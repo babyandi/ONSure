@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/oruda-final-candidate-gate.v1.schema.json",
+  "title": "ONSURE ORUDA Final Candidate Gate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "candidate_id",
+    "target_id",
+    "run1_job_id",
+    "run2_job_id",
+    "generated_at",
+    "eligible",
+    "decision",
+    "reasons",
+    "candidate_digest",
+    "final_lock_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ORUDA_FINAL_CANDIDATE_GATE_V1"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "run1_job_id": {"type": "string", "minLength": 1},
+    "run2_job_id": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "eligible": {"type": "boolean"},
+    "decision": {"enum": ["PASS", "BLOCKED"]},
+    "reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "candidate_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "final_lock_allowed": {"const": false}
+  }
+}

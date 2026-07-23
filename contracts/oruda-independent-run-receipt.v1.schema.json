@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/oruda-independent-run-receipt.v1.schema.json",
+  "title": "ONSURE ORUDA Independent Run Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "run_receipt_id",
+    "target_id",
+    "job_id",
+    "operator_id",
+    "operator_authority",
+    "environment_digest",
+    "source_digest",
+    "decision",
+    "executed_at",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ORUDA_INDEPENDENT_RUN_RECEIPT_V1"},
+    "run_receipt_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "job_id": {"type": "string", "minLength": 1},
+    "operator_id": {"type": "string", "minLength": 1},
+    "operator_authority": {"const": "INDEPENDENT_EXECUTION_OPERATOR"},
+    "environment_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "decision": {"enum": ["PASS", "FAIL"]},
+    "executed_at": {"type": "string", "format": "date-time"},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

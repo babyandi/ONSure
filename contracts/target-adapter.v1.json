@@ -1,0 +1,72 @@
+{
+  "contract": "ONSURE_TARGET_ADAPTER_V1",
+  "purpose": "Translate a validation target into ONSURE standard evidence and execution contracts without changing validator policy or final decision authority.",
+  "supported_source_kinds": [
+    "GIT_REPOSITORY",
+    "SOURCE_ARCHIVE",
+    "PACKAGE",
+    "BINARY",
+    "CONTAINER_IMAGE",
+    "DEPLOYED_SERVICE",
+    "DOCUMENT_AND_POLICY_SET"
+  ],
+  "required_inputs": [
+    "target_id",
+    "target_type",
+    "source_locator",
+    "immutable_source_reference",
+    "policy_profile",
+    "execution_profile"
+  ],
+  "required_outputs": [
+    "target_profile",
+    "source_inventory",
+    "artifact_inventory",
+    "build_and_execution_commands",
+    "sandbox_profile",
+    "observation_channels",
+    "target_specific_fixture_pack_reference",
+    "adapter_receipt"
+  ],
+  "observation_channels": [
+    "PROCESS_EXIT",
+    "STDOUT_STDERR",
+    "FILESYSTEM_DIFF",
+    "NETWORK_ACTIVITY",
+    "LOG",
+    "METRIC",
+    "TRACE",
+    "SCREEN_OR_UI_STATE",
+    "DATABASE_STATE",
+    "AI_MODEL_RESPONSE",
+    "AI_TOOL_CALL",
+    "AUTHORITY_AND_PERMISSION_EVENT"
+  ],
+  "prohibited": [
+    "OVERRIDE_ONSURE_POLICY",
+    "OVERRIDE_ONSURE_ORACLE",
+    "WRITE_INDEPENDENT_VERIFIER_DECISION",
+    "WRITE_INDEPENDENT_AUDIT_DECISION",
+    "LOWER_FINDING_SEVERITY_WITHOUT_APPROVAL",
+    "PROMOTE_TARGET_SELF_REPORTED_PASS_TO_FINAL_PASS",
+    "CREATE_CORE_RUNTIME_DEPENDENCY_ON_TARGET",
+    "HIDE_UNSUPPORTED_OR_UNOBSERVABLE_BEHAVIOUR"
+  ],
+  "embedded_mode_requires": [
+    "PORTABLE_RECEIPT_EXPORT",
+    "STANDALONE_REVERIFICATION_SUPPORT",
+    "TARGET_AND_ONSURE_KEY_SEPARATION",
+    "TARGET_CLAIMS_MARKED_UNTRUSTED_UNTIL_RECALCULATED",
+    "EMBEDDED_STANDALONE_EQUIVALENCE_TEST"
+  ],
+  "failure_modes": [
+    "TARGET_UNREACHABLE",
+    "SOURCE_NOT_IMMUTABLE",
+    "BUILD_PROFILE_INCOMPLETE",
+    "EXECUTION_PROFILE_INCOMPLETE",
+    "OBSERVATION_GAP",
+    "FIXTURE_PACK_MISSING",
+    "TARGET_POLICY_CONFLICT",
+    "ADAPTER_TAMPER_OR_DRIFT"
+  ]
+}

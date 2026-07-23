@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/oruda-document-materialization.v1.schema.json",
+  "title": "ONSURE ORUDA Document Materialization v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "materialization_id",
+    "generated_at",
+    "catalog_sha256",
+    "document_count",
+    "document_set_digest",
+    "packages"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ORUDA_DOCUMENT_MATERIALIZATION_V1"},
+    "materialization_id": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "catalog_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "document_count": {"const": 87},
+    "document_set_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "packages": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["package_id", "documents"],
+        "properties": {
+          "package_id": {"type": "string", "pattern": "^ORU-PKG-[0-9]{2}$"},
+          "documents": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["filename", "relative_path", "size_bytes", "sha256"],
+              "properties": {
+                "filename": {"type": "string", "pattern": "^oruda_.+\\.md$"},
+                "relative_path": {"type": "string", "minLength": 1},
+                "size_bytes": {"type": "integer", "minimum": 1},
+                "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

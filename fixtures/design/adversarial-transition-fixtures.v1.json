@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "suite": "ONSURE-DESIGN-ADVERSARIAL-V1",
+  "execution_status": "NOT_RUN",
+  "fixtures": [
+    {
+      "id": "A01_STAGE_SKIP",
+      "mutation": "DESIGN_REVIEWED directly to OBUILDER_BUILT",
+      "expected_decision": "FAIL",
+      "expected_reason": "STAGE_SKIP"
+    },
+    {
+      "id": "A02_MUTABLE_REF",
+      "mutation": "receipt subject uses branch name instead of immutable 40-char commit SHA",
+      "expected_decision": "FAIL",
+      "expected_reason": "MUTABLE_SOURCE_REF"
+    },
+    {
+      "id": "A03_SELF_APPROVAL",
+      "mutation": "OMaker producer also supplies maker_plan_approval",
+      "expected_decision": "FAIL",
+      "expected_reason": "SELF_APPROVAL_PROHIBITED"
+    },
+    {
+      "id": "A04_PLAN_SWAP",
+      "mutation": "OBuilder consumes a different OMaker plan digest than the approved receipt",
+      "expected_decision": "FAIL",
+      "expected_reason": "PLAN_DIGEST_MISMATCH"
+    },
+    {
+      "id": "A05_PATCH_DRIFT",
+      "mutation": "built source contains a file operation absent from change_manifest",
+      "expected_decision": "FAIL",
+      "expected_reason": "UNDECLARED_FILE_OPERATION"
+    },
+    {
+      "id": "A06_UNLOCKED_DEPENDENCY",
+      "mutation": "OBuilder resolves a dependency not present in dependency_lock",
+      "expected_decision": "FAIL",
+      "expected_reason": "UNLOCKED_DEPENDENCY"
+    },
+    {
+      "id": "A07_NETWORK_WITHOUT_PERMIT",
+      "mutation": "OBuilder accesses network with no explicit network permit",
+      "expected_decision": "FAIL",
+      "expected_reason": "UNAUTHORIZED_NETWORK_ACCESS"
+    },
+    {
+      "id": "A08_ARTIFACT_SWAP",
+      "mutation": "runtime harness receives an artifact digest different from OBuilder output",
+      "expected_decision": "FAIL",
+      "expected_reason": "BUILD_RUNTIME_DIGEST_MISMATCH"
+    },
+    {
+      "id": "A09_RECEIPT_REPLAY",
+      "mutation": "valid prior OTester receipt reused for a new workspace_id",
+      "expected_decision": "FAIL",
+      "expected_reason": "RECEIPT_REPLAY"
+    },
+    {
+      "id": "A10_SHARED_SIGNING_KEY",
+      "mutation": "Runtime, OTester and OAudit use the same signing key_id",
+      "expected_decision": "FAIL",
+      "expected_reason": "INDEPENDENCE_KEY_COLLISION"
+    },
+    {
+      "id": "A11_RUNTIME_WRITES_AUDIT",
+      "mutation": "ONSURE Runtime emits an OAudit receipt",
+      "expected_decision": "FAIL",
+      "expected_reason": "INVALID_AUDIT_AUTHORITY"
+    },
+    {
+      "id": "A12_NOT_RUN_AS_PASS",
+      "mutation": "security scanner status is NOT_RUN but lane decision is PASS",
+      "expected_decision": "FAIL",
+      "expected_reason": "NOT_RUN_CANNOT_PASS"
+    },
+    {
+      "id": "A13_OPEN_HIGH_FINDING",
+      "mutation": "one unresolved HIGH security finding exists at publication transition",
+      "expected_decision": "FAIL",
+      "expected_reason": "OPEN_BLOCKING_SECURITY_FINDING"
+    },
+    {
+      "id": "A14_REGRESSION_DUPLICATE",
+      "mutation": "same execution_id is reused for both required regression receipts",
+      "expected_decision": "FAIL",
+      "expected_reason": "REGRESSION_NOT_INDEPENDENT"
+    },
+    {
+      "id": "A15_REGRESSION_DIVERGENCE",
+      "mutation": "two regression executions have different outcomes or artifact digests",
+      "expected_decision": "FAIL",
+      "expected_reason": "NON_REPRODUCIBLE_REGRESSION"
+    },
+    {
+      "id": "A16_POLICY_DRIFT",
+      "mutation": "policy_digest changes between security review and build",
+      "expected_decision": "FAIL",
+      "expected_reason": "POLICY_DIGEST_DRIFT"
+    },
+    {
+      "id": "A17_EXPIRED_PERMIT",
+      "mutation": "build or remediation permit is expired at consumption time",
+      "expected_decision": "FAIL",
+      "expected_reason": "EXPIRED_PERMIT"
+    },
+    {
+      "id": "A18_UNSIGNED_STANDALONE_UPDATE",
+      "mutation": "standalone component update has no signed component bundle",
+      "expected_decision": "FAIL",
+      "expected_reason": "UNSIGNED_COMPONENT_UPDATE"
+    },
+    {
+      "id": "A19_MISSING_ROLLBACK",
+      "mutation": "standalone upgrade has no tested rollback bundle",
+      "expected_decision": "HOLD",
+      "expected_reason": "ROLLBACK_EVIDENCE_MISSING"
+    },
+    {
+      "id": "A20_EXTERNAL_EMBEDDED_DIVERGENCE",
+      "mutation": "embedded OMaker/OBuilder output differs from validated external reference for identical locked input",
+      "expected_decision": "INCONCLUSIVE",
+      "expected_reason": "IMPLEMENTATION_EQUIVALENCE_DIVERGENCE"
+    }
+  ]
+}

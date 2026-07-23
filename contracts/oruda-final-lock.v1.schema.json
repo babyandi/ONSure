@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/oruda-final-lock.v1.schema.json",
+  "title": "ONSURE ORUDA Final Lock v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "final_lock_id",
+    "target_id",
+    "candidate_id",
+    "candidate_digest",
+    "run1_job_id",
+    "run2_job_id",
+    "approval_id",
+    "approval_receipt_sha256",
+    "locked_at",
+    "decision",
+    "lock_digest"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ORUDA_FINAL_LOCK_V1"},
+    "final_lock_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "candidate_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "run1_job_id": {"type": "string", "minLength": 1},
+    "run2_job_id": {"type": "string", "minLength": 1},
+    "approval_id": {"type": "string", "minLength": 1},
+    "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "locked_at": {"type": "string", "format": "date-time"},
+    "decision": {"const": "LOCKED"},
+    "lock_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

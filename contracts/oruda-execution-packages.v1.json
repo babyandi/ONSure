@@ -1,0 +1,271 @@
+{
+  "contract": "ONSURE_ORUDA_EXECUTION_PACKAGE_MAP_V1",
+  "authority_entry": "oruda_failure_loop_review_to_goal.md",
+  "source_set": {
+    "total_documents": 87,
+    "loop_documents": 64,
+    "supporting_documents": 23,
+    "loop_range": "01-64",
+    "duplicate_loop_numbers": 0,
+    "missing_loop_numbers": 0,
+    "exact_duplicate_documents": 0
+  },
+  "source_materialization": {
+    "classification_status": "COMPLETE",
+    "byte_import_status": "NOT_IMPORTED",
+    "current_source": "CHATGPT_FILE_LIBRARY_REFERENCES",
+    "decision": "FILE_LIBRARY_REFERENCES_CLASSIFIED_BYTES_NOT_YET_IMPORTED"
+  },
+  "current_decision": {
+    "stop_class": "STOP_BLOCKED_BY_TRUE_EXHAUSTION_DECISION",
+    "next_action": "EXECUTION_REQUIRED_NEXT",
+    "final_candidate": "BLOCKED",
+    "final_lock": "NOT_ALLOWED"
+  },
+  "assignment_rules": [
+    "EVERY_DOCUMENT_ASSIGNED_EXACTLY_ONCE",
+    "LOOP_DOCUMENTS_RETAIN_ORIGINAL_LOOP_NUMBER",
+    "AUTHORITY_AND_STOP_DECISION_REMAIN_IN_FINAL_GATE_PACKAGE",
+    "DOCUMENT_CLASSIFICATION_DOES_NOT_COUNT_AS_EXECUTION",
+    "FILE_LIBRARY_REFERENCE_DOES_NOT_REPLACE_SOURCE_BYTE_MATERIALIZATION"
+  ],
+  "packages": [
+    {
+      "package_id": "ORU-PKG-01",
+      "name": "Authority Baseline and Intake Freeze",
+      "purpose": "Freeze source authority, repository baseline, permissions, environment and the first execution packet before any harness runs.",
+      "loop_documents": [
+        "oruda_loop_01_prerun_dryrun_check.md",
+        "oruda_loop_02_data_permission_boundary.md",
+        "oruda_loop_06_real_repository_alignment.md",
+        "oruda_loop_15_execution_start_packet.md",
+        "oruda_loop_20_mvf_source_dossier.md",
+        "oruda_loop_25_environment_freeze_manifest.md",
+        "oruda_loop_46_authority_freshness_check.md",
+        "oruda_loop_58_benchmark_environment_parity.md"
+      ],
+      "supporting_documents": [],
+      "required_outputs": [
+        "authority_set_manifest",
+        "source_lock",
+        "permission_boundary_receipt",
+        "environment_freeze_manifest",
+        "mvf_source_dossier",
+        "execution_start_receipt"
+      ],
+      "exit_gate": "ALL_INPUT_BYTES_HASHED_AND_EXECUTION_ENVIRONMENT_FROZEN"
+    },
+    {
+      "package_id": "ORU-PKG-02",
+      "name": "Program Contract Coverage and Priority",
+      "purpose": "Convert program responsibilities, handoff rules, coverage gaps, sampling and priority into the executable validation queue.",
+      "loop_documents": [
+        "oruda_loop_07_scenario_explosion_control.md",
+        "oruda_loop_09_metrics_anti_gaming.md",
+        "oruda_loop_32_failure_priority_tier.md",
+        "oruda_loop_37_fixture_gap_backfill.md",
+        "oruda_loop_41_cross_program_contract_collision.md",
+        "oruda_loop_49_evidence_sampling_bias.md",
+        "oruda_loop_57_metric_denominator_lock.md",
+        "oruda_loop_59_synthetic_real_split.md"
+      ],
+      "supporting_documents": [
+        "oruda_failure_coverage_matrix.md",
+        "oruda_program_contract_matrix.md",
+        "oruda_chain_combination_priority_table.md"
+      ],
+      "required_outputs": [
+        "program_contract_registry",
+        "handoff_gate_matrix",
+        "coverage_matrix",
+        "failure_priority_queue",
+        "fixture_sampling_receipt",
+        "metric_denominator_lock"
+      ],
+      "exit_gate": "MVF_AND_HIGH_RISK_CHAIN_SCOPE_APPROVED"
+    },
+    {
+      "package_id": "ORU-PKG-03",
+      "name": "Fixture Oracle and Provenance",
+      "purpose": "Materialize source-derived fixtures, variants, oracle versions and provenance for deterministic execution.",
+      "loop_documents": [
+        "oruda_loop_08_oracle_dispute_resolution.md",
+        "oruda_loop_16_minimum_viable_fixture_set.md",
+        "oruda_loop_26_fixture_sampling_and_reduction.md",
+        "oruda_loop_27_oracle_version_lock.md",
+        "oruda_loop_45_semantic_drift_replay.md",
+        "oruda_loop_47_fixture_provenance_chain.md",
+        "oruda_loop_48_oracle_contradiction_ledger.md",
+        "oruda_loop_51_negative_corpus_aging.md"
+      ],
+      "supporting_documents": [
+        "oruda_quality_oracle_deep_dive.md",
+        "oruda_real_artifact_fixture_mining.md",
+        "oruda_fixture_id_taxonomy.md",
+        "oruda_artifact_to_fixture_pipeline.md",
+        "oruda_negative_mutation_generation.md",
+        "oruda_oracle_catalog.md"
+      ],
+      "required_outputs": [
+        "mvf_001_fixture_set",
+        "fixture_registry",
+        "fixture_provenance_chain",
+        "oracle_catalog",
+        "oracle_version_lock",
+        "oracle_contradiction_ledger"
+      ],
+      "exit_gate": "MVF_17_FIXTURES_HAVE_SOURCE_HASH_ORACLE_AND_EXPECTED_RESULT"
+    },
+    {
+      "package_id": "ORU-PKG-04",
+      "name": "Harness Command and Execution Control",
+      "purpose": "Bind each fixture to an executable command, harness, parser, timeout, retry policy and canonical trace classification.",
+      "loop_documents": [
+        "oruda_loop_03_reliability_stress_recovery.md",
+        "oruda_loop_21_harness_command_manifest.md",
+        "oruda_loop_28_reproduction_log_contract.md",
+        "oruda_loop_29_pause_resume_integrity.md",
+        "oruda_loop_30_execution_result_classifier.md",
+        "oruda_loop_35_execution_trace_canonicalization.md",
+        "oruda_loop_50_harness_flake_quarantine.md",
+        "oruda_loop_60_adversarial_prompt_policy_injection.md"
+      ],
+      "supporting_documents": [
+        "oruda_execution_queue_model.md",
+        "oruda_harness_binding_contract.md",
+        "oruda_harness_meta_test_set.md"
+      ],
+      "required_outputs": [
+        "harness_command_manifest",
+        "execution_queue",
+        "canonical_execution_trace",
+        "execution_result_classification",
+        "harness_meta_test_receipt",
+        "flake_quarantine_registry"
+      ],
+      "exit_gate": "EVERY_MVF_FIXTURE_HAS_EXECUTABLE_COMMAND_AND_TYPED_RESULT"
+    },
+    {
+      "package_id": "ORU-PKG-05",
+      "name": "Evidence Receipt and Lineage",
+      "purpose": "Persist evidence records and reconstruct source-to-fixture-to-command-to-oracle-to-receipt lineage with integrity verification.",
+      "loop_documents": [
+        "oruda_loop_12_double_loop_audit_trail.md",
+        "oruda_loop_22_evidence_integrity_verifier.md",
+        "oruda_loop_31_evidence_conflict_arbitration.md",
+        "oruda_loop_36_receipt_lineage_reconstruction.md",
+        "oruda_loop_43_artifact_retention_and_access.md",
+        "oruda_loop_53_privacy_redaction_proof.md",
+        "oruda_loop_56_rollback_recovery_receipt.md",
+        "oruda_loop_61_golden_trace_replay_escrow.md"
+      ],
+      "supporting_documents": [
+        "oruda_evidence_population_protocol.md",
+        "oruda_evidence_registry_schema.md"
+      ],
+      "required_outputs": [
+        "evidence_registry",
+        "receipt_lineage_graph",
+        "integrity_verification_receipt",
+        "evidence_conflict_ledger",
+        "privacy_redaction_proof",
+        "retention_access_receipt",
+        "golden_trace_escrow"
+      ],
+      "exit_gate": "ALL_EXECUTION_RESULTS_HAVE_VERIFIED_LINEAGE_AND_RETRIEVABLE_BYTES"
+    },
+    {
+      "package_id": "ORU-PKG-06",
+      "name": "RCA Remediation and Regression Lock",
+      "purpose": "Close unexpected outcomes through reproducible RCA, approved remediation, replay and a frozen long-term regression set.",
+      "loop_documents": [
+        "oruda_loop_11_counterexample_hunt.md",
+        "oruda_loop_17_not_run_burn_down.md",
+        "oruda_loop_23_rca_closure_proof.md",
+        "oruda_loop_33_regression_set_freeze.md",
+        "oruda_loop_38_policy_exception_quarantine.md",
+        "oruda_loop_52_cross_version_regression_bridge.md",
+        "oruda_loop_63_post_final_monitoring_hook.md"
+      ],
+      "supporting_documents": [
+        "oruda_rca_reinjection_loop.md"
+      ],
+      "required_outputs": [
+        "counterexample_results",
+        "not_run_burn_down",
+        "rca_closure_proofs",
+        "remediation_receipts",
+        "regression_lock_set",
+        "cross_version_bridge",
+        "reopen_monitoring_rules"
+      ],
+      "exit_gate": "UNEXPECTED_RESULTS_ZERO_AND_REGRESSION_REPLAY_TWO_OF_TWO_CLEAN"
+    },
+    {
+      "package_id": "ORU-PKG-07",
+      "name": "Independent Replay Audit and Operational Transfer",
+      "purpose": "Prove that independent verifiers and operators can reproduce the evidence, reject false final claims and perform the run without author context.",
+      "loop_documents": [
+        "oruda_loop_05_final_seal_independent_review.md",
+        "oruda_loop_10_operational_handover.md",
+        "oruda_loop_14_independent_red_team_replay.md",
+        "oruda_loop_39_independent_operator_replay.md",
+        "oruda_loop_42_human_review_variance_control.md",
+        "oruda_loop_54_dependency_license_vulnerability_gate.md",
+        "oruda_loop_55_operator_runbook_dry_transfer.md",
+        "oruda_loop_62_release_note_evidence_mapping.md"
+      ],
+      "supporting_documents": [
+        "oruda_otester_oaudit_false_pass_review.md",
+        "oruda_human_blind_review_sheet.md"
+      ],
+      "required_outputs": [
+        "independent_verifier_receipt",
+        "independent_audit_receipt",
+        "red_team_replay_receipt",
+        "operator_replay_receipt",
+        "blind_review_receipt",
+        "review_variance_report",
+        "dependency_license_vulnerability_receipt",
+        "release_claim_evidence_map"
+      ],
+      "exit_gate": "INDEPENDENT_REPLAY_AND_AUDIT_AGREE_WITH_PRIMARY_EXECUTION"
+    },
+    {
+      "package_id": "ORU-PKG-08",
+      "name": "Final Candidate Exhaustion and Stop Decision",
+      "purpose": "Evaluate final-candidate eligibility, saturation, counterclaims and typed stop reasons without allowing automatic Final Lock.",
+      "loop_documents": [
+        "oruda_loop_04_governance_drift_control.md",
+        "oruda_loop_13_stop_reason_matrix.md",
+        "oruda_loop_18_termination_counterclaim_review.md",
+        "oruda_loop_19_final_candidate_transition_gate.md",
+        "oruda_loop_24_final_candidate_rehearsal.md",
+        "oruda_loop_34_stop_declaration_bundle.md",
+        "oruda_loop_40_timeboxed_saturation_sweep.md",
+        "oruda_loop_44_final_lock_pre_mortem.md",
+        "oruda_loop_64_true_exhaustion_decision_record.md"
+      ],
+      "supporting_documents": [
+        "oruda_failure_loop_review_to_goal.md",
+        "oruda_review_exhaustion_log_template.md",
+        "oruda_gold_run_readiness.md",
+        "oruda_saturation_metrics.md",
+        "oruda_double_loop_termination_protocol.md",
+        "oruda_pr_gate_checklist.md"
+      ],
+      "required_outputs": [
+        "governance_drift_replay_receipt",
+        "termination_counterclaim_result",
+        "final_candidate_rehearsal_receipt",
+        "stop_declaration_bundle",
+        "saturation_sweep_receipt_1",
+        "saturation_sweep_receipt_2",
+        "final_lock_pre_mortem",
+        "true_exhaustion_decision_record"
+      ],
+      "exit_gate": "FINAL_CANDIDATE_ONLY_AFTER_ALL_PACKAGES_PASS_AND_HUMAN_APPROVAL",
+      "automatic_final_lock": false
+    }
+  ]
+}

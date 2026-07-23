@@ -1,0 +1,53 @@
+{
+  "contract": "ONSURE_VALIDATION_TARGET_REGISTRY_V1",
+  "registry_status": "INITIAL",
+  "target_contract": {
+    "required_identity": [
+      "target_id",
+      "target_name",
+      "target_type",
+      "source_locator",
+      "immutable_source_reference",
+      "adapter_contract",
+      "policy_profile",
+      "execution_profile"
+    ],
+    "required_evidence": [
+      "source_lock",
+      "target_profile_receipt",
+      "fixture_set_receipt",
+      "harness_receipt",
+      "oracle_receipt",
+      "finding_receipt",
+      "rca_receipt",
+      "remediation_receipt",
+      "regression_lock",
+      "final_validation_report"
+    ]
+  },
+  "targets": [
+    {
+      "ordinal": 1,
+      "target_id": "ORUDA",
+      "target_name": "ORUDA",
+      "target_type": "AI_AGENTIC_SOFTWARE_PLATFORM",
+      "status": "PLANNED_FIRST_VALIDATION_TARGET",
+      "relationship": "EXTERNAL_VALIDATION_TARGET",
+      "initial_integration": "ONSURE_TARGET_ADAPTER",
+      "future_integration_options": [
+        "ONSURE_AGENT_IN_ORUDA",
+        "ONSURE_VALIDATION_MODULE_IN_ORUDA"
+      ],
+      "onsure_runtime_dependency_on_target": false,
+      "target_runtime_dependency_on_onsure": false,
+      "final_decision_authority": "ONSURE_INDEPENDENT_VERIFIER_AND_AUDIT"
+    }
+  ],
+  "registration_rules": [
+    "TARGET_REGISTRATION_DOES_NOT_CREATE_PRODUCT_DEPENDENCY",
+    "TARGET_ADAPTER_MUST_NOT_OVERRIDE_VALIDATOR_ENGINE_POLICY",
+    "TARGET_GENERATED_CLAIMS_ARE_UNTRUSTED_UNTIL_INDEPENDENTLY_RECALCULATED",
+    "EMBEDDED_MODULE_MUST_EXPORT_PORTABLE_RECEIPTS_FOR_STANDALONE_REVERIFICATION",
+    "TARGET_REMOVAL_MUST_NOT_BREAK_ONSURE_CORE_EXECUTION"
+  ]
+}

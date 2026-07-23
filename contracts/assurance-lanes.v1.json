@@ -1,0 +1,208 @@
+{
+  "schema_version": "1.3.0",
+  "product": "ONSURE",
+  "product_category": "INDEPENDENT_COMMERCIAL_SOFTWARE_VALIDATION_PLATFORM",
+  "mode": "IMPLEMENTATION_READY",
+  "execution_gate": "HOLD",
+  "target_deployment": "STANDALONE",
+  "target_scope": [
+    "AI_APPLICATION",
+    "AGENTIC_SYSTEM",
+    "GENERAL_SOFTWARE",
+    "WEB_APPLICATION",
+    "API_SERVICE",
+    "DESKTOP_APPLICATION",
+    "MOBILE_APPLICATION",
+    "AUTOMATION_WORKFLOW"
+  ],
+  "validator_engine_patterns": [
+    "RCA",
+    "FAILURE_MODE_REGISTRY",
+    "FIXTURE_REGISTRY",
+    "HARNESS",
+    "ORACLE",
+    "RECEIPT_CHAIN",
+    "REGRESSION_LOCK"
+  ],
+  "decision_values": ["PASS", "FAIL", "HOLD", "BLOCKED", "NOT_RUN", "INCONCLUSIVE"],
+  "final_pass_requires": [
+    "target_registration",
+    "source_lock",
+    "requirements_validation",
+    "architecture_review",
+    "design_review",
+    "implementation_plan_receipt",
+    "code_review",
+    "security_review",
+    "build_receipt",
+    "runtime_execution",
+    "failure_mode_and_rca_receipts",
+    "fixture_harness_oracle_receipts",
+    "full_regression_twice",
+    "independent_verifier_receipt",
+    "independent_audit_receipt",
+    "final_validation_report"
+  ],
+  "lanes": [
+    {
+      "id": "target-registration",
+      "owner": "ONSURE",
+      "required_outputs": ["target_profile", "adapter_contract", "policy_profile", "execution_profile"],
+      "fail_closed_on": ["unregistered_target", "target_adapter_overrides_policy", "target_dependency_in_core"]
+    },
+    {
+      "id": "source-intake",
+      "owner": "ONSURE",
+      "required_outputs": ["source_receipt", "inventory_digest", "immutable_commit_sha"],
+      "fail_closed_on": ["mutable_ref", "missing_hash", "secret_scan_not_run"]
+    },
+    {
+      "id": "requirements",
+      "owner": "ONSURE",
+      "required_outputs": ["requirement_model", "acceptance_criteria", "traceability_map"],
+      "fail_closed_on": ["unresolved_conflict", "missing_source_anchor"]
+    },
+    {
+      "id": "architecture-design",
+      "owner": "ONSURE",
+      "optional_capability_providers": [
+        "DOCUMENT_ANALYZER",
+        "REPORT_ANALYZER",
+        "DESIGN_ANALYZER",
+        "UI_ANALYZER"
+      ],
+      "reference_provider_names": ["ODocument", "OReport", "ODesign", "OUI"],
+      "required_outputs": ["boundary_model", "trust_boundaries", "state_model", "design_findings"],
+      "fail_closed_on": ["undefined_authority", "undefined_permission_boundary"]
+    },
+    {
+      "id": "implementation-planning",
+      "owner": "ONSURE_OR_APPROVED_PROVIDER",
+      "reference_provider_name": "OMaker",
+      "execution_boundary": "adapter_or_separate_agent_runtime",
+      "required_inputs": ["immutable_commit_sha", "requirement_model", "design_contract", "security_policy_digest", "approved_change_scope"],
+      "required_outputs": ["implementation_plan", "plan_self_hash", "change_trace", "build_request"],
+      "prohibited": ["unapproved_requirement_change", "unbound_policy", "writes_independent_verifier_or_audit_decision"]
+    },
+    {
+      "id": "code-review",
+      "owner": "ONSURE",
+      "required_outputs": ["code_findings", "test_gap_findings", "design_code_mismatch"],
+      "fail_closed_on": ["review_not_run"]
+    },
+    {
+      "id": "security",
+      "owner": "ONSURE",
+      "required_outputs": ["threat_model", "security_findings", "scanner_receipts", "adversarial_plan"],
+      "blocking_severities": ["CRITICAL", "HIGH"],
+      "fail_closed_on": ["security_lane_not_run", "unknown_open_critical_high"]
+    },
+    {
+      "id": "failure-analysis",
+      "owner": "ONSURE",
+      "required_outputs": ["failure_mode_registry", "rca_receipts", "blast_radius", "required_fixture_and_oracle_plan"],
+      "fail_closed_on": ["unreproduced_failure_marked_resolved", "root_cause_missing", "failure_without_evidence"]
+    },
+    {
+      "id": "remediation",
+      "owner": "ONSURE",
+      "required_outputs": ["remediation_plan", "patch_receipt", "focused_test_receipts"],
+      "approval_required_for": [
+        "identity_model_change",
+        "permission_model_change",
+        "cryptographic_migration",
+        "data_retention_change",
+        "breaking_architecture_change",
+        "regulatory_interpretation_change"
+      ]
+    },
+    {
+      "id": "build",
+      "owner": "ONSURE_OR_APPROVED_BUILDER",
+      "reference_provider_name": "OBuilder",
+      "execution_boundary": "isolated_ephemeral_workspace",
+      "required_inputs": ["plan_self_hash", "immutable_commit_sha", "approved_patch_sha", "dependency_lock", "build_policy_digest"],
+      "required_outputs": ["build_receipt", "artifact_digest", "sbom", "provenance", "reproducibility_result"],
+      "fail_closed_on": ["mutable_toolchain", "unapproved_dependency", "unrestricted_network", "secret_leak", "non_reproducible_build"]
+    },
+    {
+      "id": "fixture-harness-oracle",
+      "owner": "ONSURE",
+      "required_outputs": ["fixture_set_receipt", "harness_receipt", "oracle_receipt", "failure_reproduction_result"],
+      "fail_closed_on": ["fixture_not_locked", "harness_not_run", "oracle_missing", "target_claim_trusted_without_recalculation"]
+    },
+    {
+      "id": "runtime-test",
+      "owner": "ONSURE",
+      "required_outputs": ["runtime_receipt", "regression_receipt_1", "regression_receipt_2", "regression_lock"],
+      "fail_closed_on": ["execution_not_run", "non_reproducible_result"]
+    },
+    {
+      "id": "independent-verifier",
+      "owner": "ONSURE_INDEPENDENT_VERIFIER",
+      "reference_provider_name": "OTester",
+      "execution_boundary": "separate_process_or_service",
+      "required_outputs": ["independent_verifier_receipt"],
+      "prohibited": ["runtime_writes_verifier_decision", "trust_runtime_pass_without_recalculation"]
+    },
+    {
+      "id": "independent-audit",
+      "owner": "ONSURE_INDEPENDENT_AUDIT",
+      "reference_provider_name": "OAudit",
+      "execution_boundary": "separate_process_or_service",
+      "required_outputs": ["independent_audit_receipt", "decision_ceiling"],
+      "prohibited": ["runtime_writes_audit_decision", "accept_unbound_receipt"]
+    },
+    {
+      "id": "reporting",
+      "owner": "ONSURE",
+      "required_outputs": ["user_risk_summary", "technical_rca_report", "remediation_report", "revalidation_report", "final_validation_report"],
+      "fail_closed_on": ["material_conclusion_without_evidence", "report_decision_exceeds_receipt_ceiling"]
+    },
+    {
+      "id": "standalone-packaging",
+      "owner": "ONSURE",
+      "required_outputs": ["offline_distribution", "embedded_contract_inventory", "component_hash_lock", "install_receipt", "rollback_receipt"],
+      "fail_closed_on": ["external_target_runtime_required", "missing_component_hash", "offline_execution_failed", "independent_verifier_audit_boundary_collapsed"]
+    }
+  ],
+  "state_transitions": [
+    "UNINITIALIZED->SOURCE_LOCKED",
+    "SOURCE_LOCKED->REQUIREMENTS_VALIDATED",
+    "REQUIREMENTS_VALIDATED->ARCHITECTURE_REVIEWED",
+    "ARCHITECTURE_REVIEWED->DESIGN_REVIEWED",
+    "DESIGN_REVIEWED->OMAKER_PLAN_APPROVED",
+    "OMAKER_PLAN_APPROVED->CODE_REVIEWED",
+    "CODE_REVIEWED->SECURITY_REVIEWED",
+    "SECURITY_REVIEWED->REMEDIATION_READY",
+    "REMEDIATION_READY->PATCHED",
+    "PATCHED->OBUILDER_BUILT",
+    "OBUILDER_BUILT->TESTED",
+    "TESTED->OTESTER_VERIFIED",
+    "OTESTER_VERIFIED->OAUDIT_VERIFIED",
+    "OAUDIT_VERIFIED->PUBLICATION_ELIGIBLE"
+  ],
+  "standalone_gate": [
+    "generic_validator_core_locked",
+    "target_adapter_contracts_approved",
+    "target_removal_does_not_break_core",
+    "external_and_embedded_module_equivalence_verified",
+    "offline_install_update_rollback_verified",
+    "windows_and_linux_reproducible_build_verified",
+    "full_e2e_twice_identical",
+    "critical_high_zero_twice",
+    "independent_technical_review_twice"
+  ],
+  "invariants": [
+    "no_stage_skipping",
+    "not_run_is_never_pass",
+    "critical_or_high_blocks_publication",
+    "every_transition_requires_input_and_output_receipts",
+    "builder_output_is_not_official_before_independent_verification_and_audit",
+    "agent_cannot_self_approve",
+    "standalone_does_not_mean_collapsed_trust_boundaries",
+    "no_target_specific_runtime_dependency",
+    "oruda_is_first_target_not_product_dependency",
+    "embedded_target_module_exports_portable_receipts"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/source-lock.v1.schema.json",
+  "title": "ONSURE Source Lock v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["digest_contract", "commit_sha", "tree_sha256", "policy_sha256", "worktree_clean"],
+  "properties": {
+    "digest_contract": {"const": "ONSURE_SOURCE_DIGEST_V1"},
+    "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "policy_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "worktree_clean": {"const": true}
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.1.0",
+  "contract": "ONSURE-OMAKER-OBUILDER-ADAPTER",
+  "status": "REFERENCE_PROVIDER_COMPATIBILITY",
+  "authority": {
+    "product_scope_contract": "ONSURE_PRODUCT_SCOPE_V1",
+    "generic_target_adapter_contract": "ONSURE_TARGET_ADAPTER_V1",
+    "this_contract_is_core_required": false,
+    "oruda_runtime_required": false
+  },
+  "generic_role_mapping": {
+    "OMaker": "IMPLEMENTATION_AND_REMEDIATION_PLANNER_PROVIDER",
+    "OBuilder": "ISOLATED_PATCH_BUILDER_PROVIDER",
+    "OTester": "INDEPENDENT_VERIFIER_REFERENCE_PROVIDER",
+    "OAudit": "INDEPENDENT_AUDIT_REFERENCE_PROVIDER"
+  },
+  "omaker": {
+    "role": "Generate an implementation plan and bounded patch proposal from approved requirements and design contracts.",
+    "required_inputs": [
+      "source_receipt",
+      "requirement_receipt",
+      "architecture_receipt",
+      "design_receipt",
+      "policy_digest",
+      "permit"
+    ],
+    "required_outputs": [
+      "omaker_plan_receipt",
+      "change_manifest",
+      "file_operation_plan",
+      "test_generation_plan",
+      "security_control_plan",
+      "rollback_plan"
+    ],
+    "prohibited": [
+      "write_final_pass",
+      "change_immutable_source_baseline",
+      "silently_change_requirement_meaning",
+      "approve_own_plan",
+      "execute_unapproved_privileged_change",
+      "omit_security_impact_analysis"
+    ],
+    "change_classes": {
+      "AUTO_ALLOWED": [
+        "local_bug_fix",
+        "input_validation",
+        "output_encoding",
+        "exception_handling",
+        "test_addition",
+        "receipt_binding",
+        "safe_configuration_hardening"
+      ],
+      "APPROVAL_REQUIRED": [
+        "authentication_model_change",
+        "authorization_model_change",
+        "cryptographic_migration",
+        "data_retention_change",
+        "external_integration_block",
+        "breaking_api_change",
+        "architecture_boundary_change",
+        "regulatory_interpretation_change"
+      ]
+    }
+  },
+  "obuilder": {
+    "role": "Build, assemble, package and attest only an approved implementation plan and approved patches in an isolated environment.",
+    "execution_boundary": "isolated_process_container_or_vm",
+    "required_inputs": [
+      "approved_omaker_plan_receipt",
+      "patch_receipt",
+      "immutable_source_receipt",
+      "toolchain_lock",
+      "dependency_lock",
+      "build_policy_digest",
+      "build_permit"
+    ],
+    "required_outputs": [
+      "obuilder_build_receipt",
+      "artifact_manifest",
+      "sbom",
+      "provenance",
+      "runtime_bundle_digest",
+      "build_log_digest"
+    ],
+    "prohibited": [
+      "network_access_without_explicit_permit",
+      "unlocked_dependency_resolution",
+      "source_mutation_outside_patch_manifest",
+      "reuse_unsigned_artifact",
+      "write_independent_verifier_or_audit_decision",
+      "publish_before_independent_verification"
+    ]
+  },
+  "handoff_guards": [
+    "omaker_output_digest_is_bound_to_patch_receipt",
+    "obuilder_consumes_exact_approved_plan_digest",
+    "all_file_operations_match_change_manifest",
+    "build_input_commit_matches_source_receipt",
+    "build_artifact_digest_matches_runtime_harness_input",
+    "sbom_and_provenance_are_bound_to_build_receipt",
+    "omaker_and_obuilder_execution_ids_are_distinct",
+    "omaker_and_obuilder_signing_keys_are_distinct"
+  ],
+  "standalone_requirement": {
+    "external_target_runtime_required": false,
+    "works_without_oruda": true,
+    "embedded_components": [
+      "implementation_planner_provider",
+      "isolated_builder_provider",
+      "policy_registry",
+      "receipt_ledger",
+      "runtime_harness"
+    ],
+    "independent_components": [
+      "independent_verifier",
+      "independent_audit"
+    ],
+    "offline_operation": true,
+    "upgrade_requires": [
+      "signed_component_bundle",
+      "compatibility_receipt",
+      "rollback_bundle",
+      "standalone_regression_twice",
+      "independent_verifier_receipt",
+      "independent_audit_receipt"
+    ]
+  }
+}

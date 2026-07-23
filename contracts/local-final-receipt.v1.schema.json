@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/local-final-receipt.v1.schema.json",
+  "title": "ONSURE Local Final Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "decision",
+    "execution_mode",
+    "assurance_run_id",
+    "run_started_at",
+    "verified_at",
+    "receipt_dir",
+    "source_commit_sha",
+    "source_tree_sha256",
+    "policy_sha256",
+    "fixture_contract_snapshot",
+    "fixture_contract_snapshot_sha256",
+    "security_findings_snapshot",
+    "security_findings_snapshot_sha256",
+    "key_registry_snapshot",
+    "key_registry_snapshot_sha256",
+    "ledger",
+    "ledger_chain_head",
+    "final_lock_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_LOCAL_FINAL_RECEIPT_V1"},
+    "decision": {"const": "PASS"},
+    "execution_mode": {"const": "LOCAL_STANDALONE"},
+    "assurance_run_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{8,128}$"},
+    "run_started_at": {"type": "string", "format": "date-time"},
+    "verified_at": {"type": "string", "format": "date-time"},
+    "receipt_dir": {"type": "string", "minLength": 1},
+    "source_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "source_tree_sha256": {"$ref": "#/$defs/sha256"},
+    "policy_sha256": {"$ref": "#/$defs/sha256"},
+    "fixture_contract_snapshot": {"type": "string", "minLength": 1},
+    "fixture_contract_snapshot_sha256": {"$ref": "#/$defs/sha256"},
+    "security_findings_snapshot": {"type": "string", "minLength": 1},
+    "security_findings_snapshot_sha256": {"$ref": "#/$defs/sha256"},
+    "key_registry_snapshot": {"type": "string", "minLength": 1},
+    "key_registry_snapshot_sha256": {"$ref": "#/$defs/sha256"},
+    "ledger": {"type": "string", "minLength": 1},
+    "ledger_chain_head": {"$ref": "#/$defs/sha256"},
+    "final_lock_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

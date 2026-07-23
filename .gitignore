@@ -1,0 +1,6 @@
+target/
+receipts/local/
+receipts/product-e2e/
+receipts/development-gate/
+validation-data/
+*.log

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/oruda-package-output-receipt.v1.schema.json",
+  "title": "ONSURE ORUDA Package Output Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "package_id",
+    "output_id",
+    "target_id",
+    "job_id",
+    "decision",
+    "evidence_path",
+    "evidence_sha256",
+    "semantic_digest",
+    "produced_at",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ORUDA_PACKAGE_OUTPUT_RECEIPT_V1"},
+    "package_id": {"type": "string", "pattern": "^ORU-PKG-[0-9]{2}$"},
+    "output_id": {"type": "string", "pattern": "^[a-z0-9_]{1,128}$"},
+    "target_id": {"type": "string", "minLength": 1},
+    "job_id": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN"]},
+    "evidence_path": {"type": "string", "minLength": 1},
+    "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "semantic_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "produced_at": {"type": "string", "format": "date-time"},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

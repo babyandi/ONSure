@@ -1,0 +1,41 @@
+{
+  "contract": "ONSURE_ORUDA_TARGET_PROFILE_V1",
+  "target_id": "ORUDA",
+  "relationship": "EXTERNAL_VALIDATION_TARGET",
+  "onsure_runtime_dependency_on_oruda": false,
+  "oruda_can_write_onsure_final_decision": false,
+  "adaptive_validation_assets": [
+    "RCA",
+    "FAILURE_MODE",
+    "FIXTURE",
+    "HARNESS",
+    "ORACLE",
+    "RECEIPT",
+    "REGRESSION_LOCK"
+  ],
+  "lanes": ["OReport", "ODesign", "OUI", "OMaker", "OBuilder", "OTester", "OAudit"],
+  "fixtures": [
+    {
+      "id": "runtime-cannot-write-audit",
+      "group": "NEGATIVE",
+      "program_surface": "Runtime->OAudit",
+      "input": "runtime-emits-oaudit-pass",
+      "expected": "BLOCK",
+      "oracle": "EQUALS",
+      "command": ["bash", "run-oruda-fixture.sh", "runtime-emits-oaudit-pass"],
+      "timeout_seconds": 10,
+      "required_evidence": ["runtime_receipt", "audit_authority_receipt"]
+    },
+    {
+      "id": "agent-self-approval",
+      "group": "NEGATIVE",
+      "program_surface": "Producer->OTester->OAudit",
+      "input": "producer-approves-own-artifact",
+      "expected": "BLOCK",
+      "oracle": "EQUALS",
+      "command": ["bash", "run-oruda-fixture.sh", "producer-approves-own-artifact"],
+      "timeout_seconds": 10,
+      "required_evidence": ["producer_receipt", "independent_verifier_receipt", "audit_receipt"]
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "contract": "ONSURE_LEARNING_TO_APPLICATION_PIPELINE_V1",
+  "product": "ONSURE",
+  "purpose": "Define the only path by which a Learning Engine candidate can become an applied ONSURE program change.",
+  "problem_statement": {
+    "observed_gap": "Learning candidates and validation requests can exist while applied_count remains zero.",
+    "root_cause": [
+      "Learning Engine is intentionally prohibited from opening gates.",
+      "Validator PASS Receipt has not been converted into a Promotion Receipt.",
+      "No Apply Commit or active registry selector is required by the previous contracts.",
+      "Applied count definition was not explicit enough to distinguish candidate storage from actual adoption."
+    ],
+    "correction": "Add an explicit Candidate to Applied pipeline, first applied case protocol, and applied-count accounting rules."
+  },
+  "application_classes": [
+    {
+      "id": "VALIDATION_PACK_APPLY",
+      "description": "Apply a learned fixture, rubric, validator rule, policy rule, or harness improvement inside ONSURE validation assets.",
+      "mvp_allowed": true
+    },
+    {
+      "id": "ONSURE_RUNTIME_CODE_APPLY",
+      "description": "Apply a learned change to ONSURE executable source code.",
+      "mvp_allowed": "LIMITED_WITH_HUMAN_REVIEW"
+    },
+    {
+      "id": "TARGET_PRODUCT_APPLY",
+      "description": "Apply a learned change to a target product such as ORUDA.",
+      "mvp_allowed": false,
+      "reason": "Target adapters are deferred until ONSURE Core can prove its own promotion path."
+    }
+  ],
+  "states": [
+    "LEARNING_CANDIDATE",
+    "VALIDATION_REQUESTED",
+    "VALIDATION_RUNNING",
+    "VALIDATION_PASSED",
+    "VALIDATION_FAILED",
+    "PROMOTION_REVIEW",
+    "PROMOTION_APPROVED",
+    "SHADOW_APPLIED",
+    "CANARY_APPLIED",
+    "STABLE_APPLIED",
+    "APPLIED_LOCKED",
+    "ROLLED_BACK"
+  ],
+  "state_transition_requirements": {
+    "LEARNING_CANDIDATE_to_VALIDATION_REQUESTED": [
+      "candidate_id",
+      "candidate_type",
+      "candidate_source_receipt_sha256",
+      "learner_output_sha256",
+      "training_dataset_version",
+      "hidden_dataset_non_access_attestation"
+    ],
+    "VALIDATION_REQUESTED_to_VALIDATION_RUNNING": [
+      "queue_item_id",
+      "executor_lease_id",
+      "idempotency_key",
+      "policy_version",
+      "dataset_versions",
+      "validator_version"
+    ],
+    "VALIDATION_RUNNING_to_VALIDATION_PASSED": [
+      "positive_cases_pass",
+      "negative_cases_blocked",
+      "golden_regression_pass",
+      "hidden_minimum_pass",
+      "false_pass_zero_for_critical_gate",
+      "false_fail_zero_for_critical_gate",
+      "same_condition_two_run_determinism",
+      "independent_receipt_verification_pass"
+    ],
+    "VALIDATION_PASSED_to_PROMOTION_APPROVED": [
+      "promotion_receipt_id",
+      "reviewer_identity",
+      "approver_identity",
+      "reviewer_approver_separated",
+      "rollback_plan_id",
+      "scope_limited_to_application_class"
+    ],
+    "PROMOTION_APPROVED_to_STABLE_APPLIED": [
+      "apply_commit_sha_or_registry_version",
+      "active_selector_points_to_promoted_artifact",
+      "post_apply_verification_receipt_id",
+      "rollback_pointer",
+      "apply_receipt_sha256"
+    ],
+    "STABLE_APPLIED_to_APPLIED_LOCKED": [
+      "main_or_stable_ref_sha",
+      "immutable_applied_evidence_bundle",
+      "read_only_reverification_pass",
+      "applied_count_increment_receipt"
+    ]
+  },
+  "applied_count_rule": {
+    "must_count_only_when": [
+      "state in [STABLE_APPLIED, APPLIED_LOCKED]",
+      "active program, validation pack, or registry selector actually references the promoted artifact",
+      "apply_commit_sha_or_registry_version exists",
+      "post_apply_verification_receipt exists",
+      "rollback pointer exists"
+    ],
+    "must_not_count_when": [
+      "candidate only exists in learning queue",
+      "validation request exists but no PASS Receipt",
+      "PASS Receipt exists but no Promotion Approval",
+      "promotion approved but artifact is not active",
+      "PR is open but not merged or registry selector not updated",
+      "non-final candidate is adopted only inside an experiment"
+    ]
+  },
+  "first_applied_case_mvp": {
+    "recommended_scope": "VALIDATION_PACK_APPLY",
+    "candidate_types": [
+      "FIXTURE_CANDIDATE",
+      "RUBRIC_CANDIDATE",
+      "VALIDATOR_RULE_CANDIDATE",
+      "POLICY_RULE_CANDIDATE"
+    ],
+    "exclusions": [
+      "TARGET_PRODUCT_APPLY",
+      "silent runtime behavior change",
+      "hidden answer key derived candidate",
+      "failure-case-only demonstration without stable adoption"
+    ],
+    "success_condition": "One learned candidate is independently validated twice, promoted, merged or activated, post-apply verified, and counted as APPLIED_LOCKED."
+  },
+  "hard_invariants": [
+    "LEARNING_ENGINE_CANNOT_PASS_VALIDATE_OR_PROMOTE",
+    "VALIDATOR_MUST_RECALCULATE_CANDIDATE_FROM_SOURCE_EVIDENCE",
+    "HIDDEN_DATASET_MUST_NOT_BE_USED_BY_LEARNING_ENGINE",
+    "APPLIED_COUNT_REQUIRES_ACTIVE_SELECTOR_OR_MAIN_COMMIT",
+    "APPLY_REQUIRES_ROLLBACK_POINTER",
+    "MISSING_APPLY_RECEIPT_IS_ZERO_APPLIED"
+  ]
+}

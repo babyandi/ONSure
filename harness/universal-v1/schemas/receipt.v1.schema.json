@@ -1,0 +1,22 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.local/harness/universal-v1/receipt.v1.schema.json",
+  "title":"ONSURE Universal Receipt v1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","receipt_id","run_id","fixture_id","oracle_id","evidence_sha256","decision","reason","created_at","receipt_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_UNIVERSAL_RECEIPT_V1"},
+    "receipt_id":{"type":"string","minLength":1},
+    "run_id":{"type":"string","minLength":1},
+    "fixture_id":{"type":"string","minLength":1},
+    "oracle_id":{"type":"string","minLength":1},
+    "evidence_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "decision":{"enum":["PASS","FAIL","BLOCKED","NOT_RUN"]},
+    "reason":{"type":"string","minLength":1},
+    "severity":{"enum":["CRITICAL","MAJOR","MINOR","INFO"]},
+    "rca_required":{"type":"boolean"},
+    "created_at":{"type":"string","format":"date-time"},
+    "receipt_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}
+  }
+}

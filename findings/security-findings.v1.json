@@ -1,0 +1,70 @@
+{
+  "contract": "ONSURE_SECURITY_FINDINGS_V1",
+  "review_status": "COMPLETE",
+  "review_method": "STATIC_PR_REVIEW",
+  "findings": [
+    {
+      "id": "ONSURE-SEC-001",
+      "severity": "HIGH",
+      "status": "CLOSED",
+      "summary": "Later global Ledger appends invalidated historical Final Receipts",
+      "resolution": "Final Receipt now binds exact per-run OTester/OAudit entries and per-run head"
+    },
+    {
+      "id": "ONSURE-SEC-002",
+      "severity": "HIGH",
+      "status": "CLOSED",
+      "summary": "OTester input was not verified against the regression evidence manifest",
+      "resolution": "Evidence manifests and OTester input digest are now directly verified"
+    },
+    {
+      "id": "ONSURE-SEC-003",
+      "severity": "HIGH",
+      "status": "CLOSED",
+      "summary": "Historical fixture verification depended on the current repository fixture definition",
+      "resolution": "Each run now seals and verifies a fixture contract snapshot"
+    },
+    {
+      "id": "ONSURE-SEC-004",
+      "severity": "MEDIUM",
+      "status": "CLOSED",
+      "summary": "Receipt JSON Schema and Java ReceiptEnvelope used different field structures",
+      "resolution": "Schema now exactly matches the Java record and consistency tests enforce it"
+    },
+    {
+      "id": "ONSURE-SEC-005",
+      "severity": "MEDIUM",
+      "status": "CLOSED",
+      "summary": "Signing-key expiry and revocation invalidated historical valid receipts",
+      "resolution": "Key validity and revocation are evaluated at receipt issuance time"
+    },
+    {
+      "id": "ONSURE-SEC-006",
+      "severity": "HIGH",
+      "status": "CLOSED",
+      "summary": "Final Receipt PASS could be produced while Critical and High finding status remained unknown",
+      "resolution": "A reviewed security finding snapshot is now required, fail-closed, Final-Locked and Final-Receipt-bound"
+    },
+    {
+      "id": "ONSURE-SEC-007",
+      "severity": "HIGH",
+      "status": "CLOSED",
+      "summary": "Official read-only re-verification validated Source Lock format without rebinding the current repository source",
+      "resolution": "Official re-verification now checks commit, tracked tree, policy digest and clean worktree against the repository"
+    },
+    {
+      "id": "ONSURE-SEC-008",
+      "severity": "MEDIUM",
+      "status": "CLOSED",
+      "summary": "Whole-run reproducibility compared evidence manifests containing run-specific absolute paths",
+      "resolution": "The gate compares underlying deterministic evidence while validating each manifest independently"
+    },
+    {
+      "id": "ONSURE-SEC-009",
+      "severity": "HIGH",
+      "status": "CLOSED",
+      "summary": "Sealed Fixture and Security snapshots were not explicitly compared with their Source-Locked repository originals",
+      "resolution": "Finalization and official re-verification now require exact snapshot-to-repository byte equality"
+    }
+  ]
+}

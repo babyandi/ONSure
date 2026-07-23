@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/oruda-final-approval-receipt.v1.schema.json",
+  "title": "ONSURE ORUDA Final Approval Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "approval_id",
+    "target_id",
+    "candidate_id",
+    "candidate_digest",
+    "approver_id",
+    "approver_authority",
+    "decision",
+    "approved_at",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ORUDA_FINAL_APPROVAL_RECEIPT_V1"},
+    "approval_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "candidate_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approver_id": {"type": "string", "minLength": 1},
+    "approver_authority": {"const": "HUMAN_FINAL_AUTHORITY"},
+    "decision": {"enum": ["APPROVE", "REJECT"]},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

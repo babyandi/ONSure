@@ -1,0 +1,128 @@
+{
+  "contract": "ONSURE_LEARNING_VALIDATION_ENGINE_V1",
+  "product": "ONSURE",
+  "product_unit": "SINGLE_PROGRAM",
+  "internal_engines": {
+    "learning_engine": {
+      "role": "CANDIDATE_GENERATION",
+      "allowed": [
+        "FAILURE_RECEIPT_ANALYSIS",
+        "RCA_CLUSTERING",
+        "FAILURE_MODE_CANDIDATE",
+        "FIXTURE_CANDIDATE",
+        "ORACLE_CANDIDATE",
+        "RUBRIC_CANDIDATE",
+        "REMEDIATION_PATTERN_CANDIDATE"
+      ],
+      "prohibited": [
+        "PASS_DECISION",
+        "PROMOTION_GATE_OPEN",
+        "HIDDEN_ANSWER_KEY_ACCESS",
+        "SILENT_RUBRIC_CHANGE",
+        "SELF_APPROVAL"
+      ]
+    },
+    "validator_engine": {
+      "role": "INDEPENDENT_DECISION",
+      "required_metrics": [
+        "FALSE_PASS",
+        "FALSE_FAIL",
+        "NONDETERMINISM",
+        "GOLDEN_REGRESSION",
+        "HIDDEN_TEST_RESULT"
+      ],
+      "prohibited": [
+        "TRUST_LEARNER_OUTPUT_WITHOUT_RECALCULATION",
+        "PROMOTE_WITHOUT_RECEIPT"
+      ]
+    },
+    "executor_engine": {
+      "role": "QUEUE_CONSUME_AND_RUNTIME_EXECUTION",
+      "states": [
+        "READY",
+        "RUNNING",
+        "DONE",
+        "RETRY",
+        "HOLD",
+        "CANCELLED",
+        "EXPIRED",
+        "APPLY_PENDING",
+        "POST_APPLY_VERIFY",
+        "APPLIED_LOCKED"
+      ],
+      "required_controls": [
+        "QUEUE_LEASE",
+        "IDEMPOTENCY_KEY",
+        "DUPLICATE_CONSUME_BLOCK",
+        "CHECKPOINT_RESUME",
+        "MAX_RETRY_WITH_RCA"
+      ]
+    },
+    "governance_engine": {
+      "role": "PROMOTION_AND_APPLICATION_CONTROL",
+      "required_controls": [
+        "PROMOTION_RECEIPT",
+        "REVIEWER_APPROVER_SEPARATION",
+        "APPLY_COMMIT_OR_STABLE_REGISTRY_VERSION",
+        "POST_APPLY_VERIFICATION",
+        "ROLLBACK_POINTER",
+        "APPLIED_COUNT_ACCOUNTING"
+      ],
+      "prohibited": [
+        "COUNT_CANDIDATE_AS_APPLIED",
+        "COUNT_NON_FINAL_EXPERIMENT_AS_APPLIED",
+        "PROMOTE_WITHOUT_ACTIVE_SELECTOR",
+        "PROMOTE_WITHOUT_ROLLBACK_POINTER"
+      ]
+    }
+  },
+  "dataset_separation": {
+    "training_validation_hidden_golden_overlap_allowed": false,
+    "byte_sha256_required": true,
+    "hidden_answer_key_access": "RESTRICTED",
+    "dataset_change_requires_receipt": true
+  },
+  "promotion_stages": [
+    "CANDIDATE",
+    "SHADOW",
+    "CANARY",
+    "STABLE",
+    "LOCKED"
+  ],
+  "hardening_backlog_ids": [
+    "HV-001",
+    "HV-002",
+    "HV-003",
+    "HV-004",
+    "HV-005",
+    "HV-006",
+    "HV-007",
+    "HV-008",
+    "HV-009",
+    "HV-010",
+    "HV-011",
+    "HV-012",
+    "HV-013",
+    "HV-014",
+    "HV-015",
+    "HV-016",
+    "HV-017",
+    "HV-018",
+    "HV-019",
+    "HV-020"
+  ],
+  "mvp_decision_boundary": {
+    "full_learning_automation": false,
+    "queue_executor_validator_receipt_required": true,
+    "golden_hidden_minimum_required": true,
+    "pass_fail_hold_gate_required": true,
+    "first_applied_case_required_before_claiming_learning_application": true,
+    "applied_count_zero_is_expected_until_promotion_pipeline_runs": true
+  },
+  "application_pipeline": {
+    "contract": "contracts/learning-to-application-pipeline.v1.json",
+    "applied_count_definition": "Only STABLE_APPLIED or APPLIED_LOCKED candidates with an active selector or main/stable apply commit, post-apply verification receipt, and rollback pointer count as applied.",
+    "first_applied_case_scope": "VALIDATION_PACK_APPLY",
+    "mvp_success_metric": "applied_locked_count >= 1"
+  }
+}

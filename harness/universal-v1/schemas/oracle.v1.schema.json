@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.local/harness/universal-v1/oracle.v1.schema.json",
+  "title":"ONSURE Universal Oracle v1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["oracle_id","type","description","blocked_on_missing_evidence"],
+  "properties":{
+    "oracle_id":{"type":"string","pattern":"^ORC-[A-Z0-9_-]+$"},
+    "type":{"enum":["EQUALS","CONTAINS","EXIT_CODE","NUMERIC_MAX","NUMERIC_MIN","FILE_EXISTS"]},
+    "description":{"type":"string","minLength":1},
+    "blocked_on_missing_evidence":{"type":"boolean"},
+    "parameters":{"type":"object"}
+  }
+}

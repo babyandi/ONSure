@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/local-run-context.v1.schema.json",
+  "title": "ONSURE Local Run Context v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "run_id", "started_at"],
+  "properties": {
+    "contract": {"const": "ONSURE_LOCAL_RUN_CONTEXT_V1"},
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{8,128}$"},
+    "started_at": {"type": "string", "format": "date-time"}
+  }
+}

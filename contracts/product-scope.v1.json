@@ -1,0 +1,112 @@
+{
+  "contract": "ONSURE_PRODUCT_SCOPE_V1",
+  "product": "ONSURE",
+  "product_category": "INDEPENDENT_COMMERCIAL_SOFTWARE_VALIDATION_PLATFORM",
+  "commercial_positioning": {
+    "primary_users": [
+      "NON_DEVELOPER_AI_BUILDERS",
+      "SOFTWARE_DEVELOPERS",
+      "PRODUCT_TEAMS",
+      "ENTERPRISE_ASSURANCE_TEAMS"
+    ],
+    "supported_target_types": [
+      "AI_APPLICATION",
+      "AGENTIC_SYSTEM",
+      "GENERAL_SOFTWARE",
+      "WEB_APPLICATION",
+      "API_SERVICE",
+      "DESKTOP_APPLICATION",
+      "MOBILE_APPLICATION",
+      "AUTOMATION_WORKFLOW"
+    ],
+    "delivery_modes": [
+      "STANDALONE_DESKTOP_OR_SERVER",
+      "LOCAL_CLI",
+      "PRIVATE_NETWORK_SERVICE",
+      "EMBEDDED_VALIDATION_MODULE",
+      "TARGET_SIDE_VALIDATION_AGENT"
+    ]
+  },
+  "core_capabilities": [
+    "SOURCE_AND_ARTIFACT_INTAKE",
+    "REQUIREMENT_AND_POLICY_RECONSTRUCTION",
+    "STATIC_CODE_AND_CONFIGURATION_VALIDATION",
+    "RUNTIME_AND_E2E_VALIDATION",
+    "AI_AGENT_AND_PROMPT_SECURITY_VALIDATION",
+    "FAILURE_MODE_DETECTION",
+    "ROOT_CAUSE_ANALYSIS",
+    "FIXTURE_GENERATION_AND_REGISTRY",
+    "HARNESS_EXECUTION",
+    "ORACLE_BASED_JUDGEMENT",
+    "RECEIPT_AND_EVIDENCE_CHAIN",
+    "REGRESSION_LOCK",
+    "REMEDIATION_PLANNING_AND_PATCHING",
+    "VALIDATION_REPORT_GENERATION",
+    "INDEPENDENT_REVALIDATION",
+    "QUEUE_LEDGER_AND_EXECUTOR_LOOP",
+    "DATASET_REGISTRY_AND_GOLDEN_HIDDEN_TEST_MANAGEMENT",
+    "POLICY_AS_CODE",
+    "MODEL_PROMPT_TOOL_REGISTRY",
+    "TRACE_AND_INCIDENT_REPLAY",
+    "LEARNING_FEEDBACK_ENGINE",
+    "PROMOTION_AND_ROLLBACK_GATE",
+    "DASHBOARD_DRIFT_AND_SLA_MONITORING"
+  ],
+  "validator_engine_sources": [
+    {
+      "source": "ORUDA_ADAPTIVE_VALIDATION_MASTER",
+      "relationship": "DESIGN_INPUT_ONLY",
+      "absorbed_patterns": [
+        "RCA",
+        "FAILURE_MODE",
+        "FIXTURE",
+        "HARNESS",
+        "ORACLE",
+        "RECEIPT",
+        "REGRESSION_LOCK"
+      ],
+      "runtime_dependency": false,
+      "authority_dependency": false
+    }
+  ],
+  "independence": {
+    "standalone_product": true,
+    "separate_repository": true,
+    "separate_runtime": true,
+    "target_specific_runtime_dependency": false,
+    "target_specific_policy_authority": false,
+    "works_without_oruda": true
+  },
+  "product_sequence": [
+    "STRENGTHEN_ONSURE_AS_INDEPENDENT_PRODUCT",
+    "REGISTER_ORUDA_AS_FIRST_VALIDATION_TARGET",
+    "VALIDATE_ORUDA_THROUGH_EXTERNAL_TARGET_ADAPTER",
+    "OPTIONALLY_EMBED_ONSURE_AGENT_OR_VALIDATION_MODULE_IN_ORUDA",
+    "KEEP_ONSURE_STANDALONE_PRODUCT_LINE_INDEPENDENT"
+  ],
+  "invariants": [
+    "NO_TARGET_PRODUCT_MAY_DEFINE_ONSURE_FINAL_DECISION",
+    "NO_TARGET_SPECIFIC_COMPONENT_IS_REQUIRED_FOR_CORE_EXECUTION",
+    "EMBEDDED_DEPLOYMENT_MUST_PRESERVE_INDEPENDENT_EVIDENCE_AND_AUDIT_BOUNDARIES",
+    "REPORT_AND_REMEDIATION_OUTPUTS_MUST_REMAIN_EVIDENCE_BOUND",
+    "REVALIDATION_MUST_USE_LOCKED_SOURCE_POLICY_FIXTURE_ORACLE_AND_REGRESSION_CONTEXT",
+    "LEARNING_ENGINE_MUST_NOT_OPEN_PROMOTION_GATE",
+    "VALIDATOR_ENGINE_MUST_RECALCULATE_LEARNING_CANDIDATES",
+    "EXECUTOR_TRANSITIONS_MUST_WRITE_RECEIPTS",
+    "TRACE_DATASET_POLICY_MODEL_PROMPT_TOOL_VERSIONS_MUST_BIND_TO_DECISION"
+  ],
+  "core_operating_architecture": {
+    "product_unit": "SINGLE_INDEPENDENT_PROGRAM",
+    "internal_engine_separation": true,
+    "planes": [
+      "CONTROL",
+      "EXECUTION",
+      "VALIDATION",
+      "EVIDENCE",
+      "GOVERNANCE",
+      "LEARNING",
+      "OBSERVABILITY"
+    ],
+    "mvp_excludes_oruda_adapter": true
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "initial_state": "UNINITIALIZED",
+  "terminal_states": ["PUBLICATION_ELIGIBLE", "FAILED", "CANCELLED"],
+  "states": [
+    "UNINITIALIZED",
+    "SOURCE_LOCKED",
+    "REQUIREMENTS_VALIDATED",
+    "ARCHITECTURE_REVIEWED",
+    "DESIGN_REVIEWED",
+    "OMAKER_PLAN_APPROVED",
+    "CODE_REVIEWED",
+    "SECURITY_REVIEWED",
+    "REMEDIATION_READY",
+    "PATCHED",
+    "OBUILDER_BUILT",
+    "TESTED",
+    "OTESTER_VERIFIED",
+    "OAUDIT_VERIFIED",
+    "PUBLICATION_ELIGIBLE",
+    "FAILED",
+    "CANCELLED"
+  ],
+  "transitions": [
+    {"from":"UNINITIALIZED","to":"SOURCE_LOCKED","required_receipts":["SOURCE"]},
+    {"from":"SOURCE_LOCKED","to":"REQUIREMENTS_VALIDATED","required_receipts":["SOURCE","REQUIREMENT"]},
+    {"from":"REQUIREMENTS_VALIDATED","to":"ARCHITECTURE_REVIEWED","required_receipts":["ARCHITECTURE"]},
+    {"from":"ARCHITECTURE_REVIEWED","to":"DESIGN_REVIEWED","required_receipts":["DESIGN"]},
+    {"from":"DESIGN_REVIEWED","to":"OMAKER_PLAN_APPROVED","required_receipts":["OMAKER_PLAN"],"required_approvals":["maker_plan_approval"]},
+    {"from":"OMAKER_PLAN_APPROVED","to":"CODE_REVIEWED","required_receipts":["CODE_REVIEW"]},
+    {"from":"CODE_REVIEWED","to":"SECURITY_REVIEWED","required_receipts":["SECURITY"]},
+    {"from":"SECURITY_REVIEWED","to":"REMEDIATION_READY","required_receipts":["REMEDIATION_PLAN"]},
+    {"from":"REMEDIATION_READY","to":"PATCHED","required_receipts":["PATCH"]},
+    {"from":"PATCHED","to":"OBUILDER_BUILT","required_receipts":["OBUILDER_BUILD"]},
+    {"from":"OBUILDER_BUILT","to":"TESTED","required_receipts":["RUNTIME","REGRESSION","REGRESSION"]},
+    {"from":"TESTED","to":"OTESTER_VERIFIED","required_receipts":["OTESTER"],"required_authority":"OTESTER"},
+    {"from":"OTESTER_VERIFIED","to":"OAUDIT_VERIFIED","required_receipts":["OAUDIT"],"required_authority":"OAUDIT"},
+    {"from":"OAUDIT_VERIFIED","to":"PUBLICATION_ELIGIBLE","required_receipts":["PUBLICATION"],"required_decision":"PASS"}
+  ],
+  "global_guards": [
+    "immutable_commit_sha_matches_all_receipts",
+    "workspace_id_matches_all_receipts",
+    "policy_digest_matches_all_receipts",
+    "permit_is_valid_and_unexpired",
+    "receipt_self_hash_and_signature_valid",
+    "no_open_critical_or_high_security_finding",
+    "no_not_run_hold_blocked_or_inconclusive_in_required_lane",
+    "no_stage_skipping",
+    "producer_cannot_approve_own_independent_receipt",
+    "otester_and_oaudit_keys_are_distinct_from_runtime_key",
+    "builder_output_digest_matches_runtime_input_digest",
+    "two_regression_receipts_are_distinct_executions_with_equal_outcome"
+  ],
+  "failure_transitions": {
+    "any_guard_failure": "FAILED",
+    "explicit_cancel": "CANCELLED"
+  }
+}

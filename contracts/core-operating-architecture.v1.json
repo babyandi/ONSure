@@ -1,0 +1,138 @@
+{
+  "contract": "ONSURE_CORE_OPERATING_ARCHITECTURE_V1",
+  "product": "ONSURE",
+  "program_boundary": {
+    "product_unit": "SINGLE_INDEPENDENT_PROGRAM",
+    "core_runtime": "STANDALONE_FIRST",
+    "engine_boundary": "INTERNAL_ENGINES_SEPARATED",
+    "oruda_adapter": "DEFERRED_TARGET_PACK"
+  },
+  "planes": [
+    {
+      "id": "CONTROL_PLANE",
+      "responsibilities": [
+        "QUEUE_LEDGER",
+        "AUTHORIZATION",
+        "POLICY",
+        "STATE_TRANSITION",
+        "LIMITS"
+      ],
+      "mvp": true
+    },
+    {
+      "id": "EXECUTION_PLANE",
+      "responsibilities": [
+        "EXECUTOR_LOOP",
+        "HARNESS_RUNNER",
+        "SANDBOX",
+        "RETRY",
+        "CHECKPOINT_RESUME"
+      ],
+      "mvp": true
+    },
+    {
+      "id": "VALIDATION_PLANE",
+      "responsibilities": [
+        "VALIDATOR_ENGINE",
+        "FIXTURE",
+        "GOLDEN_HIDDEN",
+        "REGRESSION"
+      ],
+      "mvp": true
+    },
+    {
+      "id": "EVIDENCE_PLANE",
+      "responsibilities": [
+        "RECEIPT_CHAIN",
+        "SHA256",
+        "TRACE",
+        "SOURCE_LOCK",
+        "INCIDENT_REPLAY"
+      ],
+      "mvp": true
+    },
+    {
+      "id": "GOVERNANCE_PLANE",
+      "responsibilities": [
+        "PASS_FAIL_HOLD",
+        "PROMOTION",
+        "ROLLBACK",
+        "APPROVAL_SEPARATION"
+      ],
+      "mvp": "BASIC_GATE"
+    },
+    {
+      "id": "LEARNING_PLANE",
+      "responsibilities": [
+        "FAILURE_ANALYSIS",
+        "CANDIDATE_GENERATION",
+        "RUBRIC_CANDIDATE",
+        "FIXTURE_CANDIDATE"
+      ],
+      "mvp": "DESIGN_FIRST"
+    },
+    {
+      "id": "OBSERVABILITY_PLANE",
+      "responsibilities": [
+        "DASHBOARD",
+        "DRIFT",
+        "SLA",
+        "STALE_QUEUE",
+        "INCIDENT_REPLAY_VIEW"
+      ],
+      "mvp": "TRACE_MINIMUM"
+    }
+  ],
+  "registries": [
+    "TARGET_REGISTRY",
+    "QUEUE_LEDGER",
+    "DATASET_REGISTRY",
+    "POLICY_REGISTRY",
+    "RUBRIC_REGISTRY",
+    "MODEL_PROMPT_TOOL_REGISTRY",
+    "RECEIPT_LEDGER",
+    "INCIDENT_REPLAY_LEDGER",
+    "PROMOTION_REGISTRY",
+    "APPLICATION_LEDGER",
+    "ACTIVE_SELECTOR_REGISTRY"
+  ],
+  "mvp_must_implement": [
+    "QUEUE_LEDGER",
+    "EXECUTOR_LOOP",
+    "BASIC_HARNESS_RUNNER",
+    "VALIDATOR_ENGINE_MINIMUM",
+    "RECEIPT_EVIDENCE_CHAIN",
+    "DATASET_REGISTRY_MINIMUM",
+    "POLICY_AS_CODE_MINIMUM",
+    "GOLDEN_HIDDEN_MINIMUM",
+    "PASS_FAIL_HOLD_GATE",
+    "TRACE_SNAPSHOT",
+    "LEARNING_TO_APPLICATION_PIPELINE_MINIMUM",
+    "FIRST_APPLIED_CASE_PROTOCOL",
+    "POST_APPLY_VERIFICATION_RECEIPT"
+  ],
+  "post_mvp": [
+    "FULL_LEARNING_AUTOMATION_AFTER_FIRST_APPLIED_CASE",
+    "FULL_DASHBOARD",
+    "ADVANCED_CANARY_ROLLBACK",
+    "ADVERSARIAL_AUTO_GENERATOR",
+    "ORUDA_ADAPTER",
+    "ENTERPRISE_APPROVAL_WORKFLOW"
+  ],
+  "invariants": [
+    "LEARNING_ENGINE_CANNOT_OPEN_GATE",
+    "VALIDATOR_ENGINE_DOES_NOT_TRUST_LEARNING_CANDIDATE_WITHOUT_RECALCULATION",
+    "EXECUTOR_TRANSITIONS_REQUIRE_RECEIPTS",
+    "HIDDEN_GOLDEN_DATASETS_ARE_SEALED_AND_SEPARATED",
+    "MISSING_TOOL_OR_PARTIAL_EVIDENCE_FAILS_CLOSED",
+    "ORUDA_IS_NOT_A_CORE_RUNTIME_DEPENDENCY",
+    "APPLIED_COUNT_REQUIRES_ACTIVE_SELECTOR_OR_MAIN_COMMIT",
+    "PROMOTION_REQUIRES_POST_APPLY_VERIFICATION_AND_ROLLBACK_POINTER",
+    "NON_FINAL_EXPERIMENT_CANNOT_INCREMENT_APPLIED_COUNT"
+  ],
+  "learning_to_application_pipeline": {
+    "contract": "contracts/learning-to-application-pipeline.v1.json",
+    "first_mvp_application_class": "VALIDATION_PACK_APPLY",
+    "count_rule": "Candidates, validation requests, open PRs, and non-final experiment selections do not count as applied."
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.local/harness/universal-v1/fixture.v1.schema.json",
+  "title":"ONSURE Universal Fixture v1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["fixture_id","kind","axis_ids","severity","command","cwd","timeout_sec","oracle_id","expected","required_evidence"],
+  "properties":{
+    "fixture_id":{"type":"string","pattern":"^FX-[A-Z0-9_-]+$"},
+    "kind":{"enum":["NORMAL","ERROR","AUTHORIZATION","LARGE_DATA","CONCURRENCY","FAILURE_RECOVERY","ADVERSARIAL"]},
+    "axis_ids":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","pattern":"^AX-[0-9]{2}$"}},
+    "severity":{"enum":["CRITICAL","MAJOR","MINOR","INFO"]},
+    "command":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},
+    "cwd":{"type":"string","minLength":1},
+    "timeout_sec":{"type":"integer","minimum":1,"maximum":3600},
+    "oracle_id":{"type":"string","minLength":1},
+    "expected":{},
+    "required_evidence":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "tags":{"type":"array","uniqueItems":true,"items":{"type":"string"}}
+  }
+}

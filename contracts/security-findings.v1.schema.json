@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/security-findings.v1.schema.json",
+  "title": "ONSURE Security Findings v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "review_status", "review_method", "findings"],
+  "properties": {
+    "contract": {"const": "ONSURE_SECURITY_FINDINGS_V1"},
+    "review_status": {"type": "string", "enum": ["COMPLETE", "INCOMPLETE"]},
+    "review_method": {"type": "string", "minLength": 1},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "status", "summary", "resolution"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^ONSURE-SEC-[0-9]{3,}$"},
+          "severity": {"type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]},
+          "status": {"type": "string", "enum": ["OPEN", "CLOSED", "ACCEPTED_RISK"]},
+          "summary": {"type": "string", "minLength": 1},
+          "resolution": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "contract":"ONSURE_UNIVERSAL_RCA_V1",
+  "rca_id":"RCA-PENDING",
+  "run_id":"NOT_RUN",
+  "fixture_id":"NOT_SET",
+  "severity":"MAJOR",
+  "failure_reason":"NOT_SET",
+  "root_cause":"PENDING_ANALYSIS",
+  "contributing_factors":[],
+  "fix_reference":"NOT_SET",
+  "focused_retest":"NOT_RUN",
+  "regression_run_1":"NOT_RUN",
+  "regression_run_2":"NOT_RUN",
+  "status":"RCA_PENDING"
+}

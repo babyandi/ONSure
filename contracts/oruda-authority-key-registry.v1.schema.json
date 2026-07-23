@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/oruda-authority-key-registry.v1.schema.json",
+  "title": "ONSURE ORUDA External Authority Key Registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "registry_id", "keys"],
+  "properties": {
+    "contract": {"const": "ONSURE_ORUDA_AUTHORITY_KEY_REGISTRY_V1"},
+    "registry_id": {"type": "string", "minLength": 1},
+    "keys": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key_id",
+          "authority",
+          "principal_id",
+          "public_key_file",
+          "valid_from",
+          "valid_until",
+          "revoked"
+        ],
+        "properties": {
+          "key_id": {"type": "string", "minLength": 1},
+          "authority": {
+            "enum": [
+              "HUMAN_INDEPENDENT_REVIEWER",
+              "INDEPENDENT_EXECUTION_OPERATOR",
+              "HUMAN_FINAL_AUTHORITY"
+            ]
+          },
+          "principal_id": {"type": "string", "minLength": 1},
+          "public_key_file": {"type": "string", "minLength": 1},
+          "valid_from": {"type": "string", "format": "date-time"},
+          "valid_until": {"type": "string", "format": "date-time"},
+          "revoked": {"type": "boolean"},
+          "revoked_at": {
+            "oneOf": [
+              {"type": "string", "format": "date-time"},
+              {"type": "null"}
+            ]
+          },
+          "replaced_by": {
+            "oneOf": [
+              {"type": "string", "minLength": 1},
+              {"type": "null"}
+            ]
+          }
+        }
+      }
+    }
+  }
+}

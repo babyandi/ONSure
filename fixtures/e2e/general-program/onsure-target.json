@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_TARGET_MANIFEST_V1",
+  "target_id": "sample-general-program",
+  "target_type": "GENERAL_SOFTWARE",
+  "language": "Java",
+  "framework": "Plain Java",
+  "entrypoint": "src/SampleService.java",
+  "self_reported_final_decision": false,
+  "capabilities": ["INPUT_VALIDATION", "ACCESS_DECISION"],
+  "fixtures": [
+    {
+      "id": "authorized-user",
+      "input": "alice",
+      "expected": "ALLOW",
+      "oracle": "EQUALS",
+      "command": ["bash", "run-fixture.sh", "alice"],
+      "timeout_seconds": 30
+    },
+    {
+      "id": "unauthorized-user",
+      "input": "mallory",
+      "expected": "DENY",
+      "oracle": "EQUALS",
+      "command": ["bash", "run-fixture.sh", "mallory"],
+      "timeout_seconds": 30
+    }
+  ]
+}

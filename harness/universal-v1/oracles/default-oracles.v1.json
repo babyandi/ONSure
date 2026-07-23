@@ -1,0 +1,9 @@
+{
+  "contract":"ONSURE_UNIVERSAL_ORACLE_SET_V1",
+  "version":"1.0.0",
+  "oracles":[
+    {"oracle_id":"ORC-EQUALS","type":"EQUALS","description":"표준 출력이 기대값과 정확히 일치해야 한다.","blocked_on_missing_evidence":true,"parameters":{}},
+    {"oracle_id":"ORC-CONTAINS","type":"CONTAINS","description":"표준 출력이 기대 문자열을 포함해야 한다.","blocked_on_missing_evidence":true,"parameters":{}},
+    {"oracle_id":"ORC-EXIT-ZERO","type":"EXIT_CODE","description":"프로세스 종료코드가 0이어야 한다.","blocked_on_missing_evidence":true,"parameters":{"expected_exit_code":0}}
+  ]
+}
