@@ -43,6 +43,7 @@
 - [x] AI 행동 회귀검증 기준
 - [x] 근본원인분석 상위 계약
 - [x] 독립 판정과 자기검증 방지 원칙
+- [x] 내부 책임 분리와 자기승인 차단 계약
 - [x] Evidence Ledger 상위 계약
 - [ ] 세부 Receipt JSON Schema
 
@@ -51,7 +52,7 @@
 - [x] 수정 유형과 허용 범위
 - [x] 위험도 분류와 자동 적용 정책
 - [x] 코드·프롬프트·RAG·도구·설정 보완 상위 계약
-- [x] Patch·Branch·Commit·PR 생성 계약
+- [x] Patch·Branch·Commit 계약
 - [x] Before/After 개선 비교 기준
 - [x] 회귀 차단과 롤백 정책
 
@@ -60,6 +61,7 @@
 - [x] 논리 아키텍처
 - [x] Developer·Team·Enterprise 배포 아키텍처
 - [x] 컴포넌트 책임과 경계
+- [x] 내부 프로그램 책임 분리 기준
 - [x] 핵심 데이터 객체
 - [x] API·CLI·IDE 인터페이스 원칙
 - [x] 실행 상태 모델
@@ -133,7 +135,9 @@
 - `docs/04_IMPLEMENTATION_ROADMAP_VSCODE_AGENT_GIT.md`
 - `docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md`
 - `docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md`
+- `docs/08_INTERNAL_RESPONSIBILITY_SEPARATION.md`
 - `docs/08_TEST_COMMERCIALIZATION_AND_RELEASE_PLAN.md`
+- `contracts/internal-responsibility-separation.v1.yaml`
 
 ## 실행 대장
 
