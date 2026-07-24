@@ -1,171 +1,204 @@
-# ONSURE Security Remediation Contract v1
+# ONSURE 보안 개선 계약 v1
 
 ## 1. 목적
 
-보안 검토는 코드 리뷰의 부속 항목이 아니다. ONSURE은 보안 위반을 탐지하고, 공격 경로와 영향도를 분석하고, 안전한 수정안을 선택하고, 허용 범위에서는 직접 수정하며, 동일 공격과 변형 공격을 재시험해야 한다.
+보안 검토는 코드 검토의 부속 항목이 아니다. ONSURE은 보안 위반을 탐지하고, 공격 경로와 영향도를 분석하고, 안전한 수정안을 선택하며, 허용 범위에서는 직접 수정하고, 동일 공격과 변형 공격을 재시험해야 한다.
 
-## 2. 보호 자산
+## 2. 기본 원칙
 
-- 소스코드와 빌드 산출물
-- GitHub token, API key, signing key, credential
-- 고객·사용자·업무 데이터와 개인정보
-- Receipt, Lock, Permit, Oracle, Policy
-- CI/CD, container, cloud, runtime configuration
-- OTester/OAudit의 독립 판정 권한
-- AI Agent의 prompt, context, tool permission
+- 보안 발견사항은 일반 품질 발견사항보다 높은 판정 우선순위를 가진다.
+- `Critical` 또는 `High` 미해결 발견사항이 있으면 배포·승격을 차단한다.
+- 대상 제품의 자체 보안 판정은 주장으로만 취급한다.
+- 수정은 승인된 소스·정책·의존성·파일 범위에서만 수행한다.
+- 실행하지 않은 보안 시험은 `PASS`가 아니라 `NOT_RUN`이다.
+- 부분 스캔·시간 초과·제외된 실패는 전체 통과가 될 수 없다.
+- 비밀정보·개인정보·고객 데이터는 증적에 원문으로 남기지 않는다.
 
-## 3. 신뢰 경계
+## 3. 보안 검증 범위
 
-1. GitHub -> Source Intake
-2. Source Intake -> ONSURE Runtime
-3. Runtime -> external scanner/tool
-4. Runtime -> patch workspace
-5. Runtime -> Builder/Agent
-6. Runtime -> OTester
-7. OTester -> OAudit
-8. OAudit -> Publication/Merge Gate
+### 3.1 인증과 인가
 
-각 경계는 입력 hash, 호출 주체, 권한, 시간, 정책 digest를 기록한다.
+- 인증 우회
+- 역할·권한 상승
+- 테넌트 경계 침범
+- 자기 승인
+- 서비스 간 신뢰 오용
+- 세션·토큰 검증 누락
 
-## 4. 필수 위협 범주
+### 3.2 입력과 실행
 
-### Application
-- injection, XSS, CSRF, SSRF
-- path traversal, unsafe file upload
-- unsafe deserialization, template injection
-- authentication bypass, privilege escalation
-- insecure session/token lifecycle
-- race, replay, duplicate execution, TOCTOU
+- SQL·명령·템플릿·경로 주입
+- 역직렬화 위험
+- 파일 업로드·압축 해제 위험
+- 경로 이탈·심볼릭 링크
+- 임의 코드·셸 실행
+- 시간 제한·자원 제한 부재
 
-### Data and Privacy
-- secret in source/log/receipt
-- personal data overcollection or unmasked output
-- insecure storage or transit
-- retention/deletion policy mismatch
+### 3.3 데이터 보호
 
-### Supply Chain
-- vulnerable or malicious dependency
-- lockfile bypass
-- unsigned/untrusted artifact
-- compromised workflow/action
-- dependency confusion and typosquatting
-- incomplete SBOM or provenance
+- 비밀정보·API 키·인증서 노출
+- 개인정보·신용정보·고객 데이터 노출
+- 로그·오류 응답·추적 정보 유출
+- 저장·전송 암호화 누락
+- 데이터 보존·삭제 정책 위반
 
-### Infrastructure
-- excessive IAM
-- root container, writable filesystem, dangerous capability
-- open network/service, weak TLS
-- insecure CI variable and artifact handling
+### 3.4 AI 보안
 
-### Assurance System
-- forged or reused Receipt
-- source/policy/runner/oracle mismatch
-- Permit replay
-- test suppression or skipped security lane
-- Runtime writing OTester/OAudit decision
-- stale evidence accepted as current
+- 프롬프트 주입
+- 신뢰하지 않은 도구 실행
+- 에이전트 자기 승인
+- 전체 문맥 유출
+- 참조 자료 오염
+- 근거 없는 응답을 권위 결과로 사용
+- 모델·프롬프트·도구 버전 미고정
 
-### AI/Agent
-- prompt injection from repository content
-- tool invocation beyond declared scope
-- secret exfiltration through generated output
-- untrusted code execution
-- cross-tenant context leakage
-- Agent self-approval
+### 3.5 공급망
 
-## 5. Finding schema
+- 미고정 의존성
+- 알려진 취약점
+- 라이선스 위반
+- SBOM 누락
+- 빌드 출처 증명 누락
+- 서명·체크섬 검증 누락
+- 폐기·지원 종료 구성요소
 
-각 Finding은 다음을 포함한다.
+### 3.6 실행·운영
 
-- finding_id
-- category and weakness identifier
-- affected asset
-- file/function/line or configuration path
-- attack precondition
-- exploit path
-- impact and blast radius
-- severity and confidence
-- violated requirement/policy
-- reproduction evidence
-- recommended minimal fix
-- recommended durable fix
-- required regression/adversarial tests
-- residual risk
+- 장애·복구·롤백 실패
+- 중복 실행·멱등성 오류
+- 동시성 경합
+- 권한 없는 네트워크 접근
+- 감사 로그 변조
+- 실행 증적 삭제
 
-## 6. 심각도와 Gate
+## 4. 발견사항 구조
 
-- CRITICAL: 즉시 실행·병합·배포 차단
-- HIGH: 병합·배포 차단
-- MEDIUM: 명시적 승인과 기한 없는 배포 금지
-- LOW: 계획된 보완 가능
-- INFO: 근거 보존, 자동 PASS 영향 없음
+보안 발견사항은 최소한 다음을 포함한다.
 
-CRITICAL/HIGH가 1건이라도 열려 있으면 Final PASS는 불가능하다.
+- 발견사항 ID
+- 심각도
+- 대상·테넌트·환경
+- 위반 계약·정책
+- 공격 선행 조건
+- 공격 경로
+- 재현 절차
+- 영향 범위
+- 증적 위치와 SHA-256
+- 근본원인
+- 최소 수정안
+- 지속 가능한 수정안
+- 필요한 음성·적대 시험
+- 승인 필요 여부
+- 잔여 위험
+
+## 5. 심각도
+
+| 등급 | 의미 | 기본 판정 |
+|---|---|---|
+| Critical | 즉시 악용·광범위 유출·권한 완전 장악 | `FAIL`·배포 차단 |
+| High | 중대한 권한·데이터·공급망 위험 | `FAIL`·배포 차단 |
+| Medium | 제한적 영향 또는 추가 조건 필요 | 수정 또는 승인된 위험 수용 |
+| Low | 낮은 영향·개선 권고 | 계획된 개선 가능 |
+| 정보 | 관찰·참고 | 판정 영향 없음 |
+
+## 6. 개선 분류
+
+### 6.1 자동 수정 가능
+
+- 명확한 비밀정보 제거
+- 안전한 기본값 적용
+- 입력 검증 추가
+- 경로·권한 검사 추가
+- 고정 버전·체크섬 추가
+- 로그 마스킹
+- 시험 데이터 추가
+
+자동 수정 조건:
+
+- 승인된 경로 범위
+- 의미 변경 없음
+- 정책·권한 모델 변경 없음
+- 회귀검증 가능
+- 롤백 가능
+
+### 6.2 사람 승인 필요
+
+- 인증·인가 모델 변경
+- 데이터 보존·삭제 정책 변경
+- 외부 네트워크·서비스 추가
+- 라이선스 변경
+- 암호화 키·인증서 교체
+- 고객·규제 의미 변경
+- 대규모 아키텍처 변경
+
+### 6.3 자동 수정 금지
+
+- 증적 삭제
+- 보안 시험 기대값 완화
+- 심각도 임의 축소
+- 실패 경로 제외
+- 대상 제품의 자체 통과 주장 채택
+- 비공개 정답을 이용한 규칙 생성
 
 ## 7. 개선 절차
 
 ```text
-Finding
--> exploit reproduction
--> root cause analysis
--> remediation options
--> approval classification
--> patch
--> focused security test
--> bypass/variant test
--> full regression
--> OTester reproduction
--> OAudit evidence check
--> close or residual-risk approval
+발견사항 확인
+→ 공격 경로 재현
+→ 증적 봉인
+→ 근본원인분석
+→ 최소 수정·지속 수정 분리
+→ 승인 범위 확인
+→ 패치 생성
+→ 정적·음성·적대 시험
+→ 동일 공격 재시험
+→ 변형 공격 재시험
+→ 전체 회귀검증 2회
+→ 독립 검증·감사
+→ 보안 발견사항 상태 변경
 ```
 
-## 8. 자동 수정 경계
+## 8. 패치 증적
 
-자동 적용 가능:
-- parameterized query
-- allowlist/input validation
-- output encoding
-- secure cookie/header defaults
-- secret removal and reference substitution
-- least-privilege configuration where compatibility is preserved
-- safe dependency patch/minor upgrade with lock update
-- test and security fixture addition
-- fail-open to fail-closed where documented behavior is unchanged
+패치에는 다음을 결속한다.
 
-승인 필수:
-- auth provider or identity model change
-- permission/RBAC redesign
-- cryptographic migration
-- data retention/deletion changes
-- network/API compatibility breaking change
-- major dependency/framework migration
-- business workflow or regulatory interpretation change
+- 기준 소스 SHA
+- 패치 SHA
+- 변경 파일 목록
+- 승인 범위
+- 정책 해시
+- 의존성 잠금
+- 빌드·시험 결과
+- 보안 음성 시험 결과
+- 롤백 포인터
+- 패치 전후 발견사항 차이
 
-## 9. Patch Receipt
+## 9. 재검증
 
-- finding_id
-- source_commit_sha
-- pre_patch_tree_sha
-- patch_sha256
-- changed_paths
-- post_patch_tree_sha
-- policy_digest
-- actor and approval
-- focused_test_receipts
-- adversarial_test_receipts
-- full_regression_receipt
-- residual_risk
+수정 후 다음을 모두 실행한다.
 
-## 10. 완료 기준
+- 원래 공격 시험
+- 동일 근본원인의 변형 시험
+- 권한·테넌트 경계 시험
+- 정상 기능 시험
+- 전체 회귀검증
+- 공급망·비밀정보 재검사
+- 독립 영수증 재검증
 
-보안 수정 완료는 다음을 모두 충족해야 한다.
+## 10. 보안 관문
 
-1. 원 공격이 차단됨
-2. 우회·변형 공격이 차단됨
-3. 정상 기능이 유지됨
-4. 새로운 CRITICAL/HIGH가 없음
-5. 전체 회귀가 연속 2회 동일 결과
-6. OTester가 독립 재현
-7. OAudit이 증거 계보 검증
+```text
+Critical 미해결 = 0
+High 미해결 = 0
+필수 보안 시험 NOT_RUN = 0
+부분 스캔 = 0
+시간 초과 제외 = 0
+증적 누락 = 0
+독립 검증·감사 PASS
+```
 
-스캐너가 0건을 보고했다는 사실만으로 PASS할 수 없다.
+조건을 충족하지 못하면 관문은 `HOLD` 또는 `FAIL`이다.
+
+## 11. 현재 상태
+
+보안 계약·발견사항 등록부·시험 코드·관문은 구현되어 있으나 실제 전체 실행 결과는 `NOT_RUN`일 수 있다. 구조 존재만으로 보안 통과를 주장하지 않는다.
