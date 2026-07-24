@@ -27,6 +27,7 @@ class ONSureVerifyRunCliTest(unittest.TestCase):
 
         result = json.loads(completed.stdout)
         self.assertEqual("ALLOW", result["decision"])
+        self.assertTrue(result["loop"]["stable"])
 
     def test_json_cli_blocks_and_returns_remediation_target(self):
         profile = build_sample_oruda_report_profile()
@@ -56,6 +57,43 @@ class ONSureVerifyRunCliTest(unittest.TestCase):
         self.assertEqual(1, completed.returncode)
         self.assertEqual("BLOCK", result["decision"])
         self.assertIn("OUI", result["remediation_targets"])
+
+    def test_json_cli_runs_three_stable_onsure_loops(self):
+        profile = build_sample_oruda_report_profile()
+        run = build_sample_run(omit_scene_manifest=True)
+        with tempfile.TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "profile.json"
+            run_path = Path(tmp) / "run.json"
+            profile_path.write_text(json.dumps(profile), encoding="utf-8")
+            run_path.write_text(json.dumps(run), encoding="utf-8")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(CLI),
+                    "--profile",
+                    str(profile_path),
+                    "--run",
+                    str(run_path),
+                    "--loop",
+                    "3",
+                ],
+                cwd=ROOT,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+
+        result = json.loads(completed.stdout)
+        self.assertEqual(1, completed.returncode)
+        self.assertEqual("BLOCK", result["decision"])
+        self.assertTrue(result["loop"]["stable"])
+        self.assertEqual(3, result["loop"]["requested_iterations"])
+        self.assertEqual(3, len(result["loop"]["iterations"]))
+        self.assertEqual(
+            {item["result_hash"] for item in result["loop"]["iterations"]},
+            {result["loop"]["iterations"][0]["result_hash"]},
+        )
 
 
 if __name__ == "__main__":
