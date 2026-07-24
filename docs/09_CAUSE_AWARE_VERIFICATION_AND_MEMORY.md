@@ -51,6 +51,7 @@ ODocument Raw
 ```
 
 If OUI drops `field_manifest`, the finding targets OUI and learns into Failure Memory. If ODesign omits one of its formal steps, the finding targets ODesign and learns into Program Learning. If OTester or OAudit is `PENDING`, final completion is blocked and the improvement rule learns into Improvement Memory.
+If ODocument drops the claim source hash, the finding targets ODocument and learns into Failure Memory.
 
 ## CLI
 
@@ -75,6 +76,7 @@ They must prove:
 
 - baseline run is `ALLOW`
 - missing ODocument/OReport/ODesign/OUI route is `BLOCK`
+- missing ODocument claim source binding is `BLOCK`
 - parent hash drift is `BLOCK`
 - body drift is `BLOCK`
 - missing formal procedure is `BLOCK`
