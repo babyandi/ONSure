@@ -1,0 +1,116 @@
+version: internal-responsibility-separation.v1
+product: ONSURE
+purpose: Prevent self-approval across learning, verification, improvement, and release gates.
+
+principles:
+  - producer_must_not_be_final_gate
+  - scenario_generator_must_not_be_sole_verifier
+  - verifier_must_not_be_improver
+  - improver_must_not_be_release_approver
+  - evidence_writer_must_not_rewrite_source_evidence
+  - pending_receipts_must_block_final_complete
+
+programs:
+  ProgramLearning:
+    separated_responsibilities:
+      - ProgramSourceReader
+      - ProgramProfileBuilder
+      - BehaviorTraceCollector
+      - LearningCandidateWriter
+    forbidden_combinations:
+      - ProgramProfileBuilder + LearningPromotionDecision
+      - BehaviorTraceCollector + FinalCompleteDecision
+
+  ScenarioGeneration:
+    separated_responsibilities:
+      - BaselineScenarioBuilder
+      - BoundaryScenarioBuilder
+      - FailureScenarioBuilder
+      - AdversarialScenarioBuilder
+      - ScenarioReceiptWriter
+    forbidden_combinations:
+      - ScenarioBuilder + SoleVerificationDecision
+      - ScenarioReceiptWriter + ScenarioResultRewriter
+
+  Verification:
+    separated_responsibilities:
+      - FunctionalVerifier
+      - PolicyVerifier
+      - SafetyVerifier
+      - RegressionVerifier
+      - EvidenceVerifier
+      - VerificationReceiptWriter
+      - VerificationDecision
+    forbidden_combinations:
+      - VerificationDecision + ImprovementPatchAuthor
+      - VerificationReceiptWriter + EvidenceSourceMutator
+
+  RootCauseAnalysis:
+    separated_responsibilities:
+      - FailureClassifier
+      - CauseHypothesisBuilder
+      - EvidenceBinder
+      - CauseDecision
+    forbidden_combinations:
+      - CauseDecision + FinalFixApproval
+
+  Improvement:
+    separated_responsibilities:
+      - PatchPlanner
+      - PatchAuthor
+      - PromptUpdater
+      - RagUpdater
+      - ToolContractUpdater
+      - ImprovementReceiptWriter
+    forbidden_combinations:
+      - PatchAuthor + RegressionPassDecision
+      - RagUpdater + LearningPromotionDecision
+
+  LearningMemory:
+    separated_responsibilities:
+      - CandidateStore
+      - PromotionGate
+      - RollbackManager
+      - MemoryReceiptWriter
+    required_inputs:
+      - independent_verification_receipt
+      - improvement_effect_receipt
+    forbidden_combinations:
+      - CandidateStore + PromotionGateWithoutIndependentReceipt
+
+  ReleaseGate:
+    separated_responsibilities:
+      - ReceiptCollector
+      - IndependenceChecker
+      - FinalDecisionWriter
+    required_inputs:
+      - verification_receipt
+      - improvement_receipt
+      - regression_receipt
+      - independence_receipt
+    fail_closed_when:
+      - any_required_receipt_missing
+      - any_required_receipt_pending
+      - verification_and_improvement_share_same_actor
+      - scenario_generation_and_final_decision_share_same_actor
+
+receipt_rules:
+  every_receipt_must_include:
+    - receipt_id
+    - program_id
+    - responsibility
+    - parent_receipt_hashes
+    - input_hashes
+    - output_hash
+    - actor
+    - decision
+    - created_at
+  decisions:
+    allowed:
+      - PASS
+      - FAIL
+      - PENDING
+    final_complete_requires:
+      - all_required_receipts_PASS
+      - independence_check_PASS
+      - no_pending_receipts
