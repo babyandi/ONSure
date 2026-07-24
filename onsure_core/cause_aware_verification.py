@@ -80,6 +80,12 @@ CAUSES = {
         remediation="Block final completion unless every configured final gate is PASS and receipt-bound.",
         memory_kind="improvement_memory",
     ),
+    "LOOP_RESULT_UNSTABLE": CauseDefinition(
+        code="LOOP_RESULT_UNSTABLE",
+        cause="Repeated verification loops produced different decisions, causes, remediation targets, or evidence hashes.",
+        remediation="Stabilize ONSure verification projections before promoting the finding or changing a target program.",
+        memory_kind="improvement_memory",
+    ),
 }
 
 
@@ -171,6 +177,69 @@ def verify_program_run(profile: Mapping[str, Any], run: Mapping[str, Any]) -> di
     }
 
 
+def result_projection(result: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the stable subset used to compare repeated verification loops."""
+    return {
+        "decision": result.get("decision"),
+        "finding_codes": [item.get("code") for item in result.get("findings", [])],
+        "finding_programs": [item.get("program") for item in result.get("findings", [])],
+        "memory_kinds": [item.get("memory_kind") for item in result.get("memory_candidates", [])],
+        "remediation_targets": result.get("remediation_targets", []),
+    }
+
+
+def verify_program_run_loop(profile: Mapping[str, Any], run: Mapping[str, Any], loops: int = 1) -> dict[str, Any]:
+    """Run the same verification repeatedly and expose loop stability evidence."""
+    if loops < 1:
+        raise ValueError("loops must be >= 1")
+
+    iterations = []
+    projection_hashes = []
+    for index in range(loops):
+        result = verify_program_run(profile, run)
+        projection = result_projection(result)
+        projection_hash = digest(projection)
+        projection_hashes.append(projection_hash)
+        iterations.append(
+            {
+                "index": index + 1,
+                "decision": result["decision"],
+                "result_hash": digest(result),
+                "projection_hash": projection_hash,
+                "finding_codes": projection["finding_codes"],
+                "remediation_targets": projection["remediation_targets"],
+            }
+        )
+
+    stable = len(set(projection_hashes)) == 1
+    final = verify_program_run(profile, run)
+    final["loop"] = {
+        "requested": loops,
+        "stable": stable,
+        "projection_hash": projection_hashes[0],
+        "iterations": iterations,
+    }
+
+    if not stable:
+        final["decision"] = DECISION_BLOCK
+        final["findings"].append(_finding("LOOP_RESULT_UNSTABLE", "ONSure", f"projection hashes: {projection_hashes!r}"))
+        final["finding_count"] = len(final["findings"])
+        final["memory_candidates"].append(
+            {
+                "memory_kind": "improvement_memory",
+                "program": "ONSure",
+                "cause_code": "LOOP_RESULT_UNSTABLE",
+                "cause": CAUSES["LOOP_RESULT_UNSTABLE"].cause,
+                "remediation": CAUSES["LOOP_RESULT_UNSTABLE"].remediation,
+                "evidence_hash": digest(final["loop"]),
+                "status": "CANDIDATE_NOT_PROMOTED",
+            }
+        )
+        final["remediation_targets"] = sorted(set(final["remediation_targets"]) | {"ONSure"})
+
+    return final
+
+
 def build_sample_oruda_report_profile() -> dict[str, Any]:
     """Example target profile for an ORUDA report-generation chain."""
     procedure_steps = [
@@ -186,6 +255,15 @@ def build_sample_oruda_report_profile() -> dict[str, Any]:
     return {
         "program_id": "ORUDA_REPORT_CHAIN",
         "required_routes": {
+            "oreport_runtime": "products/oreport/runtime",
+            "oreport_contract": "products/oreport/contracts",
+            "oreport_tests": "tests/oreport",
+            "odesign_runtime": "products/odesign/runtime",
+            "odesign_contract": "products/odesign/contracts",
+            "odesign_tests": "tests/odesign",
+            "oui_runtime": "products/oui/runtime",
+            "oui_contract": "products/oui/contracts",
+            "oui_tests": "tests/oui",
             "odocument_runtime": "products/odocument/runtime",
             "odocument_contract": "products/odocument/contracts",
             "odocument_tests": "tests/odocument",
@@ -210,6 +288,15 @@ def build_sample_oruda_report_profile() -> dict[str, Any]:
 
 def build_sample_run(*, omit_scene_manifest: bool = False, pending_gate: str | None = None) -> dict[str, Any]:
     routes = {
+        "oreport_runtime": "products/oreport/runtime",
+        "oreport_contract": "products/oreport/contracts",
+        "oreport_tests": "tests/oreport",
+        "odesign_runtime": "products/odesign/runtime",
+        "odesign_contract": "products/odesign/contracts",
+        "odesign_tests": "tests/odesign",
+        "oui_runtime": "products/oui/runtime",
+        "oui_contract": "products/oui/contracts",
+        "oui_tests": "tests/oui",
         "odocument_runtime": "products/odocument/runtime",
         "odocument_contract": "products/odocument/contracts",
         "odocument_tests": "tests/odocument",
