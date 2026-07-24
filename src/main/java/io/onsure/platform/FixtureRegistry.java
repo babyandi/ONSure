@@ -54,7 +54,7 @@ public final class FixtureRegistry {
             entry.put("output_parser", "UTF8_STDOUT_STRIP");
             entry.put("environment_keys", fixture.environment().keySet().stream().sorted().toList());
             entry.put("receipt_binding", List.of(
-                    "COMMAND", "TIMEOUT", "EXIT_CODE", "TIMED_OUT", "OUTPUT_SHA256",
+                    "COMMAND", "TIMEOUT", "ENVIRONMENT_SHA256", "EXIT_CODE", "TIMED_OUT", "OUTPUT_SHA256",
                     "ORACLE_ID", "EXPECTED_RESULT", "ACTUAL_RESULT"));
             commands.add(Map.copyOf(entry));
         }
@@ -65,7 +65,8 @@ public final class FixtureRegistry {
             commandManifest.put("harness_id", harnessId);
             commandManifest.put("working_directory", workingDirectory.toAbsolutePath().normalize().toString());
             commandManifest.put("allowed_executables", List.of("bash"));
-            commandManifest.put("network_policy", "DENY_BY_DEFAULT");
+            commandManifest.put("network_policy", "HOST_POLICY_NOT_ENFORCED");
+            commandManifest.put("execution_trust_boundary", "REVIEWED_LOCAL_FIXTURES_ONLY");
             commandManifest.put("created_at", Instant.now().toString());
             commandManifest.put("entries", commands);
             write(runRoot.resolve("harness-command-manifest.json"), commandManifest);
