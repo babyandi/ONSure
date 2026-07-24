@@ -71,6 +71,27 @@ class FixtureEvidenceBindingTest {
         assertViolation(result, evidence, "FIXTURE_RESULT_EVIDENCE_MISMATCH:fixture-a");
     }
 
+    @Test
+    void fabricatedOutputDigestIsRejectedEvenWhenEvidenceDigestIsRecomputed() {
+        FixtureResult result = result("fixture-a");
+        Map<String, Object> changed = new HashMap<>(attributes());
+        changed.put("output_sha256", "0".repeat(64));
+        Evidence evidence = evidence("fixture-a", changed);
+        assertViolation(result, evidence, "FIXTURE_OUTPUT_SHA_MISMATCH:fixture-a");
+    }
+
+    @Test
+    void semanticExecutionFieldsAreBoundIntoEvidenceDigest() {
+        Map<String, Object> original = attributes();
+        String digest = FixtureEvidenceBinding.digest("fixture-a", original);
+        for (String field : List.of(
+                "oracle", "harness", "command_executed", "output_sha256")) {
+            Map<String, Object> changed = new HashMap<>(original);
+            changed.put(field, "command_executed".equals(field) ? false : "changed");
+            assertTrue(!digest.equals(FixtureEvidenceBinding.digest("fixture-a", changed)), field);
+        }
+    }
+
     private static void assertViolation(
             FixtureResult result, Evidence evidence, String expected) {
         assertTrue(FixtureEvidenceBinding.violations(List.of(result), List.of(evidence))
@@ -99,6 +120,6 @@ class FixtureEvidenceBindingTest {
                 "exit_code", 0,
                 "timed_out", false,
                 "duration_ms", 1,
-                "output_sha256", "a".repeat(64));
+                "output_sha256", Hashing.sha256("SAFE"));
     }
 }
