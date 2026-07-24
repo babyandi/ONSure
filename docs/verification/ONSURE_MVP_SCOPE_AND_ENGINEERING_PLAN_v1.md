@@ -1,110 +1,216 @@
-# ONSURE MVP Scope and Engineering Plan v1
+# ONSURE MVP 범위와 개발 계획 v1
 
 ## 1. 원칙
 
-설계에는 Core 1~7번을 모두 반영한다. 구현은 MVP 범위부터 개발한다. ORUDA Adapter는 후순위다.
+설계에는 ONSURE 핵심 운영 영역 전체를 반영한다. 구현은 MVP 범위부터 진행한다. ORUDA 어댑터와 고급 학습 자동화는 후순위다.
 
 ```text
-설계 반영: Queue, Executor, Validator, Receipt, Golden/Hidden, Learning, Promotion/Rollback, Dashboard
-MVP 구현: Queue, Executor, Validator, Receipt, Golden/Hidden minimum, Basic Gate, Trace
-후순위: ORUDA Adapter, full Learning automation, full Dashboard, advanced Rollback/Canary
+제품 단위      ONSURE 하나
+MVP 목표       독립 실행 가능한 검증 핵심 체계
+우선 대상      일반 프로그램 + AI 프로그램
+첫 적용 사례   ONSURE 내부 검증 팩
+ORUDA 연계     후순위 대상 팩
 ```
 
-## 2. MVP 구현 범위
+## 2. MVP 목표
 
-| 항목 | MVP 구현 |
-|---|---|
-| Queue Ledger | READY/RUNNING/DONE/RETRY/HOLD |
-| Executor Loop | lease, idempotency, retry, checkpoint |
-| Harness Runner | fixture 실행, 결과 수집 |
-| Validator Engine | 기본 rule/oracle 판정 |
-| Receipt/Evidence | append-only chain, sha256, trace |
-| Dataset Registry | Golden/Hidden 최소 분리 |
-| Policy-as-Code | Gate 조건과 fail-closed rule |
-| Promotion Gate | PASS/FAIL/HOLD 기본 판정 |
-| Trace Snapshot | input/source/model/prompt/tool/runtime snapshot |
+MVP는 다음 질문에 실제 실행 증거로 답할 수 있어야 한다.
 
-## 3. 설계만 우선 반영할 항목
+1. 검증 대상을 등록하고 변경 불가 소스에 결속할 수 있는가
+2. 작업을 대장에 등록하고 실행기가 안전하게 소비할 수 있는가
+3. 정상·오류·권한·장애·적대 시험을 실제 실행할 수 있는가
+4. 종료 코드·출력·환경·증적을 영수증으로 남길 수 있는가
+5. 실패 유형과 근본원인을 만들 수 있는가
+6. 개선 전후를 재검증하고 회귀를 잠글 수 있는가
+7. 독립 검증·감사가 대상 자체 판정을 재계산할 수 있는가
+8. 학습 후보를 검증·승격·적용 후 `APPLIED_LOCKED`로 만들 수 있는가
 
-| 항목 | 이유 |
-|---|---|
-| Learning Engine full automation | 검증 오염 방지 후 단계적 적용 필요 |
-| Dashboard | MVP 이후 운영 UX로 확장 |
-| Drift Monitor | 초기에는 Metric contract만 반영 |
-| Rollback Drill | Last-known-good 계약 먼저 반영 |
-| Canary Promotion | Gate model 먼저 반영 |
-| Adversarial Generator | 수동 fixture pack 이후 자동화 |
-| ORUDA Adapter | ONSURE Core 독립성 확보 후 연결 |
+## 3. MVP 필수 기능
 
-## 4. 1차 개발 순서
+### 3.1 작업 대장과 실행기
 
-1. Contract and schema skeleton
-2. Queue Ledger and state transition Executor
-3. Receipt envelope and hash chain
-4. Fixture/Harness runner
-5. Validator Engine minimum
-6. Dataset Registry minimum
-7. Golden/Hidden fixture pack
-8. PASS/FAIL/HOLD Gate
-9. Read-only verifier
-10. MVP runbook and report template
+- 작업 등록
+- 상태 전이
+- 작업 임대
+- 멱등 키
+- 중복 소비 차단
+- 재시도·보류·만료
+- 체크포인트 재개
+- 실패 증적 보존
 
-## 5. MVP 완료 조건
-## 5. 추가 MVP 보완: 첫 Applied Case
+### 3.2 기본 하네스 실행기
 
-MVP는 단순히 Queue를 읽고 PASS/FAIL/HOLD를 판단하는 데서 끝나면 안 된다. 학습기가 만든 저위험 후보 1건을 검증하고 실제 ONSURE Core 기준에 반영해 `APPLIED_LOCKED`까지 만들어야 한다.
+- 허용 명령만 실행
+- 절대경로·대상 루트 이탈·인라인 셸 차단
+- 시간 제한
+- 표준출력·표준오류 제한
+- 종료 코드 기록
+- 환경 해시
+- 시험 데이터별 영수증
 
-첫 적용 범위:
+### 3.3 최소 검증 엔진
+
+- 정적 검증
+- 실행·종단간 검증
+- 인증·인가·입력 검증
+- 비밀정보·개인정보 검증
+- AI 프롬프트·도구 권한 검증
+- 공급망·SBOM·라이선스 기본 검증
+- `PASS`·`FAIL`·`HOLD` 판정
+
+### 3.4 증적·영수증 체인
+
+- 소스 잠금
+- 정책·시험 데이터·오라클 버전
+- 명령·종료 코드·출력 해시
+- 발견사항·근본원인분석
+- 독립 검증·감사 영수증
+- 증적 SHA-256 목록
+- 읽기 전용 재검증
+
+### 3.5 데이터셋 등록소 최소 기능
+
+- 학습·검증·골든·비공개·회귀 세트 구분
+- 바이트 SHA-256
+- 버전·생성 주체·사용 범위
+- 세트 간 중복·오염 검사
+- 비공개 정답 접근 차단
+
+### 3.6 정책 코드화 최소 기능
+
+- 정책 ID·버전
+- 적용 대상·범위
+- 금지 조건
+- 관문 조건
+- 승인 권한
+- 변경 영수증
+- 롤백 버전
+
+### 3.7 첫 학습 적용 사례
+
+- 학습 후보 생성
+- 독립 검증 2회
+- 승격 승인
+- 적용 커밋 또는 안정 등록소 활성화
+- 적용 후 검증
+- 롤백 포인터
+- `APPLIED_LOCKED` 영수증
+
+## 4. MVP 제외 범위
+
+- 학습 엔진 완전 자동화
+- 외부 대상 제품 자동 수정
+- 고급 카나리·롤백 훈련
+- 적대 시험 데이터 대규모 자동 생성
+- 전체 현황판 사용자 경험
+- 기업 다단계 승인 작업 흐름
+- ORUDA 전용 전체 대상 팩
+- 다언어·다프레임워크 시장
+- 자동 최종 잠금
+
+## 5. 개발 순서
+
+### 1단계: 핵심 계약 고정
+
+- 제품 범위
+- 대상 어댑터
+- 상태 모델
+- 영수증·소스 잠금
+- 검증 축·시험 데이터·오라클
+- 구현 권위
+
+### 2단계: 실행 핵심부
+
+- 작업 대장
+- 실행기 반복 처리
+- 제한된 프로세스 하네스
+- 환경·출력·종료 코드 증적
+
+### 3단계: 검증 엔진
+
+- 정적·실행·보안 검증선
+- 오라클 판정
+- 발견사항·실패 유형·근본원인분석
+- 보고서 생성
+
+### 4단계: 재검증·독립 보증
+
+- 개선 계획
+- 패치 전후 비교
+- 회귀 잠금
+- 독립 검증·감사
+- 읽기 전용 영수증 재검증
+
+### 5단계: 학습 적용
+
+- 후보 생성
+- 검증 요청
+- 승격 검토
+- 안정 적용
+- 적용 후 검증
+- 적용 잠금
+
+### 6단계: 외부 대상 확장
+
+- ORUDA 대상 어댑터
+- 대상 전용 시험 팩
+- 외부 문서·실행 증적
+- 독립 대상 보고서
+
+## 6. 개발 관문
+
+각 단계는 다음 조건을 요구한다.
 
 ```text
-Application Class: VALIDATION_PACK_APPLY
-대상: Fixture / Rubric / Validator Rule / Policy Rule 중 1건
-제외: ORUDA Target 적용, 외부 제품 런타임 변경, Hidden answer key 기반 후보
+코드·계약 일치
+단위 시험
+음성·적대 시험
+증적·영수증
+실패 시 근본원인분석
+회귀검증 2회
+독립 검증
+미해결 Critical/High 0건
 ```
 
-완료 조건:
+## 7. MVP 성공 지표
 
 ```text
-learning_candidate_id 존재
-validation_pass_receipt 존재
-promotion_receipt 존재
-apply_commit_sha_or_registry_version 존재
-post_apply_verification_receipt 존재
-rollback_pointer 존재
-applied_count = 1
+등록 가능한 대상 유형               2개 이상
+실행 가능한 시험 데이터 유형          7개
+필수 검증 축                         30개
+제품 플랫폼 종단간 실행               2회 PASS
+범용 하네스 독립 실행                 2회 PASS
+미해결 Critical/Major                 0건
+첫 학습 적용 사례                    APPLIED_LOCKED 1건
+증적 읽기 전용 재검증                 PASS
+개발 관문                            PASS
 ```
 
-적용 건수로 세면 안 되는 것:
+## 8. 현재 구현 상태
 
 ```text
-학습 후보 큐 등록
-검증 요청 생성
-NON_FINAL 실험 채택
-열린 PR
-Stable selector가 참조하지 않는 산출물
-Rollback 근거 없는 변경
+설계·계약                 완료
+제품 핵심 코드             완료
+범용 하네스                완료
+학습 적용 파이프라인        설계 완료
+Maven/JUnit               NOT_RUN
+제품 종단간 실행            NOT_RUN
+범용 하네스 독립 2회        NOT_RUN
+첫 APPLIED_LOCKED          NOT_RUN
+개발 관문                  HOLD
+최종 잠금                  NOT_ALLOWED
 ```
 
+## 9. 다음 실행
 
-```text
-Queue item이 READY에서 RUNNING으로 lease 획득
-동일 item 중복 실행 차단
-Harness 실행 결과 수집
-Validator PASS/FAIL/HOLD 판정
-Receipt self hash 생성
-previous receipt hash chain 유지
-Golden/Hidden 데이터 분리 확인
-missing evidence는 fail-closed
-동일 입력 2회 결과 hash 비교
-최종 report가 evidence에 결속
+```bash
+bash scripts/preflight-local-assurance.sh
+bash scripts/preflight-universal-harness.sh
+mvn -B -ntp test
+bash scripts/run-product-platform-e2e.sh
+bash scripts/run-universal-harness-twice.sh \
+  operator-independent-1 operator-independent-2 local-jdk17
+bash scripts/run-onsure-development-gate.sh
 ```
 
-## 6. 기간 기준
-
-| 단계 | 예상 |
-|---|---|
-| MVP | 6~8주 |
-| 운영 베타 | 10~14주 |
-| 상용화 수준 | 4~6개월 |
-
-Learning Engine은 MVP의 중심이 아니라 후속 고도화다. MVP는 실제 검증 실행과 증적 체인부터 완성한다.
+실행 결과가 없으면 문서상 구현 완료를 제품 완료로 승격하지 않는다.
