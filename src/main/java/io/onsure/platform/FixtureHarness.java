@@ -123,7 +123,7 @@ public final class FixtureHarness {
                 Hashing.sha256(observed), command);
     }
 
-    private static void validateCommand(List<String> command, Path root) {
+    private static void validateCommand(List<String> command, Path root) throws Exception {
         if (command.size() < 2 || command.size() > MAX_ARGUMENTS) {
             throw new IllegalArgumentException("fixture command size invalid");
         }
@@ -143,7 +143,10 @@ public final class FixtureHarness {
         Path declaredScript = Path.of(command.get(1));
         if (declaredScript.isAbsolute()) throw new IllegalArgumentException("absolute fixture script is prohibited");
         Path script = root.resolve(declaredScript).normalize();
-        if (!script.startsWith(root) || !Files.isRegularFile(script)) {
+        if (!script.startsWith(root)
+                || Files.isSymbolicLink(script)
+                || !Files.isRegularFile(script, java.nio.file.LinkOption.NOFOLLOW_LINKS)
+                || !script.toRealPath().startsWith(root.toRealPath())) {
             throw new IllegalArgumentException("fixture script must be a regular file inside target root");
         }
     }
@@ -152,7 +155,7 @@ public final class FixtureHarness {
             Map<String, String> fixtureEnvironment) {
         Map<String, String> host = System.getenv();
         processEnvironment.clear();
-        for (String key : List.of("PATH", "JAVA_HOME", "HOME", "LANG", "LC_ALL")) {
+        for (String key : List.of("PATH", "JAVA_HOME", "LANG", "LC_ALL")) {
             String value = host.get(key);
             if (value != null) processEnvironment.put(key, value);
         }
