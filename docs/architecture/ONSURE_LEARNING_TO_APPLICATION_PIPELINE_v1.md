@@ -1,150 +1,240 @@
-# ONSURE Learning to Application Pipeline v1
+# ONSURE 학습 후보 적용 파이프라인 v1
 
 ## 1. 검토 결론
 
-현재 ONSURE 설계는 학습 후보를 안전하게 막는 구조는 갖췄지만, 후보가 실제 적용까지 가는 공식 경로가 약했다. 그래서 큐와 후보가 쌓여도 적용 건수는 0건으로 남는다.
+현재 ONSURE 설계는 학습 후보를 안전하게 차단하는 구조는 갖췄지만, 후보가 실제 적용까지 이동하는 공식 경로가 부족했다. 그 결과 학습 큐와 검증 요청이 존재해도 적용 건수는 0건으로 남을 수 있다.
 
-보완 결론은 다음과 같다.
+다음 경로를 유일한 공식 적용 경로로 사용한다.
 
 ```text
-Learning Candidate
--> Validation Request
--> Validator 독립 검증
--> PASS Receipt
--> Promotion Review
--> Apply Commit 또는 Stable Registry Activation
--> Post-Apply Verification
--> Applied Lock
+학습 후보
+→ 검증 요청
+→ 검증 실행
+→ 검증 통과
+→ 승격 검토
+→ 승격 승인
+→ 그림자 적용 또는 카나리 적용
+→ 안정 적용
+→ 적용 후 검증
+→ 적용 잠금
 ```
 
-이 경로를 통과한 경우만 "학습 적용 1건"으로 계산한다.
+## 2. 적용 건수의 정의
 
-## 2. 왜 기존 구조에서 0건이 정상적으로 발생했는가
-
-| 원인 | 설명 | 보완 |
-|---|---|---|
-| Learning Engine 권한 제한 | 학습기는 후보만 만들고 PASS/Gate를 열 수 없음 | 유지 |
-| PASS Receipt 부족 | 검증 요청은 있으나 검증 완료 PASS가 없음 | Validator Runner 연결 |
-| Promotion 경로 부족 | PASS 이후 Apply로 가는 계약이 약함 | Promotion Receipt 추가 |
-| 적용 정의 부족 | 후보 적재와 실제 적용의 경계가 불명확 | Applied Count Rule 추가 |
-| 활성 선택자 부재 | 후보가 실제 프로그램/검증팩에서 참조되지 않음 | active selector 또는 main commit 필수화 |
-
-## 3. 적용 완료의 정의
-
-다음 조건을 모두 만족해야 적용 1건이다.
+적용 1건은 다음 조건을 모두 만족해야 한다.
 
 | 조건 | 필수 여부 |
 |---|---:|
-| 학습 후보 ID 존재 | 필수 |
-| 학습 후보 Source Receipt 존재 | 필수 |
-| Validator 독립 검증 PASS | 필수 |
-| Golden/Hidden 최소 검증 PASS | 필수 |
-| 같은 조건 2회 재현성 PASS | 필수 |
-| Promotion Approval Receipt | 필수 |
-| Apply Commit 또는 Registry Version | 필수 |
-| Stable selector가 후보 산출물을 실제 참조 | 필수 |
-| Post-Apply Verification Receipt | 필수 |
-| Rollback Pointer | 필수 |
+| 학습 후보 ID | 필수 |
+| 후보 소스 영수증 SHA-256 | 필수 |
+| 학습 산출물 SHA-256 | 필수 |
+| 학습 데이터셋 버전 | 필수 |
+| 비공개 데이터 미접근 확인 | 필수 |
+| 검증 엔진 독립 재계산 | 필수 |
+| 정상·음성·골든·비공개 시험 통과 | 필수 |
+| 동일 조건 2회 결과 일치 | 필수 |
+| 승격 승인 영수증 | 필수 |
+| 검토자·승인자 분리 | 필수 |
+| 적용 커밋 또는 안정 등록소 버전 | 필수 |
+| 활성 선택자의 실제 참조 | 필수 |
+| 적용 후 검증 영수증 | 필수 |
+| 롤백 포인터 | 필수 |
+| 적용 건수 증가 영수증 | 필수 |
 
-다음은 적용으로 세지 않는다.
+다음은 적용 건수로 계산하지 않는다.
 
-```text
-후보 큐 등록
-검증 요청 생성
-NON_FINAL 실험 채택
-PASS 없는 문서화
-PR 열림 상태
-Registry selector 미변경
-Rollback 근거 없는 적용
-```
+- 학습 큐에 후보만 존재하는 경우
+- 검증 요청만 존재하고 `PASS` 영수증이 없는 경우
+- 검증 `PASS`는 있으나 승격 승인이 없는 경우
+- 승격은 승인됐으나 실제 활성 선택자가 변경되지 않은 경우
+- PR이 열려 있지만 병합되지 않은 경우
+- 실험 환경에서만 `NON_FINAL` 후보를 채택한 경우
+- 롤백 포인터나 적용 후 검증 영수증이 없는 경우
 
-## 4. 최소 상태 전이
+## 3. 적용 유형
+
+### 3.1 검증 팩 적용
+
+ONSURE 내부 검증 자산에 학습된 개선을 적용한다.
+
+대상 예시:
+
+- 시험 데이터
+- 판정 기준
+- 검증 규칙
+- 정책 규칙
+- 하네스 개선
+- 실패 유형 분류
+
+MVP에서 허용하는 첫 적용 유형이다.
+
+### 3.2 ONSURE 실행 코드 적용
+
+ONSURE 실행 소스 코드에 학습된 변경을 적용한다.
+
+- 사람 검토 필수
+- 영향 범위 제한
+- 보안·회귀검증 강화
+- 자동 병합 금지
+
+### 3.3 검증 대상 제품 적용
+
+ORUDA 같은 외부 검증 대상에 학습된 변경을 적용한다.
+
+MVP에서는 금지한다. ONSURE 핵심 체계가 자신의 승격·적용 경로를 먼저 증명한 후 별도 권한 계약으로 수행한다.
+
+## 4. 상태 모델
 
 ```text
 LEARNING_CANDIDATE
-  -> VALIDATION_REQUESTED
-  -> VALIDATION_RUNNING
-  -> VALIDATION_PASSED
-  -> PROMOTION_REVIEW
-  -> PROMOTION_APPROVED
-  -> SHADOW_APPLIED
-  -> STABLE_APPLIED
-  -> APPLIED_LOCKED
+VALIDATION_REQUESTED
+VALIDATION_RUNNING
+VALIDATION_PASSED
+VALIDATION_FAILED
+PROMOTION_REVIEW
+PROMOTION_APPROVED
+SHADOW_APPLIED
+CANARY_APPLIED
+STABLE_APPLIED
+APPLIED_LOCKED
+ROLLED_BACK
 ```
 
-MVP에서는 Canary를 생략할 수 있지만 Shadow와 Stable의 의미는 유지한다.
+상태 이름은 실행 계약 호환성을 위해 영문 식별자를 유지한다.
 
-| 상태 | 의미 |
-|---|---|
-| LEARNING_CANDIDATE | 학습기가 만든 개선 후보 |
-| VALIDATION_REQUESTED | 검증기가 검증해야 할 요청 |
-| VALIDATION_PASSED | 독립 검증 PASS Receipt 발행 |
-| PROMOTION_APPROVED | 권한 분리된 승인 완료 |
-| SHADOW_APPLIED | 운영 기준에는 영향 없는 비활성 적용 |
-| STABLE_APPLIED | 실제 ONSURE 검증팩/정책/코드가 참조 |
-| APPLIED_LOCKED | 재검증과 Rollback 근거까지 고정 |
+## 5. 상태 전이 요구사항
 
-## 5. 첫 적용 1건의 범위
+### 5.1 학습 후보 → 검증 요청
 
-첫 적용은 ORUDA Target 적용이 아니라 ONSURE Core 내부의 작은 검증팩 적용으로 잡는다.
+필수 항목:
 
-권장 1호 적용 후보:
+- 후보 ID와 유형
+- 후보 소스 영수증 SHA-256
+- 학습 산출물 SHA-256
+- 학습 데이터셋 버전
+- 비공개 정답 미접근 확인
+- 대상 적용 유형
+
+### 5.2 검증 요청 → 검증 실행
+
+필수 항목:
+
+- 작업 ID
+- 실행기 임대 ID
+- 멱등 키
+- 정책 버전
+- 데이터셋 버전
+- 검증기 버전
+- 실행 환경 해시
+
+### 5.3 검증 실행 → 검증 통과
+
+필수 항목:
+
+- 정상 시험 통과
+- 음성 시험 차단
+- 골든 회귀검증 통과
+- 비공개 최소 시험 통과
+- 중요 관문의 거짓 통과 0건
+- 중요 관문의 거짓 실패 0건
+- 동일 조건 2회 결정성
+- 독립 영수증 재검증 통과
+
+### 5.4 검증 통과 → 승격 승인
+
+필수 항목:
+
+- 승격 영수증 ID
+- 검토자 ID
+- 승인자 ID
+- 검토자·승인자 분리
+- 롤백 계획 ID
+- 적용 유형에 제한된 승인 범위
+- 적용 예정 산출물 SHA-256
+
+### 5.5 승격 승인 → 안정 적용
+
+필수 항목:
+
+- 적용 커밋 SHA 또는 등록소 버전
+- 활성 선택자의 승격 산출물 참조
+- 적용 영수증 SHA-256
+- 적용 후 검증 영수증
+- 롤백 포인터
+
+### 5.6 안정 적용 → 적용 잠금
+
+필수 항목:
+
+- `main` 또는 안정 참조 SHA
+- 변경 불가 적용 증적 묶음
+- 읽기 전용 재검증 통과
+- 적용 건수 증가 영수증
+
+## 6. 첫 적용 사례
+
+MVP의 첫 적용 사례는 `VALIDATION_PACK_APPLY`로 제한한다.
+
+권장 후보:
+
+- `FIXTURE_CANDIDATE`
+- `RUBRIC_CANDIDATE`
+- `VALIDATOR_RULE_CANDIDATE`
+- `POLICY_RULE_CANDIDATE`
+
+제외 대상:
+
+- 외부 대상 제품 자동 수정
+- 사용자에게 알리지 않은 실행 동작 변경
+- 비공개 정답에서 파생된 후보
+- 안정 적용 없이 실패 시연만 수행한 경우
+
+성공 조건:
 
 ```text
-VALIDATION_PACK_APPLY
-- Fixture 후보 1건
-- Rubric 후보 1건
-- Validator Rule 후보 1건
-- Policy Rule 후보 1건
+후보 1건 생성
+→ 독립 검증 2회
+→ 승격 승인
+→ 병합 또는 안정 등록소 활성화
+→ 적용 후 재검증
+→ APPLIED_LOCKED
+→ 적용 건수 1 증가
 ```
 
-선정 기준:
+## 7. 하드 불변조건
 
-| 기준 | 이유 |
-|---|---|
-| 대상 범위가 작다 | 최초 적용 실패 시 영향 최소화 |
-| Hidden 정답 접근이 없다 | 학습 오염 방지 |
-| 기존 Golden을 깨지 않는다 | 회귀 위험 감소 |
-| 증적을 만들기 쉽다 | 첫 Applied Receipt 확보 |
-| Rollback이 단순하다 | Stable selector 이전 버전으로 되돌릴 수 있음 |
+- 학습 엔진은 검증 통과·승격·적용을 직접 결정할 수 없다.
+- 검증 엔진은 소스 증적에서 후보를 독립 재계산해야 한다.
+- 학습 엔진은 비공개 데이터셋 정답에 접근할 수 없다.
+- 적용 건수는 활성 선택자 또는 안정 커밋이 있어야 증가한다.
+- 적용에는 롤백 포인터가 필요하다.
+- 적용 영수증이 없으면 적용 건수는 0이다.
+- `NON_FINAL` 실험은 적용 건수로 계산하지 않는다.
 
-## 6. Executor 책임 보완
+## 8. 실패와 롤백
 
-예약작업은 후보 생성에서 끝나면 안 된다. 최소한 다음 Job Type을 분리해야 한다.
+다음 상황에서는 적용을 중단하거나 롤백한다.
 
-| Job Type | 책임 |
-|---|---|
-| LEARNING | 후보 생성 |
-| VALIDATION | 후보 검증 |
-| PROMOTION_CHECK | PASS 후보의 승격 조건 확인 |
-| APPLY | 승인된 후보를 검증팩/정책/코드에 반영 |
-| POST_APPLY_VERIFY | 적용 후 재검증 |
-| LOCK | Applied Receipt 고정 |
+- 적용 후 검증 실패
+- 활성 선택자 불일치
+- 정책·데이터셋·소스 해시 불일치
+- 새 `Critical` 또는 `High` 발견사항
+- 회귀검증 실패
+- 승인 범위 초과
+- 롤백 포인터 손실
 
-MVP에서 자동 코딩 적용은 제한해도 된다. 그러나 검증팩이나 정책 Registry 적용은 ONSURE 내부 적용으로 처리할 수 있어야 한다.
+롤백 후에는 원인 영수증과 재검증 계획을 남기며, 과거 적용 잠금을 자동 복원하지 않는다. 새로운 후보·검증·승격 절차를 다시 수행한다.
 
-## 7. 실패사례 검증과의 차이
-
-이 파이프라인은 실패사례 수집용 검증이 아니다.
-
-| 구분 | 실패사례 검증 | 학습 적용 파이프라인 |
-|---|---|---|
-| 출발점 | 실패/사고/취약 사례 | 학습기가 만든 개선 후보 |
-| 목적 | 막아야 할 위험 확인 | ONSURE 기준 자체 개선 |
-| 최종 상태 | Finding 또는 HOLD | APPLIED_LOCKED |
-| 적용 조건 | 필요 없음 | Apply Receipt와 Stable selector 필수 |
-
-## 8. MVP 보완 완료 조건
+## 9. 현재 상태
 
 ```text
-applied_count = 1
-learning_candidate_id 존재
-validation_pass_receipt 존재
-promotion_receipt 존재
-apply_commit_sha_or_registry_version 존재
-post_apply_verification_receipt 존재
-rollback_pointer 존재
-active selector가 promoted artifact를 참조
+계약·문서 설계     완료
+학습 후보 생성     구현 대상
+검증 실행          NOT_RUN
+승격 승인          NOT_RUN
+안정 적용          NOT_RUN
+적용 후 검증       NOT_RUN
+적용 잠금          NOT_RUN
+적용 건수          0
+최종 관문           HOLD
 ```
-
-이 조건이 충족되기 전까지는 후보가 아무리 많아도 적용 0건으로 보는 것이 맞다.
