@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HexFormat;
 
 public final class AdversarialFixtureRunner {
     private static final String D = "a".repeat(64);
@@ -55,9 +59,44 @@ public final class AdversarialFixtureRunner {
     }
 
     private ValidationResult builder(String approvedPlan, String consumedPlan, String buildArtifact, String runtimeArtifact, boolean networkUsed, boolean networkPermit, boolean isolated, boolean reproducible, List<String> declared, List<String> actual) {
-        return new OBuilderBuildValidator().validate(new OBuilderBuildContext(
-                approvedPlan, consumedPlan, D, buildArtifact, runtimeArtifact, D, D, D,
-                declared, actual, networkUsed, networkPermit, isolated, reproducible));
+        try {
+            Path root = Files.createTempDirectory("onsure-obuilder-fixture-");
+            var plan = evidence(root, "approved-plan", approvedPlan);
+            var consumed = evidence(root, "consumed-plan", consumedPlan);
+            var source = evidence(root, "source", "source");
+            var artifact = evidence(root, "artifact", buildArtifact);
+            var runtime = evidence(root, "runtime", runtimeArtifact);
+            var dependency = evidence(root, "dependency", "dependency");
+            var sbom = evidence(root, "sbom", "sbom");
+            var provenance = evidence(root, "provenance", "provenance");
+            var toolchain = evidence(root, "toolchain", "toolchain");
+            var log = evidence(root, "build-log", "build-log");
+            String runId = "run-" + root.getFileName();
+            var permit = networkUsed && networkPermit
+                    ? new OBuilderBuildContext.NetworkPermitReceipt(
+                            "permit-1", runId, source.claimedSha256(), true,
+                            Instant.now().plusSeconds(300), "permit-key", true)
+                    : null;
+            var execution = new OBuilderBuildContext.BuildExecutionReceipt(
+                    runId, source.claimedSha256(), toolchain.claimedSha256(), log.claimedSha256(),
+                    isolated, networkUsed, reproducible, reproducible, artifact.claimedSha256(),
+                    artifact.claimedSha256(), "builder-key", true);
+            ValidationResult result = new OBuilderBuildValidator().validate(new OBuilderBuildContext(
+                    plan, consumed, source, artifact, runtime, dependency, sbom, provenance,
+                    toolchain, log, declared, actual, permit, execution));
+            return result;
+        } catch (Exception exception) {
+            return ValidationResult.fail(List.of("OBUILDER_FIXTURE_EXECUTION_ERROR"));
+        }
+    }
+
+    private static OBuilderBuildContext.EvidenceFile evidence(Path root, String name, String value)
+            throws Exception {
+        Path file = root.resolve(name);
+        Files.writeString(file, value);
+        String digest = HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file)));
+        return new OBuilderBuildContext.EvidenceFile(file, digest);
     }
 
     private ReceiptEnvelope receipt(String type, String authority, String sourceRef, Decision decision) {
