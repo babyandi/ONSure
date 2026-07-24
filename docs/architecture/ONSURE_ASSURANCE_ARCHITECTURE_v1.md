@@ -1,330 +1,279 @@
-# ONSURE Assurance Architecture v1
+# ONSURE 검증·보증 아키텍처 v1
 
 ## 1. 제품 목적과 현재 단계
 
-ONSURE은 일반인·개발자·제품팀이 AI로 만든 AI 프로그램과 일반 프로그램을 독립적으로 검증하는 상용 Software Validation Platform이다. 소스·요구사항·설계·코드·보안·정책·실행·증거를 검토하고, Failure Mode와 RCA를 만들며, Fixture·Harness·Oracle로 문제를 재현하고, 개선·리포트·재검증까지 수행한다.
+ONSURE은 일반 사용자·개발자·제품팀이 AI로 만든 프로그램과 일반 프로그램을 독립적으로 검증하는 상용 소프트웨어 검증 플랫폼이다. 소스·요구사항·설계·코드·보안·정책·실행·증거를 검토하고, 실패 유형과 근본원인분석을 만들며, 시험 데이터·하네스·오라클로 문제를 재현하고, 개선·보고·재검증까지 수행한다.
 
-ONSURE은 ORUDA 전용 검증기가 아니다. ORUDA Adaptive Validation Master의 RCA·Failure Mode·Fixture·Harness·Oracle·Receipt·Regression Lock 구조는 범용 Validator Engine 설계 재료로 흡수하며, ORUDA 자체는 ONSURE 독립 제품 완성 후 등록되는 1호 검증 대상이다.
+ONSURE은 ORUDA 전용 검증기가 아니다. ORUDA 적응형 검증 체계의 실패 분석 자산은 범용 검증 엔진 설계 재료로 흡수하며, ORUDA는 ONSURE 독립 제품 완성 후 등록되는 첫 공식 검증 대상이다.
 
 ```text
-Product          INDEPENDENT_COMMERCIAL_SOFTWARE_VALIDATION_PLATFORM
-Core Runtime     STANDALONE
-Target Scope     AI_APPLICATION + GENERAL_SOFTWARE
-First Target     ORUDA / PLANNED
-Execution Gate   HOLD
-Runtime Result   NOT_RUN
-PR State         DRAFT
+제품 성격       독립 상용 소프트웨어 검증 플랫폼
+핵심 실행 방식  독립 실행
+검증 범위       AI 응용프로그램 + 일반 소프트웨어
+첫 검증 대상    ORUDA / 계획됨
+실행 관문       HOLD
+실행 결과       NOT_RUN
+PR 상태         DRAFT
 ```
 
-설계·계약·Validator·Fixture·로컬 Runner·실행 환경은 구현되었지만 실제 JDK 17/Maven 실행 증거가 없으므로 PASS를 주장하지 않는다.
+설계·계약·검증기·시험 데이터·로컬 실행기·실행 환경은 구현되었지만 실제 JDK 17과 Maven 실행 증거가 없으므로 `PASS`를 주장하지 않는다.
 
 ## 2. 최상위 원칙
 
-1. 특정 검증 대상은 ONSURE Final Decision Authority가 될 수 없다.
-2. ORUDA를 포함한 모든 대상은 Target Adapter를 통해 연결한다.
-3. 대상 제품이 없어도 ONSURE Core가 단독 실행되어야 한다.
-4. 실행 증거가 없으면 PASS 금지, 미실행은 `NOT_RUN`이다.
-5. 증거·정책·권한이 불명확하면 fail-closed 한다.
+1. 특정 검증 대상은 ONSURE 최종 판정 권위가 될 수 없다.
+2. ORUDA를 포함한 모든 대상은 대상 어댑터를 통해 연결한다.
+3. 대상 제품이 없어도 ONSURE 핵심 체계가 단독 실행되어야 한다.
+4. 실행 증거가 없으면 `PASS`를 금지하며 미실행은 `NOT_RUN`이다.
+5. 증거·정책·권한이 불명확하면 차단 우선으로 처리한다.
 6. 생성·수정 주체와 독립 검증·감사 주체를 분리한다.
-7. 코드 수정은 요구사항·정책·Fixture·Oracle·Regression Lock·Receipt에 결속한다.
-8. Critical 또는 High 보안 결함이 존재하면 배포를 차단한다.
+7. 코드 수정은 요구사항·정책·시험 데이터·오라클·회귀 잠금·영수증에 결속한다.
+8. `Critical` 또는 `High` 보안 결함이 존재하면 배포를 차단한다.
 9. 자동 수정은 승인된 범위에서만 수행한다.
 10. 업무 의미·규제·권한 모델 변경은 승인 후 수행한다.
-11. 수정 후 동일 실패와 변형 실패 및 전체 회귀를 재실행한다.
-12. Material report conclusion은 Evidence에 연결되어야 한다.
+11. 수정 후 동일 실패·변형 실패·전체 회귀검증을 재실행한다.
+12. 보고서의 중대한 결론은 증적에 연결되어야 한다.
 13. GitHub Actions와 외부 CI는 공식 판정 근거로 사용하지 않는다.
-14. 공식 검증은 Standalone Runner와 서명 Receipt로 증명한다.
-15. Embedded Agent/Module도 portable Receipt를 내보내 독립 재검증 가능해야 한다.
+14. 공식 검증은 독립 실행기와 서명 영수증으로 증명한다.
+15. 내장 에이전트·모듈도 이식 가능한 영수증을 내보내 독립 재검증할 수 있어야 한다.
 
 ## 3. 범용 전체 구조
 
 ```text
-Validation Target Registry
-  -> Target Adapter / Intake
-  -> Immutable Source & Artifact Lock
-  -> Requirement / Policy / Architecture Reconstruction
-  -> Static Code / Configuration Validator
-  -> Runtime & E2E Harness
-  -> Security / Privacy / Supply-chain Validator
-  -> Failure Mode Registry
-  -> RCA Engine
-  -> Fixture Synthesizer & Registry
-  -> Oracle Evaluation
-  -> Remediation Planner / Approved Patch Builder
-  -> Regression Lock
-  -> Independent Verifier
-  -> Independent Audit
-  -> Validation Report
-  -> Final Lock / Receipt Ledger / Final Decision
+검증 대상 등록소
+→ 대상 어댑터 / 입력 접수
+→ 변경 불가 소스·산출물 잠금
+→ 요구사항·정책·아키텍처 재구성
+→ 정적 코드·설정 검증
+→ 실행·종단간 하네스
+→ 보안·개인정보·공급망 검증
+→ 실패 유형 등록소
+→ 근본원인분석 엔진
+→ 시험 데이터 합성·등록
+→ 판정 오라클 평가
+→ 개선 계획 / 승인된 패치 빌드
+→ 회귀 잠금
+→ 독립 검증
+→ 독립 감사
+→ 검증 보고서
+→ 최종 잠금 / 영수증 대장 / 최종 판정
 ```
 
-## 4. Core와 Target 경계
+## 4. 핵심 체계와 대상의 경계
 
-### 4.1 ONSURE Core
+### 4.1 ONSURE 핵심 체계
 
-ONSURE Core는 Target와 무관하게 다음 범용 기능을 제공한다.
+ONSURE 핵심 체계는 검증 대상과 무관하게 다음 범용 기능을 제공한다.
 
-- Target Registry와 Adapter contract
-- Receipt canonical serialization과 서명 검증
-- SHA-256, Source Lock, Permit, Replay 검증
-- Claim-Evidence binding
-- 정책 카탈로그와 reason code
-- Failure Mode와 RCA registry
-- Fixture·Harness·Oracle interface
-- SBOM·provenance·dependency evidence contract
-- Remediation approval·patch·rollback contract
-- Regression Lock
-- Run Context, Final Lock, Ledger, Final Receipt 검증
-- 일반 사용자·개발자·감사용 Validation Report
+- 검증 대상 등록소와 어댑터 계약
+- 검증 영수증 정규 직렬화와 서명 검증
+- SHA-256, 소스 잠금, 허가증, 재사용 검증
+- 주장과 증적 결속
+- 정책 목록과 사유 코드
+- 실패 유형과 근본원인 등록소
+- 시험 데이터·하네스·오라클 인터페이스
+- SBOM·출처 증명·의존성 증적 계약
+- 개선 승인·패치·롤백 계약
+- 회귀 잠금
+- 실행 문맥, 최종 잠금, 대장, 최종 영수증 검증
+- 일반 사용자·개발자·감사용 검증 보고서
 
-### 4.2 Target Adapter
+### 4.2 대상 어댑터
 
-Target Adapter는 언어·프레임워크·빌드·실행·데이터 특성을 ONSURE 표준 계약으로 변환한다.
+대상 어댑터는 언어·프레임워크·빌드·실행·데이터 특성을 ONSURE 표준 계약으로 변환한다.
 
-Adapter가 할 수 있는 일:
+어댑터가 할 수 있는 일:
 
-- Source·artifact·configuration inventory 제공
-- 빌드·실행 명령과 sandbox profile 제공
-- Target-specific Fixture Pack 연결
-- 로그·metric·trace·screen·AI tool call 수집
+- 소스·산출물·설정 목록 제공
+- 빌드·실행 명령과 격리 프로필 제공
+- 대상 전용 시험 팩 연결
+- 로그·지표·추적·화면·AI 도구 호출 수집
 
-Adapter가 할 수 없는 일:
+어댑터가 할 수 없는 일:
 
-- ONSURE policy 또는 Oracle 변경
-- Finding severity 축소
-- 독립 Verifier/Audit decision 작성
-- Target 자체 PASS를 ONSURE Final PASS로 승격
-- Core 실행에 Target Runtime을 필수 의존성으로 삽입
+- ONSURE 정책 또는 오라클 변경
+- 발견사항 심각도 축소
+- 독립 검증·감사 판정 작성
+- 대상 자체 `PASS`를 ONSURE 최종 `PASS`로 승격
+- 핵심 실행에 대상 실행 환경을 필수 의존성으로 삽입
 
-## 5. 현재 내부 Provider와 범용 역할
+## 5. 현재 참조 구현과 범용 역할
 
-현재 구현명은 초기 reference provider이며 제품 계약의 필수 고유명사가 아니다.
+현재 구현명은 초기 참조 제공자이며 제품 계약의 필수 고유명사가 아니다.
 
 | 현재 구현명 | 범용 역할 | 제품 경계 |
 |---|---|---|
-| ODocument | Document / Requirement Analyzer | 교체 가능한 capability provider |
-| OReport | Evidence Analyzer / Reporter | ONSURE Reporter로 일반화 |
-| ODesign | Architecture / Design Analyzer | 선택적 provider |
-| OUI | UI / Interaction Analyzer | Target별 provider |
-| OMaker | Implementation / Remediation Planner | 승인 경계가 있는 provider |
-| OBuilder | Isolated Patch Builder | 교체 가능한 builder |
-| OTester | Independent Verifier | 별도 프로세스·별도 key |
-| OAudit | Independent Audit | 판정 상한·Receipt 계보 감사 |
+| ODocument | 문서·요구사항 분석 | 교체 가능한 기능 제공자 |
+| OReport | 증적 분석·보고 | ONSURE 보고 기능으로 일반화 |
+| ODesign | 아키텍처·설계 분석 | 선택 기능 제공자 |
+| OUI | 화면·상호작용 분석 | 대상별 기능 제공자 |
+| OMaker | 구현·개선 계획 | 승인 경계를 가진 기능 제공자 |
+| OBuilder | 격리 패치 빌드 | 교체 가능한 빌더 |
+| OTester | 독립 검증 | 별도 프로세스·별도 키 |
+| OAudit | 독립 감사 | 판정 상한·영수증 계보 감사 |
 
-ONSURE Runtime은 독립 Verifier/Audit 판정을 대신 작성할 수 없다.
+ONSURE 실행 환경은 독립 검증·감사 판정을 대신 작성할 수 없다.
 
 ## 6. 핵심 모듈
 
-### 6.1 Target Registration
+### 6.1 검증 대상 등록
 
-- `ONSURE_VALIDATION_TARGET_REGISTRY_V1`에 대상 등록
-- target type, source locator, adapter, policy profile, execution profile 고정
-- Target 등록이 Core 의존성을 만들지 않는지 검사
-- 첫 Target는 ORUDA이며 초기 관계는 `EXTERNAL_VALIDATION_TARGET`이다.
+- `ONSURE_VALIDATION_TARGET_REGISTRY_V1`에 대상을 등록한다.
+- 대상 유형, 소스 위치, 어댑터, 정책 프로필, 실행 프로필을 고정한다.
+- 대상 등록이 핵심 체계의 필수 의존성을 만들지 않는지 검사한다.
+- 첫 대상은 ORUDA이며 초기 관계는 `EXTERNAL_VALIDATION_TARGET`이다.
 
-### 6.2 Source and Artifact Intake
+### 6.2 소스와 산출물 접수
 
-- Git ref를 immutable commit SHA로 고정
-- package·binary·container·configuration digest 수집
-- tracked source inventory와 canonical path/content digest 생성
-- 정책 집합 digest 생성
-- dirty tracked worktree 차단
-- `ONSURE_SOURCE_DIGEST_V1` Source Lock 발행
+- Git 참조를 변경 불가 커밋 SHA로 고정한다.
+- 패키지·실행 파일·컨테이너·설정 해시를 수집한다.
+- 추적 소스 목록과 정규 경로·내용 해시를 생성한다.
+- 정책 집합 해시를 생성한다.
+- 추적 파일이 변경된 작업공간을 차단한다.
+- `ONSURE_SOURCE_DIGEST_V1` 소스 잠금을 발행한다.
 
-### 6.3 Requirement·Policy·Architecture Reconstruction
+### 6.3 요구사항·정책·아키텍처 재구성
 
-- 요구사항 ID, 출처, 수용 기준, 추적 관계 저장
-- README·issue·RFP·code·test·runtime claim 간 충돌 탐지
-- 상충 요구사항은 자동 선택하지 않고 `CONFLICT`
-- 추론 내용은 `INFERRED`로 표시하고 승인 전 Authority 금지
-- 신뢰 경계·권한·상태·장애·복구 검토
+- 요구사항 ID, 출처, 수용 기준, 추적 관계를 저장한다.
+- README·이슈·RFP·코드·시험·실행 주장 간 충돌을 탐지한다.
+- 상충 요구사항은 자동 선택하지 않고 `CONFLICT`로 처리한다.
+- 추론은 `INFERRED`로 표시하고 승인 전에는 권위로 사용하지 않는다.
+- 신뢰 경계·권한·상태·장애·복구를 검토한다.
 
-### 6.4 Static and Security Validator
+### 6.4 정적·보안 검증
 
-- 설계-코드 불일치, 상태 전이, 예외, 동시성, 멱등성 검토
-- 인증·인가·입력 검증·Injection·Secret·개인정보 검토
-- 공급망·SBOM·provenance·서명·license 검토
-- AI prompt injection·tool abuse·data exfiltration·hallucination guard 검토
-- Critical/High 1건 이상이면 Publication 차단
+- 설계와 코드 불일치, 상태 전이, 예외, 동시성, 멱등성 검토
+- 인증·인가·입력 검증·주입 공격·비밀정보·개인정보 검토
+- 공급망·SBOM·출처 증명·서명·라이선스 검토
+- AI 프롬프트 주입·도구 오용·데이터 유출·환각 방지 검토
+- `Critical` 또는 `High` 발견사항이 있으면 발행 차단
 
-### 6.5 Runtime Harness
+### 6.5 실행 하네스
 
 - 정상·예외·장애·복구·동시성·대용량 시나리오 실행
-- Target-specific sandbox와 network policy 적용
-- 동일 locked input으로 clean regression 2회
-- 결과·compiled artifact·runtime output 비교
-- AI 프로그램은 모델 변동·tool call·authority boundary를 별도 기록
+- 대상 전용 격리 환경과 네트워크 정책 적용
+- 동일 잠금 입력으로 깨끗한 회귀검증 2회 실행
+- 결과·컴파일 산출물·실행 출력 비교
+- AI 프로그램은 모델 변동·도구 호출·권한 경계를 별도 기록
 
-### 6.6 Failure Mode와 RCA
+### 6.6 실패 유형과 근본원인분석
 
 ```text
-Failure Mode
--> Trigger / Preconditions
--> Observable Symptom
--> Violated Contract
--> Evidence
--> Blast Radius
--> Root Cause
--> Minimal Fix / Durable Fix
--> Required Fixture / Oracle / Regression
+실패 유형
+→ 촉발 조건 / 선행 조건
+→ 관찰 증상
+→ 위반 계약
+→ 증적
+→ 영향 범위
+→ 근본원인
+→ 최소 수정 / 지속 가능한 수정
+→ 필요한 시험 데이터 / 오라클 / 회귀검증
 ```
 
-Failure Mode Registry는 동일 원인의 변형 실패와 재발 여부를 연결한다.
+실패 유형 등록소는 동일 원인의 변형 실패와 재발 여부를 연결한다.
 
-### 6.7 Fixture·Harness·Oracle
+### 6.7 시험 데이터·하네스·오라클
 
-- Fixture: 입력·환경·권한·장애·적대 조건
-- Harness: 격리 실행·관찰·장애 주입·복구 수행체
-- Oracle: expected decision·reason·tolerance·policy 기반 판정기
+- 시험 데이터: 입력·환경·권한·장애·적대 조건
+- 실행 하네스: 격리 실행·관찰·장애 주입·복구 수행체
+- 판정 오라클: 기대 판정·사유·허용 오차·정책 기반 판정기
 
-Target가 제공하는 예상 결과는 claim으로만 취급하고 ONSURE이 독립 재계산한다.
+대상이 제공하는 예상 결과는 주장으로만 취급하고 ONSURE이 독립 재계산한다.
 
-### 6.8 Remediation and Build
+### 6.8 개선과 빌드
 
-- RCA 기반 minimal/durable remediation option 생성
+- 근본원인 기반 최소·지속 개선안 생성
 - 자동 수정 가능 범위와 승인 필요 범위 분리
-- 승인된 plan digest·source digest·dependency lock·policy digest만 소비
-- 무허가 network·미고정 dependency·미신고 file operation 차단
-- patch, build artifact, SBOM, provenance, rollback receipt 생성
+- 승인된 계획 해시·소스 해시·의존성 잠금·정책 해시만 소비
+- 무허가 네트워크·미고정 의존성·미신고 파일 작업 차단
+- 패치, 빌드 산출물, SBOM, 출처 증명, 롤백 영수증 생성
 
-### 6.9 Independent Verification and Audit
+### 6.9 독립 검증과 감사
 
-Independent Verifier는 runtime result·artifact·Fixture·Oracle 결과를 별도 process/service에서 재계산한다.
+독립 검증기는 실행 결과·산출물·시험 데이터·오라클 결과를 별도 프로세스 또는 서비스에서 재계산한다.
 
-Independent Audit은 Source·Policy·Target·Fixture·Harness·Oracle·Finding·RCA·Patch·Regression·Report Receipt 계보와 decision ceiling을 검증한다.
+독립 감사는 소스·정책·대상·시험 데이터·하네스·오라클·발견사항·근본원인·패치·회귀검증·보고서 영수증 계보와 판정 상한을 검증한다.
 
-### 6.10 Report Generation
+### 6.10 보고서 생성
 
 ONSURE은 다음 결과를 생성한다.
 
 - 일반 사용자용 위험·오류·개선 요약
-- 개발자용 재현 절차와 기술 RCA
-- 보안·정책·공급망 Finding 보고서
+- 개발자용 재현 절차와 기술 근본원인분석
+- 보안·정책·공급망 발견사항 보고서
 - 개선 우선순위와 승인 필요사항
 - 패치 전후 비교
-- 재검증·Regression Lock 결과
+- 재검증·회귀 잠금 결과
 - 배포 가능 여부와 잔여 위험
-- Evidence/Receipt가 결속된 Final Validation Report
+- 증적·영수증이 결속된 최종 검증 보고서
 
-## 7. ORUDA 자산 흡수와 1호 Target
+## 7. ORUDA 자산 흡수와 첫 검증 대상
 
-ORUDA Adaptive Validation Master에서 다음 구조를 일반화하여 흡수한다.
+ORUDA 적응형 검증 체계에서 근본원인분석, 실패 유형, 시험 데이터, 하네스, 오라클, 영수증, 회귀 잠금을 일반화하여 흡수한다.
 
-- RCA
-- Failure Mode
-- Fixture
-- Harness
-- Oracle
-- Receipt
-- Regression Lock
-
-흡수된 구조는 ONSURE 소유의 범용 계약으로 재작성한다. ORUDA 경로·Agent·Runtime·정책 Authority를 Core dependency로 가져오지 않는다.
-
-초기 ORUDA 검증:
+흡수된 구조는 ONSURE 소유의 범용 계약으로 재작성한다. ORUDA 경로·에이전트·실행 환경·정책 권위를 핵심 의존성으로 가져오지 않는다.
 
 ```text
-ONSURE Standalone
-  -> ORUDA Target Adapter
-  -> ORUDA Source / Policy / Runtime Evidence
-  -> Generic Validator Engine
-  -> ORUDA Target Fixture Pack
-  -> Independent Harness / Oracle / Receipt / Report
+ONSURE 독립 실행
+→ ORUDA 대상 어댑터
+→ ORUDA 소스·정책·실행 증적
+→ 범용 검증 엔진
+→ ORUDA 전용 시험 팩
+→ 독립 하네스·오라클·영수증·보고서
 ```
 
-## 8. 장기 Embedded 구조
+## 8. 장기 내장 구조
 
-장기적으로 ORUDA 내부에 ONSURE Agent 또는 ONSURE Validation Module을 이식할 수 있다.
+장기적으로 ORUDA 내부에 ONSURE 에이전트 또는 검증 모듈을 이식할 수 있다.
 
-- Target 내부에서 상태·로그·Receipt 수집 및 사전 차단
-- portable evidence를 Standalone ONSURE으로 전달
-- 외부 ONSURE이 독립 재계산 가능
-- embedded result와 standalone result equivalence 검증
+- 대상 내부에서 상태·로그·영수증 수집과 사전 차단
+- 이식 가능한 증적을 독립 ONSURE으로 전달
+- 외부 ONSURE의 독립 재계산
+- 내장 결과와 독립 결과의 동등성 검증
 
-이식 후에도 ONSURE 별도 저장소·배포판·Runtime·Final Decision Authority는 유지한다.
+이식 후에도 ONSURE 별도 저장소·배포판·실행 환경·최종 판정 권위를 유지한다.
 
-## 9. Receipt와 무결성
+## 9. 영수증과 무결성
 
-### 9.1 일반 Receipt
+### 9.1 일반 영수증
 
 `contracts/receipt-envelope.v1.schema.json`은 Java `ReceiptEnvelope`의 정확한 구조를 정의한다.
 
-### 9.2 Agent Receipt
+### 9.2 독립 에이전트 영수증
 
-현재 Independent Verifier/Audit reference provider는 `ONSURE_LOCAL_AGENT_RECEIPT_V1`을 사용한다.
+독립 검증·감사 참조 구현은 `ONSURE_LOCAL_AGENT_RECEIPT_V1`을 사용한다.
 
-필수 결속:
+필수 결속 항목:
 
-- authority와 role policy/scope
-- agent run ID와 assurance run ID
-- target ID와 source/policy context
-- run start와 creation time
-- input digest
-- Ed25519 key ID와 signature
-- 별도 execution boundary
+- 권위와 역할 정책·범위
+- 에이전트 실행 ID와 보증 실행 ID
+- 대상 ID와 소스·정책 문맥
+- 실행 시작·생성 시각
+- 입력 해시
+- Ed25519 키 ID와 서명
+- 별도 실행 경계
 
-### 9.3 Regression Lock
+### 9.3 회귀 잠금
 
-- target ID와 immutable source/artifact
-- toolchain/dependency/execution profile
-- Fixture set과 Oracle version
-- Policy profile
-- Finding/RCA/patch chain
+- 대상 ID와 변경 불가 소스·산출물
+- 도구와 환경
+- 시험 데이터·오라클·정책 버전
+- 발견사항·근본원인·패치 연결
 - 반복 실행 결과와 허용 차이
 
-### 9.4 Ledger와 Final Receipt
+## 10. 최종 관문
 
-Ledger는 append-only hash chain이다. Final Receipt는 자신의 Run ID와 정확한 independent verifier/audit entry 및 per-run head에 결속된다. 후속 실행이 추가되어도 과거 Receipt 재검증은 유지된다.
-
-## 10. 상태 모델
-
-현재 구현 호환 상태명은 유지한다.
+다음 조건을 모두 충족해야 한다.
 
 ```text
-UNINITIALIZED
--> SOURCE_LOCKED
--> REQUIREMENTS_VALIDATED
--> ARCHITECTURE_REVIEWED
--> DESIGN_REVIEWED
--> OMAKER_PLAN_APPROVED
--> CODE_REVIEWED
--> SECURITY_REVIEWED
--> REMEDIATION_READY
--> PATCHED
--> OBUILDER_BUILT
--> TESTED
--> OTESTER_VERIFIED
--> OAUDIT_VERIFIED
--> PUBLICATION_ELIGIBLE
+실행 전 점검 PASS
+JDK 17 컴파일 PASS
+JUnit 전체 PASS
+정상·경계·적대·장애 시험 판정 일치
+동일 입력 회귀검증 2회 결과 동일
+독립 검증·감사 영수증 PASS
+보안 발견사항 관문 PASS
+최종 잠금·대장·최종 영수증 PASS
+미해결 Critical/High 0건
 ```
 
-OMAKER/OBUILDER/OTESTER/OAUDIT 상태명은 현재 reference implementation 호환 이름이며, 외부 제품 계약에서는 implementation plan, build, independent verification, independent audit 역할로 해석한다.
-
-## 11. 판정
-
-- `PASS`: 실행·증거·독립 검증 완료
-- `FAIL`: 검증 기준 위반 재현
-- `HOLD`: 승인·정책·실행 Gate 미충족
-- `BLOCKED`: 필수 환경 또는 의존성 부재
-- `NOT_RUN`: 아직 실행되지 않음
-- `INCONCLUSIVE`: 증거 상충 또는 재현 불가
-
-`NOT_RUN`, `HOLD`, `BLOCKED`, `INCONCLUSIVE`는 PASS로 승격할 수 없다.
-
-## 12. 실행 Gate
-
-다음이 모두 실제 증거로 확인되어야 한다.
-
-- Product Scope·Target Registry 계약 일치
-- Preflight PASS
-- JDK 17 compile PASS
-- JUnit 전체 PASS
-- A01~A20 예상 판정 일치
-- 한 Runner 내부 회귀 2회 동일
-- 전체 Runner 연속 2회 PASS
-- 두 실행 Source Lock·Snapshot·결정적 Evidence 동일
-- Independent Verifier/Audit Receipt PASS
-- Final Lock·Ledger·Final Receipt PASS
-- 두 실행 읽기 전용 재검증 PASS
-- Critical/High 미해결 0건
-
-현재는 독립 제품 설계·실행 환경 기준선까지 준비되었으며 실제 실행 Gate는 `HOLD`다.
+하나라도 미실행이거나 증적이 누락되면 관문은 `HOLD`다.
