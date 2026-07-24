@@ -125,7 +125,7 @@ public final class ReceiptLineageVerifier {
         if (!"ONSURE_ORUDA_HARNESS_COMMAND_MANIFEST_V1".equals(commandManifest.path("contract").asText())) {
             violations.add("ORUDA_COMMAND_MANIFEST_CONTRACT_MISMATCH");
         }
-        if (!"DENY_BY_DEFAULT".equals(commandManifest.path("network_policy").asText())) {
+        if (!"HOST_POLICY_NOT_ENFORCED".equals(commandManifest.path("network_policy").asText())) {
             violations.add("ORUDA_COMMAND_MANIFEST_NETWORK_POLICY_INVALID");
         }
         if (!targetRoot.toAbsolutePath().normalize().toString()
