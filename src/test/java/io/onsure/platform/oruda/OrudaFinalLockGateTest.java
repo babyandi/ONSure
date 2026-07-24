@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.onsure.assurance.Decision;
 import io.onsure.platform.OrudaTargetAdapter;
+import io.onsure.platform.SourceReferenceBinding;
 import io.onsure.platform.ValidationEngine;
 import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
@@ -104,7 +105,7 @@ class OrudaFinalLockGateTest {
                 "ORUDA Minimum Viable Fixture Set",
                 TargetType.AI_AGENTIC_PLATFORM,
                 TARGET_ROOT,
-                "f".repeat(40),
+                SourceReferenceBinding.treeReference(TARGET_ROOT),
                 OrudaTargetAdapter.ID,
                 "ONSURE_ORUDA_MVF_POLICY_V1",
                 "LOCAL_MVF_E2E");
