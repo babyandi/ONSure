@@ -88,11 +88,11 @@ class ONSureVerifyRunCliTest(unittest.TestCase):
         self.assertEqual(1, completed.returncode)
         self.assertEqual("BLOCK", result["decision"])
         self.assertTrue(result["loop"]["stable"])
-        self.assertEqual(3, result["loop"]["requested_iterations"])
+        self.assertEqual(3, result["loop"]["requested"])
         self.assertEqual(3, len(result["loop"]["iterations"]))
         self.assertEqual(
-            {item["result_hash"] for item in result["loop"]["iterations"]},
-            {result["loop"]["iterations"][0]["result_hash"]},
+            {item["projection_hash"] for item in result["loop"]["iterations"]},
+            {result["loop"]["iterations"][0]["projection_hash"]},
         )
 
 
