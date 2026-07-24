@@ -1,79 +1,141 @@
-# ONSURE Final Execution Environment v1
+# ONSURE 최종 실행 환경 v1
 
 ## 목적
 
-Issue #4 종료와 PR #2 Ready 판단에 필요한 JDK 17·Maven 로컬 실행 환경과 최종 실행 명령을 고정한다.
+Issue #4 종료와 개발 PR 준비 판단에 필요한 JDK 17·Maven 로컬 실행 환경과 최종 실행 명령을 고정한다.
 
-## Codespace
-
-PR #2의 `design/assurance-architecture-v1` 브랜치에서 Codespace를 생성한다.
-
-`.devcontainer/devcontainer.json`은 다음을 고정한다.
-
-- JDK 17 기반 Java Dev Container
-- Maven 설치
-- Gradle 미설치
-- Java Extension Pack
-- 생성 후 `scripts/prepare-assurance-environment.sh` 자동 실행
-
-환경 준비 성공 출력:
+## 필수 도구
 
 ```text
-ONSURE_ASSURANCE_ENVIRONMENT_READY commit=<sha> java=17 maven=<version>
-NEXT_COMMAND bash scripts/execute-issue-4-final-gate.sh
+Git
+Bash
+JDK 17
+javac 17
+Maven
+sha256sum
+cmp
+Python 3
 ```
 
-## Clean worktree
+실행 전 모든 도구의 경로와 버전을 기록한다.
 
-JDK 17·Maven·Git·sha256sum·cmp가 설치된 Linux clean worktree에서도 동일하게 실행할 수 있다.
+## 작업공간 조건
+
+- 승인된 ONSURE 저장소
+- 실행 대상 커밋 SHA 고정
+- 추적 파일 변경 없음
+- 필수 계약·시험 데이터·오라클 존재
+- 저장소 내부 임시 비밀정보 없음
+- 이전 실행 산출물과 새 실행 산출물 분리
+
+확인 명령:
+
+```bash
+git status --short
+git rev-parse HEAD
+java -version
+javac -version
+mvn -version
+python3 --version
+```
+
+## 권장 실행 환경
+
+### Codespace 또는 개발 컨테이너
 
 ```bash
 bash scripts/prepare-assurance-environment.sh
 ```
 
-## 최종 실행
+### VS Code 로컬 환경
+
+저장소 루트에서 JDK 17과 Maven이 같은 Java 실행 환경을 사용하도록 설정한다.
 
 ```bash
+export JAVA_HOME=<JDK17_PATH>
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Windows PowerShell에서는 대응하는 환경 변수 설정을 사용한다.
+
+## 실행 전 점검
+
+```bash
+bash scripts/preflight-local-assurance.sh
+bash scripts/preflight-universal-harness.sh
+```
+
+점검 항목:
+
+- JDK·Maven·Git·Bash 사용 가능
+- 추적 파일 변경 없음
+- 제품 범위·대상 등록소·상태 모델 계약
+- 시험 데이터·오라클·검증 축
+- 영수증·소스 잠금·보안 발견사항 계약
+- 실행 명령 허용 목록
+
+## 정식 실행 순서
+
+```bash
+mvn -B -ntp test
+bash scripts/run-product-platform-e2e.sh
+bash scripts/run-universal-harness-twice.sh \
+  operator-independent-1 operator-independent-2 local-jdk17
+bash scripts/run-local-assurance-twice.sh
 bash scripts/execute-issue-4-final-gate.sh
+bash scripts/run-onsure-development-gate.sh
 ```
 
-이 명령은 다음을 수행한다.
+## 성공 표식
 
 ```text
-환경·commit·clean worktree 확인
--> 전체 Runner 연속 2회
--> 각 실행 현재 Source 기준 재검증
--> 후속 Ledger append 후 Run 1 per-run 재검증
--> 두 실행 Summary 생성
--> 최종 실행 Evidence Manifest 생성
+ONSURE_PRODUCT_PLATFORM_E2E_PASS
+ONSURE_UNIVERSAL_TWO_RUN_PASS
+LOCAL_ASSURANCE_TWICE_PASS
+ISSUE4_FINAL_GATE_EVIDENCE_READY
+ONSURE_DEVELOPMENT_GATE_PASS
 ```
 
-성공 출력:
+표식만으로 통과하지 않는다. 종료 코드, 영수증, 증적 SHA-256, 읽기 전용 재검증 결과가 필요하다.
+
+## 실패 처리
 
 ```text
-ISSUE4_FINAL_GATE_EVIDENCE_READY <evidence-dir> <run-root-1> <run-root-2>
+실패 명령·출력·종료 코드 보존
+→ 근본원인분석
+→ 수정
+→ 집중 재시험
+→ 전체 회귀검증 2회
+→ 독립 검증·감사
+→ 전체 관문 재실행
 ```
 
-최종 증거 폴더:
+환경 누락은 결함 통과가 아니라 `BLOCKED` 또는 `NOT_RUN`이다.
+
+## 결과 위치
+
+실행별 증적은 고유 실행 디렉터리에 저장한다.
 
 ```text
-receipts/local/final-gate-<timestamp>-<pid>/
-├─ whole-run-twice.log
-├─ run-1-summary.md
-├─ run-2-summary.md
-├─ final-gate-result.txt
-└─ evidence.sha256
+receipts/local/<run-directory>/
 ```
 
-## 종료 판단
+보존 대상:
 
-다음이 모두 확인된 경우에만 Issue #4 종료와 PR #2 Ready·병합 판단을 수행한다.
+- 실행 문맥
+- 소스 잠금
+- 시험·회귀검증 출력
+- 독립 검증·감사 영수증
+- 증적 SHA-256 목록
+- 최종 영수증
+- 실패 근본원인분석
 
-- `LOCAL_ASSURANCE_TWICE_PASS`
-- `ISSUE4_FINAL_GATE_EVIDENCE_READY`
-- 두 Summary의 Read-only verifier PASS
-- Security Finding Gate PASS
-- Critical/High 미해결 0건
-- Final Lock·Ledger·Final Receipt PASS
+## 현재 상태
 
-스크립트는 GitHub Issue 종료, PR Ready 전환 또는 병합을 자동 수행하지 않는다. 최종 증거를 독립 검토한 뒤 명시적으로 결정한다.
+```text
+실행 환경 문서     완료
+JDK17 확인         NOT_RUN
+Maven 확인         NOT_RUN
+공식 실행          NOT_RUN
+개발 관문          HOLD
+```
