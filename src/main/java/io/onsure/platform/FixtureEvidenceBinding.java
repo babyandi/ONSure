@@ -69,6 +69,16 @@ final class FixtureEvidenceBinding {
         } else if (!outputDigest.equals(Hashing.sha256(result.observed()))) {
             violations.add("FIXTURE_OUTPUT_SHA_MISMATCH:" + fixtureId);
         }
+        String expectedEvidenceId = "EV-FIXTURE-" + evidence.sha256().substring(0, 16);
+        if (!expectedEvidenceId.equals(evidence.evidenceId())) {
+            violations.add("FIXTURE_EVIDENCE_ID_MISMATCH:" + fixtureId);
+        }
+        if (integer(attributes.get("timeout_seconds")) < 1) {
+            violations.add("FIXTURE_TIMEOUT_INVALID:" + fixtureId);
+        }
+        if (!text(attributes.get("environment_sha256")).matches("[0-9a-f]{64}")) {
+            violations.add("FIXTURE_ENVIRONMENT_SHA_INVALID:" + fixtureId);
+        }
         String recalculated = digest(evidence.source(), attributes);
         if (!evidence.sha256().equals(recalculated)) {
             violations.add("FIXTURE_EVIDENCE_DIGEST_MISMATCH:" + fixtureId);
@@ -84,6 +94,8 @@ final class FixtureEvidenceBinding {
                         + "|" + Boolean.TRUE.equals(attributes.get("command_executed"))
                         + "|" + integer(attributes.get("exit_code"))
                         + "|" + Boolean.TRUE.equals(attributes.get("timed_out"))
+                        + "|" + integer(attributes.get("timeout_seconds"))
+                        + "|" + text(attributes.get("environment_sha256"))
                         + "|" + text(attributes.get("output_sha256"))
                         + "|" + String.join("\u0000", stringList(attributes.get("command"))));
     }
@@ -99,5 +111,13 @@ final class FixtureEvidenceBinding {
     private static List<String> stringList(Object value) {
         if (!(value instanceof List<?> values)) return List.of();
         return values.stream().map(String::valueOf).toList();
+    }
+
+    static String environmentDigest(Map<String, String> environment) {
+        String canonical = environment.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .reduce("", (left, right) -> left + "\u0000" + right);
+        return Hashing.sha256(canonical);
     }
 }

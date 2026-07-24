@@ -65,6 +65,10 @@ public final class BuiltInStages {
         public StageResult execute(ValidationContext context) throws Exception {
             Instant start = Instant.now();
             String digest = Hashing.tree(context.target().sourceRoot());
+            SourceReferenceBinding.Verification sourceReference = SourceReferenceBinding.verify(
+                    context.target().sourceRoot(),
+                    context.target().immutableSourceReference(),
+                    digest);
             long fileCount;
             try (var stream = Files.walk(context.target().sourceRoot())) {
                 fileCount = stream.filter(Files::isRegularFile).count();
@@ -73,8 +77,12 @@ public final class BuiltInStages {
                     "EV-SOURCE-" + digest.substring(0, 16), "SOURCE_TREE",
                     context.target().sourceRoot().toString(), digest, Instant.now(),
                     Map.of("file_count", fileCount,
-                            "immutable_reference", context.target().immutableSourceReference())));
+                            "immutable_reference", context.target().immutableSourceReference(),
+                            "immutable_reference_mode", sourceReference.mode(),
+                            "immutable_reference_verified", true)));
             context.putAttribute("source_tree_sha256", digest);
+            context.putAttribute("immutable_source_verified", true);
+            context.putAttribute("immutable_source_reference_mode", sourceReference.mode());
             return result(stageId(), Decision.PASS, start, context, 0,
                     Map.of("files", fileCount));
         }
@@ -198,17 +206,20 @@ public final class BuiltInStages {
                 if (execution.commandExecuted()) executedCommands++;
                 if (execution.timedOut()) timeouts++;
 
-                Map<String, Object> evidenceAttributes = Map.of(
-                        "expected", fixture.expected(),
-                        "observed", fixtureResult.observed(),
-                        "oracle", fixture.oracleId(),
-                        "harness", harness.harnessId(),
-                        "command_executed", execution.commandExecuted(),
-                        "command", execution.command(),
-                        "exit_code", execution.exitCode(),
-                        "timed_out", execution.timedOut(),
-                        "duration_ms", execution.durationMillis(),
-                        "output_sha256", execution.outputSha256());
+                Map<String, Object> evidenceAttributes = Map.ofEntries(
+                        Map.entry("expected", fixture.expected()),
+                        Map.entry("observed", fixtureResult.observed()),
+                        Map.entry("oracle", fixture.oracleId()),
+                        Map.entry("harness", harness.harnessId()),
+                        Map.entry("command_executed", execution.commandExecuted()),
+                        Map.entry("command", execution.command()),
+                        Map.entry("exit_code", execution.exitCode()),
+                        Map.entry("timed_out", execution.timedOut()),
+                        Map.entry("timeout_seconds", fixture.timeoutSeconds()),
+                        Map.entry("environment_sha256",
+                                FixtureEvidenceBinding.environmentDigest(fixture.environment())),
+                        Map.entry("duration_ms", execution.durationMillis()),
+                        Map.entry("output_sha256", execution.outputSha256()));
                 String digest = FixtureEvidenceBinding.digest(fixture.fixtureId(), evidenceAttributes);
                 String evidenceId = "EV-FIXTURE-" + digest.substring(0, 16);
                 context.addEvidence(new Evidence(evidenceId, "FIXTURE_EXECUTION", fixture.fixtureId(), digest,

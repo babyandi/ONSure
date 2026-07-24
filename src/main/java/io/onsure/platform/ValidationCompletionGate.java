@@ -55,6 +55,9 @@ public final class ValidationCompletionGate {
             reasons.add("REQUIRED_STAGE_MISSING:AI_BEHAVIOR_VALIDATION");
         }
         reasons.addAll(runtimeCoverageReasons(context));
+        if (!Boolean.TRUE.equals(context.attributes().get("immutable_source_verified"))) {
+            reasons.add("IMMUTABLE_SOURCE_REFERENCE_UNVERIFIED");
+        }
         return new Evaluation(reasons.isEmpty(), reasons);
     }
 
