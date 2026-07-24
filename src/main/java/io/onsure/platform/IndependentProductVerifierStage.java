@@ -18,6 +18,7 @@ public final class IndependentProductVerifierStage implements ValidatorStage {
     @Override
     public StageResult execute(ValidationContext context) throws Exception {
         Instant start = Instant.now();
+        ValidationCompletionGate.requireRuntimeCoverage(context, "INDEPENDENT_VERIFIER");
         if (context.regressionLock() == null) throw new IllegalStateException("REGRESSION_LOCK_MISSING");
         String sourceDigest = Hashing.tree(context.target().sourceRoot());
         if (!sourceDigest.equals(context.regressionLock().sourceDigest())) {
