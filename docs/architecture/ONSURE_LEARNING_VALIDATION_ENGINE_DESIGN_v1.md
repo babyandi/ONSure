@@ -1,51 +1,83 @@
-# ONSURE Learning and Validation Engine Design v1
+# ONSURE 학습·검증 엔진 설계 v1
 
 ## 1. 결론
 
-ONSURE에는 학습기와 검증기를 모두 포함한다. 그러나 두 엔진은 같은 판정 로직으로 섞지 않는다.
+ONSURE에는 학습 엔진과 검증 엔진을 모두 포함한다. 그러나 두 엔진은 같은 판정 로직이나 동일 권한으로 섞지 않는다.
 
 ```text
-ONSURE Product
-  -> Learning Engine
-  -> Validator Engine
-  -> Executor Engine
-  -> Evidence / Receipt Engine
-  -> Governance Gate
+학습 엔진   실패·근본원인·운영 이력에서 개선 후보 생성
+검증 엔진   후보를 독립 재계산하여 PASS / FAIL / HOLD 판정
+실행 엔진   작업 대장을 소비하고 실제 하네스를 실행
+통제 엔진   승격·적용·롤백·승인 분리를 관리
 ```
 
-제품은 하나이고 엔진은 분리한다.
+핵심 원칙은 다음과 같다.
 
-## 2. 책임 분리
+- 학습 엔진은 후보를 만들 수 있지만 관문을 열 수 없다.
+- 검증 엔진은 학습 엔진의 출력이나 자체 주장만 신뢰하지 않는다.
+- 비공개·골든 데이터는 학습 데이터와 분리한다.
+- 승격에는 독립 검증 영수증과 승인 분리가 필요하다.
+- 실행 결과와 정책·데이터셋·모델·프롬프트·도구 버전을 하나의 증적 체인에 결속한다.
 
-| 엔진 | 책임 | 금지 |
-|---|---|---|
-| Learning Engine | 실패 분석, 개선 후보, Fixture 후보, Rubric 후보 생성 | PASS 결정, Gate 개방, Hidden 정답 접근 |
-| Validator Engine | 검증 실행, PASS/FAIL/HOLD 판정, False Pass/Fail 측정 | 학습 후보를 무검증 승격 |
-| Executor Engine | Queue 소비, 상태 전이, Harness 실행, Receipt 생성 | 검증 결과 임의 수정 |
-| Evidence Engine | Receipt chain, trace, sha, replay snapshot | 증거 없는 결론 생성 |
-| Governance Engine | Promotion/Rollback, 권한 분리, 승인 Gate | learner self-approval |
+## 2. 학습 엔진
 
-## 3. 데이터 분리
+### 2.1 입력
 
-| 데이터 | 용도 | 접근 |
-|---|---|---|
-| Training Set | 학습 후보 생성 | Learning Engine 허용 |
-| Validation Set | 후보 1차 평가 | Validator Engine 허용 |
-| Hidden Test Set | 오염 방지 평가 | 제한 접근 |
-| Golden Set | 기준 회귀 평가 | 봉인/버전관리 |
-| Regression Set | 재발 방지 | Validator/Executor 허용 |
-| Incident Replay Set | 사고 재현 | 승인된 재검증에서만 사용 |
+- 실패 검증 영수증
+- 근본원인분석 결과
+- 실패 유형 등록소
+- 회귀검증 결과
+- 운영 사고·변화 감지 신호
+- 사용자 승인된 개선 이력
 
-필수 규칙:
+### 2.2 허용 출력
 
-- Training/Validation/Hidden/Golden overlap 금지
-- Dataset byte SHA-256 봉인
-- Hidden answer key는 Learning Engine이 직접 읽을 수 없음
-- Dataset 변경은 Rubric/Policy 변경 Receipt와 함께 승인 필요
+- 실패 유형 후보
+- 시험 데이터 후보
+- 하네스 후보
+- 판정 오라클 후보
+- 평가 기준 후보
+- 개선 패턴 후보
+- 정책 규칙 후보
+- 변화 감지 후보
 
-## 4. Executor Queue Contract
+### 2.3 금지 행위
 
-상태:
+- `PASS` 또는 최종 판정 작성
+- 승격 관문 개방
+- 비공개 정답 접근
+- 평가 기준의 무승인 변경
+- 자기 결과의 자기 승인
+- 대상 프로그램에 대한 무승인 자동 반영
+- 실험 후보를 안정 적용으로 계산
+
+## 3. 검증 엔진
+
+검증 엔진은 후보를 소스 증적에서 다시 만들거나 독립 재계산한 뒤 판정한다.
+
+필수 검증:
+
+- 정상 시험 통과
+- 음성·적대 시험 차단
+- 골든 회귀검증 통과
+- 비공개 최소 시험 통과
+- `Critical` 관문의 거짓 통과 0건
+- `Critical` 관문의 거짓 실패 0건
+- 동일 조건 2회 결정성
+- 독립 영수증 재검증
+- 정책·데이터셋·도구·모델·프롬프트 버전 결속
+
+검증 엔진이 금지하는 행위:
+
+- 학습 후보의 `PASS` 주장 신뢰
+- 원본 증적 재계산 없는 판정
+- 미실행 항목의 `PASS` 처리
+- 실패 항목 제외 후 부분 통과
+- 검증 영수증 없는 승격
+
+## 4. 실행 엔진
+
+### 4.1 상태
 
 ```text
 READY
@@ -55,130 +87,125 @@ RETRY
 HOLD
 CANCELLED
 EXPIRED
+APPLY_PENDING
+POST_APPLY_VERIFY
+APPLIED_LOCKED
 ```
 
-필수 필드:
+### 4.2 필수 통제
 
-```json
-{
-  "queue_item_id": "string",
-  "target_id": "string",
-  "job_type": "VALIDATION | LEARNING | REGRESSION | REPLAY | PROMOTION_CHECK",
-  "state": "READY",
-  "priority": 0,
-  "lease_id": null,
-  "idempotency_key": "sha256",
-  "attempt_count": 0,
-  "max_retry": 2,
-  "required_policy_version": "string",
-  "required_dataset_versions": [],
-  "created_at": "iso8601",
-  "expires_at": "iso8601"
-}
-```
+- 작업 임대
+- 멱등 키
+- 중복 소비 차단
+- 체크포인트 재개
+- 재시도 횟수 제한
+- 재시도 전 근본원인 기록
+- 도구 누락 시 차단
+- 부분 증적 시 차단
+- 상태 전이 영수증
 
-전이마다 transition receipt가 필요하다.
+## 5. 데이터셋 분리
 
-## 5. Validation Loop
+데이터셋 등록소는 최소한 다음 구분을 유지한다.
+
+| 구분 | 목적 | 학습 엔진 접근 |
+|---|---|---:|
+| 학습 세트 | 후보 생성 | 허용 |
+| 검증 세트 | 일반 성능 검증 | 제한 |
+| 골든 세트 | 기준 회귀검증 | 읽기 제한 |
+| 비공개 세트 | 일반화·오염 검증 | 금지 |
+| 회귀 세트 | 과거 실패 재발 검증 | 제한 |
+
+필수 규칙:
+
+- 학습·검증·골든·비공개 세트의 바이트 SHA-256 기록
+- 데이터셋 변경 영수증
+- 비공개 정답 접근 통제
+- 세트 간 중복·오염 검사
+- 검증 결과에 데이터셋 버전 결속
+
+## 6. 평가 기준 등록소
+
+평가 기준은 다음 정보를 가진다.
+
+- 평가 기준 ID·버전
+- 적용 범위
+- 판정 상한
+- 양성·음성 사례
+- 허용 오차
+- 변경 차이
+- 검토자·승인자
+- 승인 영수증
+- 롤백 버전
+
+학습 엔진은 평가 기준 후보를 만들 수 있지만 활성 기준을 직접 수정할 수 없다.
+
+## 7. 승격 단계
 
 ```text
-Queue READY
-  -> lease acquire
-  -> RUNNING receipt
-  -> fixture materialization
-  -> harness execution
-  -> oracle evaluation
-  -> validator decision
-  -> independent receipt check
-  -> DONE / RETRY / HOLD
+CANDIDATE
+→ SHADOW
+→ CANARY
+→ STABLE
+→ LOCKED
 ```
 
-PASS 조건:
+각 단계는 다음을 요구한다.
 
-- positive cases pass
-- negative cases fail
-- mutation/adversarial cases blocked
-- false pass count = 0 for MVP critical gate
-- false fail count = 0 for MVP critical gate
-- same-condition 2x deterministic where required
-- all required evidence present
+- 검증 영수증
+- 승인 범위
+- 적용 대상과 버전
+- 적용 후 검증
+- 롤백 포인터
+- 활성 선택자 확인
 
-## 6. Learning Feedback Loop
+## 8. 거짓 통과·거짓 실패·비결정성
+
+검증 엔진은 단순 정확도보다 다음 세 지표를 우선 관리한다.
+
+- 거짓 통과: 실패해야 할 대상을 통과시킨 비율
+- 거짓 실패: 통과해야 할 대상을 차단한 비율
+- 비결정성: 동일 조건에서 결과가 달라지는 비율
+
+`Critical` 관문은 거짓 통과를 허용하지 않는다. 비결정성이 발견되면 결과는 `HOLD`이며 원인 영수증이 필요하다.
+
+## 9. MVP 범위
+
+MVP에서 구현할 항목:
+
+- 작업 대장과 실행기 반복 처리
+- 기본 하네스 실행기
+- 최소 검증 엔진
+- 검증 영수증·증적 체인
+- 최소 데이터셋 등록소
+- 최소 정책 코드화
+- 최소 골든·비공개 시험
+- `PASS`·`FAIL`·`HOLD` 관문
+- 추적 스냅샷
+- 학습 후보에서 실제 적용까지의 최소 파이프라인
+- 첫 `APPLIED_LOCKED` 적용 사례
+
+MVP 이후 항목:
+
+- 학습 완전 자동화
+- 고급 카나리·롤백
+- 적대 시험 자동 생성
+- 전체 현황판
+- 기업 승인 작업 흐름
+- ORUDA 전용 어댑터 고도화
+
+## 10. 완료 조건
+
+학습 기능이 구현되었다고 주장하려면 최소한 다음이 필요하다.
 
 ```text
-FAIL/HOLD Receipt
-  -> RCA candidate
-  -> Failure Mode clustering
-  -> Fixture/Oracle candidate
-  -> Rubric candidate
-  -> Validation Request
-  -> Validator Engine 재검증
+학습 후보 생성
+→ 독립 검증 2회
+→ 승격 승인
+→ 적용 커밋 또는 안정 등록소 활성화
+→ 적용 후 검증
+→ 롤백 포인터
+→ APPLIED_LOCKED 영수증
 ```
 
-Learning Output은 항상 CANDIDATE다. Stable 기준으로 승격하려면 Promotion Gate를 통과해야 한다.
-
-## 7. Hardening Backlog 반영
-
-| ID | ONSURE 설계 반영 |
-|---|---|
-| HV-001 | durable Queue Ledger |
-| HV-002 | state transition Executor |
-| HV-003 | independent verifier/audit receipt |
-| HV-004 | same-condition 2x reproducibility |
-| HV-005 | false pass/false fail/nondeterminism calibration |
-| HV-006 | Dataset Registry byte seal |
-| HV-007 | source authority and license receipt |
-| HV-008 | candidate/shadow/canary/stable/locked promotion |
-| HV-009 | rollback and last-known-good evidence |
-| HV-010 | lane metrics and stale queue alert |
-| HV-011 | prompt injection/reference poisoning fixtures |
-| HV-012 | model/prompt/tool/validator version snapshot |
-| HV-013 | budget, loop, backpressure |
-| HV-014 | reviewer/approver identity separation |
-| HV-015 | queue lease and idempotency |
-| HV-016 | tamper-evident receipt chain |
-| HV-017 | rubric version and approval |
-| HV-018 | retention, redaction, deletion tombstone |
-| HV-019 | missing tool/partial evidence fail-closed |
-| HV-020 | stale queue and expired evidence detection |
-
-## 8. MVP 판정
-## 8. 학습 후보 적용 파이프라인
-
-학습 후보가 실제 ONSURE 기준으로 적용되려면 다음 경로를 통과해야 한다.
-
-```text
-LEARNING_CANDIDATE
-  -> VALIDATION_REQUESTED
-  -> VALIDATION_PASSED
-  -> PROMOTION_APPROVED
-  -> STABLE_APPLIED
-  -> APPLIED_LOCKED
-```
-
-적용 완료는 PASS와 다르다. PASS는 검증 결과이고, 적용은 ONSURE의 실제 검증팩, 정책, 코드, 또는 Stable Registry selector가 해당 산출물을 참조하는 상태다.
-
-필수 조건:
-
-| 조건 | 설명 |
-|---|---|
-| Validation PASS Receipt | Validator가 독립 재계산 |
-| Promotion Receipt | reviewer/approver 분리 |
-| Apply Commit 또는 Registry Version | 실제 활성 기준 변경 |
-| Post-Apply Verification | 적용 후 회귀 검증 |
-| Rollback Pointer | 이전 안정 기준으로 복귀 가능 |
-| Applied Lock Receipt | 적용 건수 증가의 유일 근거 |
-
-따라서 현재 적용 0건은 후보 부족이 아니라 이 파이프라인 미실행 상태를 의미한다.
-
-
-MVP는 완전 자동학습 제품이 아니다. MVP의 목표는 다음이다.
-
-```text
-Queue를 읽는다
-Executor가 실제 실행한다
-Harness가 검증을 돌린다
-Receipt를 남긴다
-PASS / FAIL / HOLD를 판단한다
-Golden/Hidden 최소 세트로 오염을 막는다
-```
+후보만 존재하거나 열린 PR만 존재하는 경우에는 적용 건수로 계산하지 않는다.
