@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.onsure.assurance.Decision;
 import io.onsure.platform.OrudaTargetAdapter;
+import io.onsure.platform.SourceReferenceBinding;
 import io.onsure.platform.ValidationEngine;
 import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
@@ -66,7 +67,7 @@ class OrudaMvf001E2ETest {
                 "ORUDA Minimum Viable Fixture Set",
                 TargetType.AI_AGENTIC_PLATFORM,
                 ROOT,
-                "f".repeat(40),
+                SourceReferenceBinding.treeReference(ROOT),
                 OrudaTargetAdapter.ID,
                 "ONSURE_ORUDA_MVF_POLICY_V1",
                 "LOCAL_MVF_E2E");
