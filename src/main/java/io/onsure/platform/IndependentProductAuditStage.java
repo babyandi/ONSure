@@ -19,6 +19,7 @@ public final class IndependentProductAuditStage implements ValidatorStage {
     @Override
     public StageResult execute(ValidationContext context) throws Exception {
         Instant start = Instant.now();
+        ValidationCompletionGate.requireRuntimeCoverage(context, "INDEPENDENT_AUDIT");
         Set<String> evidenceIds = new HashSet<>();
         for (Evidence evidence : context.evidence()) {
             if (!evidenceIds.add(evidence.evidenceId())) {
