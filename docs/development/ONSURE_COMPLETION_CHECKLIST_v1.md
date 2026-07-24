@@ -1,43 +1,64 @@
-# ONSURE Requested Scope Completion Checklist v1
+# ONSURE 요청 범위 완료 점검표 v1
 
 ## 구현 완료
 
-- [x] ONSURE Product Core
-- [x] Generic Validator Engine
-- [x] General Program baseline/fixed E2E definitions
-- [x] AI Program adversarial E2E definitions
-- [x] Failure Mode Registry persistence
-- [x] RCA persistence and Finding/Evidence linkage
-- [x] Fixture Registry and Process Harness
-- [x] Oracle Registry and judgement
-- [x] Regression Lock persistence
-- [x] Remediation Plan and approval classification
-- [x] Revalidation Delta
-- [x] Independent Product Verifier
-- [x] Independent Product Audit
-- [x] ORUDA external Target Adapter
-- [x] ORUDA execution package catalog
-- [x] ORUDA MVF-001 17-fixture package
-- [x] ORUDA Evidence/Execution Registry
-- [x] ORUDA Receipt lineage and candidate/final gates
-- [x] Product E2E twice runner
-- [x] ONSURE development gate runner
-- [x] Authoritative implementation path contract
+- [x] ONSURE 제품 핵심부
+- [x] 범용 검증 엔진
+- [x] 검증 대상 등록소와 대상 어댑터
+- [x] 일반 프로그램 종단간 시험 대상
+- [x] AI 프로그램 종단간 시험 대상
+- [x] ORUDA 외부 대상 어댑터
+- [x] 실패 유형·근본원인분석·개선 계획
+- [x] 시험 데이터·하네스·오라클 등록 구조
+- [x] 회귀 잠금과 재검증 비교
+- [x] 독립 검증·감사 영수증 구조
+- [x] 범용 검증 축 30개
+- [x] 시험 데이터 유형 7개
+- [x] 실행 전 점검과 개발 관문
+- [x] 학습 엔진·검증 엔진 분리 설계
+- [x] 학습 후보 실제 적용 파이프라인 설계
 
-## 실제 실행 대기
+## 정적 통합 완료
 
-- [ ] JDK 17 Preflight
-- [ ] Maven compile/JUnit
-- [ ] Product Platform E2E two identical runs
-- [ ] ONSURE self-assurance two complete runs
-- [ ] Development Gate Lock generation
-- [ ] Critical/High unresolved zero confirmation
-- [ ] PR Ready and merge decision
+- [x] 제품 핵심부와 범용 하네스의 단일 기준선 결속
+- [x] 실행 명령 허용 목록과 경로 이탈 차단
+- [x] 시간 제한·출력 제한·종료 코드 증적
+- [x] 영수증·증적 SHA-256 목록
+- [x] 실패 시 `RCA_PENDING`
+- [x] 독립 회귀검증 2회 관문
+- [x] 서로 다른 운영자의 독립 실행 2회 조건
+- [x] `NOT_RUN`·`BLOCKED` 최종 후보 차단
+- [x] 자동 최종 잠금 금지
 
-## 공식 명령
+## 실제 실행 필요
 
-```bash
-bash scripts/run-onsure-development-gate.sh
+- [ ] JDK 17 확인
+- [ ] Maven 확인
+- [ ] `mvn -B -ntp test`
+- [ ] 제품 플랫폼 종단간 시험 2회
+- [ ] 범용 하네스 독립 실행 2회
+- [ ] ONSURE 자체 보증 2회
+- [ ] 실패 발생 시 근본원인분석·수정·전체 회귀검증
+- [ ] 개발 관문 `PASS`
+- [ ] 증적 SHA-256 읽기 전용 재검증
+
+## 최종 후보 조건
+
+- [ ] `NOT_RUN=0`
+- [ ] `BLOCKED=0`
+- [ ] 미해결 `Critical/Major=0`
+- [ ] 독립 실행 운영자 분리
+- [ ] 동일 환경·소스·정책·시험 데이터·오라클
+- [ ] 정규화 결과 해시 동일
+- [ ] 필요한 근본원인분석과 회귀검증 완료
+
+## 최종 잠금
+
+최종 후보 조건을 충족해도 최종 잠금은 자동 허용하지 않는다. 별도 승인·독립 감사·최종 영수증 검증이 필요하다.
+
+```text
+현재 개발 상태      IMPLEMENTED_NOT_RUN
+개발 관문           HOLD
+최종 후보           BLOCKED
+최종 잠금           NOT_ALLOWED
 ```
-
-실제 성공 출력 없이 실행 항목을 완료 처리하지 않는다.
