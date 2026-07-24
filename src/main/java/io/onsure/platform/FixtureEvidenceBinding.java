@@ -66,6 +66,8 @@ final class FixtureEvidenceBinding {
         String outputDigest = text(attributes.get("output_sha256"));
         if (!outputDigest.matches("[0-9a-f]{64}")) {
             violations.add("FIXTURE_OUTPUT_SHA_INVALID:" + fixtureId);
+        } else if (!outputDigest.equals(Hashing.sha256(result.observed()))) {
+            violations.add("FIXTURE_OUTPUT_SHA_MISMATCH:" + fixtureId);
         }
         String recalculated = digest(evidence.source(), attributes);
         if (!evidence.sha256().equals(recalculated)) {
@@ -77,8 +79,12 @@ final class FixtureEvidenceBinding {
         return Hashing.sha256(
                 fixtureId + "|" + text(attributes.get("expected"))
                         + "|" + text(attributes.get("observed"))
+                        + "|" + text(attributes.get("oracle"))
+                        + "|" + text(attributes.get("harness"))
+                        + "|" + Boolean.TRUE.equals(attributes.get("command_executed"))
                         + "|" + integer(attributes.get("exit_code"))
                         + "|" + Boolean.TRUE.equals(attributes.get("timed_out"))
+                        + "|" + text(attributes.get("output_sha256"))
                         + "|" + String.join("\u0000", stringList(attributes.get("command"))));
     }
 
