@@ -108,6 +108,7 @@ public final class ValidationEngine {
     }
 
     private static ValidationReport createReport(ValidationContext context, Decision decision, Instant generatedAt) {
+        ValidationCompletionGate.Evaluation completion = ValidationCompletionGate.evaluate(context);
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("open_critical", count(context.findings(), Severity.CRITICAL));
         summary.put("open_high", count(context.findings(), Severity.HIGH));
@@ -126,6 +127,9 @@ public final class ValidationEngine {
         summary.put("adapter_id", context.adapter().adapterId());
         summary.put("independent_verifier", stageDecision(context, "INDEPENDENT_PRODUCT_VERIFIER"));
         summary.put("independent_audit", stageDecision(context, "INDEPENDENT_PRODUCT_AUDIT"));
+        summary.put("completion_gate_contract", ValidationCompletionGate.CONTRACT);
+        summary.put("completion_gate_eligible", completion.eligible());
+        summary.put("completion_gate_reasons", completion.reasons());
         return new ValidationReport(
                 REPORT_CONTRACT,
                 "REPORT-" + context.job().jobId(),
@@ -151,6 +155,7 @@ public final class ValidationEngine {
 
     private static Decision finalDecision(ValidationContext context, Exception executionFailure) {
         if (executionFailure != null) return Decision.FAIL;
+        if (!ValidationCompletionGate.evaluate(context).eligible()) return Decision.FAIL;
         if (context.stageResults().stream().anyMatch(value -> value.decision() == Decision.FAIL)) {
             return Decision.FAIL;
         }
