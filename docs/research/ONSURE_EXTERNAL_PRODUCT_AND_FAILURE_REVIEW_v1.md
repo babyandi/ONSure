@@ -1,53 +1,134 @@
-# ONSURE External Product and Failure Review v1
+# ONSURE 외부 제품·실패 사례 검토 v1
 
 ## 1. 검토 결론
 
-ONSURE과 1:1로 같은 제품은 없다. ONSURE은 여러 제품군의 기능을 묶되, 단순 관측이나 테스트 도구가 아니라 독립 검증·증적·승격 통제 프로그램으로 설계해야 한다.
+ONSURE과 기능·권한·증적 구조가 완전히 같은 단일 제품은 없다. ONSURE은 여러 제품군의 기능을 결합하되, 단순 관측이나 시험 자동화 도구가 아니라 독립 검증·증적·승격 통제 프로그램으로 설계해야 한다.
 
-| 영역 | 유사 제품군 | ONSURE 반영 |
-|---|---|---|
-| LLM observability | LangSmith, Arize Phoenix | trace-first, dataset/eval linkage |
-| LLM eval/red-team | promptfoo, Giskard | fixture, adversarial, regression |
-| Guardrail | Guardrails AI | policy-as-code, output constraint |
-| ML lifecycle | MLflow Model Registry | version, lineage, promotion |
-| Drift monitoring | Evidently | drift and stale evidence detection |
-| code/security validation | SonarQube, Snyk | static/security/supply-chain gate |
+## 2. 참고 제품군
 
-## 2. 실패사례 반영
+| 제품군 | 강점 | ONSURE 반영점 | 그대로 따르지 않을 점 |
+|---|---|---|---|
+| 정적 분석·보안 검사 | 코드 취약점·품질 규칙 | 정적 검증선·보안 발견사항 | 코드 검사만으로 최종 판정하지 않음 |
+| 시험 자동화 | 반복 실행·회귀검증 | 시험 데이터·하네스·오라클 | 성공 종료 코드를 전체 품질로 해석하지 않음 |
+| 관찰·추적 | 로그·지표·추적 수집 | 실행 증적·사고 재현 | 관측값을 검증 판정으로 대체하지 않음 |
+| AI 평가 | 프롬프트·응답·도구 호출 평가 | AI 동작 검증·적대 시험 | 모델 자기평가를 최종 판정으로 사용하지 않음 |
+| 공급망·SBOM | 의존성·라이선스·취약점 | 공급망 검증·잠금 | 목록 존재만으로 안전을 주장하지 않음 |
+| 정책 코드화 | 규칙 기반 차단 | 정책 등록소·관문 | 정책 작성자와 승인자의 자기 승인을 허용하지 않음 |
+| 빌드·배포 관문 | 승격·배포 제어 | 승격·적용·롤백 | 검증 영수증 없는 자동 승격 금지 |
 
-| 사례 | 실패 원인 | ONSURE 설계 반영 |
-|---|---|---|
-| Air Canada chatbot | 잘못된 AI 안내도 회사 책임으로 이어짐 | 정책 원문 검증, 책임 Receipt, human escalation |
-| Microsoft Tay | 공개 입력에 의한 오염과 악의적 유도 | 학습 피드백 격리, 적대 Harness |
-| Zillow Offers | 예측 모델과 운영 리스크 관리 실패 | Drift, Shadow/Canary, Rollback |
-| Amazon recruiting AI | 과거 데이터 편향 학습 | bias fixture, dataset 분포 검증 |
-| Mata v. Avianca | 존재하지 않는 판례 인용 | source existence validation, citation receipt |
+## 3. 반복적으로 발생하는 실패 유형
 
-## 3. ONSURE 아키텍처 요구사항
+### 3.1 실행 성공을 품질 통과로 오해
 
-외부 검토 결과 ONSURE 설계에 반드시 들어가야 하는 항목:
+프로그램이 실행되거나 종료 코드가 0이라는 사실은 요구사항·보안·복구·운영 품질을 보장하지 않는다.
 
-1. Trace-first execution
-2. Dataset Registry
-3. Policy-as-Code
-4. Model/Prompt/Tool Registry
-5. Incident Replay
-6. Golden/Hidden set separation
-7. adversarial and negative fixture harness
-8. false pass / false fail calibration
-9. Promotion/Rollback Gate
-10. tamper-evident receipt chain
+ONSURE 반영:
 
-## 4. 설계 판단
+- 실행 결과와 오라클 판정 분리
+- 필수 검증 축 미실행 시 `NOT_RUN`
+- 실패 항목 제외 후 부분 통과 금지
 
-ONSURE은 다음 포지션으로 잡는다.
+### 3.2 대상 제품의 자기 판정 신뢰
+
+대상 프로그램이 만든 `PASS`·감사 결과·품질 점수를 독립 재계산 없이 신뢰하면 거짓 통과가 발생한다.
+
+ONSURE 반영:
+
+- 대상 결과는 주장으로 취급
+- 원본 증적·정책·시험 데이터 기반 독립 재계산
+- 독립 검증·감사 역할 분리
+
+### 3.3 합성 시험만으로 실제 품질 주장
+
+합성 시험은 하네스 동작을 확인할 수 있지만 실제 고객 데이터·대용량·동시성·장애·권한 구조를 모두 증명하지 못한다.
+
+ONSURE 반영:
+
+- 합성·실제·비공개 시험 분류
+- 실제 시험 미실행을 `NOT_RUN`으로 표시
+- 합성 통과 결과의 판정 상한 제한
+
+### 3.4 증적 계보 단절
+
+보고서에는 통과라고 쓰여 있지만 어떤 소스·정책·도구·환경·시험 데이터에서 나온 결과인지 연결되지 않는 문제가 반복된다.
+
+ONSURE 반영:
+
+- 소스 잠금
+- 실행 문맥
+- 증적 SHA-256 목록
+- 영수증 자기 해시와 상위 계보
+- 읽기 전용 재검증
+
+### 3.5 학습 후보의 무검증 자동 반영
+
+실패 이력에서 만든 개선 후보가 검증·승인 없이 활성 규칙으로 반영되면 평가 기준 오염과 자기 강화 오류가 발생한다.
+
+ONSURE 반영:
+
+- 학습 엔진과 검증 엔진 분리
+- 비공개 데이터 접근 차단
+- 승격 영수증과 승인 분리
+- 적용 후 검증과 롤백 포인터
+- `APPLIED_LOCKED` 이전 적용 건수 증가 금지
+
+### 3.6 동일 조건 재현성 부족
+
+환경·모델·의존성·시간·외부 서비스 차이로 결과가 달라져도 단일 실행만으로 통과 처리하는 문제가 있다.
+
+ONSURE 반영:
+
+- 동일 조건 2회 실행
+- 환경·도구·소스·정책 해시 결속
+- 정규화 결과 해시 비교
+- 비결정성 발견 시 `HOLD`
+
+### 3.7 수정 후 전체 회귀검증 누락
+
+발견된 결함만 고친 뒤 주변 기능과 변형 실패를 재검증하지 않아 새로운 회귀가 발생한다.
+
+ONSURE 반영:
+
+- 최소 수정·지속 수정 구분
+- 집중 재시험
+- 변형 시험 데이터
+- 전체 회귀검증 2회
+- 회귀 잠금
+
+## 4. ONSURE 차별점
+
+ONSURE은 다음을 하나의 검증 체계로 연결한다.
 
 ```text
-AI가 만든 코드/문서/판단/실행 결과를
-독립적으로 검증하고
-증적을 남기고
-승격·차단·롤백까지 통제하는
-Standalone Software Validation Platform
+대상 등록
+→ 요구사항·정책·아키텍처 재구성
+→ 정적·실행·보안·공급망 검증
+→ 실패 유형·근본원인분석
+→ 시험 데이터·하네스·오라클
+→ 개선·패치
+→ 회귀검증
+→ 독립 검증·감사
+→ 보고서·영수증·적용 통제
 ```
 
-단순 LLM 평가 도구, 코드 스캐너, MLOps Registry 중 하나로 좁히지 않는다.
+핵심 차별점:
+
+- 대상 제품과 최종 판정 권위 분리
+- 실패 증거에서 개선·재검증까지 연결
+- 학습 후보와 실제 적용 경계 명확화
+- 판정 상한과 `NOT_RUN/HOLD` 정직성
+- 읽기 전용 재검증 가능한 증적
+
+## 5. 제품 설계 반영 원칙
+
+1. 외부 제품 기능을 그대로 복제하지 않는다.
+2. 기능보다 독립성·권위·증적 계보를 우선한다.
+3. 실행하지 않은 검사는 통과로 기록하지 않는다.
+4. 실제 대상 시험과 합성 시험을 구분한다.
+5. 자동 수정·승격은 승인 범위와 롤백을 요구한다.
+6. 학습 엔진은 판정·승격 권한을 갖지 않는다.
+7. 최종 보고서의 중대한 결론은 증적에 연결한다.
+
+## 6. 현재 결론
+
+ONSURE의 방향은 단순 시험 도구 묶음이 아니라 “검증 대상 등록부터 독립 판정·근본원인·개선·재검증·적용 통제까지 수행하는 독립 플랫폼”으로 유지한다.
