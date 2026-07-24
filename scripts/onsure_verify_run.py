@@ -12,56 +12,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from onsure_core.cause_aware_verification import (
     build_sample_oruda_report_profile,
     build_sample_run,
-    digest,
-    verify_program_run,
+    verify_program_run_loop,
 )
 
 
 def _load_json(path: str) -> dict:
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
-
-
-def _stable_projection(result: dict) -> dict:
-    return {
-        "decision": result["decision"],
-        "finding_codes": [item["code"] for item in result["findings"]],
-        "remediation_targets": result["remediation_targets"],
-        "memory_evidence_hashes": [item["evidence_hash"] for item in result["memory_candidates"]],
-    }
-
-
-def _verify_loop(profile: dict, run: dict, loop_count: int) -> dict:
-    if loop_count < 1:
-        raise ValueError("loop_count must be >= 1")
-
-    iterations = []
-    baseline_projection = None
-    stable = True
-    for index in range(loop_count):
-        result = verify_program_run(profile, run)
-        projection = _stable_projection(result)
-        if baseline_projection is None:
-            baseline_projection = projection
-        elif projection != baseline_projection:
-            stable = False
-        iterations.append(
-            {
-                "iteration": index + 1,
-                "decision": result["decision"],
-                "finding_count": result["finding_count"],
-                "result_hash": digest(projection),
-            }
-        )
-
-    final_result = verify_program_run(profile, run)
-    final_result["loop"] = {
-        "requested_iterations": loop_count,
-        "stable": stable,
-        "iterations": iterations,
-        "stable_projection_hash": digest(baseline_projection),
-    }
-    return final_result
 
 
 def main() -> int:
@@ -85,7 +42,7 @@ def main() -> int:
     else:
         parser.error("provide --sample-oruda or both --profile and --run")
 
-    result = _verify_loop(profile, run, args.loop)
+    result = verify_program_run_loop(profile, run, args.loop)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["decision"] == "ALLOW" and result["loop"]["stable"] else 1
 
