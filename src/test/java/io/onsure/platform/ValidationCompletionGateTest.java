@@ -111,6 +111,32 @@ class ValidationCompletionGateTest {
         assertTrue(reasons.contains("FIXTURE_RESULT_COUNT_ZERO"));
     }
 
+    @Test
+    void bogusImmutableReferenceCannotProducePass() throws Exception {
+        ValidationTarget valid = writeTarget("bogus-ref", """
+                [{
+                  "id":"safe",
+                  "input":"safe",
+                  "expected":"SAFE",
+                  "oracle":"EQUALS",
+                  "command":["bash","fixture.sh"]
+                }]
+                """);
+        ValidationTarget bogus = new ValidationTarget(
+                valid.targetId(), valid.targetName(), valid.targetType(), valid.sourceRoot(),
+                "0".repeat(40), valid.adapterId(), valid.policyProfile(), valid.executionProfile());
+        try {
+            ValidationEngine.defaultEngine(temp.resolve("bogus-ref-runs")).run(bogus);
+        } catch (ValidationEngine.ValidationExecutionException failure) {
+            assertEquals(Decision.FAIL, failure.report().decision());
+            assertTrue(failure.getCause().getMessage().contains(
+                    "IMMUTABLE_SOURCE_REFERENCE_UNVERIFIED"));
+            assertFalse((Boolean) failure.report().summary().get("completion_gate_eligible"));
+            return;
+        }
+        throw new AssertionError("unverified immutable reference must fail closed");
+    }
+
     private ValidationTarget writeTarget(String id, String fixtures) throws Exception {
         Path root = temp.resolve(id);
         Files.createDirectories(root);
@@ -126,7 +152,8 @@ class ValidationCompletionGateTest {
                 }
                 """.formatted(id, fixtures));
         return new ValidationTarget(
-                id, id, TargetType.GENERAL_SOFTWARE, root, "a".repeat(40),
+                id, id, TargetType.GENERAL_SOFTWARE, root,
+                SourceReferenceBinding.treeReference(root),
                 GenericManifestTargetAdapter.ID, "ONSURE_DEFAULT_POLICY_V1", "LOCAL_E2E");
     }
 }
