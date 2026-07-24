@@ -1,171 +1,174 @@
-# ONSURE Product Implementation Status v1
+# ONSURE 제품 구현 상태 v1
 
 ## 판정
 
-ONSURE 제품 개발의 권위 구현은 `io.onsure.platform`이다. `io.onsure.assurance`는 독립 검증·Receipt·Final Gate를 담당한다.
+ONSURE 제품 개발의 권위 구현은 `io.onsure.platform`이다. `io.onsure.assurance`는 독립 검증·영수증·최종 관문을 담당하며, `io.onsure.harness`는 범용 실행 하네스를 담당한다.
 
 ```text
-Product Core Static Implementation          COMPLETE
-Generic Validator Engine Static Implementation COMPLETE
-General Program E2E Definition             COMPLETE
-AI Program E2E Definition                  COMPLETE
-Persistent Failure/RCA/Fixture/Oracle/Lock COMPLETE
-ORUDA Target Adapter                       COMPLETE
-Product E2E Actual Execution               NOT_RUN_IN_CURRENT_SESSION
-ONSURE Self-Assurance Actual Execution      NOT_RUN_IN_CURRENT_SESSION
-Development Gate                           HOLD
+제품 핵심 구현              완료
+범용 검증 엔진              완료
+일반 프로그램 대상          완료
+AI 프로그램 대상            완료
+ORUDA 대상 어댑터           완료
+실패 유형·근본원인분석       완료
+개선·재검증                 완료
+범용 하네스                 완료
+Maven 컴파일               NOT_RUN
+JUnit                      NOT_RUN
+실제 제품 종단간 시험        NOT_RUN
+개발 관문                   HOLD
 ```
 
-실제 JDK 17·Maven 실행 증거가 없으므로 PASS를 주장하지 않는다.
+## 제품 핵심부
 
-## 1. ONSURE 제품 Core
+구현된 기능:
 
-권위 파일:
+- 작업공간·프로젝트·검증 대상 목록
+- 검증 작업 생성과 상태 전이
+- 실패 시 부분 증적 보존
+- 대상 어댑터 등록소
+- 검증 단계 파이프라인
+- 판정 상한
+- 발견사항·실패 유형·근본원인분석 저장 모델
+- 개선 계획과 승인 필요 분류
+- JSON·Markdown·HTML 검증 보고서
+- 수정 전후 재검증 차이
 
-- `ValidationModel.java`: ValidationTarget, ValidationJob, Evidence, Finding, FailureMode, RCA, FixtureResult, RegressionLock, ValidationReport, RevalidationDelta
-- `ValidationContext.java`: 실행 중 제품 상태와 Stage 산출물
-- `FileValidationStore.java`: Target별 Run Root와 JSON Evidence 영속화
-- `ValidationEngine.java`: Adapter 선택, Stage 실행, 판정, 보고서, 저장
-- `TargetAdapterRegistry.java`: Target Adapter 등록과 선택
-
-## 2. 범용 Validator Engine
-
-실행 흐름:
+## 범용 검증 엔진
 
 ```text
-Target Registration
--> Source Intake / Lock
--> Target Metadata
--> Static Validation
--> Runtime Validation
--> Security / AI Validation
--> Failure Mode / RCA
--> Fixture Registry
--> Harness / Oracle
--> Remediation Planning
--> Regression Lock
--> Independent Product Verifier
--> Independent Product Audit
--> Validation Report
+대상 입력
+→ 소스 목록
+→ 정적 분석
+→ AI 동작 검증
+→ 시험 데이터·오라클 등록소 봉인
+→ 제한된 프로세스 하네스
+→ 오라클 판정
+→ 실패 유형·근본원인분석
+→ 개선 계획
+→ 회귀 잠금
+→ 독립 제품 검증
+→ 독립 제품 감사
+→ 보고서·영수증·증적 목록
 ```
 
-권위 구현:
+핵심 통제:
 
-- `ValidationEngine.defaultEngine`
-- `BuiltInStages.defaults`
-- `FixtureRegistryStage`
-- `RemediationPlanningStage`
-- `IndependentProductVerifierStage`
-- `IndependentProductAuditStage`
+- 실제 프로세스 출력·종료 코드·시간 제한 증적
+- 인라인 셸·절대경로·대상 루트 이탈 차단
+- 전역 실패 유형 등록소
+- 해시 봉인된 검증·감사 영수증
+- 대상 자체 최종 판정 작성 차단
 
-## 3. 일반 프로그램 전체 E2E
+## 일반 프로그램 종단간 대상
 
-시나리오:
+결함본:
 
-- `fixtures/e2e/general-program`: 결함 포함 기준선, 기대 판정 FAIL
-- `fixtures/e2e/general-program-fixed`: 개선본, 기대 판정 PASS
-- `RevalidationService`: 기준선과 개선본 비교
-- 해결 Finding 존재, 신규 Finding 0건, Source/Regression 결과 변화 확인
+- 비밀정보 노출
+- 미완성 표시
+- 권한 오류
 
-## 4. AI 프로그램 전체 E2E
+수정본:
 
-시나리오:
+- 비밀정보 제거
+- 권한 판정 수정
+- 회귀검증 기대값 고정
 
-- `fixtures/e2e/ai-program`
-- Prompt Injection 검출
-- Tool Authorization 결함 검출
-- 기대 판정 FAIL
-- Independent Verifier와 Audit PASS 필수
+실제 Java 컴파일과 프로세스 시험 코드는 구현돼 있으나 공식 실행 결과는 `NOT_RUN`이다.
 
-## 5. Registry 실제 저장·실행
+## AI 프로그램 종단간 대상
 
-제품 E2E 실행 시 다음을 Target별 Run Root에 영속화한다.
+검증 항목:
 
-- Target와 Job
-- Evidence와 Stage Result
-- Finding
-- Failure Mode
-- RCA
-- Remediation Plan
-- Fixture/Harness/Oracle Result
-- Regression Lock
-- Validation Report
-- Revalidation Delta
-- Independent Verifier/Audit Evidence
+- 신뢰하지 않은 도구 실행
+- 에이전트 자기 승인
+- 프롬프트 주입 우회
+- 전체 문맥 유출
+- 안전·적대 도구 호출
+- 정책과 실제 행동 불일치
 
-두 번 실행한 정규화 결과가 동일해야 한다.
+시험 대상 실행 스크립트는 존재하지만 ONSURE 전체 엔진의 공식 `PASS` 증거는 아직 없다.
 
-## 6. ORUDA Target Adapter
+## ORUDA 대상
 
-- `OrudaTargetAdapter.java`
-- ORUDA는 `AI_AGENTIC_PLATFORM` 외부 Target
-- ONSURE Runtime은 ORUDA에 의존하지 않음
-- ORUDA Claim은 ONSURE 재계산 전까지 신뢰하지 않음
-- ORUDA는 ONSURE Final Decision을 기록할 수 없음
-- Portable Receipt 요구
+구현 범위:
 
-E2E 시나리오:
+- 독립 외부 대상 어댑터
+- ORUDA의 ONSURE 최종 판정 작성 차단
+- 실행 감사 위조·에이전트 자기 승인 시험
+- 실행 패키지 목록
+- 증적 등록소
+- 실행 결과 분류기
+- 영수증 계보 검증기
+- MVF-001 실행 시험 데이터
 
-- `fixtures/e2e/oruda-target`: 결함 검출 대상, 기대 FAIL
-- `fixtures/oruda/mvf-001`: 최소 검증 실행 패키지, 17개 Fixture PASS
-- ORUDA 실행 패키지 Catalog, Document Materializer, Execution Registry, Evidence Registry, Receipt Lineage, Blind Review, Independent Run, Final Candidate, Final Approval, Final Lock 경로 포함
+ORUDA는 ONSURE 핵심 의존성이 아니며 후순위 대상 팩으로 유지한다.
 
-## 7. 공식 실행
+## 범용 하네스
 
-제품 E2E:
+구현 범위:
+
+- 필수 검증 축 30개
+- 시험 데이터 유형 7개
+- 제한된 프로세스 실행
+- 시간 제한·출력 제한
+- 증적·시험·실행 영수증
+- SHA-256 증적 목록
+- 실패 시 `RCA_PENDING`
+- 독립 회귀검증 2회
+- 서로 다른 운영자의 독립 실행 2회
+- 최종 후보 차단 규칙
+
+## 실행 명령
+
+제품 플랫폼 종단간 시험:
 
 ```bash
 bash scripts/run-product-platform-e2e.sh
 ```
 
-수행 내용:
+범용 하네스 독립 2회:
 
-- 지정 제품·ORUDA 테스트 2회
-- Class/Test Class Hash 비교
-- 일반 기준선·개선본·AI·ORUDA·ORUDA MVF 실행 2회
-- 정규화 결과 바이트 동일성 비교
-- Revalidation Delta 확인
-- Product E2E Lock 생성
+```bash
+bash scripts/run-universal-harness-twice.sh \
+  operator-independent-1 operator-independent-2 local-jdk17
+```
 
-전체 개발 Gate:
+전체 개발 관문:
 
 ```bash
 bash scripts/run-onsure-development-gate.sh
 ```
 
-수행 내용:
+## 성공 조건
 
 ```text
-Preflight
--> Product Platform E2E
--> ONSURE Self-Assurance Final Gate
--> Development Gate Lock
+ONSURE_PRODUCT_PLATFORM_E2E_PASS
+ONSURE_UNIVERSAL_TWO_RUN_PASS
+ISSUE4_FINAL_GATE_EVIDENCE_READY
+ONSURE_DEVELOPMENT_GATE_PASS
 ```
 
-## 8. 현재 실행 Blocker
+성공 표식만으로 통과할 수 없다. 종료 코드, 영수증, 증적 SHA-256, 읽기 전용 재검증 결과가 모두 필요하다.
 
-현재 대화 세션의 실행 환경은 다음과 같다.
+## 남은 작업
+
+- JDK 17·Maven 실행 환경 준비
+- Maven 컴파일·JUnit 실행
+- 제품 종단간 시험 2회
+- 범용 하네스 독립 2회
+- ONSURE 자체 보증
+- 실패 시 근본원인분석·수정·전체 회귀검증
+- 개발 관문 성공
+- 증적 고정과 독립 검토
+
+## 정확한 현재 상태
 
 ```text
-Java/Javac 21
-Maven      MISSING
-Required   Java/Javac 17 + Maven
+IMPLEMENTATION        COMPLETE
+STATIC_INTEGRATION    COMPLETE
+FORMAL_EXECUTION      NOT_RUN
+DEVELOPMENT_GATE      HOLD
+FINAL_CANDIDATE       BLOCKED
+FINAL_LOCK_ALLOWED    false
 ```
-
-따라서 코드·Fixture·Runner·Gate 구현은 완료했지만 실제 Maven/JUnit/E2E/Receipt 증거는 아직 생성하지 못했다.
-
-## 9. 다음 상태 전이
-
-JDK 17·Maven clean worktree 또는 저장소 Devcontainer에서 다음 한 명령을 실행한다.
-
-```bash
-bash scripts/run-onsure-development-gate.sh
-```
-
-성공 출력:
-
-```text
-ONSURE_DEVELOPMENT_GATE_PASS <evidence-root>
-```
-
-이 출력과 Lock 검증 전에는 Issue 종료, PR Ready, Merge, ORUDA 공식 검증 완료 판정을 금지한다.
