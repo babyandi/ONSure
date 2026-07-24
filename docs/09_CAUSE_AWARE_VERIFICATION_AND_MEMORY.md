@@ -46,11 +46,25 @@ ODocument Raw
 
 If OUI drops `field_manifest`, the finding targets OUI and learns into Failure Memory. If ODesign omits one of its formal steps, the finding targets ODesign and learns into Program Learning. If OTester or OAudit is `PENDING`, final completion is blocked and the improvement rule learns into Improvement Memory.
 
+## CLI
+
+`ONSure` can verify a built-in ORUDA sample or externally supplied JSON receipts:
+
+```bash
+python3 scripts/onsure_verify_run.py --sample-oruda
+python3 scripts/onsure_verify_run.py --profile profile.json --run run.json
+```
+
+The CLI exits `0` only when the decision is `ALLOW`. A `BLOCK` result exits non-zero and prints the same cause-aware payload, including `findings`, `memory_candidates`, and `remediation_targets`.
+
 ## Acceptance
 
-The first executable contract is `tests/test_cause_aware_verification.py`.
+The executable contracts are:
 
-It must prove:
+- `tests/test_cause_aware_verification.py`
+- `tests/test_onsure_verify_run_cli.py`
+
+They must prove:
 
 - baseline run is `ALLOW`
 - missing route is `BLOCK`
@@ -60,3 +74,5 @@ It must prove:
 - missing lossless scene field is `BLOCK`
 - final output binding drift is `BLOCK`
 - pending final gate is `BLOCK`
+- CLI sample verification exits `0`
+- CLI JSON verification returns the owning remediation target on `BLOCK`
