@@ -182,6 +182,11 @@ public final class BuiltInStages {
             int before = context.findings().size();
             FixtureHarness harness = new FixtureHarness("ONSURE_BUILTIN_HARNESS_V1");
             List<TargetAdapter.FixtureDefinition> fixtures = context.adapter().loadFixtures(context.target());
+            long registered = context.attributes().get("registered_fixture_count") instanceof Number value
+                    ? value.longValue() : -1;
+            if (fixtures.isEmpty() || registered != fixtures.size()) {
+                throw new IllegalStateException("RUNTIME_FIXTURE_REGISTRY_MISMATCH");
+            }
             int failures = 0;
             int executedCommands = 0;
             int timeouts = 0;
@@ -222,6 +227,7 @@ public final class BuiltInStages {
                             "fixture:" + fixture.fixtureId(), List.of(evidenceId));
                 }
             }
+            context.putAttribute("executed_fixture_count", executedCommands);
             return result(stageId(), failures == 0 ? Decision.PASS : Decision.FAIL,
                     start, context, before, Map.of(
                             "fixtures", fixtures.size(),
