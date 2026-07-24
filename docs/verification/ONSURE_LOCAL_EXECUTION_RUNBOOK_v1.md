@@ -1,245 +1,223 @@
-# ONSURE Local Execution Runbook v1
+# ONSURE 로컬 실행서 v1
 
 ## 1. 목적과 현재 상태
 
-ONSURE 로컬 검증을 동일한 명령·증거·판정 순서로 수행하는 공식 절차다. GitHub Actions와 외부 CI는 PASS 근거로 사용하지 않는다.
+ONSURE 로컬 검증을 동일한 명령·증거·판정 순서로 수행하는 공식 절차다. GitHub Actions와 외부 CI는 `PASS` 근거로 사용하지 않는다.
 
 ```text
-Implementation  IMPLEMENTATION_READY
-Execution       NOT_RUN
-Gate            HOLD
-PR              DRAFT
+구현 상태       완료
+공식 로컬 실행  NOT_RUN
+개발 관문       HOLD
+최종 후보       BLOCKED
+최종 잠금       NOT_ALLOWED
 ```
 
-## 2. 사전 조건
+## 2. 실행 원칙
+
+- 승인된 변경 불가 커밋에서 실행한다.
+- 추적 파일 변경이 있으면 중단한다.
+- 모든 실행은 고유 증적 디렉터리를 사용한다.
+- 실패 증적을 삭제하지 않는다.
+- 종료 코드와 출력 해시를 함께 기록한다.
+- 미실행은 `NOT_RUN`, 환경 부족은 `BLOCKED`다.
+- 단일 성공 실행만으로 최종 후보가 될 수 없다.
+- 독립 운영자 2회 실행과 읽기 전용 재검증이 필요하다.
+
+## 3. 환경 준비
+
+```bash
+bash scripts/prepare-assurance-environment.sh
+```
+
+수동 확인:
+
+```bash
+git status --short
+git rev-parse HEAD
+java -version
+javac -version
+mvn -version
+python3 --version
+```
+
+필수 조건:
 
 ```text
 JDK 17
 Maven
 Git
+Bash
+Python 3
 sha256sum
-cmp
-검증 대상 commit이 checkout된 clean tracked worktree
+추적 파일 변경 없음
 ```
 
-```bash
-java -version
-mvn -version
-git rev-parse HEAD
-git status --short
-```
-
-`receipts/local/`은 Git 추적 대상이 아닌 실행 증거 디렉터리다.
-
-## 3. Preflight
+## 4. 실행 전 점검
 
 ```bash
 bash scripts/preflight-local-assurance.sh
+bash scripts/preflight-universal-harness.sh
 ```
 
-검사 항목:
+점검 실패는 `PASS`가 아니라 `BLOCKED`다.
 
-- JDK 17, Maven, Git, sha256sum, cmp
-- POM과 단일·2회 Runner, 재검증기, 요약기
-- State·Lane·Receipt·Agent Receipt·Run Context·Source Lock·Final Receipt 계약
-- Security Finding 계약과 Register
-- A01~A20 Fixture
-- immutable commit SHA와 clean tracked worktree
-- Maven project validate
-
-성공:
-
-```text
-LOCAL_ASSURANCE_PREFLIGHT_PASS <commit-sha>
-```
-
-Runner는 Preflight를 내부에서 다시 실행한다.
-
-## 4. 단일 전체 Runner
+## 5. Maven·JUnit 실행
 
 ```bash
-bash scripts/run-local-assurance.sh
+mvn -B -ntp test
 ```
 
-```text
-Preflight
--> Run Context
--> Source Lock
--> Fixture Contract Snapshot
--> Security Findings Snapshot / blocking gate
--> Maven/JUnit regression-1
--> target 초기화
--> Maven/JUnit regression-2
--> Summary·Class Hash·A01~A20 Report 비교
--> Evidence Manifest 검증
--> OTester 별도 JVM·별도 Ed25519 key
--> OAudit 별도 JVM·별도 Ed25519 key
--> Key Registry Snapshot
--> Final Lock
--> Append-only Ledger
--> Final Receipt와 자기검증
+기록 항목:
+
+- 명령과 종료 코드
+- 전체 시험 수
+- 성공·실패·오류·건너뜀 수
+- 표준출력·표준오류 SHA-256
+- 생성 산출물 SHA-256
+
+## 6. 제품 플랫폼 종단간 실행
+
+```bash
+bash scripts/run-product-platform-e2e.sh
 ```
 
-성공:
+검증 범위:
 
-```text
-LOCAL_ASSURANCE_PASS <run-root>
+- 일반 프로그램 결함본·수정본
+- AI 프로그램 정상·적대 동작
+- ORUDA 외부 대상 어댑터
+- 발견사항·근본원인·개선·재검증
+- 독립 검증·감사 영수증
+
+같은 조건으로 2회 실행하고 정규화 결과를 비교한다.
+
+## 7. 범용 하네스 독립 실행 2회
+
+```bash
+bash scripts/run-universal-harness-twice.sh \
+  operator-independent-1 \
+  operator-independent-2 \
+  local-jdk17
 ```
 
-## 5. 최종 Gate용 전체 Runner 연속 2회
+필수 조건:
+
+- 운영자 ID 서로 다름
+- 동일 소스·정책·시험 데이터·오라클
+- 동일 환경 분류
+- 두 실행 모두 `PASS`
+- `NOT_RUN=0`
+- `BLOCKED=0`
+- 미해결 `Critical/Major=0`
+- 정규화 결과 해시 동일
+
+## 8. 로컬 자체 보증 2회
 
 ```bash
 bash scripts/run-local-assurance-twice.sh
 ```
 
-검증 내용:
+각 전체 실행기는 내부 회귀검증 2회를 수행한다.
 
 ```text
-Runner 1 PASS
--> Run 1 현재 저장소 기준 재검증
--> Runner 2 PASS
--> 후속 Ledger append 후 Run 1 per-run 결속 재검증
--> Run 2 재검증
--> Source Lock 동일
--> Fixture·Security Snapshot 동일
--> 양쪽 Summary·Class Hash·Fixture Report 동일
+실행 전 점검
+→ 실행 문맥
+→ 소스 잠금
+→ 시험 데이터·보안 스냅샷
+→ 회귀검증 1회차
+→ 빌드 산출물 정리
+→ 회귀검증 2회차
+→ 결과 비교
+→ 독립 검증 영수증
+→ 독립 감사 영수증
+→ 최종 영수증
 ```
 
-`evidence.sha256`는 실행별 절대 경로를 포함한다. 따라서 Manifest 바이트 자체는 전체 실행 간 비교하지 않고, 각 실행에서 정확한 파일 집합과 SHA-256을 검증한 뒤 원본 Evidence를 비교한다.
+## 9. Issue #4 최종 관문
 
-성공:
+```bash
+bash scripts/execute-issue-4-final-gate.sh
+```
+
+성공 표식:
 
 ```text
-LOCAL_ASSURANCE_TWICE_PASS <run-root-1> <run-root-2>
+ISSUE4_FINAL_GATE_EVIDENCE_READY
 ```
 
-OTester/OAudit의 실행 ID·키·서명·Ledger 기록 시각은 실행마다 달라야 하므로 Receipt 바이트 동일성은 요구하지 않는다.
+증적 파일·영수증·종료 코드가 없으면 표식만으로 성공 처리하지 않는다.
 
-## 6. 필수 실행 증거
+## 10. 개발 관문
+
+```bash
+bash scripts/run-onsure-development-gate.sh
+```
+
+개발 관문은 제품 종단간 시험, 범용 하네스, 자체 보증, Issue #4 증적을 모두 확인한다.
+
+성공 표식:
 
 ```text
-receipts/local/<UTC timestamp>-<pid>/
-├─ run-context.json
-├─ source-lock.json
-├─ adversarial-transition-fixtures.snapshot.json
-├─ security-findings.snapshot.json
-├─ regression-1/
-│  ├─ test-summary.txt
-│  ├─ classes.sha256
-│  ├─ adversarial-fixtures.tsv
-│  └─ evidence.sha256
-├─ regression-2/
-│  ├─ test-summary.txt
-│  ├─ classes.sha256
-│  ├─ adversarial-fixtures.tsv
-│  └─ evidence.sha256
-├─ otester/receipt.json
-├─ oaudit/receipt.json
-├─ keys/otester-public.key
-├─ keys/oaudit-public.key
-├─ key-registry.snapshot.json
-├─ final-lock.sha256
-└─ final-receipt.json
+ONSURE_DEVELOPMENT_GATE_PASS
 ```
 
-공통 Ledger:
-
-```text
-receipts/local/receipt-ledger.jsonl
-```
-
-개인키는 실행 종료 시 삭제한다.
-
-## 7. 읽기 전용 재검증
+## 11. 읽기 전용 재검증
 
 ```bash
 bash scripts/verify-local-assurance.sh receipts/local/<run-directory>
 ```
 
-공식 재검증은 다음을 확인한다.
+재검증 항목:
 
-- 현재 checkout의 commit·tracked tree·policy와 Source Lock
-- Run Context
-- Fixture Contract Snapshot과 A01~A20 Report
-- Security Findings Snapshot과 open Critical/High 0건
-- Snapshot과 Source-Locked 저장소 원본의 바이트 일치
-- Summary·Class Hash·Evidence Manifest
-- OTester/OAudit 계약·역할·시간·입력·서명·키
-- Final Lock path/digest/필수 Evidence
-- 전체 Ledger chain과 해당 Run ID의 OTester/OAudit Entry·per-run head
-- Final Receipt의 Source·Fixture·Security·Registry·Final Lock 결속
+- 영수증 자기 해시
+- 증적 파일 존재·SHA-256
+- 소스 잠금·정책·실행 문맥
+- 독립 검증·감사 계보
+- 판정 상한
+- 최종 영수증
 
-성공:
-
-```text
-LOCAL_ASSURANCE_REVERIFY_PASS <run-root>
-```
-
-다른 commit이 checkout된 상태에서는 Source drift로 fail-closed 된다. Ledger에 후속 실행이 추가되더라도 동일 source 기준 과거 실행의 per-run 결속은 유지되어야 한다.
-
-## 8. 실행 결과 요약
+## 12. 실행 결과 요약
 
 ```bash
-bash scripts/summarize-local-assurance.sh receipts/local/<run-directory>
-bash scripts/summarize-local-assurance.sh --verify receipts/local/<run-directory>
+bash scripts/summarize-local-assurance.sh \
+  --verify receipts/local/<run-directory>
 ```
 
-출력은 `ONSURE_LOCAL_EXECUTION_RESULT_TEMPLATE_v1.md`와 대응한다. `--verify`가 PASS한 경우에만 open Critical/High 0건을 확인된 것으로 표시한다.
+보고서에는 다음을 포함한다.
 
-## 9. 실패 코드
+- 실행 HEAD와 환경
+- 시험 수와 결과
+- 제품 종단간·범용 하네스 결과
+- 발견사항과 심각도
+- 근본원인분석·회귀검증 상태
+- 증적 루트와 SHA-256
+- 개발 관문 판정
+- 잔여 `NOT_RUN/BLOCKED`
+
+## 13. 실패 처리
 
 ```text
-1   Preflight fail-closed
-64  사용법 오류
-69  필수 명령 또는 Run Context 오류
-70  JDK 17 불일치 또는 시간 역전
-71  실행 폴더·Git 기준 오류
-72  dirty worktree
-77  Policy Snapshot과 Source-Locked 원본 불일치
-78  Security Finding Gate 실패
-79  Source Lock 실패
-80  Evidence 실패
-81  Final Lock 실패
-82  Ledger 또는 Final Receipt 검증 실패
-83  Ledger append 실패
-84  Final Receipt 생성·자기검증 실패
-85  Ledger rollback 실패
-86  전체 Runner가 run-root를 보고하지 않음
-87  전체 2회 Source commit 불일치
-88  A01~A20 Fixture Report 계약 불일치
+실패 발생
+→ 명령·출력·종료 코드·증적 보존
+→ RCA_PENDING
+→ 근본원인 확정
+→ 최소 수정·지속 수정 구분
+→ 집중 재시험
+→ 전체 회귀검증 2회
+→ 독립 검증·감사
+→ 전체 관문 재실행
 ```
 
-## 10. RCA 절차
+시험 기대값을 완화하거나 실패 항목을 제외하여 통과시키는 행위는 금지한다.
+
+## 14. 최종 판정
 
 ```text
-최초 실패 단계·오류 코드 고정
--> 재현 명령과 실패 증거 보존
--> 직접 원인·근본 원인 기록
--> 최소 수정
--> 집중 Test/Fixture
--> 전체 Runner 연속 2회
--> 두 실행 현재 저장소 기준 재검증
+PASS      모든 필수 실행·검증·증적 완료
+FAIL      실행 결함 또는 판정 불일치
+BLOCKED   환경·도구·권한·증적 부족
+NOT_RUN   미실행
+HOLD      최종 승격 조건 미충족
 ```
 
-부분 테스트 성공만으로 Gate를 올리지 않는다.
-
-## 11. Final Gate
-
-```text
-Preflight PASS
-JDK 17 compile PASS
-JUnit 전체 PASS
-A01~A20 예상 판정 일치
-Security Finding Gate PASS
-단일 Runner 내부 회귀 2회 동일
-전체 Runner 연속 2회 PASS
-두 실행 Source Lock·Snapshot·Summary·Class Hash·Fixture Report 동일
-OTester/OAudit 독립 Receipt PASS
-Final Lock PASS
-Ledger chain·per-run binding PASS
-Final Receipt PASS
-두 실행 현재 저장소 기준 재검증 PASS
-Critical/High 미해결 0건
-```
-
-하나라도 미실행이거나 증거가 누락되면 `HOLD`다.
+최종 후보가 되어도 최종 잠금은 별도 승인·감사 절차를 요구한다.
