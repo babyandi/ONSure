@@ -35,6 +35,13 @@ class CauseAwareVerificationTest(unittest.TestCase):
         self.assertEqual("BLOCK", result["decision"])
         self.assertTrue(any(item["code"] == "PROGRAM_ROUTE_MISSING" for item in result["findings"]))
 
+    def test_missing_odocument_claim_source_hash_blocks_with_target(self):
+        result = verify_program_run(self.profile, build_sample_run(omit_claim_source_hash=True))
+
+        self.assertEqual("BLOCK", result["decision"])
+        self.assertIn("ODocument", result["remediation_targets"])
+        self.assertTrue(any(item["code"] == "REQUIRED_OUTPUT_FIELD_MISSING" for item in result["findings"]))
+
     def test_three_loop_verification_is_stable_for_oui_omission(self):
         result = verify_program_run_loop(self.profile, build_sample_run(omit_scene_manifest=True), loops=3)
 
