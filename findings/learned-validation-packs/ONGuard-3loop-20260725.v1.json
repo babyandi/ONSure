@@ -1,0 +1,77 @@
+{
+  "contract": "ONSURE_VERIFICATION_OMISSION_LEARNING_V1",
+  "record_id": "ONGuard-3loop-20260725",
+  "target": {
+    "repository": "babyandi/ONGuard",
+    "pull_request": 8,
+    "discovery_head": "02b01ce98514435e88bb4a0f627b3d13088fa0b0",
+    "validated_head": "01047d9fdb7c7157832a31cc18c8a7808ef12763"
+  },
+  "validator": {
+    "repository": "babyandi/ONSure",
+    "pull_request": 4,
+    "discovery_head": "44a420b45cfa85164fa5ee898183767368282634"
+  },
+  "root_causes": [
+    {
+      "id": "OMISSION-OPAQUE-AGGREGATE-PASS",
+      "cause": "ONSure consumed one aggregate adversarial script result without proving the required scenario set or dedicated execution commands.",
+      "correction": "Require an ONSURE_LEARNED_VALIDATION_PACK with required_scenarios mapped to distinct executable Fixture IDs and commands."
+    },
+    {
+      "id": "OMISSION-MUTATION-FAMILY-COVERAGE",
+      "cause": "ONGuard tests covered named examples rather than separator, case and prompt phrase mutation families.",
+      "correction": "Add independent learned scenarios for identifier separators, case normalization and English/Korean prompt-injection variants."
+    },
+    {
+      "id": "OMISSION-RECEIPT-IDENTITY-BINDING",
+      "cause": "Receipt verification recalculated the decision hash without actor_id, target and policy_version.",
+      "correction": "Bind all three fields into issuance and read-back verification."
+    },
+    {
+      "id": "OMISSION-POLICY-SCOPE-AND-CONFLICT",
+      "cause": "Missing targets silently defaulted to external-llm and equal-priority conflicting effects were resolved lexicographically.",
+      "correction": "Reject omitted target scopes and return fail-closed UNKNOWN for conflicting top-priority effects."
+    },
+    {
+      "id": "OMISSION-SOURCE-AND-EVIDENCE-LINEAGE",
+      "cause": "Immutable references were recorded but not verified; Fixture Evidence IDs and execution configuration were not fully bound.",
+      "correction": "Verify sha256 tree or clean git commit references and bind deterministic Evidence ID, timeout and environment digest."
+    },
+    {
+      "id": "OMISSION-EXECUTION-BOUNDARY",
+      "cause": "Fixture processes received host HOME, symlink scripts could escape the target root, and the manifest claimed unenforced network isolation.",
+      "correction": "Remove HOME, reject symlink scripts, and mark network isolation as HOST_POLICY_NOT_ENFORCED with reviewed-local-only trust."
+    },
+    {
+      "id": "OMISSION-FAIL-EXIT-BINDING",
+      "cause": "ONSure CLI returned exit code zero even when the validation report decision was FAIL.",
+      "correction": "Bind PASS to exit 0 and validation FAIL to exit 2."
+    }
+  ],
+  "learned_required_scenarios": [
+    "pii-separator-variants",
+    "pii-case-normalization",
+    "prompt-injection-variants",
+    "receipt-bound-fields",
+    "policy-target-scope-omission",
+    "policy-equal-priority-conflict",
+    "mask-output-redaction",
+    "audit-persistence-failure"
+  ],
+  "validation": {
+    "onsure_junit": "136/136 PASS x2",
+    "onguard_regression": "41/41 PASS x2",
+    "onsure_to_onguard": "12/12 PASS x3",
+    "mutation_revalidation": "15/15 PASS",
+    "source_digest": "fbcd998091924962108afe7683e2e3c32e90c08da03fd2cf614fd98ef7029a36",
+    "result_digest": "be03c58870079b8ceba6a591c1d9bb0d8fd3249553e5d9d43c0b50e063f33085",
+    "lock_digest": "9f707540bb1f0da413c9844a23b1436f87ad9586e577ab6e8abb1ac6240ef50c"
+  },
+  "application_state": "SHADOW_VALIDATED_NONFINAL",
+  "applied_locked": false,
+  "independent_otester": "NOT_RUN",
+  "independent_oaudit": "NOT_RUN",
+  "production_go": false,
+  "commercial_go": false
+}
