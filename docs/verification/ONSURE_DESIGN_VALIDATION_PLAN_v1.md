@@ -1,235 +1,160 @@
-# ONSURE Design Validation Plan v1
+# ONSURE 설계 검증 계획 v1
 
 ## 1. 목적
 
-ONSURE이 특정 프로젝트 전용 도구가 아니라 AI 프로그램과 일반 프로그램을 검증하는 독립 상용 Validation Platform으로 동작하는지 검증한다. 문서 존재가 아니라 제품 독립성, Target Adapter 경계, 상태·권한·Receipt·Hash·Failure Mode·RCA·Fixture·Harness·Oracle·Regression Lock·리포트·재검증의 모순을 반박 중심으로 찾는다.
+ONSURE이 특정 프로젝트 전용 도구가 아니라 AI 프로그램과 일반 프로그램을 검증하는 독립 상용 검증 플랫폼으로 동작하는지 검증한다. 문서 존재 여부가 아니라 제품 독립성, 대상 어댑터 경계, 상태·권한·영수증·해시·실패 유형·근본원인분석·시험 데이터·하네스·오라클·회귀 잠금·보고서·재검증의 모순을 반박 중심으로 찾는다.
 
-## 2. 검증 대상 계층
+## 2. 검증 원칙
 
-### Layer A — ONSURE 자체 검증
+- 설계 문구보다 실행 가능한 계약과 코드 경계를 우선한다.
+- 검증 대상의 자체 `PASS` 주장을 신뢰하지 않는다.
+- 미실행 항목은 `NOT_RUN`으로 기록한다.
+- 증적·정책·권한이 부족하면 차단 우선으로 처리한다.
+- 동일 조건 반복 결과가 다르면 `HOLD`다.
+- 독립 검증과 독립 감사는 역할·프로세스·키·오라클을 분리한다.
+- `Critical`·`High` 미해결 발견사항은 최종 후보를 차단한다.
 
-- Generic Validator Core
-- Product Scope·Target Registry·Target Adapter 계약
-- Receipt·Source Lock·Final Lock·Ledger
-- Failure Mode·RCA·Fixture·Harness·Oracle·Regression Lock 구조
-- Independent Verifier/Audit 경계
-- Report·Remediation·Revalidation 계약
+## 3. 검증 대상
 
-### Layer B — 범용 Target SDK 검증
+### 3.1 제품 독립성
 
-- 서로 다른 언어·프레임워크·실행 방식의 샘플 Target
-- Target 제거 후 Core 독립 실행
-- Target Adapter가 Policy·Oracle·Final Decision을 침범하지 않는지 검증
-- Embedded Agent/Module과 Standalone 결과의 등가성 검증
+- ORUDA 없이 ONSURE 핵심 체계가 실행되는가
+- 대상 어댑터 제거가 다른 대상 검증을 손상시키지 않는가
+- 대상이 ONSURE 정책·오라클·최종 판정을 변경할 수 없는가
+- 내장 모듈도 독립 재검증 가능한 영수증을 내보내는가
 
-### Layer C — ORUDA 1호 Target 검증
+### 3.2 상태와 권한
 
-- ORUDA를 `EXTERNAL_VALIDATION_TARGET`으로 등록
-- ORUDA Target Adapter와 Target Fixture Pack 사용
-- ORUDA 내부 claim을 독립 재계산
-- ORUDA 장애·제거가 ONSURE Core에 영향을 주지 않는지 확인
-- 장기 Embedded Agent/Module은 별도 단계에서 검증
+- 상태 전이가 허용 목록을 따르는가
+- 잘못된 단계 건너뛰기를 차단하는가
+- 자기 승인·역할 재사용을 차단하는가
+- 승격·적용·최종 잠금 권한이 분리되는가
+- 만료·폐기·회수 권한을 검증하는가
 
-Layer A가 PASS하기 전에 Layer C 결과를 ONSURE 제품 완성 근거로 사용할 수 없다.
+### 3.3 소스·정책·증적
 
-## 3. 공식 환경
+- 소스가 변경 불가 커밋과 해시에 결속되는가
+- 정책·시험 데이터·오라클·도구 버전이 판정에 결속되는가
+- 증적 파일과 등록 레코드를 실제 바이트로 재검증하는가
+- 영수증 자기 해시와 상위 계보를 확인하는가
+- 부분 증적·누락 증적을 통과로 처리하지 않는가
 
-- GitHub Actions와 외부 CI는 공식 판정에 사용하지 않는다.
-- GitHub는 immutable source와 승인 계약 저장소다.
-- JDK 17과 Maven을 사용하는 clean local worktree에서 실행한다.
-- Product Scope, Target Registry, Adapter contract, commit SHA, tracked tree, policy set, Fixture 계약, Security Finding Register를 고정한다.
-- 실행 결과는 서명 Receipt·Final Lock·append-only Ledger·Final Receipt로 남긴다.
+### 3.4 실행 하네스
 
-## 4. Layer A 공식 검증 순서
+- 정상·오류·권한·대용량·동시성·장애복구·적대 입력을 실행하는가
+- 허용된 명령만 실행하는가
+- 절대경로·대상 루트 이탈·인라인 셸을 차단하는가
+- 시간 제한·출력 제한·종료 코드를 기록하는가
+- 실패 증적을 보존하는가
 
-```text
-Preflight
--> Product Scope / Target Registry / Adapter Contract Consistency
--> Source Lock
--> Fixture Contract Snapshot
--> Security Findings Snapshot / blocking gate
--> Compile / Unit / A01~A20 regression-1
--> Clean target
--> Compile / Unit / A01~A20 regression-2
--> Summary·Class Hash·Fixture Report equivalence
--> Evidence Manifest validation
--> Independent Verifier separate JVM
--> Independent Audit separate JVM
--> Final Lock
--> Receipt Ledger
--> Final Receipt
--> Current repository source re-verification
-```
+### 3.5 실패 유형과 근본원인분석
 
-단일 Runner 내부 회귀 2회와 별개로 전체 Runner 자체도 연속 2회 실행한다. 두 전체 실행은 별도 Run Context·키·Receipt를 사용하면서 Source Lock·Snapshot·결정적 Evidence가 같아야 한다.
+- 증상·촉발 조건·위반 계약·영향 범위가 연결되는가
+- 최소 수정과 지속 가능한 수정을 구분하는가
+- 동일 근본원인의 변형 실패를 연결하는가
+- 수정 후 집중 재시험과 전체 회귀검증을 수행하는가
 
-## 5. 정상 시나리오
+### 3.6 학습·검증 분리
 
-| ID | 시나리오 | 기대 결과 |
-|---|---|---|
-| N01 | Product Scope 계약 확인 | 독립 상용 플랫폼·AI/일반 프로그램 범위 확인 |
-| N02 | ORUDA 설계 재료 관계 확인 | `DESIGN_INPUT_ONLY`, Runtime·Authority dependency false |
-| N03 | ORUDA 1호 Target Registry 확인 | `PLANNED_FIRST_VALIDATION_TARGET`·External 관계 |
-| N04 | Target Adapter 권한 확인 | Policy·Oracle·Independent Decision override 금지 |
-| N05 | immutable commit의 clean source | Source Lock과 policy digest 생성 |
-| N06 | 일반 Receipt 계약 직렬화 | JSON Schema와 Java record 필드 정확히 일치 |
-| N07 | Implementation Planner와 독립 승인 | 자기승인 차단, plan digest 결속 |
-| N08 | Isolated Builder 재현 빌드 | plan·source·artifact·SBOM·provenance 결속 |
-| N09 | 보안 Finding Register 완료 | open Critical/High 0건일 때만 통과 |
-| N10 | A01~A20 Snapshot 실행 | 예상 Decision·Reason과 실제 결과 일치 |
-| N11 | Independent Verifier 별도 JVM | regression Evidence Manifest digest에 직접 결속 |
-| N12 | Independent Audit 별도 JVM | Verifier Receipt digest에 직접 결속 |
-| N13 | 후속 Ledger append | 과거 Final Receipt의 per-run head 검증 유지 |
-| N14 | 전체 Runner 연속 2회 | Source Lock·Snapshot·Summary·Class·Fixture Report 동일 |
-| N15 | Target Adapter 제거 | ONSURE Core 실행·계약 검증 유지 |
-| N16 | Embedded result export | portable Receipt로 Standalone 재검증 가능 |
-| N17 | Validation Report 생성 | 중대한 결론이 Evidence·Finding·RCA·Receipt에 연결 |
+- 학습 엔진이 `PASS`·승격·적용을 결정하지 못하는가
+- 비공개 정답 접근을 차단하는가
+- 검증 엔진이 후보를 독립 재계산하는가
+- 적용 건수는 실제 활성 선택자와 적용 후 검증이 있을 때만 증가하는가
 
-## 6. 적대 시나리오
+## 4. 검증 방법
 
-기존 A01~A20과 함께 범용 제품 적대 시나리오를 확장한다.
+### 4.1 정적 검토
 
-### 기존 실행·증거 적대 시나리오
+- 계약 JSON 구조
+- 코드·계약 일치
+- 상태·역할·오류 코드
+- 경로·해시·서명·만료 검증
+- 보고서와 실제 판정 상한
 
-- 단계 건너뛰기
-- Mutable ref·Source hash 누락
-- 자기승인
-- 계획·Artifact 바꿔치기
-- 미신고 파일 변경
-- 미고정 의존성
-- 무허가 네트워크
-- Receipt·Permit replay
-- Runtime/Verifier/Audit key 공유
-- Runtime의 독립 판정 위조
-- NOT_RUN의 PASS 위조
-- 미해결 Critical/High
-- 회귀 실행 재사용·결과 불일치
-- Policy drift
-- 만료 Permit
-- 서명 없는 Update
-- Rollback 증거 누락
-- 외부·내장 구현 불일치
-
-### 범용 제품·Target 적대 시나리오
-
-- Target Adapter가 ONSURE Policy를 덮어씀
-- Target self-reported PASS를 Final PASS로 승격
-- Target가 Finding severity를 낮춤
-- ORUDA Runtime이 없으면 ONSURE Core가 시작되지 않음
-- Target-specific Fixture가 Generic Engine 계약을 변경
-- Embedded Module이 portable Receipt를 내보내지 않음
-- Embedded Module과 Standalone 결과가 다름
-- Target 제거 후 다른 Target 검증이 실패
-- 일반 프로그램 검증 경로가 AI 전용 가정 때문에 실패
-- AI 프로그램 검증에서 prompt·tool·authority evidence 누락
-- 리포트 결론이 Evidence보다 높은 판정을 주장
-- RCA 없이 Finding을 CLOSED 처리
-- Fixture·Oracle 없이 Failure Mode를 해결됨으로 처리
-
-## 7. 독립성
-
-### Independent Verifier
-
-- 별도 process/service·별도 key
-- Run Context와 role policy/scope 결속
-- runtime result·artifact·Fixture·Oracle 결과 재계산
-- Target self-report를 공식 결과로 신뢰하지 않음
-
-### Independent Audit
-
-- 별도 process/service·별도 key
-- Target·Source·Policy·Fixture·Harness·Oracle·Finding·RCA·Patch·Regression·Report Receipt 계보 검증
-- decision ceiling 적용
-
-### Target Independence
-
-- Target가 없어도 Core 실행
-- Adapter 삭제가 Core·다른 Adapter를 손상시키지 않음
-- ORUDA는 첫 Target이지만 Product Authority가 아님
-- Embedded 배포에서도 Standalone 재검증 가능
-
-## 8. ORUDA 1호 Target 검증 순서
+### 4.2 시험 데이터 검증
 
 ```text
-Layer A PASS
--> ORUDA Target Profile 등록
--> ORUDA immutable source / policy / runtime inventory
--> ORUDA Adapter Receipt
--> ORUDA Failure Mode Registry import and generalization check
--> ORUDA Target Fixture Pack lock
--> Harness / Oracle execution
--> Finding / RCA / Remediation Report
--> Full regression twice
--> Independent Verifier / Audit
--> ORUDA Final Validation Report
+NORMAL
+ERROR
+AUTHORIZATION
+LARGE_DATA
+CONCURRENCY
+FAILURE_RECOVERY
+ADVERSARIAL
 ```
 
-ORUDA Adaptive Validation Master의 RCA·Failure Mode·Fixture·Harness·Oracle·Receipt·Regression Lock는 다음 조건으로만 사용한다.
+각 유형은 최소 하나 이상의 필수 검증 축과 연결되어야 한다.
 
-- ONSURE 범용 계약으로 변환
-- Target-specific 요소는 ORUDA Target Pack으로 분리
-- ORUDA 자체 판정을 독립 재계산
-- Core Runtime dependency false
+### 4.3 변이 검증
 
-## 9. 장기 Embedded 검증
+다음을 변이해 차단 여부를 확인한다.
 
-ONSURE Agent 또는 Validation Module을 ORUDA 내부에 이식할 때 다음을 검증한다.
+- 소스·정책·증적 해시
+- 역할·권한·테넌트
+- 상태 전이
+- 종료 코드
+- 오라클 기대값
+- 영수증 계보
+- 만료·폐기·회수 상태
+- 동일 ID의 다른 입력
 
-- embedded component hash와 version lock
-- ORUDA key와 ONSURE key 분리
-- portable Receipt export
-- Standalone ONSURE 재검증
-- Embedded/Standalone 동일 locked input 결과 비교
-- ORUDA 장애 시 fail-closed 또는 evidence-preserving degradation
-- ONSURE 독립 배포판 유지
+### 4.4 실행 검증
 
-## 10. PASS 조건
+- JDK 17 컴파일
+- Maven/JUnit 전체 실행
+- 제품 플랫폼 종단간 시험 2회
+- 범용 하네스 독립 실행 2회
+- ONSURE 자체 보증
+- 읽기 전용 영수증 재검증
 
-### Layer A
+## 5. 핵심 반박 질문
 
-- Product Scope·Target Registry·Target Adapter 계약 PASS
-- ONSURE이 ORUDA 없이 실행 가능
-- Preflight PASS
-- 현재 checkout commit·tracked tree·policy가 Source Lock과 일치
-- Security Finding Gate PASS, open Critical/High 0건
-- JDK 17 compile과 JUnit 전체 PASS
-- A01~A20 예상 Decision·Reason 일치
-- 단일 Runner 내부 회귀 2회 동일
-- 전체 Runner 연속 2회 PASS
-- Independent Verifier/Audit Receipt PASS
-- Final Lock·전체 Ledger chain·per-run binding PASS
-- Final Receipt 생성·자기검증 PASS
-- 두 실행 읽기 전용 재검증 PASS
+1. 대상이 자기 결과를 바꾸면 ONSURE 판정도 바뀌는가
+2. 동일 시험을 두 번 실행했을 때 결과가 다른데도 통과하는가
+3. 증적 ID만 있고 실제 파일이 없어도 통과하는가
+4. 성공 문자열이 있으나 종료 코드가 실패여도 통과하는가
+5. 실패 시험을 목록에서 제거하면 전체 통과가 되는가
+6. 동일 멱등 키에 다른 입력을 넣어도 과거 영수증을 재사용하는가
+7. 검증기와 감사기가 같은 결함 구현을 공유하는가
+8. 학습 후보가 비공개 정답을 이용해 규칙을 만드는가
+9. 승격 승인 없이 활성 선택자가 변경되는가
+10. 적용 후 검증·롤백 포인터 없이 적용 건수가 증가하는가
 
-### Layer B
-
-- 최소 2개 이상의 서로 다른 Target profile 검증
-- Target Adapter 권한 침범 0건
-- Target 제거 후 Core 정상
-- 일반 프로그램과 AI 프로그램 경로 모두 PASS
-- portable Receipt와 embedded/standalone equivalence PASS
-
-### Layer C — ORUDA
-
-- ORUDA 1호 Target 등록 PASS
-- ORUDA Target Pack 전체 실행 PASS
-- ORUDA claim 독립 재계산 PASS
-- ORUDA 장애와 ONSURE Core 독립성 PASS
-- ORUDA Final Validation Report와 Receipt chain PASS
-
-미실행, 증거 누락, 외부 CI 상태는 PASS 근거가 아니다.
-
-## 11. 현재 판정
+## 6. 판정
 
 ```text
-Product Scope / Target Contracts  IMPLEMENTED
-Generic Platform Architecture     IMPLEMENTED
-Static PR Review                  COMPLETED
-Layer A JDK17/Maven Execution     NOT_RUN
-Layer B Multi-target Validation   NOT_RUN
-Layer C ORUDA First Target        NOT_REGISTERED_FOR_EXECUTION
-Final Gate                        HOLD
-PR                                DRAFT
+PASS      실제 실행·필수 검증·증적 재검증 완료
+FAIL      결함 또는 기대 판정 불일치
+BLOCKED   환경·권한·도구·증적 부족
+NOT_RUN   실행하지 않음
+HOLD      최종 승격 조건 미충족
 ```
 
-현재 Issue #4는 Layer A 실행 Gate를 다룬다. Layer A 실제 증거가 없으므로 PR #2를 Ready 또는 Merge로 전환하지 않는다.
+## 7. 완료 조건
+
+```text
+정적 계약 검증 PASS
+Maven/JUnit PASS
+필수 검증 축 NOT_RUN 0
+BLOCKED 0
+Critical/High 미해결 0
+제품 종단간 시험 2회 PASS
+범용 하네스 독립 2회 PASS
+독립 검증·감사 PASS
+정규화 결과 해시 동일
+증적 읽기 전용 재검증 PASS
+개발 관문 PASS
+```
+
+최종 잠금은 완료 조건 통과 후 별도 승인 대상으로 유지한다.
+
+## 8. 현재 상태
+
+```text
+설계 검토      완료
+정적 구현      완료
+실제 실행      NOT_RUN
+개발 관문      HOLD
+최종 후보      BLOCKED
+최종 잠금      NOT_ALLOWED
+```
