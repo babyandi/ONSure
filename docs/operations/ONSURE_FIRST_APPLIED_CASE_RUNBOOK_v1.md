@@ -1,168 +1,205 @@
-# ONSURE First Applied Case Runbook v1
+# ONSURE 최초 학습 적용 사례 실행서 v1
 
 ## 목적
 
-ONSURE에서 최초로 "학습기에서 출발해서 검증 완료 후 실제 적용된 1건"을 만든다.
+ONSURE에서 처음으로 “학습 엔진에서 출발해 독립 검증을 통과하고 실제 안정 기준에 적용된 1건”을 만든다.
 
-범위는 안전한 MVP 기준으로 제한한다.
-
-```text
-대상: ONSURE Core 내부 Validation Pack
-제외: ORUDA Target 적용, 외부 제품 런타임 수정, Hidden answer key 기반 후보
-목표: APPLIED_LOCKED 1건
-```
-
-## 1. 후보 선정
-
-선정 가능한 후보:
-
-| 후보 | 허용 |
-|---|---:|
-| Fixture 후보 | 예 |
-| Rubric 후보 | 예 |
-| Validator Rule 후보 | 예 |
-| Policy Rule 후보 | 예 |
-| Runtime source code 자동 수정 | 제한 |
-| ORUDA Adapter 적용 | 아니오 |
-
-후보는 다음 조건을 만족해야 한다.
+첫 사례는 외부 검증 대상 수정이 아니라 ONSURE 내부 검증 팩 적용으로 제한한다.
 
 ```text
-candidate_id
-candidate_type
-learner_source_receipt_id
-learner_output_sha256
-training_dataset_version
-hidden_non_access_attestation
-expected_improvement
-rollback_plan
+적용 유형       VALIDATION_PACK_APPLY
+최종 상태       APPLIED_LOCKED
+대상 제품 수정  금지
+자동 승격       금지
+사람 승인       필수
 ```
 
-## 2. 검증 요청 생성
+## 적용 후보 선택
 
-Validation Request에는 다음을 결속한다.
+허용 후보:
+
+- `FIXTURE_CANDIDATE`
+- `RUBRIC_CANDIDATE`
+- `VALIDATOR_RULE_CANDIDATE`
+- `POLICY_RULE_CANDIDATE`
+
+선정 기준:
+
+- 실제 실패 영수증 또는 근본원인분석에서 출발
+- 적용 범위가 하나의 검증 팩으로 제한
+- 비공개 정답에서 파생되지 않음
+- 정상·음성 시험으로 효과를 측정 가능
+- 롤백이 가능
+- 적용 전후 결과 차이를 재현 가능
+
+## 1단계: 후보 봉인
+
+필수 산출물:
+
+- 후보 ID와 유형
+- 후보 내용 SHA-256
+- 후보 소스 영수증 SHA-256
+- 학습 데이터셋 버전
+- 비공개 데이터 미접근 확인
+- 예상 개선 효과
+- 영향 범위
+- 롤백 대상 버전
+
+후보 상태는 `LEARNING_CANDIDATE`다.
+
+## 2단계: 검증 요청
+
+검증 요청에는 다음을 결속한다.
+
+- 후보 ID
+- 대상 검증 팩
+- 정책 버전
+- 시험 데이터·오라클 버전
+- 실행 환경
+- 멱등 키
+- 검증기 버전
+
+상태를 `VALIDATION_REQUESTED`로 변경하고 작업 대장에 등록한다.
+
+## 3단계: 독립 검증
+
+검증 엔진은 후보가 주장한 결과를 신뢰하지 않고 소스 증적에서 독립 재계산한다.
+
+필수 시험:
+
+- 정상 시험
+- 음성·적대 시험
+- 골든 회귀검증
+- 비공개 최소 시험
+- 동일 조건 2회 실행
+- 기존 검증 팩과 비교
+- 거짓 통과·거짓 실패 확인
+
+통과 조건:
 
 ```text
-queue_item_id
-candidate_id
-validator_version
-policy_version
-dataset_versions
-golden_set_version
-hidden_set_version
-idempotency_key
+두 실행 모두 PASS
+Critical 거짓 통과 0
+Critical 거짓 실패 0
+정규화 결과 해시 동일
+기존 필수 시험 회귀 없음
+증적·영수증 재검증 PASS
 ```
 
-## 3. 독립 검증
+실패하면 `VALIDATION_FAILED`로 이동하고 근본원인분석을 수행한다.
 
-필수 검증:
+## 4단계: 승격 검토
 
-| 검증 | 통과 조건 |
-|---|---|
-| Positive fixture | 모두 PASS |
-| Negative fixture | 모두 BLOCK 또는 FAIL_EXPECTED |
-| Golden regression | 기존 기준 불변 |
-| Hidden minimum | 오염 없이 PASS |
-| Reproducibility | 같은 조건 2회 동일 |
-| Receipt verification | self hash와 chain 검증 |
+검토자는 다음을 확인한다.
 
-검증기는 학습기 산출물을 그대로 믿지 않고 source evidence에서 재계산해야 한다.
+- 후보 출처와 학습 데이터 오염 여부
+- 검증 결과와 독립성
+- 영향 범위
+- 정책·보안·라이선스 영향
+- 롤백 계획
+- 적용 후 검증 계획
 
-## 4. Promotion Review
+검토자와 승인자는 서로 달라야 한다.
 
-승격 승인 조건:
+승인 산출물:
+
+- 승격 영수증 ID
+- 검토자·승인자 ID
+- 승인 범위
+- 적용 대상 버전
+- 롤백 계획 ID
+- 승격 산출물 SHA-256
+
+## 5단계: 그림자 적용
+
+후보를 활성 기준에 연결하지 않고 그림자 환경에서 실행한다.
+
+- 기존 기준과 후보 기준을 동시에 실행
+- 결과 차이 기록
+- 대상 사용자·운영 영향 없음
+- 오류 발생 시 즉시 폐기
+
+그림자 적용은 적용 건수로 계산하지 않는다.
+
+## 6단계: 안정 적용
+
+승격 승인 후 다음 중 하나를 수행한다.
+
+- `main` 적용 커밋
+- 안정 등록소 새 버전 생성
+- 활성 선택자를 새 버전으로 변경
+
+필수 조건:
+
+- 적용 커밋 또는 등록소 버전 존재
+- 활성 선택자가 실제 승격 산출물을 참조
+- 적용 영수증 생성
+- 롤백 포인터 저장
+
+## 7단계: 적용 후 검증
+
+적용 직후 다음을 다시 실행한다.
+
+- 정상·음성·골든·비공개 시험
+- 전체 회귀검증
+- 활성 선택자 확인
+- 적용 바이트·해시 확인
+- 성능·결정성 비교
+- 보안 발견사항 확인
+
+실패 시 즉시 롤백한다.
+
+## 8단계: 적용 잠금
+
+다음이 모두 존재하면 `APPLIED_LOCKED`로 전이한다.
+
+- 안정 적용 상태
+- 적용 후 검증 `PASS` 영수증
+- 변경 불가 적용 증적 묶음
+- 읽기 전용 재검증 결과
+- 롤백 포인터
+- 적용 건수 증가 영수증
+
+이 시점에만 적용 건수를 1 증가시킨다.
+
+## 롤백 절차
 
 ```text
-validation_pass_receipt_id
-reviewer_identity
-approver_identity
-reviewer != approver
-scope = VALIDATION_PACK_APPLY
-rollback_pointer
-risk = LOW
+적용 후 실패 발견
+→ 활성 선택자를 이전 버전으로 복구
+→ 롤백 영수증 생성
+→ 영향 범위 확인
+→ 근본원인분석
+→ 회귀검증
+→ 새 후보 절차 재시작
 ```
 
-## 5. Apply
+과거 적용 잠금을 자동으로 재활성화하지 않는다.
 
-적용은 둘 중 하나로 처리한다.
-
-| 방식 | 설명 |
-|---|---|
-| Apply Commit | 저장소 main에 검증팩/정책/문서/계약 변경 병합 |
-| Registry Activation | Stable selector가 새 artifact version을 참조 |
-
-MVP 첫 건은 Apply Commit 방식이 가장 명확하다.
-
-## 6. Post-Apply Verification
-
-적용 후 다시 확인한다.
+## 완료 보고
 
 ```text
-active selector 또는 main commit이 promoted artifact를 참조하는가
-기존 Golden이 깨지지 않았는가
-새 후보가 Validator에서 실제 사용되는가
-Rollback pointer가 유효한가
-Receipt chain이 읽기 전용으로 재검증되는가
+후보 ID
+후보 유형
+소스 영수증 SHA-256
+검증 실행 1·2 결과
+승격 영수증
+적용 커밋 또는 등록소 버전
+활성 선택자
+적용 후 검증 영수증
+롤백 포인터
+APPLIED_LOCKED 영수증
+적용 건수
 ```
 
-## 7. Applied Lock
-
-다음 필드를 가진 Applied Receipt를 남긴다.
-
-```json
-{
-  "applied_case_id": "ONSURE-APPLIED-0001",
-  "state": "APPLIED_LOCKED",
-  "candidate_id": "string",
-  "application_class": "VALIDATION_PACK_APPLY",
-  "validation_pass_receipt_id": "string",
-  "promotion_receipt_id": "string",
-  "apply_commit_sha_or_registry_version": "string",
-  "post_apply_verification_receipt_id": "string",
-  "rollback_pointer": "string",
-  "applied_count_delta": 1
-}
-```
-
-## 8. 운영 예약작업 보완
-
-예약작업은 다음 단계별 결과를 보고해야 한다.
-
-| 항목 | 보고 |
-|---|---|
-| learning_candidates_created | 후보 생성 건수 |
-| validation_requests_created | 검증 요청 건수 |
-| validation_passed | PASS Receipt 건수 |
-| promotion_approved | Promotion Receipt 건수 |
-| applied_locked | 실제 적용 건수 |
-| blocked_reason_top3 | 적용되지 못한 주요 원인 |
-
-이 구분이 없으면 학습 후보가 많아도 실제 적용 상태를 알 수 없다.
-
-## 9. 첫 1건 실행 순서
+## 현재 상태
 
 ```text
-1. 저위험 Validation Pack 후보 1건 선정
-2. Validation Request 생성
-3. Validator 2회 실행
-4. PASS Receipt 발행
-5. Promotion Review 승인
-6. Apply Commit 생성
-7. Post-Apply Verification 실행
-8. Applied Lock Receipt 발행
-9. applied_count = 1 보고
-```
-
-## 10. 중단 조건
-
-다음 중 하나라도 발생하면 HOLD다.
-
-```text
-Hidden overlap 의심
-false pass 1건 이상
-Golden regression 깨짐
-reviewer와 approver 동일
-Rollback pointer 없음
-Apply 후 active selector 미참조
-Receipt self verification 실패
+절차·계약        준비됨
+최초 후보         NOT_SELECTED
+검증 실행         NOT_RUN
+승격 승인         NOT_RUN
+안정 적용         NOT_RUN
+적용 잠금         NOT_RUN
+적용 건수         0
 ```
