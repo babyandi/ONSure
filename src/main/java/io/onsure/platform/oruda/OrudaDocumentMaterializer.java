@@ -222,7 +222,7 @@ public final class OrudaDocumentMaterializer {
     }
 
     private static Path safeDocumentPath(Path source, String filename) {
-        if (filename == null || !filename.matches("oruda_[A-Za-z0-9_()\-]+\\.md")) {
+        if (filename == null || !filename.matches("oruda_[A-Za-z0-9_()-]+\\.md")) {
             throw new IllegalArgumentException("ORUDA_MATERIALIZATION_FILENAME_INVALID:" + filename);
         }
         Path file = source.resolve(filename).normalize();
