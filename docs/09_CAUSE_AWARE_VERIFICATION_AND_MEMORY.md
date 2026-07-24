@@ -27,6 +27,7 @@ Memory candidates are never promoted automatically. They remain `CANDIDATE_NOT_P
 | `FORMAL_PROCEDURE_MISSING` | Program Learning | Require ordered procedural receipts |
 | `RENDER_OR_OUTPUT_BINDING_MISSING` | Failure Memory | Bind final output hash to the full canonical representation |
 | `FINAL_GATE_NOT_PASS` | Improvement Memory | Block final completion unless independent gates pass |
+| `LOOP_RESULT_UNSTABLE` | Improvement Memory | Stabilize ONSure's repeated verification projection |
 
 ## ORUDA Report Chain As A Target Profile
 
@@ -35,6 +36,11 @@ ORUDA can be registered as a target program profile without making ONSURE depend
 The report-generation profile requires:
 
 ```text
+ODocument Runtime/Contract/Test Route
+OReport Runtime/Contract/Test Route
+ODesign Runtime/Contract/Test Route
+OUI Runtime/Contract/Test Route
+
 ODocument Raw
 → ODocument Claim
 → OReport PageSpec
@@ -53,9 +59,10 @@ If OUI drops `field_manifest`, the finding targets OUI and learns into Failure M
 ```bash
 python3 scripts/onsure_verify_run.py --sample-oruda
 python3 scripts/onsure_verify_run.py --profile profile.json --run run.json
+python3 scripts/onsure_verify_run.py --profile profile.json --run run.json --loop 3
 ```
 
-The CLI exits `0` only when the decision is `ALLOW`. A `BLOCK` result exits non-zero and prints the same cause-aware payload, including `findings`, `memory_candidates`, and `remediation_targets`.
+The CLI exits `0` only when the decision is `ALLOW` and repeated verification remains stable. A `BLOCK` result exits non-zero and prints the same cause-aware payload, including `findings`, `memory_candidates`, `remediation_targets`, and `loop` evidence.
 
 ## Acceptance
 
@@ -67,7 +74,7 @@ The executable contracts are:
 They must prove:
 
 - baseline run is `ALLOW`
-- missing route is `BLOCK`
+- missing ODocument/OReport/ODesign/OUI route is `BLOCK`
 - parent hash drift is `BLOCK`
 - body drift is `BLOCK`
 - missing formal procedure is `BLOCK`
@@ -76,3 +83,4 @@ They must prove:
 - pending final gate is `BLOCK`
 - CLI sample verification exits `0`
 - CLI JSON verification returns the owning remediation target on `BLOCK`
+- CLI `--loop 3` returns stable repeated evidence for the same OUI omission
