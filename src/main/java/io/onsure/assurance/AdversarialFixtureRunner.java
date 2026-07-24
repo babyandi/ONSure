@@ -55,7 +55,9 @@ public final class AdversarialFixtureRunner {
     }
 
     private ValidationResult builder(String approvedPlan, String consumedPlan, String buildArtifact, String runtimeArtifact, boolean networkUsed, boolean networkPermit, boolean isolated, boolean reproducible, List<String> declared, List<String> actual) {
-        return new OBuilderBuildValidator().validate(new OBuilderBuildContext(approvedPlan, consumedPlan, D, D, buildArtifact, runtimeArtifact, D, D, declared, actual, networkUsed, networkPermit, isolated, reproducible));
+        return new OBuilderBuildValidator().validate(new OBuilderBuildContext(
+                approvedPlan, consumedPlan, D, buildArtifact, runtimeArtifact, D, D, D,
+                declared, actual, networkUsed, networkPermit, isolated, reproducible));
     }
 
     private ReceiptEnvelope receipt(String type, String authority, String sourceRef, Decision decision) {
