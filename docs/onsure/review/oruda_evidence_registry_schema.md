@@ -1,77 +1,125 @@
-# ORUDA Evidence Registry Schema
+# ORUDA 증적 등록소 스키마
 
 작성일: 2026-07-22
 
 ## 목적
 
-Evidence Registry는 Failure, Fixture, Oracle, Harness, RCA, Regression, Blind Review, Lock 상태를 하나로 묶는 실행 증적 저장 형식이다.
+ONSURE이 ORUDA를 외부 검증 대상으로 다룰 때 사용하는 증적 등록소의 구조와 검증 규칙을 정의한다. ORUDA 내부 결과는 주장으로만 취급하며, ONSURE이 원본 증적과 해시·권위·계보를 독립 확인한 후에만 사용할 수 있다.
 
-## 최소 스키마
+## 기본 원칙
 
-| 필드 | 타입 | 필수 | 설명 |
-|---|---|---|---|
-| failure_id | string | yes | 실패 원형 ID |
-| fixture_id | string | yes | 실행 가능한 Fixture ID |
-| variant_type | enum | yes | Base, Boundary, Deception, Chain, Adversarial, Regression, Cross-program |
-| severity | enum | yes | Critical, Major, Minor, Informational |
-| primary_owner | string | yes | 1차 방어 프로그램 |
-| secondary_guard | string | yes | 2차 방어선 |
-| final_guard | string | yes | 최종 방어선 |
-| oracle_id | string | yes | 적용 Oracle |
-| harness_id | string | yes | 실행 Harness |
-| input_hash | sha256 | yes | Fixture 입력 hash |
-| policy_digest | sha256 | conditional | 정책 관련 Fixture일 때 필수 |
-| receipt_digest | sha256 | conditional | Receipt 관련 Fixture일 때 필수 |
-| run_id | string | yes | 실행 ID |
-| run_number | integer | yes | 반복 실행 번호 |
-| expected_result | enum | yes | EXPECTED_FAIL 또는 CLEAN |
-| actual_result | enum | yes | 실제 프로그램 결과 |
-| verdict | enum | yes | EXPECTED_FAIL, UNEXPECTED_PASS, CLEAN, ERROR, SKIPPED, INCONCLUSIVE |
-| rca_id | string | conditional | UNEXPECTED_PASS일 때 필수 |
-| fix_ref | string | conditional | 수정 발생 시 필수 |
-| regression_run_1 | enum | conditional | 수정 후 필수 |
-| regression_run_2 | enum | conditional | 수정 후 필수 |
-| blind_review_id | string | conditional | Quality Critical일 때 필수 |
-| lock_status | enum | yes | OPEN, BLOCKED, RCA_REQUIRED, REGRESSION_REQUIRED, LOCK_CANDIDATE |
+- 증적 ID만 존재한다고 유효한 증적으로 인정하지 않는다.
+- 실제 파일 또는 등록 레코드의 존재를 확인한다.
+- SHA-256, 바이트 크기, 대상, 테넌트, 범위, 생성 주체를 결속한다.
+- 만료·폐기·회수된 증적을 차단한다.
+- 동일 ID의 다른 바이트를 허용하지 않는다.
+- 증적이 없는 `PASS` 주장을 차단한다.
+- 등록소는 읽기 전용 재검증이 가능해야 한다.
 
-## JSON 예시
+## 증적 레코드
 
-```json
-{
-  "failure_id": "FAIL-CHAIN-EVID-001",
-  "fixture_id": "FX-CHAIN-EVID-001-BASE",
-  "variant_type": "Chain",
-  "severity": "Critical",
-  "primary_owner": "OReport",
-  "secondary_guard": "OTester",
-  "final_guard": "OAudit",
-  "oracle_id": "ORC-CHAIN-001",
-  "harness_id": "HARNESS-CHAIN-001",
-  "input_hash": "sha256:<pending>",
-  "policy_digest": "sha256:<pending>",
-  "receipt_digest": "sha256:<pending>",
-  "run_id": "RUN-20260722-001",
-  "run_number": 1,
-  "expected_result": "EXPECTED_FAIL",
-  "actual_result": "BLOCKED",
-  "verdict": "EXPECTED_FAIL",
-  "rca_id": null,
-  "fix_ref": null,
-  "regression_run_1": null,
-  "regression_run_2": null,
-  "blind_review_id": null,
-  "lock_status": "OPEN"
-}
-```
+필수 개념 필드는 다음과 같다. 실제 JSON 키는 실행 계약과의 호환성을 위해 스키마 원문을 유지한다.
 
-## 완료 금지 규칙
+| 개념 | 설명 |
+|---|---|
+| 증적 ID | 전역 또는 대상 범위에서 유일한 식별자 |
+| 증적 유형 | 소스, 정책, 실행 결과, 화면, 문서, 영수증 등 |
+| 대상 ID | 증적이 연결된 검증 대상 |
+| 테넌트 ID | 증적 소유 테넌트 |
+| 주체 | 증적이 설명하는 소스·작업·산출물 |
+| 범위 | 증적이 증명하는 정확한 범위 |
+| 파일 위치 | 허용된 외부 또는 저장소 상대 위치 |
+| SHA-256 | 실제 바이트 해시 |
+| 바이트 크기 | 실제 파일 크기 |
+| 매체 유형 | JSON, 텍스트, 이미지, 문서, 실행 파일 등 |
+| 생성 주체 | 프로그램·역할·실행 ID |
+| 생성 시각 | 증적 생성 시각 |
+| 유효 기한 | 증적 사용 가능 기한 |
+| 상태 | 활성, 정지, 폐기, 회수 등 |
+| 상위 증적 | 입력·원본·정책·권위 영수증 |
+| 서명 정보 | 키 ID, 알고리즘, 서명, 공개키 지문 |
+
+## 상태
 
 ```text
-fixture_id 없음 -> 완료 불가
-harness_id 없음 -> 완료 불가
-oracle_id 없음 -> 완료 불가
-UNEXPECTED_PASS인데 rca_id 없음 -> 완료 불가
-수정했는데 regression 2회 없음 -> 완료 불가
-Quality Critical인데 blind_review_id 없음 -> 완료 불가
-SKIPPED/NOT_RUN/INCONCLUSIVE -> 완료 집계 금지
+ACTIVE
+SUSPENDED
+EXPIRED
+REVOKED
+SUPERSEDED
+QUARANTINED
 ```
+
+`ACTIVE`가 아닌 증적은 기본적으로 최종 판정에 사용할 수 없다. 별도 이력 검토 목적의 읽기는 가능하지만 통과 근거가 될 수 없다.
+
+## 등록 시 검증
+
+1. 필수 필드 존재 여부
+2. 대상·테넌트·주체·범위 일치
+3. 파일 존재와 일반 파일 여부
+4. 심볼릭 링크·경로 이탈 차단
+5. 실제 바이트 SHA-256·크기 일치
+6. 증적 ID·파일 경로·해시 중복 충돌 확인
+7. 생성 주체와 권한 범위 확인
+8. 서명·키 상태·만료·폐기 확인
+9. 상위 증적 존재와 계보 확인
+10. 상태가 `ACTIVE`인지 확인
+
+## 사용 시 재검증
+
+증적을 판정에 사용할 때마다 다음을 다시 확인한다.
+
+- 등록 레코드 자기 해시
+- 실제 파일 SHA-256·크기
+- 대상·테넌트·주체·범위
+- 상위 영수증과 증적 계보
+- 서명 유효성
+- 현재 시각 기준 만료 여부
+- 폐기·회수 여부
+- 정책 버전과 실행 문맥
+
+## 실패 코드 예시
+
+```text
+EVIDENCE_NOT_FOUND
+EVIDENCE_FILE_INVALID
+EVIDENCE_DIGEST_MISMATCH
+EVIDENCE_SIZE_MISMATCH
+EVIDENCE_TARGET_MISMATCH
+EVIDENCE_TENANT_MISMATCH
+EVIDENCE_SCOPE_MISMATCH
+EVIDENCE_EXPIRED
+EVIDENCE_REVOKED
+EVIDENCE_SIGNATURE_INVALID
+EVIDENCE_LINEAGE_INVALID
+EVIDENCE_ID_CONFLICT
+```
+
+오류 코드는 실행 계약 식별자이므로 한글로 번역하지 않는다.
+
+## ORUDA 특화 결속
+
+ORUDA 검증에서는 다음 증적 유형을 구분한다.
+
+- 실행 패키지 목록
+- 패키지 실행 결과
+- 독립 실행 영수증
+- 블라인드 검토 영수증
+- 문서 바이트 물질화 영수증
+- 최종 승인 영수증
+- 최종 후보 관문 영수증
+- 최종 잠금 영수증
+
+대상 자체가 작성한 성공 결과는 ONSURE 독립 실행·검증·감사 영수증과 연결되기 전까지 최종 판정 근거가 될 수 없다.
+
+## 보존과 변경
+
+- 증적 등록소는 추가 전용을 원칙으로 한다.
+- 수정이 필요하면 새 버전과 대체 관계를 등록한다.
+- 폐기·회수 이력은 삭제하지 않는다.
+- 원본 바이트와 등록 레코드의 해시를 함께 보존한다.
+- 최종 잠금 이후 증적 변경은 새 검증 실행을 요구한다.
+
+## 현재 경계
+
+스키마와 검증 코드는 구현돼 있으나 실제 ORUDA 전체 실행 증적은 아직 `NOT_RUN`일 수 있다. 증적 등록소 구조가 존재한다는 사실만으로 검증 통과를 주장하지 않는다.
