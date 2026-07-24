@@ -1,162 +1,162 @@
-# ONSURE Local Execution Result Template v1
+# ONSURE 로컬 실행 결과 서식 v1
 
 실제 실행 증거가 없는 항목은 `PASS`로 기록하지 않는다.
 
 ## 1. 실행 식별
 
-- Issue: #4
-- PR: #2
-- Branch: `design/assurance-architecture-v1`
-- Run root:
-- Assurance run ID:
-- Run started at (UTC):
-- Source commit SHA:
-- 실행자:
-- OS:
-- JDK:
-- Maven:
-
-## 2. 공식 실행 명령
-
-```bash
-bash scripts/preflight-local-assurance.sh
-bash scripts/run-local-assurance.sh
-bash scripts/verify-local-assurance.sh receipts/local/<run-directory>
-bash scripts/summarize-local-assurance.sh --verify receipts/local/<run-directory>
+```text
+실행 ID:
+실행 일시:
+운영자 ID:
+저장소:
+브랜치:
+실행 HEAD:
+실행 환경:
+증적 루트:
 ```
 
-최종 Gate:
+## 2. 도구 환경
 
-```bash
-bash scripts/run-local-assurance-twice.sh
-```
+| 항목 | 경로·버전 | 판정 |
+|---|---|---|
+| Git |  | NOT_RUN |
+| Bash |  | NOT_RUN |
+| Java |  | NOT_RUN |
+| javac |  | NOT_RUN |
+| Maven |  | NOT_RUN |
+| Python |  | NOT_RUN |
+| sha256sum |  | NOT_RUN |
 
-## 3. 단일 실행 결과
+## 3. 작업공간
 
 ```text
-Preflight                  NOT_RUN
-Source binding             NOT_RUN
-Security Finding Gate      NOT_RUN
-Maven compile              NOT_RUN
-JUnit                      NOT_RUN
-A01~A20 Fixture            NOT_RUN
-Regression-1               NOT_RUN
-Regression-2               NOT_RUN
-Regression equality        NOT_RUN
-OTester                     NOT_RUN
-OAudit                      NOT_RUN
-Final Lock                 NOT_RUN
-Ledger chain               NOT_RUN
-Per-run Ledger binding     NOT_RUN
-Final Receipt              NOT_RUN
-Read-only Verify           NOT_RUN
-Critical/High              UNKNOWN
-Gate                       HOLD
+추적 파일 변경:
+실행 시작 HEAD:
+실행 종료 HEAD:
+원격 HEAD 일치:
+소스 잠금 SHA-256:
+정책 SHA-256:
+시험 데이터 SHA-256:
+오라클 SHA-256:
 ```
 
-## 4. 증거 Inventory
+## 4. 실행 전 점검
 
-| Evidence | Path | Status | SHA-256 |
+| 점검 | 결과 | 증적 |
+|---|---|---|
+| 로컬 보증 점검 | NOT_RUN |  |
+| 범용 하네스 점검 | NOT_RUN |  |
+| 제품 범위 계약 | NOT_RUN |  |
+| 대상 등록소 계약 | NOT_RUN |  |
+| 상태·영수증 계약 | NOT_RUN |  |
+| 보안 발견사항 계약 | NOT_RUN |  |
+
+## 5. Maven·JUnit
+
+```text
+명령:
+종료 코드:
+시험 수:
+성공:
+실패:
+오류:
+건너뜀:
+표준출력 SHA-256:
+표준오류 SHA-256:
+판정: NOT_RUN
+```
+
+## 6. 제품 플랫폼 종단간 시험
+
+| 실행 | 운영자 | 결과 | 정규화 결과 SHA-256 | 증적 위치 |
+|---|---|---|---|---|
+| 1회차 |  | NOT_RUN |  |  |
+| 2회차 |  | NOT_RUN |  |  |
+
+```text
+두 실행 결과 동일:
+ONSURE_PRODUCT_PLATFORM_E2E_PASS 확인:
+```
+
+## 7. 범용 하네스 독립 실행
+
+| 실행 | 운영자 | 환경 | 결과 | NOT_RUN | BLOCKED | Critical/Major |
+|---|---|---|---|---:|---:|---:|
+| 1회차 |  |  | NOT_RUN |  |  |  |
+| 2회차 |  |  | NOT_RUN |  |  |  |
+
+```text
+운영자 분리:
+환경 해시 동일:
+정규화 결과 해시 동일:
+ONSURE_UNIVERSAL_TWO_RUN_PASS 확인:
+```
+
+## 8. 로컬 자체 보증
+
+| 항목 | 1회차 | 2회차 | 증적 |
 |---|---|---|---|
-| Run Context | `run-context.json` |  |  |
-| Source Lock | `source-lock.json` |  |  |
-| Fixture Contract Snapshot | `adversarial-transition-fixtures.snapshot.json` |  |  |
-| Security Findings Snapshot | `security-findings.snapshot.json` |  |  |
-| Regression-1 Summary | `regression-1/test-summary.txt` |  |  |
-| Regression-1 Classes | `regression-1/classes.sha256` |  |  |
-| Regression-1 Fixture Report | `regression-1/adversarial-fixtures.tsv` |  |  |
-| Regression-1 Manifest | `regression-1/evidence.sha256` |  |  |
-| Regression-2 Summary | `regression-2/test-summary.txt` |  |  |
-| Regression-2 Classes | `regression-2/classes.sha256` |  |  |
-| Regression-2 Fixture Report | `regression-2/adversarial-fixtures.tsv` |  |  |
-| Regression-2 Manifest | `regression-2/evidence.sha256` |  |  |
-| OTester Receipt | `otester/receipt.json` |  |  |
-| OAudit Receipt | `oaudit/receipt.json` |  |  |
-| Registry Snapshot | `key-registry.snapshot.json` |  |  |
-| Final Lock | `final-lock.sha256` |  |  |
-| Final Receipt | `final-receipt.json` |  |  |
-| Global Ledger | `../receipt-ledger.jsonl` |  |  |
+| 소스 잠금 | NOT_RUN | NOT_RUN |  |
+| 시험·보안 스냅샷 | NOT_RUN | NOT_RUN |  |
+| 회귀검증 | NOT_RUN | NOT_RUN |  |
+| 독립 검증 영수증 | NOT_RUN | NOT_RUN |  |
+| 독립 감사 영수증 | NOT_RUN | NOT_RUN |  |
+| 최종 영수증 | NOT_RUN | NOT_RUN |  |
 
-## 5. Hash와 결속
+## 9. 발견사항
 
-- Source tree SHA-256:
-- Policy SHA-256:
-- Fixture Contract Snapshot SHA-256:
-- Security Findings Snapshot SHA-256:
-- OTester input digest:
-- OTester receipt SHA-256:
-- OAudit input digest:
-- OAudit receipt SHA-256:
-- Registry snapshot SHA-256:
-- Final lock SHA-256:
-- Final Receipt per-run Ledger head:
-- Current global Ledger head:
-- Final Receipt verified at:
+| ID | 심각도 | 설명 | 상태 | 증적 |
+|---|---|---|---|---|
+|  |  |  |  |  |
 
-## 6. 재현성
+```text
+Critical 미해결:
+High 미해결:
+Medium 미해결:
+Low 미해결:
+```
 
-- Regression summary identical:
-- Compiled class hash identical:
-- A01~A20 report identical:
-- Regression-1 Manifest valid:
-- Regression-2 Manifest valid:
+## 10. 근본원인분석과 회귀검증
 
-## 7. Fixture 결과
-
-`regression-2/adversarial-fixtures.tsv`의 각 행을 기록한다.
-
-| Fixture | Expected Decision | Expected Reason | Actual Decision | Actual Reasons | Result |
+| 실패 ID | 근본원인 상태 | 수정 커밋 | 집중 재시험 | 전체 회귀 1 | 전체 회귀 2 |
 |---|---|---|---|---|---|
-| A01~A20 |  |  |  |  | NOT_RUN |
+|  |  |  | NOT_RUN | NOT_RUN | NOT_RUN |
 
-## 8. Security Finding 결과
+## 11. 증적 무결성
 
-- Review status:
-- Review method:
-- Finding 총 건수:
-- Open Critical:
-- Open High:
-- Accepted-risk Critical/High:
-- Gate result:
+```text
+증적 목록 파일:
+증적 목록 SHA-256:
+영수증 자기 해시 검증:
+계보 검증:
+읽기 전용 재검증:
+```
 
-## 9. 전체 Runner 연속 2회
+## 12. 개발 관문
 
-- Run root 1:
-- Run root 2:
-- 두 실행 Source Lock 동일:
-- 두 실행 Fixture Snapshot 동일:
-- 두 실행 Security Snapshot 동일:
-- 두 실행 Regression Summary 동일:
-- 두 실행 Compiled Class Hash 동일:
-- 두 실행 A01~A20 Report 동일:
-- Run 1 현재 저장소 기준 재검증 PASS:
-- Run 2 현재 저장소 기준 재검증 PASS:
-- 후속 Ledger append 후 Run 1 per-run 결속 재검증 PASS:
-- `LOCAL_ASSURANCE_TWICE_PASS` 확인:
+```text
+ONSURE_PRODUCT_PLATFORM_E2E_PASS:
+ONSURE_UNIVERSAL_TWO_RUN_PASS:
+LOCAL_ASSURANCE_TWICE_PASS:
+ISSUE4_FINAL_GATE_EVIDENCE_READY:
+ONSURE_DEVELOPMENT_GATE_PASS:
+```
 
-`evidence.sha256`는 실행별 절대 경로가 포함되므로 전체 실행 간 바이트 동일성을 요구하지 않는다. 각 실행에서 Manifest 파일 집합과 SHA-256을 검증한다.
+## 13. 최종 판정
 
-## 10. 실패와 RCA
+```text
+MAVEN_COMPILE       = NOT_RUN
+JUNIT               = NOT_RUN
+PRODUCT_E2E_TWICE   = NOT_RUN
+UNIVERSAL_TWO_RUN   = NOT_RUN
+SELF_ASSURANCE      = NOT_RUN
+CRITICAL_OPEN       = UNKNOWN
+HIGH_OPEN           = UNKNOWN
+DEVELOPMENT_GATE    = HOLD
+FINAL_CANDIDATE     = BLOCKED
+FINAL_LOCK_ALLOWED  = false
+```
 
-- 최초 실패 단계:
-- 오류 코드:
-- 재현 명령:
-- 직접 원인:
-- 근본 원인:
-- 영향 범위:
-- 최소 수정:
-- 추가 Fixture/Test:
-- 집중 테스트 결과:
-- 전체 2회 재실행 결과:
+## 14. 판정 사유
 
-## 11. 최종 판정
-
-- Source binding:
-- Critical/High 미해결 건수:
-- OTester/OAudit 독립성:
-- Final Lock·Ledger·Final Receipt:
-- 두 실행 현재 저장소 기준 재검증:
-- Issue #4 종료 여부:
-- PR #2 Ready 전환 여부:
-- 병합 여부:
-- 최종 Gate: `HOLD`
+실행된 항목, 미실행 항목, 실패 원인, 증적 누락, 잔여 위험을 서술한다.
