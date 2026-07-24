@@ -123,9 +123,9 @@ public final class ProductPlatformE2EMain {
     }
 
     private static ValidationTarget target(String id, TargetType type, Path sourceRoot,
-            String adapterId, String sourceReference) {
+            String adapterId, String ignoredSourceReference) throws Exception {
         return new ValidationTarget(
-                id, id, type, sourceRoot, sourceReference, adapterId,
+                id, id, type, sourceRoot, SourceReferenceBinding.treeReference(sourceRoot), adapterId,
                 "ONSURE_DEFAULT_POLICY_V1", FixtureRegistryStage.TRUSTED_LOCAL_PROFILE);
     }
 
