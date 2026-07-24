@@ -33,8 +33,8 @@ public final class ReceiptLineageVerifier {
             "fixture-results.json",
             "stage-results.json",
             "regression-lock.json",
-            "independent-verifier-receipt.json",
-            "independent-audit-receipt.json",
+            "internal-verifier-receipt.json",
+            "internal-audit-receipt.json",
             "validation-report.json",
             OrudaEvidenceRegistry.FILE_NAME);
     private static final Set<String> POST_RUN_SUPPLEMENTS = Set.of(
@@ -95,12 +95,12 @@ public final class ReceiptLineageVerifier {
             if (!Objects.equals(lock.path("lockDigest").asText(), registry.regressionLockDigest())) {
                 violations.add("ORUDA_REGISTRY_LOCK_LINEAGE_MISMATCH");
             }
-            verifyProductReceipt(normalizedRun.resolve("independent-verifier-receipt.json"),
-                    "ONSURE_PRODUCT_VERIFIER_RECEIPT_V1", "ONSURE_INDEPENDENT_VERIFIER", jobId,
-                    "ORUDA_VERIFIER_", violations);
-            verifyProductReceipt(normalizedRun.resolve("independent-audit-receipt.json"),
-                    "ONSURE_PRODUCT_AUDIT_RECEIPT_V1", "ONSURE_INDEPENDENT_AUDIT", jobId,
-                    "ORUDA_AUDIT_", violations);
+            verifyProductReceipt(normalizedRun.resolve("internal-verifier-receipt.json"),
+                    "ONSURE_INTERNAL_VERIFIER_RECEIPT_V1", "ONSURE_INTERNAL_VERIFIER", jobId,
+                    "ORUDA_INTERNAL_VERIFIER_", violations);
+            verifyProductReceipt(normalizedRun.resolve("internal-audit-receipt.json"),
+                    "ONSURE_INTERNAL_AUDIT_RECEIPT_V1", "ONSURE_INTERNAL_AUDIT", jobId,
+                    "ORUDA_INTERNAL_AUDIT_", violations);
 
             for (OrudaEvidenceRegistry.Row row : registry.rows()) {
                 if (!Objects.equals(jobId, row.runId())) {

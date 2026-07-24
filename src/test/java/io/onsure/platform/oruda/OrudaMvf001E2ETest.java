@@ -96,8 +96,8 @@ class OrudaMvf001E2ETest {
                 "evidence.json",
                 "oruda-evidence-registry.json",
                 "regression-lock.json",
-                "independent-verifier-receipt.json",
-                "independent-audit-receipt.json",
+                "internal-verifier-receipt.json",
+                "internal-audit-receipt.json",
                 "validation-report.json",
                 "manifest.sha256")) {
             assertTrue(Files.isRegularFile(result.runRoot().resolve(file)), file);

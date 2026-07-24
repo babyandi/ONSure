@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/** Recalculates source, Oracle outcomes and Regression Lock without trusting stage claims. */
+/** Same-process, nonfinal cross-check. This is not an independent external attestation. */
 public final class IndependentProductVerifierStage implements ValidatorStage {
-    @Override public String stageId() { return "INDEPENDENT_PRODUCT_VERIFIER"; }
+    @Override public String stageId() { return "INTERNAL_PRODUCT_VERIFIER"; }
     @Override public boolean supports(ValidationContext context) { return true; }
 
     @Override
@@ -55,9 +55,11 @@ public final class IndependentProductVerifierStage implements ValidatorStage {
             throw new IllegalStateException("INDEPENDENT_REGRESSION_LOCK_MISMATCH");
         }
         ProductReceiptWriter.write(
-                context.runRoot().resolve("independent-verifier-receipt.json"),
-                "ONSURE_PRODUCT_VERIFIER_RECEIPT_V1", "ONSURE_INDEPENDENT_VERIFIER",
+                context.runRoot().resolve("internal-verifier-receipt.json"),
+                "ONSURE_INTERNAL_VERIFIER_RECEIPT_V1", "ONSURE_INTERNAL_VERIFIER",
                 context.job().jobId(), Map.of(
+                        "assurance_class", "INTERNAL_NONFINAL",
+                        "execution_context", "SAME_PROCESS_MUTABLE_CONTEXT",
                         "source_digest", sourceDigest,
                         "result_digest", resultDigest,
                         "regression_lock_digest", lockDigest,

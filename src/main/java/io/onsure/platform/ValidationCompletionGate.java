@@ -33,8 +33,8 @@ public final class ValidationCompletionGate {
             "FAILURE_MODE_AND_RCA",
             "REMEDIATION_PLANNING",
             "REGRESSION_LOCK",
-            "INDEPENDENT_PRODUCT_VERIFIER",
-            "INDEPENDENT_PRODUCT_AUDIT");
+            "INTERNAL_PRODUCT_VERIFIER",
+            "INTERNAL_PRODUCT_AUDIT");
 
     private ValidationCompletionGate() {}
 
@@ -82,6 +82,8 @@ public final class ValidationCompletionGate {
         if (results != uniqueResults) reasons.add("DUPLICATE_FIXTURE_RESULT_ID");
         if (registered > 0 && executed != registered) reasons.add("FIXTURE_EXECUTION_COUNT_MISMATCH");
         if (results > 0 && evidence != results) reasons.add("FIXTURE_EVIDENCE_COUNT_MISMATCH");
+        reasons.addAll(FixtureEvidenceBinding.violations(
+                context.fixtureResults(), context.evidence()));
         return List.copyOf(reasons);
     }
 

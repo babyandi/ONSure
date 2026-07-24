@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Audits Evidence -> Finding -> Failure Mode/RCA/Remediation lineage and receipts. */
+/** Same-process, nonfinal lineage audit. This is not an independent external attestation. */
 public final class IndependentProductAuditStage implements ValidatorStage {
-    @Override public String stageId() { return "INDEPENDENT_PRODUCT_AUDIT"; }
+    @Override public String stageId() { return "INTERNAL_PRODUCT_AUDIT"; }
     @Override public boolean supports(ValidationContext context) { return true; }
 
     @Override
@@ -51,13 +51,15 @@ public final class IndependentProductAuditStage implements ValidatorStage {
         }
         if (context.regressionLock() == null) throw new IllegalStateException("AUDIT_REGRESSION_LOCK_MISSING");
         ProductReceiptWriter.verify(
-                context.runRoot().resolve("independent-verifier-receipt.json"),
-                "ONSURE_PRODUCT_VERIFIER_RECEIPT_V1", "ONSURE_INDEPENDENT_VERIFIER",
+                context.runRoot().resolve("internal-verifier-receipt.json"),
+                "ONSURE_INTERNAL_VERIFIER_RECEIPT_V1", "ONSURE_INTERNAL_VERIFIER",
                 context.job().jobId());
         ProductReceiptWriter.write(
-                context.runRoot().resolve("independent-audit-receipt.json"),
-                "ONSURE_PRODUCT_AUDIT_RECEIPT_V1", "ONSURE_INDEPENDENT_AUDIT",
+                context.runRoot().resolve("internal-audit-receipt.json"),
+                "ONSURE_INTERNAL_AUDIT_RECEIPT_V1", "ONSURE_INTERNAL_AUDIT",
                 context.job().jobId(), Map.of(
+                        "assurance_class", "INTERNAL_NONFINAL",
+                        "execution_context", "SAME_PROCESS_MUTABLE_CONTEXT",
                         "evidence_count", context.evidence().size(),
                         "finding_count", context.findings().size(),
                         "failure_mode_count", context.failureModes().size(),

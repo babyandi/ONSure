@@ -198,23 +198,21 @@ public final class BuiltInStages {
                 if (execution.commandExecuted()) executedCommands++;
                 if (execution.timedOut()) timeouts++;
 
-                String digest = Hashing.sha256(
-                        fixture.fixtureId() + "|" + fixture.expected() + "|" + fixtureResult.observed()
-                                + "|" + execution.exitCode() + "|" + execution.timedOut()
-                                + "|" + String.join("\u0000", execution.command()));
+                Map<String, Object> evidenceAttributes = Map.of(
+                        "expected", fixture.expected(),
+                        "observed", fixtureResult.observed(),
+                        "oracle", fixture.oracleId(),
+                        "harness", harness.harnessId(),
+                        "command_executed", execution.commandExecuted(),
+                        "command", execution.command(),
+                        "exit_code", execution.exitCode(),
+                        "timed_out", execution.timedOut(),
+                        "duration_ms", execution.durationMillis(),
+                        "output_sha256", execution.outputSha256());
+                String digest = FixtureEvidenceBinding.digest(fixture.fixtureId(), evidenceAttributes);
                 String evidenceId = "EV-FIXTURE-" + digest.substring(0, 16);
                 context.addEvidence(new Evidence(evidenceId, "FIXTURE_EXECUTION", fixture.fixtureId(), digest,
-                        Instant.now(), Map.of(
-                                "expected", fixture.expected(),
-                                "observed", fixtureResult.observed(),
-                                "oracle", fixture.oracleId(),
-                                "harness", harness.harnessId(),
-                                "command_executed", execution.commandExecuted(),
-                                "command", execution.command(),
-                                "exit_code", execution.exitCode(),
-                                "timed_out", execution.timedOut(),
-                                "duration_ms", execution.durationMillis(),
-                                "output_sha256", execution.outputSha256())));
+                        Instant.now(), evidenceAttributes));
 
                 if (fixtureResult.decision() != Decision.PASS) {
                     failures++;

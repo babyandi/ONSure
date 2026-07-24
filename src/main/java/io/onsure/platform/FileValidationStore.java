@@ -72,21 +72,21 @@ public final class FileValidationStore {
 
     private static void verifyCompletedReceipts(ValidationContext context) throws Exception {
         boolean verifierPass = context.stageResults().stream()
-                .anyMatch(value -> "INDEPENDENT_PRODUCT_VERIFIER".equals(value.stageId())
+                .anyMatch(value -> "INTERNAL_PRODUCT_VERIFIER".equals(value.stageId())
                         && value.decision() == Decision.PASS);
         boolean auditPass = context.stageResults().stream()
-                .anyMatch(value -> "INDEPENDENT_PRODUCT_AUDIT".equals(value.stageId())
+                .anyMatch(value -> "INTERNAL_PRODUCT_AUDIT".equals(value.stageId())
                         && value.decision() == Decision.PASS);
         if (verifierPass) {
             ProductReceiptWriter.verify(
-                    context.runRoot().resolve("independent-verifier-receipt.json"),
-                    "ONSURE_PRODUCT_VERIFIER_RECEIPT_V1", "ONSURE_INDEPENDENT_VERIFIER",
+                    context.runRoot().resolve("internal-verifier-receipt.json"),
+                    "ONSURE_INTERNAL_VERIFIER_RECEIPT_V1", "ONSURE_INTERNAL_VERIFIER",
                     context.job().jobId());
         }
         if (auditPass) {
             ProductReceiptWriter.verify(
-                    context.runRoot().resolve("independent-audit-receipt.json"),
-                    "ONSURE_PRODUCT_AUDIT_RECEIPT_V1", "ONSURE_INDEPENDENT_AUDIT",
+                    context.runRoot().resolve("internal-audit-receipt.json"),
+                    "ONSURE_INTERNAL_AUDIT_RECEIPT_V1", "ONSURE_INTERNAL_AUDIT",
                     context.job().jobId());
         }
     }

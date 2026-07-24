@@ -116,8 +116,9 @@ public final class ProductPlatformE2EMain {
                 .sorted().toList());
         value.put("source_digest", report.regressionLock().sourceDigest());
         value.put("result_digest", report.regressionLock().resultDigest());
-        value.put("independent_verifier", report.summary().get("independent_verifier"));
-        value.put("independent_audit", report.summary().get("independent_audit"));
+        value.put("internal_verifier", report.summary().get("internal_verifier"));
+        value.put("internal_audit", report.summary().get("internal_audit"));
+        value.put("assurance_class", report.summary().get("assurance_class"));
         return value;
     }
 
@@ -141,9 +142,12 @@ public final class ProductPlatformE2EMain {
     }
 
     private static void requireIndependentReceipts(ValidationReport report) {
-        if (!"PASS".equals(report.summary().get("independent_verifier"))
-                || !"PASS".equals(report.summary().get("independent_audit"))) {
-            throw new IllegalStateException("independent verification missing for " + report.target().targetId());
+        if (!"PASS".equals(report.summary().get("internal_verifier"))
+                || !"PASS".equals(report.summary().get("internal_audit"))
+                || !"NOT_RUN".equals(report.summary().get("independent_verifier"))
+                || !"NOT_RUN".equals(report.summary().get("independent_audit"))) {
+            throw new IllegalStateException("internal nonfinal verification missing for "
+                    + report.target().targetId());
         }
     }
 }
