@@ -277,6 +277,8 @@ def build_sample_oruda_report_profile() -> dict[str, Any]:
             {"name": "render", "program": "Canvas"},
         ],
         "required_output_fields": {
+            "raw": ["bytes_sha256"],
+            "claim": ["text", "source_hash"],
             "page_spec": ["intent", "information_priority", "geometry_contract"],
             "scene": ["objects", "field_manifest"],
             "render": ["render_hash", "binding"],
@@ -286,7 +288,12 @@ def build_sample_oruda_report_profile() -> dict[str, Any]:
     }
 
 
-def build_sample_run(*, omit_scene_manifest: bool = False, pending_gate: str | None = None) -> dict[str, Any]:
+def build_sample_run(
+    *,
+    omit_claim_source_hash: bool = False,
+    omit_scene_manifest: bool = False,
+    pending_gate: str | None = None,
+) -> dict[str, Any]:
     routes = {
         "oreport_runtime": "products/oreport/runtime",
         "oreport_contract": "products/oreport/contracts",
@@ -305,7 +312,7 @@ def build_sample_run(*, omit_scene_manifest: bool = False, pending_gate: str | N
     previous = None
     bodies = {
         "raw": {"bytes_sha256": "1" * 64},
-        "claim": {"text": "claim"},
+        "claim": {"text": "claim", "source_hash": "6" * 64},
         "page_spec": {"intent": "explain", "information_priority": ["a"], "geometry_contract": {"width": 1920, "height": 1080}},
         "design": {"visual_quality_gate": "PASS"},
         "scene": {"objects": [{"object_id": "title"}], "field_manifest": {"title": {"object_id": "title"}}},
@@ -313,6 +320,8 @@ def build_sample_run(*, omit_scene_manifest: bool = False, pending_gate: str | N
     }
     if omit_scene_manifest:
         bodies["scene"].pop("field_manifest")
+    if omit_claim_source_hash:
+        bodies["claim"].pop("source_hash")
     procedure_steps = build_sample_oruda_report_profile()["required_procedure_steps"]["design"]
     for name, body in bodies.items():
         output = {"body": body, "body_hash": digest(body)}
