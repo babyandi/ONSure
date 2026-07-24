@@ -6,6 +6,7 @@ import io.onsure.assurance.Decision;
 import io.onsure.assurance.ValidationResult;
 import io.onsure.platform.ValidationModel.ValidationReport;
 import io.onsure.platform.oruda.OrudaEvidenceRegistry;
+import io.onsure.rag.RagPreparationService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Map;
 
 /** File-backed product store for evidence, findings, RCA, fixtures, locks and reports. */
 public final class FileValidationStore {
@@ -48,6 +50,9 @@ public final class FileValidationStore {
         writeJson(run.resolve("stage-results.json"), context.stageResults());
         writeJson(run.resolve("regression-lock.json"), context.regressionLock());
         writeJson(run.resolve("validation-report.json"), report);
+        Map<String, Object> ragCandidate = new RagPreparationService()
+                .prepareOwnCandidate(report, root.resolve("rag-preparation"));
+        writeJson(run.resolve("rag-preparation-candidate.json"), ragCandidate);
         new ValidationReportExporter().export(report, run);
         new FailureModeRegistry(root.resolve("failure-mode-registry.json")).register(context.failureModes());
         verifyCompletedReceipts(context);

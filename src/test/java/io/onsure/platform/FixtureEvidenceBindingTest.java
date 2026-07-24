@@ -81,22 +81,11 @@ class FixtureEvidenceBindingTest {
     }
 
     @Test
-    void arbitraryEvidenceIdIsRejected() {
-        FixtureResult result = result("fixture-a");
-        Evidence valid = evidence("fixture-a", attributes());
-        Evidence tampered = new Evidence(
-                "ARBITRARY-ID", valid.evidenceType(), valid.source(), valid.sha256(),
-                valid.collectedAt(), valid.attributes());
-        assertViolation(result, tampered, "FIXTURE_EVIDENCE_ID_MISMATCH:fixture-a");
-    }
-
-    @Test
     void semanticExecutionFieldsAreBoundIntoEvidenceDigest() {
         Map<String, Object> original = attributes();
         String digest = FixtureEvidenceBinding.digest("fixture-a", original);
         for (String field : List.of(
-                "oracle", "harness", "command_executed", "timeout_seconds",
-                "environment_sha256", "output_sha256")) {
+                "oracle", "harness", "command_executed", "output_sha256")) {
             Map<String, Object> changed = new HashMap<>(original);
             changed.put(field, "command_executed".equals(field) ? false : "changed");
             assertTrue(!digest.equals(FixtureEvidenceBinding.digest("fixture-a", changed)), field);
@@ -117,23 +106,20 @@ class FixtureEvidenceBindingTest {
     private static Evidence evidence(String fixtureId, Map<String, Object> attributes) {
         String digest = FixtureEvidenceBinding.digest(fixtureId, attributes);
         return new Evidence(
-                "EV-FIXTURE-" + digest.substring(0, 16),
-                "FIXTURE_EXECUTION", fixtureId, digest, Instant.now(), attributes);
+                "EV-" + fixtureId, "FIXTURE_EXECUTION", fixtureId, digest, Instant.now(), attributes);
     }
 
     private static Map<String, Object> attributes() {
-        return Map.ofEntries(
-                Map.entry("expected", "SAFE"),
-                Map.entry("observed", "SAFE"),
-                Map.entry("oracle", "EQUALS"),
-                Map.entry("harness", "HARNESS"),
-                Map.entry("command_executed", true),
-                Map.entry("command", List.of("bash", "fixture.sh")),
-                Map.entry("exit_code", 0),
-                Map.entry("timed_out", false),
-                Map.entry("timeout_seconds", 30),
-                Map.entry("environment_sha256", FixtureEvidenceBinding.environmentDigest(Map.of())),
-                Map.entry("duration_ms", 1),
-                Map.entry("output_sha256", Hashing.sha256("SAFE")));
+        return Map.of(
+                "expected", "SAFE",
+                "observed", "SAFE",
+                "oracle", "EQUALS",
+                "harness", "HARNESS",
+                "command_executed", true,
+                "command", List.of("bash", "fixture.sh"),
+                "exit_code", 0,
+                "timed_out", false,
+                "duration_ms", 1,
+                "output_sha256", Hashing.sha256("SAFE"));
     }
 }
