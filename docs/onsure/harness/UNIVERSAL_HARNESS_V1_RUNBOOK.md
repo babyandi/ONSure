@@ -1,161 +1,183 @@
-# ONSURE Universal Verification Harness v1 Runbook
+# ONSURE 범용 검증 하네스 v1 실행서
 
 ## 기준선
 
-- 제품 Core 기준선: PR #2 `design/assurance-architecture-v1`
-- 문서 기준선: PR #6 `docs/onsure/review/`
-- 원 Harness 구현: PR #7
-- 통합 브랜치: `integration/product-core-universal-harness-v1`
-- 런타임: JDK 17, Maven
-- 현재 상태: `INTEGRATED / NOT_RUN`
-- Final Lock: 금지
+- 제품 핵심 기준선: `main`
+- 범용 하네스: `harness/universal-v1/**`
+- 실행 코드: `io.onsure.harness`
+- 상태 파일: `harness/universal-v1/status/current-status.v1.json`
+- 공식 실행 환경: JDK 17, Maven, Git, Bash
 
-## Codespace 후순위 원칙
+## 목적
 
-현재 Codespace는 별도로 구성 중이며, ONSURE 구현 작업의 선행 조건으로 사용하지 않는다.
+ONSURE의 문서상 검증 기준을 실제 실행 가능한 범용 하네스로 전환하고, 일반 프로그램·AI 프로그램·ORUDA 대상에 동일한 증적·오라클·근본원인·회귀검증 규칙을 적용한다.
 
-```text
-CODESPACE_STATUS = CONFIGURING
-CODESPACE_PRIORITY = DEFERRED_TO_FINAL_EXECUTION_STAGE
-CURRENT_WORK_MODE = GITHUB_REPOSITORY_INTEGRATION_AND_STATIC_REVIEW
-EXECUTION_STATUS = NOT_RUN
-```
-
-Codespace가 준비되기 전에는 다음 작업을 우선한다.
-
-1. 계약·모델·스키마 명칭과 필드 일관성 검토
-2. 30개 검증 축의 Fixture·Oracle·Evidence·Receipt 커버리지 보강
-3. Harness known-good·known-bad·timeout·변조 Meta-Test 확대
-4. `NOT_RUN/BLOCKED`의 PASS 승격 우회 경로 제거
-5. RCA → 수정 → 독립 Regression 2회 Gate 보강
-6. PR #2 제품 Core와 Universal Harness의 추적성 확인
-7. 실행 명령과 결과 파일 경로의 정적 정합성 검토
-
-Codespace가 준비되기 전에는 아래 상태를 변경하지 않는다.
+## 실행 전 조건
 
 ```text
-MAVEN_COMPILE = NOT_RUN
-JUNIT = NOT_RUN
-SINGLE_HARNESS_RUN = NOT_RUN
-INDEPENDENT_RUN_1 = NOT_RUN
-INDEPENDENT_RUN_2 = NOT_RUN
-FINAL_CANDIDATE = BLOCKED
-FINAL_LOCK_ALLOWED = false
+JDK 17
+Maven
+Git
+Bash
+sha256sum
+추적 파일 변경이 없는 작업공간
+고정된 대상 소스
+고정된 시험 데이터·오라클
 ```
 
-## 구조
+필수 조건이 없으면 `PASS`가 아니라 `BLOCKED` 또는 `NOT_RUN`으로 기록한다.
 
-```text
-harness/universal-v1/
-├─ axes/verification-axes.v1.json
-├─ schemas/
-├─ oracles/default-oracles.v1.json
-├─ rca/rca-template.v1.json
-└─ status/current-status.v1.json
-fixtures/universal-v1/sample-target/
-src/main/java/io/onsure/harness/
-src/test/java/io/onsure/harness/
-scripts/
-```
-
-## 단일 실행
-
-Codespace 또는 clean JDK 17 환경이 준비된 최종 실행 단계에서만 수행한다.
-
-```bash
-bash scripts/run-universal-harness.sh <operator-id> <environment-label>
-```
-
-생성물:
-
-```text
-receipts/universal-v1/runs/<run-id>/
-├─ logs/
-├─ evidence/
-├─ receipts/
-├─ rca/                       # 실제 FAIL이 있을 때
-├─ run-summary.json
-├─ evidence-manifest.sha256
-└─ run-receipt.json
-```
-
-판정 우선순위:
-
-```text
-FAIL > BLOCKED > NOT_RUN > PASS
-```
-
-`NOT_RUN`, `BLOCKED`, Evidence 누락, Hash 불일치는 PASS로 승격할 수 없습니다.
-
-## 두 번 독립 실행
-
-```bash
-bash scripts/run-universal-harness-twice.sh \
-  operator-independent-1 operator-independent-2 local-jdk17
-```
-
-두 실행은 다음을 만족해야 합니다.
-
-- Run ID와 운영자 ID가 서로 다름
-- 환경 Digest 동일
-- 30개 축 전부 PASS
-- `NOT_RUN=0`, `BLOCKED=0`
-- Critical·Major 결함 0
-- 정상화 결과 Digest 동일
-- 각 실행 Evidence Manifest와 Receipt 재검증 PASS
-
-성공해도 결과는 `Final Candidate`일 뿐이며 `final_lock_allowed=false`입니다.
-
-## 실패와 Regression
-
-실패 Fixture는 자동으로 `rca/<fixture-id>.json`을 생성하며 초기 상태는 다음과 같습니다.
-
-```text
-root_cause=PENDING_ANALYSIS
-fix_reference=NOT_SET
-regression_run_1=NOT_RUN
-regression_run_2=NOT_RUN
-status=RCA_PENDING
-```
-
-수정 후:
-
-```bash
-java ... io.onsure.harness.HarnessCli regression \
-  <baseline-run> <regression-run-1> <regression-run-2> <output-json>
-```
-
-두 회귀 실행이 독립적이고 모두 clean일 때만 Regression Receipt가 PASS입니다.
-
-## 실행 전 검사
-
-Codespace가 준비된 최종 실행 단계에서 수행한다.
+## 사전 점검
 
 ```bash
 bash scripts/preflight-universal-harness.sh
-mvn -B -ntp test
 ```
 
-검사 범위:
+사전 점검은 다음을 확인한다.
 
-- 범용 축 30개 고정
-- 7종 Fixture가 모든 축을 커버
-- Oracle 미등록 차단
-- 명령 실행 경계와 timeout
-- Evidence/Receipt Hash 계보
-- 증적 변조 차단
-- 독립 실행 운영자 분리
-- RCA 생성
-- 두 번의 clean Regression
-- 자동 Final Lock 금지
+- 필수 파일·스키마·검증 축 존재
+- 7개 시험 데이터 유형 존재
+- 시험 데이터와 오라클 연결
+- 실행 명령 허용 목록
+- 대상 루트 이탈·절대경로·인라인 셸 차단
+- JDK 17·Maven 사용 가능 여부
+- 작업공간 변경 여부
 
-## 금지
+## 단일 실행
 
-- Codespace 준비를 기다리며 구현을 중단
-- 실행하지 않은 결과를 PASS로 기록
-- 일부 축을 생략하고 Final Candidate 선언
-- 동일 운영자·동일 Run 재사용을 독립 실행으로 인정
-- Evidence 파일과 Receipt를 함께 바꿔 우회
-- RCA_PENDING 상태에서 종료
-- 자동 Final Lock 생성
-- ORUDA-Master-Queue 사용
+```bash
+bash scripts/run-universal-harness.sh <운영자-ID> <환경-표시>
+```
+
+예:
+
+```bash
+bash scripts/run-universal-harness.sh operator-1 local-jdk17
+```
+
+단일 실행은 다음을 생성한다.
+
+- 실행 디렉터리
+- 환경 해시
+- 시험 데이터별 명령·출력·종료 코드
+- 시험 데이터 영수증
+- 전체 실행 영수증
+- 증적 SHA-256 목록
+- 실패 시 근본원인분석 초안
+
+## 독립 실행 2회
+
+```bash
+bash scripts/run-universal-harness-twice.sh \
+  operator-independent-1 \
+  operator-independent-2 \
+  local-jdk17
+```
+
+두 운영자 ID는 서로 달라야 한다. 동일 운영자를 재사용하면 독립 실행으로 인정하지 않는다.
+
+비교 항목:
+
+- 소스 해시
+- 정책 해시
+- 시험 데이터·오라클 해시
+- 환경 해시
+- 정규화 결과 해시
+- 발견사항 수와 심각도
+- `NOT_RUN`·`BLOCKED` 수
+- 근본원인분석·회귀검증 상태
+
+## 판정
+
+```text
+PASS      실제 실행 및 모든 필수 오라클 충족
+FAIL      실제 실행됐으나 기대 판정 불일치
+BLOCKED   필수 환경·권한·도구·증적 부족
+NOT_RUN   실행하지 않음
+```
+
+최종 후보 조건:
+
+```text
+독립 운영자 2명
+두 실행 모두 PASS
+NOT_RUN = 0
+BLOCKED = 0
+Critical/Major 미해결 = 0
+정규화 결과 해시 동일
+필요한 근본원인분석·회귀검증 완료
+```
+
+최종 후보가 되어도 최종 잠금은 자동 허용되지 않는다.
+
+## 실패 처리
+
+실패가 발생하면 다음 순서를 따른다.
+
+```text
+실패 영수증 생성
+→ 근본원인분석 상태 RCA_PENDING
+→ 원인·영향·수정안 기록
+→ 코드·정책·시험 데이터 수정
+→ 집중 재시험
+→ 독립 회귀검증 2회
+→ 전체 범용 하네스 재실행
+```
+
+금지 사항:
+
+- 실패 증적 삭제
+- 기대값 완화로 실패 은폐
+- 부분 성공을 전체 통과로 승격
+- 미실행 항목을 통과로 변경
+- 자동 최종 잠금
+
+## 읽기 전용 재검증
+
+검증 영수증은 다음을 다시 확인해야 한다.
+
+- 자기 해시
+- 상위·하위 영수증 연결
+- 증적 파일 존재와 SHA-256
+- 실행 명령·종료 코드·출력 해시
+- 대상 소스·정책·시험 데이터·오라클 버전
+- 판정 상한
+
+## 개발 관문 연결
+
+```bash
+bash scripts/run-onsure-development-gate.sh
+```
+
+개발 관문은 다음을 순서대로 실행한다.
+
+```text
+제품 플랫폼 종단간 검증 2회
+→ 범용 하네스 독립 2회
+→ ONSURE 자체 보증
+→ Issue #4 최종 증적 확인
+→ 개발 관문 판정
+```
+
+성공 표식:
+
+```text
+ONSURE_PRODUCT_PLATFORM_E2E_PASS
+ONSURE_UNIVERSAL_TWO_RUN_PASS
+ISSUE4_FINAL_GATE_EVIDENCE_READY
+ONSURE_DEVELOPMENT_GATE_PASS
+```
+
+## 현재 정확한 상태
+
+```text
+하네스 코드              구현됨
+시험 데이터·오라클        구현됨
+Maven 컴파일             NOT_RUN
+JUnit                    NOT_RUN
+단일 하네스              NOT_RUN
+독립 실행 1·2회          NOT_RUN
+개발 관문                HOLD
+최종 후보                BLOCKED
+최종 잠금                NOT_ALLOWED
+```
