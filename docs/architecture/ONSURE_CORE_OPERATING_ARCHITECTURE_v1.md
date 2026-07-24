@@ -1,183 +1,183 @@
-# ONSURE Core Operating Architecture v1
+# ONSURE 핵심 운영 아키텍처 v1
 
 ## 1. 설계 결정
 
-ONSURE은 ORUDA 내부 기능이 아니라 독립 상용 검증 프로그램이다. 학습기와 검증기는 ONSURE 안에 함께 포함하되, 내부 엔진·데이터·권한·Receipt 체인은 분리한다.
+ONSURE은 ORUDA 내부 기능이 아니라 독립 상용 검증 프로그램이다. 학습 엔진과 검증 엔진은 ONSURE 안에 함께 포함하되, 내부 엔진·데이터·권한·검증 영수증 체인은 분리한다.
 
 ```text
 제품 단위       ONSURE 하나
-실행 단위       Standalone Core 우선
-내부 구조       Learning Engine / Validator Engine / Executor 분리
-대상 연결       Target Adapter / Validation Pack
-ORUDA Adapter   MVP 이후
+실행 단위       독립 핵심 체계 우선
+내부 구조       학습 엔진 / 검증 엔진 / 실행기 분리
+대상 연결       대상 어댑터 / 검증 팩
+ORUDA 어댑터   MVP 이후
 ```
 
-핵심 원칙:
+핵심 원칙은 다음과 같다.
 
-1. 학습기는 개선 후보를 만들 수 있지만 Gate를 열 수 없다.
-2. 검증기는 통과·차단 판단을 수행하지만 학습 데이터 생성자가 될 수 없다.
-3. Executor는 Queue를 소비하고 상태와 Receipt를 남기는 실행 책임만 가진다.
-4. Hidden/Golden 데이터는 Dataset Registry에서 분리·봉인한다.
-5. 모든 판정은 Trace, Policy, Dataset, Tool, Prompt, Model, Source digest에 결속한다.
-6. 증거가 없거나 부분 증거만 있으면 PASS가 아니라 HOLD 또는 FAIL_CLOSED다.
+1. 학습 엔진은 개선 후보를 만들 수 있지만 관문을 열 수 없다.
+2. 검증 엔진은 통과·차단 판단을 수행하지만 학습 데이터 생성자가 될 수 없다.
+3. 실행기는 작업 대장을 소비하고 상태와 검증 영수증을 남기는 실행 책임만 가진다.
+4. 비공개·골든 데이터는 데이터셋 등록소에서 분리·봉인한다.
+5. 모든 판정은 추적 정보, 정책, 데이터셋, 도구, 프롬프트, 모델, 소스 해시에 결속한다.
+6. 증거가 없거나 부분 증거만 있으면 `PASS`가 아니라 `HOLD` 또는 `FAIL_CLOSED`다.
 
-## 2. 최상위 Plane
+## 2. 최상위 영역
 
-| Plane | 책임 | MVP 반영 |
+| 영역 | 책임 | MVP 반영 |
 |---|---|---|
-| Control Plane | Queue, 권한, 정책, 상태 전이, 실행 제한 | 구현 |
-| Execution Plane | Executor Loop, Harness Runner, Sandbox, 재시도·복구 | 구현 |
-| Validation Plane | Validator Engine, Fixture, Golden/Hidden, Regression | 기본 구현 |
-| Evidence Plane | Receipt, SHA-256, Trace, Source/Artifact Lock, Replay Snapshot | 구현 |
-| Governance Plane | PASS/FAIL/HOLD, Promotion, Rollback, 승인 분리 | 기본 Gate |
-| Learning Plane | 실패 분석, Fixture 후보, Rubric 후보, 개선 후보 | 설계 우선 |
-| Observability Plane | Dashboard, Drift, SLA, 오래된 Queue 감지, Incident Replay | 설계+최소 Trace |
+| 통제 영역 | 작업 대장, 권한, 정책, 상태 전이, 실행 제한 | 구현 |
+| 실행 영역 | 실행기 반복 처리, 하네스 실행기, 격리 환경, 재시도·복구 | 구현 |
+| 검증 영역 | 검증 엔진, 시험 데이터, 골든·비공개 시험, 회귀검증 | 기본 구현 |
+| 증적 영역 | 검증 영수증, SHA-256, 추적, 소스·산출물 잠금, 재현 스냅샷 | 구현 |
+| 통제·승인 영역 | `PASS`·`FAIL`·`HOLD`, 승격, 롤백, 승인 분리 | 기본 관문 |
+| 학습 영역 | 실패 분석, 시험 데이터 후보, 평가 기준 후보, 개선 후보 | 설계 우선 |
+| 관찰 영역 | 현황판, 변화 감지, 서비스 수준, 오래된 작업 감지, 사고 재현 | 설계 + 최소 추적 |
 
-## 3. Core Runtime Flow
+## 3. 핵심 실행 흐름
 
 ```text
-Intake/API/CLI
-  -> Target / Job Registration
-  -> Queue Ledger
-  -> Executor Lease
-  -> RUNNING State Receipt
-  -> Harness Runner
-  -> Validator Engine
-  -> Evidence / Trace / Receipt Chain
-  -> PASS / FAIL / HOLD Gate
-  -> Report / Dashboard
-  -> Learning Feedback Queue
+입력 접수 / API / 명령행
+→ 검증 대상·작업 등록
+→ 작업 대장
+→ 실행기 임대
+→ RUNNING 상태 영수증
+→ 하네스 실행기
+→ 검증 엔진
+→ 증적·추적·영수증 체인
+→ PASS / FAIL / HOLD 관문
+→ 보고서·현황판
+→ 학습 피드백 큐
 ```
 
-Learning Feedback Queue는 검증 실패와 운영 사고를 학습 후보로 전환한다. 단, 학습 후보는 다시 Validator와 Golden/Hidden 검증을 통과하기 전까지 운영 기준이 될 수 없다.
+학습 피드백 큐는 검증 실패와 운영 사고를 학습 후보로 전환한다. 학습 후보는 다시 검증 엔진과 골든·비공개 시험을 통과하기 전까지 운영 기준이 될 수 없다.
 
 ## 4. 내부 엔진
 
-### Executor Engine
+### 4.1 실행 엔진
 
-필수 상태 전이:
+필수 상태 전이는 다음과 같다.
 
 ```text
-READY -> RUNNING
-RUNNING -> DONE
-RUNNING -> RETRY
-RUNNING -> HOLD
-RETRY -> RUNNING
-HOLD -> READY_AFTER_RCA
+READY → RUNNING
+RUNNING → DONE
+RUNNING → RETRY
+RUNNING → HOLD
+RETRY → RUNNING
+HOLD → READY_AFTER_RCA
 ```
 
 필수 통제:
 
-- queue lease
-- idempotency key
-- duplicate consume block
-- checkpoint resume
-- max retry without RCA
-- stale queue detection
-- missing tool fail-closed
-- partial evidence fail-closed
+- 작업 임대
+- 멱등 키
+- 중복 소비 차단
+- 체크포인트 재개
+- 근본원인분석 없는 무제한 재시도 차단
+- 오래된 작업 감지
+- 필수 도구 누락 시 차단
+- 부분 증적만 존재할 때 차단
 
-### Validator Engine
+### 4.2 검증 엔진
 
 필수 기능:
 
-- static validation
-- runtime and E2E validation
-- security and privacy validation
-- supply-chain validation
-- prompt injection and reference poisoning validation
-- false pass / false fail / nondeterminism calibration
-- Golden/Hidden/Regression set evaluation
-- independent verifier/audit receipt validation
+- 정적 검증
+- 실행·종단간 검증
+- 보안·개인정보 검증
+- 공급망 검증
+- 프롬프트 주입·참조 오염 검증
+- 거짓 통과·거짓 실패·비결정성 교정
+- 골든·비공개·회귀 데이터셋 평가
+- 독립 검증·감사 영수증 검증
 
-Validator는 Learning Engine의 제안을 신뢰하지 않고 독립 재계산한다.
+검증 엔진은 학습 엔진의 제안을 신뢰하지 않고 독립 재계산한다.
 
-### Learning Engine
+### 4.3 학습 엔진
 
 허용 기능:
 
-- 실패 Receipt 분석
-- RCA clustering
-- Failure Mode candidate 생성
-- Fixture/Harness/Oracle candidate 생성
-- Rubric improvement candidate 생성
-- Remediation pattern candidate 생성
-- Drift signal candidate 생성
+- 실패 영수증 분석
+- 근본원인 군집화
+- 실패 유형 후보 생성
+- 시험 데이터·하네스·오라클 후보 생성
+- 평가 기준 개선 후보 생성
+- 개선 패턴 후보 생성
+- 변화 감지 후보 생성
 
 금지 기능:
 
-- PASS 결정
-- Promotion Gate 개방
-- Hidden answer key 접근
-- Validator Rubric 무승인 변경
-- 자기 학습 결과를 직접 Stable 기준으로 승격
+- `PASS` 결정
+- 승격 관문 개방
+- 비공개 정답 접근
+- 검증 평가 기준의 무승인 변경
+- 자기 학습 결과를 직접 안정 기준으로 승격
 
-## 5. Registry
+## 5. 등록소
 
-| Registry | 내용 |
+| 등록소 | 내용 |
 |---|---|
-| Target Registry | 검증 대상, Adapter, 정책 Profile, 실행 Profile |
-| Queue Ledger | READY/RUNNING/DONE/RETRY/HOLD 상태와 lease |
-| Dataset Registry | Training/Validation/Hidden/Golden/Regression 세트와 SHA |
-| Policy Registry | Policy-as-Code, 금지조건, Gate 조건, 승인권한 |
-| Rubric Registry | 평가 기준 버전, 변경 diff, 승인 Receipt |
-| Model/Prompt/Tool Registry | 모델·프롬프트·도구·검증 코드 버전 |
-| Receipt Ledger | append-only evidence chain |
-| Incident Replay Ledger | 사고 입력·환경·도구·결과 재현 Snapshot |
-| Promotion Registry | Candidate/Shadow/Canary/Stable/Locked 전이 |
+| 검증 대상 등록소 | 검증 대상, 어댑터, 정책 프로필, 실행 프로필 |
+| 작업 대장 | `READY`, `RUNNING`, `DONE`, `RETRY`, `HOLD` 상태와 임대 |
+| 데이터셋 등록소 | 학습·검증·비공개·골든·회귀 세트와 SHA |
+| 정책 등록소 | 정책 코드, 금지 조건, 관문 조건, 승인 권한 |
+| 평가 기준 등록소 | 평가 기준 버전, 변경 차이, 승인 영수증 |
+| 모델·프롬프트·도구 등록소 | 모델·프롬프트·도구·검증 코드 버전 |
+| 검증 영수증 대장 | 추가 전용 증적 체인 |
+| 사고 재현 대장 | 사고 입력·환경·도구·결과 재현 스냅샷 |
+| 승격 등록소 | `CANDIDATE`, `SHADOW`, `CANARY`, `STABLE`, `LOCKED` 전이 |
 
-## 6. Harness 구조
+## 6. 하네스 구조
 
-MVP Harness:
+MVP 하네스:
 
-- Fixture Harness
-- Golden/Hidden 최소 Harness
-- Regression Harness
-- Security Negative Harness
-- Receipt Verification Harness
+- 시험 데이터 하네스
+- 골든·비공개 최소 하네스
+- 회귀검증 하네스
+- 보안 음성 시험 하네스
+- 검증 영수증 확인 하네스
 
-MVP 이후 Harness:
+MVP 이후 하네스:
 
-- adversarial fixture generator
-- drift monitor harness
-- rollback drill harness
-- independent OTester/OAudit equivalent harness
-- visual/document quality blind review harness
+- 적대적 시험 데이터 자동 생성기
+- 변화 감지 하네스
+- 롤백 훈련 하네스
+- 독립 검증·감사 동등성 하네스
+- 시각·문서 품질 블라인드 검토 하네스
 
 ## 7. MVP 구현 경계
 
 MVP에서 반드시 구현한다.
 
 ```text
-Queue Ledger
-Executor Loop
-Basic Harness Runner
-Validator Engine
-Receipt/Evidence Chain
-Dataset Registry minimum
-Policy-as-Code minimum
-Golden/Hidden minimum set
-PASS/FAIL/HOLD Gate
-Trace Snapshot
+작업 대장
+실행기 반복 처리
+기본 하네스 실행기
+검증 엔진
+검증 영수증·증적 체인
+최소 데이터셋 등록소
+최소 정책 코드화
+최소 골든·비공개 시험 세트
+PASS / FAIL / HOLD 관문
+추적 스냅샷
 ```
 
 MVP 이후로 둔다.
 
 ```text
-Learning Engine full automation
-Dashboard full UX
-Canary/Rollback advanced drill
-Adversarial automatic generation
-ORUDA Adapter
-Enterprise approval workflow
+학습 엔진 완전 자동화
+현황판 전체 사용자 경험
+고급 카나리·롤백 훈련
+적대적 시험 자동 생성
+ORUDA 어댑터
+기업 승인 작업 흐름
 ```
 
-## 8. ORUDA Adapter 후순위 원칙
+## 8. ORUDA 어댑터 후순위 원칙
 
-ORUDA는 ONSURE의 첫 검증 대상이 될 수 있지만 Core 의존성이 아니다.
+ORUDA는 ONSURE의 첫 검증 대상이 될 수 있지만 핵심 체계의 의존성이 아니다.
 
 ```text
-ONSURE Core 먼저
--> 범용 Queue/Executor/Validator/Receipt 먼저
--> ORUDA Adapter는 나중에 Target Pack으로 연결
+ONSURE 핵심 체계 우선
+→ 범용 작업 대장·실행기·검증기·영수증 우선
+→ ORUDA 어댑터는 후속 대상 팩으로 연결
 ```
