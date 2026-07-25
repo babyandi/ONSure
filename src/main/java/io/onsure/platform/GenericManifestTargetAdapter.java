@@ -45,7 +45,8 @@ public class GenericManifestTargetAdapter implements TargetAdapter {
         if (root.path("self_reported_final_decision").asBoolean(false)) {
             throw new IllegalArgumentException("TARGET_CANNOT_SELF_REPORT_FINAL_DECISION");
         }
-        parseFixtures(root);
+        List<FixtureDefinition> fixtures = parseFixtures(root);
+        validateLearnedScenarioCoverage(root, fixtures);
     }
 
     @Override
@@ -59,6 +60,9 @@ public class GenericManifestTargetAdapter implements TargetAdapter {
         metadata.put("framework", root.path("framework").asText("UNKNOWN"));
         metadata.put("entrypoint", root.path("entrypoint").asText("UNKNOWN"));
         metadata.put("declared_capabilities", mapper.convertValue(root.path("capabilities"), List.class));
+        metadata.put("required_scenarios", root.path("required_scenarios").isArray()
+                ? mapper.convertValue(root.path("required_scenarios"), List.class)
+                : List.of());
         metadata.put("fixture_count", root.path("fixtures").size());
         return Map.copyOf(metadata);
     }
@@ -94,5 +98,40 @@ public class GenericManifestTargetAdapter implements TargetAdapter {
 
     protected Path manifestPath(ValidationTarget target) {
         return target.sourceRoot().resolve(MANIFEST).toAbsolutePath().normalize();
+    }
+
+    private static void validateLearnedScenarioCoverage(
+            JsonNode root, List<FixtureDefinition> fixtures) {
+        boolean learnedPack = false;
+        for (JsonNode capability : root.path("capabilities")) {
+            if ("ONSURE_LEARNED_VALIDATION_PACK".equals(capability.asText())) {
+                learnedPack = true;
+            }
+        }
+        if (!learnedPack) return;
+
+        JsonNode required = root.path("required_scenarios");
+        if (!required.isArray() || required.isEmpty()) {
+            throw new IllegalArgumentException("LEARNED_REQUIRED_SCENARIOS_MISSING");
+        }
+        java.util.Set<String> requiredIds = new java.util.HashSet<>();
+        for (JsonNode scenario : required) {
+            String id = scenario.asText();
+            if (id.isBlank() || !requiredIds.add(id)) {
+                throw new IllegalArgumentException("LEARNED_REQUIRED_SCENARIO_INVALID:" + id);
+            }
+        }
+        Map<String, FixtureDefinition> byId = new java.util.HashMap<>();
+        for (FixtureDefinition fixture : fixtures) byId.put(fixture.fixtureId(), fixture);
+        java.util.Set<List<String>> commands = new java.util.HashSet<>();
+        for (String scenario : requiredIds) {
+            FixtureDefinition fixture = byId.get(scenario);
+            if (fixture == null || !fixture.executable()) {
+                throw new IllegalArgumentException("LEARNED_SCENARIO_FIXTURE_MISSING:" + scenario);
+            }
+            if (!commands.add(fixture.command())) {
+                throw new IllegalArgumentException("LEARNED_SCENARIO_COMMAND_NOT_DEDICATED:" + scenario);
+            }
+        }
     }
 }

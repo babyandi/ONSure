@@ -104,18 +104,18 @@ public final class FinalCandidateGate {
             }
             if (packages1 != null && packages2 != null) comparePackageSemantics(packages1, packages2, reasons);
 
-            verifyProductReceipt(first.resolve("independent-verifier-receipt.json"),
-                    "ONSURE_PRODUCT_VERIFIER_RECEIPT_V1", "ONSURE_INDEPENDENT_VERIFIER", job1,
-                    "RUN1_VERIFIER_", reasons);
-            verifyProductReceipt(first.resolve("independent-audit-receipt.json"),
-                    "ONSURE_PRODUCT_AUDIT_RECEIPT_V1", "ONSURE_INDEPENDENT_AUDIT", job1,
-                    "RUN1_AUDIT_", reasons);
-            verifyProductReceipt(second.resolve("independent-verifier-receipt.json"),
-                    "ONSURE_PRODUCT_VERIFIER_RECEIPT_V1", "ONSURE_INDEPENDENT_VERIFIER", job2,
-                    "RUN2_VERIFIER_", reasons);
-            verifyProductReceipt(second.resolve("independent-audit-receipt.json"),
-                    "ONSURE_PRODUCT_AUDIT_RECEIPT_V1", "ONSURE_INDEPENDENT_AUDIT", job2,
-                    "RUN2_AUDIT_", reasons);
+            verifyProductReceipt(first.resolve("internal-verifier-receipt.json"),
+                    "ONSURE_INTERNAL_VERIFIER_RECEIPT_V1", "ONSURE_INTERNAL_VERIFIER", job1,
+                    "RUN1_INTERNAL_VERIFIER_", reasons);
+            verifyProductReceipt(first.resolve("internal-audit-receipt.json"),
+                    "ONSURE_INTERNAL_AUDIT_RECEIPT_V1", "ONSURE_INTERNAL_AUDIT", job1,
+                    "RUN1_INTERNAL_AUDIT_", reasons);
+            verifyProductReceipt(second.resolve("internal-verifier-receipt.json"),
+                    "ONSURE_INTERNAL_VERIFIER_RECEIPT_V1", "ONSURE_INTERNAL_VERIFIER", job2,
+                    "RUN2_INTERNAL_VERIFIER_", reasons);
+            verifyProductReceipt(second.resolve("internal-audit-receipt.json"),
+                    "ONSURE_INTERNAL_AUDIT_RECEIPT_V1", "ONSURE_INTERNAL_AUDIT", job2,
+                    "RUN2_INTERNAL_AUDIT_", reasons);
 
             IndependentRunReceiptVerifier.Verification independent1 = new IndependentRunReceiptVerifier().verify(
                     first.resolve(IndependentRunReceiptVerifier.FILE_NAME), targetId, job1,

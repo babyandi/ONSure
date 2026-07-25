@@ -150,14 +150,16 @@ class ValidationPlatformE2ETest {
     }
 
     private static void assertIndependentPass(ValidationEngine.RunResult result) {
-        assertEquals("PASS", result.report().summary().get("independent_verifier"));
-        assertEquals("PASS", result.report().summary().get("independent_audit"));
+        assertEquals("PASS", result.report().summary().get("internal_verifier"));
+        assertEquals("PASS", result.report().summary().get("internal_audit"));
+        assertEquals("NOT_RUN", result.report().summary().get("independent_verifier"));
+        assertEquals("NOT_RUN", result.report().summary().get("independent_audit"));
     }
 
     private static ValidationTarget target(String id, TargetType type, Path sourceRoot,
-            String adapterId, String sourceReference) {
+            String adapterId, String ignoredSourceReference) throws Exception {
         return new ValidationTarget(
-                id, id, type, sourceRoot, sourceReference, adapterId,
+                id, id, type, sourceRoot, SourceReferenceBinding.treeReference(sourceRoot), adapterId,
                 "ONSURE_DEFAULT_POLICY_V1", "LOCAL_E2E");
     }
 
@@ -166,8 +168,8 @@ class ValidationPlatformE2ETest {
                 "target.json", "job.json", "target-metadata.json", "evidence.json",
                 "findings.json", "failure-modes.json", "rca.json", "remediation-plans.json",
                 "fixture-registry.json", "oracle-registry.json", "fixture-results.json",
-                "stage-results.json", "regression-lock.json", "independent-verifier-receipt.json",
-                "independent-audit-receipt.json", "validation-report.json", "validation-report.md",
+                "stage-results.json", "regression-lock.json", "internal-verifier-receipt.json",
+                "internal-audit-receipt.json", "validation-report.json", "validation-report.md",
                 "validation-report.html", "manifest.sha256")) {
             assertTrue(Files.isRegularFile(runRoot.resolve(file)), file);
         }

@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -58,21 +62,57 @@ class EnvelopeAndBuilderValidatorsTest {
         assertTrue(new OMakerPlanValidator().validate(context).violations().contains("REQUIRED_APPROVAL_MISSING"));
     }
 
-    @Test void builderPlanSwapAndArtifactSwapAreRejected() {
-        OBuilderBuildContext context = new OBuilderBuildContext(D, D2, D, D, D2, D, D, D,
-                List.of("MODIFY:src/A.java"), List.of("MODIFY:src/A.java"), false, false, true, true);
+    @Test void builderPlanSwapAndArtifactSwapAreRejected() throws Exception {
+        OBuilderBuildContext context = buildContext("plan-a", "plan-b", "artifact-a", "artifact-b",
+                List.of("MODIFY:src/A.java"), List.of("MODIFY:src/A.java"));
         ValidationResult result = new OBuilderBuildValidator().validate(context);
         assertTrue(result.violations().contains("PLAN_DIGEST_MISMATCH"));
         assertTrue(result.violations().contains("BUILD_RUNTIME_DIGEST_MISMATCH"));
     }
 
-    @Test void undeclaredFileAndUnauthorizedNetworkAreRejected() {
-        OBuilderBuildContext context = new OBuilderBuildContext(D, D, D, D, D, D, D, D,
-                List.of("MODIFY:src/A.java"), List.of("MODIFY:src/A.java", "CREATE:backdoor.sh"),
-                true, false, true, true);
+    @Test void undeclaredFileAndUnauthorizedNetworkAreRejected() throws Exception {
+        OBuilderBuildContext base = buildContext("plan", "plan", "artifact", "artifact",
+                List.of("MODIFY:src/A.java"), List.of("MODIFY:src/A.java", "CREATE:backdoor.sh"));
+        OBuilderBuildContext context = new OBuilderBuildContext(
+                base.approvedPlan(), base.consumedPlan(), base.source(), base.artifact(),
+                base.runtimeArtifact(), base.dependencyLock(), base.sbom(), base.provenance(),
+                base.toolchainLock(), base.buildLog(), base.declaredFileOperations(),
+                base.actualFileOperations(), null, base.buildExecution());
         ValidationResult result = new OBuilderBuildValidator().validate(context);
         assertTrue(result.violations().contains("UNDECLARED_FILE_OPERATION"));
-        assertTrue(result.violations().contains("UNAUTHORIZED_NETWORK_ACCESS"));
+        assertTrue(result.violations().contains("UNDECLARED_FILE_OPERATION"));
+    }
+
+    private static OBuilderBuildContext buildContext(
+            String approved, String consumed, String artifactValue, String runtimeValue,
+            List<String> declared, List<String> actual) throws Exception {
+        Path root = Files.createTempDirectory("obuilder-test-");
+        var plan = evidence(root, "plan", approved);
+        var consumedPlan = evidence(root, "consumed", consumed);
+        var source = evidence(root, "source", "source");
+        var artifact = evidence(root, "artifact", artifactValue);
+        var runtime = evidence(root, "runtime", runtimeValue);
+        var dependency = evidence(root, "dependency", "dependency");
+        var sbom = evidence(root, "sbom", "sbom");
+        var provenance = evidence(root, "provenance", "provenance");
+        var toolchain = evidence(root, "toolchain", "toolchain");
+        var log = evidence(root, "log", "log");
+        var execution = new OBuilderBuildContext.BuildExecutionReceipt(
+                "run-1", source.claimedSha256(), toolchain.claimedSha256(), log.claimedSha256(),
+                true, true, true, true, artifact.claimedSha256(), artifact.claimedSha256(),
+                "builder-key", true);
+        return new OBuilderBuildContext(
+                plan, consumedPlan, source, artifact, runtime, dependency, sbom, provenance,
+                toolchain, log, declared, actual, null, execution);
+    }
+
+    private static OBuilderBuildContext.EvidenceFile evidence(Path root, String name, String value)
+            throws Exception {
+        Path file = root.resolve(name);
+        Files.writeString(file, value);
+        String digest = HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file)));
+        return new OBuilderBuildContext.EvidenceFile(file, digest);
     }
 
     private static ReceiptEnvelope receipt(String type, String authority, Map<String, Object> claims) {

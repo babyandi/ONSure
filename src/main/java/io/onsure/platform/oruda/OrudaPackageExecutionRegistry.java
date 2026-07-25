@@ -96,6 +96,7 @@ public final class OrudaPackageExecutionRegistry {
                         verified.evidenceSha256(),
                         verified.semanticDigest()));
             }
+            missing.sort(String::compareTo);
             receipts.sort(Comparator.comparing(OutputReceipt::outputId));
             String status = deriveStatus(missing, receipts);
             String reason = deriveReason(missing, receipts, status);

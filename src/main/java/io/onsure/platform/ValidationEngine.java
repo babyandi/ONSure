@@ -108,6 +108,7 @@ public final class ValidationEngine {
     }
 
     private static ValidationReport createReport(ValidationContext context, Decision decision, Instant generatedAt) {
+        ValidationCompletionGate.Evaluation completion = ValidationCompletionGate.evaluate(context);
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("open_critical", count(context.findings(), Severity.CRITICAL));
         summary.put("open_high", count(context.findings(), Severity.HIGH));
@@ -124,8 +125,14 @@ public final class ValidationEngine {
                 .filter(value -> value.decision() != Decision.PASS).count());
         summary.put("source_tree_sha256", context.attributes().getOrDefault("source_tree_sha256", "NOT_AVAILABLE"));
         summary.put("adapter_id", context.adapter().adapterId());
-        summary.put("independent_verifier", stageDecision(context, "INDEPENDENT_PRODUCT_VERIFIER"));
-        summary.put("independent_audit", stageDecision(context, "INDEPENDENT_PRODUCT_AUDIT"));
+        summary.put("internal_verifier", stageDecision(context, "INTERNAL_PRODUCT_VERIFIER"));
+        summary.put("internal_audit", stageDecision(context, "INTERNAL_PRODUCT_AUDIT"));
+        summary.put("independent_verifier", "NOT_RUN");
+        summary.put("independent_audit", "NOT_RUN");
+        summary.put("assurance_class", "SELF_VALIDATION_NONFINAL");
+        summary.put("completion_gate_contract", ValidationCompletionGate.CONTRACT);
+        summary.put("completion_gate_eligible", completion.eligible());
+        summary.put("completion_gate_reasons", completion.reasons());
         return new ValidationReport(
                 REPORT_CONTRACT,
                 "REPORT-" + context.job().jobId(),
@@ -151,6 +158,7 @@ public final class ValidationEngine {
 
     private static Decision finalDecision(ValidationContext context, Exception executionFailure) {
         if (executionFailure != null) return Decision.FAIL;
+        if (!ValidationCompletionGate.evaluate(context).eligible()) return Decision.FAIL;
         if (context.stageResults().stream().anyMatch(value -> value.decision() == Decision.FAIL)) {
             return Decision.FAIL;
         }

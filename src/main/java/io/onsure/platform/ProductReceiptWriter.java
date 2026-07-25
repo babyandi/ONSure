@@ -16,6 +16,9 @@ final class ProductReceiptWriter {
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+    private static final ObjectMapper CANONICAL_MAPPER = new ObjectMapper()
+            .findAndRegisterModules()
+            .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
     private ProductReceiptWriter() {}
 
@@ -60,6 +63,6 @@ final class ProductReceiptWriter {
     }
 
     private static String digest(Map<String, Object> body) throws Exception {
-        return Hashing.sha256(MAPPER.writeValueAsBytes(new TreeMap<>(body)));
+        return Hashing.sha256(CANONICAL_MAPPER.writeValueAsBytes(new TreeMap<>(body)));
     }
 }

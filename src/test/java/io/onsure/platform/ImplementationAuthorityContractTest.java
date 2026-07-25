@@ -55,7 +55,7 @@ class ImplementationAuthorityContractTest {
         assertTrue(outputs.containsAll(Set.of(
                 "finding", "failure_mode", "rca", "remediation_plan", "fixture_result",
                 "oracle_result", "regression_lock", "validation_report", "revalidation_delta",
-                "independent_verifier_receipt", "independent_audit_receipt",
+                "internal_verifier_receipt", "internal_audit_receipt",
                 "universal_run_summary", "universal_evidence_manifest",
                 "universal_run_receipt", "universal_final_candidate", "universal_regression_receipt")));
     }

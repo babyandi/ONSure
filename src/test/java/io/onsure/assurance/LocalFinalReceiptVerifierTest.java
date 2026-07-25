@@ -39,8 +39,10 @@ class LocalFinalReceiptVerifierTest {
         Path oaudit = run.resolve("oaudit/receipt.json");
         Files.createDirectories(otester.getParent());
         Files.createDirectories(oaudit.getParent());
-        Files.writeString(otester, "{\"assurance_run_id\":\"" + runId + "\"}");
-        Files.writeString(oaudit, "{\"assurance_run_id\":\"" + runId + "\"}");
+        Files.writeString(otester, "{\"assurance_run_id\":\"" + runId
+                + "\",\"authority\":\"OTESTER\"}");
+        Files.writeString(oaudit, "{\"assurance_run_id\":\"" + runId
+                + "\",\"authority\":\"OAUDIT\"}");
         Path ledgerPath = run.getParent().resolve("receipt-ledger.jsonl").toAbsolutePath().normalize();
         LocalReceiptLedger ledger = new LocalReceiptLedger(ledgerPath);
         assertEquals(Decision.PASS, ledger.appendAllAtomic(java.util.List.of(otester, oaudit), runId).decision());
@@ -77,8 +79,10 @@ class LocalFinalReceiptVerifierTest {
         Path laterOaudit = later.resolve("oaudit/receipt.json");
         Files.createDirectories(laterOtester.getParent());
         Files.createDirectories(laterOaudit.getParent());
-        Files.writeString(laterOtester, "{\"assurance_run_id\":\"run-20260722\"}");
-        Files.writeString(laterOaudit, "{\"assurance_run_id\":\"run-20260722\"}");
+        Files.writeString(laterOtester,
+                "{\"assurance_run_id\":\"run-20260722\",\"authority\":\"OTESTER\"}");
+        Files.writeString(laterOaudit,
+                "{\"assurance_run_id\":\"run-20260722\",\"authority\":\"OAUDIT\"}");
         assertEquals(Decision.PASS, ledger.appendAllAtomic(
                 java.util.List.of(laterOtester, laterOaudit), "run-20260722").decision());
         assertEquals(Decision.PASS, verifier.verify(run).decision());

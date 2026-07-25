@@ -3,6 +3,7 @@ package io.onsure.platform;
 import io.onsure.assurance.Decision;
 import io.onsure.platform.ValidationModel.StageResult;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,17 +21,31 @@ public final class FixtureRegistryStage implements ValidatorStage {
     public StageResult execute(ValidationContext context) throws Exception {
         Instant start = Instant.now();
         List<TargetAdapter.FixtureDefinition> fixtures = context.adapter().loadFixtures(context.target());
-        boolean executable = fixtures.stream().anyMatch(TargetAdapter.FixtureDefinition::executable);
-        if (executable && !TRUSTED_PROFILES.contains(context.target().executionProfile())) {
+        if (fixtures.isEmpty()) {
+            throw new IllegalArgumentException("FIXTURE_SET_EMPTY");
+        }
+        Set<String> fixtureIds = new HashSet<>();
+        for (TargetAdapter.FixtureDefinition fixture : fixtures) {
+            if (!fixtureIds.add(fixture.fixtureId())) {
+                throw new IllegalArgumentException("DUPLICATE_FIXTURE_ID:" + fixture.fixtureId());
+            }
+        }
+        long executable = fixtures.stream().filter(TargetAdapter.FixtureDefinition::executable).count();
+        if (executable != fixtures.size()) {
+            throw new IllegalArgumentException("ALL_FIXTURES_MUST_BE_EXECUTABLE");
+        }
+        if (!TRUSTED_PROFILES.contains(context.target().executionProfile())) {
             throw new IllegalArgumentException("EXECUTABLE_FIXTURE_REQUIRES_TRUSTED_LOCAL_PROFILE");
         }
+        context.putAttribute("registered_fixture_count", fixtures.size());
+        context.putAttribute("registered_executable_fixture_count", executable);
         FixtureHarness harness = new FixtureHarness("ONSURE_BUILTIN_HARNESS_V1");
         new FixtureRegistry().persist(
                 context.runRoot(), context.target().targetId(), context.target().sourceRoot(), fixtures,
                 harness.harnessId(), harness.oracleIds());
         return new StageResult(stageId(), Decision.PASS, start, Instant.now(), List.of(),
                 Map.of("fixtures", fixtures.size(), "oracles", harness.oracleIds().size(),
-                        "executable_fixtures", fixtures.stream().filter(TargetAdapter.FixtureDefinition::executable).count(),
+                        "executable_fixtures", executable,
                         "harness_id", harness.harnessId(),
                         "execution_profile", context.target().executionProfile()));
     }
