@@ -3,9 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE="${1:---core}"
-MANIFEST="$ROOT/fixtures/external/onguard-f49f76c1.manifest.json"
-ARCHIVE="$ROOT/fixtures/external/onguard-f49f76c1.tar.gz"
-EXPECTED_SHA256="4bf18dfad3f9055d4dbd74b4bab65b63d04231fd2cd16759b8977fbbe46b1d99"
+MANIFEST="$ROOT/fixtures/external/onguard-f9615d10.manifest.json"
+ARCHIVE="$ROOT/fixtures/external/onguard-f9615d10.tar.gz"
+EXPECTED_SHA256="b3001d512dc3192bbbd288ee4a0087691d23d2ec800d565b33816311c0d6c878"
 RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 OUT="$ROOT/receipts/manual/onguard-fixed-target/$RUN_ID"
 WORK="$(mktemp -d)"
@@ -106,7 +106,7 @@ fi
 cat > "$OUT/result.txt" <<EOF
 contract=ONSURE_MANUAL_ONGUARD_FIXED_TARGET_V1
 execution_mode=$MODE
-source_commit=f49f76c19657efc9f8487f2102212da7af6df403
+source_commit=f9615d10411249a347e107ffd992b803a828ce42
 archive_sha256=$EXPECTED_SHA256
 core_and_rule_harness=PASS
 postgres_append_only=$POSTGRES_STATUS
