@@ -1,0 +1,52 @@
+{
+  "pack_id": "onsure_common_oruda_report_chain_rag",
+  "version": "2026-07-25.1",
+  "owner": "ONSure",
+  "target_systems": ["ORUDA"],
+  "target_programs": ["ODocument", "OReport", "ODesign", "OUI"],
+  "purpose": "Common RAG material for ONSure verification, cause analysis, memory candidate generation, and remediation guidance.",
+  "source_files": [
+    "docs/rag/onsure_common_management_design.md",
+    "docs/rag/rag_source_pack.md"
+  ],
+  "chunk_file": "rag/chunks/oruda_report_chain.jsonl",
+  "taxonomy": {
+    "categories": [
+      "architecture_rule",
+      "chain_contract",
+      "program_contract",
+      "formal_procedure",
+      "lossless_contract",
+      "final_gate",
+      "cause_class",
+      "harness_rule",
+      "rag_governance"
+    ],
+    "memory_kinds": [
+      "program_learning",
+      "behavior_learning",
+      "failure_memory",
+      "improvement_memory"
+    ]
+  },
+  "promotion_policy": {
+    "initial_status": "ready_candidate",
+    "requires_loop_stability": true,
+    "minimum_loops": 2,
+    "recommended_loops": 3,
+    "requires_regression_evidence": true,
+    "automatic_promotion": false
+  },
+  "retrieval_filters": {
+    "programs": "Use when the question is about a specific target program or chain boundary.",
+    "category": "Use to separate contracts, cause classes, harness rules, and governance.",
+    "memory_kind": "Use to route candidate findings into the correct ONSure memory store."
+  },
+  "exclusions": [
+    "transient PR status",
+    "temporary branch names",
+    "duplicate progress updates",
+    "unverified speculation",
+    "raw conversation logs"
+  ]
+}

@@ -1,0 +1,1 @@
+"""ONSure standalone core contracts."""

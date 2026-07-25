@@ -1,0 +1,40 @@
+{
+  "contract": "ONSURE_OFFICIAL_LEARNING_LEDGER_V1",
+  "authority": "babyandi/ONSure",
+  "entry_order": [
+    "LEARNING_CANDIDATE",
+    "VALIDATION_REQUEST",
+    "VALIDATION_PACK",
+    "VALIDATION_RECEIPT",
+    "PROMOTION",
+    "APPLIED_LOCK"
+  ],
+  "completion_rule": {
+    "recognized_only_at": "APPLIED_LOCKED",
+    "minimum_pass_receipts": 2,
+    "requires_distinct_runs": true,
+    "requires_stable_projection": true,
+    "requires_independent_recalculation": true,
+    "requires_reviewer_approver_separation": true,
+    "requires_active_selector_binding": true,
+    "requires_rollback_pointer": true,
+    "requires_read_only_reverification": true
+  },
+  "fail_closed_states": [
+    "SKIPPED",
+    "NOT_RUN",
+    "INCONCLUSIVE",
+    "PENDING",
+    "BLOCKED",
+    "SELF_REPORTED_PASS"
+  ],
+  "hard_invariants": [
+    "LEARNING_ENGINE_CANNOT_VALIDATE_OR_PROMOTE",
+    "SCHEDULED_RESULTS_MUST_ENTER_OFFICIAL_LEDGER",
+    "PASS_REQUIRES_FIXTURE_HARNESS_ORACLE_RESULT_EVIDENCE_LINEAGE",
+    "ONE_BYTE_LEDGER_MUTATION_INVALIDATES_CHAIN",
+    "APPLIED_COUNT_REQUIRES_APPLIED_LOCK"
+  ],
+  "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
+  "external_otester_oaudit_required_for_final": true
+}
