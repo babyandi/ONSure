@@ -84,11 +84,11 @@ jobs:
       ONGUARD_PG_PASSWORD: onguard
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: babyandi/ONGuard
-          ref: 33cf9cadb2052706fb9e9eafc422c7cdbb3c62dd
-          path: onguard-target
+      - name: Verify and extract fixed ONGuard target
+        run: |
+          echo "18801f5e60a1ac5bacb471292d6bfe315ff5e284c0506997aa2d8393a6929a0e  fixtures/external/onguard-33cf9cad.tar.gz" \
+            | sha256sum -c -
+          tar -xzf fixtures/external/onguard-33cf9cad.tar.gz
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
