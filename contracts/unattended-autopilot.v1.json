@@ -1,0 +1,74 @@
+{
+  "contract": "ONSURE_UNATTENDED_AUTOPILOT_V1",
+  "version": 1,
+  "checkpoint_dir": ".onsure/autopilot",
+  "maximum_stage_attempts": 3,
+  "continue_after_restart": true,
+  "source_must_be_clean": true,
+  "forbidden_actions": [
+    "FINAL_PASS",
+    "FINAL_AUDIT_PASS",
+    "FINAL_LOCK",
+    "PRODUCTION_GO",
+    "COMMERCIAL_GO",
+    "REAL_DATA_LEARNING",
+    "PAID_EXTERNAL_SERVICE",
+    "SECRET_EXPORT",
+    "FORCE_PUSH",
+    "HARD_RESET",
+    "IMPLICIT_STASH"
+  ],
+  "merge_authorization": {
+    "authorized": true,
+    "authority": "USER_EXPLICIT_INSTRUCTION_2026-07-25",
+    "scope": "babyandi/ONSure unattended-autopilot work",
+    "self_review_must_not_be_misrepresented_as_independent_approval": true,
+    "required_before_merge": [
+      "OTESTER_SEPARATE_PROCESS_PASS",
+      "OAUDIT_SEPARATE_PROCESS_PASS",
+      "REGRESSION_TWO_RUN_PASS",
+      "ADVERSARIAL_PASS",
+      "PR_HEAD_EQUALS_VERIFIED_SOURCE",
+      "LATEST_MAIN_CONVERGED",
+      "UNRESOLVED_REVIEW_THREADS_ZERO",
+      "P0_P1_OPEN_ZERO"
+    ]
+  },
+  "stages": [
+    {
+      "id": "preflight",
+      "command": ["bash", "scripts/preflight-local-assurance.sh"],
+      "required_marker": "LOCAL_ASSURANCE_PREFLIGHT_PASS",
+      "depends_on": []
+    },
+    {
+      "id": "universal_preflight",
+      "command": ["bash", "scripts/preflight-universal-harness.sh"],
+      "required_marker": "ONSURE_UNIVERSAL_PREFLIGHT_PASS",
+      "depends_on": ["preflight"]
+    },
+    {
+      "id": "regression_run_1",
+      "command": ["bash", "scripts/run-local-assurance.sh"],
+      "required_marker": "LOCAL_ASSURANCE_PASS",
+      "depends_on": ["universal_preflight"]
+    },
+    {
+      "id": "regression_run_2",
+      "command": ["bash", "scripts/run-local-assurance.sh"],
+      "required_marker": "LOCAL_ASSURANCE_PASS",
+      "depends_on": ["regression_run_1"]
+    },
+    {
+      "id": "development_gate",
+      "command": ["bash", "scripts/run-onsure-development-gate.sh"],
+      "required_marker": "ONSURE_DEVELOPMENT_GATE_PASS",
+      "depends_on": ["regression_run_2"]
+    }
+  ],
+  "terminal_gate": {
+    "state": "MERGE_AUTHORIZED_READY",
+    "reason": "USER_AUTHORIZED_MERGE_AFTER_INDEPENDENT_GATES",
+    "operational_ready_only": true
+  }
+}

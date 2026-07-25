@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_VERIFICATION_STATUS_V1",
+  "baseline": "c75ae6f9a259f6382c840fc6b3f4103396e0acda",
+  "autopilot": {
+    "state": "NOT_RUN",
+    "receipt": null
+  },
+  "independent_otester": "NOT_RUN",
+  "independent_oaudit": "NOT_RUN",
+  "final_pass": false,
+  "final_audit_pass": false,
+  "final_lock": false,
+  "production_go": false,
+  "commercial_go": false
+}

@@ -4,3 +4,5 @@ receipts/product-e2e/
 receipts/development-gate/
 validation-data/
 *.log
+.onsure/autopilot/
+__pycache__/
