@@ -19,8 +19,13 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Compile and run all JUnit tests
         run: mvn -B -ntp verify
+      - name: Run unattended autopilot contract tests
+        run: python -m unittest tests/test_onsure_autopilot.py -v
       - name: Preflight executable assurance contracts
         run: bash scripts/preflight-local-assurance.sh
 
