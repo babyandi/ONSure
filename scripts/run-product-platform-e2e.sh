@@ -32,7 +32,9 @@ run_tests() {
   mvn -B -ntp \
     -Dtest=ImplementationAuthorityContractTest,ValidationPlatformE2ETest,ProductExecutionBoundaryTest,OrudaExecutionPackageCatalogTest,OrudaDocumentMaterializerTest,OrudaPackageExecutionRegistryTest,OrudaMvf001E2ETest,ExecutionResultClassifierTest,OrudaEvidenceLineageAndCandidateTest,OrudaFinalLockGateTest,UniversalHarnessContractTest,OracleEngineTest,UniversalHarnessRunnerTest,FinalCandidateAndRegressionTest \
     test | tee "$output/maven.log"
-  grep -h '^Tests run:' target/surefire-reports/*.txt | LC_ALL=C sort > "$output/test-summary.txt"
+  grep -h '^Tests run:' target/surefire-reports/*.txt \
+    | python "$ROOT/scripts/normalize-surefire-summary.py" \
+    | LC_ALL=C sort > "$output/test-summary.txt"
   (cd target/classes && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) \
     > "$output/classes.sha256"
   (cd target/test-classes && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) \
