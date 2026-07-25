@@ -92,6 +92,38 @@ URL 문자열이나 locator hash만으로 원문 봉인을 대신할 수 없다.
 - 생성자, 검증자, 승격자
 - 생성·검증·만료 시각
 
+### 5.4 표준 학습자산 12종
+
+ONSURE는 모든 대상 프로그램의 경험을 다음 12종으로 분리한다.
+
+| 자산 | 내용 |
+|---|---|
+| Source | 원문, 코드, 요구사항, 외부 근거와 실제 byte hash |
+| Constraint | 고정 규칙, 금지사항, 사용자 선호, 승인 경계 |
+| Method | 수행 방법과 절차 |
+| Decision | 선택 내용, 선택 이유, 대안, 기각 이유 |
+| Case | 실제 입력부터 결과까지의 수행 사례 |
+| Failure | 실패 결과, 재현 조건, 근본원인 |
+| Correction | 수정 지시, 수정 전후, 영향 범위 |
+| Pattern | 반복 검증된 재사용 가능 패턴 |
+| Anti-pattern | 적용 금지 조건과 실패 패턴 |
+| Golden | 독립 검증·재생성·일반화·사용자 승인을 통과한 기준 사례 |
+| Evaluation | 사용자, OTester, OAudit, 실행 하네스의 평가 증적 |
+| Lineage | Source부터 승격·롤백까지의 부모 hash 계보 |
+
+최종 산출물만 저장하지 않는다. 선택하지 않은 대안과 기각 이유, 사용자의 명시적 승인·거부·수정 지시를 함께 보존한다. 무응답은 승인으로 해석하지 않는다.
+
+### 5.5 다계층 경험 구조
+
+하나의 경험은 다음 계층으로 분해하되 동일 parent_case_id로 결속한다.
+
+1. Project/Program: 전체 목적, 사용자, 환경, 기준선
+2. Stage/Capability: 분석·기획·생성·검증·개선 등 수행 단계
+3. Unit: 페이지, 기능, 컴포넌트, 시나리오 또는 산출물 단위
+4. Event: 개별 판단, 실패, 사용자 피드백, 수정, 재검증 사건
+
+보고서 프로그램은 Project → 작성 단계 → 페이지 → 판단·수정 사건으로, 코드·Agent 프로그램은 Program → Capability → Function/Scenario → 판단·수정 사건으로 매핑한다.
+
 ## 6. 표준 학습 절차
 
 ### 단계 0. 학습 트리거 고정
@@ -138,6 +170,20 @@ Branch, Commit SHA, Dirty 상태, 의존성 lock, 모델 ID·버전·설정, 프
 
 원리, 패턴, 실패 조건, 개선 가설을 Learning Atom으로 만든다. 유사 문장 생성량이 아니라 새로운 근거·조건·반례의 증가량을 측정한다.
 
+### 단계 7A. 피드백 사건 구조화
+
+대화나 운영 로그를 통째로 학습하지 않고 요청 → 결과 → 사용자/운영 평가 → 원인 → 수정 → 승인 여부의 사건으로 추출한다. 성공·실패·개선·검증 사례를 분리하되 동일 case_id와 parent_hash로 연결한다.
+
+### 단계 7B. 2~3중 수렴 하네스
+
+각 회차는 후보 생성 → 중복·충돌 제거 → OTester 검증 → OAudit 감사 → 미통과 원인 보완 순서로 실행한다.
+
+- 최소 2회, 불안정·신규 패턴 발견 시 3회 실행
+- 회차마다 신규 Source, 신규 Learning Atom, 신규 실패 유형, 미해결 충돌, 검증 결과를 기록
+- 마지막 2회 연속 신규 유효 패턴 0건, 미해결 충돌 0건, 결과 hash 안정일 때만 포화 후보
+- 최대 3회 도달 후에도 신규 패턴이나 충돌이 남으면 완료로 간주하지 않고 HOLD와 다음 재개 조건을 기록
+- 문장 변형이나 조합 증가는 신규 학습자료로 계산하지 않음
+
 ### 단계 8. 반례·충돌·오염 검사
 
 다음을 검사한다.
@@ -158,6 +204,12 @@ Branch, Commit SHA, Dirty 상태, 의존성 lock, 모델 ID·버전·설정, 프
 ### 단계 10. 독립 검증
 
 후보 생성자와 다른 책임 주체가 출처, 의미, 재현성, 적용 조건, 부작용을 검증한다. 자체 스크립트 하나의 PASS만으로 독립 검증을 대체할 수 없다.
+
+- OTester: 기능·사실·구조·재현·회귀·변형 입력·미학습 과제 적용을 검증한다.
+- OAudit: Source 권리, 실제 byte hash, parent lineage, 책임 분리, Receipt, 승격 조건을 감사한다.
+- User/Owner Gate: 실제 사용자의 명시적 승인 또는 정의된 업무 오라클을 확인한다.
+
+세 판정 중 하나라도 FAIL·PENDING·NOT_RUN이면 Golden 또는 ACTIVE로 승격하지 않는다.
 
 ### 단계 11. 제한적 적용과 A/B 비교
 
@@ -281,6 +333,9 @@ Project Memory를 Reusable Pattern Memory로 승격하려면 최소 두 개의 �
 - Promotion Receipt
 - Memory Version Manifest
 - Rollback Pointer
+- RAG 준비물: source_pack.md, chunks.jsonl, manifest.json, ingest_guide.md
+
+RAG 준비물은 RAG_READY 승인 후보까지만 만든다. 실제 embedding, Vector DB 적재, fine-tuning은 별도 승인·실행·검증이 없으면 수행하거나 완료로 표현하지 않는다.
 
 모든 산출물은 SourceBaseline, parent_hashes, actor, tool/model version, created_at, decision을 포함한다.
 
@@ -301,6 +356,10 @@ Project Memory를 Reusable Pattern Memory로 승격하려면 최소 두 개의 �
 11. 활성 기억 롤백 후 이전 결과 재현
 12. 복합 도메인 사례에서 판단 계약과 실행 계약 분리
 13. 두 개의 실제 대상 프로그램에서 Full-Chain 2회 연속 성공
+14. 사용자 피드백 사건의 요청·결과·지적·수정·승인 계보 재현
+15. 12종 학습자산의 필수 필드와 상호 parent hash 결속
+16. 2~3중 하네스에서 마지막 2회 연속 신규 유효 패턴 0건과 안정 hash 확인
+17. 미학습 프로그램 또는 변경 입력에서 재사용 조건과 금지 조건 검증
 
 ## 15. 최종 판정 규칙
 
