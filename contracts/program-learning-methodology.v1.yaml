@@ -1,0 +1,220 @@
+version: "1.0"
+contract_id: "onsure.program-learning-methodology"
+status: "DESIGN_BASELINE"
+scope:
+  product: "ONSURE"
+  applies_to:
+    - program_learning
+    - behavior_learning
+    - domain_learning
+    - improvement_learning
+  excludes:
+    - foundation_model_pretraining
+    - enterprise_wide_knowledge_management
+
+principles:
+  authority_before_learning: true
+  candidate_first: true
+  evidence_over_assertion: true
+  preserve_intent: true
+  domain_aware: true
+  parent_hash_lineage: true
+  fail_closed: true
+  reversible_memory: true
+
+required_source_fields:
+  - source_id
+  - source_type
+  - owner
+  - license_or_permission
+  - locator
+  - actual_byte_hash
+  - version
+  - confidentiality
+  - personal_data_classification
+  - retrieved_at
+
+learning_atom_required_fields:
+  - atom_id
+  - claim
+  - target_program
+  - domains
+  - source_hashes
+  - case_hashes
+  - conditions
+  - exceptions
+  - counterexamples
+  - confidence
+  - scenario_ids
+  - oracle_ids
+  - memory_scope
+  - created_by
+  - verified_by
+  - expires_at
+
+asset_taxonomy:
+  - source
+  - constraint
+  - method
+  - decision
+  - case
+  - failure
+  - correction
+  - pattern
+  - anti_pattern
+  - golden
+  - evaluation
+  - lineage
+
+experience_hierarchy:
+  - project_or_program
+  - stage_or_capability
+  - page_function_scenario_or_artifact
+  - decision_failure_feedback_correction_event
+
+feedback_event_required_fields:
+  - request_hash
+  - result_hash
+  - evaluation_type
+  - evaluation_hash
+  - root_cause
+  - correction_hash
+  - approval_status
+  - parent_case_id
+
+states:
+  normal:
+    - DISCOVERED
+    - RIGHTS_CHECKED
+    - MATERIALIZED
+    - PROFILE_CANDIDATE
+    - EVIDENCE_BOUND
+    - VERIFIED
+    - SHADOW_APPLIED
+    - PROMOTION_CANDIDATE
+    - ACTIVE
+  exception:
+    - CONFLICT
+    - QUARANTINED
+    - REFERENCE_ONLY
+    - REJECTED
+    - STALE
+    - ROLLED_BACK
+    - HOLD
+
+promotion_gate:
+  decision: "fail_closed"
+  all_required:
+    - source_actual_byte_hash_present
+    - rights_and_data_classification_pass
+    - scope_and_prohibitions_declared
+    - boundary_or_counterexample_present
+    - executable_scenario_and_oracle_present
+    - independent_verification_pass
+    - before_after_improvement_proven
+    - zero_regression
+    - complete_parent_hash_lineage
+    - zero_pending_receipts
+    - zero_unresolved_conflicts
+    - rollback_pointer_present
+  on_failure: "HOLD"
+
+memory_separation:
+  project_memory:
+    cross_project_retrieval: false
+    may_contain_customer_specific_data: true
+  reusable_pattern_memory:
+    customer_specific_data: false
+    minimum_independent_reproductions: 2
+    rights_review_required: true
+    privacy_review_required: true
+
+convergence_harness:
+  minimum_loops: 2
+  maximum_loops: 3
+  stable_final_loops_required: 2
+  per_loop_required_metrics:
+    - new_authority_sources
+    - new_valid_learning_atoms
+    - new_failure_types
+    - unresolved_conflicts
+    - otester_result
+    - oaudit_result
+    - stable_projection_hash
+  saturation_all_required:
+    - zero_new_valid_patterns_in_last_two_loops
+    - zero_unresolved_conflicts
+    - stable_projection_hash_in_last_two_loops
+  on_max_loop_without_saturation: "HOLD"
+
+independent_gates:
+  otester:
+    - function_and_fact
+    - structure_and_reproduction
+    - regression
+    - changed_input
+    - unseen_program_generalization
+  oaudit:
+    - rights_and_privacy
+    - actual_byte_hash
+    - parent_lineage
+    - responsibility_separation
+    - receipts_and_promotion_gate
+  user_or_owner:
+    explicit_approval_required: true
+    silence_counts_as_approval: false
+
+responsibility_separation:
+  candidate_creator_may_promote: false
+  scenario_creator_may_self_pass: false
+  verifier_may_author_patch_and_finally_approve: false
+  improvement_author_may_judge_own_effect: false
+  pending_receipt_may_reach_final: false
+
+required_artifacts:
+  - source_manifest
+  - rights_data_classification_receipt
+  - program_inventory
+  - program_profile
+  - domain_coverage_map
+  - behavior_profile
+  - learning_atom_set
+  - conflict_contamination_report
+  - scenario_oracle_pack
+  - verification_receipt
+  - before_after_proof
+  - promotion_receipt
+  - memory_version_manifest
+  - rollback_pointer
+  - rag_source_pack
+  - rag_chunks_jsonl
+  - rag_manifest
+  - rag_ingest_guide
+
+rag_policy:
+  prepared_state: "RAG_READY_CANDIDATE"
+  actual_embedding_without_separate_approval: false
+  vector_db_ingestion_without_separate_approval: false
+  fine_tuning_without_separate_approval: false
+  completion_claim_before_ingestion_receipt: false
+
+required_receipt_fields:
+  - receipt_id
+  - source_baseline_hash
+  - parent_hashes
+  - input_hash
+  - output_hash
+  - actor
+  - tool_or_model_version
+  - created_at
+  - decision
+
+acceptance:
+  consecutive_full_chain_passes: 2
+  minimum_distinct_real_programs: 2
+  otester_pass_required: true
+  oaudit_pass_required: true
+  explicit_user_or_owner_gate_required: true
+  unseen_or_changed_input_test_required: true
+  twelve_asset_lineage_required: true
+  production_claim_allowed_before_runtime_test: false
