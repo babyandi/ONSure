@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_FIXED_EXTERNAL_TARGET_ARCHIVE_V1",
+  "target_id": "ONGuard",
+  "source_repository": "babyandi/ONGuard",
+  "source_commit": "d475d6d3fc04200f390f840b381f6af6e38c9e94",
+  "archive": "onguard-d475d6d3.tar.gz",
+  "archive_sha256": "9afe68ba3dfa683f311885358c0e93518fb7749800fd9c2f8bd550a05af30ebb",
+  "included_scope": [
+    ".devcontainer",
+    "db",
+    "docs/spec",
+    "fixtures/good_code_rules",
+    "pyproject.toml",
+    "src",
+    "tests",
+    "tests_postgres",
+    "tools"
+  ],
+  "excluded_scope": [
+    ".git",
+    "doc/report",
+    "artifacts/generated-before-run",
+    "cache"
+  ],
+  "assurance_class": "SELF_VALIDATION_NONFINAL",
+  "independent_otester": "NOT_RUN",
+  "independent_oaudit": "NOT_RUN"
+}
