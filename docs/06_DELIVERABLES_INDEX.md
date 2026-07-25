@@ -28,6 +28,8 @@
 - [x] Program Learning 상위 정의
 - [x] Behavior Learning 상위 정의
 - [x] Improvement Learning 상위 정의
+- [x] 증거 결속형 프로그램 학습 방법론
+- [x] 학습 후보 상태·승격·롤백 기계 계약
 - [ ] Program Model JSON Schema
 - [ ] Behavior Model JSON Schema
 - [ ] Failure Memory JSON Schema
@@ -137,7 +139,9 @@
 - `docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md`
 - `docs/08_INTERNAL_RESPONSIBILITY_SEPARATION.md`
 - `docs/08_TEST_COMMERCIALIZATION_AND_RELEASE_PLAN.md`
+- `docs/09_PROGRAM_LEARNING_METHODOLOGY.md`
 - `contracts/internal-responsibility-separation.v1.yaml`
+- `contracts/program-learning-methodology.v1.yaml`
 
 ## 실행 대장
 
