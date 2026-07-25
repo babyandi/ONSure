@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -n "${ONSURE_MAVEN_BIN:-}" && -x "${ONSURE_MAVEN_BIN}" ]]; then
+  exec "${ONSURE_MAVEN_BIN}" "$@"
+fi
+
+for candidate in /tmp/apache-maven-3.9.11/bin/mvn /tmp/apache-maven-3.9.9/bin/mvn; do
+  if [[ -x "$candidate" ]]; then
+    exec "$candidate" "$@"
+  fi
+done
+
+echo "ONSURE_MAVEN_NOT_FOUND: install Maven or set ONSURE_MAVEN_BIN" >&2
+exit 69

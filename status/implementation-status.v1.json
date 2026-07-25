@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_IMPLEMENTATION_STATUS_V1",
+  "items": [
+    {
+      "id": "ONSURE-INTERNAL-RAG-CONTROL",
+      "state": "UNIT_VERIFIED",
+      "evidence": "PR #4"
+    },
+    {
+      "id": "OBUILDER-EVIDENCE-BINDING",
+      "state": "UNIT_VERIFIED",
+      "evidence": "PR #4 @ c75ae6f9a259f6382c840fc6b3f4103396e0acda"
+    },
+    {
+      "id": "UNATTENDED-VSCODE-AUTOPILOT",
+      "state": "IMPLEMENTED",
+      "evidence": "scripts/onsure-autopilot.py"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
+  "items": [
+    {
+      "id": "AUTOPILOT-SELF-VERIFY",
+      "state": "READY",
+      "requires_human": false,
+      "next_action": "Run the unattended autopilot test suite and two-run regression."
+    },
+    {
+      "id": "ORUDA-OBUILDER-REAL-E2E",
+      "state": "BLOCKED_EXTERNAL_WORKSPACE",
+      "requires_human": false,
+      "next_action": "Open or attach the ORUDA target workspace and bind real OBuilder receipts."
+    },
+    {
+      "id": "ODESIGN-RAG-REAL-E2E",
+      "state": "BLOCKED_EXTERNAL_WORKSPACE",
+      "requires_human": false,
+      "next_action": "Open or attach the ODesign target workspace and materialize its RAG environment."
+    },
+    {
+      "id": "INDEPENDENT-OTESTER-OAUDIT",
+      "state": "BLOCKED_INDEPENDENT_AUTHORITY",
+      "requires_human": false,
+      "next_action": "Run separate processes, execution identities, and signing keys."
+    },
+    {
+      "id": "APPROVE-AND-MERGE",
+      "state": "WAITING_HUMAN_GATE",
+      "requires_human": true,
+      "next_action": "Obtain Human Decision Owner Permit."
+    },
+    {
+      "id": "OPERATIONAL",
+      "state": "HOLD",
+      "requires_human": true,
+      "next_action": "Stop at OPERATIONAL_READY until Production GO is explicitly granted."
+    }
+  ]
+}
