@@ -32,6 +32,18 @@ class SurefireSummaryNormalizationTest(unittest.TestCase):
         failing = "Tests run: 42, Failures: 1, Time elapsed: 1.0 s\n"
         self.assertNotEqual(MODULE.normalize(passing), MODULE.normalize(failing))
 
+    def test_both_repeated_harnesses_use_the_normalizer(self) -> None:
+        for relative_path in (
+            "scripts/run-product-platform-e2e.sh",
+            "scripts/run-local-assurance.sh",
+        ):
+            script = (ROOT / relative_path).read_text(encoding="utf-8")
+            self.assertIn(
+                'python "$ROOT/scripts/normalize-surefire-summary.py"',
+                script,
+                relative_path,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
