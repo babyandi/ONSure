@@ -52,6 +52,36 @@ learning_atom_required_fields:
   - verified_by
   - expires_at
 
+asset_taxonomy:
+  - source
+  - constraint
+  - method
+  - decision
+  - case
+  - failure
+  - correction
+  - pattern
+  - anti_pattern
+  - golden
+  - evaluation
+  - lineage
+
+experience_hierarchy:
+  - project_or_program
+  - stage_or_capability
+  - page_function_scenario_or_artifact
+  - decision_failure_feedback_correction_event
+
+feedback_event_required_fields:
+  - request_hash
+  - result_hash
+  - evaluation_type
+  - evaluation_hash
+  - root_cause
+  - correction_hash
+  - approval_status
+  - parent_case_id
+
 states:
   normal:
     - DISCOVERED
@@ -99,6 +129,41 @@ memory_separation:
     rights_review_required: true
     privacy_review_required: true
 
+convergence_harness:
+  minimum_loops: 2
+  maximum_loops: 3
+  stable_final_loops_required: 2
+  per_loop_required_metrics:
+    - new_authority_sources
+    - new_valid_learning_atoms
+    - new_failure_types
+    - unresolved_conflicts
+    - otester_result
+    - oaudit_result
+    - stable_projection_hash
+  saturation_all_required:
+    - zero_new_valid_patterns_in_last_two_loops
+    - zero_unresolved_conflicts
+    - stable_projection_hash_in_last_two_loops
+  on_max_loop_without_saturation: "HOLD"
+
+independent_gates:
+  otester:
+    - function_and_fact
+    - structure_and_reproduction
+    - regression
+    - changed_input
+    - unseen_program_generalization
+  oaudit:
+    - rights_and_privacy
+    - actual_byte_hash
+    - parent_lineage
+    - responsibility_separation
+    - receipts_and_promotion_gate
+  user_or_owner:
+    explicit_approval_required: true
+    silence_counts_as_approval: false
+
 responsibility_separation:
   candidate_creator_may_promote: false
   scenario_creator_may_self_pass: false
@@ -121,6 +186,17 @@ required_artifacts:
   - promotion_receipt
   - memory_version_manifest
   - rollback_pointer
+  - rag_source_pack
+  - rag_chunks_jsonl
+  - rag_manifest
+  - rag_ingest_guide
+
+rag_policy:
+  prepared_state: "RAG_READY_CANDIDATE"
+  actual_embedding_without_separate_approval: false
+  vector_db_ingestion_without_separate_approval: false
+  fine_tuning_without_separate_approval: false
+  completion_claim_before_ingestion_receipt: false
 
 required_receipt_fields:
   - receipt_id
@@ -136,4 +212,9 @@ required_receipt_fields:
 acceptance:
   consecutive_full_chain_passes: 2
   minimum_distinct_real_programs: 2
+  otester_pass_required: true
+  oaudit_pass_required: true
+  explicit_user_or_owner_gate_required: true
+  unseen_or_changed_input_test_required: true
+  twelve_asset_lineage_required: true
   production_claim_allowed_before_runtime_test: false
