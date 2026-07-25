@@ -53,7 +53,9 @@ run_once() {
   rm -rf target
   mkdir -p "$run_dir"
   mvn -B -ntp clean test | tee "$run_dir/maven.log"
-  grep -h '^Tests run:' target/surefire-reports/*.txt | LC_ALL=C sort > "$run_dir/test-summary.txt"
+  grep -h '^Tests run:' target/surefire-reports/*.txt \
+    | python "$ROOT/scripts/normalize-surefire-summary.py" \
+    | LC_ALL=C sort > "$run_dir/test-summary.txt"
   (cd target/classes && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) > "$run_dir/classes.sha256"
   java -cp "$CP" io.onsure.assurance.AdversarialFixtureReportMain \
     "$FIXTURE_SNAPSHOT" \
