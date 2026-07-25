@@ -86,7 +86,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify and extract fixed ONGuard target
         run: |
-          echo "18801f5e60a1ac5bacb471292d6bfe315ff5e284c0506997aa2d8393a6929a0e  fixtures/external/onguard-33cf9cad.tar.gz" \
+          echo "3e8b6317b73057c730900ffb2c8ff16e12a722c9fee4f71b0f9383b590a17b89  fixtures/external/onguard-33cf9cad.tar.gz" \
             | sha256sum -c -
           tar -xzf fixtures/external/onguard-33cf9cad.tar.gz
       - uses: actions/setup-python@v5
