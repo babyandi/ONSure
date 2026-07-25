@@ -2,8 +2,8 @@
   "contract": "ONSURE_FIXED_EXTERNAL_TARGET_ARCHIVE_V1",
   "target_id": "ONGuard",
   "source_repository": "babyandi/ONGuard",
-  "source_commit": "1b591977301d62e4d190eeda38750d8a94cc7c17",
-  "archive": "onguard-1b591977.tar.gz",
+  "source_commit": "e5e2f8d5ac06567479540dce1c93d12b9c9c0957",
+  "archive": "onguard-e5e2f8d5.tar.gz",
   "archive_sha256": "e9444750a18c9331b7ee26369f09b41d8d1645ae7f4026a7b3c113c393be8010",
   "included_scope": [
     ".devcontainer",
@@ -23,6 +23,8 @@
     "cache"
   ],
   "assurance_class": "SELF_VALIDATION_NONFINAL",
+  "domain_detector_implemented": 0,
+  "domain_detector_pending": 295,
   "independent_otester": "NOT_RUN",
   "independent_oaudit": "NOT_RUN"
 }
