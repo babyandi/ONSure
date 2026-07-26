@@ -14,10 +14,17 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /** Generates a risk-based, approval-aware execution plan from a Program Profile. */
 public final class ExecutionPlanService {
     public static final String CONTRACT = "ONSURE_EXECUTION_PLAN_V1";
+    public static final Set<String> APPROVABLE_ACTIONS = Set.of(
+            "STATIC_ANALYSIS", "AI_BEHAVIOR_VALIDATION", "BEHAVIOR_LEARNING",
+            "FIXTURE_EXECUTION", "REVIEW", "RCA", "IMPROVEMENT_PLAN",
+            "REGRESSION_LOCK", "EVIDENCE_GENERATION");
+
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -47,23 +54,39 @@ public final class ExecutionPlanService {
                 "(?:LOCAL_E2E|LOCAL_MVF_E2E|LOCAL_FIXTURE|TRUSTED_LOCAL_FIXTURE|LOCAL_DEVELOPMENT)");
         String approvalState = developmentAutoApproval
                 ? "AUTO_APPROVED_DEVELOPMENT_NONFINAL" : "AWAITING_USER_APPROVAL";
+
         List<String> reviewPacks = new ArrayList<>(List.of(
                 "REQUIREMENT_TRACEABILITY", "ARCHITECTURE", "POLICY", "CODE",
                 "SECURITY", "TEST_QUALITY"));
-        if (target.targetType() != TargetType.GENERAL_SOFTWARE) {
-            reviewPacks.addAll(List.of("AI_PROMPT", "AI_TOOL", "AI_RAG", "AI_BEHAVIOR"));
-        }
         List<String> scenarios = new ArrayList<>(List.of(
                 "NORMAL", "BOUNDARY", "FAILURE", "UNAUTHORIZED", "RECOVERY"));
+        List<String> allowedActions = new ArrayList<>(List.of(
+                "STATIC_ANALYSIS", "FIXTURE_EXECUTION", "REVIEW", "RCA",
+                "IMPROVEMENT_PLAN", "REGRESSION_LOCK", "EVIDENCE_GENERATION"));
         if (target.targetType() != TargetType.GENERAL_SOFTWARE) {
+            reviewPacks.addAll(List.of("AI_PROMPT", "AI_TOOL", "AI_RAG", "AI_BEHAVIOR"));
             scenarios.addAll(List.of(
                     "PROMPT_INJECTION", "TOOL_AUTHORIZATION", "CONTEXT_EXFILTRATION",
                     "REPEATED_BEHAVIOR_VARIABILITY"));
+            allowedActions.addAll(List.of("AI_BEHAVIOR_VALIDATION", "BEHAVIOR_LEARNING"));
         }
+        allowedActions = allowedActions.stream().distinct().sorted().toList();
+        if (!APPROVABLE_ACTIONS.containsAll(allowedActions)) {
+            throw new IllegalStateException("EXECUTION_PLAN_ACTION_SET_INVALID");
+        }
+
         long estimatedSeconds = Math.max(30L, registeredFixtureCount * 15L
                 + profile.path("components").size() * 2L
                 + profile.path("dependencies").size());
         long estimatedMemoryMb = riskScore >= 60 ? 2048 : 1024;
+
+        Map<String, Object> approval = new LinkedHashMap<>();
+        approval.put("state", approvalState);
+        approval.put("scope", developmentAutoApproval ? "LOCAL_NONFINAL_VALIDATION_ONLY" : "NO_EXECUTION");
+        approval.put("approver", developmentAutoApproval ? "POLICY:LOCAL_DEVELOPMENT" : "NOT_ASSIGNED");
+        approval.put("revocable", true);
+        approval.put("approved_actions", developmentAutoApproval ? allowedActions : List.of());
+        approval.put("signed_receipt_required", !developmentAutoApproval);
 
         Map<String, Object> plan = new LinkedHashMap<>();
         plan.put("contract", CONTRACT);
@@ -74,6 +97,7 @@ public final class ExecutionPlanService {
         plan.put("risk", Map.of("score", riskScore, "level", riskLevel));
         plan.put("review_packs", List.copyOf(reviewPacks));
         plan.put("scenario_classes", List.copyOf(scenarios));
+        plan.put("allowed_actions", List.copyOf(allowedActions));
         plan.put("fixture_count", registeredFixtureCount);
         plan.put("resource_budget", Map.of(
                 "estimated_seconds", estimatedSeconds,
@@ -92,24 +116,21 @@ public final class ExecutionPlanService {
         plan.put("stop_conditions", List.of(
                 "SOURCE_DRIFT", "UNTRACKED_EXECUTION_INPUT", "SANDBOX_UNAVAILABLE",
                 "CRITICAL_SECURITY_FINDING", "EVIDENCE_WRITE_FAILURE", "APPROVAL_REVOKED"));
-        plan.put("approval", Map.of(
-                "state", approvalState,
-                "scope", developmentAutoApproval ? "LOCAL_NONFINAL_VALIDATION_ONLY" : "NO_EXECUTION",
-                "approver", developmentAutoApproval ? "POLICY:LOCAL_DEVELOPMENT" : "NOT_ASSIGNED",
-                "revocable", true));
+        plan.put("approval", Map.copyOf(approval));
         plan.put("created_at", Instant.now().toString());
         plan.put("product_full_chain", "NOT_RUN");
         plan.put("independent_assurance", "NOT_RUN");
         plan.put("final_claim_allowed", false);
-        plan.put("plan_sha256", sha256(mapper.writeValueAsBytes(plan)));
+        plan.put("plan_sha256", planHash(plan));
         writeAtomic(outputFile, plan);
         return Map.copyOf(plan);
     }
 
-    public void requireApproved(Map<String, Object> plan) {
+    public void requireApproved(Map<String, Object> plan) throws Exception {
         if (!CONTRACT.equals(plan.get("contract"))) {
             throw new IllegalArgumentException("EXECUTION_PLAN_CONTRACT_INVALID");
         }
+        verifyPlanHash(plan);
         Object approvalObject = plan.get("approval");
         if (!(approvalObject instanceof Map<?, ?> approval)) {
             throw new IllegalArgumentException("EXECUTION_PLAN_APPROVAL_MISSING");
@@ -118,6 +139,49 @@ public final class ExecutionPlanService {
         if (!List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED").contains(state)) {
             throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_REQUIRED");
         }
+        Set<String> allowed = stringSet(plan.get("allowed_actions"));
+        Set<String> approved = stringSet(approval.get("approved_actions"));
+        if (allowed.isEmpty() || !allowed.equals(approved) || !APPROVABLE_ACTIONS.containsAll(approved)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INCOMPLETE");
+        }
+        if ("USER_APPROVED".equals(state)) {
+            for (String field : List.of(
+                    "approval_id", "approval_actor", "approval_key_id",
+                    "approval_receipt_sha256", "approved_at", "expires_at")) {
+                Object value = approval.get(field);
+                if (!(value instanceof String text) || text.isBlank()) {
+                    throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_LINEAGE_MISSING:" + field);
+                }
+            }
+            if (!String.valueOf(approval.get("approval_receipt_sha256")).matches("[0-9a-f]{64}")) {
+                throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_RECEIPT_DIGEST_INVALID");
+            }
+            if (!Instant.now().isBefore(Instant.parse(String.valueOf(approval.get("expires_at"))))) {
+                throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_EXPIRED");
+            }
+        }
+    }
+
+    public void verifyPlanHash(Map<String, Object> plan) throws Exception {
+        String expected = String.valueOf(plan.get("plan_sha256"));
+        if (!expected.matches("[0-9a-f]{64}") || !expected.equals(planHash(plan))) {
+            throw new IllegalStateException("EXECUTION_PLAN_HASH_MISMATCH");
+        }
+    }
+
+    public String planHash(Map<String, Object> plan) throws Exception {
+        Map<String, Object> copy = new TreeMap<>(plan);
+        copy.remove("plan_sha256");
+        return sha256(mapper.writeValueAsBytes(copy));
+    }
+
+    private static Set<String> stringSet(Object value) {
+        if (!(value instanceof List<?> list)) return Set.of();
+        java.util.LinkedHashSet<String> result = new java.util.LinkedHashSet<>();
+        for (Object item : list) {
+            if (item instanceof String text && !text.isBlank()) result.add(text);
+        }
+        return Set.copyOf(result);
     }
 
     private static int riskScore(
