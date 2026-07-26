@@ -13,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Executes general, remediated, AI and ORUDA product scenarios and preserves evidence. */
+/** Executes generic, AI and optional ORUDA validator-fixture scenarios and preserves evidence. */
 public final class ProductPlatformE2EMain {
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .findAndRegisterModules().enable(SerializationFeature.INDENT_OUTPUT)
@@ -28,7 +28,7 @@ public final class ProductPlatformE2EMain {
         }
         Path output = Path.of(args[0]).toAbsolutePath().normalize();
         Files.createDirectories(output);
-        ValidationEngine engine = ValidationEngine.defaultEngine(output.resolve("validation-data"));
+        ValidationEngine engine = ValidationEngine.withOrudaAdapter(output.resolve("validation-data"));
 
         ValidationEngine.RunResult generalBaseline = engine.run(target(
                 "sample-general-program", TargetType.GENERAL_SOFTWARE,
@@ -74,6 +74,7 @@ public final class ProductPlatformE2EMain {
         }
 
         Map<String, Object> normalized = new LinkedHashMap<>();
+        normalized.put("scope", "VALIDATOR_FIXTURE_E2E_NONFINAL");
         normalized.put("general_baseline", normalize(generalBaseline.report()));
         normalized.put("general_fixed", normalize(generalFixed.report()));
         normalized.put("ai_program", normalize(ai.report()));
@@ -88,7 +89,8 @@ public final class ProductPlatformE2EMain {
         MAPPER.writeValue(output.resolve("normalized-result.json").toFile(), normalized);
 
         Map<String, Object> inventory = new LinkedHashMap<>();
-        inventory.put("contract", "ONSURE_PRODUCT_PLATFORM_E2E_V1");
+        inventory.put("contract", "ONSURE_VALIDATOR_FIXTURE_E2E_V1");
+        inventory.put("product_full_chain", "NOT_RUN");
         inventory.put("general_baseline_run", generalBaseline.runRoot().toString());
         inventory.put("general_fixed_run", generalFixed.runRoot().toString());
         inventory.put("ai_run", ai.runRoot().toString());
@@ -97,7 +99,7 @@ public final class ProductPlatformE2EMain {
         inventory.put("normalized_result", output.resolve("normalized-result.json").toString());
         inventory.put("revalidation_delta", output.resolve("general-program-revalidation-delta.json").toString());
         MAPPER.writeValue(output.resolve("execution-inventory.json").toFile(), inventory);
-        System.out.println("ONSURE_PRODUCT_E2E_EXECUTION_PASS " + output);
+        System.out.println("ONSURE_VALIDATOR_FIXTURE_E2E_EXECUTION_PASS " + output);
     }
 
     private static Map<String, Object> normalize(ValidationReport report) {
@@ -106,6 +108,7 @@ public final class ProductPlatformE2EMain {
         value.put("target_type", report.target().targetType().name());
         value.put("decision", report.decision().name());
         value.put("adapter_id", report.summary().get("adapter_id"));
+        value.put("registered_adapter_ids", report.summary().get("registered_adapter_ids"));
         value.put("finding_fingerprints", report.findings().stream()
                 .map(finding -> finding.fingerprint()).sorted().toList());
         value.put("failure_mode_codes", report.failureModes().stream()
