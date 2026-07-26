@@ -1,0 +1,83 @@
+{
+  "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
+  "version": "1.0.0",
+  "bindings": [
+    {
+      "schema": "contracts/security-findings.v1.schema.json",
+      "instances": ["findings/security-findings.v1.json"],
+      "required": true,
+      "scope": "COMMITTED"
+    },
+    {
+      "schema": "contracts/program-profile.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/behavior-profile.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/failure-memory.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/improvement-memory.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/evidence-receipt.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/source-lock.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/local-agent-receipt.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/local-final-receipt.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "RUNTIME_GENERATED",
+      "state": "NOT_RUN"
+    },
+    {
+      "schema": "contracts/oruda-document-materialization.v1.schema.json",
+      "instances": [],
+      "required": false,
+      "scope": "OPTIONAL_ADAPTER_RUNTIME",
+      "state": "NOT_RUN"
+    }
+  ],
+  "rules": {
+    "required_instance_missing": "FAIL",
+    "schema_meta_invalid": "FAIL",
+    "instance_invalid": "FAIL",
+    "optional_runtime_instance_missing": "NOT_RUN",
+    "unknown_schema_reference": "FAIL"
+  },
+  "final_claim_allowed": false
+}
