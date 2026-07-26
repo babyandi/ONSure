@@ -49,6 +49,8 @@ if ! python3 -c 'import jsonschema, yaml' >/dev/null 2>&1; then
     | tee "$OUT/validation-dependency-install.log"
   VALIDATION_PYTHON="$OUT/validation-venv/bin/python"
 fi
+VALIDATION_BIN="$(cd "$(dirname "$VALIDATION_PYTHON")" && pwd)"
+export PATH="$VALIDATION_BIN:$PATH"
 
 "$VALIDATION_PYTHON" scripts/validate-structured-contracts.py --require-full \
   | tee "$OUT/structured-contracts.log"
