@@ -1,12 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://onsure.local/contracts/local-final-receipt.v1.schema.json",
-  "title": "ONSURE Local Final Receipt v1",
+  "title": "ONSURE Local Self-Validation Nonfinal Receipt v1",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "contract",
     "decision",
+    "assurance_class",
+    "independent_otester",
+    "independent_oaudit",
+    "final_lock_allowed",
+    "production_go",
+    "commercial_go",
     "execution_mode",
     "assurance_run_id",
     "run_started_at",
@@ -23,17 +29,23 @@
     "key_registry_snapshot_sha256",
     "ledger",
     "ledger_chain_head",
-    "final_lock_sha256"
+    "evidence_lock_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_LOCAL_FINAL_RECEIPT_V1"},
     "decision": {"const": "PASS"},
-    "execution_mode": {"const": "LOCAL_STANDALONE"},
+    "assurance_class": {"const": "SELF_VALIDATION_NONFINAL"},
+    "independent_otester": {"const": "NOT_RUN"},
+    "independent_oaudit": {"const": "NOT_RUN"},
+    "final_lock_allowed": {"const": false},
+    "production_go": {"const": false},
+    "commercial_go": {"const": false},
+    "execution_mode": {"const": "LOCAL_STANDALONE_SELF_VALIDATION"},
     "assurance_run_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{8,128}$"},
     "run_started_at": {"type": "string", "format": "date-time"},
     "verified_at": {"type": "string", "format": "date-time"},
     "receipt_dir": {"type": "string", "minLength": 1},
-    "source_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "source_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
     "source_tree_sha256": {"$ref": "#/$defs/sha256"},
     "policy_sha256": {"$ref": "#/$defs/sha256"},
     "fixture_contract_snapshot": {"type": "string", "minLength": 1},
@@ -44,7 +56,7 @@
     "key_registry_snapshot_sha256": {"$ref": "#/$defs/sha256"},
     "ledger": {"type": "string", "minLength": 1},
     "ledger_chain_head": {"$ref": "#/$defs/sha256"},
-    "final_lock_sha256": {"$ref": "#/$defs/sha256"}
+    "evidence_lock_sha256": {"$ref": "#/$defs/sha256"}
   },
   "$defs": {
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
