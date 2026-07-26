@@ -7,6 +7,10 @@
   "risk": {"score": 35, "level": "MEDIUM"},
   "review_packs": ["REQUIREMENT_TRACEABILITY", "ARCHITECTURE", "CODE", "SECURITY", "TEST_QUALITY"],
   "scenario_classes": ["NORMAL", "BOUNDARY", "FAILURE", "UNAUTHORIZED", "RECOVERY"],
+  "allowed_actions": [
+    "EVIDENCE_GENERATION", "FIXTURE_EXECUTION", "IMPROVEMENT_PLAN", "RCA",
+    "REGRESSION_LOCK", "REVIEW", "STATIC_ANALYSIS"
+  ],
   "fixture_count": 2,
   "resource_budget": {
     "estimated_seconds": 60,
@@ -29,7 +33,12 @@
     "state": "AUTO_APPROVED_DEVELOPMENT_NONFINAL",
     "scope": "LOCAL_NONFINAL_VALIDATION_ONLY",
     "approver": "POLICY:LOCAL_DEVELOPMENT",
-    "revocable": true
+    "revocable": true,
+    "approved_actions": [
+      "EVIDENCE_GENERATION", "FIXTURE_EXECUTION", "IMPROVEMENT_PLAN", "RCA",
+      "REGRESSION_LOCK", "REVIEW", "STATIC_ANALYSIS"
+    ],
+    "signed_receipt_required": false
   },
   "created_at": "2026-07-26T00:00:00Z",
   "product_full_chain": "NOT_RUN",
