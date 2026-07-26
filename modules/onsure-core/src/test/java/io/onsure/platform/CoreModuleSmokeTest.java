@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.onsure.assurance.Decision;
 import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,7 +23,8 @@ class CoreModuleSmokeTest {
                 "sample-general-program", TargetType.GENERAL_SOFTWARE,
                 fixedRoot, GenericManifestTargetAdapter.ID);
         var fixedResult = ValidationEngine.defaultEngine(temp.resolve("fixed")).run(fixed);
-        assertEquals(Decision.PASS, fixedResult.report().decision());
+        assertEquals(Decision.HOLD, fixedResult.report().decision());
+        assertEquals("HOLD", fixedResult.report().summary().get("review_quality_decision"));
         assertFalse(fixedResult.report().summary().get("registered_adapter_ids").toString().contains("ORUDA"));
 
         Path aiRoot = Path.of("../../fixtures/e2e/ai-program").toAbsolutePath().normalize();
@@ -36,11 +38,14 @@ class CoreModuleSmokeTest {
     }
 
     @Test
-    void coreRejectsAgenticTargetWithoutOptionalAdapter() throws Exception {
-        Path root = Path.of("../../fixtures/e2e/oruda-target").toAbsolutePath().normalize();
+    void coreRejectsAgenticTargetWithoutOptionalAdapterAndWithoutTargetSpecificFixture() throws Exception {
+        Path root = temp.resolve("neutral-agentic-target");
+        Files.createDirectories(root);
+        Files.writeString(root.resolve("placeholder.txt"), "target-neutral\n");
         ValidationTarget target = new ValidationTarget(
-                "ORUDA", "ORUDA", TargetType.AI_AGENTIC_PLATFORM, root,
-                SourceReferenceBinding.treeReference(root), "ONSURE_ORUDA_TARGET_ADAPTER_V1",
+                "external-agentic-target", "External Agentic Target",
+                TargetType.AI_AGENTIC_PLATFORM, root,
+                SourceReferenceBinding.treeReference(root), "OPTIONAL_AGENTIC_ADAPTER_V1",
                 "policy", FixtureRegistryStage.TRUSTED_LOCAL_PROFILE);
         IllegalArgumentException error = assertThrows(
                 IllegalArgumentException.class,
