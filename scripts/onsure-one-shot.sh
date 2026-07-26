@@ -123,10 +123,13 @@ printf '%s\n' "$HEAD_SHA" > "$OUT/source-commit.txt"
 git ls-files -s | sha256sum | awk '{print $1}' > "$OUT/tracked-index.sha256"
 
 python3 - "$OUT/environment.json" <<'PY'
-import json, os, pathlib, platform, subprocess, sys
+import hashlib, json, os, pathlib, platform, subprocess, sys
 
 def capture(command):
-    result = subprocess.run(command, text=True, capture_output=True, check=False)
+    try:
+        result = subprocess.run(command, text=True, capture_output=True, check=False)
+    except FileNotFoundError:
+        return {"command": command, "exit_code": 127, "first_line": "NOT_INSTALLED"}
     text = (result.stdout or result.stderr).strip().splitlines()
     return {"command": command, "exit_code": result.returncode, "first_line": text[0] if text else ""}
 
@@ -135,7 +138,7 @@ body = {
     "platform": platform.platform(),
     "machine": platform.machine(),
     "python": sys.version.splitlines()[0],
-    "path_sha256_input": os.environ.get("PATH", ""),
+    "path_sha256": hashlib.sha256(os.environ.get("PATH", "").encode()).hexdigest(),
     "tools": {
         "git": capture(["git", "--version"]),
         "bash": capture(["bash", "--version"]),
