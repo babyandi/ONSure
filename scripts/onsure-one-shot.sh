@@ -14,9 +14,9 @@ while [[ $# -gt 0 ]]; do
       cat <<'EOF'
 usage: bash scripts/onsure-one-shot.sh [--profile core|oruda] [--static-only]
 
-core        Core-oriented validation. Physical module isolation remains source-bound and must be proven in Java 17/Maven.
+core        Core-oriented validation with Generic/AI scope.
 oruda       Core-oriented validation plus the optional ORUDA adapter fixture pack.
-static-only Tracked source, contracts, module boundaries, atomic requirement candidates, links and shell syntax only.
+static-only Tracked source, structured contracts, module boundaries, requirement candidates, links and shell syntax.
 EOF
       exit 0
       ;;
@@ -49,7 +49,7 @@ fail() {
 import json, pathlib, sys
 path, profile, failure, source = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V3",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V4",
     "decision": "FAIL",
     "profile": profile,
     "failure": failure,
@@ -83,7 +83,7 @@ import hashlib, json, pathlib, sys
 path, step, started, finished, code, stdout, stderr, source, profile, environment, *command = sys.argv[1:]
 def digest(path): return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
 body = {
-    "contract": "ONSURE_ONE_SHOT_STEP_RECEIPT_V3",
+    "contract": "ONSURE_ONE_SHOT_STEP_RECEIPT_V4",
     "step": step,
     "started_at": started,
     "finished_at": finished,
@@ -120,14 +120,15 @@ def capture(command):
     lines = (result.stdout or result.stderr).strip().splitlines()
     return {"command": command, "exit_code": result.returncode, "first_line": lines[0] if lines else ""}
 body = {
-    "contract": "ONSURE_ONE_SHOT_ENVIRONMENT_V2",
+    "contract": "ONSURE_ONE_SHOT_ENVIRONMENT_V3",
     "platform": platform.platform(),
     "machine": platform.machine(),
     "python": sys.version.splitlines()[0],
     "path_sha256": hashlib.sha256(os.environ.get("PATH", "").encode()).hexdigest(),
     "tools": {name: capture(command) for name, command in {
         "git": ["git", "--version"], "bash": ["bash", "--version"],
-        "java": ["java", "-version"], "javac": ["javac", "-version"], "maven": ["mvn", "-version"]
+        "java": ["java", "-version"], "javac": ["javac", "-version"], "maven": ["mvn", "-version"],
+        "bwrap": ["bwrap", "--version"], "prlimit": ["prlimit", "--version"]
     }.items()},
 }
 pathlib.Path(sys.argv[1]).write_text(json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -135,6 +136,8 @@ PY
 ENVIRONMENT_DIGEST="$(sha256sum "$OUT/environment.json" | awk '{print $1}')"
 
 run_step repository-contracts python3 scripts/validate-repository-contracts.py --output "$OUT/repository-contract-report.json"
+run_step codespace-free-static python3 scripts/validate-codespace-free-remediation.py
+run_step structured-contracts python3 scripts/validate-structured-contracts.py
 run_step module-boundaries python3 scripts/check-module-boundaries.py
 run_step atomic-requirements python3 scripts/extract-atomic-requirements.py --output "$OUT/atomic-requirement-candidates.json"
 run_step shell-syntax bash scripts/check-shell-syntax.sh
@@ -146,18 +149,18 @@ if [[ "$STATIC_ONLY" == true ]]; then
 import json, pathlib, sys
 path, profile, head, environment = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V3",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V4",
     "decision": "NON_FINAL",
     "mode": "STATIC_ONLY",
     "profile": profile,
     "source_commit": head,
     "environment_digest": environment,
     "repository_contracts": "PASS",
-    "module_boundary_static": "PASS_OR_FAIL_CLOSED",
+    "codespace_free_static_gate": "PASS",
+    "structured_contracts": "PASS_OR_LIMITED_BY_OPTIONAL_PACKAGES",
+    "module_boundary_static": "PASS",
     "atomic_requirement_candidates": "GENERATED_NONAUTHORITATIVE",
     "shell_syntax": "PASS",
-    "json_schema_instance_validation": "NOT_RUN",
-    "yaml_validation": "NOT_RUN",
     "maven_junit": "NOT_RUN",
     "runtime_e2e": "NOT_RUN",
     "independent_otester": "NOT_RUN",
@@ -197,17 +200,19 @@ python3 - "$OUT/result.json" "$PROFILE" "$HEAD_SHA" "$ENVIRONMENT_DIGEST" "$ORUD
 import json, pathlib, sys
 path, profile, head, environment, oruda = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V3",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V4",
     "decision": "BLOCKED",
-    "blocking_reason": "PHYSICAL_MODULE_ISOLATION_ATOMIC_TRACEABILITY_AND_PRODUCT_FULL_CHAIN_NOT_PROVEN",
+    "blocking_reason": "PRODUCT_FULL_CHAIN_AND_INDEPENDENT_ASSURANCE_NOT_PROVEN",
     "mode": "FULL_AVAILABLE_AUTOMATION",
     "profile": profile,
     "source_commit": head,
     "environment_digest": environment,
+    "repository_contracts": "PASS",
+    "codespace_free_static_gate": "PASS",
+    "structured_contracts": "PASS",
     "maven_junit": "PASS",
     "python_regression": "PASS",
     "internal_universal_harness": "PASS_NONFINAL",
-    "core_compile_without_oruda": "NOT_PROVEN_UNTIL_PHYSICAL_MODULE_EXECUTION",
     "optional_oruda_fixtures": oruda,
     "vscode_product_full_chain": "NOT_RUN",
     "web_product_full_chain": "NOT_RUN",
