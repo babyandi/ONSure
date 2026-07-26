@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.onsure</groupId>
+    <artifactId>onsure-parent</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>onsure-core</artifactId>
+  <name>ONSure Standalone Core</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>${maven.multiModuleProjectDirectory}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${maven.multiModuleProjectDirectory}/src/test/java</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>io/onsure/assurance/**/*.java</include>
+            <include>io/onsure/harness/**/*.java</include>
+            <include>io/onsure/learning/**/*.java</include>
+            <include>io/onsure/rag/**/*.java</include>
+            <include>io/onsure/platform/**/*.java</include>
+          </includes>
+          <excludes>
+            <exclude>io/onsure/platform/OrudaTargetAdapter.java</exclude>
+            <exclude>io/onsure/platform/ProductPlatformE2EMain.java</exclude>
+            <exclude>io/onsure/platform/ONSureCli.java</exclude>
+            <exclude>io/onsure/platform/oruda/**/*.java</exclude>
+          </excludes>
+          <testIncludes>
+            <testInclude>io/onsure/assurance/**/*.java</testInclude>
+            <testInclude>io/onsure/harness/**/*.java</testInclude>
+            <testInclude>io/onsure/learning/**/*.java</testInclude>
+            <testInclude>io/onsure/rag/**/*.java</testInclude>
+            <testInclude>io/onsure/platform/**/*.java</testInclude>
+          </testIncludes>
+          <testExcludes>
+            <testExclude>io/onsure/platform/ONSureCliTest.java</testExclude>
+            <testExclude>io/onsure/platform/oruda/**/*.java</testExclude>
+          </testExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <onsure.repository.root>${maven.multiModuleProjectDirectory}</onsure.repository.root>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
