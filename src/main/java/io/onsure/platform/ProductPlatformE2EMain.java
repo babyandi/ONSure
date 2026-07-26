@@ -28,7 +28,8 @@ public final class ProductPlatformE2EMain {
         }
         Path output = Path.of(args[0]).toAbsolutePath().normalize();
         Files.createDirectories(output);
-        ValidationEngine engine = ValidationEngine.withOrudaAdapter(output.resolve("validation-data"));
+        ValidationEngine engine = ValidationEngine.withOptionalAdapters(
+                output.resolve("validation-data"), List.of(new OrudaTargetAdapter()));
 
         ValidationEngine.RunResult generalBaseline = engine.run(target(
                 "sample-general-program", TargetType.GENERAL_SOFTWARE,
