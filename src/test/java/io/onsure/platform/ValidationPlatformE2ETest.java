@@ -16,6 +16,7 @@ import io.onsure.platform.ValidationModel.ValidationTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -116,7 +117,8 @@ class ValidationPlatformE2ETest {
         ValidationTarget oruda = target(
                 "ORUDA", TargetType.AI_AGENTIC_PLATFORM,
                 Path.of("fixtures/e2e/oruda-target"), OrudaTargetAdapter.ID, "d".repeat(40));
-        ValidationEngine.RunResult result = ValidationEngine.withOrudaAdapter(temp.resolve("oruda-runs")).run(oruda);
+        ValidationEngine.RunResult result = ValidationEngine.withOptionalAdapters(
+                temp.resolve("oruda-runs"), List.of(new OrudaTargetAdapter())).run(oruda);
         assertEquals(Decision.FAIL, result.report().decision());
         assertEquals(OrudaTargetAdapter.ID, result.report().summary().get("adapter_id"));
         assertTrue(result.report().findings().stream()
@@ -146,7 +148,8 @@ class ValidationPlatformE2ETest {
         ValidationTarget target = target(
                 "ORUDA", TargetType.AI_AGENTIC_PLATFORM, root, OrudaTargetAdapter.ID, "e".repeat(40));
         try {
-            ValidationEngine.withOrudaAdapter(temp.resolve("invalid-runs")).run(target);
+            ValidationEngine.withOptionalAdapters(
+                    temp.resolve("invalid-runs"), List.of(new OrudaTargetAdapter())).run(target);
         } catch (ValidationEngine.ValidationExecutionException e) {
             assertTrue(e.getCause().getMessage().contains("ORUDA_CANNOT_WRITE_ONSURE_FINAL_DECISION"));
             assertNotNull(e.report());
