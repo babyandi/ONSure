@@ -1,0 +1,7 @@
+{
+  "contract": "ONSURE_TENANT_CONTEXT_V1",
+  "organization_id": "org-sample",
+  "tenant_id": "tenant-sample",
+  "workspace_id": "workspace-sample",
+  "actor_id": "actor-sample"
+}
