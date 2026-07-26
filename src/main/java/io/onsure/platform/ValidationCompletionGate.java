@@ -10,7 +10,7 @@ import java.util.Set;
 
 /** Fail-closed completeness policy for one nonfinal product validation run. */
 public final class ValidationCompletionGate {
-    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V4";
+    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V5";
 
     public record Evaluation(boolean eligible, List<String> reasons) {
         public Evaluation { reasons = List.copyOf(reasons); }
@@ -20,8 +20,9 @@ public final class ValidationCompletionGate {
             "TARGET_INTAKE", "SOURCE_INVENTORY", "PROGRAM_LEARNING",
             "RISK_BASED_EXECUTION_PLANNING", "STATIC_ANALYSIS", "OREVIEW",
             "FIXTURE_ORACLE_REGISTRY", "FIXTURE_HARNESS_ORACLE",
-            "FAILURE_MODE_AND_RCA", "EVIDENCE_BASED_RCA", "REMEDIATION_PLANNING",
-            "REGRESSION_LOCK", "INTERNAL_PRODUCT_VERIFIER", "INTERNAL_PRODUCT_AUDIT");
+            "FAILURE_MODE_AND_RCA", "EVIDENCE_BASED_RCA", "PATCH_PLANNING",
+            "REMEDIATION_PLANNING", "REGRESSION_LOCK",
+            "INTERNAL_PRODUCT_VERIFIER", "INTERNAL_PRODUCT_AUDIT");
 
     private ValidationCompletionGate() {}
 
@@ -49,6 +50,8 @@ public final class ValidationCompletionGate {
                 "OREVIEW_RESULT", "OREVIEW", reasons);
         requireAttributeAndFile(context, "evidence_based_rca_sha256", "evidence-based-rca.json",
                 "EVIDENCE_BASED_RCA_SET", "EVIDENCE_BASED_RCA", reasons);
+        requireArtifact(context, "patch_plan_id", "patch-plan.json",
+                "PATCH_PLAN_CANDIDATE", "PATCH_PLAN", reasons);
         Object approval = context.attributes().get("execution_plan_approval");
         if (!(approval instanceof String state)
                 || !List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED").contains(state)) {
