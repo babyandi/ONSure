@@ -47,4 +47,13 @@ public interface TargetAdapter {
     Map<String, Object> collectTargetMetadata(ValidationTarget target) throws Exception;
 
     List<FixtureDefinition> loadFixtures(ValidationTarget target) throws Exception;
+
+    /**
+     * Optional adapter-owned evidence materialization after the generic product store is written.
+     * Core adapters normally use the no-op implementation. Target-specific adapters may add their
+     * own evidence without creating a compile-time dependency from the ONSure Core store.
+     */
+    default void afterPersist(ValidationContext context) throws Exception {
+        // Intentionally empty for standalone Core adapters.
+    }
 }
