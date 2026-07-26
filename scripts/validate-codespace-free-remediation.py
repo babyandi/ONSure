@@ -15,6 +15,13 @@ REQUIRED = [
     "contracts/module-boundary.v1.json",
     "contracts/ledger-hardening.v1.json",
     "contracts/sandbox-boundary.v1.json",
+    "contracts/schema-instance-registry.v1.json",
+    "fixtures/contracts/program-profile.valid.json",
+    "fixtures/contracts/behavior-profile.valid.json",
+    "fixtures/contracts/failure-memory.valid.json",
+    "fixtures/contracts/improvement-memory.valid.json",
+    "fixtures/contracts/evidence-receipt.valid.json",
+    "requirements-validation.txt",
     "pom-modular.xml",
     "modules/onsure-core/pom.xml",
     "modules/onsure-cli/pom.xml",
@@ -23,6 +30,7 @@ REQUIRED = [
     "scripts/check-module-boundaries.py",
     "scripts/create-source-snapshot.py",
     "scripts/extract-atomic-requirements.py",
+    "scripts/validate-structured-contracts.py",
     "scripts/run-core-modular-twice.sh",
     "scripts/onsure-final-stage.sh",
 ]
@@ -48,16 +56,18 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             errors.append(f"INVALID:{relative}:{type(exc).__name__}:{exc}")
 
-    for command, marker in [
+    commands = [
         ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
         ([sys.executable, "scripts/validate-repository-contracts.py"], "ONSURE_REPOSITORY_CONTRACTS_PASS"),
+        ([sys.executable, "scripts/validate-structured-contracts.py"], "ONSURE_STRUCTURED_CONTRACTS_"),
         (["bash", "scripts/check-shell-syntax.sh"], "ONSURE_SHELL_SYNTAX_PASS"),
-    ]:
+    ]
+    for command, marker in commands:
         result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
         if result.returncode != 0 or marker not in result.stdout:
             errors.append(
                 f"COMMAND_FAIL:{' '.join(command)}:{result.returncode}:"
-                f"{result.stdout[-500:]}:{result.stderr[-500:]}"
+                f"{result.stdout[-1000:]}:{result.stderr[-1000:]}"
             )
 
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
@@ -69,9 +79,10 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V1",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V2",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
+        "structured_contract_validation": "SYNTAX_OR_FULL_DEPENDING_ON_PINNED_PACKAGES",
         "runtime_execution": "NOT_RUN",
         "modular_compile": "NOT_RUN",
         "independent_otester": "NOT_RUN",
