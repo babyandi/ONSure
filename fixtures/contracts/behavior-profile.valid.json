@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_BEHAVIOR_PROFILE_V1",
+  "profile_id": "behavior-sample-001",
+  "program_profile_id": "profile-sample-001",
+  "source_baseline_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "observations": [
+    {
+      "scenario_id": "scenario-001",
+      "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "output_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "tool_calls": [],
+      "decision": "PASS",
+      "run_receipt_id": "receipt-run-001"
+    }
+  ],
+  "variability": {
+    "repeated_run_count": 2,
+    "distinct_output_count": 1,
+    "stable": true
+  },
+  "failure_conditions": [],
+  "policy_violations": [],
+  "evidence_refs": ["receipt-run-001", "receipt-run-002"],
+  "state": "BEHAVIOR_CANDIDATE"
+}
