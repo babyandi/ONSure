@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 public final class LocalSourceLockVerifier {
     public static final String DIGEST_CONTRACT = "ONSURE_SOURCE_DIGEST_V1";
+    public static final String SOURCE_SCOPE = "GIT_TRACKED_FILES_ONLY";
+    public static final String POLICY_SCOPE = "GIT_TRACKED_POLICY_FILES_ONLY";
     private static final Duration GIT_TIMEOUT = Duration.ofSeconds(30);
     private static final Set<String> POLICY_PREFIXES = Set.of(
             "contracts/", "fixtures/design/", "docs/security/", "findings/");
@@ -55,6 +57,15 @@ public final class LocalSourceLockVerifier {
             }
             if (!tree.matches("[0-9a-f]{64}")) violations.add("INVALID_SOURCE_TREE_DIGEST");
             if (!policy.matches("[0-9a-f]{64}")) violations.add("INVALID_POLICY_SET_DIGEST");
+            if (!SOURCE_SCOPE.equals(node.path("source_scope").asText())) {
+                violations.add("SOURCE_SCOPE_NOT_TRACKED_ONLY");
+            }
+            if (!POLICY_SCOPE.equals(node.path("policy_scope").asText())) {
+                violations.add("POLICY_SCOPE_NOT_TRACKED_ONLY");
+            }
+            if (!node.path("untracked_files_blocked").asBoolean(false)) {
+                violations.add("UNTRACKED_FILES_NOT_BLOCKED");
+            }
             if (!clean) violations.add("DIRTY_SOURCE_WORKTREE");
 
             if (repositoryRoot != null && violations.isEmpty()) {
@@ -153,8 +164,7 @@ public final class LocalSourceLockVerifier {
     }
 
     private static String runText(Path root, String... arguments) throws Exception {
-        GitResult result = run(root, arguments);
-        return result.text();
+        return run(root, arguments).text();
     }
 
     private static byte[] runBytes(Path root, String... arguments) throws Exception {
