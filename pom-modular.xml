@@ -39,6 +39,8 @@
 
   <modules>
     <module>modules/onsure-core</module>
+    <module>modules/onsure-cli</module>
+    <module>modules/onsure-test-fixtures</module>
     <module>modules/onsure-adapter-oruda</module>
   </modules>
 </project>
