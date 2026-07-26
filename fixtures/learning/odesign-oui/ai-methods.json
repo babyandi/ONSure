@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_id": "KNW-UIUX-AI-METHOD-20260725",
+  "status": "VALIDATED_KNOWLEDGE",
+  "counting_rule": "one distinct method with trigger, procedure, failure mode, evidence, and source binding",
+  "research_stop_rule": "three consecutive coverage loops yielded zero new admissible method units",
+  "methods": [
+    {
+      "id": "UIUX-AIM-001",
+      "name": "Problem-before-interface gate",
+      "trigger": "Before selecting an AI feature or drawing a screen",
+      "procedure": ["Identify the user and valued outcome", "Test whether AI adds a unique strength", "Define a non-AI baseline", "Reject the feature if the AI advantage is not evidenced"],
+      "success": "The proposed AI capability solves a demonstrated need better than the baseline.",
+      "failure": "A visually attractive AI feature is built without a validated user problem.",
+      "evidence_required": ["research finding", "AI-versus-baseline decision record", "success metric"],
+      "source_url": "https://pair.withgoogle.com/guidebook/chapters/user-needs-and-defining-success/identify-user-needs-and-ai-strengths",
+      "source_locator": "Identify user needs and AI strengths",
+      "conversation_binding": "The dialogue established that UI/UX review must start with business/service purpose rather than visual design."
+    },
+    {
+      "id": "UIUX-AIM-002",
+      "name": "Outcome-and-harm reward design",
+      "trigger": "When defining AI success",
+      "procedure": ["State the desired user outcome", "List downstream harms and affected roles", "Define primary and guardrail metrics", "Review the reward with a cross-functional group"],
+      "success": "Optimization improves the user outcome without breaching guardrails.",
+      "failure": "The system maximizes clicks, speed, or model score while degrading trust, safety, or task completion.",
+      "evidence_required": ["reward-function record", "guardrail metrics", "cross-role approval"],
+      "source_url": "https://pair.withgoogle.com/chapter/user-needs/",
+      "source_locator": "User Needs and Defining Success",
+      "conversation_binding": "The dialogue required user, creator, administrator, operator, business, and auditor perspectives."
+    },
+    {
+      "id": "UIUX-AIM-003",
+      "name": "Capability and limitation disclosure",
+      "trigger": "At first use and before consequential AI action",
+      "procedure": ["Explain what the system can do", "State material limitations", "Show the data or context used when useful", "Set an accurate confidence expectation"],
+      "success": "Users form a calibrated mental model and choose appropriate tasks.",
+      "failure": "Human-like presentation causes users to assume unsupported accuracy or authority.",
+      "evidence_required": ["first-use comprehension test", "expectation calibration result", "limitation copy review"],
+      "source_url": "https://www.microsoft.com/en-us/haxtoolkit/",
+      "source_locator": "Guidelines for Human-AI Interaction and Design Library",
+      "conversation_binding": "The dialogue prohibited calling unregistered or unvalidated candidates learned."
+    },
+    {
+      "id": "UIUX-AIM-004",
+      "name": "Uncertainty-visible output",
+      "trigger": "When AI output can be incomplete, ambiguous, or wrong",
+      "procedure": ["Represent uncertainty at the decision point", "Provide supporting evidence or provenance", "Offer alternatives when confidence is insufficient", "Block irreversible action under the threshold"],
+      "success": "The user can distinguish reliable, uncertain, and unavailable output.",
+      "failure": "All generated outputs look equally authoritative.",
+      "evidence_required": ["uncertainty-state inventory", "threshold test", "false-confidence negative fixture"],
+      "source_url": "https://pair.withgoogle.com/guidebook/",
+      "source_locator": "Explainability and Trust chapters",
+      "conversation_binding": "ORUDA requires Candidate, PASS, HOLD, and Final states to remain visibly distinct."
+    },
+    {
+      "id": "UIUX-AIM-005",
+      "name": "Correction and recovery loop",
+      "trigger": "After an AI recommendation or generation",
+      "procedure": ["Allow review before commitment", "Enable correction or rejection", "Preserve the original and edited lineage", "Revalidate the corrected result"],
+      "success": "A user can safely recover without restarting or losing provenance.",
+      "failure": "The user must accept, discard everything, or silently overwrite AI output.",
+      "evidence_required": ["undo/reject test", "lineage receipt", "revalidation result"],
+      "source_url": "https://www.microsoft.com/en-us/haxtoolkit/",
+      "source_locator": "Support efficient correction and dismissal",
+      "conversation_binding": "The dialogue requires OTester/OAudit validation before promotion."
+    },
+    {
+      "id": "UIUX-AIM-006",
+      "name": "Feedback-loop integrity",
+      "trigger": "When user feedback changes future AI behaviour",
+      "procedure": ["Make the feedback target explicit", "Separate preference from factual correction", "Confirm whether feedback was accepted", "Measure downstream behaviour and abuse risk"],
+      "success": "Feedback is attributable, reversible, and improves the intended behaviour.",
+      "failure": "A thumbs-up/down control exists but its effect is unknown or misinterpreted.",
+      "evidence_required": ["feedback event schema", "acceptance receipt", "downstream evaluation"],
+      "source_url": "https://pair.withgoogle.com/guidebook/chapters/feedback-and-controls/design-ai-feedback-loops",
+      "source_locator": "Design AI feedback loops",
+      "conversation_binding": "The user requested continual accumulation only after deduplication and actual registration."
+    },
+    {
+      "id": "UIUX-AIM-007",
+      "name": "Human authority at consequential boundaries",
+      "trigger": "For approval, payment, release, safety, legal, or production decisions",
+      "procedure": ["Identify the accountable human role", "Present evidence and uncertainty", "Require explicit confirmation", "Record decision and override reason"],
+      "success": "AI assists the decision while authority and accountability remain unambiguous.",
+      "failure": "Automation bias turns a suggestion into an unreviewed final action.",
+      "evidence_required": ["authority matrix", "confirmation test", "audit log"],
+      "source_url": "https://www.microsoft.com/en-us/haxtoolkit/",
+      "source_locator": "Human-AI interaction guidelines",
+      "conversation_binding": "The dialogue separates creator, administrator, operator, tester, and auditor responsibilities."
+    },
+    {
+      "id": "UIUX-AIM-008",
+      "name": "AI-generated layout contract",
+      "trigger": "When AI generates UI screens or visual assets",
+      "procedure": ["Generate against fixed geometry and design tokens", "Preserve content hierarchy and accessibility semantics", "Bind assets and parent hashes", "Render and inspect the actual canvas"],
+      "success": "Generated UI is editable, traceable, responsive, and visually stable.",
+      "failure": "A plausible image bypasses component, geometry, accessibility, or lineage contracts.",
+      "evidence_required": ["geometry contract", "scene/render hash", "reflow test", "asset manifest"],
+      "source_url": "https://www.w3.org/WAI/WCAG22/Understanding/reflow.html",
+      "source_locator": "WCAG 2.2 Understanding Reflow",
+      "conversation_binding": "The dialogue fixed Geometry Contract, canonical Scene, render hash, and actual overlap/clipping inspection."
+    },
+    {
+      "id": "UIUX-AIM-009",
+      "name": "Role-complete workflow simulation",
+      "trigger": "Before accepting an AI-created service flow",
+      "procedure": ["Run the user happy path", "Run creator authoring and revision", "Run administrator policy and permission changes", "Run operator incident and recovery", "Run auditor trace reconstruction"],
+      "success": "All roles can complete normal, exception, and recovery work with consistent state.",
+      "failure": "Only the end-user happy path is designed.",
+      "evidence_required": ["role-path matrix", "exception fixtures", "recovery receipt", "audit reconstruction"],
+      "source_url": "https://www.microsoft.com/en-us/haxtoolkit/",
+      "source_locator": "HAX Workbook and Playbook",
+      "conversation_binding": "The dialogue explicitly required user, creator, administrator, and operator perspectives plus audit."
+    },
+    {
+      "id": "UIUX-AIM-010",
+      "name": "Semantic deduplication before learning",
+      "trigger": "Before registering generated UI/UX knowledge",
+      "procedure": ["Normalize topic and outcome", "Compare semantic fingerprints", "Reject proficiency/role Cartesian variants", "Count only materially distinct situation-action-result-validation units"],
+      "success": "The corpus grows by distinct reusable knowledge rather than paraphrase volume.",
+      "failure": "Requested counts are met by changing labels, roles, or proficiency levels.",
+      "evidence_required": ["semantic fingerprint", "dedup report", "rejected-duplicate ledger"],
+      "source_url": "conversation://ORUDA-UIUX-20260725",
+      "source_locator": "2,016 combination-generated candidates review",
+      "conversation_binding": "The dialogue found 2,016 records were 7 proficiency levels × 4 perspectives × 72 topics and excluded them."
+    },
+    {
+      "id": "UIUX-AIM-011",
+      "name": "Three-loop saturation review",
+      "trigger": "Before declaring UI/UX research complete",
+      "procedure": ["Loop 1: discover across the taxonomy", "Loop 2: adversarially search gaps and counterexamples", "Loop 3: deduplicate and repeat the same source scope", "Stop only when the loop produces zero admissible unique units"],
+      "success": "The declared scope reaches an evidenced saturation point.",
+      "failure": "Research stops when an arbitrary target count is reached.",
+      "evidence_required": ["loop ledger", "new/rejected counts per loop", "zero-new stop receipt"],
+      "source_url": "conversation://ORUDA-UIUX-20260725",
+      "source_locator": "User instruction for 2-3 loops until no additional learning material remains",
+      "conversation_binding": "The user removed numeric limits and required maximum investigation without omission."
+    },
+    {
+      "id": "UIUX-AIM-012",
+      "name": "Dual independent promotion gate",
+      "trigger": "Before moving candidate UI/UX knowledge into the official corpus",
+      "procedure": ["OTester checks schema, lineage, source binding, uniqueness, and fixtures", "OAudit recalculates bindings and checks false-pass/final risks", "Promote only records passing both", "Merge the exact verified bytes"],
+      "success": "Registered, validated, promoted, and merged counts are equal for the promoted set.",
+      "failure": "Candidate creation or local validation is reported as learning completion.",
+      "evidence_required": ["OTester receipt", "OAudit receipt", "corpus digest", "merge commit SHA"],
+      "source_url": "conversation://ORUDA-UIUX-20260725",
+      "source_locator": "Required lifecycle: register, independent validate, promote, merge, evidence report",
+      "conversation_binding": "The dialogue repeatedly prohibited describing unregistered material as learned."
+    }
+  ]
+}
+
+
