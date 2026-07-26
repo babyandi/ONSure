@@ -7,4 +7,6 @@ validation-data/
 *.log
 .onsure/autopilot/
 .onsure/one-shot/
+.onsure/core-fixture-e2e/
+.onsure/atomic-traceability/
 __pycache__/
