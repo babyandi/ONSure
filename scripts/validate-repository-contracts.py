@@ -9,6 +9,7 @@ import json
 import pathlib
 import re
 import subprocess
+import sys
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -40,15 +41,18 @@ def sha256(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def tracked_files(*patterns: str) -> list[pathlib.Path]:
-    command = ["git", "ls-files", "-z"]
-    if patterns:
-        command.extend(["--", *patterns])
-    result = subprocess.run(command, cwd=ROOT, capture_output=True, check=False)
+def tracked_files() -> list[pathlib.Path]:
+    result = subprocess.run(
+        ["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=False
+    )
     if result.returncode != 0:
         raise RuntimeError("GIT_LS_FILES_FAILED")
     values = [item for item in result.stdout.split(b"\0") if item]
     return sorted((ROOT / item.decode("utf-8")).resolve() for item in values)
+
+
+def files_with_suffix(files: list[pathlib.Path], suffix: str) -> list[pathlib.Path]:
+    return [path for path in files if path.name.endswith(suffix)]
 
 
 def validate_required_files(errors: list[str]) -> None:
@@ -57,14 +61,9 @@ def validate_required_files(errors: list[str]) -> None:
             errors.append(f"MISSING_REQUIRED_FILE:{relative}")
 
 
-def validate_json_files(errors: list[str]) -> dict[str, str]:
+def validate_json_files(files: list[pathlib.Path], errors: list[str]) -> dict[str, str]:
     digests: dict[str, str] = {}
-    try:
-        files = tracked_files("*.json", "**/*.json")
-    except RuntimeError as exc:
-        errors.append(str(exc))
-        return digests
-    for path in files:
+    for path in files_with_suffix(files, ".json"):
         relative = str(path.relative_to(ROOT)).replace("\\", "/")
         try:
             body = json.loads(path.read_text(encoding="utf-8"))
@@ -72,23 +71,21 @@ def validate_json_files(errors: list[str]) -> dict[str, str]:
             if relative.endswith(".schema.json"):
                 if not isinstance(body, dict):
                     errors.append(f"SCHEMA_NOT_OBJECT:{relative}")
-                else:
-                    for field in ("$schema", "$id", "type"):
-                        if not body.get(field):
-                            errors.append(f"SCHEMA_META_MISSING:{relative}:{field}")
-        except Exception as exc:  # noqa: BLE001 - report malformed tracked contract
+                    continue
+                if not body.get("$schema"):
+                    errors.append(f"SCHEMA_META_MISSING:{relative}:$schema")
+                if not body.get("$id"):
+                    errors.append(f"SCHEMA_META_MISSING:{relative}:$id")
+                if not any(key in body for key in ("type", "oneOf", "anyOf", "allOf", "$ref")):
+                    errors.append(f"SCHEMA_ROOT_CONSTRAINT_MISSING:{relative}")
+        except Exception as exc:  # noqa: BLE001
             errors.append(f"JSON_INVALID:{relative}:{type(exc).__name__}")
     return digests
 
 
-def validate_jsonl_files(errors: list[str]) -> dict[str, str]:
+def validate_jsonl_files(files: list[pathlib.Path], errors: list[str]) -> dict[str, str]:
     digests: dict[str, str] = {}
-    try:
-        files = tracked_files("*.jsonl", "**/*.jsonl")
-    except RuntimeError as exc:
-        errors.append(str(exc))
-        return digests
-    for path in files:
+    for path in files_with_suffix(files, ".jsonl"):
         relative = str(path.relative_to(ROOT)).replace("\\", "/")
         try:
             lines = path.read_text(encoding="utf-8").splitlines()
@@ -149,27 +146,31 @@ def validate_traceability(errors: list[str]) -> tuple[dict[str, int], dict[str, 
             for relative in refs:
                 if not (ROOT / relative).exists():
                     errors.append(f"TRACE_REF_MISSING:{item_id}:{key}:{relative}")
-        evidence_refs = item.get("evidence_refs", [])
-        if verification_state == "PASS" and not evidence_refs:
+        if verification_state == "PASS" and not item.get("evidence_refs"):
             errors.append(f"TRACE_PASS_WITHOUT_EVIDENCE:{item_id}")
 
     declared = trace.get("summary", {})
     for state, count in implementation_counts.items():
         if declared.get(state.lower()) != count:
-            errors.append(f"TRACE_IMPLEMENTATION_SUMMARY_MISMATCH:{state}:{declared.get(state.lower())}:{count}")
+            errors.append(
+                f"TRACE_IMPLEMENTATION_SUMMARY_MISMATCH:{state}:"
+                f"{declared.get(state.lower())}:{count}"
+            )
     declared_verification = declared.get("verification", {})
     for state, count in verification_counts.items():
         if declared_verification.get(state.lower()) != count:
-            errors.append(f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}:{declared_verification.get(state.lower())}:{count}")
+            errors.append(
+                f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}:"
+                f"{declared_verification.get(state.lower())}:{count}"
+            )
     return implementation_counts, verification_counts
 
 
 def validate_matrix(errors: list[str], trace_counts: dict[str, int]) -> None:
     implementation_allowed, _ = vocabulary()
     matrix = load_json("status/implementation-matrix.v1.json")
-    capabilities = matrix.get("capabilities", {})
     calculated = {state: 0 for state in implementation_allowed}
-    for capability, status in capabilities.items():
+    for capability, status in matrix.get("capabilities", {}).items():
         if status not in implementation_allowed:
             errors.append(f"MATRIX_STATUS_INVALID:{capability}:{status}")
         else:
@@ -213,25 +214,23 @@ def validate_state_mapping(errors: list[str]) -> None:
             errors.append(f"STATE_MAPPING_RULE_MISSING:{required_rule}")
 
 
-def validate_markdown_links(errors: list[str]) -> None:
-    try:
-        files = tracked_files("*.md", "**/*.md")
-    except RuntimeError as exc:
-        errors.append(str(exc))
-        return
+def validate_markdown_links(files: list[pathlib.Path], errors: list[str]) -> None:
     pattern = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-    for document in files:
+    for document in files_with_suffix(files, ".md"):
         relative_document = str(document.relative_to(ROOT)).replace("\\", "/")
         text = document.read_text(encoding="utf-8", errors="replace")
-        for target in pattern.findall(text):
-            target = target.strip().split(" ", 1)[0]
+        for raw_target in pattern.findall(text):
+            target = raw_target.strip().split(" ", 1)[0].strip("<>")
             if target.startswith(("http://", "https://", "mailto:", "#")):
                 continue
             normalized = target.split("#", 1)[0]
             if not normalized:
                 continue
-            resolved = (document.parent / normalized).resolve()
-            if not resolved.exists():
+            candidates = [
+                (document.parent / normalized).resolve(),
+                (ROOT / normalized).resolve(),
+            ]
+            if not any(candidate.exists() for candidate in candidates):
                 errors.append(f"MARKDOWN_LINK_MISSING:{relative_document}:{target}")
 
 
@@ -241,7 +240,7 @@ def validate_verification_status(errors: list[str]) -> None:
         errors.append("VERIFICATION_STATUS_STATIC_RUNTIME_COMMIT_FORBIDDEN")
     if body.get("runtime_source_binding_state") != "PENDING_ONE_SHOT_RECEIPT":
         errors.append("VERIFICATION_STATUS_RUNTIME_BINDING_INVALID")
-    if body.get("final_lock") is not False or body.get("production_go") is not False or body.get("commercial_go") is not False:
+    if any(body.get(key) is not False for key in ("final_lock", "production_go", "commercial_go")):
         errors.append("VERIFICATION_STATUS_UNSAFE_GO_CLAIM")
 
 
@@ -251,14 +250,19 @@ def main() -> int:
     args = parser.parse_args()
 
     errors: list[str] = []
+    try:
+        files = tracked_files()
+    except RuntimeError as exc:
+        files = []
+        errors.append(str(exc))
     validate_required_files(errors)
-    json_digests = validate_json_files(errors)
-    jsonl_digests = validate_jsonl_files(errors)
+    json_digests = validate_json_files(files, errors)
+    jsonl_digests = validate_jsonl_files(files, errors)
     implementation_counts, verification_counts = validate_traceability(errors)
     validate_matrix(errors, implementation_counts)
     validate_boundary(errors)
     validate_state_mapping(errors)
-    validate_markdown_links(errors)
+    validate_markdown_links(files, errors)
     validate_verification_status(errors)
 
     report = {
@@ -273,6 +277,7 @@ def main() -> int:
             "json_schema_instance_validation": "NOT_RUN",
             "yaml_parser_validation": "NOT_RUN",
             "runtime_execution": "NOT_RUN",
+            "atomic_requirement_coverage": "NOT_COMPLETE",
         },
         "final_claim_allowed": False,
     }
@@ -283,7 +288,7 @@ def main() -> int:
         output.write_text(serialized, encoding="utf-8")
     print(serialized, end="")
     if errors:
-        print("ONSURE_REPOSITORY_CONTRACTS_FAIL", file=__import__("sys").stderr)
+        print("ONSURE_REPOSITORY_CONTRACTS_FAIL", file=sys.stderr)
         return 1
     print("ONSURE_REPOSITORY_CONTRACTS_PASS")
     return 0
