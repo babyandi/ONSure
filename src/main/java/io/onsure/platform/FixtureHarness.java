@@ -132,11 +132,7 @@ public final class FixtureHarness {
         if (!"REQUIRED".equals(mode)) {
             throw new IllegalArgumentException("unknown fixture sandbox mode: " + mode);
         }
-        Path launcher = Path.of("scripts/fixture-sandbox-launcher.sh")
-                .toAbsolutePath().normalize();
-        if (!Files.isRegularFile(launcher)) {
-            throw new IllegalStateException("FIXTURE_SANDBOX_LAUNCHER_MISSING");
-        }
+        Path launcher = findSandboxLauncher();
         List<String> command = new ArrayList<>();
         command.add("bash");
         command.add(launcher.toString());
@@ -144,6 +140,18 @@ public final class FixtureHarness {
         command.add(Integer.toString(fixture.timeoutSeconds()));
         command.addAll(fixture.command());
         return List.copyOf(command);
+    }
+
+    private static Path findSandboxLauncher() {
+        Path current = Path.of(System.getProperty("user.dir", "."))
+                .toAbsolutePath().normalize();
+        for (int depth = 0; current != null && depth < 8; depth++, current = current.getParent()) {
+            Path candidate = current.resolve("scripts/fixture-sandbox-launcher.sh").normalize();
+            if (Files.isRegularFile(candidate) && !Files.isSymbolicLink(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("FIXTURE_SANDBOX_LAUNCHER_MISSING");
     }
 
     private static void validateCommand(List<String> command, Path root) throws Exception {
@@ -184,7 +192,7 @@ public final class FixtureHarness {
             Map<String, String> fixtureEnvironment) {
         Map<String, String> host = System.getenv();
         processEnvironment.clear();
-        for (String key : List.of("PATH", "JAVA_HOME", "LANG", "LC_ALL")) {
+        for (String key : List.of("PATH", "JAVA_HOME", "LANG", "LC_ALL", SANDBOX_ENV)) {
             String value = host.get(key);
             if (value != null) processEnvironment.put(key, value);
         }
