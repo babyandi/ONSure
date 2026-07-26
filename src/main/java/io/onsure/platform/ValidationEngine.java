@@ -38,10 +38,23 @@ public final class ValidationEngine {
         if (this.stages.isEmpty()) throw new IllegalArgumentException("at least one stage is required");
     }
 
+    /** Standalone default: Generic adapter only. Target-specific adapters must be explicit. */
     public static ValidationEngine defaultEngine(Path storeRoot) {
-        return new ValidationEngine(
-                List.of(new GenericManifestTargetAdapter(), new OrudaTargetAdapter()),
-                defaultStages(), new FileValidationStore(storeRoot));
+        return withOptionalAdapters(storeRoot, List.of());
+    }
+
+    /** Explicit optional profile used by the ORUDA adapter fixture suite. */
+    public static ValidationEngine withOrudaAdapter(Path storeRoot) {
+        return withOptionalAdapters(storeRoot, List.of(new OrudaTargetAdapter()));
+    }
+
+    /** Creates a standalone core engine with explicitly selected optional target adapters. */
+    public static ValidationEngine withOptionalAdapters(
+            Path storeRoot, List<TargetAdapter> optionalAdapters) {
+        List<TargetAdapter> adapters = new ArrayList<>();
+        adapters.add(new GenericManifestTargetAdapter());
+        if (optionalAdapters != null) adapters.addAll(optionalAdapters);
+        return new ValidationEngine(adapters, defaultStages(), new FileValidationStore(storeRoot));
     }
 
     private static List<ValidatorStage> defaultStages() {
@@ -125,6 +138,7 @@ public final class ValidationEngine {
                 .filter(value -> value.decision() != Decision.PASS).count());
         summary.put("source_tree_sha256", context.attributes().getOrDefault("source_tree_sha256", "NOT_AVAILABLE"));
         summary.put("adapter_id", context.adapter().adapterId());
+        summary.put("registered_adapter_ids", context.attributes().get("registered_adapter_ids"));
         summary.put("internal_verifier", stageDecision(context, "INTERNAL_PRODUCT_VERIFIER"));
         summary.put("internal_audit", stageDecision(context, "INTERNAL_PRODUCT_AUDIT"));
         summary.put("independent_verifier", "NOT_RUN");
