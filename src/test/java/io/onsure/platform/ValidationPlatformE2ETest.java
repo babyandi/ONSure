@@ -3,6 +3,7 @@ package io.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.onsure.assurance.Decision;
@@ -100,11 +101,22 @@ class ValidationPlatformE2ETest {
     }
 
     @Test
-    void orudaRunsAsExternalFirstTargetWithoutDecisionAuthority() throws Exception {
+    void standaloneDefaultEngineDoesNotRegisterOrudaAdapter() throws Exception {
         ValidationTarget oruda = target(
                 "ORUDA", TargetType.AI_AGENTIC_PLATFORM,
                 Path.of("fixtures/e2e/oruda-target"), OrudaTargetAdapter.ID, "d".repeat(40));
-        ValidationEngine.RunResult result = ValidationEngine.defaultEngine(temp.resolve("oruda-runs")).run(oruda);
+        IllegalArgumentException failure = assertThrows(
+                IllegalArgumentException.class,
+                () -> ValidationEngine.defaultEngine(temp.resolve("standalone-runs")).run(oruda));
+        assertTrue(failure.getMessage().contains("NO_TARGET_ADAPTER"));
+    }
+
+    @Test
+    void orudaRunsOnlyThroughExplicitOptionalAdapterProfile() throws Exception {
+        ValidationTarget oruda = target(
+                "ORUDA", TargetType.AI_AGENTIC_PLATFORM,
+                Path.of("fixtures/e2e/oruda-target"), OrudaTargetAdapter.ID, "d".repeat(40));
+        ValidationEngine.RunResult result = ValidationEngine.withOrudaAdapter(temp.resolve("oruda-runs")).run(oruda);
         assertEquals(Decision.FAIL, result.report().decision());
         assertEquals(OrudaTargetAdapter.ID, result.report().summary().get("adapter_id"));
         assertTrue(result.report().findings().stream()
@@ -134,7 +146,7 @@ class ValidationPlatformE2ETest {
         ValidationTarget target = target(
                 "ORUDA", TargetType.AI_AGENTIC_PLATFORM, root, OrudaTargetAdapter.ID, "e".repeat(40));
         try {
-            ValidationEngine.defaultEngine(temp.resolve("invalid-runs")).run(target);
+            ValidationEngine.withOrudaAdapter(temp.resolve("invalid-runs")).run(target);
         } catch (ValidationEngine.ValidationExecutionException e) {
             assertTrue(e.getCause().getMessage().contains("ORUDA_CANNOT_WRITE_ONSURE_FINAL_DECISION"));
             assertNotNull(e.report());
