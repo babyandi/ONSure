@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 final class Hashing {
@@ -31,44 +32,27 @@ final class Hashing {
         return sha256(Files.readAllBytes(file));
     }
 
-    /**
-     * Produces a deterministic tree digest.
-     *
-     * <p>When the target is inside a Git worktree, only Git-tracked regular files below the target
-     * root are included. This prevents .git metadata, untracked files, build output and receipts
-     * from silently changing the source identity. Non-Git archive targets use a fail-closed
-     * filesystem walk with runtime-output and symbolic-link exclusions.
-     */
-    static String tree(Path root) throws Exception {
+    /** Returns the exact deterministic file set used for source identity. */
+    static List<Path> sourceFiles(Path root) throws Exception {
         Path normalized = root.toAbsolutePath().normalize();
         List<Path> tracked = gitTrackedFiles(normalized);
-        return digestTree(normalized, tracked != null ? tracked : archiveFiles(normalized));
+        return tracked != null ? tracked : archiveFiles(normalized);
+    }
+
+    /** Produces a deterministic digest over {@link #sourceFiles(Path)}. */
+    static String tree(Path root) throws Exception {
+        Path normalized = root.toAbsolutePath().normalize();
+        return digestTree(normalized, sourceFiles(normalized));
     }
 
     private static List<Path> gitTrackedFiles(Path root) throws Exception {
-        ProcessBuilder topBuilder = new ProcessBuilder(
-                "git", "-C", root.toString(), "rev-parse", "--show-toplevel")
-                .redirectErrorStream(true);
-        Process topProcess = topBuilder.start();
-        boolean topCompleted = topProcess.waitFor(15, TimeUnit.SECONDS);
-        if (!topCompleted) {
-            topProcess.destroyForcibly();
-            throw new IllegalStateException("GIT_TOPLEVEL_TIMEOUT");
-        }
+        Process topProcess = git(root, List.of("rev-parse", "--show-toplevel"), 15);
         if (topProcess.exitValue() != 0) return null;
         Path gitRoot = Path.of(new String(
                 topProcess.getInputStream().readAllBytes(), StandardCharsets.UTF_8).strip())
                 .toAbsolutePath().normalize();
 
-        ProcessBuilder listBuilder = new ProcessBuilder(
-                "git", "-C", root.toString(), "ls-files", "-z", "--", ".")
-                .redirectErrorStream(true);
-        Process listProcess = listBuilder.start();
-        boolean listCompleted = listProcess.waitFor(30, TimeUnit.SECONDS);
-        if (!listCompleted) {
-            listProcess.destroyForcibly();
-            throw new IllegalStateException("GIT_LS_FILES_TIMEOUT");
-        }
+        Process listProcess = git(root, List.of("ls-files", "-z", "--full-name", "--", "."), 30);
         byte[] output = listProcess.getInputStream().readAllBytes();
         if (listProcess.exitValue() != 0) {
             throw new IllegalStateException("GIT_LS_FILES_FAILED");
@@ -91,6 +75,28 @@ final class Hashing {
         }
         files.sort(Comparator.comparing(path -> relative(root, path)));
         return List.copyOf(files);
+    }
+
+    private static Process git(Path root, List<String> arguments, long timeoutSeconds) throws Exception {
+        List<String> command = new ArrayList<>();
+        command.add("git");
+        command.add("-C");
+        command.add(root.toString());
+        command.addAll(arguments);
+        ProcessBuilder builder = new ProcessBuilder(command).redirectErrorStream(true);
+        Map<String, String> environment = builder.environment();
+        String path = environment.get("PATH");
+        environment.clear();
+        if (path != null) environment.put("PATH", path);
+        environment.put("GIT_TERMINAL_PROMPT", "0");
+        environment.put("GIT_CONFIG_NOSYSTEM", "1");
+        Process process = builder.start();
+        boolean completed = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
+        if (!completed) {
+            process.destroyForcibly();
+            throw new IllegalStateException("GIT_SOURCE_COMMAND_TIMEOUT");
+        }
+        return process;
     }
 
     private static List<Path> archiveFiles(Path root) throws Exception {
