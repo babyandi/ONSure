@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_FAILURE_MEMORY_V1",
+  "memory_id": "failure-memory-001",
+  "program_id": "program-sample-001",
+  "finding_id": "finding-sample-001",
+  "reproduction": ["Run scenario-001 with the locked source and fixture."],
+  "first_failure_point": "fixture:scenario-001",
+  "direct_cause": "Observed output differed from the locked oracle.",
+  "root_cause": "The authorization decision path omitted the required deny rule.",
+  "contributing_factors": ["Missing negative regression fixture"],
+  "confidence": 0.9,
+  "evidence_refs": ["receipt-run-fail-001"],
+  "scope": "PROJECT_ONLY",
+  "state": "CANDIDATE"
+}
