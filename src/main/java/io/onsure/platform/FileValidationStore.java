@@ -3,14 +3,16 @@ package io.onsure.platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.Decision;
-import io.onsure.assurance.ValidationResult;
 import io.onsure.platform.ValidationModel.ValidationReport;
-import io.onsure.platform.oruda.OrudaEvidenceRegistry;
 import io.onsure.rag.RagPreparationService;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -38,41 +40,41 @@ public final class FileValidationStore {
     public void persist(ValidationContext context, ValidationReport report) throws Exception {
         Path run = context.runRoot();
         Files.createDirectories(run);
-        writeJson(run.resolve("target.json"), context.target());
-        writeJson(run.resolve("job.json"), context.job());
-        writeJson(run.resolve("target-metadata.json"), context.attributes());
-        writeJson(run.resolve("evidence.json"), context.evidence());
-        writeJson(run.resolve("findings.json"), context.findings());
-        writeJson(run.resolve("failure-modes.json"), context.failureModes());
-        writeJson(run.resolve("rca.json"), context.rcaRecords());
-        writeJson(run.resolve("remediation-plans.json"), context.remediationPlans());
-        writeJson(run.resolve("fixture-results.json"), context.fixtureResults());
-        writeJson(run.resolve("stage-results.json"), context.stageResults());
-        writeJson(run.resolve("regression-lock.json"), context.regressionLock());
-        writeJson(run.resolve("validation-report.json"), report);
-        Map<String, Object> ragCandidate = new RagPreparationService()
-                .prepareOwnCandidate(report, root.resolve("rag-preparation"));
-        writeJson(run.resolve("rag-preparation-candidate.json"), ragCandidate);
-        new ValidationReportExporter().export(report, run);
-        new FailureModeRegistry(root.resolve("failure-mode-registry.json")).register(context.failureModes());
-        verifyCompletedReceipts(context);
-        persistOrudaEvidenceRegistry(context);
-        writeManifest(run);
+        Path lockFile = run.resolve(".persist.lock");
+        try (FileChannel channel = FileChannel.open(lockFile,
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+             FileLock ignored = channel.lock()) {
+            writeJson(run.resolve("target.json"), context.target());
+            writeJson(run.resolve("job.json"), context.job());
+            writeJson(run.resolve("target-metadata.json"), context.attributes());
+            writeJson(run.resolve("evidence.json"), context.evidence());
+            writeJson(run.resolve("findings.json"), context.findings());
+            writeJson(run.resolve("failure-modes.json"), context.failureModes());
+            writeJson(run.resolve("rca.json"), context.rcaRecords());
+            writeJson(run.resolve("remediation-plans.json"), context.remediationPlans());
+            writeJson(run.resolve("fixture-results.json"), context.fixtureResults());
+            writeJson(run.resolve("stage-results.json"), context.stageResults());
+            writeJson(run.resolve("regression-lock.json"), context.regressionLock());
+            writeJson(run.resolve("validation-report.json"), report);
+            Map<String, Object> ragCandidate = new RagPreparationService()
+                    .prepareOwnCandidate(report, root.resolve("rag-preparation"));
+            writeJson(run.resolve("rag-preparation-candidate.json"), ragCandidate);
+            new ValidationReportExporter().export(report, run);
+            new FailureModeRegistry(root.resolve("failure-mode-registry.json"))
+                    .register(context.failureModes());
+            verifyCompletedReceipts(context);
+            context.adapter().afterPersist(context);
+            writeManifest(run);
+            channel.position(0);
+            channel.truncate(0);
+            channel.write(ByteBuffer.wrap((context.job().jobId() + "\n")
+                    .getBytes(StandardCharsets.UTF_8)));
+            channel.force(true);
+        }
     }
 
     public ValidationReport readReport(Path runRoot) throws Exception {
         return mapper.readValue(runRoot.resolve("validation-report.json").toFile(), ValidationReport.class);
-    }
-
-    private static void persistOrudaEvidenceRegistry(ValidationContext context) throws Exception {
-        if (!OrudaTargetAdapter.ID.equals(context.adapter().adapterId())) return;
-        if (context.regressionLock() == null || context.fixtureResults().isEmpty()) return;
-        OrudaEvidenceRegistry registry = new OrudaEvidenceRegistry();
-        registry.populate(context);
-        ValidationResult result = registry.verify(context.runRoot(), context.target().sourceRoot());
-        if (result.decision() != Decision.PASS) {
-            throw new IllegalStateException("ORUDA_EVIDENCE_REGISTRY_VERIFY_FAIL " + result.violations());
-        }
     }
 
     private static void verifyCompletedReceipts(ValidationContext context) throws Exception {
@@ -101,6 +103,7 @@ public final class FileValidationStore {
         try (var stream = Files.list(run)) {
             stream.filter(Files::isRegularFile)
                     .filter(path -> !path.getFileName().toString().equals("manifest.sha256"))
+                    .filter(path -> !path.getFileName().toString().equals(".persist.lock"))
                     .sorted()
                     .forEach(files::add);
         }
@@ -134,7 +137,8 @@ public final class FileValidationStore {
     }
 
     private static String sha256(Path file) throws Exception {
-        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file)));
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(file)));
     }
 
     private static String safe(String value) {
