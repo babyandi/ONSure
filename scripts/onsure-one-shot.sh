@@ -49,7 +49,7 @@ fail() {
 import json, pathlib, sys
 path, profile, failure, source = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V4",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V5",
     "decision": "FAIL",
     "profile": profile,
     "failure": failure,
@@ -83,7 +83,7 @@ import hashlib, json, pathlib, sys
 path, step, started, finished, code, stdout, stderr, source, profile, environment, *command = sys.argv[1:]
 def digest(path): return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
 body = {
-    "contract": "ONSURE_ONE_SHOT_STEP_RECEIPT_V4",
+    "contract": "ONSURE_ONE_SHOT_STEP_RECEIPT_V5",
     "step": step,
     "started_at": started,
     "finished_at": finished,
@@ -120,7 +120,7 @@ def capture(command):
     lines = (result.stdout or result.stderr).strip().splitlines()
     return {"command": command, "exit_code": result.returncode, "first_line": lines[0] if lines else ""}
 body = {
-    "contract": "ONSURE_ONE_SHOT_ENVIRONMENT_V3",
+    "contract": "ONSURE_ONE_SHOT_ENVIRONMENT_V4",
     "platform": platform.platform(),
     "machine": platform.machine(),
     "python": sys.version.splitlines()[0],
@@ -128,7 +128,8 @@ body = {
     "tools": {name: capture(command) for name, command in {
         "git": ["git", "--version"], "bash": ["bash", "--version"],
         "java": ["java", "-version"], "javac": ["javac", "-version"], "maven": ["mvn", "-version"],
-        "bwrap": ["bwrap", "--version"], "prlimit": ["prlimit", "--version"]
+        "bwrap": ["bwrap", "--version"], "prlimit": ["prlimit", "--version"],
+        "node": ["node", "--version"], "npm": ["npm", "--version"]
     }.items()},
 }
 pathlib.Path(sys.argv[1]).write_text(json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -139,6 +140,7 @@ run_step repository-contracts python3 scripts/validate-repository-contracts.py -
 run_step codespace-free-static python3 scripts/validate-codespace-free-remediation.py
 run_step structured-contracts python3 scripts/validate-structured-contracts.py
 run_step module-boundaries python3 scripts/check-module-boundaries.py
+run_step vscode-static python3 scripts/validate-vscode-extension.py
 run_step atomic-requirements python3 scripts/extract-atomic-requirements.py --output "$OUT/atomic-requirement-candidates.json"
 run_step shell-syntax bash scripts/check-shell-syntax.sh
 
@@ -149,7 +151,7 @@ if [[ "$STATIC_ONLY" == true ]]; then
 import json, pathlib, sys
 path, profile, head, environment = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V4",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V5",
     "decision": "NON_FINAL",
     "mode": "STATIC_ONLY",
     "profile": profile,
@@ -159,13 +161,14 @@ body = {
     "codespace_free_static_gate": "PASS",
     "structured_contracts": "PASS_OR_LIMITED_BY_OPTIONAL_PACKAGES",
     "module_boundary_static": "PASS",
+    "vscode_static": "PASS_OR_NODE_NOT_RUN",
     "atomic_requirement_candidates": "GENERATED_NONAUTHORITATIVE",
     "shell_syntax": "PASS",
     "maven_junit": "NOT_RUN",
     "runtime_e2e": "NOT_RUN",
+    "release_gate": "HOLD",
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
-    "assurance_class": "SELF_VALIDATION_NONFINAL",
     "final_lock_allowed": False,
     "production_go": False,
     "commercial_go": False,
@@ -177,15 +180,19 @@ PY
   exit 0
 fi
 
-for command in java javac mvn; do require "$command"; done
+for command in java javac mvn bwrap prlimit timeout; do require "$command"; done
 JAVA_MAJOR="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}')"
 JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
 [[ "$JAVA_MAJOR" == "17" && "$JAVAC_MAJOR" == "17" ]] || fail JDK17_REQUIRED
+export ONSURE_FIXTURE_SANDBOX_MODE=REQUIRED
 
 run_step preflight bash scripts/preflight-local-assurance.sh --profile "$PROFILE"
-run_step maven-tests mvn -B -ntp test
+run_step root-maven-tests mvn -B -ntp test
+run_step modular-core-cli-api mvn -B -ntp -f pom-modular.xml \
+  -pl modules/onsure-core,modules/onsure-cli,modules/onsure-local-api -am test
 run_step python-tests python3 -m unittest discover -s tests -p 'test_*.py'
-run_step universal-harness-twice bash scripts/run-universal-harness-twice.sh one-shot-internal-1 one-shot-internal-2 local-jdk17
+run_step universal-harness-twice bash scripts/run-universal-harness-twice.sh \
+  one-shot-internal-1 one-shot-internal-2 local-jdk17
 
 ORUDA_FIXTURES="NOT_RUN"
 if [[ "$PROFILE" == "oruda" ]]; then
@@ -200,25 +207,25 @@ python3 - "$OUT/result.json" "$PROFILE" "$HEAD_SHA" "$ENVIRONMENT_DIGEST" "$ORUD
 import json, pathlib, sys
 path, profile, head, environment, oruda = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V4",
-    "decision": "BLOCKED",
-    "blocking_reason": "PRODUCT_FULL_CHAIN_AND_INDEPENDENT_ASSURANCE_NOT_PROVEN",
-    "mode": "FULL_AVAILABLE_AUTOMATION",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V5",
+    "decision": "NON_FINAL",
+    "release_gate": "HOLD_PRODUCT_FULL_CHAIN_AND_INDEPENDENT_ASSURANCE_NOT_RUN",
+    "mode": "FULL_INTERNAL_AUTOMATION",
     "profile": profile,
     "source_commit": head,
     "environment_digest": environment,
     "repository_contracts": "PASS",
     "codespace_free_static_gate": "PASS",
     "structured_contracts": "PASS",
-    "maven_junit": "PASS",
+    "root_maven_junit": "PASS",
+    "modular_core_cli_api": "PASS_NONFINAL",
     "python_regression": "PASS",
     "internal_universal_harness": "PASS_NONFINAL",
     "optional_oruda_fixtures": oruda,
-    "vscode_product_full_chain": "NOT_RUN",
-    "web_product_full_chain": "NOT_RUN",
+    "vscode_extension_host_full_chain": "NOT_RUN",
+    "web_payment_provider_full_chain": "NOT_RUN",
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
-    "assurance_class": "SELF_VALIDATION_NONFINAL",
     "final_lock_allowed": False,
     "production_go": False,
     "commercial_go": False,
@@ -226,5 +233,5 @@ body = {
 pathlib.Path(path).write_text(json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 (cd "$OUT" && find . -type f ! -name evidence.sha256 -print0 | sort -z | xargs -0 sha256sum > evidence.sha256)
-echo "ONSURE_ONE_SHOT_BLOCKED_NONFINAL $OUT" >&2
-exit 75
+echo "ONSURE_ONE_SHOT_SELF_VALIDATION_NONFINAL $OUT"
+exit 0
