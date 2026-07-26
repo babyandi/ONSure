@@ -24,7 +24,16 @@
   "data_flows": [],
   "unknowns": [],
   "conflicts": [],
-  "evidence_refs": ["receipt-source-001"],
+  "evidence_refs": [
+    "source-tree:sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  ],
   "revision": 1,
-  "state": "PROFILE_CANDIDATE"
+  "state": "PROFILE_CANDIDATE",
+  "generated_at": "2026-07-26T00:00:00Z",
+  "learning_method": "STATIC_REPOSITORY_UNDERSTANDING_V1",
+  "language_inventory": {"Java": 1},
+  "dynamic_trace": "NOT_RUN",
+  "runtime_verification": "NOT_RUN",
+  "final_claim_allowed": false,
+  "profile_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
 }
