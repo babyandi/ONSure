@@ -69,6 +69,26 @@ final class FixtureEvidenceBinding {
         } else if (!outputDigest.equals(Hashing.sha256(result.observed()))) {
             violations.add("FIXTURE_OUTPUT_SHA_MISMATCH:" + fixtureId);
         }
+        String sandbox = text(attributes.get("sandbox_profile"));
+        if (!List.of(FixtureProcessSandbox.REVIEWED_LOCAL_NONFINAL,
+                FixtureProcessSandbox.STRICT_BWRAP).contains(sandbox)) {
+            violations.add("FIXTURE_SANDBOX_PROFILE_INVALID:" + fixtureId);
+        }
+        if (FixtureProcessSandbox.STRICT_BWRAP.equals(sandbox)) {
+            for (String field : List.of(
+                    "network_isolated", "filesystem_read_only",
+                    "pid_namespace_isolated", "resource_limits_enforced")) {
+                if (!Boolean.TRUE.equals(attributes.get(field))) {
+                    violations.add("FIXTURE_STRICT_SANDBOX_CONTROL_MISSING:"
+                            + fixtureId + ":" + field);
+                }
+            }
+        }
+        if (!"SELF_VALIDATION_NONFINAL".equals(text(attributes.get("assurance_class")))
+                && !"SELF_VALIDATION_NONFINAL_SANDBOXED"
+                        .equals(text(attributes.get("assurance_class")))) {
+            violations.add("FIXTURE_ASSURANCE_CLASS_INVALID:" + fixtureId);
+        }
         String expectedEvidenceId = "EV-FIXTURE-" + evidence.sha256().substring(0, 16);
         if (!expectedEvidenceId.equals(evidence.evidenceId())) {
             violations.add("FIXTURE_EVIDENCE_ID_MISMATCH:" + fixtureId);
@@ -97,6 +117,12 @@ final class FixtureEvidenceBinding {
                         + "|" + integer(attributes.get("timeout_seconds"))
                         + "|" + text(attributes.get("environment_sha256"))
                         + "|" + text(attributes.get("output_sha256"))
+                        + "|" + text(attributes.get("sandbox_profile"))
+                        + "|" + Boolean.TRUE.equals(attributes.get("network_isolated"))
+                        + "|" + Boolean.TRUE.equals(attributes.get("filesystem_read_only"))
+                        + "|" + Boolean.TRUE.equals(attributes.get("pid_namespace_isolated"))
+                        + "|" + Boolean.TRUE.equals(attributes.get("resource_limits_enforced"))
+                        + "|" + text(attributes.get("assurance_class"))
                         + "|" + String.join("\u0000", stringList(attributes.get("command"))));
     }
 
