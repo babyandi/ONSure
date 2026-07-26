@@ -1,0 +1,58 @@
+{
+  "contract": "ONSURE_MISSING_CAPABILITY_REGISTER_V1",
+  "assessment_date": "2026-07-26",
+  "priority_groups": [
+    {
+      "priority": "P0",
+      "capabilities": [
+        "Standalone core preflight without ORUDA",
+        "Single authoritative product and run state mapping",
+        "Real Program Profile generation",
+        "Real Behavior Profile from repeated execution",
+        "Risk-based planning and approval",
+        "OReview engine beyond marker scanning",
+        "Evidence-based RCA candidate and confirmation states",
+        "Patch, hunk approval, worktree and rollback engine",
+        "Before/After proof with identical validation context",
+        "Actual VS Code Extension and Local Authenticated API",
+        "Git worktree, commit, push and Draft PR full-chain"
+      ]
+    },
+    {
+      "priority": "P1",
+      "capabilities": [
+        "Append-only externally anchored evidence ledger",
+        "Role and signing-key separation across learning promotion",
+        "Scenario generation and fixture registry by target type",
+        "Build, dependency, API, container, performance and recovery validation",
+        "Model, prompt, tool and RAG registry",
+        "Provider abstraction with cost and data-transfer receipts",
+        "Installer, VSIX package and update channel",
+        "Real repository Full-Chain two-run acceptance"
+      ]
+    },
+    {
+      "priority": "P2",
+      "capabilities": [
+        "Web preflight, quote, payment and service case",
+        "Identity, organization, SSO and MFA",
+        "OLicense entitlement, credit and offline lifecycle",
+        "Tenant isolation, sandbox, queue and object storage",
+        "Retention, legal hold, complete deletion and deletion receipt",
+        "Observability, incident response and SLA",
+        "Team and Enterprise deployment"
+      ]
+    }
+  ],
+  "codespace_deferred": [
+    "JDK 17 and Maven compile",
+    "JUnit and Python regression",
+    "Generic and AI fixture E2E",
+    "Two-run deterministic assurance",
+    "Container, database and network isolation",
+    "Performance, recovery and failure injection",
+    "VS Code Extension Host Full-Chain",
+    "Independent OTester and OAudit"
+  ],
+  "final_claim_allowed": false
+}
