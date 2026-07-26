@@ -6,9 +6,9 @@
   "additionalProperties": false,
   "required": [
     "contract", "approval_id", "authority_class", "approval_purpose", "nonce",
-    "patch_apply_receipt_sha256", "branch", "remote", "base_branch", "actor", "key_id",
-    "signature_algorithm", "signature", "approved_at", "expires_at", "allow_commit",
-    "allow_push", "allow_draft_pr", "allow_force_push", "allow_merge"
+    "patch_apply_receipt_sha256", "branch", "remote", "remote_url_sha256", "base_branch",
+    "actor", "key_id", "signature_algorithm", "signature", "approved_at", "expires_at",
+    "allow_commit", "allow_push", "allow_draft_pr", "allow_force_push", "allow_merge"
   ],
   "properties": {
     "contract": {"const": "ONSURE_GIT_DELIVERY_APPROVAL_V1"},
@@ -19,6 +19,7 @@
     "patch_apply_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "branch": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{2,120}$"},
     "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,64}$"},
+    "remote_url_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "base_branch": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,120}$"},
     "actor": {"type": "string", "minLength": 1, "not": {"const": "ONSURE_AUTOMATION"}},
     "key_id": {"type": "string", "minLength": 1},
