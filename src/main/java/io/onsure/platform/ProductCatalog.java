@@ -3,12 +3,11 @@ package io.onsure.platform;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.onsure.assurance.ExclusiveFileLock;
 import io.onsure.platform.ValidationModel.ValidationTarget;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,13 +110,11 @@ public final class ProductCatalog {
 
     private void withExclusiveMutation(String operation, CheckedRunnable mutation) throws Exception {
         Files.createDirectories(root);
-        try (FileChannel channel = FileChannel.open(lockFile,
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-             var ignored = channel.lock()) {
+        ExclusiveFileLock.run(lockFile, () -> {
             long before = revision();
             mutation.run();
             writeRevision(before + 1, operation);
-        }
+        });
     }
 
     private <T> List<T> read(String name, TypeReference<List<T>> type) throws Exception {
