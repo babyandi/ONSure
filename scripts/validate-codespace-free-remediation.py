@@ -18,6 +18,10 @@ REQUIRED = [
     "contracts/schema-instance-registry.v1.json",
     "contracts/product-process-lineage.v1.json",
     "status/design-capability-coverage.v2.json",
+    "status/omission-detection-status.v1.json",
+    "status/implementation-matrix.v1.json",
+    "status/verification-status.v1.json",
+    "status/remaining-work-register.v1.json",
     "fixtures/contracts/program-profile.valid.json",
     "fixtures/contracts/behavior-profile.valid.json",
     "fixtures/contracts/failure-memory.valid.json",
@@ -39,6 +43,7 @@ REQUIRED = [
     "scripts/validate-structured-contracts.py",
     "scripts/validate-design-coverage.py",
     "scripts/validate-product-process-lineage.py",
+    "scripts/validate-status-consistency.py",
     "scripts/run-core-modular-twice.sh",
     "scripts/fixture-sandbox-launcher.sh",
     "scripts/onsure-final-stage.sh",
@@ -88,6 +93,10 @@ SOURCE_ASSERTIONS = {
         "REQUIRED_STAGES", "REQUIRED_ARTIFACTS", "ARTIFACT_PARENT_BINDING_MISSING",
         "STAGE_CONSUMES_UNPRODUCED_ARTIFACT", "NO_FINAL_WITHOUT_INDEPENDENT_RECEIPTS",
         "self_test",
+    ],
+    "scripts/validate-status-consistency.py": [
+        "TRACE_DESIGN_ID_SET_MISMATCH", "IMPLEMENTATION_MATRIX_CAPABILITY_MAP_MISMATCH",
+        "OMISSION_FAILURE_CASE_COUNT_MISMATCH", "UNSAFE_RELEASE_FLAG",
     ],
 }
 
@@ -146,6 +155,8 @@ def main() -> int:
         ([sys.executable, "scripts/validate-design-coverage.py", "--matrix",
           "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"],
          '"decision": "PASS"'),
+        ([sys.executable, "scripts/validate-status-consistency.py"],
+         "ONSURE_STATUS_CONSISTENCY_PASS"),
         (["bash", "scripts/check-shell-syntax.sh"], "ONSURE_SHELL_SYNTAX_PASS"),
     ]
     for command, marker in commands:
@@ -165,10 +176,11 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V6",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V7",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
+        "status_cross_consistency": "PASS" if not errors else "FAIL",
         "design_capability_count": 28,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
