@@ -5,6 +5,8 @@ import argparse
 import copy
 import json
 import pathlib
+import subprocess
+import sys
 from collections import Counter
 from typing import Any
 
@@ -34,10 +36,10 @@ def expand(matrix: dict[str, Any], item: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(profile, dict):
         return item
     result = copy.deepcopy(item)
-    cid = str(item.get("capability_id", "UNKNOWN"))
+    capability_id = str(item.get("capability_id", "UNKNOWN"))
     for field in ("process_steps", "required_data", "failure_cases", "detection_controls"):
         value = copy.deepcopy(profile.get(field, []))
-        encoded = json.dumps(value).replace("${CAP}", cid)
+        encoded = json.dumps(value).replace("${CAP}", capability_id)
         result[field] = json.loads(encoded)
     for field in ("process_steps", "required_data", "failure_cases", "detection_controls"):
         if field in item:
@@ -56,105 +58,104 @@ def validate(matrix: dict[str, Any], root: pathlib.Path | None, check_paths: boo
     for value, count in Counter(ids).items():
         if count > 1:
             errors.append(f"DUPLICATE_CAPABILITY:{value}")
-    for cid in sorted(REQUIRED_CAPABILITIES - set(ids)):
-        errors.append(f"REQUIRED_CAPABILITY_MISSING:{cid}")
+    for capability_id in sorted(REQUIRED_CAPABILITIES - set(ids)):
+        errors.append(f"REQUIRED_CAPABILITY_MISSING:{capability_id}")
 
     mapped_docs: set[str] = set()
     for index, raw in enumerate(items):
         if not isinstance(raw, dict):
             errors.append(f"CAPABILITY_NOT_OBJECT:{index}")
             continue
-        cid = str(raw.get("capability_id", f"INDEX-{index}"))
+        capability_id = str(raw.get("capability_id", f"INDEX-{index}"))
         for field in sorted(BASE_FIELDS - set(raw)):
-            errors.append(f"CAPABILITY_FIELD_MISSING:{cid}:{field}")
+            errors.append(f"CAPABILITY_FIELD_MISSING:{capability_id}:{field}")
         item = expand(matrix, raw)
         if raw.get("coverage_profile") not in matrix.get("coverage_profiles", {}):
-            errors.append(f"COVERAGE_PROFILE_UNKNOWN:{cid}:{raw.get('coverage_profile')}")
-        impl, verification = item.get("implementation_status"), item.get("verification_state")
-        if impl not in ALLOWED_IMPLEMENTATION:
-            errors.append(f"IMPLEMENTATION_STATUS_INVALID:{cid}:{impl}")
+            errors.append(f"COVERAGE_PROFILE_UNKNOWN:{capability_id}:{raw.get('coverage_profile')}")
+        implementation, verification = item.get("implementation_status"), item.get("verification_state")
+        if implementation not in ALLOWED_IMPLEMENTATION:
+            errors.append(f"IMPLEMENTATION_STATUS_INVALID:{capability_id}:{implementation}")
         if verification not in ALLOWED_VERIFICATION:
-            errors.append(f"VERIFICATION_STATE_INVALID:{cid}:{verification}")
+            errors.append(f"VERIFICATION_STATE_INVALID:{capability_id}:{verification}")
 
         for field in ("design_refs", "contract_refs", "code_refs", "test_refs", "evidence_refs", "limitations",
                       "process_steps", "required_data", "failure_cases", "detection_controls"):
-            value = item.get(field)
-            if not isinstance(value, list):
-                errors.append(f"CAPABILITY_LIST_FIELD_INVALID:{cid}:{field}")
+            if not isinstance(item.get(field), list):
+                errors.append(f"CAPABILITY_LIST_FIELD_INVALID:{capability_id}:{field}")
         for field in ("design_refs", "process_steps", "required_data", "failure_cases", "detection_controls"):
             if not item.get(field):
-                errors.append(f"CAPABILITY_REQUIRED_LIST_EMPTY:{cid}:{field}")
+                errors.append(f"CAPABILITY_REQUIRED_LIST_EMPTY:{capability_id}:{field}")
 
         design_refs = item.get("design_refs", []) if isinstance(item.get("design_refs"), list) else []
-        mapped_docs.update(str(v).split("#", 1)[0].split(":L", 1)[0] for v in design_refs)
+        mapped_docs.update(str(value).split("#", 1)[0].split(":L", 1)[0] for value in design_refs)
         code_refs = item.get("code_refs", []) if isinstance(item.get("code_refs"), list) else []
         test_refs = item.get("test_refs", []) if isinstance(item.get("test_refs"), list) else []
         evidence_refs = item.get("evidence_refs", []) if isinstance(item.get("evidence_refs"), list) else []
-        if impl in {"IMPLEMENTED", "PARTIAL", "STUB"} and not code_refs:
-            errors.append(f"IMPLEMENTATION_WITHOUT_CODE:{cid}")
-        if impl in {"IMPLEMENTED", "PARTIAL"} and not test_refs:
-            errors.append(f"IMPLEMENTATION_WITHOUT_TEST:{cid}")
-        if impl == "IMPLEMENTED" and verification in {"NOT_RUN", "BLOCKED", "INCONCLUSIVE"}:
-            errors.append(f"IMPLEMENTED_WITHOUT_EXECUTED_VERIFICATION:{cid}")
+        if implementation in {"IMPLEMENTED", "PARTIAL", "STUB"} and not code_refs:
+            errors.append(f"IMPLEMENTATION_WITHOUT_CODE:{capability_id}")
+        if implementation in {"IMPLEMENTED", "PARTIAL"} and not test_refs:
+            errors.append(f"IMPLEMENTATION_WITHOUT_TEST:{capability_id}")
+        if implementation == "IMPLEMENTED" and verification in {"NOT_RUN", "BLOCKED", "INCONCLUSIVE"}:
+            errors.append(f"IMPLEMENTED_WITHOUT_EXECUTED_VERIFICATION:{capability_id}")
         if verification == "PASS" and not evidence_refs:
-            errors.append(f"PASS_WITHOUT_EVIDENCE:{cid}")
+            errors.append(f"PASS_WITHOUT_EVIDENCE:{capability_id}")
         if verification == "PASS" and matrix.get("assurance", {}).get("independent_otester") != "PASS":
-            errors.append(f"PASS_WITHOUT_INDEPENDENT_OTESTER:{cid}")
+            errors.append(f"PASS_WITHOUT_INDEPENDENT_OTESTER:{capability_id}")
 
         steps = item.get("process_steps", []) if isinstance(item.get("process_steps"), list) else []
-        step_ids = [s.get("step_id") for s in steps if isinstance(s, dict)]
+        step_ids = [step.get("step_id") for step in steps if isinstance(step, dict)]
         for value, count in Counter(step_ids).items():
             if count > 1:
-                errors.append(f"DUPLICATE_PROCESS_STEP:{cid}:{value}")
+                errors.append(f"DUPLICATE_PROCESS_STEP:{capability_id}:{value}")
         seen: set[str] = set()
         for step in steps:
             if not isinstance(step, dict) or not step.get("step_id"):
-                errors.append(f"PROCESS_STEP_ID_MISSING:{cid}")
+                errors.append(f"PROCESS_STEP_ID_MISSING:{capability_id}")
                 continue
-            sid = str(step["step_id"])
+            step_id = str(step["step_id"])
             requires = step.get("requires", [])
             outputs = step.get("outputs", [])
             if not isinstance(requires, list) or not isinstance(outputs, list) or not outputs:
-                errors.append(f"PROCESS_STEP_CONTRACT_INVALID:{cid}:{sid}")
-            for pred in requires if isinstance(requires, list) else []:
-                if pred not in seen:
-                    errors.append(f"PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER:{cid}:{sid}:{pred}")
-            seen.add(sid)
+                errors.append(f"PROCESS_STEP_CONTRACT_INVALID:{capability_id}:{step_id}")
+            for predecessor in requires if isinstance(requires, list) else []:
+                if predecessor not in seen:
+                    errors.append(f"PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER:{capability_id}:{step_id}:{predecessor}")
+            seen.add(step_id)
 
         data = item.get("required_data", []) if isinstance(item.get("required_data"), list) else []
-        data_ids = {d.get("data_id") for d in data if isinstance(d, dict)}
-        for d in data:
-            if not isinstance(d, dict) or not d.get("data_id") or not d.get("producer") or not d.get("consumer"):
-                errors.append(f"REQUIRED_DATA_CONTRACT_INVALID:{cid}")
+        data_ids = {entry.get("data_id") for entry in data if isinstance(entry, dict)}
+        for entry in data:
+            if not isinstance(entry, dict) or not entry.get("data_id") or not entry.get("producer") or not entry.get("consumer"):
+                errors.append(f"REQUIRED_DATA_CONTRACT_INVALID:{capability_id}")
                 continue
-            if d.get("lineage_required") is True and not d.get("parent_binding"):
-                errors.append(f"LINEAGE_PARENT_BINDING_MISSING:{cid}:{d.get('data_id')}")
+            if entry.get("lineage_required") is True and not entry.get("parent_binding"):
+                errors.append(f"LINEAGE_PARENT_BINDING_MISSING:{capability_id}:{entry.get('data_id')}")
         for step in steps:
             if isinstance(step, dict):
                 for data_id in step.get("consumes", []) if isinstance(step.get("consumes"), list) else []:
                     if data_id not in data_ids:
-                        errors.append(f"PROCESS_CONSUMES_UNDECLARED_DATA:{cid}:{step.get('step_id')}:{data_id}")
+                        errors.append(f"PROCESS_CONSUMES_UNDECLARED_DATA:{capability_id}:{step.get('step_id')}:{data_id}")
 
         controls = item.get("detection_controls", []) if isinstance(item.get("detection_controls"), list) else []
-        control_ids = {c.get("control_id") for c in controls if isinstance(c, dict)}
+        control_ids = {control.get("control_id") for control in controls if isinstance(control, dict)}
         for failure in item.get("failure_cases", []) if isinstance(item.get("failure_cases"), list) else []:
             if not isinstance(failure, dict) or not failure.get("failure_id"):
-                errors.append(f"FAILURE_CASE_CONTRACT_INVALID:{cid}")
+                errors.append(f"FAILURE_CASE_CONTRACT_INVALID:{capability_id}")
                 continue
             detects = failure.get("detected_by", [])
             if not isinstance(detects, list) or not detects:
-                errors.append(f"FAILURE_CASE_UNDETECTED:{cid}:{failure.get('failure_id')}")
+                errors.append(f"FAILURE_CASE_UNDETECTED:{capability_id}:{failure.get('failure_id')}")
                 continue
             for control in detects:
                 if control not in control_ids:
-                    errors.append(f"FAILURE_CASE_UNKNOWN_CONTROL:{cid}:{failure.get('failure_id')}:{control}")
+                    errors.append(f"FAILURE_CASE_UNKNOWN_CONTROL:{capability_id}:{failure.get('failure_id')}:{control}")
 
         if check_paths and root:
             for field in ("design_refs", "contract_refs", "code_refs", "test_refs"):
-                for ref in item.get(field, []) if isinstance(item.get(field), list) else []:
-                    path_text = str(ref).split("#", 1)[0].split(":L", 1)[0]
+                for reference in item.get(field, []) if isinstance(item.get(field), list) else []:
+                    path_text = str(reference).split("#", 1)[0].split(":L", 1)[0]
                     if path_text and not (root / path_text).exists():
-                        errors.append(f"REFERENCE_PATH_MISSING:{cid}:{field}:{path_text}")
+                        errors.append(f"REFERENCE_PATH_MISSING:{capability_id}:{field}:{path_text}")
 
     for document in matrix.get("authoritative_documents", []):
         if document not in mapped_docs:
@@ -179,18 +180,18 @@ def self_test(matrix: dict[str, Any]) -> list[str]:
         if not any(value.startswith(prefix) for value in violations):
             failures.append(f"SELF_TEST_MISSED:{name}:{prefix}:{violations[:5]}")
 
-    expect("missing capability", lambda m: m["capabilities"].pop(0), "REQUIRED_CAPABILITY_MISSING:")
-    expect("duplicate capability", lambda m: m["capabilities"].append(copy.deepcopy(m["capabilities"][0])), "DUPLICATE_CAPABILITY:")
-    expect("unknown profile", lambda m: m["capabilities"][0].update(coverage_profile="MISSING"), "COVERAGE_PROFILE_UNKNOWN:")
-    expect("missing process", lambda m: m["capabilities"][0].update(process_steps=[]), "CAPABILITY_REQUIRED_LIST_EMPTY:")
-    expect("broken predecessor", lambda m: m["capabilities"][0].update(process_steps=[{"step_id": "VERIFY", "requires": ["PROCESS"], "consumes": [], "outputs": ["x"]}]), "PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER:")
-    expect("missing lineage", lambda m: m["capabilities"][0].update(required_data=[{"data_id": "x", "producer": "a", "consumer": "b", "lineage_required": True, "parent_binding": ""}]), "LINEAGE_PARENT_BINDING_MISSING:")
-    expect("undetected failure", lambda m: m["capabilities"][0].update(failure_cases=[{"failure_id": "x", "detected_by": []}]), "FAILURE_CASE_UNDETECTED:")
-    expect("unknown control", lambda m: m["capabilities"][0].update(failure_cases=[{"failure_id": "x", "detected_by": ["UNKNOWN"]}]), "FAILURE_CASE_UNKNOWN_CONTROL:")
-    expect("partial no test", lambda m: m["capabilities"][0].update(implementation_status="PARTIAL", test_refs=[]), "IMPLEMENTATION_WITHOUT_TEST:")
-    expect("pass no evidence", lambda m: m["capabilities"][0].update(verification_state="PASS", evidence_refs=[]), "PASS_WITHOUT_EVIDENCE:")
-    expect("implemented not run", lambda m: m["capabilities"][0].update(implementation_status="IMPLEMENTED", verification_state="NOT_RUN"), "IMPLEMENTED_WITHOUT_EXECUTED_VERIFICATION:")
-    expect("unmapped design", lambda m: m["authoritative_documents"].append("docs/missing-authority.md"), "AUTHORITATIVE_DOCUMENT_UNMAPPED:")
+    expect("missing capability", lambda model: model["capabilities"].pop(0), "REQUIRED_CAPABILITY_MISSING:")
+    expect("duplicate capability", lambda model: model["capabilities"].append(copy.deepcopy(model["capabilities"][0])), "DUPLICATE_CAPABILITY:")
+    expect("unknown profile", lambda model: model["capabilities"][0].update(coverage_profile="MISSING"), "COVERAGE_PROFILE_UNKNOWN:")
+    expect("missing process", lambda model: model["capabilities"][0].update(process_steps=[]), "CAPABILITY_REQUIRED_LIST_EMPTY:")
+    expect("broken predecessor", lambda model: model["capabilities"][0].update(process_steps=[{"step_id": "VERIFY", "requires": ["PROCESS"], "consumes": [], "outputs": ["x"]}]), "PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER:")
+    expect("missing lineage", lambda model: model["capabilities"][0].update(required_data=[{"data_id": "x", "producer": "a", "consumer": "b", "lineage_required": True, "parent_binding": ""}]), "LINEAGE_PARENT_BINDING_MISSING:")
+    expect("undetected failure", lambda model: model["capabilities"][0].update(failure_cases=[{"failure_id": "x", "detected_by": []}]), "FAILURE_CASE_UNDETECTED:")
+    expect("unknown control", lambda model: model["capabilities"][0].update(failure_cases=[{"failure_id": "x", "detected_by": ["UNKNOWN"]}]), "FAILURE_CASE_UNKNOWN_CONTROL:")
+    expect("partial no test", lambda model: model["capabilities"][0].update(implementation_status="PARTIAL", test_refs=[]), "IMPLEMENTATION_WITHOUT_TEST:")
+    expect("pass no evidence", lambda model: model["capabilities"][0].update(verification_state="PASS", evidence_refs=[]), "PASS_WITHOUT_EVIDENCE:")
+    expect("implemented not run", lambda model: model["capabilities"][0].update(implementation_status="IMPLEMENTED", verification_state="NOT_RUN"), "IMPLEMENTED_WITHOUT_EXECUTED_VERIFICATION:")
+    expect("unmapped design", lambda model: model["authoritative_documents"].append("docs/missing-authority.md"), "AUTHORITATIVE_DOCUMENT_UNMAPPED:")
     return failures
 
 
@@ -201,16 +202,40 @@ def main() -> int:
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--skip-path-checks", action="store_true")
     parser.add_argument("--output", type=pathlib.Path)
+    parser.add_argument("--process-model", type=pathlib.Path)
     args = parser.parse_args()
     matrix = load_json(args.matrix)
     errors = validate(matrix, args.root, not args.skip_path_checks)
     self_errors = self_test(matrix) if args.self_test else []
+    process_errors: list[str] = []
+    process_injections = 0
+    root = args.root.resolve() if args.root else None
+    process_model = args.process_model
+    if process_model is None and root is not None:
+        process_model = root / "contracts/product-process-lineage.v1.json"
+    if process_model is not None:
+        validator = (root / "scripts/validate-product-process-lineage.py") if root else pathlib.Path("scripts/validate-product-process-lineage.py")
+        if not validator.is_file() or not process_model.is_file():
+            process_errors.append("PRODUCT_PROCESS_LINEAGE_VALIDATOR_OR_MODEL_MISSING")
+        else:
+            command = [sys.executable, str(validator), "--model", str(process_model)]
+            if args.self_test:
+                command.append("--self-test")
+            result = subprocess.run(command, text=True, capture_output=True, check=False)
+            if result.returncode != 0:
+                process_errors.append("PRODUCT_PROCESS_LINEAGE_FAIL:" + result.stdout[-2000:] + result.stderr[-1000:])
+            else:
+                payload = json.loads(result.stdout)
+                process_injections = int(payload.get("failure_injection_count", 0))
+                if payload.get("decision") != "PASS":
+                    process_errors.append("PRODUCT_PROCESS_LINEAGE_NON_PASS")
     report = {
-        "contract": "ONSURE_DESIGN_COVERAGE_VALIDATION_REPORT_V1",
-        "decision": "PASS" if not errors and not self_errors else "FAIL",
+        "contract": "ONSURE_DESIGN_COVERAGE_VALIDATION_REPORT_V2",
+        "decision": "PASS" if not errors and not self_errors and not process_errors else "FAIL",
         "coverage_errors": errors,
         "self_test_errors": self_errors,
-        "failure_injection_count": 12 if args.self_test else 0,
+        "process_lineage_errors": process_errors,
+        "failure_injection_count": (12 if args.self_test else 0) + process_injections,
         "final_claim_allowed": False,
     }
     text = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
