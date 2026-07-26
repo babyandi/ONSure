@@ -3,8 +3,10 @@
   "profile_id": "behavior-sample-001",
   "program_profile_id": "profile-sample-001",
   "source_baseline_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "coverage_class": "EXECUTABLE_FIXTURE_PROCESS_PROXY",
+  "direct_behavior_telemetry": false,
   "runtime_context": {
-    "harness_id": "ONSURE_BUILTIN_HARNESS_V1",
+    "harness_id": "ONSURE_BEHAVIOR_LEARNING_HARNESS_V1",
     "execution_profile": "LOCAL_FIXTURE",
     "model_id": "NOT_APPLICABLE_FIXTURE_TARGET",
     "model_version": "NOT_APPLICABLE",
@@ -18,20 +20,26 @@
       "iteration": 1,
       "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "output_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-      "tool_calls": [],
+      "tool_calls": ["bash", "scenario.sh"],
+      "tool_call_observation": "PROCESS_COMMAND_PROXY",
       "decision": "PASS",
       "duration_ms": 10,
-      "run_receipt_id": "receipt-run-001"
+      "run_receipt_id": "receipt-run-001",
+      "run_receipt_path": "/tmp/behavior-receipts/receipt-run-001.json",
+      "run_receipt_file_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     },
     {
       "scenario_id": "scenario-001",
       "iteration": 2,
       "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "output_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-      "tool_calls": [],
+      "tool_calls": ["bash", "scenario.sh"],
+      "tool_call_observation": "PROCESS_COMMAND_PROXY",
       "decision": "PASS",
       "duration_ms": 9,
-      "run_receipt_id": "receipt-run-002"
+      "run_receipt_id": "receipt-run-002",
+      "run_receipt_path": "/tmp/behavior-receipts/receipt-run-002.json",
+      "run_receipt_file_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     }
   ],
   "variability": {
@@ -43,11 +51,16 @@
   },
   "failure_conditions": [],
   "policy_violations": [],
-  "evidence_refs": ["receipt-run-001", "receipt-run-002"],
+  "evidence_refs": [
+    "receipt-file:sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "receipt-file:sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  ],
+  "receipt_directory": "/tmp/behavior-receipts",
   "state": "BEHAVIOR_CANDIDATE",
   "generated_at": "2026-07-26T00:00:00Z",
   "learning_method": "REPEATED_EXECUTABLE_FIXTURE_OBSERVATION_V1",
   "human_review": "NOT_RUN",
   "independent_validation": "NOT_RUN",
-  "final_claim_allowed": false
+  "final_claim_allowed": false,
+  "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 }
