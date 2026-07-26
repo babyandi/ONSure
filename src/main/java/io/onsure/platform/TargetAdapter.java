@@ -47,4 +47,9 @@ public interface TargetAdapter {
     Map<String, Object> collectTargetMetadata(ValidationTarget target) throws Exception;
 
     List<FixtureDefinition> loadFixtures(ValidationTarget target) throws Exception;
+
+    /** Optional adapter-owned evidence extension. Core does not import target-specific classes. */
+    default void persistAdditionalEvidence(ValidationContext context) throws Exception {
+        // Generic adapters have no additional evidence registry.
+    }
 }
