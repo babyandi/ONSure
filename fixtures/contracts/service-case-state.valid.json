@@ -1,0 +1,54 @@
+{
+  "contract": "ONSURE_SERVICE_CASE_STATE_V1",
+  "case_id": "case-sample-001",
+  "organization_id": "org-sample",
+  "tenant_id": "tenant-sample",
+  "workspace_id": "workspace-sample",
+  "service_type": "AI_CODE_VALIDATION",
+  "target_reference": "git:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "status": "PAYMENT_RECEIPT_RECORDED",
+  "preflight": {
+    "decision": "PASS",
+    "source_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "findings": [],
+    "recorded_at": "2026-07-26T00:00:00Z"
+  },
+  "quote": {
+    "quote_id": "quote-sample-001",
+    "currency": "KRW",
+    "amount_minor": 100000,
+    "scope": ["PROGRAM_PROFILE", "VALIDATION_REPORT"],
+    "expires_at": "2026-07-27T00:00:00Z",
+    "created_at": "2026-07-26T00:00:00Z",
+    "accepted": true,
+    "accepted_at": "2026-07-26T01:00:00Z"
+  },
+  "order": {
+    "order_id": "ORDER-case-sample-001",
+    "quote_id": "quote-sample-001",
+    "state": "PAYMENT_PENDING",
+    "created_at": "2026-07-26T01:00:00Z"
+  },
+  "payment": {
+    "provider": "provider-sample",
+    "provider_receipt_id": "provider-receipt-001",
+    "currency": "KRW",
+    "amount_minor": 100000,
+    "receipt_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "provider_verification": "NOT_RUN",
+    "recorded_at": "2026-07-26T01:01:00Z"
+  },
+  "delivery": null,
+  "refund": null,
+  "deletion_receipt": null,
+  "legal_hold": false,
+  "legal_hold_reason": null,
+  "retention_state": "ACTIVE",
+  "revision": 5,
+  "ledger_sequence": 5,
+  "ledger_head": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "created_at": "2026-07-26T00:00:00Z",
+  "updated_at": "2026-07-26T01:01:00Z",
+  "final_claim_allowed": false,
+  "state_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}
