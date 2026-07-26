@@ -27,7 +27,8 @@ class OrudaMvf001E2ETest {
     @TempDir Path temp;
 
     @Test
-    void mvfManifestContainsExactlySeventeenExecutableFixturesAcrossRequiredGroupsAndLanes() throws Exception {
+    void mvfManifestContainsExactlySeventeenExecutableFixturesAcrossRequiredGroupsAndLanes()
+            throws Exception {
         JsonNode root = mapper.readTree(ROOT.resolve("oruda-target.json").toFile());
         JsonNode fixtures = root.path("fixtures");
         assertEquals("ONSURE_ORUDA_TARGET_PROFILE_V1", root.path("contract").asText());
@@ -48,20 +49,24 @@ class OrudaMvf001E2ETest {
         Set<String> lanes = StreamSupport.stream(root.path("lanes").spliterator(), false)
                 .map(JsonNode::asText).collect(Collectors.toSet());
         assertTrue(lanes.containsAll(Set.of(
-                "OReport", "ODesign", "OAsset", "OUI", "OTester", "OAudit", "EvidenceRegistry")));
+                "OReport", "ODesign", "OAsset", "OUI", "OTester", "OAudit",
+                "EvidenceRegistry")));
 
         for (JsonNode fixture : fixtures) {
-            assertTrue(fixture.path("id").asText().matches("MVF-(POS|NEG|HANDOFF|QUALITY|EVID)-\\d{3}"));
+            assertTrue(fixture.path("id").asText()
+                    .matches("MVF-(POS|NEG|HANDOFF|QUALITY|EVID)-\\d{3}"));
             assertTrue(fixture.path("required_evidence").isArray());
             assertTrue(fixture.path("required_evidence").size() > 0);
             assertEquals("bash", fixture.path("command").get(0).asText());
             assertEquals("mvf-runner.sh", fixture.path("command").get(1).asText());
-            assertTrue(Files.isRegularFile(ROOT.resolve(fixture.path("command").get(1).asText())));
+            assertTrue(Files.isRegularFile(
+                    ROOT.resolve(fixture.path("command").get(1).asText())));
         }
     }
 
     @Test
-    void mvfRunsThroughExplicitOrudaAdapterHarnessOracleEvidenceRcaAndRegressionLock() throws Exception {
+    void mvfRunsThroughExplicitOrudaAdapterHarnessOracleEvidenceRcaAndRegressionLock()
+            throws Exception {
         ValidationTarget target = new ValidationTarget(
                 "ORUDA-MVF-001",
                 "ORUDA Minimum Viable Fixture Set",
@@ -72,7 +77,8 @@ class OrudaMvf001E2ETest {
                 "ONSURE_ORUDA_MVF_POLICY_V1",
                 "LOCAL_MVF_E2E");
 
-        ValidationEngine.RunResult result = ValidationEngine.withOrudaAdapter(temp.resolve("runs")).run(target);
+        ValidationEngine.RunResult result = OrudaValidationEngineFactory.create(
+                temp.resolve("runs")).run(target);
         assertEquals(Decision.PASS, result.report().decision());
         assertEquals(17, result.report().fixtureResults().size());
         assertTrue(result.report().fixtureResults().stream()
@@ -86,7 +92,8 @@ class OrudaMvf001E2ETest {
                 .filter(value -> value.stageId().equals("FIXTURE_HARNESS_ORACLE"))
                 .findFirst().orElseThrow();
         assertEquals(17, ((Number) fixtureStage.metrics().get("fixtures")).intValue());
-        assertEquals(17, ((Number) fixtureStage.metrics().get("commands_executed")).intValue());
+        assertEquals(17, ((Number) fixtureStage.metrics()
+                .get("commands_executed")).intValue());
         assertEquals(0, ((Number) fixtureStage.metrics().get("failures")).intValue());
 
         for (String file : Set.of(
