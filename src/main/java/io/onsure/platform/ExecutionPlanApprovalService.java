@@ -10,10 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +21,6 @@ import java.util.Set;
 public final class ExecutionPlanApprovalService {
     public static final String APPROVAL_CONTRACT = "ONSURE_EXECUTION_PLAN_APPROVAL_V1";
     public static final String PURPOSE = "EXECUTION_PLAN_APPROVAL";
-    private static final Set<String> APPROVABLE_ACTIONS = Set.of(
-            "PROGRAM_PROFILE", "STATIC_ANALYSIS", "AI_BEHAVIOR_VALIDATION",
-            "FIXTURE_EXECUTION", "REVIEW", "RCA", "IMPROVEMENT_PLAN",
-            "REGRESSION_LOCK", "EVIDENCE_GENERATION");
 
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
@@ -40,9 +34,10 @@ public final class ExecutionPlanApprovalService {
             Path approvalReplayLedger,
             Path outputFile) throws Exception {
         Map<String, Object> plan = read(planFile, ExecutionPlanService.CONTRACT, "EXECUTION_PLAN");
+        new ExecutionPlanService().verifyPlanHash(plan);
         Map<String, Object> approval = read(
                 approvalReceiptFile, APPROVAL_CONTRACT, "EXECUTION_PLAN_APPROVAL");
-        String planFileSha = fileSha(planFile);
+        String planFileSha = Hashing.file(planFile);
         if (!planFileSha.equals(approval.get("plan_file_sha256"))) {
             throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_FILE_DIGEST_MISMATCH");
         }
@@ -60,12 +55,14 @@ public final class ExecutionPlanApprovalService {
                 || Boolean.TRUE.equals(approval.get("allow_deploy"))) {
             throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_UNSAFE_AUTHORITY");
         }
-        List<String> plannedActions = strings(plan.get("allowed_actions"));
-        List<String> approvedActions = strings(approval.get("approved_actions"));
-        if (approvedActions.isEmpty() || !plannedActions.containsAll(approvedActions)
-                || !APPROVABLE_ACTIONS.containsAll(approvedActions)) {
-            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INVALID");
+        Set<String> plannedActions = strings(plan.get("allowed_actions"));
+        Set<String> approvedActions = strings(approval.get("approved_actions"));
+        if (plannedActions.isEmpty()
+                || !plannedActions.equals(approvedActions)
+                || !ExecutionPlanService.APPROVABLE_ACTIONS.containsAll(approvedActions)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INCOMPLETE");
         }
+
         ApprovalReceiptVerifier verifier = new ApprovalReceiptVerifier(
                 trustedKeyRegistry, approvalReplayLedger);
         ValidationResult verification = verifier.verify(
@@ -74,22 +71,31 @@ public final class ExecutionPlanApprovalService {
             throw new IllegalStateException(
                     "EXECUTION_PLAN_APPROVAL_INVALID:" + String.join(",", verification.violations()));
         }
-        verifier.requireValidAndConsume(
-                approvalReceiptFile, APPROVAL_CONTRACT, PURPOSE, Instant.now());
+
+        Map<String, Object> approvalState = new LinkedHashMap<>();
+        approvalState.put("state", "USER_APPROVED");
+        approvalState.put("scope", "EXACT_PLAN_ACTION_SET");
+        approvalState.put("approver", approval.get("actor"));
+        approvalState.put("revocable", true);
+        approvalState.put("approved_actions", approvedActions.stream().sorted().toList());
+        approvalState.put("signed_receipt_required", true);
+        approvalState.put("approval_id", approval.get("approval_id"));
+        approvalState.put("approval_actor", approval.get("actor"));
+        approvalState.put("approval_key_id", approval.get("key_id"));
+        approvalState.put("approval_receipt_sha256", Hashing.file(approvalReceiptFile));
+        approvalState.put("approved_at", approval.get("approved_at"));
+        approvalState.put("expires_at", approval.get("expires_at"));
 
         Map<String, Object> approved = new LinkedHashMap<>(plan);
-        approved.put("approval_state", "USER_APPROVED");
-        approved.put("approved_actions", List.copyOf(approvedActions));
-        approved.put("approval_id", approval.get("approval_id"));
-        approved.put("approval_actor", approval.get("actor"));
-        approved.put("approval_key_id", approval.get("key_id"));
-        approved.put("approval_receipt_sha256", fileSha(approvalReceiptFile));
-        approved.put("approved_at", approval.get("approved_at"));
-        approved.put("approval_expires_at", approval.get("expires_at"));
+        approved.put("approval", Map.copyOf(approvalState));
         approved.put("final_claim_allowed", false);
         approved.remove("plan_sha256");
-        approved.put("plan_sha256", sha256(mapper.writeValueAsBytes(approved)));
+        approved.put("plan_sha256", new ExecutionPlanService().planHash(approved));
         writeAtomic(outputFile, approved);
+
+        // Consume only after the approved artifact is durably written. A replay then fails closed.
+        verifier.requireValidAndConsume(
+                approvalReceiptFile, APPROVAL_CONTRACT, PURPOSE, Instant.now());
         return Map.copyOf(approved);
     }
 
@@ -99,10 +105,7 @@ public final class ExecutionPlanApprovalService {
             String expectedSourceTreeSha256) throws Exception {
         Map<String, Object> plan = read(
                 approvedPlanFile, ExecutionPlanService.CONTRACT, "APPROVED_EXECUTION_PLAN");
-        if (!"USER_APPROVED".equals(plan.get("approval_state"))
-                && !"AUTO_APPROVED_DEVELOPMENT_NONFINAL".equals(plan.get("approval_state"))) {
-            throw new IllegalStateException("EXECUTION_PLAN_NOT_APPROVED");
-        }
+        new ExecutionPlanService().verifyPlanHash(plan);
         if (!target.targetId().equals(plan.get("target_id"))) {
             throw new IllegalStateException("EXECUTION_PLAN_TARGET_MISMATCH");
         }
@@ -112,15 +115,34 @@ public final class ExecutionPlanApprovalService {
         if (Boolean.TRUE.equals(plan.get("final_claim_allowed"))) {
             throw new IllegalStateException("EXECUTION_PLAN_FINAL_AUTHORITY_INVALID");
         }
-        if ("USER_APPROVED".equals(plan.get("approval_state"))) {
-            if (string(plan, "approval_id").isBlank()
-                    || string(plan, "approval_actor").isBlank()
-                    || string(plan, "approval_key_id").isBlank()
-                    || !string(plan, "approval_receipt_sha256").matches("[0-9a-f]{64}")) {
-                throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_LINEAGE_MISSING");
+        Object value = plan.get("approval");
+        if (!(value instanceof Map<?, ?> approval)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_MISSING");
+        }
+        String state = String.valueOf(approval.get("state"));
+        if (!"USER_APPROVED".equals(state)
+                && !"AUTO_APPROVED_DEVELOPMENT_NONFINAL".equals(state)) {
+            throw new IllegalStateException("EXECUTION_PLAN_NOT_APPROVED");
+        }
+        Set<String> planned = strings(plan.get("allowed_actions"));
+        Set<String> approved = strings(approval.get("approved_actions"));
+        if (planned.isEmpty() || !planned.equals(approved)
+                || !ExecutionPlanService.APPROVABLE_ACTIONS.containsAll(approved)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INCOMPLETE");
+        }
+        if ("USER_APPROVED".equals(state)) {
+            for (String field : List.of(
+                    "approval_id", "approval_actor", "approval_key_id",
+                    "approval_receipt_sha256", "approved_at", "expires_at")) {
+                Object item = approval.get(field);
+                if (!(item instanceof String text) || text.isBlank()) {
+                    throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_LINEAGE_MISSING:" + field);
+                }
             }
-            Instant expiry = Instant.parse(string(plan, "approval_expires_at"));
-            if (!Instant.now().isBefore(expiry)) {
+            if (!String.valueOf(approval.get("approval_receipt_sha256")).matches("[0-9a-f]{64}")) {
+                throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_RECEIPT_DIGEST_INVALID");
+            }
+            if (!Instant.now().isBefore(Instant.parse(String.valueOf(approval.get("expires_at"))))) {
                 throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_EXPIRED");
             }
         }
@@ -138,18 +160,13 @@ public final class ExecutionPlanApprovalService {
         return value;
     }
 
-    private static List<String> strings(Object value) {
-        if (!(value instanceof List<?> list)) return List.of();
-        List<String> result = new ArrayList<>();
+    private static Set<String> strings(Object value) {
+        if (!(value instanceof List<?> list)) return Set.of();
+        java.util.LinkedHashSet<String> result = new java.util.LinkedHashSet<>();
         for (Object item : list) {
             if (item instanceof String text && !text.isBlank()) result.add(text);
         }
-        return List.copyOf(result);
-    }
-
-    private static String string(Map<String, Object> value, String key) {
-        Object item = value.get(key);
-        return item instanceof String text ? text : "";
+        return Set.copyOf(result);
     }
 
     private void writeAtomic(Path outputFile, Object value) throws Exception {
@@ -163,13 +180,5 @@ public final class ExecutionPlanApprovalService {
         } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
             Files.move(temporary, output, StandardCopyOption.REPLACE_EXISTING);
         }
-    }
-
-    private static String fileSha(Path file) throws Exception {
-        return sha256(Files.readAllBytes(file));
-    }
-
-    private static String sha256(byte[] value) throws Exception {
-        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value));
     }
 }
