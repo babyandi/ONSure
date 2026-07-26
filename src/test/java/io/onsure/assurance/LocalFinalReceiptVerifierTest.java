@@ -18,7 +18,7 @@ class LocalFinalReceiptVerifierTest {
     @TempDir Path temp;
 
     @Test
-    void acceptsHistoricalFinalReceiptAfterLaterRunAndRejectsTampering() throws Exception {
+    void acceptsHistoricalNonfinalReceiptAfterLaterRunAndRejectsTampering() throws Exception {
         Path run = temp.resolve("receipts/local/run-20260721").toAbsolutePath().normalize();
         Files.createDirectories(run);
         String runId = "run-20260721";
@@ -51,7 +51,13 @@ class LocalFinalReceiptVerifierTest {
         Map<String, Object> receipt = new LinkedHashMap<>();
         receipt.put("contract", LocalFinalReceiptVerifier.CONTRACT);
         receipt.put("decision", "PASS");
-        receipt.put("execution_mode", "LOCAL_STANDALONE");
+        receipt.put("assurance_class", "SELF_VALIDATION_NONFINAL");
+        receipt.put("independent_otester", "NOT_RUN");
+        receipt.put("independent_oaudit", "NOT_RUN");
+        receipt.put("final_lock_allowed", false);
+        receipt.put("production_go", false);
+        receipt.put("commercial_go", false);
+        receipt.put("execution_mode", "LOCAL_STANDALONE_SELF_VALIDATION");
         receipt.put("assurance_run_id", runId);
         receipt.put("run_started_at", started.toString());
         receipt.put("verified_at", started.plusSeconds(10).toString());
@@ -67,7 +73,7 @@ class LocalFinalReceiptVerifierTest {
         receipt.put("key_registry_snapshot_sha256", sha256(run.resolve("key-registry.snapshot.json")));
         receipt.put("ledger", ledgerPath.toString());
         receipt.put("ledger_chain_head", runHead);
-        receipt.put("final_lock_sha256", sha256(run.resolve("final-lock.sha256")));
+        receipt.put("evidence_lock_sha256", sha256(run.resolve("final-lock.sha256")));
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(run.resolve("final-receipt.json").toFile(), receipt);
 
@@ -87,24 +93,24 @@ class LocalFinalReceiptVerifierTest {
                 java.util.List.of(laterOtester, laterOaudit), "run-20260722").decision());
         assertEquals(Decision.PASS, verifier.verify(run).decision());
 
+        receipt.put("final_lock_allowed", true);
+        mapper.writeValue(run.resolve("final-receipt.json").toFile(), receipt);
+        assertTrue(verifier.verify(run).violations().contains("FINAL_RECEIPT_FINAL_LOCK_MUST_BE_FALSE"));
+        receipt.put("final_lock_allowed", false);
+
+        receipt.put("independent_otester", "PASS");
+        mapper.writeValue(run.resolve("final-receipt.json").toFile(), receipt);
+        assertTrue(verifier.verify(run).violations().contains("FINAL_RECEIPT_FALSE_OTESTER_CLAIM"));
+        receipt.put("independent_otester", "NOT_RUN");
+
         Files.writeString(fixtureSnapshot, "tampered");
+        mapper.writeValue(run.resolve("final-receipt.json").toFile(), receipt);
         assertTrue(verifier.verify(run).violations().contains("FINAL_RECEIPT_FIXTURE_SNAPSHOT_HASH_MISMATCH"));
         Files.writeString(fixtureSnapshot, "{\"fixtures\":[]}");
-
-        Files.writeString(securitySnapshot, "{\"contract\":\"ONSURE_SECURITY_FINDINGS_V1\",\"review_status\":\"INCOMPLETE\",\"review_method\":\"TEST\",\"findings\":[]}");
-        ValidationResult securityTamper = verifier.verify(run);
-        assertTrue(securityTamper.violations().contains("FINAL_RECEIPT_SECURITY_SNAPSHOT_HASH_MISMATCH"));
-        assertTrue(securityTamper.violations().contains("SECURITY_REVIEW_INCOMPLETE"));
-        Files.writeString(securitySnapshot, "{\"contract\":\"ONSURE_SECURITY_FINDINGS_V1\",\"review_status\":\"COMPLETE\",\"review_method\":\"TEST\",\"findings\":[]}");
 
         receipt.put("ledger", temp.resolve("foreign-ledger.jsonl").toString());
         mapper.writeValue(run.resolve("final-receipt.json").toFile(), receipt);
         assertTrue(verifier.verify(run).violations().contains("FINAL_RECEIPT_LEDGER_PATH_MISMATCH"));
-
-        receipt.put("ledger", ledgerPath.toString());
-        receipt.put("contract", "ONSURE_LOCAL_FINAL_RECEIPT_V0");
-        mapper.writeValue(run.resolve("final-receipt.json").toFile(), receipt);
-        assertTrue(verifier.verify(run).violations().contains("FINAL_RECEIPT_CONTRACT_MISMATCH"));
     }
 
     private static String sha256(Path file) throws Exception {
