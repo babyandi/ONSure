@@ -16,6 +16,7 @@ REQUIRED = [
     "contracts/ledger-hardening.v1.json",
     "contracts/sandbox-boundary.v1.json",
     "contracts/schema-instance-registry.v1.json",
+    "status/design-capability-coverage.v2.json",
     "fixtures/contracts/program-profile.valid.json",
     "fixtures/contracts/behavior-profile.valid.json",
     "fixtures/contracts/failure-memory.valid.json",
@@ -25,14 +26,17 @@ REQUIRED = [
     "pom-modular.xml",
     "modules/onsure-core/pom.xml",
     "modules/onsure-cli/pom.xml",
+    "modules/onsure-local-api/pom.xml",
     "modules/onsure-test-fixtures/pom.xml",
     "modules/onsure-adapter-oruda/pom.xml",
     "modules/onsure-core/src/test/java/io/onsure/platform/CoreModuleSmokeTest.java",
     "modules/onsure-adapter-oruda/src/test/java/io/onsure/platform/OrudaAdapterModuleSmokeTest.java",
+    "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java",
     "scripts/check-module-boundaries.py",
     "scripts/create-source-snapshot.py",
     "scripts/extract-atomic-requirements.py",
     "scripts/validate-structured-contracts.py",
+    "scripts/validate-design-coverage.py",
     "scripts/run-core-modular-twice.sh",
     "scripts/fixture-sandbox-launcher.sh",
     "scripts/onsure-final-stage.sh",
@@ -60,7 +64,8 @@ SOURCE_ASSERTIONS = {
         "requireGitObjectId",
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
-        '"ls-files", "-z"',
+        '"ls-files"',
+        '"--full-name"',
         "GIT_LS_FILES_FAILED",
         "archiveFiles",
     ],
@@ -87,6 +92,14 @@ SOURCE_ASSERTIONS = {
         "prlimit",
         "--ro-bind",
         "timeout --signal=KILL",
+    ],
+    "scripts/validate-design-coverage.py": [
+        "REQUIRED_CAPABILITIES",
+        "PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER",
+        "LINEAGE_PARENT_BINDING_MISSING",
+        "FAILURE_CASE_UNDETECTED",
+        "PASS_WITHOUT_EVIDENCE",
+        "self_test",
     ],
 }
 
@@ -144,6 +157,9 @@ def main() -> int:
         ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
         ([sys.executable, "scripts/validate-repository-contracts.py"], "ONSURE_REPOSITORY_CONTRACTS_PASS"),
         ([sys.executable, "scripts/validate-structured-contracts.py"], "ONSURE_STRUCTURED_CONTRACTS_"),
+        ([sys.executable, "scripts/validate-design-coverage.py", "--matrix",
+          "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"],
+         '"decision": "PASS"'),
         (["bash", "scripts/check-shell-syntax.sh"], "ONSURE_SHELL_SYNTAX_PASS"),
     ]
     for command, marker in commands:
@@ -151,7 +167,7 @@ def main() -> int:
         if result.returncode != 0 or marker not in result.stdout:
             errors.append(
                 f"COMMAND_FAIL:{' '.join(command)}:{result.returncode}:"
-                f"{result.stdout[-1000:]}:{result.stderr[-1000:]}"
+                f"{result.stdout[-2000:]}:{result.stderr[-1000:]}"
             )
 
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
@@ -163,10 +179,11 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V4",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V5",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
+        "design_coverage_failure_injection": "PASS" if not errors else "FAIL",
         "structured_contract_validation": "SYNTAX_OR_FULL_DEPENDING_ON_PINNED_PACKAGES",
         "runtime_execution": "NOT_RUN",
         "modular_compile": "NOT_RUN",
