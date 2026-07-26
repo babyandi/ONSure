@@ -3,6 +3,9 @@ package io.onsure.platform;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.onsure.assurance.ApprovalReceiptVerifier;
+import io.onsure.assurance.Decision;
+import io.onsure.assurance.ValidationResult;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -17,14 +20,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-/** Creates bounded patch candidates and applies only explicitly approved hunks in an isolated worktree. */
+/** Creates bounded patch candidates and applies only trusted, explicitly approved hunks. */
 public final class ImprovementWorkflowService {
     public static final String PATCH_PLAN_CONTRACT = "ONSURE_PATCH_PLAN_V1";
     public static final String APPROVAL_CONTRACT = "ONSURE_HUNK_APPROVAL_RECEIPT_V1";
     public static final String APPLY_RECEIPT_CONTRACT = "ONSURE_PATCH_APPLY_RECEIPT_V1";
+    public static final String ROLLBACK_RECEIPT_CONTRACT = "ONSURE_PATCH_ROLLBACK_RECEIPT_V1";
+    public static final String APPROVAL_PURPOSE = "PATCH_HUNK_APPROVAL";
     private static final Map<String, String> SAFE_MARKER_REPLACEMENTS = Map.of(
             "ALLOW_UNTRUSTED_TOOL", "DENY_UNTRUSTED_TOOL",
             "SELF_APPROVE", "REQUIRE_INDEPENDENT_APPROVAL",
@@ -47,18 +51,15 @@ public final class ImprovementWorkflowService {
                     || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) continue;
             String source = Files.readString(file, StandardCharsets.UTF_8);
             String marker = matchedMarker(source);
-            if (marker == null) continue;
-            String replacement = SAFE_MARKER_REPLACEMENTS.get(marker);
-            if (count(source, marker) != 1) continue;
+            if (marker == null || count(source, marker) != 1) continue;
             String relative = Hashing.relative(context.target().sourceRoot(), file);
-            String preimage = Hashing.file(file);
             Map<String, Object> hunk = new LinkedHashMap<>();
             hunk.put("hunk_id", "HUNK-" + finding.fingerprint().substring(0, 16));
             hunk.put("finding_id", finding.findingId());
             hunk.put("relative_path", relative);
-            hunk.put("preimage_sha256", preimage);
+            hunk.put("preimage_sha256", Hashing.file(file));
             hunk.put("match_text", marker);
-            hunk.put("replacement_text", replacement);
+            hunk.put("replacement_text", SAFE_MARKER_REPLACEMENTS.get(marker));
             hunk.put("occurrence", 1);
             hunk.put("change_class", "APPROVAL_REQUIRED");
             hunk.put("approval_state", "PENDING");
@@ -68,6 +69,9 @@ public final class ImprovementWorkflowService {
             hunks.add(Map.copyOf(hunk));
         }
         String sourceDigest = String.valueOf(context.attributes().get("source_tree_sha256"));
+        if (!sourceDigest.matches("[0-9a-f]{64}")) {
+            throw new IllegalStateException("PATCH_PLAN_SOURCE_DIGEST_MISSING");
+        }
         Map<String, Object> plan = new LinkedHashMap<>();
         plan.put("contract", PATCH_PLAN_CONTRACT);
         plan.put("patch_plan_id", "PATCH-" + context.job().jobId());
@@ -90,10 +94,23 @@ public final class ImprovementWorkflowService {
         return Map.copyOf(plan);
     }
 
+    /** Unsafe legacy entry point is intentionally disabled. */
+    @Deprecated
     public Map<String, Object> applyApprovedPlan(
             Path repositoryRoot,
             Path planFile,
             Path approvalReceiptFile,
+            Path worktreeRoot,
+            Path evidenceRoot) {
+        throw new IllegalStateException("APPROVAL_TRUST_REGISTRY_REQUIRED");
+    }
+
+    public Map<String, Object> applyApprovedPlan(
+            Path repositoryRoot,
+            Path planFile,
+            Path approvalReceiptFile,
+            Path approvalKeyRegistry,
+            Path approvalReplayLedger,
             Path worktreeRoot,
             Path evidenceRoot) throws Exception {
         Path repository = repositoryRoot.toAbsolutePath().normalize();
@@ -104,27 +121,51 @@ public final class ImprovementWorkflowService {
         if (!planDigest.equals(approval.path("patch_plan_file_sha256").asText())) {
             throw new IllegalStateException("HUNK_APPROVAL_PLAN_DIGEST_MISMATCH");
         }
-        if (approval.path("actor").asText().isBlank()
-                || "ONSURE_AUTOMATION".equals(approval.path("actor").asText())) {
-            throw new IllegalStateException("HUMAN_OR_EXTERNAL_APPROVER_REQUIRED");
+        if (!plan.path("patch_plan_id").asText().equals(approval.path("patch_plan_id").asText())) {
+            throw new IllegalStateException("HUNK_APPROVAL_PLAN_ID_MISMATCH");
         }
-        if (approval.path("key_id").asText().isBlank() || approval.path("signature").asText().isBlank()) {
-            throw new IllegalStateException("HUNK_APPROVAL_SIGNATURE_REQUIRED");
+        if (approval.path("allow_direct_main_write").asBoolean(true)
+                || approval.path("allow_force_push").asBoolean(true)
+                || approval.path("allow_merge").asBoolean(true)) {
+            throw new IllegalStateException("UNSAFE_PATCH_PERMISSION_REQUESTED");
+        }
+        String currentSourceDigest = Hashing.tree(repository);
+        if (!currentSourceDigest.equals(plan.path("source_tree_sha256").asText())) {
+            throw new IllegalStateException("PATCH_PLAN_SOURCE_TREE_DRIFT");
         }
         Set<String> approved = new LinkedHashSet<>();
         approval.path("approved_hunk_ids").forEach(value -> approved.add(value.asText()));
         if (approved.isEmpty()) throw new IllegalStateException("APPROVED_HUNK_SET_EMPTY");
+        Set<String> declared = new LinkedHashSet<>();
+        plan.path("hunks").forEach(value -> declared.add(value.path("hunk_id").asText()));
+        if (!declared.containsAll(approved)) throw new IllegalStateException("APPROVED_HUNK_NOT_FOUND_IN_PLAN");
 
-        String sourceCommit = git(repository, List.of("rev-parse", "HEAD"), 20).strip();
         String branch = requireBranch(approval.path("branch_name").asText());
+        if (isProtectedBranch(branch)) throw new IllegalStateException("PROTECTED_BRANCH_PATCH_PROHIBITED");
         Path worktree = worktreeRoot.toAbsolutePath().normalize();
+        Path evidence = evidenceRoot.toAbsolutePath().normalize();
         if (Files.exists(worktree, LinkOption.NOFOLLOW_LINKS)) {
             throw new IllegalStateException("WORKTREE_ALREADY_EXISTS");
         }
-        git(repository, List.of("worktree", "add", "-b", branch, worktree.toString(), sourceCommit), 60);
+        if (Files.exists(evidence.resolve("backups"), LinkOption.NOFOLLOW_LINKS)) {
+            throw new IllegalStateException("PATCH_BACKUP_ROOT_ALREADY_EXISTS");
+        }
 
+        ApprovalReceiptVerifier verifier = new ApprovalReceiptVerifier(
+                approvalKeyRegistry, approvalReplayLedger);
+        ValidationResult approvalValidation = verifier.verify(
+                approvalReceiptFile, APPROVAL_CONTRACT, APPROVAL_PURPOSE, Instant.now());
+        if (approvalValidation.decision() != Decision.PASS) {
+            throw new IllegalStateException(
+                    "HUNK_APPROVAL_INVALID:" + String.join(",", approvalValidation.violations()));
+        }
+        verifier.requireValidAndConsume(
+                approvalReceiptFile, APPROVAL_CONTRACT, APPROVAL_PURPOSE, Instant.now());
+
+        String sourceCommit = git(repository, List.of("rev-parse", "HEAD"), 20).strip();
+        git(repository, List.of("worktree", "add", "-b", branch, worktree.toString(), sourceCommit), 60);
         List<Map<String, Object>> applied = new ArrayList<>();
-        Path backupRoot = evidenceRoot.toAbsolutePath().normalize().resolve("backups");
+        Path backupRoot = evidence.resolve("backups");
         try {
             for (JsonNode hunk : plan.path("hunks")) {
                 String hunkId = hunk.path("hunk_id").asText();
@@ -151,8 +192,7 @@ public final class ImprovementWorkflowService {
                 if (!backup.startsWith(backupRoot)) throw new IllegalStateException("BACKUP_PATH_ESCAPE");
                 Files.createDirectories(backup.getParent());
                 Files.write(backup, original);
-                String changed = source.replace(match, replacement);
-                Files.writeString(file, changed, StandardCharsets.UTF_8);
+                Files.writeString(file, source.replace(match, replacement), StandardCharsets.UTF_8);
                 Map<String, Object> appliedHunk = new LinkedHashMap<>();
                 appliedHunk.put("hunk_id", hunkId);
                 appliedHunk.put("relative_path", relative);
@@ -161,32 +201,41 @@ public final class ImprovementWorkflowService {
                 appliedHunk.put("backup_sha256", sha256(Files.readAllBytes(backup)));
                 applied.add(Map.copyOf(appliedHunk));
             }
-            if (!approved.equals(applied.stream().map(item -> item.get("hunk_id").toString()).collect(
-                    java.util.stream.Collectors.toCollection(LinkedHashSet::new)))) {
-                throw new IllegalStateException("APPROVED_HUNK_NOT_FOUND_IN_PLAN");
-            }
+            Set<String> appliedIds = applied.stream().map(item -> item.get("hunk_id").toString())
+                    .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+            if (!approved.equals(appliedIds)) throw new IllegalStateException("APPROVED_HUNK_APPLICATION_MISMATCH");
+            git(worktree, List.of("diff", "--check"), 20);
             String status = git(worktree, List.of("status", "--porcelain", "--untracked-files=all"), 20);
             if (status.isBlank()) throw new IllegalStateException("PATCH_PRODUCED_NO_CHANGE");
+            if (status.lines().anyMatch(line -> line.startsWith("??"))) {
+                throw new IllegalStateException("PATCH_PRODUCED_UNTRACKED_FILE");
+            }
             Map<String, Object> receipt = new LinkedHashMap<>();
             receipt.put("contract", APPLY_RECEIPT_CONTRACT);
             receipt.put("patch_plan_id", plan.path("patch_plan_id").asText());
             receipt.put("patch_plan_file_sha256", planDigest);
             receipt.put("approval_receipt_sha256", sha256(Files.readAllBytes(approvalReceiptFile)));
+            receipt.put("approval_actor", approval.path("actor").asText());
+            receipt.put("approval_key_id", approval.path("key_id").asText());
             receipt.put("source_commit", sourceCommit);
+            receipt.put("source_tree_sha256", currentSourceDigest);
             receipt.put("branch", branch);
             receipt.put("worktree", worktree.toString());
             receipt.put("applied_hunks", List.copyOf(applied));
             receipt.put("git_status", status.lines().toList());
             receipt.put("rollback_pointer", backupRoot.toString());
             receipt.put("state", "APPLIED_NONFINAL");
+            receipt.put("focused_tests", "NOT_RUN");
+            receipt.put("full_regression", "NOT_RUN");
+            receipt.put("before_after_proof", "NOT_RUN");
             receipt.put("commit_allowed", false);
             receipt.put("push_allowed", false);
             receipt.put("merge_allowed", false);
             receipt.put("created_at", Instant.now().toString());
             receipt.put("final_claim_allowed", false);
             receipt.put("receipt_sha256", sha256(mapper.writeValueAsBytes(receipt)));
-            Files.createDirectories(evidenceRoot);
-            writeAtomic(evidenceRoot.resolve("patch-apply-receipt.json"), receipt);
+            Files.createDirectories(evidence);
+            writeAtomic(evidence.resolve("patch-apply-receipt.json"), receipt);
             return Map.copyOf(receipt);
         } catch (Exception failure) {
             try { git(repository, List.of("worktree", "remove", "--force", worktree.toString()), 60); }
@@ -197,16 +246,23 @@ public final class ImprovementWorkflowService {
         }
     }
 
-    public void rollback(Path worktreeRoot, Path applyReceiptFile) throws Exception {
-        JsonNode receipt = readContract(applyReceiptFile, APPLY_RECEIPT_CONTRACT, "PATCH_APPLY_RECEIPT");
+    public Map<String, Object> rollback(
+            Path worktreeRoot, Path applyReceiptFile, Path rollbackReceiptFile) throws Exception {
+        JsonNode receipt = readContract(
+                applyReceiptFile, APPLY_RECEIPT_CONTRACT, "PATCH_APPLY_RECEIPT");
         Path worktree = worktreeRoot.toAbsolutePath().normalize();
+        if (!worktree.toString().equals(receipt.path("worktree").asText())) {
+            throw new IllegalStateException("ROLLBACK_WORKTREE_RECEIPT_MISMATCH");
+        }
         Path backupRoot = Path.of(receipt.path("rollback_pointer").asText()).toAbsolutePath().normalize();
+        List<Map<String, Object>> restored = new ArrayList<>();
         for (JsonNode hunk : receipt.path("applied_hunks")) {
             String relative = hunk.path("relative_path").asText();
             Path target = worktree.resolve(relative).normalize();
             Path backup = backupRoot.resolve(relative).normalize();
             if (!target.startsWith(worktree) || !backup.startsWith(backupRoot)
-                    || !Files.isRegularFile(backup, LinkOption.NOFOLLOW_LINKS)) {
+                    || !Files.isRegularFile(backup, LinkOption.NOFOLLOW_LINKS)
+                    || Files.isSymbolicLink(backup)) {
                 throw new IllegalStateException("ROLLBACK_POINTER_INVALID");
             }
             if (!Hashing.file(target).equals(hunk.path("postimage_sha256").asText())) {
@@ -216,11 +272,29 @@ public final class ImprovementWorkflowService {
             if (!Hashing.file(target).equals(hunk.path("preimage_sha256").asText())) {
                 throw new IllegalStateException("ROLLBACK_RESTORE_MISMATCH:" + relative);
             }
+            restored.add(Map.of(
+                    "hunk_id", hunk.path("hunk_id").asText(),
+                    "relative_path", relative,
+                    "restored_sha256", Hashing.file(target)));
         }
+        Map<String, Object> rollback = new LinkedHashMap<>();
+        rollback.put("contract", ROLLBACK_RECEIPT_CONTRACT);
+        rollback.put("patch_apply_receipt_sha256", sha256(Files.readAllBytes(applyReceiptFile)));
+        rollback.put("worktree", worktree.toString());
+        rollback.put("restored_hunks", List.copyOf(restored));
+        rollback.put("git_status", git(worktree,
+                List.of("status", "--porcelain", "--untracked-files=all"), 20).lines().toList());
+        rollback.put("state", "ROLLED_BACK_NONFINAL");
+        rollback.put("created_at", Instant.now().toString());
+        rollback.put("final_claim_allowed", false);
+        rollback.put("receipt_sha256", sha256(mapper.writeValueAsBytes(rollback)));
+        writeAtomic(rollbackReceiptFile, rollback);
+        return Map.copyOf(rollback);
     }
 
     private static String matchedMarker(String source) {
-        return SAFE_MARKER_REPLACEMENTS.keySet().stream().filter(source::contains).sorted().findFirst().orElse(null);
+        return SAFE_MARKER_REPLACEMENTS.keySet().stream()
+                .filter(source::contains).sorted().findFirst().orElse(null);
     }
 
     private static int count(String source, String token) {
@@ -253,6 +327,10 @@ public final class ImprovementWorkflowService {
         return value;
     }
 
+    private static boolean isProtectedBranch(String branch) {
+        return List.of("main", "master", "production", "release").contains(branch.toLowerCase());
+    }
+
     private static String git(Path root, List<String> arguments, long timeoutSeconds) throws Exception {
         List<String> command = new ArrayList<>();
         command.add("git"); command.add("-C"); command.add(root.toString()); command.addAll(arguments);
@@ -270,7 +348,8 @@ public final class ImprovementWorkflowService {
         }
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         if (process.exitValue() != 0) {
-            throw new IllegalStateException("GIT_COMMAND_FAILED:" + arguments.get(0) + ":" + output.strip());
+            throw new IllegalStateException(
+                    "GIT_COMMAND_FAILED:" + arguments.get(0) + ":" + output.strip());
         }
         return output;
     }
@@ -283,7 +362,7 @@ public final class ImprovementWorkflowService {
         try {
             Files.move(temporary, output, StandardCopyOption.REPLACE_EXISTING,
                     StandardCopyOption.ATOMIC_MOVE);
-        } catch (java.nio.file.AtomicMoveNotSupportedException exception) {
+        } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
             Files.move(temporary, output, StandardCopyOption.REPLACE_EXISTING);
         }
     }
