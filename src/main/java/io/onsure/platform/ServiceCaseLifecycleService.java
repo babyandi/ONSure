@@ -1,25 +1,29 @@
 package io.onsure.platform;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.onsure.assurance.ApprovalReceiptVerifier;
+import io.onsure.assurance.Decision;
 import io.onsure.assurance.ExclusiveFileLock;
+import io.onsure.assurance.ValidationResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-/** Durable one-time service case workflow. Payment and refund require external verification. */
+/** Durable one-time service case workflow with signed payment, refund and deletion verification. */
 public final class ServiceCaseLifecycleService {
     public static final String STATE_CONTRACT = "ONSURE_SERVICE_CASE_STATE_V1";
     public static final String EVENT_CONTRACT = "ONSURE_SERVICE_CASE_EVENT_V1";
     public static final String RECEIPT_INDEX_CONTRACT = "ONSURE_EXTERNAL_RECEIPT_INDEX_V1";
+    public static final String VERIFICATION_RECEIPT_CONTRACT = "ONSURE_SERVICE_VERIFICATION_RECEIPT_V1";
 
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
@@ -61,13 +65,13 @@ public final class ServiceCaseLifecycleService {
         state.put("refund", null);
         state.put("deletion_receipt", null);
         state.put("legal_hold", false);
+        state.put("legal_hold_reason", null);
         state.put("retention_state", "ACTIVE");
         state.put("created_at", Instant.now().toString());
         state.put("final_claim_allowed", false);
-        Map<String, Object> result = store(caseId).initialize(state, "CASE_OPENED", actor, Map.of(
+        return state(store(caseId).initialize(state, "CASE_OPENED", actor, Map.of(
                 "service_type", serviceType,
-                "target_reference", targetReference));
-        return state(result);
+                "target_reference", targetReference)));
     }
 
     public Map<String, Object> recordPreflight(
@@ -127,13 +131,13 @@ public final class ServiceCaseLifecycleService {
 
     public Map<String, Object> acceptOrder(String caseId, String quoteId, String actor) throws Exception {
         requireId(quoteId, "QUOTE_ID_INVALID");
-        return mutate(caseId, actor, "ORDER_ACCEPTED", state -> {
+        Map<String, Object> result = mutate(caseId, actor, "ORDER_ACCEPTANCE_ATTEMPTED", state -> {
             requireStatus(state, "QUOTED");
             Map<String, Object> quote = map(state.get("quote"), "QUOTE_MISSING");
             if (!quoteId.equals(quote.get("quote_id"))) throw new IllegalStateException("QUOTE_ID_MISMATCH");
             if (!Instant.now().isBefore(Instant.parse(quote.get("expires_at").toString()))) {
                 state.put("status", "QUOTE_EXPIRED");
-                throw new IllegalStateException("QUOTE_EXPIRED");
+                return Map.of("accepted", false, "expired", true, "quote_id", quoteId);
             }
             Map<String, Object> acceptedQuote = new LinkedHashMap<>(quote);
             acceptedQuote.put("accepted", true);
@@ -148,9 +152,13 @@ public final class ServiceCaseLifecycleService {
             state.put("status", "PAYMENT_PENDING");
             return order;
         });
+        if (Boolean.TRUE.equals(details(result).get("expired"))) {
+            throw new IllegalStateException("QUOTE_EXPIRED");
+        }
+        return result;
     }
 
-    /** Compatibility entry point: records an unverified provider receipt. */
+    /** Records a provider receipt but does not claim that payment was independently verified. */
     public Map<String, Object> recordPayment(
             String caseId,
             String provider,
@@ -201,24 +209,50 @@ public final class ServiceCaseLifecycleService {
         }
     }
 
+    @Deprecated
     public Map<String, Object> verifyPayment(
             String caseId,
             String verifierIdentity,
             String verificationReceiptDigest,
             boolean valid,
+            String actor) {
+        throw new IllegalStateException("SIGNED_PAYMENT_VERIFICATION_RECEIPT_REQUIRED");
+    }
+
+    public Map<String, Object> verifyPayment(
+            String caseId,
+            Path signedVerificationReceipt,
+            Path trustedKeyRegistry,
+            Path verificationReplayLedger,
             String actor) throws Exception {
-        requireText(verifierIdentity, "PAYMENT_VERIFIER_REQUIRED");
-        requireDigest(verificationReceiptDigest, "PAYMENT_VERIFICATION_RECEIPT_INVALID");
-        return mutate(caseId, actor, valid ? "PAYMENT_CONFIRMED" : "PAYMENT_REJECTED", state -> {
+        Map<String, Object> current = read(caseId);
+        Map<String, Object> payment = map(current.get("payment"), "PAYMENT_MISSING");
+        Map<String, Object> verification = validateVerificationReceipt(
+                signedVerificationReceipt,
+                trustedKeyRegistry,
+                verificationReplayLedger,
+                caseId,
+                number(current.get("revision")),
+                "PAYMENT_VERIFICATION",
+                "PAYMENT",
+                String.valueOf(payment.get("provider")),
+                String.valueOf(payment.get("provider_receipt_id")),
+                String.valueOf(payment.get("receipt_digest")));
+        return mutate(caseId, actor, "PASS".equals(verification.get("decision"))
+                ? "PAYMENT_CONFIRMED" : "PAYMENT_REJECTED", state -> {
+            requireRevision(state, number(verification.get("case_revision")));
             requireStatus(state, "PAYMENT_RECEIPT_RECORDED");
-            Map<String, Object> payment = map(state.get("payment"), "PAYMENT_MISSING");
-            Map<String, Object> verified = new LinkedHashMap<>(payment);
-            verified.put("provider_verification", valid ? "PASS" : "FAIL");
-            verified.put("verifier_identity", verifierIdentity);
-            verified.put("verification_receipt_digest", verificationReceiptDigest);
+            Map<String, Object> existing = map(state.get("payment"), "PAYMENT_MISSING");
+            Map<String, Object> verified = new LinkedHashMap<>(existing);
+            verified.put("provider_verification", verification.get("decision"));
+            verified.put("verifier_identity", verification.get("actor"));
+            verified.put("verification_approval_id", verification.get("approval_id"));
+            verified.put("verification_key_id", verification.get("key_id"));
+            verified.put("verification_receipt_sha256", fileSha(signedVerificationReceipt));
             verified.put("verified_at", Instant.now().toString());
             state.put("payment", Map.copyOf(verified));
-            state.put("status", valid ? "PAYMENT_CONFIRMED" : "PAYMENT_REJECTED");
+            state.put("status", "PASS".equals(verification.get("decision"))
+                    ? "PAYMENT_CONFIRMED" : "PAYMENT_REJECTED");
             return Map.copyOf(verified);
         });
     }
@@ -314,6 +348,7 @@ public final class ServiceCaseLifecycleService {
                 Map<String, Object> refund = map(state.get("refund"), "REFUND_MISSING");
                 Map<String, Object> recorded = new LinkedHashMap<>(refund);
                 recorded.put("state", "RECEIPT_RECORDED");
+                recorded.put("provider", provider);
                 recorded.put("provider_receipt_id", providerReceiptId);
                 recorded.put("receipt_digest", receiptDigest);
                 recorded.put("provider_verification", "NOT_RUN");
@@ -328,25 +363,52 @@ public final class ServiceCaseLifecycleService {
         }
     }
 
+    @Deprecated
     public Map<String, Object> verifyRefund(
             String caseId,
             String verifierIdentity,
             String verificationReceiptDigest,
             boolean valid,
+            String actor) {
+        throw new IllegalStateException("SIGNED_REFUND_VERIFICATION_RECEIPT_REQUIRED");
+    }
+
+    public Map<String, Object> verifyRefund(
+            String caseId,
+            Path signedVerificationReceipt,
+            Path trustedKeyRegistry,
+            Path verificationReplayLedger,
             String actor) throws Exception {
-        requireText(verifierIdentity, "REFUND_VERIFIER_REQUIRED");
-        requireDigest(verificationReceiptDigest, "REFUND_VERIFICATION_RECEIPT_INVALID");
-        return mutate(caseId, actor, valid ? "REFUND_COMPLETED" : "REFUND_REJECTED", state -> {
+        Map<String, Object> current = read(caseId);
+        Map<String, Object> refund = map(current.get("refund"), "REFUND_MISSING");
+        Map<String, Object> verification = validateVerificationReceipt(
+                signedVerificationReceipt,
+                trustedKeyRegistry,
+                verificationReplayLedger,
+                caseId,
+                number(current.get("revision")),
+                "REFUND_VERIFICATION",
+                "REFUND",
+                String.valueOf(refund.get("provider")),
+                String.valueOf(refund.get("provider_receipt_id")),
+                String.valueOf(refund.get("receipt_digest")));
+        return mutate(caseId, actor, "PASS".equals(verification.get("decision"))
+                ? "REFUND_COMPLETED" : "REFUND_REJECTED", state -> {
+            requireRevision(state, number(verification.get("case_revision")));
             requireStatus(state, "REFUND_RECEIPT_RECORDED");
-            Map<String, Object> refund = map(state.get("refund"), "REFUND_MISSING");
-            Map<String, Object> verified = new LinkedHashMap<>(refund);
-            verified.put("provider_verification", valid ? "PASS" : "FAIL");
-            verified.put("verifier_identity", verifierIdentity);
-            verified.put("verification_receipt_digest", verificationReceiptDigest);
+            Map<String, Object> existing = map(state.get("refund"), "REFUND_MISSING");
+            Map<String, Object> verified = new LinkedHashMap<>(existing);
+            verified.put("provider_verification", verification.get("decision"));
+            verified.put("verifier_identity", verification.get("actor"));
+            verified.put("verification_approval_id", verification.get("approval_id"));
+            verified.put("verification_key_id", verification.get("key_id"));
+            verified.put("verification_receipt_sha256", fileSha(signedVerificationReceipt));
             verified.put("verified_at", Instant.now().toString());
-            verified.put("state", valid ? "COMPLETED" : "REJECTED");
+            verified.put("state", "PASS".equals(verification.get("decision"))
+                    ? "COMPLETED" : "REJECTED");
             state.put("refund", Map.copyOf(verified));
-            state.put("status", valid ? "REFUNDED" : "REFUND_REJECTED");
+            state.put("status", "PASS".equals(verification.get("decision"))
+                    ? "REFUNDED" : "REFUND_REJECTED");
             return Map.copyOf(verified);
         });
     }
@@ -362,35 +424,58 @@ public final class ServiceCaseLifecycleService {
         });
     }
 
+    @Deprecated
     public Map<String, Object> recordDeletion(
-            String caseId, String deletionReceiptDigest, String actor) throws Exception {
-        return recordDeletion(caseId, deletionReceiptDigest, actor, actor);
+            String caseId, String deletionReceiptDigest, String actor) {
+        throw new IllegalStateException("SIGNED_DELETION_VERIFICATION_RECEIPT_REQUIRED");
     }
 
     public Map<String, Object> recordDeletion(
             String caseId,
-            String deletionReceiptDigest,
-            String verifierIdentity,
+            Path signedVerificationReceipt,
+            Path trustedKeyRegistry,
+            Path verificationReplayLedger,
             String actor) throws Exception {
-        requireDigest(deletionReceiptDigest, "DELETION_RECEIPT_DIGEST_INVALID");
-        requireText(verifierIdentity, "DELETION_VERIFIER_REQUIRED");
-        return mutate(caseId, actor, "DATA_DELETION_RECORDED", state -> {
-            if (!List.of("DELIVERY_ACCEPTED", "REFUNDED").contains(state.get("status"))) {
-                throw new IllegalStateException("DELETION_STATE_INVALID:" + state.get("status"));
+        Map<String, Object> current = read(caseId);
+        Map<String, Object> verification = readVerificationReceipt(signedVerificationReceipt);
+        requireVerificationEnvelope(verification, caseId, number(current.get("revision")),
+                "DELETION_VERIFICATION", "DELETION");
+        String provider = string(verification, "provider");
+        String receiptId = string(verification, "provider_receipt_id");
+        String receiptDigest = string(verification, "provider_receipt_digest");
+        registerExternalReceipt("DELETION", provider, receiptId, caseId, receiptDigest);
+        try {
+            verifyAndConsume(signedVerificationReceipt, trustedKeyRegistry,
+                    verificationReplayLedger, "DELETION_VERIFICATION");
+            if (!"PASS".equals(verification.get("decision"))) {
+                throw new IllegalStateException("DELETION_VERIFICATION_NON_PASS");
             }
-            if (Boolean.TRUE.equals(state.get("legal_hold"))) {
-                throw new IllegalStateException("DELETION_BLOCKED_BY_LEGAL_HOLD");
-            }
-            Map<String, Object> deletion = Map.of(
-                    "receipt_digest", deletionReceiptDigest,
-                    "verifier_identity", verifierIdentity,
-                    "recorded_at", Instant.now().toString(),
-                    "complete_deletion", "EXTERNAL_RECEIPT_BOUND");
-            state.put("deletion_receipt", deletion);
-            state.put("retention_state", "DELETED_EXTERNAL_RECEIPT_BOUND");
-            state.put("status", "CLOSED");
-            return deletion;
-        });
+            return mutate(caseId, actor, "DATA_DELETION_RECORDED", state -> {
+                requireRevision(state, number(verification.get("case_revision")));
+                if (!List.of("DELIVERY_ACCEPTED", "REFUNDED").contains(state.get("status"))) {
+                    throw new IllegalStateException("DELETION_STATE_INVALID:" + state.get("status"));
+                }
+                if (Boolean.TRUE.equals(state.get("legal_hold"))) {
+                    throw new IllegalStateException("DELETION_BLOCKED_BY_LEGAL_HOLD");
+                }
+                Map<String, Object> deletion = Map.of(
+                        "provider", provider,
+                        "provider_receipt_id", receiptId,
+                        "receipt_digest", receiptDigest,
+                        "verification_approval_id", verification.get("approval_id"),
+                        "verification_key_id", verification.get("key_id"),
+                        "verification_receipt_sha256", fileSha(signedVerificationReceipt),
+                        "recorded_at", Instant.now().toString(),
+                        "complete_deletion", "SIGNED_EXTERNAL_VERIFICATION_PASS");
+                state.put("deletion_receipt", deletion);
+                state.put("retention_state", "DELETED_SIGNED_EXTERNAL_VERIFICATION");
+                state.put("status", "CLOSED");
+                return deletion;
+            });
+        } catch (Exception failure) {
+            unregisterExternalReceipt("DELETION", provider, receiptId, caseId, receiptDigest);
+            throw failure;
+        }
     }
 
     public Map<String, Object> cancel(String caseId, String reason, String actor) throws Exception {
@@ -415,6 +500,76 @@ public final class ServiceCaseLifecycleService {
     public DurableStateLedger.Verification verify(String caseId) throws Exception {
         requireId(caseId, "CASE_ID_INVALID");
         return store(caseId).verify();
+    }
+
+    private Map<String, Object> validateVerificationReceipt(
+            Path receiptFile,
+            Path keyRegistry,
+            Path replayLedger,
+            String caseId,
+            long revision,
+            String purpose,
+            String type,
+            String provider,
+            String providerReceiptId,
+            String providerReceiptDigest) throws Exception {
+        Map<String, Object> verification = readVerificationReceipt(receiptFile);
+        requireVerificationEnvelope(verification, caseId, revision, purpose, type);
+        if (!provider.equals(verification.get("provider"))
+                || !providerReceiptId.equals(verification.get("provider_receipt_id"))
+                || !providerReceiptDigest.equals(verification.get("provider_receipt_digest"))) {
+            throw new IllegalStateException("SERVICE_VERIFICATION_PROVIDER_RECEIPT_MISMATCH");
+        }
+        verifyAndConsume(receiptFile, keyRegistry, replayLedger, purpose);
+        return verification;
+    }
+
+    private Map<String, Object> readVerificationReceipt(Path receiptFile) throws Exception {
+        if (!Files.isRegularFile(receiptFile, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(receiptFile)) {
+            throw new IllegalArgumentException("SERVICE_VERIFICATION_RECEIPT_FILE_INVALID");
+        }
+        Map<String, Object> value = mapper.readValue(receiptFile.toFile(), new TypeReference<>() {});
+        if (!VERIFICATION_RECEIPT_CONTRACT.equals(value.get("contract"))) {
+            throw new IllegalArgumentException("SERVICE_VERIFICATION_RECEIPT_CONTRACT_MISMATCH");
+        }
+        return value;
+    }
+
+    private static void requireVerificationEnvelope(
+            Map<String, Object> verification,
+            String caseId,
+            long revision,
+            String purpose,
+            String type) {
+        if (!caseId.equals(verification.get("case_id"))) {
+            throw new IllegalStateException("SERVICE_VERIFICATION_CASE_MISMATCH");
+        }
+        if (revision != number(verification.get("case_revision"))) {
+            throw new IllegalStateException("SERVICE_VERIFICATION_CASE_REVISION_MISMATCH");
+        }
+        if (!purpose.equals(verification.get("approval_purpose"))) {
+            throw new IllegalStateException("SERVICE_VERIFICATION_PURPOSE_MISMATCH");
+        }
+        if (!type.equals(verification.get("verification_type"))) {
+            throw new IllegalStateException("SERVICE_VERIFICATION_TYPE_MISMATCH");
+        }
+    }
+
+    private static void verifyAndConsume(
+            Path receiptFile,
+            Path keyRegistry,
+            Path replayLedger,
+            String purpose) throws Exception {
+        ApprovalReceiptVerifier verifier = new ApprovalReceiptVerifier(keyRegistry, replayLedger);
+        ValidationResult result = verifier.verify(
+                receiptFile, VERIFICATION_RECEIPT_CONTRACT, purpose, Instant.now());
+        if (result.decision() != Decision.PASS) {
+            throw new IllegalStateException(
+                    "SERVICE_VERIFICATION_RECEIPT_INVALID:" + String.join(",", result.violations()));
+        }
+        verifier.requireValidAndConsume(
+                receiptFile, VERIFICATION_RECEIPT_CONTRACT, purpose, Instant.now());
     }
 
     private Map<String, Object> mutate(
@@ -474,20 +629,28 @@ public final class ServiceCaseLifecycleService {
         }
         Object entries = wrapper.get("entries");
         if (!(entries instanceof Map<?, ?> raw)) throw new IllegalStateException("EXTERNAL_RECEIPT_ENTRIES_INVALID");
-        Map<String, Object> result = new TreeMap<>();
-        raw.forEach((key, value) -> result.put(String.valueOf(key), value));
-        return result;
+        Map<String, Object> canonical = new TreeMap<>();
+        raw.forEach((key, value) -> canonical.put(String.valueOf(key), value));
+        String declared = string(wrapper, "index_sha256");
+        if (!declared.equals(indexHash(canonical))) throw new IllegalStateException("EXTERNAL_RECEIPT_INDEX_TAMPERED");
+        return canonical;
     }
 
     private void writeReceiptIndex(Map<String, Object> entries) throws Exception {
+        Map<String, Object> canonical = new TreeMap<>(entries);
         Map<String, Object> wrapper = new LinkedHashMap<>();
         wrapper.put("contract", RECEIPT_INDEX_CONTRACT);
-        wrapper.put("entries", new TreeMap<>(entries));
+        wrapper.put("entries", canonical);
         wrapper.put("updated_at", Instant.now().toString());
+        wrapper.put("index_sha256", indexHash(canonical));
         Files.createDirectories(receiptIndex.getParent());
         Path temporary = receiptIndex.resolveSibling(receiptIndex.getFileName() + ".tmp");
         mapper.writeValue(temporary.toFile(), wrapper);
         move(temporary, receiptIndex);
+    }
+
+    private String indexHash(Map<String, Object> entries) throws Exception {
+        return sha256(mapper.writeValueAsBytes(new TreeMap<>(entries)));
     }
 
     private static String receiptKey(String kind, String provider, String receiptId) {
@@ -510,6 +673,12 @@ public final class ServiceCaseLifecycleService {
         }
     }
 
+    private static void requireRevision(Map<String, Object> state, long expected) {
+        if (number(state.get("revision")) != expected) {
+            throw new IllegalStateException("CASE_REVISION_DRIFT");
+        }
+    }
+
     private static Map<String, Object> map(Object value, String error) {
         if (!(value instanceof Map<?, ?> raw)) throw new IllegalStateException(error);
         Map<String, Object> result = new LinkedHashMap<>();
@@ -521,6 +690,13 @@ public final class ServiceCaseLifecycleService {
     private static Map<String, Object> state(Map<String, Object> envelope) {
         Object value = envelope.get("state");
         if (!(value instanceof Map<?, ?> raw)) throw new IllegalStateException("CASE_STATE_RESULT_MISSING");
+        return (Map<String, Object>) raw;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> details(Map<String, Object> envelope) {
+        Object value = envelope.get("details");
+        if (!(value instanceof Map<?, ?> raw)) throw new IllegalStateException("CASE_DETAILS_RESULT_MISSING");
         return (Map<String, Object>) raw;
     }
 
@@ -553,9 +729,23 @@ public final class ServiceCaseLifecycleService {
         if (value == null || !value.matches("[0-9a-f]{64}")) throw new IllegalArgumentException(error);
     }
 
+    private static String string(Map<String, Object> value, String key) {
+        Object item = value.get(key);
+        return item instanceof String text ? text : "";
+    }
+
     private static long number(Object value) {
         if (value instanceof Number number) return number.longValue();
         return Long.parseLong(String.valueOf(value));
+    }
+
+    private static String fileSha(Path file) throws Exception {
+        return sha256(Files.readAllBytes(file));
+    }
+
+    private static String sha256(byte[] value) throws Exception {
+        return java.util.HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(value));
     }
 
     private static void move(Path source, Path destination) throws Exception {
