@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/git-change-set.v1.schema.json",
+  "title": "ONSure Git Change Set v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "change_set_id", "patch_apply_receipt_sha256", "delivery_approval_sha256", "branch", "commit_sha", "tree_sha", "commit_message", "push_state", "draft_pr_state", "merge_state", "created_at", "final_claim_allowed", "change_set_sha256"],
+  "properties": {
+    "contract": {"const": "ONSURE_GIT_CHANGE_SET_V1"},
+    "change_set_id": {"type": "string", "minLength": 1},
+    "patch_apply_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "delivery_approval_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "branch": {"type": "string", "minLength": 1},
+    "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "tree_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "commit_message": {"type": "string", "minLength": 1, "maxLength": 200},
+    "push_state": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "draft_pr_state": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "merge_state": {"const": "PROHIBITED"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false},
+    "change_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
