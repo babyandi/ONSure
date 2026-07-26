@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/patch-plan.v1.schema.json",
+  "title": "ONSure Patch Plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "patch_plan_id", "target_id", "source_tree_sha256", "review_id", "evidence_based_rca_sha256", "hunks", "default_approval", "worktree_required", "direct_main_write_allowed", "force_push_allowed", "merge_allowed", "created_at", "execution_state", "final_claim_allowed", "patch_plan_sha256"],
+  "properties": {
+    "contract": {"const": "ONSURE_PATCH_PLAN_V1"},
+    "patch_plan_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_id": {"type": "string", "minLength": 1},
+    "evidence_based_rca_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "hunks": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["hunk_id", "finding_id", "relative_path", "preimage_sha256", "match_text", "replacement_text", "occurrence", "change_class", "approval_state", "expected_effect", "required_tests"],
+        "properties": {
+          "hunk_id": {"type": "string", "minLength": 1},
+          "finding_id": {"type": "string", "minLength": 1},
+          "relative_path": {"type": "string", "minLength": 1},
+          "preimage_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "match_text": {"type": "string", "minLength": 1},
+          "replacement_text": {"type": "string", "minLength": 1},
+          "occurrence": {"const": 1},
+          "change_class": {"const": "APPROVAL_REQUIRED"},
+          "approval_state": {"const": "PENDING"},
+          "expected_effect": {"type": "string", "minLength": 1},
+          "required_tests": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true}
+        }
+      }
+    },
+    "default_approval": {"const": "DENY"},
+    "worktree_required": {"const": true},
+    "direct_main_write_allowed": {"const": false},
+    "force_push_allowed": {"const": false},
+    "merge_allowed": {"const": false},
+    "created_at": {"type": "string", "format": "date-time"},
+    "execution_state": {"enum": ["NO_SAFE_PATCH_CANDIDATE", "AWAITING_HUNK_APPROVAL"]},
+    "final_claim_allowed": {"const": false},
+    "patch_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
