@@ -3,9 +3,7 @@ package io.onsure.platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.Decision;
-import io.onsure.assurance.ValidationResult;
 import io.onsure.platform.ValidationModel.ValidationReport;
-import io.onsure.platform.oruda.OrudaEvidenceRegistry;
 import io.onsure.rag.RagPreparationService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -56,23 +54,12 @@ public final class FileValidationStore {
         new ValidationReportExporter().export(report, run);
         new FailureModeRegistry(root.resolve("failure-mode-registry.json")).register(context.failureModes());
         verifyCompletedReceipts(context);
-        persistOrudaEvidenceRegistry(context);
+        context.adapter().persistAdditionalEvidence(context);
         writeManifest(run);
     }
 
     public ValidationReport readReport(Path runRoot) throws Exception {
         return mapper.readValue(runRoot.resolve("validation-report.json").toFile(), ValidationReport.class);
-    }
-
-    private static void persistOrudaEvidenceRegistry(ValidationContext context) throws Exception {
-        if (!OrudaTargetAdapter.ID.equals(context.adapter().adapterId())) return;
-        if (context.regressionLock() == null || context.fixtureResults().isEmpty()) return;
-        OrudaEvidenceRegistry registry = new OrudaEvidenceRegistry();
-        registry.populate(context);
-        ValidationResult result = registry.verify(context.runRoot(), context.target().sourceRoot());
-        if (result.decision() != Decision.PASS) {
-            throw new IllegalStateException("ORUDA_EVIDENCE_REGISTRY_VERIFY_FAIL " + result.violations());
-        }
     }
 
     private static void verifyCompletedReceipts(ValidationContext context) throws Exception {
