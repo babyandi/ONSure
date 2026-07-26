@@ -1,0 +1,73 @@
+{
+  "contract": "ONSURE_OFFICIAL_LEARNING_LEDGER_V2",
+  "version": "2.0.0",
+  "authority": "babyandi/ONSure",
+  "entry_order": [
+    "LEARNING_CANDIDATE",
+    "VALIDATION_REQUEST",
+    "VALIDATION_PACK",
+    "VALIDATION_RECEIPT",
+    "PROMOTION",
+    "APPLIED_LOCK"
+  ],
+  "receipt_purposes": [
+    "CANDIDATE_VALIDATION",
+    "POST_APPLY_REVERIFICATION"
+  ],
+  "completion_rule": {
+    "recognized_only_at": "APPLIED_LOCKED_NONFINAL",
+    "minimum_candidate_pass_receipts": 2,
+    "requires_latest_validation_request": true,
+    "requires_latest_validation_pack": true,
+    "requires_source_baseline_ref": true,
+    "requires_distinct_runs": true,
+    "requires_distinct_verifier_identities": true,
+    "requires_distinct_verifier_keys": true,
+    "requires_stable_projection": true,
+    "requires_signed_recalculation_receipt_digest": true,
+    "requires_learner_requester_verifier_reviewer_approver_separation": true,
+    "requires_passing_post_apply_receipt": true,
+    "requires_post_apply_artifact_projection_binding": true,
+    "requires_active_selector_binding": true,
+    "requires_rollback_pointer": true,
+    "requires_read_only_reverification": true,
+    "final_lock_allowed": false
+  },
+  "storage_controls": {
+    "cross_process_lock": "FILE_CHANNEL_LOCK",
+    "durable_atomic_replace": true,
+    "head_anchor_required": true,
+    "default_anchor_mode": "LOCAL_FILE_NONFINAL",
+    "production_anchor_required": "EXTERNAL_WORM_OR_KMS",
+    "local_anchor_may_issue_final": false
+  },
+  "source_reference": {
+    "git_sha1": "40_HEX",
+    "git_sha256": "64_HEX",
+    "archive_tree": "sha256:64_HEX"
+  },
+  "fail_closed_states": [
+    "SKIPPED",
+    "NOT_RUN",
+    "INCONCLUSIVE",
+    "PENDING",
+    "BLOCKED",
+    "SELF_REPORTED_PASS",
+    "ANCHOR_MISSING",
+    "OLD_PACK_PASS",
+    "SAME_VERIFIER_OR_KEY"
+  ],
+  "hard_invariants": [
+    "LEARNING_ENGINE_CANNOT_VALIDATE_OR_PROMOTE",
+    "SCHEDULED_RESULTS_MUST_ENTER_OFFICIAL_LEDGER",
+    "PASS_REQUIRES_FIXTURE_HARNESS_ORACLE_RESULT_EVIDENCE_LINEAGE",
+    "ONE_BYTE_LEDGER_OR_ANCHOR_MUTATION_INVALIDATES_CHAIN",
+    "APPLIED_COUNT_REQUIRES_VALID_POST_APPLY_RECEIPT_AND_APPLIED_LOCK",
+    "LOCAL_FILE_ANCHOR_IS_NONFINAL"
+  ],
+  "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
+  "independent_otester": "NOT_RUN",
+  "independent_oaudit": "NOT_RUN",
+  "external_otester_oaudit_required_for_final": true,
+  "final_claim_allowed": false
+}
