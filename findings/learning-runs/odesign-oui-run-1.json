@@ -1,0 +1,1830 @@
+{
+  "contract": "ONSURE_ODESIGN_OUI_LEARNING_RUN_V1",
+  "source_baseline": {
+    "repository": "babyandi/ORUDA",
+    "merge_commit": "5c872570466b117b9d0ac5f5332ee1cd29b2fd75",
+    "corpus_byte_hashes": {
+      "actual_cases": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+      "ai_methods": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+    }
+  },
+  "programs": {
+    "ODesign": [
+      {
+        "atom_id": "ODesign-UIUX-ACT-001",
+        "claim": "Do not add review/navigation affordances unless their scope and interaction are consistent with the user's mental model.",
+        "target_program": "ODesign",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "8170f00e1e8caa7f4bf6a0d1b5fbc5039554e15043df855d0ad38d302a1d0a08"
+        ],
+        "conditions": "Section-local answer summaries looked interactive and behaved inconsistently across page structures.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The feature did not meet the assumed need and created confusion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-001:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-001"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "ba3013eaf3270176dca28e52f9057e9682283a57b41edc9f79f44dcd3b969666"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-002",
+        "claim": "Removal is a testable design intervention; validate it with a stated hypothesis and multiple guardrail metrics.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "d73867ff4ed3de7ff8642ed9832568be6e443d80964f0d428998b595ad672959"
+        ],
+        "conditions": "The team did not know whether removing smart answers would harm completion.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live-service before/after measurement."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-002:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-002"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0d78da1c36c493c73f81ba0d3b3594dcc9e50487cc569371066cee447c82f1d5"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-003",
+        "claim": "Place review at the natural commitment boundary and allow correction before submission.",
+        "target_program": "ODesign",
+        "domains": [
+          "task_flow"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "a6029f702a09915d329ddc80236a4ecf50da47eff27588647f69bae8f8e2f866"
+        ],
+        "conditions": "Users expected to review the whole application rather than section-local summaries.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Prototype testing plus satisfaction-survey feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-003:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b60b543c739a2cae610681848b09ba392187030936fe115c25f4546938f368b5"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-004",
+        "claim": "Optional questions are not free: each adds interpretation and decision cost.",
+        "target_program": "ODesign",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "b0d9e34efda6faeeec73ec229836734182c7564b0414067daee9324ca2bbb8a3"
+        ],
+        "conditions": "A form presented many optional fields without a clear information hierarchy.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Users understood and completed the section faster."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-004:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-004"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b0317c05aa2e38deca3a3a8835db271251bebd0ad9b0a802c44f3c5e78c6b93b"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-005",
+        "claim": "A smaller, explicit question set can improve both user effort and downstream operational quality.",
+        "target_program": "ODesign",
+        "domains": [
+          "function_screen_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "e0c0ae7213e73c9364d4672bbcdf1fc4d6b1ed7d63ff661208a4943b9474a330"
+        ],
+        "conditions": "The education section was slow and confusing.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live completion-time and processing-quality data."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-005:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c2c99ef82cc6bddf076736784f314917ad788915ad731cf5dcfc080d68fff100"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-006",
+        "claim": "Flow polish cannot compensate for an intrinsically burdensome information demand.",
+        "target_program": "ODesign",
+        "domains": [
+          "business_task_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "17d78dfeed3ab03d1610428936fbd8461abe72479cfa12654b8418bb23b668fe"
+        ],
+        "conditions": "Employment questions added about 14 minutes and required hard-to-retrieve dates and payslips.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Completion time stayed the same; only the number of steps decreased slightly."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-006:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-006"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "acc9dda2f71ccbd5b407891e0c99009a14a613b198afaf02422f8324cf783e2d"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-007",
+        "claim": "Escalate unresolved UX friction to policy, data, and operational-process redesign.",
+        "target_program": "ODesign",
+        "domains": [
+          "service_policy"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "7fb88381a91d4382b567014582ca2ec45281b36a53aaaac131b56959f4b8f6a0"
+        ],
+        "conditions": "A presentational redesign failed to reduce completion time.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Re-test completion time, abandonment, data completeness, and manual follow-up after implementation."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-007:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-007"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "2b4c913653217f81426d9c8e951da14a901b7de1a414b1732d9a6982843ed620"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-008",
+        "claim": "Support discoverability and support routing must be designed as one end-to-end service.",
+        "target_program": "ODesign",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "9fb661803cfb7b8368cd90121641b6a2a71bff0f04af12ff0f771437382dea64"
+        ],
+        "conditions": "A helpline was behind a disclosure and pointed to technical support although users needed eligibility help.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Calls were transferred because the support destination did not match the user need."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-008:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "89b10e486260f547b0783a8c662e1b8613e58963e7a526f90da3386ae4ca65a6"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-009",
+        "claim": "Do not equate shipping help content with a successful outcome; retain an inconclusive or failed result until metrics improve.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "45c59f9454b157bd8984897a8849fa7204859bda9d71e27d5923ee43b4290357"
+        ],
+        "conditions": "The team introduced contextual links and a help guide.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Post-release completion-rate monitoring."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-009:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-009"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c6c98c296b0f586e49bddc8d17644e3d8afb4dd499e53b30d195dbed2be13dbf"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-010",
+        "claim": "A good service distinguishes successful completion from a correct early exit.",
+        "target_program": "ODesign",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "7d32ae8f863ee653ba4eb515f50df33e8acd2247d6ae082a390a601595ff0297"
+        ],
+        "conditions": "Users told they might not be entitled could only continue into a lengthy application.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Measure reason-coded exits separately from harmful abandonment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-010:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "29b3c310a48daf2a246569dbac47921bcc5901685be8de3cb94add3fbc0c1ce9"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-011",
+        "claim": "Progress UI must answer a demonstrated question and match expected interaction.",
+        "target_program": "ODesign",
+        "domains": [
+          "visual_ui_system"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "56f515ebbd545cbc058429f61abaf2c89ec1869f888ff12b76bffc85cd53142e"
+        ],
+        "conditions": "Users either did not notice the indicator or expected it to support navigation; some were intimidated by the section count.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Completion and time were unchanged."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-011:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c363e59a9e002f6012f4b1c2a637b661660890ea8927b3724f328e433b010d8b"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-012",
+        "claim": "A simpler system with fewer misleading components can be a successful design outcome.",
+        "target_program": "ODesign",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "4c0728209083ea9641f282ac9edfb7013bc678165142ca56ce292b8283ad7091"
+        ],
+        "conditions": "A progress component consumed attention without meeting the user need.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live guardrail metrics and follow-up feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-012:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "20bcd8477781b449fa490b0425261e64d297ab38087a7cc2da6dae726ff58cd6"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-013",
+        "claim": "Safety-critical continuous controls require immediate, perceivable state and mode feedback; visual-only controls may be inadequate.",
+        "target_program": "ODesign",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "87561e052b83a5448e56aa1d6f4866009947a692b442420f8a6436d74ada2d1c"
+        ],
+        "conditions": "Ship thrust was controlled through touch-screen throttles that could be independently ganged or unganged.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The interface increased the likelihood of operator errors contributing to a fatal collision."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-013:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-013"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "caa1dbbed35cb8f1a4e8a09c64fb2918aa0c1a41a3b0972ab2da45fde539285d"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-014",
+        "claim": "Transfer of authority must be explicit, acknowledged, visible to all affected operators, and reversible.",
+        "target_program": "ODesign",
+        "domains": [
+          "stakeholders_accountability"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "8c1b713f5fc1a50a2906c3b6b7cd5d05ddf2f324824d9c9f1c3a61d2c3462db1"
+        ],
+        "conditions": "In backup manual mode another station could take steering without acknowledgement.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Control and mode changed in less than a second while operators perceived a system malfunction."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-014:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-014"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "6d1ac94faa083d16236f881bfc600d96c9189499fdb876a64b6d64d254240211"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-015",
+        "claim": "Match the control modality to the physical continuity, risk, and feedback needs of the task.",
+        "target_program": "ODesign",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "c954c7fa5555ef7e63956c66327b9c5770f46ed76c4fa8737e17e0495595a7b9"
+        ],
+        "conditions": "Touch controls provided less direction, force, and gang-state feedback than mechanical throttles.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Conformance to ASTM F1166 plus representative bridge simulation."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-015:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-015"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "447f58f46dfa0506704494d16aadf3c98735a27f30cfc2eec9d71c7baadef756"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-016",
+        "claim": "A UI is not operationally complete until procedures and training cover normal, transfer, exception, and recovery states.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "044d3432a1bd8d5093f5a78ac4fba592aa8c209528947ad4378fd99bacbf561c"
+        ],
+        "conditions": "Written procedures omitted transfer and ganging steps, and training had no standard for them.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Procedure traceability and observed proficiency tests."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-016:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-016"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0644371e828153c6fd202ec6d35b6af959607362285c3d312c155d9f131a593c"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-018",
+        "claim": "Validation needs layered methods and performance evidence, not checklist-only approval.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "fd7f5fe1481d280867fa9b2326f8dd7589389a1feda047ee195257eec5914ddb"
+        ],
+        "conditions": "A single heuristic review cannot prove safe performance.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The published EUP protocol itself specifies the independent validation method."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-018:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-018"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "bd75f6612617feeb706f8fb5d78dd234c6c52b45bea1d9cfbf4b6556d533fb50"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-020",
+        "claim": "Workarounds are evidence of a system-work mismatch and should trigger root-cause analysis, not normalization.",
+        "target_program": "ODesign",
+        "domains": [
+          "business_task_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "e8d0c84262415c802c65ad3b33074a1c0e733440ca13aeeafd12988548cb5a42"
+        ],
+        "conditions": "EHR workflows did not adequately support clinical cognitive work and flexible task sequencing.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Information quality, workload, and patient-safety risks increased."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-020:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-020"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "60b6dbd58ba2ec8ffde34a9574eb92efc8d66ffbf8e9bbc2eca3ff89cc91d1ff"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-021",
+        "claim": "Derive functions from observed goals, coordination, variability, and workload rather than from database structure.",
+        "target_program": "ODesign",
+        "domains": [
+          "business_task_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "5cd4b19f856abd2913160cbfaff4c4e8d10e65078d6dc3b785e6a0c999d7c042"
+        ],
+        "conditions": "Billing-centred EHR design conflicted with clinician-centred goals.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "SME correction, interdisciplinary review, iterative diagrams, and published-evidence convergence."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-021:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-021"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "8d942974f2e254389102ba4bd56caf42ab60f003188bfd5f24095c70afcf3e43"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-022",
+        "claim": "Pair quantitative behaviour with qualitative explanation before prioritising UX changes.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "134e1cd31465b372ab23bbbf56140ccf73b9c31acb31580822897c5e521e2fc4"
+        ],
+        "conditions": "Analytics showed what visitors did but not why.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Cross-source convergence and post-change metric monitoring."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-022:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-022"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "804adab243eef2a19f39e374575b2396eb5c3f5ddff8247f76a3743822c3d707"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-023",
+        "claim": "Accessibility validation must include representative users and their actual assistive technologies.",
+        "target_program": "ODesign",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "498022418f73a1ccdfc962f9163927ca7d155dadadbbc35e4b634206eab39e67"
+        ],
+        "conditions": "Conformance checks alone did not reveal lived navigation problems.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Participant study with disability-community partnership."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-023:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-023"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "383dca5ddf9806b0a90d95568b003abbbd5e49376d813a7a17c856d31930528a"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-024",
+        "claim": "Launch is a measurement point; sustained success requires an evidence-backed improvement backlog.",
+        "target_program": "ODesign",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "53b015b21548bac55db7998394366e7717209411029634c74666045fd7b5b738"
+        ],
+        "conditions": "USA.gov and USAGov en Español needed improved discoverability and task coverage.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Usability tests, visitor feedback, click data, and outcome trends."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-024:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-024"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "3726485cd25e1147c0755149e428aad0228f03ebe0bf9bb47b415ab455b35fdc"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-026",
+        "claim": "Multilingual UX requires managed terminology, content governance, testing, and support—not literal string substitution.",
+        "target_program": "ODesign",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "dbdedd5f46fda927aaae7219d66892adc2459f4f4e80645e9fa338aecc92c5d8"
+        ],
+        "conditions": "English-only or ad-hoc translation limited access and created inconsistent support.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Language-specific content review and representative-user task testing."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-026:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-026"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0cfc712d01d63de357a0057b521ad43d71f3543565c99ca14bc99e135d2ad8b9"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-027",
+        "claim": "Treat the design system as a governed product with research, accessibility, release notes, and contribution loops.",
+        "target_program": "ODesign",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "eae224852d6cd260607f9727304b5dfd453addf0248f350495c0427a9367d33c"
+        ],
+        "conditions": "Service teams otherwise recreate common components and repeat solved accessibility work.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Component research, accessibility testing, versioned releases, and cross-service adoption evidence."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-027:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-027"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "7b5e9d2b48c8f2850de144b14f2f525656df46a6922a7340aca9598d64dc15fb"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-028",
+        "claim": "For civic and high-stakes systems, certify observable task performance across diverse users rather than visual conformance alone.",
+        "target_program": "ODesign",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "f1214c924187780e153051892d46341156c942a42a58afd9e469357229481b17"
+        ],
+        "conditions": "General or low-level design prescriptions did not reliably prevent voter errors or exclusion.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Qualification/certification testing against complete user-related functional requirements."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-028:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-028"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "415e7c05b35a86cd6d0130fe5b58967e3d87d2bb39f7ac11a78fdf0f0ce6ce5f"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-029",
+        "claim": "Model the full service and its support ecosystem before optimising a single interface.",
+        "target_program": "ODesign",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "131a3ca58f9c44265b3be2daa884e9cc20e1575c885f0088fd6698e29405163c"
+        ],
+        "conditions": "Claimant needs and service operations cross digital and assisted channels.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "End-to-end journey and operational-service assessment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-029:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-029"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "d0f7ffd36c5150e05f4b66c061b7e8cef3e196d6141c854cc24974702b3757a1"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-030",
+        "claim": "Scale validation fidelity, scenario realism, and independence with consequence severity.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "42376cbacbf8227d0e0fdece52205f6656ee57a7d668e443df41bd644f80c1ac"
+        ],
+        "conditions": "Method selection can under-test complex or safety-critical work.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Risk-based selection of observation, walkthrough, simulation, expert review, and summative tests."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-030:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-030"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "839a1233e98e5568dc7002ac4ac326fc3cef857e7d8677728f2a990fd5941074"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-001",
+        "claim": "The proposed AI capability solves a demonstrated need better than the baseline.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "b1ebda980630867f651a30f6c5667a73bfa417f1639c3fd17e4cb556f63dfa5f"
+        ],
+        "conditions": "Before selecting an AI feature or drawing a screen",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "A visually attractive AI feature is built without a validated user problem."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-001:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-001"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "f228c16d2466b7e9f7c21b109b1da1ddcd16ed493b63100f2df71a4fda7268e7"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-002",
+        "claim": "Optimization improves the user outcome without breaching guardrails.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "85bc30874e479b0716952af29ff99058cb5475880447b317b250dba800201f2b"
+        ],
+        "conditions": "When defining AI success",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The system maximizes clicks, speed, or model score while degrading trust, safety, or task completion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-002:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-002"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "656983e687c4d54423fda8e838ac8afa746c5f97c761662cffbabf9c473813e0"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-010",
+        "claim": "The corpus grows by distinct reusable knowledge rather than paraphrase volume.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "f259cf26f5738ba9f50d92f7d38bd6453434dbafc46c7be827cb020732cca65d"
+        ],
+        "conditions": "Before registering generated UI/UX knowledge",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Requested counts are met by changing labels, roles, or proficiency levels."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-010:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b4aa15f932ad46818453df9a08f312a0fc7e029032733a09d00b8e1312ebcfbf"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-011",
+        "claim": "The declared scope reaches an evidenced saturation point.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "c6bc0eeec7ff00acd671f44dcf6ac2299190120d71b6be187c4342470649f86f"
+        ],
+        "conditions": "Before declaring UI/UX research complete",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Research stops when an arbitrary target count is reached."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-011:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b6216e6f344a7a29f04ee8ff35fd7d7212ecf2607824583837e172d8d2fa3213"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-012",
+        "claim": "Registered, validated, promoted, and merged counts are equal for the promoted set.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "75e79432d96ebf932b2f617a81e0fa720a6677f88ef16e53a4f79b80a79a60a1"
+        ],
+        "conditions": "Before moving candidate UI/UX knowledge into the official corpus",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Candidate creation or local validation is reported as learning completion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-012:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "53417d3ba71879a110dafd2fac1144e293a05acf4fa62cec32a5379bb8457a2c"
+      }
+    ],
+    "OUI": [
+      {
+        "atom_id": "OUI-UIUX-ACT-001",
+        "claim": "Do not add review/navigation affordances unless their scope and interaction are consistent with the user's mental model.",
+        "target_program": "OUI",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "8170f00e1e8caa7f4bf6a0d1b5fbc5039554e15043df855d0ad38d302a1d0a08"
+        ],
+        "conditions": "Section-local answer summaries looked interactive and behaved inconsistently across page structures.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The feature did not meet the assumed need and created confusion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-001:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-001"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "aad87d6ba0787d672d75286ccbca43b1138b27fedcee2f40c0b5464babab4384"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-003",
+        "claim": "Place review at the natural commitment boundary and allow correction before submission.",
+        "target_program": "OUI",
+        "domains": [
+          "task_flow"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "a6029f702a09915d329ddc80236a4ecf50da47eff27588647f69bae8f8e2f866"
+        ],
+        "conditions": "Users expected to review the whole application rather than section-local summaries.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Prototype testing plus satisfaction-survey feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-003:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "e3413f9851531c2bf85bda78cfcd9601bb34a3c2bfe66de7a23e954c929b34aa"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-004",
+        "claim": "Optional questions are not free: each adds interpretation and decision cost.",
+        "target_program": "OUI",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "b0d9e34efda6faeeec73ec229836734182c7564b0414067daee9324ca2bbb8a3"
+        ],
+        "conditions": "A form presented many optional fields without a clear information hierarchy.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Users understood and completed the section faster."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-004:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-004"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "a00f10941fdf1fd637bbafbe4f2e466ffe4e0d63ef86c1a758fce818f0667d81"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-005",
+        "claim": "A smaller, explicit question set can improve both user effort and downstream operational quality.",
+        "target_program": "OUI",
+        "domains": [
+          "function_screen_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "e0c0ae7213e73c9364d4672bbcdf1fc4d6b1ed7d63ff661208a4943b9474a330"
+        ],
+        "conditions": "The education section was slow and confusing.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live completion-time and processing-quality data."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-005:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c12d3315c3273095f753170c371c9dce49d180854079c1c8b75918ad1ba49755"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-008",
+        "claim": "Support discoverability and support routing must be designed as one end-to-end service.",
+        "target_program": "OUI",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "9fb661803cfb7b8368cd90121641b6a2a71bff0f04af12ff0f771437382dea64"
+        ],
+        "conditions": "A helpline was behind a disclosure and pointed to technical support although users needed eligibility help.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Calls were transferred because the support destination did not match the user need."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-008:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "2cfb9a5bf96ab6c343f356429d4ec044c18de54d986eaa23700b7d102dbc70f7"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-010",
+        "claim": "A good service distinguishes successful completion from a correct early exit.",
+        "target_program": "OUI",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "7d32ae8f863ee653ba4eb515f50df33e8acd2247d6ae082a390a601595ff0297"
+        ],
+        "conditions": "Users told they might not be entitled could only continue into a lengthy application.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Measure reason-coded exits separately from harmful abandonment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-010:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c9211db9812ff7f124dd9b44f8684e3f8b86aeb42c9d42c22fc85fa2d6998f72"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-011",
+        "claim": "Progress UI must answer a demonstrated question and match expected interaction.",
+        "target_program": "OUI",
+        "domains": [
+          "visual_ui_system"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "56f515ebbd545cbc058429f61abaf2c89ec1869f888ff12b76bffc85cd53142e"
+        ],
+        "conditions": "Users either did not notice the indicator or expected it to support navigation; some were intimidated by the section count.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Completion and time were unchanged."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-011:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "fb9382ed7ec04da421bb3fdbfa7bf68b032789a3cc581961bd5c15863b1272df"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-012",
+        "claim": "A simpler system with fewer misleading components can be a successful design outcome.",
+        "target_program": "OUI",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "4c0728209083ea9641f282ac9edfb7013bc678165142ca56ce292b8283ad7091"
+        ],
+        "conditions": "A progress component consumed attention without meeting the user need.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live guardrail metrics and follow-up feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-012:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "795d06eb205b228e1acbe44e06b6fe7a782281617f0e481a4fecf6a8f6ff3539"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-013",
+        "claim": "Safety-critical continuous controls require immediate, perceivable state and mode feedback; visual-only controls may be inadequate.",
+        "target_program": "OUI",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "87561e052b83a5448e56aa1d6f4866009947a692b442420f8a6436d74ada2d1c"
+        ],
+        "conditions": "Ship thrust was controlled through touch-screen throttles that could be independently ganged or unganged.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The interface increased the likelihood of operator errors contributing to a fatal collision."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-013:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-013"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "fb253b8ea9906b7ebe70d40aa3f02a6c47777fb89b8e170b5b255b13cc2e1b5a"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-015",
+        "claim": "Match the control modality to the physical continuity, risk, and feedback needs of the task.",
+        "target_program": "OUI",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "c954c7fa5555ef7e63956c66327b9c5770f46ed76c4fa8737e17e0495595a7b9"
+        ],
+        "conditions": "Touch controls provided less direction, force, and gang-state feedback than mechanical throttles.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Conformance to ASTM F1166 plus representative bridge simulation."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-015:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-015"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "688aa825bb617883c28f1124d21c3c2070a9fc5ebe3886b6386bb0f66d513d0b"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-023",
+        "claim": "Accessibility validation must include representative users and their actual assistive technologies.",
+        "target_program": "OUI",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "498022418f73a1ccdfc962f9163927ca7d155dadadbbc35e4b634206eab39e67"
+        ],
+        "conditions": "Conformance checks alone did not reveal lived navigation problems.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Participant study with disability-community partnership."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-023:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-023"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "f93b0eff84ac61cc5bc2e3ae18503ad3bc3a291c68a1502684425338bdea519b"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-024",
+        "claim": "Launch is a measurement point; sustained success requires an evidence-backed improvement backlog.",
+        "target_program": "OUI",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "53b015b21548bac55db7998394366e7717209411029634c74666045fd7b5b738"
+        ],
+        "conditions": "USA.gov and USAGov en Español needed improved discoverability and task coverage.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Usability tests, visitor feedback, click data, and outcome trends."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-024:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-024"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "5dafdfebfe5427b09e941e15241659f64cd7aa3fea95036769a60aa5177bedb3"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-026",
+        "claim": "Multilingual UX requires managed terminology, content governance, testing, and support—not literal string substitution.",
+        "target_program": "OUI",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "dbdedd5f46fda927aaae7219d66892adc2459f4f4e80645e9fa338aecc92c5d8"
+        ],
+        "conditions": "English-only or ad-hoc translation limited access and created inconsistent support.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Language-specific content review and representative-user task testing."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-026:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-026"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "1e33e5edba0b5a92e82f6449637833a21d7a7c42ef2fb7c75889ce7c5d33052e"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-027",
+        "claim": "Treat the design system as a governed product with research, accessibility, release notes, and contribution loops.",
+        "target_program": "OUI",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "eae224852d6cd260607f9727304b5dfd453addf0248f350495c0427a9367d33c"
+        ],
+        "conditions": "Service teams otherwise recreate common components and repeat solved accessibility work.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Component research, accessibility testing, versioned releases, and cross-service adoption evidence."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-027:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-027"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "974bc234a7c01bf31012a47f6641deca916a442b76785042ab27d6585e10cdfb"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-028",
+        "claim": "For civic and high-stakes systems, certify observable task performance across diverse users rather than visual conformance alone.",
+        "target_program": "OUI",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "f1214c924187780e153051892d46341156c942a42a58afd9e469357229481b17"
+        ],
+        "conditions": "General or low-level design prescriptions did not reliably prevent voter errors or exclusion.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Qualification/certification testing against complete user-related functional requirements."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-028:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-028"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0fc03a2d51e2f6f961e45bbe07c5b7e5c583f49a0c6973038255ceaa9da163b8"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-029",
+        "claim": "Model the full service and its support ecosystem before optimising a single interface.",
+        "target_program": "OUI",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "131a3ca58f9c44265b3be2daa884e9cc20e1575c885f0088fd6698e29405163c"
+        ],
+        "conditions": "Claimant needs and service operations cross digital and assisted channels.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "End-to-end journey and operational-service assessment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-029:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-029"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "d032b438caeb81ac865a9b7e2e6d69ef59f5c15f491941d34b945b2082494a16"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-003",
+        "claim": "Users form a calibrated mental model and choose appropriate tasks.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "f1829dc02d6c35f6528527fdc3ab448189311e757d620117fc8b4e83bc64e701"
+        ],
+        "conditions": "At first use and before consequential AI action",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Human-like presentation causes users to assume unsupported accuracy or authority."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-003:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "4a2e4ce0303406ee4a462b7eb43158defabbe791e4fa18ec15644ae5966bae53"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-004",
+        "claim": "The user can distinguish reliable, uncertain, and unavailable output.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "8414d87c2c5fa98b1e17252bbb5e076109d771d134db84706a26ccf93d6248c4"
+        ],
+        "conditions": "When AI output can be incomplete, ambiguous, or wrong",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "All generated outputs look equally authoritative."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-004:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-004"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "caf766649d1061a7474a90665ac9d718633d3786dea96215e80aeb8004ac567a"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-005",
+        "claim": "A user can safely recover without restarting or losing provenance.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "6ffbd2a9ac966ce35651c3b8af5b1119f6d262cc481a1aa8eac0426f9bfdcf59"
+        ],
+        "conditions": "After an AI recommendation or generation",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The user must accept, discard everything, or silently overwrite AI output."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-005:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "47c771a4cdb1687889e8d8e33fe62baeb4efb2ea6d58854dec4d7d801298addd"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-006",
+        "claim": "Feedback is attributable, reversible, and improves the intended behaviour.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "f28cbf84207e68533573f27d323d348a42349b6dfaba10b18e9d447bf13a7b50"
+        ],
+        "conditions": "When user feedback changes future AI behaviour",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "A thumbs-up/down control exists but its effect is unknown or misinterpreted."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-006:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-006"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "937bfe582a1c67752771cbe153f8644e2f97a4ff872e2fbcffb3ebae6535795c"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-007",
+        "claim": "AI assists the decision while authority and accountability remain unambiguous.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "47cdce2b9740c00711e1057ebdb0427b7f98f3cd964bfaa17b1fe48efe1a579e"
+        ],
+        "conditions": "For approval, payment, release, safety, legal, or production decisions",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Automation bias turns a suggestion into an unreviewed final action."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-007:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-007"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "8e3b87dde49e1d19f4485ffbca8de8b0a4d6d73c35afed095f720b6837a0f70e"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-008",
+        "claim": "Generated UI is editable, traceable, responsive, and visually stable.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "8d4738f40cca2d31310fb8e6c2fda292114fe50639fc1db116a286a4e67b2781"
+        ],
+        "conditions": "When AI generates UI screens or visual assets",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "A plausible image bypasses component, geometry, accessibility, or lineage contracts."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-008:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "2590e6e8f251f6149c58775cea3856bdfb5d59d2f17d2ad3835da9bf6343cc16"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-009",
+        "claim": "All roles can complete normal, exception, and recovery work with consistent state.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "5a1dba33ac086f2a5519c28f8717af1440b033927d83fcc39b4f7debca96c21d"
+        ],
+        "conditions": "Before accepting an AI-created service flow",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Only the end-user happy path is designed."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-009:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-009"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "961f77c53944cd617127b4b7e309457b7be01619f464c01dc7df7c7e5cdd9e7c"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-012",
+        "claim": "Registered, validated, promoted, and merged counts are equal for the promoted set.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "75e79432d96ebf932b2f617a81e0fa720a6677f88ef16e53a4f79b80a79a60a1"
+        ],
+        "conditions": "Before moving candidate UI/UX knowledge into the official corpus",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Candidate creation or local validation is reported as learning completion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-012:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "db66da17d0351d9a7e2611891bcc62cea31369c0d43367aa28e91d618520b676"
+      }
+    ]
+  },
+  "counts": {
+    "ODesign": 32,
+    "OUI": 24,
+    "total": 56
+  },
+  "conflicts": [],
+  "promotion": {
+    "decision": "HOLD",
+    "active_learning_performed": false,
+    "project_memory_candidates_materialized": true,
+    "missing_gates": [
+      "ORIGINAL_EXTERNAL_SOURCE_BYTES_NOT_MATERIALIZED",
+      "RIGHTS_AND_DATA_CLASSIFICATION_RECEIPT_MISSING",
+      "ODESIGN_TO_OUI_RUNTIME_SCENARIO_NOT_RUN",
+      "BEFORE_AFTER_IMPROVEMENT_NOT_PROVEN",
+      "INDEPENDENT_OTESTER_RECEIPTS_MISSING",
+      "INDEPENDENT_OAUDIT_RECEIPTS_MISSING",
+      "ROLLBACK_REPRODUCTION_NOT_RUN"
+    ]
+  },
+  "run_sha256": "d4ebb4f7ac7bfcf37101c0bc7f2ffa2c6295deb92dae04330634cbcbe9770d1d"
+}

@@ -1,0 +1,212 @@
+{
+  "contract": "ONSURE_DESIGN_EXPERT_COMPETENCY_V1",
+  "scope": [
+    "ODesign",
+    "OUI"
+  ],
+  "assurance_ceiling": "CANDIDATE_ONLY",
+  "levels": [
+    {
+      "id": "FOUNDATION",
+      "rank": 0,
+      "meaning": "Terminology and principle recall"
+    },
+    {
+      "id": "BEGINNER",
+      "rank": 1,
+      "meaning": "Reproduce bounded patterns"
+    },
+    {
+      "id": "INTERMEDIATE",
+      "rank": 2,
+      "meaning": "Design and implement a complete task under normal constraints"
+    },
+    {
+      "id": "ADVANCED",
+      "rank": 3,
+      "meaning": "Resolve conflicting user, brand, technical, accessibility, and operational constraints"
+    },
+    {
+      "id": "EXPERT_VERIFIED",
+      "rank": 4,
+      "meaning": "Make evidence-backed, industry-responsible decisions and prove outcomes on unseen work"
+    }
+  ],
+  "promotion_policy": {
+    "unit_of_promotion": "TRACK",
+    "no_global_expert_label": true,
+    "no_level_skipping": true,
+    "required_clean_rounds": 2,
+    "critical_or_high_findings_allowed": 0,
+    "pending_findings_allowed": 0,
+    "runtime_lineage_required": true,
+    "blind_tasks_required": true,
+    "before_after_effect_required": true,
+    "independent_reviewers": [
+      "OTester",
+      "OAudit"
+    ],
+    "human_user_evidence_required_for_expert": true,
+    "rollback_reproduction_required": true
+  },
+  "tracks": [
+    {
+      "id": "UI_UX",
+      "targets": [
+        "ODesign",
+        "OUI"
+      ],
+      "priority": 1,
+      "current_claim": "BEGINNER_CANDIDATE",
+      "task_bank": {
+        "standard": 30,
+        "adversarial": 10,
+        "blind": 10
+      },
+      "competencies": [
+        "requirements and task-flow analysis",
+        "information architecture",
+        "normal, empty, loading, error, permission, and recovery states",
+        "responsive behavior",
+        "accessibility and inclusive interaction",
+        "usability measurement and correction"
+      ],
+      "expert_oracles": [
+        "task success, time, error, recovery, and abandonment are measured",
+        "automated and human accessibility evidence are both present",
+        "improvement reproduces across tasks and relevant user groups"
+      ]
+    },
+    {
+      "id": "DESIGN_SYSTEMS",
+      "targets": [
+        "ODesign",
+        "OUI"
+      ],
+      "priority": 2,
+      "current_claim": "BEGINNER_CANDIDATE",
+      "task_bank": {
+        "standard": 30,
+        "adversarial": 10,
+        "blind": 10
+      },
+      "competencies": [
+        "semantic and visual token governance",
+        "typed component anatomy, props, variants, and state contracts",
+        "design-to-code and code-to-design round trip",
+        "responsive and accessibility behavior",
+        "versioning, migration, deprecation, and rollback",
+        "agent mutation permission and audit"
+      ],
+      "expert_oracles": [
+        "human edits survive a versioned round trip",
+        "invalid variants and unauthorized mutations fail closed",
+        "token or component migration has regression and rollback evidence"
+      ]
+    },
+    {
+      "id": "PRESENTATION_DOCUMENT",
+      "targets": [
+        "ODesign",
+        "OUI"
+      ],
+      "priority": 3,
+      "current_claim": "FOUNDATION_VERIFIED_BEGINNER_CANDIDATE",
+      "task_bank": {
+        "standard": 30,
+        "adversarial": 10,
+        "blind": 10
+      },
+      "competencies": [
+        "audience, purpose, story, and evidence hierarchy",
+        "three-second headline, ten-second rationale, and thirty-second proof",
+        "editable geometry, typography, tables, charts, and assets",
+        "source-faithful reconstruction and controlled redesign",
+        "cross-format PPTX, PDF, image, and screen consistency",
+        "distant-view, overflow, contrast, and asset-rights validation"
+      ],
+      "expert_oracles": [
+        "content and geometry lineage reaches the final render",
+        "meaning and editability survive format conversion",
+        "human comprehension and evidence-location tests improve over baseline"
+      ]
+    },
+    {
+      "id": "AI_DESIGN",
+      "targets": [
+        "ODesign",
+        "OUI"
+      ],
+      "priority": 4,
+      "current_claim": "FOUNDATION_VERIFIED_BEGINNER_CANDIDATE",
+      "task_bank": {
+        "standard": 30,
+        "adversarial": 10,
+        "blind": 10
+      },
+      "competencies": [
+        "bounded intake and ambiguity escalation",
+        "materially distinct alternative generation",
+        "selection and rejection rationale",
+        "self-critique and correction",
+        "source, rights, prompt, model, and output lineage",
+        "tool permission, approval, audit, revocation, and rollback"
+      ],
+      "expert_oracles": [
+        "alternatives differ in decision logic rather than cosmetic variation",
+        "self-critique produces measured improvement without hiding regressions",
+        "unsafe, unsupported, or unauthorized generation is blocked"
+      ]
+    }
+  ],
+  "task_contract": {
+    "required_fields": [
+      "task_id",
+      "track",
+      "level",
+      "unseen",
+      "requirements",
+      "constraints",
+      "conflicts",
+      "required_states",
+      "source_receipts",
+      "expected_evidence",
+      "oracle",
+      "adversarial_mutations",
+      "rollback_target"
+    ],
+    "required_chain": [
+      "source_and_user_request",
+      "claims_and_constraints",
+      "alternatives_and_rationale",
+      "PageSpec_and_Croquis",
+      "Geometry_Contract",
+      "Canonical_Scene",
+      "runtime_render_and_interaction",
+      "effect_measurement",
+      "independent_receipts"
+    ]
+  },
+  "current_disposition": {
+    "knowledge_breadth": "EARLY_INTERMEDIATE",
+    "runtime_ability": "BEGINNER_UNVERIFIED",
+    "official_level": "BEGINNER_NOT_YET_VERIFIED",
+    "expert_tracks": [],
+    "decision": "HOLD",
+    "blocking_gates": [
+      "40 blind prompts and rubrics await independent OTester/OAudit sealing",
+      "ODesign to OUI runtime A/B not executed for this candidate set",
+      "materialized standard and adversarial task execution evidence absent",
+      "human user outcome evidence absent",
+      "independent OTester and OAudit receipts absent"
+    ]
+  },
+  "task_bank_status": {
+    "contract": "ONSURE_DESIGN_EXPERT_TASK_BANK_V1",
+    "total_slots": 200,
+    "materialized_tasks": 160,
+    "blind_slots_sealed_pending": 40,
+    "execution_receipts": 0,
+    "decision": "HOLD"
+  }
+}
