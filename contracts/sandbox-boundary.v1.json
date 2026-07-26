@@ -1,0 +1,54 @@
+{
+  "contract": "ONSURE_SANDBOX_BOUNDARY_V1",
+  "version": "1.0.0",
+  "execution": {
+    "network_default": "DENY",
+    "filesystem_default": "READ_ONLY_SOURCE_WRITE_RUN_ROOT_ONLY",
+    "child_process_default": "DENY_EXCEPT_ALLOWLIST",
+    "host_environment_default": "DENY",
+    "secret_access": "EXPLICIT_PERMIT_ONLY",
+    "cpu_limit_required": true,
+    "memory_limit_required": true,
+    "process_count_limit_required": true,
+    "output_limit_required": true,
+    "wall_clock_timeout_required": true,
+    "process_tree_kill_required": true,
+    "symlink_escape_denied": true,
+    "device_mount_denied": true
+  },
+  "tenant": {
+    "organization_id_required": true,
+    "project_id_required": true,
+    "program_id_required": true,
+    "run_id_required": true,
+    "cross_tenant_read_default": "DENY",
+    "cross_tenant_write_default": "DENY",
+    "tenant_bound_encryption_context_required": true,
+    "tenant_bound_evidence_parentage_required": true
+  },
+  "persistence": {
+    "cross_process_lock_or_cas_required": true,
+    "atomic_write_required": true,
+    "append_only_evidence_required": true,
+    "retention_policy_required": true,
+    "legal_hold_required": true,
+    "deletion_receipt_required": true
+  },
+  "required_attack_fixtures": [
+    "NETWORK_EGRESS",
+    "FILESYSTEM_ESCAPE",
+    "SYMLINK_ESCAPE",
+    "CHILD_PROCESS_SURVIVAL",
+    "CPU_EXHAUSTION",
+    "MEMORY_EXHAUSTION",
+    "OUTPUT_FLOOD",
+    "SECRET_ENVIRONMENT_EXFILTRATION",
+    "CROSS_TENANT_READ",
+    "CROSS_TENANT_WRITE",
+    "CONCURRENT_CATALOG_UPDATE",
+    "CONCURRENT_EVIDENCE_APPEND"
+  ],
+  "implementation_state": "CONTRACT_READY_HOST_HARNESS_NOT_ISOLATED",
+  "runtime_verification": "NOT_RUN",
+  "final_claim_allowed": false
+}
