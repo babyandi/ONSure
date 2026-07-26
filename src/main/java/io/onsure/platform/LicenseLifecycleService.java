@@ -1,36 +1,18 @@
 package io.onsure.platform;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 
-/** File-backed OLicense lifecycle with credit reservations, offline grace and rollback detection. */
+/** Durable OLicense lifecycle with credit reservations, offline grace and clock rollback detection. */
 public final class LicenseLifecycleService {
     public static final String STATE_CONTRACT = "ONSURE_LICENSE_STATE_V1";
     public static final String EVENT_CONTRACT = "ONSURE_LICENSE_EVENT_V1";
-    private static final String GENESIS = "0".repeat(64);
-    private final ObjectMapper mapper = new ObjectMapper()
-            .findAndRegisterModules()
-            .enable(SerializationFeature.INDENT_OUTPUT)
-            .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
     private final Path root;
 
     public LicenseLifecycleService(Path root) {
@@ -61,47 +43,42 @@ public final class LicenseLifecycleService {
                 || clockToleranceSeconds < 0 || clockToleranceSeconds > 3600) {
             throw new IllegalArgumentException("LICENSE_LIMIT_INVALID");
         }
-        return locked(licenseId, () -> {
-            Path stateFile = stateFile(licenseId);
-            if (Files.exists(stateFile, LinkOption.NOFOLLOW_LINKS)) {
-                throw new IllegalStateException("LICENSE_ALREADY_EXISTS");
-            }
-            Map<String, Object> state = new LinkedHashMap<>();
-            state.put("contract", STATE_CONTRACT);
-            state.put("license_id", licenseId);
-            state.put("organization_id", tenantContext.get("organization_id"));
-            state.put("tenant_id", tenantContext.get("tenant_id"));
-            state.put("workspace_id", tenantContext.get("workspace_id"));
-            state.put("product_id", productId);
-            state.put("edition", edition);
-            state.put("status", "ISSUED");
-            state.put("valid_from", validFrom.toString());
-            state.put("valid_until", validUntil.toString());
-            state.put("offline_grace_hours", offlineGraceHours);
-            state.put("clock_tolerance_seconds", clockToleranceSeconds);
-            state.put("last_observed_at", validFrom.toString());
-            state.put("last_online_validation_at", null);
-            state.put("entitlements", List.copyOf(entitlements == null ? List.of() : entitlements));
-            state.put("credits", credits(totalCredits, totalCredits, 0, 0));
-            state.put("reservations", new TreeMap<String, Object>());
-            state.put("revision", 1L);
-            state.put("created_at", Instant.now().toString());
-            state.put("updated_at", Instant.now().toString());
-            state.put("final_claim_allowed", false);
-            state.put("state_sha256", stateHash(state));
-            writeState(stateFile, state);
-            appendEvent(licenseId, "ISSUED", actor, Map.of(
-                    "product_id", productId, "edition", edition, "total_credits", totalCredits));
-            return Map.copyOf(state);
-        });
+        List<String> normalizedEntitlements = entitlements == null ? List.of() : entitlements.stream()
+                .peek(value -> requireId(value, "ENTITLEMENT_INVALID"))
+                .distinct().sorted().toList();
+        Map<String, Object> state = new LinkedHashMap<>();
+        state.put("organization_id", tenantContext.get("organization_id"));
+        state.put("tenant_id", tenantContext.get("tenant_id"));
+        state.put("workspace_id", tenantContext.get("workspace_id"));
+        state.put("product_id", productId);
+        state.put("edition", edition);
+        state.put("status", "ISSUED");
+        state.put("valid_from", validFrom.toString());
+        state.put("valid_until", validUntil.toString());
+        state.put("offline_grace_hours", offlineGraceHours);
+        state.put("clock_tolerance_seconds", clockToleranceSeconds);
+        state.put("last_observed_at", validFrom.toString());
+        state.put("last_online_validation_at", null);
+        state.put("entitlements", normalizedEntitlements);
+        state.put("credits", credits(totalCredits, totalCredits, 0, 0));
+        state.put("reservations", new TreeMap<String, Object>());
+        state.put("created_at", Instant.now().toString());
+        state.put("final_claim_allowed", false);
+        Map<String, Object> envelope = store(licenseId).initialize(state, "ISSUED", actor, Map.of(
+                "product_id", productId,
+                "edition", edition,
+                "total_credits", totalCredits,
+                "entitlements", normalizedEntitlements));
+        return state(envelope);
     }
 
     public Map<String, Object> activate(String licenseId, Instant observedAt, String actor) throws Exception {
-        return mutate(licenseId, observedAt, actor, "ACTIVATED", state -> {
+        return mutateStrict(licenseId, observedAt, actor, "ACTIVATED", state -> {
             String status = string(state, "status");
             if (!List.of("ISSUED", "SUSPENDED").contains(status)) {
                 throw new IllegalStateException("LICENSE_ACTIVATION_STATE_INVALID:" + status);
             }
+            requireWithinValidity(state, observedAt);
             state.put("status", "ACTIVE");
             state.put("last_online_validation_at", observedAt.toString());
             return Map.of("previous_status", status, "next_status", "ACTIVE");
@@ -110,20 +87,23 @@ public final class LicenseLifecycleService {
 
     public Map<String, Object> validate(
             String licenseId, Instant observedAt, boolean online, String actor) throws Exception {
-        return mutate(licenseId, observedAt, actor, "VALIDATED", state -> {
+        requireObservedAt(observedAt);
+        return store(licenseId).mutate("VALIDATED", actor, state -> {
+            Map<String, Object> rollback = suspendOnClockRollback(state, observedAt);
+            if (rollback != null) return rollback;
             expireReservations(state, observedAt);
             String status = string(state, "status");
             Instant validFrom = Instant.parse(string(state, "valid_from"));
             Instant validUntil = Instant.parse(string(state, "valid_until"));
             String decision;
             List<String> reasons = new ArrayList<>();
-            if (!List.of("ACTIVE", "ISSUED").contains(status)) {
+            if (!"ACTIVE".equals(status)) {
                 decision = "DENY";
                 reasons.add("STATUS_" + status);
             } else if (observedAt.isBefore(validFrom)) {
                 decision = "DENY";
                 reasons.add("NOT_YET_VALID");
-            } else if (observedAt.isAfter(validUntil)) {
+            } else if (!observedAt.isBefore(validUntil)) {
                 decision = "DENY";
                 reasons.add("LICENSE_EXPIRED");
             } else if (!online && !offlineAllowed(state, observedAt)) {
@@ -136,6 +116,7 @@ public final class LicenseLifecycleService {
             if (online && "ALLOW".equals(decision)) {
                 state.put("last_online_validation_at", observedAt.toString());
             }
+            state.put("last_observed_at", observedAt.toString());
             return Map.of(
                     "decision", decision,
                     "reasons", List.copyOf(reasons),
@@ -144,54 +125,78 @@ public final class LicenseLifecycleService {
         });
     }
 
+    public Map<String, Object> authorize(
+            String licenseId,
+            String entitlement,
+            Instant observedAt,
+            boolean online,
+            String actor) throws Exception {
+        requireId(entitlement, "ENTITLEMENT_INVALID");
+        Map<String, Object> result = validate(licenseId, observedAt, online, actor);
+        Map<String, Object> current = state(result);
+        Map<String, Object> details = details(result);
+        boolean validationAllowed = "ALLOW".equals(details.get("decision"));
+        boolean entitled = entitlements(current).contains(entitlement);
+        Map<String, Object> decision = new LinkedHashMap<>();
+        decision.put("decision", validationAllowed && entitled ? "ALLOW" : "DENY");
+        decision.put("entitlement", entitlement);
+        decision.put("license_validation", details.get("decision"));
+        decision.put("entitlement_present", entitled);
+        decision.put("available_credits", creditValue(current, "available"));
+        decision.put("assurance_class", "SELF_VALIDATION_NONFINAL");
+        decision.put("final_claim_allowed", false);
+        return Map.copyOf(decision);
+    }
+
     public Map<String, Object> reserve(
             String licenseId,
             String reservationId,
-            long credits,
+            long amount,
             Instant expiresAt,
             Instant observedAt,
             String actor) throws Exception {
         requireId(reservationId, "RESERVATION_ID_INVALID");
-        if (credits <= 0 || expiresAt == null || !expiresAt.isAfter(observedAt)) {
+        requireObservedAt(observedAt);
+        if (amount <= 0 || expiresAt == null || !expiresAt.isAfter(observedAt)) {
             throw new IllegalArgumentException("RESERVATION_INVALID");
         }
-        return mutate(licenseId, observedAt, actor, "CREDITS_RESERVED", state -> {
+        return mutateStrict(licenseId, observedAt, actor, "CREDITS_RESERVED", state -> {
             requireActive(state, observedAt);
             expireReservations(state, observedAt);
             Map<String, Object> reservations = reservations(state);
             if (reservations.containsKey(reservationId)) throw new IllegalStateException("RESERVATION_REPLAY");
             long available = creditValue(state, "available");
-            if (available < credits) throw new IllegalStateException("INSUFFICIENT_CREDITS");
+            if (available < amount) throw new IllegalStateException("INSUFFICIENT_CREDITS");
             reservations.put(reservationId, Map.of(
                     "reservation_id", reservationId,
-                    "credits", credits,
+                    "credits", amount,
                     "state", "RESERVED",
                     "created_at", observedAt.toString(),
                     "expires_at", expiresAt.toString()));
-            updateCredits(state, available - credits,
-                    creditValue(state, "reserved") + credits,
+            updateCredits(state, available - amount,
+                    creditValue(state, "reserved") + amount,
                     creditValue(state, "committed"));
-            return Map.of("reservation_id", reservationId, "credits", credits, "state", "RESERVED");
+            return Map.of("reservation_id", reservationId, "credits", amount, "state", "RESERVED");
         });
     }
 
     public Map<String, Object> commitReservation(
             String licenseId, String reservationId, Instant observedAt, String actor) throws Exception {
-        return mutate(licenseId, observedAt, actor, "CREDITS_COMMITTED", state -> {
+        return mutateStrict(licenseId, observedAt, actor, "CREDITS_COMMITTED", state -> {
+            requireActive(state, observedAt);
+            expireReservations(state, observedAt);
             Map<String, Object> reservations = reservations(state);
             Map<String, Object> reservation = reservation(reservations, reservationId);
             if (!"RESERVED".equals(reservation.get("state"))) {
                 throw new IllegalStateException("RESERVATION_NOT_RESERVED");
-            }
-            if (observedAt.isAfter(Instant.parse(reservation.get("expires_at").toString()))) {
-                throw new IllegalStateException("RESERVATION_EXPIRED");
             }
             long amount = number(reservation.get("credits"));
             Map<String, Object> changed = new LinkedHashMap<>(reservation);
             changed.put("state", "COMMITTED");
             changed.put("committed_at", observedAt.toString());
             reservations.put(reservationId, Map.copyOf(changed));
-            updateCredits(state, creditValue(state, "available"),
+            updateCredits(state,
+                    creditValue(state, "available"),
                     creditValue(state, "reserved") - amount,
                     creditValue(state, "committed") + amount);
             return Map.of("reservation_id", reservationId, "credits", amount, "state", "COMMITTED");
@@ -200,7 +205,8 @@ public final class LicenseLifecycleService {
 
     public Map<String, Object> releaseReservation(
             String licenseId, String reservationId, Instant observedAt, String actor) throws Exception {
-        return mutate(licenseId, observedAt, actor, "CREDITS_RELEASED", state -> {
+        return mutateStrict(licenseId, observedAt, actor, "CREDITS_RELEASED", state -> {
+            expireReservations(state, observedAt);
             Map<String, Object> reservations = reservations(state);
             Map<String, Object> reservation = reservation(reservations, reservationId);
             if (!"RESERVED".equals(reservation.get("state"))) {
@@ -219,10 +225,22 @@ public final class LicenseLifecycleService {
         });
     }
 
+    public Map<String, Object> suspend(
+            String licenseId, String reason, Instant observedAt, String actor) throws Exception {
+        requireText(reason, "SUSPENSION_REASON_REQUIRED");
+        return mutateStrict(licenseId, observedAt, actor, "SUSPENDED", state -> {
+            state.put("status", "SUSPENDED");
+            state.put("suspension_reason", reason);
+            state.put("suspended_at", observedAt.toString());
+            return Map.of("status", "SUSPENDED", "reason", reason);
+        });
+    }
+
     public Map<String, Object> revoke(
             String licenseId, String reason, Instant observedAt, String actor) throws Exception {
-        if (reason == null || reason.isBlank()) throw new IllegalArgumentException("REVOCATION_REASON_REQUIRED");
-        return mutate(licenseId, observedAt, actor, "REVOKED", state -> {
+        requireText(reason, "REVOCATION_REASON_REQUIRED");
+        return mutateStrict(licenseId, observedAt, actor, "REVOKED", state -> {
+            if ("REVOKED".equals(state.get("status"))) throw new IllegalStateException("LICENSE_ALREADY_REVOKED");
             state.put("status", "REVOKED");
             state.put("revocation_reason", reason);
             state.put("revoked_at", observedAt.toString());
@@ -231,52 +249,63 @@ public final class LicenseLifecycleService {
     }
 
     public Map<String, Object> read(String licenseId) throws Exception {
-        return locked(licenseId, () -> Map.copyOf(readState(stateFile(licenseId))));
+        requireId(licenseId, "LICENSE_ID_INVALID");
+        return store(licenseId).read();
     }
 
-    private Map<String, Object> mutate(
+    public DurableStateLedger.Verification verify(String licenseId) throws Exception {
+        requireId(licenseId, "LICENSE_ID_INVALID");
+        return store(licenseId).verify();
+    }
+
+    private Map<String, Object> mutateStrict(
             String licenseId,
             Instant observedAt,
             String actor,
             String eventType,
-            Mutation mutation) throws Exception {
+            DurableStateLedger.Mutation mutation) throws Exception {
         requireId(licenseId, "LICENSE_ID_INVALID");
         requireActor(actor);
-        if (observedAt == null) throw new IllegalArgumentException("OBSERVED_AT_REQUIRED");
-        return locked(licenseId, () -> {
-            Path stateFile = stateFile(licenseId);
-            Map<String, Object> state = readState(stateFile);
-            enforceClock(state, observedAt);
+        requireObservedAt(observedAt);
+        Map<String, Object> result = store(licenseId).mutate(eventType, actor, state -> {
+            Map<String, Object> rollback = suspendOnClockRollback(state, observedAt);
+            if (rollback != null) return rollback;
             Map<String, Object> details = mutation.apply(state);
             state.put("last_observed_at", observedAt.toString());
-            state.put("updated_at", Instant.now().toString());
-            state.put("revision", number(state.get("revision")) + 1);
-            state.put("state_sha256", stateHash(state));
-            writeState(stateFile, state);
-            appendEvent(licenseId, eventType, actor, details);
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("state", Map.copyOf(state));
-            result.put("event", eventType);
-            result.put("details", details);
-            result.put("assurance_class", "SELF_VALIDATION_NONFINAL");
-            result.put("final_claim_allowed", false);
-            return Map.copyOf(result);
+            return details;
         });
+        if (Boolean.TRUE.equals(details(result).get("clock_rollback"))) {
+            throw new IllegalStateException("LICENSE_CLOCK_ROLLBACK_DETECTED");
+        }
+        return result;
     }
 
-    private void enforceClock(Map<String, Object> state, Instant observedAt) {
+    private static Map<String, Object> suspendOnClockRollback(
+            Map<String, Object> state, Instant observedAt) {
         Instant last = Instant.parse(string(state, "last_observed_at"));
         long tolerance = number(state.get("clock_tolerance_seconds"));
         if (observedAt.plusSeconds(tolerance).isBefore(last)) {
             state.put("status", "SUSPENDED");
-            throw new IllegalStateException("LICENSE_CLOCK_ROLLBACK_DETECTED");
+            state.put("clock_rollback_detected_at", observedAt.toString());
+            state.put("last_observed_at", last.toString());
+            return Map.of(
+                    "decision", "DENY",
+                    "reason", "CLOCK_ROLLBACK_DETECTED",
+                    "clock_rollback", true,
+                    "previous_observed_at", last.toString(),
+                    "rejected_observed_at", observedAt.toString());
         }
+        return null;
     }
 
     private static void requireActive(Map<String, Object> state, Instant now) {
         if (!"ACTIVE".equals(state.get("status"))) throw new IllegalStateException("LICENSE_NOT_ACTIVE");
+        requireWithinValidity(state, now);
+    }
+
+    private static void requireWithinValidity(Map<String, Object> state, Instant now) {
         if (now.isBefore(Instant.parse(state.get("valid_from").toString()))
-                || now.isAfter(Instant.parse(state.get("valid_until").toString()))) {
+                || !now.isBefore(Instant.parse(state.get("valid_until").toString()))) {
             throw new IllegalStateException("LICENSE_OUTSIDE_VALIDITY");
         }
     }
@@ -295,7 +324,7 @@ public final class LicenseLifecycleService {
             if (!(entry.getValue() instanceof Map<?, ?> raw)) continue;
             Map<String, Object> value = cast(raw);
             if ("RESERVED".equals(value.get("state"))
-                    && now.isAfter(Instant.parse(value.get("expires_at").toString()))) {
+                    && !now.isBefore(Instant.parse(value.get("expires_at").toString()))) {
                 long amount = number(value.get("credits"));
                 returned += amount;
                 Map<String, Object> changed = new LinkedHashMap<>(value);
@@ -310,6 +339,18 @@ public final class LicenseLifecycleService {
                     creditValue(state, "reserved") - returned,
                     creditValue(state, "committed"));
         }
+    }
+
+    private DurableStateLedger store(String licenseId) {
+        return new DurableStateLedger(licenseRoot(licenseId), STATE_CONTRACT, EVENT_CONTRACT,
+                "license_id", licenseId);
+    }
+
+    private Path licenseRoot(String id) {
+        requireId(id, "LICENSE_ID_INVALID");
+        Path value = root.resolve("licenses").resolve(id).normalize();
+        if (!value.startsWith(root)) throw new IllegalArgumentException("LICENSE_PATH_ESCAPE");
+        return value;
     }
 
     private static Map<String, Object> credits(long total, long available, long reserved, long committed) {
@@ -350,55 +391,24 @@ public final class LicenseLifecycleService {
         return result;
     }
 
-    private void appendEvent(String licenseId, String type, String actor, Map<String, Object> details) throws Exception {
-        Path ledger = ledgerFile(licenseId);
-        List<String> lines = Files.exists(ledger)
-                ? new ArrayList<>(Files.readAllLines(ledger, StandardCharsets.UTF_8)) : new ArrayList<>();
-        String previous = lines.isEmpty() ? GENESIS
-                : mapper.readTree(lines.get(lines.size() - 1)).path("entry_hash").asText();
-        Map<String, Object> event = new LinkedHashMap<>();
-        event.put("contract", EVENT_CONTRACT);
-        event.put("sequence", lines.size() + 1L);
-        event.put("license_id", licenseId);
-        event.put("event_type", type);
-        event.put("actor", actor);
-        event.put("details", new TreeMap<>(details));
-        event.put("recorded_at", Instant.now().toString());
-        event.put("previous_hash", previous);
-        event.put("entry_hash", sha256(mapper.writeValueAsBytes(event)));
-        lines.add(mapper.writeValueAsString(event));
-        writeLinesAtomic(ledger, lines);
+    private static List<String> entitlements(Map<String, Object> state) {
+        Object value = state.get("entitlements");
+        if (!(value instanceof List<?> values)) return List.of();
+        return values.stream().map(String::valueOf).toList();
     }
 
-    private <T> T locked(String licenseId, Callable<T> action) throws Exception {
-        Path lock = licenseRoot(licenseId).resolve("license.lock");
-        Files.createDirectories(lock.getParent());
-        try (FileChannel channel = FileChannel.open(lock,
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-             FileLock ignored = channel.lock()) {
-            return action.call();
-        }
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> state(Map<String, Object> envelope) {
+        Object value = envelope.get("state");
+        if (!(value instanceof Map<?, ?> raw)) throw new IllegalStateException("LICENSE_STATE_RESULT_MISSING");
+        return (Map<String, Object>) raw;
     }
 
-    private Map<String, Object> readState(Path file) throws Exception {
-        if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(file)) {
-            throw new IllegalStateException("LICENSE_STATE_MISSING");
-        }
-        Map<String, Object> state = mapper.readValue(file.toFile(), new TypeReference<>() {});
-        if (!STATE_CONTRACT.equals(state.get("contract"))) throw new IllegalStateException("LICENSE_STATE_CONTRACT_INVALID");
-        String expected = string(state, "state_sha256");
-        if (!expected.equals(stateHash(state))) throw new IllegalStateException("LICENSE_STATE_TAMPERED");
-        return new LinkedHashMap<>(state);
-    }
-
-    private String stateHash(Map<String, Object> state) throws Exception {
-        Map<String, Object> copy = new TreeMap<>(state);
-        copy.remove("state_sha256");
-        return sha256(mapper.writeValueAsBytes(copy));
-    }
-
-    private void writeState(Path file, Map<String, Object> state) throws Exception {
-        writeAtomic(file, state);
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> details(Map<String, Object> envelope) {
+        Object value = envelope.get("details");
+        if (!(value instanceof Map<?, ?> raw)) throw new IllegalStateException("LICENSE_DETAILS_RESULT_MISSING");
+        return (Map<String, Object>) raw;
     }
 
     private static void requireTenant(Map<String, Object> tenant) {
@@ -406,57 +416,37 @@ public final class LicenseLifecycleService {
             throw new IllegalArgumentException("TENANT_CONTEXT_INVALID");
         }
         for (String key : List.of("organization_id", "tenant_id", "workspace_id", "actor_id")) {
-            requireId(String.valueOf(tenant.get(key)), "TENANT_CONTEXT_FIELD_INVALID:" + key);
+            Object value = tenant.get(key);
+            if (!(value instanceof String text)) {
+                throw new IllegalArgumentException("TENANT_CONTEXT_FIELD_INVALID:" + key);
+            }
+            requireId(text, "TENANT_CONTEXT_FIELD_INVALID:" + key);
         }
     }
 
-    private static void requireActor(String actor) {
-        if (actor == null || actor.isBlank()) throw new IllegalArgumentException("ACTOR_REQUIRED");
+    private static void requireObservedAt(Instant observedAt) {
+        if (observedAt == null) throw new IllegalArgumentException("OBSERVED_AT_REQUIRED");
     }
+
+    private static void requireActor(String actor) { requireText(actor, "ACTOR_REQUIRED"); }
 
     private static void requireId(String value, String error) {
-        if (value == null || !value.matches("[A-Za-z0-9._:-]{1,160}")) throw new IllegalArgumentException(error);
-    }
-
-    private Path licenseRoot(String id) {
-        requireId(id, "LICENSE_ID_INVALID");
-        Path value = root.resolve("licenses").resolve(id).normalize();
-        if (!value.startsWith(root)) throw new IllegalArgumentException("LICENSE_PATH_ESCAPE");
-        return value;
-    }
-    private Path stateFile(String id) { return licenseRoot(id).resolve("state.json"); }
-    private Path ledgerFile(String id) { return licenseRoot(id).resolve("ledger.jsonl"); }
-
-    private void writeAtomic(Path file, Object value) throws Exception {
-        Files.createDirectories(file.getParent());
-        Path temporary = file.resolveSibling(file.getFileName() + ".tmp");
-        mapper.writeValue(temporary.toFile(), value);
-        move(temporary, file);
-    }
-    private static void writeLinesAtomic(Path file, List<String> lines) throws Exception {
-        Files.createDirectories(file.getParent());
-        Path temporary = file.resolveSibling(file.getFileName() + ".tmp");
-        Files.write(temporary, lines, StandardCharsets.UTF_8);
-        move(temporary, file);
-    }
-    private static void move(Path source, Path target) throws Exception {
-        try { Files.move(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE); }
-        catch (java.nio.file.AtomicMoveNotSupportedException error) {
-            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        if (value == null || !value.matches("[A-Za-z0-9._:-]{1,160}")) {
+            throw new IllegalArgumentException(error);
         }
     }
+
+    private static void requireText(String value, String error) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException(error);
+    }
+
     private static String string(Map<String, Object> state, String key) {
         Object value = state.get(key);
         return value instanceof String text ? text : "";
     }
+
     private static long number(Object value) {
         if (value instanceof Number number) return number.longValue();
         return Long.parseLong(String.valueOf(value));
     }
-    private static String sha256(byte[] value) throws Exception {
-        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value));
-    }
-
-    @FunctionalInterface
-    private interface Mutation { Map<String, Object> apply(Map<String, Object> state) throws Exception; }
 }
