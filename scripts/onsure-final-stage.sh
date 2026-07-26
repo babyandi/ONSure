@@ -17,7 +17,7 @@ fi
   exit 64
 }
 
-for command in git bash python3 java javac mvn sha256sum; do
+for command in git bash python3 java javac mvn sha256sum cmp; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "ONSURE_FINAL_STAGE_FAIL MISSING_COMMAND_$command" >&2
     exit 69
@@ -30,7 +30,6 @@ JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
   echo "ONSURE_FINAL_STAGE_FAIL JDK17_REQUIRED" >&2
   exit 70
 }
-
 [[ -z "$(git status --porcelain)" ]] || {
   echo "ONSURE_FINAL_STAGE_FAIL WORKTREE_DIRTY_OR_UNTRACKED" >&2
   exit 72
@@ -45,6 +44,22 @@ python3 scripts/check-module-boundaries.py | tee "$OUT/module-boundary.log"
 python3 scripts/extract-atomic-requirements.py --output "$OUT/atomic-requirement-candidates.json"
 
 set +e
+bash scripts/run-core-modular-twice.sh | tee "$OUT/core-modular.log"
+CORE_EXIT=${PIPESTATUS[0]}
+set -e
+[[ $CORE_EXIT -eq 0 ]] || {
+  echo "ONSURE_FINAL_STAGE_FAIL CORE_MODULAR_EXIT_$CORE_EXIT $OUT" >&2
+  exit "$CORE_EXIT"
+}
+
+ORUDA_MODULE="NOT_RUN"
+if [[ "$PROFILE" == "oruda" ]]; then
+  mvn -B -ntp -f pom-modular.xml -pl modules/onsure-adapter-oruda -am test \
+    | tee "$OUT/oruda-module.log"
+  ORUDA_MODULE="PASS_NONFINAL"
+fi
+
+set +e
 bash scripts/onsure-one-shot.sh --profile "$PROFILE" | tee "$OUT/one-shot.log"
 ONE_SHOT_EXIT=${PIPESTATUS[0]}
 set -e
@@ -55,7 +70,29 @@ cmp "$OUT/source-start.json" "$OUT/source-end.json" >/dev/null || {
   exit 73
 }
 
-sha256sum "$OUT"/* > "$OUT/evidence.sha256"
+python3 - "$OUT/final-stage-result.json" "$PROFILE" "$ORUDA_MODULE" "$ONE_SHOT_EXIT" <<'PY'
+import json, pathlib, sys
+path, profile, oruda, one_shot = sys.argv[1:]
+body = {
+    "contract": "ONSURE_FINAL_STAGE_RESULT_V1",
+    "profile": profile,
+    "core_modular_two_run": "PASS_NONFINAL",
+    "oruda_module": oruda,
+    "one_shot_exit": int(one_shot),
+    "decision": "BLOCKED" if int(one_shot) == 75 else ("NON_FINAL" if int(one_shot) == 0 else "FAIL"),
+    "independent_otester": "NOT_RUN",
+    "independent_oaudit": "NOT_RUN",
+    "vscode_full_chain": "NOT_RUN",
+    "web_full_chain": "NOT_RUN",
+    "final_lock_allowed": False,
+    "production_go": False,
+    "commercial_go": False,
+}
+pathlib.Path(path).write_text(json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+
+find "$OUT" -maxdepth 1 -type f ! -name evidence.sha256 -print0 \
+  | sort -z | xargs -0 sha256sum > "$OUT/evidence.sha256"
 
 if [[ $ONE_SHOT_EXIT -eq 0 ]]; then
   echo "ONSURE_FINAL_STAGE_SELF_VALIDATION_NONFINAL $OUT"
