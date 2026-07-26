@@ -41,6 +41,7 @@ mkdir -p "$OUT"
 
 python3 scripts/create-source-snapshot.py --output "$OUT/source-start.json"
 python3 scripts/validate-codespace-free-remediation.py | tee "$OUT/codespace-free-static-gate.log"
+python3 scripts/validate-structured-contracts.py --require-full | tee "$OUT/structured-contracts.log"
 python3 scripts/check-module-boundaries.py | tee "$OUT/module-boundary.log"
 python3 scripts/extract-atomic-requirements.py --output "$OUT/atomic-requirement-candidates.json"
 
@@ -78,6 +79,7 @@ body = {
     "contract": "ONSURE_FINAL_STAGE_RESULT_V1",
     "profile": profile,
     "codespace_free_static_gate": "PASS",
+    "structured_contract_validation": "PASS",
     "core_modular_two_run": "PASS_NONFINAL",
     "oruda_module": oruda,
     "one_shot_exit": int(one_shot),
