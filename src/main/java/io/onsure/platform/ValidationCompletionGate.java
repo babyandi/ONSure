@@ -10,7 +10,7 @@ import java.util.Set;
 
 /** Fail-closed completeness policy for one nonfinal product validation run. */
 public final class ValidationCompletionGate {
-    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V5";
+    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V6";
 
     public record Evaluation(boolean eligible, List<String> reasons) {
         public Evaluation { reasons = List.copyOf(reasons); }
@@ -46,6 +46,9 @@ public final class ValidationCompletionGate {
                 "PROGRAM_PROFILE_CANDIDATE", "PROGRAM_PROFILE", reasons);
         requireArtifact(context, "execution_plan_id", "execution-plan.json",
                 "EXECUTION_PLAN", "EXECUTION_PLAN", reasons);
+        requireAttributeAndFile(context, "execution_plan_approval_sha256",
+                "execution-plan-approval.json", "EXECUTION_PLAN_APPROVAL_EVIDENCE",
+                "EXECUTION_PLAN_APPROVAL", reasons);
         requireArtifact(context, "review_id", "review-result.json",
                 "OREVIEW_RESULT", "OREVIEW", reasons);
         requireAttributeAndFile(context, "evidence_based_rca_sha256", "evidence-based-rca.json",
