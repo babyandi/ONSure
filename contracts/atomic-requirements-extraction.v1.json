@@ -1,0 +1,72 @@
+{
+  "contract": "ONSURE_ATOMIC_REQUIREMENTS_EXTRACTION_V1",
+  "version": "1.0.0",
+  "document_globs": [
+    "README.md",
+    "docs/**/*.md"
+  ],
+  "excluded_globs": [
+    "docs/archive/**",
+    "docs/generated/**"
+  ],
+  "normative_markers": [
+    "해야",
+    "하여야",
+    "필수",
+    "금지",
+    "차단",
+    "지원해야",
+    "제공해야",
+    "보존해야",
+    "검증해야",
+    "승인해야",
+    "수용 기준",
+    "완료 조건",
+    "must",
+    "shall",
+    "required",
+    "prohibited",
+    "must not",
+    "acceptance"
+  ],
+  "acceptance_section_markers": [
+    "수용 기준",
+    "완료 조건",
+    "성공 조건",
+    "Acceptance",
+    "Completion Criteria"
+  ],
+  "id_algorithm": "REQ-SHA256-DOCUMENT-LINE-TEXT-16",
+  "default_implementation_status": "DESIGN_ONLY",
+  "default_verification_status": "NOT_RUN",
+  "required_fields": [
+    "requirement_id",
+    "document",
+    "line",
+    "heading_path",
+    "text",
+    "requirement_type",
+    "implementation_status",
+    "verification_status",
+    "code_symbols",
+    "test_symbols",
+    "evidence_refs",
+    "mapping_state"
+  ],
+  "mapping_states": [
+    "MAPPED",
+    "PARTIALLY_MAPPED",
+    "UNMAPPED",
+    "CONFLICT",
+    "DEPRECATED"
+  ],
+  "coverage_gate": {
+    "every_extracted_requirement_recorded": true,
+    "pass_requires_evidence": true,
+    "implemented_requires_code_symbol": true,
+    "verified_requires_test_and_evidence": true,
+    "unmapped_blocks_full_chain": true
+  },
+  "runtime_execution_state": "NOT_RUN",
+  "final_claim_allowed": false
+}
