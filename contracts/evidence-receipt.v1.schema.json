@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/evidence-receipt.v1.schema.json",
+  "title": "ONSure Evidence Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "receipt_id", "receipt_type", "organization_id", "project_id",
+    "program_id", "source_baseline", "policy_digest", "environment_digest",
+    "toolchain_digest", "command_digest", "input_digest", "output_digest",
+    "decision", "actor", "created_at", "parent_receipt_ids", "receipt_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EVIDENCE_RECEIPT_V1"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "receipt_type": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "program_id": {"type": "string", "minLength": 1},
+    "source_baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["git_commit_sha", "source_tree_sha256"],
+      "properties": {
+        "git_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+        "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "policy_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "environment_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "toolchain_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "command_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "input_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "output_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE", "NON_FINAL"]},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "role", "execution_id"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "role": {"type": "string", "minLength": 1},
+        "execution_id": {"type": "string", "minLength": 1},
+        "key_id": {"type": "string"}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "parent_receipt_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "signature": {"type": ["string", "null"]},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
