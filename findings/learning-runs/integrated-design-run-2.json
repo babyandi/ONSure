@@ -1,0 +1,4262 @@
+{
+  "contract": "ONSURE_ODESIGN_OUI_LEARNING_RUN_V1",
+  "source_baseline": {
+    "repository": "babyandi/ORUDA",
+    "merge_commit": "5c872570466b117b9d0ac5f5332ee1cd29b2fd75",
+    "corpus_byte_hashes": {
+      "actual_cases": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+      "ai_methods": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+      "integrated_design_research": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+    }
+  },
+  "programs": {
+    "ODesign": [
+      {
+        "atom_id": "ODesign-UIUX-ACT-001",
+        "claim": "Do not add review/navigation affordances unless their scope and interaction are consistent with the user's mental model.",
+        "target_program": "ODesign",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "8170f00e1e8caa7f4bf6a0d1b5fbc5039554e15043df855d0ad38d302a1d0a08"
+        ],
+        "conditions": "Section-local answer summaries looked interactive and behaved inconsistently across page structures.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The feature did not meet the assumed need and created confusion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-001:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-001"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "ba3013eaf3270176dca28e52f9057e9682283a57b41edc9f79f44dcd3b969666"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-002",
+        "claim": "Removal is a testable design intervention; validate it with a stated hypothesis and multiple guardrail metrics.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "d73867ff4ed3de7ff8642ed9832568be6e443d80964f0d428998b595ad672959"
+        ],
+        "conditions": "The team did not know whether removing smart answers would harm completion.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live-service before/after measurement."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-002:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-002"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0d78da1c36c493c73f81ba0d3b3594dcc9e50487cc569371066cee447c82f1d5"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-003",
+        "claim": "Place review at the natural commitment boundary and allow correction before submission.",
+        "target_program": "ODesign",
+        "domains": [
+          "task_flow"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "a6029f702a09915d329ddc80236a4ecf50da47eff27588647f69bae8f8e2f866"
+        ],
+        "conditions": "Users expected to review the whole application rather than section-local summaries.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Prototype testing plus satisfaction-survey feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-003:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b60b543c739a2cae610681848b09ba392187030936fe115c25f4546938f368b5"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-004",
+        "claim": "Optional questions are not free: each adds interpretation and decision cost.",
+        "target_program": "ODesign",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "b0d9e34efda6faeeec73ec229836734182c7564b0414067daee9324ca2bbb8a3"
+        ],
+        "conditions": "A form presented many optional fields without a clear information hierarchy.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Users understood and completed the section faster."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-004:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-004"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b0317c05aa2e38deca3a3a8835db271251bebd0ad9b0a802c44f3c5e78c6b93b"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-005",
+        "claim": "A smaller, explicit question set can improve both user effort and downstream operational quality.",
+        "target_program": "ODesign",
+        "domains": [
+          "function_screen_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "e0c0ae7213e73c9364d4672bbcdf1fc4d6b1ed7d63ff661208a4943b9474a330"
+        ],
+        "conditions": "The education section was slow and confusing.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live completion-time and processing-quality data."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-005:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c2c99ef82cc6bddf076736784f314917ad788915ad731cf5dcfc080d68fff100"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-006",
+        "claim": "Flow polish cannot compensate for an intrinsically burdensome information demand.",
+        "target_program": "ODesign",
+        "domains": [
+          "business_task_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "17d78dfeed3ab03d1610428936fbd8461abe72479cfa12654b8418bb23b668fe"
+        ],
+        "conditions": "Employment questions added about 14 minutes and required hard-to-retrieve dates and payslips.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Completion time stayed the same; only the number of steps decreased slightly."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-006:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-006"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "acc9dda2f71ccbd5b407891e0c99009a14a613b198afaf02422f8324cf783e2d"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-007",
+        "claim": "Escalate unresolved UX friction to policy, data, and operational-process redesign.",
+        "target_program": "ODesign",
+        "domains": [
+          "service_policy"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "7fb88381a91d4382b567014582ca2ec45281b36a53aaaac131b56959f4b8f6a0"
+        ],
+        "conditions": "A presentational redesign failed to reduce completion time.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Re-test completion time, abandonment, data completeness, and manual follow-up after implementation."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-007:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-007"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "2b4c913653217f81426d9c8e951da14a901b7de1a414b1732d9a6982843ed620"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-008",
+        "claim": "Support discoverability and support routing must be designed as one end-to-end service.",
+        "target_program": "ODesign",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "9fb661803cfb7b8368cd90121641b6a2a71bff0f04af12ff0f771437382dea64"
+        ],
+        "conditions": "A helpline was behind a disclosure and pointed to technical support although users needed eligibility help.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Calls were transferred because the support destination did not match the user need."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-008:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "89b10e486260f547b0783a8c662e1b8613e58963e7a526f90da3386ae4ca65a6"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-009",
+        "claim": "Do not equate shipping help content with a successful outcome; retain an inconclusive or failed result until metrics improve.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "45c59f9454b157bd8984897a8849fa7204859bda9d71e27d5923ee43b4290357"
+        ],
+        "conditions": "The team introduced contextual links and a help guide.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Post-release completion-rate monitoring."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-009:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-009"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c6c98c296b0f586e49bddc8d17644e3d8afb4dd499e53b30d195dbed2be13dbf"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-010",
+        "claim": "A good service distinguishes successful completion from a correct early exit.",
+        "target_program": "ODesign",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "7d32ae8f863ee653ba4eb515f50df33e8acd2247d6ae082a390a601595ff0297"
+        ],
+        "conditions": "Users told they might not be entitled could only continue into a lengthy application.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Measure reason-coded exits separately from harmful abandonment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-010:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "29b3c310a48daf2a246569dbac47921bcc5901685be8de3cb94add3fbc0c1ce9"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-011",
+        "claim": "Progress UI must answer a demonstrated question and match expected interaction.",
+        "target_program": "ODesign",
+        "domains": [
+          "visual_ui_system"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "56f515ebbd545cbc058429f61abaf2c89ec1869f888ff12b76bffc85cd53142e"
+        ],
+        "conditions": "Users either did not notice the indicator or expected it to support navigation; some were intimidated by the section count.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Completion and time were unchanged."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-011:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c363e59a9e002f6012f4b1c2a637b661660890ea8927b3724f328e433b010d8b"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-012",
+        "claim": "A simpler system with fewer misleading components can be a successful design outcome.",
+        "target_program": "ODesign",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "4c0728209083ea9641f282ac9edfb7013bc678165142ca56ce292b8283ad7091"
+        ],
+        "conditions": "A progress component consumed attention without meeting the user need.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live guardrail metrics and follow-up feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-012:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "20bcd8477781b449fa490b0425261e64d297ab38087a7cc2da6dae726ff58cd6"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-013",
+        "claim": "Safety-critical continuous controls require immediate, perceivable state and mode feedback; visual-only controls may be inadequate.",
+        "target_program": "ODesign",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "87561e052b83a5448e56aa1d6f4866009947a692b442420f8a6436d74ada2d1c"
+        ],
+        "conditions": "Ship thrust was controlled through touch-screen throttles that could be independently ganged or unganged.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The interface increased the likelihood of operator errors contributing to a fatal collision."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-013:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-013"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "caa1dbbed35cb8f1a4e8a09c64fb2918aa0c1a41a3b0972ab2da45fde539285d"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-014",
+        "claim": "Transfer of authority must be explicit, acknowledged, visible to all affected operators, and reversible.",
+        "target_program": "ODesign",
+        "domains": [
+          "stakeholders_accountability"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "8c1b713f5fc1a50a2906c3b6b7cd5d05ddf2f324824d9c9f1c3a61d2c3462db1"
+        ],
+        "conditions": "In backup manual mode another station could take steering without acknowledgement.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Control and mode changed in less than a second while operators perceived a system malfunction."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-014:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-014"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "6d1ac94faa083d16236f881bfc600d96c9189499fdb876a64b6d64d254240211"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-015",
+        "claim": "Match the control modality to the physical continuity, risk, and feedback needs of the task.",
+        "target_program": "ODesign",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "c954c7fa5555ef7e63956c66327b9c5770f46ed76c4fa8737e17e0495595a7b9"
+        ],
+        "conditions": "Touch controls provided less direction, force, and gang-state feedback than mechanical throttles.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Conformance to ASTM F1166 plus representative bridge simulation."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-015:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-015"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "447f58f46dfa0506704494d16aadf3c98735a27f30cfc2eec9d71c7baadef756"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-016",
+        "claim": "A UI is not operationally complete until procedures and training cover normal, transfer, exception, and recovery states.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "044d3432a1bd8d5093f5a78ac4fba592aa8c209528947ad4378fd99bacbf561c"
+        ],
+        "conditions": "Written procedures omitted transfer and ganging steps, and training had no standard for them.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Procedure traceability and observed proficiency tests."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-016:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-016"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0644371e828153c6fd202ec6d35b6af959607362285c3d312c155d9f131a593c"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-018",
+        "claim": "Validation needs layered methods and performance evidence, not checklist-only approval.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "fd7f5fe1481d280867fa9b2326f8dd7589389a1feda047ee195257eec5914ddb"
+        ],
+        "conditions": "A single heuristic review cannot prove safe performance.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The published EUP protocol itself specifies the independent validation method."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-018:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-018"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "bd75f6612617feeb706f8fb5d78dd234c6c52b45bea1d9cfbf4b6556d533fb50"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-020",
+        "claim": "Workarounds are evidence of a system-work mismatch and should trigger root-cause analysis, not normalization.",
+        "target_program": "ODesign",
+        "domains": [
+          "business_task_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "e8d0c84262415c802c65ad3b33074a1c0e733440ca13aeeafd12988548cb5a42"
+        ],
+        "conditions": "EHR workflows did not adequately support clinical cognitive work and flexible task sequencing.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Information quality, workload, and patient-safety risks increased."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-020:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-020"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "60b6dbd58ba2ec8ffde34a9574eb92efc8d66ffbf8e9bbc2eca3ff89cc91d1ff"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-021",
+        "claim": "Derive functions from observed goals, coordination, variability, and workload rather than from database structure.",
+        "target_program": "ODesign",
+        "domains": [
+          "business_task_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "5cd4b19f856abd2913160cbfaff4c4e8d10e65078d6dc3b785e6a0c999d7c042"
+        ],
+        "conditions": "Billing-centred EHR design conflicted with clinician-centred goals.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "SME correction, interdisciplinary review, iterative diagrams, and published-evidence convergence."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-021:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-021"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "8d942974f2e254389102ba4bd56caf42ab60f003188bfd5f24095c70afcf3e43"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-022",
+        "claim": "Pair quantitative behaviour with qualitative explanation before prioritising UX changes.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "134e1cd31465b372ab23bbbf56140ccf73b9c31acb31580822897c5e521e2fc4"
+        ],
+        "conditions": "Analytics showed what visitors did but not why.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Cross-source convergence and post-change metric monitoring."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-022:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-022"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "804adab243eef2a19f39e374575b2396eb5c3f5ddff8247f76a3743822c3d707"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-023",
+        "claim": "Accessibility validation must include representative users and their actual assistive technologies.",
+        "target_program": "ODesign",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "498022418f73a1ccdfc962f9163927ca7d155dadadbbc35e4b634206eab39e67"
+        ],
+        "conditions": "Conformance checks alone did not reveal lived navigation problems.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Participant study with disability-community partnership."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-023:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-023"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "383dca5ddf9806b0a90d95568b003abbbd5e49376d813a7a17c856d31930528a"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-024",
+        "claim": "Launch is a measurement point; sustained success requires an evidence-backed improvement backlog.",
+        "target_program": "ODesign",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "53b015b21548bac55db7998394366e7717209411029634c74666045fd7b5b738"
+        ],
+        "conditions": "USA.gov and USAGov en Español needed improved discoverability and task coverage.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Usability tests, visitor feedback, click data, and outcome trends."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-024:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-024"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "3726485cd25e1147c0755149e428aad0228f03ebe0bf9bb47b415ab455b35fdc"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-026",
+        "claim": "Multilingual UX requires managed terminology, content governance, testing, and support—not literal string substitution.",
+        "target_program": "ODesign",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "dbdedd5f46fda927aaae7219d66892adc2459f4f4e80645e9fa338aecc92c5d8"
+        ],
+        "conditions": "English-only or ad-hoc translation limited access and created inconsistent support.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Language-specific content review and representative-user task testing."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-026:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-026"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0cfc712d01d63de357a0057b521ad43d71f3543565c99ca14bc99e135d2ad8b9"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-027",
+        "claim": "Treat the design system as a governed product with research, accessibility, release notes, and contribution loops.",
+        "target_program": "ODesign",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "eae224852d6cd260607f9727304b5dfd453addf0248f350495c0427a9367d33c"
+        ],
+        "conditions": "Service teams otherwise recreate common components and repeat solved accessibility work.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Component research, accessibility testing, versioned releases, and cross-service adoption evidence."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-027:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-027"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "7b5e9d2b48c8f2850de144b14f2f525656df46a6922a7340aca9598d64dc15fb"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-028",
+        "claim": "For civic and high-stakes systems, certify observable task performance across diverse users rather than visual conformance alone.",
+        "target_program": "ODesign",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "f1214c924187780e153051892d46341156c942a42a58afd9e469357229481b17"
+        ],
+        "conditions": "General or low-level design prescriptions did not reliably prevent voter errors or exclusion.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Qualification/certification testing against complete user-related functional requirements."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-028:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-028"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "415e7c05b35a86cd6d0130fe5b58967e3d87d2bb39f7ac11a78fdf0f0ce6ce5f"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-029",
+        "claim": "Model the full service and its support ecosystem before optimising a single interface.",
+        "target_program": "ODesign",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "131a3ca58f9c44265b3be2daa884e9cc20e1575c885f0088fd6698e29405163c"
+        ],
+        "conditions": "Claimant needs and service operations cross digital and assisted channels.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "End-to-end journey and operational-service assessment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-029:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-029"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "d0f7ffd36c5150e05f4b66c061b7e8cef3e196d6141c854cc24974702b3757a1"
+      },
+      {
+        "atom_id": "ODesign-UIUX-ACT-030",
+        "claim": "Scale validation fidelity, scenario realism, and independence with consequence severity.",
+        "target_program": "ODesign",
+        "domains": [
+          "operations_measurement"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "42376cbacbf8227d0e0fdece52205f6656ee57a7d668e443df41bd644f80c1ac"
+        ],
+        "conditions": "Method selection can under-test complex or safety-critical work.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Risk-based selection of observation, walkthrough, simulation, expert review, and summative tests."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-030:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-030"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "839a1233e98e5568dc7002ac4ac326fc3cef857e7d8677728f2a990fd5941074"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-001",
+        "claim": "The proposed AI capability solves a demonstrated need better than the baseline.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "b1ebda980630867f651a30f6c5667a73bfa417f1639c3fd17e4cb556f63dfa5f"
+        ],
+        "conditions": "Before selecting an AI feature or drawing a screen",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "A visually attractive AI feature is built without a validated user problem."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-001:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-001"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "f228c16d2466b7e9f7c21b109b1da1ddcd16ed493b63100f2df71a4fda7268e7"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-002",
+        "claim": "Optimization improves the user outcome without breaching guardrails.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "85bc30874e479b0716952af29ff99058cb5475880447b317b250dba800201f2b"
+        ],
+        "conditions": "When defining AI success",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The system maximizes clicks, speed, or model score while degrading trust, safety, or task completion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-002:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-002"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "656983e687c4d54423fda8e838ac8afa746c5f97c761662cffbabf9c473813e0"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-010",
+        "claim": "The corpus grows by distinct reusable knowledge rather than paraphrase volume.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "f259cf26f5738ba9f50d92f7d38bd6453434dbafc46c7be827cb020732cca65d"
+        ],
+        "conditions": "Before registering generated UI/UX knowledge",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Requested counts are met by changing labels, roles, or proficiency levels."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-010:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b4aa15f932ad46818453df9a08f312a0fc7e029032733a09d00b8e1312ebcfbf"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-011",
+        "claim": "The declared scope reaches an evidenced saturation point.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "c6bc0eeec7ff00acd671f44dcf6ac2299190120d71b6be187c4342470649f86f"
+        ],
+        "conditions": "Before declaring UI/UX research complete",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Research stops when an arbitrary target count is reached."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-011:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "b6216e6f344a7a29f04ee8ff35fd7d7212ecf2607824583837e172d8d2fa3213"
+      },
+      {
+        "atom_id": "ODesign-UIUX-AIM-012",
+        "claim": "Registered, validated, promoted, and merged counts are equal for the promoted set.",
+        "target_program": "ODesign",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "75e79432d96ebf932b2f617a81e0fa720a6677f88ef16e53a4f79b80a79a60a1"
+        ],
+        "conditions": "Before moving candidate UI/UX knowledge into the official corpus",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Candidate creation or local validation is reported as learning completion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-012:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "53417d3ba71879a110dafd2fac1144e293a05acf4fa62cec32a5379bb8457a2c"
+      },
+      {
+        "atom_id": "ODesign-IDM-001",
+        "claim": "Explore problems and alternatives broadly before converging on a defined brief and validated delivery.",
+        "target_program": "ODesign",
+        "domains": [
+          "integrated_design_process"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "7c30c3e47f21900ec6bb44949eb6d1a216ccfae59797be382592b8fe06312fc3"
+        ],
+        "conditions": "Design tasks with uncertain framing or multiple plausible solutions.",
+        "procedure": [
+          "Discover evidence and needs",
+          "Define the priority problem",
+          "Develop at least two alternatives",
+          "Deliver through testing and iteration"
+        ],
+        "exceptions": "The framework page states CC BY 4.0; verify exact reused assets separately.",
+        "counterexamples": [
+          "The first plausible result is accepted without discovery or alternative comparison."
+        ],
+        "evidence_required": [
+          "research record",
+          "design brief",
+          "alternative decision record",
+          "test result"
+        ],
+        "source_binding": {
+          "url": "https://www.designcouncil.org.uk/resources/the-double-diamond/",
+          "locator": "The Double Diamond",
+          "authority": "Design Council",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-001:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-001"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "96b491d50ed05e781ae005cc67a7b5f334313f0343c9758def0edbff4b4e8d95"
+      },
+      {
+        "atom_id": "ODesign-IDM-002",
+        "claim": "Ground decisions in users, tasks, environments, and iterative evaluation throughout the lifecycle.",
+        "target_program": "ODesign",
+        "domains": [
+          "human_centered_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "aa13b231afaa1d0422ac2818e6d05c0fb7c431a92b448a293ba64c6ac0a436e5"
+        ],
+        "conditions": "Interactive products, services, controls, displays, and web experiences.",
+        "procedure": [
+          "Describe context of use",
+          "Specify user requirements",
+          "Produce solutions",
+          "Evaluate against requirements",
+          "Iterate on failure"
+        ],
+        "exceptions": "The full standard is licensed and must not be copied without rights.",
+        "counterexamples": [
+          "Aesthetic preference substitutes for observed context and measured usability."
+        ],
+        "evidence_required": [
+          "context record",
+          "requirements",
+          "evaluation plan",
+          "iteration trace"
+        ],
+        "source_binding": {
+          "url": "https://www.iso.org/standard/77520.html",
+          "locator": "ISO 9241-210:2019",
+          "authority": "ISO",
+          "access": "PUBLIC_ABSTRACT"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-002:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-002"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "2296d3c15d742f9967b882fa15f87205e17105025f558037268314ff3c8dc0ea"
+      },
+      {
+        "atom_id": "ODesign-IDM-003",
+        "claim": "Size, contrast, spacing, alignment, and typography must express priority and reading order rather than decorate.",
+        "target_program": "ODesign",
+        "domains": [
+          "visual_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "d8b24a691b2017743117bfbf01f8e808d847864bf7487dc8a274390672367238"
+        ],
+        "conditions": "Interfaces, advertisements, reports, packaging, signage, and publications.",
+        "procedure": [
+          "Declare attention order",
+          "Map it to visual variables",
+          "Check reading without color",
+          "Test timed comprehension"
+        ],
+        "exceptions": "Retain attribution and verify page terms before redistribution.",
+        "counterexamples": [
+          "Every element competes equally or color alone carries meaning."
+        ],
+        "evidence_required": [
+          "attention contract",
+          "grayscale check",
+          "contrast check",
+          "comprehension result"
+        ],
+        "source_binding": {
+          "url": "https://digital.gov/guides/accessibility-for-teams/visual-design",
+          "locator": "Accessibility for visual designers",
+          "authority": "U.S. GSA",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-003:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "8ba061e2e26394aa22ef7be3258b5478236fe0c3a436a53a29833fa4264c9ab8"
+      },
+      {
+        "atom_id": "ODesign-IDM-004",
+        "claim": "Physical-product design must jointly resolve appearance, functionality, manufacturability, and lasting user value.",
+        "target_program": "ODesign",
+        "domains": [
+          "industrial_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "22033e6e25e6a43485dd2dcc75c2213cc7121f4bdb92d639110452d2e6e6d9d8"
+        ],
+        "conditions": "Mass-produced devices, appliances, tools, furniture, packaging, and controls.",
+        "procedure": [
+          "Define use environment",
+          "Model ergonomics",
+          "Compare materials and production",
+          "Prototype",
+          "Validate safety, manufacture, maintenance, and end-of-life"
+        ],
+        "exceptions": "Do not reproduce protected imagery or extended source text.",
+        "counterexamples": [
+          "A concept render is accepted despite unsafe ergonomics or no manufacturing route."
+        ],
+        "evidence_required": [
+          "ergonomic test",
+          "material decision",
+          "manufacturing review",
+          "safety review",
+          "prototype result"
+        ],
+        "source_binding": {
+          "url": "https://www.idsa.org/about-idsa/advocacy/what-industrial-design/",
+          "locator": "What Is Industrial Design?",
+          "authority": "IDSA",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-004:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-004"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "cc79d9d2f7e03f49a40927f962edf189aa31416dd97c6ab1850f5e2f63752cd6"
+      },
+      {
+        "atom_id": "ODesign-IDM-005",
+        "claim": "Physical controls, displays, sound, haptics, and companion interfaces must share one consistent state machine.",
+        "target_program": "ODesign",
+        "domains": [
+          "product_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "a45fbc46379b4537b97e3af053b42a18146a361260042c4a34dd45b5a598e6c2"
+        ],
+        "conditions": "Appliances, vehicles, kiosks, wearables, instruments, and connected products.",
+        "procedure": [
+          "Inventory controls",
+          "Define states and transitions",
+          "Bind feedback",
+          "Test error recovery",
+          "Verify cross-channel consistency"
+        ],
+        "exceptions": "Derived candidate requiring expert validation and licensed-standard review.",
+        "counterexamples": [
+          "The display contradicts the physical control or provides no recoverable feedback."
+        ],
+        "evidence_required": [
+          "control-state matrix",
+          "transition tests",
+          "feedback test",
+          "recovery receipt"
+        ],
+        "source_binding": {
+          "url": "https://www.iso.org/standard/77520.html",
+          "locator": "Human-centred design for interactive systems",
+          "authority": "ISO",
+          "access": "PUBLIC_ABSTRACT"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-005:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "5614be97fd56876f96c51ba854d6c1f6274dbc4ecc9e9ec6e0e4966ffdfb11e0"
+      },
+      {
+        "atom_id": "ODesign-IDM-006",
+        "claim": "Web design must preserve perceivability, operability, understandability, and robustness as testable requirements.",
+        "target_program": "ODesign",
+        "domains": [
+          "web_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "4bf30a54b5185510bb42ffee65f09d380915896f1b04e124eb029e860a06de35"
+        ],
+        "conditions": "Web pages, applications, interactive documents, and embedded web views.",
+        "procedure": [
+          "Set WCAG target",
+          "Design semantics and focus",
+          "Meet contrast, target-size, input, and reflow rules",
+          "Run automated and human tests"
+        ],
+        "exceptions": "Preserve the standard version and exact criterion locator.",
+        "counterexamples": [
+          "A polished page is promoted while keyboard, reflow, focus, alternatives, or target size fails."
+        ],
+        "evidence_required": [
+          "WCAG checklist",
+          "keyboard trace",
+          "reflow capture",
+          "contrast result",
+          "assistive review"
+        ],
+        "source_binding": {
+          "url": "https://www.w3.org/TR/WCAG22/",
+          "locator": "WCAG 2.2",
+          "authority": "W3C",
+          "access": "PUBLIC_STANDARD"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-006:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-006"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "4e40e45fe5425aad99fe0bd676e8cca2e1c0bd35c5a722b6bc52218cd8248905"
+      },
+      {
+        "atom_id": "ODesign-IDM-007",
+        "claim": "Objective advertising claims and comparisons require documentary evidence and visible, understandable qualifications.",
+        "target_program": "ODesign",
+        "domains": [
+          "advertising_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "ed4d203151a9a2844c674c09a730f120042d506fdfd3ae355eea4d4104657ed4"
+        ],
+        "conditions": "Display, print, video, social, landing-page, environmental, and comparative advertising.",
+        "procedure": [
+          "Classify claims",
+          "Bind objective claims to evidence",
+          "Test audience interpretation",
+          "Place qualifications clearly",
+          "Reject exaggeration"
+        ],
+        "exceptions": "Market-specific legal review remains required.",
+        "counterexamples": [
+          "Headline, imagery, or disclaimer creates a stronger promise than evidence supports."
+        ],
+        "evidence_required": [
+          "claim inventory",
+          "substantiation",
+          "interpretation review",
+          "qualification test"
+        ],
+        "source_binding": {
+          "url": "https://www.asa.org.uk/static/47eb51e7-028d-4509-ab3c0f4822c9a3c4/The-Cap-code.pdf",
+          "locator": "CAP Code Section 3",
+          "authority": "UK CAP",
+          "access": "PUBLIC_PDF"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-007:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-007"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "bf20a5f67b7477dde94f4ffac0541f3653ad4847894b6a01991aef906e1df00b"
+      },
+      {
+        "atom_id": "ODesign-IDM-008",
+        "claim": "Publication layout must preserve headings, reading order, alternatives, table structure, language, metadata, and reflow.",
+        "target_program": "ODesign",
+        "domains": [
+          "publication_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "210e01fb11e75396820cea1593deb0ba3c94484a83173db37020838704248010"
+        ],
+        "conditions": "Reports, books, manuals, brochures, PDF, EPUB, and digital publications.",
+        "procedure": [
+          "Define outline",
+          "Use semantic structures",
+          "Set language and metadata",
+          "Verify reading order",
+          "Test tags, alternatives, zoom, and reflow"
+        ],
+        "exceptions": "Evaluate each technique against target format and WCAG version.",
+        "counterexamples": [
+          "The page looks correct but is flattened or has broken reading order and tables."
+        ],
+        "evidence_required": [
+          "structure tree",
+          "reading-order test",
+          "tag report",
+          "alt-text review",
+          "reflow test"
+        ],
+        "source_binding": {
+          "url": "https://www.w3.org/TR/WCAG20-TECHS/pdf",
+          "locator": "PDF Techniques for WCAG",
+          "authority": "W3C",
+          "access": "PUBLIC_GUIDANCE"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-008:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "e9adda4a306dfb7de1ed8116149fc250e0a49f9d90f246ea3f2e8c5eeaf4ce54"
+      },
+      {
+        "atom_id": "ODesign-IDM-009",
+        "claim": "Typography must be tested for audience, medium, distance, language, line length, spacing, and reading duration.",
+        "target_program": "ODesign",
+        "domains": [
+          "publication_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "a66ba8ff0e42fd4b604dd0a534a0ad9c2b8469cb2ef33c24c5c61a44b7a250a1"
+        ],
+        "conditions": "Long-form print and digital publications, manuals, reports, and captions.",
+        "procedure": [
+          "Profile reading conditions",
+          "Select type",
+          "Set measure and spacing",
+          "Test representative pages",
+          "Check fallback and export fidelity"
+        ],
+        "exceptions": "Print-specific claims require separate evidence.",
+        "counterexamples": [
+          "A fashionable treatment reduces legibility, loses characters, or breaks on export."
+        ],
+        "evidence_required": [
+          "type specification",
+          "page test",
+          "font coverage",
+          "export comparison"
+        ],
+        "source_binding": {
+          "url": "https://www.section508.gov/develop/fonts-typography/",
+          "locator": "Accessible Fonts and Typography",
+          "authority": "U.S. Section 508",
+          "access": "PUBLIC_GUIDANCE"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-009:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-009"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "0e48fcf0af06061341987b0839661c352834b9a18f3a4735a716fc1b8545f190"
+      },
+      {
+        "atom_id": "ODesign-IDM-010",
+        "claim": "Generative design should create an editable foundation, preserve human control, and support repeated refinement.",
+        "target_program": "ODesign",
+        "domains": [
+          "llm_design_product_philosophy"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "456fa21111618ea8427fc8eb8e9b09f3a967c367fcd0dd66a1cc535627458be2"
+        ],
+        "conditions": "Prompt-to-layout, prompt-to-prototype, prompt-to-code, and AI asset generation.",
+        "procedure": [
+          "Generate structured output",
+          "Expose layers, components, code, and tokens",
+          "Offer alternatives",
+          "Preserve human changes",
+          "Review before publish"
+        ],
+        "exceptions": "Vendor philosophy is descriptive, not independent proof of quality.",
+        "counterexamples": [
+          "The result is a flattened image or opaque code that cannot be safely refined."
+        ],
+        "evidence_required": [
+          "editability test",
+          "structure manifest",
+          "regeneration test",
+          "human approval"
+        ],
+        "source_binding": {
+          "url": "https://www.figma.com/solutions/ai-design-generator/",
+          "locator": "Figma Make: edit and iterate",
+          "authority": "Figma",
+          "access": "PUBLIC_PRODUCT_PAGE"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-010:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "25e1915e05ad1bd82394816da6490eacf60ebcdb35e0f74dadd72cffdedca5f6"
+      },
+      {
+        "atom_id": "ODesign-IDM-011",
+        "claim": "Learn general design patterns and tool structure without retaining or reproducing customer-specific content, concepts, or sensitive data.",
+        "target_program": "ODesign",
+        "domains": [
+          "llm_design_product_philosophy"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "b67adbd47a1adc419df606e9761a287fd063be68000d3835f5b062df8d203a95"
+        ],
+        "conditions": "Training, fine-tuning, retrieval, telemetry, and prompt-to-design services.",
+        "procedure": [
+          "Separate patterns from customer content",
+          "Redact sensitive input",
+          "Define data controls",
+          "Test memorization and cross-tenant leakage",
+          "Provide governance"
+        ],
+        "exceptions": "Vendor statements require independent technical verification.",
+        "counterexamples": [
+          "Customer designs or ideas are reproduced across tenants or reused beyond declared purposes."
+        ],
+        "evidence_required": [
+          "classification",
+          "redaction test",
+          "memorization test",
+          "tenant-isolation test",
+          "policy receipt"
+        ],
+        "source_binding": {
+          "url": "https://www.figma.com/ai/our-approach/",
+          "locator": "Building Figma AI",
+          "authority": "Figma",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-011:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "f2606ebe5c186faab8a570c4d9159c33f1dd3f754a58d626f87ade49bd633b7c"
+      },
+      {
+        "atom_id": "ODesign-IDM-012",
+        "claim": "Generated assets require source-rights controls, prompt and output safeguards, and provenance transparency before commercial use.",
+        "target_program": "ODesign",
+        "domains": [
+          "llm_design_product_philosophy"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "ad9f5cce340a1266655db969d008f3ae80f5f3cbd8cf59d75a30424b330565bf"
+        ],
+        "conditions": "Image, illustration, texture, advertising, packaging, brand, and publication generation.",
+        "procedure": [
+          "Use authorized material",
+          "Screen prompts and outputs",
+          "Attach provenance",
+          "Check trademarks and likeness",
+          "Escalate uncertainty"
+        ],
+        "exceptions": "Vendor claims do not replace project-specific rights review.",
+        "counterexamples": [
+          "A suitable-looking asset is treated as commercially safe without rights or similarity checks."
+        ],
+        "evidence_required": [
+          "rights receipt",
+          "safety result",
+          "similarity review",
+          "provenance",
+          "human legal review"
+        ],
+        "source_binding": {
+          "url": "https://www.adobe.com/ai/overview/firefly/gen-ai-approach.html",
+          "locator": "Approach to generative AI with Adobe Firefly",
+          "authority": "Adobe",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-012:odesign"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "b5b7fd9d3f4770171a38120bfbfce79fcb804bbd7f79d81ea52f96613a74dd16"
+      }
+    ],
+    "OUI": [
+      {
+        "atom_id": "OUI-UIUX-ACT-001",
+        "claim": "Do not add review/navigation affordances unless their scope and interaction are consistent with the user's mental model.",
+        "target_program": "OUI",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "8170f00e1e8caa7f4bf6a0d1b5fbc5039554e15043df855d0ad38d302a1d0a08"
+        ],
+        "conditions": "Section-local answer summaries looked interactive and behaved inconsistently across page structures.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The feature did not meet the assumed need and created confusion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-001:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-001"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "aad87d6ba0787d672d75286ccbca43b1138b27fedcee2f40c0b5464babab4384"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-003",
+        "claim": "Place review at the natural commitment boundary and allow correction before submission.",
+        "target_program": "OUI",
+        "domains": [
+          "task_flow"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "a6029f702a09915d329ddc80236a4ecf50da47eff27588647f69bae8f8e2f866"
+        ],
+        "conditions": "Users expected to review the whole application rather than section-local summaries.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Prototype testing plus satisfaction-survey feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-003:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "e3413f9851531c2bf85bda78cfcd9601bb34a3c2bfe66de7a23e954c929b34aa"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-004",
+        "claim": "Optional questions are not free: each adds interpretation and decision cost.",
+        "target_program": "OUI",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "b0d9e34efda6faeeec73ec229836734182c7564b0414067daee9324ca2bbb8a3"
+        ],
+        "conditions": "A form presented many optional fields without a clear information hierarchy.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Users understood and completed the section faster."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-004:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-004"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "a00f10941fdf1fd637bbafbe4f2e466ffe4e0d63ef86c1a758fce818f0667d81"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-005",
+        "claim": "A smaller, explicit question set can improve both user effort and downstream operational quality.",
+        "target_program": "OUI",
+        "domains": [
+          "function_screen_structure"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "e0c0ae7213e73c9364d4672bbcdf1fc4d6b1ed7d63ff661208a4943b9474a330"
+        ],
+        "conditions": "The education section was slow and confusing.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live completion-time and processing-quality data."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-005:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c12d3315c3273095f753170c371c9dce49d180854079c1c8b75918ad1ba49755"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-008",
+        "claim": "Support discoverability and support routing must be designed as one end-to-end service.",
+        "target_program": "OUI",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "9fb661803cfb7b8368cd90121641b6a2a71bff0f04af12ff0f771437382dea64"
+        ],
+        "conditions": "A helpline was behind a disclosure and pointed to technical support although users needed eligibility help.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Calls were transferred because the support destination did not match the user need."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-008:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "2cfb9a5bf96ab6c343f356429d4ec044c18de54d986eaa23700b7d102dbc70f7"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-010",
+        "claim": "A good service distinguishes successful completion from a correct early exit.",
+        "target_program": "OUI",
+        "domains": [
+          "interaction_state"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "7d32ae8f863ee653ba4eb515f50df33e8acd2247d6ae082a390a601595ff0297"
+        ],
+        "conditions": "Users told they might not be entitled could only continue into a lengthy application.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Measure reason-coded exits separately from harmful abandonment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-010:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "c9211db9812ff7f124dd9b44f8684e3f8b86aeb42c9d42c22fc85fa2d6998f72"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-011",
+        "claim": "Progress UI must answer a demonstrated question and match expected interaction.",
+        "target_program": "OUI",
+        "domains": [
+          "visual_ui_system"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "56f515ebbd545cbc058429f61abaf2c89ec1869f888ff12b76bffc85cd53142e"
+        ],
+        "conditions": "Users either did not notice the indicator or expected it to support navigation; some were intimidated by the section count.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Completion and time were unchanged."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-011:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "fb9382ed7ec04da421bb3fdbfa7bf68b032789a3cc581961bd5c15863b1272df"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-012",
+        "claim": "A simpler system with fewer misleading components can be a successful design outcome.",
+        "target_program": "OUI",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "4c0728209083ea9641f282ac9edfb7013bc678165142ca56ce292b8283ad7091"
+        ],
+        "conditions": "A progress component consumed attention without meeting the user need.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Live guardrail metrics and follow-up feedback."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-012:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "795d06eb205b228e1acbe44e06b6fe7a782281617f0e481a4fecf6a8f6ff3539"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-013",
+        "claim": "Safety-critical continuous controls require immediate, perceivable state and mode feedback; visual-only controls may be inadequate.",
+        "target_program": "OUI",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "87561e052b83a5448e56aa1d6f4866009947a692b442420f8a6436d74ada2d1c"
+        ],
+        "conditions": "Ship thrust was controlled through touch-screen throttles that could be independently ganged or unganged.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The interface increased the likelihood of operator errors contributing to a fatal collision."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-013:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-013"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "fb253b8ea9906b7ebe70d40aa3f02a6c47777fb89b8e170b5b255b13cc2e1b5a"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-015",
+        "claim": "Match the control modality to the physical continuity, risk, and feedback needs of the task.",
+        "target_program": "OUI",
+        "domains": [
+          "technology_human_factors"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "c954c7fa5555ef7e63956c66327b9c5770f46ed76c4fa8737e17e0495595a7b9"
+        ],
+        "conditions": "Touch controls provided less direction, force, and gang-state feedback than mechanical throttles.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Conformance to ASTM F1166 plus representative bridge simulation."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-015:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-015"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "688aa825bb617883c28f1124d21c3c2070a9fc5ebe3886b6386bb0f66d513d0b"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-023",
+        "claim": "Accessibility validation must include representative users and their actual assistive technologies.",
+        "target_program": "OUI",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "498022418f73a1ccdfc962f9163927ca7d155dadadbbc35e4b634206eab39e67"
+        ],
+        "conditions": "Conformance checks alone did not reveal lived navigation problems.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Participant study with disability-community partnership."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-023:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-023"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "f93b0eff84ac61cc5bc2e3ae18503ad3bc3a291c68a1502684425338bdea519b"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-024",
+        "claim": "Launch is a measurement point; sustained success requires an evidence-backed improvement backlog.",
+        "target_program": "OUI",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "53b015b21548bac55db7998394366e7717209411029634c74666045fd7b5b738"
+        ],
+        "conditions": "USA.gov and USAGov en Español needed improved discoverability and task coverage.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Usability tests, visitor feedback, click data, and outcome trends."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-024:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-024"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "5dafdfebfe5427b09e941e15241659f64cd7aa3fea95036769a60aa5177bedb3"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-026",
+        "claim": "Multilingual UX requires managed terminology, content governance, testing, and support—not literal string substitution.",
+        "target_program": "OUI",
+        "domains": [
+          "content_communication"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "dbdedd5f46fda927aaae7219d66892adc2459f4f4e80645e9fa338aecc92c5d8"
+        ],
+        "conditions": "English-only or ad-hoc translation limited access and created inconsistent support.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Language-specific content review and representative-user task testing."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-026:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-026"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "1e33e5edba0b5a92e82f6449637833a21d7a7c42ef2fb7c75889ce7c5d33052e"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-027",
+        "claim": "Treat the design system as a governed product with research, accessibility, release notes, and contribution loops.",
+        "target_program": "OUI",
+        "domains": [
+          "design_system_generation"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "eae224852d6cd260607f9727304b5dfd453addf0248f350495c0427a9367d33c"
+        ],
+        "conditions": "Service teams otherwise recreate common components and repeat solved accessibility work.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Component research, accessibility testing, versioned releases, and cross-service adoption evidence."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-027:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-027"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "974bc234a7c01bf31012a47f6641deca916a442b76785042ab27d6585e10cdfb"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-028",
+        "claim": "For civic and high-stakes systems, certify observable task performance across diverse users rather than visual conformance alone.",
+        "target_program": "OUI",
+        "domains": [
+          "accessibility_inclusion"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "f1214c924187780e153051892d46341156c942a42a58afd9e469357229481b17"
+        ],
+        "conditions": "General or low-level design prescriptions did not reliably prevent voter errors or exclusion.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Qualification/certification testing against complete user-related functional requirements."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-028:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-028"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "0fc03a2d51e2f6f961e45bbe07c5b7e5c583f49a0c6973038255ceaa9da163b8"
+      },
+      {
+        "atom_id": "OUI-UIUX-ACT-029",
+        "claim": "Model the full service and its support ecosystem before optimising a single interface.",
+        "target_program": "OUI",
+        "domains": [
+          "journey_channels"
+        ],
+        "source_hashes": [
+          "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222"
+        ],
+        "case_hashes": [
+          "131a3ca58f9c44265b3be2daa884e9cc20e1575c885f0088fd6698e29405163c"
+        ],
+        "conditions": "Claimant needs and service operations cross digital and assisted channels.",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "End-to-end journey and operational-service assessment."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "reproduce:UIUX-ACT-029:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-ACT-029"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "d032b438caeb81ac865a9b7e2e6d69ef59f5c15f491941d34b945b2082494a16"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-003",
+        "claim": "Users form a calibrated mental model and choose appropriate tasks.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "f1829dc02d6c35f6528527fdc3ab448189311e757d620117fc8b4e83bc64e701"
+        ],
+        "conditions": "At first use and before consequential AI action",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Human-like presentation causes users to assume unsupported accuracy or authority."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-003:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "4a2e4ce0303406ee4a462b7eb43158defabbe791e4fa18ec15644ae5966bae53"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-004",
+        "claim": "The user can distinguish reliable, uncertain, and unavailable output.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "8414d87c2c5fa98b1e17252bbb5e076109d771d134db84706a26ccf93d6248c4"
+        ],
+        "conditions": "When AI output can be incomplete, ambiguous, or wrong",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "All generated outputs look equally authoritative."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-004:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-004"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "caf766649d1061a7474a90665ac9d718633d3786dea96215e80aeb8004ac567a"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-005",
+        "claim": "A user can safely recover without restarting or losing provenance.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "6ffbd2a9ac966ce35651c3b8af5b1119f6d262cc481a1aa8eac0426f9bfdcf59"
+        ],
+        "conditions": "After an AI recommendation or generation",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "The user must accept, discard everything, or silently overwrite AI output."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-005:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "47c771a4cdb1687889e8d8e33fe62baeb4efb2ea6d58854dec4d7d801298addd"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-006",
+        "claim": "Feedback is attributable, reversible, and improves the intended behaviour.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "f28cbf84207e68533573f27d323d348a42349b6dfaba10b18e9d447bf13a7b50"
+        ],
+        "conditions": "When user feedback changes future AI behaviour",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "A thumbs-up/down control exists but its effect is unknown or misinterpreted."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-006:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-006"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "937bfe582a1c67752771cbe153f8644e2f97a4ff872e2fbcffb3ebae6535795c"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-007",
+        "claim": "AI assists the decision while authority and accountability remain unambiguous.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "47cdce2b9740c00711e1057ebdb0427b7f98f3cd964bfaa17b1fe48efe1a579e"
+        ],
+        "conditions": "For approval, payment, release, safety, legal, or production decisions",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Automation bias turns a suggestion into an unreviewed final action."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-007:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-007"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "8e3b87dde49e1d19f4485ffbca8de8b0a4d6d73c35afed095f720b6837a0f70e"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-008",
+        "claim": "Generated UI is editable, traceable, responsive, and visually stable.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "8d4738f40cca2d31310fb8e6c2fda292114fe50639fc1db116a286a4e67b2781"
+        ],
+        "conditions": "When AI generates UI screens or visual assets",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "A plausible image bypasses component, geometry, accessibility, or lineage contracts."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-008:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "2590e6e8f251f6149c58775cea3856bdfb5d59d2f17d2ad3835da9bf6343cc16"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-009",
+        "claim": "All roles can complete normal, exception, and recovery work with consistent state.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "5a1dba33ac086f2a5519c28f8717af1440b033927d83fcc39b4f7debca96c21d"
+        ],
+        "conditions": "Before accepting an AI-created service flow",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Only the end-user happy path is designed."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-009:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-009"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "961f77c53944cd617127b4b7e309457b7be01619f464c01dc7df7c7e5cdd9e7c"
+      },
+      {
+        "atom_id": "OUI-UIUX-AIM-012",
+        "claim": "Registered, validated, promoted, and merged counts are equal for the promoted set.",
+        "target_program": "OUI",
+        "domains": [
+          "ai_interaction_method"
+        ],
+        "source_hashes": [
+          "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2"
+        ],
+        "case_hashes": [
+          "75e79432d96ebf932b2f617a81e0fa720a6677f88ef16e53a4f79b80a79a60a1"
+        ],
+        "conditions": "Before moving candidate UI/UX knowledge into the official corpus",
+        "exceptions": "Do not generalize beyond the stated context without a new reproduction.",
+        "counterexamples": [
+          "Candidate creation or local validation is reported as learning completion."
+        ],
+        "confidence": "CANDIDATE",
+        "scenario_ids": [
+          "execute:UIUX-AIM-012:oui"
+        ],
+        "oracle_ids": [
+          "oracle:UIUX-AIM-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "EVIDENCE_BOUND",
+        "atom_sha256": "db66da17d0351d9a7e2611891bcc62cea31369c0d43367aa28e91d618520b676"
+      },
+      {
+        "atom_id": "OUI-IDM-003",
+        "claim": "Size, contrast, spacing, alignment, and typography must express priority and reading order rather than decorate.",
+        "target_program": "OUI",
+        "domains": [
+          "visual_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "d8b24a691b2017743117bfbf01f8e808d847864bf7487dc8a274390672367238"
+        ],
+        "conditions": "Interfaces, advertisements, reports, packaging, signage, and publications.",
+        "procedure": [
+          "Declare attention order",
+          "Map it to visual variables",
+          "Check reading without color",
+          "Test timed comprehension"
+        ],
+        "exceptions": "Retain attribution and verify page terms before redistribution.",
+        "counterexamples": [
+          "Every element competes equally or color alone carries meaning."
+        ],
+        "evidence_required": [
+          "attention contract",
+          "grayscale check",
+          "contrast check",
+          "comprehension result"
+        ],
+        "source_binding": {
+          "url": "https://digital.gov/guides/accessibility-for-teams/visual-design",
+          "locator": "Accessibility for visual designers",
+          "authority": "U.S. GSA",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-003:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-003"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "daae4a038aefaa8befde57eadc17544c59220a8c21dbc31670e7e81f37d83f4f"
+      },
+      {
+        "atom_id": "OUI-IDM-005",
+        "claim": "Physical controls, displays, sound, haptics, and companion interfaces must share one consistent state machine.",
+        "target_program": "OUI",
+        "domains": [
+          "product_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "a45fbc46379b4537b97e3af053b42a18146a361260042c4a34dd45b5a598e6c2"
+        ],
+        "conditions": "Appliances, vehicles, kiosks, wearables, instruments, and connected products.",
+        "procedure": [
+          "Inventory controls",
+          "Define states and transitions",
+          "Bind feedback",
+          "Test error recovery",
+          "Verify cross-channel consistency"
+        ],
+        "exceptions": "Derived candidate requiring expert validation and licensed-standard review.",
+        "counterexamples": [
+          "The display contradicts the physical control or provides no recoverable feedback."
+        ],
+        "evidence_required": [
+          "control-state matrix",
+          "transition tests",
+          "feedback test",
+          "recovery receipt"
+        ],
+        "source_binding": {
+          "url": "https://www.iso.org/standard/77520.html",
+          "locator": "Human-centred design for interactive systems",
+          "authority": "ISO",
+          "access": "PUBLIC_ABSTRACT"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-005:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-005"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "47c11dbc809a5b87b5abb3b09284c700de209b09fd8ee5091caba5bd4a3f70c9"
+      },
+      {
+        "atom_id": "OUI-IDM-006",
+        "claim": "Web design must preserve perceivability, operability, understandability, and robustness as testable requirements.",
+        "target_program": "OUI",
+        "domains": [
+          "web_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "4bf30a54b5185510bb42ffee65f09d380915896f1b04e124eb029e860a06de35"
+        ],
+        "conditions": "Web pages, applications, interactive documents, and embedded web views.",
+        "procedure": [
+          "Set WCAG target",
+          "Design semantics and focus",
+          "Meet contrast, target-size, input, and reflow rules",
+          "Run automated and human tests"
+        ],
+        "exceptions": "Preserve the standard version and exact criterion locator.",
+        "counterexamples": [
+          "A polished page is promoted while keyboard, reflow, focus, alternatives, or target size fails."
+        ],
+        "evidence_required": [
+          "WCAG checklist",
+          "keyboard trace",
+          "reflow capture",
+          "contrast result",
+          "assistive review"
+        ],
+        "source_binding": {
+          "url": "https://www.w3.org/TR/WCAG22/",
+          "locator": "WCAG 2.2",
+          "authority": "W3C",
+          "access": "PUBLIC_STANDARD"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-006:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-006"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "53aadb229949ccba327627564908e8336f6165c1d43121cbbb668ab806c644e6"
+      },
+      {
+        "atom_id": "OUI-IDM-008",
+        "claim": "Publication layout must preserve headings, reading order, alternatives, table structure, language, metadata, and reflow.",
+        "target_program": "OUI",
+        "domains": [
+          "publication_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "210e01fb11e75396820cea1593deb0ba3c94484a83173db37020838704248010"
+        ],
+        "conditions": "Reports, books, manuals, brochures, PDF, EPUB, and digital publications.",
+        "procedure": [
+          "Define outline",
+          "Use semantic structures",
+          "Set language and metadata",
+          "Verify reading order",
+          "Test tags, alternatives, zoom, and reflow"
+        ],
+        "exceptions": "Evaluate each technique against target format and WCAG version.",
+        "counterexamples": [
+          "The page looks correct but is flattened or has broken reading order and tables."
+        ],
+        "evidence_required": [
+          "structure tree",
+          "reading-order test",
+          "tag report",
+          "alt-text review",
+          "reflow test"
+        ],
+        "source_binding": {
+          "url": "https://www.w3.org/TR/WCAG20-TECHS/pdf",
+          "locator": "PDF Techniques for WCAG",
+          "authority": "W3C",
+          "access": "PUBLIC_GUIDANCE"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-008:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-008"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "9bf266a1f291b3f0c73258000379757d7a91d3804fce3575895523c4138b58f5"
+      },
+      {
+        "atom_id": "OUI-IDM-009",
+        "claim": "Typography must be tested for audience, medium, distance, language, line length, spacing, and reading duration.",
+        "target_program": "OUI",
+        "domains": [
+          "publication_design"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "a66ba8ff0e42fd4b604dd0a534a0ad9c2b8469cb2ef33c24c5c61a44b7a250a1"
+        ],
+        "conditions": "Long-form print and digital publications, manuals, reports, and captions.",
+        "procedure": [
+          "Profile reading conditions",
+          "Select type",
+          "Set measure and spacing",
+          "Test representative pages",
+          "Check fallback and export fidelity"
+        ],
+        "exceptions": "Print-specific claims require separate evidence.",
+        "counterexamples": [
+          "A fashionable treatment reduces legibility, loses characters, or breaks on export."
+        ],
+        "evidence_required": [
+          "type specification",
+          "page test",
+          "font coverage",
+          "export comparison"
+        ],
+        "source_binding": {
+          "url": "https://www.section508.gov/develop/fonts-typography/",
+          "locator": "Accessible Fonts and Typography",
+          "authority": "U.S. Section 508",
+          "access": "PUBLIC_GUIDANCE"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-009:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-009"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "2c57b346777770bda61a581d71237a83b1806d851b5f2d28e3ea2418e0b12ac9"
+      },
+      {
+        "atom_id": "OUI-IDM-010",
+        "claim": "Generative design should create an editable foundation, preserve human control, and support repeated refinement.",
+        "target_program": "OUI",
+        "domains": [
+          "llm_design_product_philosophy"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "456fa21111618ea8427fc8eb8e9b09f3a967c367fcd0dd66a1cc535627458be2"
+        ],
+        "conditions": "Prompt-to-layout, prompt-to-prototype, prompt-to-code, and AI asset generation.",
+        "procedure": [
+          "Generate structured output",
+          "Expose layers, components, code, and tokens",
+          "Offer alternatives",
+          "Preserve human changes",
+          "Review before publish"
+        ],
+        "exceptions": "Vendor philosophy is descriptive, not independent proof of quality.",
+        "counterexamples": [
+          "The result is a flattened image or opaque code that cannot be safely refined."
+        ],
+        "evidence_required": [
+          "editability test",
+          "structure manifest",
+          "regeneration test",
+          "human approval"
+        ],
+        "source_binding": {
+          "url": "https://www.figma.com/solutions/ai-design-generator/",
+          "locator": "Figma Make: edit and iterate",
+          "authority": "Figma",
+          "access": "PUBLIC_PRODUCT_PAGE"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-010:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-010"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "88b77fa0b50b0f1d783628fe02bbf4e160a5e0f1876b5c9a61940bad0fa82d89"
+      },
+      {
+        "atom_id": "OUI-IDM-011",
+        "claim": "Learn general design patterns and tool structure without retaining or reproducing customer-specific content, concepts, or sensitive data.",
+        "target_program": "OUI",
+        "domains": [
+          "llm_design_product_philosophy"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "b67adbd47a1adc419df606e9761a287fd063be68000d3835f5b062df8d203a95"
+        ],
+        "conditions": "Training, fine-tuning, retrieval, telemetry, and prompt-to-design services.",
+        "procedure": [
+          "Separate patterns from customer content",
+          "Redact sensitive input",
+          "Define data controls",
+          "Test memorization and cross-tenant leakage",
+          "Provide governance"
+        ],
+        "exceptions": "Vendor statements require independent technical verification.",
+        "counterexamples": [
+          "Customer designs or ideas are reproduced across tenants or reused beyond declared purposes."
+        ],
+        "evidence_required": [
+          "classification",
+          "redaction test",
+          "memorization test",
+          "tenant-isolation test",
+          "policy receipt"
+        ],
+        "source_binding": {
+          "url": "https://www.figma.com/ai/our-approach/",
+          "locator": "Building Figma AI",
+          "authority": "Figma",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-011:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-011"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "6ebc2eac12258d57a8d3a5c8686265524a9ed86e6b314c0f5d9e29177d5cd591"
+      },
+      {
+        "atom_id": "OUI-IDM-012",
+        "claim": "Generated assets require source-rights controls, prompt and output safeguards, and provenance transparency before commercial use.",
+        "target_program": "OUI",
+        "domains": [
+          "llm_design_product_philosophy"
+        ],
+        "source_hashes": [
+          "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26"
+        ],
+        "case_hashes": [
+          "ad9f5cce340a1266655db969d008f3ae80f5f3cbd8cf59d75a30424b330565bf"
+        ],
+        "conditions": "Image, illustration, texture, advertising, packaging, brand, and publication generation.",
+        "procedure": [
+          "Use authorized material",
+          "Screen prompts and outputs",
+          "Attach provenance",
+          "Check trademarks and likeness",
+          "Escalate uncertainty"
+        ],
+        "exceptions": "Vendor claims do not replace project-specific rights review.",
+        "counterexamples": [
+          "A suitable-looking asset is treated as commercially safe without rights or similarity checks."
+        ],
+        "evidence_required": [
+          "rights receipt",
+          "safety result",
+          "similarity review",
+          "provenance",
+          "human legal review"
+        ],
+        "source_binding": {
+          "url": "https://www.adobe.com/ai/overview/firefly/gen-ai-approach.html",
+          "locator": "Approach to generative AI with Adobe Firefly",
+          "authority": "Adobe",
+          "access": "PUBLIC_WEB"
+        },
+        "confidence": "RESEARCH_CANDIDATE",
+        "scenario_ids": [
+          "execute:IDM-012:oui"
+        ],
+        "oracle_ids": [
+          "oracle:IDM-012"
+        ],
+        "memory_scope": "PROJECT_MEMORY",
+        "created_by": "ONSureLearningEngine",
+        "verified_by": [],
+        "expires_at": null,
+        "state": "SOURCE_REFERENCED",
+        "atom_sha256": "d424e29b667e99c472d756ecf339bb6cc3fa2f96c571e563e7703143b930bf7a"
+      }
+    ]
+  },
+  "official_candidate_ledger": {
+    "contract": "ONSURE_OFFICIAL_LEARNING_LEDGER_V1",
+    "recognized_completion_state": "HOLD_VALIDATION_NOT_REQUESTED",
+    "entries": [
+      {
+        "sequence": 1,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "payload": {
+          "candidate_id": "ODesign-IDM-001",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "96b491d50ed05e781ae005cc67a7b5f334313f0343c9758def0edbff4b4e8d95",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "19ef7bdd19d4b916a564351afb58efa7644e39ad4b7b56b0357bcddea0583f24"
+      },
+      {
+        "sequence": 2,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "19ef7bdd19d4b916a564351afb58efa7644e39ad4b7b56b0357bcddea0583f24",
+        "payload": {
+          "candidate_id": "ODesign-IDM-002",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "2296d3c15d742f9967b882fa15f87205e17105025f558037268314ff3c8dc0ea",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "5c3053a5eb143fd7b3fbb058e4e09e4ae06104412127b47c0ad03812681e13e6"
+      },
+      {
+        "sequence": 3,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "5c3053a5eb143fd7b3fbb058e4e09e4ae06104412127b47c0ad03812681e13e6",
+        "payload": {
+          "candidate_id": "ODesign-IDM-003",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "8ba061e2e26394aa22ef7be3258b5478236fe0c3a436a53a29833fa4264c9ab8",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "c8253f6a8d22020a2859475ca480ca1226522d2ccc73bf89f541769fd23d5798"
+      },
+      {
+        "sequence": 4,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "c8253f6a8d22020a2859475ca480ca1226522d2ccc73bf89f541769fd23d5798",
+        "payload": {
+          "candidate_id": "ODesign-IDM-004",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "cc79d9d2f7e03f49a40927f962edf189aa31416dd97c6ab1850f5e2f63752cd6",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "5c1ede88f00cf780345670acdc2e74a661ce0452f20a78504319ecb777d8fb5b"
+      },
+      {
+        "sequence": 5,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "5c1ede88f00cf780345670acdc2e74a661ce0452f20a78504319ecb777d8fb5b",
+        "payload": {
+          "candidate_id": "ODesign-IDM-005",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "5614be97fd56876f96c51ba854d6c1f6274dbc4ecc9e9ec6e0e4966ffdfb11e0",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "16e5322fb15e9e16ee191c0615495597ff87ba9a9be24db256ae9a5754921afd"
+      },
+      {
+        "sequence": 6,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "16e5322fb15e9e16ee191c0615495597ff87ba9a9be24db256ae9a5754921afd",
+        "payload": {
+          "candidate_id": "ODesign-IDM-006",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "4e40e45fe5425aad99fe0bd676e8cca2e1c0bd35c5a722b6bc52218cd8248905",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "575f6a0fc4bcc327f4e26d8e0c9197f1247ba10dae71ea1510c69baa0365fa35"
+      },
+      {
+        "sequence": 7,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "575f6a0fc4bcc327f4e26d8e0c9197f1247ba10dae71ea1510c69baa0365fa35",
+        "payload": {
+          "candidate_id": "ODesign-IDM-007",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "bf20a5f67b7477dde94f4ffac0541f3653ad4847894b6a01991aef906e1df00b",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "304ca2b8b3fcad4faad0d51f557b2ff96cdd7539f7c212af05a656888695a18f"
+      },
+      {
+        "sequence": 8,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "304ca2b8b3fcad4faad0d51f557b2ff96cdd7539f7c212af05a656888695a18f",
+        "payload": {
+          "candidate_id": "ODesign-IDM-008",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "e9adda4a306dfb7de1ed8116149fc250e0a49f9d90f246ea3f2e8c5eeaf4ce54",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "229ec750c19e5daf5076fc77ff6f11a60c955b19b920e636a1616a6fa93407b1"
+      },
+      {
+        "sequence": 9,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "229ec750c19e5daf5076fc77ff6f11a60c955b19b920e636a1616a6fa93407b1",
+        "payload": {
+          "candidate_id": "ODesign-IDM-009",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "0e48fcf0af06061341987b0839661c352834b9a18f3a4735a716fc1b8545f190",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "19a15aa48a72faaa140ad7a9352f9ad98521dc99156b0e2bf6d220105a0e3603"
+      },
+      {
+        "sequence": 10,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "19a15aa48a72faaa140ad7a9352f9ad98521dc99156b0e2bf6d220105a0e3603",
+        "payload": {
+          "candidate_id": "ODesign-IDM-010",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "25e1915e05ad1bd82394816da6490eacf60ebcdb35e0f74dadd72cffdedca5f6",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "dd5b70768954ebe28db9c95065481e381d75749aa3fad9067fcc12ad064b6780"
+      },
+      {
+        "sequence": 11,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "dd5b70768954ebe28db9c95065481e381d75749aa3fad9067fcc12ad064b6780",
+        "payload": {
+          "candidate_id": "ODesign-IDM-011",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "f2606ebe5c186faab8a570c4d9159c33f1dd3f754a58d626f87ade49bd633b7c",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "71207bd9e9b5efaddd13d8484372057282ad9b5ae0a36cf354ebf88dda521432"
+      },
+      {
+        "sequence": 12,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "71207bd9e9b5efaddd13d8484372057282ad9b5ae0a36cf354ebf88dda521432",
+        "payload": {
+          "candidate_id": "ODesign-IDM-012",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "b5b7fd9d3f4770171a38120bfbfce79fcb804bbd7f79d81ea52f96613a74dd16",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "18820d4e3d46b37b6f8d63f02a02aa0dddadd3ee9f9922fcf7684525dea5db45"
+      },
+      {
+        "sequence": 13,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "18820d4e3d46b37b6f8d63f02a02aa0dddadd3ee9f9922fcf7684525dea5db45",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-001",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "ba3013eaf3270176dca28e52f9057e9682283a57b41edc9f79f44dcd3b969666",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "c13d7d0067520ddccfa247a7061387f57be002c3503bb8601be6bd78c5d2c27f"
+      },
+      {
+        "sequence": 14,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "c13d7d0067520ddccfa247a7061387f57be002c3503bb8601be6bd78c5d2c27f",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-002",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "0d78da1c36c493c73f81ba0d3b3594dcc9e50487cc569371066cee447c82f1d5",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "eb14d73a08cf56981cfcffdabcb9eec41fbe273d3b8d0d543a3e04f277822bf8"
+      },
+      {
+        "sequence": 15,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "eb14d73a08cf56981cfcffdabcb9eec41fbe273d3b8d0d543a3e04f277822bf8",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-003",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "b60b543c739a2cae610681848b09ba392187030936fe115c25f4546938f368b5",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "2b66fb4d6f8abb8fb38a6c12f9cf2bb3ec608158623f0f8e887aadc058af9b10"
+      },
+      {
+        "sequence": 16,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "2b66fb4d6f8abb8fb38a6c12f9cf2bb3ec608158623f0f8e887aadc058af9b10",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-004",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "b0317c05aa2e38deca3a3a8835db271251bebd0ad9b0a802c44f3c5e78c6b93b",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "3e06d6413b22fff931ec538f7110a2e3c10b5d7f6abee7fc3f263ef6c088be70"
+      },
+      {
+        "sequence": 17,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "3e06d6413b22fff931ec538f7110a2e3c10b5d7f6abee7fc3f263ef6c088be70",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-005",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "c2c99ef82cc6bddf076736784f314917ad788915ad731cf5dcfc080d68fff100",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "fcb9c08b7278a16932189e86aa76dd200444e8d1afb1b43457e6c0d339ba59e4"
+      },
+      {
+        "sequence": 18,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "fcb9c08b7278a16932189e86aa76dd200444e8d1afb1b43457e6c0d339ba59e4",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-006",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "acc9dda2f71ccbd5b407891e0c99009a14a613b198afaf02422f8324cf783e2d",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "581d3ff1b3af2f5408c37cdc7611af6cc7747da72b5300cebd72f844b998c75a"
+      },
+      {
+        "sequence": 19,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "581d3ff1b3af2f5408c37cdc7611af6cc7747da72b5300cebd72f844b998c75a",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-007",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "2b4c913653217f81426d9c8e951da14a901b7de1a414b1732d9a6982843ed620",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "dfab57dbdc042f825d9449b85e186e064f01f2336193a2fc75226d59e681f3fd"
+      },
+      {
+        "sequence": 20,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "dfab57dbdc042f825d9449b85e186e064f01f2336193a2fc75226d59e681f3fd",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-008",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "89b10e486260f547b0783a8c662e1b8613e58963e7a526f90da3386ae4ca65a6",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "87d99965c931519cc8afe20b1df90738573b37d8f6f099140ba76d48b99b2576"
+      },
+      {
+        "sequence": 21,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "87d99965c931519cc8afe20b1df90738573b37d8f6f099140ba76d48b99b2576",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-009",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "c6c98c296b0f586e49bddc8d17644e3d8afb4dd499e53b30d195dbed2be13dbf",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "963dcee9f87d90bf41545e45ff0d6ddaa2c5ccefbc9bbbc46721e2c619dc437c"
+      },
+      {
+        "sequence": 22,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "963dcee9f87d90bf41545e45ff0d6ddaa2c5ccefbc9bbbc46721e2c619dc437c",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-010",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "29b3c310a48daf2a246569dbac47921bcc5901685be8de3cb94add3fbc0c1ce9",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "faa4aebae0191bb37996890a2b1c3b9a513a0e30c2faa4cbaab8b2226dc130cf"
+      },
+      {
+        "sequence": 23,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "faa4aebae0191bb37996890a2b1c3b9a513a0e30c2faa4cbaab8b2226dc130cf",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-011",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "c363e59a9e002f6012f4b1c2a637b661660890ea8927b3724f328e433b010d8b",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "8bde202d0f9b52c64d4a5af3258e48cdf406e325d3d78ba4556fb8604457318a"
+      },
+      {
+        "sequence": 24,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "8bde202d0f9b52c64d4a5af3258e48cdf406e325d3d78ba4556fb8604457318a",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-012",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "20bcd8477781b449fa490b0425261e64d297ab38087a7cc2da6dae726ff58cd6",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "3101b42cb5ac072f8f75a06e034bd2d6d88bbc1ef4b18bd5302b54d7a1fdb87c"
+      },
+      {
+        "sequence": 25,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "3101b42cb5ac072f8f75a06e034bd2d6d88bbc1ef4b18bd5302b54d7a1fdb87c",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-013",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "caa1dbbed35cb8f1a4e8a09c64fb2918aa0c1a41a3b0972ab2da45fde539285d",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "f4296d107b15296c49682eb084b4afdbefcd45174f159d843784541e4077fcfe"
+      },
+      {
+        "sequence": 26,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "f4296d107b15296c49682eb084b4afdbefcd45174f159d843784541e4077fcfe",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-014",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "6d1ac94faa083d16236f881bfc600d96c9189499fdb876a64b6d64d254240211",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "f5c9b2e94e588ee2c3d922f544983a9ba2f8e3d5bc58d45c36058763a9913ca1"
+      },
+      {
+        "sequence": 27,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "f5c9b2e94e588ee2c3d922f544983a9ba2f8e3d5bc58d45c36058763a9913ca1",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-015",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "447f58f46dfa0506704494d16aadf3c98735a27f30cfc2eec9d71c7baadef756",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "3bb532b3327e63524bf933c04acfcec1540aa09eb9a59c01f9def7de75b2f634"
+      },
+      {
+        "sequence": 28,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "3bb532b3327e63524bf933c04acfcec1540aa09eb9a59c01f9def7de75b2f634",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-016",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "0644371e828153c6fd202ec6d35b6af959607362285c3d312c155d9f131a593c",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "95aa5f5f1ce27140751b38c8914b575616903cd5081adc8935fd25cc26861cc6"
+      },
+      {
+        "sequence": 29,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "95aa5f5f1ce27140751b38c8914b575616903cd5081adc8935fd25cc26861cc6",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-018",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "bd75f6612617feeb706f8fb5d78dd234c6c52b45bea1d9cfbf4b6556d533fb50",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "7324288fb60ae805737d3341aa78bbcc8761662629b1394f59e31e1df570ad1a"
+      },
+      {
+        "sequence": 30,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "7324288fb60ae805737d3341aa78bbcc8761662629b1394f59e31e1df570ad1a",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-020",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "60b6dbd58ba2ec8ffde34a9574eb92efc8d66ffbf8e9bbc2eca3ff89cc91d1ff",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "fd64d804ea89d7e8d0b091f156efe58e63a85d71ed0360f479533749d9f32ca7"
+      },
+      {
+        "sequence": 31,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "fd64d804ea89d7e8d0b091f156efe58e63a85d71ed0360f479533749d9f32ca7",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-021",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "8d942974f2e254389102ba4bd56caf42ab60f003188bfd5f24095c70afcf3e43",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "cb32b8a057fcc58f1055be6338779ca4d48d11c59fcce2ce131e9614509a1316"
+      },
+      {
+        "sequence": 32,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "cb32b8a057fcc58f1055be6338779ca4d48d11c59fcce2ce131e9614509a1316",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-022",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "804adab243eef2a19f39e374575b2396eb5c3f5ddff8247f76a3743822c3d707",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "f53b3a3a87cfbaa0657f6e6b16a733a4c94a730e866acce0faed132814b54d39"
+      },
+      {
+        "sequence": 33,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "f53b3a3a87cfbaa0657f6e6b16a733a4c94a730e866acce0faed132814b54d39",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-023",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "383dca5ddf9806b0a90d95568b003abbbd5e49376d813a7a17c856d31930528a",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "93c0e242239fd2dd9b335e646dc6d50d1a4d562c0432287c35802877df065b94"
+      },
+      {
+        "sequence": 34,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "93c0e242239fd2dd9b335e646dc6d50d1a4d562c0432287c35802877df065b94",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-024",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "3726485cd25e1147c0755149e428aad0228f03ebe0bf9bb47b415ab455b35fdc",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "11fee8b5f4e1ca96b51bef378f108687789143fe0470408c9669c4d09fd7c84c"
+      },
+      {
+        "sequence": 35,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "11fee8b5f4e1ca96b51bef378f108687789143fe0470408c9669c4d09fd7c84c",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-026",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "0cfc712d01d63de357a0057b521ad43d71f3543565c99ca14bc99e135d2ad8b9",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "dfb982c1c942bda663f8ebd9529b6db559abcff4724b9eb8b43430258661bc17"
+      },
+      {
+        "sequence": 36,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "dfb982c1c942bda663f8ebd9529b6db559abcff4724b9eb8b43430258661bc17",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-027",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "7b5e9d2b48c8f2850de144b14f2f525656df46a6922a7340aca9598d64dc15fb",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "126d08cb85234c3f10c1d442996819998015be263b7f037b898c8948f2f5f2b6"
+      },
+      {
+        "sequence": 37,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "126d08cb85234c3f10c1d442996819998015be263b7f037b898c8948f2f5f2b6",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-028",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "415e7c05b35a86cd6d0130fe5b58967e3d87d2bb39f7ac11a78fdf0f0ce6ce5f",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "ac6ffbc2aff114fc1fda28c8cad3ca873e09f0fa2c77576869c6f69b6912796a"
+      },
+      {
+        "sequence": 38,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "ac6ffbc2aff114fc1fda28c8cad3ca873e09f0fa2c77576869c6f69b6912796a",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-029",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "d0f7ffd36c5150e05f4b66c061b7e8cef3e196d6141c854cc24974702b3757a1",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "e6c666294debe5b262df2a745509ef6f5db51b1f038936d0339ee45e5cc56bf5"
+      },
+      {
+        "sequence": 39,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "e6c666294debe5b262df2a745509ef6f5db51b1f038936d0339ee45e5cc56bf5",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-ACT-030",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "839a1233e98e5568dc7002ac4ac326fc3cef857e7d8677728f2a990fd5941074",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "0780888b32789b2bd204fa8dc0552747e484ba30fec6c7915e7aa82165e76afd"
+      },
+      {
+        "sequence": 40,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "0780888b32789b2bd204fa8dc0552747e484ba30fec6c7915e7aa82165e76afd",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-AIM-001",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "f228c16d2466b7e9f7c21b109b1da1ddcd16ed493b63100f2df71a4fda7268e7",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "7e7189ea8f96b4a2f7f1757544527cfe6c146c5736bb5f5dc6c28b0a5c8af29b"
+      },
+      {
+        "sequence": 41,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "7e7189ea8f96b4a2f7f1757544527cfe6c146c5736bb5f5dc6c28b0a5c8af29b",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-AIM-002",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "656983e687c4d54423fda8e838ac8afa746c5f97c761662cffbabf9c473813e0",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "196c38c917ed527afbab78ddd4e6a4e247cce4198feb5882a1609bef1ca4f198"
+      },
+      {
+        "sequence": 42,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "196c38c917ed527afbab78ddd4e6a4e247cce4198feb5882a1609bef1ca4f198",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-AIM-010",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "b4aa15f932ad46818453df9a08f312a0fc7e029032733a09d00b8e1312ebcfbf",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "c586b8134086e6d26e0595f9db6d23b1539f35d13bc4d6bceb35aae99990e613"
+      },
+      {
+        "sequence": 43,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "c586b8134086e6d26e0595f9db6d23b1539f35d13bc4d6bceb35aae99990e613",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-AIM-011",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "b6216e6f344a7a29f04ee8ff35fd7d7212ecf2607824583837e172d8d2fa3213",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "921bcd44b41c0ccdfa1091153fca11624dc72fb4379730e7198dad948c4efde3"
+      },
+      {
+        "sequence": 44,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "921bcd44b41c0ccdfa1091153fca11624dc72fb4379730e7198dad948c4efde3",
+        "payload": {
+          "candidate_id": "ODesign-UIUX-AIM-012",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "ODesign",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "53417d3ba71879a110dafd2fac1144e293a05acf4fa62cec32a5379bb8457a2c",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "bb990727efd512d0154607bbaef3bc45e3eb8effdaf497f0f871d61c22104b82"
+      },
+      {
+        "sequence": 45,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "bb990727efd512d0154607bbaef3bc45e3eb8effdaf497f0f871d61c22104b82",
+        "payload": {
+          "candidate_id": "OUI-IDM-003",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "daae4a038aefaa8befde57eadc17544c59220a8c21dbc31670e7e81f37d83f4f",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "885ce20b9491c90e40f00635277107bd2248d4de6f53439616a9bd14803ce90b"
+      },
+      {
+        "sequence": 46,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "885ce20b9491c90e40f00635277107bd2248d4de6f53439616a9bd14803ce90b",
+        "payload": {
+          "candidate_id": "OUI-IDM-005",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "47c11dbc809a5b87b5abb3b09284c700de209b09fd8ee5091caba5bd4a3f70c9",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "c75daffcc11bd2b7eae980c0cd726b8b5935b83fe2dcde2feb287f9ae6267a94"
+      },
+      {
+        "sequence": 47,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "c75daffcc11bd2b7eae980c0cd726b8b5935b83fe2dcde2feb287f9ae6267a94",
+        "payload": {
+          "candidate_id": "OUI-IDM-006",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "53aadb229949ccba327627564908e8336f6165c1d43121cbbb668ab806c644e6",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "5b2b6f624a2d8e0562dc38fba0f54df1e1bc1c3348c482bde1f388abe65920dc"
+      },
+      {
+        "sequence": 48,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "5b2b6f624a2d8e0562dc38fba0f54df1e1bc1c3348c482bde1f388abe65920dc",
+        "payload": {
+          "candidate_id": "OUI-IDM-008",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "9bf266a1f291b3f0c73258000379757d7a91d3804fce3575895523c4138b58f5",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "81b4727f9ac5596fb52f4af96c1a9539d2d42e35a7c735075b8e3cf306132bac"
+      },
+      {
+        "sequence": 49,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "81b4727f9ac5596fb52f4af96c1a9539d2d42e35a7c735075b8e3cf306132bac",
+        "payload": {
+          "candidate_id": "OUI-IDM-009",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "2c57b346777770bda61a581d71237a83b1806d851b5f2d28e3ea2418e0b12ac9",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "6b037b6bb565adb2ae7bf20d52b001222ac777eb07967d43c238a8019b6ec76c"
+      },
+      {
+        "sequence": 50,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "6b037b6bb565adb2ae7bf20d52b001222ac777eb07967d43c238a8019b6ec76c",
+        "payload": {
+          "candidate_id": "OUI-IDM-010",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "88b77fa0b50b0f1d783628fe02bbf4e160a5e0f1876b5c9a61940bad0fa82d89",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "b10b80979f19cb7564fcb029f1e1a1d632bd870d9e153c0b806e29dae2c5933f"
+      },
+      {
+        "sequence": 51,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "b10b80979f19cb7564fcb029f1e1a1d632bd870d9e153c0b806e29dae2c5933f",
+        "payload": {
+          "candidate_id": "OUI-IDM-011",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "6ebc2eac12258d57a8d3a5c8686265524a9ed86e6b314c0f5d9e29177d5cd591",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "17ba53c638ed641ff347a17d48165526f59e978f5eb3bf04b91af1b6c11aaf69"
+      },
+      {
+        "sequence": 52,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "17ba53c638ed641ff347a17d48165526f59e978f5eb3bf04b91af1b6c11aaf69",
+        "payload": {
+          "candidate_id": "OUI-IDM-012",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "4e375f1c8b84210132d73db4094f82e14476974218006fa5cd9cf3fcc46b7d26",
+          "learner_output_sha256": "d424e29b667e99c472d756ecf339bb6cc3fa2f96c571e563e7703143b930bf7a",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "SOURCE_REFERENCED"
+        },
+        "entry_sha256": "d1056e12c8700a2e66d53d9ac7d197a9e371f6bc301a0965cfc17957ed55d60d"
+      },
+      {
+        "sequence": 53,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "d1056e12c8700a2e66d53d9ac7d197a9e371f6bc301a0965cfc17957ed55d60d",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-001",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "aad87d6ba0787d672d75286ccbca43b1138b27fedcee2f40c0b5464babab4384",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "59bee625f07b05f93ebf525d011f51568f53a068d80c533705bc8bef431609a5"
+      },
+      {
+        "sequence": 54,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "59bee625f07b05f93ebf525d011f51568f53a068d80c533705bc8bef431609a5",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-003",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "e3413f9851531c2bf85bda78cfcd9601bb34a3c2bfe66de7a23e954c929b34aa",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "61ddd6c88f82d10cab3dbb4e7846590be45b9bcb765dd2de9054f09cb99b4efe"
+      },
+      {
+        "sequence": 55,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "61ddd6c88f82d10cab3dbb4e7846590be45b9bcb765dd2de9054f09cb99b4efe",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-004",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "a00f10941fdf1fd637bbafbe4f2e466ffe4e0d63ef86c1a758fce818f0667d81",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "a000fb13e0f900fe4f751315dd046885312f7a66980c871d53b3303bd221ee97"
+      },
+      {
+        "sequence": 56,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "a000fb13e0f900fe4f751315dd046885312f7a66980c871d53b3303bd221ee97",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-005",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "c12d3315c3273095f753170c371c9dce49d180854079c1c8b75918ad1ba49755",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "0efe63800e7624cab4c403078a8ae1eff3b25c91681eb7a4e57e32701eb93305"
+      },
+      {
+        "sequence": 57,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "0efe63800e7624cab4c403078a8ae1eff3b25c91681eb7a4e57e32701eb93305",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-008",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "2cfb9a5bf96ab6c343f356429d4ec044c18de54d986eaa23700b7d102dbc70f7",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "ef045e7c2f731f37c25faab642164cfe501ddb48837c9844cec1f44213acb7a7"
+      },
+      {
+        "sequence": 58,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "ef045e7c2f731f37c25faab642164cfe501ddb48837c9844cec1f44213acb7a7",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-010",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "c9211db9812ff7f124dd9b44f8684e3f8b86aeb42c9d42c22fc85fa2d6998f72",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "27cf22747df3ea2b5315dc70ada88b4dd48ca531a921e170c2c41b377b7fd48f"
+      },
+      {
+        "sequence": 59,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "27cf22747df3ea2b5315dc70ada88b4dd48ca531a921e170c2c41b377b7fd48f",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-011",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "fb9382ed7ec04da421bb3fdbfa7bf68b032789a3cc581961bd5c15863b1272df",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "8bc98646604e45939dc703c512f6dce5611140944280f47c7e6a5bac31bca51b"
+      },
+      {
+        "sequence": 60,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "8bc98646604e45939dc703c512f6dce5611140944280f47c7e6a5bac31bca51b",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-012",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "795d06eb205b228e1acbe44e06b6fe7a782281617f0e481a4fecf6a8f6ff3539",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "ac551a18e0ec5ed5c1ec2573a8901479f621cb83a58a4cb13f27b115381a683c"
+      },
+      {
+        "sequence": 61,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "ac551a18e0ec5ed5c1ec2573a8901479f621cb83a58a4cb13f27b115381a683c",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-013",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "fb253b8ea9906b7ebe70d40aa3f02a6c47777fb89b8e170b5b255b13cc2e1b5a",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "4bcfaf040ed797b3b4d99d10df69ba817abb928ae9b48eb3b32bcb78bfeb26aa"
+      },
+      {
+        "sequence": 62,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "4bcfaf040ed797b3b4d99d10df69ba817abb928ae9b48eb3b32bcb78bfeb26aa",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-015",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "688aa825bb617883c28f1124d21c3c2070a9fc5ebe3886b6386bb0f66d513d0b",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "2aad6a13a406c7a1dbbf35a136b085d516c2946de60b514f0404fecbee671668"
+      },
+      {
+        "sequence": 63,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "2aad6a13a406c7a1dbbf35a136b085d516c2946de60b514f0404fecbee671668",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-023",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "f93b0eff84ac61cc5bc2e3ae18503ad3bc3a291c68a1502684425338bdea519b",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "b9630da00208ea4c65a783a501a5801425ba8be5ffd026417197b28896470ebb"
+      },
+      {
+        "sequence": 64,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "b9630da00208ea4c65a783a501a5801425ba8be5ffd026417197b28896470ebb",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-024",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "5dafdfebfe5427b09e941e15241659f64cd7aa3fea95036769a60aa5177bedb3",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "b1f028241de4789e893b59d26139a92f6547ffa9e716bf199c91d4f0707b28f9"
+      },
+      {
+        "sequence": 65,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "b1f028241de4789e893b59d26139a92f6547ffa9e716bf199c91d4f0707b28f9",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-026",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "1e33e5edba0b5a92e82f6449637833a21d7a7c42ef2fb7c75889ce7c5d33052e",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "d5dc8beb5d4f70e0ef151e2cded567dbf237726d87825a7d68c7a2102ad12954"
+      },
+      {
+        "sequence": 66,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "d5dc8beb5d4f70e0ef151e2cded567dbf237726d87825a7d68c7a2102ad12954",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-027",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "974bc234a7c01bf31012a47f6641deca916a442b76785042ab27d6585e10cdfb",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "6933aac2f0721169abad46d2b1a833b771ea8630f7ca5ce4b00f0021c30adf62"
+      },
+      {
+        "sequence": 67,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "6933aac2f0721169abad46d2b1a833b771ea8630f7ca5ce4b00f0021c30adf62",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-028",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "0fc03a2d51e2f6f961e45bbe07c5b7e5c583f49a0c6973038255ceaa9da163b8",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "d87757b40862a116c5ba5574d584a31a3a7aa99df2d28fdce01b0bf35c33efbb"
+      },
+      {
+        "sequence": 68,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "d87757b40862a116c5ba5574d584a31a3a7aa99df2d28fdce01b0bf35c33efbb",
+        "payload": {
+          "candidate_id": "OUI-UIUX-ACT-029",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "b5a88a24b588e1ee7472ea5a1a3e1206e1c0e850a05c1797e632142019798222",
+          "learner_output_sha256": "d032b438caeb81ac865a9b7e2e6d69ef59f5c15f491941d34b945b2082494a16",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "16754bfacba11a80e52696d9b7c59c5c1e65e451b7f6fe17d9dbfab3b2553165"
+      },
+      {
+        "sequence": 69,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "16754bfacba11a80e52696d9b7c59c5c1e65e451b7f6fe17d9dbfab3b2553165",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-003",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "4a2e4ce0303406ee4a462b7eb43158defabbe791e4fa18ec15644ae5966bae53",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "36bd77eae29cbff1f74d1b921db7cae1e462645b68923669355e1177a6081826"
+      },
+      {
+        "sequence": 70,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "36bd77eae29cbff1f74d1b921db7cae1e462645b68923669355e1177a6081826",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-004",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "caf766649d1061a7474a90665ac9d718633d3786dea96215e80aeb8004ac567a",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "39550a1c1cce7d5350e87dd816bdaa77b167a95b9569c76508d008d0917b3c41"
+      },
+      {
+        "sequence": 71,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "39550a1c1cce7d5350e87dd816bdaa77b167a95b9569c76508d008d0917b3c41",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-005",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "47c771a4cdb1687889e8d8e33fe62baeb4efb2ea6d58854dec4d7d801298addd",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "1fe0e8a4d8ff9d5dec43607e56228d1df66229feb4cd23aec0938c110d813d9d"
+      },
+      {
+        "sequence": 72,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "1fe0e8a4d8ff9d5dec43607e56228d1df66229feb4cd23aec0938c110d813d9d",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-006",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "937bfe582a1c67752771cbe153f8644e2f97a4ff872e2fbcffb3ebae6535795c",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "098d6e24cf6a9e56ca7ef1da6f64ebd62c0bf2fed29c9236834783e1b227970c"
+      },
+      {
+        "sequence": 73,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "098d6e24cf6a9e56ca7ef1da6f64ebd62c0bf2fed29c9236834783e1b227970c",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-007",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "8e3b87dde49e1d19f4485ffbca8de8b0a4d6d73c35afed095f720b6837a0f70e",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "8f4f49199559ed6cfa4122561be0bcaf9b2e96bbed51c92cb0461fae5816352c"
+      },
+      {
+        "sequence": 74,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "8f4f49199559ed6cfa4122561be0bcaf9b2e96bbed51c92cb0461fae5816352c",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-008",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "2590e6e8f251f6149c58775cea3856bdfb5d59d2f17d2ad3835da9bf6343cc16",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "bbc6703a195498d14627b0812d320a87e146732cc586de50922b9fe7f1ba9e5c"
+      },
+      {
+        "sequence": 75,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "bbc6703a195498d14627b0812d320a87e146732cc586de50922b9fe7f1ba9e5c",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-009",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "961f77c53944cd617127b4b7e309457b7be01619f464c01dc7df7c7e5cdd9e7c",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "ecd3c9f87ddbf5bb197530e426ef1c79207f6dfcb57c52e9f958e87d98f5381e"
+      },
+      {
+        "sequence": 76,
+        "entry_type": "LEARNING_CANDIDATE",
+        "previous_entry_sha256": "ecd3c9f87ddbf5bb197530e426ef1c79207f6dfcb57c52e9f958e87d98f5381e",
+        "payload": {
+          "candidate_id": "OUI-UIUX-AIM-012",
+          "candidate_type": "PROGRAM_MEMORY_CANDIDATE",
+          "target_program": "OUI",
+          "source_receipt_sha256": "a3c89f65ab62f2872a9e071c674943fbc73dd797c66596c46d7f201e0fe86cd2",
+          "learner_output_sha256": "db66da17d0351d9a7e2611891bcc62cea31369c0d43367aa28e91d618520b676",
+          "training_dataset_version": "oruda-uiux-42@5c872570",
+          "hidden_dataset_non_access_attestation": true,
+          "learner_identity": "ONSureLearningEngine",
+          "state": "EVIDENCE_BOUND"
+        },
+        "entry_sha256": "a4e09c942a5668f1eb5ca10359ea2855ea98ca4e043ce592d1d41e7430412d58"
+      }
+    ],
+    "head_sha256": "a4e09c942a5668f1eb5ca10359ea2855ea98ca4e043ce592d1d41e7430412d58"
+  },
+  "retrieval_evaluation": {
+    "scope": "OFFLINE_RETRIEVAL_ONLY",
+    "scenario_count": 9,
+    "pass_count": 9,
+    "results": [
+      {
+        "target_program": "ODesign",
+        "query": "접근성 사용자 과업 흐름과 실패 조건을 설계",
+        "expected_domain": "accessibility_inclusion",
+        "hit_atom_ids": [
+          "ODesign-IDM-002",
+          "ODesign-UIUX-ACT-003",
+          "ODesign-UIUX-ACT-023",
+          "ODesign-UIUX-ACT-028"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "ODesign",
+        "query": "서비스 정책과 이해관계자 책임을 설계",
+        "expected_domain": "service_policy",
+        "hit_atom_ids": [
+          "ODesign-UIUX-ACT-007",
+          "ODesign-UIUX-ACT-014"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "OUI",
+        "query": "상호작용 상태 오류 복구 화면을 구현",
+        "expected_domain": "interaction_state",
+        "hit_atom_ids": [
+          "OUI-UIUX-ACT-001",
+          "OUI-UIUX-ACT-010"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "OUI",
+        "query": "접근성 포함 화면 구조와 시각 UI를 구현",
+        "expected_domain": "accessibility_inclusion",
+        "hit_atom_ids": [
+          "OUI-IDM-003",
+          "OUI-UIUX-ACT-005",
+          "OUI-UIUX-ACT-011",
+          "OUI-UIUX-ACT-023",
+          "OUI-UIUX-ACT-028"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "ODesign",
+        "query": "산업 제품의 제조성과 인간공학을 설계",
+        "expected_domain": "industrial_design",
+        "hit_atom_ids": [
+          "ODesign-IDM-004"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "ODesign",
+        "query": "광고 주장의 근거와 전환 흐름을 설계",
+        "expected_domain": "advertising_design",
+        "hit_atom_ids": [
+          "ODesign-IDM-007"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "ODesign",
+        "query": "출판 문서의 읽기 구조와 타이포그래피를 설계",
+        "expected_domain": "publication_design",
+        "hit_atom_ids": [
+          "ODesign-IDM-008",
+          "ODesign-IDM-009"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "OUI",
+        "query": "웹 반응형 리플로우와 접근성을 구현",
+        "expected_domain": "web_design",
+        "hit_atom_ids": [
+          "OUI-IDM-006"
+        ],
+        "decision": "PASS"
+      },
+      {
+        "target_program": "OUI",
+        "query": "피그마 같은 편집 가능한 LLM 디자인 생성을 구현",
+        "expected_domain": "llm_design_product_philosophy",
+        "hit_atom_ids": [
+          "OUI-IDM-010",
+          "OUI-IDM-011",
+          "OUI-IDM-012",
+          "OUI-UIUX-ACT-011"
+        ],
+        "decision": "PASS"
+      }
+    ]
+  },
+  "rollback_reproduction": {
+    "scope": "CANDIDATE_REGISTRY_ONLY",
+    "removed_candidate_id": "OUI-UIUX-AIM-012",
+    "head_before": "a4e09c942a5668f1eb5ca10359ea2855ea98ca4e043ce592d1d41e7430412d58",
+    "head_after_restore": "a4e09c942a5668f1eb5ca10359ea2855ea98ca4e043ce592d1d41e7430412d58",
+    "restored_byte_identical": true,
+    "decision": "PASS"
+  },
+  "counts": {
+    "ODesign": 44,
+    "OUI": 32,
+    "total": 76
+  },
+  "conflicts": [],
+  "promotion": {
+    "decision": "HOLD",
+    "active_learning_performed": false,
+    "project_memory_candidates_materialized": true,
+    "missing_gates": [
+      "ORIGINAL_EXTERNAL_SOURCE_BYTES_NOT_MATERIALIZED",
+      "RIGHTS_AND_DATA_CLASSIFICATION_RECEIPT_MISSING",
+      "ODESIGN_TO_OUI_RUNTIME_SCENARIO_NOT_RUN",
+      "BEFORE_AFTER_IMPROVEMENT_NOT_PROVEN",
+      "INDEPENDENT_OTESTER_RECEIPTS_MISSING",
+      "INDEPENDENT_OAUDIT_RECEIPTS_MISSING"
+    ]
+  },
+  "run_sha256": "5e7ac5f5d8148f275453c0322d332c6fac1f63fb576acc120b8da56c4b8dff53"
+}
