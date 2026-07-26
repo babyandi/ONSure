@@ -31,12 +31,26 @@ class LocalEvidenceVerifierTest {
     }
 
     @Test
-    void acceptsBoundTwoRunAndSignedAgentChain() throws Exception {
+    void acceptsBoundTwoRunAndSignedInternalAgentChain() throws Exception {
         writeSameRegressionEvidence();
         Path otester = writeSignedReceipt("otester/receipt.json", "OTESTER",
                 regressionEvidenceDigest(), "otester-key-1", "otester");
         writeSignedReceipt("oaudit/receipt.json", "OAUDIT", sha256(otester), "oaudit-key-1", "oaudit");
         assertEquals(Decision.PASS, new LocalEvidenceVerifier().verify(runRoot).decision());
+    }
+
+    @Test
+    void rejectsFalseIndependentAuthorityClaim() throws Exception {
+        writeSameRegressionEvidence();
+        Path otester = writeSignedReceipt("otester/receipt.json", "OTESTER",
+                regressionEvidenceDigest(), "otester-false-independent", "otester");
+        Map<String, Object> changed = new ObjectMapper().readValue(otester.toFile(), Map.class);
+        changed.put("independent_authority", true);
+        new ObjectMapper().writeValue(otester.toFile(), changed);
+        writeSignedReceipt("oaudit/receipt.json", "OAUDIT", sha256(otester), "oaudit-false-independent", "oaudit");
+        ValidationResult result = new LocalEvidenceVerifier().verify(runRoot);
+        assertTrue(result.violations().contains("OTESTER_FALSE_INDEPENDENCE_CLAIM"));
+        assertTrue(result.violations().contains("OTESTER_SIGNATURE_INVALID"));
     }
 
     @Test
@@ -207,13 +221,16 @@ class LocalEvidenceVerifierTest {
         Map<String, Object> value = new LinkedHashMap<>();
         value.put("contract", LocalAgentMain.CONTRACT);
         value.put("authority", authority);
+        value.put("authority_class", LocalAgentMain.AUTHORITY_CLASS);
+        value.put("assurance_class", LocalAgentMain.ASSURANCE_CLASS);
+        value.put("independent_authority", false);
         value.put("run_id", authority.toLowerCase() + "-agent-0001");
         value.put("assurance_run_id", RUN_ID);
         value.put("run_started_at", runStartedAt.toString());
         value.put("input_digest", inputDigest);
         value.put("decision", "PASS");
         value.put("created_at", createdAt.toString());
-        value.put("execution_mode", "LOCAL_SEPARATE_JVM");
+        value.put("execution_mode", "LOCAL_SEPARATE_JVM_SAME_ENVIRONMENT");
         value.put("role_policy", LocalRolePolicy.expectedPolicy(authority));
         value.put("evidence_scope", LocalRolePolicy.expectedScope(authority));
         value.put("key_id", keyId);
