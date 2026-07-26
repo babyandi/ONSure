@@ -36,6 +36,7 @@ REQUIRED = [
     "scripts/run-core-modular-twice.sh",
     "scripts/fixture-sandbox-launcher.sh",
     "scripts/onsure-final-stage.sh",
+    "src/main/java/io/onsure/assurance/ExclusiveFileLock.java",
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java",
     "src/main/java/io/onsure/platform/Hashing.java",
     "src/main/java/io/onsure/platform/SourceReferenceBinding.java",
@@ -45,6 +46,11 @@ REQUIRED = [
 ]
 
 SOURCE_ASSERTIONS = {
+    "src/main/java/io/onsure/assurance/ExclusiveFileLock.java": [
+        "ConcurrentHashMap",
+        "lockInterruptibly",
+        "channel.lock()",
+    ],
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
         "TWO_DISTINCT_VERIFIERS_REQUIRED",
         "VALIDATION_RECEIPT_PACK_STALE",
@@ -64,12 +70,12 @@ SOURCE_ASSERTIONS = {
     ],
     "src/main/java/io/onsure/platform/FileValidationStore.java": [
         "ONSURE_VALIDATION_STORAGE_CONTEXT_V1",
-        "FileChannel.open(lockFile",
+        "ExclusiveFileLock",
         "ONSURE_VALIDATION_STORE_REVISION_V1",
     ],
     "src/main/java/io/onsure/platform/ProductCatalog.java": [
         "ONSURE_PRODUCT_CATALOG_REVISION_V1",
-        "FileChannel.open(lockFile",
+        "ExclusiveFileLock",
     ],
     "src/main/java/io/onsure/platform/FixtureHarness.java": [
         "ONSURE_FIXTURE_SANDBOX_MODE",
@@ -157,7 +163,7 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V3",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V4",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
