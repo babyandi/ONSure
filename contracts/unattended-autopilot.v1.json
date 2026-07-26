@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_UNATTENDED_AUTOPILOT_V1",
-  "version": 1,
+  "version": 2,
   "checkpoint_dir": ".onsure/autopilot",
   "maximum_stage_attempts": 3,
   "continue_after_restart": true,
@@ -20,10 +20,11 @@
   ],
   "merge_authorization": {
     "authorized": true,
-    "authority": "USER_EXPLICIT_INSTRUCTION_2026-07-25",
-    "scope": "babyandi/ONSure unattended-autopilot work",
+    "authority": "USER_EXPLICIT_INSTRUCTION_2026-07-26",
+    "scope": "babyandi/ONSure integrated design gap and remediation branch",
     "self_review_must_not_be_misrepresented_as_independent_approval": true,
-    "required_before_merge": [
+    "repository_merge_may_proceed_for_nonfinal_integration": true,
+    "final_release_still_requires": [
       "OTESTER_SEPARATE_PROCESS_PASS",
       "OAUDIT_SEPARATE_PROCESS_PASS",
       "REGRESSION_TWO_RUN_PASS",
@@ -31,13 +32,14 @@
       "PR_HEAD_EQUALS_VERIFIED_SOURCE",
       "LATEST_MAIN_CONVERGED",
       "UNRESOLVED_REVIEW_THREADS_ZERO",
-      "P0_P1_OPEN_ZERO"
+      "P0_P1_OPEN_ZERO",
+      "HUMAN_ACCEPTANCE_PASS"
     ]
   },
   "stages": [
     {
       "id": "preflight",
-      "command": ["bash", "scripts/preflight-local-assurance.sh"],
+      "command": ["bash", "scripts/preflight-local-assurance.sh", "--profile", "core"],
       "required_marker": "LOCAL_ASSURANCE_PREFLIGHT_PASS",
       "depends_on": []
     },
@@ -67,8 +69,9 @@
     }
   ],
   "terminal_gate": {
-    "state": "MERGE_AUTHORIZED_READY",
-    "reason": "USER_AUTHORIZED_MERGE_AFTER_INDEPENDENT_GATES",
-    "operational_ready_only": true
+    "state": "WAITING_HUMAN_GATE",
+    "reason": "SELF_VALIDATION_NONFINAL_ONLY",
+    "operational_ready_only": true,
+    "final_claim_allowed": false
   }
 }

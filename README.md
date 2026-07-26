@@ -1,91 +1,106 @@
 # ONSURE
 
-ONSURE는 AI 프로그램을 자동으로 학습하고, 실제 수행 결과를 검증하며, 발견된 결함과 부족한 부분을 자동 보완 개발하는 독립형 상용 제품입니다.
-
-ONSURE는 ORUDA의 하위 프로그램이나 전용 검증기가 아닙니다. 제품, 저장소, 실행 환경, 사용자 경험, 라이선스, 판매 및 고객 지원 체계를 독립적으로 유지합니다. 향후 ORUDA가 ONSURE의 기능을 내장할 수 있으나, 이는 별도 제품인 ONSURE의 독립성과 기능 소유권을 변경하지 않습니다.
-
-## 제품 한 문장
-
-> 등록된 AI 프로그램의 목적과 행동을 학습하고, 반복 시험으로 부족함을 발견하며, 검증 가능한 방식으로 스스로 보완하는 AI 프로그램 개선 제품
-
-## 핵심 루프
-
-```text
-대상 AI 프로그램 등록
-→ 프로그램·행동 학습
-→ 기준선과 시험 시나리오 생성
-→ 기능·정확성·정책·안전성 검증
-→ 결함·누락·성능 저하 진단
-→ 코드·프롬프트·RAG·도구·설정 보완
-→ 수정 전후 재검증
-→ 개선 효과 입증
-→ 학습·실패·개선 이력 축적
-```
-
-## 제품 범위
-
-### 포함
-
-- AI 응용프로그램, AI Agent, RAG 서비스, LLM 기반 업무 프로그램
-- 소스코드, 프롬프트, 모델 설정, 도구 계약, RAG 구성, 테스트와 실행 로그 학습
-- 정상·경계·실패·적대 시나리오 자동 생성
-- 기능·정확성·정책·보안·AI 행동 회귀검증
-- 코드·프롬프트·RAG·도구·설정·테스트 자동 보완
-- 수정 전후 성능과 품질 비교
-- 브랜치·커밋·패치·PR 및 검증 보고서 생성
-- 프로그램별 학습·실패·개선 기억 축적
-
-### 제외
-
-- 기업 전체 지식경영
-- 범용 기반모델의 사전학습
-- 전사 업무혁신 컨설팅
-- 범용 신규 시스템 구축
-- 일반 프로젝트 관리
-- 전사 운영 관제와 감사 플랫폼
-- 일반 문서·보고서·디자인 제작
+ONSURE는 등록된 AI 프로그램과 일반 소프트웨어의 목적·구조·행동을 학습하고, 실제 수행 결과를 검증하며, 확인된 Finding에서 제한적 개선과 재검증을 수행하도록 설계된 독립형 제품입니다.
 
 ## 제품 원칙
 
-1. **Learn before judging** — 검증하기 전에 대상 프로그램을 먼저 이해합니다.
-2. **Improve from evidence** — 추측이 아니라 실행 결과와 재현 가능한 증거에 근거해 보완합니다.
-3. **Prove the improvement** — 수정했다는 사실이 아니라 실제 개선 효과를 입증합니다.
-4. **Preserve intent** — 보완 과정에서 프로그램의 원래 목적과 승인된 정상 동작을 훼손하지 않습니다.
-5. **Standalone first** — 외부 제품 없이 단독 설치·실행·판매 가능한 구조를 기준으로 합니다.
+- **Learn before judging** — 대상 프로그램을 이해한 뒤 검증한다.
+- **Evidence over assertion** — 실행 증거 없는 PASS를 금지한다.
+- **Improve from verified findings** — 임의 기능 개발이 아니라 확인된 Finding에서 개선을 시작한다.
+- **Preserve intent** — 승인된 제품 목적과 정상 동작을 훼손하지 않는다.
+- **Standalone first** — ORUDA 또는 특정 대상 제품 없이 Core가 실행돼야 한다.
+- **Fail closed** — 누락, 충돌, NOT_RUN, PENDING과 독립성 부족을 완료로 바꾸지 않는다.
 
-## 학습 범위
+## 제품 목표 흐름
 
-ONSURE의 학습은 거대한 기업 지식 학습이 아니라, 등록된 AI 프로그램을 개선하는 데 필요한 세 가지 학습으로 제한합니다.
+```text
+Project registration
+→ Program and Behavior Learning
+→ Program Profile
+→ Risk-based Plan and Approval
+→ Review and Verification
+→ Finding and evidence-based RCA
+→ Approved Patch in isolated Worktree
+→ Regression and Before/After Proof
+→ Commit, Push and Draft PR
+→ Evidence and Memory
+→ Restart-safe restoration
+```
 
-- **Program Learning**: 목적, 구조, 규칙, 코드, 프롬프트, RAG, 도구, 실행환경 학습
-- **Behavior Learning**: 성공·실패 입력, 취약 조건, 응답 변동, 도구 오호출과 정책 위반 학습
-- **Improvement Learning**: 어떤 수정이 실제 효과가 있었는지 비교하고 재사용 가능한 개선 경험으로 축적
+## 현재 구현 경계
+
+현재 저장소에는 범용 Fixture 실행, 일부 정적·AI Marker 검사, 파일 기반 Evidence, 검증 보고서, Learning Ledger, RAG 준비 통제와 무인 실행 보조 기능이 포함돼 있습니다.
+
+다음은 아직 Standalone 제품 Full-Chain으로 구현되지 않았습니다.
+
+- 실제 Program Profile과 Behavior Profile 생성
+- 위험 기반 OPlanning
+- 요구사항·설계·정책·코드·AI 전체 OReview
+- Trace 기반 RCA 확정
+- Patch·Hunk 승인·Worktree·Rollback
+- 실제 VS Code Extension과 Local Authenticated API
+- Commit·Push·Draft PR Git Full-Chain
+- Web·Commerce·OLicense·Tenant·Sandbox 운영 기능
+
+정확한 상태는 다음 파일을 권위로 합니다.
+
+- [설계 권위와 적용 범위](docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md)
+- [전체 상세설계 Gap 검증](docs/verification/ONSURE_FULL_DESIGN_GAP_ASSESSMENT_v1.md)
+- [요구사항 추적성 계약](contracts/requirements-traceability.v1.json)
+- [구현 상태 Matrix](status/implementation-matrix.v1.json)
+- [설계 충돌 대장](status/design-conflict-register.v1.json)
+- [누락 기능 대장](status/missing-capability-register.v1.json)
 
 ## 독립 제품 정책
 
-```text
-현재
-ONSURE = 독립 제품
-ORUDA  = 별도 제품
+ONSURE Core 요구사항과 기본 실행은 ORUDA의 경로, 정책, 실행기, 저장소, 데이터 또는 프로그램 구성에 의존해서는 안 됩니다.
 
-향후
-ORUDA가 ONSURE 기능을 내장하거나 별도 Edition으로 제공할 수 있음
-ONSURE Standalone의 독립 판매·배포·발전은 계속 유지
+ORUDA 관련 코드는 선택형 Target Adapter입니다.
+
+```text
+Default: ONSure Core + Generic Target Adapter
+Optional: ONSure Core + ORUDA Adapter Profile
 ```
 
-ONSURE 요구사항과 구현은 ORUDA의 경로, 정책, 실행기, 저장소, 데이터 또는 프로그램 구성에 의존해서는 안 됩니다.
+## 단일 실행 명령
+
+Codespace 이전 정적 검증:
+
+```bash
+bash scripts/onsure-one-shot.sh --static-only
+```
+
+최종 Core 실행환경 검증:
+
+```bash
+bash scripts/onsure-one-shot.sh --profile core
+```
+
+선택형 ORUDA Adapter까지 포함한 검증:
+
+```bash
+bash scripts/onsure-one-shot.sh --profile oruda
+```
+
+각 실행은 `.onsure/one-shot/<UTC timestamp>/`에 단계별 로그, Receipt, Hash와 결과를 저장합니다.
 
 ## 기준 문서
 
 - [제품 기준선](docs/00_PRODUCT_BASELINE.md)
 - [사업계획서](docs/01_BUSINESS_PLAN.md)
-- [제품 요구사항](docs/02_PRODUCT_REQUIREMENTS.md)
-- [학습·검증·보완 아키텍처](docs/03_LEARNING_IMPROVEMENT_ARCHITECTURE.md)
-- [시장·판매 전략](docs/04_MARKET_SALES_PLAN.md)
-- [MVP 및 로드맵](docs/05_MVP_ROADMAP.md)
+- [Claude형 작업환경](docs/02_CLAUDE_LIKE_WORK_ENVIRONMENT.md)
+- [Git·변경관리](docs/03_GIT_AND_CHANGE_GOVERNANCE.md)
+- [VS Code·Agent·Git 구현 로드맵](docs/04_IMPLEMENTATION_ROADMAP_VSCODE_AGENT_GIT.md)
+- [제품 요구사항 및 수용 기준](docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md)
 - [전체 산출물 대장](docs/06_DELIVERABLES_INDEX.md)
-- [ORUDA 관계 정책](docs/07_ORUDA_RELATIONSHIP_POLICY.md)
+- [핵심 아키텍처 및 상태 모델](docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md)
+- [내부 책임 분리](docs/08_INTERNAL_RESPONSIBILITY_SEPARATION.md)
+- [시험·상용화·출시계획](docs/08_TEST_COMMERCIALIZATION_AND_RELEASE_PLAN.md)
+- [프로그램 학습 방법론](docs/09_PROGRAM_LEARNING_METHODOLOGY.md)
+- [Master Design Set](docs/master/00_ONSURE_MASTER_DESIGN_SET.md)
 
-## 상태
+## 판정 상한
 
-현재 문서는 ONSURE을 독립형 AI 프로그램 학습·검증·보완 제품으로 재정의한 제품 기준선입니다. 기존의 검증 중심 표현과 ORUDA 연계 전제는 이 기준선에 맞춰 순차적으로 제거하거나 개정해야 합니다.
+현재 허용 상태는 `SELF_VALIDATION_NONFINAL / HOLD`입니다.
+
+실제 VS Code와 Web Full-Chain, 현재 Source 기준 반복 실행, 독립 OTester·OAudit와 사용자 승인 전에는 Final PASS, FinalLock, Production GO 또는 Commercial GO를 선언하지 않습니다.

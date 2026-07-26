@@ -2,173 +2,96 @@
 
 ## 판정
 
-ONSURE 제품 개발의 권위 구현은 `io.onsure.platform`이다. `io.onsure.assurance`는 독립 검증·영수증·최종 관문을 담당하며, `io.onsure.harness`는 범용 실행 하네스를 담당한다.
-
 ```text
-제품 핵심 구현              완료
-범용 검증 엔진              완료
-일반 프로그램 대상          완료
-AI 프로그램 대상            완료
-ORUDA 대상 어댑터           완료
-실패 유형·근본원인분석       완료
-개선·재검증                 완료
-범용 하네스                 완료
-Maven 컴파일               NOT_RUN
-JUnit                      NOT_RUN
-실제 제품 종단간 시험        NOT_RUN
-개발 관문                   HOLD
+DESIGN_BASELINE                 AVAILABLE
+VALIDATOR_FIXTURE_SLICE         PARTIAL
+FILE_EVIDENCE_AND_RECEIPTS      PARTIAL
+LEARNING_GOVERNANCE             PARTIAL
+PROGRAM_LEARNING                STUB
+BEHAVIOR_LEARNING               STUB
+OPLANNING                       DESIGN_ONLY
+OREVIEW                         STUB
+OIMPROVEMENT_PATCH              DESIGN_ONLY
+VSCODE_EXTENSION                DESIGN_ONLY
+GIT_FULL_CHAIN                  DESIGN_ONLY
+WEB_COMMERCE_OLICENSE           DESIGN_ONLY
+CURRENT_SOURCE_FORMAL_RUN       NOT_RUN
+INDEPENDENT_OTESTER             NOT_RUN
+INDEPENDENT_OAUDIT              NOT_RUN
+STANDALONE_PRODUCT_FULL_CHAIN   BLOCKED
+FINAL_LOCK_ALLOWED              false
 ```
 
-## 제품 핵심부
+## 권위 상태
 
-구현된 기능:
+구현 상태의 기계 판정 권위는 다음 파일이다.
 
-- 작업공간·프로젝트·검증 대상 목록
-- 검증 작업 생성과 상태 전이
-- 실패 시 부분 증적 보존
-- 대상 어댑터 등록소
-- 검증 단계 파이프라인
-- 판정 상한
-- 발견사항·실패 유형·근본원인분석 저장 모델
-- 개선 계획과 승인 필요 분류
-- JSON·Markdown·HTML 검증 보고서
-- 수정 전후 재검증 차이
+- `contracts/requirements-traceability.v1.json`
+- `status/implementation-matrix.v1.json`
+- `status/design-conflict-register.v1.json`
+- `status/missing-capability-register.v1.json`
+- `status/verification-status.v1.json`
 
-## 범용 검증 엔진
+## 현재 존재하는 구현
 
-```text
-대상 입력
-→ 소스 목록
-→ 정적 분석
-→ AI 동작 검증
-→ 시험 데이터·오라클 등록소 봉인
-→ 제한된 프로세스 하네스
-→ 오라클 판정
-→ 실패 유형·근본원인분석
-→ 개선 계획
-→ 회귀 잠금
-→ 독립 제품 검증
-→ 독립 제품 감사
-→ 보고서·영수증·증적 목록
-```
+- Generic과 선택형 ORUDA Target Adapter 구조
+- Source Tree와 Immutable Reference 일부 검증
+- Fixture Registry, 제한된 프로세스 Harness와 Oracle 비교
+- 일부 정적 Marker와 AI Policy Marker 검사
+- Finding, Failure Mode, RCA 후보와 Remediation Plan 저장
+- Regression Digest와 보고서 Export
+- 파일 기반 Evidence와 Manifest
+- Learning Candidate부터 Applied Lock까지의 Ledger 골격
+- RAG 준비 Candidate와 Target Learning 요청·사후 기록
+- 중단·재개 가능한 Repository Autopilot 보조 Runner
 
-핵심 통제:
+## 축소·모의 구현으로 분류하는 이유
 
-- 실제 프로세스 출력·종료 코드·시간 제한 증적
-- 인라인 셸·절대경로·대상 루트 이탈 차단
-- 전역 실패 유형 등록소
-- 해시 봉인된 검증·감사 영수증
-- 대상 자체 최종 판정 작성 차단
+- AI Behavior 단계는 실제 모델·Agent·Tool 실행 대신 Marker를 검색한다.
+- RCA는 Trace와 인과 실험 대신 Category Template을 사용한다.
+- Remediation은 Patch를 만들지 않고 계획 문구만 기록한다.
+- Before/After는 Finding Fingerprint 집합의 차이를 비교한다.
+- `.vscode/tasks.json`과 Python Runner는 실제 VS Code Extension이 아니다.
+- ProductPlatformE2E는 제품 Full-Chain이 아니라 Validator Fixture E2E다.
 
-## 일반 프로그램 종단간 대상
+## 이번 기준선에서 추가된 Codespace-free 보완
 
-결함본:
+- 설계 권위와 문서 우선순위
+- 통일된 상태 용어
+- Core와 Optional Adapter 경계
+- Program, Behavior, Failure, Improvement, Evidence Schema
+- 전체 요구사항 추적성
+- 구현·충돌·누락 대장
+- Core/ORUDA Profile Preflight
+- 단일 실행기
+- Repository Contract Validator
+- 과장된 구현 완료 표현과 오래된 상태 기준선 교정
 
-- 비밀정보 노출
-- 미완성 표시
-- 권한 오류
+## 남은 P0 구현
 
-수정본:
+1. 실제 Repository Understanding과 Program Profile
+2. 반복 실행 기반 Behavior Profile
+3. Risk-based OPlanning과 승인
+4. 요구사항·Architecture·Policy·Code·AI 전체 OReview
+5. 재현·최초 실패·Trace 기반 RCA
+6. Patch·Hunk 승인·Worktree·Rollback
+7. 동일 검증 맥락의 Before/After Proof
+8. Local Authenticated API
+9. 실제 VS Code Extension
+10. Git Commit·Push·Draft PR Full-Chain
 
-- 비밀정보 제거
-- 권한 판정 수정
-- 회귀검증 기대값 고정
+## 최종 실행
 
-실제 Java 컴파일과 프로세스 시험 코드는 구현돼 있으나 공식 실행 결과는 `NOT_RUN`이다.
-
-## AI 프로그램 종단간 대상
-
-검증 항목:
-
-- 신뢰하지 않은 도구 실행
-- 에이전트 자기 승인
-- 프롬프트 주입 우회
-- 전체 문맥 유출
-- 안전·적대 도구 호출
-- 정책과 실제 행동 불일치
-
-시험 대상 실행 스크립트는 존재하지만 ONSURE 전체 엔진의 공식 `PASS` 증거는 아직 없다.
-
-## ORUDA 대상
-
-구현 범위:
-
-- 독립 외부 대상 어댑터
-- ORUDA의 ONSURE 최종 판정 작성 차단
-- 실행 감사 위조·에이전트 자기 승인 시험
-- 실행 패키지 목록
-- 증적 등록소
-- 실행 결과 분류기
-- 영수증 계보 검증기
-- MVF-001 실행 시험 데이터
-
-ORUDA는 ONSURE 핵심 의존성이 아니며 후순위 대상 팩으로 유지한다.
-
-## 범용 하네스
-
-구현 범위:
-
-- 필수 검증 축 30개
-- 시험 데이터 유형 7개
-- 제한된 프로세스 실행
-- 시간 제한·출력 제한
-- 증적·시험·실행 영수증
-- SHA-256 증적 목록
-- 실패 시 `RCA_PENDING`
-- 독립 회귀검증 2회
-- 서로 다른 운영자의 독립 실행 2회
-- 최종 후보 차단 규칙
-
-## 실행 명령
-
-제품 플랫폼 종단간 시험:
+Codespace 또는 동등 환경은 위 Codespace-free 변경이 병합된 뒤 마지막에 사용한다.
 
 ```bash
-bash scripts/run-product-platform-e2e.sh
+bash scripts/onsure-one-shot.sh --profile core
 ```
 
-범용 하네스 독립 2회:
+ORUDA Adapter까지 검증할 경우에만 다음을 실행한다.
 
 ```bash
-bash scripts/run-universal-harness-twice.sh \
-  operator-independent-1 operator-independent-2 local-jdk17
+bash scripts/onsure-one-shot.sh --profile oruda
 ```
 
-전체 개발 관문:
-
-```bash
-bash scripts/run-onsure-development-gate.sh
-```
-
-## 성공 조건
-
-```text
-ONSURE_PRODUCT_PLATFORM_E2E_PASS
-ONSURE_UNIVERSAL_TWO_RUN_PASS
-ISSUE4_FINAL_GATE_EVIDENCE_READY
-ONSURE_DEVELOPMENT_GATE_PASS
-```
-
-성공 표식만으로 통과할 수 없다. 종료 코드, 영수증, 증적 SHA-256, 읽기 전용 재검증 결과가 모두 필요하다.
-
-## 남은 작업
-
-- JDK 17·Maven 실행 환경 준비
-- Maven 컴파일·JUnit 실행
-- 제품 종단간 시험 2회
-- 범용 하네스 독립 2회
-- ONSURE 자체 보증
-- 실패 시 근본원인분석·수정·전체 회귀검증
-- 개발 관문 성공
-- 증적 고정과 독립 검토
-
-## 정확한 현재 상태
-
-```text
-IMPLEMENTATION        COMPLETE
-STATIC_INTEGRATION    COMPLETE
-FORMAL_EXECUTION      NOT_RUN
-DEVELOPMENT_GATE      HOLD
-FINAL_CANDIDATE       BLOCKED
-FINAL_LOCK_ALLOWED    false
-```
+실행 성공은 `SELF_VALIDATION_NONFINAL`까지만 허용한다. 독립 OTester·OAudit와 실제 제품 Full-Chain이 없는 상태에서 Final PASS, FinalLock, Production GO 또는 Commercial GO를 부여하지 않는다.

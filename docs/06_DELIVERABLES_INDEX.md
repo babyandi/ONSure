@@ -1,6 +1,28 @@
 # ONSURE 전체 산출물 대장
 
-이 문서는 ONSURE를 독립형 AI 프로그램 학습·검증·보완 제품으로 재정의한 뒤 다시 작성해야 하는 전체 산출물을 관리합니다.
+이 문서는 ONSURE 독립 제품의 설계·계약·구현·시험·운영 산출물을 관리한다. 문서 완료와 구현 완료를 분리하며, 실제 실행 증거 전에는 PASS를 주장하지 않는다.
+
+## 0. 권위·추적성
+
+- [x] 설계 권위와 문서 우선순위
+- [x] 구현·검증 상태 용어 계약
+- [x] Core와 Optional Target Adapter 경계
+- [x] 제품·검증·개선·Git·출시 State Machine 분리와 Mapping
+- [x] Requirement → Design → Contract → Code → Test → Evidence 추적성 기준선
+- [x] 상세설계 Gap 검증 보고서
+- [x] 구현 Matrix
+- [x] 설계 충돌 대장
+- [x] 누락 기능 대장
+- [x] 단일 실행기와 Runbook
+
+권위 파일:
+
+- `docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md`
+- `contracts/status-vocabulary.v1.json`
+- `contracts/core-extension-boundary.v1.json`
+- `contracts/state-model-mapping.v1.json`
+- `contracts/requirements-traceability.v1.json`
+- `status/implementation-matrix.v1.json`
 
 ## A. 사업·제품
 
@@ -8,8 +30,8 @@
 - [x] 사업계획서
 - [ ] 시장·경쟁 분석
 - [ ] 고객 세그먼트와 페르소나
-- [ ] 제품·Edition·가격 정책
-- [ ] 영업전략과 파트너 전략
+- [ ] 제품·Edition·가격 확정
+- [ ] 영업·파트너 전략
 - [ ] 투자·수익·비용 계획
 - [x] 사업 위험과 대응 원칙
 
@@ -29,13 +51,16 @@
 - [x] Behavior Learning 상위 정의
 - [x] Improvement Learning 상위 정의
 - [x] 증거 결속형 프로그램 학습 방법론
-- [x] 학습 후보 상태·승격·롤백 기계 계약
-- [ ] Program Model JSON Schema
-- [ ] Behavior Model JSON Schema
-- [ ] Failure Memory JSON Schema
-- [ ] Improvement Memory JSON Schema
-- [x] 프로젝트 기억·범용 패턴 분리 원칙
-- [x] 학습 후보 생성·검증·승격·롤백 상위 계약
+- [x] 학습 후보 상태·승격·롤백 상위 계약
+- [x] Program Profile JSON Schema
+- [x] Behavior Profile JSON Schema
+- [x] Failure Memory JSON Schema
+- [x] Improvement Memory JSON Schema
+- [x] 프로젝트 기억과 범용 패턴 분리 원칙
+- [ ] 실제 Repository Understanding Engine
+- [ ] 실제 Behavior Observation Engine
+- [ ] 증분 학습과 Profile Revision Runtime
+- [ ] 독립 승격·폐기·롤백 Runtime
 
 ## D. 검증 체계
 
@@ -43,20 +68,27 @@
 - [x] 정상·경계·실패·적대 시나리오 체계
 - [x] 코드·프롬프트·RAG·도구·모델 검증 상위 계약
 - [x] AI 행동 회귀검증 기준
-- [x] 근본원인분석 상위 계약
+- [x] RCA 상위 계약
 - [x] 독립 판정과 자기검증 방지 원칙
-- [x] 내부 책임 분리와 자기승인 차단 계약
-- [x] Evidence Ledger 상위 계약
-- [ ] 세부 Receipt JSON Schema
+- [x] 내부 책임 분리 계약
+- [x] 상세 Evidence Receipt JSON Schema
+- [x] 범용 Fixture·Harness 부분 구현
+- [ ] 실제 Build·API·Container·Performance·Recovery 검증
+- [ ] 실제 Model·Agent·Tool·RAG 행동 검증
+- [ ] Trace 기반 RCA 확정 Runtime
 
 ## E. 자동 보완 개발
 
 - [x] 수정 유형과 허용 범위
 - [x] 위험도 분류와 자동 적용 정책
-- [x] 코드·프롬프트·RAG·도구·설정 보완 상위 계약
-- [x] Patch·Branch·Commit 계약
-- [x] Before/After 개선 비교 기준
+- [x] Patch·Branch·Commit 상위 계약
+- [x] Before/After 상위 기준
 - [x] 회귀 차단과 롤백 정책
+- [ ] 실제 Patch 생성
+- [ ] 파일·Hunk 승인
+- [ ] Worktree 적용과 Rollback
+- [ ] Test 생성·수정
+- [ ] 동일 환경 Before/After 기계 판정
 
 ## F. 아키텍처·설계
 
@@ -66,30 +98,35 @@
 - [x] 내부 프로그램 책임 분리 기준
 - [x] 핵심 데이터 객체
 - [x] API·CLI·IDE 인터페이스 원칙
-- [x] 실행 상태 모델
-- [x] 모델 공급자와 실행 엔진 추상화
+- [x] 실행 상태 모델 상위 정의
+- [x] 제품·검증·출시 State Machine 명시적 Mapping
+- [x] 모델 Provider 추상화 원칙
+- [ ] Java Runtime 상태 모델 Migration
 - [ ] 상세 DB 모델
-- [ ] Local API 명세
+- [ ] Local Authenticated API 명세
 - [ ] 멀티테넌시·격리 상세 설계
 
 ## G. VS Code·Claude형 환경
 
 - [x] VS Code 정보구조
 - [x] Chat·Ask·Plan·Act·Autopilot 정의
-- [x] Program Profile·Learning·Verification·Improvement View
-- [x] Diff·승인·Git & PR 사용자 흐름
+- [x] Program Profile·Review·Verification·Improvement View 설계
+- [x] Diff·승인·Git & PR 사용자 흐름 설계
 - [x] 상태 지속성과 재접속 복구 기준
-- [ ] 상세 화면 Wireframe
-- [ ] VS Code Extension 명령·Contribution 명세
+- [ ] 실제 VS Code Extension Shell
+- [ ] Command·Contribution 명세
+- [ ] View·Webview·인증·승인 UI
 - [ ] 접근성·단축키·오류 UX
+- [ ] Extension Host Full-Chain 시험
 
 ## H. Git·변경관리
 
-- [x] Dirty Workspace 보호
+- [x] Dirty Workspace 보호 원칙
 - [x] Worktree·Branch 정책
 - [x] Diff·Patch·Commit 계약
-- [x] Push·Draft PR·CI 연결
+- [x] Push·Draft PR·CI 연결 설계
 - [x] Merge·Rollback 정책
+- [ ] 실제 Worktree·Branch·Commit·Push·Draft PR Engine
 - [ ] GitHub Adapter 상세 API
 - [ ] GitLab Adapter 상세 API
 
@@ -100,60 +137,61 @@
 - [x] 필수 E2E 시나리오
 - [x] 보안·적대·장애·복구 시험 원칙
 - [x] MVP Full-Chain 수용 기준
+- [x] Repository 정적 계약 검증기
+- [x] Profile 기반 단일 실행기
 - [ ] 저장소 구조와 코딩 규칙
 - [ ] Golden·비공개 Fixture 상세 계획
-- [ ] 성능 목표 수치
-- [ ] 독립 기술검토·Blind Review 절차
+- [ ] 정량 성능 목표
+- [ ] 독립 기술검토·Blind Review 운영 절차
+- [ ] 실제 저장소 Full-Chain 2회
 
 ## J. 운영·상용화
 
-- [x] Developer·Team·Enterprise·Assessment·Embedded Edition
+- [x] 상품·Edition 상위 구조
 - [x] 출시 단계와 출시 관문
 - [x] 가격 구성 원칙
 - [x] PoC 성공 기준
 - [x] KPI와 출시 금지 조건
+- [ ] Web·Commerce·Payment·Refund Runtime
+- [ ] OLicense 전 수명주기 Runtime
+- [ ] Identity·Tenant·Sandbox·Queue·Storage
 - [ ] 설치·구성 가이드
 - [ ] 사용자·관리자 매뉴얼
 - [ ] SLA·지원 정책
-- [ ] 개인정보·데이터 보존 정책
+- [ ] 개인정보·데이터 보존·Legal Hold 정책
 - [ ] 릴리스·업그레이드·호환성 정책
-- [ ] 제품 소개서·IR·제안서·데모 자료
 
 ## K. ORUDA 관계
 
-- [x] 현재 제품·기술·판매상 무관계 원칙
-- [x] 향후 Embedded/OEM 적용 원칙
-- [x] ONSURE Standalone 기준 구현 원칙
-- [ ] 기존 저장소 내 ORUDA 전용 표현·계약 전수 제거
-- [ ] ORUDA 내장 시 별도 Adapter·라이선스 계약
+- [x] ONSURE Standalone 독립 원칙
+- [x] ORUDA를 선택형 Target Adapter로 정의
+- [x] Core Preflight와 ORUDA Profile 분리
+- [x] ValidationEngine 기본 Adapter 등록과 선택형 ORUDA 등록 분리
+- [ ] Runtime 실행 증거
+- [ ] ORUDA Embedded/OEM 라이선스 계약
+- [ ] ORUDA Adapter 독립 패키징
 
-## 현재 기준 문서
+## Codespace 실행 정책
 
-- `README.md`
-- `docs/00_PRODUCT_BASELINE.md`
-- `docs/01_BUSINESS_PLAN.md`
-- `docs/02_CLAUDE_LIKE_WORK_ENVIRONMENT.md`
-- `docs/03_GIT_AND_CHANGE_GOVERNANCE.md`
-- `docs/04_IMPLEMENTATION_ROADMAP_VSCODE_AGENT_GIT.md`
-- `docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md`
-- `docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md`
-- `docs/08_INTERNAL_RESPONSIBILITY_SEPARATION.md`
-- `docs/08_TEST_COMMERCIALIZATION_AND_RELEASE_PLAN.md`
-- `docs/09_PROGRAM_LEARNING_METHODOLOGY.md`
-- `contracts/internal-responsibility-separation.v1.yaml`
-- `contracts/program-learning-methodology.v1.yaml`
+Codespace 또는 동등 실행환경은 모든 Codespace-free 설계·계약·코드·PR 보완이 끝난 뒤 마지막에 사용한다.
 
-## 실행 대장
+최종 단일 명령:
 
-실제 구현은 GitHub Issue #2의 L0~L7 Lane으로 관리합니다.
+```bash
+bash scripts/onsure-one-shot.sh --profile core
+```
 
-## 재작성 원칙
+ORUDA Adapter는 필요할 때만 다음 명령으로 별도 검증한다.
 
-1. ONSURE는 독립 판매되는 완결형 제품입니다.
-2. ORUDA는 현재 ONSURE의 고객, 구성요소, 첫 검증 대상 또는 필수 의존성이 아닙니다.
-3. ONSURE의 중심은 검증만이 아니라 프로그램 학습·행동 학습·개선 학습입니다.
-4. 자동 보완 개발은 학습 또는 검증으로 확인된 개선 필요에서 시작합니다.
-5. VS Code·CLI·Local Runtime·Git Full-Chain은 핵심 제품 범위입니다.
-6. 기업 전체 학습, 범용 신규 개발, 전사 운영 플랫폼으로 범위를 확대하지 않습니다.
-7. 향후 ORUDA 내장 가능성은 Embedded/OEM 배포 시나리오로만 기술합니다.
-8. 문서 완료와 구현 완료를 혼동하지 않으며 실제 시험 전에는 `PASS`를 주장하지 않습니다.
+```bash
+bash scripts/onsure-one-shot.sh --profile oruda
+```
+
+## 현재 판정
+
+- Standalone product Full-Chain: `BLOCKED`
+- Current source formal execution: `NOT_RUN`
+- Independent OTester/OAudit: `NOT_RUN`
+- FinalLock: `false`
+- Production GO: `false`
+- Commercial GO: `false`

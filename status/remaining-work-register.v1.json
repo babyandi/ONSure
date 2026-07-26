@@ -1,41 +1,61 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
+  "assessment_date": "2026-07-26",
+  "authority": "status/missing-capability-register.v1.json",
   "items": [
     {
-      "id": "AUTOPILOT-SELF-VERIFY",
-      "state": "READY",
+      "id": "P0-CORE-ADAPTER-SEPARATION",
+      "state": "REMEDIATION_IN_BRANCH",
       "requires_human": false,
-      "next_action": "Run the unattended autopilot test suite and two-run regression."
+      "next_action": "Validate the core profile without ORUDA and refactor default engine registration if runtime tests reveal coupling."
     },
     {
-      "id": "ORUDA-OBUILDER-REAL-E2E",
-      "state": "BLOCKED_EXTERNAL_WORKSPACE",
+      "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
+      "state": "BLOCKED_IMPLEMENTATION",
       "requires_human": false,
-      "next_action": "Open or attach the ORUDA target workspace and bind real OBuilder receipts."
+      "next_action": "Implement repository understanding, Program Profile generation and repeated behavior observation against the new schemas."
     },
     {
-      "id": "ODESIGN-RAG-REAL-E2E",
-      "state": "BLOCKED_EXTERNAL_WORKSPACE",
+      "id": "P0-PLANNING-OREVIEW-RCA",
+      "state": "BLOCKED_IMPLEMENTATION",
       "requires_human": false,
-      "next_action": "Open or attach the ODesign target workspace and materialize its RAG environment."
+      "next_action": "Implement risk planning, full review domains and evidence-based RCA candidate confirmation."
+    },
+    {
+      "id": "P0-IMPROVEMENT-GIT",
+      "state": "BLOCKED_IMPLEMENTATION",
+      "requires_human": false,
+      "next_action": "Implement patch planning, hunk approval, worktree, rollback, regression proof and Draft PR flow."
+    },
+    {
+      "id": "P0-VSCODE-LOCAL-API",
+      "state": "BLOCKED_IMPLEMENTATION",
+      "requires_human": false,
+      "next_action": "Implement the actual VS Code Extension and authenticated local runtime API."
+    },
+    {
+      "id": "FINAL-CODESPACE-EXECUTION",
+      "state": "DEFERRED_LAST_STAGE",
+      "requires_human": false,
+      "next_action": "Run scripts/onsure-one-shot.sh only after codespace-free contracts, code and PR work are complete."
     },
     {
       "id": "INDEPENDENT-OTESTER-OAUDIT",
       "state": "BLOCKED_INDEPENDENT_AUTHORITY",
       "requires_human": false,
-      "next_action": "Run separate processes, execution identities, and signing keys."
+      "next_action": "Use separate execution identities and signing keys after runtime Full-Chain succeeds."
     },
     {
-      "id": "APPROVE-AND-MERGE",
+      "id": "HUMAN-ACCEPTANCE",
       "state": "WAITING_HUMAN_GATE",
       "requires_human": true,
-      "next_action": "Obtain Human Decision Owner Permit."
+      "next_action": "Approve product scope and real-user acceptance only after evidence is available."
     },
     {
       "id": "OPERATIONAL",
       "state": "HOLD",
       "requires_human": true,
-      "next_action": "Stop at OPERATIONAL_READY until Production GO is explicitly granted."
+      "next_action": "Keep FinalLock, Production GO and Commercial GO false until every release gate passes."
     }
   ]
 }

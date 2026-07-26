@@ -6,24 +6,25 @@ cd "$ROOT"
 
 for command in java javac mvn git bash sha256sum cmp; do
   command -v "$command" >/dev/null 2>&1 || {
-    echo "PRODUCT_E2E_FAIL MISSING_COMMAND_$command" >&2
+    echo "VALIDATOR_FIXTURE_E2E_FAIL MISSING_COMMAND_$command" >&2
     exit 69
   }
 done
 JAVA_MAJOR="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}')"
 JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
 [[ "$JAVA_MAJOR" == "17" && "$JAVAC_MAJOR" == "17" ]] || {
-  echo "PRODUCT_E2E_FAIL JDK_17_REQUIRED_FOUND_java_${JAVA_MAJOR:-unknown}_javac_${JAVAC_MAJOR:-unknown}" >&2
+  echo "VALIDATOR_FIXTURE_E2E_FAIL JDK_17_REQUIRED_FOUND_java_${JAVA_MAJOR:-unknown}_javac_${JAVAC_MAJOR:-unknown}" >&2
   exit 70
 }
 [[ -z "$(git status --porcelain --untracked-files=no)" ]] || {
-  echo "PRODUCT_E2E_FAIL TRACKED_WORKTREE_DIRTY" >&2
+  echo "VALIDATOR_FIXTURE_E2E_FAIL TRACKED_WORKTREE_DIRTY" >&2
   exit 72
 }
 
-bash "$ROOT/scripts/preflight-local-assurance.sh"
+# This runner includes the optional ORUDA fixture pack and therefore uses the explicit profile.
+bash "$ROOT/scripts/preflight-local-assurance.sh" --profile oruda
 bash "$ROOT/scripts/preflight-universal-harness.sh"
-OUT="$ROOT/receipts/product-e2e/$(date -u +%Y%m%dT%H%M%SZ)-$$"
+OUT="$ROOT/receipts/validator-fixture-e2e/$(date -u +%Y%m%dT%H%M%SZ)-$$"
 mkdir -p "$OUT/test-1" "$OUT/test-2" "$OUT/execution-1" "$OUT/execution-2"
 
 run_tests() {
@@ -60,11 +61,11 @@ java -cp "$CP" io.onsure.platform.ProductPlatformE2EMain "$OUT/execution-2" \
 cmp "$OUT/execution-1/normalized-result.json" "$OUT/execution-2/normalized-result.json"
 for run in execution-1 execution-2; do
   [[ -s "$OUT/$run/general-program-revalidation-delta.json" ]] || {
-    echo "PRODUCT_E2E_FAIL REVALIDATION_DELTA_MISSING_$run" >&2
+    echo "VALIDATOR_FIXTURE_E2E_FAIL REVALIDATION_DELTA_MISSING_$run" >&2
     exit 80
   }
   [[ -s "$OUT/$run/execution-inventory.json" ]] || {
-    echo "PRODUCT_E2E_FAIL EXECUTION_INVENTORY_MISSING_$run" >&2
+    echo "VALIDATOR_FIXTURE_E2E_FAIL EXECUTION_INVENTORY_MISSING_$run" >&2
     exit 80
   }
 done
@@ -74,6 +75,6 @@ sha256sum \
   "$OUT/test-2/test-summary.txt" "$OUT/test-2/classes.sha256" "$OUT/test-2/test-classes.sha256" \
   "$OUT/execution-1/normalized-result.json" "$OUT/execution-1/general-program-revalidation-delta.json" \
   "$OUT/execution-2/normalized-result.json" "$OUT/execution-2/general-program-revalidation-delta.json" \
-  > "$OUT/product-e2e-lock.sha256"
+  > "$OUT/validator-fixture-e2e-lock.sha256"
 
-printf 'ONSURE_PRODUCT_PLATFORM_E2E_PASS %s\n' "$OUT"
+printf 'ONSURE_VALIDATOR_FIXTURE_E2E_PASS %s\n' "$OUT"

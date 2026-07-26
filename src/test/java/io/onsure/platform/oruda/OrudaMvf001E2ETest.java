@@ -61,7 +61,7 @@ class OrudaMvf001E2ETest {
     }
 
     @Test
-    void mvfRunsThroughOrudaAdapterHarnessOracleEvidenceRcaAndRegressionLock() throws Exception {
+    void mvfRunsThroughExplicitOrudaAdapterHarnessOracleEvidenceRcaAndRegressionLock() throws Exception {
         ValidationTarget target = new ValidationTarget(
                 "ORUDA-MVF-001",
                 "ORUDA Minimum Viable Fixture Set",
@@ -72,7 +72,7 @@ class OrudaMvf001E2ETest {
                 "ONSURE_ORUDA_MVF_POLICY_V1",
                 "LOCAL_MVF_E2E");
 
-        ValidationEngine.RunResult result = ValidationEngine.defaultEngine(temp.resolve("runs")).run(target);
+        ValidationEngine.RunResult result = ValidationEngine.withOrudaAdapter(temp.resolve("runs")).run(target);
         assertEquals(Decision.PASS, result.report().decision());
         assertEquals(17, result.report().fixtureResults().size());
         assertTrue(result.report().fixtureResults().stream()

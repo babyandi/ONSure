@@ -1,0 +1,38 @@
+{
+  "contract": "ONSURE_STATUS_VOCABULARY_V1",
+  "version": "1.0.0",
+  "implementation_states": [
+    "IMPLEMENTED",
+    "PARTIAL",
+    "STUB",
+    "DESIGN_ONLY",
+    "NOT_RUN",
+    "BLOCKED",
+    "CONFLICT",
+    "DEPRECATED"
+  ],
+  "run_decisions": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "HOLD",
+    "NOT_RUN",
+    "INCONCLUSIVE",
+    "NON_FINAL"
+  ],
+  "rules": {
+    "file_exists_is_not_implemented": true,
+    "compiled_is_not_runtime_pass": true,
+    "self_validation_is_nonfinal": true,
+    "not_run_cannot_be_pass": true,
+    "blocked_cannot_be_fail_without_cause": true,
+    "independent_receipt_required_for_final": true,
+    "current_source_baseline_required": true
+  },
+  "final_claims": {
+    "allowed_before_full_chain": false,
+    "allowed_before_independent_otester": false,
+    "allowed_before_independent_oaudit": false,
+    "allowed_before_human_gate": false
+  }
+}
