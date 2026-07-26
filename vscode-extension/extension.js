@@ -1,17 +1,16 @@
 'use strict';
 
 const vscode = require('vscode');
-const crypto = require('crypto');
+const fs = require('fs');
 const path = require('path');
 
 const TOKEN_KEY = 'onsure.localApiToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
 const LAST_PROFILE_KEY = 'onsure.lastProgramProfile';
+const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
 
 class ApiClient {
-  constructor(context) {
-    this.context = context;
-  }
+  constructor(context) { this.context = context; }
 
   get baseUrl() {
     const configured = vscode.workspace.getConfiguration('onsure').get('localApiUrl');
@@ -40,7 +39,7 @@ class ApiClient {
 
   async request(route, method = 'GET', body) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000);
+    const timeout = setTimeout(() => controller.abort(), 180000);
     try {
       const token = await this.token();
       const response = await fetch(`${this.baseUrl}${route}`, {
@@ -65,6 +64,14 @@ class ApiClient {
       clearTimeout(timeout);
     }
   }
+
+  async workflow(operation, request) {
+    const response = await this.request('/v1/workflow', 'POST', { operation, request });
+    if (!response.workflow || response.workflow.operation !== operation) {
+      throw new Error('Local API workflow response is not bound to the requested operation.');
+    }
+    return response.workflow;
+  }
 }
 
 class AssuranceTreeProvider {
@@ -77,13 +84,8 @@ class AssuranceTreeProvider {
     this.error = null;
   }
 
-  refresh() {
-    this._onDidChangeTreeData.fire(undefined);
-  }
-
-  getTreeItem(element) {
-    return element;
-  }
+  refresh() { this._onDidChangeTreeData.fire(undefined); }
+  getTreeItem(element) { return element; }
 
   async getChildren(element) {
     if (element) return element.children || [];
@@ -101,16 +103,22 @@ class AssuranceTreeProvider {
       items.push(item('Runtime', this.status.state || 'UNKNOWN', 'server-process'));
       items.push(item('Program Learning', this.status.program_learning || 'UNKNOWN', 'symbol-class'));
       items.push(item('Behavior Learning', this.status.behavior_learning || 'UNKNOWN', 'pulse'));
+      items.push(item('Planning / Review / RCA', this.status.planning_review_rca || 'UNKNOWN', 'checklist'));
       items.push(item('Validation', this.status.validation || 'UNKNOWN', 'beaker'));
       items.push(item('Improvement', this.status.patch_application || 'UNKNOWN', 'diff'));
+      items.push(item('Improvement Proof', this.status.improvement_proof || 'UNKNOWN', 'verified-filled'));
       items.push(item('Git Delivery', this.status.git_delivery || 'UNKNOWN', 'git-pull-request'));
+      items.push(item('OLicense', this.status.license || 'UNKNOWN', 'key'));
+      items.push(item('Service Case', this.status.service_case || 'UNKNOWN', 'briefcase'));
       items.push(item('Independent OTester', this.status.independent_otester || 'NOT_RUN', 'shield'));
       items.push(item('Independent OAudit', this.status.independent_oaudit || 'NOT_RUN', 'verified'));
     }
-    const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
     const lastProfile = this.context.workspaceState.get(LAST_PROFILE_KEY);
+    const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
+    const lastWorkflow = this.context.workspaceState.get(LAST_WORKFLOW_KEY);
     if (lastProfile) items.push(item('Last Program Profile', lastProfile, 'json'));
     if (lastRun) items.push(item('Last Run', lastRun, 'folder-opened', 'onsure.openLastArtifact'));
+    if (lastWorkflow) items.push(item('Last Workflow', lastWorkflow, 'run-all'));
     return items;
   }
 }
@@ -128,6 +136,16 @@ function workspaceRoot() {
   const folder = vscode.workspace.workspaceFolders?.[0];
   if (!folder) throw new Error('Open a workspace folder before using ONSure.');
   return folder.uri.fsPath;
+}
+
+function requireInsideWorkspace(file) {
+  const root = path.resolve(workspaceRoot());
+  const candidate = path.resolve(file);
+  const relative = path.relative(root, candidate);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('Workflow request file must be inside the active workspace.');
+  }
+  return candidate;
 }
 
 async function showJson(title, value) {
@@ -150,11 +168,28 @@ async function activate(context) {
   statusBar.command = 'onsure.refresh';
   statusBar.show();
 
+  async function executeWorkflow(operation, request, title) {
+    const workflow = await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: `ONSure: ${title}`,
+      cancellable: false
+    }, () => client.workflow(operation, request));
+    await context.workspaceState.update(LAST_WORKFLOW_KEY, operation);
+    const result = workflow.result || {};
+    if (result.run_root) await context.workspaceState.update(LAST_RUN_KEY, result.run_root);
+    if (result.output_file) await context.workspaceState.update(LAST_PROFILE_KEY, result.output_file);
+    output.appendLine(`[${new Date().toISOString()}] ${operation}: ${JSON.stringify(result)}`);
+    provider.refresh();
+    await showJson(`${title} — SELF_VALIDATION_NONFINAL`, workflow);
+    return workflow;
+  }
+
   context.subscriptions.push(view, output, statusBar,
     vscode.commands.registerCommand('onsure.configure', async () => {
+      const current = vscode.workspace.getConfiguration('onsure').get('localApiUrl') || 'http://127.0.0.1:47311';
       const url = await vscode.window.showInputBox({
         title: 'ONSure Local API URL',
-        value: client.baseUrl,
+        value: String(current),
         validateInput: value => /^http:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):\d{2,5}\/?$/.test(value)
           ? undefined : 'Use a loopback URL such as http://127.0.0.1:47311.'
       });
@@ -166,6 +201,10 @@ async function activate(context) {
       });
       if (token) await context.secrets.store(TOKEN_KEY, token);
       provider.refresh();
+    }),
+    vscode.commands.registerCommand('onsure.clearToken', async () => {
+      await context.secrets.delete(TOKEN_KEY);
+      vscode.window.showInformationMessage('ONSure Local API token cleared.');
     }),
     vscode.commands.registerCommand('onsure.refresh', async () => provider.refresh()),
     vscode.commands.registerCommand('onsure.learnProgram', async () => {
@@ -182,16 +221,10 @@ async function activate(context) {
         });
         if (!programId) return;
         const outputFile = path.join(root, '.onsure', 'profiles', 'program-profile.json');
-        const result = await vscode.window.withProgress({
-          location: vscode.ProgressLocation.Notification,
-          title: 'ONSure: Learning program', cancellable: false
-        }, () => client.request('/v1/program-profile', 'POST', {
+        await executeWorkflow('program.learn', {
           source_root: root, project_id: projectId, program_id: programId, output_file: outputFile
-        }));
-        await context.workspaceState.update(LAST_PROFILE_KEY, result.output_file);
-        output.appendLine(`[${new Date().toISOString()}] Program profile: ${result.output_file}`);
-        provider.refresh();
-        await showJson('Program Profile Candidate', result);
+        }, 'Learning program');
+        await context.workspaceState.update(LAST_PROFILE_KEY, outputFile);
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure program learning failed: ${error.message}`);
       }
@@ -208,10 +241,7 @@ async function activate(context) {
           validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid target ID.'
         });
         if (!targetId) return;
-        const result = await vscode.window.withProgress({
-          location: vscode.ProgressLocation.Notification,
-          title: 'ONSure: Running self-validation (nonfinal)', cancellable: false
-        }, () => client.request('/v1/validate', 'POST', {
+        await executeWorkflow('validation.run', {
           source_root: root,
           store_root: path.join(root, '.onsure', 'validation-data'),
           target_id: targetId,
@@ -220,13 +250,32 @@ async function activate(context) {
           adapter_id: 'ONSURE_GENERIC_MANIFEST_V1',
           policy_profile: 'ONSURE_DEFAULT_POLICY_V1',
           execution_profile: vscode.workspace.getConfiguration('onsure').get('defaultExecutionProfile')
-        }));
-        await context.workspaceState.update(LAST_RUN_KEY, result.run_root);
-        output.appendLine(`[${new Date().toISOString()}] Validation ${result.decision}: ${result.run_root}`);
-        provider.refresh();
-        await showJson(`Validation ${result.decision}`, result);
+        }, 'Running validation');
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure validation failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.runWorkflowRequest', async () => {
+      try {
+        const selected = await vscode.window.showOpenDialog({
+          title: 'Select ONSure Workflow Request JSON',
+          canSelectMany: false,
+          canSelectFiles: true,
+          canSelectFolders: false,
+          filters: { JSON: ['json'] },
+          defaultUri: vscode.Uri.file(workspaceRoot())
+        });
+        if (!selected?.length) return;
+        const requestFile = requireInsideWorkspace(selected[0].fsPath);
+        const raw = fs.readFileSync(requestFile, 'utf8');
+        if (raw.length > 1024 * 1024) throw new Error('Workflow request file exceeds 1 MiB.');
+        const envelope = JSON.parse(raw);
+        if (!envelope || typeof envelope.operation !== 'string' || typeof envelope.request !== 'object') {
+          throw new Error('Workflow file requires {"operation":"...","request":{...}}.');
+        }
+        await executeWorkflow(envelope.operation, envelope.request, envelope.operation);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure workflow failed: ${error.message}`);
       }
     }),
     vscode.commands.registerCommand('onsure.openLastArtifact', async () => {
@@ -238,9 +287,7 @@ async function activate(context) {
           'behavior-profile.json', 'review-result.json', 'evidence-based-rca.json', 'patch-plan.json'
         ], { title: 'ONSure Run Artifact' });
         if (!artifact) return;
-        const result = await client.request('/v1/run-artifact', 'POST', {
-          run_root: runRoot, artifact
-        });
+        const result = await client.request('/v1/run-artifact', 'POST', { run_root: runRoot, artifact });
         await showJson(artifact, result.body);
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure artifact open failed: ${error.message}`);
