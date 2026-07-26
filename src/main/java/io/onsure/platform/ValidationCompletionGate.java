@@ -10,7 +10,7 @@ import java.util.Set;
 
 /** Fail-closed completeness policy for one nonfinal product validation run. */
 public final class ValidationCompletionGate {
-    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V3";
+    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V4";
 
     public record Evaluation(boolean eligible, List<String> reasons) {
         public Evaluation { reasons = List.copyOf(reasons); }
@@ -18,10 +18,10 @@ public final class ValidationCompletionGate {
 
     private static final List<String> REQUIRED_STAGES = List.of(
             "TARGET_INTAKE", "SOURCE_INVENTORY", "PROGRAM_LEARNING",
-            "RISK_BASED_EXECUTION_PLANNING", "STATIC_ANALYSIS",
+            "RISK_BASED_EXECUTION_PLANNING", "STATIC_ANALYSIS", "OREVIEW",
             "FIXTURE_ORACLE_REGISTRY", "FIXTURE_HARNESS_ORACLE",
-            "FAILURE_MODE_AND_RCA", "REMEDIATION_PLANNING", "REGRESSION_LOCK",
-            "INTERNAL_PRODUCT_VERIFIER", "INTERNAL_PRODUCT_AUDIT");
+            "FAILURE_MODE_AND_RCA", "EVIDENCE_BASED_RCA", "REMEDIATION_PLANNING",
+            "REGRESSION_LOCK", "INTERNAL_PRODUCT_VERIFIER", "INTERNAL_PRODUCT_AUDIT");
 
     private ValidationCompletionGate() {}
 
@@ -45,6 +45,10 @@ public final class ValidationCompletionGate {
                 "PROGRAM_PROFILE_CANDIDATE", "PROGRAM_PROFILE", reasons);
         requireArtifact(context, "execution_plan_id", "execution-plan.json",
                 "EXECUTION_PLAN", "EXECUTION_PLAN", reasons);
+        requireArtifact(context, "review_id", "review-result.json",
+                "OREVIEW_RESULT", "OREVIEW", reasons);
+        requireAttributeAndFile(context, "evidence_based_rca_sha256", "evidence-based-rca.json",
+                "EVIDENCE_BASED_RCA_SET", "EVIDENCE_BASED_RCA", reasons);
         Object approval = context.attributes().get("execution_plan_approval");
         if (!(approval instanceof String state)
                 || !List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED").contains(state)) {
@@ -66,6 +70,22 @@ public final class ValidationCompletionGate {
             String label, List<String> reasons) {
         Object value = context.attributes().get(attribute);
         if (!(value instanceof String text) || text.isBlank()) reasons.add(label + "_ID_MISSING");
+        requireEvidenceAndFile(context, filename, evidenceType, label, reasons);
+    }
+
+    private static void requireAttributeAndFile(
+            ValidationContext context, String attribute, String filename, String evidenceType,
+            String label, List<String> reasons) {
+        Object value = context.attributes().get(attribute);
+        if (!(value instanceof String text) || !text.matches("[0-9a-f]{64}")) {
+            reasons.add(label + "_DIGEST_MISSING");
+        }
+        requireEvidenceAndFile(context, filename, evidenceType, label, reasons);
+    }
+
+    private static void requireEvidenceAndFile(
+            ValidationContext context, String filename, String evidenceType, String label,
+            List<String> reasons) {
         if (!Files.isRegularFile(context.runRoot().resolve(filename))) reasons.add(label + "_ARTIFACT_MISSING");
         if (context.evidence().stream().noneMatch(item -> evidenceType.equals(item.evidenceType()))) {
             reasons.add(label + "_EVIDENCE_MISSING");
