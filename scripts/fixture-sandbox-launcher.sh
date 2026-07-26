@@ -10,7 +10,7 @@ ROOT="$(cd "$1" && pwd -P)"
 TIMEOUT_SECONDS="$2"
 shift 2
 
-for command in bwrap prlimit timeout bash; do
+for command in bwrap prlimit timeout bash env; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_$command" >&2
     exit 69
@@ -22,8 +22,8 @@ done
   exit 64
 }
 
-SCRIPT="$2"
-[[ "$SCRIPT" != /* && "$SCRIPT" != *".."* ]] || {
+SCRIPT="${2:-}"
+[[ -n "$SCRIPT" && "$SCRIPT" != /* && "$SCRIPT" != *".."* ]] || {
   echo "ONSURE_FIXTURE_SANDBOX_FAIL INVALID_SCRIPT_PATH" >&2
   exit 65
 }
@@ -39,6 +39,19 @@ for path in /bin /usr /lib /lib64 /etc/ld.so.cache /etc/alternatives; do
   fi
 done
 
+SANDBOX_ENV=(
+  --setenv PATH /usr/bin:/bin
+  --setenv HOME /nonexistent
+  --setenv TMPDIR /tmp
+  --setenv LANG C.UTF-8
+  --setenv LC_ALL C.UTF-8
+)
+while IFS='=' read -r key value; do
+  if [[ "$key" =~ ^ONSURE_FIXTURE_[A-Z0-9_]{1,64}$ ]]; then
+    SANDBOX_ENV+=(--setenv "$key" "$value")
+  fi
+done < <(env)
+
 exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
   bwrap \
     --die-with-parent \
@@ -48,9 +61,7 @@ exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
     --unshare-ipc \
     --unshare-uts \
     --clearenv \
-    --setenv PATH /usr/bin:/bin \
-    --setenv HOME /nonexistent \
-    --setenv TMPDIR /tmp \
+    "${SANDBOX_ENV[@]}" \
     "${BINDINGS[@]}" \
     --ro-bind "$ROOT" /workspace \
     --tmpfs /tmp \
