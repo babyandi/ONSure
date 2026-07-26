@@ -1,7 +1,10 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_MATRIX_V1",
+  "version": "1.1.0",
   "generated_from": "contracts/requirements-traceability.v1.json",
-  "source_baseline": "main@e1aad6fd0447f00835236b242635e9e899c932b1",
+  "assessment_origin_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
+  "runtime_source_commit": null,
+  "runtime_binding_state": "PENDING_SOURCE_BOUND_RECEIPT",
   "assessment_date": "2026-07-26",
   "capabilities": {
     "standalone_core": "PARTIAL",
@@ -30,13 +33,18 @@
     "PARTIAL": 8,
     "STUB": 5,
     "DESIGN_ONLY": 7,
-    "NOT_RUN": 0,
-    "BLOCKED": 0,
     "CONFLICT": 0,
     "DEPRECATED": 0
   },
+  "self_audit": {
+    "state": "P0_OPEN",
+    "issue": 20,
+    "atomic_requirement_coverage": "INCOMPLETE",
+    "core_compile_isolation": "NOT_PROVEN",
+    "source_and_receipt_hardening": "REQUIRED"
+  },
   "assurance": {
-    "self_validation": "NON_FINAL",
+    "self_validation": "NOT_RUN_CURRENT_MAIN",
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
     "human_full_chain": "NOT_RUN",
