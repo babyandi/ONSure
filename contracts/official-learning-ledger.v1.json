@@ -1,40 +1,18 @@
 {
   "contract": "ONSURE_OFFICIAL_LEARNING_LEDGER_V1",
-  "authority": "babyandi/ONSure",
-  "entry_order": [
-    "LEARNING_CANDIDATE",
-    "VALIDATION_REQUEST",
-    "VALIDATION_PACK",
-    "VALIDATION_RECEIPT",
-    "PROMOTION",
-    "APPLIED_LOCK"
+  "version": "1.0.0",
+  "state": "DEPRECATED",
+  "superseded_by": "contracts/official-learning-ledger.v2.json",
+  "migration_reason": [
+    "V1 did not require distinct verifier identities and keys",
+    "V1 did not bind promotion to the latest validation pack",
+    "V1 did not resolve and validate post-apply receipts",
+    "V1 used JVM synchronization without cross-process locking",
+    "V1 had no separate ledger head anchor",
+    "V1 treated Git object identifiers as SHA-256 digests"
   ],
-  "completion_rule": {
-    "recognized_only_at": "APPLIED_LOCKED",
-    "minimum_pass_receipts": 2,
-    "requires_distinct_runs": true,
-    "requires_stable_projection": true,
-    "requires_independent_recalculation": true,
-    "requires_reviewer_approver_separation": true,
-    "requires_active_selector_binding": true,
-    "requires_rollback_pointer": true,
-    "requires_read_only_reverification": true
-  },
-  "fail_closed_states": [
-    "SKIPPED",
-    "NOT_RUN",
-    "INCONCLUSIVE",
-    "PENDING",
-    "BLOCKED",
-    "SELF_REPORTED_PASS"
-  ],
-  "hard_invariants": [
-    "LEARNING_ENGINE_CANNOT_VALIDATE_OR_PROMOTE",
-    "SCHEDULED_RESULTS_MUST_ENTER_OFFICIAL_LEDGER",
-    "PASS_REQUIRES_FIXTURE_HARNESS_ORACLE_RESULT_EVIDENCE_LINEAGE",
-    "ONE_BYTE_LEDGER_MUTATION_INVALIDATES_CHAIN",
-    "APPLIED_COUNT_REQUIRES_APPLIED_LOCK"
-  ],
+  "use_for_new_entries": false,
+  "historical_read_only": true,
   "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
-  "external_otester_oaudit_required_for_final": true
+  "final_claim_allowed": false
 }
