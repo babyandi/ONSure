@@ -8,13 +8,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-/** Executes trusted development fixtures through a named Oracle. */
+/** Executes reviewed fixtures through a declared sandbox profile and named Oracle. */
 public final class FixtureHarness {
     private static final Set<String> ALLOWED_EXECUTABLES = Set.of("bash");
     private static final int MAX_ARGUMENTS = 64;
@@ -33,7 +35,13 @@ public final class FixtureHarness {
             boolean timedOut,
             long durationMillis,
             String outputSha256,
-            List<String> command) {
+            List<String> command,
+            String sandboxProfile,
+            boolean networkIsolated,
+            boolean filesystemReadOnly,
+            boolean pidNamespaceIsolated,
+            boolean resourceLimitsEnforced,
+            String assuranceClass) {
         public HarnessExecution { command = List.copyOf(command); }
     }
 
@@ -53,16 +61,26 @@ public final class FixtureHarness {
     }
 
     private final String harnessId;
+    private final String executionProfile;
     private final Map<String, Oracle> oracles = new LinkedHashMap<>();
 
     public FixtureHarness(String harnessId) {
+        this(harnessId, FixtureRegistryStage.TRUSTED_LOCAL_PROFILE);
+    }
+
+    public FixtureHarness(String harnessId, String executionProfile) {
         if (harnessId == null || harnessId.isBlank()) throw new IllegalArgumentException("harnessId");
+        if (executionProfile == null || executionProfile.isBlank()) {
+            throw new IllegalArgumentException("executionProfile");
+        }
         this.harnessId = harnessId;
+        this.executionProfile = executionProfile;
         register(new EqualsOracle());
         register(new ContainsOracle());
     }
 
     public String harnessId() { return harnessId; }
+    public String executionProfile() { return executionProfile; }
     public Set<String> oracleIds() { return Set.copyOf(oracles.keySet()); }
 
     public void register(Oracle oracle) {
@@ -78,49 +96,65 @@ public final class FixtureHarness {
         Oracle oracle = oracles.get(fixture.oracleId());
         if (oracle == null) throw new IllegalArgumentException("unknown oracle: " + fixture.oracleId());
         Path normalizedRoot = workingDirectory.toAbsolutePath().normalize();
-        if (!Files.isDirectory(normalizedRoot)) throw new IllegalArgumentException("fixture working directory missing");
+        if (!Files.isDirectory(normalizedRoot)) {
+            throw new IllegalArgumentException("fixture working directory missing");
+        }
 
         Instant started = Instant.now();
         String observed = fixture.declaredObserved();
         boolean executed = fixture.executable();
         int exitCode = 0;
         boolean timedOut = false;
-        List<String> command = fixture.command();
+        List<String> originalCommand = fixture.command();
+        Map<String, String> restrictedEnvironment = restrictedEnvironment(fixture.environment());
+        FixtureProcessSandbox.Plan sandbox = new FixtureProcessSandbox.Plan(
+                FixtureProcessSandbox.mapExecutionProfile(executionProfile),
+                originalCommand, false, false, false, false, "SELF_VALIDATION_NONFINAL");
 
         if (executed) {
-            validateCommand(command, normalizedRoot);
+            validateCommand(originalCommand, normalizedRoot);
+            sandbox = FixtureProcessSandbox.plan(
+                    executionProfile, originalCommand, normalizedRoot, restrictedEnvironment);
             Path outputFile = Files.createTempFile("onsure-fixture-", ".log");
+            Process process = null;
             try {
-                ProcessBuilder builder = new ProcessBuilder(command)
+                ProcessBuilder builder = new ProcessBuilder(sandbox.command())
                         .directory(normalizedRoot.toFile())
                         .redirectErrorStream(true)
                         .redirectOutput(outputFile.toFile());
-                restrictEnvironment(builder.environment(), fixture.environment());
-                Process process = builder.start();
+                builder.environment().clear();
+                if (FixtureProcessSandbox.REVIEWED_LOCAL_NONFINAL.equals(sandbox.profile())) {
+                    builder.environment().putAll(restrictedEnvironment);
+                }
+                process = builder.start();
                 boolean completed = process.waitFor(fixture.timeoutSeconds(), TimeUnit.SECONDS);
                 if (!completed) {
                     timedOut = true;
-                    process.destroyForcibly();
-                    process.waitFor(5, TimeUnit.SECONDS);
+                    destroyProcessTree(process);
                     exitCode = 124;
                 } else {
                     exitCode = process.exitValue();
                 }
                 observed = readLimited(outputFile).strip();
             } finally {
+                if (process != null && process.isAlive()) destroyProcessTree(process);
                 Files.deleteIfExists(outputFile);
             }
         }
 
         Decision oracleDecision = oracle.judge(fixture.expected(), observed);
-        Decision decision = executed && (timedOut || exitCode != 0) ? Decision.FAIL : oracleDecision;
+        Decision decision = executed && (timedOut || exitCode != 0)
+                ? Decision.FAIL : oracleDecision;
         FixtureResult result = new FixtureResult(
                 fixture.fixtureId(), harnessId, oracle.oracleId(), fixture.expected(), observed,
                 decision, Instant.now());
         return new HarnessExecution(
                 result, executed, exitCode, timedOut,
                 Duration.between(started, Instant.now()).toMillis(),
-                Hashing.sha256(observed), command);
+                Hashing.sha256(observed), originalCommand, sandbox.profile(),
+                sandbox.networkIsolated(), sandbox.filesystemReadOnly(),
+                sandbox.pidNamespaceIsolated(), sandbox.resourceLimitsEnforced(),
+                sandbox.assuranceClass());
     }
 
     private static void validateCommand(List<String> command, Path root) throws Exception {
@@ -132,7 +166,9 @@ public final class FixtureHarness {
             throw new IllegalArgumentException("fixture command contains control characters");
         }
         int characters = command.stream().mapToInt(String::length).sum();
-        if (characters > MAX_COMMAND_CHARACTERS) throw new IllegalArgumentException("fixture command too long");
+        if (characters > MAX_COMMAND_CHARACTERS) {
+            throw new IllegalArgumentException("fixture command too long");
+        }
         String executable = Path.of(command.get(0)).getFileName().toString();
         if (!ALLOWED_EXECUTABLES.contains(executable)) {
             throw new IllegalArgumentException("fixture executable not allowed: " + executable);
@@ -141,35 +177,64 @@ public final class FixtureHarness {
             throw new IllegalArgumentException("inline shell command is prohibited");
         }
         Path declaredScript = Path.of(command.get(1));
-        if (declaredScript.isAbsolute()) throw new IllegalArgumentException("absolute fixture script is prohibited");
+        if (declaredScript.isAbsolute()) {
+            throw new IllegalArgumentException("absolute fixture script is prohibited");
+        }
         Path script = root.resolve(declaredScript).normalize();
         if (!script.startsWith(root)
                 || Files.isSymbolicLink(script)
                 || !Files.isRegularFile(script, java.nio.file.LinkOption.NOFOLLOW_LINKS)
                 || !script.toRealPath().startsWith(root.toRealPath())) {
-            throw new IllegalArgumentException("fixture script must be a regular file inside target root");
+            throw new IllegalArgumentException(
+                    "fixture script must be a regular file inside target root");
         }
     }
 
-    private static void restrictEnvironment(Map<String, String> processEnvironment,
+    private static Map<String, String> restrictedEnvironment(
             Map<String, String> fixtureEnvironment) {
+        Map<String, String> environment = new LinkedHashMap<>();
         Map<String, String> host = System.getenv();
-        processEnvironment.clear();
         for (String key : List.of("PATH", "JAVA_HOME", "LANG", "LC_ALL")) {
             String value = host.get(key);
-            if (value != null) processEnvironment.put(key, value);
+            if (value != null) environment.put(key, value);
         }
         fixtureEnvironment.forEach((key, value) -> {
             if (!key.matches("ONSURE_FIXTURE_[A-Z0-9_]{1,64}")) {
-                throw new IllegalArgumentException("fixture environment key not allowed: " + key);
+                throw new IllegalArgumentException(
+                        "fixture environment key not allowed: " + key);
             }
-            processEnvironment.put(key, value);
+            environment.put(key, value);
         });
+        return Map.copyOf(environment);
+    }
+
+    private static void destroyProcessTree(Process process) {
+        List<ProcessHandle> descendants = new ArrayList<>(process.descendants().toList());
+        descendants.sort(Comparator.comparingLong(ProcessHandle::pid).reversed());
+        for (ProcessHandle handle : descendants) handle.destroy();
+        process.destroy();
+        try {
+            if (!process.waitFor(2, TimeUnit.SECONDS)) {
+                for (ProcessHandle handle : descendants) {
+                    if (handle.isAlive()) handle.destroyForcibly();
+                }
+                process.destroyForcibly();
+                process.waitFor(3, TimeUnit.SECONDS);
+            }
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            for (ProcessHandle handle : descendants) {
+                if (handle.isAlive()) handle.destroyForcibly();
+            }
+            process.destroyForcibly();
+        }
     }
 
     private static String readLimited(Path file) throws Exception {
-        byte[] bytes = Files.readAllBytes(file);
-        if (bytes.length > MAX_OUTPUT_BYTES) throw new IllegalArgumentException("fixture output limit exceeded");
-        return new String(bytes, StandardCharsets.UTF_8);
+        long size = Files.size(file);
+        if (size > MAX_OUTPUT_BYTES) {
+            throw new IllegalArgumentException("fixture output limit exceeded");
+        }
+        return Files.readString(file, StandardCharsets.UTF_8);
     }
 }
