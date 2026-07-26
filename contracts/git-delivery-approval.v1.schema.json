@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/git-delivery-approval.v1.schema.json",
+  "title": "ONSure Git Delivery Approval v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "approval_id", "branch", "remote", "actor", "key_id", "signature_algorithm", "signature", "approved_at", "allow_commit", "allow_push", "allow_draft_pr", "allow_force_push", "allow_merge"],
+  "properties": {
+    "contract": {"const": "ONSURE_GIT_DELIVERY_APPROVAL_V1"},
+    "approval_id": {"type": "string", "minLength": 1},
+    "branch": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{2,120}$"},
+    "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,64}$"},
+    "actor": {"type": "string", "minLength": 1, "not": {"const": "ONSURE_AUTOMATION"}},
+    "key_id": {"type": "string", "minLength": 1},
+    "signature_algorithm": {"const": "Ed25519"},
+    "signature": {"type": "string", "minLength": 32},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "allow_commit": {"type": "boolean"},
+    "allow_push": {"type": "boolean"},
+    "allow_draft_pr": {"type": "boolean"},
+    "allow_force_push": {"const": false},
+    "allow_merge": {"const": false}
+  }
+}
