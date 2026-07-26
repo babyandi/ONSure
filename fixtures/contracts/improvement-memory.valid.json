@@ -1,0 +1,16 @@
+{
+  "contract": "ONSURE_IMPROVEMENT_MEMORY_V1",
+  "memory_id": "improvement-memory-001",
+  "finding_id": "finding-sample-001",
+  "failure_memory_id": "failure-memory-001",
+  "change_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "before_receipt_id": "receipt-before-001",
+  "after_receipt_id": "receipt-after-001",
+  "regression_receipt_ids": ["receipt-regression-001", "receipt-regression-002"],
+  "decision": "IMPROVEMENT_PROVEN",
+  "applicability": ["program-sample-001"],
+  "prohibitions": ["Do not generalize outside the verified authorization pattern."],
+  "rollback_pointer": "git:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "scope": "PROJECT_ONLY",
+  "state": "CANDIDATE"
+}
