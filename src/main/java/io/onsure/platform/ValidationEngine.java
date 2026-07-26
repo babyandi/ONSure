@@ -43,12 +43,7 @@ public final class ValidationEngine {
         return withOptionalAdapters(storeRoot, List.of());
     }
 
-    /** Explicit optional profile used by the ORUDA adapter fixture suite. */
-    public static ValidationEngine withOrudaAdapter(Path storeRoot) {
-        return withOptionalAdapters(storeRoot, List.of(new OrudaTargetAdapter()));
-    }
-
-    /** Creates a standalone core engine with explicitly selected optional target adapters. */
+    /** Creates a standalone core engine with explicitly supplied optional target adapters. */
     public static ValidationEngine withOptionalAdapters(
             Path storeRoot, List<TargetAdapter> optionalAdapters) {
         List<TargetAdapter> adapters = new ArrayList<>();
