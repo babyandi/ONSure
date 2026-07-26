@@ -1,12 +1,29 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "baseline": "c75ae6f9a259f6382c840fc6b3f4103396e0acda",
-  "autopilot": {
+  "assessment_basis": "main@e1aad6fd0447f00835236b242635e9e899c932b1",
+  "remediation_branch": "audit/onsure-full-design-gap-remediation-20260726",
+  "repository_static_contracts": {
     "state": "NOT_RUN",
-    "receipt": null
+    "runner": "python3 scripts/validate-repository-contracts.py"
   },
+  "one_shot_static": {
+    "state": "NOT_RUN",
+    "runner": "bash scripts/onsure-one-shot.sh --static-only"
+  },
+  "one_shot_core": {
+    "state": "NOT_RUN",
+    "runner": "bash scripts/onsure-one-shot.sh --profile core"
+  },
+  "optional_oruda_profile": {
+    "state": "NOT_RUN",
+    "runner": "bash scripts/onsure-one-shot.sh --profile oruda"
+  },
+  "vscode_product_full_chain": "NOT_RUN",
+  "web_product_full_chain": "NOT_RUN",
   "independent_otester": "NOT_RUN",
   "independent_oaudit": "NOT_RUN",
+  "human_acceptance": "NOT_RUN",
+  "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
   "final_pass": false,
   "final_audit_pass": false,
   "final_lock": false,
