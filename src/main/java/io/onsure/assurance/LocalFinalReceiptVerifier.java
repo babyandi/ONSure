@@ -29,12 +29,18 @@ public final class LocalFinalReceiptVerifier {
             Path securitySnapshot = root.resolve("security-findings.snapshot.json")
                     .toAbsolutePath().normalize();
             Path registrySnapshot = root.resolve("key-registry.snapshot.json").toAbsolutePath().normalize();
-            Path finalLock = root.resolve("final-lock.sha256").toAbsolutePath().normalize();
+            Path evidenceLock = root.resolve("final-lock.sha256").toAbsolutePath().normalize();
             Path ledger = root.getParent().resolve("receipt-ledger.jsonl").toAbsolutePath().normalize();
 
             if (!CONTRACT.equals(receipt.path("contract").asText())) violations.add("FINAL_RECEIPT_CONTRACT_MISMATCH");
             if (!"PASS".equals(receipt.path("decision").asText())) violations.add("FINAL_RECEIPT_NON_PASS");
-            if (!"LOCAL_STANDALONE".equals(receipt.path("execution_mode").asText())) violations.add("FINAL_RECEIPT_EXECUTION_MODE_INVALID");
+            if (!"SELF_VALIDATION_NONFINAL".equals(receipt.path("assurance_class").asText())) violations.add("FINAL_RECEIPT_ASSURANCE_CLASS_INVALID");
+            if (!"NOT_RUN".equals(receipt.path("independent_otester").asText())) violations.add("FINAL_RECEIPT_FALSE_OTESTER_CLAIM");
+            if (!"NOT_RUN".equals(receipt.path("independent_oaudit").asText())) violations.add("FINAL_RECEIPT_FALSE_OAUDIT_CLAIM");
+            if (receipt.path("final_lock_allowed").asBoolean(true)) violations.add("FINAL_RECEIPT_FINAL_LOCK_MUST_BE_FALSE");
+            if (receipt.path("production_go").asBoolean(true)) violations.add("FINAL_RECEIPT_PRODUCTION_GO_MUST_BE_FALSE");
+            if (receipt.path("commercial_go").asBoolean(true)) violations.add("FINAL_RECEIPT_COMMERCIAL_GO_MUST_BE_FALSE");
+            if (!"LOCAL_STANDALONE_SELF_VALIDATION".equals(receipt.path("execution_mode").asText())) violations.add("FINAL_RECEIPT_EXECUTION_MODE_INVALID");
             if (!Objects.equals(context.runId(), receipt.path("assurance_run_id").asText())) violations.add("FINAL_RECEIPT_RUN_ID_MISMATCH");
             if (!Objects.equals(context.startedAt().toString(), receipt.path("run_started_at").asText())) violations.add("FINAL_RECEIPT_RUN_START_MISMATCH");
             try {
@@ -54,7 +60,7 @@ public final class LocalFinalReceiptVerifier {
             if (!Objects.equals(sha256(fixtureSnapshot), receipt.path("fixture_contract_snapshot_sha256").asText())) violations.add("FINAL_RECEIPT_FIXTURE_SNAPSHOT_HASH_MISMATCH");
             if (!Objects.equals(sha256(securitySnapshot), receipt.path("security_findings_snapshot_sha256").asText())) violations.add("FINAL_RECEIPT_SECURITY_SNAPSHOT_HASH_MISMATCH");
             if (!Objects.equals(sha256(registrySnapshot), receipt.path("key_registry_snapshot_sha256").asText())) violations.add("FINAL_RECEIPT_KEY_REGISTRY_HASH_MISMATCH");
-            if (!Objects.equals(sha256(finalLock), receipt.path("final_lock_sha256").asText())) violations.add("FINAL_RECEIPT_FINAL_LOCK_HASH_MISMATCH");
+            if (!Objects.equals(sha256(evidenceLock), receipt.path("evidence_lock_sha256").asText())) violations.add("FINAL_RECEIPT_EVIDENCE_LOCK_HASH_MISMATCH");
             ValidationResult security = new LocalSecurityGateVerifier().verify(securitySnapshot);
             if (security.decision() != Decision.PASS) violations.addAll(security.violations());
             LocalReceiptLedger localLedger = new LocalReceiptLedger(ledger);
