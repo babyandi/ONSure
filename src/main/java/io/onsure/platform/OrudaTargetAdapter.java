@@ -1,8 +1,11 @@
 package io.onsure.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.onsure.assurance.Decision;
+import io.onsure.assurance.ValidationResult;
 import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
+import io.onsure.platform.oruda.OrudaEvidenceRegistry;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -67,6 +70,17 @@ public final class OrudaTargetAdapter extends GenericManifestTargetAdapter {
     @Override
     public List<FixtureDefinition> loadFixtures(ValidationTarget target) throws Exception {
         return parseFixtures(mapper.readTree(orudaManifest(target).toFile()));
+    }
+
+    @Override
+    public void persistAdditionalEvidence(ValidationContext context) throws Exception {
+        if (context.regressionLock() == null || context.fixtureResults().isEmpty()) return;
+        OrudaEvidenceRegistry registry = new OrudaEvidenceRegistry();
+        registry.populate(context);
+        ValidationResult result = registry.verify(context.runRoot(), context.target().sourceRoot());
+        if (result.decision() != Decision.PASS) {
+            throw new IllegalStateException("ORUDA_EVIDENCE_REGISTRY_VERIFY_FAIL " + result.violations());
+        }
     }
 
     private Path orudaManifest(ValidationTarget target) {
