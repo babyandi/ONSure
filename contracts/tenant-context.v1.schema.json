@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/tenant-context.v1.schema.json",
+  "title": "ONSure Tenant Context v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "organization_id", "tenant_id", "workspace_id", "actor_id", "roles", "data_region", "created_at"],
+  "properties": {
+    "contract": {"const": "ONSURE_TENANT_CONTEXT_V1"},
+    "organization_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "tenant_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "workspace_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "actor_id": {"type": "string", "minLength": 1},
+    "roles": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "data_region": {"type": "string", "minLength": 2},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}
