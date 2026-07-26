@@ -293,6 +293,86 @@
       "evidence_required": ["baseline", "metric taxonomy", "adoption measure", "task and business outcome", "risk measure", "review decision"],
       "source_url": "https://wikidocs.net/blog/@edwin/22173/", "source_locator": "AX KPI, 숫자만 쫓으면 진짜 가치를 놓칩니다", "source_authority": "Wikidocs blog article", "source_access": "SEARCH_SNIPPET_ONLY",
       "rights_note": "Practitioner hypothesis; validate metric definitions against the target organization and independent evidence."
+    },
+    {
+      "id": "IDM-030", "domain": "research_gap_to_question", "targets": ["ODesign"],
+      "claim": "Desk research must record source, date, finding, limitation, and unanswered question, and route each unresolved gap into primary research rather than silently filling it with AI inference.",
+      "applicability": "Early discovery, competitive scans, unfamiliar domains, and AI-assisted research synthesis.",
+      "procedure": ["Collect comparable sources", "Record source and date", "Separate fact from interpretation", "List limits and unknowns", "Convert unknowns into interview or observation questions", "Verify AI summaries against originals"],
+      "failure": "A generated synthesis hides missing evidence and is treated as direct user research.",
+      "evidence_required": ["research-note table", "source/date binding", "gap register", "primary-research questions", "AI-to-original comparison"],
+      "source_url": "https://wikidocs.net/373527", "source_locator": "2.3 데스크 리서치와 인터뷰 노트 작성, lines 18-83", "source_authority": "Wikidocs course material", "source_access": "DIRECT_CRAWL_PUBLIC_WEB",
+      "rights_note": "Use the procedure as a research candidate; do not reproduce the source's examples or templates without permission."
+    },
+    {
+      "id": "IDM-031", "domain": "service_blueprint_contract", "targets": ["ODesign", "OUI"],
+      "claim": "A customer-facing journey must be bound to front-stage actions, back-stage processes, systems, data, owners, handoffs, and failure recovery in one service blueprint.",
+      "applicability": "Cross-channel services whose visible UI depends on payments, inventory, notifications, operations, or human support.",
+      "procedure": ["Define the customer journey", "Map front-stage touchpoints", "Map back-stage processes and systems", "Bind handoffs and owners", "Model failure and recovery", "Validate end-to-end timing and evidence"],
+      "failure": "A polished front-stage flow is approved while hidden systems or operational handoffs cannot deliver it.",
+      "evidence_required": ["journey scope", "front/back-stage map", "system/data dependencies", "owner matrix", "failure-recovery tests", "end-to-end trace"],
+      "source_url": "https://wikidocs.net/335510", "source_locator": "09-2 HCI·UX의 핵심 개념과 설계 원리—서비스 블루프린트", "source_authority": "Wikidocs MIS course material", "source_access": "DIRECT_CRAWL_PUBLIC_WEB",
+      "rights_note": "The course example is secondary; validate the blueprint against the target service's real architecture and operations."
+    },
+    {
+      "id": "IDM-032", "domain": "anti_dark_pattern_design", "targets": ["ODesign", "OUI"],
+      "claim": "Choice architecture must preserve informed, symmetric, reversible user choice and reject interfaces that exploit attention, defaults, obstruction, or emotional pressure.",
+      "applicability": "Consent, subscription, purchase, cancellation, privacy, notification, and account-deletion flows.",
+      "procedure": ["List consequential choices", "Compare accept and reject paths", "Expose costs and effects before action", "Remove obstruction and disguised controls", "Provide undo or cancellation", "Test comprehension and voluntary choice"],
+      "failure": "Short-term conversion improves because refusal, cancellation, or consequence discovery is harder than acceptance.",
+      "evidence_required": ["choice-path comparison", "disclosure timing", "friction measurement", "comprehension test", "reversal test", "ethics review"],
+      "source_url": "https://wikidocs.net/335515", "source_locator": "09-7 HCI/UX 혁신의 리스크와 전략적 인사이트—다크 패턴", "source_authority": "Wikidocs MIS course material", "source_access": "DIRECT_CRAWL_PUBLIC_WEB",
+      "rights_note": "This is an ethics candidate, not market-specific legal advice; bind applicable consumer-protection rules before activation."
+    },
+    {
+      "id": "IDM-033", "domain": "agent_design_change_control", "targets": ["ODesign", "OUI"],
+      "claim": "Agent-facing design tools must distinguish read-only and mutating operations, authenticate remote access, protect credentials, and require approval for state-changing design actions.",
+      "applicability": "MCP, SDK, CLI, or IDE integrations that let agents create or edit projects, screens, components, or design systems.",
+      "procedure": ["Classify every tool as read or mutate", "Authenticate the caller", "Keep secrets out of artifacts", "Require approval for mutations", "Log action and resulting version", "Test revocation and rollback"],
+      "failure": "An agent silently changes a shared design system or leaks a persistent API key through project files.",
+      "evidence_required": ["tool annotation manifest", "auth receipt", "secret scan", "approval receipt", "mutation audit log", "rollback test"],
+      "source_url": "https://discuss.pytorch.kr/t/google-stitch-ui-google-labs-stitch-sdk-mcp-design-md-agent-skills/11094", "source_locator": "MCP integration and tool annotations, lines 107-141", "source_authority": "PyTorchKR detailed project overview", "source_access": "DIRECT_CRAWL_PUBLIC_SECONDARY",
+      "rights_note": "Verify current behavior against Google primary documentation and execute permission tests before activation."
+    },
+    {
+      "id": "IDM-034", "domain": "design_agent_round_trip", "targets": ["ODesign", "OUI"],
+      "claim": "Design-agent output must support a versioned round trip among intent, DESIGN.md, structured screens, components, code, and runtime without discarding human edits.",
+      "applicability": "Prompt-to-UI, code-to-design, multi-screen generation, and agent-assisted design-system workflows.",
+      "procedure": ["Pin intent and design context", "Generate structured screens", "Export editable code and components", "Apply human edits", "Round-trip back through the tool", "Compare semantics, geometry, states, and responsive behavior"],
+      "failure": "Each regeneration replaces prior edits or preserves appearance while losing semantics and behavior.",
+      "evidence_required": ["versioned DESIGN.md", "screen graph", "component/code export", "human-edit diff", "round-trip comparison", "runtime capture"],
+      "source_url": "https://discuss.pytorch.kr/t/google-stitch-ui-google-labs-stitch-sdk-mcp-design-md-agent-skills/11094", "source_locator": "DESIGN.md and Agent Skills, lines 60-69 and 142-148", "source_authority": "PyTorchKR detailed project overview", "source_access": "DIRECT_CRAWL_PUBLIC_SECONDARY",
+      "rights_note": "Product claims remain secondary until verified against the official tool and actual exports."
+    },
+    {
+      "id": "IDM-035", "domain": "parallel_design_exploration", "targets": ["ODesign"],
+      "claim": "AI-assisted exploration should produce and preserve multiple materially different alternatives, allow branching, and compare them against explicit intent instead of polishing one default.",
+      "applicability": "Early visual direction, layout, component, campaign, and interaction exploration.",
+      "procedure": ["Declare comparison criteria", "Generate distinct alternatives", "Preserve each branch", "Compare intent and constraints", "Select or combine with rationale", "Validate the chosen branch"],
+      "failure": "Ten cosmetically varied outputs are presented as alternatives although structure and decision logic are identical.",
+      "evidence_required": ["criteria", "alternative distance report", "branch lineage", "comparison matrix", "selection rationale", "validation result"],
+      "source_url": "https://discuss.pytorch.kr/t/superdesign-cursor-windsufr-vs-code-ide-ai-design-agent/7588", "source_locator": "Parallel generation and forked iteration, lines 11-18", "source_authority": "PyTorchKR project overview", "source_access": "DIRECT_CRAWL_PUBLIC_SECONDARY",
+      "rights_note": "Treat vendor and project claims as hypotheses until repository and runtime verification."
+    },
+    {
+      "id": "IDM-036", "domain": "design_intake_and_self_critique", "targets": ["ODesign"],
+      "claim": "Before generation, the agent must resolve audience, purpose, tone, brand context, scale, and constraints; before delivery, it must critique the result against declared dimensions.",
+      "applicability": "Ambiguous prompt-to-artifact work where missing context causes broad rework.",
+      "procedure": ["Ask a bounded intake form", "Record answers as intent", "Offer distinct visual directions when needed", "Generate under pinned constraints", "Run multidimensional self-critique", "Escalate unresolved conflicts"],
+      "failure": "The agent invents audience or brand assumptions, then cites its own output as proof that the design fits.",
+      "evidence_required": ["intake answers", "intent contract", "direction decision", "constraint trace", "critique report", "conflict disposition"],
+      "source_url": "https://discuss.pytorch.kr/t/open-design-anthropic-claude-design-ai/9959", "source_locator": "Question form, visual directions, and self-critique, lines 19-40", "source_authority": "PyTorchKR project overview", "source_access": "DIRECT_CRAWL_PUBLIC_SECONDARY",
+      "rights_note": "The reported rework reduction and product capabilities require primary evidence and reproduction."
+    },
+    {
+      "id": "IDM-037", "domain": "typed_component_contract", "targets": ["ODesign", "OUI"],
+      "claim": "AI-generated UI should consume approved component libraries through typed props and permitted subcomponents so visual intent, behavior, accessibility, and implementation remain constrained together.",
+      "applicability": "Agentic frontend implementation over an established design system.",
+      "procedure": ["Expose approved components", "Define typed props and child constraints", "Bind design intent to component selection", "Generate within the contract", "Run build, interaction, and accessibility tests", "Review exceptions"],
+      "failure": "The agent approximates a component from pixels and creates invalid states, inaccessible behavior, or unmaintainable variants.",
+      "evidence_required": ["component catalog", "type contract", "selection trace", "build result", "state tests", "accessibility tests", "exception review"],
+      "source_url": "https://discuss.pytorch.kr/t/openai-ai-feat-codex/10577", "source_locator": "Design system, MCP, component library, and typed props, lines 72-84", "source_authority": "PyTorchKR summary of OpenAI guide", "source_access": "DIRECT_CRAWL_PUBLIC_SECONDARY",
+      "rights_note": "Bind the primary OpenAI guide before promotion; applicability to OUI must be proven in the ORUDA runtime."
     }
   ]
 }
