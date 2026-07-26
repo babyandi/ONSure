@@ -7,7 +7,8 @@
   "required": [
     "contract", "profile_id", "program_profile_id", "source_baseline_hash",
     "runtime_context", "observations", "variability", "failure_conditions",
-    "policy_violations", "evidence_refs", "state"
+    "policy_violations", "evidence_refs", "state", "generated_at",
+    "learning_method", "human_review", "independent_validation", "final_claim_allowed"
   ],
   "properties": {
     "contract": {"const": "ONSURE_BEHAVIOR_PROFILE_V1"},
@@ -68,6 +69,11 @@
     "failure_conditions": {"type": "array", "items": {"type": "string"}},
     "policy_violations": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
-    "state": {"enum": ["BEHAVIOR_CANDIDATE", "BEHAVIOR_VERIFIED", "BEHAVIOR_ACTIVE", "STALE", "HOLD"]}
+    "state": {"enum": ["BEHAVIOR_CANDIDATE", "BEHAVIOR_VERIFIED", "BEHAVIOR_ACTIVE", "STALE", "HOLD"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "learning_method": {"const": "REPEATED_EXECUTABLE_FIXTURE_OBSERVATION_V1"},
+    "human_review": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "independent_validation": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "final_claim_allowed": {"const": false}
   }
 }
