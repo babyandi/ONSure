@@ -7,6 +7,7 @@
 - [x] 설계 권위와 문서 우선순위
 - [x] 구현·검증 상태 용어 계약
 - [x] Core와 Optional Target Adapter 경계
+- [x] 제품·검증·개선·Git·출시 State Machine 분리와 Mapping
 - [x] Requirement → Design → Contract → Code → Test → Evidence 추적성 기준선
 - [x] 상세설계 Gap 검증 보고서
 - [x] 구현 Matrix
@@ -19,6 +20,7 @@
 - `docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md`
 - `contracts/status-vocabulary.v1.json`
 - `contracts/core-extension-boundary.v1.json`
+- `contracts/state-model-mapping.v1.json`
 - `contracts/requirements-traceability.v1.json`
 - `status/implementation-matrix.v1.json`
 
@@ -97,8 +99,9 @@
 - [x] 핵심 데이터 객체
 - [x] API·CLI·IDE 인터페이스 원칙
 - [x] 실행 상태 모델 상위 정의
+- [x] 제품·검증·출시 State Machine 명시적 Mapping
 - [x] 모델 Provider 추상화 원칙
-- [ ] 제품·검증·출시 State Machine 명시적 Mapping
+- [ ] Java Runtime 상태 모델 Migration
 - [ ] 상세 DB 모델
 - [ ] Local Authenticated API 명세
 - [ ] 멀티테넌시·격리 상세 설계
@@ -163,7 +166,8 @@
 - [x] ONSURE Standalone 독립 원칙
 - [x] ORUDA를 선택형 Target Adapter로 정의
 - [x] Core Preflight와 ORUDA Profile 분리
-- [ ] ValidationEngine 기본 Adapter 등록 Runtime 분리
+- [x] ValidationEngine 기본 Adapter 등록과 선택형 ORUDA 등록 분리
+- [ ] Runtime 실행 증거
 - [ ] ORUDA Embedded/OEM 라이선스 계약
 - [ ] ORUDA Adapter 독립 패키징
 
