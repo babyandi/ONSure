@@ -91,14 +91,32 @@ class FixtureEvidenceBindingTest {
     }
 
     @Test
-    void semanticExecutionFieldsAreBoundIntoEvidenceDigest() {
+    void strictSandboxClaimsRequireAllControls() {
+        FixtureResult result = result("fixture-a");
+        Map<String, Object> changed = new HashMap<>(attributes());
+        changed.put("sandbox_profile", FixtureProcessSandbox.STRICT_BWRAP);
+        changed.put("assurance_class", "SELF_VALIDATION_NONFINAL_SANDBOXED");
+        changed.put("network_isolated", true);
+        changed.put("filesystem_read_only", true);
+        changed.put("pid_namespace_isolated", false);
+        changed.put("resource_limits_enforced", true);
+        Evidence evidence = evidence("fixture-a", changed);
+        assertViolation(result, evidence,
+                "FIXTURE_STRICT_SANDBOX_CONTROL_MISSING:fixture-a:pid_namespace_isolated");
+    }
+
+    @Test
+    void semanticExecutionAndSandboxFieldsAreBoundIntoEvidenceDigest() {
         Map<String, Object> original = attributes();
         String digest = FixtureEvidenceBinding.digest("fixture-a", original);
         for (String field : List.of(
                 "oracle", "harness", "command_executed", "timeout_seconds",
-                "environment_sha256", "output_sha256")) {
+                "environment_sha256", "output_sha256", "sandbox_profile",
+                "network_isolated", "filesystem_read_only", "pid_namespace_isolated",
+                "resource_limits_enforced", "assurance_class")) {
             Map<String, Object> changed = new HashMap<>(original);
-            changed.put(field, "command_executed".equals(field) ? false : "changed");
+            Object replacement = original.get(field) instanceof Boolean value ? !value : "changed";
+            changed.put(field, replacement);
             assertTrue(!digest.equals(FixtureEvidenceBinding.digest("fixture-a", changed)), field);
         }
     }
@@ -111,7 +129,8 @@ class FixtureEvidenceBindingTest {
 
     private static FixtureResult result(String fixtureId) {
         return new FixtureResult(
-                fixtureId, "HARNESS", "EQUALS", "SAFE", "SAFE", Decision.PASS, Instant.now());
+                fixtureId, "HARNESS", "EQUALS", "SAFE", "SAFE", Decision.PASS,
+                Instant.now());
     }
 
     private static Evidence evidence(String fixtureId, Map<String, Object> attributes) {
@@ -134,6 +153,12 @@ class FixtureEvidenceBindingTest {
                 Map.entry("timeout_seconds", 30),
                 Map.entry("environment_sha256", FixtureEvidenceBinding.environmentDigest(Map.of())),
                 Map.entry("duration_ms", 1),
-                Map.entry("output_sha256", Hashing.sha256("SAFE")));
+                Map.entry("output_sha256", Hashing.sha256("SAFE")),
+                Map.entry("sandbox_profile", FixtureProcessSandbox.REVIEWED_LOCAL_NONFINAL),
+                Map.entry("network_isolated", false),
+                Map.entry("filesystem_read_only", false),
+                Map.entry("pid_namespace_isolated", false),
+                Map.entry("resource_limits_enforced", false),
+                Map.entry("assurance_class", "SELF_VALIDATION_NONFINAL"));
     }
 }
