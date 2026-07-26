@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/review-result.v1.schema.json",
+  "title": "ONSure Review Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "review_id", "source_digest", "domains", "findings",
+    "unmapped_requirement_count", "decision", "merge_decision", "created_at",
+    "assurance_class"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_REVIEW_RESULT_V1"},
+    "review_id": {"type": "string", "minLength": 1},
+    "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "domains": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["REQUIREMENT", "ARCHITECTURE", "POLICY", "CODE", "AI", "SECURITY", "PERFORMANCE", "TEST", "MERGE"]}
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "domain", "severity", "title", "location", "evidence_refs", "state"],
+        "properties": {
+          "finding_id": {"type": "string", "minLength": 1},
+          "domain": {"type": "string"},
+          "severity": {"enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]},
+          "title": {"type": "string", "minLength": 1},
+          "location": {"type": "string", "minLength": 1},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "state": {"enum": ["OPEN", "RESOLVED", "ACCEPTED_RISK"]}
+        }
+      }
+    },
+    "unmapped_requirement_count": {"type": "integer", "minimum": 0},
+    "decision": {"enum": ["PASS_NONFINAL", "FAIL", "HOLD", "BLOCKED"]},
+    "merge_decision": {"enum": ["MERGE_READY_CANDIDATE", "CHANGES_REQUIRED", "HOLD"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "assurance_class": {"const": "SELF_VALIDATION_NONFINAL"}
+  }
+}
