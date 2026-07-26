@@ -23,8 +23,8 @@
 
 - `IMPLEMENTED`: 0
 - `PARTIAL`: 8
-- `STUB`: 4
-- `DESIGN_ONLY`: 8
+- `STUB`: 5
+- `DESIGN_ONLY`: 7
 - Final claim allowed: false
 
 상세 근거는 `contracts/requirements-traceability.v1.json`과 `status/implementation-matrix.v1.json`을 권위로 한다.
@@ -33,7 +33,7 @@
 
 ### 4.1 Standalone Core
 
-Core Preflight와 기본 엔진이 ORUDA 파일과 Adapter를 필수 경로로 취급한다. README의 독립 제품 원칙과 충돌한다. Core는 Generic Target만으로 실행돼야 하고 ORUDA는 명시적으로 선택한 Adapter Profile에서만 요구해야 한다.
+이번 변경에서 Core Preflight를 ORUDA와 분리하고 ORUDA를 명시적 선택 Profile로 전환했다. 다만 기본 Validation Engine은 아직 Generic Adapter와 ORUDA Adapter를 함께 등록하므로, Runtime 레벨 독립성은 후속 코드 변경과 실행 증거가 필요하다.
 
 ### 4.2 Program Learning
 
