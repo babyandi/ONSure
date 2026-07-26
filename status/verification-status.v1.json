@@ -1,37 +1,57 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "1.1.0",
-  "design_gap_merge_commit": "97344e8e2484ae418043ad479be32d38a153bb3f",
-  "post_merge_self_audit_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
+  "version": "2.0.0",
+  "assessment_source_ref": "feature/onsure-codespace-free-remediation-20260726",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
-  "active_remediation_issue": 20,
+  "active_remediation_issues": [20, 23],
+  "design_coverage": {
+    "capability_count": 28,
+    "state": "LOGIC_SELF_TEST_PASS_NONFINAL",
+    "runner": "python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test",
+    "source_bound_receipt": "NOT_RUN_AFTER_LATEST_CHANGES"
+  },
+  "product_process_lineage": {
+    "stage_count": 20,
+    "artifact_count": 20,
+    "state": "LOGIC_SELF_TEST_PASS_NONFINAL",
+    "runner": "python3 scripts/validate-product-process-lineage.py --model contracts/product-process-lineage.v1.json --self-test",
+    "source_bound_receipt": "NOT_RUN_AFTER_LATEST_CHANGES"
+  },
+  "omission_failure_injection": {
+    "total_cases": 28,
+    "logic_self_test": "PASS",
+    "full_repository_current_head": "NOT_RUN_AFTER_LATEST_CHANGES"
+  },
   "repository_static_contracts": {
-    "state": "NOT_RUN_CURRENT_MAIN",
+    "state": "NOT_RUN_AFTER_LATEST_CHANGES",
     "runner": "python3 scripts/validate-repository-contracts.py"
   },
+  "codespace_free_static_gate": {
+    "state": "NOT_RUN_AFTER_LATEST_CHANGES",
+    "runner": "python3 scripts/validate-codespace-free-remediation.py"
+  },
   "one_shot_static": {
-    "state": "NOT_RUN_CURRENT_MAIN",
+    "state": "NOT_RUN_AFTER_LATEST_CHANGES",
     "runner": "bash scripts/onsure-one-shot.sh --static-only"
   },
   "one_shot_core": {
-    "state": "BLOCKED_P0_CORE_ISOLATION",
+    "state": "NOT_RUN",
     "runner": "bash scripts/onsure-one-shot.sh --profile core"
   },
   "optional_oruda_profile": {
-    "state": "NOT_RUN_CURRENT_MAIN",
+    "state": "NOT_RUN",
     "runner": "bash scripts/onsure-one-shot.sh --profile oruda"
   },
+  "java17_maven_junit": "NOT_RUN",
+  "core_modular_without_oruda": "NOT_RUN",
+  "sandbox_attack_tests": "NOT_RUN",
+  "local_api_runtime_e2e": "NOT_RUN",
   "vscode_product_full_chain": "NOT_RUN",
-  "web_product_full_chain": "NOT_RUN",
+  "web_payment_provider_full_chain": "NOT_RUN",
   "independent_otester": "NOT_RUN",
   "independent_oaudit": "NOT_RUN",
   "human_acceptance": "NOT_RUN",
-  "governance": {
-    "direct_main_change_detected": true,
-    "direct_main_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
-    "future_changes_require_branch_and_pr": true
-  },
   "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
   "final_pass": false,
   "final_audit_pass": false,
