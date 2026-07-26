@@ -7,7 +7,9 @@
   "required": [
     "contract", "profile_id", "project_id", "program_id", "source_baseline",
     "purpose", "components", "dependencies", "ai_components", "data_flows",
-    "unknowns", "conflicts", "evidence_refs", "revision", "state"
+    "unknowns", "conflicts", "evidence_refs", "revision", "state",
+    "generated_at", "learning_method", "language_inventory", "dynamic_trace",
+    "runtime_verification", "final_claim_allowed", "profile_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_PROGRAM_PROFILE_V1"},
@@ -33,7 +35,17 @@
     "conflicts": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
     "revision": {"type": "integer", "minimum": 1},
-    "state": {"enum": ["PROFILE_CANDIDATE", "PROFILE_REVIEWED", "PROFILE_ACTIVE", "STALE", "HOLD"]}
+    "state": {"enum": ["PROFILE_CANDIDATE", "PROFILE_REVIEWED", "PROFILE_ACTIVE", "STALE", "HOLD"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "learning_method": {"const": "STATIC_REPOSITORY_UNDERSTANDING_V1"},
+    "language_inventory": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 1}
+    },
+    "dynamic_trace": {"enum": ["NOT_RUN", "PARTIAL", "PASS", "FAIL", "HOLD"]},
+    "runtime_verification": {"enum": ["NOT_RUN", "PARTIAL", "PASS", "FAIL", "HOLD"]},
+    "final_claim_allowed": {"const": false},
+    "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
     "evidenceBoundItem": {
