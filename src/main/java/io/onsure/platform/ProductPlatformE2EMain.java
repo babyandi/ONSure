@@ -7,6 +7,7 @@ import io.onsure.platform.ValidationModel.RevalidationDelta;
 import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationReport;
 import io.onsure.platform.ValidationModel.ValidationTarget;
+import io.onsure.platform.oruda.OrudaValidationEngineFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -28,23 +29,23 @@ public final class ProductPlatformE2EMain {
         }
         Path output = Path.of(args[0]).toAbsolutePath().normalize();
         Files.createDirectories(output);
-        ValidationEngine engine = ValidationEngine.withOrudaAdapter(output.resolve("validation-data"));
+        ValidationEngine engine = OrudaValidationEngineFactory.create(output.resolve("validation-data"));
 
         ValidationEngine.RunResult generalBaseline = engine.run(target(
                 "sample-general-program", TargetType.GENERAL_SOFTWARE,
-                Path.of("fixtures/e2e/general-program"), GenericManifestTargetAdapter.ID, "a".repeat(40)));
+                Path.of("fixtures/e2e/general-program"), GenericManifestTargetAdapter.ID));
         ValidationEngine.RunResult generalFixed = engine.run(target(
                 "sample-general-program", TargetType.GENERAL_SOFTWARE,
-                Path.of("fixtures/e2e/general-program-fixed"), GenericManifestTargetAdapter.ID, "b".repeat(40)));
+                Path.of("fixtures/e2e/general-program-fixed"), GenericManifestTargetAdapter.ID));
         ValidationEngine.RunResult ai = engine.run(target(
                 "sample-ai-program", TargetType.AI_APPLICATION,
-                Path.of("fixtures/e2e/ai-program"), GenericManifestTargetAdapter.ID, "c".repeat(40)));
+                Path.of("fixtures/e2e/ai-program"), GenericManifestTargetAdapter.ID));
         ValidationEngine.RunResult oruda = engine.run(target(
                 "ORUDA", TargetType.AI_AGENTIC_PLATFORM,
-                Path.of("fixtures/e2e/oruda-target"), OrudaTargetAdapter.ID, "d".repeat(40)));
+                Path.of("fixtures/e2e/oruda-target"), OrudaTargetAdapter.ID));
         ValidationEngine.RunResult orudaMvf = engine.run(target(
                 "ORUDA-MVF-001", TargetType.AI_AGENTIC_PLATFORM,
-                Path.of("fixtures/oruda/mvf-001"), OrudaTargetAdapter.ID, "f".repeat(40)));
+                Path.of("fixtures/oruda/mvf-001"), OrudaTargetAdapter.ID));
 
         requireDecision("general-baseline", generalBaseline.report(), Decision.FAIL);
         requireDecision("general-fixed", generalFixed.report(), Decision.PASS);
@@ -53,7 +54,7 @@ public final class ProductPlatformE2EMain {
         requireDecision("oruda-mvf-001", orudaMvf.report(), Decision.PASS);
         for (ValidationEngine.RunResult result : List.of(
                 generalBaseline, generalFixed, ai, oruda, orudaMvf)) {
-            requireIndependentReceipts(result.report());
+            requireInternalNonfinalReceipts(result.report());
         }
         requireFindingCategory(ai.report(), "AI_TOOL_AUTHORIZATION");
         requireFindingCategory(ai.report(), "PROMPT_INJECTION");
@@ -74,7 +75,7 @@ public final class ProductPlatformE2EMain {
         }
 
         Map<String, Object> normalized = new LinkedHashMap<>();
-        normalized.put("scope", "VALIDATOR_FIXTURE_E2E_NONFINAL");
+        normalized.put("scope", "VALIDATOR_FIXTURE_E2E_WITH_OPTIONAL_ORUDA_NONFINAL");
         normalized.put("general_baseline", normalize(generalBaseline.report()));
         normalized.put("general_fixed", normalize(generalFixed.report()));
         normalized.put("ai_program", normalize(ai.report()));
@@ -89,17 +90,19 @@ public final class ProductPlatformE2EMain {
         MAPPER.writeValue(output.resolve("normalized-result.json").toFile(), normalized);
 
         Map<String, Object> inventory = new LinkedHashMap<>();
-        inventory.put("contract", "ONSURE_VALIDATOR_FIXTURE_E2E_V1");
+        inventory.put("contract", "ONSURE_VALIDATOR_FIXTURE_E2E_WITH_ORUDA_V2");
         inventory.put("product_full_chain", "NOT_RUN");
+        inventory.put("assurance_class", "SELF_VALIDATION_NONFINAL");
         inventory.put("general_baseline_run", generalBaseline.runRoot().toString());
         inventory.put("general_fixed_run", generalFixed.runRoot().toString());
         inventory.put("ai_run", ai.runRoot().toString());
         inventory.put("oruda_run", oruda.runRoot().toString());
         inventory.put("oruda_mvf_001_run", orudaMvf.runRoot().toString());
         inventory.put("normalized_result", output.resolve("normalized-result.json").toString());
-        inventory.put("revalidation_delta", output.resolve("general-program-revalidation-delta.json").toString());
+        inventory.put("revalidation_delta",
+                output.resolve("general-program-revalidation-delta.json").toString());
         MAPPER.writeValue(output.resolve("execution-inventory.json").toFile(), inventory);
-        System.out.println("ONSURE_VALIDATOR_FIXTURE_E2E_EXECUTION_PASS " + output);
+        System.out.println("ONSURE_OPTIONAL_ORUDA_FIXTURE_E2E_PASS_NONFINAL " + output);
     }
 
     private static Map<String, Object> normalize(ValidationReport report) {
@@ -125,16 +128,18 @@ public final class ProductPlatformE2EMain {
         return value;
     }
 
-    private static ValidationTarget target(String id, TargetType type, Path sourceRoot,
-            String adapterId, String ignoredSourceReference) throws Exception {
+    private static ValidationTarget target(
+            String id, TargetType type, Path sourceRoot, String adapterId) throws Exception {
         return new ValidationTarget(
                 id, id, type, sourceRoot, SourceReferenceBinding.treeReference(sourceRoot), adapterId,
                 "ONSURE_DEFAULT_POLICY_V1", FixtureRegistryStage.TRUSTED_LOCAL_PROFILE);
     }
 
-    private static void requireDecision(String scenario, ValidationReport report, Decision expected) {
+    private static void requireDecision(
+            String scenario, ValidationReport report, Decision expected) {
         if (report.decision() != expected) {
-            throw new IllegalStateException(scenario + " expected " + expected + " but got " + report.decision());
+            throw new IllegalStateException(
+                    scenario + " expected " + expected + " but got " + report.decision());
         }
     }
 
@@ -144,11 +149,12 @@ public final class ProductPlatformE2EMain {
         }
     }
 
-    private static void requireIndependentReceipts(ValidationReport report) {
+    private static void requireInternalNonfinalReceipts(ValidationReport report) {
         if (!"PASS".equals(report.summary().get("internal_verifier"))
                 || !"PASS".equals(report.summary().get("internal_audit"))
                 || !"NOT_RUN".equals(report.summary().get("independent_verifier"))
-                || !"NOT_RUN".equals(report.summary().get("independent_audit"))) {
+                || !"NOT_RUN".equals(report.summary().get("independent_audit"))
+                || !"SELF_VALIDATION_NONFINAL".equals(report.summary().get("assurance_class"))) {
             throw new IllegalStateException("internal nonfinal verification missing for "
                     + report.target().targetId());
         }
