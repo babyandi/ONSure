@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/execution-plan.v1.schema.json",
+  "title": "ONSure Execution Plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "plan_id", "target_id", "source_digest", "risk_score",
+    "scenarios", "required_permissions", "estimated_minutes", "estimated_credit_units",
+    "stop_conditions", "approval", "created_at", "state"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EXECUTION_PLAN_V1"},
+    "plan_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "risk_score": {"type": "integer", "minimum": 0, "maximum": 100},
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scenario_id", "category", "risk", "command", "expected",
+          "required_permissions", "estimated_seconds", "selected", "reason"
+        ],
+        "properties": {
+          "scenario_id": {"type": "string", "minLength": 1},
+          "category": {"enum": ["NORMAL", "BOUNDARY", "FAILURE", "ADVERSARIAL", "REGRESSION"]},
+          "risk": {"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+          "command": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "expected": {"type": "string"},
+          "required_permissions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "estimated_seconds": {"type": "integer", "minimum": 1},
+          "selected": {"type": "boolean"},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "required_permissions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "estimated_minutes": {"type": "integer", "minimum": 1},
+    "estimated_credit_units": {"type": "integer", "minimum": 0},
+    "stop_conditions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "approved_scenario_ids", "rejected_scenario_ids", "approved_by", "approved_at"],
+      "properties": {
+        "state": {"enum": ["AWAITING_APPROVAL", "PARTIALLY_APPROVED", "APPROVED", "REJECTED"]},
+        "approved_scenario_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "rejected_scenario_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "approved_by": {"type": ["string", "null"]},
+        "approved_at": {"type": ["string", "null"], "format": "date-time"}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "state": {"enum": ["PLANNED", "AWAITING_APPROVAL", "READY", "HOLD"]}
+  }
+}
