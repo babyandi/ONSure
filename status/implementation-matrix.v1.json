@@ -1,0 +1,47 @@
+{
+  "contract": "ONSURE_IMPLEMENTATION_MATRIX_V1",
+  "generated_from": "contracts/requirements-traceability.v1.json",
+  "source_baseline": "main@e1aad6fd0447f00835236b242635e9e899c932b1",
+  "assessment_date": "2026-07-26",
+  "capabilities": {
+    "standalone_core": "PARTIAL",
+    "workspace_intake": "PARTIAL",
+    "program_learning": "STUB",
+    "behavior_learning": "STUB",
+    "planning": "DESIGN_ONLY",
+    "oreview": "STUB",
+    "verification": "PARTIAL",
+    "diagnosis_rca": "STUB",
+    "automatic_improvement": "DESIGN_ONLY",
+    "before_after_proof": "PARTIAL",
+    "evidence_receipts": "PARTIAL",
+    "learning_memory": "PARTIAL",
+    "git_full_chain": "DESIGN_ONLY",
+    "vscode_extension": "STUB",
+    "local_authenticated_api": "DESIGN_ONLY",
+    "web_commerce": "DESIGN_ONLY",
+    "olicense": "DESIGN_ONLY",
+    "tenant_sandbox_operations": "DESIGN_ONLY",
+    "delivery": "PARTIAL",
+    "commercial_deployment": "DESIGN_ONLY"
+  },
+  "counts": {
+    "IMPLEMENTED": 0,
+    "PARTIAL": 8,
+    "STUB": 4,
+    "DESIGN_ONLY": 8,
+    "NOT_RUN": 0,
+    "BLOCKED": 0,
+    "CONFLICT": 0,
+    "DEPRECATED": 0
+  },
+  "assurance": {
+    "self_validation": "NON_FINAL",
+    "independent_otester": "NOT_RUN",
+    "independent_oaudit": "NOT_RUN",
+    "human_full_chain": "NOT_RUN",
+    "final_lock": false,
+    "production_go": false,
+    "commercial_go": false
+  }
+}
