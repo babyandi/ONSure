@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": [
     "contract", "approval_id", "authority_class", "approval_purpose", "nonce",
-    "case_id", "verification_type", "provider", "provider_receipt_id",
+    "case_id", "case_revision", "verification_type", "provider", "provider_receipt_id",
     "provider_receipt_digest", "decision", "reasons", "actor", "key_id",
     "signature_algorithm", "signature", "approved_at", "expires_at"
   ],
@@ -17,6 +17,7 @@
     "approval_purpose": {"enum": ["PAYMENT_VERIFICATION", "REFUND_VERIFICATION", "DELETION_VERIFICATION"]},
     "nonce": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{16,160}$"},
     "case_id": {"type": "string", "minLength": 1},
+    "case_revision": {"type": "integer", "minimum": 1},
     "verification_type": {"enum": ["PAYMENT", "REFUND", "DELETION"]},
     "provider": {"type": "string", "minLength": 1},
     "provider_receipt_id": {"type": "string", "minLength": 1},
