@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/hunk-approval-receipt.v1.schema.json",
+  "title": "ONSure Hunk Approval Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "approval_id", "patch_plan_id", "patch_plan_file_sha256", "approved_hunk_ids", "branch_name", "actor", "key_id", "signature_algorithm", "signature", "approved_at", "allow_direct_main_write", "allow_force_push", "allow_merge"],
+  "properties": {
+    "contract": {"const": "ONSURE_HUNK_APPROVAL_RECEIPT_V1"},
+    "approval_id": {"type": "string", "minLength": 1},
+    "patch_plan_id": {"type": "string", "minLength": 1},
+    "patch_plan_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approved_hunk_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "branch_name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{2,120}$"},
+    "actor": {"type": "string", "minLength": 1, "not": {"const": "ONSURE_AUTOMATION"}},
+    "key_id": {"type": "string", "minLength": 1},
+    "signature_algorithm": {"const": "Ed25519"},
+    "signature": {"type": "string", "minLength": 32},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "allow_direct_main_write": {"const": false},
+    "allow_force_push": {"const": false},
+    "allow_merge": {"const": false}
+  }
+}
