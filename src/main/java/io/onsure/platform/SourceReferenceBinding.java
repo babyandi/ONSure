@@ -1,7 +1,6 @@
 package io.onsure.platform;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -22,25 +21,33 @@ public final class SourceReferenceBinding {
         Path root = sourceRoot.toAbsolutePath().normalize();
         if (reference.startsWith("sha256:")) {
             String declared = reference.substring("sha256:".length());
-            if (!declared.matches("[0-9a-f]{64}") || !declared.equals(treeDigest)) {
+            String current = Hashing.tree(root);
+            if (!declared.matches("[0-9a-f]{64}")
+                    || !declared.equals(treeDigest)
+                    || !declared.equals(current)) {
                 throw new IllegalStateException("IMMUTABLE_SOURCE_TREE_DIGEST_MISMATCH");
             }
             return new Verification("SHA256_TREE", reference, treeDigest);
         }
         if (reference.startsWith("git:")) {
             String commit = reference.substring("git:".length());
-            if (!commit.matches("[0-9a-f]{40}")) {
+            if (!commit.matches("(?:[0-9a-f]{40}|[0-9a-f]{64})")) {
                 throw new IllegalStateException("IMMUTABLE_GIT_REFERENCE_INVALID");
             }
             String head = runGit(root, List.of("rev-parse", "HEAD")).strip();
             if (!commit.equals(head)) {
                 throw new IllegalStateException("IMMUTABLE_GIT_HEAD_MISMATCH");
             }
-            String dirty = runGit(root, List.of("status", "--porcelain", "--untracked-files=no"));
+            String dirty = runGit(root, List.of(
+                    "status", "--porcelain", "--untracked-files=all", "--", "."));
             if (!dirty.isBlank()) {
-                throw new IllegalStateException("IMMUTABLE_GIT_WORKTREE_DIRTY");
+                throw new IllegalStateException("IMMUTABLE_GIT_WORKTREE_DIRTY_OR_UNTRACKED");
             }
-            return new Verification("GIT_COMMIT", reference, treeDigest);
+            String current = Hashing.tree(root);
+            if (!current.equals(treeDigest)) {
+                throw new IllegalStateException("IMMUTABLE_GIT_TREE_DIGEST_MISMATCH");
+            }
+            return new Verification("GIT_COMMIT_AND_TRACKED_TREE", reference, treeDigest);
         }
         throw new IllegalStateException("IMMUTABLE_SOURCE_REFERENCE_UNVERIFIED");
     }
