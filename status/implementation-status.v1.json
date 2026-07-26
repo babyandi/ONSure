@@ -1,10 +1,13 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_STATUS_V1",
-  "assessment_basis": "main@e1aad6fd0447f00835236b242635e9e899c932b1",
+  "version": "1.1.0",
+  "assessment_origin_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
+  "runtime_source_commit": null,
   "assessment_date": "2026-07-26",
   "authority": "status/implementation-matrix.v1.json",
   "items": [
     {"id": "VALIDATOR-FIXTURE-ENGINE", "state": "PARTIAL", "evidence": "io.onsure.platform and io.onsure.harness"},
+    {"id": "CORE-ORUDA-ISOLATION", "state": "PARTIAL", "evidence": "Runtime adapter registration separated; compile-time imports and single Maven module remain"},
     {"id": "FILE-EVIDENCE-STORE", "state": "PARTIAL", "evidence": "src/main/java/io/onsure/platform/FileValidationStore.java"},
     {"id": "OFFICIAL-LEARNING-LEDGER", "state": "PARTIAL", "evidence": "src/main/java/io/onsure/learning/OfficialLearningLedger.java"},
     {"id": "RAG-PREPARATION-CONTROL", "state": "PARTIAL", "evidence": "io.onsure.rag"},
@@ -12,6 +15,7 @@
     {"id": "PROGRAM-LEARNING", "state": "STUB", "evidence": "Hash and approval recording without repository understanding"},
     {"id": "BEHAVIOR-LEARNING", "state": "STUB", "evidence": "Marker scan without repeated behavior observation"},
     {"id": "OREVIEW", "state": "STUB", "evidence": "Limited marker-based static stage"},
+    {"id": "ATOMIC-TRACEABILITY", "state": "STUB", "evidence": "20 capability groups only; atomic requirements and receipts not mapped"},
     {"id": "OPLANNING", "state": "DESIGN_ONLY", "evidence": null},
     {"id": "OIMPROVEMENT-PATCH", "state": "DESIGN_ONLY", "evidence": null},
     {"id": "VSCODE-EXTENSION", "state": "DESIGN_ONLY", "evidence": null},
@@ -19,6 +23,8 @@
     {"id": "WEB-COMMERCE-OLICENSE", "state": "DESIGN_ONLY", "evidence": null}
   ],
   "summary": {
+    "post_merge_self_audit": "P0_OPEN",
+    "active_issue": 20,
     "standalone_product_full_chain": "BLOCKED",
     "formal_execution_current_source": "NOT_RUN",
     "independent_assurance": "NOT_RUN",

@@ -8,7 +8,7 @@ ONSURE는 등록된 AI 프로그램과 일반 소프트웨어의 목적·구조�
 - **Evidence over assertion** — 실행 증거 없는 PASS를 금지한다.
 - **Improve from verified findings** — 임의 기능 개발이 아니라 확인된 Finding에서 개선을 시작한다.
 - **Preserve intent** — 승인된 제품 목적과 정상 동작을 훼손하지 않는다.
-- **Standalone first** — ORUDA 또는 특정 대상 제품 없이 Core가 실행돼야 한다.
+- **Standalone first** — ORUDA 또는 특정 대상 제품 없이 Core가 빌드·시험·실행돼야 한다.
 - **Fail closed** — 누락, 충돌, NOT_RUN, PENDING과 독립성 부족을 완료로 바꾸지 않는다.
 
 ## 제품 목표 흐름
@@ -42,10 +42,18 @@ Project registration
 - Commit·Push·Draft PR Git Full-Chain
 - Web·Commerce·OLicense·Tenant·Sandbox 운영 기능
 
+PR #19 병합 후 자기검증에서 추가 P0가 확인됐습니다.
+
+- Core와 ORUDA는 기본 Adapter 등록만 분리됐으며 Maven Module과 Compile-time Import는 아직 분리되지 않음
+- Traceability는 20개 기능군 수준이며 원자 Requirement 100%가 아님
+- 현재 Main 기준 Runtime One-Shot은 아직 실행되지 않음
+- Local OTester/OAudit는 내부 역할분리이며 독립 권위가 아님
+
 정확한 상태는 다음 파일을 권위로 합니다.
 
 - [설계 권위와 적용 범위](docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md)
 - [전체 상세설계 Gap 검증](docs/verification/ONSURE_FULL_DESIGN_GAP_ASSESSMENT_v1.md)
+- [병합 후 자기검증](docs/verification/ONSURE_POST_MERGE_SELF_AUDIT_v1.md)
 - [요구사항 추적성 계약](contracts/requirements-traceability.v1.json)
 - [구현 상태 Matrix](status/implementation-matrix.v1.json)
 - [설계 충돌 대장](status/design-conflict-register.v1.json)
@@ -55,22 +63,26 @@ Project registration
 
 ONSURE Core 요구사항과 기본 실행은 ORUDA의 경로, 정책, 실행기, 저장소, 데이터 또는 프로그램 구성에 의존해서는 안 됩니다.
 
-ORUDA 관련 코드는 선택형 Target Adapter입니다.
+목표 구조는 다음과 같습니다.
 
 ```text
 Default: ONSure Core + Generic Target Adapter
-Optional: ONSure Core + ORUDA Adapter Profile
+Optional: ONSure Core + ORUDA Adapter Module
 ```
+
+현재는 Runtime Adapter 선택만 부분 분리된 상태이며, 별도 Maven Module·Artifact 분리는 Issue #20의 P0입니다.
 
 ## 단일 실행 명령
 
 Codespace 이전 정적 검증:
 
 ```bash
-bash scripts/onsure-one-shot.sh --static-only
+bash scripts/onsure-one-shot.sh --static-only --profile core
 ```
 
-최종 Core 실행환경 검증:
+정적 검사는 성공해도 `NON_FINAL`입니다.
+
+Core 지향 Runtime 검증:
 
 ```bash
 bash scripts/onsure-one-shot.sh --profile core
@@ -82,7 +94,9 @@ bash scripts/onsure-one-shot.sh --profile core
 bash scripts/onsure-one-shot.sh --profile oruda
 ```
 
-각 실행은 `.onsure/one-shot/<UTC timestamp>/`에 단계별 로그, Receipt, Hash와 결과를 저장합니다.
+Issue #20의 Core 모듈 분리와 원자 추적성이 완료되기 전에는 Runtime 모드가 내부 시험을 통과하더라도 `ONSURE_ONE_SHOT_BLOCKED_NONFINAL`로 종료합니다.
+
+각 실행은 `.onsure/one-shot/<UTC timestamp>-<pid>/`에 단계별 로그, Receipt, Hash와 결과를 저장합니다.
 
 ## 기준 문서
 
@@ -101,6 +115,6 @@ bash scripts/onsure-one-shot.sh --profile oruda
 
 ## 판정 상한
 
-현재 허용 상태는 `SELF_VALIDATION_NONFINAL / HOLD`입니다.
+현재 허용 상태는 `SELF_VALIDATION_NONFINAL / BLOCKED`입니다.
 
-실제 VS Code와 Web Full-Chain, 현재 Source 기준 반복 실행, 독립 OTester·OAudit와 사용자 승인 전에는 Final PASS, FinalLock, Production GO 또는 Commercial GO를 선언하지 않습니다.
+실제 Core 독립 빌드, 원자 Traceability, VS Code와 Web Full-Chain, 현재 Source 기준 반복 실행, 독립 OTester·OAudit와 사용자 승인 전에는 Final PASS, FinalLock, Production GO 또는 Commercial GO를 선언하지 않습니다.

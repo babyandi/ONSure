@@ -1,8 +1,10 @@
 target/
 receipts/local/
 receipts/product-e2e/
+receipts/validator-fixture-e2e/
 receipts/development-gate/
 validation-data/
 *.log
 .onsure/autopilot/
+.onsure/one-shot/
 __pycache__/

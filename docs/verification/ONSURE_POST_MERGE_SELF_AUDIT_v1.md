@@ -12,6 +12,7 @@
 - `전체 요구사항 추적성`은 과장이다. 현재 20개 기능군 수준이며 세부 FR, API, 화면, 상태, 시험 항목을 원자 단위로 추적하지 않는다.
 - `정적 계약 검증`은 JSON 구문과 파일 존재 중심이다. JSON Schema 적합성, YAML, JSONL, 전체 Markdown 링크, 실제 Evidence 계보를 검증하지 않는다.
 - `전체 작업 완료`는 Codespace-free 기준선 통합 완료를 의미할 뿐 제품 구현 또는 전체 검증 완료를 의미하지 않는다.
+- 자기검증 문서를 `main`에 직접 기록한 커밋 `189c7075...`은 Branch·PR 정책 위반이다. 사용자 권한 위임은 독립 리뷰와 변경관리 절차를 대체하지 않는다.
 
 ## 3. P0 발견사항
 
@@ -45,6 +46,11 @@
 - Git mode Dirty 검사에서 untracked 파일을 제외한다.
 - Generic Target Tree Hash는 전체 `Files.walk`를 사용해 실제 Repository 대상에서는 `.git`, untracked, 실행 산출물이 포함될 수 있다.
 - 실행기는 untracked Python, Shell, Java Source/Test에 영향을 받을 수 있는데 Source Snapshot은 이를 제외한다.
+
+정정 메모:
+
+- `LocalSourceLockVerifier.digestTrackedFiles`는 Git 추적 파일을 사용하므로 Local Source Lock이 Receipt 디렉터리를 직접 Hash한다는 해석은 맞지 않는다.
+- 남은 문제는 Local Dirty 판정이 untracked를 제외한다는 점, Policy Digest가 추적 여부를 분리하지 않는 점, Generic Validation의 `Hashing.tree`가 Git 추적 파일이 아닌 전체 Filesystem을 사용한다는 점이다.
 
 필요 조치:
 
@@ -86,14 +92,25 @@
 
 ### SELF-P0-006 상태 대장 기준선 노후화
 
-- PR #19 병합 후에도 상태 파일들이 `main@e1aad6...`와 병합 전 Branch를 기준으로 기록한다.
-- Core Adapter 분리 상태도 `REMEDIATION_IN_BRANCH`로 남아 있다.
+- PR #19 병합 후에도 상태 파일들이 `main@e1aad6...`와 병합 전 Branch를 기준으로 기록했다.
+- Core Adapter 분리 상태도 `REMEDIATION_IN_BRANCH`로 남아 있었다.
 
 필요 조치:
 
 - 정적 상태 파일은 `runtime_source_commit=null`과 `PENDING_SOURCE_BOUND_RECEIPT`를 사용
 - One-Shot 실행 시에만 실제 HEAD SHA를 Receipt에 기록
 - 병합 Branch가 아닌 현재 Main 상태로 대장 갱신
+
+### SELF-P0-007 Git 변경관리 위반
+
+- 자기검증 문서 추가가 Branch·Draft PR 없이 `main`에 직접 반영됐다.
+- 이는 `Main 직접 변경 금지`, 독립 리뷰, 병합 Gate 원칙과 충돌한다.
+
+필요 조치:
+
+- 위반 Commit을 감사대장에 보존
+- 이후 모든 정정은 `audit/onsure-post-merge-self-audit-remediation-20260726` Branch와 PR을 사용
+- Branch Protection 또는 Server-side Rule이 없으면 운영 절차만으로 차단됐다고 주장하지 않음
 
 ## 4. P1 발견사항
 

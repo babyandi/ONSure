@@ -10,6 +10,8 @@ import java.util.Map;
 
 public final class LocalAgentMain {
     public static final String CONTRACT = "ONSURE_LOCAL_AGENT_RECEIPT_V1";
+    public static final String AUTHORITY_CLASS = "INTERNAL_SELF_VALIDATION";
+    public static final String ASSURANCE_CLASS = "SELF_VALIDATION_NONFINAL";
 
     private LocalAgentMain() {}
 
@@ -53,13 +55,16 @@ public final class LocalAgentMain {
         Map<String, Object> receipt = new LinkedHashMap<>();
         receipt.put("contract", CONTRACT);
         receipt.put("authority", authority);
+        receipt.put("authority_class", AUTHORITY_CLASS);
+        receipt.put("assurance_class", ASSURANCE_CLASS);
+        receipt.put("independent_authority", false);
         receipt.put("run_id", args[1]);
         receipt.put("assurance_run_id", context.runId());
         receipt.put("run_started_at", context.startedAt().toString());
         receipt.put("input_digest", args[2]);
         receipt.put("decision", "PASS");
         receipt.put("created_at", createdAt.toString());
-        receipt.put("execution_mode", "LOCAL_SEPARATE_JVM");
+        receipt.put("execution_mode", "LOCAL_SEPARATE_JVM_SAME_ENVIRONMENT");
         receipt.put("role_policy", args[6]);
         receipt.put("evidence_scope", args[7]);
         receipt.put("key_id", args[3]);

@@ -66,7 +66,7 @@ public final class LocalEvidenceVerifier {
         String oauditKeyId = verifyAgentReceipt(
                 oaudit, "OAUDIT", otesterDigest, registry, runContext, violations);
         if (otesterKeyId != null && Objects.equals(otesterKeyId, oauditKeyId)) {
-            violations.add("INDEPENDENCE_KEY_COLLISION");
+            violations.add("INTERNAL_ROLE_KEY_COLLISION");
         }
         return violations.isEmpty() ? ValidationResult.pass() : ValidationResult.fail(violations);
     }
@@ -81,8 +81,11 @@ public final class LocalEvidenceVerifier {
             JsonNode node = mapper.readTree(file.toFile());
             if (!LocalAgentMain.CONTRACT.equals(node.path("contract").asText())) violations.add(expectedAuthority + "_RECEIPT_CONTRACT_MISMATCH");
             if (!expectedAuthority.equals(node.path("authority").asText())) violations.add(expectedAuthority + "_AUTHORITY_MISMATCH");
+            if (!LocalAgentMain.AUTHORITY_CLASS.equals(node.path("authority_class").asText())) violations.add(expectedAuthority + "_AUTHORITY_CLASS_INVALID");
+            if (!LocalAgentMain.ASSURANCE_CLASS.equals(node.path("assurance_class").asText())) violations.add(expectedAuthority + "_ASSURANCE_CLASS_INVALID");
+            if (node.path("independent_authority").asBoolean(true)) violations.add(expectedAuthority + "_FALSE_INDEPENDENCE_CLAIM");
             if (!"PASS".equals(node.path("decision").asText())) violations.add(expectedAuthority + "_NON_PASS");
-            if (!"LOCAL_SEPARATE_JVM".equals(node.path("execution_mode").asText())) violations.add(expectedAuthority + "_PROCESS_BOUNDARY_MISSING");
+            if (!"LOCAL_SEPARATE_JVM_SAME_ENVIRONMENT".equals(node.path("execution_mode").asText())) violations.add(expectedAuthority + "_EXECUTION_MODE_INVALID");
             if (!LocalRolePolicy.expectedPolicy(expectedAuthority).equals(node.path("role_policy").asText())) violations.add(expectedAuthority + "_ROLE_POLICY_MISMATCH");
             if (!LocalRolePolicy.expectedScope(expectedAuthority).equals(node.path("evidence_scope").asText())) violations.add(expectedAuthority + "_EVIDENCE_SCOPE_MISMATCH");
             if (runContext != null) {
@@ -145,7 +148,7 @@ public final class LocalEvidenceVerifier {
             }
             Set<String> seen = new HashSet<>();
             for (int i = 1; i < lines.size(); i++) {
-                String[] columns = lines.get(i).split("\\t", -1);
+                String[] columns = lines.get(i).split("\t", -1);
                 if (columns.length != 7) {
                     violations.add("ADVERSARIAL_FIXTURE_REPORT_FORMAT_INVALID");
                     continue;

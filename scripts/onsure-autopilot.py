@@ -62,9 +62,9 @@ def git(*arguments: str) -> str:
 
 def source_snapshot(require_clean: bool) -> dict[str, Any]:
     head = git("rev-parse", "HEAD")
-    status = git("status", "--porcelain", "--untracked-files=no")
+    status = git("status", "--porcelain")
     if require_clean and status:
-        raise RuntimeError("SOURCE_DIRTY")
+        raise RuntimeError("SOURCE_DIRTY_OR_UNTRACKED")
     tracked = git("ls-files", "-s")
     return {
         "head": head,

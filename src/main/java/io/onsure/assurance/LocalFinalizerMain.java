@@ -43,9 +43,9 @@ public final class LocalFinalizerMain {
             System.err.println("LOCAL_EVIDENCE_FAIL " + evidence.violations());
             System.exit(80);
         }
-        ValidationResult finalLock = new LocalFinalLockVerifier().verify(root.resolve("final-lock.sha256"), root);
-        if (finalLock.decision() != Decision.PASS) {
-            System.err.println("LOCAL_FINAL_LOCK_FAIL " + finalLock.violations());
+        ValidationResult evidenceLock = new LocalFinalLockVerifier().verify(root.resolve("final-lock.sha256"), root);
+        if (evidenceLock.decision() != Decision.PASS) {
+            System.err.println("LOCAL_EVIDENCE_LOCK_FAIL " + evidenceLock.violations());
             System.exit(81);
         }
 
@@ -79,7 +79,13 @@ public final class LocalFinalizerMain {
             Map<String, Object> finalReceipt = new LinkedHashMap<>();
             finalReceipt.put("contract", LocalFinalReceiptVerifier.CONTRACT);
             finalReceipt.put("decision", "PASS");
-            finalReceipt.put("execution_mode", "LOCAL_STANDALONE");
+            finalReceipt.put("assurance_class", "SELF_VALIDATION_NONFINAL");
+            finalReceipt.put("independent_otester", "NOT_RUN");
+            finalReceipt.put("independent_oaudit", "NOT_RUN");
+            finalReceipt.put("final_lock_allowed", false);
+            finalReceipt.put("production_go", false);
+            finalReceipt.put("commercial_go", false);
+            finalReceipt.put("execution_mode", "LOCAL_STANDALONE_SELF_VALIDATION");
             finalReceipt.put("assurance_run_id", runContext.runId());
             finalReceipt.put("run_started_at", runContext.startedAt().toString());
             finalReceipt.put("verified_at", Instant.now().toString());
@@ -95,26 +101,26 @@ public final class LocalFinalizerMain {
             finalReceipt.put("key_registry_snapshot_sha256", sha256(registrySnapshot));
             finalReceipt.put("ledger", ledger.toAbsolutePath().normalize().toString());
             finalReceipt.put("ledger_chain_head", chainHead);
-            finalReceipt.put("final_lock_sha256", sha256(root.resolve("final-lock.sha256")));
+            finalReceipt.put("evidence_lock_sha256", sha256(root.resolve("final-lock.sha256")));
             Files.createDirectories(output.getParent());
             mapper.writerWithDefaultPrettyPrinter().writeValue(temporary.toFile(), finalReceipt);
             moveReplacing(temporary, output);
             ValidationResult published = new LocalFinalReceiptVerifier().verify(root);
             if (published.decision() != Decision.PASS) {
-                throw new IllegalStateException("final receipt verification failed: " + published.violations());
+                throw new IllegalStateException("local nonfinal receipt verification failed: " + published.violations());
             }
         } catch (Exception publicationFailure) {
             try { Files.deleteIfExists(temporary); } catch (Exception ignored) {}
             try { Files.deleteIfExists(output); } catch (Exception ignored) {}
             ValidationResult rollback = localLedger.restore(ledgerSnapshot);
             if (rollback.decision() != Decision.PASS) {
-                System.err.println("LOCAL_FINAL_RECEIPT_FAIL_AND_LEDGER_ROLLBACK_FAIL " + rollback.violations());
+                System.err.println("LOCAL_NONFINAL_RECEIPT_FAIL_AND_LEDGER_ROLLBACK_FAIL " + rollback.violations());
                 System.exit(85);
             }
-            System.err.println("LOCAL_FINAL_RECEIPT_FAIL " + publicationFailure.getMessage());
+            System.err.println("LOCAL_NONFINAL_RECEIPT_FAIL " + publicationFailure.getMessage());
             System.exit(84);
         }
-        System.out.println("LOCAL_ASSURANCE_PASS " + root);
+        System.out.println("LOCAL_ASSURANCE_NONFINAL_PASS " + root);
     }
 
     private static void moveReplacing(Path source, Path target) throws Exception {

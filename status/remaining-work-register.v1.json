@@ -1,19 +1,39 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
+  "version": "1.1.0",
   "assessment_date": "2026-07-26",
-  "authority": "status/missing-capability-register.v1.json",
+  "authority": "docs/verification/ONSURE_POST_MERGE_SELF_AUDIT_v1.md",
+  "active_issue": 20,
   "items": [
     {
-      "id": "P0-CORE-ADAPTER-SEPARATION",
-      "state": "REMEDIATION_IN_BRANCH",
+      "id": "P0-CORE-ADAPTER-MODULE-SEPARATION",
+      "state": "BLOCKED_COMPILE_TIME_COUPLING",
       "requires_human": false,
-      "next_action": "Validate the core profile without ORUDA and refactor default engine registration if runtime tests reveal coupling."
+      "next_action": "Split onsure-core and onsure-adapter-oruda modules; prove Core compile/test/E2E after removing the ORUDA module."
+    },
+    {
+      "id": "P0-SOURCE-AND-ONE-SHOT-INTEGRITY",
+      "state": "BLOCKED_IMPLEMENTATION",
+      "requires_human": false,
+      "next_action": "Use tracked Git objects for source binding, block untracked execution influence, separate Core E2E, and harden step receipts."
+    },
+    {
+      "id": "P0-ATOMIC-TRACEABILITY",
+      "state": "BLOCKED_DETAILED_ANALYSIS",
+      "requires_human": false,
+      "next_action": "Extract every atomic requirement, acceptance criterion, API, screen, state and test condition and map it to code symbols, test methods and evidence."
+    },
+    {
+      "id": "P0-INTERNAL-RECEIPT-NONFINAL-BOUNDARY",
+      "state": "BLOCKED_IMPLEMENTATION",
+      "requires_human": false,
+      "next_action": "Force SELF_VALIDATION_NONFINAL, independent gates NOT_RUN and final_lock_allowed=false in local receipt schemas and verifiers."
     },
     {
       "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
       "state": "BLOCKED_IMPLEMENTATION",
       "requires_human": false,
-      "next_action": "Implement repository understanding, Program Profile generation and repeated behavior observation against the new schemas."
+      "next_action": "Implement repository understanding, Program Profile generation and repeated behavior observation against the schemas."
     },
     {
       "id": "P0-PLANNING-OREVIEW-RCA",
@@ -35,15 +55,15 @@
     },
     {
       "id": "FINAL-CODESPACE-EXECUTION",
-      "state": "DEFERRED_LAST_STAGE",
+      "state": "DEFERRED_UNTIL_CODESPACE_FREE_P0_ZERO",
       "requires_human": false,
-      "next_action": "Run scripts/onsure-one-shot.sh only after codespace-free contracts, code and PR work are complete."
+      "next_action": "Run One-Shot only after Issue 20 Codespace-free P0 implementation and static review are complete."
     },
     {
       "id": "INDEPENDENT-OTESTER-OAUDIT",
       "state": "BLOCKED_INDEPENDENT_AUTHORITY",
       "requires_human": false,
-      "next_action": "Use separate execution identities and signing keys after runtime Full-Chain succeeds."
+      "next_action": "Use separate execution identities, signing keys and environments after runtime Full-Chain succeeds."
     },
     {
       "id": "HUMAN-ACCEPTANCE",

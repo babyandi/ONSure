@@ -1,0 +1,37 @@
+{
+  "contract": "ONSURE_POST_MERGE_SELF_AUDIT_V1",
+  "assessment_date": "2026-07-26",
+  "design_gap_merge_commit": "97344e8e2484ae418043ad479be32d38a153bb3f",
+  "audit_origin_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
+  "remediation_issue": 20,
+  "decision": "BLOCKED",
+  "assurance_class": "SELF_VALIDATION_NONFINAL",
+  "codespace_free_remediation_complete": false,
+  "runtime_verification": "NOT_RUN",
+  "p0": [
+    "CORE_ORUDA_MODULE_ISOLATION",
+    "CORE_ONE_SHOT_SCOPE",
+    "ATOMIC_REQUIREMENTS_TRACEABILITY",
+    "SOURCE_AND_RECEIPT_INTEGRITY",
+    "PROGRAM_AND_BEHAVIOR_LEARNING",
+    "PLANNING_REVIEW_RCA",
+    "IMPROVEMENT_GIT_FULL_CHAIN",
+    "VSCODE_LOCAL_API"
+  ],
+  "governance": {
+    "direct_main_commit_detected": true,
+    "direct_main_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
+    "subsequent_changes_use_branch_and_pr": true,
+    "accidental_issue_21_closed": true
+  },
+  "environment_attempt": {
+    "repository_clone": "BLOCKED_DNS",
+    "python": "3.13.5",
+    "bash": "5.2.37",
+    "java": "21.0.10_NOT_REQUIRED_17",
+    "maven": "NOT_INSTALLED"
+  },
+  "final_lock": false,
+  "production_go": false,
+  "commercial_go": false
+}

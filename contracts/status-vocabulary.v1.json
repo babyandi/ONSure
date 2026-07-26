@@ -1,15 +1,22 @@
 {
   "contract": "ONSURE_STATUS_VOCABULARY_V1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "implementation_states": [
     "IMPLEMENTED",
     "PARTIAL",
     "STUB",
     "DESIGN_ONLY",
-    "NOT_RUN",
-    "BLOCKED",
     "CONFLICT",
     "DEPRECATED"
+  ],
+  "verification_states": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "HOLD",
+    "NOT_RUN",
+    "INCONCLUSIVE",
+    "NON_FINAL"
   ],
   "run_decisions": [
     "PASS",
@@ -21,13 +28,15 @@
     "NON_FINAL"
   ],
   "rules": {
+    "implementation_and_verification_are_separate_dimensions": true,
     "file_exists_is_not_implemented": true,
     "compiled_is_not_runtime_pass": true,
     "self_validation_is_nonfinal": true,
     "not_run_cannot_be_pass": true,
     "blocked_cannot_be_fail_without_cause": true,
     "independent_receipt_required_for_final": true,
-    "current_source_baseline_required": true
+    "current_source_baseline_required": true,
+    "missing_evidence_keeps_verification_not_run": true
   },
   "final_claims": {
     "allowed_before_full_chain": false,
