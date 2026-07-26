@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/improvement-memory.v1.schema.json",
+  "title": "ONSure Improvement Memory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "memory_id", "finding_id", "failure_memory_id", "change_digest", "before_receipt_id", "after_receipt_id", "regression_receipt_ids", "decision", "applicability", "prohibitions", "rollback_pointer", "scope", "state"],
+  "properties": {
+    "contract": {"const": "ONSURE_IMPROVEMENT_MEMORY_V1"},
+    "memory_id": {"type": "string", "minLength": 1},
+    "finding_id": {"type": "string", "minLength": 1},
+    "failure_memory_id": {"type": "string", "minLength": 1},
+    "change_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "before_receipt_id": {"type": "string", "minLength": 1},
+    "after_receipt_id": {"type": "string", "minLength": 1},
+    "regression_receipt_ids": {"type": "array", "items": {"type": "string"}, "minItems": 2, "uniqueItems": true},
+    "decision": {"enum": ["IMPROVEMENT_PROVEN", "NO_MEANINGFUL_IMPROVEMENT", "REGRESSION_DETECTED", "HOLD"]},
+    "applicability": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "prohibitions": {"type": "array", "items": {"type": "string"}},
+    "rollback_pointer": {"type": "string", "minLength": 1},
+    "scope": {"enum": ["PROJECT_ONLY", "REUSABLE_CANDIDATE"]},
+    "state": {"enum": ["CANDIDATE", "VERIFIED", "ACTIVE", "STALE", "ROLLED_BACK", "HOLD"]}
+  }
+}
