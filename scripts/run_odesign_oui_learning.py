@@ -45,6 +45,14 @@ DOMAIN_ALIASES = {
     "advertising_design": {"광고", "주장", "전환", "advertising"},
     "publication_design": {"출판", "문서", "읽기", "pdf", "publication"},
     "llm_design_product_philosophy": {"figma", "피그마", "llm", "생성", "편집", "권리"},
+    "research_gap_to_question": {"리서치", "조사", "근거", "빈틈", "질문"},
+    "service_blueprint_contract": {"서비스", "블루프린트", "백스테이지", "운영", "시스템"},
+    "anti_dark_pattern_design": {"다크패턴", "취소", "동의", "선택권", "윤리"},
+    "agent_design_change_control": {"에이전트", "권한", "승인", "mcp", "변경"},
+    "design_agent_round_trip": {"라운드트립", "design.md", "코드", "편집", "재생성"},
+    "parallel_design_exploration": {"대안", "병렬", "분기", "비교", "탐색"},
+    "design_intake_and_self_critique": {"대상", "목적", "브랜드", "제약", "자기비평"},
+    "typed_component_contract": {"컴포넌트", "타입", "props", "상태", "구현"},
 }
 
 
@@ -191,6 +199,14 @@ def offline_retrieval_evaluation(projections):
         ("ODesign", "출판 문서의 읽기 구조와 타이포그래피를 설계", "publication_design"),
         ("OUI", "웹 반응형 리플로우와 접근성을 구현", "web_design"),
         ("OUI", "피그마 같은 편집 가능한 LLM 디자인 생성을 구현", "llm_design_product_philosophy"),
+        ("ODesign", "데스크 리서치의 근거 빈틈을 인터뷰 질문으로 전환", "research_gap_to_question"),
+        ("ODesign", "서비스 블루프린트로 화면과 백스테이지 운영 시스템을 연결", "service_blueprint_contract"),
+        ("OUI", "동의와 취소 선택권을 왜곡하는 다크패턴을 차단", "anti_dark_pattern_design"),
+        ("OUI", "MCP 디자인 에이전트의 변경 권한과 승인을 통제", "agent_design_change_control"),
+        ("OUI", "DESIGN.md와 코드의 편집 가능한 라운드트립을 검증", "design_agent_round_trip"),
+        ("ODesign", "병렬 대안을 분기하고 비교해 디자인을 선택", "parallel_design_exploration"),
+        ("ODesign", "대상 목적 브랜드 제약을 확정하고 자기비평", "design_intake_and_self_critique"),
+        ("OUI", "타입 props 컴포넌트 계약으로 상태와 구현을 제한", "typed_component_contract"),
     ]
     results = []
     for target, query, expected_domain in scenarios:
