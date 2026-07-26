@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Generic commercial Validator Engine: target -> findings/RCA -> lock -> report. */
+/** Generic commercial Validator Engine: target -> findings/RCA candidate -> lock -> report. */
 public final class ValidationEngine {
     public static final String REPORT_CONTRACT = "ONSURE_VALIDATION_REPORT_V1";
 
@@ -31,7 +31,8 @@ public final class ValidationEngine {
     private final List<ValidatorStage> stages;
     private final FileValidationStore store;
 
-    public ValidationEngine(List<TargetAdapter> adapters, List<ValidatorStage> stages, FileValidationStore store) {
+    public ValidationEngine(List<TargetAdapter> adapters, List<ValidatorStage> stages,
+            FileValidationStore store) {
         this.adapterRegistry = new TargetAdapterRegistry(adapters);
         this.stages = List.copyOf(stages);
         this.store = Objects.requireNonNull(store, "store");
@@ -43,12 +44,7 @@ public final class ValidationEngine {
         return withOptionalAdapters(storeRoot, List.of());
     }
 
-    /** Explicit optional profile used by the ORUDA adapter fixture suite. */
-    public static ValidationEngine withOrudaAdapter(Path storeRoot) {
-        return withOptionalAdapters(storeRoot, List.of(new OrudaTargetAdapter()));
-    }
-
-    /** Creates a standalone core engine with explicitly selected optional target adapters. */
+    /** Creates a standalone Core engine with explicitly supplied optional target adapters. */
     public static ValidationEngine withOptionalAdapters(
             Path storeRoot, List<TargetAdapter> optionalAdapters) {
         List<TargetAdapter> adapters = new ArrayList<>();
@@ -120,7 +116,8 @@ public final class ValidationEngine {
         return new RunResult(runRoot, report);
     }
 
-    private static ValidationReport createReport(ValidationContext context, Decision decision, Instant generatedAt) {
+    private static ValidationReport createReport(
+            ValidationContext context, Decision decision, Instant generatedAt) {
         ValidationCompletionGate.Evaluation completion = ValidationCompletionGate.evaluate(context);
         Map<String, Object> summary = new LinkedHashMap<>();
         summary.put("open_critical", count(context.findings(), Severity.CRITICAL));
@@ -129,6 +126,7 @@ public final class ValidationEngine {
         summary.put("finding_count", context.findings().size());
         summary.put("failure_mode_count", context.failureModes().size());
         summary.put("rca_count", context.rcaRecords().size());
+        summary.put("rca_assurance", "RCA_CANDIDATE_TEMPLATE_NONFINAL");
         summary.put("remediation_plan_count", context.remediationPlans().size());
         summary.put("approval_required_count", context.remediationPlans().stream()
                 .filter(value -> value.changeClass() == ChangeClass.APPROVAL_REQUIRED).count());
@@ -136,7 +134,8 @@ public final class ValidationEngine {
         summary.put("fixture_count", context.fixtureResults().size());
         summary.put("fixture_failures", context.fixtureResults().stream()
                 .filter(value -> value.decision() != Decision.PASS).count());
-        summary.put("source_tree_sha256", context.attributes().getOrDefault("source_tree_sha256", "NOT_AVAILABLE"));
+        summary.put("source_tree_sha256",
+                context.attributes().getOrDefault("source_tree_sha256", "NOT_AVAILABLE"));
         summary.put("adapter_id", context.adapter().adapterId());
         summary.put("registered_adapter_ids", context.attributes().get("registered_adapter_ids"));
         summary.put("internal_verifier", stageDecision(context, "INTERNAL_PRODUCT_VERIFIER"));
@@ -144,6 +143,9 @@ public final class ValidationEngine {
         summary.put("independent_verifier", "NOT_RUN");
         summary.put("independent_audit", "NOT_RUN");
         summary.put("assurance_class", "SELF_VALIDATION_NONFINAL");
+        summary.put("final_lock_allowed", false);
+        summary.put("production_go", false);
+        summary.put("commercial_go", false);
         summary.put("completion_gate_contract", ValidationCompletionGate.CONTRACT);
         summary.put("completion_gate_eligible", completion.eligible());
         summary.put("completion_gate_reasons", completion.reasons());
@@ -181,7 +183,8 @@ public final class ValidationEngine {
         }
         boolean blocking = context.findings().stream()
                 .filter(value -> value.status() == FindingStatus.OPEN)
-                .anyMatch(value -> value.severity() == Severity.CRITICAL || value.severity() == Severity.HIGH);
+                .anyMatch(value -> value.severity() == Severity.CRITICAL
+                        || value.severity() == Severity.HIGH);
         if (blocking) return Decision.FAIL;
         boolean nonBlocking = context.findings().stream()
                 .anyMatch(value -> value.status() == FindingStatus.OPEN);
@@ -211,7 +214,8 @@ public final class ValidationEngine {
         private final Path runRoot;
         private final ValidationReport report;
 
-        ValidationExecutionException(String message, Throwable cause, Path runRoot, ValidationReport report) {
+        ValidationExecutionException(
+                String message, Throwable cause, Path runRoot, ValidationReport report) {
             super(message, cause);
             this.runRoot = runRoot;
             this.report = report;
