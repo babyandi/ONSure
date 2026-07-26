@@ -1,21 +1,25 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "assessment_basis": "main@e1aad6fd0447f00835236b242635e9e899c932b1",
-  "remediation_branch": "audit/onsure-full-design-gap-remediation-20260726",
+  "version": "1.1.0",
+  "design_gap_merge_commit": "97344e8e2484ae418043ad479be32d38a153bb3f",
+  "post_merge_self_audit_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
+  "runtime_source_commit": null,
+  "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
+  "active_remediation_issue": 20,
   "repository_static_contracts": {
-    "state": "NOT_RUN",
+    "state": "NOT_RUN_CURRENT_MAIN",
     "runner": "python3 scripts/validate-repository-contracts.py"
   },
   "one_shot_static": {
-    "state": "NOT_RUN",
+    "state": "NOT_RUN_CURRENT_MAIN",
     "runner": "bash scripts/onsure-one-shot.sh --static-only"
   },
   "one_shot_core": {
-    "state": "NOT_RUN",
+    "state": "BLOCKED_P0_CORE_ISOLATION",
     "runner": "bash scripts/onsure-one-shot.sh --profile core"
   },
   "optional_oruda_profile": {
-    "state": "NOT_RUN",
+    "state": "NOT_RUN_CURRENT_MAIN",
     "runner": "bash scripts/onsure-one-shot.sh --profile oruda"
   },
   "vscode_product_full_chain": "NOT_RUN",
@@ -23,6 +27,11 @@
   "independent_otester": "NOT_RUN",
   "independent_oaudit": "NOT_RUN",
   "human_acceptance": "NOT_RUN",
+  "governance": {
+    "direct_main_change_detected": true,
+    "direct_main_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
+    "future_changes_require_branch_and_pr": true
+  },
   "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
   "final_pass": false,
   "final_audit_pass": false,
