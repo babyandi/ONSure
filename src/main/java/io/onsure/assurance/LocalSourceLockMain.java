@@ -18,12 +18,12 @@ public final class LocalSourceLockMain {
         Path root = Path.of(args[0]).toAbsolutePath().normalize();
         Path output = Path.of(args[1]).toAbsolutePath().normalize();
         String commit = LocalSourceLockVerifier.currentCommit(root);
-        if (!commit.matches("[0-9a-f]{40}")) {
+        if (!commit.matches("[0-9a-f]{40}|[0-9a-f]{64}")) {
             System.err.println("invalid git commit");
             System.exit(71);
         }
         if (!LocalSourceLockVerifier.isTrackedWorktreeClean(root)) {
-            System.err.println("tracked worktree is dirty");
+            System.err.println("worktree is dirty or contains untracked files");
             System.exit(72);
         }
         Map<String, Object> lock = new LinkedHashMap<>();
@@ -31,12 +31,16 @@ public final class LocalSourceLockMain {
         lock.put("commit_sha", commit);
         lock.put("tree_sha256", LocalSourceLockVerifier.digestTrackedFiles(root));
         lock.put("policy_sha256", LocalSourceLockVerifier.digestPolicyFiles(root));
+        lock.put("source_scope", "GIT_TRACKED_FILES_ONLY");
+        lock.put("policy_scope", "GIT_TRACKED_POLICY_FILES_ONLY");
+        lock.put("untracked_files_blocked", true);
         lock.put("worktree_clean", true);
         Files.createDirectories(output.getParent());
         Path temporary = output.resolveSibling(output.getFileName() + ".tmp");
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(temporary.toFile(), lock);
         try {
-            Files.move(temporary, output, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(temporary, output, StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING);
         } catch (java.nio.file.AtomicMoveNotSupportedException e) {
             Files.move(temporary, output, StandardCopyOption.REPLACE_EXISTING);
         }
