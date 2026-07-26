@@ -2,7 +2,7 @@ package io.onsure.assurance;
 
 import java.nio.file.Path;
 
-/** Read-only verification entrypoint for a completed local assurance run. */
+/** Read-only verification entrypoint for a completed local self-validation run. */
 public final class LocalVerifyMain {
     private LocalVerifyMain() {}
 
@@ -30,16 +30,16 @@ public final class LocalVerifyMain {
             System.err.println("LOCAL_EVIDENCE_VERIFY_FAIL " + evidence.violations());
             System.exit(80);
         }
-        ValidationResult finalLock = new LocalFinalLockVerifier().verify(root);
-        if (finalLock.decision() != Decision.PASS) {
-            System.err.println("LOCAL_FINAL_LOCK_VERIFY_FAIL " + finalLock.violations());
+        ValidationResult evidenceLock = new LocalFinalLockVerifier().verify(root);
+        if (evidenceLock.decision() != Decision.PASS) {
+            System.err.println("LOCAL_EVIDENCE_LOCK_VERIFY_FAIL " + evidenceLock.violations());
             System.exit(81);
         }
-        ValidationResult finalReceipt = new LocalFinalReceiptVerifier().verify(root);
-        if (finalReceipt.decision() != Decision.PASS) {
-            System.err.println("LOCAL_FINAL_RECEIPT_VERIFY_FAIL " + finalReceipt.violations());
+        ValidationResult nonfinalReceipt = new LocalFinalReceiptVerifier().verify(root);
+        if (nonfinalReceipt.decision() != Decision.PASS) {
+            System.err.println("LOCAL_NONFINAL_RECEIPT_VERIFY_FAIL " + nonfinalReceipt.violations());
             System.exit(82);
         }
-        System.out.println("LOCAL_ASSURANCE_REVERIFY_PASS " + root);
+        System.out.println("LOCAL_ASSURANCE_NONFINAL_REVERIFY_PASS " + root);
     }
 }
