@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_id": "KNW-INTEGRATED-DESIGN-AI-PRODUCTS-20260726",
+  "status": "RESEARCH_CANDIDATE",
+  "counting_rule": "one distinct decision method with applicability, procedure, failure, evidence, target, and public source binding",
+  "knowledge": [
+    {
+      "id": "IDM-001", "domain": "integrated_design_process", "targets": ["ODesign"],
+      "claim": "Explore problems and alternatives broadly before converging on a defined brief and validated delivery.",
+      "applicability": "Design tasks with uncertain framing or multiple plausible solutions.",
+      "procedure": ["Discover evidence and needs", "Define the priority problem", "Develop at least two alternatives", "Deliver through testing and iteration"],
+      "failure": "The first plausible result is accepted without discovery or alternative comparison.",
+      "evidence_required": ["research record", "design brief", "alternative decision record", "test result"],
+      "source_url": "https://www.designcouncil.org.uk/resources/the-double-diamond/", "source_locator": "The Double Diamond", "source_authority": "Design Council", "source_access": "PUBLIC_WEB",
+      "rights_note": "The framework page states CC BY 4.0; verify exact reused assets separately."
+    },
+    {
+      "id": "IDM-002", "domain": "human_centered_design", "targets": ["ODesign"],
+      "claim": "Ground decisions in users, tasks, environments, and iterative evaluation throughout the lifecycle.",
+      "applicability": "Interactive products, services, controls, displays, and web experiences.",
+      "procedure": ["Describe context of use", "Specify user requirements", "Produce solutions", "Evaluate against requirements", "Iterate on failure"],
+      "failure": "Aesthetic preference substitutes for observed context and measured usability.",
+      "evidence_required": ["context record", "requirements", "evaluation plan", "iteration trace"],
+      "source_url": "https://www.iso.org/standard/77520.html", "source_locator": "ISO 9241-210:2019", "source_authority": "ISO", "source_access": "PUBLIC_ABSTRACT",
+      "rights_note": "The full standard is licensed and must not be copied without rights."
+    },
+    {
+      "id": "IDM-003", "domain": "visual_design", "targets": ["ODesign", "OUI"],
+      "claim": "Size, contrast, spacing, alignment, and typography must express priority and reading order rather than decorate.",
+      "applicability": "Interfaces, advertisements, reports, packaging, signage, and publications.",
+      "procedure": ["Declare attention order", "Map it to visual variables", "Check reading without color", "Test timed comprehension"],
+      "failure": "Every element competes equally or color alone carries meaning.",
+      "evidence_required": ["attention contract", "grayscale check", "contrast check", "comprehension result"],
+      "source_url": "https://digital.gov/guides/accessibility-for-teams/visual-design", "source_locator": "Accessibility for visual designers", "source_authority": "U.S. GSA", "source_access": "PUBLIC_WEB",
+      "rights_note": "Retain attribution and verify page terms before redistribution."
+    },
+    {
+      "id": "IDM-004", "domain": "industrial_design", "targets": ["ODesign"],
+      "claim": "Physical-product design must jointly resolve appearance, functionality, manufacturability, and lasting user value.",
+      "applicability": "Mass-produced devices, appliances, tools, furniture, packaging, and controls.",
+      "procedure": ["Define use environment", "Model ergonomics", "Compare materials and production", "Prototype", "Validate safety, manufacture, maintenance, and end-of-life"],
+      "failure": "A concept render is accepted despite unsafe ergonomics or no manufacturing route.",
+      "evidence_required": ["ergonomic test", "material decision", "manufacturing review", "safety review", "prototype result"],
+      "source_url": "https://www.idsa.org/about-idsa/advocacy/what-industrial-design/", "source_locator": "What Is Industrial Design?", "source_authority": "IDSA", "source_access": "PUBLIC_WEB",
+      "rights_note": "Do not reproduce protected imagery or extended source text."
+    },
+    {
+      "id": "IDM-005", "domain": "product_design", "targets": ["ODesign", "OUI"],
+      "claim": "Physical controls, displays, sound, haptics, and companion interfaces must share one consistent state machine.",
+      "applicability": "Appliances, vehicles, kiosks, wearables, instruments, and connected products.",
+      "procedure": ["Inventory controls", "Define states and transitions", "Bind feedback", "Test error recovery", "Verify cross-channel consistency"],
+      "failure": "The display contradicts the physical control or provides no recoverable feedback.",
+      "evidence_required": ["control-state matrix", "transition tests", "feedback test", "recovery receipt"],
+      "source_url": "https://www.iso.org/standard/77520.html", "source_locator": "Human-centred design for interactive systems", "source_authority": "ISO", "source_access": "PUBLIC_ABSTRACT",
+      "rights_note": "Derived candidate requiring expert validation and licensed-standard review."
+    },
+    {
+      "id": "IDM-006", "domain": "web_design", "targets": ["ODesign", "OUI"],
+      "claim": "Web design must preserve perceivability, operability, understandability, and robustness as testable requirements.",
+      "applicability": "Web pages, applications, interactive documents, and embedded web views.",
+      "procedure": ["Set WCAG target", "Design semantics and focus", "Meet contrast, target-size, input, and reflow rules", "Run automated and human tests"],
+      "failure": "A polished page is promoted while keyboard, reflow, focus, alternatives, or target size fails.",
+      "evidence_required": ["WCAG checklist", "keyboard trace", "reflow capture", "contrast result", "assistive review"],
+      "source_url": "https://www.w3.org/TR/WCAG22/", "source_locator": "WCAG 2.2", "source_authority": "W3C", "source_access": "PUBLIC_STANDARD",
+      "rights_note": "Preserve the standard version and exact criterion locator."
+    },
+    {
+      "id": "IDM-007", "domain": "advertising_design", "targets": ["ODesign"],
+      "claim": "Objective advertising claims and comparisons require documentary evidence and visible, understandable qualifications.",
+      "applicability": "Display, print, video, social, landing-page, environmental, and comparative advertising.",
+      "procedure": ["Classify claims", "Bind objective claims to evidence", "Test audience interpretation", "Place qualifications clearly", "Reject exaggeration"],
+      "failure": "Headline, imagery, or disclaimer creates a stronger promise than evidence supports.",
+      "evidence_required": ["claim inventory", "substantiation", "interpretation review", "qualification test"],
+      "source_url": "https://www.asa.org.uk/static/47eb51e7-028d-4509-ab3c0f4822c9a3c4/The-Cap-code.pdf", "source_locator": "CAP Code Section 3", "source_authority": "UK CAP", "source_access": "PUBLIC_PDF",
+      "rights_note": "Market-specific legal review remains required."
+    },
+    {
+      "id": "IDM-008", "domain": "publication_design", "targets": ["ODesign", "OUI"],
+      "claim": "Publication layout must preserve headings, reading order, alternatives, table structure, language, metadata, and reflow.",
+      "applicability": "Reports, books, manuals, brochures, PDF, EPUB, and digital publications.",
+      "procedure": ["Define outline", "Use semantic structures", "Set language and metadata", "Verify reading order", "Test tags, alternatives, zoom, and reflow"],
+      "failure": "The page looks correct but is flattened or has broken reading order and tables.",
+      "evidence_required": ["structure tree", "reading-order test", "tag report", "alt-text review", "reflow test"],
+      "source_url": "https://www.w3.org/TR/WCAG20-TECHS/pdf", "source_locator": "PDF Techniques for WCAG", "source_authority": "W3C", "source_access": "PUBLIC_GUIDANCE",
+      "rights_note": "Evaluate each technique against target format and WCAG version."
+    },
+    {
+      "id": "IDM-009", "domain": "publication_design", "targets": ["ODesign", "OUI"],
+      "claim": "Typography must be tested for audience, medium, distance, language, line length, spacing, and reading duration.",
+      "applicability": "Long-form print and digital publications, manuals, reports, and captions.",
+      "procedure": ["Profile reading conditions", "Select type", "Set measure and spacing", "Test representative pages", "Check fallback and export fidelity"],
+      "failure": "A fashionable treatment reduces legibility, loses characters, or breaks on export.",
+      "evidence_required": ["type specification", "page test", "font coverage", "export comparison"],
+      "source_url": "https://www.section508.gov/develop/fonts-typography/", "source_locator": "Accessible Fonts and Typography", "source_authority": "U.S. Section 508", "source_access": "PUBLIC_GUIDANCE",
+      "rights_note": "Print-specific claims require separate evidence."
+    },
+    {
+      "id": "IDM-010", "domain": "llm_design_product_philosophy", "targets": ["ODesign", "OUI"],
+      "claim": "Generative design should create an editable foundation, preserve human control, and support repeated refinement.",
+      "applicability": "Prompt-to-layout, prompt-to-prototype, prompt-to-code, and AI asset generation.",
+      "procedure": ["Generate structured output", "Expose layers, components, code, and tokens", "Offer alternatives", "Preserve human changes", "Review before publish"],
+      "failure": "The result is a flattened image or opaque code that cannot be safely refined.",
+      "evidence_required": ["editability test", "structure manifest", "regeneration test", "human approval"],
+      "source_url": "https://www.figma.com/solutions/ai-design-generator/", "source_locator": "Figma Make: edit and iterate", "source_authority": "Figma", "source_access": "PUBLIC_PRODUCT_PAGE",
+      "rights_note": "Vendor philosophy is descriptive, not independent proof of quality."
+    },
+    {
+      "id": "IDM-011", "domain": "llm_design_product_philosophy", "targets": ["ODesign", "OUI"],
+      "claim": "Learn general design patterns and tool structure without retaining or reproducing customer-specific content, concepts, or sensitive data.",
+      "applicability": "Training, fine-tuning, retrieval, telemetry, and prompt-to-design services.",
+      "procedure": ["Separate patterns from customer content", "Redact sensitive input", "Define data controls", "Test memorization and cross-tenant leakage", "Provide governance"],
+      "failure": "Customer designs or ideas are reproduced across tenants or reused beyond declared purposes.",
+      "evidence_required": ["classification", "redaction test", "memorization test", "tenant-isolation test", "policy receipt"],
+      "source_url": "https://www.figma.com/ai/our-approach/", "source_locator": "Building Figma AI", "source_authority": "Figma", "source_access": "PUBLIC_WEB",
+      "rights_note": "Vendor statements require independent technical verification."
+    },
+    {
+      "id": "IDM-012", "domain": "llm_design_product_philosophy", "targets": ["ODesign", "OUI"],
+      "claim": "Generated assets require source-rights controls, prompt and output safeguards, and provenance transparency before commercial use.",
+      "applicability": "Image, illustration, texture, advertising, packaging, brand, and publication generation.",
+      "procedure": ["Use authorized material", "Screen prompts and outputs", "Attach provenance", "Check trademarks and likeness", "Escalate uncertainty"],
+      "failure": "A suitable-looking asset is treated as commercially safe without rights or similarity checks.",
+      "evidence_required": ["rights receipt", "safety result", "similarity review", "provenance", "human legal review"],
+      "source_url": "https://www.adobe.com/ai/overview/firefly/gen-ai-approach.html", "source_locator": "Approach to generative AI with Adobe Firefly", "source_authority": "Adobe", "source_access": "PUBLIC_WEB",
+      "rights_note": "Vendor claims do not replace project-specific rights review."
+    }
+  ]
+}
