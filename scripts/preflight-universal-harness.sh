@@ -6,12 +6,13 @@ fail() { echo "ONSURE_UNIVERSAL_PREFLIGHT_BLOCKED $1" >&2; exit 78; }
 require() { command -v "$1" >/dev/null 2>&1 || fail "MISSING_COMMAND_$1"; }
 require_file() { [[ -f "$1" ]] || fail "$2"; }
 
-for command in java javac mvn git bash sha256sum; do require "$command"; done
+for command in java javac mvn git bash python3 sha256sum; do require "$command"; done
 JAVA_MAJOR="$(java -version 2>&1 | awk -F '[\".]' '/version/ {print $2; exit}')"
 JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
-[[ "$JAVA_MAJOR" == "17" && "$JAVAC_MAJOR" == "17" ]] || fail "JDK_17_REQUIRED"
-[[ -z "$(git status --porcelain --untracked-files=no)" ]] || fail "TRACKED_WORKTREE_DIRTY"
+[[ "$JAVA_MAJOR" == "17" && "$JAVAC_MAJOR" == "17" ]] || fail JDK_17_REQUIRED
+[[ -z "$(git status --porcelain --untracked-files=all)" ]] || fail WORKTREE_DIRTY_OR_UNTRACKED
 
+require_file modules/onsure-core/pom.xml CORE_MODULE_POM_MISSING
 require_file docs/onsure/review/onsure_universal_harness_execution_transition.md PR6_EXECUTION_TRANSITION_MISSING
 require_file docs/onsure/review/oruda_evidence_registry_schema.md PR6_EVIDENCE_SCHEMA_MISSING
 require_file harness/universal-v1/axes/verification-axes.v1.json AXIS_DEFINITION_MISSING
@@ -27,9 +28,12 @@ require_file src/main/java/io/onsure/harness/FinalCandidateGate.java FINAL_CANDI
 require_file src/main/java/io/onsure/harness/RegressionGate.java REGRESSION_GATE_MISSING
 
 if grep -R --line-number --fixed-strings 'ORUDA-Master-Queue' \
-  src/main src/test harness/universal-v1 scripts/run-universal-harness.sh scripts/run-universal-harness-twice.sh \
-  >/dev/null 2>&1; then
-  fail "FORBIDDEN_ORUDA_MASTER_QUEUE_REFERENCE"
+  src/main/java/io/onsure/harness src/test/java/io/onsure/harness \
+  harness/universal-v1 scripts/run-universal-harness.sh \
+  scripts/run-universal-harness-twice.sh >/dev/null 2>&1; then
+  fail FORBIDDEN_ORUDA_MASTER_QUEUE_REFERENCE
 fi
-mvn -B -ntp -DskipTests validate >/dev/null || fail "MAVEN_VALIDATE_FAILED"
-printf 'ONSURE_UNIVERSAL_PREFLIGHT_PASS %s\n' "$(git rev-parse HEAD)"
+python3 scripts/validate-core-isolation.py >/dev/null || fail CORE_ISOLATION_STATIC_FAIL
+mvn -B -ntp -pl modules/onsure-core -am -DskipTests validate >/dev/null \
+  || fail MAVEN_CORE_VALIDATE_FAILED
+printf 'ONSURE_UNIVERSAL_PREFLIGHT_PASS %s NONFINAL\n' "$(git rev-parse HEAD)"
