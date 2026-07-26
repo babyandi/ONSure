@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Generic commercial Validator Engine: learn -> review/verify -> diagnose -> prove nonfinal. */
+/** Generic commercial Validator Engine: learn -> plan -> review/verify -> diagnose -> prove nonfinal. */
 public final class ValidationEngine {
     public static final String REPORT_CONTRACT = "ONSURE_VALIDATION_REPORT_V1";
 
@@ -38,12 +38,10 @@ public final class ValidationEngine {
         if (this.stages.isEmpty()) throw new IllegalArgumentException("at least one stage is required");
     }
 
-    /** Standalone default: Generic adapter only. Target-specific adapters must be explicit. */
     public static ValidationEngine defaultEngine(Path storeRoot) {
         return withOptionalAdapters(storeRoot, List.of());
     }
 
-    /** Creates a standalone core engine with explicitly supplied optional target adapters. */
     public static ValidationEngine withOptionalAdapters(
             Path storeRoot, List<TargetAdapter> optionalAdapters) {
         List<TargetAdapter> adapters = new ArrayList<>();
@@ -56,6 +54,7 @@ public final class ValidationEngine {
         List<ValidatorStage> values = new ArrayList<>(BuiltInStages.defaults());
         int afterInventory = indexOf(values, "SOURCE_INVENTORY") + 1;
         values.add(afterInventory, new ProgramLearningStage());
+        values.add(afterInventory + 1, new RiskPlanningStage());
         int runtimeFixtureIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
         values.add(runtimeFixtureIndex, new FixtureRegistryStage());
         runtimeFixtureIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
@@ -138,6 +137,8 @@ public final class ValidationEngine {
         summary.put("source_tree_sha256", context.attributes().getOrDefault("source_tree_sha256", "NOT_AVAILABLE"));
         summary.put("program_profile_id", context.attributes().getOrDefault("program_profile_id", "NOT_RUN"));
         summary.put("program_profile_state", context.attributes().getOrDefault("program_profile_state", "NOT_RUN"));
+        summary.put("execution_plan_id", context.attributes().getOrDefault("execution_plan_id", "NOT_RUN"));
+        summary.put("execution_plan_approval", context.attributes().getOrDefault("execution_plan_approval", "NOT_RUN"));
         summary.put("behavior_profile_id", context.attributes().getOrDefault("behavior_profile_id", "NOT_RUN"));
         summary.put("behavior_profile_state", context.attributes().getOrDefault("behavior_profile_state", "NOT_RUN"));
         summary.put("behavior_profile_stable", context.attributes().getOrDefault("behavior_profile_stable", "NOT_RUN"));
@@ -177,19 +178,14 @@ public final class ValidationEngine {
     private static Decision finalDecision(ValidationContext context, Exception executionFailure) {
         if (executionFailure != null) return Decision.FAIL;
         if (!ValidationCompletionGate.evaluate(context).eligible()) return Decision.FAIL;
-        if (context.stageResults().stream().anyMatch(value -> value.decision() == Decision.FAIL)) {
-            return Decision.FAIL;
-        }
-        if (context.stageResults().stream().anyMatch(value -> value.decision() != Decision.PASS)) {
-            return Decision.HOLD;
-        }
+        if (context.stageResults().stream().anyMatch(value -> value.decision() == Decision.FAIL)) return Decision.FAIL;
+        if (context.stageResults().stream().anyMatch(value -> value.decision() != Decision.PASS)) return Decision.HOLD;
         boolean blocking = context.findings().stream()
                 .filter(value -> value.status() == FindingStatus.OPEN)
                 .anyMatch(value -> value.severity() == Severity.CRITICAL || value.severity() == Severity.HIGH);
         if (blocking) return Decision.FAIL;
-        boolean nonBlocking = context.findings().stream()
-                .anyMatch(value -> value.status() == FindingStatus.OPEN);
-        return nonBlocking ? Decision.HOLD : Decision.PASS;
+        return context.findings().stream().anyMatch(value -> value.status() == FindingStatus.OPEN)
+                ? Decision.HOLD : Decision.PASS;
     }
 
     private static long count(List<Finding> findings, Severity severity) {
