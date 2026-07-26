@@ -1,0 +1,29 @@
+{
+  "contract": "ONSURE_EVIDENCE_RECEIPT_V1",
+  "receipt_id": "receipt-sample-001",
+  "receipt_type": "RUNTIME",
+  "organization_id": "org-sample-001",
+  "project_id": "project-sample-001",
+  "program_id": "program-sample-001",
+  "source_baseline": {
+    "git_commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_tree_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "policy_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "environment_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "toolchain_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "command_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "input_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+  "output_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+  "decision": "NON_FINAL",
+  "actor": {
+    "identity": "internal-runner-001",
+    "role": "INTERNAL_SELF_VALIDATION",
+    "execution_id": "execution-sample-001",
+    "key_id": "internal-key-001"
+  },
+  "created_at": "2026-07-26T00:00:00Z",
+  "parent_receipt_ids": [],
+  "signature": null,
+  "receipt_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+}
