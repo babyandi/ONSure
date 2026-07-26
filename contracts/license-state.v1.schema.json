@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/license-state.v1.schema.json",
+  "title": "ONSure License State v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "license_id", "organization_id", "tenant_id", "workspace_id",
+    "product_id", "edition", "status", "valid_from", "valid_until",
+    "offline_grace_hours", "clock_tolerance_seconds", "last_observed_at",
+    "last_online_validation_at", "entitlements", "credits", "reservations",
+    "revision", "created_at", "updated_at", "final_claim_allowed", "state_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_LICENSE_STATE_V1"},
+    "license_id": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "workspace_id": {"type": "string", "minLength": 1},
+    "product_id": {"type": "string", "minLength": 1},
+    "edition": {"type": "string", "minLength": 1},
+    "status": {"enum": ["ISSUED", "ACTIVE", "SUSPENDED", "REVOKED", "EXPIRED"]},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "offline_grace_hours": {"type": "integer", "minimum": 0},
+    "clock_tolerance_seconds": {"type": "integer", "minimum": 0},
+    "last_observed_at": {"type": "string", "format": "date-time"},
+    "last_online_validation_at": {"type": ["string", "null"], "format": "date-time"},
+    "entitlements": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "credits": {
+      "type": "object", "additionalProperties": false,
+      "required": ["total", "available", "reserved", "committed"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "available": {"type": "integer", "minimum": 0},
+        "reserved": {"type": "integer", "minimum": 0},
+        "committed": {"type": "integer", "minimum": 0}
+      }
+    },
+    "reservations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object", "additionalProperties": true,
+        "required": ["reservation_id", "credits", "state", "created_at", "expires_at"],
+        "properties": {
+          "reservation_id": {"type": "string"},
+          "credits": {"type": "integer", "minimum": 1},
+          "state": {"enum": ["RESERVED", "COMMITTED", "RELEASED", "EXPIRED"]},
+          "created_at": {"type": "string", "format": "date-time"},
+          "expires_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "revision": {"type": "integer", "minimum": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "revocation_reason": {"type": "string"},
+    "revoked_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false},
+    "state_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
