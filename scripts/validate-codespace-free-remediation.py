@@ -16,6 +16,7 @@ REQUIRED = [
     "contracts/ledger-hardening.v1.json",
     "contracts/sandbox-boundary.v1.json",
     "contracts/schema-instance-registry.v1.json",
+    "contracts/product-process-lineage.v1.json",
     "status/design-capability-coverage.v2.json",
     "fixtures/contracts/program-profile.valid.json",
     "fixtures/contracts/behavior-profile.valid.json",
@@ -37,6 +38,7 @@ REQUIRED = [
     "scripts/extract-atomic-requirements.py",
     "scripts/validate-structured-contracts.py",
     "scripts/validate-design-coverage.py",
+    "scripts/validate-product-process-lineage.py",
     "scripts/run-core-modular-twice.sh",
     "scripts/fixture-sandbox-launcher.sh",
     "scripts/onsure-final-stage.sh",
@@ -51,66 +53,50 @@ REQUIRED = [
 
 SOURCE_ASSERTIONS = {
     "src/main/java/io/onsure/assurance/ExclusiveFileLock.java": [
-        "ConcurrentHashMap",
-        "lockInterruptibly",
-        "channel.lock()",
+        "ConcurrentHashMap", "lockInterruptibly", "channel.lock()",
     ],
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
-        "TWO_DISTINCT_VERIFIERS_REQUIRED",
-        "VALIDATION_RECEIPT_PACK_STALE",
-        "POST_APPLY_RECEIPT_MISSING",
-        "FileChannel.open(lockFile",
-        "LEDGER_HEAD_ANCHOR_MISMATCH",
-        "requireGitObjectId",
+        "TWO_DISTINCT_VERIFIERS_REQUIRED", "VALIDATION_RECEIPT_PACK_STALE",
+        "POST_APPLY_RECEIPT_MISSING", "FileChannel.open(lockFile",
+        "LEDGER_HEAD_ANCHOR_MISMATCH", "requireGitObjectId",
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
-        '"ls-files"',
-        '"--full-name"',
-        "GIT_LS_FILES_FAILED",
-        "archiveFiles",
+        '"ls-files"', '"--full-name"', "GIT_LS_FILES_FAILED", "archiveFiles",
     ],
     "src/main/java/io/onsure/platform/SourceReferenceBinding.java": [
-        '"--untracked-files=all"',
-        "IMMUTABLE_GIT_TREE_DIGEST_MISMATCH",
+        '"--untracked-files=all"', "IMMUTABLE_GIT_TREE_DIGEST_MISMATCH",
     ],
     "src/main/java/io/onsure/platform/FileValidationStore.java": [
-        "ONSURE_VALIDATION_STORAGE_CONTEXT_V1",
-        "ExclusiveFileLock",
+        "ONSURE_VALIDATION_STORAGE_CONTEXT_V1", "ExclusiveFileLock",
         "ONSURE_VALIDATION_STORE_REVISION_V1",
     ],
     "src/main/java/io/onsure/platform/ProductCatalog.java": [
-        "ONSURE_PRODUCT_CATALOG_REVISION_V1",
-        "ExclusiveFileLock",
+        "ONSURE_PRODUCT_CATALOG_REVISION_V1", "ExclusiveFileLock",
     ],
     "src/main/java/io/onsure/platform/FixtureHarness.java": [
-        "ONSURE_FIXTURE_SANDBOX_MODE",
-        "fixture-sandbox-launcher.sh",
-        "terminateProcessTree",
+        "ONSURE_FIXTURE_SANDBOX_MODE", "fixture-sandbox-launcher.sh", "terminateProcessTree",
     ],
     "scripts/fixture-sandbox-launcher.sh": [
-        "--unshare-net",
-        "prlimit",
-        "--ro-bind",
-        "timeout --signal=KILL",
+        "--unshare-net", "prlimit", "--ro-bind", "timeout --signal=KILL",
     ],
     "scripts/validate-design-coverage.py": [
-        "REQUIRED_CAPABILITIES",
-        "PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER",
-        "LINEAGE_PARENT_BINDING_MISSING",
-        "FAILURE_CASE_UNDETECTED",
-        "PASS_WITHOUT_EVIDENCE",
+        "REQUIRED_CAPABILITIES", "PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER",
+        "LINEAGE_PARENT_BINDING_MISSING", "FAILURE_CASE_UNDETECTED",
+        "PASS_WITHOUT_EVIDENCE", "self_test", "validate-product-process-lineage.py",
+    ],
+    "scripts/validate-product-process-lineage.py": [
+        "REQUIRED_STAGES", "REQUIRED_ARTIFACTS", "ARTIFACT_PARENT_BINDING_MISSING",
+        "STAGE_CONSUMES_UNPRODUCED_ARTIFACT", "NO_FINAL_WITHOUT_INDEPENDENT_RECEIPTS",
         "self_test",
     ],
 }
 
 FORBIDDEN_SOURCE_TOKENS = {
     "src/main/java/io/onsure/platform/ValidationEngine.java": [
-        "new OrudaTargetAdapter",
-        "withOrudaAdapter",
+        "new OrudaTargetAdapter", "withOrudaAdapter",
     ],
     "src/main/java/io/onsure/platform/FileValidationStore.java": [
-        "io.onsure.platform.oruda",
-        "OrudaEvidenceRegistry",
+        "io.onsure.platform.oruda", "OrudaEvidenceRegistry",
     ],
 }
 
@@ -179,11 +165,15 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V5",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V6",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
-        "design_coverage_failure_injection": "PASS" if not errors else "FAIL",
+        "design_capability_count": 28,
+        "product_process_stage_count": 20,
+        "product_lineage_artifact_count": 20,
+        "failure_injection_count": 28,
+        "design_and_lineage_detection": "PASS" if not errors else "FAIL",
         "structured_contract_validation": "SYNTAX_OR_FULL_DEPENDING_ON_PINNED_PACKAGES",
         "runtime_execution": "NOT_RUN",
         "modular_compile": "NOT_RUN",
