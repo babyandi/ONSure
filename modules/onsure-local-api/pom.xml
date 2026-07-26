@@ -15,6 +15,11 @@
       <artifactId>onsure-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -27,9 +32,7 @@
             <id>add-local-api-source</id>
             <phase>generate-sources</phase>
             <goals><goal>add-source</goal></goals>
-            <configuration>
-              <sources><source>${project.basedir}/../../src/main/java</source></sources>
-            </configuration>
+            <configuration><sources><source>${project.basedir}/../../src/main/java</source></sources></configuration>
           </execution>
         </executions>
       </plugin>
@@ -41,6 +44,15 @@
           <release>${maven.compiler.release}</release>
           <includes><include>io/onsure/platform/LocalAuthenticatedApiServer.java</include></includes>
           <compilerArgs><arg>--add-modules</arg><arg>jdk.httpserver</arg></compilerArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+          <argLine>--add-modules jdk.httpserver</argLine>
         </configuration>
       </plugin>
     </plugins>
