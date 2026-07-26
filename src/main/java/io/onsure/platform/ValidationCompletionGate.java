@@ -1,6 +1,5 @@
 package io.onsure.platform;
 
-import io.onsure.assurance.Decision;
 import io.onsure.platform.ValidationModel.StageResult;
 import io.onsure.platform.ValidationModel.TargetType;
 import java.nio.file.Files;
@@ -11,24 +10,18 @@ import java.util.Set;
 
 /** Fail-closed completeness policy for one nonfinal product validation run. */
 public final class ValidationCompletionGate {
-    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V2";
+    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V3";
 
     public record Evaluation(boolean eligible, List<String> reasons) {
         public Evaluation { reasons = List.copyOf(reasons); }
     }
 
     private static final List<String> REQUIRED_STAGES = List.of(
-            "TARGET_INTAKE",
-            "SOURCE_INVENTORY",
-            "PROGRAM_LEARNING",
-            "STATIC_ANALYSIS",
-            "FIXTURE_ORACLE_REGISTRY",
-            "FIXTURE_HARNESS_ORACLE",
-            "FAILURE_MODE_AND_RCA",
-            "REMEDIATION_PLANNING",
-            "REGRESSION_LOCK",
-            "INTERNAL_PRODUCT_VERIFIER",
-            "INTERNAL_PRODUCT_AUDIT");
+            "TARGET_INTAKE", "SOURCE_INVENTORY", "PROGRAM_LEARNING",
+            "RISK_BASED_EXECUTION_PLANNING", "STATIC_ANALYSIS",
+            "FIXTURE_ORACLE_REGISTRY", "FIXTURE_HARNESS_ORACLE",
+            "FAILURE_MODE_AND_RCA", "REMEDIATION_PLANNING", "REGRESSION_LOCK",
+            "INTERNAL_PRODUCT_VERIFIER", "INTERNAL_PRODUCT_AUDIT");
 
     private ValidationCompletionGate() {}
 
@@ -48,11 +41,18 @@ public final class ValidationCompletionGate {
                 if (!stageIds.contains(required)) reasons.add("REQUIRED_STAGE_MISSING:" + required);
             }
         }
-        requireProfileCandidate(context, "program_profile_id", "program-profile.json",
-                "PROGRAM_PROFILE", reasons);
+        requireArtifact(context, "program_profile_id", "program-profile.json",
+                "PROGRAM_PROFILE_CANDIDATE", "PROGRAM_PROFILE", reasons);
+        requireArtifact(context, "execution_plan_id", "execution-plan.json",
+                "EXECUTION_PLAN", "EXECUTION_PLAN", reasons);
+        Object approval = context.attributes().get("execution_plan_approval");
+        if (!(approval instanceof String state)
+                || !List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED").contains(state)) {
+            reasons.add("EXECUTION_PLAN_NOT_APPROVED");
+        }
         if (aiTarget) {
-            requireProfileCandidate(context, "behavior_profile_id", "behavior-profile.json",
-                    "BEHAVIOR_PROFILE", reasons);
+            requireArtifact(context, "behavior_profile_id", "behavior-profile.json",
+                    "BEHAVIOR_PROFILE_CANDIDATE", "BEHAVIOR_PROFILE", reasons);
         }
         reasons.addAll(runtimeCoverageReasons(context));
         if (!Boolean.TRUE.equals(context.attributes().get("immutable_source_verified"))) {
@@ -61,19 +61,15 @@ public final class ValidationCompletionGate {
         return new Evaluation(reasons.isEmpty(), reasons);
     }
 
-    private static void requireProfileCandidate(
-            ValidationContext context, String attribute, String filename, String label,
-            List<String> reasons) {
+    private static void requireArtifact(
+            ValidationContext context, String attribute, String filename, String evidenceType,
+            String label, List<String> reasons) {
         Object value = context.attributes().get(attribute);
-        if (!(value instanceof String text) || text.isBlank()) {
-            reasons.add(label + "_ID_MISSING");
+        if (!(value instanceof String text) || text.isBlank()) reasons.add(label + "_ID_MISSING");
+        if (!Files.isRegularFile(context.runRoot().resolve(filename))) reasons.add(label + "_ARTIFACT_MISSING");
+        if (context.evidence().stream().noneMatch(item -> evidenceType.equals(item.evidenceType()))) {
+            reasons.add(label + "_EVIDENCE_MISSING");
         }
-        if (!Files.isRegularFile(context.runRoot().resolve(filename))) {
-            reasons.add(label + "_ARTIFACT_MISSING");
-        }
-        boolean evidence = context.evidence().stream().anyMatch(item ->
-                (label + "_CANDIDATE").equals(item.evidenceType()));
-        if (!evidence) reasons.add(label + "_EVIDENCE_MISSING");
     }
 
     static List<String> runtimeCoverageReasons(ValidationContext context) {
@@ -83,11 +79,9 @@ public final class ValidationCompletionGate {
         long executed = numericAttribute(context, "executed_fixture_count");
         long results = context.fixtureResults().size();
         long evidence = context.evidence().stream()
-                .filter(value -> "FIXTURE_EXECUTION".equals(value.evidenceType()))
-                .count();
+                .filter(value -> "FIXTURE_EXECUTION".equals(value.evidenceType())).count();
         long uniqueResults = context.fixtureResults().stream()
                 .map(value -> value.fixtureId()).distinct().count();
-
         if (registered <= 0) reasons.add("REGISTERED_FIXTURE_COUNT_ZERO");
         if (registeredExecutable <= 0) reasons.add("EXECUTABLE_FIXTURE_COUNT_ZERO");
         if (registered > 0 && registeredExecutable != registered) reasons.add("NOT_ALL_FIXTURES_EXECUTABLE");
