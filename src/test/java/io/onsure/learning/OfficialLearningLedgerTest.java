@@ -23,6 +23,7 @@ class OfficialLearningLedgerTest {
     private static final String C = "c".repeat(64);
     private static final String D = "d".repeat(64);
     private static final String E = "e".repeat(64);
+    private static final String GIT_SHA1 = "f".repeat(40);
 
     @TempDir Path temp;
     private OfficialLearningLedger ledger;
@@ -43,6 +44,7 @@ class OfficialLearningLedgerTest {
         assertEquals(CompletionStatus.APPLIED_LOCKED, ledger.completionStatus("candidate-001"));
         assertEquals(1, ledger.appliedCount());
         assertTrue(ledger.verifyChain().valid());
+        assertTrue(Files.isRegularFile(temp.resolve("official-learning-ledger.jsonl.head.json")));
     }
 
     @Test
@@ -65,6 +67,18 @@ class OfficialLearningLedgerTest {
     }
 
     @Test
+    void promotionRequiresTwoDistinctVerifierIdentities() {
+        candidate();
+        requestAndPack();
+        pass("receipt-001", "run-0001", "otester-a", D);
+        pass("receipt-002", "run-0002", "otester-a", E);
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class, this::promote);
+        assertEquals("TWO_DISTINCT_VERIFIERS_REQUIRED", failure.getMessage());
+    }
+
+    @Test
     void learnerCannotValidateOwnCandidate() {
         candidate();
         requestAndPack();
@@ -73,6 +87,33 @@ class OfficialLearningLedgerTest {
                 IllegalStateException.class,
                 () -> pass("receipt-001", "run-0001", "learner-a", D));
         assertEquals("LEARNER_CANNOT_VALIDATE", failure.getMessage());
+    }
+
+    @Test
+    void requesterCannotValidateRequestedPack() {
+        candidate();
+        requestAndPack();
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class,
+                () -> pass("receipt-001", "run-0001", "scheduler-a", D));
+        assertEquals("REQUESTER_CANNOT_VALIDATE", failure.getMessage());
+    }
+
+    @Test
+    void stalePackCannotReceiveNewReceipt() {
+        candidate();
+        requestAndPack();
+        ledger.requestValidation(new ValidationRequest(
+                "request-002", "candidate-001", "queue-002", "policy-v2",
+                B, "validator-v2", "scheduler-b"));
+        ledger.issueValidationPack(new ValidationPack(
+                "pack-002", "request-002", "candidate-001", B, C, D, E));
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class,
+                () -> pass("receipt-001", "run-0001", "otester-a", D));
+        assertEquals("VALIDATION_RECEIPT_PACK_STALE", failure.getMessage());
     }
 
     @Test
@@ -131,6 +172,22 @@ class OfficialLearningLedgerTest {
     }
 
     @Test
+    void reviewerCannotReuseVerifierIdentity() {
+        candidate();
+        requestAndPack();
+        pass("receipt-001", "run-0001", "otester-a", D);
+        pass("receipt-002", "run-0002", "otester-b", E);
+        Promotion invalid = new Promotion(
+                "promotion-001", "candidate-001", B, "VALIDATION_PACK_APPLY",
+                "otester-a", "approver-b", "rollback-plan-001");
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class,
+                () -> ledger.approvePromotion(invalid));
+        assertEquals("REVIEWER_ROLE_SEPARATION_REQUIRED", failure.getMessage());
+    }
+
+    @Test
     void activeSelectorMustReferencePromotedArtifact() {
         candidate();
         requestAndPack();
@@ -138,13 +195,29 @@ class OfficialLearningLedgerTest {
         pass("receipt-002", "run-0002", "otester-b", E);
         promote();
         AppliedLock invalid = new AppliedLock(
-                "lock-001", "candidate-001", B, "registry:active", A, C, D,
+                "lock-001", "candidate-001", B, "registry:active", A, GIT_SHA1, D,
                 "post-apply-001", "registry:previous", E, true);
 
         IllegalStateException failure = assertThrows(
                 IllegalStateException.class,
                 () -> ledger.lockApplied(invalid));
         assertEquals("ACTIVE_SELECTOR_NOT_PROMOTED_ARTIFACT", failure.getMessage());
+    }
+
+    @Test
+    void appliedLockRequiresExistingPostApplyPassReceipt() {
+        candidate();
+        requestAndPack();
+        pass("receipt-001", "run-0001", "otester-a", D);
+        pass("receipt-002", "run-0002", "otester-b", E);
+        promote();
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class,
+                () -> ledger.lockApplied(new AppliedLock(
+                        "lock-001", "candidate-001", B, "registry:active", B, GIT_SHA1, D,
+                        "post-apply-001", "registry:previous", E, true)));
+        assertEquals("POST_APPLY_RECEIPT_MISSING", failure.getMessage());
     }
 
     @Test
@@ -158,6 +231,15 @@ class OfficialLearningLedgerTest {
         assertThrows(
                 IllegalStateException.class,
                 () -> ledger.completionStatus("candidate-001"));
+    }
+
+    @Test
+    void headAnchorMutationIsDetected() throws Exception {
+        candidate();
+        Path anchor = temp.resolve("official-learning-ledger.jsonl.head.json");
+        String original = Files.readString(anchor);
+        Files.writeString(anchor, original.replaceFirst("[0-9a-f]{64}", "0".repeat(64)));
+        assertTrue(ledger.verifyChain().violations().contains("LEDGER_HEAD_ANCHOR_MISMATCH"));
     }
 
     private void candidate() {
@@ -193,8 +275,9 @@ class OfficialLearningLedgerTest {
 
     private void promoteAndLock() {
         promote();
+        pass("post-apply-001", "run-0003", "otester-c", A);
         ledger.lockApplied(new AppliedLock(
-                "lock-001", "candidate-001", B, "registry:active", B, C, D,
+                "lock-001", "candidate-001", B, "registry:active", B, GIT_SHA1, D,
                 "post-apply-001", "registry:previous", E, true));
     }
 }
