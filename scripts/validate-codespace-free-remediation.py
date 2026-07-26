@@ -27,13 +27,73 @@ REQUIRED = [
     "modules/onsure-cli/pom.xml",
     "modules/onsure-test-fixtures/pom.xml",
     "modules/onsure-adapter-oruda/pom.xml",
+    "modules/onsure-core/src/test/java/io/onsure/platform/CoreModuleSmokeTest.java",
+    "modules/onsure-adapter-oruda/src/test/java/io/onsure/platform/OrudaAdapterModuleSmokeTest.java",
     "scripts/check-module-boundaries.py",
     "scripts/create-source-snapshot.py",
     "scripts/extract-atomic-requirements.py",
     "scripts/validate-structured-contracts.py",
     "scripts/run-core-modular-twice.sh",
+    "scripts/fixture-sandbox-launcher.sh",
     "scripts/onsure-final-stage.sh",
+    "src/main/java/io/onsure/learning/OfficialLearningLedger.java",
+    "src/main/java/io/onsure/platform/Hashing.java",
+    "src/main/java/io/onsure/platform/SourceReferenceBinding.java",
+    "src/main/java/io/onsure/platform/FileValidationStore.java",
+    "src/main/java/io/onsure/platform/ProductCatalog.java",
+    "src/main/java/io/onsure/platform/FixtureHarness.java",
 ]
+
+SOURCE_ASSERTIONS = {
+    "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
+        "TWO_DISTINCT_VERIFIERS_REQUIRED",
+        "VALIDATION_RECEIPT_PACK_STALE",
+        "POST_APPLY_RECEIPT_MISSING",
+        "FileChannel.open(lockFile",
+        "LEDGER_HEAD_ANCHOR_MISMATCH",
+        "requireGitObjectId",
+    ],
+    "src/main/java/io/onsure/platform/Hashing.java": [
+        '"ls-files", "-z"',
+        "GIT_LS_FILES_FAILED",
+        "archiveFiles",
+    ],
+    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": [
+        '"--untracked-files=all"',
+        "IMMUTABLE_GIT_TREE_DIGEST_MISMATCH",
+    ],
+    "src/main/java/io/onsure/platform/FileValidationStore.java": [
+        "ONSURE_VALIDATION_STORAGE_CONTEXT_V1",
+        "FileChannel.open(lockFile",
+        "ONSURE_VALIDATION_STORE_REVISION_V1",
+    ],
+    "src/main/java/io/onsure/platform/ProductCatalog.java": [
+        "ONSURE_PRODUCT_CATALOG_REVISION_V1",
+        "FileChannel.open(lockFile",
+    ],
+    "src/main/java/io/onsure/platform/FixtureHarness.java": [
+        "ONSURE_FIXTURE_SANDBOX_MODE",
+        "fixture-sandbox-launcher.sh",
+        "terminateProcessTree",
+    ],
+    "scripts/fixture-sandbox-launcher.sh": [
+        "--unshare-net",
+        "prlimit",
+        "--ro-bind",
+        "timeout --signal=KILL",
+    ],
+}
+
+FORBIDDEN_SOURCE_TOKENS = {
+    "src/main/java/io/onsure/platform/ValidationEngine.java": [
+        "new OrudaTargetAdapter",
+        "withOrudaAdapter",
+    ],
+    "src/main/java/io/onsure/platform/FileValidationStore.java": [
+        "io.onsure.platform.oruda",
+        "OrudaEvidenceRegistry",
+    ],
+}
 
 
 def main() -> int:
@@ -55,6 +115,24 @@ def main() -> int:
                 py_compile.compile(str(path), doraise=True)
         except Exception as exc:  # noqa: BLE001
             errors.append(f"INVALID:{relative}:{type(exc).__name__}:{exc}")
+
+    for relative, tokens in SOURCE_ASSERTIONS.items():
+        path = ROOT / relative
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for token in tokens:
+            if token not in text:
+                errors.append(f"SOURCE_ASSERTION_MISSING:{relative}:{token}")
+
+    for relative, tokens in FORBIDDEN_SOURCE_TOKENS.items():
+        path = ROOT / relative
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for token in tokens:
+            if token in text:
+                errors.append(f"FORBIDDEN_SOURCE_TOKEN:{relative}:{token}")
 
     commands = [
         ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
@@ -79,9 +157,10 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V2",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V3",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
+        "source_boundary_assertions": "PASS" if not errors else "FAIL",
         "structured_contract_validation": "SYNTAX_OR_FULL_DEPENDING_ON_PINNED_PACKAGES",
         "runtime_execution": "NOT_RUN",
         "modular_compile": "NOT_RUN",
