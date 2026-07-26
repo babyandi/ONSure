@@ -31,6 +31,7 @@ def physical_core_source(relative: str) -> bool:
         return False
     return relative not in {
         "src/main/java/io/onsure/platform/ONSureCli.java",
+        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
         "src/main/java/io/onsure/platform/OrudaTargetAdapter.java",
         "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
     } and not relative.startswith("src/main/java/io/onsure/platform/oruda/")
@@ -62,12 +63,15 @@ def main() -> int:
             violations.append(f"CORE_ORUDA_PACKAGE_REFERENCE:{relative}")
         if "fixtures/oruda" in text or "fixtures/e2e/oruda-target" in text:
             violations.append(f"CORE_ORUDA_FIXTURE_REFERENCE:{relative}")
+        if "com.sun.net.httpserver" in text:
+            violations.append(f"CORE_LOCAL_API_JDK_MODULE_REFERENCE:{relative}")
 
     aggregator = ET.parse(ROOT / "pom-modular.xml").getroot()
     modules = text_values(aggregator, "m:modules/m:module")
     expected_modules = {
         "modules/onsure-core",
         "modules/onsure-cli",
+        "modules/onsure-local-api",
         "modules/onsure-test-fixtures",
         "modules/onsure-adapter-oruda",
     }
@@ -78,6 +82,7 @@ def main() -> int:
     core_excludes = text_values(core_pom, ".//m:excludes/m:exclude")
     required_core_excludes = {
         "io/onsure/platform/ONSureCli.java",
+        "io/onsure/platform/LocalAuthenticatedApiServer.java",
         "io/onsure/platform/OrudaTargetAdapter.java",
         "io/onsure/platform/ProductPlatformE2EMain.java",
         "io/onsure/platform/oruda/**",
@@ -100,21 +105,25 @@ def main() -> int:
     if cli_includes != {"io/onsure/platform/ONSureCli.java"}:
         violations.append(f"CLI_POM_INCLUDE_SET:{sorted(cli_includes)}")
 
+    api_pom = ET.parse(ROOT / "modules/onsure-local-api/pom.xml").getroot()
+    api_includes = text_values(api_pom, ".//m:includes/m:include")
+    if api_includes != {"io/onsure/platform/LocalAuthenticatedApiServer.java"}:
+        violations.append(f"LOCAL_API_POM_INCLUDE_SET:{sorted(api_includes)}")
+
     for module in expected_modules:
         if not (ROOT / module / "pom.xml").is_file():
             violations.append(f"MODULE_POM_MISSING:{module}")
 
     result = {
-        "contract": "ONSURE_MODULE_BOUNDARY_REPORT_V3",
+        "contract": "ONSURE_MODULE_BOUNDARY_REPORT_V4",
         "decision": "PASS" if not violations else "FAIL",
         "violations": sorted(set(violations)),
         "declared_modules": sorted(modules),
         "inspected_core_source_count": len(inspected_core_files),
-        "core_direct_oruda_reference_count": sum(
-            1 for value in violations if value.startswith("CORE_")
-        ),
+        "core_direct_optional_reference_count": sum(1 for value in violations if value.startswith("CORE_")),
         "physical_module_compile": "NOT_RUN",
         "oruda_module_removal_test": "NOT_RUN",
+        "local_api_module_test": "NOT_RUN",
         "final_claim_allowed": False,
     }
     print(json.dumps(result, indent=2, sort_keys=True))
