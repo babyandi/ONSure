@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Generic commercial Validator Engine: target -> findings/RCA -> lock -> report. */
+/** Generic commercial Validator Engine: learn -> review/verify -> diagnose -> prove nonfinal. */
 public final class ValidationEngine {
     public static final String REPORT_CONTRACT = "ONSURE_VALIDATION_REPORT_V1";
 
@@ -54,8 +54,12 @@ public final class ValidationEngine {
 
     private static List<ValidatorStage> defaultStages() {
         List<ValidatorStage> values = new ArrayList<>(BuiltInStages.defaults());
+        int afterInventory = indexOf(values, "SOURCE_INVENTORY") + 1;
+        values.add(afterInventory, new ProgramLearningStage());
         int runtimeFixtureIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
         values.add(runtimeFixtureIndex, new FixtureRegistryStage());
+        runtimeFixtureIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
+        values.add(runtimeFixtureIndex, new BehaviorLearningStage());
         int regressionLockIndex = indexOf(values, "REGRESSION_LOCK");
         values.add(regressionLockIndex, new RemediationPlanningStage());
         int afterRegressionLock = indexOf(values, "REGRESSION_LOCK") + 1;
@@ -132,6 +136,11 @@ public final class ValidationEngine {
         summary.put("fixture_failures", context.fixtureResults().stream()
                 .filter(value -> value.decision() != Decision.PASS).count());
         summary.put("source_tree_sha256", context.attributes().getOrDefault("source_tree_sha256", "NOT_AVAILABLE"));
+        summary.put("program_profile_id", context.attributes().getOrDefault("program_profile_id", "NOT_RUN"));
+        summary.put("program_profile_state", context.attributes().getOrDefault("program_profile_state", "NOT_RUN"));
+        summary.put("behavior_profile_id", context.attributes().getOrDefault("behavior_profile_id", "NOT_RUN"));
+        summary.put("behavior_profile_state", context.attributes().getOrDefault("behavior_profile_state", "NOT_RUN"));
+        summary.put("behavior_profile_stable", context.attributes().getOrDefault("behavior_profile_stable", "NOT_RUN"));
         summary.put("adapter_id", context.adapter().adapterId());
         summary.put("registered_adapter_ids", context.attributes().get("registered_adapter_ids"));
         summary.put("internal_verifier", stageDecision(context, "INTERNAL_PRODUCT_VERIFIER"));
