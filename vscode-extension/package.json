@@ -1,0 +1,70 @@
+{
+  "name": "onsure",
+  "displayName": "ONSure",
+  "description": "Evidence-bound program learning, review, validation and approved improvement workflow.",
+  "version": "0.1.0",
+  "publisher": "babyandi",
+  "license": "UNLICENSED",
+  "engines": {"vscode": "^1.95.0"},
+  "categories": ["Testing", "Other"],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onView:onsure.workspace",
+    "onCommand:onsure.configure",
+    "onCommand:onsure.refresh",
+    "onCommand:onsure.learnProgram",
+    "onCommand:onsure.runValidation",
+    "onCommand:onsure.openLastArtifact"
+  ],
+  "contributes": {
+    "commands": [
+      {"command": "onsure.configure", "title": "ONSure: Configure Local API"},
+      {"command": "onsure.refresh", "title": "ONSure: Refresh Status"},
+      {"command": "onsure.learnProgram", "title": "ONSure: Learn Program"},
+      {"command": "onsure.runValidation", "title": "ONSure: Run Validation"},
+      {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"}
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {"id": "onsure", "title": "ONSure", "icon": "media/onsure.svg"}
+      ]
+    },
+    "views": {
+      "onsure": [
+        {"id": "onsure.workspace", "name": "Program Assurance"}
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {"command": "onsure.refresh", "when": "view == onsure.workspace", "group": "navigation@1"},
+        {"command": "onsure.learnProgram", "when": "view == onsure.workspace", "group": "navigation@2"},
+        {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@3"}
+      ]
+    },
+    "configuration": {
+      "title": "ONSure",
+      "properties": {
+        "onsure.localApiUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:47311",
+          "description": "Loopback-only ONSure Local API URL."
+        },
+        "onsure.defaultTargetType": {
+          "type": "string",
+          "enum": ["GENERAL_SOFTWARE", "AI_APPLICATION"],
+          "default": "GENERAL_SOFTWARE"
+        },
+        "onsure.defaultExecutionProfile": {
+          "type": "string",
+          "default": "LOCAL_DEVELOPMENT"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "3.2.2"
+  }
+}
