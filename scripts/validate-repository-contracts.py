@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed static validation for ONSure design, traceability and status contracts."""
+"""Fail-closed tracked-file validation for ONSure design, traceability and status contracts."""
 
 from __future__ import annotations
 
@@ -8,17 +8,14 @@ import hashlib
 import json
 import pathlib
 import re
-import sys
+import subprocess
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-ALLOWED = {
-    "IMPLEMENTED", "PARTIAL", "STUB", "DESIGN_ONLY",
-    "NOT_RUN", "BLOCKED", "CONFLICT", "DEPRECATED",
-}
 REQUIRED_FILES = [
     "docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md",
     "docs/verification/ONSURE_FULL_DESIGN_GAP_ASSESSMENT_v1.md",
+    "docs/verification/ONSURE_POST_MERGE_SELF_AUDIT_v1.md",
     "contracts/status-vocabulary.v1.json",
     "contracts/core-extension-boundary.v1.json",
     "contracts/state-model-mapping.v1.json",
@@ -31,6 +28,7 @@ REQUIRED_FILES = [
     "status/implementation-matrix.v1.json",
     "status/design-conflict-register.v1.json",
     "status/missing-capability-register.v1.json",
+    "status/verification-status.v1.json",
 ]
 
 
@@ -42,6 +40,17 @@ def sha256(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def tracked_files(*patterns: str) -> list[pathlib.Path]:
+    command = ["git", "ls-files", "-z"]
+    if patterns:
+        command.extend(["--", *patterns])
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, check=False)
+    if result.returncode != 0:
+        raise RuntimeError("GIT_LS_FILES_FAILED")
+    values = [item for item in result.stdout.split(b"\0") if item]
+    return sorted((ROOT / item.decode("utf-8")).resolve() for item in values)
+
+
 def validate_required_files(errors: list[str]) -> None:
     for relative in REQUIRED_FILES:
         if not (ROOT / relative).is_file():
@@ -50,54 +59,118 @@ def validate_required_files(errors: list[str]) -> None:
 
 def validate_json_files(errors: list[str]) -> dict[str, str]:
     digests: dict[str, str] = {}
-    for path in sorted(ROOT.rglob("*.json")):
-        if any(part in {"target", ".git", ".onsure"} for part in path.parts):
-            continue
+    try:
+        files = tracked_files("*.json", "**/*.json")
+    except RuntimeError as exc:
+        errors.append(str(exc))
+        return digests
+    for path in files:
+        relative = str(path.relative_to(ROOT)).replace("\\", "/")
         try:
-            json.loads(path.read_text(encoding="utf-8"))
-            digests[str(path.relative_to(ROOT)).replace("\\", "/")] = sha256(path)
-        except Exception as exc:  # noqa: BLE001 - report malformed contract
-            errors.append(f"JSON_INVALID:{path.relative_to(ROOT)}:{type(exc).__name__}")
+            body = json.loads(path.read_text(encoding="utf-8"))
+            digests[relative] = sha256(path)
+            if relative.endswith(".schema.json"):
+                if not isinstance(body, dict):
+                    errors.append(f"SCHEMA_NOT_OBJECT:{relative}")
+                else:
+                    for field in ("$schema", "$id", "type"):
+                        if not body.get(field):
+                            errors.append(f"SCHEMA_META_MISSING:{relative}:{field}")
+        except Exception as exc:  # noqa: BLE001 - report malformed tracked contract
+            errors.append(f"JSON_INVALID:{relative}:{type(exc).__name__}")
     return digests
 
 
-def validate_traceability(errors: list[str]) -> dict[str, int]:
+def validate_jsonl_files(errors: list[str]) -> dict[str, str]:
+    digests: dict[str, str] = {}
+    try:
+        files = tracked_files("*.jsonl", "**/*.jsonl")
+    except RuntimeError as exc:
+        errors.append(str(exc))
+        return digests
+    for path in files:
+        relative = str(path.relative_to(ROOT)).replace("\\", "/")
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+            if not lines:
+                errors.append(f"JSONL_EMPTY:{relative}")
+                continue
+            for line_number, line in enumerate(lines, start=1):
+                if not line.strip():
+                    errors.append(f"JSONL_BLANK_LINE:{relative}:{line_number}")
+                    continue
+                json.loads(line)
+            digests[relative] = sha256(path)
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"JSONL_INVALID:{relative}:{type(exc).__name__}")
+    return digests
+
+
+def vocabulary() -> tuple[set[str], set[str]]:
+    body = load_json("contracts/status-vocabulary.v1.json")
+    return set(body.get("implementation_states", [])), set(body.get("verification_states", []))
+
+
+def validate_traceability(errors: list[str]) -> tuple[dict[str, int], dict[str, int]]:
+    implementation_allowed, verification_allowed = vocabulary()
     trace = load_json("contracts/requirements-traceability.v1.json")
+    if set(trace.get("allowed_implementation_statuses", [])) != implementation_allowed:
+        errors.append("TRACE_IMPLEMENTATION_VOCABULARY_MISMATCH")
+    if set(trace.get("allowed_verification_states", [])) != verification_allowed:
+        errors.append("TRACE_VERIFICATION_VOCABULARY_MISMATCH")
+    if trace.get("coverage_level") != "CAPABILITY_GROUP_ONLY_ATOMIC_REQUIREMENTS_PENDING":
+        errors.append("TRACE_COVERAGE_LEVEL_MISSING_OR_OVERCLAIMED")
+
     items = trace.get("items", [])
     seen: set[str] = set()
-    counts = {state: 0 for state in ALLOWED}
+    implementation_counts = {state: 0 for state in implementation_allowed}
+    verification_counts = {state: 0 for state in verification_allowed}
     for item in items:
         item_id = item.get("id")
         status = item.get("status")
+        verification_state = item.get("verification_state")
         if not item_id or item_id in seen:
             errors.append(f"TRACE_ID_INVALID_OR_DUPLICATE:{item_id}")
         seen.add(str(item_id))
-        if status not in ALLOWED:
-            errors.append(f"TRACE_STATUS_INVALID:{item_id}:{status}")
-            continue
-        counts[status] += 1
-        for key in ("design_refs", "contract_refs", "code_refs", "test_refs"):
-            refs = item.get(key, [])
+        if status not in implementation_allowed:
+            errors.append(f"TRACE_IMPLEMENTATION_STATUS_INVALID:{item_id}:{status}")
+        else:
+            implementation_counts[status] += 1
+        if verification_state not in verification_allowed:
+            errors.append(f"TRACE_VERIFICATION_STATUS_INVALID:{item_id}:{verification_state}")
+        else:
+            verification_counts[verification_state] += 1
+
+        for key in ("design_refs", "contract_refs", "code_refs", "test_refs", "evidence_refs"):
+            refs = item.get(key)
             if not isinstance(refs, list):
                 errors.append(f"TRACE_REFS_NOT_LIST:{item_id}:{key}")
                 continue
             for relative in refs:
                 if not (ROOT / relative).exists():
                     errors.append(f"TRACE_REF_MISSING:{item_id}:{key}:{relative}")
+        evidence_refs = item.get("evidence_refs", [])
+        if verification_state == "PASS" and not evidence_refs:
+            errors.append(f"TRACE_PASS_WITHOUT_EVIDENCE:{item_id}")
+
     declared = trace.get("summary", {})
-    for state, count in counts.items():
-        key = state.lower()
-        if declared.get(key) != count:
-            errors.append(f"TRACE_SUMMARY_MISMATCH:{state}:{declared.get(key)}:{count}")
-    return counts
+    for state, count in implementation_counts.items():
+        if declared.get(state.lower()) != count:
+            errors.append(f"TRACE_IMPLEMENTATION_SUMMARY_MISMATCH:{state}:{declared.get(state.lower())}:{count}")
+    declared_verification = declared.get("verification", {})
+    for state, count in verification_counts.items():
+        if declared_verification.get(state.lower()) != count:
+            errors.append(f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}:{declared_verification.get(state.lower())}:{count}")
+    return implementation_counts, verification_counts
 
 
 def validate_matrix(errors: list[str], trace_counts: dict[str, int]) -> None:
+    implementation_allowed, _ = vocabulary()
     matrix = load_json("status/implementation-matrix.v1.json")
     capabilities = matrix.get("capabilities", {})
-    calculated = {state: 0 for state in ALLOWED}
+    calculated = {state: 0 for state in implementation_allowed}
     for capability, status in capabilities.items():
-        if status not in ALLOWED:
+        if status not in implementation_allowed:
             errors.append(f"MATRIX_STATUS_INVALID:{capability}:{status}")
         else:
             calculated[status] += 1
@@ -107,6 +180,8 @@ def validate_matrix(errors: list[str], trace_counts: dict[str, int]) -> None:
             errors.append(f"MATRIX_COUNT_MISMATCH:{state}:{declared.get(state)}:{count}")
         if trace_counts.get(state) != count:
             errors.append(f"MATRIX_TRACE_MISMATCH:{state}:{trace_counts.get(state)}:{count}")
+    if matrix.get("runtime_source_commit") is not None:
+        errors.append("MATRIX_RUNTIME_SOURCE_MUST_BE_RECEIPT_BOUND_NOT_STATIC")
 
 
 def validate_boundary(errors: list[str]) -> None:
@@ -119,7 +194,7 @@ def validate_boundary(errors: list[str]) -> None:
     optional = boundary.get("optional_adapters", [])
     oruda = [item for item in optional if item.get("adapter_id") == "ORUDA_V1"]
     if len(oruda) != 1 or oruda[0].get("required_for_core") is not False:
-        errors.append("ORUDA_NOT_OPTIONAL")
+        errors.append("ORUDA_NOT_OPTIONAL_IN_CONTRACT")
 
 
 def validate_state_mapping(errors: list[str]) -> None:
@@ -138,14 +213,36 @@ def validate_state_mapping(errors: list[str]) -> None:
             errors.append(f"STATE_MAPPING_RULE_MISSING:{required_rule}")
 
 
-def validate_readme_links(errors: list[str]) -> None:
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    for target in re.findall(r"\[[^\]]+\]\(([^)]+)\)", readme):
-        if target.startswith(("http://", "https://", "#")):
-            continue
-        normalized = target.split("#", 1)[0]
-        if normalized and not (ROOT / normalized).exists():
-            errors.append(f"README_LINK_MISSING:{target}")
+def validate_markdown_links(errors: list[str]) -> None:
+    try:
+        files = tracked_files("*.md", "**/*.md")
+    except RuntimeError as exc:
+        errors.append(str(exc))
+        return
+    pattern = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+    for document in files:
+        relative_document = str(document.relative_to(ROOT)).replace("\\", "/")
+        text = document.read_text(encoding="utf-8", errors="replace")
+        for target in pattern.findall(text):
+            target = target.strip().split(" ", 1)[0]
+            if target.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            normalized = target.split("#", 1)[0]
+            if not normalized:
+                continue
+            resolved = (document.parent / normalized).resolve()
+            if not resolved.exists():
+                errors.append(f"MARKDOWN_LINK_MISSING:{relative_document}:{target}")
+
+
+def validate_verification_status(errors: list[str]) -> None:
+    body = load_json("status/verification-status.v1.json")
+    if body.get("runtime_source_commit") is not None:
+        errors.append("VERIFICATION_STATUS_STATIC_RUNTIME_COMMIT_FORBIDDEN")
+    if body.get("runtime_source_binding_state") != "PENDING_ONE_SHOT_RECEIPT":
+        errors.append("VERIFICATION_STATUS_RUNTIME_BINDING_INVALID")
+    if body.get("final_lock") is not False or body.get("production_go") is not False or body.get("commercial_go") is not False:
+        errors.append("VERIFICATION_STATUS_UNSAFE_GO_CLAIM")
 
 
 def main() -> int:
@@ -156,18 +253,27 @@ def main() -> int:
     errors: list[str] = []
     validate_required_files(errors)
     json_digests = validate_json_files(errors)
-    counts = validate_traceability(errors)
-    validate_matrix(errors, counts)
+    jsonl_digests = validate_jsonl_files(errors)
+    implementation_counts, verification_counts = validate_traceability(errors)
+    validate_matrix(errors, implementation_counts)
     validate_boundary(errors)
     validate_state_mapping(errors)
-    validate_readme_links(errors)
+    validate_markdown_links(errors)
+    validate_verification_status(errors)
 
     report = {
-        "contract": "ONSURE_REPOSITORY_STATIC_CONTRACT_REPORT_V1",
+        "contract": "ONSURE_REPOSITORY_STATIC_CONTRACT_REPORT_V2",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
-        "traceability_counts": dict(sorted(counts.items())),
+        "implementation_counts": dict(sorted(implementation_counts.items())),
+        "verification_counts": dict(sorted(verification_counts.items())),
         "json_contract_digests": json_digests,
+        "jsonl_digests": jsonl_digests,
+        "limitations": {
+            "json_schema_instance_validation": "NOT_RUN",
+            "yaml_parser_validation": "NOT_RUN",
+            "runtime_execution": "NOT_RUN",
+        },
         "final_claim_allowed": False,
     }
     serialized = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
@@ -177,7 +283,7 @@ def main() -> int:
         output.write_text(serialized, encoding="utf-8")
     print(serialized, end="")
     if errors:
-        print("ONSURE_REPOSITORY_CONTRACTS_FAIL", file=sys.stderr)
+        print("ONSURE_REPOSITORY_CONTRACTS_FAIL", file=__import__("sys").stderr)
         return 1
     print("ONSURE_REPOSITORY_CONTRACTS_PASS")
     return 0
