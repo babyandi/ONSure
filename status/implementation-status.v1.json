@@ -1,20 +1,29 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_STATUS_V1",
+  "assessment_basis": "main@e1aad6fd0447f00835236b242635e9e899c932b1",
+  "assessment_date": "2026-07-26",
+  "authority": "status/implementation-matrix.v1.json",
   "items": [
-    {
-      "id": "ONSURE-INTERNAL-RAG-CONTROL",
-      "state": "UNIT_VERIFIED",
-      "evidence": "PR #4"
-    },
-    {
-      "id": "OBUILDER-EVIDENCE-BINDING",
-      "state": "UNIT_VERIFIED",
-      "evidence": "PR #4 @ c75ae6f9a259f6382c840fc6b3f4103396e0acda"
-    },
-    {
-      "id": "UNATTENDED-VSCODE-AUTOPILOT",
-      "state": "IMPLEMENTED",
-      "evidence": "scripts/onsure-autopilot.py"
-    }
-  ]
+    {"id": "VALIDATOR-FIXTURE-ENGINE", "state": "PARTIAL", "evidence": "io.onsure.platform and io.onsure.harness"},
+    {"id": "FILE-EVIDENCE-STORE", "state": "PARTIAL", "evidence": "src/main/java/io/onsure/platform/FileValidationStore.java"},
+    {"id": "OFFICIAL-LEARNING-LEDGER", "state": "PARTIAL", "evidence": "src/main/java/io/onsure/learning/OfficialLearningLedger.java"},
+    {"id": "RAG-PREPARATION-CONTROL", "state": "PARTIAL", "evidence": "io.onsure.rag"},
+    {"id": "UNATTENDED-RUNNER", "state": "STUB", "evidence": "scripts/onsure-autopilot.py and .vscode/tasks.json"},
+    {"id": "PROGRAM-LEARNING", "state": "STUB", "evidence": "Hash and approval recording without repository understanding"},
+    {"id": "BEHAVIOR-LEARNING", "state": "STUB", "evidence": "Marker scan without repeated behavior observation"},
+    {"id": "OREVIEW", "state": "STUB", "evidence": "Limited marker-based static stage"},
+    {"id": "OPLANNING", "state": "DESIGN_ONLY", "evidence": null},
+    {"id": "OIMPROVEMENT-PATCH", "state": "DESIGN_ONLY", "evidence": null},
+    {"id": "VSCODE-EXTENSION", "state": "DESIGN_ONLY", "evidence": null},
+    {"id": "GIT-FULL-CHAIN", "state": "DESIGN_ONLY", "evidence": null},
+    {"id": "WEB-COMMERCE-OLICENSE", "state": "DESIGN_ONLY", "evidence": null}
+  ],
+  "summary": {
+    "standalone_product_full_chain": "BLOCKED",
+    "formal_execution_current_source": "NOT_RUN",
+    "independent_assurance": "NOT_RUN",
+    "final_lock_allowed": false,
+    "production_go": false,
+    "commercial_go": false
+  }
 }
