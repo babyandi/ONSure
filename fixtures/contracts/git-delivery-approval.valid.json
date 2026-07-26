@@ -7,6 +7,7 @@
   "patch_apply_receipt_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "branch": "fix/sample-approved-patch",
   "remote": "origin",
+  "remote_url_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "base_branch": "main",
   "actor": "reviewer@example.invalid",
   "key_id": "reviewer-key-001",
