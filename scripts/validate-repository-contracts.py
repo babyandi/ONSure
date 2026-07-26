@@ -21,6 +21,7 @@ REQUIRED_FILES = [
     "docs/verification/ONSURE_FULL_DESIGN_GAP_ASSESSMENT_v1.md",
     "contracts/status-vocabulary.v1.json",
     "contracts/core-extension-boundary.v1.json",
+    "contracts/state-model-mapping.v1.json",
     "contracts/requirements-traceability.v1.json",
     "contracts/program-profile.v1.schema.json",
     "contracts/behavior-profile.v1.schema.json",
@@ -91,6 +92,23 @@ def validate_traceability(errors: list[str]) -> dict[str, int]:
     return counts
 
 
+def validate_matrix(errors: list[str], trace_counts: dict[str, int]) -> None:
+    matrix = load_json("status/implementation-matrix.v1.json")
+    capabilities = matrix.get("capabilities", {})
+    calculated = {state: 0 for state in ALLOWED}
+    for capability, status in capabilities.items():
+        if status not in ALLOWED:
+            errors.append(f"MATRIX_STATUS_INVALID:{capability}:{status}")
+        else:
+            calculated[status] += 1
+    declared = matrix.get("counts", {})
+    for state, count in calculated.items():
+        if declared.get(state) != count:
+            errors.append(f"MATRIX_COUNT_MISMATCH:{state}:{declared.get(state)}:{count}")
+        if trace_counts.get(state) != count:
+            errors.append(f"MATRIX_TRACE_MISMATCH:{state}:{trace_counts.get(state)}:{count}")
+
+
 def validate_boundary(errors: list[str]) -> None:
     boundary = load_json("contracts/core-extension-boundary.v1.json")
     profiles = boundary.get("preflight_profiles", {})
@@ -102,6 +120,22 @@ def validate_boundary(errors: list[str]) -> None:
     oruda = [item for item in optional if item.get("adapter_id") == "ORUDA_V1"]
     if len(oruda) != 1 or oruda[0].get("required_for_core") is not False:
         errors.append("ORUDA_NOT_OPTIONAL")
+
+
+def validate_state_mapping(errors: list[str]) -> None:
+    mapping = load_json("contracts/state-model-mapping.v1.json")
+    machines = mapping.get("machines", {})
+    required = {"program_profile", "validation_run", "improvement", "git_delivery", "assurance_publication"}
+    if set(machines) != required:
+        errors.append(f"STATE_MACHINE_SET_INVALID:{sorted(machines)}")
+    rules = set(mapping.get("mapping_rules", []))
+    for required_rule in {
+        "VALIDATION_EVIDENCE_LOCKED_DOES_NOT_IMPLY_FINAL_PASS",
+        "MERGED_DOES_NOT_IMPLY_PRODUCTION_GO",
+        "NOT_RUN_BLOCKED_HOLD_INCONCLUSIVE_CANNOT_MAP_TO_PASS",
+    }:
+        if required_rule not in rules:
+            errors.append(f"STATE_MAPPING_RULE_MISSING:{required_rule}")
 
 
 def validate_readme_links(errors: list[str]) -> None:
@@ -123,7 +157,9 @@ def main() -> int:
     validate_required_files(errors)
     json_digests = validate_json_files(errors)
     counts = validate_traceability(errors)
+    validate_matrix(errors, counts)
     validate_boundary(errors)
+    validate_state_mapping(errors)
     validate_readme_links(errors)
 
     report = {
