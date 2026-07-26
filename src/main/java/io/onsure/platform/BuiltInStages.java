@@ -66,9 +66,7 @@ public final class BuiltInStages {
             Instant start = Instant.now();
             String digest = Hashing.tree(context.target().sourceRoot());
             SourceReferenceBinding.Verification sourceReference = SourceReferenceBinding.verify(
-                    context.target().sourceRoot(),
-                    context.target().immutableSourceReference(),
-                    digest);
+                    context.target().sourceRoot(), context.target().immutableSourceReference(), digest);
             long fileCount;
             try (var stream = Files.walk(context.target().sourceRoot())) {
                 fileCount = stream.filter(Files::isRegularFile).count();
@@ -129,7 +127,8 @@ public final class BuiltInStages {
             }
             int created = context.findings().size() - before;
             return result(stageId(), created == 0 ? Decision.PASS : Decision.FAIL,
-                    start, context, before, Map.of("findings_created", created));
+                    start, context, before, Map.of("findings_created", created,
+                            "analysis_scope", "MARKER_SCAN_NONFINAL"));
         }
     }
 
@@ -176,7 +175,8 @@ public final class BuiltInStages {
             }
             int created = context.findings().size() - before;
             return result(stageId(), created == 0 ? Decision.PASS : Decision.FAIL,
-                    start, context, before, Map.of("findings_created", created));
+                    start, context, before, Map.of("findings_created", created,
+                            "behavior_observation", "NOT_RUN_MARKER_SCAN_ONLY"));
         }
     }
 
@@ -188,7 +188,8 @@ public final class BuiltInStages {
         public StageResult execute(ValidationContext context) throws Exception {
             Instant start = Instant.now();
             int before = context.findings().size();
-            FixtureHarness harness = new FixtureHarness("ONSURE_BUILTIN_HARNESS_V1");
+            FixtureHarness harness = new FixtureHarness(
+                    "ONSURE_BUILTIN_HARNESS_V2", context.target().executionProfile());
             List<TargetAdapter.FixtureDefinition> fixtures = context.adapter().loadFixtures(context.target());
             long registered = context.attributes().get("registered_fixture_count") instanceof Number value
                     ? value.longValue() : -1;
@@ -198,6 +199,11 @@ public final class BuiltInStages {
             int failures = 0;
             int executedCommands = 0;
             int timeouts = 0;
+            boolean allNetworkIsolated = true;
+            boolean allFilesystemReadOnly = true;
+            boolean allResourceLimited = true;
+            String sandboxProfile = "NOT_RUN";
+            String assuranceClass = "SELF_VALIDATION_NONFINAL";
             for (TargetAdapter.FixtureDefinition fixture : fixtures) {
                 FixtureHarness.HarnessExecution execution = harness.execute(
                         fixture, context.target().sourceRoot());
@@ -205,6 +211,11 @@ public final class BuiltInStages {
                 context.addFixtureResult(fixtureResult);
                 if (execution.commandExecuted()) executedCommands++;
                 if (execution.timedOut()) timeouts++;
+                sandboxProfile = execution.sandboxProfile();
+                assuranceClass = execution.assuranceClass();
+                allNetworkIsolated &= execution.networkIsolated();
+                allFilesystemReadOnly &= execution.filesystemReadOnly();
+                allResourceLimited &= execution.resourceLimitsEnforced();
 
                 Map<String, Object> evidenceAttributes = Map.ofEntries(
                         Map.entry("expected", fixture.expected()),
@@ -219,10 +230,17 @@ public final class BuiltInStages {
                         Map.entry("environment_sha256",
                                 FixtureEvidenceBinding.environmentDigest(fixture.environment())),
                         Map.entry("duration_ms", execution.durationMillis()),
-                        Map.entry("output_sha256", execution.outputSha256()));
+                        Map.entry("output_sha256", execution.outputSha256()),
+                        Map.entry("sandbox_profile", execution.sandboxProfile()),
+                        Map.entry("network_isolated", execution.networkIsolated()),
+                        Map.entry("filesystem_read_only", execution.filesystemReadOnly()),
+                        Map.entry("pid_namespace_isolated", execution.pidNamespaceIsolated()),
+                        Map.entry("resource_limits_enforced", execution.resourceLimitsEnforced()),
+                        Map.entry("assurance_class", execution.assuranceClass()));
                 String digest = FixtureEvidenceBinding.digest(fixture.fixtureId(), evidenceAttributes);
                 String evidenceId = "EV-FIXTURE-" + digest.substring(0, 16);
-                context.addEvidence(new Evidence(evidenceId, "FIXTURE_EXECUTION", fixture.fixtureId(), digest,
+                context.addEvidence(new Evidence(
+                        evidenceId, "FIXTURE_EXECUTION", fixture.fixtureId(), digest,
                         Instant.now(), evidenceAttributes));
 
                 if (fixtureResult.decision() != Decision.PASS) {
@@ -237,12 +255,21 @@ public final class BuiltInStages {
                 }
             }
             context.putAttribute("executed_fixture_count", executedCommands);
+            context.putAttribute("fixture_sandbox_profile", sandboxProfile);
+            context.putAttribute("fixture_network_isolated", allNetworkIsolated);
+            context.putAttribute("fixture_filesystem_read_only", allFilesystemReadOnly);
+            context.putAttribute("fixture_resource_limits_enforced", allResourceLimited);
             return result(stageId(), failures == 0 ? Decision.PASS : Decision.FAIL,
-                    start, context, before, Map.of(
-                            "fixtures", fixtures.size(),
-                            "failures", failures,
-                            "commands_executed", executedCommands,
-                            "timeouts", timeouts));
+                    start, context, before, Map.ofEntries(
+                            Map.entry("fixtures", fixtures.size()),
+                            Map.entry("failures", failures),
+                            Map.entry("commands_executed", executedCommands),
+                            Map.entry("timeouts", timeouts),
+                            Map.entry("sandbox_profile", sandboxProfile),
+                            Map.entry("network_isolated", allNetworkIsolated),
+                            Map.entry("filesystem_read_only", allFilesystemReadOnly),
+                            Map.entry("resource_limits_enforced", allResourceLimited),
+                            Map.entry("assurance_class", assuranceClass)));
         }
     }
 
@@ -259,18 +286,21 @@ public final class BuiltInStages {
                 context.addFailureMode(new FailureMode(
                         modeId, modeCode, failureModeTitle(finding.category()),
                         finding.title(), impact(finding.severity()), List.of(finding.findingId())));
-                String remediation = Optional.ofNullable(context.attributes().get("remediation:" + finding.category()))
-                        .map(Object::toString)
-                        .orElse(defaultRemediation(finding.category()));
+                String remediation = Optional.ofNullable(
+                        context.attributes().get("remediation:" + finding.category()))
+                        .map(Object::toString).orElse(defaultRemediation(finding.category()));
                 context.addRcaRecord(new RcaRecord(
                         "RCA-" + finding.fingerprint().substring(0, 16), finding.findingId(),
                         finding.description(), rootCause(finding.category()),
                         "Control was absent, incomplete, or not independently verified.", remediation,
-                        "Re-run the focused fixture and the complete Validator Engine pipeline."));
+                        "Reproduce the first failure point, run a causal experiment, then re-run "
+                                + "the focused fixture and complete Validator Engine pipeline."));
             }
+            context.putAttribute("rca_assurance", "RCA_CANDIDATE_TEMPLATE_NONFINAL");
             return result(stageId(), Decision.PASS, start, context, context.findings().size(),
                     Map.of("failure_modes", context.failureModes().size(),
-                            "rca_records", context.rcaRecords().size()));
+                            "rca_records", context.rcaRecords().size(),
+                            "rca_assurance", "RCA_CANDIDATE_TEMPLATE_NONFINAL"));
         }
     }
 
@@ -294,13 +324,14 @@ public final class BuiltInStages {
                             + ":" + value.expected() + ":" + value.observed() + ":" + value.decision())
                     .reduce("", (a, b) -> a + "|" + b);
             String resultDigest = Hashing.sha256(findings + fixtures);
-            String lockDigest = Hashing.sha256("ONSURE_REGRESSION_LOCK_V1|" + context.target().targetId()
-                    + "|" + sourceDigest + "|" + resultDigest);
+            String lockDigest = Hashing.sha256("ONSURE_REGRESSION_LOCK_V1|"
+                    + context.target().targetId() + "|" + sourceDigest + "|" + resultDigest);
             context.regressionLock(new RegressionLock(
                     "ONSURE_REGRESSION_LOCK_V1", context.target().targetId(), context.job().jobId(),
                     sourceDigest, resultDigest, lockDigest, Instant.now()));
             return result(stageId(), Decision.PASS, start, context, context.findings().size(),
-                    Map.of("lock_digest", lockDigest));
+                    Map.of("lock_digest", lockDigest,
+                            "assurance_class", "SELF_VALIDATION_NONFINAL"));
         }
     }
 
@@ -312,11 +343,12 @@ public final class BuiltInStages {
     }
 
     private static void addFinding(ValidationContext context, String stageId, String category,
-            Severity severity, String title, String description, String location, List<String> evidenceIds) {
+            Severity severity, String title, String description, String location,
+            List<String> evidenceIds) {
         String fingerprint = Hashing.sha256(category + "|" + location + "|" + title);
         context.addFinding(new Finding(
-                "F-" + fingerprint.substring(0, 16), fingerprint, category, severity, FindingStatus.OPEN,
-                title, description, location, evidenceIds, stageId));
+                "F-" + fingerprint.substring(0, 16), fingerprint, category, severity,
+                FindingStatus.OPEN, title, description, location, evidenceIds, stageId));
     }
 
     private static List<Path> textFiles(Path root) throws Exception {
@@ -328,8 +360,7 @@ public final class BuiltInStages {
                         try { return Files.size(path) <= 1_000_000; }
                         catch (Exception e) { return false; }
                     })
-                    .sorted()
-                    .forEach(files::add);
+                    .sorted().forEach(files::add);
         }
         return files;
     }
@@ -339,8 +370,8 @@ public final class BuiltInStages {
         return lower.endsWith(".java") || lower.endsWith(".kt") || lower.endsWith(".py")
                 || lower.endsWith(".js") || lower.endsWith(".ts") || lower.endsWith(".json")
                 || lower.endsWith(".yaml") || lower.endsWith(".yml") || lower.endsWith(".md")
-                || lower.endsWith(".txt") || lower.endsWith(".properties") || lower.endsWith(".xml")
-                || lower.endsWith(".sh");
+                || lower.endsWith(".txt") || lower.endsWith(".properties")
+                || lower.endsWith(".xml") || lower.endsWith(".sh");
     }
 
     private static String failureModeCode(String category) {
