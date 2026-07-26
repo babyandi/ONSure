@@ -78,10 +78,10 @@
       "id": "CONFLICT-009",
       "severity": "P0",
       "subject": "PR 17 completion claims versus candidate files",
-      "authority": "status/implementation-matrix.v1.json",
+      "authority": "fixtures/learning/odesign-oui/expert-competency-framework.v1.json",
       "conflicting_paths": ["pull/17", "fixtures/learning/odesign-oui/expert-competency-framework.v1.json", "fixtures/learning/odesign-oui/expert-task-bank.v1.json"],
-      "resolution": "Integrate PR 17 only as a nonfinal candidate set; retain blind, human outcome and expert promotion gates as HOLD until immutable receipts are bound.",
-      "state": "PENDING_INTEGRATED_BRANCH"
+      "resolution": "The candidate set was integrated through PR 18 with CANDIDATE_ONLY assurance. Blind execution, human outcome, independent receipts and expert promotion remain HOLD.",
+      "state": "INTEGRATED_CANDIDATE_ONLY"
     }
   ]
 }
