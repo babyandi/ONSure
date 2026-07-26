@@ -2,7 +2,7 @@
   "name": "onsure",
   "displayName": "ONSure",
   "description": "Evidence-bound program learning, review, validation and approved improvement workflow.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "babyandi",
   "license": "UNLICENSED",
   "engines": {"vscode": "^1.95.0"},
@@ -14,7 +14,9 @@
     "onCommand:onsure.refresh",
     "onCommand:onsure.learnProgram",
     "onCommand:onsure.runValidation",
-    "onCommand:onsure.openLastArtifact"
+    "onCommand:onsure.runWorkflowRequest",
+    "onCommand:onsure.openLastArtifact",
+    "onCommand:onsure.clearToken"
   ],
   "contributes": {
     "commands": [
@@ -22,7 +24,9 @@
       {"command": "onsure.refresh", "title": "ONSure: Refresh Status"},
       {"command": "onsure.learnProgram", "title": "ONSure: Learn Program"},
       {"command": "onsure.runValidation", "title": "ONSure: Run Validation"},
-      {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"}
+      {"command": "onsure.runWorkflowRequest", "title": "ONSure: Run Signed Workflow Request"},
+      {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"},
+      {"command": "onsure.clearToken", "title": "ONSure: Clear Local API Token"}
     ],
     "viewsContainers": {
       "activitybar": [
@@ -38,7 +42,11 @@
       "view/title": [
         {"command": "onsure.refresh", "when": "view == onsure.workspace", "group": "navigation@1"},
         {"command": "onsure.learnProgram", "when": "view == onsure.workspace", "group": "navigation@2"},
-        {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@3"}
+        {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@3"},
+        {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@4"}
+      ],
+      "commandPalette": [
+        {"command": "onsure.clearToken"}
       ]
     },
     "configuration": {
@@ -62,6 +70,7 @@
     }
   },
   "scripts": {
+    "check": "node --check extension.js",
     "package": "npx @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {
