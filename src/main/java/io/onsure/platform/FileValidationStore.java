@@ -3,15 +3,14 @@ package io.onsure.platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.Decision;
+import io.onsure.assurance.ExclusiveFileLock;
 import io.onsure.platform.ValidationModel.ValidationReport;
 import io.onsure.rag.RagPreparationService;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -40,17 +39,15 @@ public final class FileValidationStore {
         Path runRoot = targetRoot.resolve(safe(jobId)).toAbsolutePath().normalize();
         if (!runRoot.startsWith(root)) throw new IllegalArgumentException("run path escapes store root");
         Files.createDirectories(root);
-        try (FileChannel channel = FileChannel.open(lockFile,
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-             var ignored = channel.lock()) {
+        return ExclusiveFileLock.call(lockFile, () -> {
             Files.createDirectories(targetRoot);
             if (Files.exists(runRoot, LinkOption.NOFOLLOW_LINKS)) {
                 throw new IllegalStateException("VALIDATION_RUN_ALREADY_EXISTS");
             }
             Files.createDirectory(runRoot);
             incrementRevision("CREATE_RUN_ROOT", runRoot);
-        }
-        return runRoot;
+            return runRoot;
+        });
     }
 
     public void persist(ValidationContext context, ValidationReport report) throws Exception {
@@ -61,9 +58,7 @@ public final class FileValidationStore {
             throw new IllegalArgumentException("validation run root outside store boundary");
         }
         Files.createDirectories(root);
-        try (FileChannel channel = FileChannel.open(lockFile,
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-             var ignored = channel.lock()) {
+        ExclusiveFileLock.run(lockFile, () -> {
             writeJson(run.resolve("storage-context.json"), storageContext(context));
             writeJson(run.resolve("target.json"), context.target());
             writeJson(run.resolve("job.json"), context.job());
@@ -87,7 +82,7 @@ public final class FileValidationStore {
             context.adapter().persistAdditionalEvidence(context);
             writeManifest(run);
             incrementRevision("PERSIST_VALIDATION_RUN", run);
-        }
+        });
     }
 
     public ValidationReport readReport(Path runRoot) throws Exception {
