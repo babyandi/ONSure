@@ -46,17 +46,13 @@ final class Hashing {
     }
 
     private static List<Path> gitTrackedFiles(Path root) throws Exception {
-        Process topProcess = git(root, List.of("rev-parse", "--show-toplevel"), 15);
-        if (topProcess.exitValue() != 0) return null;
-        Path gitRoot = Path.of(new String(
-                topProcess.getInputStream().readAllBytes(), StandardCharsets.UTF_8).strip())
-                .toAbsolutePath().normalize();
+        GitResult top = git(root, List.of("rev-parse", "--show-toplevel"), 15);
+        if (top.exitCode() != 0) return null;
+        Path gitRoot = Path.of(top.outputText().strip()).toAbsolutePath().normalize();
 
-        Process listProcess = git(root, List.of("ls-files", "-z", "--full-name", "--", "."), 30);
-        byte[] output = listProcess.getInputStream().readAllBytes();
-        if (listProcess.exitValue() != 0) {
-            throw new IllegalStateException("GIT_LS_FILES_FAILED");
-        }
+        GitResult listed = git(root, List.of("ls-files", "-z", "--full-name", "--", "."), 30);
+        if (listed.exitCode() != 0) throw new IllegalStateException("GIT_LS_FILES_FAILED");
+        byte[] output = listed.output();
         List<Path> files = new ArrayList<>();
         int start = 0;
         for (int index = 0; index <= output.length; index++) {
@@ -77,7 +73,7 @@ final class Hashing {
         return List.copyOf(files);
     }
 
-    private static Process git(Path root, List<String> arguments, long timeoutSeconds) throws Exception {
+    private static GitResult git(Path root, List<String> arguments, long timeoutSeconds) throws Exception {
         List<String> command = new ArrayList<>();
         command.add("git");
         command.add("-C");
@@ -91,12 +87,24 @@ final class Hashing {
         environment.put("GIT_TERMINAL_PROMPT", "0");
         environment.put("GIT_CONFIG_NOSYSTEM", "1");
         Process process = builder.start();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Thread reader = Thread.ofVirtual().name("onsure-git-output").start(() -> {
+            try { process.getInputStream().transferTo(output); }
+            catch (Exception ignored) {}
+        });
         boolean completed = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
         if (!completed) {
+            process.toHandle().descendants().forEach(ProcessHandle::destroyForcibly);
             process.destroyForcibly();
+            reader.join(5000);
             throw new IllegalStateException("GIT_SOURCE_COMMAND_TIMEOUT");
         }
-        return process;
+        reader.join(5000);
+        if (reader.isAlive()) {
+            reader.interrupt();
+            throw new IllegalStateException("GIT_SOURCE_OUTPUT_READ_TIMEOUT");
+        }
+        return new GitResult(process.exitValue(), output.toByteArray());
     }
 
     private static List<Path> archiveFiles(Path root) throws Exception {
@@ -135,5 +143,9 @@ final class Hashing {
     static String relative(Path root, Path file) {
         return root.toAbsolutePath().normalize().relativize(file.toAbsolutePath().normalize())
                 .toString().replace('\\', '/');
+    }
+
+    private record GitResult(int exitCode, byte[] output) {
+        private String outputText() { return new String(output, StandardCharsets.UTF_8); }
     }
 }
