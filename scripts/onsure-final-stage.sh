@@ -17,7 +17,7 @@ fi
   exit 64
 }
 
-for command in git bash python3 java javac mvn sha256sum cmp; do
+for command in git bash python3 java javac mvn sha256sum cmp bwrap prlimit timeout; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "ONSURE_FINAL_STAGE_FAIL MISSING_COMMAND_$command" >&2
     exit 69
@@ -40,10 +40,26 @@ OUT="${ONSURE_FINAL_STAGE_OUTPUT:-$ROOT/.onsure/final-stage/$STAMP}"
 mkdir -p "$OUT"
 
 python3 scripts/create-source-snapshot.py --output "$OUT/source-start.json"
-python3 scripts/validate-codespace-free-remediation.py | tee "$OUT/codespace-free-static-gate.log"
-python3 scripts/validate-structured-contracts.py --require-full | tee "$OUT/structured-contracts.log"
+
+VALIDATION_PYTHON="python3"
+if ! python3 -c 'import jsonschema, yaml' >/dev/null 2>&1; then
+  python3 -m venv "$OUT/validation-venv"
+  "$OUT/validation-venv/bin/python" -m pip install \
+    --disable-pip-version-check --no-input -r requirements-validation.txt \
+    | tee "$OUT/validation-dependency-install.log"
+  VALIDATION_PYTHON="$OUT/validation-venv/bin/python"
+fi
+
+"$VALIDATION_PYTHON" scripts/validate-structured-contracts.py --require-full \
+  | tee "$OUT/structured-contracts.log"
+python3 scripts/validate-codespace-free-remediation.py \
+  | tee "$OUT/codespace-free-static-gate.log"
 python3 scripts/check-module-boundaries.py | tee "$OUT/module-boundary.log"
-python3 scripts/extract-atomic-requirements.py --output "$OUT/atomic-requirement-candidates.json"
+python3 scripts/extract-atomic-requirements.py \
+  --output "$OUT/atomic-requirement-candidates.json"
+
+# Final execution must use the Linux isolation profile. Missing sandbox tooling is a hard failure.
+export ONSURE_FIXTURE_SANDBOX_MODE=REQUIRED
 
 set +e
 bash scripts/run-core-modular-twice.sh | tee "$OUT/core-modular.log"
@@ -75,19 +91,22 @@ cmp "$OUT/source-start.json" "$OUT/source-end.json" >/dev/null || {
 python3 - "$OUT/final-stage-result.json" "$PROFILE" "$ORUDA_MODULE" "$ONE_SHOT_EXIT" <<'PY'
 import json, pathlib, sys
 path, profile, oruda, one_shot = sys.argv[1:]
+exit_code = int(one_shot)
 body = {
-    "contract": "ONSURE_FINAL_STAGE_RESULT_V1",
+    "contract": "ONSURE_FINAL_STAGE_RESULT_V2",
     "profile": profile,
+    "structured_contracts": "PASS",
     "codespace_free_static_gate": "PASS",
-    "structured_contract_validation": "PASS",
+    "fixture_sandbox": "BWRAP_PRLIMIT_NETWORK_UNSHARED",
     "core_modular_two_run": "PASS_NONFINAL",
     "oruda_module": oruda,
-    "one_shot_exit": int(one_shot),
-    "decision": "BLOCKED" if int(one_shot) == 75 else ("NON_FINAL" if int(one_shot) == 0 else "FAIL"),
+    "one_shot_exit": exit_code,
+    "decision": "BLOCKED" if exit_code == 75 else ("NON_FINAL" if exit_code == 0 else "FAIL"),
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
     "vscode_full_chain": "NOT_RUN",
     "web_full_chain": "NOT_RUN",
+    "assurance_class": "SELF_VALIDATION_NONFINAL",
     "final_lock_allowed": False,
     "production_go": False,
     "commercial_go": False,
