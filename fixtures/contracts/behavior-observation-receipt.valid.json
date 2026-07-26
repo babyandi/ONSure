@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_BEHAVIOR_OBSERVATION_RECEIPT_V1",
+  "receipt_id": "BEH-scenario-001-1-aaaaaaaaaaaa",
+  "profile_id": "behavior-sample-001",
+  "program_profile_id": "profile-sample-001",
+  "source_baseline_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "scenario_id": "scenario-001",
+  "iteration": 1,
+  "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "output_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "command": ["bash", "scenario.sh"],
+  "decision": "PASS",
+  "exit_code": 0,
+  "timed_out": false,
+  "duration_ms": 10,
+  "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "coverage_class": "EXECUTABLE_FIXTURE_PROCESS_PROXY",
+  "created_at": "2026-07-26T00:00:00Z",
+  "final_claim_allowed": false,
+  "receipt_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+}
