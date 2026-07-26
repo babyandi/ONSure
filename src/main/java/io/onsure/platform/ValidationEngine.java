@@ -81,6 +81,11 @@ public final class ValidationEngine {
     }
 
     public RunResult run(ValidationTarget target) throws Exception {
+        return run(target, null);
+    }
+
+    /** Runs with a previously signed and source-bound execution plan. */
+    public RunResult run(ValidationTarget target, Path approvedExecutionPlanFile) throws Exception {
         TargetAdapter adapter = adapterRegistry.require(target);
         Instant created = Instant.now();
         String jobId = createJobId(target.targetId(), created);
@@ -89,6 +94,10 @@ public final class ValidationEngine {
                 jobId, target.targetId(), JobStatus.RUNNING, created, created, null, null);
         ValidationContext context = new ValidationContext(target, running, adapter, runRoot);
         context.putAttribute("registered_adapter_ids", adapterRegistry.adapterIds());
+        if (approvedExecutionPlanFile != null) {
+            context.putAttribute("approved_execution_plan_file",
+                    approvedExecutionPlanFile.toAbsolutePath().normalize().toString());
+        }
 
         Exception executionFailure = null;
         for (ValidatorStage stage : stages) {
@@ -150,9 +159,13 @@ public final class ValidationEngine {
         summary.put("program_profile_state", context.attributes().getOrDefault("program_profile_state", "NOT_RUN"));
         summary.put("execution_plan_id", context.attributes().getOrDefault("execution_plan_id", "NOT_RUN"));
         summary.put("execution_plan_approval", context.attributes().getOrDefault("execution_plan_approval", "NOT_RUN"));
+        summary.put("execution_plan_approval_sha256",
+                context.attributes().getOrDefault("execution_plan_approval_sha256", "NOT_RUN"));
         summary.put("behavior_profile_id", context.attributes().getOrDefault("behavior_profile_id", "NOT_RUN"));
         summary.put("behavior_profile_state", context.attributes().getOrDefault("behavior_profile_state", "NOT_RUN"));
         summary.put("behavior_profile_stable", context.attributes().getOrDefault("behavior_profile_stable", "NOT_RUN"));
+        summary.put("behavior_profile_coverage_class",
+                context.attributes().getOrDefault("behavior_profile_coverage_class", "NOT_RUN"));
         summary.put("review_id", context.attributes().getOrDefault("review_id", "NOT_RUN"));
         summary.put("review_quality_decision", context.attributes().getOrDefault("review_quality_decision", "NOT_RUN"));
         summary.put("adapter_id", context.adapter().adapterId());
