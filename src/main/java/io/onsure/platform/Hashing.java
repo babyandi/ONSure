@@ -1,8 +1,6 @@
 package io.onsure.platform;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -59,7 +57,8 @@ final class Hashing {
         GitResult status = runGit(scope.repositoryRoot(),
                 "status", "--porcelain", "--untracked-files=all", "--", rootPathspec);
         if (!status.text().isBlank()) {
-            throw new IllegalStateException("SOURCE_TREE_DIRTY_OR_UNTRACKED:" + status.text().strip());
+            throw new IllegalStateException(
+                    "SOURCE_TREE_DIRTY_OR_UNTRACKED:" + status.text().strip());
         }
 
         GitResult listed = runGit(scope.repositoryRoot(), "ls-files", "-z", "--", rootPathspec);
@@ -71,7 +70,8 @@ final class Hashing {
             if (!file.startsWith(root)) continue;
             if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)
                     || Files.isSymbolicLink(file)) {
-                throw new IllegalStateException("TRACKED_SOURCE_FILE_INVALID:" + relativeToRepository);
+                throw new IllegalStateException(
+                        "TRACKED_SOURCE_FILE_INVALID:" + relativeToRepository);
             }
             files.add(file);
         }
@@ -83,13 +83,15 @@ final class Hashing {
     private static List<Path> archiveFiles(Path root) throws Exception {
         List<Path> files = new ArrayList<>();
         long totalBytes = 0;
-        try (var stream = Files.walk(root, FileVisitOption.FOLLOW_LINKS)) {
-            for (Path path : stream.sorted(Comparator.comparing(value -> relative(root, value))).toList()) {
+        try (var stream = Files.walk(root)) {
+            for (Path path : stream.sorted(
+                    Comparator.comparing(value -> relative(root, value))).toList()) {
                 if (path.equals(root)) continue;
                 Path relative = root.relativize(path);
                 if (containsExcludedDirectory(relative)) continue;
                 if (Files.isSymbolicLink(path)) {
-                    throw new IllegalStateException("ARCHIVE_SOURCE_SYMLINK_PROHIBITED:" + relative(root, path));
+                    throw new IllegalStateException(
+                            "ARCHIVE_SOURCE_SYMLINK_PROHIBITED:" + relative(root, path));
                 }
                 if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) continue;
                 files.add(path);
