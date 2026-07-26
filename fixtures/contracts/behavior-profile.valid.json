@@ -3,19 +3,42 @@
   "profile_id": "behavior-sample-001",
   "program_profile_id": "profile-sample-001",
   "source_baseline_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "runtime_context": {
+    "harness_id": "ONSURE_BUILTIN_HARNESS_V1",
+    "execution_profile": "LOCAL_FIXTURE",
+    "model_id": "NOT_APPLICABLE_FIXTURE_TARGET",
+    "model_version": "NOT_APPLICABLE",
+    "prompt_digest": "NOT_AVAILABLE",
+    "tool_registry_digest": "NOT_AVAILABLE",
+    "environment_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
   "observations": [
     {
       "scenario_id": "scenario-001",
+      "iteration": 1,
       "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "output_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
       "tool_calls": [],
       "decision": "PASS",
+      "duration_ms": 10,
       "run_receipt_id": "receipt-run-001"
+    },
+    {
+      "scenario_id": "scenario-001",
+      "iteration": 2,
+      "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "output_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "tool_calls": [],
+      "decision": "PASS",
+      "duration_ms": 9,
+      "run_receipt_id": "receipt-run-002"
     }
   ],
   "variability": {
     "repeated_run_count": 2,
+    "scenario_count": 1,
     "distinct_output_count": 1,
+    "unstable_scenarios": [],
     "stable": true
   },
   "failure_conditions": [],
