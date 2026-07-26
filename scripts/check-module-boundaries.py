@@ -24,6 +24,18 @@ def tracked_java() -> list[pathlib.Path]:
     )
 
 
+def physical_core_source(relative: str) -> bool:
+    if relative.startswith("modules/onsure-core/src/"):
+        return True
+    if not relative.startswith("src/main/java/"):
+        return False
+    return relative not in {
+        "src/main/java/io/onsure/platform/ONSureCli.java",
+        "src/main/java/io/onsure/platform/OrudaTargetAdapter.java",
+        "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
+    } and not relative.startswith("src/main/java/io/onsure/platform/oruda/")
+
+
 def text_values(root: ET.Element, xpath: str) -> set[str]:
     return {node.text.strip() for node in root.findall(xpath, NS) if node.text and node.text.strip()}
 
@@ -33,17 +45,13 @@ def main() -> int:
     core = contract["modules"]["onsure-core"]
     forbidden_imports = tuple(core["forbidden_import_prefixes"])
     violations: list[str] = []
+    inspected_core_files: list[str] = []
 
     for path in tracked_java():
         relative = path.relative_to(ROOT).as_posix()
-        target_specific = (
-            relative.startswith("src/main/java/io/onsure/platform/oruda/")
-            or relative == "src/main/java/io/onsure/platform/OrudaTargetAdapter.java"
-            or relative == "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java"
-            or relative.startswith("src/test/java/io/onsure/platform/oruda/")
-        )
-        if target_specific:
+        if not physical_core_source(relative):
             continue
+        inspected_core_files.append(relative)
         text = path.read_text(encoding="utf-8", errors="replace")
         for imported in re.findall(r"^import\s+([^;]+);", text, flags=re.MULTILINE):
             if imported.startswith(forbidden_imports):
@@ -52,6 +60,8 @@ def main() -> int:
             violations.append(f"CORE_ORUDA_SYMBOL_REFERENCE:{relative}")
         if "io.onsure.platform.oruda" in text:
             violations.append(f"CORE_ORUDA_PACKAGE_REFERENCE:{relative}")
+        if "fixtures/oruda" in text or "fixtures/e2e/oruda-target" in text:
+            violations.append(f"CORE_ORUDA_FIXTURE_REFERENCE:{relative}")
 
     aggregator = ET.parse(ROOT / "pom-modular.xml").getroot()
     modules = text_values(aggregator, "m:modules/m:module")
@@ -95,10 +105,11 @@ def main() -> int:
             violations.append(f"MODULE_POM_MISSING:{module}")
 
     result = {
-        "contract": "ONSURE_MODULE_BOUNDARY_REPORT_V2",
+        "contract": "ONSURE_MODULE_BOUNDARY_REPORT_V3",
         "decision": "PASS" if not violations else "FAIL",
         "violations": sorted(set(violations)),
         "declared_modules": sorted(modules),
+        "inspected_core_source_count": len(inspected_core_files),
         "core_direct_oruda_reference_count": sum(
             1 for value in violations if value.startswith("CORE_")
         ),
