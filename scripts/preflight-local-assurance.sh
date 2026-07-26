@@ -35,29 +35,31 @@ JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
 [[ "$JAVA_MAJOR" == "17" && "$JAVAC_MAJOR" == "17" ]] \
   || fail "JDK_17_REQUIRED_FOUND_java_${JAVA_MAJOR:-unknown}_javac_${JAVAC_MAJOR:-unknown}"
 
-# Standalone core authority and tooling.
+# Standalone authority and tooling. This is a structural preflight, not proof of module isolation.
 require_file pom.xml POM_MISSING
 require_file .devcontainer/devcontainer.json DEVCONTAINER_CONFIGURATION_MISSING
 require_file README.md README_MISSING
 require_file docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md DESIGN_AUTHORITY_MISSING
 require_file docs/verification/ONSURE_FULL_DESIGN_GAP_ASSESSMENT_v1.md DESIGN_GAP_ASSESSMENT_MISSING
+require_file docs/verification/ONSURE_POST_MERGE_SELF_AUDIT_v1.md POST_MERGE_SELF_AUDIT_MISSING
 require_file scripts/validate-repository-contracts.py REPOSITORY_CONTRACT_VALIDATOR_MISSING
+require_file scripts/check-shell-syntax.sh SHELL_SYNTAX_CHECKER_MISSING
 require_file scripts/onsure-one-shot.sh ONE_SHOT_RUNNER_MISSING
 require_file scripts/run-local-assurance.sh RUNNER_MISSING
 require_file scripts/run-local-assurance-twice.sh TWICE_RUNNER_MISSING
+require_file scripts/run-universal-harness-twice.sh UNIVERSAL_TWICE_RUNNER_MISSING
 require_file scripts/verify-local-assurance.sh REVERIFY_SCRIPT_MISSING
 require_file scripts/summarize-local-assurance.sh SUMMARY_SCRIPT_MISSING
 
-# Standalone core implementation slice.
+# Current core implementation slice.
 require_file src/main/java/io/onsure/platform/ValidationEngine.java PRODUCT_VALIDATION_ENGINE_MISSING
-require_file src/main/java/io/onsure/platform/ProductPlatformE2EMain.java VALIDATOR_FIXTURE_E2E_MAIN_MISSING
 require_file src/main/java/io/onsure/platform/TargetAdapter.java PRODUCT_TARGET_ADAPTER_MISSING
 require_file src/main/java/io/onsure/platform/GenericManifestTargetAdapter.java GENERIC_TARGET_ADAPTER_MISSING
 require_file src/main/java/io/onsure/platform/FixtureHarness.java PRODUCT_FIXTURE_HARNESS_MISSING
 require_file src/main/java/io/onsure/learning/OfficialLearningLedger.java LEARNING_LEDGER_MISSING
 require_file src/main/java/io/onsure/rag/ProgramLearningOrchestrator.java LEARNING_ORCHESTRATOR_MISSING
 
-# Core fixtures and contracts must not require ORUDA.
+# Core fixtures and contracts.
 require_file fixtures/e2e/general-program/onsure-target.json GENERAL_TARGET_E2E_MISSING
 require_file fixtures/e2e/general-program-fixed/onsure-target.json GENERAL_REMEDIATED_TARGET_E2E_MISSING
 require_file fixtures/e2e/ai-program/onsure-target.json AI_TARGET_E2E_MISSING
@@ -78,8 +80,9 @@ require_file contracts/local-run-context.v1.schema.json RUN_CONTEXT_CONTRACT_MIS
 require_file contracts/source-lock.v1.schema.json SOURCE_LOCK_CONTRACT_MISSING
 require_file contracts/security-findings.v1.schema.json SECURITY_FINDINGS_CONTRACT_MISSING
 
-# Optional ORUDA target pack. It is never required by the default core profile.
+# Optional ORUDA target pack and combined validator fixture runner.
 if [[ "$PROFILE" == "oruda" ]]; then
+  require_file src/main/java/io/onsure/platform/ProductPlatformE2EMain.java OPTIONAL_VALIDATOR_FIXTURE_E2E_MAIN_MISSING
   require_file src/main/java/io/onsure/platform/OrudaTargetAdapter.java ORUDA_TARGET_ADAPTER_MISSING
   require_file src/main/java/io/onsure/platform/oruda/OrudaExecutionPackageCatalog.java ORUDA_EXECUTION_PACKAGE_CATALOG_LOADER_MISSING
   require_file src/main/java/io/onsure/platform/oruda/OrudaDocumentMaterializer.java ORUDA_DOCUMENT_MATERIALIZER_MISSING
@@ -99,12 +102,13 @@ fi
 
 GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)" || fail NOT_A_GIT_REPOSITORY
 [[ -n "$GIT_DIR" ]] || fail NOT_A_GIT_REPOSITORY
-[[ -z "$(git status --porcelain --untracked-files=no)" ]] || fail TRACKED_WORKTREE_DIRTY
+[[ -z "$(git status --porcelain)" ]] || fail WORKTREE_DIRTY_OR_UNTRACKED
 
 COMMIT="$(git rev-parse HEAD)"
 [[ "$COMMIT" =~ ^[0-9a-f]{40,64}$ ]] || fail INVALID_COMMIT_SHA
 
 python3 scripts/validate-repository-contracts.py >/dev/null || fail REPOSITORY_CONTRACT_VALIDATION_FAILED
+bash scripts/check-shell-syntax.sh >/dev/null || fail SHELL_SYNTAX_VALIDATION_FAILED
 mvn -B -ntp -DskipTests validate >/dev/null || fail MAVEN_VALIDATE_FAILED
 
-echo "LOCAL_ASSURANCE_PREFLIGHT_PASS $PROFILE $COMMIT"
+echo "LOCAL_ASSURANCE_PREFLIGHT_PASS $PROFILE $COMMIT NONFINAL_MODULE_ISOLATION_NOT_PROVEN"
