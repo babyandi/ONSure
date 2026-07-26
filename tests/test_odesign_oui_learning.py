@@ -107,3 +107,64 @@ def test_integrated_design_domains_and_product_philosophies_are_routed():
     assert all(atom["source_binding"]["url"].startswith("https://")
                for atom in research_atoms)
     assert all(atom["verified_by"] == [] for atom in research_atoms)
+
+
+def test_user_references_are_routed_without_overstating_source_strength():
+    result = run()
+    atoms = [
+        atom for atoms in result["programs"].values() for atom in atoms
+        if any(
+            atom["atom_id"].split("-", 1)[1].startswith(f"IDM-{number:03d}")
+            for number in range(13, 21)
+        )
+    ]
+    assert len(atoms) == 14
+    assert {atom["target_program"] for atom in atoms} == {"ODesign", "OUI"}
+    assert all(atom["state"] == "SOURCE_REFERENCED" for atom in atoms)
+    assert all(atom["verified_by"] == [] for atom in atoms)
+    assert any(
+        atom["source_binding"]["access"] == "SEARCH_SNIPPET_ONLY"
+        for atom in atoms
+    )
+    assert {
+        domain for atom in atoms for domain in atom["domains"]
+    } >= {
+        "agent_ready_design_system",
+        "design_planning_and_value",
+        "design_judgment",
+        "retrieval_grounded_design",
+        "adaptive_ux_patterns",
+        "design_to_implementation_continuity",
+        "local_first_multi_model_design",
+        "editable_ai_commerce_design",
+    }
+
+
+def test_wikidocs_and_forum_discovery_is_kept_source_referenced():
+    result = run()
+    atoms = [
+        atom for atoms in result["programs"].values() for atom in atoms
+        if any(
+            atom["atom_id"].split("-", 1)[1].startswith(f"IDM-{number:03d}")
+            for number in range(21, 30)
+        )
+    ]
+    assert len(atoms) == 13
+    assert all(atom["state"] == "SOURCE_REFERENCED" for atom in atoms)
+    assert all(atom["verified_by"] == [] for atom in atoms)
+    urls = {atom["source_binding"]["url"] for atom in atoms}
+    assert any("wikidocs.net" in url for url in urls)
+    assert any("discuss.pytorch.kr" in url for url in urls)
+    assert {
+        domain for atom in atoms for domain in atom["domains"]
+    } >= {
+        "field_research_design",
+        "journey_mapping",
+        "prototype_usability_testing",
+        "accessibility_test_execution",
+        "ax_transformation_design",
+        "prompt_to_editable_ui",
+        "portable_design_context",
+        "design_system_extraction",
+        "ax_outcome_measurement",
+    }
