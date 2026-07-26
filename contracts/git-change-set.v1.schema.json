@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/git-change-set.v1.schema.json",
+  "title": "ONSure Git Change Set v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "change_set_id", "repository", "source_commit", "branch", "worktree",
+    "patch_plan_id", "patch_sha256", "approval_receipt_sha256", "rollback_ref",
+    "test_receipt_ids", "commit_sha", "push_state", "draft_pr", "state", "created_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_GIT_CHANGE_SET_V1"},
+    "change_set_id": {"type": "string", "minLength": 1},
+    "repository": {"type": "string", "minLength": 1},
+    "source_commit": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+    "branch": {"type": "string", "minLength": 1},
+    "worktree": {"type": "string", "minLength": 1},
+    "patch_plan_id": {"type": "string", "minLength": 1},
+    "patch_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "rollback_ref": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+    "test_receipt_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "commit_sha": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+    "push_state": {"enum": ["NOT_RUN", "PUSHED", "FAILED", "HOLD"]},
+    "draft_pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "provider", "url", "receipt_sha256"],
+      "properties": {
+        "state": {"enum": ["NOT_RUN", "DRAFT_PR_OPEN", "FAILED", "HOLD"]},
+        "provider": {"enum": ["GITHUB", "GITLAB", "NONE"]},
+        "url": {"type": ["string", "null"]},
+        "receipt_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "state": {"enum": ["WORKTREE_READY", "CHANGES_APPLIED", "LOCAL_VERIFIED", "COMMITTED", "PUSHED", "DRAFT_PR_OPEN", "ROLLED_BACK", "HOLD"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}
