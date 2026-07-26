@@ -1,12 +1,15 @@
 target/
+modules/*/target/
 receipts/local/
 receipts/product-e2e/
 receipts/validator-fixture-e2e/
 receipts/development-gate/
+receipts/universal-v1/
 validation-data/
 *.log
 .onsure/autopilot/
 .onsure/one-shot/
 .onsure/core-fixture-e2e/
 .onsure/atomic-traceability/
+.onsure/validation-venv/
 __pycache__/
