@@ -4,12 +4,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.platform.ValidationModel.ValidationTarget;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /** File-backed commercial product catalog for workspaces, projects and targets. */
@@ -42,39 +45,51 @@ public final class ProductCatalog {
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules().enable(SerializationFeature.INDENT_OUTPUT);
     private final Path root;
+    private final Path lockFile;
+    private final Path revisionFile;
 
     public ProductCatalog(Path root) {
         this.root = root.toAbsolutePath().normalize();
+        this.lockFile = this.root.resolve(".catalog.lock");
+        this.revisionFile = this.root.resolve("catalog-revision.json");
     }
 
     public synchronized void registerWorkspace(Workspace workspace) throws Exception {
-        List<Workspace> values = read("workspaces.json", new TypeReference<>() {});
-        ensureUnique(values.stream().map(Workspace::workspaceId).toList(), workspace.workspaceId(), "WORKSPACE_EXISTS");
-        values.add(workspace);
-        write("workspaces.json", values);
+        withExclusiveMutation("REGISTER_WORKSPACE", () -> {
+            List<Workspace> values = read("workspaces.json", new TypeReference<>() {});
+            ensureUnique(values.stream().map(Workspace::workspaceId).toList(),
+                    workspace.workspaceId(), "WORKSPACE_EXISTS");
+            values.add(workspace);
+            write("workspaces.json", values);
+        });
     }
 
     public synchronized void registerProject(Project project) throws Exception {
-        List<Workspace> workspaces = read("workspaces.json", new TypeReference<>() {});
-        if (workspaces.stream().noneMatch(value -> value.workspaceId().equals(project.workspaceId()))) {
-            throw new IllegalArgumentException("UNKNOWN_WORKSPACE");
-        }
-        List<Project> values = read("projects.json", new TypeReference<>() {});
-        ensureUnique(values.stream().map(Project::projectId).toList(), project.projectId(), "PROJECT_EXISTS");
-        values.add(project);
-        write("projects.json", values);
+        withExclusiveMutation("REGISTER_PROJECT", () -> {
+            List<Workspace> workspaces = read("workspaces.json", new TypeReference<>() {});
+            if (workspaces.stream().noneMatch(value -> value.workspaceId().equals(project.workspaceId()))) {
+                throw new IllegalArgumentException("UNKNOWN_WORKSPACE");
+            }
+            List<Project> values = read("projects.json", new TypeReference<>() {});
+            ensureUnique(values.stream().map(Project::projectId).toList(),
+                    project.projectId(), "PROJECT_EXISTS");
+            values.add(project);
+            write("projects.json", values);
+        });
     }
 
     public synchronized void registerTarget(RegisteredTarget target) throws Exception {
-        List<Project> projects = read("projects.json", new TypeReference<>() {});
-        if (projects.stream().noneMatch(value -> value.projectId().equals(target.projectId()))) {
-            throw new IllegalArgumentException("UNKNOWN_PROJECT");
-        }
-        List<RegisteredTarget> values = read("targets.json", new TypeReference<>() {});
-        ensureUnique(values.stream().map(value -> value.target().targetId()).toList(),
-                target.target().targetId(), "TARGET_EXISTS");
-        values.add(target);
-        write("targets.json", values);
+        withExclusiveMutation("REGISTER_TARGET", () -> {
+            List<Project> projects = read("projects.json", new TypeReference<>() {});
+            if (projects.stream().noneMatch(value -> value.projectId().equals(target.projectId()))) {
+                throw new IllegalArgumentException("UNKNOWN_PROJECT");
+            }
+            List<RegisteredTarget> values = read("targets.json", new TypeReference<>() {});
+            ensureUnique(values.stream().map(value -> value.target().targetId()).toList(),
+                    target.target().targetId(), "TARGET_EXISTS");
+            values.add(target);
+            write("targets.json", values);
+        });
     }
 
     public synchronized ValidationTarget requireTarget(String targetId) throws Exception {
@@ -89,6 +104,22 @@ public final class ProductCatalog {
                 .filter(value -> value.projectId().equals(projectId)).toList();
     }
 
+    public synchronized long revision() throws Exception {
+        if (!Files.isRegularFile(revisionFile)) return 0;
+        return mapper.readTree(revisionFile.toFile()).path("revision").asLong(0);
+    }
+
+    private void withExclusiveMutation(String operation, CheckedRunnable mutation) throws Exception {
+        Files.createDirectories(root);
+        try (FileChannel channel = FileChannel.open(lockFile,
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+             var ignored = channel.lock()) {
+            long before = revision();
+            mutation.run();
+            writeRevision(before + 1, operation);
+        }
+    }
+
     private <T> List<T> read(String name, TypeReference<List<T>> type) throws Exception {
         Path file = root.resolve(name);
         if (!Files.exists(file)) return new ArrayList<>();
@@ -100,10 +131,26 @@ public final class ProductCatalog {
         Path file = root.resolve(name);
         Path temporary = file.resolveSibling(file.getFileName() + ".tmp");
         mapper.writeValue(temporary.toFile(), value);
+        moveReplacing(temporary, file);
+    }
+
+    private void writeRevision(long revision, String operation) throws Exception {
+        Path temporary = revisionFile.resolveSibling(revisionFile.getFileName() + ".tmp");
+        mapper.writeValue(temporary.toFile(), Map.of(
+                "contract", "ONSURE_PRODUCT_CATALOG_REVISION_V1",
+                "revision", revision,
+                "operation", operation,
+                "updated_at", Instant.now().toString(),
+                "cross_process_lock", true));
+        moveReplacing(temporary, revisionFile);
+    }
+
+    private static void moveReplacing(Path source, Path target) throws Exception {
         try {
-            Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE);
         } catch (java.nio.file.AtomicMoveNotSupportedException e) {
-            Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -117,5 +164,10 @@ public final class ProductCatalog {
 
     private static void requireText(String value, String name) {
         if (value == null || value.isBlank()) throw new IllegalArgumentException(name);
+    }
+
+    @FunctionalInterface
+    private interface CheckedRunnable {
+        void run() throws Exception;
     }
 }
