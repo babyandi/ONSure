@@ -44,5 +44,10 @@
   "failure_conditions": [],
   "policy_violations": [],
   "evidence_refs": ["receipt-run-001", "receipt-run-002"],
-  "state": "BEHAVIOR_CANDIDATE"
+  "state": "BEHAVIOR_CANDIDATE",
+  "generated_at": "2026-07-26T00:00:00Z",
+  "learning_method": "REPEATED_EXECUTABLE_FIXTURE_OBSERVATION_V1",
+  "human_review": "NOT_RUN",
+  "independent_validation": "NOT_RUN",
+  "final_claim_allowed": false
 }
