@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/service-case-state.v1.schema.json",
+  "title": "ONSure Service Case State v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "case_id", "organization_id", "tenant_id", "workspace_id",
+    "service_type", "target_reference", "status", "preflight", "quote", "order",
+    "payment", "delivery", "refund", "deletion_receipt", "legal_hold",
+    "legal_hold_reason", "retention_state", "revision", "ledger_sequence", "ledger_head",
+    "created_at", "updated_at", "final_claim_allowed", "state_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_SERVICE_CASE_STATE_V1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "workspace_id": {"type": "string", "minLength": 1},
+    "service_type": {"type": "string", "minLength": 1},
+    "target_reference": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": [
+        "PREFLIGHT_REQUIRED", "PREFLIGHT_BLOCKED", "QUOTE_READY", "QUOTED",
+        "QUOTE_EXPIRED", "PAYMENT_PENDING", "PAYMENT_RECEIPT_RECORDED",
+        "PAYMENT_CONFIRMED", "PAYMENT_REJECTED", "IN_PROGRESS",
+        "DELIVERED_AWAITING_ACCEPTANCE", "DELIVERY_ACCEPTED", "REFUND_PENDING",
+        "REFUND_RECEIPT_RECORDED", "REFUNDED", "REFUND_REJECTED", "CANCELLED",
+        "CLOSED"
+      ]
+    },
+    "preflight": {"type": ["object", "null"], "additionalProperties": true},
+    "quote": {"type": ["object", "null"], "additionalProperties": true},
+    "order": {"type": ["object", "null"], "additionalProperties": true},
+    "payment": {"type": ["object", "null"], "additionalProperties": true},
+    "delivery": {"type": ["object", "null"], "additionalProperties": true},
+    "refund": {"type": ["object", "null"], "additionalProperties": true},
+    "deletion_receipt": {"type": ["object", "null"], "additionalProperties": true},
+    "legal_hold": {"type": "boolean"},
+    "legal_hold_reason": {"type": ["string", "null"]},
+    "legal_hold_updated_at": {"type": "string", "format": "date-time"},
+    "retention_state": {"enum": ["ACTIVE", "DELETED_SIGNED_EXTERNAL_VERIFICATION"]},
+    "cancellation_reason": {"type": "string"},
+    "cancelled_at": {"type": "string", "format": "date-time"},
+    "revision": {"type": "integer", "minimum": 1},
+    "ledger_sequence": {"type": "integer", "minimum": 1},
+    "ledger_head": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false},
+    "state_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
