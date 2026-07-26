@@ -1,0 +1,50 @@
+{
+  "contract": "ONSURE_CORE_MODULE_ISOLATION_V1",
+  "version": "1.0.0",
+  "parent_module": "onsure-parent",
+  "required_modules": [
+    "modules/onsure-core",
+    "modules/onsure-adapter-oruda",
+    "modules/onsure-cli",
+    "modules/onsure-test-fixtures"
+  ],
+  "core_module": {
+    "artifact_id": "onsure-core",
+    "forbidden_main_sources": [
+      "src/main/java/io/onsure/platform/OrudaTargetAdapter.java",
+      "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
+      "src/main/java/io/onsure/platform/oruda/"
+    ],
+    "forbidden_test_sources": [
+      "src/test/java/io/onsure/platform/oruda/"
+    ],
+    "forbidden_import_prefixes": [
+      "io.onsure.platform.oruda",
+      "io.onsure.platform.OrudaTargetAdapter"
+    ],
+    "required_fixture_scopes": [
+      "fixtures/e2e/general-program",
+      "fixtures/e2e/general-program-fixed",
+      "fixtures/e2e/ai-program"
+    ],
+    "forbidden_fixture_scopes": [
+      "fixtures/e2e/oruda-target",
+      "fixtures/oruda"
+    ]
+  },
+  "optional_oruda_module": {
+    "artifact_id": "onsure-adapter-oruda",
+    "depends_on": ["onsure-core"],
+    "may_write_onsure_final_decision": false,
+    "required_for_core_build": false
+  },
+  "acceptance": [
+    "CORE_COMPILES_WITHOUT_ORUDA_MODULE",
+    "CORE_TESTS_WITHOUT_ORUDA_SOURCES",
+    "CORE_GENERIC_AI_E2E_TWO_RUN_EQUAL",
+    "ORUDA_MODULE_REMOVAL_DOES_NOT_CHANGE_CORE_OUTPUT",
+    "INDEPENDENT_ASSURANCE_REMAINS_NOT_RUN"
+  ],
+  "runtime_execution_state": "NOT_RUN",
+  "final_claim_allowed": false
+}
