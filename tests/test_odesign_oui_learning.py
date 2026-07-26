@@ -168,3 +168,32 @@ def test_wikidocs_and_forum_discovery_is_kept_source_referenced():
         "design_system_extraction",
         "ax_outcome_measurement",
     }
+
+
+def test_direct_crawl_batch_closes_identified_method_gaps_without_promotion():
+    result = run()
+    atoms = [
+        atom for atoms in result["programs"].values() for atom in atoms
+        if any(
+            atom["atom_id"].split("-", 1)[1] == f"IDM-{number:03d}"
+            for number in range(30, 38)
+        )
+    ]
+    assert len(atoms) == 13
+    assert all(atom["state"] == "SOURCE_REFERENCED" for atom in atoms)
+    assert all(
+        atom["source_binding"]["access"].startswith("DIRECT_CRAWL_")
+        for atom in atoms
+    )
+    assert {
+        domain for atom in atoms for domain in atom["domains"]
+    } >= {
+        "research_gap_to_question",
+        "service_blueprint_contract",
+        "anti_dark_pattern_design",
+        "agent_design_change_control",
+        "design_agent_round_trip",
+        "parallel_design_exploration",
+        "design_intake_and_self_critique",
+        "typed_component_contract",
+    }
