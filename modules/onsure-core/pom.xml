@@ -9,23 +9,11 @@
     <relativePath>../../pom-modular.xml</relativePath>
   </parent>
   <artifactId>onsure-core</artifactId>
-
   <dependencies>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId></dependency>
+    <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jsr310</artifactId></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -37,9 +25,7 @@
             <id>add-shared-core-source</id>
             <phase>generate-sources</phase>
             <goals><goal>add-source</goal></goals>
-            <configuration>
-              <sources><source>${project.basedir}/../../src/main/java</source></sources>
-            </configuration>
+            <configuration><sources><source>${project.basedir}/../../src/main/java</source></sources></configuration>
           </execution>
         </executions>
       </plugin>
@@ -51,6 +37,7 @@
           <release>${maven.compiler.release}</release>
           <excludes>
             <exclude>io/onsure/platform/ONSureCli.java</exclude>
+            <exclude>io/onsure/platform/LocalAuthenticatedApiServer.java</exclude>
             <exclude>io/onsure/platform/OrudaTargetAdapter.java</exclude>
             <exclude>io/onsure/platform/ProductPlatformE2EMain.java</exclude>
             <exclude>io/onsure/platform/oruda/**</exclude>
