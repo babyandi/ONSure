@@ -13,6 +13,7 @@ import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -72,7 +73,8 @@ class OrudaMvf001E2ETest {
                 "ONSURE_ORUDA_MVF_POLICY_V1",
                 "LOCAL_MVF_E2E");
 
-        ValidationEngine.RunResult result = ValidationEngine.withOrudaAdapter(temp.resolve("runs")).run(target);
+        ValidationEngine.RunResult result = ValidationEngine.withOptionalAdapters(
+                temp.resolve("runs"), List.of(new OrudaTargetAdapter())).run(target);
         assertEquals(Decision.PASS, result.report().decision());
         assertEquals(17, result.report().fixtureResults().size());
         assertTrue(result.report().fixtureResults().stream()
