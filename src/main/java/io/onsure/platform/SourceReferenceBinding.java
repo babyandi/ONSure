@@ -1,7 +1,6 @@
 package io.onsure.platform;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -29,18 +28,23 @@ public final class SourceReferenceBinding {
         }
         if (reference.startsWith("git:")) {
             String commit = reference.substring("git:".length());
-            if (!commit.matches("[0-9a-f]{40}")) {
+            if (!commit.matches("[0-9a-f]{40}|[0-9a-f]{64}")) {
                 throw new IllegalStateException("IMMUTABLE_GIT_REFERENCE_INVALID");
             }
             String head = runGit(root, List.of("rev-parse", "HEAD")).strip();
             if (!commit.equals(head)) {
                 throw new IllegalStateException("IMMUTABLE_GIT_HEAD_MISMATCH");
             }
-            String dirty = runGit(root, List.of("status", "--porcelain", "--untracked-files=no"));
+            String dirty = runGit(root, List.of(
+                    "status", "--porcelain", "--untracked-files=all", "--", "."));
             if (!dirty.isBlank()) {
-                throw new IllegalStateException("IMMUTABLE_GIT_WORKTREE_DIRTY");
+                throw new IllegalStateException("IMMUTABLE_GIT_WORKTREE_DIRTY_OR_UNTRACKED");
             }
-            return new Verification("GIT_COMMIT", reference, treeDigest);
+            String recalculated = Hashing.tree(root);
+            if (!treeDigest.equals(recalculated)) {
+                throw new IllegalStateException("IMMUTABLE_GIT_TREE_DIGEST_DRIFT");
+            }
+            return new Verification("GIT_COMMIT_AND_TRACKED_TREE", reference, treeDigest);
         }
         throw new IllegalStateException("IMMUTABLE_SOURCE_REFERENCE_UNVERIFIED");
     }
@@ -64,7 +68,8 @@ public final class SourceReferenceBinding {
         }
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         if (process.exitValue() != 0) {
-            throw new IllegalStateException("IMMUTABLE_GIT_REFERENCE_UNVERIFIED:" + output.strip());
+            throw new IllegalStateException(
+                    "IMMUTABLE_GIT_REFERENCE_UNVERIFIED:" + output.strip());
         }
         return output;
     }
