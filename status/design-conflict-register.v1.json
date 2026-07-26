@@ -1,0 +1,78 @@
+{
+  "contract": "ONSURE_DESIGN_CONFLICT_REGISTER_V1",
+  "assessment_date": "2026-07-26",
+  "items": [
+    {
+      "id": "CONFLICT-001",
+      "severity": "P0",
+      "subject": "Standalone core versus ORUDA required preflight",
+      "authority": "README.md",
+      "conflicting_paths": ["scripts/preflight-local-assurance.sh", "src/main/java/io/onsure/platform/ValidationEngine.java"],
+      "resolution": "Core profile must not require ORUDA; ORUDA becomes an explicit optional profile.",
+      "state": "REMEDIATION_IN_BRANCH"
+    },
+    {
+      "id": "CONFLICT-002",
+      "severity": "P0",
+      "subject": "Three incompatible state models",
+      "authority": "docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md",
+      "conflicting_paths": ["src/main/java/io/onsure/platform/ValidationModel.java", "contracts/state-machine.v1.json"],
+      "resolution": "Keep product lifecycle, validation run and assurance publication state machines separate and map them explicitly.",
+      "state": "OPEN_RUNTIME_REFACTOR"
+    },
+    {
+      "id": "CONFLICT-003",
+      "severity": "P0",
+      "subject": "Product implementation complete claim versus official status",
+      "authority": "status/implementation-matrix.v1.json",
+      "conflicting_paths": ["docs/development/ONSURE_PRODUCT_IMPLEMENTATION_STATUS_v1.md", "status/implementation-status.v1.json"],
+      "resolution": "Replace completion claim with validator-slice status and current source-bound evidence status.",
+      "state": "REMEDIATION_IN_BRANCH"
+    },
+    {
+      "id": "CONFLICT-004",
+      "severity": "P1",
+      "subject": "Product E2E naming versus executed fixture scope",
+      "authority": "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
+      "conflicting_paths": ["src/main/java/io/onsure/platform/ProductPlatformE2EMain.java", "scripts/run-product-platform-e2e.sh"],
+      "resolution": "Treat current run as validator fixture E2E; reserve product Full-Chain for VS Code, runtime, patch, Git and restore flow.",
+      "state": "OPEN_RUNTIME_REFACTOR"
+    },
+    {
+      "id": "CONFLICT-005",
+      "severity": "P1",
+      "subject": "AI behavior validation name versus marker scan implementation",
+      "authority": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
+      "conflicting_paths": ["src/main/java/io/onsure/platform/BuiltInStages.java"],
+      "resolution": "Rename the existing stage to policy marker scan or implement actual repeated agent/model/tool execution.",
+      "state": "OPEN_RUNTIME_REFACTOR"
+    },
+    {
+      "id": "CONFLICT-006",
+      "severity": "P1",
+      "subject": "RCA completion versus template-only inference",
+      "authority": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
+      "conflicting_paths": ["src/main/java/io/onsure/platform/BuiltInStages.java"],
+      "resolution": "Template output must be RCA_CANDIDATE until reproduction, first-failure and causal evidence are bound.",
+      "state": "OPEN_RUNTIME_REFACTOR"
+    },
+    {
+      "id": "CONFLICT-007",
+      "severity": "P1",
+      "subject": "Git SHA and artifact SHA validation",
+      "authority": "contracts/evidence-receipt.v1.schema.json",
+      "conflicting_paths": ["src/main/java/io/onsure/learning/OfficialLearningLedger.java"],
+      "resolution": "Use 40 or 64 hex for Git object identity and exactly 64 hex for SHA-256 artifact digests.",
+      "state": "OPEN_RUNTIME_REFACTOR"
+    },
+    {
+      "id": "CONFLICT-008",
+      "severity": "P1",
+      "subject": "README links versus actual document names",
+      "authority": "docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md",
+      "conflicting_paths": ["README.md"],
+      "resolution": "Replace broken links with current authoritative files.",
+      "state": "REMEDIATION_IN_BRANCH"
+    }
+  ]
+}
