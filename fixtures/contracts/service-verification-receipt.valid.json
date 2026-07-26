@@ -5,6 +5,7 @@
   "approval_purpose": "PAYMENT_VERIFICATION",
   "nonce": "nonce-payment-verify-0001",
   "case_id": "case-sample-001",
+  "case_revision": 5,
   "verification_type": "PAYMENT",
   "provider": "provider-sample",
   "provider_receipt_id": "provider-receipt-001",
