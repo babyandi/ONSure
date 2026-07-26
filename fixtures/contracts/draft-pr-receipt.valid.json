@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_DRAFT_PR_RECEIPT_V1",
+  "change_set_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "delivery_approval_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "approval_actor": "reviewer@example.invalid",
+  "approval_key_id": "ed25519:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "branch": "fix/sample-approved-patch",
+  "commit_sha": "dddddddddddddddddddddddddddddddddddddddd",
+  "remote": "origin",
+  "base_branch": "main",
+  "draft_pr_url": "https://github.com/example/example/pull/1",
+  "draft": true,
+  "merge_authorized": false,
+  "created_at": "2026-07-26T00:00:00Z",
+  "final_claim_allowed": false,
+  "receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}
