@@ -1,0 +1,27 @@
+{
+  "contract": "ONSURE_OREVIEW_RESULT_V1",
+  "review_id": "REVIEW-sample-001",
+  "target_id": "sample-target",
+  "source_tree_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "program_profile_id": "profile-sample-001",
+  "execution_plan_id": "PLAN-aaaaaaaaaaaaaaaa",
+  "domains": [
+    {"domain":"REQUIREMENT_TRACEABILITY","decision":"HOLD","evidence_refs":["program-profile.json#unknowns"],"observations":["Atomic requirement reconciliation is pending."],"recommendation":"Complete atomic traceability."},
+    {"domain":"ARCHITECTURE","decision":"PASS","evidence_refs":["program-profile.json#components"],"observations":["Components were recalculated."],"recommendation":"Confirm with runtime trace."},
+    {"domain":"POLICY_AND_APPROVAL","decision":"PASS","evidence_refs":["execution-plan.json#approval"],"observations":["Development scope is approved."],"recommendation":"Reapprove scope changes."},
+    {"domain":"CODE","decision":"PASS","evidence_refs":[],"observations":["No blocking source marker was found."],"recommendation":"Run compiler and runtime tests."},
+    {"domain":"AI_BEHAVIOR","decision":"NOT_APPLICABLE","evidence_refs":[],"observations":["The target is general software."],"recommendation":"None."},
+    {"domain":"SECURITY","decision":"PASS","evidence_refs":[],"observations":["Known security categories were evaluated."],"recommendation":"Run dependency and container scans."},
+    {"domain":"PERFORMANCE","decision":"HOLD","evidence_refs":["execution-plan.json#resource_budget"],"observations":["A resource budget exists."],"recommendation":"Run quantitative benchmarks."},
+    {"domain":"TEST_QUALITY","decision":"PASS","evidence_refs":["fixture-registry.json"],"observations":["Executable fixtures are registered."],"recommendation":"Add blind acceptance tests."},
+    {"domain":"PRODUCT_QUALITY","decision":"PASS","evidence_refs":["program-profile.json#conflicts"],"observations":["No static conflict was recorded."],"recommendation":"Obtain owner review."},
+    {"domain":"MERGE_READINESS","decision":"NOT_APPLICABLE","evidence_refs":[],"observations":["This run does not authorize merge."],"recommendation":"Use approved worktree and Draft PR workflow."}
+  ],
+  "quality_decision": "HOLD",
+  "review_execution": "PASS",
+  "independent_reviewer": "NOT_RUN",
+  "merge_authorized": false,
+  "final_claim_allowed": false,
+  "generated_at": "2026-07-26T00:00:00Z",
+  "review_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}
