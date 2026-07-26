@@ -1,0 +1,34 @@
+{
+  "contract": "ONSURE_ATOMIC_REQUIREMENT_OVERRIDES_V1",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "match": {"document": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"},
+      "capability_group": "PRODUCT_REQUIREMENTS",
+      "review_required": true
+    },
+    {
+      "match": {"document_prefix": "docs/master/"},
+      "capability_group": "MASTER_DESIGN",
+      "review_required": true
+    },
+    {
+      "match": {"document_prefix": "docs/v2/"},
+      "capability_group": "V2_PRODUCT_AND_COMMERCE",
+      "review_required": true
+    },
+    {
+      "match": {"document_prefix": "docs/security/"},
+      "capability_group": "SECURITY_AND_ASSURANCE",
+      "review_required": true
+    },
+    {
+      "match": {"document_prefix": "docs/operations/"},
+      "capability_group": "OPERATIONS",
+      "review_required": true
+    }
+  ],
+  "requirement_overrides": {},
+  "unreviewed_override_policy": "HOLD",
+  "final_claim_allowed": false
+}
