@@ -3,7 +3,6 @@ package io.onsure.platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.Decision;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -23,6 +22,7 @@ import java.util.TreeMap;
 /** Executes registered scenarios repeatedly and materializes an evidence-bound Behavior Profile. */
 public final class BehaviorLearningService {
     public static final String CONTRACT = "ONSURE_BEHAVIOR_PROFILE_V1";
+    public static final String OBSERVATION_RECEIPT_CONTRACT = "ONSURE_BEHAVIOR_OBSERVATION_RECEIPT_V1";
     private static final int MIN_REPETITIONS = 2;
     private static final int MAX_REPETITIONS = 10;
 
@@ -49,7 +49,22 @@ public final class BehaviorLearningService {
         }
 
         String sourceDigest = Hashing.tree(target.sourceRoot());
+        String profileId = "BP-" + sourceDigest.substring(0, 16) + "-" + repetitions;
+        Path output = outputFile.toAbsolutePath().normalize();
+        Path receiptDirectory = output.resolveSibling(profileId + "-receipts");
+        if (Files.exists(receiptDirectory)) {
+            throw new IllegalStateException("BEHAVIOR_RECEIPT_DIRECTORY_ALREADY_EXISTS");
+        }
+        Files.createDirectories(receiptDirectory);
+
         FixtureHarness harness = new FixtureHarness("ONSURE_BEHAVIOR_LEARNING_HARNESS_V1");
+        String environmentDigest = environmentDigest(target, adapter, harness);
+        Map<String, Object> targetMetadata = adapter.collectTargetMetadata(target);
+        boolean directTelemetry = Boolean.TRUE.equals(targetMetadata.get("direct_behavior_telemetry"));
+        String coverageClass = directTelemetry
+                ? "DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY"
+                : "EXECUTABLE_FIXTURE_PROCESS_PROXY";
+
         List<Map<String, Object>> observations = new ArrayList<>();
         Map<String, Set<String>> outputByScenario = new TreeMap<>();
         Set<String> failureConditions = new LinkedHashSet<>();
@@ -67,22 +82,49 @@ public final class BehaviorLearningService {
                         "command", fixture.command(),
                         "environment", new TreeMap<>(fixture.environment()))));
                 String outputDigest = execution.outputSha256();
-                String receiptId = "BEH-" + fixture.fixtureId() + "-" + iteration + "-"
+                String receiptId = "BEH-" + sanitize(fixture.fixtureId()) + "-" + iteration + "-"
                         + outputDigest.substring(0, 12);
+                Map<String, Object> receipt = new LinkedHashMap<>();
+                receipt.put("contract", OBSERVATION_RECEIPT_CONTRACT);
+                receipt.put("receipt_id", receiptId);
+                receipt.put("profile_id", profileId);
+                receipt.put("program_profile_id", requireId(programProfileId, "PROGRAM_PROFILE_ID_INVALID"));
+                receipt.put("source_baseline_hash", sourceDigest);
+                receipt.put("scenario_id", fixture.fixtureId());
+                receipt.put("iteration", iteration);
+                receipt.put("input_digest", inputDigest);
+                receipt.put("output_digest", outputDigest);
+                receipt.put("command", execution.command());
+                receipt.put("decision", execution.result().decision().name());
+                receipt.put("exit_code", execution.exitCode());
+                receipt.put("timed_out", execution.timedOut());
+                receipt.put("duration_ms", execution.durationMillis());
+                receipt.put("environment_digest", environmentDigest);
+                receipt.put("coverage_class", coverageClass);
+                receipt.put("created_at", Instant.now().toString());
+                receipt.put("final_claim_allowed", false);
+                receipt.put("receipt_sha256", sha256(mapper.writeValueAsBytes(receipt)));
+                Path receiptFile = receiptDirectory.resolve(receiptId + ".json");
+                writeAtomic(receiptFile, receipt);
+                String receiptFileSha = Hashing.file(receiptFile);
+
                 Map<String, Object> observation = new LinkedHashMap<>();
                 observation.put("scenario_id", fixture.fixtureId());
                 observation.put("iteration", iteration);
                 observation.put("input_digest", inputDigest);
                 observation.put("output_digest", outputDigest);
                 observation.put("tool_calls", execution.command());
+                observation.put("tool_call_observation", directTelemetry ? "DIRECT" : "PROCESS_COMMAND_PROXY");
                 observation.put("decision", execution.result().decision().name());
                 observation.put("duration_ms", execution.durationMillis());
                 observation.put("run_receipt_id", receiptId);
+                observation.put("run_receipt_path", receiptFile.toString());
+                observation.put("run_receipt_file_sha256", receiptFileSha);
                 observations.add(Map.copyOf(observation));
                 outputByScenario.computeIfAbsent(fixture.fixtureId(), ignored -> new HashSet<>())
                         .add(outputDigest);
                 allOutputs.add(outputDigest);
-                evidenceRefs.add(receiptId);
+                evidenceRefs.add("receipt-file:sha256:" + receiptFileSha);
                 if (execution.result().decision() != Decision.PASS) {
                     failureConditions.add(fixture.fixtureId() + ":"
                             + execution.result().decision().name());
@@ -97,22 +139,21 @@ public final class BehaviorLearningService {
         List<String> unstable = outputByScenario.entrySet().stream()
                 .filter(entry -> entry.getValue().size() > 1)
                 .map(Map.Entry::getKey)
-                .sorted()
-                .toList();
-        boolean stable = unstable.isEmpty();
-        String environmentDigest = environmentDigest(target, adapter, harness);
+                .sorted().toList();
         Map<String, Object> profile = new LinkedHashMap<>();
         profile.put("contract", CONTRACT);
-        profile.put("profile_id", "BP-" + sourceDigest.substring(0, 16) + "-" + repetitions);
+        profile.put("profile_id", profileId);
         profile.put("program_profile_id", requireId(programProfileId, "PROGRAM_PROFILE_ID_INVALID"));
         profile.put("source_baseline_hash", sourceDigest);
+        profile.put("coverage_class", coverageClass);
+        profile.put("direct_behavior_telemetry", directTelemetry);
         profile.put("runtime_context", Map.of(
                 "harness_id", harness.harnessId(),
                 "execution_profile", target.executionProfile(),
-                "model_id", metadata(adapter, target, "model_id", "NOT_DECLARED"),
-                "model_version", metadata(adapter, target, "model_version", "NOT_DECLARED"),
-                "prompt_digest", metadataDigest(adapter, target, "prompt_digest"),
-                "tool_registry_digest", metadataDigest(adapter, target, "tool_registry_digest"),
+                "model_id", metadata(targetMetadata, "model_id", "NOT_DECLARED"),
+                "model_version", metadata(targetMetadata, "model_version", "NOT_DECLARED"),
+                "prompt_digest", metadataDigest(targetMetadata, "prompt_digest"),
+                "tool_registry_digest", metadataDigest(targetMetadata, "tool_registry_digest"),
                 "environment_digest", environmentDigest));
         profile.put("observations", List.copyOf(observations));
         profile.put("variability", Map.of(
@@ -120,17 +161,19 @@ public final class BehaviorLearningService {
                 "scenario_count", fixtures.size(),
                 "distinct_output_count", allOutputs.size(),
                 "unstable_scenarios", unstable,
-                "stable", stable));
+                "stable", unstable.isEmpty()));
         profile.put("failure_conditions", List.copyOf(failureConditions));
         profile.put("policy_violations", List.copyOf(policyViolations));
         profile.put("evidence_refs", List.copyOf(evidenceRefs));
+        profile.put("receipt_directory", receiptDirectory.toString());
         profile.put("state", "BEHAVIOR_CANDIDATE");
         profile.put("generated_at", Instant.now().toString());
         profile.put("learning_method", "REPEATED_EXECUTABLE_FIXTURE_OBSERVATION_V1");
         profile.put("human_review", "NOT_RUN");
         profile.put("independent_validation", "NOT_RUN");
         profile.put("final_claim_allowed", false);
-        writeAtomic(outputFile, profile);
+        profile.put("profile_sha256", sha256(mapper.writeValueAsBytes(profile)));
+        writeAtomic(output, profile);
         return Map.copyOf(profile);
     }
 
@@ -150,19 +193,13 @@ public final class BehaviorLearningService {
         return sha256(mapper.writeValueAsBytes(environment));
     }
 
-    private static String metadata(
-            TargetAdapter adapter, ValidationModel.ValidationTarget target, String key, String fallback) {
-        try {
-            Object value = adapter.collectTargetMetadata(target).get(key);
-            return value instanceof String text && !text.isBlank() ? text : fallback;
-        } catch (Exception ignored) {
-            return fallback;
-        }
+    private static String metadata(Map<String, Object> metadata, String key, String fallback) {
+        Object value = metadata.get(key);
+        return value instanceof String text && !text.isBlank() ? text : fallback;
     }
 
-    private static String metadataDigest(
-            TargetAdapter adapter, ValidationModel.ValidationTarget target, String key) {
-        String value = metadata(adapter, target, key, "NOT_AVAILABLE");
+    private static String metadataDigest(Map<String, Object> metadata, String key) {
+        String value = metadata(metadata, key, "NOT_AVAILABLE");
         return value.matches("[0-9a-f]{64}") ? value : "NOT_AVAILABLE";
     }
 
@@ -184,6 +221,11 @@ public final class BehaviorLearningService {
             throw new IllegalArgumentException(error);
         }
         return value;
+    }
+
+    private static String sanitize(String value) {
+        String sanitized = value.replaceAll("[^A-Za-z0-9._-]", "-");
+        return sanitized.length() > 80 ? sanitized.substring(0, 80) : sanitized;
     }
 
     private static String sha256(byte[] value) throws Exception {
