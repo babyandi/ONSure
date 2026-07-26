@@ -6,7 +6,6 @@
   <artifactId>onsure-modular-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,7 +15,6 @@
     <compiler.version>3.13.0</compiler.version>
     <surefire.version>3.5.2</surefire.version>
   </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -36,10 +34,10 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
   <modules>
     <module>modules/onsure-core</module>
     <module>modules/onsure-cli</module>
+    <module>modules/onsure-local-api</module>
     <module>modules/onsure-test-fixtures</module>
     <module>modules/onsure-adapter-oruda</module>
   </modules>
