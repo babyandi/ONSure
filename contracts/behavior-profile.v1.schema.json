@@ -4,7 +4,12 @@
   "title": "ONSure Behavior Profile v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contract", "profile_id", "program_profile_id", "source_baseline_hash", "observations", "variability", "failure_conditions", "policy_violations", "evidence_refs", "state"],
+  "required": [
+    "contract", "profile_id", "program_profile_id", "source_baseline_hash",
+    "observations", "variability", "failure_conditions", "policy_violations",
+    "evidence_refs", "model_versions", "prompt_versions", "tool_versions",
+    "environment_versions", "state", "generated_at", "verification_state"
+  ],
   "properties": {
     "contract": {"const": "ONSURE_BEHAVIOR_PROFILE_V1"},
     "profile_id": {"type": "string", "minLength": 1},
@@ -12,33 +17,57 @@
     "source_baseline_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "observations": {
       "type": "array",
+      "minItems": 2,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["scenario_id", "input_digest", "output_digest", "tool_calls", "decision", "run_receipt_id"],
+        "required": [
+          "scenario_id", "input_digest", "output_digest", "tool_calls", "decision",
+          "run_receipt_id", "run_index", "exit_code", "timed_out",
+          "sandbox_profile", "environment_digest"
+        ],
         "properties": {
           "scenario_id": {"type": "string", "minLength": 1},
           "input_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "output_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "tool_calls": {"type": "array", "items": {"type": "string"}},
           "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]},
-          "run_receipt_id": {"type": "string", "minLength": 1}
+          "run_receipt_id": {"type": "string", "minLength": 1},
+          "run_index": {"type": "integer", "minimum": 1},
+          "exit_code": {"type": "integer"},
+          "timed_out": {"type": "boolean"},
+          "sandbox_profile": {"enum": ["REVIEWED_LOCAL_NONFINAL", "STRICT_BWRAP"]},
+          "environment_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
         }
       }
     },
     "variability": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repeated_run_count", "distinct_output_count", "stable"],
+      "required": [
+        "repeated_run_count", "total_observation_count", "distinct_output_count",
+        "per_scenario_distinct_output_count", "stable"
+      ],
       "properties": {
-        "repeated_run_count": {"type": "integer", "minimum": 1},
+        "repeated_run_count": {"type": "integer", "minimum": 2},
+        "total_observation_count": {"type": "integer", "minimum": 2},
         "distinct_output_count": {"type": "integer", "minimum": 1},
+        "per_scenario_distinct_output_count": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 1}
+        },
         "stable": {"type": "boolean"}
       }
     },
-    "failure_conditions": {"type": "array", "items": {"type": "string"}},
-    "policy_violations": {"type": "array", "items": {"type": "string"}},
-    "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
-    "state": {"enum": ["BEHAVIOR_CANDIDATE", "BEHAVIOR_VERIFIED", "BEHAVIOR_ACTIVE", "STALE", "HOLD"]}
+    "failure_conditions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "policy_violations": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "model_versions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "prompt_versions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "tool_versions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "environment_versions": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "state": {"enum": ["BEHAVIOR_CANDIDATE", "BEHAVIOR_VERIFIED", "BEHAVIOR_ACTIVE", "STALE", "HOLD"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "verification_state": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD", "BLOCKED", "INCONCLUSIVE"]}
   }
 }
