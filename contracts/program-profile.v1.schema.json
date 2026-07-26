@@ -7,7 +7,8 @@
   "required": [
     "contract", "profile_id", "project_id", "program_id", "source_baseline",
     "purpose", "components", "dependencies", "ai_components", "data_flows",
-    "unknowns", "conflicts", "evidence_refs", "revision", "state"
+    "unknowns", "conflicts", "evidence_refs", "revision", "state",
+    "generated_at", "learning_scope", "dynamic_trace_state", "verification_state"
   ],
   "properties": {
     "contract": {"const": "ONSURE_PROGRAM_PROFILE_V1"},
@@ -17,23 +18,45 @@
     "source_baseline": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["git_commit_sha", "source_tree_sha256", "clean"],
+      "required": ["source_type", "source_ref", "git_commit_sha", "source_tree_sha256", "clean"],
       "properties": {
-        "git_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+        "source_type": {"enum": ["GIT", "ARCHIVE"]},
+        "source_ref": {
+          "type": "string",
+          "pattern": "^(?:git:[0-9a-f]{40}|git:[0-9a-f]{64}|sha256:[0-9a-f]{64})$"
+        },
+        "git_commit_sha": {
+          "type": ["string", "null"],
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
         "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "clean": {"type": "boolean"}
-      }
+        "clean": {"const": true}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"source_type": {"const": "GIT"}}},
+          "then": {"properties": {"git_commit_sha": {"type": "string"}}}
+        },
+        {
+          "if": {"properties": {"source_type": {"const": "ARCHIVE"}}},
+          "then": {"properties": {"git_commit_sha": {"type": "null"}}}
+        }
+      ]
     },
     "purpose": {"type": "string", "minLength": 1},
     "components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "dependencies": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "ai_components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "data_flows": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
-    "unknowns": {"type": "array", "items": {"type": "string"}},
-    "conflicts": {"type": "array", "items": {"type": "string"}},
-    "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "unknowns": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "conflicts": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
     "revision": {"type": "integer", "minimum": 1},
-    "state": {"enum": ["PROFILE_CANDIDATE", "PROFILE_REVIEWED", "PROFILE_ACTIVE", "STALE", "HOLD"]}
+    "state": {"enum": ["PROFILE_CANDIDATE", "PROFILE_REVIEWED", "PROFILE_ACTIVE", "STALE", "HOLD"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "learning_scope": {"const": "STATIC_REPOSITORY_UNDERSTANDING_CANDIDATE"},
+    "dynamic_trace_state": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD", "BLOCKED"]},
+    "verification_state": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD", "BLOCKED", "INCONCLUSIVE"]}
   },
   "$defs": {
     "evidenceBoundItem": {
@@ -44,7 +67,7 @@
         "id": {"type": "string", "minLength": 1},
         "name": {"type": "string", "minLength": 1},
         "kind": {"type": "string", "minLength": 1},
-        "source_locations": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "source_locations": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
         "verified": {"type": "boolean"}
       }
