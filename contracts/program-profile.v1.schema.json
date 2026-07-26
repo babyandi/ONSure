@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/program-profile.v1.schema.json",
+  "title": "ONSure Program Profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "profile_id", "project_id", "program_id", "source_baseline",
+    "purpose", "components", "dependencies", "ai_components", "data_flows",
+    "unknowns", "conflicts", "evidence_refs", "revision", "state"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PROGRAM_PROFILE_V1"},
+    "profile_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "program_id": {"type": "string", "minLength": 1},
+    "source_baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["git_commit_sha", "source_tree_sha256", "clean"],
+      "properties": {
+        "git_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+        "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "clean": {"type": "boolean"}
+      }
+    },
+    "purpose": {"type": "string", "minLength": 1},
+    "components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
+    "dependencies": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
+    "ai_components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
+    "data_flows": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "conflicts": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "state": {"enum": ["PROFILE_CANDIDATE", "PROFILE_REVIEWED", "PROFILE_ACTIVE", "STALE", "HOLD"]}
+  },
+  "$defs": {
+    "evidenceBoundItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "kind", "source_locations", "confidence", "verified"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "source_locations": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "verified": {"type": "boolean"}
+      }
+    }
+  }
+}
