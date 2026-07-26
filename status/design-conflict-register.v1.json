@@ -1,15 +1,22 @@
 {
   "contract": "ONSURE_DESIGN_CONFLICT_REGISTER_V1",
+  "version": "1.1.0",
   "assessment_date": "2026-07-26",
   "items": [
     {
       "id": "CONFLICT-001",
       "severity": "P0",
-      "subject": "Standalone core versus ORUDA required preflight",
-      "authority": "README.md",
-      "conflicting_paths": ["scripts/preflight-local-assurance.sh", "src/main/java/io/onsure/platform/ValidationEngine.java"],
-      "resolution": "Core profile no longer requires ORUDA and the default engine registers only the Generic adapter.",
-      "state": "REMEDIATED_NOT_RUN"
+      "subject": "Standalone core versus ORUDA compile-time and runtime dependency",
+      "authority": "contracts/core-extension-boundary.v1.json",
+      "conflicting_paths": [
+        "pom.xml",
+        "src/main/java/io/onsure/platform/ValidationEngine.java",
+        "src/main/java/io/onsure/platform/FileValidationStore.java",
+        "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
+        "src/main/java/io/onsure/platform/oruda"
+      ],
+      "resolution": "Runtime registration is separated, but Maven modules, Core imports, tests and E2E must be physically separated.",
+      "state": "OPEN_MODULE_SPLIT"
     },
     {
       "id": "CONFLICT-002",
@@ -17,7 +24,7 @@
       "subject": "Incompatible state models",
       "authority": "contracts/state-model-mapping.v1.json",
       "conflicting_paths": ["docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md", "src/main/java/io/onsure/platform/ValidationModel.java", "contracts/state-machine.v1.json"],
-      "resolution": "Program, validation, improvement, Git and assurance publication machines are separated by an explicit mapping contract; Java model migration remains.",
+      "resolution": "Machines are contract-mapped; Java persistence and transition migration remain.",
       "state": "CONTRACT_MAPPED_RUNTIME_PARTIAL"
     },
     {
@@ -27,7 +34,7 @@
       "authority": "status/implementation-matrix.v1.json",
       "conflicting_paths": ["docs/development/ONSURE_PRODUCT_IMPLEMENTATION_STATUS_v1.md", "status/implementation-status.v1.json"],
       "resolution": "Completion claim was replaced with validator-slice and product Full-Chain status.",
-      "state": "REMEDIATED_NOT_RUN"
+      "state": "REMEDIATED_NONFINAL"
     },
     {
       "id": "CONFLICT-004",
@@ -35,8 +42,8 @@
       "subject": "Product E2E naming versus executed fixture scope",
       "authority": "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
       "conflicting_paths": ["src/main/java/io/onsure/platform/ProductPlatformE2EMain.java", "scripts/run-product-platform-e2e.sh", "scripts/run-onsure-development-gate.sh"],
-      "resolution": "The runner, receipts and development gate now identify the scope as Validator Fixture E2E and preserve Product Full-Chain as NOT_RUN.",
-      "state": "REMEDIATED_NOT_RUN"
+      "resolution": "Names were corrected to Validator Fixture E2E, but Core and ORUDA runners remain combined.",
+      "state": "PARTIAL_RUNNER_SPLIT_REQUIRED"
     },
     {
       "id": "CONFLICT-005",
@@ -44,7 +51,7 @@
       "subject": "AI behavior validation name versus marker scan implementation",
       "authority": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
       "conflicting_paths": ["src/main/java/io/onsure/platform/BuiltInStages.java"],
-      "resolution": "Rename the existing stage to policy marker scan or implement actual repeated agent/model/tool execution.",
+      "resolution": "Rename the existing stage to policy marker scan or implement repeated agent/model/tool execution.",
       "state": "OPEN_RUNTIME_REFACTOR"
     },
     {
@@ -53,17 +60,17 @@
       "subject": "RCA completion versus template-only inference",
       "authority": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
       "conflicting_paths": ["src/main/java/io/onsure/platform/BuiltInStages.java"],
-      "resolution": "Template output must be RCA_CANDIDATE until reproduction, first-failure and causal evidence are bound.",
+      "resolution": "Template output must remain RCA_CANDIDATE until reproduction, first-failure and causal evidence are bound.",
       "state": "OPEN_RUNTIME_REFACTOR"
     },
     {
       "id": "CONFLICT-007",
       "severity": "P1",
-      "subject": "Git SHA and artifact SHA validation",
+      "subject": "Git source identity versus generic filesystem tree hashing",
       "authority": "contracts/evidence-receipt.v1.schema.json",
-      "conflicting_paths": ["src/main/java/io/onsure/learning/OfficialLearningLedger.java"],
-      "resolution": "Use 40 or 64 hex for Git object identity and exactly 64 hex for SHA-256 artifact digests.",
-      "state": "OPEN_RUNTIME_REFACTOR"
+      "conflicting_paths": ["src/main/java/io/onsure/platform/Hashing.java", "src/main/java/io/onsure/platform/SourceReferenceBinding.java", "src/main/java/io/onsure/learning/OfficialLearningLedger.java"],
+      "resolution": "Use tracked Git objects for source identity, include untracked influence in the fail-closed check, and distinguish Git object IDs from SHA-256 artifact digests.",
+      "state": "OPEN_SOURCE_BINDING_REFACTOR"
     },
     {
       "id": "CONFLICT-008",
@@ -72,7 +79,7 @@
       "authority": "docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md",
       "conflicting_paths": ["README.md"],
       "resolution": "Broken links were replaced with current authoritative files.",
-      "state": "REMEDIATED_STATIC"
+      "state": "REMEDIATED_STATIC_NOT_RUN"
     },
     {
       "id": "CONFLICT-009",
@@ -80,8 +87,26 @@
       "subject": "PR 17 completion claims versus candidate files",
       "authority": "fixtures/learning/odesign-oui/expert-competency-framework.v1.json",
       "conflicting_paths": ["pull/17", "fixtures/learning/odesign-oui/expert-competency-framework.v1.json", "fixtures/learning/odesign-oui/expert-task-bank.v1.json"],
-      "resolution": "The candidate set was integrated through PR 18 with CANDIDATE_ONLY assurance. Blind execution, human outcome, independent receipts and expert promotion remain HOLD.",
-      "state": "INTEGRATED_CANDIDATE_ONLY"
+      "resolution": "PR 17 was closed and integrated as a CANDIDATE_ONLY set with expert and independent gates on HOLD.",
+      "state": "REMEDIATED_NONFINAL"
+    },
+    {
+      "id": "CONFLICT-010",
+      "severity": "P0",
+      "subject": "Branch and PR governance versus direct main commit",
+      "authority": "docs/03_GIT_AND_CHANGE_GOVERNANCE.md",
+      "conflicting_paths": ["main@189c7075e33254c9b71bda3e2e9bb2a121337b72"],
+      "resolution": "Record the violation; all subsequent remediation must use audit/onsure-post-merge-self-audit-remediation-20260726 and a PR.",
+      "state": "VIOLATION_RECORDED_PROCESS_RESTORED"
+    },
+    {
+      "id": "CONFLICT-011",
+      "severity": "P0",
+      "subject": "Full requirements traceability claim versus 20 capability-group rows",
+      "authority": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+      "conflicting_paths": ["contracts/requirements-traceability.v1.json", "scripts/validate-repository-contracts.py"],
+      "resolution": "Extract atomic requirements and separately track implementation and verification evidence.",
+      "state": "OPEN_ATOMIC_TRACEABILITY"
     }
   ]
 }
