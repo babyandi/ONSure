@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Generic Validator Engine: learn -> plan -> review/verify -> diagnose -> prove nonfinal. */
+/** Generic Validator Engine: learn -> plan -> review/verify -> diagnose -> improve-plan -> prove nonfinal. */
 public final class ValidationEngine {
     public static final String REPORT_CONTRACT = "ONSURE_VALIDATION_REPORT_V1";
     public record RunResult(Path runRoot, ValidationReport report) {}
@@ -64,6 +64,7 @@ public final class ValidationEngine {
 
         int afterLegacyRca = indexOf(values, "FAILURE_MODE_AND_RCA") + 1;
         values.add(afterLegacyRca, new EvidenceBasedRcaStage());
+        values.add(afterLegacyRca + 1, new PatchPlanningStage());
         int regressionLockIndex = indexOf(values, "REGRESSION_LOCK");
         values.add(regressionLockIndex, new RemediationPlanningStage());
         int afterRegressionLock = indexOf(values, "REGRESSION_LOCK") + 1;
@@ -138,6 +139,9 @@ public final class ValidationEngine {
         summary.put("approval_required_count", context.remediationPlans().stream()
                 .filter(value -> value.changeClass() == ChangeClass.APPROVAL_REQUIRED).count());
         summary.put("remediation_plans", context.remediationPlans());
+        summary.put("patch_plan_id", context.attributes().getOrDefault("patch_plan_id", "NOT_RUN"));
+        summary.put("patch_plan_state", context.attributes().getOrDefault("patch_plan_state", "NOT_RUN"));
+        summary.put("patch_plan_hunk_count", context.attributes().getOrDefault("patch_plan_hunk_count", "NOT_RUN"));
         summary.put("fixture_count", context.fixtureResults().size());
         summary.put("fixture_failures", context.fixtureResults().stream()
                 .filter(value -> value.decision() != Decision.PASS).count());
