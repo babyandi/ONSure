@@ -1,81 +1,126 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "1.1.0",
-  "assessment_date": "2026-07-26",
-  "authority": "docs/verification/ONSURE_POST_MERGE_SELF_AUDIT_v1.md",
-  "active_issue": 20,
+  "version": "2.1.0",
+  "assessment_date": "2026-07-27",
+  "authority": "status/design-capability-coverage.v2.json",
+  "process_lineage_authority": "contracts/product-process-lineage.v1.json",
+  "active_issues": [20, 23],
+  "last_ci_self_validation": {
+    "run_id": 30270109833,
+    "validated_head": "e9c60cc243c8e4b11521bab379b12f0b94d5bead",
+    "state": "PASS_NONFINAL"
+  },
   "items": [
     {
-      "id": "P0-CORE-ADAPTER-MODULE-SEPARATION",
-      "state": "BLOCKED_COMPILE_TIME_COUPLING",
+      "id": "P0-FULL-REPOSITORY-STATIC-REVALIDATION",
+      "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
       "requires_human": false,
-      "next_action": "Split onsure-core and onsure-adapter-oruda modules; prove Core compile/test/E2E after removing the ORUDA module."
+      "next_action": "Keep the full static, omission, lineage and CI-boundary gates mandatory on every later source change."
     },
     {
-      "id": "P0-SOURCE-AND-ONE-SHOT-INTEGRITY",
-      "state": "BLOCKED_IMPLEMENTATION",
+      "id": "P0-CORE-ADAPTER-MODULE-SEPARATION",
+      "state": "PASS_CI_MODULAR_NONFINAL",
       "requires_human": false,
-      "next_action": "Use tracked Git objects for source binding, block untracked execution influence, separate Core E2E, and harden step receipts."
+      "next_action": "Repeat the final Core profile in the deferred final-stage environment and preserve the ORUDA-absent build receipt."
     },
     {
       "id": "P0-ATOMIC-TRACEABILITY",
-      "state": "BLOCKED_DETAILED_ANALYSIS",
+      "state": "CANDIDATE_EXTRACTION_AND_FAILURE_GATE_PASS_AUTHORITY_RECONCILIATION_INCOMPLETE",
       "requires_human": false,
-      "next_action": "Extract every atomic requirement, acceptance criterion, API, screen, state and test condition and map it to code symbols, test methods and evidence."
+      "next_action": "Reconcile every extracted normative requirement, acceptance criterion, API, screen, state and test condition with authoritative code symbols, tests and evidence."
     },
     {
-      "id": "P0-INTERNAL-RECEIPT-NONFINAL-BOUNDARY",
-      "state": "BLOCKED_IMPLEMENTATION",
+      "id": "P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION",
+      "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
       "requires_human": false,
-      "next_action": "Force SELF_VALIDATION_NONFINAL, independent gates NOT_RUN and final_lock_allowed=false in local receipt schemas and verifiers."
+      "next_action": "Keep 28 design/process/data, 10 atomic-requirement and 5 CI-boundary failure injections mandatory."
     },
     {
       "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
-      "state": "BLOCKED_IMPLEMENTATION",
+      "state": "PASS_CI_FIXTURE_PROFILE_NONFINAL",
       "requires_human": false,
-      "next_action": "Implement repository understanding, Program Profile generation and repeated behavior observation against the schemas."
+      "next_action": "Add direct production model, prompt, tool and RAG telemetry before Behavior Profile activation."
     },
     {
       "id": "P0-PLANNING-OREVIEW-RCA",
-      "state": "BLOCKED_IMPLEMENTATION",
+      "state": "PASS_CI_UNIT_E2E_NONFINAL",
       "requires_human": false,
-      "next_action": "Implement risk planning, full review domains and evidence-based RCA candidate confirmation."
+      "next_action": "Run real-target causal experiments and independent review evidence before any RCA confirmation or product PASS promotion."
     },
     {
       "id": "P0-IMPROVEMENT-GIT",
-      "state": "BLOCKED_IMPLEMENTATION",
+      "state": "PASS_CI_LOCAL_WORKTREE_NONFINAL_REMOTE_DELIVERY_NOT_RUN",
       "requires_human": false,
-      "next_action": "Implement patch planning, hunk approval, worktree, rollback, regression proof and Draft PR flow."
+      "next_action": "Execute an approved real remote push and Draft PR delivery without enabling merge, force-push or deployment."
     },
     {
       "id": "P0-VSCODE-LOCAL-API",
-      "state": "BLOCKED_IMPLEMENTATION",
+      "state": "PASS_CI_HTTP_AND_VSIX_NONFINAL_EXTENSION_HOST_NOT_RUN",
       "requires_human": false,
-      "next_action": "Implement the actual VS Code Extension and authenticated local runtime API."
+      "next_action": "Run VS Code Extension Host full-chain, restart recovery and interactive approval UX."
     },
     {
-      "id": "FINAL-CODESPACE-EXECUTION",
-      "state": "DEFERRED_UNTIL_CODESPACE_FREE_P0_ZERO",
+      "id": "P0-OLICENSE-SERVICE-CASE",
+      "state": "PASS_CI_LIFECYCLE_NONFINAL_PROVIDER_NOT_RUN",
       "requires_human": false,
-      "next_action": "Run One-Shot only after Issue 20 Codespace-free P0 implementation and static review are complete."
+      "next_action": "Run real payment/refund provider and commercial entitlement integration while retaining signed verification and legal-hold gates."
+    },
+    {
+      "id": "P0-TENANT-IDENTITY",
+      "state": "STUB",
+      "requires_human": false,
+      "next_action": "Implement authenticated identity, RBAC, tenant-scoped authorization and cross-tenant adversarial tests."
+    },
+    {
+      "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
+      "state": "PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE",
+      "requires_human": false,
+      "next_action": "Add product-target build, dependency lock, SBOM, vulnerability and license verification packs."
+    },
+    {
+      "id": "P1-PERFORMANCE-RECOVERY",
+      "state": "DESIGN_ONLY",
+      "requires_human": false,
+      "next_action": "Implement load, latency, resource, outage, recovery and deterministic failure-injection harnesses."
+    },
+    {
+      "id": "P1-OBSERVABILITY-OPERATIONS",
+      "state": "DESIGN_ONLY",
+      "requires_human": false,
+      "next_action": "Implement queue, metrics, logs, traces, backup, restore, retention scheduler and operational control plane."
+    },
+    {
+      "id": "P1-DEPLOYMENT",
+      "state": "DESIGN_ONLY",
+      "requires_human": false,
+      "next_action": "Implement signed installer, released VSIX, update, rollback, on-premises and air-gapped packages."
+    },
+    {
+      "id": "FINAL-EXECUTION-STAGE",
+      "state": "READY_BUT_DEFERRED_BY_USER",
+      "requires_human": false,
+      "next_action": "Run bash scripts/onsure-final-stage.sh --profile core only at the final deferred execution stage."
     },
     {
       "id": "INDEPENDENT-OTESTER-OAUDIT",
       "state": "BLOCKED_INDEPENDENT_AUTHORITY",
       "requires_human": false,
-      "next_action": "Use separate execution identities, signing keys and environments after runtime Full-Chain succeeds."
+      "next_action": "Use separate execution identities, signing keys, environments and evidence storage after internal product full-chain succeeds."
     },
     {
       "id": "HUMAN-ACCEPTANCE",
       "state": "WAITING_HUMAN_GATE",
       "requires_human": true,
-      "next_action": "Approve product scope and real-user acceptance only after evidence is available."
+      "next_action": "Perform real-user acceptance only after current-source product full-chain and independent receipts exist."
     },
     {
-      "id": "OPERATIONAL",
+      "id": "OPERATIONAL-RELEASE",
       "state": "HOLD",
       "requires_human": true,
-      "next_action": "Keep FinalLock, Production GO and Commercial GO false until every release gate passes."
+      "next_action": "Keep FinalLock, Production GO and Commercial GO false until all release gates pass."
     }
-  ]
+  ],
+  "final_lock_allowed": false,
+  "production_go": false,
+  "commercial_go": false
 }

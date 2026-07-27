@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_GIT_CHANGE_SET_V1",
+  "change_set_id": "CHANGESET-aaaaaaaaaaaaaaaa",
+  "patch_apply_receipt_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "improvement_proof_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "delivery_approval_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "approval_id": "approval-git-001",
+  "approval_actor": "reviewer@example.invalid",
+  "approval_key_id": "reviewer-key-001",
+  "branch": "fix/sample-approved-patch",
+  "commit_sha": "dddddddddddddddddddddddddddddddddddddddd",
+  "tree_sha": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "changed_files": ["src/main/java/example/Sample.java"],
+  "commit_message": "Fix approved validation finding",
+  "push_state": "NOT_RUN",
+  "draft_pr_state": "NOT_RUN",
+  "merge_state": "PROHIBITED",
+  "created_at": "2026-07-26T00:00:00Z",
+  "final_claim_allowed": false,
+  "change_set_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+}

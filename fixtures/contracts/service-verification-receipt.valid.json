@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_SERVICE_VERIFICATION_RECEIPT_V1",
+  "approval_id": "payment-verification-001",
+  "authority_class": "HUMAN_OR_EXTERNAL_APPROVER",
+  "approval_purpose": "PAYMENT_VERIFICATION",
+  "nonce": "nonce-payment-verify-0001",
+  "case_id": "case-sample-001",
+  "case_revision": 5,
+  "verification_type": "PAYMENT",
+  "provider": "provider-sample",
+  "provider_receipt_id": "provider-receipt-001",
+  "provider_receipt_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "decision": "PASS",
+  "reasons": ["PROVIDER_API_VERIFIED"],
+  "actor": "payment-verifier@example.invalid",
+  "key_id": "payment-verifier-key-001",
+  "signature_algorithm": "Ed25519",
+  "signature": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "approved_at": "2026-07-26T00:00:00Z",
+  "expires_at": "2026-07-27T00:00:00Z"
+}

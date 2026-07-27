@@ -1,0 +1,48 @@
+{
+  "contract": "ONSURE_EXECUTION_PLAN_V1",
+  "plan_id": "PLAN-aaaaaaaaaaaaaaaa",
+  "target_id": "sample-target",
+  "program_profile_id": "profile-sample-001",
+  "source_tree_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "risk": {"score": 35, "level": "MEDIUM"},
+  "review_packs": ["REQUIREMENT_TRACEABILITY", "ARCHITECTURE", "CODE", "SECURITY", "TEST_QUALITY"],
+  "scenario_classes": ["NORMAL", "BOUNDARY", "FAILURE", "UNAUTHORIZED", "RECOVERY"],
+  "allowed_actions": [
+    "EVIDENCE_GENERATION", "FIXTURE_EXECUTION", "IMPROVEMENT_PLAN", "RCA",
+    "REGRESSION_LOCK", "REVIEW", "STATIC_ANALYSIS"
+  ],
+  "fixture_count": 2,
+  "resource_budget": {
+    "estimated_seconds": 60,
+    "memory_limit_mb": 1024,
+    "process_limit": 64,
+    "network_egress": "DENY_BY_DEFAULT",
+    "paid_service_allowed": false
+  },
+  "permissions": {
+    "read_source": true,
+    "execute_reviewed_fixtures": true,
+    "write_run_evidence": true,
+    "modify_target": false,
+    "git_commit": false,
+    "git_push": false,
+    "merge": false
+  },
+  "stop_conditions": ["SOURCE_DRIFT", "SANDBOX_UNAVAILABLE", "APPROVAL_REVOKED"],
+  "approval": {
+    "state": "AUTO_APPROVED_DEVELOPMENT_NONFINAL",
+    "scope": "LOCAL_NONFINAL_VALIDATION_ONLY",
+    "approver": "POLICY:LOCAL_DEVELOPMENT",
+    "revocable": true,
+    "approved_actions": [
+      "EVIDENCE_GENERATION", "FIXTURE_EXECUTION", "IMPROVEMENT_PLAN", "RCA",
+      "REGRESSION_LOCK", "REVIEW", "STATIC_ANALYSIS"
+    ],
+    "signed_receipt_required": false
+  },
+  "created_at": "2026-07-26T00:00:00Z",
+  "product_full_chain": "NOT_RUN",
+  "independent_assurance": "NOT_RUN",
+  "final_claim_allowed": false,
+  "plan_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

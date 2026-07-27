@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_OREVIEW_RESULT_V1",
+  "review_id": "REVIEW-sample-001",
+  "target_id": "sample-target",
+  "source_tree_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "program_profile_id": "profile-sample-001",
+  "execution_plan_id": "PLAN-aaaaaaaaaaaaaaaa",
+  "execution_plan_approval_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "domains": [
+    {"domain":"REQUIREMENT_TRACEABILITY","decision":"HOLD","evidence_refs":["program-profile.json","status/design-capability-coverage.v2.json"],"observations":["Atomic requirement authority reconciliation is NOT_RUN."],"recommendation":"Complete atomic traceability."},
+    {"domain":"ARCHITECTURE","decision":"HOLD","evidence_refs":["program-profile.json#components"],"observations":["Static inventory exists; dynamic trace is NOT_RUN."],"recommendation":"Capture dynamic component and data-flow traces."},
+    {"domain":"POLICY_AND_APPROVAL","decision":"PASS","evidence_refs":["execution-plan.json#approval","execution-plan-approval.json"],"observations":["Exact plan action set is approved."],"recommendation":"Reapprove all scope changes."},
+    {"domain":"CODE","decision":"HOLD","evidence_refs":[],"observations":["Static review ran; compiler and human review evidence are NOT_RUN."],"recommendation":"Run build, unit, integration and focused review."},
+    {"domain":"AI_BEHAVIOR","decision":"NOT_APPLICABLE","evidence_refs":[],"observations":["The target is general software."],"recommendation":"None."},
+    {"domain":"SECURITY_AND_PRIVACY","decision":"HOLD","evidence_refs":[],"observations":["Dependency, SBOM and privacy-flow gates are NOT_RUN."],"recommendation":"Run security and privacy validation packs."},
+    {"domain":"PERFORMANCE_AND_RECOVERY","decision":"HOLD","evidence_refs":["execution-plan.json#resource_budget"],"observations":["Only resource budgets exist."],"recommendation":"Run load, outage and recovery benchmarks."},
+    {"domain":"TEST_QUALITY","decision":"HOLD","evidence_refs":["fixture-registry.json"],"observations":["Executable fixtures exist; blind independent suites are NOT_RUN."],"recommendation":"Run blind and independent acceptance tests."},
+    {"domain":"PRODUCT_QUALITY","decision":"HOLD","evidence_refs":["program-profile.json#conflicts"],"observations":["Product owner acceptance is NOT_RUN."],"recommendation":"Obtain source-bound owner acceptance."},
+    {"domain":"MERGE_READINESS","decision":"HOLD","evidence_refs":[],"observations":["Independent OTester/OAudit and human merge approval are NOT_RUN."],"recommendation":"Use Draft PR and independent release gates."}
+  ],
+  "quality_decision": "HOLD",
+  "review_execution": "PASS",
+  "independent_reviewer": "NOT_RUN",
+  "merge_authorized": false,
+  "final_claim_allowed": false,
+  "generated_at": "2026-07-27T00:00:00Z",
+  "review_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

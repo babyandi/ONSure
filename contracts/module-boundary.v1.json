@@ -1,0 +1,53 @@
+{
+  "contract": "ONSURE_MODULE_BOUNDARY_V1",
+  "version": "1.0.0",
+  "modules": {
+    "onsure-core": {
+      "allowed_package_prefixes": [
+        "io.onsure.assurance",
+        "io.onsure.harness",
+        "io.onsure.learning",
+        "io.onsure.rag",
+        "io.onsure.platform"
+      ],
+      "forbidden_import_prefixes": [
+        "io.onsure.platform.oruda",
+        "io.onsure.platform.OrudaTargetAdapter"
+      ],
+      "forbidden_source_paths": [
+        "src/main/java/io/onsure/platform/oruda/",
+        "src/test/java/io/onsure/platform/oruda/"
+      ],
+      "required_scenarios": [
+        "GENERAL_PROGRAM_BASELINE_FAIL",
+        "GENERAL_PROGRAM_REMEDIATED_PASS",
+        "AI_PROGRAM_FAIL"
+      ]
+    },
+    "onsure-adapter-oruda": {
+      "depends_on": ["onsure-core"],
+      "package_prefixes": [
+        "io.onsure.platform.oruda",
+        "io.onsure.platform.OrudaTargetAdapter"
+      ],
+      "required_scenarios": ["ORUDA_TARGET_FAIL", "ORUDA_MVF_001_PASS"],
+      "required_for_core": false
+    },
+    "onsure-cli": {
+      "depends_on": ["onsure-core"],
+      "optional_runtime_modules": ["onsure-adapter-oruda"]
+    },
+    "onsure-test-fixtures": {
+      "depends_on": ["onsure-core"],
+      "separate_test_suites": ["core", "oruda", "full-chain"]
+    }
+  },
+  "rules": [
+    "CORE_MUST_COMPILE_WITHOUT_ORUDA_MODULE",
+    "CORE_TESTS_MUST_NOT_LOAD_ORUDA_CLASSES_OR_FIXTURES",
+    "ORUDA_ADAPTER_MUST_BE_EXPLICITLY_REGISTERED",
+    "OPTIONAL_ADAPTER_FAILURE_MUST_NOT_CHANGE_CORE_AUTHORITY",
+    "NO_TARGET_ADAPTER_MAY_ISSUE_ONSURE_FINAL_DECISION"
+  ],
+  "physical_module_split": "IMPLEMENTATION_PREPARED_EXECUTION_NOT_RUN"
+}

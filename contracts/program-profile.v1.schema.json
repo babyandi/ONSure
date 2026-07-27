@@ -7,7 +7,9 @@
   "required": [
     "contract", "profile_id", "project_id", "program_id", "source_baseline",
     "purpose", "components", "dependencies", "ai_components", "data_flows",
-    "unknowns", "conflicts", "evidence_refs", "revision", "state"
+    "unknowns", "conflicts", "evidence_refs", "revision", "state", "generated_at",
+    "learning_method", "language_inventory", "dynamic_trace", "runtime_verification",
+    "human_review", "independent_validation", "final_claim_allowed", "profile_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_PROGRAM_PROFILE_V1"},
@@ -17,11 +19,18 @@
     "source_baseline": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["git_commit_sha", "source_tree_sha256", "clean"],
+      "required": [
+        "reference_type", "reference_value", "git_commit_sha", "source_tree_sha256",
+        "worktree_clean", "snapshot_complete", "source_file_count"
+      ],
       "properties": {
-        "git_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+        "reference_type": {"enum": ["GIT_COMMIT", "SOURCE_TREE_SHA256"]},
+        "reference_value": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+        "git_commit_sha": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40,64}$"},
         "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "clean": {"type": "boolean"}
+        "worktree_clean": {"type": ["boolean", "null"]},
+        "snapshot_complete": {"const": true},
+        "source_file_count": {"type": "integer", "minimum": 1}
       }
     },
     "purpose": {"type": "string", "minLength": 1},
@@ -31,14 +40,22 @@
     "data_flows": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "unknowns": {"type": "array", "items": {"type": "string"}},
     "conflicts": {"type": "array", "items": {"type": "string"}},
-    "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 2},
     "revision": {"type": "integer", "minimum": 1},
-    "state": {"enum": ["PROFILE_CANDIDATE", "PROFILE_REVIEWED", "PROFILE_ACTIVE", "STALE", "HOLD"]}
+    "state": {"enum": ["PROFILE_CANDIDATE", "PROFILE_REVIEWED", "PROFILE_ACTIVE", "STALE", "HOLD"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "learning_method": {"const": "STATIC_REPOSITORY_UNDERSTANDING_V2"},
+    "language_inventory": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+    "dynamic_trace": {"enum": ["NOT_RUN", "PARTIAL", "PASS", "FAIL", "HOLD"]},
+    "runtime_verification": {"enum": ["NOT_RUN", "PARTIAL", "PASS", "FAIL", "HOLD"]},
+    "human_review": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "independent_validation": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "final_claim_allowed": {"const": false},
+    "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
     "evidenceBoundItem": {
-      "type": "object",
-      "additionalProperties": false,
+      "type": "object", "additionalProperties": false,
       "required": ["id", "name", "kind", "source_locations", "confidence", "verified"],
       "properties": {
         "id": {"type": "string", "minLength": 1},

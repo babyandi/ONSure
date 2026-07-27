@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/service-verification-receipt.v1.schema.json",
+  "title": "ONSure Service Verification Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "approval_id", "authority_class", "approval_purpose", "nonce",
+    "case_id", "case_revision", "verification_type", "provider", "provider_receipt_id",
+    "provider_receipt_digest", "decision", "reasons", "actor", "key_id",
+    "signature_algorithm", "signature", "approved_at", "expires_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_SERVICE_VERIFICATION_RECEIPT_V1"},
+    "approval_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{3,160}$"},
+    "authority_class": {"const": "HUMAN_OR_EXTERNAL_APPROVER"},
+    "approval_purpose": {"enum": ["PAYMENT_VERIFICATION", "REFUND_VERIFICATION", "DELETION_VERIFICATION"]},
+    "nonce": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{16,160}$"},
+    "case_id": {"type": "string", "minLength": 1},
+    "case_revision": {"type": "integer", "minimum": 1},
+    "verification_type": {"enum": ["PAYMENT", "REFUND", "DELETION"]},
+    "provider": {"type": "string", "minLength": 1},
+    "provider_receipt_id": {"type": "string", "minLength": 1},
+    "provider_receipt_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "decision": {"enum": ["PASS", "FAIL"]},
+    "reasons": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "actor": {"type": "string", "minLength": 1, "not": {"const": "ONSURE_AUTOMATION"}},
+    "key_id": {"type": "string", "minLength": 1},
+    "signature_algorithm": {"const": "Ed25519"},
+    "signature": {"type": "string", "minLength": 32},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"}
+  }
+}

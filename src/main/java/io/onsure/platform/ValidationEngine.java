@@ -21,10 +21,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Generic commercial Validator Engine: target -> findings/RCA -> lock -> report. */
+/** Generic Validator Engine: learn -> plan -> review/verify -> diagnose -> improve-plan -> prove nonfinal. */
 public final class ValidationEngine {
     public static final String REPORT_CONTRACT = "ONSURE_VALIDATION_REPORT_V1";
-
     public record RunResult(Path runRoot, ValidationReport report) {}
 
     private final TargetAdapterRegistry adapterRegistry;
@@ -38,17 +37,10 @@ public final class ValidationEngine {
         if (this.stages.isEmpty()) throw new IllegalArgumentException("at least one stage is required");
     }
 
-    /** Standalone default: Generic adapter only. Target-specific adapters must be explicit. */
     public static ValidationEngine defaultEngine(Path storeRoot) {
         return withOptionalAdapters(storeRoot, List.of());
     }
 
-    /** Explicit optional profile used by the ORUDA adapter fixture suite. */
-    public static ValidationEngine withOrudaAdapter(Path storeRoot) {
-        return withOptionalAdapters(storeRoot, List.of(new OrudaTargetAdapter()));
-    }
-
-    /** Creates a standalone core engine with explicitly selected optional target adapters. */
     public static ValidationEngine withOptionalAdapters(
             Path storeRoot, List<TargetAdapter> optionalAdapters) {
         List<TargetAdapter> adapters = new ArrayList<>();
@@ -59,8 +51,20 @@ public final class ValidationEngine {
 
     private static List<ValidatorStage> defaultStages() {
         List<ValidatorStage> values = new ArrayList<>(BuiltInStages.defaults());
-        int runtimeFixtureIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
-        values.add(runtimeFixtureIndex, new FixtureRegistryStage());
+        int afterInventory = indexOf(values, "SOURCE_INVENTORY") + 1;
+        values.add(afterInventory, new ProgramLearningStage());
+        values.add(afterInventory + 1, new RiskPlanningStage());
+
+        int runtimeIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
+        values.add(runtimeIndex, new FixtureRegistryStage());
+        runtimeIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
+        values.add(runtimeIndex, new BehaviorLearningStage());
+        runtimeIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
+        values.add(runtimeIndex, new OReviewStage());
+
+        int afterLegacyRca = indexOf(values, "FAILURE_MODE_AND_RCA") + 1;
+        values.add(afterLegacyRca, new EvidenceBasedRcaStage());
+        values.add(afterLegacyRca + 1, new PatchPlanningStage());
         int regressionLockIndex = indexOf(values, "REGRESSION_LOCK");
         values.add(regressionLockIndex, new RemediationPlanningStage());
         int afterRegressionLock = indexOf(values, "REGRESSION_LOCK") + 1;
@@ -77,6 +81,11 @@ public final class ValidationEngine {
     }
 
     public RunResult run(ValidationTarget target) throws Exception {
+        return run(target, null);
+    }
+
+    /** Runs with a previously signed and source-bound execution plan. */
+    public RunResult run(ValidationTarget target, Path approvedExecutionPlanFile) throws Exception {
         TargetAdapter adapter = adapterRegistry.require(target);
         Instant created = Instant.now();
         String jobId = createJobId(target.targetId(), created);
@@ -85,13 +94,16 @@ public final class ValidationEngine {
                 jobId, target.targetId(), JobStatus.RUNNING, created, created, null, null);
         ValidationContext context = new ValidationContext(target, running, adapter, runRoot);
         context.putAttribute("registered_adapter_ids", adapterRegistry.adapterIds());
+        if (approvedExecutionPlanFile != null) {
+            context.putAttribute("approved_execution_plan_file",
+                    approvedExecutionPlanFile.toAbsolutePath().normalize().toString());
+        }
 
         Exception executionFailure = null;
         for (ValidatorStage stage : stages) {
             if (!stage.supports(context)) continue;
             try {
-                StageResult result = stage.execute(context);
-                context.addStageResult(result);
+                context.addStageResult(stage.execute(context));
             } catch (Exception e) {
                 executionFailure = e;
                 Instant now = Instant.now();
@@ -105,13 +117,12 @@ public final class ValidationEngine {
         }
 
         Instant completed = Instant.now();
-        JobStatus status = executionFailure == null ? JobStatus.COMPLETED : JobStatus.FAILED;
         context.job(new ValidationJob(
-                jobId, target.targetId(), status, created, created, completed, null));
+                jobId, target.targetId(), executionFailure == null ? JobStatus.COMPLETED : JobStatus.FAILED,
+                created, created, completed, null));
         Decision decision = finalDecision(context, executionFailure);
         ValidationReport report = createReport(context, decision, completed);
         store.persist(context, report);
-
         if (executionFailure != null) {
             throw new ValidationExecutionException(
                     "validation failed at " + context.attributes().get("execution_failure_stage"),
@@ -128,15 +139,35 @@ public final class ValidationEngine {
         summary.put("open_medium", count(context.findings(), Severity.MEDIUM));
         summary.put("finding_count", context.findings().size());
         summary.put("failure_mode_count", context.failureModes().size());
-        summary.put("rca_count", context.rcaRecords().size());
+        summary.put("legacy_rca_count", context.rcaRecords().size());
+        summary.put("evidence_based_rca_confirmed_count",
+                context.attributes().getOrDefault("evidence_based_rca_confirmed_count", "NOT_RUN"));
+        summary.put("evidence_based_rca_candidate_count",
+                context.attributes().getOrDefault("evidence_based_rca_candidate_count", "NOT_RUN"));
         summary.put("remediation_plan_count", context.remediationPlans().size());
         summary.put("approval_required_count", context.remediationPlans().stream()
                 .filter(value -> value.changeClass() == ChangeClass.APPROVAL_REQUIRED).count());
         summary.put("remediation_plans", context.remediationPlans());
+        summary.put("patch_plan_id", context.attributes().getOrDefault("patch_plan_id", "NOT_RUN"));
+        summary.put("patch_plan_state", context.attributes().getOrDefault("patch_plan_state", "NOT_RUN"));
+        summary.put("patch_plan_hunk_count", context.attributes().getOrDefault("patch_plan_hunk_count", "NOT_RUN"));
         summary.put("fixture_count", context.fixtureResults().size());
         summary.put("fixture_failures", context.fixtureResults().stream()
                 .filter(value -> value.decision() != Decision.PASS).count());
         summary.put("source_tree_sha256", context.attributes().getOrDefault("source_tree_sha256", "NOT_AVAILABLE"));
+        summary.put("program_profile_id", context.attributes().getOrDefault("program_profile_id", "NOT_RUN"));
+        summary.put("program_profile_state", context.attributes().getOrDefault("program_profile_state", "NOT_RUN"));
+        summary.put("execution_plan_id", context.attributes().getOrDefault("execution_plan_id", "NOT_RUN"));
+        summary.put("execution_plan_approval", context.attributes().getOrDefault("execution_plan_approval", "NOT_RUN"));
+        summary.put("execution_plan_approval_sha256",
+                context.attributes().getOrDefault("execution_plan_approval_sha256", "NOT_RUN"));
+        summary.put("behavior_profile_id", context.attributes().getOrDefault("behavior_profile_id", "NOT_RUN"));
+        summary.put("behavior_profile_state", context.attributes().getOrDefault("behavior_profile_state", "NOT_RUN"));
+        summary.put("behavior_profile_stable", context.attributes().getOrDefault("behavior_profile_stable", "NOT_RUN"));
+        summary.put("behavior_profile_coverage_class",
+                context.attributes().getOrDefault("behavior_profile_coverage_class", "NOT_RUN"));
+        summary.put("review_id", context.attributes().getOrDefault("review_id", "NOT_RUN"));
+        summary.put("review_quality_decision", context.attributes().getOrDefault("review_quality_decision", "NOT_RUN"));
         summary.put("adapter_id", context.adapter().adapterId());
         summary.put("registered_adapter_ids", context.attributes().get("registered_adapter_ids"));
         summary.put("internal_verifier", stageDecision(context, "INTERNAL_PRODUCT_VERIFIER"));
@@ -148,51 +179,33 @@ public final class ValidationEngine {
         summary.put("completion_gate_eligible", completion.eligible());
         summary.put("completion_gate_reasons", completion.reasons());
         return new ValidationReport(
-                REPORT_CONTRACT,
-                "REPORT-" + context.job().jobId(),
-                context.job().jobId(),
-                context.target(),
-                decision,
-                generatedAt,
-                context.stageResults(),
-                context.findings(),
-                context.failureModes(),
-                context.rcaRecords(),
-                context.fixtureResults(),
-                context.regressionLock(),
-                summary);
+                REPORT_CONTRACT, "REPORT-" + context.job().jobId(), context.job().jobId(),
+                context.target(), decision, generatedAt, context.stageResults(), context.findings(),
+                context.failureModes(), context.rcaRecords(), context.fixtureResults(),
+                context.regressionLock(), summary);
     }
 
     private static String stageDecision(ValidationContext context, String stageId) {
-        return context.stageResults().stream()
-                .filter(value -> stageId.equals(value.stageId()))
-                .map(value -> value.decision().name())
-                .findFirst().orElse("NOT_RUN");
+        return context.stageResults().stream().filter(value -> stageId.equals(value.stageId()))
+                .map(value -> value.decision().name()).findFirst().orElse("NOT_RUN");
     }
 
     private static Decision finalDecision(ValidationContext context, Exception executionFailure) {
         if (executionFailure != null) return Decision.FAIL;
         if (!ValidationCompletionGate.evaluate(context).eligible()) return Decision.FAIL;
-        if (context.stageResults().stream().anyMatch(value -> value.decision() == Decision.FAIL)) {
-            return Decision.FAIL;
-        }
-        if (context.stageResults().stream().anyMatch(value -> value.decision() != Decision.PASS)) {
-            return Decision.HOLD;
-        }
+        if (context.stageResults().stream().anyMatch(value -> value.decision() == Decision.FAIL)) return Decision.FAIL;
+        if (context.stageResults().stream().anyMatch(value -> value.decision() != Decision.PASS)) return Decision.HOLD;
         boolean blocking = context.findings().stream()
                 .filter(value -> value.status() == FindingStatus.OPEN)
                 .anyMatch(value -> value.severity() == Severity.CRITICAL || value.severity() == Severity.HIGH);
         if (blocking) return Decision.FAIL;
-        boolean nonBlocking = context.findings().stream()
-                .anyMatch(value -> value.status() == FindingStatus.OPEN);
-        return nonBlocking ? Decision.HOLD : Decision.PASS;
+        return context.findings().stream().anyMatch(value -> value.status() == FindingStatus.OPEN)
+                ? Decision.HOLD : Decision.PASS;
     }
 
     private static long count(List<Finding> findings, Severity severity) {
-        return findings.stream()
-                .filter(value -> value.status() == FindingStatus.OPEN)
-                .filter(value -> value.severity() == severity)
-                .count();
+        return findings.stream().filter(value -> value.status() == FindingStatus.OPEN)
+                .filter(value -> value.severity() == severity).count();
     }
 
     private static String createJobId(String targetId, Instant created) {
@@ -210,13 +223,11 @@ public final class ValidationEngine {
     public static final class ValidationExecutionException extends Exception {
         private final Path runRoot;
         private final ValidationReport report;
-
         ValidationExecutionException(String message, Throwable cause, Path runRoot, ValidationReport report) {
             super(message, cause);
             this.runRoot = runRoot;
             this.report = report;
         }
-
         public Path runRoot() { return runRoot; }
         public ValidationReport report() { return report; }
     }

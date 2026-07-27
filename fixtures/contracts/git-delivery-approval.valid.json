@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_GIT_DELIVERY_APPROVAL_V1",
+  "approval_id": "approval-git-001",
+  "authority_class": "HUMAN_OR_EXTERNAL_APPROVER",
+  "approval_purpose": "GIT_DELIVERY",
+  "nonce": "nonce-git-delivery-0001",
+  "patch_apply_receipt_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch": "fix/sample-approved-patch",
+  "remote": "origin",
+  "remote_url_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "base_branch": "main",
+  "actor": "reviewer@example.invalid",
+  "key_id": "reviewer-key-001",
+  "signature_algorithm": "Ed25519",
+  "signature": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "approved_at": "2026-07-26T00:00:00Z",
+  "expires_at": "2026-07-27T00:00:00Z",
+  "allow_commit": true,
+  "allow_push": true,
+  "allow_draft_pr": true,
+  "allow_force_push": false,
+  "allow_merge": false
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/evidence-based-rca.v1.schema.json",
+  "title": "ONSure Evidence-based RCA Set v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "job_id", "source_tree_sha256", "records", "confirmed_count",
+    "reproduced_count", "candidate_count", "independent_confirmation", "generated_at",
+    "final_claim_allowed", "rca_set_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EVIDENCE_BASED_RCA_SET_V1"},
+    "job_id": {"type": "string", "minLength": 1},
+    "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": [
+          "rca_id", "finding_id", "status", "reproduction", "first_failure_point",
+          "direct_cause", "root_cause_hypothesis", "contributing_factors",
+          "causal_experiment", "causal_experiment_receipt_id", "confidence",
+          "evidence_refs", "source_tree_sha256", "required_confirmation",
+          "final_claim_allowed"
+        ],
+        "properties": {
+          "rca_id": {"type": "string", "minLength": 1},
+          "finding_id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["CANDIDATE", "REPRODUCED", "CONFIRMED"]},
+          "reproduction": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "first_failure_point": {"type": "string", "minLength": 1},
+          "direct_cause": {"type": "string", "minLength": 1},
+          "root_cause_hypothesis": {"type": "string", "minLength": 1},
+          "contributing_factors": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "causal_experiment": {"type": "string", "minLength": 1},
+          "causal_experiment_receipt_id": {"type": "string", "minLength": 1},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "required_confirmation": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "final_claim_allowed": {"const": false}
+        }
+      }
+    },
+    "confirmed_count": {"type": "integer", "minimum": 0},
+    "reproduced_count": {"type": "integer", "minimum": 0},
+    "candidate_count": {"type": "integer", "minimum": 0},
+    "independent_confirmation": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false},
+    "rca_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

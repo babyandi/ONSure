@@ -1,0 +1,107 @@
+{
+  "contract": "ONSURE_CODESPACE_FREE_REMEDIATION_PLAN_V1",
+  "version": "1.0.0",
+  "source_issue": 20,
+  "umbrella_issue": 23,
+  "branch": "feature/onsure-codespace-free-remediation-20260726",
+  "execution_policy": {
+    "single_branch": true,
+    "single_pr": true,
+    "codespace_deferred_until_last": true,
+    "no_runtime_pass_without_receipt": true,
+    "no_independent_claim_from_self_validation": true
+  },
+  "lanes": [
+    {
+      "id": "CF-01",
+      "name": "Core and optional adapter isolation",
+      "codespace_free_actions": [
+        "remove direct ORUDA imports from core paths",
+        "add machine-enforced package boundary checks",
+        "define separate artifact and test-suite layout",
+        "prepare core-only and ORUDA profile commands"
+      ],
+      "final_execution": [
+        "compile core with ORUDA sources absent",
+        "run core unit and Generic/AI E2E twice"
+      ],
+      "state": "IMPLEMENTATION_IN_BRANCH"
+    },
+    {
+      "id": "CF-02",
+      "name": "Atomic requirements traceability",
+      "codespace_free_actions": [
+        "define atomic requirement schema",
+        "extract requirement candidates from authoritative documents",
+        "bind acceptance, design, code symbol, test method and evidence fields",
+        "fail closed when evidence is missing"
+      ],
+      "final_execution": ["verify every executable requirement against current-source receipts"],
+      "state": "IMPLEMENTATION_IN_BRANCH"
+    },
+    {
+      "id": "CF-03",
+      "name": "Source and policy identity",
+      "codespace_free_actions": [
+        "standardize tracked-file source snapshots",
+        "block untracked execution influence",
+        "exclude runtime outputs by tracked-set authority",
+        "reverify source and policy at completion"
+      ],
+      "final_execution": ["run source-drift and untracked-injection tests"],
+      "state": "IMPLEMENTATION_IN_BRANCH"
+    },
+    {
+      "id": "CF-04",
+      "name": "Schema and repository validation",
+      "codespace_free_actions": [
+        "validate JSON and JSONL",
+        "prepare JSON Schema meta and instance validation",
+        "prepare YAML parsing",
+        "validate Markdown links and shell syntax"
+      ],
+      "final_execution": ["run validators with pinned Python dependencies"],
+      "state": "IMPLEMENTATION_IN_BRANCH"
+    },
+    {
+      "id": "CF-05",
+      "name": "Receipt and evidence hardening",
+      "codespace_free_actions": [
+        "bind command, source, environment and toolchain digests",
+        "classify local verifier and audit as internal self validation",
+        "force independent gates to NOT_RUN",
+        "force FinalLock, Production and Commercial flags false"
+      ],
+      "final_execution": ["execute tamper, replay, identity and key-collision fixtures"],
+      "state": "IMPLEMENTATION_IN_BRANCH"
+    },
+    {
+      "id": "CF-06",
+      "name": "Ledger and persistence hardening",
+      "codespace_free_actions": [
+        "define current-pack binding",
+        "define verifier identity and key separation",
+        "define post-apply receipt resolution",
+        "define cross-process lock and external anchor contracts"
+      ],
+      "final_execution": ["run concurrent append, rewrite and rollback tests"],
+      "state": "DESIGN_AND_CONTRACT_IN_BRANCH"
+    },
+    {
+      "id": "CF-07",
+      "name": "Sandbox and tenant boundaries",
+      "codespace_free_actions": [
+        "define network, filesystem, child-process, CPU and memory policies",
+        "define tenant-bound catalog and evidence records",
+        "define CAS and process-lock requirements"
+      ],
+      "final_execution": ["run container, network, resource and cross-tenant attack fixtures"],
+      "state": "DESIGN_AND_CONTRACT_IN_BRANCH"
+    }
+  ],
+  "final_single_command": "bash scripts/onsure-final-stage.sh --profile core",
+  "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
+  "final_lock_allowed": false,
+  "production_go": false,
+  "commercial_go": false
+}

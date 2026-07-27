@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_EXECUTION_PLAN_APPROVAL_V1",
+  "approval_id": "approval-plan-001",
+  "authority_class": "HUMAN_OR_EXTERNAL_APPROVER",
+  "approval_purpose": "EXECUTION_PLAN_APPROVAL",
+  "nonce": "nonce-plan-approval-0001",
+  "plan_id": "PLAN-target-001-aaaaaaaaaaaa",
+  "plan_file_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "target_id": "target-001",
+  "source_tree_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "approved_actions": ["STATIC_ANALYSIS", "FIXTURE_EXECUTION", "EVIDENCE_GENERATION"],
+  "actor": "reviewer@example.invalid",
+  "key_id": "reviewer-key-001",
+  "signature_algorithm": "Ed25519",
+  "signature": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "approved_at": "2026-07-26T00:00:00Z",
+  "expires_at": "2026-07-27T00:00:00Z",
+  "allow_final_claim": false,
+  "allow_merge": false,
+  "allow_deploy": false
+}

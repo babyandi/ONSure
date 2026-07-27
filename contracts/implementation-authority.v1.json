@@ -1,12 +1,13 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_AUTHORITY_V1",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "authoritative_product_package": "io.onsure.platform",
   "authoritative_assurance_package": "io.onsure.assurance",
   "authoritative_universal_harness_package": "io.onsure.harness",
   "authoritative_learning_package": "io.onsure.learning",
   "authoritative_rag_package": "io.onsure.rag",
   "authoritative_product_cli": "io.onsure.platform.ONSureCli",
+  "authoritative_universal_harness_main": "io.onsure.harness.HarnessCli",
   "authoritative_validator_fixture_e2e_main": "io.onsure.platform.ProductPlatformE2EMain",
   "authoritative_one_shot_runner": "scripts/onsure-one-shot.sh",
   "authoritative_repository_contract_validator": "scripts/validate-repository-contracts.py",
@@ -34,6 +35,19 @@
   "optional_oruda_scenarios": [
     "ORUDA_TARGET_FAIL",
     "ORUDA_MVF_001_PASS"
+  ],
+  "required_universal_harness_invariants": [
+    "THIRTY_REQUIRED_AXES",
+    "SEVEN_FIXTURE_CATEGORIES",
+    "FAIL_BLOCKED_NOT_RUN_CANNOT_BECOME_PASS",
+    "TWO_INDEPENDENT_RUNS",
+    "CRITICAL_MAJOR_ZERO_TWO_CONSECUTIVE_RUNS",
+    "EVIDENCE_RECEIPT_REVERIFY",
+    "RCA_PENDING_BLOCKS_CLOSURE",
+    "REGRESSION_TWO_CLEAN_RUNS",
+    "AUTOMATIC_FINAL_LOCK_FORBIDDEN",
+    "CORE_OPTIONAL_ADAPTER_ISOLATION",
+    "INTERNAL_VALIDATION_IS_NONFINAL"
   ],
   "required_persistent_outputs": [
     "validation_target",

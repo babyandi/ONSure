@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/oreview-result.v1.schema.json",
+  "title": "ONSure OReview Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "review_id", "target_id", "source_tree_sha256", "program_profile_id",
+    "execution_plan_id", "execution_plan_approval_sha256", "domains", "quality_decision",
+    "review_execution", "independent_reviewer", "merge_authorized", "final_claim_allowed",
+    "generated_at", "review_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_OREVIEW_RESULT_V1"},
+    "review_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "program_profile_id": {"type": "string", "minLength": 1},
+    "execution_plan_id": {"type": "string", "minLength": 1},
+    "execution_plan_approval_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "domains": {
+      "type": "array", "minItems": 10,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["domain", "decision", "evidence_refs", "observations", "recommendation"],
+        "properties": {
+          "domain": {"type": "string", "minLength": 1},
+          "decision": {"enum": ["PASS", "FAIL", "HOLD", "NOT_RUN", "NOT_APPLICABLE"]},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "observations": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "recommendation": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "quality_decision": {"enum": ["PASS", "FAIL", "HOLD"]},
+    "review_execution": {"const": "PASS"},
+    "independent_reviewer": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "merge_authorized": {"const": false},
+    "final_claim_allowed": {"const": false},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

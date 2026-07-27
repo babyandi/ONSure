@@ -10,9 +10,10 @@ import java.util.Set;
 
 /** Seals Fixture definitions and available Oracles/Commands before Harness execution. */
 public final class FixtureRegistryStage implements ValidatorStage {
-    public static final String TRUSTED_LOCAL_PROFILE = "LOCAL_E2E_TRUSTED_FIXTURE";
+    public static final String TRUSTED_LOCAL_PROFILE = "TRUSTED_LOCAL_FIXTURE";
+    public static final String LEGACY_TRUSTED_LOCAL_PROFILE = "LOCAL_E2E_TRUSTED_FIXTURE";
     private static final Set<String> TRUSTED_PROFILES = Set.of(
-            TRUSTED_LOCAL_PROFILE, "LOCAL_E2E", "LOCAL_MVF_E2E");
+            TRUSTED_LOCAL_PROFILE, LEGACY_TRUSTED_LOCAL_PROFILE, "LOCAL_E2E", "LOCAL_MVF_E2E");
 
     @Override public String stageId() { return "FIXTURE_ORACLE_REGISTRY"; }
     @Override public boolean supports(ValidationContext context) { return true; }
@@ -43,10 +44,8 @@ public final class FixtureRegistryStage implements ValidatorStage {
         new FixtureRegistry().persist(
                 context.runRoot(), context.target().targetId(), context.target().sourceRoot(), fixtures,
                 harness.harnessId(), harness.oracleIds());
-        return new StageResult(stageId(), Decision.PASS, start, Instant.now(), List.of(),
-                Map.of("fixtures", fixtures.size(), "oracles", harness.oracleIds().size(),
-                        "executable_fixtures", executable,
-                        "harness_id", harness.harnessId(),
-                        "execution_profile", context.target().executionProfile()));
+        return new StageResult(stageId(), Decision.PASS, start, Instant.now(), List.of(), Map.of(
+                "fixtures", fixtures.size(), "executable", executable,
+                "oracles", harness.oracleIds().size(), "commands", fixtures.size()));
     }
 }

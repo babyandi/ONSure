@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/execution-plan-approval.v1.schema.json",
+  "title": "ONSure Execution Plan Approval v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "approval_id", "authority_class", "approval_purpose", "nonce",
+    "plan_id", "plan_file_sha256", "target_id", "source_tree_sha256",
+    "approved_actions", "actor", "key_id", "signature_algorithm", "signature",
+    "approved_at", "expires_at", "allow_final_claim", "allow_merge", "allow_deploy"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EXECUTION_PLAN_APPROVAL_V1"},
+    "approval_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{3,160}$"},
+    "authority_class": {"const": "HUMAN_OR_EXTERNAL_APPROVER"},
+    "approval_purpose": {"const": "EXECUTION_PLAN_APPROVAL"},
+    "nonce": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{16,160}$"},
+    "plan_id": {"type": "string", "minLength": 1},
+    "plan_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "target_id": {"type": "string", "minLength": 1},
+    "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approved_actions": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "actor": {"type": "string", "minLength": 1, "not": {"const": "ONSURE_AUTOMATION"}},
+    "key_id": {"type": "string", "minLength": 1},
+    "signature_algorithm": {"const": "Ed25519"},
+    "signature": {"type": "string", "minLength": 32},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "allow_final_claim": {"const": false},
+    "allow_merge": {"const": false},
+    "allow_deploy": {"const": false}
+  }
+}

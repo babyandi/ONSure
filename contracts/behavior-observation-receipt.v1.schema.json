@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/behavior-observation-receipt.v1.schema.json",
+  "title": "ONSure Behavior Observation Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "receipt_id", "profile_id", "program_profile_id", "source_baseline_hash",
+    "scenario_id", "iteration", "input_digest", "output_digest", "command", "decision",
+    "exit_code", "timed_out", "duration_ms", "environment_digest", "coverage_class",
+    "observation_class", "created_at", "final_claim_allowed", "receipt_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_BEHAVIOR_OBSERVATION_RECEIPT_V1"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "profile_id": {"type": "string", "minLength": 1},
+    "program_profile_id": {"type": "string", "minLength": 1},
+    "source_baseline_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "scenario_id": {"type": "string", "minLength": 1},
+    "iteration": {"type": "integer", "minimum": 1},
+    "input_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "output_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "command": {"type": "array", "items": {"type": "string"}, "minItems": 2},
+    "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]},
+    "exit_code": {"type": "integer"},
+    "timed_out": {"type": "boolean"},
+    "duration_ms": {"type": "integer", "minimum": 0},
+    "environment_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "coverage_class": {"enum": [
+      "DIRECT_PRODUCTION_MODEL_TELEMETRY",
+      "DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY",
+      "EXECUTABLE_FIXTURE_PROCESS_PROXY"
+    ]},
+    "observation_class": {"enum": [
+      "DIRECT_PRODUCTION_MODEL", "DIRECT_INSTRUMENTED_FIXTURE", "PROCESS_COMMAND_PROXY"
+    ]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

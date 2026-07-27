@@ -17,47 +17,54 @@ class ImplementationAuthorityContractTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void platformProductAndUniversalHarnessPackagesAreAuthoritative() throws Exception {
+    void platformProductCoreAndOptionalAdaptersAreAuthoritativeWithoutAuthorityLeakage() throws Exception {
         JsonNode contract = mapper.readTree(Path.of("contracts/implementation-authority.v1.json").toFile());
         assertEquals("ONSURE_IMPLEMENTATION_AUTHORITY_V1", contract.path("contract").asText());
         assertEquals("io.onsure.platform", contract.path("authoritative_product_package").asText());
         assertEquals("io.onsure.assurance", contract.path("authoritative_assurance_package").asText());
         assertEquals("io.onsure.harness", contract.path("authoritative_universal_harness_package").asText());
-        assertEquals("io.onsure.platform.OrudaTargetAdapter", contract.path("authoritative_oruda_adapter").asText());
-        assertEquals("io.onsure.harness.HarnessCli", contract.path("authoritative_universal_harness_main").asText());
-        assertFalse(contract.path("oruda_claims_trusted").asBoolean(true));
-        assertFalse(contract.path("oruda_can_write_onsure_final_decision").asBoolean(true));
-        assertTrue(contract.path("standalone_runtime_required").asBoolean());
+        assertEquals("io.onsure.harness.HarnessCli",
+                contract.path("authoritative_universal_harness_main").asText());
+        JsonNode oruda = StreamSupport.stream(
+                        contract.path("optional_target_adapters").spliterator(), false)
+                .filter(value -> "ORUDA_V1".equals(value.path("adapter_id").asText()))
+                .findFirst().orElseThrow();
+        assertEquals("io.onsure.platform.OrudaTargetAdapter", oruda.path("class").asText());
+        assertFalse(oruda.path("required_for_core").asBoolean(true));
+        assertFalse(oruda.path("claims_trusted").asBoolean(true));
+        assertFalse(oruda.path("may_write_onsure_final_decision").asBoolean(true));
+        assertFalse(contract.path("core_preflight").path("requires_oruda").asBoolean(true));
     }
 
     @Test
-    void allRequiredProductScenariosHarnessInvariantsAndOutputsAreLocked() throws Exception {
+    void requiredCoreOptionalScenariosInvariantsAndOutputsAreSeparated() throws Exception {
         JsonNode contract = mapper.readTree(Path.of("contracts/implementation-authority.v1.json").toFile());
-        Set<String> scenarios = textSet(contract.path("required_target_scenarios"));
-        assertTrue(scenarios.containsAll(Set.of(
+        Set<String> core = textSet(contract.path("required_core_scenarios"));
+        assertTrue(core.containsAll(Set.of(
                 "GENERAL_PROGRAM_BASELINE_FAIL",
                 "GENERAL_PROGRAM_REMEDIATED_PASS",
-                "AI_PROGRAM_FAIL",
-                "ORUDA_TARGET_FAIL",
-                "ORUDA_MVF_001_PASS")));
+                "AI_PROGRAM_FAIL")));
+        Set<String> optional = textSet(contract.path("optional_oruda_scenarios"));
+        assertTrue(optional.containsAll(Set.of("ORUDA_TARGET_FAIL", "ORUDA_MVF_001_PASS")));
         Set<String> invariants = textSet(contract.path("required_universal_harness_invariants"));
         assertTrue(invariants.containsAll(Set.of(
-                "THIRTY_REQUIRED_AXES",
-                "SEVEN_FIXTURE_CATEGORIES",
                 "FAIL_BLOCKED_NOT_RUN_CANNOT_BECOME_PASS",
-                "TWO_INDEPENDENT_RUNS",
-                "CRITICAL_MAJOR_ZERO_TWO_CONSECUTIVE_RUNS",
                 "EVIDENCE_RECEIPT_REVERIFY",
                 "RCA_PENDING_BLOCKS_CLOSURE",
-                "REGRESSION_TWO_CLEAN_RUNS",
-                "AUTOMATIC_FINAL_LOCK_FORBIDDEN")));
+                "AUTOMATIC_FINAL_LOCK_FORBIDDEN",
+                "CORE_OPTIONAL_ADAPTER_ISOLATION",
+                "INTERNAL_VALIDATION_IS_NONFINAL")));
         Set<String> outputs = textSet(contract.path("required_persistent_outputs"));
         assertTrue(outputs.containsAll(Set.of(
-                "finding", "failure_mode", "rca", "remediation_plan", "fixture_result",
-                "oracle_result", "regression_lock", "validation_report", "revalidation_delta",
-                "internal_verifier_receipt", "internal_audit_receipt",
-                "universal_run_summary", "universal_evidence_manifest",
-                "universal_run_receipt", "universal_final_candidate", "universal_regression_receipt")));
+                "validation_target", "validation_job", "evidence", "finding", "failure_mode",
+                "rca_candidate", "remediation_plan", "fixture_result", "oracle_result",
+                "regression_lock", "validation_report", "revalidation_delta",
+                "internal_verifier_receipt", "internal_audit_receipt")));
+        Set<String> fullChain = textSet(contract.path("product_full_chain_required_outputs"));
+        assertTrue(fullChain.containsAll(Set.of(
+                "program_profile", "behavior_profile", "execution_plan", "review_result",
+                "patch_plan", "approved_hunks", "worktree_receipt", "before_after_proof",
+                "git_change_set", "draft_pr_receipt", "restart_restore_receipt")));
     }
 
     @Test

@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_HUNK_APPROVAL_RECEIPT_V1",
+  "approval_id": "approval-hunk-001",
+  "authority_class": "HUMAN_OR_EXTERNAL_APPROVER",
+  "approval_purpose": "PATCH_HUNK_APPROVAL",
+  "nonce": "nonce-hunk-approval-0001",
+  "patch_plan_id": "PATCH-job-sample-001",
+  "patch_plan_file_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "approved_hunk_ids": ["HUNK-aaaaaaaaaaaaaaaa"],
+  "branch_name": "fix/sample-approved-patch",
+  "actor": "reviewer@example.invalid",
+  "key_id": "reviewer-key-001",
+  "signature_algorithm": "Ed25519",
+  "signature": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "approved_at": "2026-07-26T00:00:00Z",
+  "expires_at": "2026-07-27T00:00:00Z",
+  "allow_direct_main_write": false,
+  "allow_force_push": false,
+  "allow_merge": false
+}

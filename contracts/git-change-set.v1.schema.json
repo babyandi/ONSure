@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/git-change-set.v1.schema.json",
+  "title": "ONSure Git Change Set v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "change_set_id", "patch_apply_receipt_sha256", "improvement_proof_sha256",
+    "delivery_approval_sha256", "approval_id", "approval_actor", "approval_key_id",
+    "branch", "commit_sha", "tree_sha", "changed_files", "commit_message", "push_state",
+    "draft_pr_state", "merge_state", "created_at", "final_claim_allowed", "change_set_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_GIT_CHANGE_SET_V1"},
+    "change_set_id": {"type": "string", "minLength": 1},
+    "patch_apply_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "improvement_proof_sha256": {"$ref": "#/$defs/sha256"},
+    "delivery_approval_sha256": {"$ref": "#/$defs/sha256"},
+    "approval_id": {"type": "string", "minLength": 1},
+    "approval_actor": {"type": "string", "minLength": 1},
+    "approval_key_id": {"type": "string", "minLength": 1},
+    "branch": {"type": "string", "minLength": 1},
+    "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "tree_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "changed_files": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "commit_message": {"type": "string", "minLength": 1, "maxLength": 200},
+    "push_state": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "draft_pr_state": {"enum": ["NOT_RUN", "PASS", "FAIL", "HOLD"]},
+    "merge_state": {"const": "PROHIBITED"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false},
+    "change_set_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

@@ -1,0 +1,36 @@
+{
+  "contract": "ONSURE_BEHAVIOR_PROFILE_V1",
+  "profile_id": "invalid-behavior",
+  "program_profile_id": "profile-sample-001",
+  "source_baseline_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "coverage_class": "DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY",
+  "direct_behavior_telemetry": false,
+  "runtime_context": {
+    "harness_id": "harness",
+    "execution_profile": "LOCAL",
+    "model_id": "model",
+    "model_version": "v1",
+    "prompt_digest": "NOT_AVAILABLE",
+    "tool_registry_digest": "NOT_AVAILABLE",
+    "environment_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "observations": [],
+  "variability": {
+    "repeated_run_count": 1,
+    "scenario_count": 0,
+    "distinct_output_count": 0,
+    "unstable_scenarios": [],
+    "stable": true
+  },
+  "failure_conditions": [],
+  "policy_violations": [],
+  "evidence_refs": ["invented-receipt"],
+  "receipt_directory": "",
+  "state": "BEHAVIOR_ACTIVE",
+  "generated_at": "2026-07-26T00:00:00Z",
+  "learning_method": "REPEATED_EXECUTABLE_FIXTURE_OBSERVATION_V1",
+  "human_review": "PASS",
+  "independent_validation": "PASS",
+  "final_claim_allowed": false,
+  "profile_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

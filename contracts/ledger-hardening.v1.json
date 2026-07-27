@@ -1,0 +1,36 @@
+{
+  "contract": "ONSURE_LEDGER_HARDENING_V1",
+  "version": "1.0.0",
+  "requirements": {
+    "current_validation_pack_binding": true,
+    "two_pass_receipts_same_pack": true,
+    "distinct_run_ids": true,
+    "distinct_verifier_identities": true,
+    "distinct_verifier_key_ids": true,
+    "learner_requester_reviewer_approver_verifier_role_separation": true,
+    "signed_independent_recalculation_receipt": true,
+    "post_apply_receipt_must_exist": true,
+    "post_apply_receipt_must_pass": true,
+    "post_apply_receipt_candidate_and_artifact_binding": true,
+    "git_ref_accepts_sha1_or_sha256": true,
+    "artifact_digest_requires_sha256": true,
+    "cross_process_file_lock_or_cas": true,
+    "append_only_external_head_anchor": true,
+    "rollback_pointer_resolution": true,
+    "replay_and_whole_ledger_rewrite_detection": true
+  },
+  "required_adversarial_tests": [
+    "SAME_VERIFIER_TWO_RUNS",
+    "SAME_KEY_DIFFERENT_IDENTITIES",
+    "OLD_PACK_PASS_REUSE",
+    "MISSING_POST_APPLY_RECEIPT",
+    "FOREIGN_CANDIDATE_POST_APPLY_RECEIPT",
+    "CONCURRENT_APPEND_COLLISION",
+    "WHOLE_LEDGER_REWRITE_AND_REHASH",
+    "EXTERNAL_ANCHOR_MISMATCH",
+    "ROLLBACK_POINTER_MISSING"
+  ],
+  "implementation_state": "CONTRACT_READY_CODE_PARTIAL",
+  "runtime_verification": "NOT_RUN",
+  "final_claim_allowed": false
+}

@@ -1,0 +1,62 @@
+{
+  "contract": "ONSURE_PRODUCT_PROCESS_LINEAGE_V1",
+  "version": "1.1.0",
+  "stages": [
+    {"stage_id":"SOURCE_INTAKE","requires":[],"consumes":[],"outputs":["SOURCE_SNAPSHOT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"PROGRAM_PROFILE","requires":["SOURCE_INTAKE"],"consumes":["SOURCE_SNAPSHOT"],"outputs":["PROGRAM_PROFILE"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"EXECUTION_PLAN","requires":["PROGRAM_PROFILE"],"consumes":["SOURCE_SNAPSHOT","PROGRAM_PROFILE"],"outputs":["EXECUTION_PLAN"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"PLAN_APPROVAL","requires":["EXECUTION_PLAN"],"consumes":["EXECUTION_PLAN"],"outputs":["PLAN_APPROVAL_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"BEHAVIOR_PROFILE","requires":["PLAN_APPROVAL"],"consumes":["SOURCE_SNAPSHOT","PROGRAM_PROFILE","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT"],"outputs":["BEHAVIOR_PROFILE"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"OREVIEW","requires":["BEHAVIOR_PROFILE"],"consumes":["PROGRAM_PROFILE","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT","BEHAVIOR_PROFILE"],"outputs":["OREVIEW_RESULT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"VERIFICATION","requires":["OREVIEW"],"consumes":["SOURCE_SNAPSHOT","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT","BEHAVIOR_PROFILE","OREVIEW_RESULT"],"outputs":["VALIDATION_REPORT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"RCA","requires":["VERIFICATION"],"consumes":["VALIDATION_REPORT","BEHAVIOR_PROFILE"],"outputs":["RCA_SET"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"PATCH_PLAN","requires":["RCA"],"consumes":["RCA_SET","VALIDATION_REPORT"],"outputs":["PATCH_PLAN"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"HUNK_APPROVAL","requires":["PATCH_PLAN"],"consumes":["PATCH_PLAN"],"outputs":["HUNK_APPROVAL_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"PATCH_APPLY","requires":["HUNK_APPROVAL"],"consumes":["SOURCE_SNAPSHOT","PATCH_PLAN","HUNK_APPROVAL_RECEIPT"],"outputs":["PATCH_APPLY_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"REVALIDATION","requires":["PATCH_APPLY"],"consumes":["PATCH_APPLY_RECEIPT","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT"],"outputs":["REVALIDATION_REPORT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"IMPROVEMENT_PROOF","requires":["REVALIDATION"],"consumes":["VALIDATION_REPORT","REVALIDATION_REPORT","PATCH_APPLY_RECEIPT"],"outputs":["IMPROVEMENT_PROOF"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"GIT_APPROVAL","requires":["IMPROVEMENT_PROOF"],"consumes":["IMPROVEMENT_PROOF"],"outputs":["GIT_APPROVAL_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"COMMIT","requires":["GIT_APPROVAL"],"consumes":["PATCH_APPLY_RECEIPT","IMPROVEMENT_PROOF","GIT_APPROVAL_RECEIPT"],"outputs":["GIT_CHANGE_SET"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"PUSH","requires":["COMMIT"],"consumes":["GIT_CHANGE_SET","GIT_APPROVAL_RECEIPT"],"outputs":["PUSH_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"DRAFT_PR","requires":["PUSH"],"consumes":["GIT_CHANGE_SET","PUSH_RECEIPT","GIT_APPROVAL_RECEIPT"],"outputs":["DRAFT_PR_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"EVIDENCE_LOCK","requires":["DRAFT_PR"],"consumes":["SOURCE_SNAPSHOT","PROGRAM_PROFILE","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT","BEHAVIOR_PROFILE","OREVIEW_RESULT","VALIDATION_REPORT","RCA_SET","PATCH_PLAN","HUNK_APPROVAL_RECEIPT","PATCH_APPLY_RECEIPT","REVALIDATION_REPORT","IMPROVEMENT_PROOF","GIT_APPROVAL_RECEIPT","GIT_CHANGE_SET","PUSH_RECEIPT","DRAFT_PR_RECEIPT"],"outputs":["EVIDENCE_BUNDLE"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"INDEPENDENT_OTESTER","requires":["EVIDENCE_LOCK"],"consumes":["EVIDENCE_BUNDLE"],"outputs":["OTESTER_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]},
+    {"stage_id":"INDEPENDENT_OAUDIT","requires":["INDEPENDENT_OTESTER"],"consumes":["EVIDENCE_BUNDLE","OTESTER_RECEIPT"],"outputs":["OAUDIT_RECEIPT"],"controls":["PRESENCE","ORDER","SOURCE_HASH","TENANT","REPLAY"]}
+  ],
+  "artifacts": [
+    {"artifact_id":"SOURCE_SNAPSHOT","producer":"SOURCE_INTAKE","parent_bindings":[],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"PROGRAM_PROFILE","producer":"PROGRAM_PROFILE","parent_bindings":["SOURCE_SNAPSHOT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"EXECUTION_PLAN","producer":"EXECUTION_PLAN","parent_bindings":["SOURCE_SNAPSHOT","PROGRAM_PROFILE"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"PLAN_APPROVAL_RECEIPT","producer":"PLAN_APPROVAL","parent_bindings":["EXECUTION_PLAN"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"BEHAVIOR_PROFILE","producer":"BEHAVIOR_PROFILE","parent_bindings":["SOURCE_SNAPSHOT","PROGRAM_PROFILE","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"OREVIEW_RESULT","producer":"OREVIEW","parent_bindings":["PROGRAM_PROFILE","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT","BEHAVIOR_PROFILE"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"VALIDATION_REPORT","producer":"VERIFICATION","parent_bindings":["SOURCE_SNAPSHOT","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT","BEHAVIOR_PROFILE","OREVIEW_RESULT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"RCA_SET","producer":"RCA","parent_bindings":["VALIDATION_REPORT","BEHAVIOR_PROFILE"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"PATCH_PLAN","producer":"PATCH_PLAN","parent_bindings":["RCA_SET","VALIDATION_REPORT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"HUNK_APPROVAL_RECEIPT","producer":"HUNK_APPROVAL","parent_bindings":["PATCH_PLAN"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"PATCH_APPLY_RECEIPT","producer":"PATCH_APPLY","parent_bindings":["SOURCE_SNAPSHOT","PATCH_PLAN","HUNK_APPROVAL_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"REVALIDATION_REPORT","producer":"REVALIDATION","parent_bindings":["PATCH_APPLY_RECEIPT","EXECUTION_PLAN","PLAN_APPROVAL_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"IMPROVEMENT_PROOF","producer":"IMPROVEMENT_PROOF","parent_bindings":["VALIDATION_REPORT","REVALIDATION_REPORT","PATCH_APPLY_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"GIT_APPROVAL_RECEIPT","producer":"GIT_APPROVAL","parent_bindings":["IMPROVEMENT_PROOF"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"GIT_CHANGE_SET","producer":"COMMIT","parent_bindings":["PATCH_APPLY_RECEIPT","IMPROVEMENT_PROOF","GIT_APPROVAL_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"PUSH_RECEIPT","producer":"PUSH","parent_bindings":["GIT_CHANGE_SET","GIT_APPROVAL_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"DRAFT_PR_RECEIPT","producer":"DRAFT_PR","parent_bindings":["GIT_CHANGE_SET","PUSH_RECEIPT","GIT_APPROVAL_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"EVIDENCE_BUNDLE","producer":"EVIDENCE_LOCK","parent_bindings":["SOURCE_SNAPSHOT","DRAFT_PR_RECEIPT","IMPROVEMENT_PROOF"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"OTESTER_RECEIPT","producer":"INDEPENDENT_OTESTER","parent_bindings":["EVIDENCE_BUNDLE"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"},
+    {"artifact_id":"OAUDIT_RECEIPT","producer":"INDEPENDENT_OAUDIT","parent_bindings":["EVIDENCE_BUNDLE","OTESTER_RECEIPT"],"lineage_required":true,"tenant_bound":true,"source_bound":true,"missing_detection":"DOWNSTREAM_CONSUMER_AND_EVIDENCE_MANIFEST"}
+  ],
+  "invariants": [
+    "NO_STAGE_SKIP", "NO_STALE_RECEIPT_REPLAY", "NO_CROSS_TENANT_SUBSTITUTION",
+    "NO_FINAL_WITHOUT_INDEPENDENT_RECEIPTS", "NO_COMMIT_WITHOUT_IMPROVEMENT_PROOF",
+    "NO_PATCH_WITHOUT_HUNK_APPROVAL", "NO_RCA_CONFIRMATION_WITHOUT_CAUSAL_EXPERIMENT",
+    "NO_DELETION_DURING_LEGAL_HOLD", "NO_LICENSE_CREDIT_INVARIANT_BREAK",
+    "NO_VERIFICATION_BEFORE_PLAN_APPROVAL", "NO_REVIEW_BEFORE_BEHAVIOR_OBSERVATION"
+  ],
+  "release_gate": {
+    "independent_otester": "NOT_RUN",
+    "independent_oaudit": "NOT_RUN",
+    "final_lock_allowed": false,
+    "production_go": false,
+    "commercial_go": false
+  }
+}

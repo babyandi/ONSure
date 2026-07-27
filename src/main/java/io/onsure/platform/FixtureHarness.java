@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +18,13 @@ import java.util.concurrent.TimeUnit;
 /** Executes trusted development fixtures through a named Oracle. */
 public final class FixtureHarness {
     private static final Set<String> ALLOWED_EXECUTABLES = Set.of("bash");
+    private static final Set<String> ALLOWED_SANDBOX_BACKENDS = Set.of(
+            "ROOTLESS_BWRAP", "CI_SUDO_UNSHARE_BWRAP");
     private static final int MAX_ARGUMENTS = 64;
     private static final int MAX_COMMAND_CHARACTERS = 8192;
     private static final int MAX_OUTPUT_BYTES = 65_536;
+    private static final String SANDBOX_ENV = "ONSURE_FIXTURE_SANDBOX_MODE";
+    private static final String SANDBOX_BACKEND_ENV = "ONSURE_FIXTURE_SANDBOX_BACKEND";
 
     public interface Oracle {
         String oracleId();
@@ -65,6 +70,14 @@ public final class FixtureHarness {
     public String harnessId() { return harnessId; }
     public Set<String> oracleIds() { return Set.copyOf(oracles.keySet()); }
 
+    public static String sandboxMode() {
+        return System.getenv().getOrDefault(SANDBOX_ENV, "HOST_REVIEWED_ONLY");
+    }
+
+    public static String sandboxBackend() {
+        return System.getenv().getOrDefault(SANDBOX_BACKEND_ENV, "ROOTLESS_BWRAP");
+    }
+
     public void register(Oracle oracle) {
         if (oracle == null || oracle.oracleId() == null || oracle.oracleId().isBlank()) {
             throw new IllegalArgumentException("invalid oracle");
@@ -85,26 +98,27 @@ public final class FixtureHarness {
         boolean executed = fixture.executable();
         int exitCode = 0;
         boolean timedOut = false;
-        List<String> command = fixture.command();
+        List<String> executedCommand = fixture.command();
 
         if (executed) {
-            validateCommand(command, normalizedRoot);
+            validateCommand(fixture.command(), normalizedRoot);
+            executedCommand = sandboxedCommand(fixture, normalizedRoot);
             Path outputFile = Files.createTempFile("onsure-fixture-", ".log");
             try {
-                ProcessBuilder builder = new ProcessBuilder(command)
+                ProcessBuilder builder = new ProcessBuilder(executedCommand)
                         .directory(normalizedRoot.toFile())
                         .redirectErrorStream(true)
                         .redirectOutput(outputFile.toFile());
                 restrictEnvironment(builder.environment(), fixture.environment());
                 Process process = builder.start();
-                boolean completed = process.waitFor(fixture.timeoutSeconds(), TimeUnit.SECONDS);
+                boolean completed = process.waitFor(fixture.timeoutSeconds() + 5L, TimeUnit.SECONDS);
                 if (!completed) {
                     timedOut = true;
-                    process.destroyForcibly();
-                    process.waitFor(5, TimeUnit.SECONDS);
+                    terminateProcessTree(process);
                     exitCode = 124;
                 } else {
                     exitCode = process.exitValue();
+                    terminateDescendants(process.toHandle());
                 }
                 observed = readLimited(outputFile).strip();
             } finally {
@@ -120,7 +134,39 @@ public final class FixtureHarness {
         return new HarnessExecution(
                 result, executed, exitCode, timedOut,
                 Duration.between(started, Instant.now()).toMillis(),
-                Hashing.sha256(observed), command);
+                Hashing.sha256(observed), executedCommand);
+    }
+
+    private static List<String> sandboxedCommand(FixtureDefinition fixture, Path root) {
+        String mode = sandboxMode();
+        if ("HOST_REVIEWED_ONLY".equals(mode)) return fixture.command();
+        if (!"REQUIRED".equals(mode)) {
+            throw new IllegalArgumentException("unknown fixture sandbox mode: " + mode);
+        }
+        String backend = sandboxBackend();
+        if (!ALLOWED_SANDBOX_BACKENDS.contains(backend)) {
+            throw new IllegalArgumentException("unknown fixture sandbox backend: " + backend);
+        }
+        Path launcher = findSandboxLauncher();
+        List<String> command = new ArrayList<>();
+        command.add("bash");
+        command.add(launcher.toString());
+        command.add(root.toString());
+        command.add(Integer.toString(fixture.timeoutSeconds()));
+        command.addAll(fixture.command());
+        return List.copyOf(command);
+    }
+
+    private static Path findSandboxLauncher() {
+        Path current = Path.of(System.getProperty("user.dir", "."))
+                .toAbsolutePath().normalize();
+        for (int depth = 0; current != null && depth < 8; depth++, current = current.getParent()) {
+            Path candidate = current.resolve("scripts/fixture-sandbox-launcher.sh").normalize();
+            if (Files.isRegularFile(candidate) && !Files.isSymbolicLink(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("FIXTURE_SANDBOX_LAUNCHER_MISSING");
     }
 
     private static void validateCommand(List<String> command, Path root) throws Exception {
@@ -149,13 +195,21 @@ public final class FixtureHarness {
                 || !script.toRealPath().startsWith(root.toRealPath())) {
             throw new IllegalArgumentException("fixture script must be a regular file inside target root");
         }
+        for (int index = 2; index < command.size(); index++) {
+            String argument = command.get(index);
+            if (argument.startsWith("/") || argument.contains("../") || argument.equals("..")) {
+                throw new IllegalArgumentException("fixture argument path escape prohibited");
+            }
+        }
     }
 
     private static void restrictEnvironment(Map<String, String> processEnvironment,
             Map<String, String> fixtureEnvironment) {
         Map<String, String> host = System.getenv();
         processEnvironment.clear();
-        for (String key : List.of("PATH", "JAVA_HOME", "LANG", "LC_ALL")) {
+        for (String key : List.of(
+                "PATH", "JAVA_HOME", "LANG", "LC_ALL", SANDBOX_ENV, SANDBOX_BACKEND_ENV,
+                "CI", "GITHUB_ACTIONS")) {
             String value = host.get(key);
             if (value != null) processEnvironment.put(key, value);
         }
@@ -167,9 +221,23 @@ public final class FixtureHarness {
         });
     }
 
+    private static void terminateProcessTree(Process process) throws InterruptedException {
+        terminateDescendants(process.toHandle());
+        process.destroyForcibly();
+        process.waitFor(5, TimeUnit.SECONDS);
+    }
+
+    private static void terminateDescendants(ProcessHandle handle) {
+        handle.descendants()
+                .sorted((left, right) -> Long.compare(right.pid(), left.pid()))
+                .forEach(child -> {
+                    try { child.destroyForcibly(); } catch (Exception ignored) {}
+                });
+    }
+
     private static String readLimited(Path file) throws Exception {
-        byte[] bytes = Files.readAllBytes(file);
-        if (bytes.length > MAX_OUTPUT_BYTES) throw new IllegalArgumentException("fixture output limit exceeded");
-        return new String(bytes, StandardCharsets.UTF_8);
+        long size = Files.size(file);
+        if (size > MAX_OUTPUT_BYTES) throw new IllegalArgumentException("fixture output limit exceeded");
+        return Files.readString(file, StandardCharsets.UTF_8);
     }
 }

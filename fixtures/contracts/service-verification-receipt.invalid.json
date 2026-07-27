@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_SERVICE_VERIFICATION_RECEIPT_V1",
+  "approval_id": "service-invalid-001",
+  "authority_class": "HUMAN_OR_EXTERNAL_APPROVER",
+  "approval_purpose": "PAYMENT_VERIFICATION",
+  "nonce": "short",
+  "case_id": "case-sample-001",
+  "case_revision": 0,
+  "verification_type": "REFUND",
+  "provider": "provider-sample",
+  "provider_receipt_id": "provider-receipt-001",
+  "provider_receipt_digest": "not-a-digest",
+  "decision": "PASS",
+  "reasons": [],
+  "actor": "ONSURE_AUTOMATION",
+  "key_id": "key",
+  "signature_algorithm": "NONE",
+  "signature": "bad",
+  "approved_at": "not-a-date",
+  "expires_at": "not-a-date"
+}

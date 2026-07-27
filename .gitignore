@@ -7,4 +7,6 @@ validation-data/
 *.log
 .onsure/autopilot/
 .onsure/one-shot/
+.onsure/core-modular/
+.onsure/final-stage/
 __pycache__/

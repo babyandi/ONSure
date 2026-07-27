@@ -1,6 +1,5 @@
 package io.onsure.platform.oruda;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.HexFormat;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -193,14 +193,39 @@ public final class FinalCandidateGate {
         if (!Objects.equals(evidence1.targetId(), evidence2.targetId())) reasons.add("ORUDA_FINAL_CANDIDATE_TARGET_MISMATCH");
         if (!Objects.equals(evidence1.sourceTreeSha256(), evidence2.sourceTreeSha256())) reasons.add("ORUDA_FINAL_CANDIDATE_SOURCE_MISMATCH");
         if (!Objects.equals(evidence1.policyDigest(), evidence2.policyDigest())) reasons.add("ORUDA_FINAL_CANDIDATE_POLICY_MISMATCH");
-        if (!"PASS".equals(report1.path("decision").asText())) reasons.add("ORUDA_FINAL_CANDIDATE_RUN1_NON_PASS");
-        if (!"PASS".equals(report2.path("decision").asText())) reasons.add("ORUDA_FINAL_CANDIDATE_RUN2_NON_PASS");
+        requireTechnicallyCleanRun("RUN1", report1, reasons);
+        requireTechnicallyCleanRun("RUN2", report2, reasons);
         if (!Objects.equals(targetId, report1.path("target").path("targetId").asText())
                 || !Objects.equals(targetId, report2.path("target").path("targetId").asText())) {
             reasons.add("ORUDA_FINAL_CANDIDATE_REPORT_TARGET_MISMATCH");
         }
         if (!Objects.equals(regression1.path("resultDigest").asText(), regression2.path("resultDigest").asText())) {
             reasons.add("ORUDA_FINAL_CANDIDATE_REGRESSION_RESULT_MISMATCH");
+        }
+    }
+
+    private static void requireTechnicallyCleanRun(String run, JsonNode report, List<String> reasons) {
+        String decision = report.path("decision").asText();
+        if ("PASS".equals(decision)) return;
+        boolean nonfinalHold = "HOLD".equals(decision)
+                && "SELF_VALIDATION_NONFINAL".equals(
+                        report.path("summary").path("assurance_class").asText());
+        boolean noFindings = report.path("findings").isArray() && report.path("findings").isEmpty();
+        boolean noFailureModes = report.path("failureModes").isArray()
+                && report.path("failureModes").isEmpty();
+        boolean noRca = report.path("rcaRecords").isArray() && report.path("rcaRecords").isEmpty();
+        JsonNode fixtures = report.path("fixtureResults");
+        boolean allFixturesPass = fixtures.isArray() && !fixtures.isEmpty();
+        if (allFixturesPass) {
+            for (JsonNode fixture : fixtures) {
+                if (!"PASS".equals(fixture.path("decision").asText())) {
+                    allFixturesPass = false;
+                    break;
+                }
+            }
+        }
+        if (!(nonfinalHold && noFindings && noFailureModes && noRca && allFixturesPass)) {
+            reasons.add(run + "_ORUDA_FINAL_CANDIDATE_RUN_NOT_TECHNICALLY_CLEAN:" + decision);
         }
     }
 
@@ -312,7 +337,7 @@ public final class FinalCandidateGate {
                 reasons.add(prefix + "RECEIPT_MISSING");
                 return;
             }
-            Map<String, Object> value = CANONICAL_MAPPER.readValue(file.toFile(), new TypeReference<>() {});
+            Map<String, Object> value = objectMap(CANONICAL_MAPPER.readTree(file.toFile()));
             Object stored = value.remove("receipt_sha256");
             if (!contract.equals(value.get("contract"))) reasons.add(prefix + "CONTRACT_MISMATCH");
             if (!authority.equals(value.get("authority"))) reasons.add(prefix + "AUTHORITY_MISMATCH");
@@ -323,6 +348,32 @@ public final class FinalCandidateGate {
         } catch (Exception e) {
             reasons.add(prefix + "RECEIPT_UNREADABLE:" + e.getClass().getSimpleName());
         }
+    }
+
+    private static Map<String, Object> objectMap(JsonNode node) {
+        if (node == null || !node.isObject()) throw new IllegalArgumentException("JSON_OBJECT_REQUIRED");
+        Map<String, Object> result = new LinkedHashMap<>();
+        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            result.put(field.getKey(), jsonValue(field.getValue()));
+        }
+        return result;
+    }
+
+    private static Object jsonValue(JsonNode node) {
+        if (node == null || node.isNull()) return null;
+        if (node.isObject()) return objectMap(node);
+        if (node.isArray()) {
+            List<Object> values = new ArrayList<>();
+            node.forEach(item -> values.add(jsonValue(item)));
+            return values;
+        }
+        if (node.isTextual()) return node.textValue();
+        if (node.isBoolean()) return node.booleanValue();
+        if (node.isIntegralNumber()) return node.canConvertToInt() ? node.intValue() : node.longValue();
+        if (node.isFloatingPointNumber()) return node.decimalValue();
+        throw new IllegalArgumentException("JSON_VALUE_TYPE_UNSUPPORTED:" + node.getNodeType());
     }
 
     private static void addPrefixed(List<String> reasons, String prefix, ValidationResult result) {

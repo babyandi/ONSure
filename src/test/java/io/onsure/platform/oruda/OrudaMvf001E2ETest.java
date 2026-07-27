@@ -13,6 +13,7 @@ import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -39,11 +40,8 @@ class OrudaMvf001E2ETest {
                 .map(value -> value.path("group").asText())
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         assertEquals(Map.of(
-                "POSITIVE", 3L,
-                "NEGATIVE", 5L,
-                "HANDOFF", 3L,
-                "QUALITY", 3L,
-                "EVIDENCE", 3L), groups);
+                "POSITIVE", 3L, "NEGATIVE", 5L, "HANDOFF", 3L,
+                "QUALITY", 3L, "EVIDENCE", 3L), groups);
 
         Set<String> lanes = StreamSupport.stream(root.path("lanes").spliterator(), false)
                 .map(JsonNode::asText).collect(Collectors.toSet());
@@ -61,19 +59,17 @@ class OrudaMvf001E2ETest {
     }
 
     @Test
-    void mvfRunsThroughExplicitOrudaAdapterHarnessOracleEvidenceRcaAndRegressionLock() throws Exception {
+    void mvfFixturesAndLineagePassWhileProductAssuranceRemainsHold() throws Exception {
         ValidationTarget target = new ValidationTarget(
-                "ORUDA-MVF-001",
-                "ORUDA Minimum Viable Fixture Set",
-                TargetType.AI_AGENTIC_PLATFORM,
-                ROOT,
-                SourceReferenceBinding.treeReference(ROOT),
-                OrudaTargetAdapter.ID,
-                "ONSURE_ORUDA_MVF_POLICY_V1",
-                "LOCAL_MVF_E2E");
+                "ORUDA-MVF-001", "ORUDA Minimum Viable Fixture Set",
+                TargetType.AI_AGENTIC_PLATFORM, ROOT,
+                SourceReferenceBinding.treeReference(ROOT), OrudaTargetAdapter.ID,
+                "ONSURE_ORUDA_MVF_POLICY_V1", "LOCAL_MVF_E2E");
 
-        ValidationEngine.RunResult result = ValidationEngine.withOrudaAdapter(temp.resolve("runs")).run(target);
-        assertEquals(Decision.PASS, result.report().decision());
+        ValidationEngine.RunResult result = ValidationEngine.withOptionalAdapters(
+                temp.resolve("runs"), List.of(new OrudaTargetAdapter())).run(target);
+        assertEquals(Decision.HOLD, result.report().decision());
+        assertEquals("HOLD", result.report().summary().get("review_quality_decision"));
         assertEquals(17, result.report().fixtureResults().size());
         assertTrue(result.report().fixtureResults().stream()
                 .allMatch(value -> value.decision() == Decision.PASS));
@@ -90,17 +86,12 @@ class OrudaMvf001E2ETest {
         assertEquals(0, ((Number) fixtureStage.metrics().get("failures")).intValue());
 
         for (String file : Set.of(
-                "fixture-registry.json",
-                "oracle-registry.json",
-                "harness-command-manifest.json",
-                "fixture-results.json",
-                "evidence.json",
-                "oruda-evidence-registry.json",
-                "regression-lock.json",
-                "internal-verifier-receipt.json",
-                "internal-audit-receipt.json",
-                "validation-report.json",
-                "manifest.sha256")) {
+                "program-profile.json", "execution-plan.json", "execution-plan-approval.json",
+                "behavior-profile.json", "review-result.json", "fixture-registry.json",
+                "oracle-registry.json", "harness-command-manifest.json", "fixture-results.json",
+                "evidence.json", "oruda-evidence-registry.json", "regression-lock.json",
+                "internal-verifier-receipt.json", "internal-audit-receipt.json",
+                "validation-report.json", "manifest.sha256")) {
             assertTrue(Files.isRegularFile(result.runRoot().resolve(file)), file);
         }
         assertEquals(Decision.PASS,

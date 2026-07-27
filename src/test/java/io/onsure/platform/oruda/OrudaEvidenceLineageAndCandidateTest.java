@@ -12,6 +12,7 @@ import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -76,6 +77,7 @@ class OrudaEvidenceLineageAndCandidateTest {
                 OrudaTargetAdapter.ID,
                 "ONSURE_ORUDA_MVF_POLICY_V1",
                 "LOCAL_MVF_E2E");
-        return ValidationEngine.defaultEngine(store).run(target);
+        return ValidationEngine.withOptionalAdapters(
+                store, List.of(new OrudaTargetAdapter())).run(target);
     }
 }
