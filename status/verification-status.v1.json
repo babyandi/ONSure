@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
@@ -33,6 +33,23 @@
     "runner": "python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test",
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
+  "product_subrequirement_coverage": {
+    "requirement_count": 38,
+    "implemented": 2,
+    "partial": 28,
+    "stub": 4,
+    "design_only": 4,
+    "state": "PENDING_LOCAL_RECEIPT_WITH_36_KNOWN_INCOMPLETE",
+    "runner": "python3 scripts/validate-product-subrequirements.py --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "workflow_surface_parity": {
+    "dispatcher_operation_count": 34,
+    "surfaces": ["CLI", "LOCAL_AUTHENTICATED_API", "VSCODE"],
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-workflow-surface-parity.py --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
   "product_process_lineage": {
     "stage_count": 20,
     "artifact_count": 20,
@@ -45,7 +62,9 @@
     "atomic_requirement_cases": 10,
     "automation_boundary_cases": 6,
     "verification_claim_cases": 8,
-    "all_registered_failure_injections": 52,
+    "product_subrequirement_cases": 10,
+    "workflow_surface_cases": 6,
+    "all_registered_failure_injections": 68,
     "logic_self_test": "PASS",
     "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
