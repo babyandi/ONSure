@@ -1,80 +1,90 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
   "deferred_final_stage_detail": "CODESPACE_OR_EQUIVALENT_FINAL_STAGE_DEFERRED_BY_USER",
   "active_remediation_issues": [20],
-  "committed_status_evidence_policy": {
-    "dynamic_ci_evidence_is_external": true,
-    "current_head_pass_must_not_be_self_declared_in_source": true,
-    "current_head_evidence_query": "GITHUB_ACTIONS_COMMIT_OR_PR_RUN",
-    "historical_observation_is_not_current_source_receipt": true
+  "validation_execution_policy": {
+    "github_actions": "DISABLED_BY_USER",
+    "workflow_files_allowed": false,
+    "allowed_execution_modes": [
+      "LOCAL_STATIC_ONE_SHOT",
+      "LOCAL_FULL_GATE",
+      "LOCAL_FINAL_STAGE"
+    ],
+    "current_source_pass_requires_local_receipt": true,
+    "committed_dynamic_run_claims_allowed": false
   },
-  "historical_ci_self_validation": {
-    "workflow": "ONSure PR Validation",
-    "run_id": 30270821264,
-    "run_number": 151,
-    "validated_head": "9742beed6c9ce6451d3dcac78b76741c84e6715d",
+  "historical_automation_evidence": {
+    "provider": "ARCHIVED_REMOTE_AUTOMATION",
+    "run_id": 30276955486,
+    "run_number": 178,
+    "validated_head": "8ff5beb6f7310746ad55364802a2b034064aac9d",
     "state": "PASS_SELF_VALIDATION_NONFINAL",
-    "binding_scope": "PREVIOUS_PR_HEAD_ONLY",
+    "retained_for_audit_only": true,
     "current_source_bound": false,
-    "authority_class": "INTERNAL_CI_SELF_VALIDATION",
     "final_claim_allowed": false
   },
   "design_coverage": {
     "capability_count": 28,
-    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+    "state": "PENDING_LOCAL_RECEIPT",
     "runner": "python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test",
-    "source_bound_receipt": "EXTERNAL_CI_QUERY_REQUIRED"
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
   "product_process_lineage": {
     "stage_count": 20,
     "artifact_count": 20,
-    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+    "state": "PENDING_LOCAL_RECEIPT",
     "runner": "python3 scripts/validate-product-process-lineage.py --model contracts/product-process-lineage.v1.json --self-test",
-    "source_bound_receipt": "EXTERNAL_CI_QUERY_REQUIRED"
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
   "omission_failure_injection": {
     "design_process_lineage_cases": 28,
     "atomic_requirement_cases": 10,
-    "ci_boundary_cases": 5,
+    "automation_boundary_cases": 5,
     "verification_claim_cases": 8,
     "all_registered_failure_injections": 51,
     "logic_self_test": "PASS",
-    "current_head_execution": "EXTERNAL_CI_REQUIRED"
+    "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
   "repository_static_contracts": {
-    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+    "state": "PENDING_LOCAL_RECEIPT",
     "runner": "python3 scripts/validate-repository-contracts.py"
   },
   "codespace_free_static_gate": {
-    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+    "state": "PENDING_LOCAL_RECEIPT",
     "runner": "python3 scripts/validate-codespace-free-remediation.py"
+  },
+  "local_gate": {
+    "state": "NOT_RUN_CURRENT_MAIN",
+    "runner": "bash scripts/onsure-local-gate.sh --mode full --profile core",
+    "receipt_root": ".onsure/local-gate/"
   },
   "one_shot_static": {
     "state": "NOT_RUN_AS_SINGLE_COMMAND",
-    "runner": "bash scripts/onsure-one-shot.sh --static-only"
+    "runner": "bash scripts/onsure-one-shot.sh --static-only --profile core"
   },
   "one_shot_core": {
     "state": "NOT_RUN",
     "runner": "bash scripts/onsure-one-shot.sh --profile core"
   },
   "optional_oruda_profile": {
-    "state": "ONE_SHOT_PROFILE_NOT_RUN",
-    "runner": "bash scripts/onsure-one-shot.sh --profile oruda"
+    "state": "NOT_RUN",
+    "runner": "bash scripts/onsure-local-gate.sh --mode full --profile oruda"
   },
-  "java17_maven_junit": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
-  "core_modular_without_oruda": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+  "java17_maven_junit": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
+  "core_modular_without_oruda": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
   "sandbox_attack_tests": {
-    "state": "PARTIAL_10_OF_12_CURRENT_HEAD_CI_REQUIRED",
+    "state": "PARTIAL_10_OF_12_LOCAL_RECEIPT_REQUIRED",
     "verified_count": 10,
     "required_count": 12,
-    "unverified": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"]
+    "unverified": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
+    "current_source_execution": "NOT_RUN"
   },
-  "local_api_runtime_e2e": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
-  "vscode_static_and_vsix": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+  "local_api_runtime_e2e": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
+  "vscode_static_and_vsix": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
   "vscode_extension_host_full_chain": "NOT_RUN",
   "web_payment_provider_full_chain": "NOT_RUN",
   "direct_production_model_telemetry": "NOT_RUN",
