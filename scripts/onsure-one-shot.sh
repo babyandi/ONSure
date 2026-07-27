@@ -16,7 +16,7 @@ usage: bash scripts/onsure-one-shot.sh [--profile core|oruda] [--static-only]
 
 core        Core-oriented validation with Generic/AI scope.
 oruda       Core-oriented validation plus the optional ORUDA adapter fixture pack.
-static-only Tracked source, structured contracts, module boundaries, requirement candidates, links and shell syntax.
+static-only Tracked source, structured contracts, granular requirements, surface parity, links and shell syntax.
 EOF
       exit 0
       ;;
@@ -49,7 +49,7 @@ fail() {
 import json, pathlib, sys
 path, profile, failure, source = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V5",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V6",
     "decision": "FAIL",
     "profile": profile,
     "failure": failure,
@@ -83,7 +83,7 @@ import hashlib, json, pathlib, sys
 path, step, started, finished, code, stdout, stderr, source, profile, environment, *command = sys.argv[1:]
 def digest(path): return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
 body = {
-    "contract": "ONSURE_ONE_SHOT_STEP_RECEIPT_V5",
+    "contract": "ONSURE_ONE_SHOT_STEP_RECEIPT_V6",
     "step": step,
     "started_at": started,
     "finished_at": finished,
@@ -120,7 +120,7 @@ def capture(command):
     lines = (result.stdout or result.stderr).strip().splitlines()
     return {"command": command, "exit_code": result.returncode, "first_line": lines[0] if lines else ""}
 body = {
-    "contract": "ONSURE_ONE_SHOT_ENVIRONMENT_V4",
+    "contract": "ONSURE_ONE_SHOT_ENVIRONMENT_V5",
     "platform": platform.platform(),
     "machine": platform.machine(),
     "python": sys.version.splitlines()[0],
@@ -140,6 +140,8 @@ run_step repository-contracts python3 scripts/validate-repository-contracts.py -
 run_step codespace-free-static python3 scripts/validate-codespace-free-remediation.py
 run_step structured-contracts python3 scripts/validate-structured-contracts.py
 run_step module-boundaries python3 scripts/check-module-boundaries.py
+run_step product-subrequirements python3 scripts/validate-product-subrequirements.py --self-test
+run_step workflow-surface-parity python3 scripts/validate-workflow-surface-parity.py --self-test
 run_step vscode-static python3 scripts/validate-vscode-extension.py
 run_step atomic-requirements python3 scripts/extract-atomic-requirements.py --output "$OUT/atomic-requirement-candidates.json"
 run_step shell-syntax bash scripts/check-shell-syntax.sh
@@ -151,7 +153,7 @@ if [[ "$STATIC_ONLY" == true ]]; then
 import json, pathlib, sys
 path, profile, head, environment = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V5",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V6",
     "decision": "NON_FINAL",
     "mode": "STATIC_ONLY",
     "profile": profile,
@@ -161,6 +163,8 @@ body = {
     "codespace_free_static_gate": "PASS",
     "structured_contracts": "PASS_OR_LIMITED_BY_OPTIONAL_PACKAGES",
     "module_boundary_static": "PASS",
+    "product_subrequirements": "PASS_WITH_KNOWN_GAPS",
+    "workflow_surface_parity": "PASS",
     "vscode_static": "PASS_OR_NODE_NOT_RUN",
     "atomic_requirement_candidates": "GENERATED_NONAUTHORITATIVE",
     "shell_syntax": "PASS",
@@ -207,7 +211,7 @@ python3 - "$OUT/result.json" "$PROFILE" "$HEAD_SHA" "$ENVIRONMENT_DIGEST" "$ORUD
 import json, pathlib, sys
 path, profile, head, environment, oruda = sys.argv[1:]
 body = {
-    "contract": "ONSURE_ONE_SHOT_RESULT_V5",
+    "contract": "ONSURE_ONE_SHOT_RESULT_V6",
     "decision": "NON_FINAL",
     "release_gate": "HOLD_PRODUCT_FULL_CHAIN_AND_INDEPENDENT_ASSURANCE_NOT_RUN",
     "mode": "FULL_INTERNAL_AUTOMATION",
@@ -217,6 +221,8 @@ body = {
     "repository_contracts": "PASS",
     "codespace_free_static_gate": "PASS",
     "structured_contracts": "PASS",
+    "product_subrequirements": "PASS_WITH_KNOWN_GAPS",
+    "workflow_surface_parity": "PASS",
     "root_maven_junit": "PASS",
     "modular_core_cli_api": "PASS_NONFINAL",
     "python_regression": "PASS",
