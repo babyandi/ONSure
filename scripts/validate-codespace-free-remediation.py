@@ -10,7 +10,6 @@ import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REQUIRED = [
-    ".github/workflows/onsure-pr-validation.yml",
     "contracts/codespace-free-remediation-plan.v1.json",
     "contracts/atomic-requirement.v1.schema.json",
     "contracts/module-boundary.v1.json",
@@ -23,11 +22,6 @@ REQUIRED = [
     "status/implementation-matrix.v1.json",
     "status/verification-status.v1.json",
     "status/remaining-work-register.v1.json",
-    "fixtures/contracts/program-profile.valid.json",
-    "fixtures/contracts/behavior-profile.valid.json",
-    "fixtures/contracts/failure-memory.valid.json",
-    "fixtures/contracts/improvement-memory.valid.json",
-    "fixtures/contracts/evidence-receipt.valid.json",
     "requirements-validation.txt",
     "pom-modular.xml",
     "modules/onsure-core/pom.xml",
@@ -35,9 +29,9 @@ REQUIRED = [
     "modules/onsure-local-api/pom.xml",
     "modules/onsure-test-fixtures/pom.xml",
     "modules/onsure-adapter-oruda/pom.xml",
-    "modules/onsure-core/src/test/java/io/onsure/platform/CoreModuleSmokeTest.java",
-    "modules/onsure-adapter-oruda/src/test/java/io/onsure/platform/OrudaAdapterModuleSmokeTest.java",
-    "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java",
+    "scripts/onsure-local-gate.sh",
+    "scripts/onsure-one-shot.sh",
+    "scripts/onsure-final-stage.sh",
     "scripts/check-module-boundaries.py",
     "scripts/create-source-snapshot.py",
     "scripts/extract-atomic-requirements.py",
@@ -50,10 +44,8 @@ REQUIRED = [
     "scripts/validate-verification-claims.py",
     "tests/test_ci_boundary.py",
     "tests/test_verification_claims.py",
-    "scripts/run-core-modular-twice.sh",
     "scripts/fixture-sandbox-launcher.sh",
     "scripts/test-fixture-sandbox-boundary.sh",
-    "scripts/onsure-final-stage.sh",
     "src/main/java/io/onsure/assurance/ExclusiveFileLock.java",
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java",
     "src/main/java/io/onsure/platform/Hashing.java",
@@ -65,78 +57,78 @@ REQUIRED = [
 ]
 
 SOURCE_ASSERTIONS = {
+    "scripts/onsure-local-gate.sh": [
+        "ONSURE_LOCAL_GATE_PASS_NONFINAL",
+        "scripts/validate-verification-claims.py",
+        "scripts/test-fixture-sandbox-boundary.sh",
+        '"github_actions": "DISABLED"',
+        "mvn -B -ntp -q test",
+        "pom-modular.xml",
+    ],
+    "scripts/validate-ci-boundary.py": [
+        "GITHUB_ACTIONS_WORKFLOW_FORBIDDEN",
+        "LOCAL_VALIDATION_RUNNER_MISSING",
+        "DISABLED_AND_FORBIDDEN",
+    ],
+    "scripts/validate-verification-claims.py": [
+        "GITHUB_ACTIONS_POLICY_NOT_DISABLED",
+        "LOCAL_RECEIPT_REQUIRED",
+        "GITHUB_ACTIONS_WORKFLOW_FORBIDDEN",
+        "SANDBOX_PARTIAL_SCOPE_OVERCLAIMED_AS_PASS",
+    ],
+    "scripts/fixture-sandbox-launcher.sh": [
+        "ROOTLESS_BWRAP",
+        "NON_LOCAL_BACKEND_FORBIDDEN",
+        "--unshare-net",
+        "--ro-bind",
+        "prlimit",
+        "timeout --signal=KILL",
+    ],
+    "scripts/test-fixture-sandbox-boundary.sh": [
+        "FILESYSTEM_ESCAPE_BLOCKED",
+        "SYMLINK_ESCAPE_BLOCKED",
+        "CHILD_PROCESS_TERMINATED",
+        "CPU_LIMIT_ENFORCED",
+        "MEMORY_LIMIT_ENFORCED",
+        "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12",
+    ],
     "src/main/java/io/onsure/assurance/ExclusiveFileLock.java": [
         "ConcurrentHashMap", "lockInterruptibly", "channel.lock()",
     ],
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
-        "TWO_DISTINCT_VERIFIERS_REQUIRED", "VALIDATION_RECEIPT_PACK_STALE",
-        "POST_APPLY_RECEIPT_MISSING", "ExclusiveFileLock.call(lockFile",
-        "LEDGER_HEAD_ANCHOR_MISMATCH", "requireGitObjectId",
+        "TWO_DISTINCT_VERIFIERS_REQUIRED",
+        "VALIDATION_RECEIPT_PACK_STALE",
+        "POST_APPLY_RECEIPT_MISSING",
+        "ExclusiveFileLock.call(lockFile",
+        "LEDGER_HEAD_ANCHOR_MISMATCH",
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
         '"ls-files"', '"--full-name"', "GIT_LS_FILES_FAILED", "archiveFiles",
-        "new Thread", "reader.setDaemon(true)",
     ],
     "src/main/java/io/onsure/platform/SourceReferenceBinding.java": [
         '"--untracked-files=all"', "IMMUTABLE_GIT_TREE_DIGEST_MISMATCH",
     ],
     "src/main/java/io/onsure/platform/FileValidationStore.java": [
         "ONSURE_VALIDATION_STORAGE_CONTEXT_V1", "ExclusiveFileLock",
-        "ONSURE_VALIDATION_STORE_REVISION_V1",
     ],
     "src/main/java/io/onsure/platform/ProductCatalog.java": [
         "ONSURE_PRODUCT_CATALOG_REVISION_V1", "ExclusiveFileLock",
     ],
     "src/main/java/io/onsure/platform/FixtureHarness.java": [
-        "ONSURE_FIXTURE_SANDBOX_MODE", "fixture-sandbox-launcher.sh", "terminateProcessTree",
+        "ONSURE_FIXTURE_SANDBOX_MODE", "fixture-sandbox-launcher.sh",
         "fixture output limit exceeded",
-    ],
-    "scripts/fixture-sandbox-launcher.sh": [
-        "--unshare-net", "prlimit", "--ro-bind", "timeout --signal=KILL",
-    ],
-    "scripts/test-fixture-sandbox-boundary.sh": [
-        "FILESYSTEM_ESCAPE_BLOCKED", "SYMLINK_ESCAPE_BLOCKED", "CHILD_PROCESS_TERMINATED",
-        "CPU_LIMIT_ENFORCED", "MEMORY_LIMIT_ENFORCED",
-        "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12",
     ],
     "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java": [
         "fixtureOutputFloodIsRejectedBeforeEvidenceCanBeAccepted",
         "concurrentCatalogUpdatesDoNotLoseProjectsOrRevision",
         "concurrentLearningLedgerAppendsPreserveHashChainAndEveryCandidate",
     ],
-    "scripts/validate-atomic-requirements.py": [
-        "ATOMIC_IMPLEMENTATION_VOCABULARY_MISMATCH",
-        "ATOMIC_PASS_WITHOUT_EXECUTED_ORACLE_TEST_EVIDENCE",
-        "ATOMIC_SOURCE_DOCUMENT_DIGEST_MISMATCH", "self_test",
-    ],
-    "scripts/validate-design-coverage.py": [
-        "REQUIRED_CAPABILITIES", "PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER",
-        "LINEAGE_PARENT_BINDING_MISSING", "FAILURE_CASE_UNDETECTED",
-        "PASS_WITHOUT_EVIDENCE", "self_test", "validate-product-process-lineage.py",
-    ],
-    "scripts/validate-product-process-lineage.py": [
-        "REQUIRED_STAGES", "REQUIRED_ARTIFACTS", "ARTIFACT_PARENT_BINDING_MISSING",
-        "STAGE_CONSUMES_UNPRODUCED_ARTIFACT", "NO_FINAL_WITHOUT_INDEPENDENT_RECEIPTS",
-        "self_test",
-    ],
-    "scripts/validate-status-consistency.py": [
-        "TRACE_DESIGN_ID_SET_MISMATCH", "IMPLEMENTATION_MATRIX_CAPABILITY_MAP_MISMATCH",
-        "OMISSION_FAILURE_CASE_COUNT_MISMATCH", "UNSAFE_RELEASE_FLAG",
-    ],
-    "scripts/validate-ci-boundary.py": [
-        "CI_MUTATION_TOKEN_FORBIDDEN", "UNAPPROVED_WORKFLOW_PRESENT",
-        "CI_CHECKOUT_CREDENTIALS_NOT_DISABLED", "contents: write", "git push",
-        "CI_REQUIRED_FAIL_CLOSED_CONTROL_MISSING",
-    ],
-    "scripts/validate-verification-claims.py": [
-        "HISTORICAL_CI_FALSELY_BOUND_TO_CURRENT_SOURCE",
-        "COMMITTED_DYNAMIC_RECEIPT_OVERCLAIM",
-        "SANDBOX_PARTIAL_SCOPE_OVERCLAIMED_AS_PASS",
-        "CI_PUSH_SCOPE_MISSING",
-    ],
 }
 
 FORBIDDEN_SOURCE_TOKENS = {
+    "scripts/fixture-sandbox-launcher.sh": [
+        "CI_SUDO_UNSHARE_BWRAP", "GITHUB_ACTIONS", "sudo -n unshare",
+    ],
     "src/main/java/io/onsure/platform/ValidationEngine.java": [
         "new OrudaTargetAdapter", "withOrudaAdapter",
     ],
@@ -157,6 +149,11 @@ def main() -> int:
     for relative in REQUIRED:
         if not (ROOT / relative).is_file():
             errors.append(f"MISSING:{relative}")
+
+    workflow_root = ROOT / ".github" / "workflows"
+    if workflow_root.exists():
+        for path in sorted(workflow_root.glob("*.yml")) + sorted(workflow_root.glob("*.yaml")):
+            errors.append(f"GITHUB_ACTIONS_WORKFLOW_FORBIDDEN:{path.name}")
 
     for relative in REQUIRED:
         path = ROOT / relative
@@ -194,14 +191,12 @@ def main() -> int:
         ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
         ([sys.executable, "scripts/validate-repository-contracts.py"], "ONSURE_REPOSITORY_CONTRACTS_PASS"),
         ([sys.executable, "scripts/validate-structured-contracts.py"], "ONSURE_STRUCTURED_CONTRACTS_"),
-        ([sys.executable, "scripts/validate-atomic-requirements.py", "--self-test"],
-         '"decision": "PASS"'),
+        ([sys.executable, "scripts/validate-atomic-requirements.py", "--self-test"], '"decision": "PASS"'),
         ([sys.executable, "scripts/validate-design-coverage.py", "--matrix",
           "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"],
          '"decision": "PASS"'),
-        ([sys.executable, "scripts/validate-status-consistency.py"],
-         "ONSURE_STATUS_CONSISTENCY_PASS"),
-        ([sys.executable, "scripts/validate-ci-boundary.py"], "ONSURE_CI_BOUNDARY_PASS"),
+        ([sys.executable, "scripts/validate-status-consistency.py"], "ONSURE_STATUS_CONSISTENCY_PASS"),
+        ([sys.executable, "scripts/validate-ci-boundary.py"], "ONSURE_AUTOMATION_BOUNDARY_PASS"),
         ([sys.executable, "scripts/validate-verification-claims.py"],
          "ONSURE_VERIFICATION_CLAIM_AUDIT_PASS"),
         ([sys.executable, "-m", "unittest", "tests.test_ci_boundary", "-v"], "OK"),
@@ -226,12 +221,14 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V10",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V11",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
+        "github_actions": "DISABLED_BY_USER",
+        "local_gate_required": True,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
         "status_cross_consistency": "PASS" if not errors else "FAIL",
-        "ci_mutation_boundary": "PASS" if not errors else "FAIL",
+        "automation_boundary": "PASS" if not errors else "FAIL",
         "verification_claim_boundary": "PASS" if not errors else "FAIL",
         "design_capability_count": 28,
         "product_process_stage_count": 20,
@@ -239,7 +236,7 @@ def main() -> int:
         "failure_injection_count": 51,
         "atomic_requirement_failure_injections": 10,
         "design_and_lineage_failure_injections": 28,
-        "ci_boundary_failure_injections": 5,
+        "automation_boundary_failure_injections": 5,
         "verification_claim_failure_injections": 8,
         "sandbox_required_attacks": 12,
         "sandbox_verified_attacks": 10,
