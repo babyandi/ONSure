@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_OMISSION_DETECTION_STATUS_V1",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "assessment_date": "2026-07-28",
   "source_ref": "main",
   "authorities": {
@@ -54,9 +54,9 @@
   },
   "additional_failure_injection": {
     "atomic_requirement_cases": 10,
-    "automation_boundary_cases": 5,
+    "automation_boundary_cases": 6,
     "verification_claim_cases": 8,
-    "all_registered_cases": 51,
+    "all_registered_cases": 52,
     "atomic_requirement_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
     "automation_boundary_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
     "verification_claim_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED"
