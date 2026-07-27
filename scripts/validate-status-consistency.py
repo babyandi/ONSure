@@ -53,7 +53,10 @@ def main() -> int:
     trace_verification = trace_summary.get("verification", {})
     for state, count in verification_counts.items():
         if trace_verification.get(state.lower()) != count:
-            errors.append(f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}:{trace_verification.get(state.lower())}:{count}")
+            errors.append(
+                f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}:"
+                f"{trace_verification.get(state.lower())}:{count}"
+            )
 
     expected_matrix = {capability_key(item_id): item.get("implementation_status")
                        for item_id, item in design_by_id.items()}
@@ -61,7 +64,10 @@ def main() -> int:
         errors.append("IMPLEMENTATION_MATRIX_CAPABILITY_MAP_MISMATCH")
     for state, count in implementation_counts.items():
         if matrix.get("counts", {}).get(state) != count:
-            errors.append(f"IMPLEMENTATION_MATRIX_COUNT_MISMATCH:{state}:{matrix.get('counts', {}).get(state)}:{count}")
+            errors.append(
+                f"IMPLEMENTATION_MATRIX_COUNT_MISMATCH:{state}:"
+                f"{matrix.get('counts', {}).get(state)}:{count}"
+            )
     if matrix.get("runtime_source_commit") is not None:
         errors.append("MATRIX_RUNTIME_SOURCE_COMMIT_MUST_BE_NULL")
 
@@ -117,6 +123,7 @@ def main() -> int:
     design_status = verification.get("design_coverage", {})
     sub_status = verification.get("product_subrequirement_coverage", {})
     workflow_status = verification.get("workflow_surface_parity", {})
+    critical_status = verification.get("critical_callpath_boundary", {})
     process_status = verification.get("product_process_lineage", {})
     if design_status.get("capability_count") != 28:
         errors.append("VERIFICATION_DESIGN_COUNT_MISMATCH")
@@ -129,8 +136,23 @@ def main() -> int:
         errors.append("VERIFICATION_WORKFLOW_OPERATION_COUNT_MISMATCH")
     if set(workflow_status.get("surfaces", [])) != {"CLI", "LOCAL_AUTHENTICATED_API", "VSCODE"}:
         errors.append("VERIFICATION_WORKFLOW_SURFACE_SET_MISMATCH")
+    if critical_status.get("runner") != "python3 scripts/validate-critical-callpaths.py --self-test":
+        errors.append("VERIFICATION_CRITICAL_CALLPATH_RUNNER_MISSING")
     if process_status.get("stage_count") != 20 or process_status.get("artifact_count") != 20:
         errors.append("VERIFICATION_PROCESS_COUNT_MISMATCH")
+
+    authority = verification.get("approval_authority_boundary", {})
+    expected_authority = {
+        "authority_root": ".onsure/approval-authority/",
+        "trusted_key_registry": ".onsure/approval-authority/trusted-key-registry.json",
+        "replay_ledger": ".onsure/approval-authority/approval-replay-ledger.jsonl",
+        "request_path_override_allowed": False,
+    }
+    for field, expected in expected_authority.items():
+        if authority.get(field) != expected:
+            errors.append(f"APPROVAL_AUTHORITY_STATUS_MISMATCH:{field}")
+    if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
+        errors.append("APPROVAL_AUTHORITY_EXTERNAL_ANCHOR_STATE_INVALID")
 
     failure_status = verification.get("omission_failure_injection", {})
     expected_failure_counts = {
@@ -140,7 +162,8 @@ def main() -> int:
         "verification_claim_cases": 8,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "all_registered_failure_injections": 68,
+        "critical_callpath_cases": 7,
+        "all_registered_failure_injections": 75,
     }
     for field, expected in expected_failure_counts.items():
         if failure_status.get(field) != expected:
@@ -182,10 +205,13 @@ def main() -> int:
         "automation_boundary_cases": 6,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "all_registered_cases": 68,
+        "critical_callpath_cases": 7,
+        "all_registered_cases": 75,
     }.items():
         if additional.get(field) != expected:
             errors.append(f"OMISSION_ADDITIONAL_COUNT_MISMATCH:{field}")
+    if omission.get("authorities", {}).get("critical_callpaths") != "scripts/validate-critical-callpaths.py":
+        errors.append("OMISSION_CRITICAL_CALLPATH_AUTHORITY_MISSING")
     if omission.get("detection_result", {}).get("github_actions") != "DISABLED_BY_USER":
         errors.append("OMISSION_ACTIONS_POLICY_NOT_DISABLED")
 
@@ -202,7 +228,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V6",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V7",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
@@ -210,7 +236,7 @@ def main() -> int:
         "workflow_operations": workflow_status.get("dispatcher_operation_count"),
         "process_stages": len(stages),
         "lineage_artifacts": len(artifacts),
-        "all_registered_failure_injections": 68,
+        "all_registered_failure_injections": 75,
         "implementation_counts": dict(sorted(implementation_counts.items())),
         "subrequirement_implementation_counts": dict(sorted(sub_impl.items())),
         "verification_counts": dict(sorted(verification_counts.items())),
