@@ -104,7 +104,7 @@ def main() -> int:
     expected_failure_counts = {
         "design_process_lineage_cases": 28,
         "atomic_requirement_cases": 10,
-        "ci_boundary_cases": 5,
+        "automation_boundary_cases": 5,
         "verification_claim_cases": 8,
         "all_registered_failure_injections": 51,
     }
@@ -120,6 +120,16 @@ def main() -> int:
     if verification.get("active_remediation_issues") != [20]:
         errors.append("VERIFICATION_ACTIVE_ISSUES_STALE")
 
+    policy = verification.get("validation_execution_policy", {})
+    if policy.get("github_actions") != "DISABLED_BY_USER":
+        errors.append("VERIFICATION_ACTIONS_POLICY_NOT_DISABLED")
+    if policy.get("workflow_files_allowed") is not False:
+        errors.append("VERIFICATION_WORKFLOW_FILES_NOT_FORBIDDEN")
+    if set(policy.get("allowed_execution_modes", [])) != {
+        "LOCAL_STATIC_ONE_SHOT", "LOCAL_FULL_GATE", "LOCAL_FINAL_STAGE"
+    }:
+        errors.append("VERIFICATION_LOCAL_EXECUTION_MODES_INVALID")
+
     sandbox_status = verification.get("sandbox_attack_tests", {})
     if sandbox_status.get("verified_count") != 10 or sandbox_status.get("required_count") != 12:
         errors.append("VERIFICATION_SANDBOX_SCOPE_COUNT_MISMATCH")
@@ -130,6 +140,16 @@ def main() -> int:
         errors.append("REMAINING_WORK_AUTHORITY_MISMATCH")
     if remaining.get("process_lineage_authority") != "contracts/product-process-lineage.v1.json":
         errors.append("REMAINING_WORK_PROCESS_AUTHORITY_MISMATCH")
+    if remaining.get("validation_execution_policy", {}).get("github_actions") != "DISABLED_BY_USER":
+        errors.append("REMAINING_WORK_ACTIONS_POLICY_NOT_DISABLED")
+
+    additional = omission.get("additional_failure_injection", {})
+    if additional.get("automation_boundary_cases") != 5:
+        errors.append("OMISSION_AUTOMATION_BOUNDARY_COUNT_MISMATCH")
+    if additional.get("all_registered_cases") != 51:
+        errors.append("OMISSION_ALL_FAILURE_COUNT_MISMATCH")
+    if omission.get("detection_result", {}).get("github_actions") != "DISABLED_BY_USER":
+        errors.append("OMISSION_ACTIONS_POLICY_NOT_DISABLED")
 
     for source, flags in (
         (design.get("assurance", {}), ("final_lock_allowed", "production_go", "commercial_go")),
@@ -143,7 +163,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V2",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V3",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
@@ -153,7 +173,8 @@ def main() -> int:
         "all_registered_failure_injections": 51,
         "implementation_counts": dict(sorted(implementation_counts.items())),
         "verification_counts": dict(sorted(verification_counts.items())),
-        "runtime_execution": "EXTERNAL_CI_REQUIRED_CURRENT_HEAD",
+        "github_actions": "DISABLED_BY_USER",
+        "runtime_execution": "LOCAL_RECEIPT_REQUIRED_CURRENT_MAIN",
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
