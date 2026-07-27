@@ -14,7 +14,7 @@ import java.util.Map;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V1";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V2";
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -34,6 +34,7 @@ public final class LocalWorkflowDispatcher {
         }
         Map<String, Object> result = switch (operation) {
             case "program.learn" -> programLearn(request);
+            case "plan.approve" -> planApprove(request);
             case "validation.run" -> validationRun(request);
             case "patch.apply" -> patchApply(request);
             case "patch.rollback" -> patchRollback(request);
@@ -85,6 +86,15 @@ public final class LocalWorkflowDispatcher {
                 requiredId(request, "project_id"), requiredId(request, "program_id"), output);
     }
 
+    private Map<String, Object> planApprove(JsonNode request) throws Exception {
+        return new ExecutionPlanApprovalService().approve(
+                inputPath(request, "plan_file", true),
+                inputPath(request, "signed_approval_receipt", true),
+                inputPath(request, "trusted_key_registry", true),
+                outputPath(request, "approval_replay_ledger", ".onsure/approvals/replay.jsonl"),
+                outputPath(request, "approved_plan_file", ".onsure/plans/approved-execution-plan.json"));
+    }
+
     private Map<String, Object> validationRun(JsonNode request) throws Exception {
         Path source = inputPath(request, "source_root", true);
         Path store = outputPath(request, "store_root", ".onsure/validation-data");
@@ -101,11 +111,15 @@ public final class LocalWorkflowDispatcher {
                 adapterId,
                 request.path("policy_profile").asText("ONSURE_DEFAULT_POLICY_V1"),
                 request.path("execution_profile").asText("LOCAL_DEVELOPMENT"));
-        ValidationEngine.RunResult run = ValidationEngine.defaultEngine(store).run(target);
+        Path approvedPlan = optionalInputPath(request, "approved_execution_plan_file");
+        ValidationEngine engine = ValidationEngine.defaultEngine(store);
+        ValidationEngine.RunResult run = approvedPlan == null
+                ? engine.run(target) : engine.run(target, approvedPlan);
         return Map.of(
                 "decision", run.report().decision().name(),
                 "run_root", run.runRoot().toString(),
                 "report", run.report(),
+                "approved_execution_plan_consumed", approvedPlan != null,
                 "final_claim_allowed", false);
     }
 
@@ -159,7 +173,8 @@ public final class LocalWorkflowDispatcher {
     }
 
     private LicenseLifecycleService licenses(JsonNode request) {
-        return new LicenseLifecycleService(outputPathUnchecked(request, "license_store_root", ".onsure/license-store"));
+        return new LicenseLifecycleService(
+                outputPathUnchecked(request, "license_store_root", ".onsure/license-store"));
     }
 
     private Map<String, Object> licenseIssue(JsonNode request) throws Exception {
@@ -211,7 +226,8 @@ public final class LocalWorkflowDispatcher {
     }
 
     private ServiceCaseLifecycleService cases(JsonNode request) {
-        return new ServiceCaseLifecycleService(outputPathUnchecked(request, "case_store_root", ".onsure/service-cases"));
+        return new ServiceCaseLifecycleService(
+                outputPathUnchecked(request, "case_store_root", ".onsure/service-cases"));
     }
 
     private Map<String, Object> caseOpen(JsonNode request) throws Exception {
@@ -307,6 +323,17 @@ public final class LocalWorkflowDispatcher {
         Path path = Path.of(value).toAbsolutePath().normalize();
         requireInsideWorkspace(path, field);
         if (mustExist && (!Files.exists(path, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(path))) {
+            throw new IllegalArgumentException("WORKFLOW_INPUT_PATH_INVALID:" + field);
+        }
+        return path;
+    }
+
+    private Path optionalInputPath(JsonNode request, String field) {
+        String value = request.path(field).asText();
+        if (value == null || value.isBlank()) return null;
+        Path path = Path.of(value).toAbsolutePath().normalize();
+        requireInsideWorkspace(path, field);
+        if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(path)) {
             throw new IllegalArgumentException("WORKFLOW_INPUT_PATH_INVALID:" + field);
         }
         return path;
