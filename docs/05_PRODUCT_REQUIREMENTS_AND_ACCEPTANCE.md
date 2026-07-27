@@ -88,13 +88,13 @@ ONSURE는 사용자가 VS Code 안에서 대상 AI 프로그램을 학습시키�
 ### FR-10 Git Full-Chain
 
 - 전용 Worktree 또는 Branch를 생성해야 합니다.
-- Patch, Test, Commit, Push, Draft PR과 원격 CI 결과 수집을 연결해야 합니다.
+- Patch, Test, Commit, Push, Draft PR과 로컬 Gate 결과 수집을 연결해야 합니다.
 - 검증 미완료 상태에서 Ready 또는 Merge Ready를 주장해서는 안 됩니다.
 
 ### FR-11 CLI/API
 
 - VS Code와 동일 Core API를 사용하는 CLI를 제공해야 합니다.
-- CI와 외부 제품에서 사용할 공개 API 또는 SDK 경계를 제공해야 합니다.
+- 로컬 Gate와 외부 제품에서 사용할 공개 API 또는 SDK 경계를 제공해야 합니다.
 
 ### FR-12 학습·개선 기억
 
