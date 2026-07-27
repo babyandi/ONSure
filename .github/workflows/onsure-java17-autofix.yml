@@ -87,9 +87,7 @@ jobs:
               text = text.replace(import_anchor, import_anchor + digest_import)
               service.write_text(text, encoding='utf-8')
           PY
-      - name: Verify Java 17 compilation
-        run: mvn -B -ntp -q -DskipTests compile
-      - name: Commit bounded corrections
+      - name: Commit and push bounded corrections
         run: |
           if git diff --quiet; then
             echo 'NO_SOURCE_CHANGES_REQUIRED'
@@ -104,3 +102,5 @@ jobs:
           test "$(git diff --cached --name-only | wc -l)" -eq 3
           git commit -m 'fix: restore Java 17 compilation boundaries'
           git push origin HEAD:feature/onsure-codespace-free-remediation-20260726
+      - name: Verify Java 17 compilation after push
+        run: mvn -B -ntp -q -DskipTests compile
