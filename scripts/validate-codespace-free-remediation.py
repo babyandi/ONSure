@@ -40,6 +40,7 @@ REQUIRED = [
     "scripts/check-module-boundaries.py",
     "scripts/create-source-snapshot.py",
     "scripts/extract-atomic-requirements.py",
+    "scripts/validate-atomic-requirements.py",
     "scripts/validate-structured-contracts.py",
     "scripts/validate-design-coverage.py",
     "scripts/validate-product-process-lineage.py",
@@ -67,6 +68,7 @@ SOURCE_ASSERTIONS = {
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
         '"ls-files"', '"--full-name"', "GIT_LS_FILES_FAILED", "archiveFiles",
+        "new Thread", "reader.setDaemon(true)",
     ],
     "src/main/java/io/onsure/platform/SourceReferenceBinding.java": [
         '"--untracked-files=all"', "IMMUTABLE_GIT_TREE_DIGEST_MISMATCH",
@@ -83,6 +85,11 @@ SOURCE_ASSERTIONS = {
     ],
     "scripts/fixture-sandbox-launcher.sh": [
         "--unshare-net", "prlimit", "--ro-bind", "timeout --signal=KILL",
+    ],
+    "scripts/validate-atomic-requirements.py": [
+        "ATOMIC_IMPLEMENTATION_VOCABULARY_MISMATCH",
+        "ATOMIC_PASS_WITHOUT_EXECUTED_ORACLE_TEST_EVIDENCE",
+        "ATOMIC_SOURCE_DOCUMENT_DIGEST_MISMATCH", "self_test",
     ],
     "scripts/validate-design-coverage.py": [
         "REQUIRED_CAPABILITIES", "PROCESS_PREDECESSOR_MISSING_OR_OUT_OF_ORDER",
@@ -106,6 +113,9 @@ FORBIDDEN_SOURCE_TOKENS = {
     ],
     "src/main/java/io/onsure/platform/FileValidationStore.java": [
         "io.onsure.platform.oruda", "OrudaEvidenceRegistry",
+    ],
+    "src/main/java/io/onsure/platform/Hashing.java": [
+        "Thread.ofVirtual", "Executors.newVirtualThreadPerTaskExecutor",
     ],
 }
 
@@ -152,6 +162,8 @@ def main() -> int:
         ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
         ([sys.executable, "scripts/validate-repository-contracts.py"], "ONSURE_REPOSITORY_CONTRACTS_PASS"),
         ([sys.executable, "scripts/validate-structured-contracts.py"], "ONSURE_STRUCTURED_CONTRACTS_"),
+        ([sys.executable, "scripts/validate-atomic-requirements.py", "--self-test"],
+         '"decision": "PASS"'),
         ([sys.executable, "scripts/validate-design-coverage.py", "--matrix",
           "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"],
          '"decision": "PASS"'),
@@ -176,7 +188,7 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V7",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V8",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
@@ -184,8 +196,11 @@ def main() -> int:
         "design_capability_count": 28,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
-        "failure_injection_count": 28,
+        "failure_injection_count": 38,
+        "atomic_requirement_failure_injections": 10,
+        "design_and_lineage_failure_injections": 28,
         "design_and_lineage_detection": "PASS" if not errors else "FAIL",
+        "atomic_requirement_detection": "PASS" if not errors else "FAIL",
         "structured_contract_validation": "SYNTAX_OR_FULL_DEPENDING_ON_PINNED_PACKAGES",
         "runtime_execution": "NOT_RUN",
         "modular_compile": "NOT_RUN",
