@@ -16,8 +16,6 @@ def validate() -> list[str]:
     errors: list[str] = []
     status = load("status/verification-status.v1.json")
     sandbox = load("contracts/sandbox-boundary.v1.json")
-    workflow_path = ROOT / ".github/workflows/onsure-pr-validation.yml"
-    workflow = workflow_path.read_text(encoding="utf-8") if workflow_path.is_file() else ""
 
     if status.get("assessment_source_ref") != "main":
         errors.append("VERIFICATION_ASSESSMENT_SOURCE_NOT_MAIN")
@@ -28,14 +26,24 @@ def validate() -> list[str]:
     if 23 in status.get("active_remediation_issues", []):
         errors.append("CLOSED_REMEDIATION_ISSUE_STILL_ACTIVE:23")
 
-    historical = status.get("historical_ci_self_validation", {})
-    if historical.get("binding_scope") != "PREVIOUS_PR_HEAD_ONLY":
-        errors.append("HISTORICAL_CI_BINDING_SCOPE_INVALID")
+    policy = status.get("validation_execution_policy", {})
+    if policy.get("github_actions") != "DISABLED_BY_USER":
+        errors.append("GITHUB_ACTIONS_POLICY_NOT_DISABLED")
+    if policy.get("workflow_files_allowed") is not False:
+        errors.append("GITHUB_ACTIONS_WORKFLOW_FILES_NOT_FORBIDDEN")
+    expected_modes = {"LOCAL_STATIC_ONE_SHOT", "LOCAL_FULL_GATE", "LOCAL_FINAL_STAGE"}
+    if set(policy.get("allowed_execution_modes", [])) != expected_modes:
+        errors.append("LOCAL_VALIDATION_EXECUTION_MODES_INVALID")
+
+    historical = status.get("historical_automation_evidence", {})
+    if historical.get("retained_for_audit_only") is not True:
+        errors.append("HISTORICAL_AUTOMATION_NOT_AUDIT_ONLY")
     if historical.get("current_source_bound") is not False:
-        errors.append("HISTORICAL_CI_FALSELY_BOUND_TO_CURRENT_SOURCE")
+        errors.append("HISTORICAL_AUTOMATION_FALSELY_BOUND_TO_CURRENT_SOURCE")
+
     for section in ("design_coverage", "product_process_lineage"):
         receipt = status.get(section, {}).get("source_bound_receipt")
-        if receipt != "EXTERNAL_CI_QUERY_REQUIRED":
+        if receipt != "LOCAL_RECEIPT_REQUIRED":
             errors.append(f"COMMITTED_DYNAMIC_RECEIPT_OVERCLAIM:{section}:{receipt}")
 
     required = set(sandbox.get("required_attack_fixtures", []))
@@ -62,11 +70,26 @@ def validate() -> list[str]:
     if not unverified and not state.startswith("PASS_"):
         errors.append("SANDBOX_FULL_SCOPE_NOT_MARKED_PASS")
 
-    for token in ("- main", "- 'feature/**'", "- 'audit/**'"):
-        if token not in workflow:
-            errors.append(f"CI_PUSH_SCOPE_MISSING:{token}")
-    if "python scripts/validate-verification-claims.py" not in workflow:
-        errors.append("CI_VERIFICATION_CLAIM_GATE_NOT_INVOKED")
+    workflows = []
+    workflow_root = ROOT / ".github" / "workflows"
+    if workflow_root.exists():
+        workflows = sorted(workflow_root.glob("*.yml")) + sorted(workflow_root.glob("*.yaml"))
+    for workflow in workflows:
+        errors.append(f"GITHUB_ACTIONS_WORKFLOW_FORBIDDEN:{workflow.name}")
+
+    local_gate = ROOT / "scripts/onsure-local-gate.sh"
+    if not local_gate.is_file():
+        errors.append("LOCAL_VALIDATION_GATE_MISSING")
+    else:
+        text = local_gate.read_text(encoding="utf-8")
+        for token in (
+            "python3 scripts/validate-verification-claims.py",
+            "bash scripts/test-fixture-sandbox-boundary.sh",
+            '"github_actions": "DISABLED"',
+        ):
+            if token not in text:
+                errors.append(f"LOCAL_VALIDATION_GATE_CONTROL_MISSING:{token}")
+
     if "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12" not in (
         ROOT / "scripts/test-fixture-sandbox-boundary.sh"
     ).read_text(encoding="utf-8"):
@@ -80,11 +103,12 @@ def validate() -> list[str]:
 def main() -> int:
     errors = validate()
     report = {
-        "contract": "ONSURE_VERIFICATION_CLAIM_AUDIT_V1",
+        "contract": "ONSURE_VERIFICATION_CLAIM_AUDIT_V2",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
-        "committed_dynamic_ci_claims": "PROHIBITED",
-        "current_head_ci_evidence": "EXTERNAL_QUERY_REQUIRED",
+        "github_actions": "DISABLED_BY_USER",
+        "committed_dynamic_validation_claims": "PROHIBITED",
+        "current_source_evidence": "LOCAL_RECEIPT_REQUIRED",
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
