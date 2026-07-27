@@ -100,7 +100,7 @@ exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
     --chdir /workspace \
     prlimit \
       --cpu="$TIMEOUT_SECONDS" \
-      --as=1073741824 \
+      --as=8589934592 \
       --nproc=64 \
       --nofile=256 \
       --fsize=1048576 \
