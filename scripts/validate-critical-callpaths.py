@@ -8,6 +8,10 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REQUIRED_TOKENS = {
+    "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
+        "AUTHORITY_DIRECTORY", "trusted-key-registry.json", "approval-replay-ledger.jsonl",
+        "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "requireTrustedKeyRegistry",
+    ],
     "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
         "verifyApprovedPlanBundle",
         "EXECUTION_PLAN_CONSUMED_APPROVAL_INVALID",
@@ -35,13 +39,19 @@ REQUIRED_TOKENS = {
         "project.register-target",
         "ApprovedExecutionPlanBundle",
         "INCOMPLETE_EXECUTION_PLAN_APPROVAL_BUNDLE",
-        "original_execution_plan_file",
-        "signed_approval_receipt",
+        "approvalAuthority.rejectRequestOverrides",
+        "approvalAuthority.requireTrustedKeyRegistry",
+        "approvalAuthority.replayLedgerForConsumption",
     ],
     "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java": [
         "trustedExactApprovalRequiresOriginalPlanReceiptKeyAndConsumedReplayLedger",
         "verifyApprovedPlanBundle",
         "verifyApprovedPlan(output",
+    ],
+    "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java": [
+        "everyWorkflowRejectsCallerSelectedKeyRegistryOrReplayLedger",
+        "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED",
+        "symlinkedAuthorityRegistryIsRejected",
     ],
     "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java": [
         "project.register-workspace",
@@ -82,6 +92,8 @@ def self_test() -> list[str]:
             ("stage scope enforcement", "src/main/java/io/onsure/platform/ValidationEngine.java", "ExecutionPlanActionPolicy.notApproved"),
             ("dispatcher registration", "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java", "project.register-target"),
             ("bypass regression test", "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java", "verifyApprovedPlan(output"),
+            ("fixed trust root", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED"),
+            ("authority override regression", "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java", "everyWorkflowRejectsCallerSelectedKeyRegistryOrReplayLedger"),
         ]
         for name, relative, token in cases:
             path = root / relative
@@ -101,12 +113,12 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V1",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V2",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 5 if args.self_test else 0,
+        "failure_injection_count": 7 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
