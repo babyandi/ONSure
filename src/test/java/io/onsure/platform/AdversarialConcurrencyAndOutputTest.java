@@ -89,7 +89,7 @@ class AdversarialConcurrencyAndOutputTest {
     }
 
     private void runConcurrently(int count, ThrowingIndexedOperation operation) throws Exception {
-        ExecutorService executor = Executors.newFixedThreadPool(Math.min(count, 8));
+        ExecutorService executor = Executors.newFixedThreadPool(count);
         CountDownLatch ready = new CountDownLatch(count);
         CountDownLatch start = new CountDownLatch(1);
         List<Future<?>> futures = new ArrayList<>();
