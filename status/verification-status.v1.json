@@ -1,9 +1,10 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "assessment_source_ref": "feature/onsure-codespace-free-remediation-20260726",
   "runtime_source_commit": null,
-  "runtime_source_binding_state": "PENDING_FINAL_ONE_SHOT_RECEIPT",
+  "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
+  "deferred_final_stage_detail": "CODESPACE_OR_EQUIVALENT_FINAL_STAGE_DEFERRED_BY_USER",
   "active_remediation_issues": [20, 23],
   "last_observed_ci_self_validation": {
     "workflow": "ONSure PR Validation",
