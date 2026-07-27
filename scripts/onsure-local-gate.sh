@@ -69,6 +69,8 @@ run_step() {
 run_step structured-contracts "$VALIDATION_PYTHON" scripts/validate-structured-contracts.py --require-full
 run_step design-coverage python3 scripts/validate-design-coverage.py \
   --matrix status/design-capability-coverage.v2.json --root . --self-test
+run_step product-subrequirements python3 scripts/validate-product-subrequirements.py --self-test
+run_step workflow-surface-parity python3 scripts/validate-workflow-surface-parity.py --self-test
 run_step status-consistency python3 scripts/validate-status-consistency.py
 run_step automation-boundary python3 scripts/validate-ci-boundary.py
 run_step verification-claims python3 scripts/validate-verification-claims.py
@@ -138,11 +140,13 @@ python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" <<'PY'
 import json, pathlib, sys
 path, mode, profile = sys.argv[1:]
 body = {
-    "contract": "ONSURE_LOCAL_GATE_RESULT_V1",
+    "contract": "ONSURE_LOCAL_GATE_RESULT_V2",
     "mode": mode,
     "profile": profile,
     "decision": "PASS_NONFINAL",
     "authority_class": "LOCAL_SELF_VALIDATION",
+    "product_subrequirement_gate": "PASS",
+    "workflow_surface_parity": "PASS",
     "github_actions": "DISABLED",
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
