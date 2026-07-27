@@ -35,11 +35,8 @@ public final class GitWorkflowService {
 
     @Deprecated
     public Map<String, Object> commitApprovedWorktree(
-            Path worktreeRoot,
-            Path patchApplyReceiptFile,
-            Path deliveryApprovalFile,
-            String commitMessage,
-            Path outputFile) {
+            Path worktreeRoot, Path patchApplyReceiptFile, Path deliveryApprovalFile,
+            String commitMessage, Path outputFile) {
         throw new IllegalStateException("APPROVAL_TRUST_AND_IMPROVEMENT_PROOF_REQUIRED");
     }
 
@@ -76,6 +73,7 @@ public final class GitWorkflowService {
             throw new IllegalStateException("GIT_COMMIT_NOT_APPROVED");
         }
         requireSafeApprovalPermissions(approval);
+        requireApprovalNotExpired(approval, Instant.now());
         String branch = git(worktree, List.of("branch", "--show-current"), 20).strip();
         if (!branch.equals(patch.path("branch").asText())) {
             throw new IllegalStateException("GIT_BRANCH_PATCH_RECEIPT_MISMATCH");
@@ -127,6 +125,7 @@ public final class GitWorkflowService {
         result.put("approval_id", approval.path("approval_id").asText());
         result.put("approval_actor", approval.path("actor").asText());
         result.put("approval_key_id", approval.path("key_id").asText());
+        result.put("approval_expires_at", approval.path("expires_at").asText());
         result.put("branch", branch);
         result.put("commit_sha", commit);
         result.put("tree_sha", tree);
@@ -158,6 +157,8 @@ public final class GitWorkflowService {
         if (!approvalDigest.equals(changeSet.path("delivery_approval_sha256").asText())) {
             throw new IllegalStateException("GIT_CHANGE_SET_APPROVAL_DIGEST_MISMATCH");
         }
+        requireApprovalIdentity(changeSet, approval);
+        requireApprovalNotExpired(approval, Instant.now());
         if (!approval.path("allow_push").asBoolean(false)
                 || !approval.path("allow_draft_pr").asBoolean(false)) {
             throw new IllegalStateException("PUSH_OR_DRAFT_PR_NOT_APPROVED");
@@ -204,6 +205,7 @@ public final class GitWorkflowService {
         result.put("delivery_approval_sha256", approvalDigest);
         result.put("approval_actor", approval.path("actor").asText());
         result.put("approval_key_id", approval.path("key_id").asText());
+        result.put("approval_expires_at", approval.path("expires_at").asText());
         result.put("branch", branch);
         result.put("commit_sha", head);
         result.put("remote", remote);
@@ -217,6 +219,26 @@ public final class GitWorkflowService {
         result.put("receipt_sha256", sha256(mapper.writeValueAsBytes(result)));
         writeAtomic(outputFile, result);
         return Map.copyOf(result);
+    }
+
+    static void requireApprovalNotExpired(JsonNode approval, Instant now) {
+        try {
+            Instant expires = Instant.parse(approval.path("expires_at").asText());
+            if (!now.isBefore(expires)) throw new IllegalStateException("GIT_DELIVERY_APPROVAL_EXPIRED");
+        } catch (IllegalStateException failure) {
+            throw failure;
+        } catch (Exception invalid) {
+            throw new IllegalStateException("GIT_DELIVERY_APPROVAL_EXPIRY_INVALID", invalid);
+        }
+    }
+
+    private static void requireApprovalIdentity(JsonNode changeSet, JsonNode approval) {
+        if (!changeSet.path("approval_id").asText().equals(approval.path("approval_id").asText())
+                || !changeSet.path("approval_actor").asText().equals(approval.path("actor").asText())
+                || !changeSet.path("approval_key_id").asText().equals(approval.path("key_id").asText())
+                || !changeSet.path("approval_expires_at").asText().equals(approval.path("expires_at").asText())) {
+            throw new IllegalStateException("GIT_DELIVERY_APPROVAL_IDENTITY_OR_EXPIRY_MISMATCH");
+        }
     }
 
     private static void requireSafeApprovalPermissions(JsonNode approval) {
@@ -270,9 +292,7 @@ public final class GitWorkflowService {
         environment.put("GIT_TERMINAL_PROMPT", "0");
         BoundedProcessRunner.Result result = BoundedProcessRunner.run(
                 command, root, Duration.ofSeconds(timeout), environment, authority);
-        if (result.outputTruncated()) {
-            throw new IllegalStateException(authority + "_COMMAND_OUTPUT_LIMIT");
-        }
+        if (result.outputTruncated()) throw new IllegalStateException(authority + "_COMMAND_OUTPUT_LIMIT");
         if (result.exitCode() != 0) {
             throw new IllegalStateException(authority + "_COMMAND_FAILED:" + result.output().strip());
         }
