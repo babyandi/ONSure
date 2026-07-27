@@ -215,6 +215,10 @@ def main() -> int:
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
     if plan.get("final_single_command") != "bash scripts/onsure-final-stage.sh --profile core":
         errors.append("FINAL_SINGLE_COMMAND_MISMATCH")
+    if plan.get("local_gate_command") != "bash scripts/onsure-local-gate.sh --mode full --profile core":
+        errors.append("LOCAL_GATE_COMMAND_MISMATCH")
+    if plan.get("execution_policy", {}).get("github_actions") != "DISABLED_BY_USER":
+        errors.append("ACTIONS_POLICY_NOT_DISABLED")
     if plan.get("assurance_ceiling") != "SELF_VALIDATION_NONFINAL":
         errors.append("ASSURANCE_CEILING_UNSAFE")
     if any(plan.get(field) is not False for field in ("final_lock_allowed", "production_go", "commercial_go")):
@@ -233,10 +237,10 @@ def main() -> int:
         "design_capability_count": 28,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
-        "failure_injection_count": 51,
+        "failure_injection_count": 52,
         "atomic_requirement_failure_injections": 10,
         "design_and_lineage_failure_injections": 28,
-        "automation_boundary_failure_injections": 5,
+        "automation_boundary_failure_injections": 6,
         "verification_claim_failure_injections": 8,
         "sandbox_required_attacks": 12,
         "sandbox_verified_attacks": 10,
