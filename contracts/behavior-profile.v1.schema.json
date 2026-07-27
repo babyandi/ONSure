@@ -39,7 +39,7 @@
         "prompt_digest": {"type": "string", "pattern": "^(?:[0-9a-f]{64}|NOT_AVAILABLE)$"},
         "tool_registry_digest": {"type": "string", "pattern": "^(?:[0-9a-f]{64}|NOT_AVAILABLE)$"},
         "sandbox_mode": {"enum": ["HOST_REVIEWED_ONLY", "REQUIRED"]},
-        "sandbox_backend": {"enum": ["ROOTLESS_BWRAP", "CI_SUDO_BWRAP"]},
+        "sandbox_backend": {"enum": ["ROOTLESS_BWRAP", "CI_SUDO_UNSHARE_BWRAP"]},
         "environment_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
