@@ -8,7 +8,7 @@
     "contract", "receipt_id", "profile_id", "program_profile_id", "source_baseline_hash",
     "scenario_id", "iteration", "input_digest", "output_digest", "command", "decision",
     "exit_code", "timed_out", "duration_ms", "environment_digest", "coverage_class",
-    "created_at", "final_claim_allowed", "receipt_sha256"
+    "observation_class", "created_at", "final_claim_allowed", "receipt_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_BEHAVIOR_OBSERVATION_RECEIPT_V1"},
@@ -26,7 +26,14 @@
     "timed_out": {"type": "boolean"},
     "duration_ms": {"type": "integer", "minimum": 0},
     "environment_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "coverage_class": {"enum": ["DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY", "EXECUTABLE_FIXTURE_PROCESS_PROXY"]},
+    "coverage_class": {"enum": [
+      "DIRECT_PRODUCTION_MODEL_TELEMETRY",
+      "DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY",
+      "EXECUTABLE_FIXTURE_PROCESS_PROXY"
+    ]},
+    "observation_class": {"enum": [
+      "DIRECT_PRODUCTION_MODEL", "DIRECT_INSTRUMENTED_FIXTURE", "PROCESS_COMMAND_PROXY"
+    ]},
     "created_at": {"type": "string", "format": "date-time"},
     "final_claim_allowed": {"const": false},
     "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
