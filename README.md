@@ -11,6 +11,16 @@ ONSURE는 등록된 AI 프로그램과 일반 소프트웨어의 목적·구조�
 - **Standalone first** — ORUDA 또는 특정 대상 제품 없이 Core가 빌드·시험·실행돼야 한다.
 - **Fail closed** — 누락, 충돌, NOT_RUN, PENDING과 독립성 부족을 완료로 바꾸지 않는다.
 
+## 검증 실행 정책
+
+ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
+
+- `.github/workflows/*.yml`과 `.yaml`은 금지됩니다.
+- 검증은 저장소 내부의 로컬 실행기로만 수행합니다.
+- 실행 결과는 `.onsure/` 아래 Receipt·로그·Hash로 보관합니다.
+- 과거 원격 자동화 결과는 감사 이력일 뿐 현재 소스의 PASS 증적이 아닙니다.
+- 로컬 자체검증은 `SELF_VALIDATION_NONFINAL` 상한을 넘을 수 없습니다.
+
 ## 제품 목표 흐름
 
 ```text
@@ -29,25 +39,30 @@ Project registration
 
 ## 현재 구현 경계
 
-현재 저장소에는 범용 Fixture 실행, 일부 정적·AI Marker 검사, 파일 기반 Evidence, 검증 보고서, Learning Ledger, RAG 준비 통제와 무인 실행 보조 기능이 포함돼 있습니다.
+현재 기준선에는 다음이 포함됩니다.
 
-다음은 아직 Standalone 제품 Full-Chain으로 구현되지 않았습니다.
+- Core·CLI·Local API·Optional ORUDA Adapter 모듈 경계
+- Program/Behavior Profile 후보와 Observation Receipt
+- 위험 기반 Plan과 서명 승인
+- OReview와 Evidence-based RCA
+- 승인형 Patch·Worktree·Rollback·Improvement Proof·Git 경계
+- Source Identity·Receipt·Ledger·Replay·File Lock
+- Rootless Bubblewrap Sandbox와 적대 Fixture
+- Loopback Local API와 VS Code Extension·VSIX
+- OLicense와 Service Case 상태 코어
+- 설계·프로세스·데이터·검증 Claim 누락 감지
 
-- 실제 Program Profile과 Behavior Profile 생성
-- 위험 기반 OPlanning
-- 요구사항·설계·정책·코드·AI 전체 OReview
-- Trace 기반 RCA 확정
-- Patch·Hunk 승인·Worktree·Rollback
-- 실제 VS Code Extension과 Local Authenticated API
-- Commit·Push·Draft PR Git Full-Chain
-- Web·Commerce·OLicense·Tenant·Sandbox 운영 기능
+다음은 계속 미완료 또는 비최종입니다.
 
-PR #19 병합 후 자기검증에서 추가 P0가 확인됐습니다.
-
-- Core와 ORUDA는 기본 Adapter 등록만 분리됐으며 Maven Module과 Compile-time Import는 아직 분리되지 않음
-- Traceability는 20개 기능군 수준이며 원자 Requirement 100%가 아님
-- 현재 Main 기준 Runtime One-Shot은 아직 실행되지 않음
-- Local OTester/OAudit는 내부 역할분리이며 독립 권위가 아님
+- 원자 Requirement 권위 화해 100%
+- 실제 VS Code Extension Host 사용자 Full-Chain
+- 실제 원격 Push·Draft PR 제품 Delivery
+- 실제 Payment·Refund Provider 연동
+- Production Model·Prompt·Tool·RAG 직접 Telemetry
+- Tenant Identity·RBAC·Cross-tenant 제품 적대시험
+- SBOM·취약점·라이선스 Pack
+- 성능·부하·장애·복구·운영·배포
+- 독립 OTester·OAudit와 Human Acceptance
 
 정확한 상태는 다음 파일을 권위로 합니다.
 
@@ -56,65 +71,48 @@ PR #19 병합 후 자기검증에서 추가 P0가 확인됐습니다.
 - [병합 후 자기검증](docs/verification/ONSURE_POST_MERGE_SELF_AUDIT_v1.md)
 - [요구사항 추적성 계약](contracts/requirements-traceability.v1.json)
 - [구현 상태 Matrix](status/implementation-matrix.v1.json)
-- [설계 충돌 대장](status/design-conflict-register.v1.json)
-- [누락 기능 대장](status/missing-capability-register.v1.json)
+- [검증 상태](status/verification-status.v1.json)
+- [남은 작업 대장](status/remaining-work-register.v1.json)
 
 ## 독립 제품 정책
-
-ONSURE Core 요구사항과 기본 실행은 ORUDA의 경로, 정책, 실행기, 저장소, 데이터 또는 프로그램 구성에 의존해서는 안 됩니다.
-
-목표 구조는 다음과 같습니다.
 
 ```text
 Default: ONSure Core + Generic Target Adapter
 Optional: ONSure Core + ORUDA Adapter Module
 ```
 
-현재는 Runtime Adapter 선택만 부분 분리된 상태이며, 별도 Maven Module·Artifact 분리는 Issue #20의 P0입니다.
+ONSURE Core 요구사항과 기본 실행은 ORUDA의 경로, 정책, 실행기, 저장소, 데이터 또는 프로그램 구성에 의존해서는 안 됩니다.
 
-## 단일 실행 명령
+## 로컬 단일 실행 명령
 
-Codespace 이전 정적 검증:
-
-```bash
-bash scripts/onsure-one-shot.sh --static-only --profile core
-```
-
-정적 검사는 성공해도 `NON_FINAL`입니다.
-
-Core 지향 Runtime 검증:
+일상 정적 검증:
 
 ```bash
-bash scripts/onsure-one-shot.sh --profile core
+bash scripts/onsure-local-gate.sh --mode static --profile core
 ```
 
-선택형 ORUDA Adapter까지 포함한 검증:
+Java 17·모듈·Sandbox·VSIX를 포함한 전체 로컬 비최종 검증:
 
 ```bash
-bash scripts/onsure-one-shot.sh --profile oruda
+bash scripts/onsure-local-gate.sh --mode full --profile core
 ```
 
-Issue #20의 Core 모듈 분리와 원자 추적성이 완료되기 전에는 Runtime 모드가 내부 시험을 통과하더라도 `ONSURE_ONE_SHOT_BLOCKED_NONFINAL`로 종료합니다.
+Optional ORUDA Adapter까지 포함:
 
-각 실행은 `.onsure/one-shot/<UTC timestamp>-<pid>/`에 단계별 로그, Receipt, Hash와 결과를 저장합니다.
+```bash
+bash scripts/onsure-local-gate.sh --mode full --profile oruda
+```
 
-## 기준 문서
+최종 단계 One-Shot과 증적 고정:
 
-- [제품 기준선](docs/00_PRODUCT_BASELINE.md)
-- [사업계획서](docs/01_BUSINESS_PLAN.md)
-- [Claude형 작업환경](docs/02_CLAUDE_LIKE_WORK_ENVIRONMENT.md)
-- [Git·변경관리](docs/03_GIT_AND_CHANGE_GOVERNANCE.md)
-- [VS Code·Agent·Git 구현 로드맵](docs/04_IMPLEMENTATION_ROADMAP_VSCODE_AGENT_GIT.md)
-- [제품 요구사항 및 수용 기준](docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md)
-- [전체 산출물 대장](docs/06_DELIVERABLES_INDEX.md)
-- [핵심 아키텍처 및 상태 모델](docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md)
-- [내부 책임 분리](docs/08_INTERNAL_RESPONSIBILITY_SEPARATION.md)
-- [시험·상용화·출시계획](docs/08_TEST_COMMERCIALIZATION_AND_RELEASE_PLAN.md)
-- [프로그램 학습 방법론](docs/09_PROGRAM_LEARNING_METHODOLOGY.md)
-- [Master Design Set](docs/master/00_ONSURE_MASTER_DESIGN_SET.md)
+```bash
+bash scripts/onsure-final-stage.sh --profile core
+```
+
+로컬 Gate는 `.onsure/local-gate/<UTC timestamp>-<pid>/`에 결과를 저장합니다. 최종 단계는 `.onsure/final-stage/`에 별도 증적을 생성합니다.
 
 ## 판정 상한
 
 현재 허용 상태는 `SELF_VALIDATION_NONFINAL / BLOCKED`입니다.
 
-실제 Core 독립 빌드, 원자 Traceability, VS Code와 Web Full-Chain, 현재 Source 기준 반복 실행, 독립 OTester·OAudit와 사용자 승인 전에는 Final PASS, FinalLock, Production GO 또는 Commercial GO를 선언하지 않습니다.
+원자 Traceability, 실제 제품 Full-Chain, 현재 Source 기준 Final One-Shot, 독립 OTester·OAudit와 사용자 승인 전에는 Final PASS, FinalLock, Production GO 또는 Commercial GO를 선언하지 않습니다.
