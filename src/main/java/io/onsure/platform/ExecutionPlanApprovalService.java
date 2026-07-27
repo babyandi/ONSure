@@ -56,10 +56,10 @@ public final class ExecutionPlanApprovalService {
         }
         Set<String> plannedActions = strings(plan.get("allowed_actions"));
         Set<String> approvedActions = strings(approval.get("approved_actions"));
-        if (plannedActions.isEmpty()
-                || !plannedActions.equals(approvedActions)
+        if (plannedActions.isEmpty() || approvedActions.isEmpty()
+                || !plannedActions.containsAll(approvedActions)
                 || !ExecutionPlanService.APPROVABLE_ACTIONS.containsAll(approvedActions)) {
-            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INCOMPLETE");
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INVALID");
         }
 
         ApprovalReceiptVerifier verifier = new ApprovalReceiptVerifier(
@@ -71,9 +71,10 @@ public final class ExecutionPlanApprovalService {
                     "EXECUTION_PLAN_APPROVAL_INVALID:" + String.join(",", verification.violations()));
         }
 
+        boolean partial = !plannedActions.equals(approvedActions);
         Map<String, Object> approvalState = new LinkedHashMap<>();
         approvalState.put("state", "USER_APPROVED");
-        approvalState.put("scope", "EXACT_PLAN_ACTION_SET");
+        approvalState.put("scope", partial ? "PARTIAL_PLAN_ACTION_SET" : "EXACT_PLAN_ACTION_SET");
         approvalState.put("approver", approval.get("actor"));
         approvalState.put("revocable", true);
         approvalState.put("approved_actions", approvedActions.stream().sorted().toList());
@@ -130,9 +131,16 @@ public final class ExecutionPlanApprovalService {
         }
         Set<String> planned = strings(plan.get("allowed_actions"));
         Set<String> approved = strings(approval.get("approved_actions"));
-        if (planned.isEmpty() || !planned.equals(approved)
+        if (planned.isEmpty() || approved.isEmpty() || !planned.containsAll(approved)
                 || !ExecutionPlanService.APPROVABLE_ACTIONS.containsAll(approved)) {
-            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INCOMPLETE");
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INVALID");
+        }
+        String expectedScope = planned.equals(approved)
+                ? ("AUTO_APPROVED_DEVELOPMENT_NONFINAL".equals(state)
+                        ? "EXACT_PLAN_ACTION_SET_LOCAL_NONFINAL" : "EXACT_PLAN_ACTION_SET")
+                : "PARTIAL_PLAN_ACTION_SET";
+        if (!expectedScope.equals(String.valueOf(approval.get("scope")))) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_SCOPE_MISMATCH");
         }
         if ("USER_APPROVED".equals(state)) {
             for (String field : List.of(
