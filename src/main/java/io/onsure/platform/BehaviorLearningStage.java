@@ -35,6 +35,7 @@ public final class BehaviorLearningStage implements ValidatorStage {
                 new ValidationTargetBundle(context.target(), context.adapter()),
                 text, repetitions, output);
         String behaviorProfileId = profile.get("profile_id").toString();
+        String coverageClass = profile.get("coverage_class").toString();
         String digest = Hashing.file(output);
         String evidenceId = "EV-BEHAVIOR-PROFILE-" + digest.substring(0, 16);
         Map<?, ?> variability = (Map<?, ?>) profile.get("variability");
@@ -47,8 +48,10 @@ public final class BehaviorLearningStage implements ValidatorStage {
                 Map.of(
                         "profile_id", behaviorProfileId,
                         "state", profile.get("state"),
+                        "coverage_class", coverageClass,
                         "repeated_run_count", variability.get("repeated_run_count"),
                         "stable", variability.get("stable"),
+                        "receipt_directory", profile.get("receipt_directory"),
                         "independent_validation", "NOT_RUN",
                         "final_claim_allowed", false)));
         context.putAttribute("behavior_profile_id", behaviorProfileId);
@@ -56,10 +59,13 @@ public final class BehaviorLearningStage implements ValidatorStage {
         context.putAttribute("behavior_profile_state", profile.get("state"));
         context.putAttribute("behavior_profile_path", output.toString());
         context.putAttribute("behavior_profile_stable", variability.get("stable"));
+        context.putAttribute("behavior_profile_coverage_class", coverageClass);
+        context.putAttribute("behavior_receipt_directory", profile.get("receipt_directory"));
         return new StageResult(
                 stageId(), Decision.PASS, started, Instant.now(), List.of(),
                 Map.of(
                         "profile_id", behaviorProfileId,
+                        "coverage_class", coverageClass,
                         "observations", ((List<?>) profile.get("observations")).size(),
                         "repetitions", repetitions,
                         "stable", variability.get("stable"),
