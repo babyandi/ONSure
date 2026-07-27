@@ -1,5 +1,6 @@
 name: ONSure Java 17 Bounded Autofix
 
+# One-time bounded source correction; remove after the fix commit is verified.
 on:
   push:
     branches:
