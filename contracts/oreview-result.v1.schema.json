@@ -4,7 +4,12 @@
   "title": "ONSure OReview Result v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contract", "review_id", "target_id", "source_tree_sha256", "program_profile_id", "execution_plan_id", "domains", "quality_decision", "review_execution", "independent_reviewer", "merge_authorized", "final_claim_allowed", "generated_at", "review_sha256"],
+  "required": [
+    "contract", "review_id", "target_id", "source_tree_sha256", "program_profile_id",
+    "execution_plan_id", "execution_plan_approval_sha256", "domains", "quality_decision",
+    "review_execution", "independent_reviewer", "merge_authorized", "final_claim_allowed",
+    "generated_at", "review_sha256"
+  ],
   "properties": {
     "contract": {"const": "ONSURE_OREVIEW_RESULT_V1"},
     "review_id": {"type": "string", "minLength": 1},
@@ -12,6 +17,7 @@
     "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "program_profile_id": {"type": "string", "minLength": 1},
     "execution_plan_id": {"type": "string", "minLength": 1},
+    "execution_plan_approval_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "domains": {
       "type": "array", "minItems": 10,
       "items": {
