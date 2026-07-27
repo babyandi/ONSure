@@ -1,12 +1,13 @@
 {
   "contract": "ONSURE_OMISSION_DETECTION_STATUS_V1",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "assessment_date": "2026-07-28",
   "source_ref": "main",
   "authorities": {
     "design_coverage": "status/design-capability-coverage.v2.json",
     "product_subrequirements": "status/product-subrequirement-coverage.v1.json",
     "workflow_surface_parity": "scripts/validate-workflow-surface-parity.py",
+    "critical_callpaths": "scripts/validate-critical-callpaths.py",
     "process_lineage": "contracts/product-process-lineage.v1.json",
     "legacy_traceability": "contracts/requirements-traceability.v1.json",
     "verification_claims": "scripts/validate-verification-claims.py",
@@ -50,12 +51,14 @@
     "verification_claim_cases": 8,
     "product_subrequirement_cases": 10,
     "workflow_surface_cases": 6,
-    "all_registered_cases": 68,
+    "critical_callpath_cases": 7,
+    "all_registered_cases": 75,
     "atomic_requirement_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
     "automation_boundary_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
     "verification_claim_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
-    "product_subrequirement_result": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
-    "workflow_surface_result": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED"
+    "product_subrequirement_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
+    "workflow_surface_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
+    "critical_callpath_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED"
   },
   "detection_result": {
     "logic_self_test": "PASS",
@@ -75,9 +78,13 @@
     "FILE_CLASS_TEST_EXISTENCE_DID_NOT_PROVE_CALL_PATH",
     "REQUIRED_PRODUCT_SURFACES_WERE_NOT_MACHINE_CHECKED",
     "APPROVED_ACTION_SCOPE_WAS_NOT_ENFORCED_AT_STAGE_EXECUTION",
+    "APPROVED_PLAN_FILE_WAS_TRUSTED_WITHOUT_COMPLETE_SIGNED_BUNDLE",
+    "CALLER_SELECTED_TRUSTED_KEY_REGISTRY_WAS_NOT_TREATED_AS_TRUST_ROOT_SUBSTITUTION",
+    "CALLER_SELECTED_REPLAY_LEDGER_WAS_NOT_TREATED_AS_REPLAY_CONTROL_SUBSTITUTION",
     "INCOMPLETE_REQUIREMENTS_COULD_REMAIN_HIDDEN_INSIDE_PARTIAL_CAPABILITY"
   ],
   "known_detected_gaps": [
+    "APPROVAL_REPLAY_LEDGER_EXTERNAL_ANCHOR_NOT_IMPLEMENTED",
     "INCREMENTAL_PROGRAM_LEARNING_DESIGN_ONLY",
     "TOOL_CONTRACT_AND_EXECUTION_LOG_INVENTORY_INCOMPLETE",
     "VSCODE_REQUIRED_VIEWS_STUB",
