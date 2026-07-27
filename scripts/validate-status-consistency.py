@@ -101,10 +101,30 @@ def main() -> int:
         errors.append("VERIFICATION_DESIGN_COUNT_MISMATCH")
     if process_status.get("stage_count") != 20 or process_status.get("artifact_count") != 20:
         errors.append("VERIFICATION_PROCESS_COUNT_MISMATCH")
-    if failure_status.get("total_cases") != 28 or failure_status.get("logic_self_test") != "PASS":
-        errors.append("VERIFICATION_FAILURE_INJECTION_MISMATCH")
+    expected_failure_counts = {
+        "design_process_lineage_cases": 28,
+        "atomic_requirement_cases": 10,
+        "ci_boundary_cases": 5,
+        "verification_claim_cases": 8,
+        "all_registered_failure_injections": 51,
+    }
+    for field, expected in expected_failure_counts.items():
+        if failure_status.get(field) != expected:
+            errors.append(f"VERIFICATION_FAILURE_INJECTION_MISMATCH:{field}")
+    if failure_status.get("logic_self_test") != "PASS":
+        errors.append("VERIFICATION_FAILURE_INJECTION_LOGIC_NOT_PASS")
     if verification.get("runtime_source_commit") is not None:
         errors.append("VERIFICATION_RUNTIME_SOURCE_COMMIT_MUST_BE_NULL")
+    if verification.get("assessment_source_ref") != "main":
+        errors.append("VERIFICATION_ASSESSMENT_SOURCE_NOT_MAIN")
+    if verification.get("active_remediation_issues") != [20]:
+        errors.append("VERIFICATION_ACTIVE_ISSUES_STALE")
+
+    sandbox_status = verification.get("sandbox_attack_tests", {})
+    if sandbox_status.get("verified_count") != 10 or sandbox_status.get("required_count") != 12:
+        errors.append("VERIFICATION_SANDBOX_SCOPE_COUNT_MISMATCH")
+    if set(sandbox_status.get("unverified", [])) != {"CROSS_TENANT_READ", "CROSS_TENANT_WRITE"}:
+        errors.append("VERIFICATION_SANDBOX_UNVERIFIED_SET_MISMATCH")
 
     if remaining.get("authority") != "status/design-capability-coverage.v2.json":
         errors.append("REMAINING_WORK_AUTHORITY_MISMATCH")
@@ -123,16 +143,17 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V1",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V2",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
         "process_stages": len(stages),
         "lineage_artifacts": len(artifacts),
-        "failure_injections": failure.get("total"),
+        "design_process_lineage_failure_injections": failure.get("total"),
+        "all_registered_failure_injections": 51,
         "implementation_counts": dict(sorted(implementation_counts.items())),
         "verification_counts": dict(sorted(verification_counts.items())),
-        "runtime_execution": "NOT_RUN",
+        "runtime_execution": "EXTERNAL_CI_REQUIRED_CURRENT_HEAD",
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))

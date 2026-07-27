@@ -55,24 +55,37 @@ def validate() -> list[str]:
             for required_token in (
                 "run_step()",
                 "scripts/test-fixture-sandbox-boundary.sh",
+                "python scripts/validate-verification-claims.py",
+                "python -m unittest tests.test_verification_claims -v",
                 '[[ "$general_output" == "ALLOW" ]]',
                 '[[ "$ai_output" == "ALLOW_TOOL" ]]',
                 '[[ "$oruda_output" == "EXPECTED_PASS" ]]',
+                "- main",
+                "- 'feature/**'",
+                "- 'audit/**'",
             ):
                 if required_token not in text:
                     errors.append(f"CI_REQUIRED_FAIL_CLOSED_CONTROL_MISSING:{required_token}")
+
+    boundary_test = ROOT / "scripts/test-fixture-sandbox-boundary.sh"
+    if not boundary_test.is_file():
+        errors.append("SANDBOX_BOUNDARY_TEST_MISSING")
+    elif "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12" not in boundary_test.read_text(encoding="utf-8"):
+        errors.append("SANDBOX_BOUNDARY_TEST_COUNT_STALE")
     return sorted(set(errors))
 
 
 def main() -> int:
     errors = validate()
     report = {
-        "contract": "ONSURE_CI_BOUNDARY_REPORT_V2",
+        "contract": "ONSURE_CI_BOUNDARY_REPORT_V3",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "workflow_count": len(list(WORKFLOW_ROOT.glob("*.yml"))) + len(list(WORKFLOW_ROOT.glob("*.yaml"))),
         "mutation_authority": "PROHIBITED",
         "failure_propagation": "FAIL_CLOSED_PER_COMMAND",
+        "branch_scope": "MAIN_FEATURE_AUDIT",
+        "verification_claim_audit": "REQUIRED",
         "sandbox_expected_output_assertions": "REQUIRED",
         "final_claim_allowed": False,
     }

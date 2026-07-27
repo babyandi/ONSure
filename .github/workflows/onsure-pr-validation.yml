@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feature/onsure-codespace-free-remediation-20260726
+      - main
+      - 'feature/**'
+      - 'audit/**'
   pull_request:
     branches:
       - main
@@ -38,7 +40,7 @@ jobs:
           run_step() {
             "$@" >> "$LOG" 2>&1 || {
               echo "=== STATIC VALIDATION FAILURE: $* ==="
-              tail -n 300 "$LOG"
+              tail -n 360 "$LOG"
               exit 1
             }
           }
@@ -47,13 +49,15 @@ jobs:
             --matrix status/design-capability-coverage.v2.json --root . --self-test
           run_step python scripts/validate-status-consistency.py
           run_step python scripts/validate-ci-boundary.py
+          run_step python scripts/validate-verification-claims.py
           run_step python scripts/check-module-boundaries.py
           run_step python scripts/validate-repository-contracts.py
           run_step python scripts/validate-codespace-free-remediation.py
           run_step python -m unittest tests.test_omission_detection_gates -v
           run_step python -m unittest tests.test_ci_boundary -v
+          run_step python -m unittest tests.test_verification_claims -v
           run_step bash scripts/check-shell-syntax.sh
-          tail -n 160 "$LOG"
+          tail -n 200 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -86,14 +90,14 @@ jobs:
           run_step() {
             "$@" >> "$LOG" 2>&1 || {
               echo "=== JAVA VALIDATION FAILURE: $* ==="
-              tail -n 360 "$LOG"
+              tail -n 420 "$LOG"
               exit 1
             }
           }
           run_step mvn -B -ntp -q test
           run_step mvn -B -ntp -q -f pom-modular.xml test
           run_step mvn -B -ntp -q -f pom-modular.xml -pl modules/onsure-core -am test
-          tail -n 180 "$LOG"
+          tail -n 220 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -134,7 +138,7 @@ jobs:
           : > "$LOG"
           fail() {
             echo "=== SANDBOX VALIDATION FAILURE: $1 ==="
-            tail -n 480 "$LOG"
+            tail -n 560 "$LOG"
             exit 1
           }
           run_step() {
@@ -167,7 +171,7 @@ jobs:
           echo '=== SANDBOX JUNIT ===' >> "$LOG"
           run_step mvn -B -ntp -q -Dtest=ValidationPlatformE2ETest test
           run_step mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
-          tail -n 240 "$LOG"
+          tail -n 300 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -196,7 +200,7 @@ jobs:
           run_step() {
             "$@" >> "$LOG" 2>&1 || {
               echo "=== VSCODE VALIDATION FAILURE: $* ==="
-              tail -n 260 "$LOG"
+              tail -n 300 "$LOG"
               exit 1
             }
           }
@@ -205,10 +209,10 @@ jobs:
           run_step npm run package --silent
           test -n "$(find . -maxdepth 1 -name '*.vsix' -print -quit)" || {
             echo 'VSIX_PACKAGE_MISSING' >> "$LOG"
-            tail -n 260 "$LOG"
+            tail -n 300 "$LOG"
             exit 1
           }
-          tail -n 140 "$LOG"
+          tail -n 180 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -47,9 +47,12 @@ REQUIRED = [
     "scripts/validate-product-process-lineage.py",
     "scripts/validate-status-consistency.py",
     "scripts/validate-ci-boundary.py",
+    "scripts/validate-verification-claims.py",
     "tests/test_ci_boundary.py",
+    "tests/test_verification_claims.py",
     "scripts/run-core-modular-twice.sh",
     "scripts/fixture-sandbox-launcher.sh",
+    "scripts/test-fixture-sandbox-boundary.sh",
     "scripts/onsure-final-stage.sh",
     "src/main/java/io/onsure/assurance/ExclusiveFileLock.java",
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java",
@@ -58,6 +61,7 @@ REQUIRED = [
     "src/main/java/io/onsure/platform/FileValidationStore.java",
     "src/main/java/io/onsure/platform/ProductCatalog.java",
     "src/main/java/io/onsure/platform/FixtureHarness.java",
+    "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java",
 ]
 
 SOURCE_ASSERTIONS = {
@@ -66,7 +70,7 @@ SOURCE_ASSERTIONS = {
     ],
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
         "TWO_DISTINCT_VERIFIERS_REQUIRED", "VALIDATION_RECEIPT_PACK_STALE",
-        "POST_APPLY_RECEIPT_MISSING", "FileChannel.open(lockFile",
+        "POST_APPLY_RECEIPT_MISSING", "ExclusiveFileLock.call(lockFile",
         "LEDGER_HEAD_ANCHOR_MISMATCH", "requireGitObjectId",
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
@@ -85,9 +89,20 @@ SOURCE_ASSERTIONS = {
     ],
     "src/main/java/io/onsure/platform/FixtureHarness.java": [
         "ONSURE_FIXTURE_SANDBOX_MODE", "fixture-sandbox-launcher.sh", "terminateProcessTree",
+        "fixture output limit exceeded",
     ],
     "scripts/fixture-sandbox-launcher.sh": [
         "--unshare-net", "prlimit", "--ro-bind", "timeout --signal=KILL",
+    ],
+    "scripts/test-fixture-sandbox-boundary.sh": [
+        "FILESYSTEM_ESCAPE_BLOCKED", "SYMLINK_ESCAPE_BLOCKED", "CHILD_PROCESS_TERMINATED",
+        "CPU_LIMIT_ENFORCED", "MEMORY_LIMIT_ENFORCED",
+        "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12",
+    ],
+    "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java": [
+        "fixtureOutputFloodIsRejectedBeforeEvidenceCanBeAccepted",
+        "concurrentCatalogUpdatesDoNotLoseProjectsOrRevision",
+        "concurrentLearningLedgerAppendsPreserveHashChainAndEveryCandidate",
     ],
     "scripts/validate-atomic-requirements.py": [
         "ATOMIC_IMPLEMENTATION_VOCABULARY_MISMATCH",
@@ -111,6 +126,13 @@ SOURCE_ASSERTIONS = {
     "scripts/validate-ci-boundary.py": [
         "CI_MUTATION_TOKEN_FORBIDDEN", "UNAPPROVED_WORKFLOW_PRESENT",
         "CI_CHECKOUT_CREDENTIALS_NOT_DISABLED", "contents: write", "git push",
+        "CI_REQUIRED_FAIL_CLOSED_CONTROL_MISSING",
+    ],
+    "scripts/validate-verification-claims.py": [
+        "HISTORICAL_CI_FALSELY_BOUND_TO_CURRENT_SOURCE",
+        "COMMITTED_DYNAMIC_RECEIPT_OVERCLAIM",
+        "SANDBOX_PARTIAL_SCOPE_OVERCLAIMED_AS_PASS",
+        "CI_PUSH_SCOPE_MISSING",
     ],
 }
 
@@ -123,6 +145,9 @@ FORBIDDEN_SOURCE_TOKENS = {
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
         "Thread.ofVirtual", "Executors.newVirtualThreadPerTaskExecutor",
+    ],
+    "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
+        "FileChannel.open(lockFile", "OverlappingFileLockException",
     ],
 }
 
@@ -177,7 +202,10 @@ def main() -> int:
         ([sys.executable, "scripts/validate-status-consistency.py"],
          "ONSURE_STATUS_CONSISTENCY_PASS"),
         ([sys.executable, "scripts/validate-ci-boundary.py"], "ONSURE_CI_BOUNDARY_PASS"),
+        ([sys.executable, "scripts/validate-verification-claims.py"],
+         "ONSURE_VERIFICATION_CLAIM_AUDIT_PASS"),
         ([sys.executable, "-m", "unittest", "tests.test_ci_boundary", "-v"], "OK"),
+        ([sys.executable, "-m", "unittest", "tests.test_verification_claims", "-v"], "OK"),
         (["bash", "scripts/check-shell-syntax.sh"], "ONSURE_SHELL_SYNTAX_PASS"),
     ]
     for command, marker in commands:
@@ -186,7 +214,7 @@ def main() -> int:
         if result.returncode != 0 or marker not in combined:
             errors.append(
                 f"COMMAND_FAIL:{' '.join(command)}:{result.returncode}:"
-                f"{result.stdout[-2000:]}:{result.stderr[-1000:]}"
+                f"{result.stdout[-2400:]}:{result.stderr[-1400:]}"
             )
 
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
@@ -198,24 +226,26 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V9",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V10",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
         "status_cross_consistency": "PASS" if not errors else "FAIL",
         "ci_mutation_boundary": "PASS" if not errors else "FAIL",
+        "verification_claim_boundary": "PASS" if not errors else "FAIL",
         "design_capability_count": 28,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
-        "failure_injection_count": 43,
+        "failure_injection_count": 51,
         "atomic_requirement_failure_injections": 10,
         "design_and_lineage_failure_injections": 28,
         "ci_boundary_failure_injections": 5,
-        "design_and_lineage_detection": "PASS" if not errors else "FAIL",
-        "atomic_requirement_detection": "PASS" if not errors else "FAIL",
-        "structured_contract_validation": "SYNTAX_OR_FULL_DEPENDING_ON_PINNED_PACKAGES",
-        "runtime_execution": "NOT_RUN",
-        "modular_compile": "NOT_RUN",
+        "verification_claim_failure_injections": 8,
+        "sandbox_required_attacks": 12,
+        "sandbox_verified_attacks": 10,
+        "sandbox_unverified_attacks": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
+        "runtime_execution": "NOT_RUN_BY_STATIC_GATE",
+        "modular_compile": "NOT_RUN_BY_STATIC_GATE",
         "independent_otester": "NOT_RUN",
         "independent_oaudit": "NOT_RUN",
         "final_claim_allowed": False,

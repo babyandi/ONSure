@@ -1,12 +1,13 @@
 {
   "contract": "ONSURE_OMISSION_DETECTION_STATUS_V1",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "assessment_date": "2026-07-27",
-  "source_ref": "feature/onsure-codespace-free-remediation-20260726",
+  "source_ref": "main",
   "authorities": {
     "design_coverage": "status/design-capability-coverage.v2.json",
     "process_lineage": "contracts/product-process-lineage.v1.json",
-    "legacy_traceability": "contracts/requirements-traceability.v1.json"
+    "legacy_traceability": "contracts/requirements-traceability.v1.json",
+    "verification_claims": "scripts/validate-verification-claims.py"
   },
   "coverage": {
     "design_capabilities": 28,
@@ -53,18 +54,21 @@
   "additional_failure_injection": {
     "atomic_requirement_cases": 10,
     "ci_boundary_cases": 5,
-    "all_registered_cases": 43,
-    "atomic_requirement_result": "PASS_CI_SELF_VALIDATION_NONFINAL",
-    "ci_boundary_result": "PASS_CI_SELF_VALIDATION_NONFINAL"
+    "verification_claim_cases": 8,
+    "all_registered_cases": 51,
+    "atomic_requirement_result": "LOGIC_SELF_TEST_PASS_CURRENT_HEAD_CI_REQUIRED",
+    "ci_boundary_result": "LOGIC_SELF_TEST_PASS_CURRENT_HEAD_CI_REQUIRED",
+    "verification_claim_result": "LOGIC_SELF_TEST_PASS_CURRENT_HEAD_CI_REQUIRED"
   },
   "detection_result": {
     "logic_self_test": "PASS",
     "python_regression_tests_added": true,
     "codespace_free_gate_integrated": true,
     "one_shot_integrated": true,
-    "latest_full_repository_static_gate": "PASS_CI_SELF_VALIDATION_NONFINAL",
-    "latest_validated_head": "e9c60cc243c8e4b11521bab379b12f0b94d5bead",
-    "latest_workflow_run_id": 30270109833,
+    "current_head_static_gate": "EXTERNAL_CI_REQUIRED",
+    "historical_validated_head": "9742beed6c9ce6451d3dcac78b76741c84e6715d",
+    "historical_workflow_run_id": 30270821264,
+    "historical_binding_scope": "PREVIOUS_PR_HEAD_ONLY",
     "latest_source_bound_runtime_gate": "PENDING_FINAL_ONE_SHOT"
   },
   "known_detected_gaps": [
@@ -72,6 +76,8 @@
     "PRODUCT_BUILD_DEPENDENCY_SBOM_VULNERABILITY_PACK_INCOMPLETE",
     "PERFORMANCE_LOAD_RECOVERY_PACK_INCOMPLETE",
     "TENANT_IDENTITY_RBAC_STUB",
+    "CROSS_TENANT_READ_ATTACK_NOT_RUN",
+    "CROSS_TENANT_WRITE_ATTACK_NOT_RUN",
     "OBSERVABILITY_OPERATIONS_DESIGN_ONLY",
     "SIGNED_INSTALLER_AND_AIR_GAPPED_DEPLOYMENT_DESIGN_ONLY",
     "DIRECT_PRODUCTION_MODEL_TELEMETRY_NOT_RUN",
@@ -81,7 +87,7 @@
     "INDEPENDENT_OAUDIT_NOT_RUN"
   ],
   "assurance": {
-    "self_validation": "PASS_NONFINAL",
+    "self_validation": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
     "final_lock_allowed": false,
