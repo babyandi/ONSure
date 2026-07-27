@@ -129,7 +129,8 @@ public final class DurableStateLedger {
         requireText(actor, "EVENT_ACTOR_INVALID");
         long sequence = existingLines.size() + 1L;
         String previousHead = existingLines.isEmpty() ? GENESIS
-                : mapper.readTree(existingLines.get(existingLines.size() - 1)).path("entry_hash").asText();
+                : unwrapJson(mapper.readTree(existingLines.get(existingLines.size() - 1)))
+                        .path("entry_hash").asText();
 
         state.put("ledger_sequence", sequence);
         state.put("updated_at", Instant.now().toString());
@@ -180,7 +181,7 @@ public final class DurableStateLedger {
     }
 
     private void commitPreparedTransaction() throws Exception {
-        JsonNode manifest = mapper.readTree(transactionManifest.toFile());
+        JsonNode manifest = unwrapJson(mapper.readTree(transactionManifest.toFile()));
         requirePrepared(nextLedgerFile, ledgerFile, manifest.path("ledger_file_sha256").asText(),
                 "LEDGER_TRANSACTION_FILE_INVALID");
         requirePrepared(nextStateFile, stateFile, manifest.path("state_file_sha256").asText(),
@@ -196,7 +197,7 @@ public final class DurableStateLedger {
         if (Files.isSymbolicLink(transactionManifest)) {
             throw new IllegalStateException("STATE_LEDGER_TRANSACTION_SYMLINK");
         }
-        JsonNode manifest = mapper.readTree(transactionManifest.toFile());
+        JsonNode manifest = unwrapJson(mapper.readTree(transactionManifest.toFile()));
         if (!TRANSACTION_CONTRACT.equals(manifest.path("contract").asText())) {
             throw new IllegalStateException("STATE_LEDGER_TRANSACTION_CONTRACT_INVALID");
         }
@@ -251,7 +252,7 @@ public final class DurableStateLedger {
                 continue;
             }
             JsonNode event;
-            try { event = mapper.readTree(line); }
+            try { event = unwrapJson(mapper.readTree(line)); }
             catch (Exception invalid) {
                 violations.add("LEDGER_JSON_INVALID");
                 continue;
@@ -285,7 +286,7 @@ public final class DurableStateLedger {
     }
 
     private Map<String, Object> readStateRaw() throws Exception {
-        return objectMap(mapper.readTree(stateFile.toFile()));
+        return objectMap(unwrapJson(mapper.readTree(stateFile.toFile())));
     }
 
     private List<String> readLedgerLines() throws Exception {
@@ -306,6 +307,17 @@ public final class DurableStateLedger {
         Map<String, Object> copy = new TreeMap<>(state);
         copy.remove("state_sha256");
         return sha256(mapper.writeValueAsBytes(copy));
+    }
+
+    private JsonNode unwrapJson(JsonNode node) throws Exception {
+        if (node != null && node.isTextual()) {
+            JsonNode decoded = mapper.readTree(node.textValue());
+            if (decoded != null && decoded.isTextual()) {
+                throw new IllegalArgumentException("MULTIPLE_JSON_STRING_LAYERS_PROHIBITED");
+            }
+            return decoded;
+        }
+        return node;
     }
 
     private Map<String, Object> objectMap(JsonNode node) {
