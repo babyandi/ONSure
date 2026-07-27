@@ -14,7 +14,7 @@ import java.util.Map;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V2";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V3";
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -33,6 +33,11 @@ public final class LocalWorkflowDispatcher {
             throw new IllegalArgumentException("WORKFLOW_REQUEST_OBJECT_REQUIRED");
         }
         Map<String, Object> result = switch (operation) {
+            case "project.register-workspace" -> projectRegisterWorkspace(request);
+            case "project.register" -> projectRegister(request);
+            case "project.register-target" -> projectRegisterTarget(request);
+            case "project.read-target" -> projectReadTarget(request);
+            case "project.list-targets" -> projectListTargets(request);
             case "program.learn" -> programLearn(request);
             case "plan.approve" -> planApprove(request);
             case "validation.run" -> validationRun(request);
@@ -77,6 +82,62 @@ public final class LocalWorkflowDispatcher {
                 "independent_otester", "NOT_RUN",
                 "independent_oaudit", "NOT_RUN",
                 "final_claim_allowed", false);
+    }
+
+    private ProductCatalog catalog(JsonNode request) {
+        return new ProductCatalog(outputPathUnchecked(
+                request, "catalog_root", ".onsure/product-catalog"));
+    }
+
+    private Map<String, Object> projectRegisterWorkspace(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog(request);
+        ProductCatalog.Workspace workspace = new ProductCatalog.Workspace(
+                requiredId(request, "workspace_id"), requiredText(request, "workspace_name"), Instant.now());
+        catalog.registerWorkspace(workspace);
+        return Map.of("workspace", workspace, "catalog_revision", catalog.revision(),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> projectRegister(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog(request);
+        ProductCatalog.Project project = new ProductCatalog.Project(
+                requiredId(request, "project_id"), requiredId(request, "workspace_id"),
+                requiredText(request, "project_name"), Instant.now());
+        catalog.registerProject(project);
+        return Map.of("project", project, "catalog_revision", catalog.revision(),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> projectRegisterTarget(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog(request);
+        Path source = inputPath(request, "source_root", true);
+        String adapterId = request.path("adapter_id").asText(GenericManifestTargetAdapter.ID);
+        ValidationTarget target = new ValidationTarget(
+                requiredId(request, "target_id"),
+                request.path("target_name").asText(requiredId(request, "target_id")),
+                TargetType.valueOf(requiredText(request, "target_type")),
+                source,
+                request.path("immutable_source_reference").asText(SourceReferenceBinding.treeReference(source)),
+                adapterId,
+                request.path("policy_profile").asText("ONSURE_DEFAULT_POLICY_V1"),
+                request.path("execution_profile").asText("LOCAL_DEVELOPMENT"));
+        ProductCatalog.RegisteredTarget registered = new ProductCatalog.RegisteredTarget(
+                requiredId(request, "project_id"), target, Instant.now());
+        catalog.registerTarget(registered);
+        return Map.of("registered_target", registered, "catalog_revision", catalog.revision(),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> projectReadTarget(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog(request);
+        return Map.of("target", catalog.requireTarget(requiredId(request, "target_id")),
+                "catalog_revision", catalog.revision(), "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> projectListTargets(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog(request);
+        return Map.of("targets", catalog.targets(requiredId(request, "project_id")),
+                "catalog_revision", catalog.revision(), "final_claim_allowed", false);
     }
 
     private Map<String, Object> programLearn(JsonNode request) throws Exception {
