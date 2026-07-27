@@ -8,10 +8,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-/** Persists the multi-domain OReview result without converting review quality into final authority. */
+/** Persists multi-domain OReview and propagates its quality decision without final authority. */
 public final class OReviewStage implements ValidatorStage {
     @Override public String stageId() { return "OREVIEW"; }
-
     @Override public boolean supports(ValidationContext context) { return true; }
 
     @Override
@@ -21,6 +20,13 @@ public final class OReviewStage implements ValidatorStage {
         Map<String, Object> review = new OReviewService().review(context, output);
         String digest = Hashing.file(output);
         String evidenceId = "EV-REVIEW-" + digest.substring(0, 16);
+        String quality = String.valueOf(review.get("quality_decision"));
+        Decision decision = switch (quality) {
+            case "PASS" -> Decision.PASS;
+            case "HOLD" -> Decision.HOLD;
+            case "FAIL" -> Decision.FAIL;
+            default -> throw new IllegalStateException("OREVIEW_QUALITY_DECISION_INVALID:" + quality);
+        };
         context.addEvidence(new Evidence(
                 evidenceId,
                 "OREVIEW_RESULT",
@@ -29,20 +35,22 @@ public final class OReviewStage implements ValidatorStage {
                 Instant.now(),
                 Map.of(
                         "review_id", review.get("review_id"),
-                        "quality_decision", review.get("quality_decision"),
+                        "quality_decision", quality,
                         "review_execution", review.get("review_execution"),
+                        "execution_plan_approval_sha256", review.get("execution_plan_approval_sha256"),
                         "independent_reviewer", "NOT_RUN",
                         "merge_authorized", false)));
         context.putAttribute("review_id", review.get("review_id"));
         context.putAttribute("review_sha256", digest);
-        context.putAttribute("review_quality_decision", review.get("quality_decision"));
+        context.putAttribute("review_quality_decision", quality);
         return new StageResult(
-                stageId(), Decision.PASS, started, Instant.now(), List.of(),
+                stageId(), decision, started, Instant.now(), List.of(),
                 Map.of(
                         "review_id", review.get("review_id"),
                         "domain_count", ((List<?>) review.get("domains")).size(),
-                        "quality_decision", review.get("quality_decision"),
+                        "quality_decision", quality,
                         "review_execution", "PASS",
+                        "independent_reviewer", "NOT_RUN",
                         "merge_authorized", false));
     }
 }
