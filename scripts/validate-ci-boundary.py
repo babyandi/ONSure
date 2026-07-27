@@ -49,17 +49,31 @@ def validate() -> list[str]:
             errors.append(f"CI_CHECKOUT_CREDENTIALS_NOT_DISABLED:{path.name}")
         if "workflow_dispatch:" not in text:
             errors.append(f"CI_MANUAL_REPRODUCTION_TRIGGER_MISSING:{path.name}")
+        if "set -o pipefail" in text and "set -euo pipefail" not in text:
+            errors.append(f"CI_WEAK_FAILURE_PROPAGATION:{path.name}")
+        if path.name == "onsure-pr-validation.yml":
+            for required_token in (
+                "run_step()",
+                "scripts/test-fixture-sandbox-boundary.sh",
+                '[[ "$general_output" == "ALLOW" ]]',
+                '[[ "$ai_output" == "ALLOW_TOOL" ]]',
+                '[[ "$oruda_output" == "EXPECTED_PASS" ]]',
+            ):
+                if required_token not in text:
+                    errors.append(f"CI_REQUIRED_FAIL_CLOSED_CONTROL_MISSING:{required_token}")
     return sorted(set(errors))
 
 
 def main() -> int:
     errors = validate()
     report = {
-        "contract": "ONSURE_CI_BOUNDARY_REPORT_V1",
+        "contract": "ONSURE_CI_BOUNDARY_REPORT_V2",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "workflow_count": len(list(WORKFLOW_ROOT.glob("*.yml"))) + len(list(WORKFLOW_ROOT.glob("*.yaml"))),
         "mutation_authority": "PROHIBITED",
+        "failure_propagation": "FAIL_CLOSED_PER_COMMAND",
+        "sandbox_expected_output_assertions": "REQUIRED",
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
