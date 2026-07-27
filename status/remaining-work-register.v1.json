@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "assessment_date": "2026-07-28",
   "authority": "status/design-capability-coverage.v2.json",
   "process_lineage_authority": "contracts/product-process-lineage.v1.json",
@@ -39,9 +39,9 @@
     },
     {
       "id": "P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION",
-      "state": "51_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
+      "state": "52_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
-      "next_action": "Keep 28 design/process/data, 10 atomic-requirement, 5 automation-prohibition and 8 verification-claim failure injections mandatory."
+      "next_action": "Keep 28 design/process/data, 10 atomic-requirement, 6 automation-prohibition and 8 verification-claim failure injections mandatory."
     },
     {
       "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
