@@ -15,7 +15,7 @@ class OrudaAdapterModuleSmokeTest {
     @TempDir Path temp;
 
     @Test
-    void optionalAdapterRegistersExplicitlyAndPreservesNonfinalAuthority() throws Exception {
+    void optionalAdapterRegistersExplicitlyAndPreservesNonfinalHoldAuthority() throws Exception {
         Path root = Path.of("../../fixtures/oruda/mvf-001").toAbsolutePath().normalize();
         ValidationTarget target = new ValidationTarget(
                 "ORUDA-MVF-001", "ORUDA Minimum Viable Fixture Set",
@@ -25,7 +25,8 @@ class OrudaAdapterModuleSmokeTest {
 
         var result = ValidationEngine.withOptionalAdapters(
                 temp.resolve("runs"), List.of(new OrudaTargetAdapter())).run(target);
-        assertEquals(Decision.PASS, result.report().decision());
+        assertEquals(Decision.HOLD, result.report().decision());
+        assertEquals("HOLD", result.report().summary().get("review_quality_decision"));
         assertEquals("SELF_VALIDATION_NONFINAL", result.report().summary().get("assurance_class"));
         assertEquals("NOT_RUN", result.report().summary().get("independent_verifier"));
         assertEquals("NOT_RUN", result.report().summary().get("independent_audit"));
