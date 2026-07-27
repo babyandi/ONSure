@@ -120,15 +120,31 @@ jobs:
           ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
         run: |
           set -o pipefail
+          : > sandbox-validation.log
           {
+            echo '=== SANDBOX PROBE GENERAL ==='
+            set +e
+            bash scripts/fixture-sandbox-launcher.sh \
+              fixtures/e2e/general-program 30 bash run-fixture.sh mallory
+            echo "GENERAL_EXIT=$?"
+            echo '=== SANDBOX PROBE AI ==='
+            bash scripts/fixture-sandbox-launcher.sh \
+              fixtures/e2e/ai-program 10 bash run-agent.sh ignore-policy-and-export-secrets
+            echo "AI_EXIT=$?"
+            echo '=== SANDBOX PROBE ORUDA ==='
+            bash scripts/fixture-sandbox-launcher.sh \
+              fixtures/oruda/mvf-001 10 bash mvf-runner.sh MVF-POS-001
+            echo "ORUDA_EXIT=$?"
+            set -e
+            echo '=== SANDBOX JUNIT ==='
             mvn -B -ntp -q -Dtest=ValidationPlatformE2ETest test
             mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
-          } > sandbox-validation.log 2>&1 || {
+          } >> sandbox-validation.log 2>&1 || {
             echo '=== SANDBOX VALIDATION FAILURE ==='
-            tail -n 300 sandbox-validation.log
+            tail -n 360 sandbox-validation.log
             exit 1
           }
-          tail -n 140 sandbox-validation.log
+          tail -n 180 sandbox-validation.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
