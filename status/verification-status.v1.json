@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
@@ -9,11 +9,7 @@
   "validation_execution_policy": {
     "github_actions": "DISABLED_BY_USER",
     "workflow_files_allowed": false,
-    "allowed_execution_modes": [
-      "LOCAL_STATIC_ONE_SHOT",
-      "LOCAL_FULL_GATE",
-      "LOCAL_FINAL_STAGE"
-    ],
+    "allowed_execution_modes": ["LOCAL_STATIC_ONE_SHOT", "LOCAL_FULL_GATE", "LOCAL_FINAL_STAGE"],
     "current_source_pass_requires_local_receipt": true,
     "committed_dynamic_run_claims_allowed": false
   },
@@ -44,7 +40,7 @@
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
   "workflow_surface_parity": {
-    "dispatcher_operation_count": 34,
+    "dispatcher_operation_count": 39,
     "surfaces": ["CLI", "LOCAL_AUTHENTICATED_API", "VSCODE"],
     "state": "PENDING_LOCAL_RECEIPT",
     "runner": "python3 scripts/validate-workflow-surface-parity.py --self-test",
