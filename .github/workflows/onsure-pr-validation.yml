@@ -17,6 +17,92 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  java17-bounded-autofix:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/onsure-codespace-free-remediation-20260726
+          fetch-depth: 0
+      - name: Apply and commit exact Java 17 source corrections
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if old in text:
+                  if text.count(old) != 1:
+                      raise SystemExit(f'UNEXPECTED_REPLACEMENT_COUNT:{path}:{text.count(old)}')
+                  p.write_text(text.replace(old, new), encoding='utf-8')
+              elif new not in text:
+                  raise SystemExit(f'EXPECTED_SOURCE_PATTERN_MISSING:{path}')
+
+          replace_exact(
+              'src/main/java/io/onsure/platform/Hashing.java',
+              '''        Thread reader = Thread.ofVirtual().name("onsure-git-output").start(() -> {
+            try { process.getInputStream().transferTo(output); }
+            catch (Exception ignored) {}
+        });''',
+              '''        Thread reader = new Thread(() -> {
+            try { process.getInputStream().transferTo(output); }
+            catch (Exception ignored) {}
+        }, "onsure-git-output");
+        reader.setDaemon(true);
+        reader.start();''')
+
+          api = Path('src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java')
+          text = api.read_text(encoding='utf-8')
+          interface = '''    @FunctionalInterface
+    private interface CheckedHttpHandler {
+        void handle(HttpExchange exchange) throws Exception;
+    }
+
+'''
+          anchor = '    private HttpServer server;\n    private ExecutorService executor;\n\n'
+          if interface not in text:
+              if text.count(anchor) != 1:
+                  raise SystemExit('LOCAL_API_INTERFACE_ANCHOR_INVALID')
+              text = text.replace(anchor, anchor + interface)
+          old_signature = '    private HttpHandler authenticated(HttpHandler handler) {'
+          new_signature = '    private HttpHandler authenticated(CheckedHttpHandler handler) {'
+          if old_signature in text:
+              if text.count(old_signature) != 1:
+                  raise SystemExit('LOCAL_API_HANDLER_SIGNATURE_COUNT_INVALID')
+              text = text.replace(old_signature, new_signature)
+          elif new_signature not in text:
+              raise SystemExit('LOCAL_API_HANDLER_SIGNATURE_MISSING')
+          api.write_text(text, encoding='utf-8')
+
+          service = Path('src/main/java/io/onsure/platform/ServiceCaseLifecycleService.java')
+          text = service.read_text(encoding='utf-8')
+          digest_import = 'import java.security.MessageDigest;\n'
+          import_anchor = 'import java.nio.file.StandardCopyOption;\n'
+          if digest_import not in text:
+              if text.count(import_anchor) != 1:
+                  raise SystemExit('SERVICE_CASE_IMPORT_ANCHOR_INVALID')
+              text = text.replace(import_anchor, import_anchor + digest_import)
+              service.write_text(text, encoding='utf-8')
+          PY
+          if git diff --quiet; then
+            echo 'NO_SOURCE_CHANGES_REQUIRED'
+            exit 0
+          fi
+          git config user.name 'ONSure Validation Bot'
+          git config user.email 'onsure-validation-bot@users.noreply.github.com'
+          git add \
+            src/main/java/io/onsure/platform/Hashing.java \
+            src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java \
+            src/main/java/io/onsure/platform/ServiceCaseLifecycleService.java
+          test "$(git diff --cached --name-only | wc -l)" -eq 3
+          git commit -m 'fix: restore Java 17 compilation boundaries'
+          git push origin HEAD:feature/onsure-codespace-free-remediation-20260726
+
   static-contracts:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
