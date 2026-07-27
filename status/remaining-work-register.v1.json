@@ -1,8 +1,9 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "assessment_date": "2026-07-28",
   "authority": "status/design-capability-coverage.v2.json",
+  "subrequirement_authority": "status/product-subrequirement-coverage.v1.json",
   "process_lineage_authority": "contracts/product-process-lineage.v1.json",
   "active_issues": [20],
   "validation_execution_policy": {
@@ -26,6 +27,24 @@
       "next_action": "Run the local static or full gate and preserve .onsure/local-gate evidence; GitHub Actions must remain absent."
     },
     {
+      "id": "P0-GRANULAR-PRODUCT-SUBREQUIREMENTS",
+      "state": "38_REGISTERED_2_IMPLEMENTED_28_PARTIAL_4_STUB_4_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED",
+      "requires_human": false,
+      "next_action": "Maintain requirement-level code, test, surface, missing-control and evidence bindings; do not collapse these items back into coarse capability status."
+    },
+    {
+      "id": "P0-WORKFLOW-SURFACE-PARITY",
+      "state": "34_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+      "requires_human": false,
+      "next_action": "Run the workflow surface parity gate whenever Dispatcher, CLI, Local API or VS Code commands change."
+    },
+    {
+      "id": "P0-PARTIAL-EXECUTION-PLAN-APPROVAL",
+      "state": "CORE_SCOPE_ENFORCEMENT_IMPLEMENTED_VSCODE_INTERACTIVE_UI_MISSING_LOCAL_EXECUTION_REQUIRED",
+      "requires_human": false,
+      "next_action": "Verify signed subset approval, skipped unapproved stages and HOLD propagation in the local Java gate; implement explicit VS Code partial-approval UX."
+    },
+    {
       "id": "P0-CORE-ADAPTER-MODULE-SEPARATION",
       "state": "PREVIOUS_HEAD_PASS_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED",
       "requires_human": false,
@@ -39,9 +58,27 @@
     },
     {
       "id": "P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION",
-      "state": "52_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
+      "state": "68_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
-      "next_action": "Keep 28 design/process/data, 10 atomic-requirement, 6 automation-prohibition and 8 verification-claim failure injections mandatory."
+      "next_action": "Keep 28 design/process/data, 10 atomic, 6 automation-prohibition, 8 verification-claim, 10 product-subrequirement and 6 workflow-surface failure injections mandatory."
+    },
+    {
+      "id": "P0-INCREMENTAL-PROGRAM-LEARNING",
+      "state": "DESIGN_ONLY",
+      "requires_human": false,
+      "next_action": "Implement parent-profile lineage, added/modified/deleted source sets and incremental learning workflows across Core, CLI, Local API and VS Code."
+    },
+    {
+      "id": "P0-VSCODE-PRODUCT-SURFACES",
+      "state": "STUB_REQUIRED_VIEWS_AND_MODES_MISSING",
+      "requires_human": false,
+      "next_action": "Implement Chat, Profile, Learning, Verification, Findings, Improvement, Evidence, Git/PR views plus Ask, Plan, Act and Autopilot modes."
+    },
+    {
+      "id": "P0-LONG-RUNNING-JOB-RECOVERY",
+      "state": "DESIGN_ONLY",
+      "requires_human": false,
+      "next_action": "Implement checkpoint, cancel, pause, resume, restart-safe queue and approval-history restoration."
     },
     {
       "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
@@ -51,9 +88,9 @@
     },
     {
       "id": "P0-PLANNING-OREVIEW-RCA",
-      "state": "PREVIOUS_HEAD_UNIT_E2E_PASS_NONFINAL_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED",
+      "state": "PARTIAL_APPROVAL_CORE_FIXED_OTHER_REAL_TARGET_GATES_NOT_RUN",
       "requires_human": false,
-      "next_action": "Run real-target causal experiments and independent review evidence before any RCA confirmation or product PASS promotion."
+      "next_action": "Run signed partial approval and real-target causal experiments; preserve HOLD for unapproved stages and missing independent evidence."
     },
     {
       "id": "P0-IMPROVEMENT-GIT",
@@ -66,6 +103,12 @@
       "state": "PREVIOUS_HEAD_HTTP_AND_VSIX_PASS_NONFINAL_EXTENSION_HOST_NOT_RUN",
       "requires_human": false,
       "next_action": "Run VS Code Extension Host full-chain, restart recovery and interactive approval UX."
+    },
+    {
+      "id": "P0-PUBLIC-SDK",
+      "state": "STUB_LOOPBACK_LOCAL_API_ONLY",
+      "requires_human": false,
+      "next_action": "Define a versioned public SDK or external product API boundary without weakening local authentication and source binding."
     },
     {
       "id": "P0-OLICENSE-SERVICE-CASE",
@@ -84,6 +127,18 @@
       "state": "PARTIAL_10_OF_12_CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED",
       "requires_human": false,
       "next_action": "Run the rootless local sandbox gate; keep CROSS_TENANT_READ and CROSS_TENANT_WRITE as HOLD until tenant enforcement exists."
+    },
+    {
+      "id": "P1-EXECUTION-BUDGET-VISIBILITY",
+      "state": "STUB",
+      "requires_human": false,
+      "next_action": "Add expected result, token estimate, paid-service cost ceiling and data-transfer scope to plans and VS Code preview."
+    },
+    {
+      "id": "P1-PROVIDER-MODEL-REPLACEABILITY",
+      "state": "DESIGN_ONLY",
+      "requires_human": false,
+      "next_action": "Implement provider/model adapter contracts and compatibility tests."
     },
     {
       "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
