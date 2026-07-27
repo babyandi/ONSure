@@ -49,6 +49,8 @@ REQUIRED_TOKENS = {
     ],
     "src/main/java/io/onsure/platform/GitWorkflowService.java": [
         "BoundedProcessRunner.run", "COMMAND_OUTPUT_LIMIT",
+        "requireApprovalNotExpired", "GIT_DELIVERY_APPROVAL_EXPIRED",
+        "approval_expires_at",
     ],
     "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java": [
         "trustedExactApprovalRequiresOriginalPlanReceiptKeyAndConsumedReplayLedger",
@@ -61,6 +63,10 @@ REQUIRED_TOKENS = {
     "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java": [
         "drainsLargeOutputWithoutPipeDeadlockAndMarksTruncation",
         "killsHungProcessAtWallClockDeadline", "preservesNonzeroExitAndBoundedDiagnosticOutput",
+    ],
+    "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java": [
+        "expiredDeliveryApprovalCannotReachPushTransition",
+        "GIT_DELIVERY_APPROVAL_EXPIRED",
     ],
     "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java": [
         "project.register-workspace", "project.register-target", "project.list-targets",
@@ -104,6 +110,7 @@ def self_test() -> list[str]:
             ("bounded process runner", "src/main/java/io/onsure/platform/BoundedProcessRunner.java", "onsure-process-output-drain"),
             ("all git callpaths bounded", "src/main/java/io/onsure/platform/GitWorkflowService.java", "BoundedProcessRunner.run"),
             ("hung process regression", "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java", "killsHungProcessAtWallClockDeadline"),
+            ("push expiry regression", "src/main/java/io/onsure/platform/GitWorkflowService.java", "requireApprovalNotExpired"),
         ]
         for name, relative, token in cases:
             path = root / relative
@@ -123,12 +130,12 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V3",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V4",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 10 if args.self_test else 0,
+        "failure_injection_count": 11 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
