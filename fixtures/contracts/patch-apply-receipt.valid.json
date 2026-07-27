@@ -6,7 +6,9 @@
   "approval_actor": "reviewer@example.invalid",
   "approval_key_id": "reviewer-key-001",
   "source_commit": "dddddddddddddddddddddddddddddddddddddddd",
+  "target_relative_root": "services/sample-target",
   "source_tree_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "postimage_source_tree_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
   "branch": "fix/sample-approved-patch",
   "worktree": "/tmp/onsure-worktree",
   "applied_hunks": [
@@ -18,7 +20,7 @@
       "backup_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
   ],
-  "git_status": [" M src/main/java/example/Sample.java"],
+  "git_status": [" M services/sample-target/src/main/java/example/Sample.java"],
   "rollback_pointer": "/tmp/onsure-evidence/backups",
   "state": "APPLIED_NONFINAL",
   "focused_tests": "NOT_RUN",
