@@ -1,6 +1,5 @@
 package io.onsure.platform;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -15,6 +14,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HexFormat;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +29,6 @@ import java.util.TreeMap;
 public final class DurableStateLedger {
     public static final String TRANSACTION_CONTRACT = "ONSURE_DURABLE_STATE_LEDGER_TX_V1";
     public static final String GENESIS = "0".repeat(64);
-    private static final TypeReference<Map<String, Object>> STRING_OBJECT_MAP =
-            new TypeReference<Map<String, Object>>() {};
 
     public record Verification(boolean valid, List<String> violations, long sequence, String head) {
         public Verification { violations = List.copyOf(violations); }
@@ -262,7 +260,7 @@ public final class DurableStateLedger {
             if (event.path("sequence").asLong(-1) != expectedSequence) violations.add("LEDGER_SEQUENCE_BROKEN");
             if (!entityId.equals(event.path(entityField).asText())) violations.add("LEDGER_ENTITY_MISMATCH");
             if (!previous.equals(event.path("previous_hash").asText())) violations.add("LEDGER_PREVIOUS_HASH_BROKEN");
-            Map<String, Object> unsigned = mapper.convertValue(event, STRING_OBJECT_MAP);
+            Map<String, Object> unsigned = objectMap(event);
             String declared = String.valueOf(unsigned.remove("entry_hash"));
             String calculated = sha256(mapper.writeValueAsBytes(unsigned));
             if (!declared.equals(calculated)) violations.add("LEDGER_EVENT_TAMPERED");
@@ -287,7 +285,7 @@ public final class DurableStateLedger {
     }
 
     private Map<String, Object> readStateRaw() throws Exception {
-        return new LinkedHashMap<>(mapper.readValue(stateFile.toFile(), STRING_OBJECT_MAP));
+        return objectMap(mapper.readTree(stateFile.toFile()));
     }
 
     private List<String> readLedgerLines() throws Exception {
@@ -308,6 +306,40 @@ public final class DurableStateLedger {
         Map<String, Object> copy = new TreeMap<>(state);
         copy.remove("state_sha256");
         return sha256(mapper.writeValueAsBytes(copy));
+    }
+
+    private Map<String, Object> objectMap(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            throw new IllegalArgumentException("JSON_OBJECT_REQUIRED");
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            result.put(field.getKey(), jsonValue(field.getValue()));
+        }
+        return result;
+    }
+
+    private Object jsonValue(JsonNode node) {
+        if (node == null || node.isNull()) return null;
+        if (node.isObject()) return objectMap(node);
+        if (node.isArray()) {
+            List<Object> values = new ArrayList<>();
+            node.forEach(value -> values.add(jsonValue(value)));
+            return values;
+        }
+        if (node.isTextual()) return node.textValue();
+        if (node.isBoolean()) return node.booleanValue();
+        if (node.isIntegralNumber()) {
+            return node.canConvertToInt() ? node.intValue() : node.longValue();
+        }
+        if (node.isFloatingPointNumber()) return node.decimalValue();
+        if (node.isBinary()) {
+            try { return node.binaryValue(); }
+            catch (Exception failure) { throw new IllegalArgumentException("JSON_BINARY_INVALID", failure); }
+        }
+        throw new IllegalArgumentException("JSON_VALUE_TYPE_UNSUPPORTED:" + node.getNodeType());
     }
 
     private void writeJsonAtomic(Path file, Object value) throws Exception {
