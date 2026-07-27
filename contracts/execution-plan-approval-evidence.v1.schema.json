@@ -16,6 +16,7 @@
     "target_id": {"type": "string", "minLength": 1},
     "source_tree_sha256": {"$ref": "#/$defs/sha256"},
     "plan_file_sha256": {"$ref": "#/$defs/sha256"},
+    "original_plan_file_sha256": {"pattern": "^(?:[0-9a-f]{64}|NOT_APPLICABLE)$"},
     "plan_sha256": {"$ref": "#/$defs/sha256"},
     "approval_state": {"enum": ["AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED"]},
     "approval_scope": {"enum": [
@@ -31,5 +32,9 @@
     "final_claim_allowed": {"const": false},
     "receipt_sha256": {"$ref": "#/$defs/sha256"}
   },
+  "allOf": [{
+    "if": {"properties": {"approval_state": {"const": "USER_APPROVED"}}, "required": ["approval_state"]},
+    "then": {"required": ["original_plan_file_sha256"]}
+  }],
   "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
 }
