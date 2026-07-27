@@ -1,10 +1,12 @@
 {
   "contract": "ONSURE_OMISSION_DETECTION_STATUS_V1",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "assessment_date": "2026-07-28",
   "source_ref": "main",
   "authorities": {
     "design_coverage": "status/design-capability-coverage.v2.json",
+    "product_subrequirements": "status/product-subrequirement-coverage.v1.json",
+    "workflow_surface_parity": "scripts/validate-workflow-surface-parity.py",
     "process_lineage": "contracts/product-process-lineage.v1.json",
     "legacy_traceability": "contracts/requirements-traceability.v1.json",
     "verification_claims": "scripts/validate-verification-claims.py",
@@ -12,6 +14,9 @@
   },
   "coverage": {
     "design_capabilities": 28,
+    "product_subrequirements": 38,
+    "workflow_operations": 34,
+    "workflow_surfaces": 3,
     "product_process_stages": 20,
     "lineage_artifacts": 20,
     "authoritative_documents": 12
@@ -56,10 +61,14 @@
     "atomic_requirement_cases": 10,
     "automation_boundary_cases": 6,
     "verification_claim_cases": 8,
-    "all_registered_cases": 52,
+    "product_subrequirement_cases": 10,
+    "workflow_surface_cases": 6,
+    "all_registered_cases": 68,
     "atomic_requirement_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
     "automation_boundary_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
-    "verification_claim_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED"
+    "verification_claim_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
+    "product_subrequirement_result": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+    "workflow_surface_result": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED"
   },
   "detection_result": {
     "logic_self_test": "PASS",
@@ -73,13 +82,31 @@
     "historical_binding_scope": "ARCHIVED_PREVIOUS_HEAD_ONLY",
     "latest_source_bound_runtime_gate": "PENDING_FINAL_ONE_SHOT"
   },
+  "why_previous_onsure_missed_new_gaps": [
+    "CAPABILITY_MATRIX_WAS_COARSE_GRAINED",
+    "ATOMIC_EXTRACTION_WAS_NONAUTHORITATIVE_CANDIDATE_ONLY",
+    "FILE_CLASS_TEST_EXISTENCE_DID_NOT_PROVE_CALL_PATH",
+    "REQUIRED_PRODUCT_SURFACES_WERE_NOT_MACHINE_CHECKED",
+    "APPROVED_ACTION_SCOPE_WAS_NOT_ENFORCED_AT_STAGE_EXECUTION",
+    "INCOMPLETE_REQUIREMENTS_COULD_REMAIN_HIDDEN_INSIDE_PARTIAL_CAPABILITY"
+  ],
   "known_detected_gaps": [
-    "ATOMIC_REQUIREMENT_AUTHORITY_RECONCILIATION_INCOMPLETE",
-    "PRODUCT_BUILD_DEPENDENCY_SBOM_VULNERABILITY_PACK_INCOMPLETE",
-    "PERFORMANCE_LOAD_RECOVERY_PACK_INCOMPLETE",
+    "INCREMENTAL_PROGRAM_LEARNING_DESIGN_ONLY",
+    "TOOL_CONTRACT_AND_EXECUTION_LOG_INVENTORY_INCOMPLETE",
+    "VSCODE_REQUIRED_VIEWS_STUB",
+    "ASK_PLAN_ACT_AUTOPILOT_MODES_DESIGN_ONLY",
+    "VSCODE_PARTIAL_APPROVAL_UI_NOT_IMPLEMENTED",
+    "VSCODE_HUNK_APPROVAL_UI_NOT_IMPLEMENTED",
+    "LONG_RUNNING_JOB_PAUSE_RESUME_DESIGN_ONLY",
+    "PROVIDER_MODEL_REPLACEABILITY_DESIGN_ONLY",
+    "TOKEN_AND_DATA_TRANSFER_VISIBILITY_STUB",
+    "PUBLIC_SDK_BOUNDARY_STUB",
     "TENANT_IDENTITY_RBAC_STUB",
     "CROSS_TENANT_READ_ATTACK_NOT_RUN",
     "CROSS_TENANT_WRITE_ATTACK_NOT_RUN",
+    "ATOMIC_REQUIREMENT_AUTHORITY_RECONCILIATION_INCOMPLETE",
+    "PRODUCT_BUILD_DEPENDENCY_SBOM_VULNERABILITY_PACK_INCOMPLETE",
+    "PERFORMANCE_LOAD_RECOVERY_PACK_INCOMPLETE",
     "OBSERVABILITY_OPERATIONS_DESIGN_ONLY",
     "SIGNED_INSTALLER_AND_AIR_GAPPED_DEPLOYMENT_DESIGN_ONLY",
     "DIRECT_PRODUCTION_MODEL_TELEMETRY_NOT_RUN",
