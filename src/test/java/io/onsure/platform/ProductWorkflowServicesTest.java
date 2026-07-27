@@ -46,15 +46,18 @@ class ProductWorkflowServicesTest {
                 program.get("profile_id").toString(), 2, behaviorFile);
         assertEquals("ONSURE_BEHAVIOR_PROFILE_V1", behavior.get("contract"));
         assertEquals("BEHAVIOR_CANDIDATE", behavior.get("state"));
-        assertEquals("PROCESS_COMMAND_PROXY", behavior.get("coverage_class"));
+        assertEquals(BehaviorLearningService.COVERAGE_PROXY, behavior.get("coverage_class"));
+        assertEquals(false, behavior.get("direct_behavior_telemetry"));
+        assertEquals(false, behavior.get("production_behavior_telemetry"));
         assertEquals("NOT_RUN", behavior.get("independent_validation"));
         assertTrue(((List<?>) behavior.get("observations")).size() >= 4);
         assertTrue(Files.isRegularFile(behaviorFile));
         for (Object item : (List<?>) behavior.get("observations")) {
             Map<?, ?> observation = (Map<?, ?>) item;
-            Path receipt = behaviorFile.getParent().resolve(observation.get("run_receipt_path").toString());
+            Path receipt = Path.of(observation.get("run_receipt_path").toString());
             assertTrue(Files.isRegularFile(receipt), receipt.toString());
-            assertTrue(observation.get("run_receipt_sha256").toString().matches("[0-9a-f]{64}"));
+            assertTrue(observation.get("run_receipt_file_sha256").toString().matches("[0-9a-f]{64}"));
+            assertEquals(Hashing.file(receipt), observation.get("run_receipt_file_sha256"));
         }
     }
 
