@@ -1,0 +1,119 @@
+name: ONSure PR Validation
+
+on:
+  push:
+    branches:
+      - feature/onsure-codespace-free-remediation-20260726
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onsure-pr-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned validators
+        run: python -m pip install --disable-pip-version-check -r requirements-validation.txt
+      - name: Validate structured contracts and negative fixtures
+        run: python scripts/validate-structured-contracts.py --require-full
+      - name: Validate design capabilities, process, data lineage, and 28 failure injections
+        run: >-
+          python scripts/validate-design-coverage.py
+          --matrix status/design-capability-coverage.v2.json
+          --root . --self-test
+      - name: Validate cross-status consistency
+        run: python scripts/validate-status-consistency.py
+      - name: Validate module boundaries
+        run: python scripts/check-module-boundaries.py
+      - name: Validate repository contracts
+        run: python scripts/validate-repository-contracts.py
+      - name: Validate complete Codespace-free gate
+        run: python scripts/validate-codespace-free-remediation.py
+      - name: Run omission detection regression tests
+        run: python -m unittest tests.test_omission_detection_gates -v
+      - name: Validate shell syntax
+        run: bash scripts/check-shell-syntax.sh
+
+  java-and-modules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Verify Java version
+        run: |
+          java -version
+          javac -version
+      - name: Run root Maven tests
+        run: mvn -B -ntp test
+      - name: Run modular Maven tests
+        run: mvn -B -ntp -f pom-modular.xml test
+      - name: Prove Core without optional ORUDA module
+        run: mvn -B -ntp -f pom-modular.xml -pl modules/onsure-core -am test
+
+  sandbox-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Install Linux sandbox dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap
+          command -v bwrap
+          command -v prlimit
+          command -v timeout
+      - name: Run Generic and AI fixtures in required sandbox mode
+        env:
+          ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
+        run: mvn -B -ntp -Dtest=ValidationPlatformE2ETest test
+      - name: Run ORUDA MVF fixtures in required sandbox mode
+        env:
+          ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
+        run: mvn -B -ntp -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
+
+  vscode-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: vscode-extension/package.json
+      - name: Static extension validation
+        run: python3 scripts/validate-vscode-extension.py --require-node
+      - name: Package VSIX without publishing
+        working-directory: vscode-extension
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm run package
+          test -n "$(find . -maxdepth 1 -name '*.vsix' -print -quit)"
