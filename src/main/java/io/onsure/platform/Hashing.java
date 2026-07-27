@@ -88,10 +88,12 @@ final class Hashing {
         environment.put("GIT_CONFIG_NOSYSTEM", "1");
         Process process = builder.start();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        Thread reader = Thread.ofVirtual().name("onsure-git-output").start(() -> {
+        Thread reader = new Thread(() -> {
             try { process.getInputStream().transferTo(output); }
             catch (Exception ignored) {}
-        });
+        }, "onsure-git-output");
+        reader.setDaemon(true);
+        reader.start();
         boolean completed = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
         if (!completed) {
             process.toHandle().descendants().forEach(ProcessHandle::destroyForcibly);
