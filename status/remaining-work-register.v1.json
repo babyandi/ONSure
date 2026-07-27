@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "assessment_date": "2026-07-28",
   "authority": "status/design-capability-coverage.v2.json",
   "subrequirement_authority": "status/product-subrequirement-coverage.v1.json",
@@ -39,6 +39,18 @@
       "next_action": "Run the workflow surface parity gate whenever Dispatcher, CLI, Local API or VS Code commands change."
     },
     {
+      "id": "P0-CRITICAL-CALLPATH-AND-APPROVAL-AUTHORITY",
+      "state": "FIXED_LOCAL_TRUST_ROOT_AND_BUNDLE_VALIDATION_IMPLEMENTED_7_ATTACKS_REGISTERED_LOCAL_JAVA_EXECUTION_REQUIRED",
+      "requires_human": false,
+      "next_action": "Verify that every signed Plan, Patch, Git and Service Case workflow uses only .onsure/approval-authority, rejects caller-selected registries and ledgers, and preserves fail-closed bundle validation."
+    },
+    {
+      "id": "P0-APPROVAL-REPLAY-EXTERNAL-ANCHOR",
+      "state": "NOT_IMPLEMENTED",
+      "requires_human": false,
+      "next_action": "Anchor the approval replay-ledger head outside the mutable workspace and verify rewrite, rollback and stale-snapshot attacks."
+    },
+    {
       "id": "P0-PARTIAL-EXECUTION-PLAN-APPROVAL",
       "state": "CORE_SCOPE_ENFORCEMENT_IMPLEMENTED_VSCODE_INTERACTIVE_UI_MISSING_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
@@ -58,9 +70,9 @@
     },
     {
       "id": "P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION",
-      "state": "68_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
+      "state": "75_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
-      "next_action": "Keep 28 design/process/data, 10 atomic, 6 automation-prohibition, 8 verification-claim, 10 product-subrequirement and 6 workflow-surface failure injections mandatory."
+      "next_action": "Keep 28 design/process/data, 10 atomic, 6 automation-prohibition, 8 verification-claim, 10 product-subrequirement, 6 workflow-surface and 7 critical-callpath failure injections mandatory."
     },
     {
       "id": "P0-INCREMENTAL-PROGRAM-LEARNING",
