@@ -18,6 +18,7 @@ REQUIRED = [
     "contracts/schema-instance-registry.v1.json",
     "contracts/product-process-lineage.v1.json",
     "status/design-capability-coverage.v2.json",
+    "status/product-subrequirement-coverage.v1.json",
     "status/omission-detection-status.v1.json",
     "status/implementation-matrix.v1.json",
     "status/verification-status.v1.json",
@@ -36,6 +37,8 @@ REQUIRED = [
     "scripts/create-source-snapshot.py",
     "scripts/extract-atomic-requirements.py",
     "scripts/validate-atomic-requirements.py",
+    "scripts/validate-product-subrequirements.py",
+    "scripts/validate-workflow-surface-parity.py",
     "scripts/validate-structured-contracts.py",
     "scripts/validate-design-coverage.py",
     "scripts/validate-product-process-lineage.py",
@@ -53,17 +56,57 @@ REQUIRED = [
     "src/main/java/io/onsure/platform/FileValidationStore.java",
     "src/main/java/io/onsure/platform/ProductCatalog.java",
     "src/main/java/io/onsure/platform/FixtureHarness.java",
+    "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
+    "src/test/java/io/onsure/platform/ExecutionPlanActionPolicyTest.java",
     "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java",
 ]
 
 SOURCE_ASSERTIONS = {
     "scripts/onsure-local-gate.sh": [
         "ONSURE_LOCAL_GATE_PASS_NONFINAL",
+        "scripts/validate-product-subrequirements.py --self-test",
+        "scripts/validate-workflow-surface-parity.py --self-test",
         "scripts/validate-verification-claims.py",
         "scripts/test-fixture-sandbox-boundary.sh",
         '"github_actions": "DISABLED"',
         "mvn -B -ntp -q test",
         "pom-modular.xml",
+    ],
+    "scripts/onsure-one-shot.sh": [
+        "product-subrequirements",
+        "workflow-surface-parity",
+        "PASS_WITH_KNOWN_GAPS",
+    ],
+    "scripts/validate-product-subrequirements.py": [
+        "EXPECTED_IDS",
+        "SUBREQ_NORMATIVE_PHRASE_MISSING",
+        "SUBREQ_MISSING_SURFACE_UNDETECTED",
+        "SUBREQ_SEMANTIC_TOKEN_MISSING",
+        "failure_injection_count",
+    ],
+    "scripts/validate-workflow-surface-parity.py": [
+        "EXPECTED_OPERATIONS",
+        "WORKFLOW_OPERATION_SET_MISMATCH",
+        "WORKFLOW_CLI_GENERIC_ROUTE_MISSING",
+        "WORKFLOW_LOCAL_API_GENERIC_ROUTE_MISSING",
+        "WORKFLOW_VSCODE_GENERIC_ROUTE_MISSING",
+    ],
+    "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java": [
+        "NOT_RUN_NOT_APPROVED",
+        "FIXTURE_EXECUTION",
+        "PARTIAL_EXECUTION_PLAN",
+    ],
+    "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
+        "PARTIAL_PLAN_ACTION_SET",
+        "plannedActions.containsAll(approvedActions)",
+    ],
+    "src/main/java/io/onsure/platform/ValidationEngine.java": [
+        "ExecutionPlanActionPolicy.requiredAction",
+        "ExecutionPlanActionPolicy.notApproved",
+    ],
+    "src/main/java/io/onsure/platform/ValidationCompletionGate.java": [
+        "ExecutionPlanActionPolicy.isApproved",
+        "ONSURE_VALIDATION_COMPLETION_GATE_V7",
     ],
     "scripts/validate-ci-boundary.py": [
         "GITHUB_ACTIONS_WORKFLOW_FORBIDDEN",
@@ -195,6 +238,10 @@ def main() -> int:
         ([sys.executable, "scripts/validate-design-coverage.py", "--matrix",
           "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"],
          '"decision": "PASS"'),
+        ([sys.executable, "scripts/validate-product-subrequirements.py", "--self-test"],
+         "ONSURE_PRODUCT_SUBREQUIREMENT_GATE_PASS"),
+        ([sys.executable, "scripts/validate-workflow-surface-parity.py", "--self-test"],
+         "ONSURE_WORKFLOW_SURFACE_PARITY_PASS"),
         ([sys.executable, "scripts/validate-status-consistency.py"], "ONSURE_STATUS_CONSISTENCY_PASS"),
         ([sys.executable, "scripts/validate-ci-boundary.py"], "ONSURE_AUTOMATION_BOUNDARY_PASS"),
         ([sys.executable, "scripts/validate-verification-claims.py"],
@@ -209,7 +256,7 @@ def main() -> int:
         if result.returncode != 0 or marker not in combined:
             errors.append(
                 f"COMMAND_FAIL:{' '.join(command)}:{result.returncode}:"
-                f"{result.stdout[-2400:]}:{result.stderr[-1400:]}"
+                f"{result.stdout[-2800:]}:{result.stderr[-1600:]}"
             )
 
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
@@ -225,7 +272,7 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V11",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V12",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "github_actions": "DISABLED_BY_USER",
@@ -235,13 +282,16 @@ def main() -> int:
         "automation_boundary": "PASS" if not errors else "FAIL",
         "verification_claim_boundary": "PASS" if not errors else "FAIL",
         "design_capability_count": 28,
+        "product_subrequirement_count": 38,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
-        "failure_injection_count": 52,
+        "failure_injection_count": 68,
         "atomic_requirement_failure_injections": 10,
         "design_and_lineage_failure_injections": 28,
         "automation_boundary_failure_injections": 6,
         "verification_claim_failure_injections": 8,
+        "product_subrequirement_failure_injections": 10,
+        "workflow_surface_failure_injections": 6,
         "sandbox_required_attacks": 12,
         "sandbox_verified_attacks": 10,
         "sandbox_unverified_attacks": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
