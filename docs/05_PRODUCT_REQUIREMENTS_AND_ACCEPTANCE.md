@@ -94,7 +94,7 @@ ONSURE는 사용자가 VS Code 안에서 대상 AI 프로그램을 학습시키�
 ### FR-11 CLI/API
 
 - VS Code와 동일 Core API를 사용하는 CLI를 제공해야 합니다.
-- 로컬 Gate와 외부 제품에서 사용할 공개 API 또는 SDK 경계를 제공해야 합니다.
+- CI와 외부 제품에서 사용할 공개 API 또는 SDK 경계를 제공해야 합니다.
 
 ### FR-12 학습·개선 기억
 
