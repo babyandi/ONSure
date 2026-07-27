@@ -13,6 +13,8 @@
     "model_version": "NOT_APPLICABLE",
     "prompt_digest": "NOT_AVAILABLE",
     "tool_registry_digest": "NOT_AVAILABLE",
+    "sandbox_mode": "HOST_REVIEWED_ONLY",
+    "sandbox_backend": "ROOTLESS_BWRAP",
     "environment_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "observations": [
