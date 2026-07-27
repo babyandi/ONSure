@@ -409,7 +409,13 @@ public final class OfficialLearningLedger {
     }
 
     public synchronized ChainVerification verifyChain() {
-        return verifyChain(true);
+        try {
+            return ExclusiveFileLock.call(lockFile, () -> verifyChain(true));
+        } catch (RuntimeException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new IllegalStateException("OFFICIAL_LEDGER_READ_FAILED", exception);
+        }
     }
 
     public synchronized long appliedCount() {
