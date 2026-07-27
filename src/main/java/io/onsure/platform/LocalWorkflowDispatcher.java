@@ -14,7 +14,7 @@ import java.util.Map;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V3";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V4";
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -174,13 +174,32 @@ public final class LocalWorkflowDispatcher {
                 request.path("execution_profile").asText("LOCAL_DEVELOPMENT"));
         Path approvedPlan = optionalInputPath(request, "approved_execution_plan_file");
         ValidationEngine engine = ValidationEngine.defaultEngine(store);
-        ValidationEngine.RunResult run = approvedPlan == null
-                ? engine.run(target) : engine.run(target, approvedPlan);
+        ValidationEngine.RunResult run;
+        if (approvedPlan == null) {
+            for (String field : List.of(
+                    "original_execution_plan_file", "signed_approval_receipt",
+                    "trusted_key_registry", "approval_replay_ledger")) {
+                if (!request.path(field).asText("").isBlank()) {
+                    throw new IllegalArgumentException("INCOMPLETE_EXECUTION_PLAN_APPROVAL_BUNDLE:" + field);
+                }
+            }
+            run = engine.run(target);
+        } else {
+            ValidationEngine.ApprovedExecutionPlanBundle bundle =
+                    new ValidationEngine.ApprovedExecutionPlanBundle(
+                            approvedPlan,
+                            inputPath(request, "original_execution_plan_file", true),
+                            inputPath(request, "signed_approval_receipt", true),
+                            inputPath(request, "trusted_key_registry", true),
+                            inputPath(request, "approval_replay_ledger", true));
+            run = engine.run(target, bundle);
+        }
         return Map.of(
                 "decision", run.report().decision().name(),
                 "run_root", run.runRoot().toString(),
                 "report", run.report(),
                 "approved_execution_plan_consumed", approvedPlan != null,
+                "approval_bundle_required", approvedPlan != null,
                 "final_claim_allowed", false);
     }
 
