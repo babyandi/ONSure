@@ -9,4 +9,5 @@ validation-data/
 .onsure/one-shot/
 .onsure/core-modular/
 .onsure/final-stage/
+.onsure/local-gate/
 __pycache__/
