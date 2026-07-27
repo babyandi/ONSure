@@ -10,7 +10,7 @@ ROOT="$(cd "$1" && pwd -P)"
 TIMEOUT_SECONDS="$2"
 shift 2
 
-for command in bwrap prlimit timeout bash env; do
+for command in bwrap prlimit timeout bash env mktemp; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_$command" >&2
     exit 69
@@ -72,7 +72,13 @@ case "$BACKEND" in
     ;;
 esac
 
-BINDINGS=()
+EMPTY_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/onsure-sandbox-root.XXXXXX")"
+cleanup() {
+  rm -rf "$EMPTY_ROOT"
+}
+trap cleanup EXIT
+
+BINDINGS=(--ro-bind "$EMPTY_ROOT" /)
 for path in /bin /usr /lib /lib64 /etc/ld.so.cache /etc/alternatives; do
   if [[ -e "$path" ]]; then
     BINDINGS+=(--ro-bind "$path" "$path")
@@ -96,7 +102,8 @@ while IFS='=' read -r key value; do
   fi
 done < <(env)
 
-exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
+set +e
+timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
   "${BWRAP_COMMAND[@]}" \
     --die-with-parent \
     --new-session \
@@ -122,3 +129,6 @@ exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
       --fsize=1048576 \
       -- \
       "$@"
+status=$?
+set -e
+exit "$status"
