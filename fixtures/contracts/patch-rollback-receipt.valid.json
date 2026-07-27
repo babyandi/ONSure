@@ -2,6 +2,8 @@
   "contract": "ONSURE_PATCH_ROLLBACK_RECEIPT_V1",
   "patch_apply_receipt_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "worktree": "/tmp/onsure-worktree",
+  "target_relative_root": "services/sample-target",
+  "restored_source_tree_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "restored_hunks": [
     {
       "hunk_id": "HUNK-aaaaaaaaaaaaaaaa",
