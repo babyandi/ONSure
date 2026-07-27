@@ -117,15 +117,17 @@ jobs:
       - name: Install Linux sandbox dependency
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq bubblewrap
+          sudo apt-get install -y -qq bubblewrap util-linux
           command -v bwrap
+          command -v unshare
           command -v prlimit
           command -v timeout
           sudo -n true
+          sudo -n unshare --net -- true
       - name: Run adversarial and product fixtures in required sandbox mode
         env:
           ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
-          ONSURE_FIXTURE_SANDBOX_BACKEND: CI_SUDO_BWRAP
+          ONSURE_FIXTURE_SANDBOX_BACKEND: CI_SUDO_UNSHARE_BWRAP
         run: |
           set -euo pipefail
           LOG=sandbox-validation.log
