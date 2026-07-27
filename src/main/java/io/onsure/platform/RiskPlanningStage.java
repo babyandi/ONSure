@@ -41,9 +41,14 @@ public final class RiskPlanningStage implements ValidatorStage {
         Object approvedPlanValue = context.attributes().get("approved_execution_plan_file");
         if (approvedPlanValue instanceof String text && !text.isBlank()) {
             Path approvedPlan = Path.of(text).toAbsolutePath().normalize();
+            Path originalPlan = requiredBundlePath(context, "original_execution_plan_file");
+            Path signedReceipt = requiredBundlePath(context, "signed_plan_approval_receipt");
+            Path keyRegistry = requiredBundlePath(context, "plan_approval_key_registry");
+            Path replayLedger = requiredBundlePath(context, "plan_approval_replay_ledger");
             String sourceDigest = String.valueOf(context.attributes().get("source_tree_sha256"));
-            plan = new ExecutionPlanApprovalService().verifyApprovedPlan(
-                    approvedPlan, context.target(), sourceDigest);
+            plan = new ExecutionPlanApprovalService().verifyApprovedPlanBundle(
+                    approvedPlan, originalPlan, signedReceipt, keyRegistry, replayLedger,
+                    context.target(), sourceDigest);
             Files.copy(approvedPlan, output, StandardCopyOption.REPLACE_EXISTING);
         } else {
             plan = service.plan(context.target(), profile, fixtureCount, output);
@@ -64,9 +69,8 @@ public final class RiskPlanningStage implements ValidatorStage {
         mapper.writeValue(approvalOutput.toFile(), approvalEvidence);
         String approvalDigest = Hashing.file(approvalOutput);
 
-        String evidenceId = "EV-PLAN-" + digest.substring(0, 16);
         context.addEvidence(new Evidence(
-                evidenceId,
+                "EV-PLAN-" + digest.substring(0, 16),
                 "EXECUTION_PLAN",
                 context.runRoot().relativize(output).toString().replace('\\', '/'),
                 digest,
@@ -120,6 +124,14 @@ public final class RiskPlanningStage implements ValidatorStage {
                         "product_full_chain", "NOT_RUN"));
     }
 
+    private static Path requiredBundlePath(ValidationContext context, String attribute) {
+        Object value = context.attributes().get(attribute);
+        if (!(value instanceof String text) || text.isBlank()) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_BUNDLE_MISSING:" + attribute);
+        }
+        return Path.of(text).toAbsolutePath().normalize();
+    }
+
     private static Map<?, ?> requireApproval(Map<String, Object> plan) {
         Object value = plan.get("approval");
         if (!(value instanceof Map<?, ?> approval)) {
@@ -146,6 +158,8 @@ public final class RiskPlanningStage implements ValidatorStage {
         receipt.put("target_id", plan.get("target_id"));
         receipt.put("source_tree_sha256", plan.get("source_tree_sha256"));
         receipt.put("plan_file_sha256", planFileSha);
+        receipt.put("original_plan_file_sha256", userApproved
+                ? String.valueOf(approval.get("original_plan_file_sha256")) : "NOT_APPLICABLE");
         receipt.put("plan_sha256", plan.get("plan_sha256"));
         receipt.put("approval_state", approval.get("state"));
         receipt.put("approval_scope", approval.get("scope"));
