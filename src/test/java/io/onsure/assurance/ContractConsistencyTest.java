@@ -27,19 +27,25 @@ class ContractConsistencyTest {
     }
 
     @Test
-    void localAgentSchemaUsesRuntimeContractAndAllSignedFields() throws Exception {
+    void localAgentSchemaUsesRuntimeContractAndNonfinalAuthorityFields() throws Exception {
         JsonNode schema = schema("local-agent-receipt.v1.schema.json");
         Set<String> fields = Set.of(
-                "contract", "authority", "run_id", "assurance_run_id", "run_started_at",
+                "contract", "authority", "authority_class", "assurance_class",
+                "independent_authority", "run_id", "assurance_run_id", "run_started_at",
                 "input_digest", "decision", "created_at", "execution_mode", "role_policy",
                 "evidence_scope", "key_id", "signature_algorithm", "signature");
         assertExactFields(schema, fields);
         assertEquals(LocalAgentMain.CONTRACT,
                 schema.path("properties").path("contract").path("const").asText());
+        assertEquals("INTERNAL_SELF_VALIDATION",
+                schema.path("properties").path("authority_class").path("const").asText());
+        assertEquals("SELF_VALIDATION_NONFINAL",
+                schema.path("properties").path("assurance_class").path("const").asText());
+        assertFalse(schema.path("properties").path("independent_authority").path("const").asBoolean(true));
     }
 
     @Test
-    void runContextSourceLockAndFinalReceiptContractsMatchRuntimeConstants() throws Exception {
+    void runContextSourceLockAndNonfinalReceiptContractsMatchRuntimeConstants() throws Exception {
         JsonNode runContext = schema("local-run-context.v1.schema.json");
         assertExactFields(runContext, Set.of("contract", "run_id", "started_at"));
         assertEquals(LocalRunContext.CONTRACT,
@@ -53,14 +59,19 @@ class ContractConsistencyTest {
 
         JsonNode finalReceipt = schema("local-final-receipt.v1.schema.json");
         assertExactFields(finalReceipt, Set.of(
-                "contract", "decision", "execution_mode", "assurance_run_id", "run_started_at",
-                "verified_at", "receipt_dir", "source_commit_sha", "source_tree_sha256",
-                "policy_sha256", "fixture_contract_snapshot", "fixture_contract_snapshot_sha256",
+                "contract", "decision", "assurance_class", "independent_otester",
+                "independent_oaudit", "final_lock_allowed", "production_go", "commercial_go",
+                "execution_mode", "assurance_run_id", "run_started_at", "verified_at",
+                "receipt_dir", "source_commit_sha", "source_tree_sha256", "policy_sha256",
+                "fixture_contract_snapshot", "fixture_contract_snapshot_sha256",
                 "security_findings_snapshot", "security_findings_snapshot_sha256",
                 "key_registry_snapshot", "key_registry_snapshot_sha256", "ledger",
-                "ledger_chain_head", "final_lock_sha256"));
+                "ledger_chain_head", "evidence_lock_sha256"));
         assertEquals(LocalFinalReceiptVerifier.CONTRACT,
                 finalReceipt.path("properties").path("contract").path("const").asText());
+        assertEquals("SELF_VALIDATION_NONFINAL",
+                finalReceipt.path("properties").path("assurance_class").path("const").asText());
+        assertFalse(finalReceipt.path("properties").path("final_lock_allowed").path("const").asBoolean(true));
     }
 
     @Test
