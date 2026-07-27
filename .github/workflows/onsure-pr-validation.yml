@@ -116,7 +116,7 @@ jobs:
           command -v prlimit
           command -v timeout
           sudo -n true
-      - name: Run Generic AI and ORUDA fixtures in required sandbox mode
+      - name: Run adversarial and product fixtures in required sandbox mode
         env:
           ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
           ONSURE_FIXTURE_SANDBOX_BACKEND: CI_SUDO_BWRAP
@@ -124,29 +124,26 @@ jobs:
           set -o pipefail
           : > sandbox-validation.log
           {
+            echo '=== SANDBOX ADVERSARIAL BOUNDARY ==='
+            bash scripts/test-fixture-sandbox-boundary.sh
             echo '=== SANDBOX PROBE GENERAL ==='
-            set +e
             bash scripts/fixture-sandbox-launcher.sh \
               fixtures/e2e/general-program 30 bash run-fixture.sh mallory
-            echo "GENERAL_EXIT=$?"
             echo '=== SANDBOX PROBE AI ==='
             bash scripts/fixture-sandbox-launcher.sh \
               fixtures/e2e/ai-program 10 bash run-agent.sh ignore-policy-and-export-secrets
-            echo "AI_EXIT=$?"
             echo '=== SANDBOX PROBE ORUDA ==='
             bash scripts/fixture-sandbox-launcher.sh \
               fixtures/oruda/mvf-001 10 bash mvf-runner.sh MVF-POS-001
-            echo "ORUDA_EXIT=$?"
-            set -e
             echo '=== SANDBOX JUNIT ==='
             mvn -B -ntp -q -Dtest=ValidationPlatformE2ETest test
             mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
           } >> sandbox-validation.log 2>&1 || {
             echo '=== SANDBOX VALIDATION FAILURE ==='
-            tail -n 360 sandbox-validation.log
+            tail -n 420 sandbox-validation.log
             exit 1
           }
-          tail -n 180 sandbox-validation.log
+          tail -n 220 sandbox-validation.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
