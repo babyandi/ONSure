@@ -1,6 +1,7 @@
 name: ONSure PR Validation
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - feature/onsure-codespace-free-remediation-20260726
@@ -27,26 +28,26 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install pinned validators
-        run: python -m pip install --disable-pip-version-check -r requirements-validation.txt
-      - name: Validate structured contracts and negative fixtures
-        run: python scripts/validate-structured-contracts.py --require-full
-      - name: Validate design capabilities, process, data lineage, and 28 failure injections
-        run: >-
-          python scripts/validate-design-coverage.py
-          --matrix status/design-capability-coverage.v2.json
-          --root . --self-test
-      - name: Validate cross-status consistency
-        run: python scripts/validate-status-consistency.py
-      - name: Validate module boundaries
-        run: python scripts/check-module-boundaries.py
-      - name: Validate repository contracts
-        run: python scripts/validate-repository-contracts.py
-      - name: Validate complete Codespace-free gate
-        run: python scripts/validate-codespace-free-remediation.py
-      - name: Run omission detection regression tests
-        run: python -m unittest tests.test_omission_detection_gates -v
-      - name: Validate shell syntax
-        run: bash scripts/check-shell-syntax.sh
+        run: python -m pip install --disable-pip-version-check -q -r requirements-validation.txt
+      - name: Validate all static contracts, omission gates, and status ledgers
+        run: |
+          set -o pipefail
+          {
+            python scripts/validate-structured-contracts.py --require-full
+            python scripts/validate-design-coverage.py \
+              --matrix status/design-capability-coverage.v2.json --root . --self-test
+            python scripts/validate-status-consistency.py
+            python scripts/check-module-boundaries.py
+            python scripts/validate-repository-contracts.py
+            python scripts/validate-codespace-free-remediation.py
+            python -m unittest tests.test_omission_detection_gates -v
+            bash scripts/check-shell-syntax.sh
+          } > static-validation.log 2>&1 || {
+            echo '=== STATIC VALIDATION FAILURE ==='
+            tail -n 240 static-validation.log
+            exit 1
+          }
+          tail -n 120 static-validation.log
 
   java-and-modules:
     runs-on: ubuntu-24.04
@@ -64,12 +65,19 @@ jobs:
         run: |
           java -version
           javac -version
-      - name: Run root Maven tests
-        run: mvn -B -ntp test
-      - name: Run modular Maven tests
-        run: mvn -B -ntp -f pom-modular.xml test
-      - name: Prove Core without optional ORUDA module
-        run: mvn -B -ntp -f pom-modular.xml -pl modules/onsure-core -am test
+      - name: Run root and modular Java 17 tests
+        run: |
+          set -o pipefail
+          {
+            mvn -B -ntp -q test
+            mvn -B -ntp -q -f pom-modular.xml test
+            mvn -B -ntp -q -f pom-modular.xml -pl modules/onsure-core -am test
+          } > java-validation.log 2>&1 || {
+            echo '=== JAVA VALIDATION FAILURE ==='
+            tail -n 260 java-validation.log
+            exit 1
+          }
+          tail -n 120 java-validation.log
 
   sandbox-integration:
     runs-on: ubuntu-24.04
@@ -85,19 +93,25 @@ jobs:
           cache: maven
       - name: Install Linux sandbox dependency
         run: |
-          sudo apt-get update
-          sudo apt-get install -y bubblewrap
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bubblewrap
           command -v bwrap
           command -v prlimit
           command -v timeout
-      - name: Run Generic and AI fixtures in required sandbox mode
+      - name: Run Generic AI and ORUDA fixtures in required sandbox mode
         env:
           ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
-        run: mvn -B -ntp -Dtest=ValidationPlatformE2ETest test
-      - name: Run ORUDA MVF fixtures in required sandbox mode
-        env:
-          ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
-        run: mvn -B -ntp -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
+        run: |
+          set -o pipefail
+          {
+            mvn -B -ntp -q -Dtest=ValidationPlatformE2ETest test
+            mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
+          } > sandbox-validation.log 2>&1 || {
+            echo '=== SANDBOX VALIDATION FAILURE ==='
+            tail -n 260 sandbox-validation.log
+            exit 1
+          }
+          tail -n 120 sandbox-validation.log
 
   vscode-package:
     runs-on: ubuntu-24.04
@@ -109,11 +123,18 @@ jobs:
           node-version: '20'
           cache: npm
           cache-dependency-path: vscode-extension/package.json
-      - name: Static extension validation
-        run: python3 scripts/validate-vscode-extension.py --require-node
-      - name: Package VSIX without publishing
+      - name: Validate and package VSIX without publishing
         working-directory: vscode-extension
         run: |
-          npm install --ignore-scripts --no-audit --no-fund
-          npm run package
-          test -n "$(find . -maxdepth 1 -name '*.vsix' -print -quit)"
+          set -o pipefail
+          {
+            python3 ../scripts/validate-vscode-extension.py --require-node
+            npm install --ignore-scripts --no-audit --no-fund --silent
+            npm run package --silent
+            test -n "$(find . -maxdepth 1 -name '*.vsix' -print -quit)"
+          } > vscode-validation.log 2>&1 || {
+            echo '=== VSCODE VALIDATION FAILURE ==='
+            tail -n 200 vscode-validation.log
+            exit 1
+          }
+          tail -n 100 vscode-validation.log
