@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /** Recalculates the bijective binding between runtime fixture results and execution evidence. */
 final class FixtureEvidenceBinding {
@@ -114,8 +115,10 @@ final class FixtureEvidenceBinding {
     }
 
     static String environmentDigest(Map<String, String> environment) {
-        String canonical = environment.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
+        Map<String, String> canonicalEnvironment = new TreeMap<>(environment);
+        canonicalEnvironment.put("ONSURE_RUNTIME_SANDBOX_MODE", FixtureHarness.sandboxMode());
+        canonicalEnvironment.put("ONSURE_RUNTIME_SANDBOX_BACKEND", FixtureHarness.sandboxBackend());
+        String canonical = canonicalEnvironment.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
                 .reduce("", (left, right) -> left + "\u0000" + right);
         return Hashing.sha256(canonical);
