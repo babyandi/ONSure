@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_OMISSION_DETECTION_STATUS_V1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "assessment_date": "2026-07-27",
   "source_ref": "feature/onsure-codespace-free-remediation-20260726",
   "authorities": {
@@ -50,27 +50,38 @@
       "DUPLICATE_RECEIPT_ARTIFACT"
     ]
   },
+  "additional_failure_injection": {
+    "atomic_requirement_cases": 10,
+    "ci_boundary_cases": 5,
+    "all_registered_cases": 43,
+    "atomic_requirement_result": "PASS_CI_SELF_VALIDATION_NONFINAL",
+    "ci_boundary_result": "PASS_CI_SELF_VALIDATION_NONFINAL"
+  },
   "detection_result": {
     "logic_self_test": "PASS",
     "python_regression_tests_added": true,
     "codespace_free_gate_integrated": true,
     "one_shot_integrated": true,
-    "latest_full_repository_static_gate": "NOT_RUN_AFTER_LATEST_CHANGES",
-    "latest_source_bound_runtime_gate": "NOT_RUN"
+    "latest_full_repository_static_gate": "PASS_CI_SELF_VALIDATION_NONFINAL",
+    "latest_validated_head": "e9c60cc243c8e4b11521bab379b12f0b94d5bead",
+    "latest_workflow_run_id": 30270109833,
+    "latest_source_bound_runtime_gate": "PENDING_FINAL_ONE_SHOT"
   },
   "known_detected_gaps": [
     "ATOMIC_REQUIREMENT_AUTHORITY_RECONCILIATION_INCOMPLETE",
-    "BUILD_AND_DEPENDENCY_VERIFICATION_DESIGN_ONLY",
-    "PERFORMANCE_RECOVERY_VERIFICATION_DESIGN_ONLY",
+    "PRODUCT_BUILD_DEPENDENCY_SBOM_VULNERABILITY_PACK_INCOMPLETE",
+    "PERFORMANCE_LOAD_RECOVERY_PACK_INCOMPLETE",
     "TENANT_IDENTITY_RBAC_STUB",
     "OBSERVABILITY_OPERATIONS_DESIGN_ONLY",
     "SIGNED_INSTALLER_AND_AIR_GAPPED_DEPLOYMENT_DESIGN_ONLY",
     "DIRECT_PRODUCTION_MODEL_TELEMETRY_NOT_RUN",
+    "VSCODE_EXTENSION_HOST_FULL_CHAIN_NOT_RUN",
+    "WEB_PAYMENT_PROVIDER_FULL_CHAIN_NOT_RUN",
     "INDEPENDENT_OTESTER_NOT_RUN",
     "INDEPENDENT_OAUDIT_NOT_RUN"
   ],
   "assurance": {
-    "self_validation": "NONFINAL",
+    "self_validation": "PASS_NONFINAL",
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
     "final_lock_allowed": false,
