@@ -78,6 +78,13 @@ cleanup() {
 }
 trap cleanup EXIT
 
+for directory in bin usr lib lib64 etc etc/alternatives workspace tmp proc dev; do
+  mkdir -p "$EMPTY_ROOT/$directory"
+done
+if [[ -e /etc/ld.so.cache ]]; then
+  : > "$EMPTY_ROOT/etc/ld.so.cache"
+fi
+
 BINDINGS=(--ro-bind "$EMPTY_ROOT" /)
 for path in /bin /usr /lib /lib64 /etc/ld.so.cache /etc/alternatives; do
   if [[ -e "$path" ]]; then
