@@ -52,9 +52,9 @@ elapsed_seconds=$(( $(date +%s) - start_seconds ))
   exit 1
 }
 sleep 1
-if pgrep -f 'onsure-sandbox-child-probe' >/dev/null 2>&1; then
+if pgrep -f '[o]nsure-sandbox-child-probe' >/dev/null 2>&1; then
   echo 'SANDBOX_CHILD_PROCESS_SURVIVED' >&2
-  pkill -f 'onsure-sandbox-child-probe' || true
+  pkill -f '[o]nsure-sandbox-child-probe' || true
   exit 1
 fi
 echo 'SANDBOX_BOUNDARY_PROBE_PASS child-process CHILD_PROCESS_TERMINATED'
