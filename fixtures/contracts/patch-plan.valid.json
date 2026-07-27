@@ -2,6 +2,8 @@
   "contract": "ONSURE_PATCH_PLAN_V1",
   "patch_plan_id": "PATCH-job-sample-001",
   "target_id": "sample-target",
+  "repository_root_reference": "/tmp/sample-repository",
+  "target_relative_root": "services/sample-target",
   "source_tree_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "review_id": "REVIEW-sample-001",
   "evidence_based_rca_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
