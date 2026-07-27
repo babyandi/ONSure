@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
@@ -43,9 +43,9 @@
   "omission_failure_injection": {
     "design_process_lineage_cases": 28,
     "atomic_requirement_cases": 10,
-    "automation_boundary_cases": 5,
+    "automation_boundary_cases": 6,
     "verification_claim_cases": 8,
-    "all_registered_failure_injections": 51,
+    "all_registered_failure_injections": 52,
     "logic_self_test": "PASS",
     "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
