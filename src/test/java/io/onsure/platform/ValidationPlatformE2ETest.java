@@ -104,7 +104,7 @@ class ValidationPlatformE2ETest {
         assertPersistentRun(result.runRoot(), true);
         assertTrue(Files.readString(result.runRoot().resolve("behavior-profile.json"))
                 .contains("REPEATED_EXECUTABLE_FIXTURE_OBSERVATION_V1"));
-        assertEquals("PROCESS_COMMAND_PROXY",
+        assertEquals(BehaviorLearningService.COVERAGE_PROXY,
                 result.report().summary().get("behavior_profile_coverage_class"));
     }
 
