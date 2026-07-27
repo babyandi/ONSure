@@ -28,7 +28,8 @@
       "type": "object", "additionalProperties": false,
       "required": [
         "harness_id", "execution_profile", "model_id", "model_version",
-        "prompt_digest", "tool_registry_digest", "environment_digest"
+        "prompt_digest", "tool_registry_digest", "sandbox_mode", "sandbox_backend",
+        "environment_digest"
       ],
       "properties": {
         "harness_id": {"type": "string", "minLength": 1},
@@ -37,6 +38,8 @@
         "model_version": {"type": "string", "minLength": 1},
         "prompt_digest": {"type": "string", "pattern": "^(?:[0-9a-f]{64}|NOT_AVAILABLE)$"},
         "tool_registry_digest": {"type": "string", "pattern": "^(?:[0-9a-f]{64}|NOT_AVAILABLE)$"},
+        "sandbox_mode": {"enum": ["HOST_REVIEWED_ONLY", "REQUIRED"]},
+        "sandbox_backend": {"enum": ["ROOTLESS_BWRAP", "CI_SUDO_BWRAP"]},
         "environment_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
