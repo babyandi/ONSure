@@ -1,38 +1,55 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "assessment_source_ref": "feature/onsure-codespace-free-remediation-20260726",
   "runtime_source_commit": null,
-  "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
+  "runtime_source_binding_state": "PENDING_FINAL_ONE_SHOT_RECEIPT",
   "active_remediation_issues": [20, 23],
+  "last_observed_ci_self_validation": {
+    "workflow": "ONSure PR Validation",
+    "run_id": 30270109833,
+    "run_number": 141,
+    "validated_head": "e9c60cc243c8e4b11521bab379b12f0b94d5bead",
+    "state": "PASS_SELF_VALIDATION_NONFINAL",
+    "static_contracts": "PASS",
+    "java17_root_and_modular": "PASS",
+    "core_without_optional_oruda": "PASS",
+    "sandbox_adversarial_and_product_fixtures": "PASS",
+    "vscode_static_and_vsix": "PASS",
+    "authority_class": "INTERNAL_CI_SELF_VALIDATION",
+    "final_claim_allowed": false
+  },
   "design_coverage": {
     "capability_count": 28,
-    "state": "LOGIC_SELF_TEST_PASS_NONFINAL",
+    "state": "CI_SELF_VALIDATION_PASS_NONFINAL",
     "runner": "python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test",
-    "source_bound_receipt": "NOT_RUN_AFTER_LATEST_CHANGES"
+    "source_bound_receipt": "GITHUB_ACTIONS_RUN_30270109833"
   },
   "product_process_lineage": {
     "stage_count": 20,
     "artifact_count": 20,
-    "state": "LOGIC_SELF_TEST_PASS_NONFINAL",
+    "state": "CI_SELF_VALIDATION_PASS_NONFINAL",
     "runner": "python3 scripts/validate-product-process-lineage.py --model contracts/product-process-lineage.v1.json --self-test",
-    "source_bound_receipt": "NOT_RUN_AFTER_LATEST_CHANGES"
+    "source_bound_receipt": "GITHUB_ACTIONS_RUN_30270109833"
   },
   "omission_failure_injection": {
     "total_cases": 28,
     "logic_self_test": "PASS",
-    "full_repository_current_head": "NOT_RUN_AFTER_LATEST_CHANGES"
+    "full_repository_current_head": "PASS_CI_SELF_VALIDATION_NONFINAL",
+    "atomic_requirement_cases": 10,
+    "ci_boundary_cases": 5,
+    "all_registered_failure_injections": 43
   },
   "repository_static_contracts": {
-    "state": "NOT_RUN_AFTER_LATEST_CHANGES",
+    "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
     "runner": "python3 scripts/validate-repository-contracts.py"
   },
   "codespace_free_static_gate": {
-    "state": "NOT_RUN_AFTER_LATEST_CHANGES",
+    "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
     "runner": "python3 scripts/validate-codespace-free-remediation.py"
   },
   "one_shot_static": {
-    "state": "NOT_RUN_AFTER_LATEST_CHANGES",
+    "state": "NOT_RUN_AS_SINGLE_COMMAND",
     "runner": "bash scripts/onsure-one-shot.sh --static-only"
   },
   "one_shot_core": {
@@ -40,15 +57,17 @@
     "runner": "bash scripts/onsure-one-shot.sh --profile core"
   },
   "optional_oruda_profile": {
-    "state": "NOT_RUN",
+    "state": "MVF_SANDBOX_CI_PASS_ONE_SHOT_PROFILE_NOT_RUN",
     "runner": "bash scripts/onsure-one-shot.sh --profile oruda"
   },
-  "java17_maven_junit": "NOT_RUN",
-  "core_modular_without_oruda": "NOT_RUN",
-  "sandbox_attack_tests": "NOT_RUN",
-  "local_api_runtime_e2e": "NOT_RUN",
-  "vscode_product_full_chain": "NOT_RUN",
+  "java17_maven_junit": "PASS_CI_SELF_VALIDATION_NONFINAL",
+  "core_modular_without_oruda": "PASS_CI_SELF_VALIDATION_NONFINAL",
+  "sandbox_attack_tests": "PASS_CI_SELF_VALIDATION_NONFINAL",
+  "local_api_runtime_e2e": "PASS_CI_MODULE_HTTP_NONFINAL",
+  "vscode_static_and_vsix": "PASS_CI_SELF_VALIDATION_NONFINAL",
+  "vscode_extension_host_full_chain": "NOT_RUN",
   "web_payment_provider_full_chain": "NOT_RUN",
+  "direct_production_model_telemetry": "NOT_RUN",
   "independent_otester": "NOT_RUN",
   "independent_oaudit": "NOT_RUN",
   "human_acceptance": "NOT_RUN",
