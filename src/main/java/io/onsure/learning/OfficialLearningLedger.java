@@ -3,12 +3,11 @@ package io.onsure.learning;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.nio.channels.FileChannel;
+import io.onsure.assurance.ExclusiveFileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -464,9 +463,7 @@ public final class OfficialLearningLedger {
             EntryType type, String subjectId, String artifactDigest, Map<String, ?> payload) {
         try {
             Files.createDirectories(ledgerFile.getParent());
-            try (FileChannel channel = FileChannel.open(lockFile,
-                    StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-                 var ignored = channel.lock()) {
+            return ExclusiveFileLock.call(lockFile, () -> {
                 ChainVerification chain = verifyChain(false);
                 if (!chain.valid()) throw failure("OFFICIAL_LEDGER_CHAIN_INVALID");
                 validateAppendUniqueness(type, payload);
@@ -493,7 +490,7 @@ public final class OfficialLearningLedger {
                 ChainVerification written = verifyChain(true);
                 if (!written.valid()) throw failure("OFFICIAL_LEDGER_WRITE_VERIFY_FAILED");
                 return entryHash;
-            }
+            });
         } catch (RuntimeException exception) {
             throw exception;
         } catch (Exception exception) {
