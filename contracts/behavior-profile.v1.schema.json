@@ -6,21 +6,26 @@
   "additionalProperties": false,
   "required": [
     "contract", "profile_id", "program_profile_id", "source_baseline_hash",
-    "coverage_class", "direct_behavior_telemetry", "runtime_context", "observations",
-    "variability", "failure_conditions", "policy_violations", "evidence_refs",
-    "receipt_directory", "state", "generated_at", "learning_method", "human_review",
-    "independent_validation", "final_claim_allowed", "profile_sha256"
+    "coverage_class", "direct_behavior_telemetry", "production_behavior_telemetry",
+    "runtime_context", "observations", "variability", "failure_conditions",
+    "policy_violations", "evidence_refs", "receipt_directory", "state", "generated_at",
+    "learning_method", "human_review", "independent_validation", "final_claim_allowed",
+    "profile_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_BEHAVIOR_PROFILE_V1"},
     "profile_id": {"type": "string", "minLength": 1},
     "program_profile_id": {"type": "string", "minLength": 1},
     "source_baseline_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "coverage_class": {"enum": ["DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY", "EXECUTABLE_FIXTURE_PROCESS_PROXY"]},
+    "coverage_class": {"enum": [
+      "DIRECT_PRODUCTION_MODEL_TELEMETRY",
+      "DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY",
+      "EXECUTABLE_FIXTURE_PROCESS_PROXY"
+    ]},
     "direct_behavior_telemetry": {"type": "boolean"},
+    "production_behavior_telemetry": {"type": "boolean"},
     "runtime_context": {
-      "type": "object",
-      "additionalProperties": false,
+      "type": "object", "additionalProperties": false,
       "required": [
         "harness_id", "execution_profile", "model_id", "model_version",
         "prompt_digest", "tool_registry_digest", "environment_digest"
@@ -50,7 +55,9 @@
           "input_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "output_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "tool_calls": {"type": "array", "items": {"type": "string"}},
-          "tool_call_observation": {"enum": ["DIRECT", "PROCESS_COMMAND_PROXY"]},
+          "tool_call_observation": {"enum": [
+            "DIRECT_PRODUCTION_MODEL", "DIRECT_INSTRUMENTED_FIXTURE", "PROCESS_COMMAND_PROXY"
+          ]},
           "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]},
           "duration_ms": {"type": "integer", "minimum": 0},
           "run_receipt_id": {"type": "string", "minLength": 1},
