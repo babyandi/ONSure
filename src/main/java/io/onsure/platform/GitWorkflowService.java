@@ -12,6 +12,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -20,7 +21,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /** Performs bounded Git delivery. It never merges and never force-pushes. */
 public final class GitWorkflowService {
@@ -33,7 +33,6 @@ public final class GitWorkflowService {
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
-    /** Unsafe legacy entry point is intentionally disabled. */
     @Deprecated
     public Map<String, Object> commitApprovedWorktree(
             Path worktreeRoot,
@@ -95,7 +94,8 @@ public final class GitWorkflowService {
             throw new IllegalStateException("UNTRACKED_FILE_COMMIT_PROHIBITED");
         }
         Set<String> actualFiles = new LinkedHashSet<>(git(
-                worktree, List.of("diff", "--name-only"), 20).lines().filter(value -> !value.isBlank()).toList());
+                worktree, List.of("diff", "--name-only"), 20).lines()
+                .filter(value -> !value.isBlank()).toList());
         Set<String> approvedFiles = new LinkedHashSet<>();
         patch.path("applied_hunks").forEach(value -> approvedFiles.add(value.path("relative_path").asText()));
         if (!actualFiles.equals(approvedFiles)) {
@@ -262,26 +262,21 @@ public final class GitWorkflowService {
     }
 
     private static String run(List<String> command, Path root, long timeout, String authority) throws Exception {
-        ProcessBuilder builder = new ProcessBuilder(command).directory(root.toFile()).redirectErrorStream(true);
-        Map<String, String> env = builder.environment();
-        String path = env.get("PATH");
-        String ghToken = env.get("GH_TOKEN");
-        env.clear();
-        if (path != null) env.put("PATH", path);
-        if (ghToken != null && "GH".equals(authority)) env.put("GH_TOKEN", ghToken);
-        env.put("GIT_TERMINAL_PROMPT", "0");
-        Process process = builder.start();
-        boolean completed = process.waitFor(timeout, TimeUnit.SECONDS);
-        if (!completed) {
-            process.toHandle().descendants().forEach(ProcessHandle::destroyForcibly);
-            process.destroyForcibly();
-            throw new IllegalStateException(authority + "_COMMAND_TIMEOUT");
+        Map<String, String> environment = new LinkedHashMap<>();
+        String path = System.getenv("PATH");
+        String ghToken = System.getenv("GH_TOKEN");
+        if (path != null) environment.put("PATH", path);
+        if (ghToken != null && "GH".equals(authority)) environment.put("GH_TOKEN", ghToken);
+        environment.put("GIT_TERMINAL_PROMPT", "0");
+        BoundedProcessRunner.Result result = BoundedProcessRunner.run(
+                command, root, Duration.ofSeconds(timeout), environment, authority);
+        if (result.outputTruncated()) {
+            throw new IllegalStateException(authority + "_COMMAND_OUTPUT_LIMIT");
         }
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        if (process.exitValue() != 0) {
-            throw new IllegalStateException(authority + "_COMMAND_FAILED:" + output.strip());
+        if (result.exitCode() != 0) {
+            throw new IllegalStateException(authority + "_COMMAND_FAILED:" + result.output().strip());
         }
-        return output;
+        return result.output();
     }
 
     private void writeAtomic(Path outputFile, Object value) throws Exception {
