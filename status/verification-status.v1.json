@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
@@ -60,6 +60,15 @@
     "external_replay_anchor": "NOT_IMPLEMENTED",
     "current_source_execution": "NOT_RUN"
   },
+  "bounded_process_execution": {
+    "state": "IMPLEMENTED_JAVAC_RELEASE17_SMOKE_PASS_FULL_MAVEN_NOT_RUN",
+    "covered_callpaths": [
+      "PROGRAM_LEARNING_GIT", "SOURCE_REFERENCE_GIT", "PATCH_WORKFLOW_GIT", "GIT_DELIVERY_GIT_GH"
+    ],
+    "output_flood_test": "JAVAC_RELEASE17_STANDALONE_PASS",
+    "wall_clock_timeout_test": "JAVAC_RELEASE17_STANDALONE_PASS",
+    "current_repository_maven": "NOT_RUN"
+  },
   "product_process_lineage": {
     "stage_count": 20,
     "artifact_count": 20,
@@ -71,11 +80,11 @@
     "design_process_lineage_cases": 28,
     "atomic_requirement_cases": 10,
     "automation_boundary_cases": 6,
-    "verification_claim_cases": 8,
+    "verification_claim_cases": 10,
     "product_subrequirement_cases": 10,
     "workflow_surface_cases": 6,
-    "critical_callpath_cases": 7,
-    "all_registered_failure_injections": 75,
+    "critical_callpath_cases": 10,
+    "all_registered_failure_injections": 80,
     "logic_self_test": "PASS",
     "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
