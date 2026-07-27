@@ -1,9 +1,9 @@
 {
   "contract": "ONSURE_SANDBOX_BOUNDARY_V1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "execution": {
     "network_default": "DENY",
-    "filesystem_default": "READ_ONLY_SOURCE_WRITE_RUN_ROOT_ONLY",
+    "filesystem_default": "READ_ONLY_SOURCE_WRITE_TMP_ONLY",
     "child_process_default": "DENY_EXCEPT_ALLOWLIST",
     "host_environment_default": "DENY",
     "secret_access": "EXPLICIT_PERMIT_ONLY",
@@ -14,7 +14,25 @@
     "wall_clock_timeout_required": true,
     "process_tree_kill_required": true,
     "symlink_escape_denied": true,
-    "device_mount_denied": true
+    "device_mount_denied": true,
+    "capability_drop_required": true
+  },
+  "backends": {
+    "default": "ROOTLESS_BWRAP",
+    "rootless": {
+      "network_namespace": "BWRAP_UNSHARE_NET",
+      "user_namespace": "BWRAP_UNSHARE_USER",
+      "failure_policy": "FAIL_CLOSED"
+    },
+    "github_actions_ci": {
+      "name": "CI_SUDO_UNSHARE_BWRAP",
+      "allowed_only_when": ["CI=true", "GITHUB_ACTIONS=true"],
+      "network_namespace": "SUDO_UNSHARE_NET_WITH_NO_HOST_ROUTE",
+      "filesystem_process_resource_isolation": "BWRAP",
+      "source_mount": "READ_ONLY",
+      "capabilities": "DROP_ALL",
+      "failure_policy": "FAIL_CLOSED"
+    }
   },
   "tenant": {
     "organization_id_required": true,
@@ -48,7 +66,20 @@
     "CONCURRENT_CATALOG_UPDATE",
     "CONCURRENT_EVIDENCE_APPEND"
   ],
-  "implementation_state": "CONTRACT_READY_HOST_HARNESS_NOT_ISOLATED",
-  "runtime_verification": "NOT_RUN",
+  "verified_ci_boundaries": [
+    "SOURCE_READ_ONLY",
+    "TMP_WRITABLE",
+    "NETWORK_EGRESS_BLOCKED",
+    "CAPABILITIES_DROPPED",
+    "ENVIRONMENT_FILTERED",
+    "RESOURCE_LIMITS_ENFORCED",
+    "WALL_CLOCK_TIMEOUT_ENFORCED",
+    "GENERIC_FIXTURE_EXECUTION",
+    "AI_FIXTURE_EXECUTION",
+    "ORUDA_MVF_FIXTURE_EXECUTION"
+  ],
+  "implementation_state": "IMPLEMENTED_WITH_ROOTLESS_AND_GITHUB_ACTIONS_BACKENDS",
+  "runtime_verification": "PASS_CI_SELF_VALIDATION_NONFINAL_RUN_30270109833",
+  "independent_verification": "NOT_RUN",
   "final_claim_allowed": false
 }
