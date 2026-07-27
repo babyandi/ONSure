@@ -10,14 +10,14 @@ from typing import Any
 
 REQUIRED_STAGES = [
     "SOURCE_INTAKE", "PROGRAM_PROFILE", "EXECUTION_PLAN", "PLAN_APPROVAL",
-    "OREVIEW", "VERIFICATION", "BEHAVIOR_PROFILE", "RCA", "PATCH_PLAN",
+    "BEHAVIOR_PROFILE", "OREVIEW", "VERIFICATION", "RCA", "PATCH_PLAN",
     "HUNK_APPROVAL", "PATCH_APPLY", "REVALIDATION", "IMPROVEMENT_PROOF",
     "GIT_APPROVAL", "COMMIT", "PUSH", "DRAFT_PR", "EVIDENCE_LOCK",
     "INDEPENDENT_OTESTER", "INDEPENDENT_OAUDIT"
 ]
 REQUIRED_ARTIFACTS = {
     "SOURCE_SNAPSHOT", "PROGRAM_PROFILE", "EXECUTION_PLAN", "PLAN_APPROVAL_RECEIPT",
-    "OREVIEW_RESULT", "VALIDATION_REPORT", "BEHAVIOR_PROFILE", "RCA_SET", "PATCH_PLAN",
+    "BEHAVIOR_PROFILE", "OREVIEW_RESULT", "VALIDATION_REPORT", "RCA_SET", "PATCH_PLAN",
     "HUNK_APPROVAL_RECEIPT", "PATCH_APPLY_RECEIPT", "REVALIDATION_REPORT",
     "IMPROVEMENT_PROOF", "GIT_APPROVAL_RECEIPT", "GIT_CHANGE_SET", "PUSH_RECEIPT",
     "DRAFT_PR_RECEIPT", "EVIDENCE_BUNDLE", "OTESTER_RECEIPT", "OAUDIT_RECEIPT"
@@ -46,6 +46,8 @@ def validate(model: dict[str, Any]) -> list[str]:
     for stage in REQUIRED_STAGES:
         if stage not in stage_ids:
             errors.append(f"REQUIRED_STAGE_MISSING:{stage}")
+    if stage_ids != REQUIRED_STAGES:
+        errors.append(f"PROCESS_STAGE_SEQUENCE_MISMATCH:{stage_ids}")
     for artifact in sorted(REQUIRED_ARTIFACTS - set(artifact_ids)):
         errors.append(f"REQUIRED_ARTIFACT_MISSING:{artifact}")
 
@@ -111,7 +113,8 @@ def validate(model: dict[str, Any]) -> list[str]:
         "NO_STAGE_SKIP", "NO_STALE_RECEIPT_REPLAY", "NO_CROSS_TENANT_SUBSTITUTION",
         "NO_FINAL_WITHOUT_INDEPENDENT_RECEIPTS", "NO_COMMIT_WITHOUT_IMPROVEMENT_PROOF",
         "NO_PATCH_WITHOUT_HUNK_APPROVAL", "NO_RCA_CONFIRMATION_WITHOUT_CAUSAL_EXPERIMENT",
-        "NO_DELETION_DURING_LEGAL_HOLD", "NO_LICENSE_CREDIT_INVARIANT_BREAK"
+        "NO_DELETION_DURING_LEGAL_HOLD", "NO_LICENSE_CREDIT_INVARIANT_BREAK",
+        "NO_VERIFICATION_BEFORE_PLAN_APPROVAL", "NO_REVIEW_BEFORE_BEHAVIOR_OBSERVATION"
     }:
         if required not in invariants:
             errors.append(f"REQUIRED_INVARIANT_MISSING:{required}")
@@ -142,7 +145,7 @@ def self_test(model: dict[str, Any]) -> list[str]:
 
     expect("stage omitted", lambda model: model["stages"].pop(1), "REQUIRED_STAGE_MISSING:")
     expect("artifact omitted", lambda model: model["artifacts"].pop(1), "REQUIRED_ARTIFACT_MISSING:")
-    expect("out of order", lambda model: model["stages"].insert(0, model["stages"].pop(5)), "STAGE_PREDECESSOR_MISSING_OR_OUT_OF_ORDER:")
+    expect("out of order", lambda model: model["stages"].insert(0, model["stages"].pop(5)), "PROCESS_STAGE_SEQUENCE_MISMATCH:")
     expect("consume before produce", lambda model: model["stages"][0].update(consumes=["PROGRAM_PROFILE"]), "STAGE_CONSUMES_UNPRODUCED_ARTIFACT:")
     expect("parent dropped", lambda model: model["artifacts"][1].update(parent_bindings=[]), "ARTIFACT_PARENT_BINDING_MISSING:")
     expect("unknown parent", lambda model: model["artifacts"][1].update(parent_bindings=["MISSING"]), "ARTIFACT_UNKNOWN_PARENT:")
@@ -169,7 +172,7 @@ def main() -> int:
     errors = validate(model)
     missed = self_test(model) if args.self_test else []
     report = {
-        "contract": "ONSURE_PRODUCT_PROCESS_LINEAGE_REPORT_V1",
+        "contract": "ONSURE_PRODUCT_PROCESS_LINEAGE_REPORT_V2",
         "decision": "PASS" if not errors and not missed else "FAIL",
         "errors": errors,
         "self_test_errors": missed,
