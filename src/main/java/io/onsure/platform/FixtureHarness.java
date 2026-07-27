@@ -18,10 +18,13 @@ import java.util.concurrent.TimeUnit;
 /** Executes trusted development fixtures through a named Oracle. */
 public final class FixtureHarness {
     private static final Set<String> ALLOWED_EXECUTABLES = Set.of("bash");
+    private static final Set<String> ALLOWED_SANDBOX_BACKENDS = Set.of(
+            "ROOTLESS_BWRAP", "CI_SUDO_BWRAP");
     private static final int MAX_ARGUMENTS = 64;
     private static final int MAX_COMMAND_CHARACTERS = 8192;
     private static final int MAX_OUTPUT_BYTES = 65_536;
     private static final String SANDBOX_ENV = "ONSURE_FIXTURE_SANDBOX_MODE";
+    private static final String SANDBOX_BACKEND_ENV = "ONSURE_FIXTURE_SANDBOX_BACKEND";
 
     public interface Oracle {
         String oracleId();
@@ -66,6 +69,14 @@ public final class FixtureHarness {
 
     public String harnessId() { return harnessId; }
     public Set<String> oracleIds() { return Set.copyOf(oracles.keySet()); }
+
+    public static String sandboxMode() {
+        return System.getenv().getOrDefault(SANDBOX_ENV, "HOST_REVIEWED_ONLY");
+    }
+
+    public static String sandboxBackend() {
+        return System.getenv().getOrDefault(SANDBOX_BACKEND_ENV, "ROOTLESS_BWRAP");
+    }
 
     public void register(Oracle oracle) {
         if (oracle == null || oracle.oracleId() == null || oracle.oracleId().isBlank()) {
@@ -127,10 +138,14 @@ public final class FixtureHarness {
     }
 
     private static List<String> sandboxedCommand(FixtureDefinition fixture, Path root) {
-        String mode = System.getenv().getOrDefault(SANDBOX_ENV, "HOST_REVIEWED_ONLY");
+        String mode = sandboxMode();
         if ("HOST_REVIEWED_ONLY".equals(mode)) return fixture.command();
         if (!"REQUIRED".equals(mode)) {
             throw new IllegalArgumentException("unknown fixture sandbox mode: " + mode);
+        }
+        String backend = sandboxBackend();
+        if (!ALLOWED_SANDBOX_BACKENDS.contains(backend)) {
+            throw new IllegalArgumentException("unknown fixture sandbox backend: " + backend);
         }
         Path launcher = findSandboxLauncher();
         List<String> command = new ArrayList<>();
@@ -192,7 +207,8 @@ public final class FixtureHarness {
             Map<String, String> fixtureEnvironment) {
         Map<String, String> host = System.getenv();
         processEnvironment.clear();
-        for (String key : List.of("PATH", "JAVA_HOME", "LANG", "LC_ALL", SANDBOX_ENV)) {
+        for (String key : List.of(
+                "PATH", "JAVA_HOME", "LANG", "LC_ALL", SANDBOX_ENV, SANDBOX_BACKEND_ENV)) {
             String value = host.get(key);
             if (value != null) processEnvironment.put(key, value);
         }
