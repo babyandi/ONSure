@@ -16,12 +16,19 @@ trap cleanup EXIT
 run_probe() {
   local probe="$1"
   local expected="$2"
-  local output
+  local output status
+  set +e
   output="$(
     ONSURE_FIXTURE_TEST_MARKER=ALLOWED_MARKER \
     UNRELATED_SECRET_FOR_ONSURE_TEST=SHOULD_NOT_ESCAPE \
-    bash "$LAUNCHER" "$TARGET" 10 bash sandbox-boundary-runner.sh "$probe"
+    bash "$LAUNCHER" "$TARGET" 10 bash sandbox-boundary-runner.sh "$probe" 2>&1
   )"
+  status=$?
+  set -e
+  [[ $status -eq 0 ]] || {
+    echo "SANDBOX_BOUNDARY_PROBE_EXECUTION_FAIL $probe status=$status output=$output" >&2
+    exit 1
+  }
   [[ "$output" == "$expected" || "$output" == "$expected"* ]] || {
     echo "SANDBOX_BOUNDARY_PROBE_FAIL $probe expected=$expected observed=$output" >&2
     exit 1
