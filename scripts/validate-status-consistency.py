@@ -45,10 +45,23 @@ def main() -> int:
             errors.append(f"TRACE_DESIGN_VERIFICATION_MISMATCH:{capability_id}")
         if item.get("verification_state") == "PASS" and not item.get("evidence_refs"):
             errors.append(f"PASS_WITHOUT_EVIDENCE:{capability_id}")
+
+    trace_summary = trace.get("summary", {})
+    for state, count in implementation_counts.items():
+        if trace_summary.get(state.lower()) != count:
+            errors.append(f"TRACE_SUMMARY_MISMATCH:{state}:{trace_summary.get(state.lower())}:{count}")
+    trace_verification = trace_summary.get("verification", {})
+    for state, count in verification_counts.items():
+        if trace_verification.get(state.lower()) != count:
+            errors.append(f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}:{trace_verification.get(state.lower())}:{count}")
+
     expected_matrix = {capability_key(item_id): item.get("implementation_status")
                        for item_id, item in design_by_id.items()}
     if matrix.get("capabilities") != expected_matrix:
         errors.append("IMPLEMENTATION_MATRIX_CAPABILITY_MAP_MISMATCH")
+    for state, count in implementation_counts.items():
+        if matrix.get("counts", {}).get(state) != count:
+            errors.append(f"IMPLEMENTATION_MATRIX_COUNT_MISMATCH:{state}:{matrix.get('counts', {}).get(state)}:{count}")
     if matrix.get("runtime_source_commit") is not None:
         errors.append("MATRIX_RUNTIME_SOURCE_COMMIT_MUST_BE_NULL")
 
@@ -189,7 +202,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V5",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V6",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
