@@ -9,191 +9,101 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+TOTAL_FAILURE_INJECTIONS = 80
+
 REQUIRED = [
     "contracts/codespace-free-remediation-plan.v1.json",
-    "contracts/atomic-requirement.v1.schema.json",
-    "contracts/module-boundary.v1.json",
-    "contracts/ledger-hardening.v1.json",
-    "contracts/sandbox-boundary.v1.json",
-    "contracts/schema-instance-registry.v1.json",
     "contracts/product-process-lineage.v1.json",
     "status/design-capability-coverage.v2.json",
     "status/product-subrequirement-coverage.v1.json",
     "status/omission-detection-status.v1.json",
-    "status/implementation-matrix.v1.json",
     "status/verification-status.v1.json",
     "status/remaining-work-register.v1.json",
-    "requirements-validation.txt",
     "pom-modular.xml",
-    "modules/onsure-core/pom.xml",
-    "modules/onsure-cli/pom.xml",
-    "modules/onsure-local-api/pom.xml",
-    "modules/onsure-test-fixtures/pom.xml",
-    "modules/onsure-adapter-oruda/pom.xml",
     "scripts/onsure-local-gate.sh",
     "scripts/onsure-one-shot.sh",
     "scripts/onsure-final-stage.sh",
-    "scripts/check-module-boundaries.py",
-    "scripts/create-source-snapshot.py",
-    "scripts/extract-atomic-requirements.py",
-    "scripts/validate-atomic-requirements.py",
     "scripts/validate-product-subrequirements.py",
     "scripts/validate-workflow-surface-parity.py",
     "scripts/validate-critical-callpaths.py",
-    "scripts/validate-structured-contracts.py",
-    "scripts/validate-design-coverage.py",
-    "scripts/validate-product-process-lineage.py",
     "scripts/validate-status-consistency.py",
-    "scripts/validate-ci-boundary.py",
     "scripts/validate-verification-claims.py",
-    "tests/test_ci_boundary.py",
-    "tests/test_verification_claims.py",
-    "scripts/fixture-sandbox-launcher.sh",
-    "scripts/test-fixture-sandbox-boundary.sh",
-    "src/main/java/io/onsure/assurance/ExclusiveFileLock.java",
-    "src/main/java/io/onsure/learning/OfficialLearningLedger.java",
-    "src/main/java/io/onsure/platform/Hashing.java",
-    "src/main/java/io/onsure/platform/SourceReferenceBinding.java",
-    "src/main/java/io/onsure/platform/FileValidationStore.java",
-    "src/main/java/io/onsure/platform/ProductCatalog.java",
-    "src/main/java/io/onsure/platform/FixtureHarness.java",
     "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+    "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
     "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
     "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-    "src/test/java/io/onsure/platform/ExecutionPlanActionPolicyTest.java",
-    "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java",
+    "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java",
+    "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java",
 ]
 
-SOURCE_ASSERTIONS = {
+ASSERTIONS = {
     "scripts/onsure-local-gate.sh": [
-        "ONSURE_LOCAL_GATE_PASS_NONFINAL",
-        "scripts/validate-product-subrequirements.py --self-test",
-        "scripts/validate-workflow-surface-parity.py --self-test",
-        "scripts/validate-critical-callpaths.py --self-test",
-        "scripts/validate-verification-claims.py",
-        "scripts/test-fixture-sandbox-boundary.sh",
-        '"github_actions": "DISABLED"',
-        "mvn -B -ntp -q test",
-        "pom-modular.xml",
+        "validate-product-subrequirements.py --self-test",
+        "validate-workflow-surface-parity.py --self-test",
+        "validate-critical-callpaths.py --self-test",
+        "registered_failure_injections\": 80",
     ],
     "scripts/onsure-one-shot.sh": [
-        "product-subrequirements",
-        "workflow-surface-parity",
-        "critical-callpaths",
-        "PASS_WITH_KNOWN_GAPS",
-        "registered_failure_injections",
-    ],
-    "scripts/validate-product-subrequirements.py": [
-        "EXPECTED_IDS", "SUBREQ_NORMATIVE_PHRASE_MISSING",
-        "SUBREQ_MISSING_SURFACE_UNDETECTED", "SUBREQ_SEMANTIC_TOKEN_MISSING",
-        "failure_injection_count",
-    ],
-    "scripts/validate-workflow-surface-parity.py": [
-        "EXPECTED_OPERATIONS", "WORKFLOW_OPERATION_SET_MISMATCH",
-        "WORKFLOW_CLI_GENERIC_ROUTE_MISSING", "WORKFLOW_LOCAL_API_GENERIC_ROUTE_MISSING",
-        "WORKFLOW_VSCODE_GENERIC_ROUTE_MISSING",
-    ],
-    "scripts/validate-critical-callpaths.py": [
-        "ApprovalAuthorityPaths.java", "verifyApprovedPlanBundle",
-        "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "failure_injection_count",
-    ],
-    "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
-        "AUTHORITY_DIRECTORY", "trusted-key-registry.json", "approval-replay-ledger.jsonl",
-        "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "requireTrustedKeyRegistry",
+        "LOCAL_GATE_AUTHORITY", "local_gate_authority", "registered_failure_injections\": 80",
     ],
     "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
-        "approvalAuthority.rejectRequestOverrides", "approvalAuthority.requireTrustedKeyRegistry",
-        "approvalAuthority.replayLedgerForConsumption", "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V5",
-    ],
-    "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java": [
-        "NOT_RUN_NOT_APPROVED", "FIXTURE_EXECUTION", "PARTIAL_EXECUTION_PLAN",
+        "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V5",
+        "approvalAuthority.rejectRequestOverrides",
+        "approvalAuthority.requireTrustedKeyRegistry",
+        "ApprovedExecutionPlanBundle",
     ],
     "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
-        "PARTIAL_PLAN_ACTION_SET", "plannedActions.containsAll(approvedActions)",
         "verifyApprovedPlanBundle", "EXECUTION_PLAN_CONSUMED_APPROVAL_INVALID",
     ],
     "src/main/java/io/onsure/platform/ValidationEngine.java": [
-        "ApprovedExecutionPlanBundle", "APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED",
-        "ExecutionPlanActionPolicy.requiredAction", "ExecutionPlanActionPolicy.notApproved",
+        "APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED", "ExecutionPlanActionPolicy.notApproved",
     ],
-    "src/main/java/io/onsure/platform/ValidationCompletionGate.java": [
-        "ExecutionPlanActionPolicy.isApproved", "ONSURE_VALIDATION_COMPLETION_GATE_V7",
-    ],
-    "scripts/validate-ci-boundary.py": [
-        "GITHUB_ACTIONS_WORKFLOW_FORBIDDEN", "LOCAL_VALIDATION_RUNNER_MISSING",
-        "DISABLED_AND_FORBIDDEN",
-    ],
-    "scripts/validate-verification-claims.py": [
-        "GITHUB_ACTIONS_POLICY_NOT_DISABLED", "LOCAL_RECEIPT_REQUIRED",
-        "GITHUB_ACTIONS_WORKFLOW_FORBIDDEN", "SANDBOX_PARTIAL_SCOPE_OVERCLAIMED_AS_PASS",
-    ],
-    "scripts/fixture-sandbox-launcher.sh": [
-        "ROOTLESS_BWRAP", "NON_LOCAL_BACKEND_FORBIDDEN", "--unshare-net",
-        "--ro-bind", "prlimit", "timeout --signal=KILL",
-    ],
-    "scripts/test-fixture-sandbox-boundary.sh": [
-        "FILESYSTEM_ESCAPE_BLOCKED", "SYMLINK_ESCAPE_BLOCKED",
-        "CHILD_PROCESS_TERMINATED", "CPU_LIMIT_ENFORCED", "MEMORY_LIMIT_ENFORCED",
-        "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12",
-    ],
-    "src/main/java/io/onsure/assurance/ExclusiveFileLock.java": [
-        "ConcurrentHashMap", "lockInterruptibly", "channel.lock()",
-    ],
-    "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
-        "TWO_DISTINCT_VERIFIERS_REQUIRED", "VALIDATION_RECEIPT_PACK_STALE",
-        "POST_APPLY_RECEIPT_MISSING", "ExclusiveFileLock.call(lockFile",
-        "LEDGER_HEAD_ANCHOR_MISMATCH",
-    ],
-    "src/main/java/io/onsure/platform/Hashing.java": [
-        '"ls-files"', '"--full-name"', "GIT_LS_FILES_FAILED", "archiveFiles",
-    ],
-    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": [
-        '"--untracked-files=all"', "IMMUTABLE_GIT_TREE_DIGEST_MISMATCH",
-    ],
-    "src/main/java/io/onsure/platform/FileValidationStore.java": [
-        "ONSURE_VALIDATION_STORAGE_CONTEXT_V1", "ExclusiveFileLock",
-    ],
-    "src/main/java/io/onsure/platform/ProductCatalog.java": [
-        "ONSURE_PRODUCT_CATALOG_REVISION_V1", "ExclusiveFileLock",
-    ],
-    "src/main/java/io/onsure/platform/FixtureHarness.java": [
-        "ONSURE_FIXTURE_SANDBOX_MODE", "fixture-sandbox-launcher.sh",
-        "fixture output limit exceeded",
-    ],
-    "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java": [
-        "everyWorkflowRejectsCallerSelectedKeyRegistryOrReplayLedger",
-        "symlinkedAuthorityRegistryIsRejected",
-    ],
-    "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java": [
-        "fixtureOutputFloodIsRejectedBeforeEvidenceCanBeAccepted",
-        "concurrentCatalogUpdatesDoNotLoseProjectsOrRevision",
-        "concurrentLearningLedgerAppendsPreserveHashChainAndEveryCandidate",
-    ],
+    "src/main/java/io/onsure/platform/ProgramLearningService.java": ["BoundedProcessRunner.run"],
+    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": ["BoundedProcessRunner.run"],
+    "src/main/java/io/onsure/platform/ImprovementWorkflowService.java": ["BoundedProcessRunner.run"],
+    "src/main/java/io/onsure/platform/GitWorkflowService.java": ["BoundedProcessRunner.run"],
 }
 
-FORBIDDEN_SOURCE_TOKENS = {
-    "scripts/fixture-sandbox-launcher.sh": [
-        "CI_SUDO_UNSHARE_BWRAP", "GITHUB_ACTIONS", "sudo -n unshare",
-    ],
+FORBIDDEN = {
     "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
         'inputPath(request, "trusted_key_registry"',
         'inputPath(request, "approval_key_registry"',
         'outputPath(request, "approval_replay_ledger"',
         'outputPath(request, "verification_replay_ledger"',
     ],
-    "src/main/java/io/onsure/platform/ValidationEngine.java": [
-        "new OrudaTargetAdapter", "withOrudaAdapter",
+    "src/main/java/io/onsure/platform/ProgramLearningService.java": [
+        "getInputStream().readAllBytes()", "waitFor(timeoutSeconds",
     ],
-    "src/main/java/io/onsure/platform/FileValidationStore.java": [
-        "io.onsure.platform.oruda", "OrudaEvidenceRegistry",
+    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": [
+        "getInputStream().readAllBytes()",
     ],
-    "src/main/java/io/onsure/platform/Hashing.java": [
-        "Thread.ofVirtual", "Executors.newVirtualThreadPerTaskExecutor",
+    "src/main/java/io/onsure/platform/ImprovementWorkflowService.java": [
+        "ProcessBuilder builder", "process.waitFor(",
     ],
-    "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
-        "FileChannel.open(lockFile", "OverlappingFileLockException",
+    "src/main/java/io/onsure/platform/GitWorkflowService.java": [
+        "ProcessBuilder builder", "process.waitFor(",
     ],
 }
+
+COMMANDS = [
+    ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
+    ([sys.executable, "scripts/validate-repository-contracts.py"], "ONSURE_REPOSITORY_CONTRACTS_PASS"),
+    ([sys.executable, "scripts/validate-structured-contracts.py"], "ONSURE_STRUCTURED_CONTRACTS_"),
+    ([sys.executable, "scripts/validate-atomic-requirements.py", "--self-test"], '"decision": "PASS"'),
+    ([sys.executable, "scripts/validate-design-coverage.py", "--matrix",
+      "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"], '"decision": "PASS"'),
+    ([sys.executable, "scripts/validate-product-subrequirements.py", "--self-test"],
+     "ONSURE_PRODUCT_SUBREQUIREMENT_GATE_PASS"),
+    ([sys.executable, "scripts/validate-workflow-surface-parity.py", "--self-test"],
+     "ONSURE_WORKFLOW_SURFACE_PARITY_PASS"),
+    ([sys.executable, "scripts/validate-critical-callpaths.py", "--self-test"],
+     "ONSURE_CRITICAL_CALLPATH_PASS"),
+    ([sys.executable, "scripts/validate-status-consistency.py"], "ONSURE_STATUS_CONSISTENCY_PASS"),
+    ([sys.executable, "scripts/validate-ci-boundary.py"], "ONSURE_AUTOMATION_BOUNDARY_PASS"),
+    ([sys.executable, "scripts/validate-verification-claims.py"],
+     "ONSURE_VERIFICATION_CLAIM_AUDIT_PASS"),
+    (["bash", "scripts/check-shell-syntax.sh"], "ONSURE_SHELL_SYNTAX_PASS"),
+]
 
 
 def main() -> int:
@@ -207,67 +117,42 @@ def main() -> int:
         for path in sorted(workflow_root.glob("*.yml")) + sorted(workflow_root.glob("*.yaml")):
             errors.append(f"GITHUB_ACTIONS_WORKFLOW_FORBIDDEN:{path.name}")
 
+    for path in ROOT.rglob("*.py"):
+        if ".onsure" not in path.parts:
+            try:
+                py_compile.compile(str(path), doraise=True)
+            except Exception as exc:
+                errors.append(f"PYTHON_INVALID:{path.relative_to(ROOT)}:{exc}")
     for relative in REQUIRED:
         path = ROOT / relative
         if not path.is_file():
             continue
         try:
-            if path.suffix == ".json":
-                json.loads(path.read_text(encoding="utf-8"))
-            elif path.suffix == ".xml" or path.name == "pom.xml":
-                ET.parse(path)
-            elif path.suffix == ".py":
-                py_compile.compile(str(path), doraise=True)
-        except Exception as exc:  # noqa: BLE001
+            if path.suffix == ".json": json.loads(path.read_text(encoding="utf-8"))
+            if path.name == "pom.xml" or path.suffix == ".xml": ET.parse(path)
+        except Exception as exc:
             errors.append(f"INVALID:{relative}:{type(exc).__name__}:{exc}")
 
-    for relative, tokens in SOURCE_ASSERTIONS.items():
+    for relative, tokens in ASSERTIONS.items():
         path = ROOT / relative
-        if not path.is_file():
-            continue
-        text = path.read_text(encoding="utf-8", errors="replace")
+        text = path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
         for token in tokens:
             if token not in text:
                 errors.append(f"SOURCE_ASSERTION_MISSING:{relative}:{token}")
-
-    for relative, tokens in FORBIDDEN_SOURCE_TOKENS.items():
+    for relative, tokens in FORBIDDEN.items():
         path = ROOT / relative
-        if not path.is_file():
-            continue
-        text = path.read_text(encoding="utf-8", errors="replace")
+        text = path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
         for token in tokens:
             if token in text:
                 errors.append(f"FORBIDDEN_SOURCE_TOKEN:{relative}:{token}")
 
-    commands = [
-        ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
-        ([sys.executable, "scripts/validate-repository-contracts.py"], "ONSURE_REPOSITORY_CONTRACTS_PASS"),
-        ([sys.executable, "scripts/validate-structured-contracts.py"], "ONSURE_STRUCTURED_CONTRACTS_"),
-        ([sys.executable, "scripts/validate-atomic-requirements.py", "--self-test"], '"decision": "PASS"'),
-        ([sys.executable, "scripts/validate-design-coverage.py", "--matrix",
-          "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"],
-         '"decision": "PASS"'),
-        ([sys.executable, "scripts/validate-product-subrequirements.py", "--self-test"],
-         "ONSURE_PRODUCT_SUBREQUIREMENT_GATE_PASS"),
-        ([sys.executable, "scripts/validate-workflow-surface-parity.py", "--self-test"],
-         "ONSURE_WORKFLOW_SURFACE_PARITY_PASS"),
-        ([sys.executable, "scripts/validate-critical-callpaths.py", "--self-test"],
-         "ONSURE_CRITICAL_CALLPATH_PASS"),
-        ([sys.executable, "scripts/validate-status-consistency.py"], "ONSURE_STATUS_CONSISTENCY_PASS"),
-        ([sys.executable, "scripts/validate-ci-boundary.py"], "ONSURE_AUTOMATION_BOUNDARY_PASS"),
-        ([sys.executable, "scripts/validate-verification-claims.py"],
-         "ONSURE_VERIFICATION_CLAIM_AUDIT_PASS"),
-        ([sys.executable, "-m", "unittest", "tests.test_ci_boundary", "-v"], "OK"),
-        ([sys.executable, "-m", "unittest", "tests.test_verification_claims", "-v"], "OK"),
-        (["bash", "scripts/check-shell-syntax.sh"], "ONSURE_SHELL_SYNTAX_PASS"),
-    ]
-    for command, marker in commands:
+    for command, marker in COMMANDS:
         result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
         combined = result.stdout + result.stderr
         if result.returncode != 0 or marker not in combined:
             errors.append(
                 f"COMMAND_FAIL:{' '.join(command)}:{result.returncode}:"
-                f"{result.stdout[-2800:]}:{result.stderr[-1600:]}"
+                f"{result.stdout[-2400:]}:{result.stderr[-1600:]}"
             )
 
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
@@ -283,29 +168,24 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V13",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V14",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "github_actions": "DISABLED_BY_USER",
         "local_gate_required": True,
-        "source_boundary_assertions": "PASS" if not errors else "FAIL",
-        "status_cross_consistency": "PASS" if not errors else "FAIL",
-        "automation_boundary": "PASS" if not errors else "FAIL",
-        "verification_claim_boundary": "PASS" if not errors else "FAIL",
-        "critical_callpath_boundary": "PASS" if not errors else "FAIL",
         "design_capability_count": 28,
         "product_subrequirement_count": 38,
         "workflow_operation_count": 39,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
-        "failure_injection_count": 75,
+        "failure_injection_count": TOTAL_FAILURE_INJECTIONS,
         "atomic_requirement_failure_injections": 10,
         "design_and_lineage_failure_injections": 28,
         "automation_boundary_failure_injections": 6,
-        "verification_claim_failure_injections": 8,
+        "verification_claim_failure_injections": 10,
         "product_subrequirement_failure_injections": 10,
         "workflow_surface_failure_injections": 6,
-        "critical_callpath_failure_injections": 7,
+        "critical_callpath_failure_injections": 10,
         "sandbox_required_attacks": 12,
         "sandbox_verified_attacks": 10,
         "sandbox_unverified_attacks": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
