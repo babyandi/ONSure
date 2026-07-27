@@ -6,6 +6,7 @@
   "plan_file_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "plan_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "approval_state": "AUTO_APPROVED_DEVELOPMENT_NONFINAL",
+  "approval_scope": "EXACT_PLAN_ACTION_SET_LOCAL_NONFINAL",
   "approved_actions": [
     "EVIDENCE_GENERATION", "FIXTURE_EXECUTION", "IMPROVEMENT_PLAN", "RCA",
     "REGRESSION_LOCK", "REVIEW", "STATIC_ANALYSIS"
