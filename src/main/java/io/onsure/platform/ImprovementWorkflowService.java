@@ -22,13 +22,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-/** Creates bounded patch candidates and applies only trusted, explicitly approved hunks. */
+/** Creates bounded patch candidates and applies only explicitly approved hunks in an isolated worktree. */
 public final class ImprovementWorkflowService {
     public static final String PATCH_PLAN_CONTRACT = "ONSURE_PATCH_PLAN_V1";
     public static final String APPROVAL_CONTRACT = "ONSURE_HUNK_APPROVAL_RECEIPT_V1";
     public static final String APPLY_RECEIPT_CONTRACT = "ONSURE_PATCH_APPLY_RECEIPT_V1";
     public static final String ROLLBACK_RECEIPT_CONTRACT = "ONSURE_PATCH_ROLLBACK_RECEIPT_V1";
-    public static final String APPROVAL_PURPOSE = "PATCH_HUNK_APPROVAL";
+    public static final String APPROVAL_PURPOSE = "HUNK_APPROVAL";
     private static final Map<String, String> SAFE_MARKER_REPLACEMENTS = Map.of(
             "ALLOW_UNTRUSTED_TOOL", "DENY_UNTRUSTED_TOOL",
             "SELF_APPROVE", "REQUIRE_INDEPENDENT_APPROVAL",
@@ -42,17 +42,21 @@ public final class ImprovementWorkflowService {
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
     public Map<String, Object> createPatchPlan(ValidationContext context, Path outputFile) throws Exception {
+        Path targetRoot = context.target().sourceRoot().toAbsolutePath().normalize();
+        Path repositoryRoot = gitTopLevel(targetRoot);
+        String targetRelativeRoot = repositoryRoot.relativize(targetRoot).toString().replace('\\', '/');
+        if (targetRelativeRoot.isBlank()) targetRelativeRoot = ".";
         List<Map<String, Object>> hunks = new ArrayList<>();
         for (ValidationModel.Finding finding : context.findings()) {
             if (finding.location().startsWith("fixture:")) continue;
-            Path file = context.target().sourceRoot().resolve(finding.location()).normalize();
-            if (!file.startsWith(context.target().sourceRoot())
+            Path file = targetRoot.resolve(finding.location()).normalize();
+            if (!file.startsWith(targetRoot)
                     || Files.isSymbolicLink(file)
                     || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) continue;
             String source = Files.readString(file, StandardCharsets.UTF_8);
             String marker = matchedMarker(source);
             if (marker == null || count(source, marker) != 1) continue;
-            String relative = Hashing.relative(context.target().sourceRoot(), file);
+            String relative = Hashing.relative(targetRoot, file);
             Map<String, Object> hunk = new LinkedHashMap<>();
             hunk.put("hunk_id", "HUNK-" + finding.fingerprint().substring(0, 16));
             hunk.put("finding_id", finding.findingId());
@@ -76,6 +80,8 @@ public final class ImprovementWorkflowService {
         plan.put("contract", PATCH_PLAN_CONTRACT);
         plan.put("patch_plan_id", "PATCH-" + context.job().jobId());
         plan.put("target_id", context.target().targetId());
+        plan.put("repository_root_reference", repositoryRoot.toString());
+        plan.put("target_relative_root", targetRelativeRoot);
         plan.put("source_tree_sha256", sourceDigest);
         plan.put("review_id", context.attributes().getOrDefault("review_id", "NOT_RUN"));
         plan.put("evidence_based_rca_sha256",
@@ -94,14 +100,10 @@ public final class ImprovementWorkflowService {
         return Map.copyOf(plan);
     }
 
-    /** Unsafe legacy entry point is intentionally disabled. */
     @Deprecated
     public Map<String, Object> applyApprovedPlan(
-            Path repositoryRoot,
-            Path planFile,
-            Path approvalReceiptFile,
-            Path worktreeRoot,
-            Path evidenceRoot) {
+            Path repositoryRoot, Path planFile, Path approvalReceiptFile,
+            Path worktreeRoot, Path evidenceRoot) {
         throw new IllegalStateException("APPROVAL_TRUST_REGISTRY_REQUIRED");
     }
 
@@ -129,7 +131,15 @@ public final class ImprovementWorkflowService {
                 || approval.path("allow_merge").asBoolean(true)) {
             throw new IllegalStateException("UNSAFE_PATCH_PERMISSION_REQUESTED");
         }
-        String currentSourceDigest = Hashing.tree(repository);
+        String targetRelativeRoot = requireTargetRelativeRoot(plan.path("target_relative_root").asText());
+        Path targetRoot = ".".equals(targetRelativeRoot)
+                ? repository : repository.resolve(targetRelativeRoot).normalize();
+        if (!targetRoot.startsWith(repository)
+                || !Files.isDirectory(targetRoot, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(targetRoot)) {
+            throw new IllegalStateException("PATCH_TARGET_ROOT_INVALID");
+        }
+        String currentSourceDigest = Hashing.tree(targetRoot);
         if (!currentSourceDigest.equals(plan.path("source_tree_sha256").asText())) {
             throw new IllegalStateException("PATCH_PLAN_SOURCE_TREE_DRIFT");
         }
@@ -164,6 +174,13 @@ public final class ImprovementWorkflowService {
 
         String sourceCommit = git(repository, List.of("rev-parse", "HEAD"), 20).strip();
         git(repository, List.of("worktree", "add", "-b", branch, worktree.toString(), sourceCommit), 60);
+        Path worktreeTargetRoot = ".".equals(targetRelativeRoot)
+                ? worktree : worktree.resolve(targetRelativeRoot).normalize();
+        if (!worktreeTargetRoot.startsWith(worktree)
+                || !Files.isDirectory(worktreeTargetRoot, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(worktreeTargetRoot)) {
+            throw new IllegalStateException("PATCH_WORKTREE_TARGET_ROOT_INVALID");
+        }
         List<Map<String, Object>> applied = new ArrayList<>();
         Path backupRoot = evidence.resolve("backups");
         try {
@@ -171,8 +188,8 @@ public final class ImprovementWorkflowService {
                 String hunkId = hunk.path("hunk_id").asText();
                 if (!approved.contains(hunkId)) continue;
                 String relative = hunk.path("relative_path").asText();
-                Path file = worktree.resolve(relative).normalize();
-                if (!file.startsWith(worktree)
+                Path file = worktreeTargetRoot.resolve(relative).normalize();
+                if (!file.startsWith(worktreeTargetRoot)
                         || Files.isSymbolicLink(file)
                         || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
                     throw new IllegalStateException("PATCH_TARGET_INVALID:" + hunkId);
@@ -188,7 +205,7 @@ public final class ImprovementWorkflowService {
                 if (count(source, match) != 1) {
                     throw new IllegalStateException("PATCH_MATCH_NOT_UNIQUE:" + hunkId);
                 }
-                Path backup = backupRoot.resolve(relative).normalize();
+                Path backup = backupRoot.resolve(targetRelativeRoot).resolve(relative).normalize();
                 if (!backup.startsWith(backupRoot)) throw new IllegalStateException("BACKUP_PATH_ESCAPE");
                 Files.createDirectories(backup.getParent());
                 Files.write(backup, original);
@@ -210,6 +227,10 @@ public final class ImprovementWorkflowService {
             if (status.lines().anyMatch(line -> line.startsWith("??"))) {
                 throw new IllegalStateException("PATCH_PRODUCED_UNTRACKED_FILE");
             }
+            String postimageSourceDigest = Hashing.tree(worktreeTargetRoot);
+            if (postimageSourceDigest.equals(currentSourceDigest)) {
+                throw new IllegalStateException("PATCH_POSTIMAGE_SOURCE_TREE_UNCHANGED");
+            }
             Map<String, Object> receipt = new LinkedHashMap<>();
             receipt.put("contract", APPLY_RECEIPT_CONTRACT);
             receipt.put("patch_plan_id", plan.path("patch_plan_id").asText());
@@ -218,7 +239,9 @@ public final class ImprovementWorkflowService {
             receipt.put("approval_actor", approval.path("actor").asText());
             receipt.put("approval_key_id", approval.path("key_id").asText());
             receipt.put("source_commit", sourceCommit);
+            receipt.put("target_relative_root", targetRelativeRoot);
             receipt.put("source_tree_sha256", currentSourceDigest);
+            receipt.put("postimage_source_tree_sha256", postimageSourceDigest);
             receipt.put("branch", branch);
             receipt.put("worktree", worktree.toString());
             receipt.put("applied_hunks", List.copyOf(applied));
@@ -254,13 +277,16 @@ public final class ImprovementWorkflowService {
         if (!worktree.toString().equals(receipt.path("worktree").asText())) {
             throw new IllegalStateException("ROLLBACK_WORKTREE_RECEIPT_MISMATCH");
         }
+        String targetRelativeRoot = requireTargetRelativeRoot(receipt.path("target_relative_root").asText());
+        Path targetRoot = ".".equals(targetRelativeRoot)
+                ? worktree : worktree.resolve(targetRelativeRoot).normalize();
         Path backupRoot = Path.of(receipt.path("rollback_pointer").asText()).toAbsolutePath().normalize();
         List<Map<String, Object>> restored = new ArrayList<>();
         for (JsonNode hunk : receipt.path("applied_hunks")) {
             String relative = hunk.path("relative_path").asText();
-            Path target = worktree.resolve(relative).normalize();
-            Path backup = backupRoot.resolve(relative).normalize();
-            if (!target.startsWith(worktree) || !backup.startsWith(backupRoot)
+            Path target = targetRoot.resolve(relative).normalize();
+            Path backup = backupRoot.resolve(targetRelativeRoot).resolve(relative).normalize();
+            if (!target.startsWith(targetRoot) || !backup.startsWith(backupRoot)
                     || !Files.isRegularFile(backup, LinkOption.NOFOLLOW_LINKS)
                     || Files.isSymbolicLink(backup)) {
                 throw new IllegalStateException("ROLLBACK_POINTER_INVALID");
@@ -277,10 +303,16 @@ public final class ImprovementWorkflowService {
                     "relative_path", relative,
                     "restored_sha256", Hashing.file(target)));
         }
+        String restoredTree = Hashing.tree(targetRoot);
+        if (!restoredTree.equals(receipt.path("source_tree_sha256").asText())) {
+            throw new IllegalStateException("ROLLBACK_SOURCE_TREE_MISMATCH");
+        }
         Map<String, Object> rollback = new LinkedHashMap<>();
         rollback.put("contract", ROLLBACK_RECEIPT_CONTRACT);
         rollback.put("patch_apply_receipt_sha256", sha256(Files.readAllBytes(applyReceiptFile)));
         rollback.put("worktree", worktree.toString());
+        rollback.put("target_relative_root", targetRelativeRoot);
+        rollback.put("restored_source_tree_sha256", restoredTree);
         rollback.put("restored_hunks", List.copyOf(restored));
         rollback.put("git_status", git(worktree,
                 List.of("status", "--porcelain", "--untracked-files=all"), 20).lines().toList());
@@ -290,6 +322,21 @@ public final class ImprovementWorkflowService {
         rollback.put("receipt_sha256", sha256(mapper.writeValueAsBytes(rollback)));
         writeAtomic(rollbackReceiptFile, rollback);
         return Map.copyOf(rollback);
+    }
+
+    private static Path gitTopLevel(Path root) throws Exception {
+        String value = git(root, List.of("rev-parse", "--show-toplevel"), 20).strip();
+        Path result = Path.of(value).toAbsolutePath().normalize();
+        if (!root.startsWith(result)) throw new IllegalStateException("PATCH_SOURCE_NOT_IN_GIT_REPOSITORY");
+        return result;
+    }
+
+    private static String requireTargetRelativeRoot(String value) {
+        if (value == null || value.isBlank() || value.startsWith("/")
+                || value.contains("..") || value.contains("\\")) {
+            throw new IllegalArgumentException("TARGET_RELATIVE_ROOT_INVALID");
+        }
+        return value;
     }
 
     private static String matchedMarker(String source) {
@@ -348,8 +395,7 @@ public final class ImprovementWorkflowService {
         }
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         if (process.exitValue() != 0) {
-            throw new IllegalStateException(
-                    "GIT_COMMAND_FAILED:" + arguments.get(0) + ":" + output.strip());
+            throw new IllegalStateException("GIT_COMMAND_FAILED:" + arguments.get(0) + ":" + output.strip());
         }
         return output;
     }
@@ -362,7 +408,7 @@ public final class ImprovementWorkflowService {
         try {
             Files.move(temporary, output, StandardCopyOption.REPLACE_EXISTING,
                     StandardCopyOption.ATOMIC_MOVE);
-        } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
+        } catch (java.nio.file.AtomicMoveNotSupportedException exception) {
             Files.move(temporary, output, StandardCopyOption.REPLACE_EXISTING);
         }
     }
