@@ -13,6 +13,8 @@ CLI = "src/main/java/io/onsure/platform/ONSureCli.java"
 API = "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
 VSCODE = "vscode-extension/extension.js"
 EXPECTED_OPERATIONS = {
+    "project.register-workspace", "project.register", "project.register-target",
+    "project.read-target", "project.list-targets",
     "program.learn", "plan.approve", "validation.run",
     "patch.apply", "patch.rollback", "improvement.prove",
     "git.commit", "git.draft-pr",
@@ -45,10 +47,8 @@ def validate_texts(dispatcher: str, cli: str, api: str, vscode: str) -> list[str
             f"extra={sorted(operations-EXPECTED_OPERATIONS)}"
         )
     for operation in operations:
-        method = operation.replace("-", "_").replace(".", "_")
-        # The method-name check is advisory through the switch target; unsupported cases are caught by compilation.
         if operation not in dispatcher:
-            errors.append(f"WORKFLOW_OPERATION_UNREACHABLE_IN_DISPATCHER:{operation}:{method}")
+            errors.append(f"WORKFLOW_OPERATION_UNREACHABLE_IN_DISPATCHER:{operation}")
 
     for token in ('"workflow".equals(args[0])', '.dispatch(operation, request)',
                   'ONSURE_WORKFLOW_COMPLETE_NONFINAL'):
@@ -88,7 +88,7 @@ def self_test() -> list[str]:
         if not any(value.startswith(prefix) for value in violations):
             missed.append(f"WORKFLOW_SURFACE_SELF_TEST_MISSED:{name}:{prefix}:{violations}")
 
-    expect("operation removed", (dispatcher.replace('case "plan.approve" -> handler();\n', ''), cli, api, vscode),
+    expect("operation removed", (dispatcher.replace('case "project.register" -> handler();\n', ''), cli, api, vscode),
            "WORKFLOW_OPERATION_SET_MISMATCH")
     expect("duplicate operation", (dispatcher + '\ncase "program.learn" -> handler();', cli, api, vscode),
            "WORKFLOW_DISPATCHER_DUPLICATE_OPERATION")
@@ -110,7 +110,7 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V1",
+        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V2",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
