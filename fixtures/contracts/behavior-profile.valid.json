@@ -5,6 +5,7 @@
   "source_baseline_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "coverage_class": "EXECUTABLE_FIXTURE_PROCESS_PROXY",
   "direct_behavior_telemetry": false,
+  "production_behavior_telemetry": false,
   "runtime_context": {
     "harness_id": "ONSURE_BEHAVIOR_LEARNING_HARNESS_V1",
     "execution_profile": "LOCAL_FIXTURE",
