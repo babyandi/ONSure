@@ -3,6 +3,8 @@ package io.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,11 +26,15 @@ class LocalAuthenticatedApiServerTest {
         server.start(port);
         try {
             HttpClient client = HttpClient.newHttpClient();
+            ObjectMapper mapper = new ObjectMapper();
             HttpResponse<String> health = client.send(
                     HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/v1/health")).GET().build(),
                     HttpResponse.BodyHandlers.ofString());
             assertEquals(200, health.statusCode());
-            assertTrue(health.body().contains("LOOPBACK_ONLY"));
+            JsonNode healthBody = mapper.readTree(health.body());
+            assertEquals("127.0.0.1", healthBody.path("binding").asText());
+            assertEquals("SELF_VALIDATION_NONFINAL", healthBody.path("assurance_class").asText());
+            assertTrue(!healthBody.path("final_claim_allowed").asBoolean(true));
 
             HttpResponse<String> unauthorized = client.send(
                     HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/v1/status")).GET().build(),
@@ -40,7 +46,9 @@ class LocalAuthenticatedApiServerTest {
                             .header("Authorization", "Bearer " + token).GET().build(),
                     HttpResponse.BodyHandlers.ofString());
             assertEquals(200, authorized.statusCode());
-            assertTrue(authorized.body().contains("SELF_VALIDATION_NONFINAL"));
+            JsonNode authorizedBody = mapper.readTree(authorized.body());
+            assertEquals("SELF_VALIDATION_NONFINAL", authorizedBody.path("validation").asText());
+            assertTrue(!authorizedBody.path("final_lock_allowed").asBoolean(true));
         } finally {
             server.stop();
         }
