@@ -7,12 +7,18 @@ on:
       - feature/onsure-codespace-free-remediation-20260726
     paths:
       - .github/workflows/onsure-java17-autofix.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/onsure-java17-autofix.yml
 
 permissions:
   contents: write
 
 jobs:
   bounded-source-fix:
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
