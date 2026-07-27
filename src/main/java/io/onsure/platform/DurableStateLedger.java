@@ -29,6 +29,8 @@ import java.util.TreeMap;
 public final class DurableStateLedger {
     public static final String TRANSACTION_CONTRACT = "ONSURE_DURABLE_STATE_LEDGER_TX_V1";
     public static final String GENESIS = "0".repeat(64);
+    private static final TypeReference<Map<String, Object>> STRING_OBJECT_MAP =
+            new TypeReference<Map<String, Object>>() {};
 
     public record Verification(boolean valid, List<String> violations, long sequence, String head) {
         public Verification { violations = List.copyOf(violations); }
@@ -260,7 +262,7 @@ public final class DurableStateLedger {
             if (event.path("sequence").asLong(-1) != expectedSequence) violations.add("LEDGER_SEQUENCE_BROKEN");
             if (!entityId.equals(event.path(entityField).asText())) violations.add("LEDGER_ENTITY_MISMATCH");
             if (!previous.equals(event.path("previous_hash").asText())) violations.add("LEDGER_PREVIOUS_HASH_BROKEN");
-            Map<String, Object> unsigned = mapper.convertValue(event, new TypeReference<>() {});
+            Map<String, Object> unsigned = mapper.convertValue(event, STRING_OBJECT_MAP);
             String declared = String.valueOf(unsigned.remove("entry_hash"));
             String calculated = sha256(mapper.writeValueAsBytes(unsigned));
             if (!declared.equals(calculated)) violations.add("LEDGER_EVENT_TAMPERED");
@@ -285,7 +287,7 @@ public final class DurableStateLedger {
     }
 
     private Map<String, Object> readStateRaw() throws Exception {
-        return new LinkedHashMap<>(mapper.readValue(stateFile.toFile(), new TypeReference<>() {}));
+        return new LinkedHashMap<>(mapper.readValue(stateFile.toFile(), STRING_OBJECT_MAP));
     }
 
     private List<String> readLedgerLines() throws Exception {
