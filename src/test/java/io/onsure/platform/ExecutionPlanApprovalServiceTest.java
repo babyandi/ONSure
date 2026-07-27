@@ -3,7 +3,6 @@ package io.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.onsure.assurance.ApprovalReceiptVerifier;
@@ -80,17 +79,33 @@ class ExecutionPlanApprovalServiceTest {
     }
 
     @Test
-    void partialActionApprovalIsRejectedWithoutPublishingArtifactOrConsumingValidPlan() throws Exception {
+    void signedPartialActionApprovalPublishesBoundedPlan() throws Exception {
         Path planFile = writePlan("partial-plan.json");
         Map<String, Object> plan = mapper.readValue(planFile.toFile(), Map.class);
         Path approvalFile = writeApproval(planFile, plan,
-                List.of("STATIC_ANALYSIS"), "nonce-plan-partial-0001");
+                List.of("STATIC_ANALYSIS", "REVIEW"), "nonce-plan-partial-0001");
         Path output = temp.resolve("partial-approved-plan.json");
+
+        Map<String, Object> approved = new ExecutionPlanApprovalService().approve(
+                planFile, approvalFile, registry, replay, output);
+        Map<?, ?> approval = (Map<?, ?>) approved.get("approval");
+        assertEquals("PARTIAL_PLAN_ACTION_SET", approval.get("scope"));
+        assertEquals(List.of("REVIEW", "STATIC_ANALYSIS"), approval.get("approved_actions"));
+        new ExecutionPlanService().requireApproved(approved);
+    }
+
+    @Test
+    void approvalCannotAddActionOutsideImmutablePlan() throws Exception {
+        Path planFile = writePlan("unsafe-plan.json");
+        Map<String, Object> plan = mapper.readValue(planFile.toFile(), Map.class);
+        Path approvalFile = writeApproval(planFile, plan,
+                List.of("STATIC_ANALYSIS", "AI_BEHAVIOR_VALIDATION"), "nonce-plan-unsafe-0001");
+        Path output = temp.resolve("unsafe-approved-plan.json");
 
         IllegalStateException failure = assertThrows(IllegalStateException.class,
                 () -> new ExecutionPlanApprovalService().approve(
                         planFile, approvalFile, registry, replay, output));
-        assertEquals("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INCOMPLETE", failure.getMessage());
+        assertEquals("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INVALID", failure.getMessage());
         assertFalse(Files.exists(output));
     }
 
