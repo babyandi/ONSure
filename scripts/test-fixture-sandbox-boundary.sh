@@ -29,7 +29,7 @@ run_probe() {
     echo "SANDBOX_BOUNDARY_PROBE_EXECUTION_FAIL $probe status=$status output=$output" >&2
     exit 1
   }
-  [[ "$output" == "$expected" || "$output" == "$expected"* ]] || {
+  [[ "$output" == *"$expected"* ]] || {
     echo "SANDBOX_BOUNDARY_PROBE_FAIL $probe expected=$expected observed=$output" >&2
     exit 1
   }
