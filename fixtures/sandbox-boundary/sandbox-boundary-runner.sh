@@ -26,6 +26,39 @@ case "${1:-}" in
     fi
     echo 'NETWORK_EGRESS_BLOCKED'
     ;;
+  filesystem-escape)
+    if printf 'ESCAPE\n' > /onsure-host-escape-probe 2>/dev/null; then
+      echo 'FILESYSTEM_ESCAPE_ALLOWED'
+      exit 1
+    fi
+    if printf 'ESCAPE\n' > /etc/onsure-host-escape-probe 2>/dev/null; then
+      echo 'FILESYSTEM_ESCAPE_ALLOWED'
+      exit 1
+    fi
+    echo 'FILESYSTEM_ESCAPE_BLOCKED'
+    ;;
+  symlink-escape)
+    [[ -L escape-link ]] || {
+      echo 'SYMLINK_ESCAPE_FIXTURE_MISSING'
+      exit 1
+    }
+    if cat escape-link >/dev/null 2>&1; then
+      echo 'SYMLINK_ESCAPE_ALLOWED'
+      exit 1
+    fi
+    echo 'SYMLINK_ESCAPE_BLOCKED'
+    ;;
+  child-process)
+    setsid bash -c 'exec -a onsure-sandbox-child-probe sleep 30' >/dev/null 2>&1 &
+    echo 'CHILD_STARTED'
+    ;;
+  cpu-exhaustion)
+    while :; do :; done
+    ;;
+  memory-exhaustion)
+    python3 -c 'bytearray(9 * 1024 * 1024 * 1024)'
+    echo 'MEMORY_LIMIT_NOT_ENFORCED'
+    ;;
   capabilities)
     cap_eff="$(awk '/^CapEff:/ {print $2}' /proc/self/status)"
     [[ "$cap_eff" == '0000000000000000' ]]
@@ -40,10 +73,14 @@ case "${1:-}" in
     nofile="$(ulimit -n)"
     fsize="$(ulimit -f)"
     nproc="$(ulimit -u)"
+    vmem="$(ulimit -v)"
+    cpu="$(ulimit -t)"
     [[ "$nofile" -le 256 ]]
     [[ "$fsize" -le 2048 ]]
     [[ "$nproc" -le 64 ]]
-    echo "RESOURCE_LIMITS_ENFORCED nofile=$nofile fsize=$fsize nproc=$nproc"
+    [[ "$vmem" -le 8388608 ]]
+    [[ "$cpu" -le 300 ]]
+    echo "RESOURCE_LIMITS_ENFORCED nofile=$nofile fsize=$fsize nproc=$nproc vmem=$vmem cpu=$cpu"
     ;;
   timeout)
     sleep 30
