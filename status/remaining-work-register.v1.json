@@ -1,25 +1,27 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "assessment_date": "2026-07-27",
   "authority": "status/design-capability-coverage.v2.json",
   "process_lineage_authority": "contracts/product-process-lineage.v1.json",
-  "active_issues": [20, 23],
-  "last_ci_self_validation": {
-    "run_id": 30270109833,
-    "validated_head": "e9c60cc243c8e4b11521bab379b12f0b94d5bead",
-    "state": "PASS_NONFINAL"
+  "active_issues": [20],
+  "historical_ci_observation": {
+    "run_id": 30270821264,
+    "validated_head": "9742beed6c9ce6451d3dcac78b76741c84e6715d",
+    "state": "PASS_NONFINAL",
+    "binding_scope": "PREVIOUS_PR_HEAD_ONLY",
+    "current_source_bound": false
   },
   "items": [
     {
       "id": "P0-FULL-REPOSITORY-STATIC-REVALIDATION",
-      "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
+      "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
       "requires_human": false,
-      "next_action": "Keep the full static, omission, lineage and CI-boundary gates mandatory on every later source change."
+      "next_action": "Keep the full static, omission, lineage, verification-claim and CI-boundary gates mandatory on main, feature and audit branches."
     },
     {
       "id": "P0-CORE-ADAPTER-MODULE-SEPARATION",
-      "state": "PASS_CI_MODULAR_NONFINAL",
+      "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED_PREVIOUS_HEAD_PASS",
       "requires_human": false,
       "next_action": "Repeat the final Core profile in the deferred final-stage environment and preserve the ORUDA-absent build receipt."
     },
@@ -31,51 +33,57 @@
     },
     {
       "id": "P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION",
-      "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
+      "state": "51_FAILURE_INJECTIONS_REGISTERED_CURRENT_HEAD_CI_REQUIRED",
       "requires_human": false,
-      "next_action": "Keep 28 design/process/data, 10 atomic-requirement and 5 CI-boundary failure injections mandatory."
+      "next_action": "Keep 28 design/process/data, 10 atomic-requirement, 5 CI-boundary and 8 verification-claim failure injections mandatory."
     },
     {
       "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
-      "state": "PASS_CI_FIXTURE_PROFILE_NONFINAL",
+      "state": "PREVIOUS_HEAD_CI_FIXTURE_PROFILE_PASS_NONFINAL",
       "requires_human": false,
       "next_action": "Add direct production model, prompt, tool and RAG telemetry before Behavior Profile activation."
     },
     {
       "id": "P0-PLANNING-OREVIEW-RCA",
-      "state": "PASS_CI_UNIT_E2E_NONFINAL",
+      "state": "PREVIOUS_HEAD_CI_UNIT_E2E_PASS_NONFINAL",
       "requires_human": false,
       "next_action": "Run real-target causal experiments and independent review evidence before any RCA confirmation or product PASS promotion."
     },
     {
       "id": "P0-IMPROVEMENT-GIT",
-      "state": "PASS_CI_LOCAL_WORKTREE_NONFINAL_REMOTE_DELIVERY_NOT_RUN",
+      "state": "PREVIOUS_HEAD_LOCAL_WORKTREE_PASS_NONFINAL_REMOTE_DELIVERY_NOT_RUN",
       "requires_human": false,
       "next_action": "Execute an approved real remote push and Draft PR delivery without enabling merge, force-push or deployment."
     },
     {
       "id": "P0-VSCODE-LOCAL-API",
-      "state": "PASS_CI_HTTP_AND_VSIX_NONFINAL_EXTENSION_HOST_NOT_RUN",
+      "state": "PREVIOUS_HEAD_HTTP_AND_VSIX_PASS_NONFINAL_EXTENSION_HOST_NOT_RUN",
       "requires_human": false,
       "next_action": "Run VS Code Extension Host full-chain, restart recovery and interactive approval UX."
     },
     {
       "id": "P0-OLICENSE-SERVICE-CASE",
-      "state": "PASS_CI_LIFECYCLE_NONFINAL_PROVIDER_NOT_RUN",
+      "state": "PREVIOUS_HEAD_LIFECYCLE_PASS_NONFINAL_PROVIDER_NOT_RUN",
       "requires_human": false,
       "next_action": "Run real payment/refund provider and commercial entitlement integration while retaining signed verification and legal-hold gates."
     },
     {
       "id": "P0-TENANT-IDENTITY",
-      "state": "STUB",
+      "state": "STUB_CROSS_TENANT_READ_WRITE_ATTACKS_NOT_RUN",
       "requires_human": false,
-      "next_action": "Implement authenticated identity, RBAC, tenant-scoped authorization and cross-tenant adversarial tests."
+      "next_action": "Implement authenticated identity, RBAC, tenant-scoped authorization and cross-tenant adversarial tests. Sandbox scope remains PARTIAL until both attacks pass."
+    },
+    {
+      "id": "P0-SANDBOX-ADVERSARIAL-COVERAGE",
+      "state": "PARTIAL_10_OF_12_CURRENT_HEAD_CI_REQUIRED",
+      "requires_human": false,
+      "next_action": "Verify filesystem, symlink, child-process, CPU, memory, output-flood and concurrency attacks on the current head; retain CROSS_TENANT_READ and CROSS_TENANT_WRITE as HOLD until tenant enforcement exists."
     },
     {
       "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
       "state": "PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE",
       "requires_human": false,
-      "next_action": "Add product-target build, dependency lock, SBOM, vulnerability and license verification packs."
+      "next_action": "Add product-target dependency lock, SBOM, vulnerability and license verification packs, including a committed VSIX dependency lock."
     },
     {
       "id": "P1-PERFORMANCE-RECOVERY",
