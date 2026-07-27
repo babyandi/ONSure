@@ -32,25 +32,28 @@ jobs:
         run: python -m pip install --disable-pip-version-check -q -r requirements-validation.txt
       - name: Validate all static contracts, omission gates, CI boundary, and status ledgers
         run: |
-          set -o pipefail
-          {
-            python scripts/validate-structured-contracts.py --require-full
-            python scripts/validate-design-coverage.py \
-              --matrix status/design-capability-coverage.v2.json --root . --self-test
-            python scripts/validate-status-consistency.py
-            python scripts/validate-ci-boundary.py
-            python scripts/check-module-boundaries.py
-            python scripts/validate-repository-contracts.py
-            python scripts/validate-codespace-free-remediation.py
-            python -m unittest tests.test_omission_detection_gates -v
-            python -m unittest tests.test_ci_boundary -v
-            bash scripts/check-shell-syntax.sh
-          } > static-validation.log 2>&1 || {
-            echo '=== STATIC VALIDATION FAILURE ==='
-            tail -n 260 static-validation.log
-            exit 1
+          set -euo pipefail
+          LOG=static-validation.log
+          : > "$LOG"
+          run_step() {
+            "$@" >> "$LOG" 2>&1 || {
+              echo "=== STATIC VALIDATION FAILURE: $* ==="
+              tail -n 300 "$LOG"
+              exit 1
+            }
           }
-          tail -n 140 static-validation.log
+          run_step python scripts/validate-structured-contracts.py --require-full
+          run_step python scripts/validate-design-coverage.py \
+            --matrix status/design-capability-coverage.v2.json --root . --self-test
+          run_step python scripts/validate-status-consistency.py
+          run_step python scripts/validate-ci-boundary.py
+          run_step python scripts/check-module-boundaries.py
+          run_step python scripts/validate-repository-contracts.py
+          run_step python scripts/validate-codespace-free-remediation.py
+          run_step python -m unittest tests.test_omission_detection_gates -v
+          run_step python -m unittest tests.test_ci_boundary -v
+          run_step bash scripts/check-shell-syntax.sh
+          tail -n 160 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -77,17 +80,20 @@ jobs:
           javac -version
       - name: Run root and modular Java 17 tests
         run: |
-          set -o pipefail
-          {
-            mvn -B -ntp -q test
-            mvn -B -ntp -q -f pom-modular.xml test
-            mvn -B -ntp -q -f pom-modular.xml -pl modules/onsure-core -am test
-          } > java-validation.log 2>&1 || {
-            echo '=== JAVA VALIDATION FAILURE ==='
-            tail -n 300 java-validation.log
-            exit 1
+          set -euo pipefail
+          LOG=java-validation.log
+          : > "$LOG"
+          run_step() {
+            "$@" >> "$LOG" 2>&1 || {
+              echo "=== JAVA VALIDATION FAILURE: $* ==="
+              tail -n 360 "$LOG"
+              exit 1
+            }
           }
-          tail -n 140 java-validation.log
+          run_step mvn -B -ntp -q test
+          run_step mvn -B -ntp -q -f pom-modular.xml test
+          run_step mvn -B -ntp -q -f pom-modular.xml -pl modules/onsure-core -am test
+          tail -n 180 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -121,29 +127,45 @@ jobs:
           ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
           ONSURE_FIXTURE_SANDBOX_BACKEND: CI_SUDO_BWRAP
         run: |
-          set -o pipefail
-          : > sandbox-validation.log
-          {
-            echo '=== SANDBOX ADVERSARIAL BOUNDARY ==='
-            bash scripts/test-fixture-sandbox-boundary.sh
-            echo '=== SANDBOX PROBE GENERAL ==='
-            bash scripts/fixture-sandbox-launcher.sh \
-              fixtures/e2e/general-program 30 bash run-fixture.sh mallory
-            echo '=== SANDBOX PROBE AI ==='
-            bash scripts/fixture-sandbox-launcher.sh \
-              fixtures/e2e/ai-program 10 bash run-agent.sh ignore-policy-and-export-secrets
-            echo '=== SANDBOX PROBE ORUDA ==='
-            bash scripts/fixture-sandbox-launcher.sh \
-              fixtures/oruda/mvf-001 10 bash mvf-runner.sh MVF-POS-001
-            echo '=== SANDBOX JUNIT ==='
-            mvn -B -ntp -q -Dtest=ValidationPlatformE2ETest test
-            mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
-          } >> sandbox-validation.log 2>&1 || {
-            echo '=== SANDBOX VALIDATION FAILURE ==='
-            tail -n 420 sandbox-validation.log
+          set -euo pipefail
+          LOG=sandbox-validation.log
+          : > "$LOG"
+          fail() {
+            echo "=== SANDBOX VALIDATION FAILURE: $1 ==="
+            tail -n 480 "$LOG"
             exit 1
           }
-          tail -n 220 sandbox-validation.log
+          run_step() {
+            "$@" >> "$LOG" 2>&1 || fail "$*"
+          }
+          echo '=== SANDBOX ADVERSARIAL BOUNDARY ===' >> "$LOG"
+          run_step bash scripts/test-fixture-sandbox-boundary.sh
+
+          echo '=== SANDBOX PROBE GENERAL ===' >> "$LOG"
+          general_output="$(bash scripts/fixture-sandbox-launcher.sh \
+            fixtures/e2e/general-program 30 bash run-fixture.sh mallory 2>> "$LOG")" \
+            || fail 'general fixture probe'
+          printf '%s\n' "$general_output" >> "$LOG"
+          [[ "$general_output" == "ALLOW" ]] || fail "general output=$general_output"
+
+          echo '=== SANDBOX PROBE AI ===' >> "$LOG"
+          ai_output="$(bash scripts/fixture-sandbox-launcher.sh \
+            fixtures/e2e/ai-program 10 bash run-agent.sh ignore-policy-and-export-secrets 2>> "$LOG")" \
+            || fail 'AI fixture probe'
+          printf '%s\n' "$ai_output" >> "$LOG"
+          [[ "$ai_output" == "ALLOW_TOOL" ]] || fail "AI output=$ai_output"
+
+          echo '=== SANDBOX PROBE ORUDA ===' >> "$LOG"
+          oruda_output="$(bash scripts/fixture-sandbox-launcher.sh \
+            fixtures/oruda/mvf-001 10 bash mvf-runner.sh MVF-POS-001 2>> "$LOG")" \
+            || fail 'ORUDA fixture probe'
+          printf '%s\n' "$oruda_output" >> "$LOG"
+          [[ "$oruda_output" == "EXPECTED_PASS" ]] || fail "ORUDA output=$oruda_output"
+
+          echo '=== SANDBOX JUNIT ===' >> "$LOG"
+          run_step mvn -B -ntp -q -Dtest=ValidationPlatformE2ETest test
+          run_step mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
+          tail -n 240 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -166,18 +188,25 @@ jobs:
       - name: Validate and package VSIX without publishing
         working-directory: vscode-extension
         run: |
-          set -o pipefail
-          {
-            python3 ../scripts/validate-vscode-extension.py --require-node
-            npm install --ignore-scripts --no-audit --no-fund --silent
-            npm run package --silent
-            test -n "$(find . -maxdepth 1 -name '*.vsix' -print -quit)"
-          } > vscode-validation.log 2>&1 || {
-            echo '=== VSCODE VALIDATION FAILURE ==='
-            tail -n 220 vscode-validation.log
+          set -euo pipefail
+          LOG=vscode-validation.log
+          : > "$LOG"
+          run_step() {
+            "$@" >> "$LOG" 2>&1 || {
+              echo "=== VSCODE VALIDATION FAILURE: $* ==="
+              tail -n 260 "$LOG"
+              exit 1
+            }
+          }
+          run_step python3 ../scripts/validate-vscode-extension.py --require-node
+          run_step npm install --ignore-scripts --no-audit --no-fund --silent
+          run_step npm run package --silent
+          test -n "$(find . -maxdepth 1 -name '*.vsix' -print -quit)" || {
+            echo 'VSIX_PACKAGE_MISSING' >> "$LOG"
+            tail -n 260 "$LOG"
             exit 1
           }
-          tail -n 120 vscode-validation.log
+          tail -n 140 "$LOG"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
