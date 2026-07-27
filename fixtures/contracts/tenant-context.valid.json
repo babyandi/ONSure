@@ -3,5 +3,8 @@
   "organization_id": "org-sample",
   "tenant_id": "tenant-sample",
   "workspace_id": "workspace-sample",
-  "actor_id": "actor-sample"
+  "actor_id": "actor-sample",
+  "roles": ["VALIDATION_OPERATOR"],
+  "data_region": "KR",
+  "created_at": "2026-07-27T00:00:00Z"
 }
