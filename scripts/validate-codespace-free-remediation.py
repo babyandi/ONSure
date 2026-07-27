@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REQUIRED = [
+    ".github/workflows/onsure-pr-validation.yml",
     "contracts/codespace-free-remediation-plan.v1.json",
     "contracts/atomic-requirement.v1.schema.json",
     "contracts/module-boundary.v1.json",
@@ -45,6 +46,8 @@ REQUIRED = [
     "scripts/validate-design-coverage.py",
     "scripts/validate-product-process-lineage.py",
     "scripts/validate-status-consistency.py",
+    "scripts/validate-ci-boundary.py",
+    "tests/test_ci_boundary.py",
     "scripts/run-core-modular-twice.sh",
     "scripts/fixture-sandbox-launcher.sh",
     "scripts/onsure-final-stage.sh",
@@ -104,6 +107,10 @@ SOURCE_ASSERTIONS = {
     "scripts/validate-status-consistency.py": [
         "TRACE_DESIGN_ID_SET_MISMATCH", "IMPLEMENTATION_MATRIX_CAPABILITY_MAP_MISMATCH",
         "OMISSION_FAILURE_CASE_COUNT_MISMATCH", "UNSAFE_RELEASE_FLAG",
+    ],
+    "scripts/validate-ci-boundary.py": [
+        "CI_MUTATION_TOKEN_FORBIDDEN", "UNAPPROVED_WORKFLOW_PRESENT",
+        "CI_CHECKOUT_CREDENTIALS_NOT_DISABLED", "contents: write", "git push",
     ],
 }
 
@@ -169,11 +176,14 @@ def main() -> int:
          '"decision": "PASS"'),
         ([sys.executable, "scripts/validate-status-consistency.py"],
          "ONSURE_STATUS_CONSISTENCY_PASS"),
+        ([sys.executable, "scripts/validate-ci-boundary.py"], "ONSURE_CI_BOUNDARY_PASS"),
+        ([sys.executable, "-m", "unittest", "tests.test_ci_boundary", "-v"], "OK"),
         (["bash", "scripts/check-shell-syntax.sh"], "ONSURE_SHELL_SYNTAX_PASS"),
     ]
     for command, marker in commands:
         result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
-        if result.returncode != 0 or marker not in result.stdout:
+        combined = result.stdout + result.stderr
+        if result.returncode != 0 or marker not in combined:
             errors.append(
                 f"COMMAND_FAIL:{' '.join(command)}:{result.returncode}:"
                 f"{result.stdout[-2000:]}:{result.stderr[-1000:]}"
@@ -188,17 +198,19 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V8",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V9",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "source_boundary_assertions": "PASS" if not errors else "FAIL",
         "status_cross_consistency": "PASS" if not errors else "FAIL",
+        "ci_mutation_boundary": "PASS" if not errors else "FAIL",
         "design_capability_count": 28,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
-        "failure_injection_count": 38,
+        "failure_injection_count": 43,
         "atomic_requirement_failure_injections": 10,
         "design_and_lineage_failure_injections": 28,
+        "ci_boundary_failure_injections": 5,
         "design_and_lineage_detection": "PASS" if not errors else "FAIL",
         "atomic_requirement_detection": "PASS" if not errors else "FAIL",
         "structured_contract_validation": "SYNTAX_OR_FULL_DEPENDING_ON_PINNED_PACKAGES",
