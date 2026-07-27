@@ -45,8 +45,8 @@ class ProductRegistrationWorkflowTest {
 
         Map<String, Object> read = result(dispatcher.dispatch(
                 "project.read-target", request(Map.of("target_id", "target-001"))));
-        ValidationModel.ValidationTarget target = mapper.convertValue(
-                read.get("target"), ValidationModel.ValidationTarget.class);
+        ValidationModel.ValidationTarget target =
+                (ValidationModel.ValidationTarget) read.get("target");
         assertEquals("target-001", target.targetId());
 
         Map<String, Object> listed = result(dispatcher.dispatch(
