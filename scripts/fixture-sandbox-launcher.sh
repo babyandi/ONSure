@@ -74,6 +74,7 @@ esac
 
 EMPTY_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/onsure-sandbox-root.XXXXXX")"
 cleanup() {
+  chmod -R u+rwX "$EMPTY_ROOT" 2>/dev/null || true
   rm -rf "$EMPTY_ROOT"
 }
 trap cleanup EXIT
@@ -84,6 +85,7 @@ done
 if [[ -e /etc/ld.so.cache ]]; then
   : > "$EMPTY_ROOT/etc/ld.so.cache"
 fi
+chmod 0555 "$EMPTY_ROOT"
 
 BINDINGS=(--ro-bind "$EMPTY_ROOT" /)
 for path in /bin /usr /lib /lib64 /etc/ld.so.cache /etc/alternatives; do
