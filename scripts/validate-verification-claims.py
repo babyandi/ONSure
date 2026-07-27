@@ -41,10 +41,35 @@ def validate() -> list[str]:
     if historical.get("current_source_bound") is not False:
         errors.append("HISTORICAL_AUTOMATION_FALSELY_BOUND_TO_CURRENT_SOURCE")
 
-    for section in ("design_coverage", "product_process_lineage"):
+    for section in (
+            "design_coverage", "product_subrequirement_coverage",
+            "workflow_surface_parity", "critical_callpath_boundary",
+            "product_process_lineage"):
         receipt = status.get(section, {}).get("source_bound_receipt")
         if receipt != "LOCAL_RECEIPT_REQUIRED":
             errors.append(f"COMMITTED_DYNAMIC_RECEIPT_OVERCLAIM:{section}:{receipt}")
+
+    failure = status.get("omission_failure_injection", {})
+    if failure.get("all_registered_failure_injections") != 75:
+        errors.append("FAILURE_INJECTION_TOTAL_STALE")
+    if failure.get("critical_callpath_cases") != 7:
+        errors.append("CRITICAL_CALLPATH_FAILURE_COUNT_STALE")
+    if failure.get("current_head_execution") != "LOCAL_EXECUTION_REQUIRED":
+        errors.append("CURRENT_HEAD_FAILURE_INJECTION_EXECUTION_OVERCLAIMED")
+
+    authority = status.get("approval_authority_boundary", {})
+    if authority.get("authority_root") != ".onsure/approval-authority/":
+        errors.append("APPROVAL_AUTHORITY_ROOT_NOT_CANONICAL")
+    if authority.get("trusted_key_registry") != ".onsure/approval-authority/trusted-key-registry.json":
+        errors.append("APPROVAL_KEY_REGISTRY_NOT_CANONICAL")
+    if authority.get("replay_ledger") != ".onsure/approval-authority/approval-replay-ledger.jsonl":
+        errors.append("APPROVAL_REPLAY_LEDGER_NOT_CANONICAL")
+    if authority.get("request_path_override_allowed") is not False:
+        errors.append("APPROVAL_AUTHORITY_OVERRIDE_OVERCLAIM")
+    if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
+        errors.append("APPROVAL_REPLAY_EXTERNAL_ANCHOR_OVERCLAIMED")
+    if authority.get("current_source_execution") != "NOT_RUN":
+        errors.append("APPROVAL_AUTHORITY_CURRENT_SOURCE_EXECUTION_OVERCLAIMED")
 
     required = set(sandbox.get("required_attack_fixtures", []))
     verified = set(sandbox.get("verified_attack_fixtures", []))
@@ -70,12 +95,10 @@ def validate() -> list[str]:
     if not unverified and not state.startswith("PASS_"):
         errors.append("SANDBOX_FULL_SCOPE_NOT_MARKED_PASS")
 
-    workflows = []
     workflow_root = ROOT / ".github" / "workflows"
     if workflow_root.exists():
-        workflows = sorted(workflow_root.glob("*.yml")) + sorted(workflow_root.glob("*.yaml"))
-    for workflow in workflows:
-        errors.append(f"GITHUB_ACTIONS_WORKFLOW_FORBIDDEN:{workflow.name}")
+        for workflow in sorted(workflow_root.glob("*.yml")) + sorted(workflow_root.glob("*.yaml")):
+            errors.append(f"GITHUB_ACTIONS_WORKFLOW_FORBIDDEN:{workflow.name}")
 
     local_gate = ROOT / "scripts/onsure-local-gate.sh"
     if not local_gate.is_file():
@@ -83,6 +106,9 @@ def validate() -> list[str]:
     else:
         text = local_gate.read_text(encoding="utf-8")
         for token in (
+            "python3 scripts/validate-product-subrequirements.py --self-test",
+            "python3 scripts/validate-workflow-surface-parity.py --self-test",
+            "python3 scripts/validate-critical-callpaths.py --self-test",
             "python3 scripts/validate-verification-claims.py",
             "bash scripts/test-fixture-sandbox-boundary.sh",
             '"github_actions": "DISABLED"',
@@ -94,8 +120,12 @@ def validate() -> list[str]:
         ROOT / "scripts/test-fixture-sandbox-boundary.sh"
     ).read_text(encoding="utf-8"):
         errors.append("SANDBOX_EXPANDED_BOUNDARY_MARKER_MISSING")
-    if not (ROOT / "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java").is_file():
-        errors.append("ADVERSARIAL_CONCURRENCY_OUTPUT_TEST_MISSING")
+    for required_test in (
+            "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java",
+            "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+            "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java"):
+        if not (ROOT / required_test).is_file():
+            errors.append(f"ADVERSARIAL_TEST_MISSING:{required_test}")
 
     return sorted(set(errors))
 
@@ -103,12 +133,14 @@ def validate() -> list[str]:
 def main() -> int:
     errors = validate()
     report = {
-        "contract": "ONSURE_VERIFICATION_CLAIM_AUDIT_V2",
+        "contract": "ONSURE_VERIFICATION_CLAIM_AUDIT_V3",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "github_actions": "DISABLED_BY_USER",
         "committed_dynamic_validation_claims": "PROHIBITED",
         "current_source_evidence": "LOCAL_RECEIPT_REQUIRED",
+        "registered_failure_injections": 75,
+        "approval_external_replay_anchor": "NOT_IMPLEMENTED",
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
