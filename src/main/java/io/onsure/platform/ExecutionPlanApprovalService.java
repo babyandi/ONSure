@@ -11,7 +11,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,11 +90,16 @@ public final class ExecutionPlanApprovalService {
         approved.put("final_claim_allowed", false);
         approved.remove("plan_sha256");
         approved.put("plan_sha256", new ExecutionPlanService().planHash(approved));
-        writeAtomic(outputFile, approved);
 
-        // Consume only after the approved artifact is durably written. A replay then fails closed.
+        // Security first: consume the nonce before an approved artifact becomes visible.
         verifier.requireValidAndConsume(
                 approvalReceiptFile, APPROVAL_CONTRACT, PURPOSE, Instant.now());
+        try {
+            writeAtomic(outputFile, approved);
+        } catch (Exception failure) {
+            // A consumed approval with no artifact is safe and requires a new approval to retry.
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_PUBLISH_FAILED_AFTER_CONSUME", failure);
+        }
         return Map.copyOf(approved);
     }
 
