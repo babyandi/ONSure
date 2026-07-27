@@ -70,7 +70,7 @@ SOURCE_ASSERTIONS = {
     ],
     "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
         "TWO_DISTINCT_VERIFIERS_REQUIRED", "VALIDATION_RECEIPT_PACK_STALE",
-        "POST_APPLY_RECEIPT_MISSING", "FileChannel.open(lockFile",
+        "POST_APPLY_RECEIPT_MISSING", "ExclusiveFileLock.call(lockFile",
         "LEDGER_HEAD_ANCHOR_MISMATCH", "requireGitObjectId",
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
@@ -145,6 +145,9 @@ FORBIDDEN_SOURCE_TOKENS = {
     ],
     "src/main/java/io/onsure/platform/Hashing.java": [
         "Thread.ofVirtual", "Executors.newVirtualThreadPerTaskExecutor",
+    ],
+    "src/main/java/io/onsure/learning/OfficialLearningLedger.java": [
+        "FileChannel.open(lockFile", "OverlappingFileLockException",
     ],
 }
 
