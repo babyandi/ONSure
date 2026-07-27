@@ -115,9 +115,11 @@ jobs:
           command -v bwrap
           command -v prlimit
           command -v timeout
+          sudo -n true
       - name: Run Generic AI and ORUDA fixtures in required sandbox mode
         env:
           ONSURE_FIXTURE_SANDBOX_MODE: REQUIRED
+          ONSURE_FIXTURE_SANDBOX_BACKEND: CI_SUDO_BWRAP
         run: |
           set -o pipefail
           : > sandbox-validation.log
