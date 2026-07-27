@@ -153,7 +153,8 @@ public final class DurableStateLedger {
         state.put("ledger_head", eventHash);
         state.put("state_sha256", stateSha(state));
         List<String> nextLines = new ArrayList<>(existingLines);
-        nextLines.add(mapper.writeValueAsString(event));
+        nextLines.add(mapper.writer().without(SerializationFeature.INDENT_OUTPUT)
+                .writeValueAsString(event));
 
         prepareTransaction(state, nextLines);
         commitPreparedTransaction();
