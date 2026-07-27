@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public final class FixtureHarness {
     private static final Set<String> ALLOWED_EXECUTABLES = Set.of("bash");
     private static final Set<String> ALLOWED_SANDBOX_BACKENDS = Set.of(
-            "ROOTLESS_BWRAP", "CI_SUDO_BWRAP");
+            "ROOTLESS_BWRAP", "CI_SUDO_UNSHARE_BWRAP");
     private static final int MAX_ARGUMENTS = 64;
     private static final int MAX_COMMAND_CHARACTERS = 8192;
     private static final int MAX_OUTPUT_BYTES = 65_536;
@@ -208,7 +208,8 @@ public final class FixtureHarness {
         Map<String, String> host = System.getenv();
         processEnvironment.clear();
         for (String key : List.of(
-                "PATH", "JAVA_HOME", "LANG", "LC_ALL", SANDBOX_ENV, SANDBOX_BACKEND_ENV)) {
+                "PATH", "JAVA_HOME", "LANG", "LC_ALL", SANDBOX_ENV, SANDBOX_BACKEND_ENV,
+                "CI", "GITHUB_ACTIONS")) {
             String value = host.get(key);
             if (value != null) processEnvironment.put(key, value);
         }
