@@ -48,6 +48,12 @@ jobs:
             exit 1
           }
           tail -n 120 static-validation.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: static-validation-${{ github.run_id }}
+          path: static-validation.log
+          if-no-files-found: error
 
   java-and-modules:
     runs-on: ubuntu-24.04
@@ -78,6 +84,12 @@ jobs:
             exit 1
           }
           tail -n 120 java-validation.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: java-validation-${{ github.run_id }}
+          path: java-validation.log
+          if-no-files-found: error
 
   sandbox-integration:
     runs-on: ubuntu-24.04
@@ -112,6 +124,12 @@ jobs:
             exit 1
           }
           tail -n 120 sandbox-validation.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandbox-validation-${{ github.run_id }}
+          path: sandbox-validation.log
+          if-no-files-found: error
 
   vscode-package:
     runs-on: ubuntu-24.04
@@ -138,3 +156,9 @@ jobs:
             exit 1
           }
           tail -n 100 vscode-validation.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vscode-validation-${{ github.run_id }}
+          path: vscode-extension/vscode-validation.log
+          if-no-files-found: error
