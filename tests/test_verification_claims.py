@@ -36,7 +36,23 @@ def safe_status() -> dict:
             "current_source_bound": False,
         },
         "design_coverage": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
+        "product_subrequirement_coverage": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
+        "workflow_surface_parity": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
+        "critical_callpath_boundary": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
         "product_process_lineage": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
+        "omission_failure_injection": {
+            "critical_callpath_cases": 10,
+            "all_registered_failure_injections": 80,
+            "current_head_execution": "LOCAL_EXECUTION_REQUIRED",
+        },
+        "approval_authority_boundary": {
+            "authority_root": ".onsure/approval-authority/",
+            "trusted_key_registry": ".onsure/approval-authority/trusted-key-registry.json",
+            "replay_ledger": ".onsure/approval-authority/approval-replay-ledger.jsonl",
+            "request_path_override_allowed": False,
+            "external_replay_anchor": "NOT_IMPLEMENTED",
+            "current_source_execution": "NOT_RUN",
+        },
         "sandbox_attack_tests": {
             "state": "PARTIAL_1_OF_2_LOCAL_RECEIPT_REQUIRED",
             "verified_count": 1,
@@ -55,6 +71,9 @@ def safe_sandbox() -> dict:
 
 
 LOCAL_GATE = """#!/usr/bin/env bash
+python3 scripts/validate-product-subrequirements.py --self-test
+python3 scripts/validate-workflow-surface-parity.py --self-test
+python3 scripts/validate-critical-callpaths.py --self-test
 python3 scripts/validate-verification-claims.py
 bash scripts/test-fixture-sandbox-boundary.sh
 printf '%s' '\"github_actions\": \"DISABLED\"'
@@ -85,9 +104,14 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
             (root / "scripts/test-fixture-sandbox-boundary.sh").write_text(
                 "echo ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12\n", encoding="utf-8"
             )
-            (root / "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java").write_text(
-                "class AdversarialConcurrencyAndOutputTest {}\n", encoding="utf-8"
-            )
+            for name in (
+                "AdversarialConcurrencyAndOutputTest.java",
+                "ApprovalAuthorityPathsTest.java",
+                "BoundedProcessRunnerTest.java",
+            ):
+                (root / "src/test/java/io/onsure/platform" / name).write_text(
+                    f"class {name.removesuffix('.java')} {{}}\n", encoding="utf-8"
+                )
             with mock.patch.object(MODULE, "ROOT", root):
                 return MODULE.validate()
 
@@ -136,9 +160,19 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
         )
 
     def test_local_claim_gate_must_be_invoked(self):
-        local_gate = LOCAL_GATE.replace("python3 scripts/validate-verification-claims.py\n", "")
+        local_gate = LOCAL_GATE.replace("python3 scripts/validate-critical-callpaths.py --self-test\n", "")
         self.assertTrue(any("LOCAL_VALIDATION_GATE_CONTROL_MISSING" in value
                             for value in self.run_case(local_gate=local_gate)))
+
+    def test_failure_injection_total_cannot_stay_at_old_baseline(self):
+        status = safe_status()
+        status["omission_failure_injection"]["all_registered_failure_injections"] = 75
+        self.assertIn("FAILURE_INJECTION_TOTAL_STALE", self.run_case(status=status))
+
+    def test_unimplemented_external_replay_anchor_cannot_be_claimed_complete(self):
+        status = safe_status()
+        status["approval_authority_boundary"]["external_replay_anchor"] = "PASS"
+        self.assertIn("APPROVAL_REPLAY_EXTERNAL_ANCHOR_OVERCLAIMED", self.run_case(status=status))
 
 
 if __name__ == "__main__":
