@@ -104,9 +104,9 @@ def main() -> int:
     expected_failure_counts = {
         "design_process_lineage_cases": 28,
         "atomic_requirement_cases": 10,
-        "automation_boundary_cases": 5,
+        "automation_boundary_cases": 6,
         "verification_claim_cases": 8,
-        "all_registered_failure_injections": 51,
+        "all_registered_failure_injections": 52,
     }
     for field, expected in expected_failure_counts.items():
         if failure_status.get(field) != expected:
@@ -144,9 +144,9 @@ def main() -> int:
         errors.append("REMAINING_WORK_ACTIONS_POLICY_NOT_DISABLED")
 
     additional = omission.get("additional_failure_injection", {})
-    if additional.get("automation_boundary_cases") != 5:
+    if additional.get("automation_boundary_cases") != 6:
         errors.append("OMISSION_AUTOMATION_BOUNDARY_COUNT_MISMATCH")
-    if additional.get("all_registered_cases") != 51:
+    if additional.get("all_registered_cases") != 52:
         errors.append("OMISSION_ALL_FAILURE_COUNT_MISMATCH")
     if omission.get("detection_result", {}).get("github_actions") != "DISABLED_BY_USER":
         errors.append("OMISSION_ACTIONS_POLICY_NOT_DISABLED")
@@ -170,7 +170,7 @@ def main() -> int:
         "process_stages": len(stages),
         "lineage_artifacts": len(artifacts),
         "design_process_lineage_failure_injections": failure.get("total"),
-        "all_registered_failure_injections": 51,
+        "all_registered_failure_injections": 52,
         "implementation_counts": dict(sorted(implementation_counts.items())),
         "verification_counts": dict(sorted(verification_counts.items())),
         "github_actions": "DISABLED_BY_USER",
