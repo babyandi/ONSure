@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "assessment_date": "2026-07-28",
   "authority": "status/design-capability-coverage.v2.json",
   "subrequirement_authority": "status/product-subrequirement-coverage.v1.json",
@@ -20,186 +20,38 @@
     "current_source_bound": false
   },
   "items": [
-    {
-      "id": "P0-FULL-REPOSITORY-STATIC-REVALIDATION",
-      "state": "CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED",
-      "requires_human": false,
-      "next_action": "Run the local static or full gate and preserve .onsure/local-gate evidence; GitHub Actions must remain absent."
-    },
-    {
-      "id": "P0-GRANULAR-PRODUCT-SUBREQUIREMENTS",
-      "state": "38_REGISTERED_2_IMPLEMENTED_28_PARTIAL_4_STUB_4_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Maintain requirement-level code, test, surface, missing-control and evidence bindings; do not collapse these items back into coarse capability status."
-    },
-    {
-      "id": "P0-WORKFLOW-SURFACE-PARITY",
-      "state": "39_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Run the workflow surface parity gate whenever Dispatcher, CLI, Local API or VS Code commands change."
-    },
-    {
-      "id": "P0-CRITICAL-CALLPATH-AND-APPROVAL-AUTHORITY",
-      "state": "FIXED_LOCAL_TRUST_ROOT_AND_BUNDLE_VALIDATION_IMPLEMENTED_7_ATTACKS_REGISTERED_LOCAL_JAVA_EXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Verify that every signed Plan, Patch, Git and Service Case workflow uses only .onsure/approval-authority, rejects caller-selected registries and ledgers, and preserves fail-closed bundle validation."
-    },
-    {
-      "id": "P0-APPROVAL-REPLAY-EXTERNAL-ANCHOR",
-      "state": "NOT_IMPLEMENTED",
-      "requires_human": false,
-      "next_action": "Anchor the approval replay-ledger head outside the mutable workspace and verify rewrite, rollback and stale-snapshot attacks."
-    },
-    {
-      "id": "P0-PARTIAL-EXECUTION-PLAN-APPROVAL",
-      "state": "CORE_SCOPE_ENFORCEMENT_IMPLEMENTED_VSCODE_INTERACTIVE_UI_MISSING_LOCAL_EXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Verify signed subset approval, skipped unapproved stages and HOLD propagation in the local Java gate; implement explicit VS Code partial-approval UX."
-    },
-    {
-      "id": "P0-CORE-ADAPTER-MODULE-SEPARATION",
-      "state": "PREVIOUS_HEAD_PASS_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Repeat the Core-only modular build in the local full gate and preserve the ORUDA-absent receipt."
-    },
-    {
-      "id": "P0-ATOMIC-TRACEABILITY",
-      "state": "CANDIDATE_EXTRACTION_AND_FAILURE_GATE_PASS_AUTHORITY_RECONCILIATION_INCOMPLETE",
-      "requires_human": false,
-      "next_action": "Reconcile every normative requirement, acceptance criterion, API, screen, state and test condition with authoritative code symbols, tests and evidence."
-    },
-    {
-      "id": "P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION",
-      "state": "75_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Keep 28 design/process/data, 10 atomic, 6 automation-prohibition, 8 verification-claim, 10 product-subrequirement, 6 workflow-surface and 7 critical-callpath failure injections mandatory."
-    },
-    {
-      "id": "P0-INCREMENTAL-PROGRAM-LEARNING",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement parent-profile lineage, added/modified/deleted source sets and incremental learning workflows across Core, CLI, Local API and VS Code."
-    },
-    {
-      "id": "P0-VSCODE-PRODUCT-SURFACES",
-      "state": "STUB_REQUIRED_VIEWS_AND_MODES_MISSING",
-      "requires_human": false,
-      "next_action": "Implement Chat, Profile, Learning, Verification, Findings, Improvement, Evidence, Git/PR views plus Ask, Plan, Act and Autopilot modes."
-    },
-    {
-      "id": "P0-LONG-RUNNING-JOB-RECOVERY",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement checkpoint, cancel, pause, resume, restart-safe queue and approval-history restoration."
-    },
-    {
-      "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
-      "state": "PREVIOUS_HEAD_FIXTURE_PROFILE_PASS_NONFINAL_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Add direct production model, prompt, tool and RAG telemetry before Behavior Profile activation."
-    },
-    {
-      "id": "P0-PLANNING-OREVIEW-RCA",
-      "state": "PARTIAL_APPROVAL_CORE_FIXED_OTHER_REAL_TARGET_GATES_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Run signed partial approval and real-target causal experiments; preserve HOLD for unapproved stages and missing independent evidence."
-    },
-    {
-      "id": "P0-IMPROVEMENT-GIT",
-      "state": "PREVIOUS_HEAD_LOCAL_WORKTREE_PASS_NONFINAL_REMOTE_DELIVERY_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Execute an approved real remote push and Draft PR delivery without enabling merge, force-push or deployment."
-    },
-    {
-      "id": "P0-VSCODE-LOCAL-API",
-      "state": "PREVIOUS_HEAD_HTTP_AND_VSIX_PASS_NONFINAL_EXTENSION_HOST_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Run VS Code Extension Host full-chain, restart recovery and interactive approval UX."
-    },
-    {
-      "id": "P0-PUBLIC-SDK",
-      "state": "STUB_LOOPBACK_LOCAL_API_ONLY",
-      "requires_human": false,
-      "next_action": "Define a versioned public SDK or external product API boundary without weakening local authentication and source binding."
-    },
-    {
-      "id": "P0-OLICENSE-SERVICE-CASE",
-      "state": "PREVIOUS_HEAD_LIFECYCLE_PASS_NONFINAL_PROVIDER_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Run real payment/refund provider and commercial entitlement integration while retaining signed verification and legal-hold gates."
-    },
-    {
-      "id": "P0-TENANT-IDENTITY",
-      "state": "STUB_CROSS_TENANT_READ_WRITE_ATTACKS_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Implement authenticated identity, RBAC, tenant-scoped authorization and cross-tenant adversarial tests."
-    },
-    {
-      "id": "P0-SANDBOX-ADVERSARIAL-COVERAGE",
-      "state": "PARTIAL_10_OF_12_CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED",
-      "requires_human": false,
-      "next_action": "Run the rootless local sandbox gate; keep CROSS_TENANT_READ and CROSS_TENANT_WRITE as HOLD until tenant enforcement exists."
-    },
-    {
-      "id": "P1-EXECUTION-BUDGET-VISIBILITY",
-      "state": "STUB",
-      "requires_human": false,
-      "next_action": "Add expected result, token estimate, paid-service cost ceiling and data-transfer scope to plans and VS Code preview."
-    },
-    {
-      "id": "P1-PROVIDER-MODEL-REPLACEABILITY",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement provider/model adapter contracts and compatibility tests."
-    },
-    {
-      "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
-      "state": "PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE",
-      "requires_human": false,
-      "next_action": "Add product-target dependency lock, SBOM, vulnerability and license verification packs, including a committed VSIX dependency lock."
-    },
-    {
-      "id": "P1-PERFORMANCE-RECOVERY",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement load, latency, resource, outage, recovery and deterministic failure-injection harnesses."
-    },
-    {
-      "id": "P1-OBSERVABILITY-OPERATIONS",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement queue, metrics, logs, traces, backup, restore, retention scheduler and operational control plane."
-    },
-    {
-      "id": "P1-DEPLOYMENT",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement signed installer, released VSIX, update, rollback, on-premises and air-gapped packages."
-    },
-    {
-      "id": "FINAL-EXECUTION-STAGE",
-      "state": "READY_BUT_DEFERRED_BY_USER",
-      "requires_human": false,
-      "next_action": "Run bash scripts/onsure-final-stage.sh --profile core only at the final deferred execution stage."
-    },
-    {
-      "id": "INDEPENDENT-OTESTER-OAUDIT",
-      "state": "BLOCKED_INDEPENDENT_AUTHORITY",
-      "requires_human": false,
-      "next_action": "Use separate execution identities, signing keys, environments and evidence storage after internal product full-chain succeeds."
-    },
-    {
-      "id": "HUMAN-ACCEPTANCE",
-      "state": "WAITING_HUMAN_GATE",
-      "requires_human": true,
-      "next_action": "Perform real-user acceptance only after current-source product full-chain and independent receipts exist."
-    },
-    {
-      "id": "OPERATIONAL-RELEASE",
-      "state": "HOLD",
-      "requires_human": true,
-      "next_action": "Keep FinalLock, Production GO and Commercial GO false until all release gates pass."
-    }
+    {"id":"P0-FULL-REPOSITORY-STATIC-REVALIDATION","state":"CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED","requires_human":false,"next_action":"Run the local static or full gate and preserve .onsure/local-gate evidence; GitHub Actions must remain absent."},
+    {"id":"P0-GRANULAR-PRODUCT-SUBREQUIREMENTS","state":"38_REGISTERED_2_IMPLEMENTED_28_PARTIAL_4_STUB_4_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Maintain requirement-level code, test, surface, missing-control and evidence bindings; do not collapse these items back into coarse capability status."},
+    {"id":"P0-WORKFLOW-SURFACE-PARITY","state":"39_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Run the workflow surface parity gate whenever Dispatcher, CLI, Local API or VS Code commands change."},
+    {"id":"P0-CRITICAL-CALLPATH-AND-APPROVAL-AUTHORITY","state":"FIXED_LOCAL_TRUST_ROOT_BUNDLE_VALIDATION_AND_BOUNDED_PROCESS_IMPLEMENTED_10_ATTACKS_REGISTERED_LOCAL_JAVA_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify every signed Plan, Patch, Git and Service Case workflow uses only .onsure/approval-authority, rejects caller-selected registries and ledgers, and all child-process callpaths use the bounded runner."},
+    {"id":"P0-RAW-JAVA-AUTHORITY-PATH-API","state":"INTERNAL_ONLY_UNSUPPORTED_PUBLIC_SDK_NOT_DEFINED","requires_human":false,"next_action":"Before publishing a Java SDK, remove or encapsulate raw key-registry and replay-ledger path parameters behind a typed authority object and compatibility tests."},
+    {"id":"P0-APPROVAL-REPLAY-EXTERNAL-ANCHOR","state":"NOT_IMPLEMENTED","requires_human":false,"next_action":"Anchor the approval replay-ledger head outside the mutable workspace and verify rewrite, rollback and stale-snapshot attacks."},
+    {"id":"P0-BOUNDED-PROCESS-FULL-REVALIDATION","state":"JAVAC_RELEASE17_STANDALONE_PASS_FULL_REPOSITORY_MAVEN_NOT_RUN","requires_human":false,"next_action":"Run Java 17 Maven tests for Program Learning, Source Binding, Patch and Git Delivery output-flood and timeout behavior."},
+    {"id":"P0-PARTIAL-EXECUTION-PLAN-APPROVAL","state":"CORE_SCOPE_ENFORCEMENT_IMPLEMENTED_VSCODE_INTERACTIVE_UI_MISSING_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify signed subset approval, skipped unapproved stages and HOLD propagation in the local Java gate; implement explicit VS Code partial-approval UX."},
+    {"id":"P0-CORE-ADAPTER-MODULE-SEPARATION","state":"PREVIOUS_HEAD_PASS_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED","requires_human":false,"next_action":"Repeat the Core-only modular build in the local full gate and preserve the ORUDA-absent receipt."},
+    {"id":"P0-ATOMIC-TRACEABILITY","state":"CANDIDATE_EXTRACTION_AND_FAILURE_GATE_PASS_AUTHORITY_RECONCILIATION_INCOMPLETE","requires_human":false,"next_action":"Reconcile every normative requirement, acceptance criterion, API, screen, state and test condition with authoritative code symbols, tests and evidence."},
+    {"id":"P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION","state":"80_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Keep 28 design/process/data, 10 atomic, 6 automation-prohibition, 10 verification-claim, 10 product-subrequirement, 6 workflow-surface and 10 critical-callpath failure injections mandatory."},
+    {"id":"P0-INCREMENTAL-PROGRAM-LEARNING","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement parent-profile lineage, added/modified/deleted source sets and incremental learning workflows across Core, CLI, Local API and VS Code."},
+    {"id":"P0-VSCODE-PRODUCT-SURFACES","state":"STUB_REQUIRED_VIEWS_AND_MODES_MISSING","requires_human":false,"next_action":"Implement Chat, Profile, Learning, Verification, Findings, Improvement, Evidence, Git/PR views plus Ask, Plan, Act and Autopilot modes."},
+    {"id":"P0-LONG-RUNNING-JOB-RECOVERY","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement checkpoint, cancel, pause, resume, restart-safe queue and approval-history restoration."},
+    {"id":"P0-PROGRAM-BEHAVIOR-LEARNING","state":"PREVIOUS_HEAD_FIXTURE_PROFILE_PASS_NONFINAL_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED","requires_human":false,"next_action":"Add direct production model, prompt, tool and RAG telemetry before Behavior Profile activation."},
+    {"id":"P0-PLANNING-OREVIEW-RCA","state":"PARTIAL_APPROVAL_CORE_FIXED_OTHER_REAL_TARGET_GATES_NOT_RUN","requires_human":false,"next_action":"Run signed partial approval and real-target causal experiments; preserve HOLD for unapproved stages and missing independent evidence."},
+    {"id":"P0-IMPROVEMENT-GIT","state":"PREVIOUS_HEAD_LOCAL_WORKTREE_PASS_NONFINAL_REMOTE_DELIVERY_NOT_RUN","requires_human":false,"next_action":"Execute an approved real remote push and Draft PR delivery without enabling merge, force-push or deployment."},
+    {"id":"P0-VSCODE-LOCAL-API","state":"PREVIOUS_HEAD_HTTP_AND_VSIX_PASS_NONFINAL_EXTENSION_HOST_NOT_RUN","requires_human":false,"next_action":"Run VS Code Extension Host full-chain, restart recovery and interactive approval UX."},
+    {"id":"P0-PUBLIC-SDK","state":"STUB_LOOPBACK_LOCAL_API_ONLY","requires_human":false,"next_action":"Define a versioned public SDK or external product API boundary without weakening local authentication, fixed approval authority and source binding."},
+    {"id":"P0-OLICENSE-SERVICE-CASE","state":"PREVIOUS_HEAD_LIFECYCLE_PASS_NONFINAL_PROVIDER_NOT_RUN","requires_human":false,"next_action":"Run real payment/refund provider and commercial entitlement integration while retaining signed verification and legal-hold gates."},
+    {"id":"P0-TENANT-IDENTITY","state":"STUB_CROSS_TENANT_READ_WRITE_ATTACKS_NOT_RUN","requires_human":false,"next_action":"Implement authenticated identity, RBAC, tenant-scoped authorization and cross-tenant adversarial tests."},
+    {"id":"P0-SANDBOX-ADVERSARIAL-COVERAGE","state":"PARTIAL_10_OF_12_CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED","requires_human":false,"next_action":"Run the rootless local sandbox gate; keep CROSS_TENANT_READ and CROSS_TENANT_WRITE as HOLD until tenant enforcement exists."},
+    {"id":"P1-EXECUTION-BUDGET-VISIBILITY","state":"STUB","requires_human":false,"next_action":"Add expected result, token estimate, paid-service cost ceiling and data-transfer scope to plans and VS Code preview."},
+    {"id":"P1-PROVIDER-MODEL-REPLACEABILITY","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement provider/model adapter contracts and compatibility tests."},
+    {"id":"P1-BUILD-DEPENDENCY-VERIFICATION","state":"PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE","requires_human":false,"next_action":"Add product-target dependency lock, SBOM, vulnerability and license verification packs, including a committed VSIX dependency lock."},
+    {"id":"P1-PERFORMANCE-RECOVERY","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement load, latency, resource, outage, recovery and deterministic failure-injection harnesses."},
+    {"id":"P1-OBSERVABILITY-OPERATIONS","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement queue, metrics, logs, traces, backup, restore, retention scheduler and operational control plane."},
+    {"id":"P1-DEPLOYMENT","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement signed installer, released VSIX, update, rollback, on-premises and air-gapped packages."},
+    {"id":"FINAL-EXECUTION-STAGE","state":"READY_BUT_DEFERRED_BY_USER","requires_human":false,"next_action":"Run bash scripts/onsure-final-stage.sh --profile core only at the final deferred execution stage."},
+    {"id":"INDEPENDENT-OTESTER-OAUDIT","state":"BLOCKED_INDEPENDENT_AUTHORITY","requires_human":false,"next_action":"Use separate execution identities, signing keys, environments and evidence storage after internal product full-chain succeeds."},
+    {"id":"HUMAN-ACCEPTANCE","state":"WAITING_HUMAN_GATE","requires_human":true,"next_action":"Perform real-user acceptance only after current-source product full-chain and independent receipts exist."},
+    {"id":"OPERATIONAL-RELEASE","state":"HOLD","requires_human":true,"next_action":"Keep FinalLock, Production GO and Commercial GO false until all release gates pass."}
   ],
   "final_lock_allowed": false,
   "production_go": false,
