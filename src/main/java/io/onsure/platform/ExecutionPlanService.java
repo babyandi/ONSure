@@ -82,7 +82,8 @@ public final class ExecutionPlanService {
 
         Map<String, Object> approval = new LinkedHashMap<>();
         approval.put("state", approvalState);
-        approval.put("scope", developmentAutoApproval ? "LOCAL_NONFINAL_VALIDATION_ONLY" : "NO_EXECUTION");
+        approval.put("scope", developmentAutoApproval
+                ? "EXACT_PLAN_ACTION_SET_LOCAL_NONFINAL" : "NO_EXECUTION");
         approval.put("approver", developmentAutoApproval ? "POLICY:LOCAL_DEVELOPMENT" : "NOT_ASSIGNED");
         approval.put("revocable", true);
         approval.put("approved_actions", developmentAutoApproval ? allowedActions : List.of());
@@ -141,8 +142,17 @@ public final class ExecutionPlanService {
         }
         Set<String> allowed = stringSet(plan.get("allowed_actions"));
         Set<String> approved = stringSet(approval.get("approved_actions"));
-        if (allowed.isEmpty() || !allowed.equals(approved) || !APPROVABLE_ACTIONS.containsAll(approved)) {
-            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INCOMPLETE");
+        if (allowed.isEmpty() || approved.isEmpty() || !allowed.containsAll(approved)
+                || !APPROVABLE_ACTIONS.containsAll(approved)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INVALID");
+        }
+        String scope = String.valueOf(approval.get("scope"));
+        String expectedScope = allowed.equals(approved)
+                ? ("AUTO_APPROVED_DEVELOPMENT_NONFINAL".equals(state)
+                        ? "EXACT_PLAN_ACTION_SET_LOCAL_NONFINAL" : "EXACT_PLAN_ACTION_SET")
+                : "PARTIAL_PLAN_ACTION_SET";
+        if (!expectedScope.equals(scope)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_SCOPE_MISMATCH");
         }
         if ("USER_APPROVED".equals(state)) {
             for (String field : List.of(
