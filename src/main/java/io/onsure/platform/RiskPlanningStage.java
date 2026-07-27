@@ -10,8 +10,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /** Creates and enforces an execution plan before review and runtime validation. */
@@ -51,6 +53,13 @@ public final class RiskPlanningStage implements ValidatorStage {
         service.requireApproved(plan);
         String digest = Hashing.file(output);
         Map<?, ?> approval = requireApproval(plan);
+        List<String> allowedActions = stringList(plan.get("allowed_actions"));
+        List<String> approvedActions = stringList(approval.get("approved_actions"));
+        Set<String> approvedSet = Set.copyOf(approvedActions);
+        List<String> unapprovedActions = allowedActions.stream()
+                .filter(value -> !approvedSet.contains(value)).sorted().toList();
+        boolean partial = !unapprovedActions.isEmpty();
+
         Map<String, Object> approvalEvidence = approvalEvidence(plan, approval, digest);
         mapper.writeValue(approvalOutput.toFile(), approvalEvidence);
         String approvalDigest = Hashing.file(approvalOutput);
@@ -66,7 +75,10 @@ public final class RiskPlanningStage implements ValidatorStage {
                         "plan_id", plan.get("plan_id"),
                         "risk", plan.get("risk"),
                         "approval_state", approval.get("state"),
-                        "allowed_actions", plan.get("allowed_actions"),
+                        "approval_scope", approval.get("scope"),
+                        "allowed_actions", allowedActions,
+                        "approved_actions", approvedActions,
+                        "unapproved_actions", unapprovedActions,
                         "approval_evidence_sha256", approvalDigest,
                         "final_claim_allowed", false)));
         context.addEvidence(new Evidence(
@@ -78,21 +90,32 @@ public final class RiskPlanningStage implements ValidatorStage {
                 Map.of(
                         "plan_id", plan.get("plan_id"),
                         "state", approval.get("state"),
+                        "scope", approval.get("scope"),
                         "authority_class", approvalEvidence.get("authority_class"),
+                        "approved_actions", approvedActions,
                         "final_claim_allowed", false)));
         context.putAttribute("execution_plan_id", plan.get("plan_id"));
         context.putAttribute("execution_plan_sha256", digest);
         context.putAttribute("execution_plan_approval", approval.get("state"));
+        context.putAttribute("execution_plan_approval_scope", approval.get("scope"));
+        context.putAttribute("execution_plan_allowed_actions", allowedActions);
+        context.putAttribute("execution_plan_approved_actions", approvedActions);
+        context.putAttribute("execution_plan_unapproved_actions", unapprovedActions);
+        context.putAttribute("execution_plan_partial", partial);
         context.putAttribute("execution_plan_approval_sha256", approvalDigest);
         context.putAttribute("execution_plan_approval_file", approvalOutput.toString());
         return new StageResult(
-                stageId(), Decision.PASS, started, Instant.now(), List.of(),
+                stageId(), partial ? Decision.HOLD : Decision.PASS,
+                started, Instant.now(), List.of(),
                 Map.of(
                         "plan_id", plan.get("plan_id"),
                         "risk", plan.get("risk"),
                         "fixture_count", fixtureCount,
-                        "allowed_action_count", ((List<?>) plan.get("allowed_actions")).size(),
+                        "allowed_action_count", allowedActions.size(),
+                        "approved_action_count", approvedActions.size(),
+                        "unapproved_action_count", unapprovedActions.size(),
                         "approval_state", approval.get("state"),
+                        "approval_scope", approval.get("scope"),
                         "approval_evidence_sha256", approvalDigest,
                         "product_full_chain", "NOT_RUN"));
     }
@@ -103,6 +126,15 @@ public final class RiskPlanningStage implements ValidatorStage {
             throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_MISSING");
         }
         return approval;
+    }
+
+    private static List<String> stringList(Object value) {
+        if (!(value instanceof List<?> list)) return List.of();
+        LinkedHashSet<String> result = new LinkedHashSet<>();
+        for (Object item : list) {
+            if (item instanceof String text && !text.isBlank()) result.add(text);
+        }
+        return result.stream().sorted().toList();
     }
 
     private Map<String, Object> approvalEvidence(
@@ -116,6 +148,7 @@ public final class RiskPlanningStage implements ValidatorStage {
         receipt.put("plan_file_sha256", planFileSha);
         receipt.put("plan_sha256", plan.get("plan_sha256"));
         receipt.put("approval_state", approval.get("state"));
+        receipt.put("approval_scope", approval.get("scope"));
         receipt.put("approved_actions", approval.get("approved_actions"));
         receipt.put("authority_class", userApproved
                 ? "HUMAN_OR_EXTERNAL_APPROVER" : "INTERNAL_POLICY_AUTO_NONFINAL");
