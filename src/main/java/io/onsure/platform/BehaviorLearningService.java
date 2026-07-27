@@ -9,7 +9,6 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -23,6 +22,9 @@ import java.util.TreeMap;
 public final class BehaviorLearningService {
     public static final String CONTRACT = "ONSURE_BEHAVIOR_PROFILE_V1";
     public static final String OBSERVATION_RECEIPT_CONTRACT = "ONSURE_BEHAVIOR_OBSERVATION_RECEIPT_V1";
+    public static final String COVERAGE_PROXY = "EXECUTABLE_FIXTURE_PROCESS_PROXY";
+    public static final String COVERAGE_DIRECT_FIXTURE = "DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY";
+    public static final String COVERAGE_DIRECT_PRODUCTION = "DIRECT_PRODUCTION_MODEL_TELEMETRY";
     private static final int MIN_REPETITIONS = 2;
     private static final int MAX_REPETITIONS = 10;
 
@@ -60,10 +62,16 @@ public final class BehaviorLearningService {
         FixtureHarness harness = new FixtureHarness("ONSURE_BEHAVIOR_LEARNING_HARNESS_V1");
         String environmentDigest = environmentDigest(target, adapter, harness);
         Map<String, Object> targetMetadata = adapter.collectTargetMetadata(target);
-        boolean directTelemetry = Boolean.TRUE.equals(targetMetadata.get("direct_behavior_telemetry"));
-        String coverageClass = directTelemetry
-                ? "DIRECT_INSTRUMENTED_FIXTURE_TELEMETRY"
-                : "EXECUTABLE_FIXTURE_PROCESS_PROXY";
+        boolean directFixtureTelemetry = Boolean.TRUE.equals(targetMetadata.get("direct_behavior_telemetry"));
+        boolean productionTelemetry = directFixtureTelemetry
+                && Boolean.TRUE.equals(targetMetadata.get("production_behavior_telemetry"))
+                && metadataDigest(targetMetadata, "prompt_digest").matches("[0-9a-f]{64}")
+                && metadataDigest(targetMetadata, "tool_registry_digest").matches("[0-9a-f]{64}")
+                && !"NOT_DECLARED".equals(metadata(targetMetadata, "model_id", "NOT_DECLARED"));
+        String coverageClass = productionTelemetry ? COVERAGE_DIRECT_PRODUCTION
+                : directFixtureTelemetry ? COVERAGE_DIRECT_FIXTURE : COVERAGE_PROXY;
+        String observationClass = productionTelemetry ? "DIRECT_PRODUCTION_MODEL"
+                : directFixtureTelemetry ? "DIRECT_INSTRUMENTED_FIXTURE" : "PROCESS_COMMAND_PROXY";
 
         List<Map<String, Object>> observations = new ArrayList<>();
         Map<String, Set<String>> outputByScenario = new TreeMap<>();
@@ -101,6 +109,7 @@ public final class BehaviorLearningService {
                 receipt.put("duration_ms", execution.durationMillis());
                 receipt.put("environment_digest", environmentDigest);
                 receipt.put("coverage_class", coverageClass);
+                receipt.put("observation_class", observationClass);
                 receipt.put("created_at", Instant.now().toString());
                 receipt.put("final_claim_allowed", false);
                 receipt.put("receipt_sha256", sha256(mapper.writeValueAsBytes(receipt)));
@@ -114,7 +123,7 @@ public final class BehaviorLearningService {
                 observation.put("input_digest", inputDigest);
                 observation.put("output_digest", outputDigest);
                 observation.put("tool_calls", execution.command());
-                observation.put("tool_call_observation", directTelemetry ? "DIRECT" : "PROCESS_COMMAND_PROXY");
+                observation.put("tool_call_observation", observationClass);
                 observation.put("decision", execution.result().decision().name());
                 observation.put("duration_ms", execution.durationMillis());
                 observation.put("run_receipt_id", receiptId);
@@ -146,7 +155,8 @@ public final class BehaviorLearningService {
         profile.put("program_profile_id", requireId(programProfileId, "PROGRAM_PROFILE_ID_INVALID"));
         profile.put("source_baseline_hash", sourceDigest);
         profile.put("coverage_class", coverageClass);
-        profile.put("direct_behavior_telemetry", directTelemetry);
+        profile.put("direct_behavior_telemetry", directFixtureTelemetry);
+        profile.put("production_behavior_telemetry", productionTelemetry);
         profile.put("runtime_context", Map.of(
                 "harness_id", harness.harnessId(),
                 "execution_profile", target.executionProfile(),
