@@ -47,7 +47,9 @@ class LocalAuthenticatedApiServerTest {
                     HttpResponse.BodyHandlers.ofString());
             assertEquals(200, authorized.statusCode());
             JsonNode authorizedBody = mapper.readTree(authorized.body());
-            assertEquals("SELF_VALIDATION_NONFINAL", authorizedBody.path("validation").asText());
+            assertEquals("AVAILABLE_SELF_VALIDATION_NONFINAL", authorizedBody.path("validation").asText());
+            assertEquals("NOT_RUN", authorizedBody.path("independent_otester").asText());
+            assertEquals("NOT_RUN", authorizedBody.path("independent_oaudit").asText());
             assertTrue(!authorizedBody.path("final_lock_allowed").asBoolean(true));
         } finally {
             server.stop();
