@@ -35,20 +35,35 @@ SCRIPT="${2:-}"
 BACKEND="${ONSURE_FIXTURE_SANDBOX_BACKEND:-ROOTLESS_BWRAP}"
 BWRAP_COMMAND=(bwrap)
 IDENTITY_ARGS=(--unshare-user --uid 0 --gid 0)
+NETWORK_ARGS=(--unshare-net)
 case "$BACKEND" in
   ROOTLESS_BWRAP)
     ;;
-  CI_SUDO_BWRAP)
-    command -v sudo >/dev/null 2>&1 || {
-      echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_sudo" >&2
+  CI_SUDO_UNSHARE_BWRAP)
+    [[ "${CI:-}" == "true" && "${GITHUB_ACTIONS:-}" == "true" ]] || {
+      echo "ONSURE_FIXTURE_SANDBOX_FAIL CI_BACKEND_OUTSIDE_GITHUB_ACTIONS" >&2
       exit 69
     }
+    for command in sudo unshare; do
+      command -v "$command" >/dev/null 2>&1 || {
+        echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_$command" >&2
+        exit 69
+      }
+    done
     sudo -n true >/dev/null 2>&1 || {
       echo "ONSURE_FIXTURE_SANDBOX_FAIL CI_SUDO_NOT_AVAILABLE" >&2
       exit 69
     }
-    BWRAP_COMMAND=(sudo -n bwrap)
-    IDENTITY_ARGS=()
+    sudo -n unshare --net -- true >/dev/null 2>&1 || {
+      echo "ONSURE_FIXTURE_SANDBOX_FAIL CI_NETWORK_NAMESPACE_NOT_AVAILABLE" >&2
+      exit 69
+    }
+    BWRAP_COMMAND=(sudo -n unshare --net -- bwrap)
+    NETWORK_ARGS=()
+    ;;
+  CI_SUDO_BWRAP)
+    echo "ONSURE_FIXTURE_SANDBOX_FAIL DEPRECATED_BACKEND_USE_CI_SUDO_UNSHARE_BWRAP" >&2
+    exit 64
     ;;
   *)
     echo "ONSURE_FIXTURE_SANDBOX_FAIL UNKNOWN_BACKEND_$BACKEND" >&2
@@ -85,7 +100,7 @@ exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
     --die-with-parent \
     --new-session \
     "${IDENTITY_ARGS[@]}" \
-    --unshare-net \
+    "${NETWORK_ARGS[@]}" \
     --unshare-pid \
     --unshare-ipc \
     --unshare-uts \
