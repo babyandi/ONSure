@@ -19,6 +19,7 @@ def capability_key(capability_id: str) -> str:
 def main() -> int:
     errors: list[str] = []
     design = load("status/design-capability-coverage.v2.json")
+    subrequirements = load("status/product-subrequirement-coverage.v1.json")
     trace = load("contracts/requirements-traceability.v1.json")
     matrix = load("status/implementation-matrix.v1.json")
     omission = load("status/omission-detection-status.v1.json")
@@ -70,6 +71,28 @@ def main() -> int:
     if matrix.get("runtime_source_commit") is not None:
         errors.append("MATRIX_RUNTIME_SOURCE_COMMIT_MUST_BE_NULL")
 
+    sub_items = subrequirements.get("requirements", [])
+    sub_by_id = {item.get("id"): item for item in sub_items if isinstance(item, dict)}
+    if len(sub_items) != 38 or len(sub_by_id) != 38:
+        errors.append(f"PRODUCT_SUBREQUIREMENT_COUNT:{len(sub_items)}:{len(sub_by_id)}")
+    sub_impl = Counter(item.get("implementation_status") for item in sub_items)
+    sub_verify = Counter(item.get("verification_state") for item in sub_items)
+    expected_sub_summary = {
+        "total": 38,
+        "implemented": sub_impl.get("IMPLEMENTED", 0),
+        "partial": sub_impl.get("PARTIAL", 0),
+        "stub": sub_impl.get("STUB", 0),
+        "design_only": sub_impl.get("DESIGN_ONLY", 0),
+        "verification_not_run": sub_verify.get("NOT_RUN", 0),
+    }
+    for field, expected in expected_sub_summary.items():
+        if subrequirements.get("summary", {}).get(field) != expected:
+            errors.append(f"PRODUCT_SUBREQUIREMENT_SUMMARY_MISMATCH:{field}")
+    if sub_by_id.get("FR-04-C", {}).get("implementation_status") != "PARTIAL":
+        errors.append("PARTIAL_APPROVAL_SUBREQUIREMENT_STATE_INVALID")
+    if "VSCODE_PARTIAL_APPROVAL_UI_NOT_IMPLEMENTED" not in sub_by_id.get("FR-04-C", {}).get("missing_controls", []):
+        errors.append("PARTIAL_APPROVAL_UI_GAP_NOT_RECORDED")
+
     stages = process.get("stages", [])
     artifacts = process.get("artifacts", [])
     if len(stages) != 20:
@@ -85,6 +108,10 @@ def main() -> int:
     failure = omission.get("failure_injection", {})
     if coverage.get("design_capabilities") != 28:
         errors.append("OMISSION_DESIGN_COUNT_MISMATCH")
+    if coverage.get("product_subrequirements") != 38:
+        errors.append("OMISSION_SUBREQUIREMENT_COUNT_MISMATCH")
+    if coverage.get("workflow_operations") != 34 or coverage.get("workflow_surfaces") != 3:
+        errors.append("OMISSION_WORKFLOW_SURFACE_COUNT_MISMATCH")
     if coverage.get("product_process_stages") != 20:
         errors.append("OMISSION_PROCESS_COUNT_MISMATCH")
     if coverage.get("lineage_artifacts") != 20:
@@ -95,10 +122,21 @@ def main() -> int:
         errors.append("OMISSION_LOGIC_SELF_TEST_NOT_PASS")
 
     design_status = verification.get("design_coverage", {})
+    sub_status = verification.get("product_subrequirement_coverage", {})
+    workflow_status = verification.get("workflow_surface_parity", {})
     process_status = verification.get("product_process_lineage", {})
     failure_status = verification.get("omission_failure_injection", {})
     if design_status.get("capability_count") != 28:
         errors.append("VERIFICATION_DESIGN_COUNT_MISMATCH")
+    if sub_status.get("requirement_count") != 38:
+        errors.append("VERIFICATION_SUBREQUIREMENT_COUNT_MISMATCH")
+    for field in ("implemented", "partial", "stub", "design_only"):
+        if sub_status.get(field) != expected_sub_summary[field]:
+            errors.append(f"VERIFICATION_SUBREQUIREMENT_SUMMARY_MISMATCH:{field}")
+    if workflow_status.get("dispatcher_operation_count") != 34:
+        errors.append("VERIFICATION_WORKFLOW_OPERATION_COUNT_MISMATCH")
+    if set(workflow_status.get("surfaces", [])) != {"CLI", "LOCAL_AUTHENTICATED_API", "VSCODE"}:
+        errors.append("VERIFICATION_WORKFLOW_SURFACE_SET_MISMATCH")
     if process_status.get("stage_count") != 20 or process_status.get("artifact_count") != 20:
         errors.append("VERIFICATION_PROCESS_COUNT_MISMATCH")
     expected_failure_counts = {
@@ -106,7 +144,9 @@ def main() -> int:
         "atomic_requirement_cases": 10,
         "automation_boundary_cases": 6,
         "verification_claim_cases": 8,
-        "all_registered_failure_injections": 52,
+        "product_subrequirement_cases": 10,
+        "workflow_surface_cases": 6,
+        "all_registered_failure_injections": 68,
     }
     for field, expected in expected_failure_counts.items():
         if failure_status.get(field) != expected:
@@ -138,21 +178,29 @@ def main() -> int:
 
     if remaining.get("authority") != "status/design-capability-coverage.v2.json":
         errors.append("REMAINING_WORK_AUTHORITY_MISMATCH")
+    if remaining.get("subrequirement_authority") != "status/product-subrequirement-coverage.v1.json":
+        errors.append("REMAINING_WORK_SUBREQUIREMENT_AUTHORITY_MISMATCH")
     if remaining.get("process_lineage_authority") != "contracts/product-process-lineage.v1.json":
         errors.append("REMAINING_WORK_PROCESS_AUTHORITY_MISMATCH")
     if remaining.get("validation_execution_policy", {}).get("github_actions") != "DISABLED_BY_USER":
         errors.append("REMAINING_WORK_ACTIONS_POLICY_NOT_DISABLED")
 
     additional = omission.get("additional_failure_injection", {})
-    if additional.get("automation_boundary_cases") != 6:
-        errors.append("OMISSION_AUTOMATION_BOUNDARY_COUNT_MISMATCH")
-    if additional.get("all_registered_cases") != 52:
-        errors.append("OMISSION_ALL_FAILURE_COUNT_MISMATCH")
+    expected_additional = {
+        "automation_boundary_cases": 6,
+        "product_subrequirement_cases": 10,
+        "workflow_surface_cases": 6,
+        "all_registered_cases": 68,
+    }
+    for field, expected in expected_additional.items():
+        if additional.get(field) != expected:
+            errors.append(f"OMISSION_ADDITIONAL_COUNT_MISMATCH:{field}")
     if omission.get("detection_result", {}).get("github_actions") != "DISABLED_BY_USER":
         errors.append("OMISSION_ACTIONS_POLICY_NOT_DISABLED")
 
     for source, flags in (
         (design.get("assurance", {}), ("final_lock_allowed", "production_go", "commercial_go")),
+        (subrequirements.get("assurance", {}), ("final_claim_allowed",)),
         (omission.get("assurance", {}), ("final_lock_allowed", "production_go", "commercial_go")),
         (verification, ("final_lock", "production_go", "commercial_go")),
         (remaining, ("final_lock_allowed", "production_go", "commercial_go")),
@@ -163,15 +211,18 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V3",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V4",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
+        "product_subrequirements": len(sub_items),
+        "workflow_operations": workflow_status.get("dispatcher_operation_count"),
         "process_stages": len(stages),
         "lineage_artifacts": len(artifacts),
         "design_process_lineage_failure_injections": failure.get("total"),
-        "all_registered_failure_injections": 52,
+        "all_registered_failure_injections": 68,
         "implementation_counts": dict(sorted(implementation_counts.items())),
+        "subrequirement_implementation_counts": dict(sorted(sub_impl.items())),
         "verification_counts": dict(sorted(verification_counts.items())),
         "github_actions": "DISABLED_BY_USER",
         "runtime_execution": "LOCAL_RECEIPT_REQUIRED_CURRENT_MAIN",
