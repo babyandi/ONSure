@@ -26,6 +26,8 @@ ONSURE은 대상 프로그램을 학습하고 검증하며 보완 개발한 결�
 - ONSURE이 생성한 변경과 기존 사용자 변경을 구분합니다.
 - Commit과 PR은 검증 결과 및 Evidence를 연결합니다.
 - Merge는 별도 권한이며 기본 자동 수행하지 않습니다.
+- GitHub Actions는 사용하지 않으며 `.github/workflows/*.yml`과 `.yaml`은 금지합니다.
+- 검증은 저장소 내부 로컬 실행기와 Source-bound Receipt로만 수행합니다.
 
 ## 3. 저장소 접수
 
@@ -37,8 +39,8 @@ ONSURE은 대상 프로그램을 학습하고 검증하며 보완 개발한 결�
 - 추적·미추적·Staged 변경
 - Submodule 및 LFS
 - Branch 보호 규칙
-- CI 상태
 - 사용 가능한 Build/Test 명령
+- 로컬 검증 실행기와 최근 Receipt
 - Secret 및 권한 범위
 
 작업공간이 깨끗하지 않으면 다음 중 하나를 선택합니다.
@@ -83,11 +85,11 @@ Evidence 위치
 fix(agent): prevent unauthorized tool execution
 
 Finding: F-SEC-014
-Verification: PASS
-Evidence: .onsure/evidence/run-20260724-014.json
+Verification: PASS_NONFINAL
+Evidence: .onsure/local-gate/run-20260728-014/evidence.sha256
 ```
 
-검증되지 않은 변경은 `NON_FINAL` 상태로 표시합니다.
+검증되지 않은 변경은 `NON_FINAL` 또는 `NOT_RUN` 상태로 표시합니다.
 
 ## 6. Diff 및 Patch 검토
 
@@ -117,32 +119,53 @@ Draft PR 본문에는 최소 다음이 포함됩니다.
 Before/After 비교
 알려진 위험과 미검증 항목
 Rollback 방법
-Evidence 링크 또는 Hash
+Evidence 경로와 Hash
 ```
 
 검증 미완료 상태에서는 Ready PR 또는 Merge Ready를 주장하지 않습니다.
 
-## 8. CI 및 재검증
+## 8. 로컬 검증 및 Push 후 재검증
 
-Push 후 로컬 결과만으로 최종 PASS를 유지하지 않습니다. 원격 CI 결과를 수집해 로컬 Evidence와 비교합니다.
+GitHub Actions나 다른 원격 CI 결과를 검증 권위로 사용하지 않습니다. Push 전후 동일 Commit을 로컬 Gate로 재검증합니다.
 
 ```text
-Local PASS
-→ Push
-→ Remote CI
-→ 동일 Commit 확인
-→ 결과 수집
-→ 불일치 시 HOLD
+Clean Worktree
+→ Local Gate 실행
+→ Source SHA·환경·명령·로그 Hash 고정
+→ Commit·Push
+→ 원격 Branch SHA가 Commit SHA와 동일한지 확인
+→ 동일 Commit을 깨끗한 Worktree에서 로컬 재검증
+→ 결과 또는 SHA 불일치 시 HOLD
 → 일치 시 MERGE_READY 후보
 ```
+
+일상 정적 검증:
+
+```bash
+bash scripts/onsure-local-gate.sh --mode static --profile core
+```
+
+전체 비최종 검증:
+
+```bash
+bash scripts/onsure-local-gate.sh --mode full --profile core
+```
+
+최종 단계:
+
+```bash
+bash scripts/onsure-final-stage.sh --profile core
+```
+
+모든 결과는 `.onsure/` 아래 Receipt·로그·Hash로 보관합니다.
 
 ## 9. Merge 정책
 
 Merge 모드:
 
 - Manual: 사용자 또는 조직 담당자가 Merge
-- Guarded: 필수 Gate 통과 후 사용자가 최종 승인
-- Conditional Auto Merge: 저위험 변경과 사전 정책이 모두 충족된 경우
+- Guarded: 필수 로컬 Gate와 승인 통과 후 사용자가 최종 승인
+- Conditional Auto Merge: 기본 금지. 별도 정책 승인과 독립 검증이 있는 경우에만 검토
 
 다음은 자동 Merge 금지 기본 항목입니다.
 
@@ -153,6 +176,7 @@ Merge 모드:
 - Secret·네트워크 권한 확대
 - 고위험 공급망 변경
 - 미해결 치명·중대 Finding 존재
+- Current Source-bound Local Receipt 미존재
 
 ## 10. Rollback
 
@@ -164,7 +188,7 @@ Merge 모드:
 - DB Migration Down 또는 복구 절차
 - 배포 Artifact 이전 버전
 
-Rollback 후에도 회귀검증을 다시 수행합니다.
+Rollback 후에도 로컬 회귀검증을 다시 수행합니다.
 
 ## 11. Git Provider
 
@@ -175,7 +199,7 @@ Rollback 후에도 회귀검증을 다시 수행합니다.
 3. Bitbucket
 4. 사내 Git 서버
 
-Core Git 기능은 Provider와 독립적으로 구현하고 PR·Review·CI 연동은 Adapter로 분리합니다.
+Core Git 기능은 Provider와 독립적으로 구현하고 PR·Review 연동은 Adapter로 분리합니다. 검증 실행과 Evidence 생성은 Provider 자동화 기능에 의존하지 않습니다.
 
 ## 12. 완료 기준
 
@@ -185,11 +209,14 @@ Core Git 기능은 Provider와 독립적으로 구현하고 PR·Review·CI 연�
 Dirty Workspace 보호
 → 전용 Worktree/Branch
 → Patch 적용
-→ Test PASS
+→ Local Gate PASS_NONFINAL
 → Commit
 → Push
+→ 원격 SHA 일치 확인
+→ 동일 Commit 로컬 재검증
 → Draft PR
-→ CI 결과 회수
 → Evidence 결속
-→ Merge 또는 Rollback
+→ 승인 후 Merge 또는 Rollback
 ```
+
+독립 OTester·OAudit와 Human Acceptance 전에는 이 흐름이 성공해도 Final PASS 또는 Production GO가 아닙니다.
