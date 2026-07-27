@@ -59,6 +59,7 @@ case "$BACKEND" in
       exit 69
     }
     BWRAP_COMMAND=(sudo -n unshare --net -- bwrap)
+    IDENTITY_ARGS=()
     NETWORK_ARGS=()
     ;;
   CI_SUDO_BWRAP)
