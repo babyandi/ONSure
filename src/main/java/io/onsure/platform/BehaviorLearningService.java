@@ -164,6 +164,8 @@ public final class BehaviorLearningService {
                 "model_version", metadata(targetMetadata, "model_version", "NOT_DECLARED"),
                 "prompt_digest", metadataDigest(targetMetadata, "prompt_digest"),
                 "tool_registry_digest", metadataDigest(targetMetadata, "tool_registry_digest"),
+                "sandbox_mode", FixtureHarness.sandboxMode(),
+                "sandbox_backend", FixtureHarness.sandboxBackend(),
                 "environment_digest", environmentDigest));
         profile.put("observations", List.copyOf(observations));
         profile.put("variability", Map.of(
@@ -195,8 +197,8 @@ public final class BehaviorLearningService {
         environment.put("execution_profile", target.executionProfile());
         environment.put("policy_profile", target.policyProfile());
         environment.put("harness_id", harness.harnessId());
-        environment.put("sandbox_mode",
-                System.getenv().getOrDefault("ONSURE_FIXTURE_SANDBOX_MODE", "HOST_REVIEWED_ONLY"));
+        environment.put("sandbox_mode", FixtureHarness.sandboxMode());
+        environment.put("sandbox_backend", FixtureHarness.sandboxBackend());
         environment.put("java_version", System.getProperty("java.version", "UNKNOWN"));
         environment.put("os_name", System.getProperty("os.name", "UNKNOWN"));
         environment.put("os_arch", System.getProperty("os.arch", "UNKNOWN"));
