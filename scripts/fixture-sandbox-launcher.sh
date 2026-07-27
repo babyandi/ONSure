@@ -32,6 +32,30 @@ SCRIPT="${2:-}"
   exit 65
 }
 
+BACKEND="${ONSURE_FIXTURE_SANDBOX_BACKEND:-ROOTLESS_BWRAP}"
+BWRAP_COMMAND=(bwrap)
+IDENTITY_ARGS=(--unshare-user --uid 0 --gid 0)
+case "$BACKEND" in
+  ROOTLESS_BWRAP)
+    ;;
+  CI_SUDO_BWRAP)
+    command -v sudo >/dev/null 2>&1 || {
+      echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_sudo" >&2
+      exit 69
+    }
+    sudo -n true >/dev/null 2>&1 || {
+      echo "ONSURE_FIXTURE_SANDBOX_FAIL CI_SUDO_NOT_AVAILABLE" >&2
+      exit 69
+    }
+    BWRAP_COMMAND=(sudo -n bwrap)
+    IDENTITY_ARGS=(--unshare-user --uid 65534 --gid 65534)
+    ;;
+  *)
+    echo "ONSURE_FIXTURE_SANDBOX_FAIL UNKNOWN_BACKEND_$BACKEND" >&2
+    exit 64
+    ;;
+esac
+
 BINDINGS=()
 for path in /bin /usr /lib /lib64 /etc/ld.so.cache /etc/alternatives; do
   if [[ -e "$path" ]]; then
@@ -45,20 +69,22 @@ SANDBOX_ENV=(
   --setenv TMPDIR /tmp
   --setenv LANG C.UTF-8
   --setenv LC_ALL C.UTF-8
+  --setenv USER nobody
+  --setenv LOGNAME nobody
 )
 while IFS='=' read -r key value; do
-  if [[ "$key" =~ ^ONSURE_FIXTURE_[A-Z0-9_]{1,64}$ ]]; then
+  if [[ "$key" =~ ^ONSURE_FIXTURE_[A-Z0-9_]{1,64}$ \
+      && "$key" != "ONSURE_FIXTURE_SANDBOX_MODE" \
+      && "$key" != "ONSURE_FIXTURE_SANDBOX_BACKEND" ]]; then
     SANDBOX_ENV+=(--setenv "$key" "$value")
   fi
 done < <(env)
 
 exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
-  bwrap \
+  "${BWRAP_COMMAND[@]}" \
     --die-with-parent \
     --new-session \
-    --unshare-user \
-    --uid 0 \
-    --gid 0 \
+    "${IDENTITY_ARGS[@]}" \
     --unshare-net \
     --unshare-pid \
     --unshare-ipc \
