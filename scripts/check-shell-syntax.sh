@@ -9,11 +9,11 @@ while IFS= read -r -d '' script; do
   [[ "$script" == *.sh ]] || continue
   bash -n "$script"
   count=$((count + 1))
-done < <(git ls-files -z -- scripts)
+done < <(git ls-files -z -- scripts fixtures/sandbox-boundary)
 
 [[ $count -gt 0 ]] || {
-  echo "SHELL_SYNTAX_FAIL NO_TRACKED_SHELL_SCRIPTS" >&2
+  echo "ONSURE_SHELL_SYNTAX_FAIL NO_TRACKED_SHELL_SCRIPTS" >&2
   exit 1
 }
 
-echo "SHELL_SYNTAX_PASS $count"
+echo "ONSURE_SHELL_SYNTAX_PASS $count"
