@@ -41,6 +41,11 @@ public final class LocalAuthenticatedApiServer {
     private HttpServer server;
     private ExecutorService executor;
 
+    @FunctionalInterface
+    private interface CheckedHttpHandler {
+        void handle(HttpExchange exchange) throws Exception;
+    }
+
     public LocalAuthenticatedApiServer(Path workspaceRoot, String token) {
         this.workspaceRoot = requireWorkspace(workspaceRoot);
         if (token == null || token.length() < 32 || token.length() > 4096) {
@@ -100,7 +105,7 @@ public final class LocalAuthenticatedApiServer {
         }
     }
 
-    private HttpHandler authenticated(HttpHandler handler) {
+    private HttpHandler authenticated(CheckedHttpHandler handler) {
         return exchange -> {
             boolean acquired = false;
             try {
