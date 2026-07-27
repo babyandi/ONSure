@@ -48,7 +48,7 @@ case "$BACKEND" in
       exit 69
     }
     BWRAP_COMMAND=(sudo -n bwrap)
-    IDENTITY_ARGS=(--unshare-user --uid 0 --gid 0)
+    IDENTITY_ARGS=(--uid 65534 --gid 65534)
     ;;
   *)
     echo "ONSURE_FIXTURE_SANDBOX_FAIL UNKNOWN_BACKEND_$BACKEND" >&2
