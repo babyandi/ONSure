@@ -1,6 +1,7 @@
 package io.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,23 +25,27 @@ class ImprovementWorkflowServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void trustedApprovalAppliesExactHunkAndRollbackRestoresPreimage() throws Exception {
+    void trustedApprovalAppliesExactHunkAndRollbackRestoresTargetTree() throws Exception {
         Path repository = temp.resolve("repository");
-        Files.createDirectories(repository.resolve("src"));
+        Path targetRoot = repository.resolve("services/target-001");
+        Files.createDirectories(targetRoot.resolve("src"));
         git(repository, "init");
         git(repository, "config", "user.email", "test@example.invalid");
         git(repository, "config", "user.name", "ONSure Test");
-        Path source = repository.resolve("src/policy.txt");
+        Path source = targetRoot.resolve("src/policy.txt");
         Files.writeString(source, "ALLOW_UNTRUSTED_TOOL\n");
-        git(repository, "add", "src/policy.txt");
+        git(repository, "add", "services/target-001/src/policy.txt");
         git(repository, "commit", "-m", "baseline");
 
+        String originalTree = Hashing.tree(targetRoot);
         String preimage = Hashing.file(source);
         Map<String, Object> plan = new LinkedHashMap<>();
         plan.put("contract", ImprovementWorkflowService.PATCH_PLAN_CONTRACT);
         plan.put("patch_plan_id", "PATCH-test-001");
         plan.put("target_id", "target-001");
-        plan.put("source_tree_sha256", Hashing.tree(repository));
+        plan.put("repository_root_reference", repository.toString());
+        plan.put("target_relative_root", "services/target-001");
+        plan.put("source_tree_sha256", originalTree);
         plan.put("review_id", "review-001");
         plan.put("evidence_based_rca_sha256", "a".repeat(64));
         plan.put("hunks", List.of(Map.ofEntries(
@@ -109,14 +114,20 @@ class ImprovementWorkflowServiceTest {
                 repository, planFile, approvalFile, registryFile, temp.resolve("approval-replay.jsonl"),
                 worktree, evidence);
         assertEquals("APPLIED_NONFINAL", receipt.get("state"));
-        assertTrue(Files.readString(worktree.resolve("src/policy.txt")).contains("DENY_UNTRUSTED_TOOL"));
-        assertEquals("ALLOW_UNTRUSTED_TOOL\n", Files.readString(repository.resolve("src/policy.txt")));
+        assertEquals("services/target-001", receipt.get("target_relative_root"));
+        assertEquals(originalTree, receipt.get("source_tree_sha256"));
+        assertNotEquals(originalTree, receipt.get("postimage_source_tree_sha256"));
+        assertTrue(Files.readString(worktree.resolve("services/target-001/src/policy.txt"))
+                .contains("DENY_UNTRUSTED_TOOL"));
+        assertEquals("ALLOW_UNTRUSTED_TOOL\n", Files.readString(source));
 
         Map<String, Object> rollback = service.rollback(
                 worktree, evidence.resolve("patch-apply-receipt.json"),
                 evidence.resolve("patch-rollback-receipt.json"));
         assertEquals("ROLLED_BACK_NONFINAL", rollback.get("state"));
-        assertEquals("ALLOW_UNTRUSTED_TOOL\n", Files.readString(worktree.resolve("src/policy.txt")));
+        assertEquals(originalTree, rollback.get("restored_source_tree_sha256"));
+        assertEquals("ALLOW_UNTRUSTED_TOOL\n",
+                Files.readString(worktree.resolve("services/target-001/src/policy.txt")));
     }
 
     private static void git(Path root, String... arguments) throws Exception {
