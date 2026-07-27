@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -45,13 +46,20 @@ class ProductWorkflowServicesTest {
                 program.get("profile_id").toString(), 2, behaviorFile);
         assertEquals("ONSURE_BEHAVIOR_PROFILE_V1", behavior.get("contract"));
         assertEquals("BEHAVIOR_CANDIDATE", behavior.get("state"));
+        assertEquals("PROCESS_COMMAND_PROXY", behavior.get("coverage_class"));
         assertEquals("NOT_RUN", behavior.get("independent_validation"));
         assertTrue(((List<?>) behavior.get("observations")).size() >= 4);
         assertTrue(Files.isRegularFile(behaviorFile));
+        for (Object item : (List<?>) behavior.get("observations")) {
+            Map<?, ?> observation = (Map<?, ?>) item;
+            Path receipt = behaviorFile.getParent().resolve(observation.get("run_receipt_path").toString());
+            assertTrue(Files.isRegularFile(receipt), receipt.toString());
+            assertTrue(observation.get("run_receipt_sha256").toString().matches("[0-9a-f]{64}"));
+        }
     }
 
     @Test
-    void riskPlanAllowsOnlyBoundedLocalDevelopmentScope() throws Exception {
+    void riskPlanAllowsOnlyExactBoundedLocalDevelopmentScope() throws Exception {
         Path source = Path.of("fixtures/e2e/general-program").toAbsolutePath().normalize();
         Path profileFile = temp.resolve("program-profile.json");
         new ProgramLearningService().learn(source, "project-general", "sample-general-program", profileFile);
@@ -60,14 +68,20 @@ class ProductWorkflowServicesTest {
                 SourceReferenceBinding.treeReference(source), GenericManifestTargetAdapter.ID,
                 "ONSURE_DEFAULT_POLICY_V1", "LOCAL_DEVELOPMENT");
         Path planFile = temp.resolve("execution-plan.json");
-        Map<String, Object> plan = new ExecutionPlanService().plan(target, profileFile, 2, planFile);
+        ExecutionPlanService service = new ExecutionPlanService();
+        Map<String, Object> plan = service.plan(target, profileFile, 2, planFile);
         Map<?, ?> approval = (Map<?, ?>) plan.get("approval");
         Map<?, ?> permissions = (Map<?, ?>) plan.get("permissions");
+        Set<String> allowed = Set.copyOf((List<String>) plan.get("allowed_actions"));
+        Set<String> approved = Set.copyOf((List<String>) approval.get("approved_actions"));
         assertEquals("AUTO_APPROVED_DEVELOPMENT_NONFINAL", approval.get("state"));
+        assertEquals(allowed, approved);
+        assertTrue(ExecutionPlanService.APPROVABLE_ACTIONS.containsAll(approved));
         assertEquals(false, permissions.get("modify_target"));
         assertEquals(false, permissions.get("git_push"));
         assertEquals(false, permissions.get("merge"));
-        new ExecutionPlanService().requireApproved(plan);
+        service.requireApproved(plan);
+        assertEquals(plan.get("plan_sha256"), service.planHash(plan));
     }
 
     @Test
@@ -101,9 +115,9 @@ class ProductWorkflowServicesTest {
         context.putAttribute("evidence_based_rca_sha256", "a".repeat(64));
         String fingerprint = Hashing.sha256("finding-patch-001");
         context.addFinding(new Finding(
-                "finding-patch-001", "STATIC_ANALYSIS", Severity.HIGH, "AI_SELF_APPROVAL",
-                "Self approval marker", "Self approval marker", "agent.txt",
-                FindingStatus.OPEN, List.of("EV-SOURCE"), fingerprint));
+                "finding-patch-001", fingerprint, "AI_SELF_APPROVAL", Severity.HIGH,
+                FindingStatus.OPEN, "Self approval marker", "Self approval marker",
+                "agent.txt", List.of("EV-SOURCE"), "STATIC_ANALYSIS"));
 
         String original = Files.readString(file);
         Path planFile = context.runRoot().resolve("patch-plan.json");
