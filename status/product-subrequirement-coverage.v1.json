@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_PRODUCT_SUBREQUIREMENT_COVERAGE_V1",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "source_document": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
   "assessment_source_ref": "main",
   "requirements": [
@@ -44,12 +44,12 @@
     {"id":"NFR-08","name":"Reproducible evidence","normative_phrase":"재현 가능한 Evidence","implementation_status":"PARTIAL","verification_state":"NOT_RUN","code_refs":["src/main/java/io/onsure/platform/FileValidationStore.java","scripts/onsure-one-shot.sh"],"test_refs":["src/test/java/io/onsure/platform/DurableStateLedgerTest.java"],"evidence_refs":[],"required_surfaces":["CORE","LOCAL_GATE"],"implemented_surfaces":["CORE","LOCAL_GATE"],"missing_controls":["CURRENT_MAIN_LOCAL_RECEIPT_NOT_RUN","INDEPENDENT_RECALCULATION_NOT_RUN"],"detector_controls":["SUBREQ_REFERENCE_GATE"]}
   ],
   "summary": {
-    "total": 37,
-    "implemented": 3,
-    "partial": 25,
-    "stub": 5,
+    "total": 38,
+    "implemented": 2,
+    "partial": 28,
+    "stub": 4,
     "design_only": 4,
-    "verification_not_run": 37
+    "verification_not_run": 38
   },
   "assurance": {
     "current_main_local_gate": "NOT_RUN",
