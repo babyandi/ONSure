@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SANDBOX_BOUNDARY_V1",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "execution": {
     "network_default": "DENY",
     "filesystem_default": "READ_ONLY_SOURCE_WRITE_TMP_ONLY",
@@ -66,20 +66,50 @@
     "CONCURRENT_CATALOG_UPDATE",
     "CONCURRENT_EVIDENCE_APPEND"
   ],
+  "verified_attack_fixtures": [
+    "NETWORK_EGRESS",
+    "FILESYSTEM_ESCAPE",
+    "SYMLINK_ESCAPE",
+    "CHILD_PROCESS_SURVIVAL",
+    "CPU_EXHAUSTION",
+    "MEMORY_EXHAUSTION",
+    "OUTPUT_FLOOD",
+    "SECRET_ENVIRONMENT_EXFILTRATION",
+    "CONCURRENT_CATALOG_UPDATE",
+    "CONCURRENT_EVIDENCE_APPEND"
+  ],
+  "unverified_attack_fixtures": [
+    "CROSS_TENANT_READ",
+    "CROSS_TENANT_WRITE"
+  ],
   "verified_ci_boundaries": [
     "SOURCE_READ_ONLY",
     "TMP_WRITABLE",
     "NETWORK_EGRESS_BLOCKED",
+    "FILESYSTEM_ESCAPE_BLOCKED",
+    "SYMLINK_ESCAPE_BLOCKED",
+    "CHILD_PROCESS_TERMINATED",
+    "CPU_LIMIT_ENFORCED",
+    "MEMORY_LIMIT_ENFORCED",
+    "OUTPUT_FLOOD_REJECTED",
     "CAPABILITIES_DROPPED",
     "ENVIRONMENT_FILTERED",
     "RESOURCE_LIMITS_ENFORCED",
     "WALL_CLOCK_TIMEOUT_ENFORCED",
+    "CONCURRENT_CATALOG_UPDATE_PRESERVED",
+    "CONCURRENT_EVIDENCE_APPEND_PRESERVED",
     "GENERIC_FIXTURE_EXECUTION",
     "AI_FIXTURE_EXECUTION",
     "ORUDA_MVF_FIXTURE_EXECUTION"
   ],
-  "implementation_state": "IMPLEMENTED_WITH_ROOTLESS_AND_GITHUB_ACTIONS_BACKENDS",
-  "runtime_verification": "PASS_CI_SELF_VALIDATION_NONFINAL_RUN_30270109833",
+  "implementation_state": "PARTIAL_10_OF_12_REQUIRED_ATTACKS_IMPLEMENTED",
+  "runtime_verification": "CURRENT_HEAD_CI_REQUIRED",
+  "historical_ci_observation": {
+    "run_id": 30270821264,
+    "validated_head": "9742beed6c9ce6451d3dcac78b76741c84e6715d",
+    "scope": "PREVIOUS_PR_HEAD_ONLY",
+    "current_source_bound": false
+  },
   "independent_verification": "NOT_RUN",
   "final_claim_allowed": false
 }
