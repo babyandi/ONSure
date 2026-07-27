@@ -6,7 +6,8 @@
   "additionalProperties": false,
   "required": [
     "contract", "patch_plan_id", "patch_plan_file_sha256", "approval_receipt_sha256",
-    "approval_actor", "approval_key_id", "source_commit", "source_tree_sha256", "branch", "worktree",
+    "approval_actor", "approval_key_id", "source_commit", "target_relative_root",
+    "source_tree_sha256", "postimage_source_tree_sha256", "branch", "worktree",
     "applied_hunks", "git_status", "rollback_pointer", "state", "focused_tests",
     "full_regression", "before_after_proof", "commit_allowed", "push_allowed",
     "merge_allowed", "created_at", "final_claim_allowed", "receipt_sha256"
@@ -19,7 +20,9 @@
     "approval_actor": {"type": "string", "minLength": 1},
     "approval_key_id": {"type": "string", "minLength": 1},
     "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "target_relative_root": {"type": "string", "pattern": "^(?:\\.|[A-Za-z0-9._/-]+)$"},
     "source_tree_sha256": {"$ref": "#/$defs/sha256"},
+    "postimage_source_tree_sha256": {"$ref": "#/$defs/sha256"},
     "branch": {"type": "string", "minLength": 1},
     "worktree": {"type": "string", "minLength": 1},
     "applied_hunks": {
