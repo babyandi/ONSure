@@ -1,6 +1,6 @@
 package io.onsure.assurance;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public final class ApprovalReceiptVerifier {
                     || Files.isSymbolicLink(receipt)) {
                 return ValidationResult.fail(List.of("APPROVAL_RECEIPT_FILE_INVALID"));
             }
-            Map<String, Object> value = mapper.readValue(receipt.toFile(), new TypeReference<>() {});
+            Map<String, Object> value = readObject(receipt);
             if (!Objects.equals(expectedContract, value.get("contract"))) {
                 violations.add("APPROVAL_RECEIPT_CONTRACT_MISMATCH");
             }
@@ -134,7 +135,7 @@ public final class ApprovalReceiptVerifier {
             throw new IllegalStateException(
                     "APPROVAL_RECEIPT_INVALID:" + String.join(",", result.violations()));
         }
-        Map<String, Object> receipt = mapper.readValue(receiptFile.toFile(), new TypeReference<>() {});
+        Map<String, Object> receipt = readObject(receiptFile);
         ExclusiveFileLock.run(replayLock, () -> appendConsumption(receiptFile, receipt,
                 expectedContract, expectedPurpose));
         return Map.copyOf(receipt);
@@ -181,7 +182,7 @@ public final class ApprovalReceiptVerifier {
         long sequence = 1L;
         for (String line : Files.readAllLines(replayLedger, StandardCharsets.UTF_8)) {
             if (line.isBlank()) throw new IllegalStateException("APPROVAL_REPLAY_LEDGER_BLANK");
-            Map<String, Object> entry = mapper.readValue(line, new TypeReference<>() {});
+            Map<String, Object> entry = objectMap(mapper.readTree(line));
             if (!REPLAY_CONTRACT.equals(entry.get("contract"))) {
                 throw new IllegalStateException("APPROVAL_REPLAY_LEDGER_CONTRACT_INVALID");
             }
@@ -205,6 +206,36 @@ public final class ApprovalReceiptVerifier {
             }
         }
         return false;
+    }
+
+    private Map<String, Object> readObject(Path file) throws Exception {
+        return objectMap(mapper.readTree(file.toFile()));
+    }
+
+    private Map<String, Object> objectMap(JsonNode node) {
+        if (node == null || !node.isObject()) throw new IllegalArgumentException("JSON_OBJECT_REQUIRED");
+        Map<String, Object> result = new LinkedHashMap<>();
+        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            result.put(field.getKey(), jsonValue(field.getValue()));
+        }
+        return result;
+    }
+
+    private Object jsonValue(JsonNode node) {
+        if (node == null || node.isNull()) return null;
+        if (node.isObject()) return objectMap(node);
+        if (node.isArray()) {
+            List<Object> values = new ArrayList<>();
+            node.forEach(item -> values.add(jsonValue(item)));
+            return values;
+        }
+        if (node.isTextual()) return node.textValue();
+        if (node.isBoolean()) return node.booleanValue();
+        if (node.isIntegralNumber()) return node.canConvertToInt() ? node.intValue() : node.longValue();
+        if (node.isFloatingPointNumber()) return node.decimalValue();
+        throw new IllegalArgumentException("JSON_VALUE_TYPE_UNSUPPORTED:" + node.getNodeType());
     }
 
     private static Instant parseInstant(
