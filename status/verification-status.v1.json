@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
@@ -46,6 +46,20 @@
     "runner": "python3 scripts/validate-workflow-surface-parity.py --self-test",
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
+  "critical_callpath_boundary": {
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-critical-callpaths.py --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "approval_authority_boundary": {
+    "state": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+    "authority_root": ".onsure/approval-authority/",
+    "trusted_key_registry": ".onsure/approval-authority/trusted-key-registry.json",
+    "replay_ledger": ".onsure/approval-authority/approval-replay-ledger.jsonl",
+    "request_path_override_allowed": false,
+    "external_replay_anchor": "NOT_IMPLEMENTED",
+    "current_source_execution": "NOT_RUN"
+  },
   "product_process_lineage": {
     "stage_count": 20,
     "artifact_count": 20,
@@ -60,7 +74,8 @@
     "verification_claim_cases": 8,
     "product_subrequirement_cases": 10,
     "workflow_surface_cases": 6,
-    "all_registered_failure_injections": 68,
+    "critical_callpath_cases": 7,
+    "all_registered_failure_injections": 75,
     "logic_self_test": "PASS",
     "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
