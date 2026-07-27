@@ -167,7 +167,7 @@ public final class ApprovalReceiptVerifier {
         entry.put("receipt_sha256", sha256(Files.readAllBytes(receiptFile)));
         entry.put("consumed_at", Instant.now().toString());
         entry.put("previous_hash", previous);
-        entry.put("entry_hash", sha256(mapper.writeValueAsBytes(entry)));
+        entry.put("entry_hash", canonicalEntryHash(entry));
         lines.add(mapper.writeValueAsString(entry));
         writeLinesAtomic(replayLedger, lines);
     }
@@ -206,6 +206,12 @@ public final class ApprovalReceiptVerifier {
             }
         }
         return false;
+    }
+
+    private String canonicalEntryHash(Map<String, Object> entry) throws Exception {
+        Map<String, Object> canonical = new TreeMap<>(entry);
+        canonical.remove("entry_hash");
+        return sha256(mapper.writeValueAsBytes(canonical));
     }
 
     private Map<String, Object> readObject(Path file) throws Exception {
