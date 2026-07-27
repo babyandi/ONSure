@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Performs a structured review across requirement, design, code, AI, security and test domains. */
+/** Performs a structured review without converting missing evidence into PASS. */
 public final class OReviewService {
     public static final String CONTRACT = "ONSURE_OREVIEW_RESULT_V1";
     private final ObjectMapper mapper = new ObjectMapper()
@@ -30,80 +30,138 @@ public final class OReviewService {
                 ProgramLearningService.CONTRACT, "PROGRAM_PROFILE");
         JsonNode plan = readRequired(context.runRoot().resolve("execution-plan.json"),
                 ExecutionPlanService.CONTRACT, "EXECUTION_PLAN");
+        JsonNode planApproval = readRequired(
+                context.runRoot().resolve("execution-plan-approval.json"),
+                RiskPlanningStage.APPROVAL_EVIDENCE_CONTRACT,
+                "EXECUTION_PLAN_APPROVAL_EVIDENCE");
         JsonNode behavior = Files.isRegularFile(context.runRoot().resolve("behavior-profile.json"))
                 ? mapper.readTree(context.runRoot().resolve("behavior-profile.json").toFile()) : null;
 
         List<Map<String, Object>> domains = new ArrayList<>();
+        boolean atomicTraceabilityPass = "PASS".equals(
+                context.attributes().getOrDefault("atomic_requirement_traceability", "NOT_RUN"));
         domains.add(domain("REQUIREMENT_TRACEABILITY",
-                program.path("unknowns").isEmpty() ? "PASS" : "HOLD",
-                List.of("program-profile.json#unknowns"),
-                program.path("unknowns").isEmpty()
-                        ? List.of("No explicit static unknown was recorded.")
-                        : List.of("Static learning contains unresolved unknowns."),
-                "Atomic requirement reconciliation and source-bound evidence remain required."));
+                atomicTraceabilityPass ? "PASS" : "HOLD",
+                List.of("program-profile.json", "status/design-capability-coverage.v2.json"),
+                atomicTraceabilityPass
+                        ? List.of("Atomic requirements are source-bound to code, tests and evidence.")
+                        : List.of("Capability coverage exists, but atomic requirement authority reconciliation is NOT_RUN."),
+                "Reconcile every normative requirement and acceptance criterion before PASS."));
+
+        boolean dynamicTracePass = "PASS".equals(program.path("dynamic_trace").asText());
         domains.add(domain("ARCHITECTURE",
-                program.path("components").isEmpty() ? "HOLD" : "PASS",
+                program.path("components").isEmpty() || !dynamicTracePass ? "HOLD" : "PASS",
                 List.of("program-profile.json#components", "program-profile.json#data_flows"),
-                List.of("Component and data-flow inventory were recalculated from source."),
-                "Confirm boundaries and dynamic calls with runtime trace."));
-        String approval = plan.path("approval").path("state").asText();
-        domains.add(domain("POLICY_AND_APPROVAL",
-                List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED").contains(approval)
-                        ? "PASS" : "FAIL",
-                List.of("execution-plan.json#approval", "execution-plan.json#permissions"),
-                List.of("Execution permissions and stop conditions are explicit."),
-                "Any scope change requires a new approval receipt."));
+                List.of(dynamicTracePass
+                        ? "Static boundaries and dynamic calls are evidence-bound."
+                        : "Static component inventory exists, but dynamic call/data-flow trace is NOT_RUN."),
+                "Capture runtime component, API, event and data-flow traces."));
+
+        String approvalState = plan.path("approval").path("state").asText();
+        boolean planApproved = List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED")
+                .contains(approvalState)
+                && planApproval.path("plan_file_sha256").asText().matches("[0-9a-f]{64}")
+                && planApproval.path("approved_actions").size() == plan.path("allowed_actions").size();
+        domains.add(domain("POLICY_AND_APPROVAL", planApproved ? "PASS" : "FAIL",
+                List.of("execution-plan.json#approval", "execution-plan-approval.json"),
+                List.of(planApproved
+                        ? "Exact execution action set is covered by policy or signed approval evidence."
+                        : "Execution approval evidence is missing, stale or incomplete."),
+                "Any scope change requires a new source-bound approval receipt."));
+
         long codeFindings = context.findings().stream()
                 .filter(finding -> List.of("STATIC_ANALYSIS", "AI_BEHAVIOR_VALIDATION")
                         .contains(finding.stageId()))
                 .count();
-        domains.add(domain("CODE",
-                blocking(context.findings()) ? "FAIL" : codeFindings > 0 ? "HOLD" : "PASS",
-                evidenceFor(context.findings()),
-                List.of("Static and policy-source findings were reconciled by fingerprint."),
-                "Inline human review and compiler/runtime evidence remain separate gates."));
+        boolean compilerEvidence = "PASS".equals(
+                context.attributes().getOrDefault("build_verification", "NOT_RUN"));
+        String codeDecision = blocking(context.findings()) ? "FAIL"
+                : codeFindings > 0 || !compilerEvidence ? "HOLD" : "PASS";
+        domains.add(domain("CODE", codeDecision, evidenceFor(context.findings()),
+                List.of(compilerEvidence
+                        ? "Static review and compiler/build evidence are present."
+                        : "Static review executed; compiler, build and focused human review evidence are NOT_RUN."),
+                "Run compiler, unit, integration and focused human review gates."));
+
         if (context.target().targetType() != TargetType.GENERAL_SOFTWARE) {
+            String coverage = behavior == null ? "MISSING"
+                    : behavior.path("coverage_class").asText("PROCESS_COMMAND_PROXY");
+            boolean directTelemetry = "DIRECT_MODEL_TELEMETRY".equals(coverage);
+            boolean stable = behavior != null
+                    && behavior.path("variability").path("stable").asBoolean(false);
             String aiDecision = behavior == null ? "FAIL"
-                    : behavior.path("variability").path("stable").asBoolean(false) ? "PASS" : "HOLD";
-            domains.add(domain("AI_BEHAVIOR",
-                    aiDecision,
+                    : directTelemetry && stable ? "PASS" : "HOLD";
+            domains.add(domain("AI_BEHAVIOR", aiDecision,
                     List.of("behavior-profile.json", "program-profile.json#ai_components"),
-                    List.of("Repeated executable scenarios were observed with versioned runtime context."),
-                    "Real model/provider, prompt, tool and RAG production traces remain required."));
+                    List.of("Coverage class is " + coverage
+                            + "; direct provider/model/prompt/tool/RAG telemetry is required for PASS."),
+                    "Run repeated direct model telemetry with tool, prompt, RAG and memory lineage."));
         } else {
             domains.add(domain("AI_BEHAVIOR", "NOT_APPLICABLE", List.of(),
                     List.of("Target type is GENERAL_SOFTWARE."), "None."));
         }
+
         long securityCritical = context.findings().stream()
                 .filter(finding -> securityCategory(finding.category()))
                 .filter(finding -> finding.severity() == Severity.CRITICAL
                         || finding.severity() == Severity.HIGH)
                 .count();
-        domains.add(domain("SECURITY", securityCritical > 0 ? "FAIL" : "PASS",
+        boolean dependencyScan = "PASS".equals(
+                context.attributes().getOrDefault("dependency_security_scan", "NOT_RUN"));
+        boolean privacyReview = "PASS".equals(
+                context.attributes().getOrDefault("privacy_data_flow_review", "NOT_RUN"));
+        String securityDecision = securityCritical > 0 ? "FAIL"
+                : dependencyScan && privacyReview ? "PASS" : "HOLD";
+        domains.add(domain("SECURITY_AND_PRIVACY", securityDecision,
                 evidenceFor(context.findings().stream().filter(
                         finding -> securityCategory(finding.category())).toList()),
-                List.of("Known security categories were evaluated against current source and fixtures."),
-                "Dependency, container, network and secret-provider scans remain separate execution gates."));
-        domains.add(domain("PERFORMANCE", "HOLD", List.of("execution-plan.json#resource_budget"),
-                List.of("A resource budget and timeout are defined."),
-                "Quantitative load, latency, memory and recovery benchmarks are NOT_RUN."));
+                List.of("Source security patterns were checked; dependency/SBOM and privacy-flow gates are "
+                        + (dependencyScan && privacyReview ? "PASS." : "NOT_RUN or incomplete.")),
+                "Run dependency, SBOM, container, secret-provider, authorization and privacy-flow tests."));
+
+        boolean performancePass = "PASS".equals(
+                context.attributes().getOrDefault("performance_recovery_verification", "NOT_RUN"));
+        domains.add(domain("PERFORMANCE_AND_RECOVERY", performancePass ? "PASS" : "HOLD",
+                List.of("execution-plan.json#resource_budget"),
+                List.of(performancePass
+                        ? "Quantitative load, resource and recovery gates passed."
+                        : "Only resource budgets exist; load, latency, recovery and failure injection are NOT_RUN."),
+                "Run quantitative performance, outage and recovery benchmarks."));
+
         Object fixtureCount = context.attributes().get("registered_fixture_count");
         Object executableCount = context.attributes().get("registered_executable_fixture_count");
         boolean fixtureReady = fixtureCount instanceof Number registered
                 && executableCount instanceof Number executable
                 && registered.longValue() > 0 && registered.longValue() == executable.longValue();
-        domains.add(domain("TEST_QUALITY", fixtureReady ? "PASS" : "FAIL",
+        boolean blindIndependent = "PASS".equals(
+                context.attributes().getOrDefault("blind_independent_test", "NOT_RUN"));
+        domains.add(domain("TEST_QUALITY",
+                !fixtureReady ? "FAIL" : blindIndependent ? "PASS" : "HOLD",
                 List.of("fixture-registry.json", "oracle-registry.json"),
-                List.of("Registered scenario and executable fixture counts are compared."),
-                "Golden, blind and independent acceptance suites remain separate gates."));
+                List.of(fixtureReady
+                        ? "Registered executable fixtures are complete; blind and independent suites remain separate."
+                        : "Executable fixture registry is incomplete."),
+                "Run golden, adversarial, blind and independent acceptance suites."));
+
+        boolean ownerAcceptance = "PASS".equals(
+                context.attributes().getOrDefault("product_owner_acceptance", "NOT_RUN"));
         domains.add(domain("PRODUCT_QUALITY",
-                program.path("conflicts").isEmpty() ? "PASS" : "HOLD",
+                !program.path("conflicts").isEmpty() ? "HOLD"
+                        : ownerAcceptance ? "PASS" : "HOLD",
                 List.of("program-profile.json#conflicts"),
-                List.of("Static conflicts and unknowns are preserved instead of silently resolved."),
-                "Owner review is required before profile activation."));
-        domains.add(domain("MERGE_READINESS", "NOT_APPLICABLE", List.of(),
-                List.of("This run validates a target and does not authorize a code merge."),
-                "Patch approval, worktree, regression, Draft PR and independent review are required."));
+                List.of(ownerAcceptance
+                        ? "Owner acceptance is source-bound."
+                        : "Static conflicts are preserved; product owner acceptance is NOT_RUN."),
+                "Obtain owner acceptance against the exact profile, plan and evidence bundle."));
+
+        boolean independentPass = "PASS".equals(
+                context.attributes().getOrDefault("independent_otester", "NOT_RUN"))
+                && "PASS".equals(context.attributes().getOrDefault("independent_oaudit", "NOT_RUN"));
+        domains.add(domain("MERGE_READINESS", independentPass ? "PASS" : "HOLD", List.of(),
+                List.of(independentPass
+                        ? "Independent OTester and OAudit receipts passed."
+                        : "Independent OTester/OAudit and human merge acceptance are NOT_RUN."),
+                "Require Draft PR, independent receipts and human merge approval."));
 
         String qualityDecision = domains.stream().anyMatch(item -> "FAIL".equals(item.get("decision")))
                 ? "FAIL" : domains.stream().anyMatch(item -> "HOLD".equals(item.get("decision")))
@@ -115,6 +173,8 @@ public final class OReviewService {
         result.put("source_tree_sha256", context.attributes().get("source_tree_sha256"));
         result.put("program_profile_id", context.attributes().get("program_profile_id"));
         result.put("execution_plan_id", context.attributes().get("execution_plan_id"));
+        result.put("execution_plan_approval_sha256",
+                context.attributes().get("execution_plan_approval_sha256"));
         result.put("domains", List.copyOf(domains));
         result.put("quality_decision", qualityDecision);
         result.put("review_execution", "PASS");
@@ -160,7 +220,8 @@ public final class OReviewService {
     }
 
     private static List<String> evidenceFor(List<Finding> findings) {
-        return findings.stream().flatMap(finding -> finding.evidenceIds().stream()).distinct().sorted().toList();
+        return findings.stream().flatMap(finding -> finding.evidenceIds().stream())
+                .distinct().sorted().toList();
     }
 
     private void writeAtomic(Path outputFile, Object value) throws Exception {
