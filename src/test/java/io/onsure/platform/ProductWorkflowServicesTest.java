@@ -15,6 +15,7 @@ import io.onsure.platform.ValidationModel.ValidationTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,6 +92,9 @@ class ProductWorkflowServicesTest {
     void patchPlanRequiresApprovalAndDoesNotModifySource() throws Exception {
         Path source = temp.resolve("target");
         Files.createDirectories(source);
+        git(source, "init");
+        git(source, "config", "user.email", "test@example.invalid");
+        git(source, "config", "user.name", "ONSure Test");
         Path file = source.resolve("agent.txt");
         Files.writeString(file, "policy=SELF_APPROVE\n");
         Files.writeString(source.resolve("onsure-target.json"), """
@@ -103,6 +107,8 @@ class ProductWorkflowServicesTest {
                   "fixtures":[]
                 }
                 """);
+        git(source, "add", "agent.txt", "onsure-target.json");
+        git(source, "commit", "-m", "baseline");
         ValidationTarget target = new ValidationTarget(
                 "patch-target", "Patch Target", TargetType.GENERAL_SOFTWARE, source,
                 SourceReferenceBinding.treeReference(source), GenericManifestTargetAdapter.ID,
@@ -130,5 +136,15 @@ class ProductWorkflowServicesTest {
         assertEquals(original, Files.readString(file));
         assertEquals(false, plan.get("direct_main_write_allowed"));
         assertEquals(false, plan.get("merge_allowed"));
+    }
+
+    private static void git(Path root, String... arguments) throws Exception {
+        List<String> command = new ArrayList<>();
+        command.add("git");
+        command.addAll(List.of(arguments));
+        Process process = new ProcessBuilder(command).directory(root.toFile())
+                .redirectErrorStream(true).start();
+        String output = new String(process.getInputStream().readAllBytes());
+        if (process.waitFor() != 0) throw new IllegalStateException(output);
     }
 }
