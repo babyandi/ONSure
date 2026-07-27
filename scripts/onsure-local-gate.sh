@@ -71,6 +71,7 @@ run_step design-coverage python3 scripts/validate-design-coverage.py \
   --matrix status/design-capability-coverage.v2.json --root . --self-test
 run_step product-subrequirements python3 scripts/validate-product-subrequirements.py --self-test
 run_step workflow-surface-parity python3 scripts/validate-workflow-surface-parity.py --self-test
+run_step critical-callpaths python3 scripts/validate-critical-callpaths.py --self-test
 run_step status-consistency python3 scripts/validate-status-consistency.py
 run_step automation-boundary python3 scripts/validate-ci-boundary.py
 run_step verification-claims python3 scripts/validate-verification-claims.py
@@ -145,8 +146,10 @@ body = {
     "profile": profile,
     "decision": "PASS_NONFINAL",
     "authority_class": "LOCAL_SELF_VALIDATION",
-    "product_subrequirement_gate": "PASS",
+    "product_subrequirements": "PASS_WITH_KNOWN_GAPS",
     "workflow_surface_parity": "PASS",
+    "critical_callpaths": "PASS",
+    "registered_failure_injections": 75,
     "github_actions": "DISABLED",
     "independent_otester": "NOT_RUN",
     "independent_oaudit": "NOT_RUN",
