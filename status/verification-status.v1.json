@@ -1,52 +1,56 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.1.1",
-  "assessment_source_ref": "feature/onsure-codespace-free-remediation-20260726",
+  "version": "2.2.0",
+  "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
   "deferred_final_stage_detail": "CODESPACE_OR_EQUIVALENT_FINAL_STAGE_DEFERRED_BY_USER",
-  "active_remediation_issues": [20, 23],
-  "last_observed_ci_self_validation": {
+  "active_remediation_issues": [20],
+  "committed_status_evidence_policy": {
+    "dynamic_ci_evidence_is_external": true,
+    "current_head_pass_must_not_be_self_declared_in_source": true,
+    "current_head_evidence_query": "GITHUB_ACTIONS_COMMIT_OR_PR_RUN",
+    "historical_observation_is_not_current_source_receipt": true
+  },
+  "historical_ci_self_validation": {
     "workflow": "ONSure PR Validation",
-    "run_id": 30270109833,
-    "run_number": 141,
-    "validated_head": "e9c60cc243c8e4b11521bab379b12f0b94d5bead",
+    "run_id": 30270821264,
+    "run_number": 151,
+    "validated_head": "9742beed6c9ce6451d3dcac78b76741c84e6715d",
     "state": "PASS_SELF_VALIDATION_NONFINAL",
-    "static_contracts": "PASS",
-    "java17_root_and_modular": "PASS",
-    "core_without_optional_oruda": "PASS",
-    "sandbox_adversarial_and_product_fixtures": "PASS",
-    "vscode_static_and_vsix": "PASS",
+    "binding_scope": "PREVIOUS_PR_HEAD_ONLY",
+    "current_source_bound": false,
     "authority_class": "INTERNAL_CI_SELF_VALIDATION",
     "final_claim_allowed": false
   },
   "design_coverage": {
     "capability_count": 28,
-    "state": "CI_SELF_VALIDATION_PASS_NONFINAL",
+    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
     "runner": "python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test",
-    "source_bound_receipt": "GITHUB_ACTIONS_RUN_30270109833"
+    "source_bound_receipt": "EXTERNAL_CI_QUERY_REQUIRED"
   },
   "product_process_lineage": {
     "stage_count": 20,
     "artifact_count": 20,
-    "state": "CI_SELF_VALIDATION_PASS_NONFINAL",
+    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
     "runner": "python3 scripts/validate-product-process-lineage.py --model contracts/product-process-lineage.v1.json --self-test",
-    "source_bound_receipt": "GITHUB_ACTIONS_RUN_30270109833"
+    "source_bound_receipt": "EXTERNAL_CI_QUERY_REQUIRED"
   },
   "omission_failure_injection": {
-    "total_cases": 28,
-    "logic_self_test": "PASS",
-    "full_repository_current_head": "PASS_CI_SELF_VALIDATION_NONFINAL",
+    "design_process_lineage_cases": 28,
     "atomic_requirement_cases": 10,
     "ci_boundary_cases": 5,
-    "all_registered_failure_injections": 43
+    "verification_claim_cases": 8,
+    "all_registered_failure_injections": 51,
+    "logic_self_test": "PASS",
+    "current_head_execution": "EXTERNAL_CI_REQUIRED"
   },
   "repository_static_contracts": {
-    "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
+    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
     "runner": "python3 scripts/validate-repository-contracts.py"
   },
   "codespace_free_static_gate": {
-    "state": "PASS_CI_SELF_VALIDATION_NONFINAL",
+    "state": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
     "runner": "python3 scripts/validate-codespace-free-remediation.py"
   },
   "one_shot_static": {
@@ -58,14 +62,19 @@
     "runner": "bash scripts/onsure-one-shot.sh --profile core"
   },
   "optional_oruda_profile": {
-    "state": "MVF_SANDBOX_CI_PASS_ONE_SHOT_PROFILE_NOT_RUN",
+    "state": "ONE_SHOT_PROFILE_NOT_RUN",
     "runner": "bash scripts/onsure-one-shot.sh --profile oruda"
   },
-  "java17_maven_junit": "PASS_CI_SELF_VALIDATION_NONFINAL",
-  "core_modular_without_oruda": "PASS_CI_SELF_VALIDATION_NONFINAL",
-  "sandbox_attack_tests": "PASS_CI_SELF_VALIDATION_NONFINAL",
-  "local_api_runtime_e2e": "PASS_CI_MODULE_HTTP_NONFINAL",
-  "vscode_static_and_vsix": "PASS_CI_SELF_VALIDATION_NONFINAL",
+  "java17_maven_junit": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+  "core_modular_without_oruda": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+  "sandbox_attack_tests": {
+    "state": "PARTIAL_10_OF_12_CURRENT_HEAD_CI_REQUIRED",
+    "verified_count": 10,
+    "required_count": 12,
+    "unverified": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"]
+  },
+  "local_api_runtime_e2e": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
+  "vscode_static_and_vsix": "CURRENT_HEAD_EXTERNAL_CI_REQUIRED",
   "vscode_extension_host_full_chain": "NOT_RUN",
   "web_payment_provider_full_chain": "NOT_RUN",
   "direct_production_model_telemetry": "NOT_RUN",
