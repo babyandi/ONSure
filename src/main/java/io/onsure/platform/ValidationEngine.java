@@ -102,6 +102,14 @@ public final class ValidationEngine {
         Exception executionFailure = null;
         for (ValidatorStage stage : stages) {
             if (!stage.supports(context)) continue;
+            String requiredAction = ExecutionPlanActionPolicy.requiredAction(stage.stageId());
+            if (requiredAction != null
+                    && context.attributes().containsKey("execution_plan_approved_actions")
+                    && !ExecutionPlanActionPolicy.isApproved(context, requiredAction)) {
+                context.addStageResult(ExecutionPlanActionPolicy.notApproved(
+                        stage.stageId(), requiredAction));
+                continue;
+            }
             try {
                 context.addStageResult(stage.execute(context));
             } catch (Exception e) {
@@ -159,6 +167,14 @@ public final class ValidationEngine {
         summary.put("program_profile_state", context.attributes().getOrDefault("program_profile_state", "NOT_RUN"));
         summary.put("execution_plan_id", context.attributes().getOrDefault("execution_plan_id", "NOT_RUN"));
         summary.put("execution_plan_approval", context.attributes().getOrDefault("execution_plan_approval", "NOT_RUN"));
+        summary.put("execution_plan_approval_scope",
+                context.attributes().getOrDefault("execution_plan_approval_scope", "NOT_RUN"));
+        summary.put("execution_plan_approved_actions",
+                context.attributes().getOrDefault("execution_plan_approved_actions", List.of()));
+        summary.put("execution_plan_unapproved_actions",
+                context.attributes().getOrDefault("execution_plan_unapproved_actions", List.of()));
+        summary.put("execution_plan_partial",
+                context.attributes().getOrDefault("execution_plan_partial", false));
         summary.put("execution_plan_approval_sha256",
                 context.attributes().getOrDefault("execution_plan_approval_sha256", "NOT_RUN"));
         summary.put("behavior_profile_id", context.attributes().getOrDefault("behavior_profile_id", "NOT_RUN"));
