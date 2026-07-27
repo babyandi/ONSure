@@ -56,6 +56,9 @@ exec timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
   bwrap \
     --die-with-parent \
     --new-session \
+    --unshare-user \
+    --uid 0 \
+    --gid 0 \
     --unshare-net \
     --unshare-pid \
     --unshare-ipc \
