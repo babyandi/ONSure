@@ -14,15 +14,17 @@ import java.util.Map;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V4";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V5";
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
     private final Path workspaceRoot;
+    private final ApprovalAuthorityPaths approvalAuthority;
 
     public LocalWorkflowDispatcher(Path workspaceRoot) {
         this.workspaceRoot = requireWorkspace(workspaceRoot);
+        this.approvalAuthority = ApprovalAuthorityPaths.forWorkspace(this.workspaceRoot);
     }
 
     public Map<String, Object> dispatch(String operation, JsonNode request) throws Exception {
@@ -32,6 +34,7 @@ public final class LocalWorkflowDispatcher {
         if (request == null || !request.isObject()) {
             throw new IllegalArgumentException("WORKFLOW_REQUEST_OBJECT_REQUIRED");
         }
+        approvalAuthority.rejectRequestOverrides(request);
         Map<String, Object> result = switch (operation) {
             case "project.register-workspace" -> projectRegisterWorkspace(request);
             case "project.register" -> projectRegister(request);
@@ -78,6 +81,7 @@ public final class LocalWorkflowDispatcher {
                 "contract", CONTRACT,
                 "operation", operation,
                 "result", result,
+                "approval_authority", approvalAuthority.authorityRoot().toString(),
                 "assurance_class", "SELF_VALIDATION_NONFINAL",
                 "independent_otester", "NOT_RUN",
                 "independent_oaudit", "NOT_RUN",
@@ -151,8 +155,8 @@ public final class LocalWorkflowDispatcher {
         return new ExecutionPlanApprovalService().approve(
                 inputPath(request, "plan_file", true),
                 inputPath(request, "signed_approval_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "approval_replay_ledger", ".onsure/approvals/replay.jsonl"),
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(),
                 outputPath(request, "approved_plan_file", ".onsure/plans/approved-execution-plan.json"));
     }
 
@@ -177,8 +181,7 @@ public final class LocalWorkflowDispatcher {
         ValidationEngine.RunResult run;
         if (approvedPlan == null) {
             for (String field : List.of(
-                    "original_execution_plan_file", "signed_approval_receipt",
-                    "trusted_key_registry", "approval_replay_ledger")) {
+                    "original_execution_plan_file", "signed_approval_receipt")) {
                 if (!request.path(field).asText("").isBlank()) {
                     throw new IllegalArgumentException("INCOMPLETE_EXECUTION_PLAN_APPROVAL_BUNDLE:" + field);
                 }
@@ -190,8 +193,8 @@ public final class LocalWorkflowDispatcher {
                             approvedPlan,
                             inputPath(request, "original_execution_plan_file", true),
                             inputPath(request, "signed_approval_receipt", true),
-                            inputPath(request, "trusted_key_registry", true),
-                            inputPath(request, "approval_replay_ledger", true));
+                            approvalAuthority.requireTrustedKeyRegistry(),
+                            approvalAuthority.requireReplayLedger());
             run = engine.run(target, bundle);
         }
         return Map.of(
@@ -208,8 +211,8 @@ public final class LocalWorkflowDispatcher {
                 inputPath(request, "repository_root", true),
                 inputPath(request, "patch_plan_file", true),
                 inputPath(request, "approval_receipt_file", true),
-                inputPath(request, "approval_key_registry", true),
-                outputPath(request, "approval_replay_ledger", ".onsure/approvals/replay.jsonl"),
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(),
                 outputPath(request, "worktree_root", ".onsure/worktrees/approved-patch"),
                 outputPath(request, "evidence_root", ".onsure/improvement-evidence"));
     }
@@ -235,8 +238,8 @@ public final class LocalWorkflowDispatcher {
                 inputPath(request, "patch_apply_receipt_file", true),
                 inputPath(request, "improvement_proof_file", true),
                 inputPath(request, "delivery_approval_file", true),
-                inputPath(request, "approval_key_registry", true),
-                outputPath(request, "approval_replay_ledger", ".onsure/approvals/replay.jsonl"),
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(),
                 requiredText(request, "commit_message"),
                 outputPath(request, "output_file", ".onsure/git/change-set.json"));
     }
@@ -338,9 +341,8 @@ public final class LocalWorkflowDispatcher {
     private Map<String, Object> caseVerifyPayment(JsonNode request) throws Exception {
         return cases(request).verifyPayment(requiredId(request, "case_id"),
                 inputPath(request, "signed_verification_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "verification_replay_ledger", ".onsure/approvals/replay.jsonl"),
-                actor(request));
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(), actor(request));
     }
     private Map<String, Object> caseStartWork(JsonNode request) throws Exception {
         return cases(request).startWork(requiredId(request, "case_id"), actor(request));
@@ -366,9 +368,8 @@ public final class LocalWorkflowDispatcher {
     private Map<String, Object> caseVerifyRefund(JsonNode request) throws Exception {
         return cases(request).verifyRefund(requiredId(request, "case_id"),
                 inputPath(request, "signed_verification_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "verification_replay_ledger", ".onsure/approvals/replay.jsonl"),
-                actor(request));
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(), actor(request));
     }
     private Map<String, Object> caseLegalHold(JsonNode request) throws Exception {
         return cases(request).setLegalHold(requiredId(request, "case_id"),
@@ -378,9 +379,8 @@ public final class LocalWorkflowDispatcher {
     private Map<String, Object> caseDelete(JsonNode request) throws Exception {
         return cases(request).recordDeletion(requiredId(request, "case_id"),
                 inputPath(request, "signed_verification_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "verification_replay_ledger", ".onsure/approvals/replay.jsonl"),
-                actor(request));
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(), actor(request));
     }
     private Map<String, Object> caseCancel(JsonNode request) throws Exception {
         return cases(request).cancel(requiredId(request, "case_id"),
