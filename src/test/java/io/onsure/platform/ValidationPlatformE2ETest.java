@@ -50,7 +50,7 @@ class ValidationPlatformE2ETest {
                         && value.decision() == Decision.FAIL));
         assertEquals(2, ((Number) stage(baseline, "FIXTURE_HARNESS_ORACLE")
                 .metrics().get("commands_executed")).intValue());
-        assertProductWorkflowStages(baseline, false);
+        assertProductWorkflowStages(baseline, false, Decision.FAIL);
         assertInternalNonfinalPass(baseline);
         assertPersistentRun(baseline.runRoot(), false);
 
@@ -58,14 +58,15 @@ class ValidationPlatformE2ETest {
                 "sample-general-program", TargetType.GENERAL_SOFTWARE,
                 Path.of("fixtures/e2e/general-program-fixed"), GenericManifestTargetAdapter.ID);
         ValidationEngine.RunResult current = engine.run(fixed);
-        assertEquals(Decision.PASS, current.report().decision());
+        assertEquals(Decision.HOLD, current.report().decision());
         assertTrue(current.report().findings().isEmpty());
         assertTrue(current.report().fixtureResults().stream()
                 .allMatch(value -> value.decision() == Decision.PASS));
         assertTrue(current.report().fixtureResults().stream()
                 .anyMatch(value -> value.fixtureId().equals("unauthorized-user")
                         && value.observed().equals("DENY")));
-        assertProductWorkflowStages(current, false);
+        assertProductWorkflowStages(current, false, Decision.HOLD);
+        assertEquals("HOLD", current.report().summary().get("review_quality_decision"));
         assertInternalNonfinalPass(current);
         assertPersistentRun(current.runRoot(), false);
 
@@ -98,11 +99,13 @@ class ValidationPlatformE2ETest {
                         && value.observed().equals("ALLOW_TOOL")
                         && value.decision() == Decision.FAIL));
         assertTrue(((Number) result.report().summary().get("approval_required_count")).longValue() >= 3);
-        assertProductWorkflowStages(result, true);
+        assertProductWorkflowStages(result, true, Decision.FAIL);
         assertInternalNonfinalPass(result);
         assertPersistentRun(result.runRoot(), true);
         assertTrue(Files.readString(result.runRoot().resolve("behavior-profile.json"))
                 .contains("REPEATED_EXECUTABLE_FIXTURE_OBSERVATION_V1"));
+        assertEquals("PROCESS_COMMAND_PROXY",
+                result.report().summary().get("behavior_profile_coverage_class"));
     }
 
     @Test
@@ -127,6 +130,7 @@ class ValidationPlatformE2ETest {
         assertEquals(OrudaTargetAdapter.ID, result.report().summary().get("adapter_id"));
         assertTrue(result.report().findings().stream()
                 .anyMatch(value -> value.category().equals("AI_SELF_APPROVAL")));
+        assertEquals(Decision.FAIL, stage(result, "OREVIEW").decision());
         assertInternalNonfinalPass(result);
         assertPersistentRun(result.runRoot(), true);
     }
@@ -159,16 +163,20 @@ class ValidationPlatformE2ETest {
         throw new AssertionError("ORUDA authority claim must fail closed");
     }
 
-    private static void assertProductWorkflowStages(ValidationEngine.RunResult result, boolean ai) {
+    private static void assertProductWorkflowStages(
+            ValidationEngine.RunResult result, boolean ai, Decision expectedReview) {
         for (String stageId : Set.of(
-                "PROGRAM_LEARNING", "RISK_BASED_EXECUTION_PLANNING", "OREVIEW",
+                "PROGRAM_LEARNING", "RISK_BASED_EXECUTION_PLANNING",
                 "EVIDENCE_BASED_RCA", "PATCH_PLANNING")) {
             assertEquals(Decision.PASS, stage(result, stageId).decision(), stageId);
         }
+        assertEquals(expectedReview, stage(result, "OREVIEW").decision());
         if (ai) assertEquals(Decision.PASS, stage(result, "BEHAVIOR_LEARNING").decision());
         assertEquals("PROFILE_CANDIDATE", result.report().summary().get("program_profile_state"));
         assertEquals("AUTO_APPROVED_DEVELOPMENT_NONFINAL",
                 result.report().summary().get("execution_plan_approval"));
+        assertTrue(String.valueOf(result.report().summary().get("execution_plan_approval_sha256"))
+                .matches("[0-9a-f]{64}"));
         assertFalse(result.report().summary().get("review_id").equals("NOT_RUN"));
         assertFalse(result.report().summary().get("patch_plan_id").equals("NOT_RUN"));
     }
@@ -201,8 +209,8 @@ class ValidationPlatformE2ETest {
                 "fixture-results.json", "stage-results.json", "regression-lock.json",
                 "internal-verifier-receipt.json", "internal-audit-receipt.json",
                 "validation-report.json", "validation-report.md", "validation-report.html",
-                "program-profile.json", "execution-plan.json", "review-result.json",
-                "evidence-based-rca.json", "patch-plan.json", "manifest.sha256"));
+                "program-profile.json", "execution-plan.json", "execution-plan-approval.json",
+                "review-result.json", "evidence-based-rca.json", "patch-plan.json", "manifest.sha256"));
         if (behaviorExpected) files.add("behavior-profile.json");
         for (String file : files) assertTrue(Files.isRegularFile(runRoot.resolve(file)), file);
         assertTrue(Files.isRegularFile(runRoot.getParent().getParent().resolve("failure-mode-registry.json")));
