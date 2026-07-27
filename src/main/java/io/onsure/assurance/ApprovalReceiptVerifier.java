@@ -154,7 +154,7 @@ public final class ApprovalReceiptVerifier {
                 ? new ArrayList<>(Files.readAllLines(replayLedger, StandardCharsets.UTF_8))
                 : new ArrayList<>();
         String previous = lines.isEmpty() ? GENESIS
-                : mapper.readTree(lines.get(lines.size() - 1)).path("entry_hash").asText();
+                : unwrapJson(mapper.readTree(lines.get(lines.size() - 1))).path("entry_hash").asText();
         Map<String, Object> entry = new LinkedHashMap<>();
         entry.put("contract", REPLAY_CONTRACT);
         entry.put("sequence", lines.size() + 1L);
@@ -182,7 +182,7 @@ public final class ApprovalReceiptVerifier {
         long sequence = 1L;
         for (String line : Files.readAllLines(replayLedger, StandardCharsets.UTF_8)) {
             if (line.isBlank()) throw new IllegalStateException("APPROVAL_REPLAY_LEDGER_BLANK");
-            Map<String, Object> entry = objectMap(mapper.readTree(line));
+            Map<String, Object> entry = objectMap(unwrapJson(mapper.readTree(line)));
             if (!REPLAY_CONTRACT.equals(entry.get("contract"))) {
                 throw new IllegalStateException("APPROVAL_REPLAY_LEDGER_CONTRACT_INVALID");
             }
@@ -209,7 +209,18 @@ public final class ApprovalReceiptVerifier {
     }
 
     private Map<String, Object> readObject(Path file) throws Exception {
-        return objectMap(mapper.readTree(file.toFile()));
+        return objectMap(unwrapJson(mapper.readTree(file.toFile())));
+    }
+
+    private JsonNode unwrapJson(JsonNode node) throws Exception {
+        if (node != null && node.isTextual()) {
+            JsonNode decoded = mapper.readTree(node.textValue());
+            if (decoded != null && decoded.isTextual()) {
+                throw new IllegalArgumentException("MULTIPLE_JSON_STRING_LAYERS_PROHIBITED");
+            }
+            return decoded;
+        }
+        return node;
     }
 
     private Map<String, Object> objectMap(JsonNode node) {
