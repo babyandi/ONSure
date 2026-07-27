@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "assessment_date": "2026-07-28",
   "authority": "status/design-capability-coverage.v2.json",
   "subrequirement_authority": "status/product-subrequirement-coverage.v1.json",
@@ -34,7 +34,7 @@
     },
     {
       "id": "P0-WORKFLOW-SURFACE-PARITY",
-      "state": "34_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+      "state": "39_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
       "next_action": "Run the workflow surface parity gate whenever Dispatcher, CLI, Local API or VS Code commands change."
     },
