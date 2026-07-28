@@ -21,12 +21,13 @@ COUNT_AUTHORITY = {
         "design_process_lineage_cases": 28,
         "atomic_requirement_cases": 10,
         "automation_boundary_cases": 6,
-        "verification_claim_cases": 10,
+        "verification_claim_cases": 15,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 20,
+        "critical_callpath_cases": 24,
+        "mvp_acceptance_cases": 8,
     },
-    "total": 90,
+    "total": 107,
 }
 
 
@@ -44,6 +45,11 @@ def safe_status() -> dict:
         "historical_automation_evidence": {"retained_for_audit_only": True, "current_source_bound": False},
         "design_coverage": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
         "product_subrequirement_coverage": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
+        "mvp_acceptance_coverage": {
+            "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED",
+            "state": "NOT_RUN_ALL_11_ACCEPTANCE_ITEMS",
+            "two_consecutive_real_repository_runs": "NOT_RUN",
+        },
         "workflow_surface_parity": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
         "critical_callpath_boundary": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
         "product_process_lineage": {"source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"},
@@ -59,7 +65,7 @@ def safe_status() -> dict:
             "contained_worktree_authority_discovery": "UNIQUE_EXISTING_AUTHORITY_REQUIRED",
             "public_key_must_be_inside_authority_root": True,
             "registry_cross_process_lock": True,
-            "receipt_verify_consume_binding": "IMMUTABLE_SNAPSHOT_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+            "receipt_verify_consume_binding": "IMMUTABLE_SNAPSHOT_RETURNED_AND_CONSUMED_LOCAL_EXECUTION_REQUIRED",
             "external_replay_anchor": "NOT_IMPLEMENTED",
             "current_source_execution": "NOT_RUN",
         },
@@ -80,8 +86,20 @@ def safe_sandbox() -> dict:
     }
 
 
+def safe_mvp() -> dict:
+    return {
+        "assurance": {
+            "mvp_full_chain": "NOT_RUN",
+            "two_consecutive_real_repository_runs": "NOT_RUN",
+            "final_claim_allowed": False,
+        }
+    }
+
+
 LOCAL_GATE = """#!/usr/bin/env bash
 python3 scripts/validate-product-subrequirements.py --self-test
+python3 scripts/validate-mvp-acceptance-coverage.py --self-test
+python3 scripts/validate-mvp-status-consistency.py
 python3 scripts/validate-workflow-surface-parity.py --self-test
 python3 scripts/validate-critical-callpaths.py --self-test
 python3 scripts/validate-verification-claims.py
@@ -92,7 +110,7 @@ printf '%s' '"github_actions":"DISABLED"'
 
 
 class VerificationClaimFailureInjectionTest(unittest.TestCase):
-    def run_case(self, status=None, sandbox=None, count_authority=None,
+    def run_case(self, status=None, sandbox=None, mvp=None, count_authority=None,
                  add_workflow=False, local_gate=LOCAL_GATE):
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
@@ -103,6 +121,8 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
             (root / "src/test/java/io/onsure/platform").mkdir(parents=True)
             (root / "status/verification-status.v1.json").write_text(
                 json.dumps(status or safe_status()), encoding="utf-8")
+            (root / "status/mvp-acceptance-coverage.v1.json").write_text(
+                json.dumps(mvp or safe_mvp()), encoding="utf-8")
             (root / "contracts/sandbox-boundary.v1.json").write_text(
                 json.dumps(sandbox or safe_sandbox()), encoding="utf-8")
             (root / MODULE.COUNT_AUTHORITY).write_text(
@@ -128,7 +148,7 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
         self.assertIn("HISTORICAL_AUTOMATION_FALSELY_BOUND_TO_CURRENT_SOURCE", self.run_case(status=status))
 
     def test_committed_dynamic_receipt_cannot_replace_local_receipt(self):
-        status = safe_status(); status["design_coverage"]["source_bound_receipt"] = "GITHUB_ACTIONS_RUN_123"
+        status = safe_status(); status["design_coverage"]["source_bound_receipt"] = "REMOTE_RUN_123"
         self.assertTrue(any(value.startswith("COMMITTED_DYNAMIC_RECEIPT_OVERCLAIM") for value in self.run_case(status=status)))
 
     def test_closed_umbrella_issue_cannot_remain_active(self):
@@ -141,7 +161,7 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
 
     def test_sandbox_attack_partition_mismatch_is_detected(self):
         sandbox = safe_sandbox(); sandbox["unverified_attack_fixtures"] = []
-        self.assertTrue(any(value.startswith("SANDBOX_ATTACK_PARTITION_MISMATCH") for value in self.run_case(sandbox=sandbox)))
+        self.assertIn("SANDBOX_ATTACK_PARTITION_MISMATCH", self.run_case(sandbox=sandbox))
 
     def test_github_actions_policy_must_be_disabled(self):
         status = safe_status(); status["validation_execution_policy"]["github_actions"] = "ENABLED"
@@ -150,16 +170,16 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
     def test_any_workflow_file_is_detected(self):
         self.assertIn("GITHUB_ACTIONS_WORKFLOW_FORBIDDEN:build.yml", self.run_case(add_workflow=True))
 
-    def test_local_claim_gate_must_be_invoked(self):
+    def test_local_claim_gate_must_include_critical_callpaths(self):
         local_gate = LOCAL_GATE.replace("python3 scripts/validate-critical-callpaths.py --self-test\n", "")
         self.assertTrue(any("LOCAL_VALIDATION_GATE_CONTROL_MISSING" in value for value in self.run_case(local_gate=local_gate)))
 
     def test_failure_injection_total_cannot_stay_at_old_baseline(self):
-        status = safe_status(); status["omission_failure_injection"]["all_registered_failure_injections"] = 89
+        status = safe_status(); status["omission_failure_injection"]["all_registered_failure_injections"] = 106
         self.assertIn("FAILURE_INJECTION_TOTAL_STALE", self.run_case(status=status))
 
     def test_failure_injection_count_contract_must_balance(self):
-        authority = json.loads(json.dumps(COUNT_AUTHORITY)); authority["total"] = 91
+        authority = json.loads(json.dumps(COUNT_AUTHORITY)); authority["total"] = 108
         self.assertIn("FAILURE_COUNT_AUTHORITY_TOTAL_MISMATCH", self.run_case(count_authority=authority))
 
     def test_worktree_authority_discovery_cannot_be_removed(self):
@@ -169,6 +189,18 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
     def test_unimplemented_external_replay_anchor_cannot_be_claimed_complete(self):
         status = safe_status(); status["approval_authority_boundary"]["external_replay_anchor"] = "PASS"
         self.assertIn("APPROVAL_REPLAY_EXTERNAL_ANCHOR_OVERCLAIMED", self.run_case(status=status))
+
+    def test_mvp_acceptance_steps_cannot_be_claimed_complete(self):
+        status = safe_status(); status["mvp_acceptance_coverage"]["state"] = "PASS"
+        self.assertIn("MVP_ACCEPTANCE_STATE_OVERCLAIMED", self.run_case(status=status))
+
+    def test_two_consecutive_real_repository_runs_cannot_be_invented(self):
+        status = safe_status(); status["mvp_acceptance_coverage"]["two_consecutive_real_repository_runs"] = "PASS"
+        self.assertIn("MVP_ACCEPTANCE_REPEAT_OVERCLAIMED", self.run_case(status=status))
+
+    def test_approval_snapshot_state_must_use_canonical_vocabulary(self):
+        status = safe_status(); status["approval_authority_boundary"]["receipt_verify_consume_binding"] = "OLD_STATE"
+        self.assertIn("APPROVAL_RECEIPT_SNAPSHOT_BINDING_MISSING", self.run_case(status=status))
 
 
 if __name__ == "__main__":
