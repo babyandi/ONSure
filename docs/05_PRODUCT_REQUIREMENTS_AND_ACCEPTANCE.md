@@ -12,6 +12,8 @@
 2. `41_ONSURE_FINAL_TARGET_ARCHITECTURE.md` — 최종 제품·구성요소·역할·운영 아키텍처
 3. `42_VSCODE_AGENT_AND_GIT_FULL_CHAIN_DESIGN.md` — Claude형 VS Code Agent 및 통제된 Git Full-Chain
 4. `43_FINANCIAL_CONTROL_TRACE_AND_ACCEPTANCE.md` — 금융통제·시험·Evidence·Final Gate
+5. `44_UNIFIED_AI_WORK_DEVELOPER_ASSURANCE_DESIGN.md` — Codex형 개발, Claude형 VS Code, ChatGPT Work형 범용업무의 단일 세션·권한·증적 통합
+
 
 기존 MVP 범위는 최종 목표를 축소하거나 누락시키는 상위 기준이 아니다. 단계별 개발은 이 최종 정본의 Requirement ID를 유지한 채 구현 순서만 나눈다.
 
@@ -90,6 +92,32 @@ HA, Scale, Queue, Checkpoint, Pause/Resume, Idempotency, RTO/RPO, Backup/Restore
 
 ### FR-FIN-14 Vendor·Supply Chain
 외부 모델·AI SaaS·오픈소스·데이터·컨테이너·VSIX·패키지의 출처, 계약, 지역, 보존, 하도급, SBOM, 서명, Provenance, Exit Plan을 검증한다.
+
+
+
+### FR-FIN-15 Unified Workbench
+VS Code·Web·Desktop·CLI에서 동일 Project, Session, Task Graph, Approval, Memory, Checkpoint, Evidence를 사용한다. 화면·모델·Execution Node가 바뀌어도 조건 검산 후 작업을 재개한다.
+
+### FR-FIN-16 Developer Agent
+저장소 분석, Patch, Terminal, Test, Harness, 설치, Git 작업을 제공하되 Hunk·명령·네트워크·Git 단계별 승인과 Dirty 변경 보존을 강제한다.
+
+### FR-FIN-17 Work·Artifact Agent
+조사·분석·DOCX·PPTX·XLSX·PDF 생성·수정, 템플릿 적용, Native Object 보존, Render·Read-back QA와 출처 추적을 제공한다.
+
+### FR-FIN-18 Orchestration·Memory
+개발·조사·문서·설치·검증 Task를 조율하고 프로젝트 Memory, 결정, 제약, 출처, 만료를 관리한다. 검증되지 않은 대화·웹·Repository 정보는 범용 기준으로 자동 승격하지 않는다.
+
+### FR-FIN-19 Tool·Skill·Plugin·Connector
+Terminal, Browser, MCP, Skill, Plugin, GitHub, Drive, Mail, Calendar 등 확장 기능을 서명 Manifest, 최소권한, 네트워크·데이터 경계, 공급망 검증과 승인 정책 아래 제공한다.
+
+### FR-FIN-20 Automation
+예약·반복·조건 감시를 지원하며 실행 상한, 멱등성, 재시도, 중지조건, 승인 만료, 결과 통지를 Evidence에 결속한다.
+
+### FR-FIN-21 Package·Delivery
+설치 파일의 서명·Hash·SBOM·악성코드·라이선스·호환성을 검증하고, 격리 시험 설치, 승인된 설치·설정·기동, 기능·보안·복구 검증과 Rollback Receipt를 제공한다.
+
+### FR-FIN-22 Unified Evidence
+사용자 요청→계획→Context→모델·도구→파일·Artifact→명령·설치·Git→시험→개선→독립검증→사람결정의 단일 Parent Hash 계보를 강제한다.
 
 ## 6. 수용 원칙
 
