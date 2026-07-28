@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_META_OMISSION_FINDINGS_V1",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "assessment_date": "2026-07-28",
   "source_ref": "audit/onsure-meta-omission-remediation-20260728",
   "findings": [
@@ -191,6 +191,40 @@
       "remaining_gaps": [
         "CURRENT_HEAD_LOCAL_STATUS_CONSISTENCY_EXECUTION_NOT_RUN"
       ]
+    },
+    {
+      "id": "META-014",
+      "severity": "CRITICAL",
+      "category": "POSITIVE_CASE_AUTHORITY",
+      "title": "Successful behavior had no authoritative registry, denominator, oracle, or execution receipt",
+      "prior_miss_reason": "MAVEN_EXIT_ZERO_AND_NEGATIVE_INJECTION_COUNTS_WERE_MISTAKEN_FOR_BALANCED_VALIDATION",
+      "fix_state": "IMPLEMENTED_NONFINAL_LOCAL_FULL_GATE_REQUIRED",
+      "fix_refs": [
+        "contracts/validation-case-registry.v1.json",
+        "scripts/validate-validation-case-registry.py",
+        "scripts/onsure-local-gate.sh"
+      ],
+      "remaining_gaps": [
+        "CURRENT_HEAD_LOCAL_FULL_GATE_NOT_RUN",
+        "INDEPENDENT_OTESTER_NOT_RUN",
+        "INDEPENDENT_OAUDIT_NOT_RUN"
+      ]
+    },
+    {
+      "id": "META-015",
+      "severity": "HIGH",
+      "category": "CASE_ORACLE_ALIASING",
+      "title": "Class-level test aggregation could count normal and adversarial cases without proving the exact registered method executed",
+      "prior_miss_reason": "TEST_CLASS_EXECUTION_WAS_USED_AS_A_PROXY_FOR_CASE_ORACLE_EXECUTION",
+      "fix_state": "IMPLEMENTED_NONFINAL_LOCAL_FULL_GATE_REQUIRED",
+      "fix_refs": [
+        "contracts/validation-case-registry.v1.json",
+        "scripts/validate-validation-case-registry.py"
+      ],
+      "remaining_gaps": [
+        "ALL_REGISTRY_ENTRIES_NOT_YET_METHOD_BOUND",
+        "CURRENT_HEAD_LOCAL_FULL_GATE_NOT_RUN"
+      ]
     }
   ],
   "detector_coverage": {
@@ -234,5 +268,16 @@
     "final_lock_allowed": false,
     "production_go": false,
     "commercial_go": false
+  },
+  "validation_case_authority": {
+    "registry": "contracts/validation-case-registry.v1.json",
+    "validator": "scripts/validate-validation-case-registry.py",
+    "classes": [
+      "positive",
+      "negative",
+      "adversarial"
+    ],
+    "registered_total": 12,
+    "runtime_receipt": "NOT_RUN_CURRENT_HEAD"
   }
 }
