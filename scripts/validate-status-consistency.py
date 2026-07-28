@@ -141,7 +141,7 @@ def main() -> int:
     if authority.get("contained_worktree_authority_discovery") != "UNIQUE_EXISTING_AUTHORITY_REQUIRED":
         errors.append("APPROVAL_CONTAINED_WORKTREE_DISCOVERY_MISSING")
     if authority.get("receipt_verify_consume_binding") \
-            != "IMMUTABLE_SNAPSHOT_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED":
+            != "EXACT_CONSUMED_SNAPSHOT_RETURNED_TO_CALLER_LOCAL_EXECUTION_REQUIRED":
         errors.append("APPROVAL_RECEIPT_SNAPSHOT_BINDING_MISSING")
     if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
         errors.append("APPROVAL_EXTERNAL_ANCHOR_STATE_MISMATCH")
@@ -224,7 +224,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V13",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V14",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
