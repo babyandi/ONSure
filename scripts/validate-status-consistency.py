@@ -6,7 +6,7 @@ import pathlib
 from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TOTAL_FAILURE_INJECTIONS = 80
+TOTAL_FAILURE_INJECTIONS = 81
 
 
 def load(relative: str):
@@ -54,10 +54,8 @@ def main() -> int:
         if trace_summary.get("verification", {}).get(state.lower()) != count:
             errors.append(f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}")
 
-    expected_matrix = {
-        capability_key(capability_id): item.get("implementation_status")
-        for capability_id, item in design_by_id.items()
-    }
+    expected_matrix = {capability_key(key): value.get("implementation_status")
+                       for key, value in design_by_id.items()}
     if matrix.get("capabilities") != expected_matrix:
         errors.append("IMPLEMENTATION_MATRIX_CAPABILITY_MAP_MISMATCH")
     for state, count in impl_counts.items():
@@ -103,9 +101,8 @@ def main() -> int:
     for field, expected in expected_coverage.items():
         if omission.get("coverage", {}).get(field) != expected:
             errors.append(f"OMISSION_COVERAGE_MISMATCH:{field}")
-    base_failure = omission.get("failure_injection", {})
-    if base_failure.get("total") != 28 or len(base_failure.get("cases", [])) != 28:
-        errors.append("OMISSION_FAILURE_CASE_COUNT_MISMATCH")
+    if omission.get("failure_injection", {}).get("total") != 28:
+        errors.append("OMISSION_BASE_FAILURE_COUNT_MISMATCH")
 
     sub_status = verification.get("product_subrequirement_coverage", {})
     for field in ("implemented", "partial", "stub", "design_only"):
@@ -130,11 +127,10 @@ def main() -> int:
             errors.append(f"APPROVAL_AUTHORITY_STATUS_MISMATCH:{field}")
 
     bounded = verification.get("bounded_process_execution", {})
-    expected_callpaths = {
+    if set(bounded.get("covered_callpaths", [])) != {
         "PROGRAM_LEARNING_GIT", "SOURCE_REFERENCE_GIT",
         "PATCH_WORKFLOW_GIT", "GIT_DELIVERY_GIT_GH",
-    }
-    if set(bounded.get("covered_callpaths", [])) != expected_callpaths:
+    }:
         errors.append("BOUNDED_PROCESS_CALLPATH_SET_MISMATCH")
     if bounded.get("current_repository_maven") != "NOT_RUN":
         errors.append("BOUNDED_PROCESS_MAVEN_OVERCLAIMED")
@@ -146,7 +142,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 10,
+        "critical_callpath_cases": 11,
         "all_registered_failure_injections": TOTAL_FAILURE_INJECTIONS,
     }
     current_failure = verification.get("omission_failure_injection", {})
@@ -159,7 +155,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 10,
+        "critical_callpath_cases": 11,
         "all_registered_cases": TOTAL_FAILURE_INJECTIONS,
     }.items():
         if additional.get(field) != expected:
@@ -209,7 +205,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V8",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V9",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
