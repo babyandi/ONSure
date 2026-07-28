@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.ApprovalReceiptVerifier;
+import io.onsure.assurance.ConsumedApprovalReceiptVerifier;
 import io.onsure.assurance.Decision;
 import io.onsure.assurance.ValidationResult;
 import java.nio.charset.StandardCharsets;
@@ -136,23 +137,37 @@ public final class GitWorkflowService {
         result.put("merge_state", "PROHIBITED");
         result.put("created_at", Instant.now().toString());
         result.put("final_claim_allowed", false);
-        result.put("change_set_sha256", sha256(mapper.writeValueAsBytes(result)));
+        result.put("change_set_sha256", canonicalHash(result, "change_set_sha256"));
         writeAtomic(outputFile, result);
         return Map.copyOf(result);
+    }
+
+    @Deprecated
+    public Map<String, Object> pushAndOpenDraftPr(
+            Path worktreeRoot, Path changeSetFile, Path deliveryApprovalFile,
+            String baseBranch, String title, Path bodyFile, Path outputFile) {
+        throw new IllegalStateException("APPROVAL_TRUST_REGISTRY_REQUIRED_FOR_PUSH");
     }
 
     public Map<String, Object> pushAndOpenDraftPr(
             Path worktreeRoot,
             Path changeSetFile,
             Path deliveryApprovalFile,
+            Path approvalKeyRegistry,
+            Path approvalReplayLedger,
             String baseBranch,
             String title,
             Path bodyFile,
             Path outputFile) throws Exception {
         Path worktree = worktreeRoot.toAbsolutePath().normalize();
         JsonNode changeSet = readContract(changeSetFile, CHANGE_SET_CONTRACT, "GIT_CHANGE_SET");
+        verifyCanonicalHash(changeSet, "change_set_sha256", "GIT_CHANGE_SET_HASH_MISMATCH");
         JsonNode approval = readContract(
                 deliveryApprovalFile, DELIVERY_APPROVAL_CONTRACT, "GIT_DELIVERY_APPROVAL");
+        ConsumedApprovalReceiptVerifier.requireTrustedConsumed(
+                deliveryApprovalFile, approvalKeyRegistry, approvalReplayLedger,
+                DELIVERY_APPROVAL_CONTRACT, APPROVAL_PURPOSE, Instant.now(),
+                "GIT_DELIVERY_CONSUMED_APPROVAL_INVALID");
         String approvalDigest = sha256(Files.readAllBytes(deliveryApprovalFile));
         if (!approvalDigest.equals(changeSet.path("delivery_approval_sha256").asText())) {
             throw new IllegalStateException("GIT_CHANGE_SET_APPROVAL_DIGEST_MISMATCH");
@@ -216,7 +231,7 @@ public final class GitWorkflowService {
         result.put("merge_authorized", false);
         result.put("created_at", Instant.now().toString());
         result.put("final_claim_allowed", false);
-        result.put("receipt_sha256", sha256(mapper.writeValueAsBytes(result)));
+        result.put("receipt_sha256", canonicalHash(result, "receipt_sha256"));
         writeAtomic(outputFile, result);
         return Map.copyOf(result);
     }
@@ -239,6 +254,22 @@ public final class GitWorkflowService {
                 || !changeSet.path("approval_expires_at").asText().equals(approval.path("expires_at").asText())) {
             throw new IllegalStateException("GIT_DELIVERY_APPROVAL_IDENTITY_OR_EXPIRY_MISMATCH");
         }
+    }
+
+    private void verifyCanonicalHash(JsonNode node, String field, String code) throws Exception {
+        if (!node.isObject()) throw new IllegalStateException(code);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> value = mapper.convertValue(node, Map.class);
+        String declared = String.valueOf(value.get(field));
+        if (!declared.matches("[0-9a-f]{64}") || !declared.equals(canonicalHash(value, field))) {
+            throw new IllegalStateException(code);
+        }
+    }
+
+    private String canonicalHash(Map<String, Object> value, String selfField) throws Exception {
+        Map<String, Object> copy = new java.util.TreeMap<>(value);
+        copy.remove(selfField);
+        return sha256(mapper.writeValueAsBytes(copy));
     }
 
     private static void requireSafeApprovalPermissions(JsonNode approval) {
