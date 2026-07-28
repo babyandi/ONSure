@@ -112,6 +112,14 @@ public record ApprovalAuthorityPaths(
                         "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED:" + field);
             }
         }
+        boolean patchApplyShape = !request.path("repository_root").asText("").isBlank()
+                && !request.path("patch_plan_file").asText("").isBlank()
+                && !request.path("approval_receipt_file").asText("").isBlank();
+        if (("patch.apply".equals(operation) || patchApplyShape)
+                && !request.path("worktree_root").asText("").isBlank()) {
+            throw new IllegalArgumentException(
+                    "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED:worktree_root");
+        }
         for (String field : OPERATION_STATE_OVERRIDE_FIELDS.getOrDefault(operation, Set.of())) {
             if (!request.path(field).asText("").isBlank()) {
                 throw new IllegalArgumentException(
