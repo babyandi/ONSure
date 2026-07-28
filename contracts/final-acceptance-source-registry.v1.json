@@ -1,0 +1,16 @@
+{
+  "contract":"ONSURE_FINAL_ACCEPTANCE_SOURCE_REGISTRY_V1",
+  "version":"1.0.0",
+  "sources":[
+    {"id":"FIN-ACC-05","document":"docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md","section_anchor":"Final 후보 최소조건:","item_style":"BULLET","expected_count":10},
+    {"id":"FIN-ACC-40","document":"docs/40_FINAL_PRODUCT_RESEARCH_AND_ROLE_MODELS.md","section_anchor":"## 5. 연구에서 도출된 P0 차별 요구","item_style":"NUMBERED","expected_count":8},
+    {"id":"FIN-ACC-41","document":"docs/41_ONSURE_FINAL_TARGET_ARCHITECTURE.md","section_anchor":"## 10. 최종 수용 기준","item_style":"BULLET","expected_count":10},
+    {"id":"FIN-ACC-42","document":"docs/42_VSCODE_AGENT_AND_GIT_FULL_CHAIN_DESIGN.md","section_anchor":"## 14. 수용 기준","item_style":"BULLET","expected_count":8},
+    {"id":"FIN-ACC-43","document":"docs/43_FINANCIAL_CONTROL_TRACE_AND_ACCEPTANCE.md","section_anchor":"## 7. 최종 Gate","item_style":"NUMBERED","expected_count":12},
+    {"id":"FIN-ACC-44","document":"docs/44_UNIFIED_AI_WORK_DEVELOPER_ASSURANCE_DESIGN.md","section_anchor":"## 13. P0 통합 수용 기준","item_style":"BULLET","expected_count":13}
+  ],
+  "total_expected_items":61,
+  "coverage_state":"SOURCE_INVENTORY_ONLY_ATOMIC_IMPLEMENTATION_MAPPING_PENDING",
+  "current_source_execution":"LOCAL_RECEIPT_REQUIRED",
+  "final_claim_allowed":false
+}
