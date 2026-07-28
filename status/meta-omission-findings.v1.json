@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_META_OMISSION_FINDINGS_V1",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "assessment_date": "2026-07-28",
   "source_ref": "audit/onsure-meta-omission-remediation-20260728",
   "findings": [
@@ -141,6 +141,20 @@
         "WINDOWS_JUNCTION_AND_CASE_ALIAS_INDEPENDENT_TEST_NOT_RUN",
         "EXTERNAL_REPLAY_LEDGER_HEAD_ANCHOR"
       ]
+    },
+    {
+      "id": "META-011",
+      "severity": "HIGH",
+      "category": "VERIFICATION_DENOMINATOR_DRIFT",
+      "title": "Failure-injection totals diverged across the audit document, verification status, omission status and consistency gate",
+      "prior_miss_reason": "DUPLICATED_MANUAL_COUNTS_WITHOUT_SINGLE_AUTHORITY_CROSS_CHECK",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "scripts/validate-status-consistency.py",
+        "status/verification-status.v1.json",
+        "status/omission-detection-status.v1.json",
+        "docs/verification/ONSURE_META_OMISSION_AUDIT_v1.md"
+      ]
     }
   ],
   "detector_coverage": {
@@ -150,8 +164,8 @@
     "verification_claims": 10,
     "product_subrequirements": 10,
     "workflow_surfaces": 6,
-    "critical_callpaths": 13,
-    "registered_total": 83
+    "critical_callpaths": 16,
+    "registered_total": 86
   },
   "executed_in_this_audit": {
     "product_subrequirement_failure_injections": "10_OF_10_PASS",
