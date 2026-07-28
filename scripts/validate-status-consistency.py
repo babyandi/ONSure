@@ -6,7 +6,7 @@ import pathlib
 from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TOTAL_FAILURE_INJECTIONS = 81
+TOTAL_FAILURE_INJECTIONS = 82
 
 
 def load(relative: str):
@@ -94,9 +94,12 @@ def main() -> int:
         errors.append("PROCESS_ARTIFACT_COUNT_OR_DUPLICATE")
 
     expected_coverage = {
-        "design_capabilities": 28, "product_subrequirements": 38,
-        "workflow_operations": 39, "workflow_surfaces": 3,
-        "product_process_stages": 20, "lineage_artifacts": 20,
+        "design_capabilities": 28,
+        "product_subrequirements": 38,
+        "workflow_operations": 39,
+        "workflow_surfaces": 3,
+        "product_process_stages": 20,
+        "lineage_artifacts": 20,
     }
     for field, expected in expected_coverage.items():
         if omission.get("coverage", {}).get(field) != expected:
@@ -115,16 +118,14 @@ def main() -> int:
         errors.append("VERIFICATION_CRITICAL_CALLPATH_RUNNER_MISSING")
 
     authority = verification.get("approval_authority_boundary", {})
-    expected_authority = {
-        "authority_root": ".onsure/approval-authority/",
-        "trusted_key_registry": ".onsure/approval-authority/trusted-key-registry.json",
-        "replay_ledger": ".onsure/approval-authority/approval-replay-ledger.jsonl",
-        "request_path_override_allowed": False,
-        "external_replay_anchor": "NOT_IMPLEMENTED",
-    }
-    for field, expected in expected_authority.items():
-        if authority.get(field) != expected:
-            errors.append(f"APPROVAL_AUTHORITY_STATUS_MISMATCH:{field}")
+    if authority.get("state") != "IMPLEMENTED_OUTSIDE_TARGET_WORKSPACE_LOCAL_EXECUTION_REQUIRED":
+        errors.append("APPROVAL_AUTHORITY_STATE_MISMATCH")
+    if authority.get("request_path_override_allowed") is not False:
+        errors.append("APPROVAL_AUTHORITY_OVERRIDE_UNSAFE")
+    if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
+        errors.append("APPROVAL_EXTERNAL_ANCHOR_STATE_MISMATCH")
+    if authority.get("current_source_execution") != "NOT_RUN":
+        errors.append("APPROVAL_AUTHORITY_RUNTIME_OVERCLAIMED")
 
     bounded = verification.get("bounded_process_execution", {})
     if set(bounded.get("covered_callpaths", [])) != {
@@ -142,7 +143,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 11,
+        "critical_callpath_cases": 12,
         "all_registered_failure_injections": TOTAL_FAILURE_INJECTIONS,
     }
     current_failure = verification.get("omission_failure_injection", {})
@@ -155,7 +156,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 11,
+        "critical_callpath_cases": 12,
         "all_registered_cases": TOTAL_FAILURE_INJECTIONS,
     }.items():
         if additional.get(field) != expected:
@@ -205,7 +206,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V9",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V10",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
