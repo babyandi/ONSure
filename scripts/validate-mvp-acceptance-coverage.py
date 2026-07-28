@@ -33,8 +33,13 @@ def extract(source: str) -> dict[str, str]:
         match = NUMBERED.match(line)
         if match:
             number = int(match.group(1))
-            result[f"AC-{number:02d}"] = match.group(2).strip()
+            key = f"AC-{number:02d}"
+            if key in result:
+                raise ValueError(f"MVP_ACCEPTANCE_SOURCE_ID_DUPLICATE:{key}")
+            result[key] = match.group(2).strip()
         elif line.startswith("이 시나리오가 실제 저장소에서"):
+            if "AC-11" in result:
+                raise ValueError("MVP_ACCEPTANCE_SOURCE_ID_DUPLICATE:AC-11")
             result["AC-11"] = line
     return result
 
@@ -53,7 +58,10 @@ def validate(body: dict, source_text: str | None = None) -> list[str]:
         source_text = source_path.read_text(encoding="utf-8") if source_path.is_file() else ""
     if not source_text:
         return errors + ["MVP_ACCEPTANCE_SOURCE_DOCUMENT_MISSING"]
-    expected = extract(source_text)
+    try:
+        expected = extract(source_text)
+    except ValueError as failure:
+        return errors + [str(failure)]
     items = body.get("acceptance_items", [])
     if not isinstance(items, list):
         return errors + ["MVP_ACCEPTANCE_ITEMS_NOT_ARRAY"]
@@ -67,18 +75,13 @@ def validate(body: dict, source_text: str | None = None) -> list[str]:
 
     implementation = Counter()
     verification = Counter()
-    previous_number = 0
+    ordered_numbers: list[int] = []
     for item_id, item in registered.items():
-        if not item_id.matches if False else False:
-            pass
         match = re.fullmatch(r"AC-(\d{2})", item_id)
         if not match:
             errors.append(f"MVP_ACCEPTANCE_ID_INVALID:{item_id}")
             continue
-        number = int(match.group(1))
-        if number != previous_number + 1:
-            errors.append(f"MVP_ACCEPTANCE_SEQUENCE_GAP:{previous_number}:{number}")
-        previous_number = number
+        ordered_numbers.append(int(match.group(1)))
         phrase = str(item.get("normative_phrase", "")).strip()
         if expected.get(item_id) != phrase:
             errors.append(f"MVP_ACCEPTANCE_PHRASE_MISMATCH:{item_id}")
@@ -103,6 +106,8 @@ def validate(body: dict, source_text: str | None = None) -> list[str]:
             errors.append(f"MVP_ACCEPTANCE_INCOMPLETE_WITHOUT_GAP:{item_id}")
         if item.get("verification_state") == "PASS" and not item.get("evidence_refs"):
             errors.append(f"MVP_ACCEPTANCE_PASS_WITHOUT_EVIDENCE:{item_id}")
+    if ordered_numbers != list(range(1, len(ordered_numbers) + 1)):
+        errors.append(f"MVP_ACCEPTANCE_SEQUENCE_INVALID:{ordered_numbers}")
 
     summary = body.get("summary", {})
     calculated = {
@@ -138,10 +143,9 @@ def self_test(body: dict, source: str) -> list[str]:
             missed.append(f"MVP_ACCEPTANCE_SELF_TEST_MISSED:{name}:{prefix}:{violations[:6]}")
 
     expect("source step added", lambda value: None, "MVP_ACCEPTANCE_SOURCE_STEP_UNMAPPED",
-           lambda text: text.replace("10. VS Code를 재시작해도 상태가 복원됩니다.",
-                                    "10. VS Code를 재시작해도 상태가 복원됩니다.\n11. 새 수용 단계입니다.", 1)
-                       .replace("이 시나리오가 실제 저장소에서 2회 연속 성공해야 MVP Full-Chain으로 인정합니다.",
-                                "이 시나리오가 실제 저장소에서 2회 연속 성공해야 MVP Full-Chain으로 인정합니다.", 1))
+           lambda text: text.replace(
+               "10. VS Code를 재시작해도 상태가 복원됩니다.",
+               "10. VS Code를 재시작해도 상태가 복원됩니다.\n12. 새 수용 단계입니다.", 1))
     expect("step removed", lambda value: value["acceptance_items"].pop(2),
            "MVP_ACCEPTANCE_SOURCE_STEP_UNMAPPED")
     expect("duplicate id", lambda value: value["acceptance_items"][1].update(id="AC-01"),
@@ -168,12 +172,16 @@ def main() -> int:
     source = source_path.read_text(encoding="utf-8") if source_path.is_file() else ""
     errors = validate(body, source)
     self_errors = self_test(body, source) if args.self_test and source else []
+    try:
+        source_count = len(extract(source)) if source else 0
+    except ValueError:
+        source_count = -1
     report = {
-        "contract": "ONSURE_MVP_ACCEPTANCE_VALIDATION_REPORT_V1",
+        "contract": "ONSURE_MVP_ACCEPTANCE_VALIDATION_REPORT_V2",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
-        "source_step_count": len(extract(source)) if source else 0,
+        "source_step_count": source_count,
         "registered_step_count": len(body.get("acceptance_items", [])),
         "failure_injection_count": 8 if args.self_test else 0,
         "mvp_full_chain": "NOT_RUN",
