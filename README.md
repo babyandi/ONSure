@@ -58,7 +58,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 10개 제품 하위 Requirement 실패주입
 6개 Workflow Surface 실패주입
 24개 Critical Callpath 실패주입
-합계 81개
+합계 94개
 ```
 
 권위 파일:
@@ -67,6 +67,8 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - `scripts/validate-product-subrequirements.py`
 - `scripts/validate-workflow-surface-parity.py` — 39개 Workflow·3개 제품 표면
 - `scripts/validate-critical-callpaths.py`
+- `contracts/validation-case-registry.v1.json` — 성공·실패·공격 사례 단일 권위 목록
+- `scripts/validate-validation-case-registry.py` — 0건 실행·누락·Skip·Failure/Error 차단 및 실행 Receipt 생성
 - `status/omission-detection-status.v1.json`
 - `status/verification-status.v1.json`
 - `status/remaining-work-register.v1.json`
