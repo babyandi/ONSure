@@ -45,7 +45,7 @@ PY
 python3 - "$OUT/result.json" "$HEAD_SHA" "$PROFILE" "$MODE" "$ENVIRONMENT_DIGEST" "$GATE_EXIT" <<'PY'
 import json,pathlib,sys
 path,source,profile,mode,environment,exit_code=sys.argv[1:];code=int(exit_code)
-body={"contract":"ONSURE_ONE_SHOT_RESULT_V10","decision":"NON_FINAL" if code==0 else "FAIL","source_commit":source,"profile":profile,"mode":mode.upper(),"environment_digest":environment,"local_gate_exit":code,"local_gate_authority":True,"product_subrequirements":"PASS_WITH_KNOWN_GAPS" if code==0 else "FAIL","workflow_surface_parity":"PASS" if code==0 else "FAIL","critical_callpaths":"PASS" if code==0 else "FAIL","registered_failure_injections":82,"release_gate":"HOLD","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
+body={"contract":"ONSURE_ONE_SHOT_RESULT_V11","decision":"NON_FINAL" if code==0 else "FAIL","source_commit":source,"profile":profile,"mode":mode.upper(),"environment_digest":environment,"local_gate_exit":code,"local_gate_authority":True,"product_subrequirements":"PASS_WITH_KNOWN_GAPS" if code==0 else "FAIL","workflow_surface_parity":"PASS" if code==0 else "FAIL","critical_callpaths":"PASS" if code==0 else "FAIL","registered_failure_injections":84,"release_gate":"HOLD","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY
 find "$OUT" -type f ! -name evidence.sha256 -print0 | sort -z | xargs -0 sha256sum > "$OUT/evidence.sha256"
