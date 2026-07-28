@@ -16,6 +16,7 @@ REQUIRED = [
     COUNT_AUTHORITY,
     "status/design-capability-coverage.v2.json",
     "status/product-subrequirement-coverage.v1.json",
+    "status/mvp-acceptance-coverage.v1.json",
     "status/omission-detection-status.v1.json",
     "status/verification-status.v1.json",
     "status/remaining-work-register.v1.json",
@@ -24,11 +25,15 @@ REQUIRED = [
     "scripts/onsure-one-shot.sh",
     "scripts/onsure-final-stage.sh",
     "scripts/validate-product-subrequirements.py",
+    "scripts/validate-mvp-acceptance-coverage.py",
+    "scripts/validate-mvp-status-consistency.py",
     "scripts/validate-workflow-surface-parity.py",
     "scripts/validate-critical-callpaths.py",
     "scripts/validate-status-consistency.py",
     "scripts/validate_status_consistency_v2.py",
     "scripts/validate-verification-claims.py",
+    "scripts/validate_verification_claims_v2.py",
+    "scripts/validate_codespace_free_remediation_v2.py",
     "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
     "src/main/java/io/onsure/assurance/LocalKeyRegistry.java",
     "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
@@ -40,6 +45,8 @@ REQUIRED = [
 ASSERTIONS = {
     "scripts/onsure-local-gate.sh": [
         "validate-product-subrequirements.py --self-test",
+        "validate-mvp-acceptance-coverage.py --self-test",
+        "validate-mvp-status-consistency.py",
         "validate-workflow-surface-parity.py --self-test",
         "validate-critical-callpaths.py --self-test",
         COUNT_AUTHORITY,
@@ -88,6 +95,8 @@ COMMANDS = [
     ([sys.executable, "scripts/validate-atomic-requirements.py", "--self-test"], '"decision": "PASS"'),
     ([sys.executable, "scripts/validate-design-coverage.py", "--matrix", "status/design-capability-coverage.v2.json", "--root", ".", "--self-test"], '"decision": "PASS"'),
     ([sys.executable, "scripts/validate-product-subrequirements.py", "--self-test"], "ONSURE_PRODUCT_SUBREQUIREMENT_GATE_PASS"),
+    ([sys.executable, "scripts/validate-mvp-acceptance-coverage.py", "--self-test"], "ONSURE_MVP_ACCEPTANCE_GATE_PASS"),
+    ([sys.executable, "scripts/validate-mvp-status-consistency.py"], "ONSURE_MVP_STATUS_CONSISTENCY_PASS"),
     ([sys.executable, "scripts/validate-workflow-surface-parity.py", "--self-test"], "ONSURE_WORKFLOW_SURFACE_PARITY_PASS"),
     ([sys.executable, "scripts/validate-critical-callpaths.py", "--self-test"], "ONSURE_CRITICAL_CALLPATH_PASS"),
     ([sys.executable, "scripts/validate-status-consistency.py"], "ONSURE_STATUS_CONSISTENCY_PASS"),
@@ -147,8 +156,9 @@ def main() -> int:
     if total != sum(count_values.values()):
         errors.append("FAILURE_COUNT_AUTHORITY_TOTAL_MISMATCH")
     subreq = json.loads((ROOT / "status/product-subrequirement-coverage.v1.json").read_text(encoding="utf-8"))
-    workflow = json.loads((ROOT / "status/verification-status.v1.json").read_text(encoding="utf-8")) \
-        .get("workflow_surface_parity", {})
+    mvp = json.loads((ROOT / "status/mvp-acceptance-coverage.v1.json").read_text(encoding="utf-8"))
+    verification = json.loads((ROOT / "status/verification-status.v1.json").read_text(encoding="utf-8"))
+    workflow = verification.get("workflow_surface_parity", {})
     process = json.loads((ROOT / "contracts/product-process-lineage.v1.json").read_text(encoding="utf-8"))
 
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
@@ -164,13 +174,14 @@ def main() -> int:
         errors.append("UNSAFE_GO_FLAG")
 
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V19",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V20",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "github_actions": "DISABLED_BY_USER",
         "local_gate_required": True,
         "design_capability_count": len(json.loads((ROOT / "status/design-capability-coverage.v2.json").read_text(encoding="utf-8")).get("capabilities", [])),
         "product_subrequirement_count": len(subreq.get("requirements", [])),
+        "mvp_acceptance_item_count": len(mvp.get("acceptance_items", [])),
         "workflow_operation_count": workflow.get("dispatcher_operation_count"),
         "product_process_stage_count": len(process.get("stages", [])),
         "product_lineage_artifact_count": len(process.get("artifacts", [])),
