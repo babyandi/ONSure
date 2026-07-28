@@ -11,7 +11,8 @@ REQUIRED_TOKENS = {
     "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
         "AUTHORITY_BASE_PROPERTY", "DEFAULT_AUTHORITY_BASE", "trusted-key-registry.json",
         "approval-replay-ledger.jsonl", "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED",
-        "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE", "requireTrustedKeyRegistry",
+        "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
+        "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED", "requireTrustedKeyRegistry",
     ],
     "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
         "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile",
@@ -66,6 +67,7 @@ REQUIRED_TOKENS = {
         "authorityBaseInsideWorkspaceIsRejected",
         "everyWorkflowRejectsCallerSelectedAuthorityPaths",
         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "symlinkedAuthorityRegistryIsRejected",
+        "symlinkedWorkspaceAliasCannotForkApprovalAuthority",
     ],
     "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java": [
         "publicKeyOutsideAuthorityRootIsRejected",
@@ -120,6 +122,8 @@ def self_test() -> list[str]:
             ("fixed trust root", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED"),
             ("authority outside workspace", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE"),
             ("authority separation regression", "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java", "authorityBaseInsideWorkspaceIsRejected"),
+            ("workspace alias trust fork", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED"),
+            ("workspace alias regression", "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java", "symlinkedWorkspaceAliasCannotForkApprovalAuthority"),
             ("public key reference boundary", "src/main/java/io/onsure/assurance/LocalKeyRegistry.java", "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT"),
             ("key registry cross-process lock", "src/main/java/io/onsure/assurance/LocalKeyRegistry.java", "ExclusiveFileLock.call(lockFile"),
             ("key registry boundary regression", "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java", "publicKeyOutsideAuthorityRootIsRejected"),
@@ -145,12 +149,12 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V6",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V7",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 14 if args.self_test else 0,
+        "failure_injection_count": 16 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
