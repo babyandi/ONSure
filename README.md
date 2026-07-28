@@ -52,6 +52,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Commit 때 검증한 승인을 Push 시점에 재검증하지 않는 상태전이 누락
 - Core 기능이 존재하지만 CLI·Local API·VS Code 제품 표면에 연결되지 않은 경로
 - MVP 수용 시나리오 10단계와 실제 저장소 2회 연속 성공 조건의 미추적
+- Workflow Operation 수를 여러 상태 파일에서 손으로 중복 관리해 40개를 39개로 잘못 기록한 오류
 
 이를 방지하기 위해 다음 권위 검사를 사용합니다.
 
@@ -74,7 +75,8 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - `status/mvp-acceptance-coverage.v1.json` — 10단계 사용자 여정과 2회 연속 성공 조건
 - `scripts/validate-mvp-acceptance-coverage.py`
 - `scripts/validate-mvp-status-consistency.py`
-- `scripts/validate-workflow-surface-parity.py` — 39개 Workflow·3개 제품 표면
+- `contracts/workflow-operation-registry.v1.json` — 40개 Workflow Operation 단일 권위
+- `scripts/validate-workflow-surface-parity.py` — 40개 Workflow·3개 제품 표면
 - `scripts/validate-critical-callpaths.py`
 - `contracts/validation-case-registry.v1.json` — 성공·실패·공격 사례 단일 권위 목록
 - `scripts/validate-validation-case-registry.py`
