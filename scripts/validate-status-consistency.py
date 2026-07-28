@@ -6,7 +6,7 @@ import pathlib
 from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TOTAL_FAILURE_INJECTIONS = 87
+COUNT_AUTHORITY = "contracts/omission-failure-injection-counts.v1.json"
 
 
 def load(relative: str):
@@ -19,6 +19,14 @@ def capability_key(value: str) -> str:
 
 def main() -> int:
     errors: list[str] = []
+    count_authority = load(COUNT_AUTHORITY)
+    authority_counts = count_authority.get("counts", {})
+    total_failure_injections = count_authority.get("total")
+    if count_authority.get("contract") != "ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1":
+        errors.append("FAILURE_COUNT_AUTHORITY_CONTRACT_INVALID")
+    if total_failure_injections != sum(authority_counts.values()):
+        errors.append("FAILURE_COUNT_AUTHORITY_TOTAL_MISMATCH")
+
     design = load("status/design-capability-coverage.v2.json")
     subreq = load("status/product-subrequirement-coverage.v1.json")
     trace = load("contracts/requirements-traceability.v1.json")
@@ -130,6 +138,8 @@ def main() -> int:
         errors.append("APPROVAL_REGISTRY_CROSS_PROCESS_LOCK_MISSING")
     if authority.get("registry_atomic_replace") is not True:
         errors.append("APPROVAL_REGISTRY_ATOMIC_REPLACE_MISSING")
+    if authority.get("contained_worktree_authority_discovery") != "UNIQUE_EXISTING_AUTHORITY_REQUIRED":
+        errors.append("APPROVAL_CONTAINED_WORKTREE_DISCOVERY_MISSING")
     if authority.get("receipt_verify_consume_binding") \
             != "IMMUTABLE_SNAPSHOT_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED":
         errors.append("APPROVAL_RECEIPT_SNAPSHOT_BINDING_MISSING")
@@ -147,31 +157,24 @@ def main() -> int:
     if bounded.get("current_repository_maven") != "NOT_RUN":
         errors.append("BOUNDED_PROCESS_MAVEN_OVERCLAIMED")
 
-    expected_failure_counts = {
-        "design_process_lineage_cases": 28,
-        "atomic_requirement_cases": 10,
-        "automation_boundary_cases": 6,
-        "verification_claim_cases": 10,
-        "product_subrequirement_cases": 10,
-        "workflow_surface_cases": 6,
-        "critical_callpath_cases": 17,
-        "all_registered_failure_injections": TOTAL_FAILURE_INJECTIONS,
-    }
+    expected_failure_counts = dict(authority_counts)
+    expected_failure_counts["all_registered_failure_injections"] = total_failure_injections
     current_failure = verification.get("omission_failure_injection", {})
+    if current_failure.get("authority") != COUNT_AUTHORITY:
+        errors.append("VERIFICATION_FAILURE_COUNT_AUTHORITY_MISSING")
     for field, expected in expected_failure_counts.items():
         if current_failure.get(field) != expected:
             errors.append(f"VERIFICATION_FAILURE_INJECTION_MISMATCH:{field}")
     additional = omission.get("additional_failure_injection", {})
-    for field, expected in {
-        "automation_boundary_cases": 6,
-        "verification_claim_cases": 10,
-        "product_subrequirement_cases": 10,
-        "workflow_surface_cases": 6,
-        "critical_callpath_cases": 17,
-        "all_registered_cases": TOTAL_FAILURE_INJECTIONS,
-    }.items():
+    if additional.get("authority") != COUNT_AUTHORITY:
+        errors.append("OMISSION_FAILURE_COUNT_AUTHORITY_MISSING")
+    for field, expected in authority_counts.items():
+        if field == "design_process_lineage_cases":
+            continue
         if additional.get(field) != expected:
             errors.append(f"OMISSION_ADDITIONAL_COUNT_MISMATCH:{field}")
+    if additional.get("all_registered_cases") != total_failure_injections:
+        errors.append("OMISSION_ADDITIONAL_TOTAL_MISMATCH")
 
     if verification.get("runtime_source_commit") is not None:
         errors.append("VERIFICATION_RUNTIME_SOURCE_COMMIT_MUST_BE_NULL")
@@ -199,10 +202,14 @@ def main() -> int:
         errors.append("REMAINING_WORK_SUBREQUIREMENT_AUTHORITY_MISMATCH")
     if remaining.get("process_lineage_authority") != "contracts/product-process-lineage.v1.json":
         errors.append("REMAINING_WORK_PROCESS_AUTHORITY_MISMATCH")
+    if remaining.get("failure_injection_authority") != COUNT_AUTHORITY:
+        errors.append("REMAINING_WORK_FAILURE_COUNT_AUTHORITY_MISMATCH")
     if remaining.get("validation_execution_policy", {}).get("github_actions") != "DISABLED_BY_USER":
         errors.append("REMAINING_WORK_ACTIONS_POLICY_NOT_DISABLED")
     if omission.get("authorities", {}).get("critical_callpaths") != "scripts/validate-critical-callpaths.py":
         errors.append("OMISSION_CRITICAL_CALLPATH_AUTHORITY_MISSING")
+    if omission.get("authorities", {}).get("failure_injection_counts") != COUNT_AUTHORITY:
+        errors.append("OMISSION_FAILURE_COUNT_AUTHORITY_LINK_MISSING")
 
     for source, flags in (
         (design.get("assurance", {}), ("final_lock_allowed", "production_go", "commercial_go")),
@@ -217,7 +224,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V12",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V13",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
@@ -225,7 +232,8 @@ def main() -> int:
         "workflow_operations": verification.get("workflow_surface_parity", {}).get("dispatcher_operation_count"),
         "process_stages": len(stages),
         "lineage_artifacts": len(artifacts),
-        "all_registered_failure_injections": TOTAL_FAILURE_INJECTIONS,
+        "failure_injection_authority": COUNT_AUTHORITY,
+        "all_registered_failure_injections": total_failure_injections,
         "implementation_counts": dict(sorted(impl_counts.items())),
         "subrequirement_implementation_counts": dict(sorted(sub_impl.items())),
         "verification_counts": dict(sorted(verify_counts.items())),
