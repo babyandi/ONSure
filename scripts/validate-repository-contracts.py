@@ -13,6 +13,7 @@ from collections import Counter
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+COUNT_AUTHORITY = "contracts/omission-failure-injection-counts.v1.json"
 REQUIRED_FILES = [
     "docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md",
     "docs/verification/ONSURE_FULL_DESIGN_GAP_ASSESSMENT_v1.md",
@@ -22,6 +23,7 @@ REQUIRED_FILES = [
     "contracts/state-model-mapping.v1.json",
     "contracts/requirements-traceability.v1.json",
     "contracts/product-process-lineage.v1.json",
+    COUNT_AUTHORITY,
     "status/design-capability-coverage.v2.json",
     "status/product-subrequirement-coverage.v1.json",
     "status/implementation-matrix.v1.json",
@@ -44,12 +46,24 @@ def digest(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def tracked_files() -> list[pathlib.Path]:
-    result = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=False)
+def git_output(*args: str, timeout: int = 20, max_bytes: int = 16 * 1024 * 1024) -> bytes:
+    try:
+        result = subprocess.run(
+            ["git", *args], cwd=ROOT, capture_output=True, check=False, timeout=timeout
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError("GIT_COMMAND_TIMEOUT:" + " ".join(args)) from exc
     if result.returncode != 0:
-        raise RuntimeError("GIT_LS_FILES_FAILED")
+        raise RuntimeError("GIT_COMMAND_FAILED:" + " ".join(args))
+    if len(result.stdout) > max_bytes or len(result.stderr) > max_bytes:
+        raise RuntimeError("GIT_COMMAND_OUTPUT_LIMIT:" + " ".join(args))
+    return result.stdout
+
+
+def tracked_files() -> list[pathlib.Path]:
+    output = git_output("ls-files", "-z")
     return sorted((ROOT / item.decode("utf-8")).resolve()
-                  for item in result.stdout.split(b"\0") if item)
+                  for item in output.split(b"\0") if item)
 
 
 def validate_json(files: list[pathlib.Path], errors: list[str]) -> tuple[dict[str, str], dict[str, str]]:
@@ -69,8 +83,10 @@ def validate_json(files: list[pathlib.Path], errors: list[str]) -> tuple[dict[st
                 if not lines:
                     errors.append(f"JSONL_EMPTY:{relative}")
                 for number, line in enumerate(lines, 1):
-                    if not line.strip(): errors.append(f"JSONL_BLANK_LINE:{relative}:{number}")
-                    else: json.loads(line)
+                    if not line.strip():
+                        errors.append(f"JSONL_BLANK_LINE:{relative}:{number}")
+                    else:
+                        json.loads(line)
                 jsonl_digests[relative] = digest(path)
         except Exception as exc:
             errors.append(f"STRUCTURED_FILE_INVALID:{relative}:{type(exc).__name__}")
@@ -94,26 +110,33 @@ def validate_trace_and_matrix(errors: list[str]) -> tuple[Counter[str], Counter[
     verify = Counter()
     for item in items:
         item_id = str(item.get("id", ""))
-        if not item_id or item_id in ids: errors.append(f"TRACE_ID_INVALID_OR_DUPLICATE:{item_id}")
+        if not item_id or item_id in ids:
+            errors.append(f"TRACE_ID_INVALID_OR_DUPLICATE:{item_id}")
         ids.add(item_id)
         state = item.get("status")
         verification = item.get("verification_state")
-        if state not in impl_allowed: errors.append(f"TRACE_IMPLEMENTATION_STATUS_INVALID:{item_id}:{state}")
-        else: impl[state] += 1
-        if verification not in verify_allowed: errors.append(f"TRACE_VERIFICATION_STATUS_INVALID:{item_id}:{verification}")
-        else: verify[verification] += 1
+        if state not in impl_allowed:
+            errors.append(f"TRACE_IMPLEMENTATION_STATUS_INVALID:{item_id}:{state}")
+        else:
+            impl[state] += 1
+        if verification not in verify_allowed:
+            errors.append(f"TRACE_VERIFICATION_STATUS_INVALID:{item_id}:{verification}")
+        else:
+            verify[verification] += 1
         for field in ("design_refs", "contract_refs", "code_refs", "test_refs", "evidence_refs"):
             refs = item.get(field)
             if not isinstance(refs, list):
                 errors.append(f"TRACE_REFS_NOT_LIST:{item_id}:{field}")
                 continue
             for relative in refs:
-                if not (ROOT / relative).exists(): errors.append(f"TRACE_REF_MISSING:{item_id}:{field}:{relative}")
+                if not (ROOT / relative).exists():
+                    errors.append(f"TRACE_REF_MISSING:{item_id}:{field}:{relative}")
         if verification == "PASS" and not item.get("evidence_refs"):
             errors.append(f"TRACE_PASS_WITHOUT_EVIDENCE:{item_id}")
     summary = trace.get("summary", {})
     for state, count in impl.items():
-        if summary.get(state.lower()) != count: errors.append(f"TRACE_IMPLEMENTATION_SUMMARY_MISMATCH:{state}")
+        if summary.get(state.lower()) != count:
+            errors.append(f"TRACE_IMPLEMENTATION_SUMMARY_MISMATCH:{state}")
     for state, count in verify.items():
         if summary.get("verification", {}).get(state.lower()) != count:
             errors.append(f"TRACE_VERIFICATION_SUMMARY_MISMATCH:{state}")
@@ -121,8 +144,10 @@ def validate_trace_and_matrix(errors: list[str]) -> tuple[Counter[str], Counter[
     matrix = load_json("status/implementation-matrix.v1.json")
     calculated = Counter(matrix.get("capabilities", {}).values())
     for state, count in calculated.items():
-        if matrix.get("counts", {}).get(state) != count: errors.append(f"MATRIX_COUNT_MISMATCH:{state}")
-        if impl.get(state) != count: errors.append(f"MATRIX_TRACE_MISMATCH:{state}")
+        if matrix.get("counts", {}).get(state) != count:
+            errors.append(f"MATRIX_COUNT_MISMATCH:{state}")
+        if impl.get(state) != count:
+            errors.append(f"MATRIX_TRACE_MISMATCH:{state}")
     if matrix.get("runtime_source_commit") is not None:
         errors.append("MATRIX_RUNTIME_SOURCE_MUST_BE_RECEIPT_BOUND_NOT_STATIC")
     return impl, verify
@@ -150,48 +175,79 @@ def validate_boundaries(errors: list[str]) -> None:
         "MERGED_DOES_NOT_IMPLY_PRODUCTION_GO",
         "NOT_RUN_BLOCKED_HOLD_INCONCLUSIVE_CANNOT_MAP_TO_PASS",
     }:
-        if rule not in rules: errors.append(f"STATE_MAPPING_RULE_MISSING:{rule}")
+        if rule not in rules:
+            errors.append(f"STATE_MAPPING_RULE_MISSING:{rule}")
 
 
-def validate_granular_meta(errors: list[str]) -> None:
+def validate_granular_meta(errors: list[str]) -> int:
+    counts_authority = load_json(COUNT_AUTHORITY)
+    counts = counts_authority.get("counts", {})
+    total = counts_authority.get("total")
+    if counts_authority.get("contract") != "ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1":
+        errors.append("OMISSION_COUNT_AUTHORITY_CONTRACT_INVALID")
+    if total != sum(counts.values()):
+        errors.append("OMISSION_COUNT_AUTHORITY_TOTAL_MISMATCH")
+
     subreq = load_json("status/product-subrequirement-coverage.v1.json")
     items = subreq.get("requirements", [])
     if len(items) != 38 or len({item.get("id") for item in items}) != 38:
         errors.append("PRODUCT_SUBREQUIREMENT_COUNT_INVALID")
-    counts = Counter(item.get("implementation_status") for item in items)
-    expected = {"total": 38, "implemented": counts["IMPLEMENTED"], "partial": counts["PARTIAL"],
-                "stub": counts["STUB"], "design_only": counts["DESIGN_ONLY"]}
+    status_counts = Counter(item.get("implementation_status") for item in items)
+    expected = {
+        "total": 38,
+        "implemented": status_counts["IMPLEMENTED"],
+        "partial": status_counts["PARTIAL"],
+        "stub": status_counts["STUB"],
+        "design_only": status_counts["DESIGN_ONLY"],
+    }
     for field, value in expected.items():
         if subreq.get("summary", {}).get(field) != value:
             errors.append(f"PRODUCT_SUBREQUIREMENT_SUMMARY_MISMATCH:{field}")
 
     omission = load_json("status/omission-detection-status.v1.json")
     coverage = omission.get("coverage", {})
-    for field, value in {"design_capabilities": 28, "product_subrequirements": 38,
-                         "workflow_operations": 39, "workflow_surfaces": 3,
-                         "product_process_stages": 20, "lineage_artifacts": 20}.items():
-        if coverage.get(field) != value: errors.append(f"OMISSION_COVERAGE_MISMATCH:{field}")
+    for field, value in {
+        "design_capabilities": 28,
+        "product_subrequirements": 38,
+        "workflow_operations": 39,
+        "workflow_surfaces": 3,
+        "product_process_stages": 20,
+        "lineage_artifacts": 20,
+    }.items():
+        if coverage.get(field) != value:
+            errors.append(f"OMISSION_COVERAGE_MISMATCH:{field}")
     additional = omission.get("additional_failure_injection", {})
-    for field, value in {"atomic_requirement_cases": 10, "automation_boundary_cases": 6,
-                         "verification_claim_cases": 10, "product_subrequirement_cases": 10,
-                         "workflow_surface_cases": 6, "critical_callpath_cases": 10,
-                         "all_registered_cases": 80}.items():
-        if additional.get(field) != value: errors.append(f"OMISSION_FAILURE_COUNT_MISMATCH:{field}")
+    if additional.get("authority") != COUNT_AUTHORITY:
+        errors.append("OMISSION_COUNT_AUTHORITY_LINK_MISSING")
+    for field, value in counts.items():
+        if field == "design_process_lineage_cases":
+            continue
+        if additional.get(field) != value:
+            errors.append(f"OMISSION_FAILURE_COUNT_MISMATCH:{field}")
+    if additional.get("all_registered_cases") != total:
+        errors.append("OMISSION_FAILURE_TOTAL_MISMATCH")
 
     status = load_json("status/verification-status.v1.json")
-    if status.get("omission_failure_injection", {}).get("all_registered_failure_injections") != 80:
+    current = status.get("omission_failure_injection", {})
+    if current.get("authority") != COUNT_AUTHORITY:
+        errors.append("VERIFICATION_COUNT_AUTHORITY_LINK_MISSING")
+    for field, value in counts.items():
+        if current.get(field) != value:
+            errors.append(f"VERIFICATION_FAILURE_COUNT_MISMATCH:{field}")
+    if current.get("all_registered_failure_injections") != total:
         errors.append("VERIFICATION_FAILURE_TOTAL_STALE")
     authority = status.get("approval_authority_boundary", {})
-    if authority.get("authority_root") != ".onsure/approval-authority/":
-        errors.append("APPROVAL_AUTHORITY_ROOT_INVALID")
     if authority.get("request_path_override_allowed") is not False:
         errors.append("APPROVAL_AUTHORITY_OVERRIDE_ALLOWED")
+    if authority.get("contained_worktree_authority_discovery") != "UNIQUE_EXISTING_AUTHORITY_REQUIRED":
+        errors.append("APPROVAL_AUTHORITY_WORKTREE_DISCOVERY_MISSING")
     if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
         errors.append("APPROVAL_EXTERNAL_ANCHOR_OVERCLAIMED")
     if status.get("runtime_source_commit") is not None:
         errors.append("VERIFICATION_STATUS_STATIC_RUNTIME_COMMIT_FORBIDDEN")
     if any(status.get(key) is not False for key in ("final_lock", "production_go", "commercial_go")):
         errors.append("VERIFICATION_STATUS_UNSAFE_GO_CLAIM")
+    return int(total or 0)
 
 
 def validate_markdown_links(files: list[pathlib.Path], errors: list[str]) -> None:
@@ -199,7 +255,8 @@ def validate_markdown_links(files: list[pathlib.Path], errors: list[str]) -> Non
     for document in [path for path in files if path.suffix == ".md"]:
         for raw in pattern.findall(document.read_text(encoding="utf-8", errors="replace")):
             target = raw.strip().split(" ", 1)[0].strip("<>")
-            if target.startswith(("http://", "https://", "mailto:", "#")): continue
+            if target.startswith(("http://", "https://", "mailto:", "#")):
+                continue
             normalized = target.split("#", 1)[0]
             if normalized and not any(candidate.exists() for candidate in
                     ((document.parent / normalized).resolve(), (ROOT / normalized).resolve())):
@@ -212,25 +269,28 @@ def main() -> int:
     args = parser.parse_args()
     errors: list[str] = []
     for relative in REQUIRED_FILES:
-        if not (ROOT / relative).is_file(): errors.append(f"MISSING_REQUIRED_FILE:{relative}")
-    try: files = tracked_files()
+        if not (ROOT / relative).is_file():
+            errors.append(f"MISSING_REQUIRED_FILE:{relative}")
+    try:
+        files = tracked_files()
     except RuntimeError as exc:
         files = []
         errors.append(str(exc))
     json_digests, jsonl_digests = validate_json(files, errors)
     impl, verify = validate_trace_and_matrix(errors)
     validate_boundaries(errors)
-    validate_granular_meta(errors)
+    total = validate_granular_meta(errors)
     validate_markdown_links(files, errors)
     report = {
-        "contract": "ONSURE_REPOSITORY_STATIC_CONTRACT_REPORT_V3",
+        "contract": "ONSURE_REPOSITORY_STATIC_CONTRACT_REPORT_V4",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "implementation_counts": dict(sorted(impl.items())),
         "verification_counts": dict(sorted(verify.items())),
         "product_subrequirements": 38,
         "workflow_operations": 39,
-        "registered_failure_injections": 80,
+        "failure_injection_authority": COUNT_AUTHORITY,
+        "registered_failure_injections": total,
         "json_contract_digests": json_digests,
         "jsonl_digests": jsonl_digests,
         "runtime_execution": "NOT_RUN",
