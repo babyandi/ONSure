@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_META_OMISSION_FINDINGS_V1",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "assessment_date": "2026-07-28",
   "source_ref": "audit/onsure-meta-omission-remediation-20260728",
   "findings": [
@@ -171,6 +171,23 @@
       "remaining_gaps": [
         "CURRENT_BRANCH_FULL_JAVA17_MAVEN_JUNIT_NOT_RUN",
         "INDEPENDENT_CONCURRENCY_ATTACK_NOT_RUN"
+      ]
+    },
+    {
+      "id": "META-013",
+      "severity": "HIGH",
+      "category": "GATE_IMPLEMENTATION_STATUS_DRIFT",
+      "title": "Status and audit document reported 86 injections while the executable consistency gate still enforced 84 and critical-callpath 14",
+      "prior_miss_reason": "PRIOR_REVIEW_CHECKED_REPORTED_JSON_VALUES_BUT_DID_NOT_REOPEN_EXECUTABLE_GATE_CONSTANTS_AFTER_SEQUENTIAL_COMMITS",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "scripts/validate-status-consistency.py",
+        "status/verification-status.v1.json",
+        "status/omission-detection-status.v1.json",
+        "docs/verification/ONSURE_META_OMISSION_AUDIT_v1.md"
+      ],
+      "remaining_gaps": [
+        "CURRENT_HEAD_LOCAL_STATUS_CONSISTENCY_EXECUTION_NOT_RUN"
       ]
     }
   ],
