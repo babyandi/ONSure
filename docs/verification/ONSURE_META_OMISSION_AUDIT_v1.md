@@ -156,14 +156,18 @@ Operation 삭제·중복 또는 제품 표면 경로 제거를 6개 실패 주�
 설계·프로세스·데이터              28
 원자 Requirement                  10
 Actions 금지·로컬 자동화 경계       6
-검증 Claim                         8
+검증 Claim                        10
 제품 하위 Requirement              10
 Workflow Surface                    6
-기존 합계                          68
-Critical Callpath(누적)             16
+Critical Callpath                  16
+전체 등록 실패 주입                 86
 ```
 
-### 4.5 기존 Gate 결속
+### 4.5 분모 일관성 Gate
+
+실패 주입 수를 문서와 여러 상태 파일에 수동 중복 기록하면서 82·84·86이 혼재했다. `validate-status-consistency.py`가 현재 권위 분모 86을 `verification-status`와 `omission-detection-status`에 동시에 강제하고, Workspace alias 안전 상태도 교차 확인하도록 수정했다.
+
+### 4.6 기존 Gate 결속
 
 신규 Gate는 다음에서 필수 실행된다.
 
