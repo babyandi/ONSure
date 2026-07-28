@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
@@ -74,7 +74,8 @@
     "external_replay_anchor": "NOT_IMPLEMENTED",
     "current_source_execution": "NOT_RUN",
     "workspace_symlink_alias_allowed": false,
-    "workspace_identity": "NORMALIZED_PATH_WITH_SYMLINK_COMPONENTS_PROHIBITED"
+    "workspace_identity": "NORMALIZED_PATH_WITH_SYMLINK_COMPONENTS_PROHIBITED",
+    "receipt_verify_consume_binding": "IMMUTABLE_SNAPSHOT_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED"
   },
   "bounded_process_execution": {
     "state": "IMPLEMENTED_JAVAC_RELEASE17_SMOKE_PASS_FULL_MAVEN_NOT_RUN",
@@ -102,8 +103,8 @@
     "verification_claim_cases": 10,
     "product_subrequirement_cases": 10,
     "workflow_surface_cases": 6,
-    "critical_callpath_cases": 16,
-    "all_registered_failure_injections": 86,
+    "critical_callpath_cases": 17,
+    "all_registered_failure_injections": 87,
     "logic_self_test": "PASS",
     "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
