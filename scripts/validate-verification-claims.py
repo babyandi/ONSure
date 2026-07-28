@@ -13,8 +13,16 @@ _SPEC.loader.exec_module(_MODULE)
 
 ROOT = _MODULE.ROOT
 COUNT_AUTHORITY = _MODULE.COUNT_AUTHORITY
-validate = _MODULE.validate
-main = _MODULE.main
+
+
+def validate():
+    _MODULE.ROOT = ROOT
+    return _MODULE.validate()
+
+
+def main():
+    _MODULE.ROOT = ROOT
+    return _MODULE.main()
 
 
 if __name__ == "__main__":
