@@ -35,6 +35,10 @@ REQUIRED_TOKENS = {
         "Boolean.getBoolean(TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY)",
         "EXECUTION_PLAN_FIXTURE_AUTO_APPROVAL_PROCESS_GATE_DISABLED",
     ],
+    "src/main/java/io/onsure/platform/RegisteredExecutionPlanGenerationService.java": [
+        "PROGRAM_PROFILE_PROJECT_MISMATCH", "PROGRAM_PROFILE_TARGET_MISMATCH",
+        "PROGRAM_PROFILE_SOURCE_DRIFT", "ExecutionPlanService().plan",
+    ],
     "src/main/java/io/onsure/platform/FixtureRegistryStage.java": [
         "trustedFixtureAutoApproval", "signedFixtureApproval",
         "EXECUTABLE_FIXTURE_REQUIRES_PROCESS_GATE_OR_SIGNED_PLAN_APPROVAL",
@@ -51,7 +55,9 @@ REQUIRED_TOKENS = {
         "ExecutionPlanActionPolicy.isApproved", "ONSURE_VALIDATION_COMPLETION_GATE_V7",
     ],
     "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
-        "project.register-workspace", "project.register-target", "ApprovedExecutionPlanBundle",
+        "project.register-workspace", "project.register-target", "plan.generate",
+        "requireRegisteredTarget", "REGISTERED_TARGET_NOT_FOUND_IN_PROJECT",
+        "REGISTERED_TARGET_FIELD_OVERRIDE_PROHIBITED", "ApprovedExecutionPlanBundle",
         "INCOMPLETE_EXECUTION_PLAN_APPROVAL_BUNDLE",
         "approvalAuthority.rejectRequestOverrides",
         "approvalAuthority.requireTrustedKeyRegistry",
@@ -107,7 +113,9 @@ REQUIRED_TOKENS = {
         "expiredDeliveryApprovalCannotReachPushTransition", "GIT_DELIVERY_APPROVAL_EXPIRED",
     ],
     "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java": [
-        "project.register-workspace", "project.register-target", "project.list-targets",
+        "workspaceProjectTargetLearningAndPlanUseOneRegisteredIdentity",
+        "plan.generate", "PROGRAM_PROFILE_SOURCE_DRIFT",
+        "REGISTERED_TARGET_FIELD_OVERRIDE_PROHIBITED",
     ],
 }
 
@@ -143,6 +151,8 @@ def self_test() -> list[str]:
             ("approval bundle verifier", "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java", "verifyApprovedPlanBundle"),
             ("fixture auto approval process gate", "src/main/java/io/onsure/platform/ExecutionPlanService.java", "Boolean.getBoolean(TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY)"),
             ("product state path boundary", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED"),
+            ("registered target binding", "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java", "REGISTERED_TARGET_NOT_FOUND_IN_PROJECT"),
+            ("registered plan generation", "src/main/java/io/onsure/platform/RegisteredExecutionPlanGenerationService.java", "PROGRAM_PROFILE_SOURCE_DRIFT"),
             ("engine bundle entry", "src/main/java/io/onsure/platform/ValidationEngine.java", "ApprovedExecutionPlanBundle"),
             ("stage scope enforcement", "src/main/java/io/onsure/platform/ValidationEngine.java", "ExecutionPlanActionPolicy.notApproved"),
             ("dispatcher registration", "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java", "project.register-target"),
@@ -179,12 +189,12 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V11",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V12",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 22 if args.self_test else 0,
+        "failure_injection_count": 24 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
