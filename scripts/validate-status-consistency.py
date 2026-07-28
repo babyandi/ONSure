@@ -130,6 +130,9 @@ def main() -> int:
         errors.append("APPROVAL_REGISTRY_CROSS_PROCESS_LOCK_MISSING")
     if authority.get("registry_atomic_replace") is not True:
         errors.append("APPROVAL_REGISTRY_ATOMIC_REPLACE_MISSING")
+    if authority.get("receipt_verify_consume_binding") \
+            != "IMMUTABLE_SNAPSHOT_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED":
+        errors.append("APPROVAL_RECEIPT_SNAPSHOT_BINDING_MISSING")
     if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
         errors.append("APPROVAL_EXTERNAL_ANCHOR_STATE_MISMATCH")
     if authority.get("current_source_execution") != "NOT_RUN":
