@@ -9,7 +9,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TOTAL_FAILURE_INJECTIONS = 82
+TOTAL_FAILURE_INJECTIONS = 84
 REQUIRED = [
     "contracts/codespace-free-remediation-plan.v1.json",
     "contracts/product-process-lineage.v1.json",
@@ -28,9 +28,11 @@ REQUIRED = [
     "scripts/validate-status-consistency.py",
     "scripts/validate-verification-claims.py",
     "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+    "src/main/java/io/onsure/assurance/LocalKeyRegistry.java",
     "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
     "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
     "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+    "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java",
     "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java",
     "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java",
     "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java",
@@ -40,20 +42,23 @@ ASSERTIONS = {
         "validate-product-subrequirements.py --self-test",
         "validate-workflow-surface-parity.py --self-test",
         "validate-critical-callpaths.py --self-test",
-        'registered_failure_injections":82',
+        'registered_failure_injections":84',
     ],
     "scripts/onsure-one-shot.sh": [
-        "LOCAL_GATE_AUTHORITY", "local_gate_authority", 'registered_failure_injections":82',
+        "LOCAL_GATE_AUTHORITY", "local_gate_authority", 'registered_failure_injections":84',
     ],
     "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
         "AUTHORITY_BASE_PROPERTY", "DEFAULT_AUTHORITY_BASE",
         "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED",
     ],
-    "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java": [
-        "authorityPathsAreCanonicalAndPhysicallyOutsideWorkspace",
-        "authorityBaseInsideWorkspaceIsRejected",
-        "everyWorkflowRejectsCallerSelectedAuthorityPaths",
+    "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
+        "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile",
+        "ATOMIC_MOVE", "KEY_REGISTRY_AUTHORITY_ROOT_SYMLINK",
+    ],
+    "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java": [
+        "publicKeyOutsideAuthorityRootIsRejected",
+        "concurrentRegistryInstancesPreserveEveryKey",
     ],
     "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
         "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V5", "approvalAuthority.rejectRequestOverrides",
@@ -162,7 +167,7 @@ def main() -> int:
     if any(plan.get(field) is not False for field in ("final_lock_allowed", "production_go", "commercial_go")):
         errors.append("UNSAFE_GO_FLAG")
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V16",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V17",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "github_actions": "DISABLED_BY_USER",
@@ -179,7 +184,7 @@ def main() -> int:
         "verification_claim_failure_injections": 10,
         "product_subrequirement_failure_injections": 10,
         "workflow_surface_failure_injections": 6,
-        "critical_callpath_failure_injections": 12,
+        "critical_callpath_failure_injections": 14,
         "sandbox_required_attacks": 12,
         "sandbox_verified_attacks": 10,
         "sandbox_unverified_attacks": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
