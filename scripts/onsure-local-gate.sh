@@ -17,11 +17,8 @@ COUNT_AUTHORITY="contracts/omission-failure-injection-counts.v1.json"
 [[ -f "$COUNT_AUTHORITY" ]] || { echo "ONSURE_LOCAL_GATE_FAIL FAILURE_COUNT_AUTHORITY_MISSING" >&2; exit 72; }
 FAILURE_INJECTION_TOTAL="$(python3 - "$COUNT_AUTHORITY" <<'PY'
 import json,sys
-body=json.load(open(sys.argv[1],encoding='utf-8'))
-counts=body.get('counts',{})
-total=body.get('total')
-if body.get('contract')!='ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1' or total!=sum(counts.values()):
-    raise SystemExit(1)
+body=json.load(open(sys.argv[1],encoding='utf-8')); counts=body.get('counts',{}); total=body.get('total')
+if body.get('contract')!='ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1' or total!=sum(counts.values()): raise SystemExit(1)
 print(total)
 PY
 )" || { echo "ONSURE_LOCAL_GATE_FAIL FAILURE_COUNT_AUTHORITY_INVALID" >&2; exit 72; }
@@ -38,6 +35,8 @@ run_step(){ local name="$1"; shift; "$@" > "$OUT/logs/$name.log" 2>&1 || { echo 
 run_step structured-contracts "$VALIDATION_PYTHON" scripts/validate-structured-contracts.py --require-full
 run_step design-coverage python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test
 run_step product-subrequirements python3 scripts/validate-product-subrequirements.py --self-test
+run_step mvp-acceptance python3 scripts/validate-mvp-acceptance-coverage.py --self-test
+run_step mvp-status-consistency python3 scripts/validate-mvp-status-consistency.py
 run_step workflow-surface-parity python3 scripts/validate-workflow-surface-parity.py --self-test
 run_step critical-callpaths python3 scripts/validate-critical-callpaths.py --self-test
 run_step validation-case-registry-static python3 scripts/validate-validation-case-registry.py --static-only
@@ -80,7 +79,7 @@ cmp "$OUT/source-start.json" "$OUT/source-end.json" >/dev/null || { echo "ONSURE
 python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" <<'PY'
 import json,pathlib,sys
 path,mode,profile,authority,total=sys.argv[1:]
-body={"contract":"ONSURE_LOCAL_GATE_RESULT_V7","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"PASS_WITH_KNOWN_GAPS","workflow_surface_parity":"PASS","critical_callpaths":"PASS","validation_case_registry":"PASS","validation_case_execution_receipt":"artifacts/validation-case-execution-receipt.json" if mode=="full" else "NOT_RUN_STATIC_MODE","failure_injection_authority":authority,"registered_failure_injections":int(total),"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
+body={"contract":"ONSURE_LOCAL_GATE_RESULT_V8","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"CONTRACT_PASS_WITH_40_KNOWN_INCOMPLETE","mvp_acceptance_contract":"PASS_WITH_ALL_11_ITEMS_NOT_RUN","mvp_full_chain":"NOT_RUN","two_consecutive_real_repository_runs":"NOT_RUN","workflow_surface_parity":"PASS","critical_callpaths":"PASS","validation_case_registry":"PASS","validation_case_execution_receipt":"artifacts/validation-case-execution-receipt.json" if mode=="full" else "NOT_RUN_STATIC_MODE","failure_injection_authority":authority,"registered_failure_injections":int(total),"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY
 find "$OUT" -type f ! -name evidence.sha256 -print0 | sort -z | xargs -0 sha256sum > "$OUT/evidence.sha256"
