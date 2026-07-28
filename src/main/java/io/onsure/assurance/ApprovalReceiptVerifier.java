@@ -29,6 +29,14 @@ public final class ApprovalReceiptVerifier {
 
     private enum ConsumptionState { NONE, EXACT_RECEIPT, APPROVAL_ID_COLLISION }
 
+    /** Exact immutable receipt snapshot that was verified and consumed. */
+    public record ConsumedReceipt(Map<String, Object> receipt, String sha256) {
+        public ConsumedReceipt {
+            receipt = Map.copyOf(receipt);
+            Objects.requireNonNull(sha256, "sha256");
+        }
+    }
+
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private final Path registryFile;
     private final Path replayLedger;
@@ -137,6 +145,15 @@ public final class ApprovalReceiptVerifier {
             String expectedContract,
             String expectedPurpose,
             Instant now) throws Exception {
+        return requireValidAndConsumeSnapshot(
+                receiptFile, expectedContract, expectedPurpose, now).receipt();
+    }
+
+    public ConsumedReceipt requireValidAndConsumeSnapshot(
+            Path receiptFile,
+            String expectedContract,
+            String expectedPurpose,
+            Instant now) throws Exception {
         if (!Files.isRegularFile(receiptFile, LinkOption.NOFOLLOW_LINKS)
                 || Files.isSymbolicLink(receiptFile)) {
             throw new IllegalArgumentException("APPROVAL_RECEIPT_FILE_INVALID");
@@ -151,9 +168,10 @@ public final class ApprovalReceiptVerifier {
                         "APPROVAL_RECEIPT_INVALID:" + String.join(",", result.violations()));
             }
             Map<String, Object> receipt = readObject(snapshot);
+            String snapshotSha = sha256(Files.readAllBytes(snapshot));
             ExclusiveFileLock.run(replayLock, () -> appendConsumption(snapshot, receipt,
                     expectedContract, expectedPurpose));
-            return Map.copyOf(receipt);
+            return new ConsumedReceipt(receipt, snapshotSha);
         } finally {
             Files.deleteIfExists(snapshot);
         }
