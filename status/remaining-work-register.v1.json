@@ -1,36 +1,25 @@
 {
-  "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.6.0",
-  "assessment_date": "2026-07-28",
-  "authority": "status/design-capability-coverage.v2.json",
-  "subrequirement_authority": "status/product-subrequirement-coverage.v1.json",
-  "process_lineage_authority": "contracts/product-process-lineage.v1.json",
-  "active_issues": [20],
-  "validation_execution_policy": {
-    "github_actions": "DISABLED_BY_USER",
-    "routine_command": "bash scripts/onsure-local-gate.sh --mode static --profile core",
-    "full_local_command": "bash scripts/onsure-local-gate.sh --mode full --profile core",
-    "final_command": "bash scripts/onsure-final-stage.sh --profile core"
-  },
-  "historical_automation_observation": {
-    "validated_head": "8ff5beb6f7310746ad55364802a2b034064aac9d",
-    "state": "PASS_NONFINAL",
-    "binding_scope": "ARCHIVED_PREVIOUS_HEAD_ONLY",
-    "retained_for_audit_only": true,
-    "current_source_bound": false
-  },
-  "items": [
+  "contract":"ONSURE_REMAINING_WORK_REGISTER_V1",
+  "version":"2.6.1",
+  "assessment_date":"2026-07-28",
+  "authority":"status/design-capability-coverage.v2.json",
+  "subrequirement_authority":"status/product-subrequirement-coverage.v1.json",
+  "process_lineage_authority":"contracts/product-process-lineage.v1.json",
+  "active_issues":[20],
+  "validation_execution_policy":{"github_actions":"DISABLED_BY_USER","routine_command":"bash scripts/onsure-local-gate.sh --mode static --profile core","full_local_command":"bash scripts/onsure-local-gate.sh --mode full --profile core","final_command":"bash scripts/onsure-final-stage.sh --profile core"},
+  "historical_automation_observation":{"validated_head":"8ff5beb6f7310746ad55364802a2b034064aac9d","state":"PASS_NONFINAL","binding_scope":"ARCHIVED_PREVIOUS_HEAD_ONLY","retained_for_audit_only":true,"current_source_bound":false},
+  "items":[
     {"id":"P0-FULL-REPOSITORY-STATIC-REVALIDATION","state":"CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED","requires_human":false,"next_action":"Run the local static or full gate and preserve .onsure/local-gate evidence; GitHub Actions must remain absent."},
     {"id":"P0-GRANULAR-PRODUCT-SUBREQUIREMENTS","state":"38_REGISTERED_2_IMPLEMENTED_28_PARTIAL_4_STUB_4_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Maintain requirement-level code, test, surface, missing-control and evidence bindings; do not collapse these items back into coarse capability status."},
     {"id":"P0-WORKFLOW-SURFACE-PARITY","state":"39_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Run the workflow surface parity gate whenever Dispatcher, CLI, Local API or VS Code commands change."},
-    {"id":"P0-CRITICAL-CALLPATH-AND-APPROVAL-AUTHORITY","state":"FIXED_LOCAL_TRUST_ROOT_BUNDLE_VALIDATION_AND_BOUNDED_PROCESS_IMPLEMENTED_10_ATTACKS_REGISTERED_LOCAL_JAVA_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify every signed Plan, Patch, Git and Service Case workflow uses only .onsure/approval-authority, rejects caller-selected registries and ledgers, and all child-process callpaths use the bounded runner."},
+    {"id":"P0-CRITICAL-CALLPATH-AND-APPROVAL-AUTHORITY","state":"AUTHORITY_OUTSIDE_TARGET_WORKSPACE_BUNDLE_VALIDATION_AND_BOUNDED_PROCESS_IMPLEMENTED_12_ATTACKS_REGISTERED_LOCAL_JAVA_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify every signed Plan, Patch, Git and Service Case workflow uses the process-owned authority base outside the target workspace, rejects caller-selected registries and ledgers, and all child-process callpaths use the bounded runner."},
     {"id":"P0-RAW-JAVA-AUTHORITY-PATH-API","state":"INTERNAL_ONLY_UNSUPPORTED_PUBLIC_SDK_NOT_DEFINED","requires_human":false,"next_action":"Before publishing a Java SDK, remove or encapsulate raw key-registry and replay-ledger path parameters behind a typed authority object and compatibility tests."},
-    {"id":"P0-APPROVAL-REPLAY-EXTERNAL-ANCHOR","state":"NOT_IMPLEMENTED","requires_human":false,"next_action":"Anchor the approval replay-ledger head outside the mutable workspace and verify rewrite, rollback and stale-snapshot attacks."},
+    {"id":"P0-APPROVAL-REPLAY-EXTERNAL-ANCHOR","state":"NOT_IMPLEMENTED","requires_human":false,"next_action":"Anchor the approval replay-ledger head outside the local mutable authority store and verify rewrite, rollback and stale-snapshot attacks."},
     {"id":"P0-BOUNDED-PROCESS-FULL-REVALIDATION","state":"JAVAC_RELEASE17_STANDALONE_PASS_FULL_REPOSITORY_MAVEN_NOT_RUN","requires_human":false,"next_action":"Run Java 17 Maven tests for Program Learning, Source Binding, Patch and Git Delivery output-flood and timeout behavior."},
     {"id":"P0-PARTIAL-EXECUTION-PLAN-APPROVAL","state":"CORE_SCOPE_ENFORCEMENT_IMPLEMENTED_VSCODE_INTERACTIVE_UI_MISSING_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify signed subset approval, skipped unapproved stages and HOLD propagation in the local Java gate; implement explicit VS Code partial-approval UX."},
     {"id":"P0-CORE-ADAPTER-MODULE-SEPARATION","state":"PREVIOUS_HEAD_PASS_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED","requires_human":false,"next_action":"Repeat the Core-only modular build in the local full gate and preserve the ORUDA-absent receipt."},
     {"id":"P0-ATOMIC-TRACEABILITY","state":"CANDIDATE_EXTRACTION_AND_FAILURE_GATE_PASS_AUTHORITY_RECONCILIATION_INCOMPLETE","requires_human":false,"next_action":"Reconcile every normative requirement, acceptance criterion, API, screen, state and test condition with authoritative code symbols, tests and evidence."},
-    {"id":"P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION","state":"80_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Keep 28 design/process/data, 10 atomic, 6 automation-prohibition, 10 verification-claim, 10 product-subrequirement, 6 workflow-surface and 10 critical-callpath failure injections mandatory."},
+    {"id":"P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION","state":"82_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Keep 28 design/process/data, 10 atomic, 6 automation-prohibition, 10 verification-claim, 10 product-subrequirement, 6 workflow-surface and 12 critical-callpath failure injections mandatory."},
     {"id":"P0-INCREMENTAL-PROGRAM-LEARNING","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement parent-profile lineage, added/modified/deleted source sets and incremental learning workflows across Core, CLI, Local API and VS Code."},
     {"id":"P0-VSCODE-PRODUCT-SURFACES","state":"STUB_REQUIRED_VIEWS_AND_MODES_MISSING","requires_human":false,"next_action":"Implement Chat, Profile, Learning, Verification, Findings, Improvement, Evidence, Git/PR views plus Ask, Plan, Act and Autopilot modes."},
     {"id":"P0-LONG-RUNNING-JOB-RECOVERY","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement checkpoint, cancel, pause, resume, restart-safe queue and approval-history restoration."},
@@ -53,7 +42,7 @@
     {"id":"HUMAN-ACCEPTANCE","state":"WAITING_HUMAN_GATE","requires_human":true,"next_action":"Perform real-user acceptance only after current-source product full-chain and independent receipts exist."},
     {"id":"OPERATIONAL-RELEASE","state":"HOLD","requires_human":true,"next_action":"Keep FinalLock, Production GO and Commercial GO false until all release gates pass."}
   ],
-  "final_lock_allowed": false,
-  "production_go": false,
-  "commercial_go": false
+  "final_lock_allowed":false,
+  "production_go":false,
+  "commercial_go":false
 }
