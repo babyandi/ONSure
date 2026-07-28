@@ -57,7 +57,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 10개 Verification Claim 실패주입
 10개 제품 하위 Requirement 실패주입
 6개 Workflow Surface 실패주입
-11개 Critical Callpath 실패주입
+22개 Critical Callpath 실패주입
 합계 81개
 ```
 
