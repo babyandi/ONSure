@@ -1,42 +1,161 @@
 {
-  "contract":"ONSURE_VERIFICATION_STATUS_V1",
-  "version":"2.6.3",
-  "assessment_source_ref":"main",
-  "runtime_source_commit":null,
-  "runtime_source_binding_state":"PENDING_ONE_SHOT_RECEIPT",
-  "deferred_final_stage_detail":"CODESPACE_OR_EQUIVALENT_FINAL_STAGE_DEFERRED_BY_USER",
-  "active_remediation_issues":[20],
-  "validation_execution_policy":{"github_actions":"DISABLED_BY_USER","workflow_files_allowed":false,"allowed_execution_modes":["LOCAL_STATIC_ONE_SHOT","LOCAL_FULL_GATE","LOCAL_FINAL_STAGE"],"current_source_pass_requires_local_receipt":true,"committed_dynamic_run_claims_allowed":false},
-  "historical_automation_evidence":{"provider":"ARCHIVED_REMOTE_AUTOMATION","run_id":30276955486,"run_number":178,"validated_head":"8ff5beb6f7310746ad55364802a2b034064aac9d","state":"PASS_SELF_VALIDATION_NONFINAL","retained_for_audit_only":true,"current_source_bound":false,"final_claim_allowed":false},
-  "design_coverage":{"capability_count":28,"state":"PENDING_LOCAL_RECEIPT","runner":"python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test","source_bound_receipt":"LOCAL_RECEIPT_REQUIRED"},
-  "product_subrequirement_coverage":{"requirement_count":38,"implemented":2,"partial":28,"stub":4,"design_only":4,"state":"PENDING_LOCAL_RECEIPT_WITH_36_KNOWN_INCOMPLETE","runner":"python3 scripts/validate-product-subrequirements.py --self-test","source_bound_receipt":"LOCAL_RECEIPT_REQUIRED"},
-  "workflow_surface_parity":{"dispatcher_operation_count":39,"surfaces":["CLI","LOCAL_AUTHENTICATED_API","VSCODE"],"state":"PENDING_LOCAL_RECEIPT","runner":"python3 scripts/validate-workflow-surface-parity.py --self-test","source_bound_receipt":"LOCAL_RECEIPT_REQUIRED"},
-  "critical_callpath_boundary":{"state":"PENDING_LOCAL_RECEIPT","runner":"python3 scripts/validate-critical-callpaths.py --self-test","source_bound_receipt":"LOCAL_RECEIPT_REQUIRED"},
-  "approval_authority_boundary":{"state":"IMPLEMENTED_OUTSIDE_TARGET_WORKSPACE_KEY_REFERENCES_BOUNDED_LOCAL_EXECUTION_REQUIRED","authority_base":"${onsure.approvalAuthorityBase|ONSURE_APPROVAL_AUTHORITY_BASE|user.home/.onsure-authority/approval-authority}","workspace_scoped_directory":"SHA256_WORKSPACE_PATH_PREFIX","trusted_key_registry":"trusted-key-registry.json","replay_ledger":"approval-replay-ledger.jsonl","public_key_must_be_inside_authority_root":true,"registry_cross_process_lock":true,"registry_atomic_replace":true,"request_path_override_allowed":false,"external_replay_anchor":"NOT_IMPLEMENTED","current_source_execution":"NOT_RUN"},
-  "bounded_process_execution":{"state":"IMPLEMENTED_JAVAC_RELEASE17_SMOKE_PASS_FULL_MAVEN_NOT_RUN","covered_callpaths":["PROGRAM_LEARNING_GIT","SOURCE_REFERENCE_GIT","PATCH_WORKFLOW_GIT","GIT_DELIVERY_GIT_GH"],"output_flood_test":"JAVAC_RELEASE17_STANDALONE_PASS","wall_clock_timeout_test":"JAVAC_RELEASE17_STANDALONE_PASS","current_repository_maven":"NOT_RUN"},
-  "product_process_lineage":{"stage_count":20,"artifact_count":20,"state":"PENDING_LOCAL_RECEIPT","runner":"python3 scripts/validate-product-process-lineage.py --model contracts/product-process-lineage.v1.json --self-test","source_bound_receipt":"LOCAL_RECEIPT_REQUIRED"},
-  "omission_failure_injection":{"design_process_lineage_cases":28,"atomic_requirement_cases":10,"automation_boundary_cases":6,"verification_claim_cases":10,"product_subrequirement_cases":10,"workflow_surface_cases":6,"critical_callpath_cases":14,"all_registered_failure_injections":84,"logic_self_test":"PASS","current_head_execution":"LOCAL_EXECUTION_REQUIRED"},
-  "repository_static_contracts":{"state":"PENDING_LOCAL_RECEIPT","runner":"python3 scripts/validate-repository-contracts.py"},
-  "codespace_free_static_gate":{"state":"PENDING_LOCAL_RECEIPT","runner":"python3 scripts/validate-codespace-free-remediation.py"},
-  "local_gate":{"state":"NOT_RUN_CURRENT_MAIN","runner":"bash scripts/onsure-local-gate.sh --mode full --profile core","receipt_root":".onsure/local-gate/"},
-  "one_shot_static":{"state":"NOT_RUN_AS_SINGLE_COMMAND","runner":"bash scripts/onsure-one-shot.sh --static-only --profile core"},
-  "one_shot_core":{"state":"NOT_RUN","runner":"bash scripts/onsure-one-shot.sh --profile core"},
-  "optional_oruda_profile":{"state":"NOT_RUN","runner":"bash scripts/onsure-local-gate.sh --mode full --profile oruda"},
-  "java17_maven_junit":"LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
-  "core_modular_without_oruda":"LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
-  "sandbox_attack_tests":{"state":"PARTIAL_10_OF_12_LOCAL_RECEIPT_REQUIRED","verified_count":10,"required_count":12,"unverified":["CROSS_TENANT_READ","CROSS_TENANT_WRITE"],"current_source_execution":"NOT_RUN"},
-  "local_api_runtime_e2e":"LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
-  "vscode_static_and_vsix":"LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
-  "vscode_extension_host_full_chain":"NOT_RUN",
-  "web_payment_provider_full_chain":"NOT_RUN",
-  "direct_production_model_telemetry":"NOT_RUN",
-  "independent_otester":"NOT_RUN",
-  "independent_oaudit":"NOT_RUN",
-  "human_acceptance":"NOT_RUN",
-  "assurance_ceiling":"SELF_VALIDATION_NONFINAL",
-  "final_pass":false,
-  "final_audit_pass":false,
-  "final_lock":false,
-  "production_go":false,
-  "commercial_go":false
+  "contract": "ONSURE_VERIFICATION_STATUS_V1",
+  "version": "2.7.0",
+  "assessment_source_ref": "main",
+  "runtime_source_commit": null,
+  "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
+  "deferred_final_stage_detail": "CODESPACE_OR_EQUIVALENT_FINAL_STAGE_DEFERRED_BY_USER",
+  "active_remediation_issues": [
+    20
+  ],
+  "validation_execution_policy": {
+    "github_actions": "DISABLED_BY_USER",
+    "workflow_files_allowed": false,
+    "allowed_execution_modes": [
+      "LOCAL_STATIC_ONE_SHOT",
+      "LOCAL_FULL_GATE",
+      "LOCAL_FINAL_STAGE"
+    ],
+    "current_source_pass_requires_local_receipt": true,
+    "committed_dynamic_run_claims_allowed": false
+  },
+  "historical_automation_evidence": {
+    "provider": "ARCHIVED_REMOTE_AUTOMATION",
+    "run_id": 30276955486,
+    "run_number": 178,
+    "validated_head": "8ff5beb6f7310746ad55364802a2b034064aac9d",
+    "state": "PASS_SELF_VALIDATION_NONFINAL",
+    "retained_for_audit_only": true,
+    "current_source_bound": false,
+    "final_claim_allowed": false
+  },
+  "design_coverage": {
+    "capability_count": 28,
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-design-coverage.py --matrix status/design-capability-coverage.v2.json --root . --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "product_subrequirement_coverage": {
+    "requirement_count": 38,
+    "implemented": 2,
+    "partial": 28,
+    "stub": 4,
+    "design_only": 4,
+    "state": "PENDING_LOCAL_RECEIPT_WITH_36_KNOWN_INCOMPLETE",
+    "runner": "python3 scripts/validate-product-subrequirements.py --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "workflow_surface_parity": {
+    "dispatcher_operation_count": 39,
+    "surfaces": [
+      "CLI",
+      "LOCAL_AUTHENTICATED_API",
+      "VSCODE"
+    ],
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-workflow-surface-parity.py --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "critical_callpath_boundary": {
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-critical-callpaths.py --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "approval_authority_boundary": {
+    "state": "IMPLEMENTED_OUTSIDE_TARGET_WORKSPACE_KEY_REFERENCES_BOUNDED_LOCAL_EXECUTION_REQUIRED",
+    "authority_base": "${onsure.approvalAuthorityBase|ONSURE_APPROVAL_AUTHORITY_BASE|user.home/.onsure-authority/approval-authority}",
+    "workspace_scoped_directory": "SHA256_WORKSPACE_PATH_PREFIX",
+    "trusted_key_registry": "trusted-key-registry.json",
+    "replay_ledger": "approval-replay-ledger.jsonl",
+    "public_key_must_be_inside_authority_root": true,
+    "registry_cross_process_lock": true,
+    "registry_atomic_replace": true,
+    "request_path_override_allowed": false,
+    "external_replay_anchor": "NOT_IMPLEMENTED",
+    "current_source_execution": "NOT_RUN",
+    "workspace_symlink_alias_allowed": false,
+    "workspace_identity": "NORMALIZED_PATH_WITH_SYMLINK_COMPONENTS_PROHIBITED"
+  },
+  "bounded_process_execution": {
+    "state": "IMPLEMENTED_JAVAC_RELEASE17_SMOKE_PASS_FULL_MAVEN_NOT_RUN",
+    "covered_callpaths": [
+      "PROGRAM_LEARNING_GIT",
+      "SOURCE_REFERENCE_GIT",
+      "PATCH_WORKFLOW_GIT",
+      "GIT_DELIVERY_GIT_GH"
+    ],
+    "output_flood_test": "JAVAC_RELEASE17_STANDALONE_PASS",
+    "wall_clock_timeout_test": "JAVAC_RELEASE17_STANDALONE_PASS",
+    "current_repository_maven": "NOT_RUN"
+  },
+  "product_process_lineage": {
+    "stage_count": 20,
+    "artifact_count": 20,
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-product-process-lineage.py --model contracts/product-process-lineage.v1.json --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "omission_failure_injection": {
+    "design_process_lineage_cases": 28,
+    "atomic_requirement_cases": 10,
+    "automation_boundary_cases": 6,
+    "verification_claim_cases": 10,
+    "product_subrequirement_cases": 10,
+    "workflow_surface_cases": 6,
+    "critical_callpath_cases": 16,
+    "all_registered_failure_injections": 86,
+    "logic_self_test": "PASS",
+    "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
+  },
+  "repository_static_contracts": {
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-repository-contracts.py"
+  },
+  "codespace_free_static_gate": {
+    "state": "PENDING_LOCAL_RECEIPT",
+    "runner": "python3 scripts/validate-codespace-free-remediation.py"
+  },
+  "local_gate": {
+    "state": "NOT_RUN_CURRENT_MAIN",
+    "runner": "bash scripts/onsure-local-gate.sh --mode full --profile core",
+    "receipt_root": ".onsure/local-gate/"
+  },
+  "one_shot_static": {
+    "state": "NOT_RUN_AS_SINGLE_COMMAND",
+    "runner": "bash scripts/onsure-one-shot.sh --static-only --profile core"
+  },
+  "one_shot_core": {
+    "state": "NOT_RUN",
+    "runner": "bash scripts/onsure-one-shot.sh --profile core"
+  },
+  "optional_oruda_profile": {
+    "state": "NOT_RUN",
+    "runner": "bash scripts/onsure-local-gate.sh --mode full --profile oruda"
+  },
+  "java17_maven_junit": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
+  "core_modular_without_oruda": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
+  "sandbox_attack_tests": {
+    "state": "PARTIAL_10_OF_12_LOCAL_RECEIPT_REQUIRED",
+    "verified_count": 10,
+    "required_count": 12,
+    "unverified": [
+      "CROSS_TENANT_READ",
+      "CROSS_TENANT_WRITE"
+    ],
+    "current_source_execution": "NOT_RUN"
+  },
+  "local_api_runtime_e2e": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
+  "vscode_static_and_vsix": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
+  "vscode_extension_host_full_chain": "NOT_RUN",
+  "web_payment_provider_full_chain": "NOT_RUN",
+  "direct_production_model_telemetry": "NOT_RUN",
+  "independent_otester": "NOT_RUN",
+  "independent_oaudit": "NOT_RUN",
+  "human_acceptance": "NOT_RUN",
+  "assurance_ceiling": "SELF_VALIDATION_NONFINAL",
+  "final_pass": false,
+  "final_audit_pass": false,
+  "final_lock": false,
+  "production_go": false,
+  "commercial_go": false
 }
