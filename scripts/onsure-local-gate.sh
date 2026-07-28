@@ -13,6 +13,18 @@ done
 [[ "$PROFILE" == "core" || "$PROFILE" == "oruda" ]] || { echo "ONSURE_LOCAL_GATE_FAIL INVALID_PROFILE_$PROFILE" >&2; exit 64; }
 for command in git bash python3 sha256sum cmp; do command -v "$command" >/dev/null 2>&1 || { echo "ONSURE_LOCAL_GATE_FAIL MISSING_COMMAND_$command" >&2; exit 69; }; done
 [[ -z "$(git status --porcelain)" ]] || { echo "ONSURE_LOCAL_GATE_FAIL WORKTREE_DIRTY_OR_UNTRACKED" >&2; exit 72; }
+COUNT_AUTHORITY="contracts/omission-failure-injection-counts.v1.json"
+[[ -f "$COUNT_AUTHORITY" ]] || { echo "ONSURE_LOCAL_GATE_FAIL FAILURE_COUNT_AUTHORITY_MISSING" >&2; exit 72; }
+FAILURE_INJECTION_TOTAL="$(python3 - "$COUNT_AUTHORITY" <<'PY'
+import json,sys
+body=json.load(open(sys.argv[1],encoding='utf-8'))
+counts=body.get('counts',{})
+total=body.get('total')
+if body.get('contract')!='ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1' or total!=sum(counts.values()):
+    raise SystemExit(1)
+print(total)
+PY
+)" || { echo "ONSURE_LOCAL_GATE_FAIL FAILURE_COUNT_AUTHORITY_INVALID" >&2; exit 72; }
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"; OUT="${ONSURE_LOCAL_GATE_OUTPUT:-$ROOT/.onsure/local-gate/$STAMP}"
 mkdir -p "$OUT/logs" "$OUT/artifacts"
 python3 scripts/create-source-snapshot.py --output "$OUT/source-start.json"
@@ -59,10 +71,10 @@ if [[ "$MODE" == "full" ]]; then
 fi
 python3 scripts/create-source-snapshot.py --output "$OUT/source-end.json"
 cmp "$OUT/source-start.json" "$OUT/source-end.json" >/dev/null || { echo "ONSURE_LOCAL_GATE_FAIL SOURCE_DRIFT" >&2; exit 73; }
-python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" <<'PY'
+python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" <<'PY'
 import json,pathlib,sys
-path,mode,profile=sys.argv[1:]
-body={"contract":"ONSURE_LOCAL_GATE_RESULT_V6","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"PASS_WITH_KNOWN_GAPS","workflow_surface_parity":"PASS","critical_callpaths":"PASS","registered_failure_injections":84,"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
+path,mode,profile,authority,total=sys.argv[1:]
+body={"contract":"ONSURE_LOCAL_GATE_RESULT_V7","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"PASS_WITH_KNOWN_GAPS","workflow_surface_parity":"PASS","critical_callpaths":"PASS","failure_injection_authority":authority,"registered_failure_injections":int(total),"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY
 find "$OUT" -type f ! -name evidence.sha256 -print0 | sort -z | xargs -0 sha256sum > "$OUT/evidence.sha256"
