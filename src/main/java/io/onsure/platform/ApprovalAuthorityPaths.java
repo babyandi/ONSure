@@ -43,6 +43,9 @@ public record ApprovalAuthorityPaths(
 
     static ApprovalAuthorityPaths forWorkspace(Path workspaceRoot, Path authorityBase) {
         Path workspace = normalize(workspaceRoot, "workspaceRoot");
+        // A symlink alias would produce a second workspace hash and therefore a second
+        // trust registry/replay ledger for the same physical target. Fail closed.
+        requireNoSymlink(workspace, "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED");
         Path base = normalize(authorityBase, "authorityBase");
         String workspaceId = sha256(workspace.toString()).substring(0, 24);
         Path root = base.resolve(workspaceId).normalize();
