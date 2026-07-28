@@ -62,7 +62,7 @@ cmp "$OUT/source-start.json" "$OUT/source-end.json" >/dev/null || { echo "ONSURE
 python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" <<'PY'
 import json,pathlib,sys
 path,mode,profile=sys.argv[1:]
-body={"contract":"ONSURE_LOCAL_GATE_RESULT_V5","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"PASS_WITH_KNOWN_GAPS","workflow_surface_parity":"PASS","critical_callpaths":"PASS","registered_failure_injections":82,"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
+body={"contract":"ONSURE_LOCAL_GATE_RESULT_V6","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"PASS_WITH_KNOWN_GAPS","workflow_surface_parity":"PASS","critical_callpaths":"PASS","registered_failure_injections":84,"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY
 find "$OUT" -type f ! -name evidence.sha256 -print0 | sort -z | xargs -0 sha256sum > "$OUT/evidence.sha256"
