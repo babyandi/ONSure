@@ -36,7 +36,7 @@ def main() -> int:
         return 0
     if not args.surefire_dir:
         fail("SUREFIRE_DIR_REQUIRED")
-    suites={}
+    suites={}; methods=set()
     for raw in args.surefire_dir:
         directory=pathlib.Path(raw)
         for report in directory.rglob("TEST-*.xml") if directory.exists() else []:
@@ -45,11 +45,15 @@ def main() -> int:
             values={key:int(root.attrib.get(key,"0")) for key in ("tests","failures","errors","skipped")}
             prior=suites.setdefault(name,{"tests":0,"failures":0,"errors":0,"skipped":0})
             for key,value in values.items(): prior[key]+=value
+            for testcase in root.findall(".//testcase"):
+                methods.add((testcase.attrib.get("classname", name), testcase.attrib.get("name", "")))
     result={"contract":"ONSURE_VALIDATION_CASE_EXECUTION_RECEIPT_V1","authority":str(AUTHORITY.relative_to(ROOT)),"registered":len(registered),"case_classes":{},"decision":"PASS_NONFINAL"}
     for kind in ("positive","negative","adversarial"):
         executed=failures=errors=skipped=0
         for _,case in [item for item in registered if item[0]==kind]:
             stats=suites.get(case["test_class"])
+            if case.get("test_method") and (case["test_class"], case["test_method"]) not in methods:
+                fail(f"REGISTERED_METHOD_NOT_EXECUTED:{case['id']}")
             if not stats or stats["tests"]<case.get("minimum_tests",1):
                 fail(f"REGISTERED_CASE_NOT_EXECUTED:{case['id']}")
             executed+=stats["tests"]; failures+=stats["failures"]; errors+=stats["errors"]; skipped+=stats["skipped"]
