@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "2.8.1",
+  "version": "2.9.0",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
@@ -51,6 +51,15 @@
     "runner": "python3 scripts/validate-critical-callpaths.py --self-test",
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
+  "fixture_auto_approval_boundary": {
+    "state": "IMPLEMENTED_PROCESS_PROPERTY_GATED_LOCAL_MAVEN_NOT_RUN",
+    "process_property": "onsure.allowTrustedFixtureAutoApproval",
+    "default_product_value": false,
+    "maven_test_value": true,
+    "signed_fixture_execution_allowed": true,
+    "request_profile_alone_can_auto_approve": false,
+    "current_source_execution": "NOT_RUN"
+  },
   "approval_authority_boundary": {
     "state": "IMPLEMENTED_OUTSIDE_TARGET_WORKSPACE_KEY_REFERENCES_BOUNDED_LOCAL_EXECUTION_REQUIRED",
     "authority_base": "${onsure.approvalAuthorityBase|ONSURE_APPROVAL_AUTHORITY_BASE|user.home/.onsure-authority/approval-authority}",
@@ -90,36 +99,17 @@
     "verification_claim_cases": 10,
     "product_subrequirement_cases": 10,
     "workflow_surface_cases": 6,
-    "critical_callpath_cases": 19,
-    "all_registered_failure_injections": 89,
+    "critical_callpath_cases": 20,
+    "all_registered_failure_injections": 90,
     "logic_self_test": "PASS",
     "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
-  "repository_static_contracts": {
-    "state": "PENDING_LOCAL_RECEIPT",
-    "runner": "python3 scripts/validate-repository-contracts.py"
-  },
-  "codespace_free_static_gate": {
-    "state": "PENDING_LOCAL_RECEIPT",
-    "runner": "python3 scripts/validate-codespace-free-remediation.py"
-  },
-  "local_gate": {
-    "state": "NOT_RUN_CURRENT_MAIN",
-    "runner": "bash scripts/onsure-local-gate.sh --mode full --profile core",
-    "receipt_root": ".onsure/local-gate/"
-  },
-  "one_shot_static": {
-    "state": "NOT_RUN_AS_SINGLE_COMMAND",
-    "runner": "bash scripts/onsure-one-shot.sh --static-only --profile core"
-  },
-  "one_shot_core": {
-    "state": "NOT_RUN",
-    "runner": "bash scripts/onsure-one-shot.sh --profile core"
-  },
-  "optional_oruda_profile": {
-    "state": "NOT_RUN",
-    "runner": "bash scripts/onsure-local-gate.sh --mode full --profile oruda"
-  },
+  "repository_static_contracts": {"state": "PENDING_LOCAL_RECEIPT", "runner": "python3 scripts/validate-repository-contracts.py"},
+  "codespace_free_static_gate": {"state": "PENDING_LOCAL_RECEIPT", "runner": "python3 scripts/validate-codespace-free-remediation.py"},
+  "local_gate": {"state": "NOT_RUN_CURRENT_MAIN", "runner": "bash scripts/onsure-local-gate.sh --mode full --profile core", "receipt_root": ".onsure/local-gate/"},
+  "one_shot_static": {"state": "NOT_RUN_AS_SINGLE_COMMAND", "runner": "bash scripts/onsure-one-shot.sh --static-only --profile core"},
+  "one_shot_core": {"state": "NOT_RUN", "runner": "bash scripts/onsure-one-shot.sh --profile core"},
+  "optional_oruda_profile": {"state": "NOT_RUN", "runner": "bash scripts/onsure-local-gate.sh --mode full --profile oruda"},
   "java17_maven_junit": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
   "core_modular_without_oruda": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
   "sandbox_attack_tests": {
