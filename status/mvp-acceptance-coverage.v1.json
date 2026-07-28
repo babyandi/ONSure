@@ -1,7 +1,8 @@
 {
   "contract": "ONSURE_MVP_ACCEPTANCE_COVERAGE_V1",
-  "version": "1.0.0",
-  "source_document": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
+  "version": "1.1.0",
+  "authority_state": "LEGACY_MVP_NONAUTHORITATIVE_FOR_FINAL_PRODUCT",
+  "source_document": "docs/legacy/ONSURE_MVP_ACCEPTANCE_ARCHIVE.md",
   "assessment_source_ref": "main",
   "acceptance_items": [
     {"id":"AC-01","normative_phrase":"VS Code에서 Git 저장소를 엽니다.","implementation_status":"STUB","verification_state":"NOT_RUN","code_refs":["vscode-extension/extension.js","src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"],"test_refs":["scripts/validate-vscode-extension.py"],"evidence_refs":[],"missing_controls":["VSCODE_EXTENSION_HOST_REPOSITORY_OPEN_FULL_CHAIN_NOT_RUN"],"detector_controls":["MVP_ACCEPTANCE_REFERENCE_GATE"]},
@@ -16,19 +17,6 @@
     {"id":"AC-10","normative_phrase":"VS Code를 재시작해도 상태가 복원됩니다.","implementation_status":"STUB","verification_state":"NOT_RUN","code_refs":["vscode-extension/extension.js"],"test_refs":["scripts/validate-vscode-extension.py"],"evidence_refs":[],"missing_controls":["EXTENSION_HOST_RESTART_JOB_AND_APPROVAL_RESTORE_NOT_IMPLEMENTED"],"detector_controls":["MVP_ACCEPTANCE_MISSING_CONTROL_GATE"]},
     {"id":"AC-11","normative_phrase":"이 시나리오가 실제 저장소에서 2회 연속 성공해야 MVP Full-Chain으로 인정합니다.","implementation_status":"DESIGN_ONLY","verification_state":"NOT_RUN","code_refs":[],"test_refs":[],"evidence_refs":[],"missing_controls":["REAL_REPOSITORY_TWO_CONSECUTIVE_FULL_CHAIN_RUNS_NOT_IMPLEMENTED"],"detector_controls":["MVP_ACCEPTANCE_MISSING_CONTROL_GATE"]}
   ],
-  "summary": {
-    "total": 11,
-    "implemented": 0,
-    "partial": 7,
-    "stub": 3,
-    "design_only": 1,
-    "verification_not_run": 11
-  },
-  "assurance": {
-    "mvp_full_chain": "NOT_RUN",
-    "two_consecutive_real_repository_runs": "NOT_RUN",
-    "independent_otester": "NOT_RUN",
-    "independent_oaudit": "NOT_RUN",
-    "final_claim_allowed": false
-  }
+  "summary": {"total":11,"implemented":0,"partial":7,"stub":3,"design_only":1,"verification_not_run":11},
+  "assurance": {"mvp_full_chain":"NOT_RUN","two_consecutive_real_repository_runs":"NOT_RUN","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_claim_allowed":false}
 }
