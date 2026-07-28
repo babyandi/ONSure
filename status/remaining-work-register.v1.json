@@ -1,6 +1,6 @@
 {
   "contract":"ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version":"3.0.0",
+  "version":"3.0.1",
   "assessment_date":"2026-07-28",
   "authority":"status/design-capability-coverage.v2.json",
   "subrequirement_authority":"status/product-subrequirement-coverage.v1.json",
@@ -26,7 +26,7 @@
     {"id":"P0-PARTIAL-EXECUTION-PLAN-APPROVAL","state":"CORE_SCOPE_ENFORCEMENT_IMPLEMENTED_VSCODE_INTERACTIVE_UI_MISSING_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify signed subset approval, skipped stages and HOLD propagation; implement explicit VS Code approval UX."},
     {"id":"P0-CORE-ADAPTER-MODULE-SEPARATION","state":"PREVIOUS_HEAD_PASS_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED","requires_human":false,"next_action":"Repeat Core-only modular build and preserve the ORUDA-absent receipt."},
     {"id":"P0-ATOMIC-TRACEABILITY","state":"CANDIDATE_EXTRACTION_AND_FAILURE_GATE_PASS_AUTHORITY_RECONCILIATION_INCOMPLETE","requires_human":false,"next_action":"Reconcile each requirement, acceptance criterion, API, screen, state and test with code and evidence."},
-    {"id":"P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION","state":"102_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Keep all count-authority classes mandatory, including 8 MVP acceptance injections."},
+    {"id":"P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION","state":"107_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Keep all count-authority classes mandatory, including 15 Verification Claim and 8 MVP Acceptance injections."},
     {"id":"P0-INCREMENTAL-PROGRAM-LEARNING","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement parent-profile lineage and added/modified/deleted source sets across all surfaces."},
     {"id":"P0-BEHAVIOR-VULNERABILITY-TAXONOMY","state":"PARTIAL","requires_human":false,"next_action":"Model successful, failed, policy-violating and vulnerable behavior conditions with direct production telemetry."},
     {"id":"P0-RCA-IMPACT-UNKNOWN-SEPARATION","state":"PARTIAL","requires_human":false,"next_action":"Add explicit impact scope and unknown-item fields to RCA and validate them on real causal experiments."},
