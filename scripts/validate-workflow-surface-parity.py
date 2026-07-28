@@ -7,25 +7,28 @@ import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+AUTHORITY = "contracts/workflow-operation-registry.v1.json"
 DISPATCHER = "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
 CLI = "src/main/java/io/onsure/platform/ONSureCli.java"
 API = "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
 VSCODE = "vscode-extension/extension.js"
-EXPECTED_OPERATIONS = {
-    "project.register-workspace", "project.register", "project.register-target",
-    "project.read-target", "project.list-targets",
-    "program.learn", "plan.generate", "plan.approve", "validation.run",
-    "patch.apply", "patch.rollback", "improvement.prove",
-    "git.commit", "git.draft-pr",
-    "license.issue", "license.activate", "license.validate", "license.authorize",
-    "license.reserve", "license.commit-reservation", "license.release-reservation",
-    "license.suspend", "license.revoke", "license.read",
-    "case.open", "case.preflight", "case.quote", "case.accept-order",
-    "case.record-payment", "case.verify-payment", "case.start-work", "case.deliver",
-    "case.accept-delivery", "case.request-refund", "case.record-refund",
-    "case.verify-refund", "case.legal-hold", "case.delete", "case.cancel", "case.read",
-}
 CASE_PATTERN = re.compile(r'case\s+"([a-z][a-z0-9.-]+)"\s*->')
+
+
+def load_authority(root: pathlib.Path = ROOT) -> dict:
+    return json.loads((root / AUTHORITY).read_text(encoding="utf-8"))
+
+
+def expected_operations(root: pathlib.Path = ROOT) -> set[str]:
+    body = load_authority(root)
+    operations = body.get("operations", [])
+    if body.get("contract") != "ONSURE_WORKFLOW_OPERATION_REGISTRY_V1":
+        raise ValueError("WORKFLOW_AUTHORITY_CONTRACT_INVALID")
+    if not isinstance(operations, list) or len(operations) != len(set(operations)):
+        raise ValueError("WORKFLOW_AUTHORITY_OPERATION_LIST_INVALID")
+    if body.get("operation_count") != len(operations):
+        raise ValueError("WORKFLOW_AUTHORITY_COUNT_MISMATCH")
+    return set(operations)
 
 
 def read(root: pathlib.Path, relative: str) -> str:
@@ -33,17 +36,19 @@ def read(root: pathlib.Path, relative: str) -> str:
     return path.read_text(encoding="utf-8", errors="strict") if path.is_file() else ""
 
 
-def validate_texts(dispatcher: str, cli: str, api: str, vscode: str) -> list[str]:
+def validate_texts(
+        dispatcher: str, cli: str, api: str, vscode: str,
+        expected: set[str]) -> list[str]:
     errors: list[str] = []
     operation_list = CASE_PATTERN.findall(dispatcher)
     operations = set(operation_list)
     if len(operation_list) != len(operations):
         errors.append("WORKFLOW_DISPATCHER_DUPLICATE_OPERATION")
-    if operations != EXPECTED_OPERATIONS:
+    if operations != expected:
         errors.append(
             "WORKFLOW_OPERATION_SET_MISMATCH:"
-            f"missing={sorted(EXPECTED_OPERATIONS-operations)}:"
-            f"extra={sorted(operations-EXPECTED_OPERATIONS)}"
+            f"missing={sorted(expected-operations)}:"
+            f"extra={sorted(operations-expected)}"
         )
     for operation in operations:
         if operation not in dispatcher:
@@ -67,23 +72,31 @@ def validate_texts(dispatcher: str, cli: str, api: str, vscode: str) -> list[str
 
 
 def validate(root: pathlib.Path = ROOT) -> list[str]:
-    required = [DISPATCHER, CLI, API, VSCODE]
-    errors = [f"WORKFLOW_SURFACE_FILE_MISSING:{item}" for item in required if not (root / item).is_file()]
+    required = [AUTHORITY, DISPATCHER, CLI, API, VSCODE]
+    errors = [f"WORKFLOW_SURFACE_FILE_MISSING:{item}" for item in required
+              if not (root / item).is_file()]
     if errors:
         return errors
-    return validate_texts(*(read(root, item) for item in required))
+    try:
+        expected = expected_operations(root)
+    except ValueError as failure:
+        return [str(failure)]
+    return validate_texts(*(read(root, item) for item in (DISPATCHER, CLI, API, VSCODE)), expected)
 
 
-def self_test() -> list[str]:
-    dispatcher = '\n'.join(f'case "{item}" -> handler();' for item in sorted(EXPECTED_OPERATIONS))
+def self_test(root: pathlib.Path = ROOT) -> list[str]:
+    expected = expected_operations(root)
+    dispatcher = '\n'.join(f'case "{item}" -> handler();' for item in sorted(expected))
     cli = '"workflow".equals(args[0]); dispatcher.dispatch(operation, request); ONSURE_WORKFLOW_COMPLETE_NONFINAL'
     api = 'server.createContext("/v1/workflow", authenticated(this::workflow)); dispatcher.dispatch(operation, request);'
     vscode = 'onsure.runWorkflowRequest; envelope.operation; client.workflow(envelope.operation, envelope.request); program.learn; validation.run'
     missed: list[str] = []
+
     def expect(name: str, values: tuple[str, str, str, str], prefix: str) -> None:
-        violations = validate_texts(*values)
+        violations = validate_texts(*values, expected)
         if not any(value.startswith(prefix) for value in violations):
             missed.append(f"WORKFLOW_SURFACE_SELF_TEST_MISSED:{name}:{prefix}:{violations}")
+
     expect("operation removed", (dispatcher.replace('case "plan.generate" -> handler();\n', ''), cli, api, vscode),
            "WORKFLOW_OPERATION_SET_MISMATCH")
     expect("duplicate operation", (dispatcher + '\ncase "program.learn" -> handler();', cli, api, vscode),
@@ -105,12 +118,17 @@ def main() -> int:
     args = parser.parse_args()
     errors = validate()
     self_errors = self_test() if args.self_test else []
+    try:
+        operation_count = len(expected_operations())
+    except ValueError:
+        operation_count = -1
     report = {
-        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V3",
+        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V4",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
-        "dispatcher_operation_count": len(EXPECTED_OPERATIONS),
+        "operation_authority": AUTHORITY,
+        "dispatcher_operation_count": operation_count,
         "surfaces": ["CLI", "LOCAL_AUTHENTICATED_API", "VSCODE"],
         "failure_injection_count": 6 if args.self_test else 0,
         "final_claim_allowed": False,
