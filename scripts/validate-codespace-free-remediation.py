@@ -9,10 +9,11 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TOTAL_FAILURE_INJECTIONS = 84
+COUNT_AUTHORITY = "contracts/omission-failure-injection-counts.v1.json"
 REQUIRED = [
     "contracts/codespace-free-remediation-plan.v1.json",
     "contracts/product-process-lineage.v1.json",
+    COUNT_AUTHORITY,
     "status/design-capability-coverage.v2.json",
     "status/product-subrequirement-coverage.v1.json",
     "status/omission-detection-status.v1.json",
@@ -42,15 +43,16 @@ ASSERTIONS = {
         "validate-product-subrequirements.py --self-test",
         "validate-workflow-surface-parity.py --self-test",
         "validate-critical-callpaths.py --self-test",
-        'registered_failure_injections":84',
+        COUNT_AUTHORITY,
     ],
     "scripts/onsure-one-shot.sh": [
-        "LOCAL_GATE_AUTHORITY", "local_gate_authority", 'registered_failure_injections":84',
+        "LOCAL_GATE_AUTHORITY", "local_gate_authority", COUNT_AUTHORITY,
     ],
     "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
         "AUTHORITY_BASE_PROPERTY", "DEFAULT_AUTHORITY_BASE",
         "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED",
+        "discoverForContainedPath", "APPROVAL_AUTHORITY_AMBIGUOUS_FOR_PATH",
     ],
     "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
         "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile",
@@ -76,6 +78,7 @@ ASSERTIONS = {
     "src/main/java/io/onsure/platform/GitWorkflowService.java": [
         "BoundedProcessRunner.run", "requireApprovalNotExpired",
         "GIT_DELIVERY_APPROVAL_EXPIRED", "approval_expires_at",
+        "discoverForContainedPath", "GIT_DELIVERY_CONSUMED_APPROVAL_INVALID",
     ],
     "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java": [
         "expiredDeliveryApprovalCannotReachPushTransition",
@@ -155,6 +158,15 @@ def main() -> int:
                 f"COMMAND_FAIL:{' '.join(command)}:{result.returncode}:"
                 f"{result.stdout[-2400:]}:{result.stderr[-1600:]}"
             )
+
+    counts = json.loads((ROOT / COUNT_AUTHORITY).read_text(encoding="utf-8"))
+    count_values = counts.get("counts", {})
+    total = counts.get("total")
+    if counts.get("contract") != "ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1":
+        errors.append("FAILURE_COUNT_AUTHORITY_CONTRACT_INVALID")
+    if total != sum(count_values.values()):
+        errors.append("FAILURE_COUNT_AUTHORITY_TOTAL_MISMATCH")
+
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
     if plan.get("final_single_command") != "bash scripts/onsure-final-stage.sh --profile core":
         errors.append("FINAL_SINGLE_COMMAND_MISMATCH")
@@ -167,7 +179,7 @@ def main() -> int:
     if any(plan.get(field) is not False for field in ("final_lock_allowed", "production_go", "commercial_go")):
         errors.append("UNSAFE_GO_FLAG")
     report = {
-        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V17",
+        "contract": "ONSURE_CODESPACE_FREE_STATIC_GATE_V18",
         "decision": "PASS" if not errors else "FAIL",
         "errors": errors,
         "github_actions": "DISABLED_BY_USER",
@@ -177,14 +189,9 @@ def main() -> int:
         "workflow_operation_count": 39,
         "product_process_stage_count": 20,
         "product_lineage_artifact_count": 20,
-        "failure_injection_count": TOTAL_FAILURE_INJECTIONS,
-        "atomic_requirement_failure_injections": 10,
-        "design_and_lineage_failure_injections": 28,
-        "automation_boundary_failure_injections": 6,
-        "verification_claim_failure_injections": 10,
-        "product_subrequirement_failure_injections": 10,
-        "workflow_surface_failure_injections": 6,
-        "critical_callpath_failure_injections": 14,
+        "failure_injection_authority": COUNT_AUTHORITY,
+        "failure_injection_count": total,
+        **count_values,
         "sandbox_required_attacks": 12,
         "sandbox_verified_attacks": 10,
         "sandbox_unverified_attacks": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
