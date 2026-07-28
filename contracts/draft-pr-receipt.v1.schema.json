@@ -6,9 +6,9 @@
   "additionalProperties": false,
   "required": [
     "contract", "change_set_sha256", "delivery_approval_sha256", "approval_actor",
-    "approval_key_id", "branch", "commit_sha", "remote", "remote_url_sha256",
-    "base_branch", "draft_pr_url", "draft", "merge_authorized", "created_at",
-    "final_claim_allowed", "receipt_sha256"
+    "approval_key_id", "approval_expires_at", "branch", "commit_sha", "remote",
+    "remote_url_sha256", "base_branch", "draft_pr_url", "draft", "merge_authorized",
+    "created_at", "final_claim_allowed", "receipt_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_DRAFT_PR_RECEIPT_V1"},
@@ -16,6 +16,7 @@
     "delivery_approval_sha256": {"$ref": "#/$defs/sha256"},
     "approval_actor": {"type": "string", "minLength": 1},
     "approval_key_id": {"type": "string", "minLength": 1},
+    "approval_expires_at": {"type": "string", "format": "date-time"},
     "branch": {"type": "string", "minLength": 1},
     "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
     "remote": {"type": "string", "minLength": 1},

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.ApprovalReceiptVerifier;
+import io.onsure.assurance.ConsumedApprovalReceiptVerifier;
 import io.onsure.assurance.Decision;
 import io.onsure.assurance.ValidationResult;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -20,7 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /** Performs bounded Git delivery. It never merges and never force-pushes. */
 public final class GitWorkflowService {
@@ -33,14 +34,10 @@ public final class GitWorkflowService {
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
 
-    /** Unsafe legacy entry point is intentionally disabled. */
     @Deprecated
     public Map<String, Object> commitApprovedWorktree(
-            Path worktreeRoot,
-            Path patchApplyReceiptFile,
-            Path deliveryApprovalFile,
-            String commitMessage,
-            Path outputFile) {
+            Path worktreeRoot, Path patchApplyReceiptFile, Path deliveryApprovalFile,
+            String commitMessage, Path outputFile) {
         throw new IllegalStateException("APPROVAL_TRUST_AND_IMPROVEMENT_PROOF_REQUIRED");
     }
 
@@ -77,6 +74,7 @@ public final class GitWorkflowService {
             throw new IllegalStateException("GIT_COMMIT_NOT_APPROVED");
         }
         requireSafeApprovalPermissions(approval);
+        requireApprovalNotExpired(approval, Instant.now());
         String branch = git(worktree, List.of("branch", "--show-current"), 20).strip();
         if (!branch.equals(patch.path("branch").asText())) {
             throw new IllegalStateException("GIT_BRANCH_PATCH_RECEIPT_MISMATCH");
@@ -95,7 +93,8 @@ public final class GitWorkflowService {
             throw new IllegalStateException("UNTRACKED_FILE_COMMIT_PROHIBITED");
         }
         Set<String> actualFiles = new LinkedHashSet<>(git(
-                worktree, List.of("diff", "--name-only"), 20).lines().filter(value -> !value.isBlank()).toList());
+                worktree, List.of("diff", "--name-only"), 20).lines()
+                .filter(value -> !value.isBlank()).toList());
         Set<String> approvedFiles = new LinkedHashSet<>();
         patch.path("applied_hunks").forEach(value -> approvedFiles.add(value.path("relative_path").asText()));
         if (!actualFiles.equals(approvedFiles)) {
@@ -127,6 +126,7 @@ public final class GitWorkflowService {
         result.put("approval_id", approval.path("approval_id").asText());
         result.put("approval_actor", approval.path("actor").asText());
         result.put("approval_key_id", approval.path("key_id").asText());
+        result.put("approval_expires_at", approval.path("expires_at").asText());
         result.put("branch", branch);
         result.put("commit_sha", commit);
         result.put("tree_sha", tree);
@@ -137,27 +137,51 @@ public final class GitWorkflowService {
         result.put("merge_state", "PROHIBITED");
         result.put("created_at", Instant.now().toString());
         result.put("final_claim_allowed", false);
-        result.put("change_set_sha256", sha256(mapper.writeValueAsBytes(result)));
+        result.put("change_set_sha256", canonicalHash(result, "change_set_sha256"));
         writeAtomic(outputFile, result);
         return Map.copyOf(result);
+    }
+
+    /**
+     * Compatibility route for the Local Workflow Dispatcher. It discovers the one fixed
+     * workspace authority from the contained worktree and never accepts caller-selected paths.
+     */
+    @Deprecated
+    public Map<String, Object> pushAndOpenDraftPr(
+            Path worktreeRoot, Path changeSetFile, Path deliveryApprovalFile,
+            String baseBranch, String title, Path bodyFile, Path outputFile) throws Exception {
+        ApprovalAuthorityPaths authority = ApprovalAuthorityPaths.discoverForContainedPath(worktreeRoot);
+        return pushAndOpenDraftPr(
+                worktreeRoot, changeSetFile, deliveryApprovalFile,
+                authority.requireTrustedKeyRegistry(), authority.requireReplayLedger(),
+                baseBranch, title, bodyFile, outputFile);
     }
 
     public Map<String, Object> pushAndOpenDraftPr(
             Path worktreeRoot,
             Path changeSetFile,
             Path deliveryApprovalFile,
+            Path approvalKeyRegistry,
+            Path approvalReplayLedger,
             String baseBranch,
             String title,
             Path bodyFile,
             Path outputFile) throws Exception {
         Path worktree = worktreeRoot.toAbsolutePath().normalize();
         JsonNode changeSet = readContract(changeSetFile, CHANGE_SET_CONTRACT, "GIT_CHANGE_SET");
+        verifyCanonicalHash(changeSet, "change_set_sha256", "GIT_CHANGE_SET_HASH_MISMATCH");
         JsonNode approval = readContract(
                 deliveryApprovalFile, DELIVERY_APPROVAL_CONTRACT, "GIT_DELIVERY_APPROVAL");
+        ConsumedApprovalReceiptVerifier.requireTrustedConsumed(
+                deliveryApprovalFile, approvalKeyRegistry, approvalReplayLedger,
+                DELIVERY_APPROVAL_CONTRACT, APPROVAL_PURPOSE, Instant.now(),
+                "GIT_DELIVERY_CONSUMED_APPROVAL_INVALID");
         String approvalDigest = sha256(Files.readAllBytes(deliveryApprovalFile));
         if (!approvalDigest.equals(changeSet.path("delivery_approval_sha256").asText())) {
             throw new IllegalStateException("GIT_CHANGE_SET_APPROVAL_DIGEST_MISMATCH");
         }
+        requireApprovalIdentity(changeSet, approval);
+        requireApprovalNotExpired(approval, Instant.now());
         if (!approval.path("allow_push").asBoolean(false)
                 || !approval.path("allow_draft_pr").asBoolean(false)) {
             throw new IllegalStateException("PUSH_OR_DRAFT_PR_NOT_APPROVED");
@@ -204,6 +228,7 @@ public final class GitWorkflowService {
         result.put("delivery_approval_sha256", approvalDigest);
         result.put("approval_actor", approval.path("actor").asText());
         result.put("approval_key_id", approval.path("key_id").asText());
+        result.put("approval_expires_at", approval.path("expires_at").asText());
         result.put("branch", branch);
         result.put("commit_sha", head);
         result.put("remote", remote);
@@ -214,9 +239,45 @@ public final class GitWorkflowService {
         result.put("merge_authorized", false);
         result.put("created_at", Instant.now().toString());
         result.put("final_claim_allowed", false);
-        result.put("receipt_sha256", sha256(mapper.writeValueAsBytes(result)));
+        result.put("receipt_sha256", canonicalHash(result, "receipt_sha256"));
         writeAtomic(outputFile, result);
         return Map.copyOf(result);
+    }
+
+    static void requireApprovalNotExpired(JsonNode approval, Instant now) {
+        try {
+            Instant expires = Instant.parse(approval.path("expires_at").asText());
+            if (!now.isBefore(expires)) throw new IllegalStateException("GIT_DELIVERY_APPROVAL_EXPIRED");
+        } catch (IllegalStateException failure) {
+            throw failure;
+        } catch (Exception invalid) {
+            throw new IllegalStateException("GIT_DELIVERY_APPROVAL_EXPIRY_INVALID", invalid);
+        }
+    }
+
+    private static void requireApprovalIdentity(JsonNode changeSet, JsonNode approval) {
+        if (!changeSet.path("approval_id").asText().equals(approval.path("approval_id").asText())
+                || !changeSet.path("approval_actor").asText().equals(approval.path("actor").asText())
+                || !changeSet.path("approval_key_id").asText().equals(approval.path("key_id").asText())
+                || !changeSet.path("approval_expires_at").asText().equals(approval.path("expires_at").asText())) {
+            throw new IllegalStateException("GIT_DELIVERY_APPROVAL_IDENTITY_OR_EXPIRY_MISMATCH");
+        }
+    }
+
+    private void verifyCanonicalHash(JsonNode node, String field, String code) throws Exception {
+        if (!node.isObject()) throw new IllegalStateException(code);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> value = mapper.convertValue(node, Map.class);
+        String declared = String.valueOf(value.get(field));
+        if (!declared.matches("[0-9a-f]{64}") || !declared.equals(canonicalHash(value, field))) {
+            throw new IllegalStateException(code);
+        }
+    }
+
+    private String canonicalHash(Map<String, Object> value, String selfField) throws Exception {
+        Map<String, Object> copy = new java.util.TreeMap<>(value);
+        copy.remove(selfField);
+        return sha256(mapper.writeValueAsBytes(copy));
     }
 
     private static void requireSafeApprovalPermissions(JsonNode approval) {
@@ -262,26 +323,19 @@ public final class GitWorkflowService {
     }
 
     private static String run(List<String> command, Path root, long timeout, String authority) throws Exception {
-        ProcessBuilder builder = new ProcessBuilder(command).directory(root.toFile()).redirectErrorStream(true);
-        Map<String, String> env = builder.environment();
-        String path = env.get("PATH");
-        String ghToken = env.get("GH_TOKEN");
-        env.clear();
-        if (path != null) env.put("PATH", path);
-        if (ghToken != null && "GH".equals(authority)) env.put("GH_TOKEN", ghToken);
-        env.put("GIT_TERMINAL_PROMPT", "0");
-        Process process = builder.start();
-        boolean completed = process.waitFor(timeout, TimeUnit.SECONDS);
-        if (!completed) {
-            process.toHandle().descendants().forEach(ProcessHandle::destroyForcibly);
-            process.destroyForcibly();
-            throw new IllegalStateException(authority + "_COMMAND_TIMEOUT");
+        Map<String, String> environment = new LinkedHashMap<>();
+        String path = System.getenv("PATH");
+        String ghToken = System.getenv("GH_TOKEN");
+        if (path != null) environment.put("PATH", path);
+        if (ghToken != null && "GH".equals(authority)) environment.put("GH_TOKEN", ghToken);
+        environment.put("GIT_TERMINAL_PROMPT", "0");
+        BoundedProcessRunner.Result result = BoundedProcessRunner.run(
+                command, root, Duration.ofSeconds(timeout), environment, authority);
+        if (result.outputTruncated()) throw new IllegalStateException(authority + "_COMMAND_OUTPUT_LIMIT");
+        if (result.exitCode() != 0) {
+            throw new IllegalStateException(authority + "_COMMAND_FAILED:" + result.output().strip());
         }
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        if (process.exitValue() != 0) {
-            throw new IllegalStateException(authority + "_COMMAND_FAILED:" + output.strip());
-        }
-        return output;
+        return result.output();
     }
 
     private void writeAtomic(Path outputFile, Object value) throws Exception {

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -15,7 +16,7 @@ REQUIRED_LOCAL_RUNNERS = {
         "mvn -B -ntp -q test",
         "pom-modular.xml",
         "vscode-extension-build",
-        '"github_actions": "DISABLED"',
+        "SEMANTIC_GITHUB_ACTIONS_DISABLED",
     ),
     "scripts/onsure-one-shot.sh": ("--static-only", "--profile"),
     "scripts/onsure-final-stage.sh": ("ONSURE_FINAL_STAGE", "onsure-one-shot.sh"),
@@ -46,7 +47,14 @@ def validate() -> list[str]:
             continue
         text = path.read_text(encoding="utf-8", errors="strict")
         for token in tokens:
-            if token not in text:
+            if token == "SEMANTIC_GITHUB_ACTIONS_DISABLED":
+                present = re.search(
+                    r'["\']github_actions["\']\s*:\s*["\']DISABLED["\']',
+                    text,
+                ) is not None
+            else:
+                present = token in text
+            if not present:
                 errors.append(f"LOCAL_VALIDATION_CONTROL_MISSING:{relative}:{token}")
         for token in FORBIDDEN_ACTIVE_TOKENS:
             if token in text:
@@ -95,7 +103,7 @@ def main() -> int:
     if errors:
         print("ONSURE_AUTOMATION_BOUNDARY_FAIL", file=sys.stderr)
         return 1
-    print("ONSURE_AUTOMATION_BOUNDARY_PASS")
+    print("ONSURE_AUTOMATION_BOUNDARY_PASS", file=sys.stderr)
     return 0
 
 

@@ -1,140 +1,59 @@
 {
-  "contract": "ONSURE_REMAINING_WORK_REGISTER_V1",
-  "version": "2.3.1",
-  "assessment_date": "2026-07-28",
-  "authority": "status/design-capability-coverage.v2.json",
-  "process_lineage_authority": "contracts/product-process-lineage.v1.json",
-  "active_issues": [20],
-  "validation_execution_policy": {
-    "github_actions": "DISABLED_BY_USER",
-    "routine_command": "bash scripts/onsure-local-gate.sh --mode static --profile core",
-    "full_local_command": "bash scripts/onsure-local-gate.sh --mode full --profile core",
-    "final_command": "bash scripts/onsure-final-stage.sh --profile core"
-  },
-  "historical_automation_observation": {
-    "validated_head": "8ff5beb6f7310746ad55364802a2b034064aac9d",
-    "state": "PASS_NONFINAL",
-    "binding_scope": "ARCHIVED_PREVIOUS_HEAD_ONLY",
-    "retained_for_audit_only": true,
-    "current_source_bound": false
-  },
-  "items": [
-    {
-      "id": "P0-FULL-REPOSITORY-STATIC-REVALIDATION",
-      "state": "CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED",
-      "requires_human": false,
-      "next_action": "Run the local static or full gate and preserve .onsure/local-gate evidence; GitHub Actions must remain absent."
-    },
-    {
-      "id": "P0-CORE-ADAPTER-MODULE-SEPARATION",
-      "state": "PREVIOUS_HEAD_PASS_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Repeat the Core-only modular build in the local full gate and preserve the ORUDA-absent receipt."
-    },
-    {
-      "id": "P0-ATOMIC-TRACEABILITY",
-      "state": "CANDIDATE_EXTRACTION_AND_FAILURE_GATE_PASS_AUTHORITY_RECONCILIATION_INCOMPLETE",
-      "requires_human": false,
-      "next_action": "Reconcile every normative requirement, acceptance criterion, API, screen, state and test condition with authoritative code symbols, tests and evidence."
-    },
-    {
-      "id": "P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION",
-      "state": "52_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Keep 28 design/process/data, 10 atomic-requirement, 6 automation-prohibition and 8 verification-claim failure injections mandatory."
-    },
-    {
-      "id": "P0-PROGRAM-BEHAVIOR-LEARNING",
-      "state": "PREVIOUS_HEAD_FIXTURE_PROFILE_PASS_NONFINAL_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Add direct production model, prompt, tool and RAG telemetry before Behavior Profile activation."
-    },
-    {
-      "id": "P0-PLANNING-OREVIEW-RCA",
-      "state": "PREVIOUS_HEAD_UNIT_E2E_PASS_NONFINAL_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED",
-      "requires_human": false,
-      "next_action": "Run real-target causal experiments and independent review evidence before any RCA confirmation or product PASS promotion."
-    },
-    {
-      "id": "P0-IMPROVEMENT-GIT",
-      "state": "PREVIOUS_HEAD_LOCAL_WORKTREE_PASS_NONFINAL_REMOTE_DELIVERY_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Execute an approved real remote push and Draft PR delivery without enabling merge, force-push or deployment."
-    },
-    {
-      "id": "P0-VSCODE-LOCAL-API",
-      "state": "PREVIOUS_HEAD_HTTP_AND_VSIX_PASS_NONFINAL_EXTENSION_HOST_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Run VS Code Extension Host full-chain, restart recovery and interactive approval UX."
-    },
-    {
-      "id": "P0-OLICENSE-SERVICE-CASE",
-      "state": "PREVIOUS_HEAD_LIFECYCLE_PASS_NONFINAL_PROVIDER_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Run real payment/refund provider and commercial entitlement integration while retaining signed verification and legal-hold gates."
-    },
-    {
-      "id": "P0-TENANT-IDENTITY",
-      "state": "STUB_CROSS_TENANT_READ_WRITE_ATTACKS_NOT_RUN",
-      "requires_human": false,
-      "next_action": "Implement authenticated identity, RBAC, tenant-scoped authorization and cross-tenant adversarial tests."
-    },
-    {
-      "id": "P0-SANDBOX-ADVERSARIAL-COVERAGE",
-      "state": "PARTIAL_10_OF_12_CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED",
-      "requires_human": false,
-      "next_action": "Run the rootless local sandbox gate; keep CROSS_TENANT_READ and CROSS_TENANT_WRITE as HOLD until tenant enforcement exists."
-    },
-    {
-      "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
-      "state": "PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE",
-      "requires_human": false,
-      "next_action": "Add product-target dependency lock, SBOM, vulnerability and license verification packs, including a committed VSIX dependency lock."
-    },
-    {
-      "id": "P1-PERFORMANCE-RECOVERY",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement load, latency, resource, outage, recovery and deterministic failure-injection harnesses."
-    },
-    {
-      "id": "P1-OBSERVABILITY-OPERATIONS",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement queue, metrics, logs, traces, backup, restore, retention scheduler and operational control plane."
-    },
-    {
-      "id": "P1-DEPLOYMENT",
-      "state": "DESIGN_ONLY",
-      "requires_human": false,
-      "next_action": "Implement signed installer, released VSIX, update, rollback, on-premises and air-gapped packages."
-    },
-    {
-      "id": "FINAL-EXECUTION-STAGE",
-      "state": "READY_BUT_DEFERRED_BY_USER",
-      "requires_human": false,
-      "next_action": "Run bash scripts/onsure-final-stage.sh --profile core only at the final deferred execution stage."
-    },
-    {
-      "id": "INDEPENDENT-OTESTER-OAUDIT",
-      "state": "BLOCKED_INDEPENDENT_AUTHORITY",
-      "requires_human": false,
-      "next_action": "Use separate execution identities, signing keys, environments and evidence storage after internal product full-chain succeeds."
-    },
-    {
-      "id": "HUMAN-ACCEPTANCE",
-      "state": "WAITING_HUMAN_GATE",
-      "requires_human": true,
-      "next_action": "Perform real-user acceptance only after current-source product full-chain and independent receipts exist."
-    },
-    {
-      "id": "OPERATIONAL-RELEASE",
-      "state": "HOLD",
-      "requires_human": true,
-      "next_action": "Keep FinalLock, Production GO and Commercial GO false until all release gates pass."
-    }
+  "contract":"ONSURE_REMAINING_WORK_REGISTER_V1",
+  "version":"3.1.0",
+  "assessment_date":"2026-07-28",
+  "authority":"status/design-capability-coverage.v2.json",
+  "subrequirement_authority":"status/product-subrequirement-coverage.v1.json",
+  "mvp_acceptance_authority":"status/mvp-acceptance-coverage.v1.json",
+  "process_lineage_authority":"contracts/product-process-lineage.v1.json",
+  "failure_injection_authority":"contracts/omission-failure-injection-counts.v1.json",
+  "active_issues":[20],
+  "validation_execution_policy":{"github_actions":"DISABLED_BY_USER","routine_command":"bash scripts/onsure-local-gate.sh --mode static --profile core","full_local_command":"bash scripts/onsure-local-gate.sh --mode full --profile core","final_command":"bash scripts/onsure-final-stage.sh --profile core"},
+  "historical_automation_observation":{"validated_head":"8ff5beb6f7310746ad55364802a2b034064aac9d","state":"PASS_NONFINAL","binding_scope":"ARCHIVED_PREVIOUS_HEAD_ONLY","retained_for_audit_only":true,"current_source_bound":false},
+  "items":[
+    {"id":"P0-FULL-REPOSITORY-STATIC-REVALIDATION","state":"CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED","requires_human":false,"next_action":"Run the local static or full gate and preserve .onsure/local-gate evidence; GitHub Actions must remain absent."},
+    {"id":"P0-GRANULAR-PRODUCT-SUBREQUIREMENTS","state":"43_REGISTERED_3_IMPLEMENTED_31_PARTIAL_5_STUB_4_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Keep the source-derived 43-item register synchronized with every normative FR and NFR bullet."},
+    {"id":"P0-MVP-ACCEPTANCE-COVERAGE","state":"11_REGISTERED_ALL_NOT_RUN_TWO_CONSECUTIVE_REAL_REPOSITORY_RUNS_NOT_RUN","requires_human":false,"next_action":"Execute and preserve all 10 user-journey steps plus two consecutive real-repository Full-Chain successes."},
+    {"id":"P0-WORKFLOW-SURFACE-PARITY","state":"40_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Run workflow surface and critical-callpath gates whenever Dispatcher, CLI, Local API, VS Code commands or overloads change."},
+    {"id":"P0-CRITICAL-CALLPATH-AND-APPROVAL-AUTHORITY","state":"AUTHORITY_FIXED_BUNDLE_VALIDATION_BOUNDED_PROCESS_FIXTURE_PROVENANCE_AND_PRODUCT_STATE_PATHS_IMPLEMENTED_24_ATTACKS_REGISTERED_LOCAL_JAVA_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify signed authority, process bounds, fixture provenance and fixed state paths through the local Java gate."},
+    {"id":"P0-PRODUCT-STATE-PATH-AUTHORITY","state":"FIXED_DEFAULT_PATHS_IMPLEMENTED_LOCAL_MAVEN_NOT_RUN","requires_human":false,"next_action":"Verify state/output overrides cannot overwrite source bytes or fork authoritative state."},
+    {"id":"P0-FIXTURE-AUTO-APPROVAL-PROVENANCE","state":"PROCESS_PROPERTY_GATED_DEFAULT_PRODUCT_FALSE_MAVEN_NOT_RUN","requires_human":false,"next_action":"Ensure product runtime never enables onsure.allowTrustedFixtureAutoApproval."},
+    {"id":"P0-DRAFT-PR-WORKFLOW-REACHABILITY","state":"UNIQUE_AUTHORITY_DISCOVERY_IMPLEMENTED_LOCAL_MAVEN_AND_REAL_REMOTE_NOT_RUN","requires_human":false,"next_action":"Run the Git workflow test pack and a real approved Draft PR delivery."},
+    {"id":"P0-REGISTERED-TARGET-PROCESS-BINDING","state":"IMPLEMENTED_LOCAL_MAVEN_NOT_RUN","requires_human":false,"next_action":"Verify program.learn, plan.generate and validation.run consume the registered target without request-field override."},
+    {"id":"P0-RAW-JAVA-AUTHORITY-PATH-API","state":"INTERNAL_ONLY_UNSUPPORTED_PUBLIC_SDK_NOT_DEFINED","requires_human":false,"next_action":"Encapsulate raw authority paths behind a public typed SDK before external publication."},
+    {"id":"P0-APPROVAL-REPLAY-EXTERNAL-ANCHOR","state":"NOT_IMPLEMENTED","requires_human":false,"next_action":"Anchor replay-ledger heads outside the mutable local authority store and test rewrite, rollback and stale snapshots."},
+    {"id":"P0-BOUNDED-PROCESS-FULL-REVALIDATION","state":"JAVAC_RELEASE17_STANDALONE_PASS_FULL_REPOSITORY_MAVEN_NOT_RUN","requires_human":false,"next_action":"Run Java 17 Maven tests for output flood and timeout behavior in Learning, Source Binding, Patch and Git Delivery."},
+    {"id":"P0-PARTIAL-EXECUTION-PLAN-APPROVAL","state":"CORE_SCOPE_ENFORCEMENT_IMPLEMENTED_VSCODE_INTERACTIVE_UI_MISSING_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Verify signed subset approval, skipped stages and HOLD propagation; implement explicit VS Code approval UX."},
+    {"id":"P0-CORE-ADAPTER-MODULE-SEPARATION","state":"PREVIOUS_HEAD_PASS_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED","requires_human":false,"next_action":"Repeat Core-only modular build and preserve the ORUDA-absent receipt."},
+    {"id":"P0-ATOMIC-TRACEABILITY","state":"CANDIDATE_EXTRACTION_AND_FAILURE_GATE_PASS_AUTHORITY_RECONCILIATION_INCOMPLETE","requires_human":false,"next_action":"Reconcile each requirement, acceptance criterion, API, screen, state and test with code and evidence."},
+    {"id":"P0-DESIGN-PROCESS-DATA-OMISSION-DETECTION","state":"118_FAILURE_INJECTIONS_REGISTERED_LOCAL_EXECUTION_REQUIRED","requires_human":false,"next_action":"Keep all count-authority classes mandatory, including Legacy and Final product/acceptance classes; registered does not mean executed."},
+    {"id":"P0-INCREMENTAL-PROGRAM-LEARNING","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement parent-profile lineage and added/modified/deleted source sets across all surfaces."},
+    {"id":"P0-BEHAVIOR-VULNERABILITY-TAXONOMY","state":"PARTIAL","requires_human":false,"next_action":"Model successful, failed, policy-violating and vulnerable behavior conditions with direct production telemetry."},
+    {"id":"P0-RCA-IMPACT-UNKNOWN-SEPARATION","state":"PARTIAL","requires_human":false,"next_action":"Add explicit impact scope and unknown-item fields to RCA and validate them on real causal experiments."},
+    {"id":"P0-PATCH-PREAPPLY-RISK-IMPACT-ROLLBACK","state":"PARTIAL","requires_human":false,"next_action":"Add risk score, impact scope and rollback-method preview before patch approval."},
+    {"id":"P0-PROJECT-GENERIC-KNOWLEDGE-SEPARATION","state":"STUB","requires_human":false,"next_action":"Implement de-identification and separation of project-specific data from reusable anonymous patterns."},
+    {"id":"P0-VSCODE-PRODUCT-SURFACES","state":"STUB_REQUIRED_VIEWS_AND_MODES_MISSING","requires_human":false,"next_action":"Implement required Views and Ask, Plan, Act and Autopilot modes."},
+    {"id":"P0-LONG-RUNNING-JOB-RECOVERY","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement checkpoint, cancel, pause, resume, restart-safe queue and approval-history restoration."},
+    {"id":"P0-PROGRAM-BEHAVIOR-LEARNING","state":"PREVIOUS_HEAD_FIXTURE_PROFILE_PASS_NONFINAL_CURRENT_MAIN_LOCAL_REEXECUTION_REQUIRED","requires_human":false,"next_action":"Add direct production model, prompt, tool and RAG telemetry before profile activation."},
+    {"id":"P0-PLANNING-OREVIEW-RCA","state":"PARTIAL_APPROVAL_CORE_FIXED_OTHER_REAL_TARGET_GATES_NOT_RUN","requires_human":false,"next_action":"Run real-target causal experiments and preserve HOLD for missing independent evidence."},
+    {"id":"P0-IMPROVEMENT-GIT","state":"PREVIOUS_HEAD_LOCAL_WORKTREE_PASS_NONFINAL_REMOTE_DELIVERY_NOT_RUN","requires_human":false,"next_action":"Execute approved remote Push and Draft PR without merge, force-push or deployment."},
+    {"id":"P0-VSCODE-LOCAL-API","state":"PREVIOUS_HEAD_HTTP_AND_VSIX_PASS_NONFINAL_EXTENSION_HOST_NOT_RUN","requires_human":false,"next_action":"Run VS Code Extension Host full-chain, restart recovery and interactive approval UX."},
+    {"id":"P0-PUBLIC-SDK","state":"STUB_LOOPBACK_LOCAL_API_ONLY","requires_human":false,"next_action":"Define a versioned external SDK boundary without weakening fixed authority and source binding."},
+    {"id":"P0-OLICENSE-SERVICE-CASE","state":"PREVIOUS_HEAD_LIFECYCLE_PASS_NONFINAL_PROVIDER_NOT_RUN","requires_human":false,"next_action":"Run real payment/refund provider and entitlement integration."},
+    {"id":"P0-TENANT-IDENTITY","state":"STUB_CROSS_TENANT_READ_WRITE_ATTACKS_NOT_RUN","requires_human":false,"next_action":"Implement authenticated identity, RBAC and cross-tenant adversarial tests."},
+    {"id":"P0-SANDBOX-ADVERSARIAL-COVERAGE","state":"PARTIAL_10_OF_12_CURRENT_MAIN_LOCAL_RECEIPT_REQUIRED","requires_human":false,"next_action":"Run rootless sandbox gate; keep cross-tenant attacks HOLD until tenant enforcement exists."},
+    {"id":"P1-EXECUTION-BUDGET-VISIBILITY","state":"STUB","requires_human":false,"next_action":"Add expected result, token estimate, cost ceiling and data-transfer scope."},
+    {"id":"P1-PROVIDER-MODEL-REPLACEABILITY","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement provider/model adapter contracts and compatibility tests."},
+    {"id":"P1-BUILD-DEPENDENCY-VERIFICATION","state":"PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE","requires_human":false,"next_action":"Add dependency lock, SBOM, vulnerability and license packs."},
+    {"id":"P1-PERFORMANCE-RECOVERY","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement load, latency, outage and recovery harnesses."},
+    {"id":"P1-OBSERVABILITY-OPERATIONS","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement metrics, logs, traces, backup, restore and retention controls."},
+    {"id":"P1-DEPLOYMENT","state":"DESIGN_ONLY","requires_human":false,"next_action":"Implement signed installer, released VSIX, update, rollback, on-premises and air-gapped packages."},
+    {"id":"FINAL-EXECUTION-STAGE","state":"PREREQUISITES_INCOMPLETE_EXECUTION_DEFERRED","requires_human":false,"next_action":"Complete Final 22/62 execution coverage, source/environment binding and independent ONTester/ONAudit before running the final stage."},
+    {"id":"INDEPENDENT-OTESTER-OAUDIT","state":"BLOCKED_INDEPENDENT_AUTHORITY","requires_human":false,"next_action":"Use separate identities, keys, environments and evidence storage after internal full-chain."},
+    {"id":"HUMAN-ACCEPTANCE","state":"WAITING_HUMAN_GATE","requires_human":true,"next_action":"Perform real-user acceptance after product full-chain and independent receipts."},
+    {"id":"OPERATIONAL-RELEASE","state":"HOLD","requires_human":true,"next_action":"Keep all release flags false until every gate passes."}
   ],
-  "final_lock_allowed": false,
-  "production_go": false,
-  "commercial_go": false
+  "final_lock_allowed":false,
+  "production_go":false,
+  "commercial_go":false
 }

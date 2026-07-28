@@ -44,7 +44,7 @@ python3 scripts/create-source-snapshot.py --output "$OUT/source-start.json"
 VALIDATION_PYTHON="python3"
 if ! python3 -c 'import jsonschema, yaml' >/dev/null 2>&1; then
   python3 -m venv "$OUT/validation-venv"
-  "$OUT/validation-venv/bin/python" -m pip install \
+  "$OUT/validation-venv/bin/python" -m pip install --require-hashes \
     --disable-pip-version-check --no-input -r requirements-validation.txt \
     | tee "$OUT/logs/validation-dependency-install.log"
   VALIDATION_PYTHON="$OUT/validation-venv/bin/python"
@@ -54,6 +54,12 @@ export PATH="$VALIDATION_BIN:$PATH"
 
 "$VALIDATION_PYTHON" scripts/validate-structured-contracts.py --require-full \
   | tee "$OUT/logs/structured-contracts.log"
+python3 scripts/validate-final-product-requirements.py --self-test \
+  | tee "$OUT/logs/final-product-requirements.log"
+python3 scripts/validate-final-acceptance-coverage.py --self-test \
+  | tee "$OUT/logs/final-acceptance-coverage.log"
+python3 -m unittest discover -s tests -p 'test_*.py' -v \
+  2>&1 | tee "$OUT/logs/full-python-regression.log"
 python3 scripts/validate-codespace-free-remediation.py \
   | tee "$OUT/logs/codespace-free-static-gate.log"
 python3 scripts/check-module-boundaries.py \
@@ -85,7 +91,7 @@ EXT_BUILD="$OUT/vscode-extension-build"
 cp -R "$ROOT/vscode-extension" "$EXT_BUILD"
 (
   cd "$EXT_BUILD"
-  npm install --ignore-scripts --no-audit --no-fund \
+  npm ci --ignore-scripts --no-audit --no-fund \
     | tee "$OUT/logs/vscode-npm-install.log"
   npm run check | tee "$OUT/logs/vscode-node-check.log"
   npm run package -- --out "$OUT/artifacts/onsure.vsix" \

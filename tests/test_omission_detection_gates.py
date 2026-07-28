@@ -35,6 +35,33 @@ class OmissionDetectionGateTest(unittest.TestCase):
         self.assertEqual([], report["self_test_errors"])
         self.assertEqual([], report["process_lineage_errors"])
 
+    def test_source_derived_product_requirements_pass_self_tests(self) -> None:
+        result = self.run_command("scripts/validate-product-subrequirements.py", "--self-test")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual("PASS", report["decision"])
+        self.assertEqual(43, report["source_requirement_count"])
+        self.assertEqual(43, report["registered_requirement_count"])
+        self.assertEqual(10, report["failure_injection_count"])
+
+    def test_mvp_acceptance_sequence_and_repeat_condition_pass_self_tests(self) -> None:
+        result = self.run_command("scripts/validate-mvp-acceptance-coverage.py", "--self-test")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual("PASS", report["decision"])
+        self.assertEqual(11, report["source_step_count"])
+        self.assertEqual(11, report["registered_step_count"])
+        self.assertEqual(8, report["failure_injection_count"])
+        self.assertEqual("NOT_RUN", report["mvp_full_chain"])
+
+    def test_mvp_status_authorities_are_cross_consistent(self) -> None:
+        result = self.run_command("scripts/validate-mvp-status-consistency.py")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual("PASS", report["decision"])
+        self.assertEqual(11, report["acceptance_items"])
+        self.assertEqual(8, report["mvp_acceptance_failure_injections"])
+
     def test_missing_capability_is_detected(self) -> None:
         matrix = json.loads((ROOT / "status/design-capability-coverage.v2.json").read_text(encoding="utf-8"))
         matrix["capabilities"] = [

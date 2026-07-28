@@ -12,6 +12,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -20,7 +21,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /** Creates bounded patch candidates and applies only explicitly approved hunks in an isolated worktree. */
 public final class ImprovementWorkflowService {
@@ -381,23 +381,19 @@ public final class ImprovementWorkflowService {
     private static String git(Path root, List<String> arguments, long timeoutSeconds) throws Exception {
         List<String> command = new ArrayList<>();
         command.add("git"); command.add("-C"); command.add(root.toString()); command.addAll(arguments);
-        ProcessBuilder builder = new ProcessBuilder(command).redirectErrorStream(true);
-        Map<String, String> environment = builder.environment();
-        String path = environment.get("PATH");
-        environment.clear();
+        Map<String, String> environment = new LinkedHashMap<>();
+        String path = System.getenv("PATH");
         if (path != null) environment.put("PATH", path);
         environment.put("GIT_TERMINAL_PROMPT", "0");
-        Process process = builder.start();
-        boolean completed = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
-        if (!completed) {
-            process.destroyForcibly();
-            throw new IllegalStateException("GIT_COMMAND_TIMEOUT:" + arguments.get(0));
+        BoundedProcessRunner.Result result = BoundedProcessRunner.run(
+                command, root, Duration.ofSeconds(timeoutSeconds), environment, "PATCH_GIT");
+        if (result.outputTruncated()) {
+            throw new IllegalStateException("GIT_COMMAND_OUTPUT_LIMIT:" + arguments.get(0));
         }
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        if (process.exitValue() != 0) {
-            throw new IllegalStateException("GIT_COMMAND_FAILED:" + arguments.get(0) + ":" + output.strip());
+        if (result.exitCode() != 0) {
+            throw new IllegalStateException("GIT_COMMAND_FAILED:" + arguments.get(0) + ":" + result.output().strip());
         }
-        return output;
+        return result.output();
     }
 
     private void writeAtomic(Path outputFile, Object value) throws Exception {

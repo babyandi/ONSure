@@ -79,10 +79,16 @@ def validate_contract(contract: dict[str, Any]) -> None:
     terminal_state = contract.get("terminal_gate", {}).get("state")
     if terminal_state not in ALLOWED_TERMINAL_STATES:
         raise RuntimeError("TERMINAL_GATE_INVALID")
+    authorization = contract.get("merge_authorization")
+    if not isinstance(authorization, dict):
+        raise RuntimeError("MERGE_AUTHORIZATION_MISSING")
+    authorized = authorization.get("authorized")
+    authority = authorization.get("authority")
     if terminal_state == "MERGE_AUTHORIZED_READY":
-        authorization = contract.get("merge_authorization", {})
-        if not authorization.get("authorized") or not authorization.get("authority"):
+        if authorized is not True or not authority:
             raise RuntimeError("MERGE_AUTHORIZATION_MISSING")
+    elif authorized is not False or authority:
+        raise RuntimeError("MERGE_AUTHORIZATION_MISSING")
     ids: set[str] = set()
     for stage in contract.get("stages", []):
         stage_id = stage.get("id")

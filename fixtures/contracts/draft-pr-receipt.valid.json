@@ -4,6 +4,7 @@
   "delivery_approval_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "approval_actor": "reviewer@example.invalid",
   "approval_key_id": "reviewer-key-001",
+  "approval_expires_at": "2026-07-26T01:00:00Z",
   "branch": "fix/sample-approved-patch",
   "commit_sha": "dddddddddddddddddddddddddddddddddddddddd",
   "remote": "origin",
