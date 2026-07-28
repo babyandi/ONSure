@@ -1,21 +1,15 @@
 {
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "assessment_source_ref": "main",
   "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
   "deferred_final_stage_detail": "CODESPACE_OR_EQUIVALENT_FINAL_STAGE_DEFERRED_BY_USER",
-  "active_remediation_issues": [
-    20
-  ],
+  "active_remediation_issues": [20],
   "validation_execution_policy": {
     "github_actions": "DISABLED_BY_USER",
     "workflow_files_allowed": false,
-    "allowed_execution_modes": [
-      "LOCAL_STATIC_ONE_SHOT",
-      "LOCAL_FULL_GATE",
-      "LOCAL_FINAL_STAGE"
-    ],
+    "allowed_execution_modes": ["LOCAL_STATIC_ONE_SHOT", "LOCAL_FULL_GATE", "LOCAL_FINAL_STAGE"],
     "current_source_pass_requires_local_receipt": true,
     "committed_dynamic_run_claims_allowed": false
   },
@@ -36,22 +30,29 @@
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
   "product_subrequirement_coverage": {
-    "requirement_count": 38,
-    "implemented": 2,
-    "partial": 28,
-    "stub": 4,
+    "requirement_count": 43,
+    "implemented": 3,
+    "partial": 31,
+    "stub": 5,
     "design_only": 4,
-    "state": "PENDING_LOCAL_RECEIPT_WITH_36_KNOWN_INCOMPLETE",
+    "state": "PENDING_LOCAL_RECEIPT_WITH_40_KNOWN_INCOMPLETE",
     "runner": "python3 scripts/validate-product-subrequirements.py --self-test",
+    "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
+  },
+  "mvp_acceptance_coverage": {
+    "acceptance_item_count": 11,
+    "implemented": 0,
+    "partial": 7,
+    "stub": 3,
+    "design_only": 1,
+    "state": "NOT_RUN_ALL_11_ACCEPTANCE_ITEMS",
+    "runner": "python3 scripts/validate-mvp-acceptance-coverage.py --self-test",
+    "two_consecutive_real_repository_runs": "NOT_RUN",
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
   },
   "workflow_surface_parity": {
     "dispatcher_operation_count": 39,
-    "surfaces": [
-      "CLI",
-      "LOCAL_AUTHENTICATED_API",
-      "VSCODE"
-    ],
+    "surfaces": ["CLI", "LOCAL_AUTHENTICATED_API", "VSCODE"],
     "state": "PENDING_LOCAL_RECEIPT",
     "runner": "python3 scripts/validate-workflow-surface-parity.py --self-test",
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
@@ -96,7 +97,7 @@
     "current_source_execution": "NOT_RUN",
     "workspace_symlink_alias_allowed": false,
     "workspace_identity": "NORMALIZED_PATH_WITH_SYMLINK_COMPONENTS_PROHIBITED",
-    "receipt_verify_consume_binding": "EXACT_CONSUMED_SNAPSHOT_RETURNED_TO_CALLER_LOCAL_EXECUTION_REQUIRED"
+    "receipt_verify_consume_binding": "IMMUTABLE_SNAPSHOT_RETURNED_AND_CONSUMED_LOCAL_EXECUTION_REQUIRED"
   },
   "bounded_process_execution": {
     "state": "IMPLEMENTED_JAVAC_RELEASE17_SMOKE_PASS_FULL_MAVEN_NOT_RUN",
@@ -126,7 +127,8 @@
     "product_subrequirement_cases": 10,
     "workflow_surface_cases": 6,
     "critical_callpath_cases": 24,
-    "all_registered_failure_injections": 94,
+    "mvp_acceptance_cases": 8,
+    "all_registered_failure_injections": 102,
     "logic_self_test": "PASS",
     "current_head_execution": "LOCAL_EXECUTION_REQUIRED"
   },
@@ -161,10 +163,7 @@
     "state": "PARTIAL_10_OF_12_LOCAL_RECEIPT_REQUIRED",
     "verified_count": 10,
     "required_count": 12,
-    "unverified": [
-      "CROSS_TENANT_READ",
-      "CROSS_TENANT_WRITE"
-    ],
+    "unverified": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
     "current_source_execution": "NOT_RUN"
   },
   "local_api_runtime_e2e": "LOCAL_GATE_NOT_RUN_CURRENT_MAIN",
