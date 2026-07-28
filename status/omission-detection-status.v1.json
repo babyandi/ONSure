@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_OMISSION_DETECTION_STATUS_V1",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "assessment_date": "2026-07-28",
   "source_ref": "main",
   "authorities": {
@@ -52,12 +52,12 @@
     "authority": "contracts/omission-failure-injection-counts.v1.json",
     "atomic_requirement_cases": 10,
     "automation_boundary_cases": 6,
-    "verification_claim_cases": 10,
+    "verification_claim_cases": 15,
     "product_subrequirement_cases": 10,
     "workflow_surface_cases": 6,
     "critical_callpath_cases": 24,
     "mvp_acceptance_cases": 8,
-    "all_registered_cases": 102,
+    "all_registered_cases": 107,
     "atomic_requirement_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
     "automation_boundary_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
     "verification_claim_result": "LOGIC_SELF_TEST_PASS_LOCAL_EXECUTION_REQUIRED",
