@@ -142,11 +142,19 @@ public final class GitWorkflowService {
         return Map.copyOf(result);
     }
 
+    /**
+     * Compatibility route for the Local Workflow Dispatcher. It discovers the one fixed
+     * workspace authority from the contained worktree and never accepts caller-selected paths.
+     */
     @Deprecated
     public Map<String, Object> pushAndOpenDraftPr(
             Path worktreeRoot, Path changeSetFile, Path deliveryApprovalFile,
-            String baseBranch, String title, Path bodyFile, Path outputFile) {
-        throw new IllegalStateException("APPROVAL_TRUST_REGISTRY_REQUIRED_FOR_PUSH");
+            String baseBranch, String title, Path bodyFile, Path outputFile) throws Exception {
+        ApprovalAuthorityPaths authority = ApprovalAuthorityPaths.discoverForContainedPath(worktreeRoot);
+        return pushAndOpenDraftPr(
+                worktreeRoot, changeSetFile, deliveryApprovalFile,
+                authority.requireTrustedKeyRegistry(), authority.requireReplayLedger(),
+                baseBranch, title, bodyFile, outputFile);
     }
 
     public Map<String, Object> pushAndOpenDraftPr(
