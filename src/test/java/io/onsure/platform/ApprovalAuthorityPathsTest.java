@@ -61,6 +61,21 @@ class ApprovalAuthorityPathsTest {
     }
 
     @Test
+    void symlinkedWorkspaceAliasCannotForkApprovalAuthority() throws Exception {
+        Path workspace = temp.resolve("real-workspace");
+        Files.createDirectories(workspace);
+        Path alias = temp.resolve("workspace-alias");
+        try {
+            Files.createSymbolicLink(alias, workspace);
+        } catch (UnsupportedOperationException | java.nio.file.FileSystemException unsupported) {
+            return;
+        }
+        IllegalArgumentException failure = assertThrows(IllegalArgumentException.class,
+                () -> ApprovalAuthorityPaths.forWorkspace(alias, temp.resolve("authority-base")));
+        assertEquals("APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED", failure.getMessage());
+    }
+
+    @Test
     void symlinkedAuthorityRegistryIsRejected() throws Exception {
         Path workspace = temp.resolve("workspace");
         Path authorityBase = temp.resolve("authority-base");
