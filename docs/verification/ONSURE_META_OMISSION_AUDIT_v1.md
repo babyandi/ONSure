@@ -44,6 +44,17 @@
 
 Dispatcher Workflow는 34개에서 39개로 증가했다.
 
+### 2.3 Workspace 별칭으로 승인 신뢰근 분기 가능
+
+승인 Authority를 Workspace 밖에 고정했어도 Workspace 식별자가 정규화된 경로 문자열 Hash에 의존했다. 동일한 물리 Workspace를 심볼릭 링크 별칭으로 열면 다른 Hash가 생성되어 별도 Trusted Key Registry와 Replay Ledger가 선택될 수 있었다.
+
+수정:
+
+- Workspace 경로와 모든 상위 경로의 심볼릭 링크를 Fail-Closed로 거부
+- 동일 물리 Workspace 별칭 실패 주입 추가
+- ONSure Critical Callpath Gate에 구현 Token과 회귀시험을 필수 결속
+- Windows Junction·대소문자 별칭 독립 검증 전까지 NONFINAL 유지
+
 ## 3. 기존 ONSURE에서 검출되지 않은 원인
 
 ### 3.1 28개 대분류의 과도한 집계
@@ -80,7 +91,13 @@ Dispatcher Workflow는 34개에서 39개로 증가했다.
 
 Core 구현이 있으면 VS Code·CLI·Local API까지 구현된 것으로 오해할 수 있었다. 예를 들어 Hunk 승인 Core가 있어도 VS Code Hunk 승인 UX는 없다.
 
-### 3.5 불완전 상태가 명시적 Gap을 요구하지 않았음
+### 3.5 경로 고정과 물리 객체 동일성을 같은 것으로 판단
+
+기존 보완 검증은 요청 필드 Override와 Authority의 Workspace 외부 배치만 검사했다. 같은 물리 Workspace가 여러 경로 이름을 가질 수 있다는 공격 사례가 없어서 Workspace Hash가 분기되는 문제를 놓쳤다.
+
+ONSure에는 Workspace alias→Authority identity 불변성 실패 주입을 추가했다.
+
+### 3.6 불완전 상태가 명시적 Gap을 요구하지 않았음
 
 `PARTIAL`, `STUB`, `DESIGN_ONLY`가 무엇이 빠졌는지 기계적으로 요구하지 않아 세부 누락이 상태 한 단어 안에 숨었다.
 
@@ -142,7 +159,8 @@ Actions 금지·로컬 자동화 경계       6
 검증 Claim                         8
 제품 하위 Requirement              10
 Workflow Surface                    6
-합계                               68
+기존 합계                          68
+Critical Callpath(누적)             16
 ```
 
 ### 4.5 기존 Gate 결속
