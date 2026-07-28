@@ -137,15 +137,26 @@ public final class ApprovalReceiptVerifier {
             String expectedContract,
             String expectedPurpose,
             Instant now) throws Exception {
-        ValidationResult result = verify(receiptFile, expectedContract, expectedPurpose, now);
-        if (result.decision() != Decision.PASS) {
-            throw new IllegalStateException(
-                    "APPROVAL_RECEIPT_INVALID:" + String.join(",", result.violations()));
+        if (!Files.isRegularFile(receiptFile, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(receiptFile)) {
+            throw new IllegalArgumentException("APPROVAL_RECEIPT_FILE_INVALID");
         }
-        Map<String, Object> receipt = readObject(receiptFile);
-        ExclusiveFileLock.run(replayLock, () -> appendConsumption(receiptFile, receipt,
-                expectedContract, expectedPurpose));
-        return Map.copyOf(receipt);
+        Path snapshot = Files.createTempFile("onsure-approval-receipt-", ".snapshot");
+        try {
+            Files.copy(receiptFile, snapshot, StandardCopyOption.REPLACE_EXISTING,
+                    LinkOption.NOFOLLOW_LINKS);
+            ValidationResult result = verify(snapshot, expectedContract, expectedPurpose, now);
+            if (result.decision() != Decision.PASS) {
+                throw new IllegalStateException(
+                        "APPROVAL_RECEIPT_INVALID:" + String.join(",", result.violations()));
+            }
+            Map<String, Object> receipt = readObject(snapshot);
+            ExclusiveFileLock.run(replayLock, () -> appendConsumption(snapshot, receipt,
+                    expectedContract, expectedPurpose));
+            return Map.copyOf(receipt);
+        } finally {
+            Files.deleteIfExists(snapshot);
+        }
     }
 
     private void appendConsumption(
