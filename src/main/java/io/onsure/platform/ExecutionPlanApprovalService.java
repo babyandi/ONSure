@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.ApprovalReceiptVerifier;
-import io.onsure.assurance.Decision;
-import io.onsure.assurance.ValidationResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -32,8 +30,15 @@ public final class ExecutionPlanApprovalService {
             Path approvalReplayLedger, Path outputFile) throws Exception {
         Map<String, Object> plan = read(planFile, ExecutionPlanService.CONTRACT, "EXECUTION_PLAN");
         new ExecutionPlanService().verifyPlanHash(plan);
-        Map<String, Object> approval = read(
-                approvalReceiptFile, APPROVAL_CONTRACT, "EXECUTION_PLAN_APPROVAL");
+        ApprovalReceiptVerifier verifier = new ApprovalReceiptVerifier(
+                trustedKeyRegistry, approvalReplayLedger);
+        ApprovalReceiptVerifier.ConsumedReceipt consumedApproval =
+                verifier.requireValidAndConsumeSnapshot(
+                        approvalReceiptFile, APPROVAL_CONTRACT, PURPOSE, Instant.now());
+        Map<String, Object> approval = consumedApproval.receipt();
+        if (!APPROVAL_CONTRACT.equals(approval.get("contract"))) {
+            throw new IllegalArgumentException("EXECUTION_PLAN_APPROVAL_CONTRACT_MISMATCH");
+        }
         String planFileSha = Hashing.file(planFile);
         if (!planFileSha.equals(approval.get("plan_file_sha256"))) {
             throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_FILE_DIGEST_MISMATCH");
@@ -48,22 +53,11 @@ public final class ExecutionPlanApprovalService {
         Set<String> approvedActions = strings(approval.get("approved_actions"));
         requireApprovedSubset(plannedActions, approvedActions);
 
-        ApprovalReceiptVerifier verifier = new ApprovalReceiptVerifier(
-                trustedKeyRegistry, approvalReplayLedger);
-        ValidationResult verification = verifier.verify(
-                approvalReceiptFile, APPROVAL_CONTRACT, PURPOSE, Instant.now());
-        if (verification.decision() != Decision.PASS) {
-            throw new IllegalStateException(
-                    "EXECUTION_PLAN_APPROVAL_INVALID:" + String.join(",", verification.violations()));
-        }
-
         boolean partial = !plannedActions.equals(approvedActions);
         Map<String, Object> approvalState = approvalState(
-                approval, approvedActions, partial, planFileSha, Hashing.file(approvalReceiptFile));
+                approval, approvedActions, partial, planFileSha, consumedApproval.sha256());
         Map<String, Object> approved = derivedApprovedPlan(plan, approvalState);
 
-        verifier.requireValidAndConsume(
-                approvalReceiptFile, APPROVAL_CONTRACT, PURPOSE, Instant.now());
         try {
             writeAtomic(outputFile, approved);
         } catch (Exception failure) {
