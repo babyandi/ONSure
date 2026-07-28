@@ -22,6 +22,17 @@ if body.get('contract')!='ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1' or total!
 print(total)
 PY
 )" || { echo "ONSURE_ONE_SHOT_FAIL FAILURE_COUNT_AUTHORITY_INVALID" >&2; exit 72; }
+read -r FINAL_REQUIREMENT_TOTAL FINAL_ACCEPTANCE_TOTAL < <(python3 - <<'PY'
+import json
+requirements=json.load(open("status/final-product-requirement-coverage.v1.json",encoding="utf-8"))
+acceptance=json.load(open("contracts/final-acceptance-source-registry.v1.json",encoding="utf-8"))
+requirement_total=len(requirements.get("requirements",[]))
+acceptance_total=acceptance.get("total_expected_items")
+if requirement_total <= 0 or not isinstance(acceptance_total,int) or acceptance_total <= 0:
+    raise SystemExit(1)
+print(requirement_total, acceptance_total)
+PY
+) || { echo "ONSURE_ONE_SHOT_FAIL FINAL_AUTHORITY_INVALID" >&2; exit 72; }
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"; OUT="${ONSURE_ONE_SHOT_OUTPUT:-$ROOT/.onsure/one-shot/$STAMP}"
 mkdir -p "$OUT/logs" "$OUT/receipts"
 python3 scripts/create-source-snapshot.py --output "$OUT/source-start.json"
@@ -51,15 +62,15 @@ body={"contract":"ONSURE_ONE_SHOT_STEP_RECEIPT_V10","step":"LOCAL_GATE_AUTHORITY
 body["receipt_sha256"]=hashlib.sha256(json.dumps(body,sort_keys=True,separators=(",",":")).encode()).hexdigest()
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY
-python3 - "$OUT/result.json" "$HEAD_SHA" "$PROFILE" "$MODE" "$ENVIRONMENT_DIGEST" "$GATE_EXIT" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" <<'PY'
+python3 - "$OUT/result.json" "$HEAD_SHA" "$PROFILE" "$MODE" "$ENVIRONMENT_DIGEST" "$GATE_EXIT" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" "$FINAL_REQUIREMENT_TOTAL" "$FINAL_ACCEPTANCE_TOTAL" <<'PY'
 import json,pathlib,sys
-path,source,profile,mode,environment,exit_code,authority,total=sys.argv[1:];code=int(exit_code)
+path,source,profile,mode,environment,exit_code,authority,total,requirement_total,acceptance_total=sys.argv[1:];code=int(exit_code)
 state="PASS" if code==0 else "FAIL"
 body={"contract":"ONSURE_ONE_SHOT_RESULT_V14","decision":"NON_FINAL" if code==0 else "FAIL","source_commit":source,"profile":profile,"mode":mode.upper(),"environment_digest":environment,"local_gate_exit":code,"local_gate_authority":True,
       "legacy_product_decomposition":{"contract_validation":state,"runtime_verification":"NOT_RUN"},
       "legacy_mvp_acceptance":{"contract_validation":state,"runtime_verification":"NOT_RUN"},
-      "final_product_requirement_coverage":{"registered":22,"runtime_verification":"NOT_RUN"},
-      "final_acceptance_coverage":{"registered":61,"runtime_verification":"NOT_RUN"},
+      "final_product_requirement_coverage":{"registered":int(requirement_total),"runtime_verification":"NOT_RUN"},
+      "final_acceptance_coverage":{"registered":int(acceptance_total),"runtime_verification":"NOT_RUN"},
       "two_consecutive_real_repository_runs":"NOT_RUN","failure_injection_authority":authority,"registered_failure_injections":int(total),"release_gate":"HOLD","final_eligibility":"BLOCKED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY

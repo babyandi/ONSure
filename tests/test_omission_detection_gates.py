@@ -62,6 +62,13 @@ class OmissionDetectionGateTest(unittest.TestCase):
         self.assertEqual(11, report["acceptance_items"])
         self.assertEqual(8, report["mvp_acceptance_failure_injections"])
 
+    def test_final_authorities_and_runner_summaries_are_cross_consistent(self) -> None:
+        result = self.run_command("scripts/validate-final-authority-consistency.py")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual("PASS", report["decision"])
+        self.assertEqual([], report["errors"])
+
     def test_missing_capability_is_detected(self) -> None:
         matrix = json.loads((ROOT / "status/design-capability-coverage.v2.json").read_text(encoding="utf-8"))
         matrix["capabilities"] = [

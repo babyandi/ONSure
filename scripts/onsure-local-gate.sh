@@ -22,6 +22,17 @@ if body.get('contract')!='ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1' or total!
 print(total)
 PY
 )" || { echo "ONSURE_LOCAL_GATE_FAIL FAILURE_COUNT_AUTHORITY_INVALID" >&2; exit 72; }
+read -r FINAL_REQUIREMENT_TOTAL FINAL_ACCEPTANCE_TOTAL < <(python3 - <<'PY'
+import json
+requirements=json.load(open("status/final-product-requirement-coverage.v1.json",encoding="utf-8"))
+acceptance=json.load(open("contracts/final-acceptance-source-registry.v1.json",encoding="utf-8"))
+requirement_total=len(requirements.get("requirements",[]))
+acceptance_total=acceptance.get("total_expected_items")
+if requirement_total <= 0 or not isinstance(acceptance_total,int) or acceptance_total <= 0:
+    raise SystemExit(1)
+print(requirement_total, acceptance_total)
+PY
+) || { echo "ONSURE_LOCAL_GATE_FAIL FINAL_AUTHORITY_INVALID" >&2; exit 72; }
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"; OUT="${ONSURE_LOCAL_GATE_OUTPUT:-$ROOT/.onsure/local-gate/$STAMP}"
 mkdir -p "$OUT/logs" "$OUT/artifacts"
 python3 scripts/create-source-snapshot.py --output "$OUT/source-start.json"
@@ -50,6 +61,7 @@ run_step design-coverage python3 scripts/validate-design-coverage.py --matrix st
 run_step product-subrequirements python3 scripts/validate-product-subrequirements.py --self-test
 run_step final-product-requirements python3 scripts/validate-final-product-requirements.py --self-test
 run_step final-acceptance-coverage python3 scripts/validate-final-acceptance-coverage.py --self-test
+run_step final-authority-consistency python3 scripts/validate-final-authority-consistency.py
 run_step mvp-acceptance python3 scripts/validate-mvp-acceptance-coverage.py --self-test
 run_step mvp-status-consistency python3 scripts/validate-mvp-status-consistency.py
 run_step workflow-surface-parity python3 scripts/validate-workflow-surface-parity.py --self-test
@@ -92,12 +104,12 @@ if [[ "$MODE" == "full" ]]; then
 fi
 python3 scripts/create-source-snapshot.py --output "$OUT/source-end.json"
 cmp "$OUT/source-start.json" "$OUT/source-end.json" >/dev/null || { echo "ONSURE_LOCAL_GATE_FAIL SOURCE_DRIFT" >&2; exit 73; }
-python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" "$OUT/artifacts" "$OUT/logs" "$OUT/source-start.json" "$OUT/source-end.json" <<'PY'
+python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" "$FINAL_REQUIREMENT_TOTAL" "$FINAL_ACCEPTANCE_TOTAL" "$OUT/artifacts" "$OUT/logs" "$OUT/source-start.json" "$OUT/source-end.json" <<'PY'
 import hashlib,json,pathlib,sys
-path,mode,profile,authority,total,artifact_dir,log_dir,start_path,end_path=sys.argv[1:]
+path,mode,profile,authority,total,requirement_total,acceptance_total,artifact_dir,log_dir,start_path,end_path=sys.argv[1:]
 static_steps={
     "structured-contracts","design-coverage","product-subrequirements",
-    "final-product-requirements","final-acceptance-coverage","mvp-acceptance",
+    "final-product-requirements","final-acceptance-coverage","final-authority-consistency","mvp-acceptance",
     "mvp-status-consistency","workflow-surface-parity","critical-callpaths",
     "validation-case-registry-static","status-consistency","automation-boundary",
     "verification-claims","module-boundary","repository-contracts",
@@ -142,8 +154,8 @@ if seen != expected:
 body={"contract":"ONSURE_LOCAL_GATE_RESULT_V9","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION",
       "legacy_product_decomposition":{"contract_validation":"PASS","runtime_verification":"NOT_RUN"},
       "legacy_mvp_acceptance":{"contract_validation":"PASS","runtime_verification":"NOT_RUN"},
-      "final_product_requirement_coverage":{"registered":22,"runtime_verification":"NOT_RUN"},
-      "final_acceptance_coverage":{"registered":62,"runtime_verification":"NOT_RUN"},
+      "final_product_requirement_coverage":{"registered":int(requirement_total),"runtime_verification":"NOT_RUN"},
+      "final_acceptance_coverage":{"registered":int(acceptance_total),"runtime_verification":"NOT_RUN"},
       "source_snapshot_sha256":hashlib.sha256(pathlib.Path(start_path).read_bytes()).hexdigest(),
       "step_receipts":receipts,"step_receipt_count":len(receipts),
       "two_consecutive_real_repository_runs":"NOT_RUN","validation_case_execution_receipt":"artifacts/validation-case-execution-receipt.json" if mode=="full" else "NOT_RUN_STATIC_MODE","failure_injection_authority":authority,"registered_failure_injections":int(total),"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_eligibility":"BLOCKED","final_lock_allowed":False,"production_go":False,"commercial_go":False}
