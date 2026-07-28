@@ -1,6 +1,6 @@
 {
   "contract":"ONSURE_FINAL_PRODUCT_REQUIREMENT_COVERAGE_V1",
-  "version":"1.0.0",
+  "version":"1.0.1",
   "source_document":"docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
   "companion_authorities":["docs/40_FINAL_PRODUCT_RESEARCH_AND_ROLE_MODELS.md","docs/41_ONSURE_FINAL_TARGET_ARCHITECTURE.md","docs/42_VSCODE_AGENT_AND_GIT_FULL_CHAIN_DESIGN.md","docs/43_FINANCIAL_CONTROL_TRACE_AND_ACCEPTANCE.md","docs/44_UNIFIED_AI_WORK_DEVELOPER_ASSURANCE_DESIGN.md"],
   "assessment_source_ref":"main",
@@ -28,6 +28,6 @@
     {"id":"FR-FIN-21","name":"Package Delivery","normative_phrase":"설치 파일의 서명·Hash·SBOM·악성코드·라이선스·호환성을 검증하고, 격리 시험 설치, 승인된 설치·설정·기동, 기능·보안·복구 검증과 Rollback Receipt를 제공한다.","implementation_status":"DESIGN_ONLY","verification_state":"NOT_RUN","code_refs":[],"test_refs":[],"evidence_refs":[],"missing_controls":["PACKAGE_VERIFICATION_ENGINE_MISSING","ISOLATED_TEST_INSTALL_MISSING","INSTALL_ROLLBACK_RECEIPT_MISSING"]},
     {"id":"FR-FIN-22","name":"Unified Evidence","normative_phrase":"사용자 요청→계획→Context→모델·도구→파일·Artifact→명령·설치·Git→시험→개선→독립검증→사람결정의 단일 Parent Hash 계보를 강제한다.","implementation_status":"PARTIAL","verification_state":"NOT_RUN","code_refs":["contracts/product-process-lineage.v1.json","src/main/java/io/onsure/platform/FileValidationStore.java"],"test_refs":["scripts/validate-product-process-lineage.py","src/test/java/io/onsure/platform/DurableStateLedgerTest.java"],"evidence_refs":[],"missing_controls":["USER_REQUEST_CONTEXT_MODEL_TOOL_INSTALL_HUMAN_DECISION_END_TO_END_LINEAGE_INCOMPLETE","INDEPENDENT_READBACK_NOT_RUN"]}
   ],
-  "summary":{"total":22,"implemented":0,"partial":10,"stub":4,"design_only":8,"verification_not_run":22},
+  "summary":{"total":22,"implemented":0,"partial":11,"stub":4,"design_only":7,"verification_not_run":22},
   "assurance":{"final_product_full_chain":"NOT_RUN","financial_scenarios":"NOT_RUN","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_claim_allowed":false}
 }
