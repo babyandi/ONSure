@@ -5,7 +5,6 @@ import argparse
 import json
 import pathlib
 import re
-import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DISPATCHER = "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
@@ -15,7 +14,7 @@ VSCODE = "vscode-extension/extension.js"
 EXPECTED_OPERATIONS = {
     "project.register-workspace", "project.register", "project.register-target",
     "project.read-target", "project.list-targets",
-    "program.learn", "plan.approve", "validation.run",
+    "program.learn", "plan.generate", "plan.approve", "validation.run",
     "patch.apply", "patch.rollback", "improvement.prove",
     "git.commit", "git.draft-pr",
     "license.issue", "license.activate", "license.validate", "license.authorize",
@@ -49,7 +48,6 @@ def validate_texts(dispatcher: str, cli: str, api: str, vscode: str) -> list[str
     for operation in operations:
         if operation not in dispatcher:
             errors.append(f"WORKFLOW_OPERATION_UNREACHABLE_IN_DISPATCHER:{operation}")
-
     for token in ('"workflow".equals(args[0])', '.dispatch(operation, request)',
                   'ONSURE_WORKFLOW_COMPLETE_NONFINAL'):
         if token not in cli:
@@ -82,13 +80,11 @@ def self_test() -> list[str]:
     api = 'server.createContext("/v1/workflow", authenticated(this::workflow)); dispatcher.dispatch(operation, request);'
     vscode = 'onsure.runWorkflowRequest; envelope.operation; client.workflow(envelope.operation, envelope.request); program.learn; validation.run'
     missed: list[str] = []
-
     def expect(name: str, values: tuple[str, str, str, str], prefix: str) -> None:
         violations = validate_texts(*values)
         if not any(value.startswith(prefix) for value in violations):
             missed.append(f"WORKFLOW_SURFACE_SELF_TEST_MISSED:{name}:{prefix}:{violations}")
-
-    expect("operation removed", (dispatcher.replace('case "project.register" -> handler();\n', ''), cli, api, vscode),
+    expect("operation removed", (dispatcher.replace('case "plan.generate" -> handler();\n', ''), cli, api, vscode),
            "WORKFLOW_OPERATION_SET_MISMATCH")
     expect("duplicate operation", (dispatcher + '\ncase "program.learn" -> handler();', cli, api, vscode),
            "WORKFLOW_DISPATCHER_DUPLICATE_OPERATION")
@@ -110,7 +106,7 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V2",
+        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V3",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
@@ -123,7 +119,7 @@ def main() -> int:
     if report["decision"] == "PASS":
         print("ONSURE_WORKFLOW_SURFACE_PARITY_PASS")
         return 0
-    print("ONSURE_WORKFLOW_SURFACE_PARITY_FAIL", file=sys.stderr)
+    print("ONSURE_WORKFLOW_SURFACE_PARITY_FAIL", file=__import__("sys").stderr)
     return 1
 
 
