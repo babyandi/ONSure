@@ -98,6 +98,39 @@ class ApprovalAuthorityPathsTest {
     }
 
     @Test
+    void productOwnedStateAndOutputPathsCannotBeForkedOrPointAtSourceFiles() throws Exception {
+        Path workspace = temp.resolve("workspace");
+        Files.createDirectories(workspace);
+        String previous = System.getProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY);
+        System.setProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY,
+                temp.resolve("authority-base").toString());
+        try {
+            LocalWorkflowDispatcher dispatcher = new LocalWorkflowDispatcher(workspace);
+            for (String field : new String[] {
+                    "catalog_root", "store_root", "license_store_root", "case_store_root",
+                    "output_file", "approved_plan_file", "evidence_root", "rollback_receipt_file"}) {
+                IllegalArgumentException failure = assertThrows(IllegalArgumentException.class,
+                        () -> dispatcher.dispatch("program.learn", mapper.valueToTree(Map.of(
+                                field, workspace.resolve("source.txt").toString()))));
+                assertEquals("PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED:" + field,
+                        failure.getMessage());
+            }
+            Map<String, Object> patchRequest = Map.of(
+                    "repository_root", workspace.toString(),
+                    "patch_plan_file", workspace.resolve("patch-plan.json").toString(),
+                    "approval_receipt_file", workspace.resolve("approval.json").toString(),
+                    "worktree_root", workspace.resolve("attacker-worktree").toString());
+            IllegalArgumentException patchFailure = assertThrows(IllegalArgumentException.class,
+                    () -> dispatcher.dispatch("patch.apply", mapper.valueToTree(patchRequest)));
+            assertEquals("PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED:worktree_root",
+                    patchFailure.getMessage());
+        } finally {
+            if (previous == null) System.clearProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY);
+            else System.setProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY, previous);
+        }
+    }
+
+    @Test
     void symlinkedWorkspaceAliasCannotForkApprovalAuthority() throws Exception {
         Path workspace = temp.resolve("real-workspace");
         Files.createDirectories(workspace);
