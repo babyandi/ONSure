@@ -6,7 +6,7 @@ import pathlib
 from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TOTAL_FAILURE_INJECTIONS = 84
+TOTAL_FAILURE_INJECTIONS = 87
 
 
 def load(relative: str):
@@ -151,7 +151,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 14,
+        "critical_callpath_cases": 17,
         "all_registered_failure_injections": TOTAL_FAILURE_INJECTIONS,
     }
     current_failure = verification.get("omission_failure_injection", {})
@@ -164,7 +164,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 14,
+        "critical_callpath_cases": 17,
         "all_registered_cases": TOTAL_FAILURE_INJECTIONS,
     }.items():
         if additional.get(field) != expected:
@@ -214,7 +214,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V11",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V12",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
