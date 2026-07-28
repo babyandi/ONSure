@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 
@@ -43,8 +44,6 @@ public record ApprovalAuthorityPaths(
 
     static ApprovalAuthorityPaths forWorkspace(Path workspaceRoot, Path authorityBase) {
         Path workspace = normalize(workspaceRoot, "workspaceRoot");
-        // A symlink alias would produce a second workspace hash and therefore a second
-        // trust registry/replay ledger for the same physical target. Fail closed.
         requireNoSymlink(workspace, "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED");
         Path base = normalize(authorityBase, "authorityBase");
         String workspaceId = sha256(workspace.toString()).substring(0, 24);
@@ -56,6 +55,38 @@ public record ApprovalAuthorityPaths(
         requireNoSymlink(root, "APPROVAL_AUTHORITY_ROOT_SYMLINK_PROHIBITED");
         return new ApprovalAuthorityPaths(
                 root, root.resolve(KEY_REGISTRY_FILE), root.resolve(REPLAY_LEDGER_FILE));
+    }
+
+    /**
+     * Finds the one fixed authority belonging to an ancestor workspace of a contained path.
+     * This is used only for compatibility entry points that do not receive the workspace root.
+     */
+    public static ApprovalAuthorityPaths discoverForContainedPath(Path containedPath) {
+        Path contained = normalize(containedPath, "containedPath");
+        requireNoSymlink(contained, "APPROVAL_AUTHORITY_CONTAINED_PATH_SYMLINK_PROHIBITED");
+        List<ApprovalAuthorityPaths> matches = new ArrayList<>();
+        for (Path candidateWorkspace = contained; candidateWorkspace != null;
+                candidateWorkspace = candidateWorkspace.getParent()) {
+            try {
+                ApprovalAuthorityPaths candidate = forWorkspace(candidateWorkspace);
+                if (Files.isRegularFile(candidate.trustedKeyRegistry, LinkOption.NOFOLLOW_LINKS)
+                        && Files.isRegularFile(candidate.replayLedger, LinkOption.NOFOLLOW_LINKS)) {
+                    matches.add(candidate);
+                }
+            } catch (IllegalArgumentException ignored) {
+                // A parent that contains the configured authority base cannot be a target workspace.
+            }
+        }
+        if (matches.isEmpty()) {
+            throw new IllegalArgumentException("APPROVAL_AUTHORITY_NOT_DISCOVERABLE_FROM_PATH");
+        }
+        if (matches.size() != 1) {
+            throw new IllegalArgumentException("APPROVAL_AUTHORITY_AMBIGUOUS_FOR_PATH");
+        }
+        ApprovalAuthorityPaths authority = matches.get(0);
+        authority.requireTrustedKeyRegistry();
+        authority.requireReplayLedger();
+        return authority;
     }
 
     /** Requests may not select or replace the product trust root. */
