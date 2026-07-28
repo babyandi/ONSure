@@ -40,6 +40,7 @@ run_step design-coverage python3 scripts/validate-design-coverage.py --matrix st
 run_step product-subrequirements python3 scripts/validate-product-subrequirements.py --self-test
 run_step workflow-surface-parity python3 scripts/validate-workflow-surface-parity.py --self-test
 run_step critical-callpaths python3 scripts/validate-critical-callpaths.py --self-test
+run_step validation-case-registry-static python3 scripts/validate-validation-case-registry.py --static-only
 run_step status-consistency python3 scripts/validate-status-consistency.py
 run_step automation-boundary python3 scripts/validate-ci-boundary.py
 run_step verification-claims python3 scripts/validate-verification-claims.py
@@ -60,6 +61,11 @@ if [[ "$MODE" == "full" ]]; then
   run_step core-without-oruda mvn -B -ntp -q -f pom-modular.xml -pl modules/onsure-core -am test
   run_step sandbox-boundary bash scripts/test-fixture-sandbox-boundary.sh
   run_step generic-ai-e2e mvn -B -ntp -q -Dtest=ValidationPlatformE2ETest test
+  run_step validation-case-registry-runtime python3 scripts/validate-validation-case-registry.py \
+    --surefire-dir "$ROOT/target/surefire-reports" \
+    --surefire-dir "$ROOT/modules/onsure-core/target/surefire-reports" \
+    --surefire-dir "$ROOT/modules/onsure-adapter-oruda/target/surefire-reports" \
+    --receipt "$OUT/artifacts/validation-case-execution-receipt.json"
   if [[ "$PROFILE" == "oruda" ]]; then
     run_step oruda-module mvn -B -ntp -q -f pom-modular.xml -pl modules/onsure-adapter-oruda -am test
     run_step oruda-e2e mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
@@ -74,7 +80,7 @@ cmp "$OUT/source-start.json" "$OUT/source-end.json" >/dev/null || { echo "ONSURE
 python3 - "$OUT/local-gate-result.json" "$MODE" "$PROFILE" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" <<'PY'
 import json,pathlib,sys
 path,mode,profile,authority,total=sys.argv[1:]
-body={"contract":"ONSURE_LOCAL_GATE_RESULT_V7","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"PASS_WITH_KNOWN_GAPS","workflow_surface_parity":"PASS","critical_callpaths":"PASS","failure_injection_authority":authority,"registered_failure_injections":int(total),"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
+body={"contract":"ONSURE_LOCAL_GATE_RESULT_V7","mode":mode,"profile":profile,"decision":"PASS_NONFINAL","authority_class":"LOCAL_SELF_VALIDATION","product_subrequirements":"PASS_WITH_KNOWN_GAPS","workflow_surface_parity":"PASS","critical_callpaths":"PASS","validation_case_registry":"PASS","validation_case_execution_receipt":"artifacts/validation-case-execution-receipt.json" if mode=="full" else "NOT_RUN_STATIC_MODE","failure_injection_authority":authority,"registered_failure_injections":int(total),"github_actions":"DISABLED","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY
 find "$OUT" -type f ! -name evidence.sha256 -print0 | sort -z | xargs -0 sha256sum > "$OUT/evidence.sha256"
