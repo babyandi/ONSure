@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
-import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REQUIRED_TOKENS = {
@@ -13,6 +12,8 @@ REQUIRED_TOKENS = {
         "approval-replay-ledger.jsonl", "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED",
         "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
         "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED", "requireTrustedKeyRegistry",
+        "discoverForContainedPath", "APPROVAL_AUTHORITY_NOT_DISCOVERABLE_FROM_PATH",
+        "APPROVAL_AUTHORITY_AMBIGUOUS_FOR_PATH",
     ],
     "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java": [
         "Files.createTempFile(\"onsure-approval-receipt-\"", "Files.copy(receiptFile, snapshot",
@@ -60,7 +61,8 @@ REQUIRED_TOKENS = {
     "src/main/java/io/onsure/platform/GitWorkflowService.java": [
         "BoundedProcessRunner.run", "COMMAND_OUTPUT_LIMIT",
         "requireApprovalNotExpired", "GIT_DELIVERY_APPROVAL_EXPIRED",
-        "approval_expires_at",
+        "approval_expires_at", "discoverForContainedPath",
+        "GIT_DELIVERY_CONSUMED_APPROVAL_INVALID",
     ],
     "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java": [
         "trustedExactApprovalRequiresOriginalPlanReceiptKeyAndConsumedReplayLedger",
@@ -69,6 +71,8 @@ REQUIRED_TOKENS = {
     "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java": [
         "authorityPathsAreCanonicalAndPhysicallyOutsideWorkspace",
         "authorityBaseInsideWorkspaceIsRejected",
+        "containedWorktreeDiscoversExactlyOneFixedWorkspaceAuthority",
+        "containedPathWithoutAuthorityIsRejected",
         "everyWorkflowRejectsCallerSelectedAuthorityPaths",
         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "symlinkedAuthorityRegistryIsRejected",
         "symlinkedWorkspaceAliasCannotForkApprovalAuthority",
@@ -129,6 +133,8 @@ def self_test() -> list[str]:
             ("authority separation regression", "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java", "authorityBaseInsideWorkspaceIsRejected"),
             ("workspace alias trust fork", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED"),
             ("workspace alias regression", "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java", "symlinkedWorkspaceAliasCannotForkApprovalAuthority"),
+            ("draft PR authority discovery", "src/main/java/io/onsure/platform/GitWorkflowService.java", "discoverForContainedPath"),
+            ("authority discovery regression", "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java", "containedWorktreeDiscoversExactlyOneFixedWorkspaceAuthority"),
             ("public key reference boundary", "src/main/java/io/onsure/assurance/LocalKeyRegistry.java", "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT"),
             ("key registry cross-process lock", "src/main/java/io/onsure/assurance/LocalKeyRegistry.java", "ExclusiveFileLock.call(lockFile"),
             ("key registry boundary regression", "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java", "publicKeyOutsideAuthorityRootIsRejected"),
@@ -154,19 +160,19 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V7",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V8",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 17 if args.self_test else 0,
+        "failure_injection_count": 19 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     if report["decision"] == "PASS":
         print("ONSURE_CRITICAL_CALLPATH_PASS")
         return 0
-    print("ONSURE_CRITICAL_CALLPATH_FAIL", file=sys.stderr)
+    print("ONSURE_CRITICAL_CALLPATH_FAIL", file=__import__("sys").stderr)
     return 1
 
 
