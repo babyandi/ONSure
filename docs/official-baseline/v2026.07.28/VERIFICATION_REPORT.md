@@ -1,7 +1,7 @@
 # ONSure 설계 정본 통합 검증기록
 
 - 기준 버전: `v2026.07.28`
-- 기준 Commit: `81dfe0275f171b010c97648b58c17b8f745a3a50`
+- 기준 Commit: `464adefe585ac1f901b19aac974f443e964cca1d`
 - 검증상태: `DESIGN_ARTIFACT_PASS / REPOSITORY_GATE_BLOCKED / NONFINAL / HOLD`
 - FinalLock: `false`
 - Production GO: `false`
@@ -29,6 +29,6 @@
 
 ## 판정
 
-이번 Commit은 기존 설계와 185페이지 보완본을 하나의 공식 정본 후보로 수렴한 설계 산출물 Commit이다.  
+이번 기준선은 기존 설계와 185페이지 보완본을 하나의 공식 정본 후보로 수렴한 설계 산출물이다.
 위 차단 항목이 모두 해소되고 ONTester·ONAudit 독립 설계검토가 2회 연속 CLEAN이 되기 전에는
 `Final`, `Release`, `Production GO`, `Commercial GO`로 판정할 수 없다.

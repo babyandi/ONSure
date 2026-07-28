@@ -2,8 +2,8 @@
   "schema_version": "1.0",
   "baseline_version": "v2026.07.28",
   "source_branch": "audit/onsure-meta-omission-remediation-20260728",
-  "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
-  "generated_at": "2026-07-28T07:25:35-07:00",
+  "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
+  "generated_at": "2026-07-28T07:30:32-07:00",
   "approval_status": "BASELINE_CANDIDATE",
   "final_lock": false,
   "production_go": false,
@@ -78,8 +78,8 @@
       "document_name": "설계 정본 통합대장",
       "path": "docs/official-baseline/v2026.07.28/00_ONSURE_설계정본_통합대장_v2026.07.28.docx",
       "version": "v2026.07.28",
-      "sha256": "0e2e7e19cfe568621e32c6d2cc2ffc066b3337731eed0e56c58c52783d8d5870",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "e9a506f2460e5869caa0198e607e96d3c654ccaf6bebc98cfc4f525630ccaa8e",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -87,8 +87,8 @@
       "document_name": "산출물 통합대장·정본관리",
       "path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "0305b93672e9a6044eeceebc14ca3848a381cd34ebfeec2d31bf0d815c6dd399",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "5ea45623ecd3d2608d5fa8c768688a31a211d838a1faf4a61fd4156c3764f1d9",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -96,8 +96,8 @@
       "document_name": "제품·업무 요구사항·수용기준",
       "path": "docs/official-baseline/v2026.07.28/01_ONSURE_제품요구사항_업무요구_수용기준_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "563b50835a7b66b5122bdec3201efeadc84ed466216091a7a4d3ad68e73cad20",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "20845e5328943599775b958d426e78971e44593c730733c1328b3b40749ba631",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -105,8 +105,8 @@
       "document_name": "최종 목표 아키텍처",
       "path": "docs/official-baseline/v2026.07.28/02_ONSURE_최종목표_아키텍처_상세설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "23556240bbd71b5c689575f37156c25b2dece4e79771f61968cd110b546204b2",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "b49e8807daae3a4462e245b8fc93f79fd4a598b2930698de87253ba36bdabc3d",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -114,8 +114,8 @@
       "document_name": "AI Agent·Session·Orchestration·Memory",
       "path": "docs/official-baseline/v2026.07.28/03_ONSURE_AI_Agent_Session_Orchestration_Memory_설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "2af3bbd0b59d18fce319359f108c7a6d8e3905b356eb99589e5e68612fa82f69",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "57fafa5c04b7128d9d0a878f33c3f8e680353dd8f5be7770ec507d50e5127ec0",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -123,8 +123,8 @@
       "document_name": "Developer·Git·Package·Delivery",
       "path": "docs/official-baseline/v2026.07.28/04_ONSURE_Developer_Git_Package_Delivery_상세설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "5a18ff3e7bd4d6d3beb394df4514ef591952825b4e070d76e88a7dd75a603246",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "57cd869366935d19341b180f2cfaf570861929651e7d5e63796c5fd41802425b",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -132,8 +132,8 @@
       "document_name": "Work·Artifact·Research·Connector·Automation",
       "path": "docs/official-baseline/v2026.07.28/05_ONSURE_Work_Artifact_Research_Connector_Automation_설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "b3765ab0ee6caf44136a4458921e346e8dae27a78af3603b6c7a7e027d59b77b",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "f90514f860e3ca365f7ec3828fc07f49b90513d8cc64d536349cdaf747041177",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -141,8 +141,8 @@
       "document_name": "금융권 보안·IAM·데이터·망·공급망",
       "path": "docs/official-baseline/v2026.07.28/06_ONSURE_금융권_보안_IAM_데이터_망_공급망_설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "e3ed76e5f64ff66e66ecf25c5498fe4acbf97ce257a88273d6fc817720eed6bc",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "47196c00089d81f9b5c11be14398930054a73ef7c1ef3f527440efb85e13ae46",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -150,8 +150,8 @@
       "document_name": "데이터모델·API·Event·Receipt",
       "path": "docs/official-baseline/v2026.07.28/07_ONSURE_데이터모델_API_Event_Receipt_계약설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "f45e3695d9d1424db1aca98d45939bd97e35c4925d99bf0cc7f17944bdcff120",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "7d18e4322a7cfee3f535a62ebe39f329b46102d8fcc5cecb55e9781ea92720ce",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -159,8 +159,8 @@
       "document_name": "독립 ONTester",
       "path": "docs/official-baseline/v2026.07.28/08_ONSURE_독립_ONTester_상세설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "dc42c12a4380bb2e358469755daf59238ec864ac334d33666702962e1aa966ac",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "fcde18963245af8a3130e0dbeb35aeec5e2c2cf2f390e5eb1031ecb01c56b3c1",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -168,8 +168,8 @@
       "document_name": "독립 ONAudit·ONEvidence·ONFinalGate",
       "path": "docs/official-baseline/v2026.07.28/09_ONSURE_독립_ONAudit_ONEvidence_ONFinalGate_상세설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "d6efcea6ed08e0cccc0473452e13b4e30e248e3761f531938fa26b67e3310cd4",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "e442bbe9503c73845414875a4c4797df0676920d39911228581c39011f3b13e8",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -177,8 +177,8 @@
       "document_name": "설치·배포·운영·관제·DR",
       "path": "docs/official-baseline/v2026.07.28/10_ONSURE_설치_배포_운영_관제_DR_Runbook_설계_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "0363a6f4fa2e4ec9befe431cea7a4357e927419bd29a41f73ca579da554274b2",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "47f23bfe929b1be1719ae90c6d857abc9d1ab0051e9f0e1904d113c79d0b9c93",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     },
     {
@@ -186,8 +186,8 @@
       "document_name": "요구사항 추적·시험·수용·구현로드맵",
       "path": "docs/official-baseline/v2026.07.28/11_ONSURE_요구사항_추적_시험_수용_구현로드맵_공식정본_통합본.docx",
       "version": "v2026.07.28",
-      "sha256": "cf2b7aad0ff1a2a86bb53a8eaf2c42716a6071df974dd0070290b96d56ddf81e",
-      "source_commit": "81dfe0275f171b010c97648b58c17b8f745a3a50",
+      "sha256": "40f9682c5b82ecad3ad96705cfdb0e7399c75e78a214d759635aa3e927585d92",
+      "source_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "approval_status": "BASELINE_CANDIDATE"
     }
   ],
@@ -665,9 +665,9 @@
       "path": "contracts/omission-failure-injection-counts.v1.json",
       "title": "omission-failure-injection-counts.v1",
       "type": "json",
-      "size_bytes": 557,
-      "sha256": "a7bbbbdeb0dfdc6d5514c7661f9b4a1173ef998848f6e1aea015e669cf7cb018",
-      "last_commit": "f4f066fdb8f1ea5d0e8131c5097da0604411e875",
+      "size_bytes": 628,
+      "sha256": "317e655198b751cf2ca1aa0804aeb3bd338550dfe2fdc148b25992de348337e0",
+      "last_commit": "87e4183b19addba0fcd9beaabf594654b78c3294",
       "classification": "유지",
       "classification_reason": "기계검증 계약으로 유지하며 규범 DOCX와 양방향 추적",
       "target_doc": "governance",
@@ -2992,9 +2992,9 @@
       "path": "status/verification-status.v1.json",
       "title": "verification-status.v1",
       "type": "json",
-      "size_bytes": 6794,
-      "sha256": "ed1c0c065161676c9868e3393b234eac5dd69e1c29a134586a9e78f33a76266d",
-      "last_commit": "a37b0f4df6e9a635b97405ffdc6df10e9a1acc4b",
+      "size_bytes": 7702,
+      "sha256": "1280801e1eb9c092fd29c1978a4081085d6b70670357745a10a645842815f769",
+      "last_commit": "464adefe585ac1f901b19aac974f443e964cca1d",
       "classification": "과거 참고자료로 보존",
       "classification_reason": "특정 Commit의 상태 스냅샷으로 보존하며 새 기준선 승인상태로 승격하지 않음",
       "target_doc": "tester",
