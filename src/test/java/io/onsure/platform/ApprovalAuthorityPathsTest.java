@@ -36,6 +36,43 @@ class ApprovalAuthorityPathsTest {
     }
 
     @Test
+    void containedWorktreeDiscoversExactlyOneFixedWorkspaceAuthority() throws Exception {
+        Path workspace = temp.resolve("workspace");
+        Path worktree = workspace.resolve(".onsure/worktrees/approved-patch");
+        Files.createDirectories(worktree);
+        String previous = System.getProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY);
+        System.setProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY,
+                temp.resolve("authority-base").toString());
+        try {
+            ApprovalAuthorityPaths expected = ApprovalAuthorityPaths.forWorkspace(workspace);
+            Files.createDirectories(expected.authorityRoot());
+            Files.writeString(expected.trustedKeyRegistry(), "{}\n");
+            Files.writeString(expected.replayLedger(), "\n");
+            assertEquals(expected, ApprovalAuthorityPaths.discoverForContainedPath(worktree));
+        } finally {
+            if (previous == null) System.clearProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY);
+            else System.setProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY, previous);
+        }
+    }
+
+    @Test
+    void containedPathWithoutAuthorityIsRejected() throws Exception {
+        Path worktree = temp.resolve("workspace/.onsure/worktrees/missing-authority");
+        Files.createDirectories(worktree);
+        String previous = System.getProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY);
+        System.setProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY,
+                temp.resolve("authority-base").toString());
+        try {
+            IllegalArgumentException failure = assertThrows(IllegalArgumentException.class,
+                    () -> ApprovalAuthorityPaths.discoverForContainedPath(worktree));
+            assertEquals("APPROVAL_AUTHORITY_NOT_DISCOVERABLE_FROM_PATH", failure.getMessage());
+        } finally {
+            if (previous == null) System.clearProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY);
+            else System.setProperty(ApprovalAuthorityPaths.AUTHORITY_BASE_PROPERTY, previous);
+        }
+    }
+
+    @Test
     void everyWorkflowRejectsCallerSelectedAuthorityPaths() throws Exception {
         Path workspace = temp.resolve("workspace");
         Files.createDirectories(workspace);
