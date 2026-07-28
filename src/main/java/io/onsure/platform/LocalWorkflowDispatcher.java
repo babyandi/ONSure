@@ -11,10 +11,14 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V5";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V6";
+    private static final Set<String> PROHIBITED_REGISTERED_EXECUTION_PROFILES = Set.of(
+            "LOCAL_E2E", "LOCAL_MVF_E2E", "LOCAL_FIXTURE", "TRUSTED_LOCAL_FIXTURE",
+            "LOCAL_E2E_TRUSTED_FIXTURE", "LOCAL_DEVELOPMENT");
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -34,7 +38,7 @@ public final class LocalWorkflowDispatcher {
         if (request == null || !request.isObject()) {
             throw new IllegalArgumentException("WORKFLOW_REQUEST_OBJECT_REQUIRED");
         }
-        approvalAuthority.rejectRequestOverrides(request);
+        approvalAuthority.rejectRequestOverrides(operation, request);
         Map<String, Object> result = switch (operation) {
             case "project.register-workspace" -> projectRegisterWorkspace(request);
             case "project.register" -> projectRegister(request);
@@ -88,13 +92,12 @@ public final class LocalWorkflowDispatcher {
                 "final_claim_allowed", false);
     }
 
-    private ProductCatalog catalog(JsonNode request) {
-        return new ProductCatalog(outputPathUnchecked(
-                request, "catalog_root", ".onsure/product-catalog"));
+    private ProductCatalog catalog() {
+        return new ProductCatalog(workspaceRoot.resolve(".onsure/product-catalog"));
     }
 
     private Map<String, Object> projectRegisterWorkspace(JsonNode request) throws Exception {
-        ProductCatalog catalog = catalog(request);
+        ProductCatalog catalog = catalog();
         ProductCatalog.Workspace workspace = new ProductCatalog.Workspace(
                 requiredId(request, "workspace_id"), requiredText(request, "workspace_name"), Instant.now());
         catalog.registerWorkspace(workspace);
@@ -103,7 +106,7 @@ public final class LocalWorkflowDispatcher {
     }
 
     private Map<String, Object> projectRegister(JsonNode request) throws Exception {
-        ProductCatalog catalog = catalog(request);
+        ProductCatalog catalog = catalog();
         ProductCatalog.Project project = new ProductCatalog.Project(
                 requiredId(request, "project_id"), requiredId(request, "workspace_id"),
                 requiredText(request, "project_name"), Instant.now());
@@ -113,9 +116,13 @@ public final class LocalWorkflowDispatcher {
     }
 
     private Map<String, Object> projectRegisterTarget(JsonNode request) throws Exception {
-        ProductCatalog catalog = catalog(request);
+        ProductCatalog catalog = catalog();
         Path source = inputPath(request, "source_root", true);
         String adapterId = request.path("adapter_id").asText(GenericManifestTargetAdapter.ID);
+        String executionProfile = request.path("execution_profile").asText("REGISTERED_REVIEWED");
+        if (PROHIBITED_REGISTERED_EXECUTION_PROFILES.contains(executionProfile)) {
+            throw new IllegalArgumentException("REGISTERED_TARGET_TRUSTED_FIXTURE_PROFILE_PROHIBITED");
+        }
         ValidationTarget target = new ValidationTarget(
                 requiredId(request, "target_id"),
                 request.path("target_name").asText(requiredId(request, "target_id")),
@@ -124,7 +131,7 @@ public final class LocalWorkflowDispatcher {
                 request.path("immutable_source_reference").asText(SourceReferenceBinding.treeReference(source)),
                 adapterId,
                 request.path("policy_profile").asText("ONSURE_DEFAULT_POLICY_V1"),
-                request.path("execution_profile").asText("LOCAL_DEVELOPMENT"));
+                executionProfile);
         ProductCatalog.RegisteredTarget registered = new ProductCatalog.RegisteredTarget(
                 requiredId(request, "project_id"), target, Instant.now());
         catalog.registerTarget(registered);
@@ -133,22 +140,30 @@ public final class LocalWorkflowDispatcher {
     }
 
     private Map<String, Object> projectReadTarget(JsonNode request) throws Exception {
-        ProductCatalog catalog = catalog(request);
-        return Map.of("target", catalog.requireTarget(requiredId(request, "target_id")),
-                "catalog_revision", catalog.revision(), "final_claim_allowed", false);
+        ProductCatalog.RegisteredTarget registered = requireRegisteredTarget(
+                requiredId(request, "project_id"), requiredId(request, "target_id"));
+        return Map.of("registered_target", registered, "catalog_revision", catalog().revision(),
+                "final_claim_allowed", false);
     }
 
     private Map<String, Object> projectListTargets(JsonNode request) throws Exception {
-        ProductCatalog catalog = catalog(request);
+        ProductCatalog catalog = catalog();
         return Map.of("targets", catalog.targets(requiredId(request, "project_id")),
                 "catalog_revision", catalog.revision(), "final_claim_allowed", false);
     }
 
     private Map<String, Object> programLearn(JsonNode request) throws Exception {
-        Path source = inputPath(request, "source_root", true);
-        Path output = outputPath(request, "output_file", ".onsure/profiles/program-profile.json");
-        return new ProgramLearningService().learn(source,
-                requiredId(request, "project_id"), requiredId(request, "program_id"), output);
+        rejectRegisteredTargetOverrides(request);
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        String programId = requiredId(request, "program_id");
+        if (!programId.equals(targetId)) {
+            throw new IllegalArgumentException("PROGRAM_ID_TARGET_ID_MISMATCH");
+        }
+        ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        Path output = outputPath(request, "output_file", ".onsure/profiles/" + targetId + "/program-profile.json");
+        return new ProgramLearningService().learn(
+                target.sourceRoot(), projectId, target.targetId(), output);
     }
 
     private Map<String, Object> planApprove(JsonNode request) throws Exception {
@@ -161,27 +176,19 @@ public final class LocalWorkflowDispatcher {
     }
 
     private Map<String, Object> validationRun(JsonNode request) throws Exception {
-        Path source = inputPath(request, "source_root", true);
-        Path store = outputPath(request, "store_root", ".onsure/validation-data");
-        String adapterId = request.path("adapter_id").asText(GenericManifestTargetAdapter.ID);
-        if (!GenericManifestTargetAdapter.ID.equals(adapterId)) {
+        rejectRegisteredTargetOverrides(request);
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        if (!GenericManifestTargetAdapter.ID.equals(target.adapterId())) {
             throw new IllegalArgumentException("LOCAL_CORE_WORKFLOW_SUPPORTS_GENERIC_ADAPTER_ONLY");
         }
-        ValidationTarget target = new ValidationTarget(
-                requiredId(request, "target_id"),
-                request.path("target_name").asText(requiredId(request, "target_id")),
-                TargetType.valueOf(requiredText(request, "target_type")),
-                source,
-                request.path("immutable_source_reference").asText(SourceReferenceBinding.treeReference(source)),
-                adapterId,
-                request.path("policy_profile").asText("ONSURE_DEFAULT_POLICY_V1"),
-                request.path("execution_profile").asText("LOCAL_DEVELOPMENT"));
+        Path store = outputPath(request, "store_root", ".onsure/validation-data");
         Path approvedPlan = optionalInputPath(request, "approved_execution_plan_file");
         ValidationEngine engine = ValidationEngine.defaultEngine(store);
         ValidationEngine.RunResult run;
         if (approvedPlan == null) {
-            for (String field : List.of(
-                    "original_execution_plan_file", "signed_approval_receipt")) {
+            for (String field : List.of("original_execution_plan_file", "signed_approval_receipt")) {
                 if (!request.path(field).asText("").isBlank()) {
                     throw new IllegalArgumentException("INCOMPLETE_EXECUTION_PLAN_APPROVAL_BUNDLE:" + field);
                 }
@@ -201,9 +208,30 @@ public final class LocalWorkflowDispatcher {
                 "decision", run.report().decision().name(),
                 "run_root", run.runRoot().toString(),
                 "report", run.report(),
+                "registered_project_id", projectId,
+                "registered_target_id", targetId,
                 "approved_execution_plan_consumed", approvedPlan != null,
                 "approval_bundle_required", approvedPlan != null,
                 "final_claim_allowed", false);
+    }
+
+    private ProductCatalog.RegisteredTarget requireRegisteredTarget(
+            String projectId, String targetId) throws Exception {
+        return catalog().targets(projectId).stream()
+                .filter(value -> value.target().targetId().equals(targetId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "REGISTERED_TARGET_NOT_FOUND_IN_PROJECT:" + projectId + ":" + targetId));
+    }
+
+    private static void rejectRegisteredTargetOverrides(JsonNode request) {
+        for (String field : List.of(
+                "source_root", "target_name", "target_type", "adapter_id",
+                "immutable_source_reference", "policy_profile", "execution_profile")) {
+            if (!request.path(field).asText("").isBlank()) {
+                throw new IllegalArgumentException("REGISTERED_TARGET_FIELD_OVERRIDE_PROHIBITED:" + field);
+            }
+        }
     }
 
     private Map<String, Object> patchApply(JsonNode request) throws Exception {
