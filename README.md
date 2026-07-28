@@ -10,6 +10,8 @@ ONSURE는 등록된 AI 프로그램과 일반 소프트웨어를 학습·검증�
 - **Fixed trust root** — 승인 검증의 Key Registry와 Replay Ledger를 요청자가 선택할 수 없습니다.
 - **Transition revalidation** — Commit 때 유효했던 승인도 Push·Draft PR 직전에 다시 검증합니다.
 - **Bounded execution** — 자식 프로세스는 출력 Drain·크기 제한·Wall-clock Timeout·Process-tree 종료를 함께 적용합니다.
+- **Source-derived requirements** — 사람이 작성한 예상 ID가 아니라 규범 문서의 실제 Bullet을 요구사항 권위로 사용합니다.
+- **Acceptance is not implementation** — 클래스와 기능이 존재해도 실제 사용자 여정이 성공하지 않으면 MVP 완료가 아닙니다.
 
 ## 검증 실행 정책
 
@@ -38,17 +40,20 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 
 ## 이번 메타감사에서 확인된 검출기 사각지대
 
-이전 검증은 28개 대분류 기능군, 파일·클래스·테스트 존재, 후보 Requirement 형식을 주로 확인했습니다. 그 결과 다음 결함을 놓쳤습니다.
+이전 검증은 28개 대분류 기능군, 파일·클래스·테스트 존재, 사람이 작성한 예상 Requirement ID를 주로 확인했습니다. 그 결과 다음 결함을 놓쳤습니다.
 
 - 대분류 `PARTIAL` 안에 숨은 증분 학습·필수 View·Pause/Resume·Public SDK 누락
+- 규범 문서에 존재하지만 예상 ID 목록에서 빠진 5개 하위 요구
+- 요구사항 구현과 MVP 사용자 여정 완료를 같은 것으로 취급한 오류
 - 설계가 요구한 부분 승인을 전체 승인으로만 제한한 구현
 - 승인 Plan JSON만으로 Engine에 진입할 수 있던 서명 Bundle 우회
 - 요청자가 Trusted Key Registry·Replay Ledger 경로를 바꿀 수 있던 Trust-root substitution
 - `waitFor(timeout)`가 있어도 출력 읽기 순서 때문에 Timeout에 도달하지 못하는 Process hang
 - Commit 때 검증한 승인을 Push 시점에 재검증하지 않는 상태전이 누락
 - Core 기능이 존재하지만 CLI·Local API·VS Code 제품 표면에 연결되지 않은 경로
+- MVP 수용 시나리오 10단계와 실제 저장소 2회 연속 성공 조건의 미추적
 
-이를 방지하기 위해 다음 권위 검사를 추가했습니다.
+이를 방지하기 위해 다음 권위 검사를 사용합니다.
 
 ```text
 28개 설계·프로세스·데이터 실패주입
@@ -58,17 +63,22 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 10개 제품 하위 Requirement 실패주입
 6개 Workflow Surface 실패주입
 24개 Critical Callpath 실패주입
-합계 94개
+8개 MVP Acceptance 실패주입
+합계 102개
 ```
 
 권위 파일:
 
-- `status/product-subrequirement-coverage.v1.json` — 38개 제품 하위 요구
-- `scripts/validate-product-subrequirements.py`
+- `status/product-subrequirement-coverage.v1.json` — 규범 문서에서 자동 추출한 43개 제품 하위 요구
+- `scripts/validate-product-subrequirements.py` — 원문 Bullet과 대장의 1:1 매핑
+- `status/mvp-acceptance-coverage.v1.json` — 10단계 사용자 여정과 2회 연속 성공 조건
+- `scripts/validate-mvp-acceptance-coverage.py`
+- `scripts/validate-mvp-status-consistency.py`
 - `scripts/validate-workflow-surface-parity.py` — 39개 Workflow·3개 제품 표면
 - `scripts/validate-critical-callpaths.py`
 - `contracts/validation-case-registry.v1.json` — 성공·실패·공격 사례 단일 권위 목록
-- `scripts/validate-validation-case-registry.py` — 0건 실행·누락·Skip·Failure/Error 차단 및 실행 Receipt 생성
+- `scripts/validate-validation-case-registry.py`
+- `contracts/omission-failure-injection-counts.v1.json` — 실패주입 단일 분모
 - `status/omission-detection-status.v1.json`
 - `status/verification-status.v1.json`
 - `status/remaining-work-register.v1.json`
@@ -77,6 +87,11 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 
 - 변경분 기반 증분 Program Learning
 - Tool Contract 내용 분석과 실행 로그 인벤토리
+- Behavior Profile의 취약 조건 분류와 Production 정책 Telemetry
+- RCA의 명시적 영향 범위와 미확인 사항
+- Patch 적용 전 위험도·영향 범위·Rollback 방법 Preview
+- 프로젝트 전용 정보와 익명화된 범용 패턴의 분리·검증
+- MVP 수용 시나리오 11개 전 항목 및 실제 저장소 2회 연속 성공
 - VS Code의 Chat·Profile·Learning·Verification·Findings·Improvement·Evidence·Git/PR 개별 View
 - Ask·Plan·Act·Autopilot 모드
 - VS Code 부분 Plan 승인 및 파일·Hunk 승인 UX
@@ -113,10 +128,11 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 브랜치의 새 Python 실패주입과 독립형 Java 17 호환 Smoke 일부는 수행됐지만, **현재 브랜치 전체 Java 17 Maven/JUnit·Modular·Sandbox·VSIX Local Gate는 아직 실행되지 않았습니다.**
+현재 브랜치의 새 Python 실패주입과 독립형 Java 17 호환 Smoke 일부는 수행됐지만, **현재 브랜치 전체 Java 17 Maven/JUnit·Modular·Sandbox·VSIX Local Gate와 MVP Full-Chain은 아직 실행되지 않았습니다.**
 
 ```text
 Assurance      SELF_VALIDATION_NONFINAL
+MVP Full-Chain NOT_RUN
 FinalLock      false
 Production GO  false
 Commercial GO  false
