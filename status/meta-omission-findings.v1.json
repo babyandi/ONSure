@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_META_OMISSION_FINDINGS_V1",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "assessment_date": "2026-07-28",
   "source_ref": "audit/onsure-meta-omission-remediation-20260728",
   "findings": [
@@ -200,8 +200,8 @@
     "verification_claims": 10,
     "product_subrequirements": 10,
     "workflow_surfaces": 6,
-    "critical_callpaths": 22,
-    "registered_total": 92
+    "critical_callpaths": 24,
+    "registered_total": 94
   },
   "executed_in_this_audit": {
     "product_subrequirement_failure_injections": "10_OF_10_PASS",
