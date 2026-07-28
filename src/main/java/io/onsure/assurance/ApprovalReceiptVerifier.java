@@ -27,6 +27,8 @@ public final class ApprovalReceiptVerifier {
     private static final String GENESIS = "0".repeat(64);
     private static final Duration MAX_APPROVAL_AGE = Duration.ofDays(7);
 
+    private enum ConsumptionState { NONE, EXACT_RECEIPT, APPROVAL_ID_COLLISION }
+
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private final Path registryFile;
     private final Path replayLedger;
@@ -116,8 +118,13 @@ public final class ApprovalReceiptVerifier {
                     }
                 }
             }
-            if (isConsumed(approvalId, expectedContract, expectedPurpose)) {
+            String receiptSha = sha256(Files.readAllBytes(receipt));
+            ConsumptionState consumption = consumptionState(
+                    approvalId, expectedContract, expectedPurpose, receiptSha);
+            if (consumption == ConsumptionState.EXACT_RECEIPT) {
                 violations.add("APPROVAL_RECEIPT_REPLAY");
+            } else if (consumption == ConsumptionState.APPROVAL_ID_COLLISION) {
+                violations.add("APPROVAL_RECEIPT_ID_COLLISION");
             }
         } catch (Exception unreadable) {
             violations.add("APPROVAL_RECEIPT_UNREADABLE");
@@ -147,8 +154,12 @@ public final class ApprovalReceiptVerifier {
             String contract,
             String purpose) throws Exception {
         String approvalId = string(receipt, "approval_id");
-        if (isConsumedUnlocked(approvalId, contract, purpose)) {
-            throw new IllegalStateException("APPROVAL_RECEIPT_REPLAY");
+        String receiptSha = sha256(Files.readAllBytes(receiptFile));
+        ConsumptionState state = consumptionStateUnlocked(
+                approvalId, contract, purpose, receiptSha);
+        if (state != ConsumptionState.NONE) {
+            throw new IllegalStateException(state == ConsumptionState.EXACT_RECEIPT
+                    ? "APPROVAL_RECEIPT_REPLAY" : "APPROVAL_RECEIPT_ID_COLLISION");
         }
         List<String> lines = Files.exists(replayLedger)
                 ? new ArrayList<>(Files.readAllLines(replayLedger, StandardCharsets.UTF_8))
@@ -164,7 +175,7 @@ public final class ApprovalReceiptVerifier {
         entry.put("actor", receipt.get("actor"));
         entry.put("key_id", receipt.get("key_id"));
         entry.put("nonce", receipt.get("nonce"));
-        entry.put("receipt_sha256", sha256(Files.readAllBytes(receiptFile)));
+        entry.put("receipt_sha256", receiptSha);
         entry.put("consumed_at", Instant.now().toString());
         entry.put("previous_hash", previous);
         entry.put("entry_hash", canonicalEntryHash(entry));
@@ -172,12 +183,15 @@ public final class ApprovalReceiptVerifier {
         writeLinesAtomic(replayLedger, lines);
     }
 
-    private boolean isConsumed(String approvalId, String contract, String purpose) throws Exception {
-        return ExclusiveFileLock.call(replayLock, () -> isConsumedUnlocked(approvalId, contract, purpose));
+    private ConsumptionState consumptionState(
+            String approvalId, String contract, String purpose, String receiptSha) throws Exception {
+        return ExclusiveFileLock.call(replayLock,
+                () -> consumptionStateUnlocked(approvalId, contract, purpose, receiptSha));
     }
 
-    private boolean isConsumedUnlocked(String approvalId, String contract, String purpose) throws Exception {
-        if (!Files.exists(replayLedger)) return false;
+    private ConsumptionState consumptionStateUnlocked(
+            String approvalId, String contract, String purpose, String receiptSha) throws Exception {
+        if (!Files.exists(replayLedger)) return ConsumptionState.NONE;
         String previous = GENESIS;
         long sequence = 1L;
         for (String line : Files.readAllLines(replayLedger, StandardCharsets.UTF_8)) {
@@ -202,10 +216,12 @@ public final class ApprovalReceiptVerifier {
             if (approvalId.equals(entry.get("approval_id"))
                     && contract.equals(entry.get("approval_contract"))
                     && purpose.equals(entry.get("approval_purpose"))) {
-                return true;
+                return receiptSha.equals(entry.get("receipt_sha256"))
+                        ? ConsumptionState.EXACT_RECEIPT
+                        : ConsumptionState.APPROVAL_ID_COLLISION;
             }
         }
-        return false;
+        return ConsumptionState.NONE;
     }
 
     private String canonicalEntryHash(Map<String, Object> entry) throws Exception {
