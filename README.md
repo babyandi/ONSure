@@ -59,12 +59,12 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 28개 설계·프로세스·데이터 실패주입
 10개 원자 Requirement 실패주입
 6개 Actions 금지·로컬 자동화 실패주입
-10개 Verification Claim 실패주입
+15개 Verification Claim 실패주입
 10개 제품 하위 Requirement 실패주입
 6개 Workflow Surface 실패주입
 24개 Critical Callpath 실패주입
 8개 MVP Acceptance 실패주입
-합계 102개
+합계 107개
 ```
 
 권위 파일:
