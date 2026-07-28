@@ -122,6 +122,8 @@ def main() -> int:
         errors.append("APPROVAL_AUTHORITY_STATE_MISMATCH")
     if authority.get("request_path_override_allowed") is not False:
         errors.append("APPROVAL_AUTHORITY_OVERRIDE_UNSAFE")
+    if authority.get("workspace_symlink_alias_allowed") is not False:
+        errors.append("APPROVAL_AUTHORITY_WORKSPACE_ALIAS_UNSAFE")
     if authority.get("public_key_must_be_inside_authority_root") is not True:
         errors.append("APPROVAL_PUBLIC_KEY_BOUNDARY_MISSING")
     if authority.get("registry_cross_process_lock") is not True:
