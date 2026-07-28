@@ -44,7 +44,19 @@
 
 Dispatcher Workflow는 34개에서 39개로 증가했다.
 
-### 2.3 Workspace 별칭으로 승인 신뢰근 분기 가능
+### 2.3 승인 Receipt 검증·소비 사이 TOCTOU
+
+서명 검증 뒤 Replay Ledger 소비 전에 승인 파일을 다시 읽어, 그 사이 파일이 교체되면 검증된 바이트와 소비 기록에 결속된 바이트가 달라질 수 있었다.
+
+수정:
+
+- 승인 파일을 한 번 불변 Snapshot으로 복사
+- 동일 Snapshot만 서명 검증·Hash·Replay 소비에 사용
+- 원본 승인 파일은 Snapshot 생성 이후 다시 신뢰하지 않음
+- Snapshot 삭제를 `finally`로 보장
+- 독립 동시성 공격시험과 Java 17 전체 Maven/JUnit 전까지 NONFINAL 유지
+
+### 2.4 Workspace 별칭으로 승인 신뢰근 분기 가능
 
 승인 Authority를 Workspace 밖에 고정했어도 Workspace 식별자가 정규화된 경로 문자열 Hash에 의존했다. 동일한 물리 Workspace를 심볼릭 링크 별칭으로 열면 다른 Hash가 생성되어 별도 Trusted Key Registry와 Replay Ledger가 선택될 수 있었다.
 
@@ -97,7 +109,15 @@ Core 구현이 있으면 VS Code·CLI·Local API까지 구현된 것으로 오�
 
 ONSure에는 Workspace alias→Authority identity 불변성 실패 주입을 추가했다.
 
-### 3.6 불완전 상태가 명시적 Gap을 요구하지 않았음
+### 3.6 검증 호출과 Lock 존재를 동일 바이트 결속으로 오인
+
+기존 Critical Callpath Gate는 서명 검증 함수와 Replay Lock 토큰의 존재만 확인했다. 검증과 소비가 같은 Receipt 바이트를 사용한다는 불변식은 검사하지 않아 TOCTOU를 놓쳤다.
+
+### 3.7 실행 Gate 상수 재확인 누락
+
+상태 JSON과 문서를 86으로 고친 뒤 실제 `validate-status-consistency.py`는 84와 Critical 14를 유지했다. 이전 검토는 보고 값만 확인하고 순차 커밋 후 실행 Gate 상수를 다시 열어보지 않아 완료로 잘못 보고했다.
+
+### 3.8 불완전 상태가 명시적 Gap을 요구하지 않았음
 
 `PARTIAL`, `STUB`, `DESIGN_ONLY`가 무엇이 빠졌는지 기계적으로 요구하지 않아 세부 누락이 상태 한 단어 안에 숨었다.
 
@@ -159,15 +179,22 @@ Actions 금지·로컬 자동화 경계       6
 검증 Claim                        10
 제품 하위 Requirement              10
 Workflow Surface                    6
-Critical Callpath                  16
-전체 등록 실패 주입                 86
+Critical Callpath                  17
+전체 등록 실패 주입                 87
 ```
 
 ### 4.5 분모 일관성 Gate
 
-실패 주입 수를 문서와 여러 상태 파일에 수동 중복 기록하면서 82·84·86이 혼재했다. `validate-status-consistency.py`가 현재 권위 분모 86을 `verification-status`와 `omission-detection-status`에 동시에 강제하고, Workspace alias 안전 상태도 교차 확인하도록 수정했다.
+실패 주입 수를 문서와 여러 상태 파일에 수동 중복 기록하면서 82·84·86이 혼재했다. `validate-status-consistency.py`가 현재 권위 분모 87을 `verification-status`와 `omission-detection-status`에 동시에 강제하고, Workspace alias 안전 상태도 교차 확인하도록 수정했다.
 
-### 4.6 기존 Gate 결속
+### 4.6 META-012·013 검출기 환류
+
+- 승인 검증·소비는 동일 불변 Snapshot 토큰을 필수로 검사
+- 상태 일관성 Gate는 Snapshot 경계 상태를 강제
+- 실행 Gate의 권위 분모를 87, Critical Callpath를 17로 고정
+- 문서·상태 JSON·실행 Gate가 다르면 즉시 FAIL
+
+### 4.7 기존 Gate 결속
 
 신규 Gate는 다음에서 필수 실행된다.
 
