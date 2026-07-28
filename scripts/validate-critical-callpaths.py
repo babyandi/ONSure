@@ -14,6 +14,10 @@ REQUIRED_TOKENS = {
         "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
         "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED", "requireTrustedKeyRegistry",
     ],
+    "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java": [
+        "Files.createTempFile(\"onsure-approval-receipt-\"", "Files.copy(receiptFile, snapshot",
+        "appendConsumption(snapshot, receipt", "Files.deleteIfExists(snapshot)",
+    ],
     "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
         "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile",
         "ATOMIC_MOVE", "KEY_REGISTRY_AUTHORITY_ROOT_SYMLINK",
@@ -114,6 +118,7 @@ def self_test() -> list[str]:
         if validate(root):
             missed.append("CRITICAL_CALLPATH_BASELINE_REJECTED")
         cases = [
+            ("approval receipt immutable snapshot", "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java", "appendConsumption(snapshot, receipt"),
             ("approval bundle verifier", "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java", "verifyApprovedPlanBundle"),
             ("engine bundle entry", "src/main/java/io/onsure/platform/ValidationEngine.java", "ApprovedExecutionPlanBundle"),
             ("stage scope enforcement", "src/main/java/io/onsure/platform/ValidationEngine.java", "ExecutionPlanActionPolicy.notApproved"),
@@ -154,7 +159,7 @@ def main() -> int:
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 16 if args.self_test else 0,
+        "failure_injection_count": 17 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
