@@ -89,6 +89,16 @@ Finding 없는 임의 개선을 금지한다. Plan→승인→격리 Worktree→
 ### 4.9 ONGit·ONDelivery
 Branch/Worktree, Diff, Commit, Push, Draft PR까지 승인 범위에서 수행한다. 서명 Build, Package, Offline Bundle, 배포 전 Gate, Rollback Bundle을 제공한다. Merge·Production/Commercial GO·FinalLock은 사람과 독립검증 Gate가 필요하다.
 
+
+
+## 4A. Codex·Claude·ChatGPT Work 기능 통합 원칙
+
+ONSure는 개발 Agent, VS Code Agent, 범용 업무 Agent를 별도 세션이나 별도 증적 체계로 분리하지 않는다. `ONWorkbench`에서 하나의 Project/Session/Task Graph를 사용하고, `ONOrchestrator`가 개발·조사·문서·설치·검증 작업을 기능별 Agent에 배정한다.
+
+공통 계층은 `ONMemory, ONTool, ONConnector, ONExecution Node, ONPolicy, ONEvidence`이며, 개발은 `ONDeveloper·ONGit`, 일반업무는 `ONWork·ONArtifact·ONResearch·ONAutomation`, 설치는 `ONPackage·ONDelivery`가 담당한다. 모든 결과는 같은 Parent Hash 계보로 연결된다.
+
+통합 상세 정본은 `44_UNIFIED_AI_WORK_DEVELOPER_ASSURANCE_DESIGN.md`를 따른다. 통합은 OTester/OAudit 독립성, 사람 승인, 망·데이터 경계를 제거하지 않는다.
+
 ## 5. 3중+메타 루프
 
 ```text
