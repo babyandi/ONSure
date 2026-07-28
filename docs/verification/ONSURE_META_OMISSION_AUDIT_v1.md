@@ -111,7 +111,7 @@ ONSure에는 Workspace alias→Authority identity 불변성 실패 주입을 추
 
 ### 3.6 검증 호출과 Lock 존재를 동일 바이트 결속으로 오인
 
-기존 Critical Callpath Gate는 서명 검증 함수와 Replay Lock 토큰의 존재만 확인했다. 검증과 소비가 같은 Receipt 바이트를 사용한다는 불변식은 검사하지 않아 TOCTOU를 놓쳤다.
+기존 Critical Callpath Gate는 서명 검증 함수와 Replay Lock 토큰의 존재만 확인했다. 검증과 소비가 같은 Receipt 바이트를 사용한다는 불변식뿐 아니라 호출자가 그 정확한 소비 Snapshot과 SHA를 승인 산출물에 사용한다는 결속도 검사하지 않아 TOCTOU를 놓쳤다.
 
 ### 3.7 실행 Gate 상수 재확인 누락
 
@@ -179,19 +179,19 @@ Actions 금지·로컬 자동화 경계       6
 검증 Claim                        10
 제품 하위 Requirement              10
 Workflow Surface                    6
-Critical Callpath                  17
-전체 등록 실패 주입                 87
+Critical Callpath                  22
+전체 등록 실패 주입                 92
 ```
 
 ### 4.5 분모 일관성 Gate
 
-실패 주입 수를 문서와 여러 상태 파일에 수동 중복 기록하면서 82·84·86이 혼재했다. `validate-status-consistency.py`가 현재 권위 분모 87을 `verification-status`와 `omission-detection-status`에 동시에 강제하고, Workspace alias 안전 상태도 교차 확인하도록 수정했다.
+실패 주입 수를 문서와 여러 상태 파일에 수동 중복 기록하면서 82·84·86이 혼재했다. `validate-status-consistency.py`가 현재 권위 분모 92을 `verification-status`와 `omission-detection-status`에 동시에 강제하고, Workspace alias 안전 상태도 교차 확인하도록 수정했다.
 
 ### 4.6 META-012·013 검출기 환류
 
 - 승인 검증·소비는 동일 불변 Snapshot 토큰을 필수로 검사
 - 상태 일관성 Gate는 Snapshot 경계 상태를 강제
-- 실행 Gate의 권위 분모를 87, Critical Callpath를 17로 고정
+- 실행 Gate의 권위 분모를 92, Critical Callpath를 22로 고정
 - 문서·상태 JSON·실행 Gate가 다르면 즉시 FAIL
 
 ### 4.7 기존 Gate 결속
