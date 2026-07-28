@@ -179,19 +179,19 @@ Actions 금지·로컬 자동화 경계       6
 검증 Claim                        10
 제품 하위 Requirement              10
 Workflow Surface                    6
-Critical Callpath                  22
-전체 등록 실패 주입                 92
+Critical Callpath                  24
+전체 등록 실패 주입                 94
 ```
 
 ### 4.5 분모 일관성 Gate
 
-실패 주입 수를 문서와 여러 상태 파일에 수동 중복 기록하면서 82·84·86이 혼재했다. `validate-status-consistency.py`가 현재 권위 분모 92을 `verification-status`와 `omission-detection-status`에 동시에 강제하고, Workspace alias 안전 상태도 교차 확인하도록 수정했다.
+실패 주입 수를 문서와 여러 상태 파일에 수동 중복 기록하면서 82·84·86이 혼재했다. `validate-status-consistency.py`가 현재 권위 분모 94을 `verification-status`와 `omission-detection-status`에 동시에 강제하고, Workspace alias 안전 상태도 교차 확인하도록 수정했다.
 
 ### 4.6 META-012·013 검출기 환류
 
 - 승인 검증·소비는 동일 불변 Snapshot 토큰을 필수로 검사
 - 상태 일관성 Gate는 Snapshot 경계 상태를 강제
-- 실행 Gate의 권위 분모를 92, Critical Callpath를 22로 고정
+- 실행 Gate의 권위 분모를 94, Critical Callpath를 24로 고정
 - 문서·상태 JSON·실행 Gate가 다르면 즉시 FAIL
 
 ### 4.7 기존 Gate 결속
