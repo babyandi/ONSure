@@ -6,7 +6,7 @@ import pathlib
 from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-TOTAL_FAILURE_INJECTIONS = 82
+TOTAL_FAILURE_INJECTIONS = 84
 
 
 def load(relative: str):
@@ -118,10 +118,16 @@ def main() -> int:
         errors.append("VERIFICATION_CRITICAL_CALLPATH_RUNNER_MISSING")
 
     authority = verification.get("approval_authority_boundary", {})
-    if authority.get("state") != "IMPLEMENTED_OUTSIDE_TARGET_WORKSPACE_LOCAL_EXECUTION_REQUIRED":
+    if authority.get("state") != "IMPLEMENTED_OUTSIDE_TARGET_WORKSPACE_KEY_REFERENCES_BOUNDED_LOCAL_EXECUTION_REQUIRED":
         errors.append("APPROVAL_AUTHORITY_STATE_MISMATCH")
     if authority.get("request_path_override_allowed") is not False:
         errors.append("APPROVAL_AUTHORITY_OVERRIDE_UNSAFE")
+    if authority.get("public_key_must_be_inside_authority_root") is not True:
+        errors.append("APPROVAL_PUBLIC_KEY_BOUNDARY_MISSING")
+    if authority.get("registry_cross_process_lock") is not True:
+        errors.append("APPROVAL_REGISTRY_CROSS_PROCESS_LOCK_MISSING")
+    if authority.get("registry_atomic_replace") is not True:
+        errors.append("APPROVAL_REGISTRY_ATOMIC_REPLACE_MISSING")
     if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
         errors.append("APPROVAL_EXTERNAL_ANCHOR_STATE_MISMATCH")
     if authority.get("current_source_execution") != "NOT_RUN":
@@ -143,7 +149,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 12,
+        "critical_callpath_cases": 14,
         "all_registered_failure_injections": TOTAL_FAILURE_INJECTIONS,
     }
     current_failure = verification.get("omission_failure_injection", {})
@@ -156,7 +162,7 @@ def main() -> int:
         "verification_claim_cases": 10,
         "product_subrequirement_cases": 10,
         "workflow_surface_cases": 6,
-        "critical_callpath_cases": 12,
+        "critical_callpath_cases": 14,
         "all_registered_cases": TOTAL_FAILURE_INJECTIONS,
     }.items():
         if additional.get(field) != expected:
@@ -206,7 +212,7 @@ def main() -> int:
                 errors.append(f"UNSAFE_RELEASE_FLAG:{flag}")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V10",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V11",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "design_capabilities": len(design_items),
