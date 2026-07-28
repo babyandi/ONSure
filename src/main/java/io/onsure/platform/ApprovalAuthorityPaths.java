@@ -9,8 +9,10 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-/** Fixed local trust root for every signed approval consumed by product workflows. */
+/** Fixed local trust root and product-owned path policy for local workflows. */
 public record ApprovalAuthorityPaths(
         Path authorityRoot,
         Path trustedKeyRegistry,
@@ -21,10 +23,15 @@ public record ApprovalAuthorityPaths(
     public static final String DEFAULT_AUTHORITY_BASE = ".onsure-authority/approval-authority";
     public static final String KEY_REGISTRY_FILE = "trusted-key-registry.json";
     public static final String REPLAY_LEDGER_FILE = "approval-replay-ledger.jsonl";
-    private static final List<String> OVERRIDE_FIELDS = List.of(
+    private static final Set<String> AUTHORITY_OVERRIDE_FIELDS = Set.of(
             "trusted_key_registry", "approval_key_registry",
             "approval_replay_ledger", "verification_replay_ledger",
             "approval_authority_root", "approval_authority_base");
+    private static final Set<String> PRODUCT_STATE_OVERRIDE_FIELDS = Set.of(
+            "catalog_root", "store_root", "license_store_root", "case_store_root",
+            "output_file", "approved_plan_file", "evidence_root", "rollback_receipt_file");
+    private static final Map<String, Set<String>> OPERATION_STATE_OVERRIDE_FIELDS = Map.of(
+            "patch.apply", Set.of("worktree_root"));
 
     public ApprovalAuthorityPaths {
         authorityRoot = normalize(authorityRoot, "authorityRoot");
@@ -57,10 +64,7 @@ public record ApprovalAuthorityPaths(
                 root, root.resolve(KEY_REGISTRY_FILE), root.resolve(REPLAY_LEDGER_FILE));
     }
 
-    /**
-     * Finds the one fixed authority belonging to an ancestor workspace of a contained path.
-     * This is used only for compatibility entry points that do not receive the workspace root.
-     */
+    /** Finds exactly one fixed authority belonging to an ancestor workspace. */
     public static ApprovalAuthorityPaths discoverForContainedPath(Path containedPath) {
         Path contained = normalize(containedPath, "containedPath");
         requireNoSymlink(contained, "APPROVAL_AUTHORITY_CONTAINED_PATH_SYMLINK_PROHIBITED");
@@ -89,12 +93,29 @@ public record ApprovalAuthorityPaths(
         return authority;
     }
 
-    /** Requests may not select or replace the product trust root. */
     public void rejectRequestOverrides(JsonNode request) {
-        for (String field : OVERRIDE_FIELDS) {
-            if (request != null && !request.path(field).asText("").isBlank()) {
+        rejectRequestOverrides("UNKNOWN", request);
+    }
+
+    /** Requests may not select trust roots or product-owned state/output locations. */
+    public void rejectRequestOverrides(String operation, JsonNode request) {
+        if (request == null || !request.isObject()) return;
+        for (String field : AUTHORITY_OVERRIDE_FIELDS) {
+            if (!request.path(field).asText("").isBlank()) {
                 throw new IllegalArgumentException(
                         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED:" + field);
+            }
+        }
+        for (String field : PRODUCT_STATE_OVERRIDE_FIELDS) {
+            if (!request.path(field).asText("").isBlank()) {
+                throw new IllegalArgumentException(
+                        "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED:" + field);
+            }
+        }
+        for (String field : OPERATION_STATE_OVERRIDE_FIELDS.getOrDefault(operation, Set.of())) {
+            if (!request.path(field).asText("").isBlank()) {
+                throw new IllegalArgumentException(
+                        "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED:" + field);
             }
         }
     }
