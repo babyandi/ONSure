@@ -10,7 +10,8 @@ REQUIRED_TOKENS = {
     "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
         "AUTHORITY_BASE_PROPERTY", "DEFAULT_AUTHORITY_BASE", "trusted-key-registry.json",
         "approval-replay-ledger.jsonl", "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED",
-        "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
+        "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED", "PRODUCT_STATE_OVERRIDE_FIELDS",
+        "patchApplyShape", "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
         "APPROVAL_AUTHORITY_WORKSPACE_SYMLINK_PROHIBITED", "requireTrustedKeyRegistry",
         "discoverForContainedPath", "APPROVAL_AUTHORITY_NOT_DISCOVERABLE_FROM_PATH",
         "APPROVAL_AUTHORITY_AMBIGUOUS_FOR_PATH",
@@ -87,8 +88,9 @@ REQUIRED_TOKENS = {
         "containedWorktreeDiscoversExactlyOneFixedWorkspaceAuthority",
         "containedPathWithoutAuthorityIsRejected",
         "everyWorkflowRejectsCallerSelectedAuthorityPaths",
-        "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "symlinkedAuthorityRegistryIsRejected",
-        "symlinkedWorkspaceAliasCannotForkApprovalAuthority",
+        "productOwnedStateAndOutputPathsCannotBeForkedOrPointAtSourceFiles",
+        "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED",
+        "symlinkedAuthorityRegistryIsRejected", "symlinkedWorkspaceAliasCannotForkApprovalAuthority",
     ],
     "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java": [
         "publicKeyOutsideAuthorityRootIsRejected",
@@ -100,8 +102,7 @@ REQUIRED_TOKENS = {
         "killsHungProcessAtWallClockDeadline", "preservesNonzeroExitAndBoundedDiagnosticOutput",
     ],
     "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java": [
-        "expiredDeliveryApprovalCannotReachPushTransition",
-        "GIT_DELIVERY_APPROVAL_EXPIRED",
+        "expiredDeliveryApprovalCannotReachPushTransition", "GIT_DELIVERY_APPROVAL_EXPIRED",
     ],
     "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java": [
         "project.register-workspace", "project.register-target", "project.list-targets",
@@ -138,6 +139,7 @@ def self_test() -> list[str]:
             ("approval receipt immutable snapshot", "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java", "appendConsumption(snapshot, receipt"),
             ("approval bundle verifier", "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java", "verifyApprovedPlanBundle"),
             ("fixture auto approval process gate", "src/main/java/io/onsure/platform/ExecutionPlanService.java", "Boolean.getBoolean(TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY)"),
+            ("product state path boundary", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED"),
             ("engine bundle entry", "src/main/java/io/onsure/platform/ValidationEngine.java", "ApprovedExecutionPlanBundle"),
             ("stage scope enforcement", "src/main/java/io/onsure/platform/ValidationEngine.java", "ExecutionPlanActionPolicy.notApproved"),
             ("dispatcher registration", "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java", "project.register-target"),
@@ -174,12 +176,12 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V9",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V10",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 20 if args.self_test else 0,
+        "failure_injection_count": 21 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
