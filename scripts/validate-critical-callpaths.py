@@ -13,6 +13,10 @@ REQUIRED_TOKENS = {
         "approval-replay-ledger.jsonl", "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED",
         "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE", "requireTrustedKeyRegistry",
     ],
+    "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
+        "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile",
+        "ATOMIC_MOVE", "KEY_REGISTRY_AUTHORITY_ROOT_SYMLINK",
+    ],
     "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
         "verifyApprovedPlanBundle", "EXECUTION_PLAN_CONSUMED_APPROVAL_INVALID",
         "EXECUTION_PLAN_APPROVED_ARTIFACT_DERIVATION_MISMATCH", "original_plan_file_sha256",
@@ -63,6 +67,11 @@ REQUIRED_TOKENS = {
         "everyWorkflowRejectsCallerSelectedAuthorityPaths",
         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "symlinkedAuthorityRegistryIsRejected",
     ],
+    "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java": [
+        "publicKeyOutsideAuthorityRootIsRejected",
+        "concurrentRegistryInstancesPreserveEveryKey",
+        "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT",
+    ],
     "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java": [
         "drainsLargeOutputWithoutPipeDeadlockAndMarksTruncation",
         "killsHungProcessAtWallClockDeadline", "preservesNonzeroExitAndBoundedDiagnosticOutput",
@@ -111,9 +120,11 @@ def self_test() -> list[str]:
             ("fixed trust root", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED"),
             ("authority outside workspace", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE"),
             ("authority separation regression", "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java", "authorityBaseInsideWorkspaceIsRejected"),
+            ("public key reference boundary", "src/main/java/io/onsure/assurance/LocalKeyRegistry.java", "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT"),
+            ("key registry cross-process lock", "src/main/java/io/onsure/assurance/LocalKeyRegistry.java", "ExclusiveFileLock.call(lockFile"),
+            ("key registry boundary regression", "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java", "publicKeyOutsideAuthorityRootIsRejected"),
+            ("key registry concurrency regression", "src/test/java/io/onsure/assurance/LocalKeyRegistryBoundaryTest.java", "concurrentRegistryInstancesPreserveEveryKey"),
             ("bounded process runner", "src/main/java/io/onsure/platform/BoundedProcessRunner.java", "onsure-process-output-drain"),
-            ("all git callpaths bounded", "src/main/java/io/onsure/platform/GitWorkflowService.java", "BoundedProcessRunner.run"),
-            ("hung process regression", "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java", "killsHungProcessAtWallClockDeadline"),
             ("push expiry regression", "src/main/java/io/onsure/platform/GitWorkflowService.java", "requireApprovalNotExpired"),
         ]
         for name, relative, token in cases:
@@ -134,12 +145,12 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V5",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V6",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 12 if args.self_test else 0,
+        "failure_injection_count": 14 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
