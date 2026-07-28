@@ -155,6 +155,23 @@
         "status/omission-detection-status.v1.json",
         "docs/verification/ONSURE_META_OMISSION_AUDIT_v1.md"
       ]
+    },
+    {
+      "id": "META-012",
+      "severity": "CRITICAL",
+      "category": "APPROVAL_RECEIPT_TOCTOU",
+      "title": "Approval receipt bytes could change between signature verification and replay-ledger consumption",
+      "prior_miss_reason": "SIGNATURE_VERIFY_AND_REPLAY_LOCK_TOKENS_WERE_CHECKED_WITHOUT_PROVING_IDENTICAL_RECEIPT_BYTES",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
+        "scripts/validate-critical-callpaths.py",
+        "scripts/validate-status-consistency.py"
+      ],
+      "remaining_gaps": [
+        "CURRENT_BRANCH_FULL_JAVA17_MAVEN_JUNIT_NOT_RUN",
+        "INDEPENDENT_CONCURRENCY_ATTACK_NOT_RUN"
+      ]
     }
   ],
   "detector_coverage": {
@@ -164,8 +181,8 @@
     "verification_claims": 10,
     "product_subrequirements": 10,
     "workflow_surfaces": 6,
-    "critical_callpaths": 16,
-    "registered_total": 86
+    "critical_callpaths": 17,
+    "registered_total": 87
   },
   "executed_in_this_audit": {
     "product_subrequirement_failure_injections": "10_OF_10_PASS",
@@ -177,7 +194,8 @@
     "bounded_process_output_flood_smoke": "PASS",
     "bounded_process_wall_clock_timeout_smoke": "PASS",
     "approval_authority_paths_javac_release17_before_meta009": "PASS",
-    "critical_callpath_meta010_logic": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED"
+    "critical_callpath_meta010_logic": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+    "critical_callpath_meta012_logic": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED"
   },
   "not_run": [
     "CURRENT_BRANCH_FULL_JAVA17_MAVEN_JUNIT",
@@ -189,7 +207,8 @@
     "APPROVAL_AUTHORITY_META009_JAVA_TEST",
     "INDEPENDENT_OTESTER",
     "INDEPENDENT_OAUDIT",
-    "APPROVAL_AUTHORITY_META010_JAVA_TEST"
+    "APPROVAL_AUTHORITY_META010_JAVA_TEST",
+    "APPROVAL_RECEIPT_META012_CONCURRENCY_ATTACK"
   ],
   "assurance": {
     "class": "SELF_VALIDATION_NONFINAL",
