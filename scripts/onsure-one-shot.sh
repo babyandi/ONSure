@@ -17,11 +17,8 @@ HEAD_SHA="$(git rev-parse HEAD)"; [[ "$HEAD_SHA" =~ ^[0-9a-f]{40,64}$ ]] || { ec
 COUNT_AUTHORITY="contracts/omission-failure-injection-counts.v1.json"
 FAILURE_INJECTION_TOTAL="$(python3 - "$COUNT_AUTHORITY" <<'PY'
 import json,sys
-body=json.load(open(sys.argv[1],encoding='utf-8'))
-counts=body.get('counts',{})
-total=body.get('total')
-if body.get('contract')!='ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1' or total!=sum(counts.values()):
-    raise SystemExit(1)
+body=json.load(open(sys.argv[1],encoding='utf-8')); counts=body.get('counts',{}); total=body.get('total')
+if body.get('contract')!='ONSURE_OMISSION_FAILURE_INJECTION_COUNTS_V1' or total!=sum(counts.values()): raise SystemExit(1)
 print(total)
 PY
 )" || { echo "ONSURE_ONE_SHOT_FAIL FAILURE_COUNT_AUTHORITY_INVALID" >&2; exit 72; }
@@ -57,7 +54,7 @@ PY
 python3 - "$OUT/result.json" "$HEAD_SHA" "$PROFILE" "$MODE" "$ENVIRONMENT_DIGEST" "$GATE_EXIT" "$COUNT_AUTHORITY" "$FAILURE_INJECTION_TOTAL" <<'PY'
 import json,pathlib,sys
 path,source,profile,mode,environment,exit_code,authority,total=sys.argv[1:];code=int(exit_code)
-body={"contract":"ONSURE_ONE_SHOT_RESULT_V12","decision":"NON_FINAL" if code==0 else "FAIL","source_commit":source,"profile":profile,"mode":mode.upper(),"environment_digest":environment,"local_gate_exit":code,"local_gate_authority":True,"product_subrequirements":"PASS_WITH_KNOWN_GAPS" if code==0 else "FAIL","workflow_surface_parity":"PASS" if code==0 else "FAIL","critical_callpaths":"PASS" if code==0 else "FAIL","failure_injection_authority":authority,"registered_failure_injections":int(total),"release_gate":"HOLD","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
+body={"contract":"ONSURE_ONE_SHOT_RESULT_V13","decision":"NON_FINAL" if code==0 else "FAIL","source_commit":source,"profile":profile,"mode":mode.upper(),"environment_digest":environment,"local_gate_exit":code,"local_gate_authority":True,"product_subrequirements":"CONTRACT_PASS_WITH_40_KNOWN_INCOMPLETE" if code==0 else "FAIL","mvp_acceptance_contract":"PASS_WITH_ALL_11_ITEMS_NOT_RUN" if code==0 else "FAIL","mvp_full_chain":"NOT_RUN","two_consecutive_real_repository_runs":"NOT_RUN","workflow_surface_parity":"PASS" if code==0 else "FAIL","critical_callpaths":"PASS" if code==0 else "FAIL","failure_injection_authority":authority,"registered_failure_injections":int(total),"release_gate":"HOLD","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":False,"production_go":False,"commercial_go":False}
 pathlib.Path(path).write_text(json.dumps(body,indent=2,sort_keys=True)+"\n",encoding="utf-8")
 PY
 find "$OUT" -type f ! -name evidence.sha256 -print0 | sort -z | xargs -0 sha256sum > "$OUT/evidence.sha256"
