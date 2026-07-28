@@ -35,6 +35,20 @@ def main() -> int:
     verification = load("status/verification-status.v1.json")
     remaining = load("status/remaining-work-register.v1.json")
     process = load("contracts/product-process-lineage.v1.json")
+    case_registry = load("contracts/validation-case-registry.v1.json")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    if case_registry.get("contract") != "ONSURE_VALIDATION_CASE_REGISTRY_V1":
+        errors.append("VALIDATION_CASE_REGISTRY_CONTRACT_INVALID")
+    case_groups = case_registry.get("case_classes", {})
+    if set(case_groups) != {"positive", "negative", "adversarial"}:
+        errors.append("VALIDATION_CASE_CLASS_SET_INVALID")
+    for case_class in ("positive", "negative", "adversarial"):
+        group = case_groups.get(case_class, {})
+        if len(group.get("cases", [])) < group.get("minimum_registered", 0):
+            errors.append(f"VALIDATION_CASE_DENOMINATOR_UNDERSIZED:{case_class}")
+    if "합계 94개" not in readme:
+        errors.append("README_FAILURE_INJECTION_TOTAL_DRIFT")
 
     design_items = design.get("capabilities", [])
     design_by_id = {item.get("capability_id"): item for item in design_items}
