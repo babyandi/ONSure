@@ -19,6 +19,7 @@ REQUIRED_TOKENS = {
     "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java": [
         "Files.createTempFile(\"onsure-approval-receipt-\"", "Files.copy(receiptFile, snapshot",
         "appendConsumption(snapshot, receipt", "Files.deleteIfExists(snapshot)",
+        "record ConsumedReceipt", "requireValidAndConsumeSnapshot",
     ],
     "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
         "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile",
@@ -27,6 +28,7 @@ REQUIRED_TOKENS = {
     "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
         "verifyApprovedPlanBundle", "EXECUTION_PLAN_CONSUMED_APPROVAL_INVALID",
         "EXECUTION_PLAN_APPROVED_ARTIFACT_DERIVATION_MISMATCH", "original_plan_file_sha256",
+        "requireValidAndConsumeSnapshot", "consumedApproval.sha256()",
     ],
     "src/main/java/io/onsure/platform/ExecutionPlanService.java": [
         "TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY",
@@ -137,6 +139,7 @@ def self_test() -> list[str]:
             missed.append("CRITICAL_CALLPATH_BASELINE_REJECTED")
         cases = [
             ("approval receipt immutable snapshot", "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java", "appendConsumption(snapshot, receipt"),
+            ("approval service exact consumed snapshot", "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java", "consumedApproval.sha256()"),
             ("approval bundle verifier", "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java", "verifyApprovedPlanBundle"),
             ("fixture auto approval process gate", "src/main/java/io/onsure/platform/ExecutionPlanService.java", "Boolean.getBoolean(TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY)"),
             ("product state path boundary", "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java", "PRODUCT_STATE_PATH_OVERRIDE_PROHIBITED"),
@@ -176,12 +179,12 @@ def main() -> int:
     errors = validate()
     self_errors = self_test() if args.self_test else []
     report = {
-        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V10",
+        "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V11",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 21 if args.self_test else 0,
+        "failure_injection_count": 22 if args.self_test else 0,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
