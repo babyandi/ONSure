@@ -15,7 +15,7 @@ import java.util.Set;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V6";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V7";
     private static final Set<String> PROHIBITED_REGISTERED_EXECUTION_PROFILES = Set.of(
             "LOCAL_E2E", "LOCAL_MVF_E2E", "LOCAL_FIXTURE", "TRUSTED_LOCAL_FIXTURE",
             "LOCAL_E2E_TRUSTED_FIXTURE", "LOCAL_DEVELOPMENT");
@@ -46,6 +46,7 @@ public final class LocalWorkflowDispatcher {
             case "project.read-target" -> projectReadTarget(request);
             case "project.list-targets" -> projectListTargets(request);
             case "program.learn" -> programLearn(request);
+            case "plan.generate" -> planGenerate(request);
             case "plan.approve" -> planApprove(request);
             case "validation.run" -> validationRun(request);
             case "patch.apply" -> patchApply(request);
@@ -161,9 +162,26 @@ public final class LocalWorkflowDispatcher {
             throw new IllegalArgumentException("PROGRAM_ID_TARGET_ID_MISMATCH");
         }
         ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
-        Path output = outputPath(request, "output_file", ".onsure/profiles/" + targetId + "/program-profile.json");
+        Path output = outputPath(request, "output_file",
+                ".onsure/profiles/" + targetId + "/program-profile.json");
         return new ProgramLearningService().learn(
                 target.sourceRoot(), projectId, target.targetId(), output);
+    }
+
+    private Map<String, Object> planGenerate(JsonNode request) throws Exception {
+        rejectRegisteredTargetOverrides(request);
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        if (!GenericManifestTargetAdapter.ID.equals(target.adapterId())) {
+            throw new IllegalArgumentException("LOCAL_CORE_WORKFLOW_SUPPORTS_GENERIC_ADAPTER_ONLY");
+        }
+        Path profile = inputPath(request, "program_profile_file", true);
+        int fixtureCount = new GenericManifestTargetAdapter().loadFixtures(target).size();
+        Path output = outputPath(request, "output_file",
+                ".onsure/plans/" + targetId + "-execution-plan.json");
+        return new RegisteredExecutionPlanGenerationService().generate(
+                projectId, target, profile, fixtureCount, output);
     }
 
     private Map<String, Object> planApprove(JsonNode request) throws Exception {
