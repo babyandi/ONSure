@@ -123,16 +123,18 @@ else
   exit 69
 fi
 
-run_stage main_protection_contract "ONSURE_MAIN_BRANCH_PROTECTION_PASS" \
+run_stage main_protection_contract "ONSURE_MAIN_BRANCH_PROTECTION_GATE_PASS_NONFINAL" \
   "${PYTHON}" scripts/validate-main-branch-protection.py
 
+independent_waiting="false"
 for authority in ontester onaudit; do
   runner_var="ONSURE_${authority^^}_RUNNER"
   runner="${!runner_var:-}"
   if [[ -z "${runner}" || ! -x "${runner}" ]]; then
     record "${authority}_2x" "WAITING_INDEPENDENT_AUTHORITY" 75 "${LOG_DIR}/${authority}_2x.log"
     printf 'ONSURE_REMEDIATION_WAITING %s runner via %s\n' "${authority}" "${runner_var}" >&2
-    exit 75
+    independent_waiting="true"
+    continue
   fi
   run_stage "${authority}_2x" "ONSURE_${authority^^}_2X_CLEAN" \
     "${runner}" --source "${source_commit}" --repeat 2 --evidence-root "${RUN_ROOT}"
@@ -147,6 +149,11 @@ else
 fi
 
 [[ "$(git rev-parse HEAD)" == "${source_commit}" ]] || exit 73
+if [[ "${independent_waiting}" == "true" ]]; then
+  printf 'ONSURE_REMEDIATION_HOLD INDEPENDENT_AUTHORITIES_REQUIRED source=%s evidence=%s\n' \
+    "${source_commit}" "${RUN_ROOT}" >&2
+  exit 75
+fi
 printf 'ONSURE_REMEDIATION_READY_FOR_HUMAN_APPROVAL source=%s evidence=%s\n' \
   "${source_commit}" "${RUN_ROOT}"
 printf 'FinalLock=false Production_GO=false Commercial_GO=false Merge=BLOCKED\n'
