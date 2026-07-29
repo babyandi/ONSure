@@ -104,8 +104,8 @@ run_stage prepare "ONSURE_INTEGRATED_RUN_PASS_NONFINAL" \
 run_stage product_runtime_e2e "ONSURE_VALIDATOR_FIXTURE_E2E_PASS" \
   bash scripts/run-product-platform-e2e.sh
 
-if [[ -x scripts/run-financial-operations-e2e.sh ]]; then
-  run_stage financial_operations "ONSURE_FINANCIAL_OPERATIONS_E2E_PASS" \
+if [[ -f scripts/run-financial-operations-e2e.sh ]]; then
+  run_stage financial_operations "ONSURE_FINANCIAL_OPERATIONS_E2E_PASS_NONFINAL" \
     bash scripts/run-financial-operations-e2e.sh --repeat "${repeat}"
 else
   record financial_operations "BLOCKED_MISSING_RUNNER" 69 "${LOG_DIR}/financial_operations.log"
@@ -113,8 +113,8 @@ else
   exit 69
 fi
 
-if [[ -x scripts/run-install-rollback-dr-performance.sh ]]; then
-  run_stage install_rollback_dr_performance "ONSURE_OPERATIONS_FULL_PASS" \
+if [[ -f scripts/run-install-rollback-dr-performance.sh ]]; then
+  run_stage install_rollback_dr_performance "ONSURE_OPERATIONS_IMPLEMENTED_LANES_PASS_NONFINAL" \
     bash scripts/run-install-rollback-dr-performance.sh --repeat "${repeat}"
 else
   record install_rollback_dr_performance "BLOCKED_MISSING_RUNNER" 69 \
