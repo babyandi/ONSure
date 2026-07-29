@@ -88,6 +88,7 @@ def main() -> int:
     steps: list[dict[str, object]] = []
 
     commands = [
+        ("design-baseline-runtime", [sys.executable, "scripts/validate-design-baseline-runtime.py"]),
         ("authority-consistency", [sys.executable, "scripts/validate-final-authority-consistency.py"]),
         ("python-regression", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py", "-v"]),
         ("shell-syntax", ["bash", "scripts/check-shell-syntax.sh"]),
