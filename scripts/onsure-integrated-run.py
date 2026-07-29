@@ -133,6 +133,7 @@ def main() -> int:
     commands = [
         ("design-baseline-runtime", [sys.executable, "scripts/validate-design-baseline-runtime.py"]),
         ("authority-consistency", [sys.executable, "scripts/validate-final-authority-consistency.py"]),
+        ("acceptance-runtime-results", [sys.executable, "scripts/validate-acceptance-runtime-results.py"]),
         ("main-branch-protection", [sys.executable, "scripts/validate-main-branch-protection.py", "--self-test"]),
         ("python-regression", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py", "-v"]),
         ("shell-syntax", ["bash", "scripts/check-shell-syntax.sh"]),
