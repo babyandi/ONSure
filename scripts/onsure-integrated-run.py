@@ -53,14 +53,32 @@ def require_clean_source() -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--profile", choices=("core", "oruda"), default="core")
+    parser.add_argument(
+        "--profile",
+        choices=("core", "oruda", "full"),
+        default="core",
+        help="full includes the core product and the ORUDA adapter lane",
+    )
     parser.add_argument(
         "--stage",
-        choices=("prepare", "codespace-final", "auto"),
+        choices=("prepare", "codespace-final", "auto", "all"),
         default="auto",
         help="auto runs Codespace final only when its complete toolchain is present",
     )
+    parser.add_argument(
+        "--repeat",
+        type=int,
+        default=2,
+        help="number of identical-source Full Gate runs (1-5)",
+    )
+    parser.add_argument(
+        "--fail-closed",
+        action="store_true",
+        help="return HOLD until independent verification and human approvals exist",
+    )
     args = parser.parse_args()
+    if not 1 <= args.repeat <= 5:
+        parser.error("--repeat must be between 1 and 5")
     try:
         source_commit = require_clean_source()
     except (RuntimeError, subprocess.CalledProcessError) as failure:
@@ -70,7 +88,9 @@ def main() -> int:
     required_full_tools = ("java", "javac", "mvn", "bwrap", "prlimit", "node", "npm")
     full_toolchain = all(shutil.which(tool) for tool in required_full_tools)
     effective_stage = args.stage
-    if effective_stage == "auto":
+    if effective_stage == "all":
+        effective_stage = "codespace-final"
+    elif effective_stage == "auto":
         effective_stage = "codespace-final" if full_toolchain else "prepare"
     if effective_stage == "codespace-final" and not full_toolchain:
         missing = [tool for tool in required_full_tools if not shutil.which(tool)]
@@ -87,16 +107,28 @@ def main() -> int:
     output_root.mkdir(parents=True, exist_ok=False)
     steps: list[dict[str, object]] = []
 
+    execution_profile = "oruda" if args.profile == "full" else args.profile
     commands = [
         ("design-baseline-runtime", [sys.executable, "scripts/validate-design-baseline-runtime.py"]),
         ("authority-consistency", [sys.executable, "scripts/validate-final-authority-consistency.py"]),
         ("python-regression", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py", "-v"]),
         ("shell-syntax", ["bash", "scripts/check-shell-syntax.sh"]),
-        ("static-repeat-1", ["bash", "scripts/onsure-one-shot.sh", "--profile", args.profile, "--static-only"]),
-        ("static-repeat-2", ["bash", "scripts/onsure-one-shot.sh", "--profile", args.profile, "--static-only"]),
     ]
+    commands.extend(
+        (
+            f"static-repeat-{iteration}",
+            ["bash", "scripts/onsure-one-shot.sh", "--profile", execution_profile, "--static-only"],
+        )
+        for iteration in range(1, args.repeat + 1)
+    )
     if effective_stage == "codespace-final":
-        commands.append(("codespace-final", ["bash", "scripts/onsure-final-stage.sh", "--profile", args.profile]))
+        commands.extend(
+            (
+                f"codespace-final-{iteration}",
+                ["bash", "scripts/onsure-final-stage.sh", "--profile", execution_profile],
+            )
+            for iteration in range(1, args.repeat + 1)
+        )
 
     decision = "PASS_NONFINAL"
     for name, command in commands:
@@ -130,12 +162,19 @@ def main() -> int:
         "contract": "ONSURE_INTEGRATED_RUN_RESULT_V1",
         "source_commit": source_commit,
         "profile": args.profile,
+        "execution_profile": execution_profile,
+        "repeat": args.repeat,
+        "fail_closed": args.fail_closed,
         "requested_stage": args.stage,
         "effective_stage": effective_stage,
         "github_actions": "DISABLED",
         "decision": decision,
         "steps": steps,
-        "codespace_full_gate": "PASS_NONFINAL" if effective_stage == "codespace-final" and decision == "PASS_NONFINAL" else "NOT_RUN",
+        "codespace_full_gate": (
+            f"PASS_NONFINAL_{args.repeat}X"
+            if effective_stage == "codespace-final" and decision == "PASS_NONFINAL"
+            else "NOT_RUN"
+        ),
         "independent_otester_two_clean": "NOT_RUN",
         "independent_oaudit_two_clean": "NOT_RUN",
         "human_approval": "NOT_RUN",
@@ -160,6 +199,9 @@ def main() -> int:
     if decision != "PASS_NONFINAL":
         print(f"ONSURE_INTEGRATED_RUN_{decision} {output_root}", file=sys.stderr)
         return next((int(step["exit_code"]) for step in reversed(steps) if step.get("exit_code")), 1)
+    if args.fail_closed:
+        print(f"ONSURE_INTEGRATED_RUN_HOLD_INDEPENDENT_APPROVAL_REQUIRED {output_root}", file=sys.stderr)
+        return 75
     print(f"ONSURE_INTEGRATED_RUN_PASS_NONFINAL {output_root}")
     return 0
 
