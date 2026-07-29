@@ -36,8 +36,12 @@ PY
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"; OUT="${ONSURE_LOCAL_GATE_OUTPUT:-$ROOT/.onsure/local-gate/$STAMP}"
 mkdir -p "$OUT/logs" "$OUT/artifacts"
 python3 scripts/create-source-snapshot.py --output "$OUT/source-start.json"
-VALIDATION_PYTHON="python3"
-if ! python3 -c 'import jsonschema, yaml' >/dev/null 2>&1; then
+VALIDATION_PYTHON="${ONSURE_VALIDATION_PYTHON:-python3}"
+if ! "$VALIDATION_PYTHON" -c 'import jsonschema, yaml' >/dev/null 2>&1; then
+  [[ -z "${ONSURE_VALIDATION_PYTHON:-}" ]] || {
+    echo "ONSURE_LOCAL_GATE_FAIL INVALID_ONSURE_VALIDATION_PYTHON" >&2
+    exit 69
+  }
   python3 -m venv "$OUT/validation-venv"
   "$OUT/validation-venv/bin/python" -m pip install --require-hashes --disable-pip-version-check --no-input -r requirements-validation.txt > "$OUT/logs/validation-dependency-install.log" 2>&1
   VALIDATION_PYTHON="$OUT/validation-venv/bin/python"
