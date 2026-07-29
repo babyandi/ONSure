@@ -17,6 +17,8 @@ class IntegratedRunTest(unittest.TestCase):
         self.assertIn('choices=("prepare", "codespace-final", "auto", "all")', body)
         self.assertIn('"--repeat"', body)
         self.assertIn('"--fail-closed"', body)
+        self.assertIn("ONSURE_VALIDATION_PYTHON", body)
+        self.assertIn("validation_environment()", body)
         self.assertIn("HOLD_INDEPENDENT_APPROVAL_REQUIRED", body)
         self.assertIn('"independent_otester_two_clean": "NOT_RUN"', body)
         self.assertIn('"independent_oaudit_two_clean": "NOT_RUN"', body)
