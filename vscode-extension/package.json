@@ -11,6 +11,7 @@
   "activationEvents": [
     "onView:onsure.workspace",
     "onCommand:onsure.configure",
+    "onCommand:onsure.selectMode",
     "onCommand:onsure.refresh",
     "onCommand:onsure.learnProgram",
     "onCommand:onsure.runValidation",
@@ -21,6 +22,7 @@
   "contributes": {
     "commands": [
       {"command": "onsure.configure", "title": "ONSure: Configure Local API"},
+      {"command": "onsure.selectMode", "title": "ONSure: Select Work Mode"},
       {"command": "onsure.refresh", "title": "ONSure: Refresh Status"},
       {"command": "onsure.learnProgram", "title": "ONSure: Learn Program"},
       {"command": "onsure.runValidation", "title": "ONSure: Run Validation"},
@@ -35,7 +37,20 @@
     },
     "views": {
       "onsure": [
-        {"id": "onsure.workspace", "name": "Program Assurance"}
+        {"id": "onsure.workspace", "name": "Chat / Session"},
+        {"id": "onsure.profile", "name": "Project & Program Profile"},
+        {"id": "onsure.inventory", "name": "Asset / Data / AI Inventory"},
+        {"id": "onsure.requirements", "name": "Requirements & Trace"},
+        {"id": "onsure.threats", "name": "Threat Model & Financial Controls"},
+        {"id": "onsure.plan", "name": "Verification Plan"},
+        {"id": "onsure.runs", "name": "Runs & Live Terminal"},
+        {"id": "onsure.findings", "name": "Findings & RCA"},
+        {"id": "onsure.improvement", "name": "Improvement / Diff / Hunk Approval"},
+        {"id": "onsure.evidence", "name": "Evidence & Receipts"},
+        {"id": "onsure.git", "name": "Git / Branch / Commit / PR"},
+        {"id": "onsure.approvals", "name": "Approvals & Exceptions"},
+        {"id": "onsure.runtime", "name": "Runtime / Cost / Data Egress"},
+        {"id": "onsure.admin", "name": "Admin / Policy / Identity"}
       ]
     },
     "menus": {
@@ -47,6 +62,7 @@
       ],
       "commandPalette": [
         {"command": "onsure.clearToken"}
+        ,{"command": "onsure.selectMode"}
       ]
     },
     "configuration": {
@@ -65,6 +81,12 @@
         "onsure.defaultExecutionProfile": {
           "type": "string",
           "default": "LOCAL_DEVELOPMENT"
+        },
+        "onsure.defaultWorkMode": {
+          "type": "string",
+          "enum": ["ASK", "PLAN", "ACT", "VERIFY", "IMPROVE", "AUTOPILOT", "AUDIT", "OFFLINE"],
+          "default": "ASK",
+          "description": "Fail-closed ONSure work mode. Merge, GO and FinalLock remain prohibited."
         }
       }
     }
