@@ -32,6 +32,28 @@ def digest(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def validation_environment() -> dict[str, str]:
+    environment = os.environ.copy()
+    if environment.get("ONSURE_VALIDATION_PYTHON"):
+        return environment
+    candidates = sorted(
+        (ROOT / ".onsure" / "one-shot").glob("*/local-gate/validation-venv/bin/python"),
+        reverse=True,
+    )
+    for candidate in candidates:
+        check = subprocess.run(
+            [str(candidate), "-c", "import jsonschema, yaml"],
+            cwd=ROOT,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        if check.returncode == 0:
+            environment["ONSURE_VALIDATION_PYTHON"] = str(candidate)
+            break
+    return environment
+
+
 def require_clean_source() -> str:
     status = subprocess.run(
         ["git", "status", "--porcelain"],
@@ -111,6 +133,7 @@ def main() -> int:
     commands = [
         ("design-baseline-runtime", [sys.executable, "scripts/validate-design-baseline-runtime.py"]),
         ("authority-consistency", [sys.executable, "scripts/validate-final-authority-consistency.py"]),
+        ("main-branch-protection", [sys.executable, "scripts/validate-main-branch-protection.py", "--self-test"]),
         ("python-regression", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py", "-v"]),
         ("shell-syntax", ["bash", "scripts/check-shell-syntax.sh"]),
     ]
@@ -131,9 +154,10 @@ def main() -> int:
         )
 
     decision = "PASS_NONFINAL"
+    execution_environment = validation_environment()
     for name, command in commands:
         log = output_root / f"{name}.log"
-        exit_code = run(command, log)
+        exit_code = run(command, log, execution_environment)
         steps.append(
             {
                 "name": name,
