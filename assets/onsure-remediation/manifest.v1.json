@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "scope": "ONSure PR #28 remediation assets",
+  "branch": "agent/onsure-final-remediation-20260729",
+  "generated_at": "2026-07-30T00:00:00+09:00",
+  "policy": {
+    "repository_root": "assets/onsure-remediation",
+    "require_sha256": true,
+    "require_provenance": true,
+    "require_usage_rights": true,
+    "codex_entrypoint": "AGENTS.md"
+  },
+  "assets": [],
+  "status": "NO_IMAGE_ASSETS_USED",
+  "note": "The remediation changes are code, contracts, tests, and documentation. No raster or vector image was used; no placeholder asset was fabricated."
+}
