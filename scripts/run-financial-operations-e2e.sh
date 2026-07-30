@@ -6,7 +6,7 @@ cd "${ROOT}"
 repeat=2
 if [[ "${1:-}" == "--repeat" ]]; then repeat="${2:-}"; fi
 case "${repeat}" in 1|2|3|4|5) ;; *) exit 64 ;; esac
-for command in java javac mvn git sha256sum; do
+for command in java javac mvn git python3 sha256sum; do
   command -v "${command}" >/dev/null 2>&1 || { echo "ONSURE_FINANCIAL_OPERATIONS_E2E_BLOCKED MISSING_${command}" >&2; exit 69; }
 done
 source_commit="$(git rev-parse HEAD)"
@@ -17,7 +17,9 @@ for iteration in $(seq 1 "${repeat}"); do
   mkdir -p "${run}"
   mvn -B -ntp -Dtest=EnterpriseCapabilityRuntimeTest test | tee "${run}/maven.log"
   test -s target/surefire-reports/io.onsure.platform.EnterpriseCapabilityRuntimeTest.txt
-  cp target/surefire-reports/io.onsure.platform.EnterpriseCapabilityRuntimeTest.txt "${run}/summary.txt"
+  python3 "${ROOT}/scripts/normalize-surefire-summary.py" \
+    < target/surefire-reports/io.onsure.platform.EnterpriseCapabilityRuntimeTest.txt \
+    > "${run}/summary.txt"
   grep -Fq 'Failures: 0' "${run}/summary.txt"
   grep -Fq 'Errors: 0' "${run}/summary.txt"
   sha256sum "${run}/maven.log" "${run}/summary.txt" > "${run}/evidence.sha256"
