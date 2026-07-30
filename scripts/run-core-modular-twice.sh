@@ -24,13 +24,14 @@ JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
 
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 OUT="${ONSURE_CORE_MODULAR_OUTPUT:-$ROOT/.onsure/core-modular/$STAMP}"
+AUTHORITY_ROOT="${TMPDIR:-/tmp}/onsure-core-modular-authority/$(git rev-parse HEAD)/$STAMP"
 mkdir -p "$OUT/run-1" "$OUT/run-2"
 
 run_once() {
   local run="$1"
   rm -rf modules/onsure-core/target modules/onsure-adapter-oruda/target
   mvn -B -ntp -f pom-modular.xml -pl modules/onsure-core -am \
-    -Donsure.approvalAuthorityBase="$OUT/$run/approval-authority" test \
+    -Donsure.approvalAuthorityBase="$AUTHORITY_ROOT/$run" test \
     | tee "$OUT/$run/maven.log"
   find modules/onsure-core/target -type f -name '*.class' -print0 \
     | sort -z | xargs -0 sha256sum > "$OUT/$run/classes.sha256"
