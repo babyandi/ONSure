@@ -17,7 +17,7 @@ PR: `#28 Complete ONSure final remediation gate coverage`
 - 전체 단계를 묶는 단일 실행기 `scripts/run-onsure-remediation.sh` 구현
 - 단계별 로그 Hash, 상태 Receipt, 동일 Source 재개, Codespace 최종 단계 옵션 구현
 - ONTester/ONAudit 독립 실행기를 제품팀 자체 결과로 대체하지 못하도록 권한 경계 유지
-- Codex 참조 순서와 이미지 자산 관리 규칙을 루트 `AGENTS.md`에 고정
+- Codex 참조 순서와 이미지 자산 규칙을 전용 파일 `docs/codex/ONSURE_REMEDIATION_AGENT_20260730.md`에 격리
 
 ## 확인된 검증
 
@@ -30,8 +30,6 @@ PR: `#28 Complete ONSure final remediation gate coverage`
 - GitHub Actions: 미사용
 
 ## 현재 비최종 상태
-
-다음 항목은 실제 외부 실행환경·독립 권한·사람 승인이 필요하므로 완료로 기록하지 않는다.
 
 - 62개 수용기준 전체의 실제 제품 Runtime 완료
 - 실제 설치·업그레이드·백업·복구·DR·장시간 성능 시험
@@ -50,17 +48,15 @@ Merge=BLOCKED
 
 ## 자산
 
-이번 Remediation 변경은 코드·계약·문서 작업이며 별도의 이미지가 사용되지 않았다. 이미지가 추가되면 반드시 `assets/onsure-remediation/manifest.v1.json`에 등록한다.
+이번 Remediation은 코드·계약·문서 작업이며 별도의 이미지가 사용되지 않았다. 이미지가 추가되면 `assets/onsure-remediation/manifest.v1.json`에 원본과 Hash·출처·사용권을 등록한다.
 
-## 최종 실행
+## Codex 전달문
 
-브랜치가 준비된 저장소에서는 다음 한 줄을 실행한다.
-
-```bash
-./scripts/run-onsure-remediation.sh --codespace-final
+```text
+docs/codex/ONSURE_REMEDIATION_AGENT_20260730.md를 먼저 읽고 해당 범위에서만 작업해.
 ```
 
-원격 갱신과 브랜치 전환까지 포함해야 하는 VS Code/Claude/Codex 터미널에서는 다음 한 줄을 사용한다.
+## 최종 실행
 
 ```bash
 git fetch origin agent/onsure-final-remediation-20260729 && git switch agent/onsure-final-remediation-20260729 && git pull --ff-only origin agent/onsure-final-remediation-20260729 && ./scripts/run-onsure-remediation.sh --codespace-final
