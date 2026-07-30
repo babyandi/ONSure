@@ -10,7 +10,7 @@ ROOT="$(cd "$1" && pwd -P)"
 TIMEOUT_SECONDS="$2"
 shift 2
 
-for command in bwrap prlimit timeout bash env mktemp; do
+for command in bwrap prlimit timeout bash env mktemp readlink dirname; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_$command" >&2
     exit 69
@@ -48,7 +48,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-for directory in bin usr lib lib64 etc etc/alternatives workspace tmp proc dev; do
+for directory in bin usr lib lib64 etc etc/alternatives opt opt/onsure-jdk workspace tmp proc dev; do
   mkdir -p "$EMPTY_ROOT/$directory"
 done
 if [[ -e /etc/ld.so.cache ]]; then
@@ -63,8 +63,22 @@ for path in /bin /usr /lib /lib64 /etc/ld.so.cache /etc/alternatives; do
   fi
 done
 
+SANDBOX_PATH="/usr/bin:/bin"
+JDK_BINDINGS=()
+if command -v java >/dev/null 2>&1 && command -v javac >/dev/null 2>&1; then
+  JAVA_BIN="$(readlink -f "$(command -v java)")"
+  JAVAC_BIN="$(readlink -f "$(command -v javac)")"
+  JDK_ROOT="$(dirname "$(dirname "$JAVA_BIN")")"
+  [[ "$JAVAC_BIN" == "$JDK_ROOT/bin/javac" ]] || {
+    echo "ONSURE_FIXTURE_SANDBOX_FAIL JAVA_JAVAC_ROOT_MISMATCH" >&2
+    exit 69
+  }
+  JDK_BINDINGS=(--ro-bind "$JDK_ROOT" /opt/onsure-jdk)
+  SANDBOX_PATH="/opt/onsure-jdk/bin:$SANDBOX_PATH"
+fi
+
 SANDBOX_ENV=(
-  --setenv PATH /usr/bin:/bin
+  --setenv PATH "$SANDBOX_PATH"
   --setenv HOME /nonexistent
   --setenv TMPDIR /tmp
   --setenv LANG C.UTF-8
@@ -94,6 +108,7 @@ timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
     --clearenv \
     "${SANDBOX_ENV[@]}" \
     "${BINDINGS[@]}" \
+    "${JDK_BINDINGS[@]}" \
     --ro-bind "$ROOT" /workspace \
     --tmpfs /tmp \
     --proc /proc \
