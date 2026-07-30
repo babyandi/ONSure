@@ -79,7 +79,6 @@ fi
 
 SANDBOX_ENV=(
   --setenv PATH "$SANDBOX_PATH"
-  --setenv HOME /nonexistent
   --setenv TMPDIR /tmp
   --setenv LANG C.UTF-8
   --setenv LC_ALL C.UTF-8

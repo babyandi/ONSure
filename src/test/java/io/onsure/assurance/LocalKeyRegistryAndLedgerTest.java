@@ -17,9 +17,10 @@ class LocalKeyRegistryAndLedgerTest {
 
     @Test
     void registryPersistsJavaTimeAndAppliesRevocationFromItsEffectiveTime() throws Exception {
-        Path publicKey = temp.resolve("otester.pub");
-        Files.writeString(publicKey, "placeholder");
         Path registryPath = temp.resolve("keys/registry.json");
+        Path publicKey = registryPath.getParent().resolve("otester.pub");
+        Files.createDirectories(publicKey.getParent());
+        Files.writeString(publicKey, "placeholder");
         LocalKeyRegistry registry = new LocalKeyRegistry(registryPath);
         Instant now = Instant.parse("2026-07-21T12:00:00Z");
         Instant validFrom = now.minusSeconds(60);

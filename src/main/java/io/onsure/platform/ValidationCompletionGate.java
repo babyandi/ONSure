@@ -70,9 +70,7 @@ public final class ValidationCompletionGate {
             requireArtifact(context, "behavior_profile_id", "behavior-profile.json",
                     "BEHAVIOR_PROFILE_CANDIDATE", "BEHAVIOR_PROFILE", reasons);
         }
-        if (approved(context, "FIXTURE_EXECUTION")) {
-            reasons.addAll(runtimeCoverageReasons(context));
-        }
+        reasons.addAll(runtimeCoverageReasons(context));
         if (!Boolean.TRUE.equals(context.attributes().get("immutable_source_verified"))) {
             reasons.add("IMMUTABLE_SOURCE_REFERENCE_UNVERIFIED");
         }
