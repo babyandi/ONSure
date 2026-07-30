@@ -6,7 +6,7 @@ cd "${ROOT}"
 repeat=2
 if [[ "${1:-}" == "--repeat" ]]; then repeat="${2:-}"; fi
 case "${repeat}" in 1|2|3|4|5) ;; *) exit 64 ;; esac
-for command in java javac mvn git sha256sum; do
+for command in java javac mvn git python3 sha256sum; do
   command -v "${command}" >/dev/null 2>&1 || { echo "ONSURE_OPERATIONS_BLOCKED MISSING_${command}" >&2; exit 69; }
 done
 source_commit="$(git rev-parse HEAD)"
@@ -17,7 +17,9 @@ for iteration in $(seq 1 "${repeat}"); do
   run="${out}/run-${iteration}"
   mkdir -p "${run}"
   mvn -B -ntp -Dtest="${tests}" test | tee "${run}/maven.log"
-  grep -h '^Tests run:' target/surefire-reports/*.txt | LC_ALL=C sort > "${run}/summary.txt"
+  grep -h '^Tests run:' target/surefire-reports/*.txt \
+    | python3 "${ROOT}/scripts/normalize-surefire-summary.py" \
+    | LC_ALL=C sort > "${run}/summary.txt"
   test -s "${run}/summary.txt"
   if grep -Eq 'Failures: [1-9]|Errors: [1-9]|Skipped: [1-9]' "${run}/summary.txt"; then
     echo "ONSURE_OPERATIONS_BLOCKED TEST_FAILURE_OR_SKIP" >&2
