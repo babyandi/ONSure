@@ -1,0 +1,11 @@
+{
+  "contract": "ONSURE_ACCEPTANCE_RUNTIME_RESULTS_V1",
+  "version": "1.0.0",
+  "case_contract": "contracts/final-acceptance-execution.v1.json",
+  "source_tree_sha256": "NOT_RUN",
+  "runtime_execution": "NOT_RUN",
+  "executions": [],
+  "independent_verification": "NOT_RUN",
+  "human_approval": "NOT_RUN",
+  "final_claim_allowed": false
+}

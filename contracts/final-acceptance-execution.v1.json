@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_FINAL_ACCEPTANCE_EXECUTION_V1",
+  "version": "1.0.0",
+  "source_registry": "contracts/final-acceptance-source-registry.v1.json",
+  "case_id_pattern": "{source_id}-{item_index_2d}",
+  "required_case_fields": [
+    "case_id",
+    "source_sha256",
+    "executor",
+    "oracle",
+    "negative_oracle",
+    "evidence_contract",
+    "receipt_contract"
+  ],
+  "groups": [
+    {"id": "FIN-ACC-05", "executor": "FINAL_MINIMUM_GATE", "oracle": "ALL_MINIMUM_CONDITIONS_TRUE"},
+    {"id": "FIN-ACC-40", "executor": "P0_DIFFERENTIATOR_GATE", "oracle": "DIFFERENTIATOR_EVIDENCE_BOUND"},
+    {"id": "FIN-ACC-41", "executor": "ARCHITECTURE_FULL_CHAIN_GATE", "oracle": "ARCHITECTURE_PATH_EXECUTED"},
+    {"id": "FIN-ACC-42", "executor": "VSCODE_GIT_FULL_CHAIN_GATE", "oracle": "USER_JOURNEY_EXECUTED"},
+    {"id": "FIN-ACC-43", "executor": "FINANCIAL_CONTROL_GATE", "oracle": "FINANCIAL_CONTROL_EVIDENCE_BOUND"},
+    {"id": "FIN-ACC-44", "executor": "UNIFIED_PRODUCT_GATE", "oracle": "UNIFIED_WORKFLOW_EXECUTED"}
+  ],
+  "negative_oracle": "MISSING_OR_MISMATCHED_EVIDENCE_BLOCKS",
+  "evidence_contract": "ONSURE_ACCEPTANCE_CASE_EVIDENCE_V1",
+  "receipt_contract": "ONSURE_ACCEPTANCE_CASE_RECEIPT_V1",
+  "runtime_execution": "NOT_RUN",
+  "final_claim_allowed": false
+}

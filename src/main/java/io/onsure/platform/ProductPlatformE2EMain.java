@@ -115,7 +115,6 @@ public final class ProductPlatformE2EMain {
         value.put("decision", report.decision().name());
         value.put("review_quality_decision", report.summary().get("review_quality_decision"));
         value.put("execution_plan_approval", report.summary().get("execution_plan_approval"));
-        value.put("execution_plan_approval_sha256", report.summary().get("execution_plan_approval_sha256"));
         value.put("adapter_id", report.summary().get("adapter_id"));
         value.put("registered_adapter_ids", report.summary().get("registered_adapter_ids"));
         value.put("finding_fingerprints", report.findings().stream()

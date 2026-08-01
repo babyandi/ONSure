@@ -8,6 +8,14 @@ const TOKEN_KEY = 'onsure.localApiToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
 const LAST_PROFILE_KEY = 'onsure.lastProgramProfile';
 const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
+const WORK_MODE_KEY = 'onsure.workMode';
+const WORK_MODES = Object.freeze(['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
+const VIEW_IDS = Object.freeze([
+  'onsure.workspace', 'onsure.profile', 'onsure.inventory', 'onsure.requirements',
+  'onsure.threats', 'onsure.plan', 'onsure.runs', 'onsure.findings',
+  'onsure.improvement', 'onsure.evidence', 'onsure.git', 'onsure.approvals',
+  'onsure.runtime', 'onsure.admin'
+]);
 
 class ApiClient {
   constructor(context) { this.context = context; }
@@ -116,6 +124,9 @@ class AssuranceTreeProvider {
     const lastProfile = this.context.workspaceState.get(LAST_PROFILE_KEY);
     const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
     const lastWorkflow = this.context.workspaceState.get(LAST_WORKFLOW_KEY);
+    const workMode = this.context.workspaceState.get(WORK_MODE_KEY)
+      || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
+    items.push(item('Work Mode', workMode, 'symbol-enum', 'onsure.selectMode'));
     if (lastProfile) items.push(item('Last Program Profile', lastProfile, 'json'));
     if (lastRun) items.push(item('Last Run', lastRun, 'folder-opened', 'onsure.openLastArtifact'));
     if (lastWorkflow) items.push(item('Last Workflow', lastWorkflow, 'run-all'));
@@ -160,7 +171,8 @@ async function showJson(title, value) {
 async function activate(context) {
   const client = new ApiClient(context);
   const provider = new AssuranceTreeProvider(context, client);
-  const view = vscode.window.createTreeView('onsure.workspace', { treeDataProvider: provider });
+  const views = VIEW_IDS.map(viewId =>
+    vscode.window.createTreeView(viewId, { treeDataProvider: provider }));
   const output = vscode.window.createOutputChannel('ONSure');
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   statusBar.text = '$(shield) ONSure: NON_FINAL';
@@ -184,7 +196,7 @@ async function activate(context) {
     return workflow;
   }
 
-  context.subscriptions.push(view, output, statusBar,
+  context.subscriptions.push(...views, output, statusBar,
     vscode.commands.registerCommand('onsure.configure', async () => {
       const current = vscode.workspace.getConfiguration('onsure').get('localApiUrl') || 'http://127.0.0.1:47311';
       const url = await vscode.window.showInputBox({
@@ -205,6 +217,22 @@ async function activate(context) {
     vscode.commands.registerCommand('onsure.clearToken', async () => {
       await context.secrets.delete(TOKEN_KEY);
       vscode.window.showInformationMessage('ONSure Local API token cleared.');
+    }),
+    vscode.commands.registerCommand('onsure.selectMode', async () => {
+      const current = context.workspaceState.get(WORK_MODE_KEY)
+        || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
+      const selected = await vscode.window.showQuickPick(
+        WORK_MODES.map(mode => ({
+          label: mode,
+          description: mode === current ? 'Current mode' : mode === 'OFFLINE'
+            ? 'Network and external providers prohibited' : 'Policy and approval gated'
+        })),
+        { title: 'ONSure Work Mode', placeHolder: 'Select a fail-closed work mode.' });
+      if (!selected) return;
+      await context.workspaceState.update(WORK_MODE_KEY, selected.label);
+      statusBar.text = `$(shield) ONSure: ${selected.label} / NON_FINAL`;
+      output.appendLine(`[${new Date().toISOString()}] MODE_CHANGE:${current}->${selected.label}:SELF_VALIDATION_NONFINAL`);
+      provider.refresh();
     }),
     vscode.commands.registerCommand('onsure.refresh', async () => provider.refresh()),
     vscode.commands.registerCommand('onsure.learnProgram', async () => {

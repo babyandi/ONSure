@@ -11,18 +11,24 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V2";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V7";
+    private static final Set<String> PROHIBITED_REGISTERED_EXECUTION_PROFILES = Set.of(
+            "LOCAL_E2E", "LOCAL_MVF_E2E", "LOCAL_FIXTURE", "TRUSTED_LOCAL_FIXTURE",
+            "LOCAL_E2E_TRUSTED_FIXTURE", "LOCAL_DEVELOPMENT");
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
     private final Path workspaceRoot;
+    private final ApprovalAuthorityPaths approvalAuthority;
 
     public LocalWorkflowDispatcher(Path workspaceRoot) {
         this.workspaceRoot = requireWorkspace(workspaceRoot);
+        this.approvalAuthority = ApprovalAuthorityPaths.forWorkspace(this.workspaceRoot);
     }
 
     public Map<String, Object> dispatch(String operation, JsonNode request) throws Exception {
@@ -32,8 +38,15 @@ public final class LocalWorkflowDispatcher {
         if (request == null || !request.isObject()) {
             throw new IllegalArgumentException("WORKFLOW_REQUEST_OBJECT_REQUIRED");
         }
+        approvalAuthority.rejectRequestOverrides(operation, request);
         Map<String, Object> result = switch (operation) {
+            case "project.register-workspace" -> projectRegisterWorkspace(request);
+            case "project.register" -> projectRegister(request);
+            case "project.register-target" -> projectRegisterTarget(request);
+            case "project.read-target" -> projectReadTarget(request);
+            case "project.list-targets" -> projectListTargets(request);
             case "program.learn" -> programLearn(request);
+            case "plan.generate" -> planGenerate(request);
             case "plan.approve" -> planApprove(request);
             case "validation.run" -> validationRun(request);
             case "patch.apply" -> patchApply(request);
@@ -73,34 +86,43 @@ public final class LocalWorkflowDispatcher {
                 "contract", CONTRACT,
                 "operation", operation,
                 "result", result,
+                "approval_authority", approvalAuthority.authorityRoot().toString(),
                 "assurance_class", "SELF_VALIDATION_NONFINAL",
                 "independent_otester", "NOT_RUN",
                 "independent_oaudit", "NOT_RUN",
                 "final_claim_allowed", false);
     }
 
-    private Map<String, Object> programLearn(JsonNode request) throws Exception {
-        Path source = inputPath(request, "source_root", true);
-        Path output = outputPath(request, "output_file", ".onsure/profiles/program-profile.json");
-        return new ProgramLearningService().learn(source,
-                requiredId(request, "project_id"), requiredId(request, "program_id"), output);
+    private ProductCatalog catalog() {
+        return new ProductCatalog(workspaceRoot.resolve(".onsure/product-catalog"));
     }
 
-    private Map<String, Object> planApprove(JsonNode request) throws Exception {
-        return new ExecutionPlanApprovalService().approve(
-                inputPath(request, "plan_file", true),
-                inputPath(request, "signed_approval_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "approval_replay_ledger", ".onsure/approvals/replay.jsonl"),
-                outputPath(request, "approved_plan_file", ".onsure/plans/approved-execution-plan.json"));
+    private Map<String, Object> projectRegisterWorkspace(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog();
+        ProductCatalog.Workspace workspace = new ProductCatalog.Workspace(
+                requiredId(request, "workspace_id"), requiredText(request, "workspace_name"), Instant.now());
+        catalog.registerWorkspace(workspace);
+        return Map.of("workspace", workspace, "catalog_revision", catalog.revision(),
+                "final_claim_allowed", false);
     }
 
-    private Map<String, Object> validationRun(JsonNode request) throws Exception {
+    private Map<String, Object> projectRegister(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog();
+        ProductCatalog.Project project = new ProductCatalog.Project(
+                requiredId(request, "project_id"), requiredId(request, "workspace_id"),
+                requiredText(request, "project_name"), Instant.now());
+        catalog.registerProject(project);
+        return Map.of("project", project, "catalog_revision", catalog.revision(),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> projectRegisterTarget(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog();
         Path source = inputPath(request, "source_root", true);
-        Path store = outputPath(request, "store_root", ".onsure/validation-data");
         String adapterId = request.path("adapter_id").asText(GenericManifestTargetAdapter.ID);
-        if (!GenericManifestTargetAdapter.ID.equals(adapterId)) {
-            throw new IllegalArgumentException("LOCAL_CORE_WORKFLOW_SUPPORTS_GENERIC_ADAPTER_ONLY");
+        String executionProfile = request.path("execution_profile").asText("REGISTERED_REVIEWED");
+        if (PROHIBITED_REGISTERED_EXECUTION_PROFILES.contains(executionProfile)) {
+            throw new IllegalArgumentException("REGISTERED_TARGET_TRUSTED_FIXTURE_PROFILE_PROHIBITED");
         }
         ValidationTarget target = new ValidationTarget(
                 requiredId(request, "target_id"),
@@ -110,17 +132,124 @@ public final class LocalWorkflowDispatcher {
                 request.path("immutable_source_reference").asText(SourceReferenceBinding.treeReference(source)),
                 adapterId,
                 request.path("policy_profile").asText("ONSURE_DEFAULT_POLICY_V1"),
-                request.path("execution_profile").asText("LOCAL_DEVELOPMENT"));
+                executionProfile);
+        ProductCatalog.RegisteredTarget registered = new ProductCatalog.RegisteredTarget(
+                requiredId(request, "project_id"), target, Instant.now());
+        catalog.registerTarget(registered);
+        return Map.of("registered_target", registered, "catalog_revision", catalog.revision(),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> projectReadTarget(JsonNode request) throws Exception {
+        ProductCatalog.RegisteredTarget registered = requireRegisteredTarget(
+                requiredId(request, "project_id"), requiredId(request, "target_id"));
+        return Map.of("registered_target", registered, "catalog_revision", catalog().revision(),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> projectListTargets(JsonNode request) throws Exception {
+        ProductCatalog catalog = catalog();
+        return Map.of("targets", catalog.targets(requiredId(request, "project_id")),
+                "catalog_revision", catalog.revision(), "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> programLearn(JsonNode request) throws Exception {
+        rejectRegisteredTargetOverrides(request);
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        String programId = requiredId(request, "program_id");
+        if (!programId.equals(targetId)) {
+            throw new IllegalArgumentException("PROGRAM_ID_TARGET_ID_MISMATCH");
+        }
+        ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        Path output = outputPath(request, "output_file",
+                ".onsure/profiles/" + targetId + "/program-profile.json");
+        return new ProgramLearningService().learn(
+                target.sourceRoot(), projectId, target.targetId(), output);
+    }
+
+    private Map<String, Object> planGenerate(JsonNode request) throws Exception {
+        rejectRegisteredTargetOverrides(request);
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        if (!GenericManifestTargetAdapter.ID.equals(target.adapterId())) {
+            throw new IllegalArgumentException("LOCAL_CORE_WORKFLOW_SUPPORTS_GENERIC_ADAPTER_ONLY");
+        }
+        Path profile = inputPath(request, "program_profile_file", true);
+        int fixtureCount = new GenericManifestTargetAdapter().loadFixtures(target).size();
+        Path output = outputPath(request, "output_file",
+                ".onsure/plans/" + targetId + "-execution-plan.json");
+        return new RegisteredExecutionPlanGenerationService().generate(
+                projectId, target, profile, fixtureCount, output);
+    }
+
+    private Map<String, Object> planApprove(JsonNode request) throws Exception {
+        return new ExecutionPlanApprovalService().approve(
+                inputPath(request, "plan_file", true),
+                inputPath(request, "signed_approval_receipt", true),
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(),
+                outputPath(request, "approved_plan_file", ".onsure/plans/approved-execution-plan.json"));
+    }
+
+    private Map<String, Object> validationRun(JsonNode request) throws Exception {
+        rejectRegisteredTargetOverrides(request);
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        if (!GenericManifestTargetAdapter.ID.equals(target.adapterId())) {
+            throw new IllegalArgumentException("LOCAL_CORE_WORKFLOW_SUPPORTS_GENERIC_ADAPTER_ONLY");
+        }
+        Path store = outputPath(request, "store_root", ".onsure/validation-data");
         Path approvedPlan = optionalInputPath(request, "approved_execution_plan_file");
         ValidationEngine engine = ValidationEngine.defaultEngine(store);
-        ValidationEngine.RunResult run = approvedPlan == null
-                ? engine.run(target) : engine.run(target, approvedPlan);
+        ValidationEngine.RunResult run;
+        if (approvedPlan == null) {
+            for (String field : List.of("original_execution_plan_file", "signed_approval_receipt")) {
+                if (!request.path(field).asText("").isBlank()) {
+                    throw new IllegalArgumentException("INCOMPLETE_EXECUTION_PLAN_APPROVAL_BUNDLE:" + field);
+                }
+            }
+            run = engine.run(target);
+        } else {
+            ValidationEngine.ApprovedExecutionPlanBundle bundle =
+                    new ValidationEngine.ApprovedExecutionPlanBundle(
+                            approvedPlan,
+                            inputPath(request, "original_execution_plan_file", true),
+                            inputPath(request, "signed_approval_receipt", true),
+                            approvalAuthority.requireTrustedKeyRegistry(),
+                            approvalAuthority.requireReplayLedger());
+            run = engine.run(target, bundle);
+        }
         return Map.of(
                 "decision", run.report().decision().name(),
                 "run_root", run.runRoot().toString(),
                 "report", run.report(),
+                "registered_project_id", projectId,
+                "registered_target_id", targetId,
                 "approved_execution_plan_consumed", approvedPlan != null,
+                "approval_bundle_required", approvedPlan != null,
                 "final_claim_allowed", false);
+    }
+
+    private ProductCatalog.RegisteredTarget requireRegisteredTarget(
+            String projectId, String targetId) throws Exception {
+        return catalog().targets(projectId).stream()
+                .filter(value -> value.target().targetId().equals(targetId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "REGISTERED_TARGET_NOT_FOUND_IN_PROJECT:" + projectId + ":" + targetId));
+    }
+
+    private static void rejectRegisteredTargetOverrides(JsonNode request) {
+        for (String field : List.of(
+                "source_root", "target_name", "target_type", "adapter_id",
+                "immutable_source_reference", "policy_profile", "execution_profile")) {
+            if (!request.path(field).asText("").isBlank()) {
+                throw new IllegalArgumentException("REGISTERED_TARGET_FIELD_OVERRIDE_PROHIBITED:" + field);
+            }
+        }
     }
 
     private Map<String, Object> patchApply(JsonNode request) throws Exception {
@@ -128,8 +257,8 @@ public final class LocalWorkflowDispatcher {
                 inputPath(request, "repository_root", true),
                 inputPath(request, "patch_plan_file", true),
                 inputPath(request, "approval_receipt_file", true),
-                inputPath(request, "approval_key_registry", true),
-                outputPath(request, "approval_replay_ledger", ".onsure/approvals/replay.jsonl"),
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(),
                 outputPath(request, "worktree_root", ".onsure/worktrees/approved-patch"),
                 outputPath(request, "evidence_root", ".onsure/improvement-evidence"));
     }
@@ -155,8 +284,8 @@ public final class LocalWorkflowDispatcher {
                 inputPath(request, "patch_apply_receipt_file", true),
                 inputPath(request, "improvement_proof_file", true),
                 inputPath(request, "delivery_approval_file", true),
-                inputPath(request, "approval_key_registry", true),
-                outputPath(request, "approval_replay_ledger", ".onsure/approvals/replay.jsonl"),
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(),
                 requiredText(request, "commit_message"),
                 outputPath(request, "output_file", ".onsure/git/change-set.json"));
     }
@@ -258,9 +387,8 @@ public final class LocalWorkflowDispatcher {
     private Map<String, Object> caseVerifyPayment(JsonNode request) throws Exception {
         return cases(request).verifyPayment(requiredId(request, "case_id"),
                 inputPath(request, "signed_verification_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "verification_replay_ledger", ".onsure/approvals/replay.jsonl"),
-                actor(request));
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(), actor(request));
     }
     private Map<String, Object> caseStartWork(JsonNode request) throws Exception {
         return cases(request).startWork(requiredId(request, "case_id"), actor(request));
@@ -286,9 +414,8 @@ public final class LocalWorkflowDispatcher {
     private Map<String, Object> caseVerifyRefund(JsonNode request) throws Exception {
         return cases(request).verifyRefund(requiredId(request, "case_id"),
                 inputPath(request, "signed_verification_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "verification_replay_ledger", ".onsure/approvals/replay.jsonl"),
-                actor(request));
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(), actor(request));
     }
     private Map<String, Object> caseLegalHold(JsonNode request) throws Exception {
         return cases(request).setLegalHold(requiredId(request, "case_id"),
@@ -298,9 +425,8 @@ public final class LocalWorkflowDispatcher {
     private Map<String, Object> caseDelete(JsonNode request) throws Exception {
         return cases(request).recordDeletion(requiredId(request, "case_id"),
                 inputPath(request, "signed_verification_receipt", true),
-                inputPath(request, "trusted_key_registry", true),
-                outputPath(request, "verification_replay_ledger", ".onsure/approvals/replay.jsonl"),
-                actor(request));
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.replayLedgerForConsumption(), actor(request));
     }
     private Map<String, Object> caseCancel(JsonNode request) throws Exception {
         return cases(request).cancel(requiredId(request, "case_id"),

@@ -1,0 +1,12 @@
+{
+  "contract":"ONSURE_LEGACY_PRODUCT_SUBREQUIREMENT_AUTHORITY_V1",
+  "version":"1.0.0",
+  "register":"status/product-subrequirement-coverage.v1.json",
+  "source_document":"docs/legacy/ONSURE_MVP_PRODUCT_REQUIREMENTS_ARCHIVE.md",
+  "authority_state":"LEGACY_IMPLEMENTATION_DECOMPOSITION_NONAUTHORITATIVE_FOR_FINAL_PRODUCT",
+  "final_product_authority":"status/final-product-requirement-coverage.v1.json",
+  "may_contribute_implementation_trace":true,
+  "may_satisfy_final_requirement":false,
+  "may_satisfy_final_acceptance":false,
+  "final_claim_allowed":false
+}

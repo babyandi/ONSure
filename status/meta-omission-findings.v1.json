@@ -1,0 +1,283 @@
+{
+  "contract": "ONSURE_META_OMISSION_FINDINGS_V1",
+  "version": "1.5.0",
+  "assessment_date": "2026-07-28",
+  "source_ref": "audit/onsure-meta-omission-remediation-20260728",
+  "findings": [
+    {
+      "id": "META-001",
+      "severity": "HIGH",
+      "category": "FUNCTION_SCOPE",
+      "title": "Coarse PARTIAL capability status hid subrequirement omissions",
+      "prior_miss_reason": "CAPABILITY_GROUP_ONLY_WITHOUT_NORMATIVE_SUBREQUIREMENT_GATE",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "status/product-subrequirement-coverage.v1.json",
+        "scripts/validate-product-subrequirements.py"
+      ]
+    },
+    {
+      "id": "META-002",
+      "severity": "HIGH",
+      "category": "PROCESS_REACHABILITY",
+      "title": "Core services existed without shared product workflow reachability",
+      "prior_miss_reason": "FILE_EXISTENCE_WAS_TREATED_AS_REACHABLE_PRODUCT_FUNCTION",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "scripts/validate-workflow-surface-parity.py",
+        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java"
+      ]
+    },
+    {
+      "id": "META-003",
+      "severity": "CRITICAL",
+      "category": "APPROVAL_SCOPE",
+      "title": "Partial approval was rejected and approved action scope was not enforced per stage",
+      "prior_miss_reason": "APPROVAL_SERVICE_TEST_DID_NOT_ASSERT_STAGE_EXECUTION_SCOPE",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
+        "src/main/java/io/onsure/platform/ValidationEngine.java",
+        "src/main/java/io/onsure/platform/ValidationCompletionGate.java"
+      ]
+    },
+    {
+      "id": "META-004",
+      "severity": "CRITICAL",
+      "category": "APPROVAL_BYPASS",
+      "title": "Approved plan JSON could enter the Engine without complete signed provenance",
+      "prior_miss_reason": "APPROVAL_SERVICE_WAS_TESTED_BUT_ENGINE_DIRECT_ENTRY_WAS_NOT_ATTACKED",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
+        "src/main/java/io/onsure/platform/ValidationEngine.java",
+        "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java"
+      ]
+    },
+    {
+      "id": "META-005",
+      "severity": "CRITICAL",
+      "category": "TRUST_ROOT_SUBSTITUTION",
+      "title": "Workflow callers could select trusted key registries and replay ledgers",
+      "prior_miss_reason": "TRUST_ROOT_PATH_WAS_TREATED_AS_ORDINARY_REQUEST_DATA",
+      "fix_state": "IMPLEMENTED_NONFINAL_WITH_EXTERNAL_ANCHOR_HOLD",
+      "fix_refs": [
+        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java"
+      ],
+      "remaining_gaps": [
+        "EXTERNAL_REPLAY_LEDGER_HEAD_ANCHOR",
+        "RAW_JAVA_PATH_API_BEFORE_PUBLIC_SDK"
+      ]
+    },
+    {
+      "id": "META-006",
+      "severity": "HIGH",
+      "category": "PROCESS_TIMEOUT",
+      "title": "Child process timeout could be bypassed by output backpressure or read-before-wait ordering",
+      "prior_miss_reason": "WAITFOR_TIMEOUT_TOKEN_WAS_ACCEPTED_WITHOUT_OUTPUT_FLOOD_AND_HUNG_PROCESS_INJECTION",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
+        "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java"
+      ]
+    },
+    {
+      "id": "META-007",
+      "severity": "CRITICAL",
+      "category": "STATE_TRANSITION_APPROVAL",
+      "title": "Git approval validity and trust were not rechecked at Push and Draft PR transition",
+      "prior_miss_reason": "APPROVAL_WAS_CHECKED_AT_COMMIT_ONLY",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/platform/GitWorkflowService.java",
+        "src/main/java/io/onsure/assurance/ConsumedApprovalReceiptVerifier.java",
+        "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java"
+      ]
+    },
+    {
+      "id": "META-008",
+      "severity": "CRITICAL",
+      "category": "REPLAY_ID_COLLISION",
+      "title": "Replay detection matched approval ID but did not bind the exact consumed receipt digest",
+      "prior_miss_reason": "REPLAY_TESTS_USED_IDENTICAL_RECEIPTS_ONLY",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
+        "src/test/java/io/onsure/assurance/ApprovalReceiptIdCollisionTest.java"
+      ]
+    },
+    {
+      "id": "META-009",
+      "severity": "CRITICAL",
+      "category": "AUTHORITY_COLOCATION",
+      "title": "Trusted approval registry and replay ledger were fixed but physically colocated inside the target workspace",
+      "prior_miss_reason": "REQUEST_OVERRIDE_PROHIBITION_WAS_MISTAKEN_FOR_PHYSICAL_AUTHORITY_SEPARATION",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "scripts/validate-critical-callpaths.py"
+      ],
+      "remaining_gaps": [
+        "EXTERNAL_REPLAY_LEDGER_HEAD_ANCHOR",
+        "OPERATING_SYSTEM_IDENTITY_SEPARATION_NOT_RUN"
+      ]
+    },
+    {
+      "id": "META-010",
+      "severity": "CRITICAL",
+      "category": "WORKSPACE_IDENTITY_ALIAS",
+      "title": "A symlink alias of the same workspace could select a second approval authority and replay ledger",
+      "prior_miss_reason": "WORKSPACE_IDENTITY_USED_NORMALIZED_PATH_TEXT_WITHOUT_ALIAS_ADVERSARIAL_TEST",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "scripts/validate-critical-callpaths.py"
+      ],
+      "remaining_gaps": [
+        "WINDOWS_JUNCTION_AND_CASE_ALIAS_INDEPENDENT_TEST_NOT_RUN",
+        "EXTERNAL_REPLAY_LEDGER_HEAD_ANCHOR"
+      ]
+    },
+    {
+      "id": "META-011",
+      "severity": "HIGH",
+      "category": "VERIFICATION_DENOMINATOR_DRIFT",
+      "title": "Failure-injection totals diverged across the audit document, verification status, omission status and consistency gate",
+      "prior_miss_reason": "DUPLICATED_MANUAL_COUNTS_WITHOUT_SINGLE_AUTHORITY_CROSS_CHECK",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "scripts/validate-status-consistency.py",
+        "status/verification-status.v1.json",
+        "status/omission-detection-status.v1.json",
+        "docs/verification/ONSURE_META_OMISSION_AUDIT_v1.md"
+      ]
+    },
+    {
+      "id": "META-012",
+      "severity": "CRITICAL",
+      "category": "APPROVAL_RECEIPT_TOCTOU",
+      "title": "Approval caller could verify one receipt view but publish metadata from a later file read",
+      "prior_miss_reason": "VERIFIER_SNAPSHOT_TOKENS_WERE_ACCEPTED_WITHOUT_PROVING_THE_CALLER_USED_THE_EXACT_CONSUMED_SNAPSHOT_AND_DIGEST",
+      "fix_state": "REMEDIATED_AGAIN_NONFINAL_LOCAL_EXECUTION_REQUIRED",
+      "fix_refs": [
+        "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
+        "scripts/validate-critical-callpaths.py",
+        "scripts/validate-status-consistency.py",
+        "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java"
+      ],
+      "remaining_gaps": [
+        "CURRENT_BRANCH_FULL_JAVA17_MAVEN_JUNIT_NOT_RUN",
+        "INDEPENDENT_CONCURRENCY_ATTACK_NOT_RUN",
+        "CURRENT_HEAD_CRITICAL_CALLPATH_SELF_TEST_NOT_RUN"
+      ]
+    },
+    {
+      "id": "META-013",
+      "severity": "HIGH",
+      "category": "GATE_IMPLEMENTATION_STATUS_DRIFT",
+      "title": "Status and audit document reported 86 injections while the executable consistency gate still enforced 84 and critical-callpath 14",
+      "prior_miss_reason": "PRIOR_REVIEW_CHECKED_REPORTED_JSON_VALUES_BUT_DID_NOT_REOPEN_EXECUTABLE_GATE_CONSTANTS_AFTER_SEQUENTIAL_COMMITS",
+      "fix_state": "IMPLEMENTED_NONFINAL",
+      "fix_refs": [
+        "scripts/validate-status-consistency.py",
+        "status/verification-status.v1.json",
+        "status/omission-detection-status.v1.json",
+        "docs/verification/ONSURE_META_OMISSION_AUDIT_v1.md"
+      ],
+      "remaining_gaps": [
+        "CURRENT_HEAD_LOCAL_STATUS_CONSISTENCY_EXECUTION_NOT_RUN"
+      ]
+    },
+    {
+      "id": "META-014",
+      "severity": "CRITICAL",
+      "category": "POSITIVE_CASE_AUTHORITY",
+      "title": "Successful behavior had no authoritative registry, denominator, oracle, or execution receipt",
+      "prior_miss_reason": "MAVEN_EXIT_ZERO_AND_NEGATIVE_INJECTION_COUNTS_WERE_MISTAKEN_FOR_BALANCED_VALIDATION",
+      "fix_state": "IMPLEMENTED_NONFINAL_LOCAL_FULL_GATE_REQUIRED",
+      "fix_refs": [
+        "contracts/validation-case-registry.v1.json",
+        "scripts/validate-validation-case-registry.py",
+        "scripts/onsure-local-gate.sh"
+      ],
+      "remaining_gaps": [
+        "CURRENT_HEAD_LOCAL_FULL_GATE_NOT_RUN",
+        "INDEPENDENT_OTESTER_NOT_RUN",
+        "INDEPENDENT_OAUDIT_NOT_RUN"
+      ]
+    },
+    {
+      "id": "META-015",
+      "severity": "HIGH",
+      "category": "CASE_ORACLE_ALIASING",
+      "title": "Class-level test aggregation could count normal and adversarial cases without proving the exact registered method executed",
+      "prior_miss_reason": "TEST_CLASS_EXECUTION_WAS_USED_AS_A_PROXY_FOR_CASE_ORACLE_EXECUTION",
+      "fix_state": "IMPLEMENTED_NONFINAL_LOCAL_FULL_GATE_REQUIRED",
+      "fix_refs": [
+        "contracts/validation-case-registry.v1.json",
+        "scripts/validate-validation-case-registry.py"
+      ],
+      "remaining_gaps": [
+        "ALL_REGISTRY_ENTRIES_NOT_YET_METHOD_BOUND",
+        "CURRENT_HEAD_LOCAL_FULL_GATE_NOT_RUN"
+      ]
+    }
+  ],
+  "detector_coverage": {
+    "design_process_data": 28,
+    "atomic_requirements": 10,
+    "automation_boundary": 6,
+    "verification_claims": 10,
+    "product_subrequirements": 10,
+    "workflow_surfaces": 6,
+    "critical_callpaths": 24,
+    "registered_total": 94
+  },
+  "executed_in_this_audit": {
+    "product_subrequirement_failure_injections": "10_OF_10_PASS",
+    "workflow_surface_failure_injections": "6_OF_6_PASS",
+    "critical_callpath_failure_injections_before_meta009": "11_OF_11_PASS",
+    "critical_callpath_meta009_logic": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+    "verification_claim_failure_injections": "10_OF_10_PASS",
+    "bounded_process_javac_release17": "PASS",
+    "bounded_process_output_flood_smoke": "PASS",
+    "bounded_process_wall_clock_timeout_smoke": "PASS",
+    "approval_authority_paths_javac_release17_before_meta009": "PASS",
+    "critical_callpath_meta010_logic": "IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+    "critical_callpath_meta012_logic": "REMEDIATED_AGAIN_LOCAL_EXECUTION_REQUIRED"
+  },
+  "not_run": [
+    "CURRENT_BRANCH_FULL_JAVA17_MAVEN_JUNIT",
+    "MODULAR_MAVEN",
+    "CORE_WITHOUT_ORUDA_CURRENT_BRANCH",
+    "ROOTLESS_SANDBOX_FULL_GATE_CURRENT_BRANCH",
+    "VSIX_CURRENT_BRANCH",
+    "CURRENT_SOURCE_LOCAL_GATE_RECEIPT",
+    "APPROVAL_AUTHORITY_META009_JAVA_TEST",
+    "INDEPENDENT_OTESTER",
+    "INDEPENDENT_OAUDIT",
+    "APPROVAL_AUTHORITY_META010_JAVA_TEST",
+    "APPROVAL_RECEIPT_META012_CONCURRENCY_ATTACK"
+  ],
+  "assurance": {
+    "class": "SELF_VALIDATION_NONFINAL",
+    "final_lock_allowed": false,
+    "production_go": false,
+    "commercial_go": false
+  },
+  "validation_case_authority": {
+    "registry": "contracts/validation-case-registry.v1.json",
+    "validator": "scripts/validate-validation-case-registry.py",
+    "classes": [
+      "positive",
+      "negative",
+      "adversarial"
+    ],
+    "registered_total": 12,
+    "runtime_receipt": "NOT_RUN_CURRENT_HEAD"
+  }
+}

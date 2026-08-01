@@ -22,7 +22,7 @@ bash scripts/test-fixture-sandbox-boundary.sh
 mvn -B -ntp -q test
 mvn -B -ntp -q -f pom-modular.xml test
 EXT_BUILD=vscode-extension-build
-printf '%s' '\"github_actions\": \"DISABLED\"'
+printf '%s' '\"github_actions\":\"DISABLED\"'
 """
 
 

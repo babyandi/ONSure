@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_MAIN_BRANCH_PROTECTION_EVIDENCE_V1",
+  "repository": "babyandi/ONSure",
+  "branch": "main",
+  "observation_state": "NOT_RUN",
+  "observed_at": null,
+  "observed_source": null,
+  "observed_controls": null,
+  "source_commit": null,
+  "evidence_sha256": null,
+  "decision": "HOLD",
+  "final_claim_allowed": false
+}
