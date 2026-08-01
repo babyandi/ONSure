@@ -161,10 +161,16 @@
       "id": "FR-02-C",
       "name": "Full and incremental learning",
       "normative_phrase": "최초 전체 학습과 변경분 기반 증분 학습을 지원해야 합니다.",
-      "implementation_status": "DESIGN_ONLY",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
-      "code_refs": [],
-      "test_refs": [],
+      "code_refs": [
+        "src/main/java/io/onsure/platform/ProgramLearningService.java",
+        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
+      ],
+      "test_refs": [
+        "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java",
+        "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE",
@@ -172,18 +178,28 @@
         "LOCAL_API",
         "VSCODE"
       ],
-      "implemented_surfaces": [],
-      "missing_controls": [
-        "INCREMENTAL_PROFILE_PARENTAGE_MISSING",
-        "ADDED_MODIFIED_DELETED_SOURCE_SET_MISSING",
-        "INCREMENTAL_WORKFLOW_OPERATION_MISSING"
+      "implemented_surfaces": [
+        "CORE",
+        "CLI",
+        "LOCAL_API",
+        "VSCODE"
       ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
         "SUBREQ_WORKFLOW_REACHABILITY_GATE",
         "SUBREQ_SURFACE_GATE"
       ],
-      "semantic_assertions": []
+      "semantic_assertions": [
+        {
+          "path": "src/main/java/io/onsure/platform/ProgramLearningService.java",
+          "tokens": ["parent_profile", "source_inventory", "change_set", "PARENT_PROGRAM_PROFILE_HASH_INVALID"]
+        },
+        {
+          "path": "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java",
+          "tokens": ["repeatedLearningBindsParentAndReportsAddedModifiedDeletedAndUnchanged", "tamperedParentProfileFailsClosed"]
+        }
+      ]
     },
     {
       "id": "FR-03-A",
@@ -1267,10 +1283,10 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 3,
+    "implemented": 4,
     "partial": 31,
     "stub": 5,
-    "design_only": 4,
+    "design_only": 3,
     "verification_not_run": 43
   },
   "assurance": {

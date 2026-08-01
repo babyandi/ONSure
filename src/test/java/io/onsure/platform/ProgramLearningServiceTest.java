@@ -2,10 +2,12 @@ package io.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -30,6 +32,11 @@ class ProgramLearningServiceTest {
         assertEquals(2, ((Number) baseline.get("source_file_count")).intValue());
         assertEquals("STATIC_REPOSITORY_UNDERSTANDING_V2", profile.get("learning_method"));
         assertEquals("NOT_RUN", profile.get("dynamic_trace"));
+        assertNull(profile.get("parent_profile"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> changeSet = (Map<String, Object>) profile.get("change_set");
+        assertEquals("FULL", changeSet.get("mode"));
+        assertEquals(List.of("README.md", "src/main.py"), changeSet.get("added"));
     }
 
     @Test
@@ -53,6 +60,55 @@ class ProgramLearningServiceTest {
         assertEquals(false, baseline.get("worktree_clean"));
         assertEquals(2, ((Number) baseline.get("source_file_count")).intValue());
         assertEquals(Hashing.tree(source), baseline.get("source_tree_sha256"));
+    }
+
+    @Test
+    void repeatedLearningBindsParentAndReportsAddedModifiedDeletedAndUnchanged() throws Exception {
+        Path source = temp.resolve("incremental-source");
+        Files.createDirectories(source.resolve("src"));
+        Files.writeString(source.resolve("README.md"), "# Incremental Sample\n");
+        Files.writeString(source.resolve("src/main.py"), "print('v1')\n");
+        Files.writeString(source.resolve("src/stable.py"), "STABLE = True\n");
+        Path output = temp.resolve("program-profile.json");
+        Map<String, Object> first = new ProgramLearningService().learn(
+                source, "project-incremental", "program-incremental", output);
+
+        Files.delete(source.resolve("README.md"));
+        Files.writeString(source.resolve("src/main.py"), "print('v2')\n");
+        Files.writeString(source.resolve("src/added.py"), "ADDED = True\n");
+        Map<String, Object> second = new ProgramLearningService().learn(
+                source, "project-incremental", "program-incremental", output);
+
+        assertEquals(2, second.get("revision"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> parent = (Map<String, Object>) second.get("parent_profile");
+        assertEquals(first.get("profile_id"), parent.get("profile_id"));
+        assertEquals(first.get("profile_sha256"), parent.get("profile_sha256"));
+        assertEquals(1, parent.get("revision"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> changeSet = (Map<String, Object>) second.get("change_set");
+        assertEquals("INCREMENTAL", changeSet.get("mode"));
+        assertEquals(List.of("src/added.py"), changeSet.get("added"));
+        assertEquals(List.of("src/main.py"), changeSet.get("modified"));
+        assertEquals(List.of("README.md"), changeSet.get("deleted"));
+        assertEquals(List.of("src/stable.py"), changeSet.get("unchanged"));
+        assertEquals(3, changeSet.get("compared_file_count"));
+    }
+
+    @Test
+    void tamperedParentProfileFailsClosed() throws Exception {
+        Path source = temp.resolve("tampered-parent-source");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("main.py"), "print('safe')\n");
+        Path output = temp.resolve("tampered-profile.json");
+        new ProgramLearningService().learn(
+                source, "project-tamper", "program-tamper", output);
+        Files.writeString(output, Files.readString(output).replace(
+                "PROFILE_CANDIDATE", "PROFILE_REVIEWED"));
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> new ProgramLearningService().learn(
+                        source, "project-tamper", "program-tamper", output));
+        assertEquals("PARENT_PROGRAM_PROFILE_HASH_INVALID", failure.getMessage());
     }
 
     private static void git(Path root, String... arguments) throws Exception {

@@ -62,6 +62,17 @@ class ProductRegistrationWorkflowTest {
                         "project_id", "project-001", "target_id", "target-001",
                         "program_id", "target-001"))));
         assertEquals("target-001", learned.get("program_id"));
+        Files.writeString(source.resolve("added.txt"), "incremental source\n");
+        Map<String, Object> incrementallyLearned = result(dispatcher.dispatch(
+                "program.learn", request(Map.of(
+                        "project_id", "project-001", "target_id", "target-001",
+                        "program_id", "target-001"))));
+        assertEquals(2, incrementallyLearned.get("revision"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> changeSet =
+                (Map<String, Object>) incrementallyLearned.get("change_set");
+        assertEquals("INCREMENTAL", changeSet.get("mode"));
+        assertEquals(java.util.List.of("added.txt"), changeSet.get("added"));
         Path profile = temp.resolve(".onsure/profiles/target-001/program-profile.json");
         Map<String, Object> plan = result(dispatcher.dispatch(
                 "plan.generate", request(Map.of(
