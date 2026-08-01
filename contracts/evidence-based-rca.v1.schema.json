@@ -33,6 +33,18 @@
           "direct_cause": {"type": "string", "minLength": 1},
           "root_cause_hypothesis": {"type": "string", "minLength": 1},
           "contributing_factors": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "impact_scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["classification", "affected_assets", "assessment_basis", "verified"],
+            "properties": {
+              "classification": {"enum": ["SOURCE_LOCATION_OBSERVED", "FIXTURE_OBSERVED", "EXPERIMENT_VERIFIED"]},
+              "affected_assets": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+              "assessment_basis": {"type": "string", "minLength": 1},
+              "verified": {"type": "boolean"}
+            }
+          },
+          "unknown_items": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
           "causal_experiment": {"type": "string", "minLength": 1},
           "causal_experiment_receipt_id": {"type": "string", "minLength": 1},
           "confidence": {"type": "number", "minimum": 0, "maximum": 1},

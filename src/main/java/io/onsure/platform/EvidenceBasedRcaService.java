@@ -67,6 +67,9 @@ public final class EvidenceBasedRcaService {
             record.put("direct_cause", directCause(finding, fixture));
             record.put("root_cause_hypothesis", rootCauseHypothesis(finding.category()));
             record.put("contributing_factors", contributingFactors(finding, context));
+            Map<String, Object> impactScope = impactScope(finding, fixture, experiment, causalConfirmed);
+            record.put("impact_scope", impactScope);
+            record.put("unknown_items", unknownItems(causalConfirmed, impactScope));
             record.put("causal_experiment", causalConfirmed
                     ? experimentSummary(experiment) : reproduced ? "FAILURE_REPRODUCED_CAUSAL_ISOLATION_NOT_RUN" : "NOT_RUN");
             record.put("causal_experiment_receipt_id", causalConfirmed
@@ -184,6 +187,49 @@ public final class EvidenceBasedRcaService {
         }
         if (values.size() == 1) values.add("CONTROL_DESIGN_OR_IMPLEMENTATION_GAP");
         return List.copyOf(values);
+    }
+
+    private static Map<String, Object> impactScope(
+            Finding finding, FixtureResult fixture, JsonNode experiment, boolean causalConfirmed) {
+        List<String> verifiedAssets = experimentAssets(experiment);
+        boolean verified = causalConfirmed
+                && experiment != null
+                && experiment.path("impact_scope_verified").asBoolean(false)
+                && !verifiedAssets.isEmpty();
+        Map<String, Object> impact = new LinkedHashMap<>();
+        impact.put("classification", verified ? "EXPERIMENT_VERIFIED"
+                : fixture != null ? "FIXTURE_OBSERVED" : "SOURCE_LOCATION_OBSERVED");
+        impact.put("affected_assets", verified ? verifiedAssets : List.of(
+                fixture != null ? "fixture:" + fixture.fixtureId() : "source:" + finding.location()));
+        impact.put("assessment_basis", verified
+                ? "BOUND_CAUSAL_EXPERIMENT:" + experiment.path("experiment_id").asText()
+                : fixture != null
+                        ? "OBSERVED_FIXTURE_FAILURE_NO_IMPACT_ISOLATION"
+                        : "SOURCE_FINDING_NO_RUNTIME_IMPACT_ISOLATION");
+        impact.put("verified", verified);
+        return Map.copyOf(impact);
+    }
+
+    private static List<String> experimentAssets(JsonNode experiment) {
+        if (experiment == null || !experiment.path("affected_assets").isArray()) return List.of();
+        List<String> assets = new ArrayList<>();
+        for (JsonNode value : experiment.path("affected_assets")) {
+            String asset = value.asText();
+            if (asset.isBlank() || assets.contains(asset)) return List.of();
+            assets.add(asset);
+        }
+        return List.copyOf(assets);
+    }
+
+    private static List<String> unknownItems(
+            boolean causalConfirmed, Map<String, Object> impactScope) {
+        List<String> unknowns = new ArrayList<>();
+        if (!causalConfirmed) unknowns.add("CAUSAL_FACTOR_NOT_CONFIRMED");
+        if (!Boolean.TRUE.equals(impactScope.get("verified"))) {
+            unknowns.add("IMPACT_BOUNDARY_NOT_CAUSALLY_VERIFIED");
+        }
+        unknowns.add("INDEPENDENT_CONFIRMATION_NOT_RUN");
+        return List.copyOf(unknowns);
     }
 
     private void writeAtomic(Path outputFile, Object value) throws Exception {

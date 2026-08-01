@@ -12,6 +12,17 @@
       "direct_cause": "The source contains the condition described by the finding.",
       "root_cause_hypothesis": "The required control may be incomplete.",
       "contributing_factors": ["INDEPENDENT_VALIDATION_NOT_RUN"],
+      "impact_scope": {
+        "classification": "SOURCE_LOCATION_OBSERVED",
+        "affected_assets": ["source:src/main/java/example/Sample.java"],
+        "assessment_basis": "SOURCE_FINDING_NO_RUNTIME_IMPACT_ISOLATION",
+        "verified": false
+      },
+      "unknown_items": [
+        "CAUSAL_FACTOR_NOT_CONFIRMED",
+        "IMPACT_BOUNDARY_NOT_CAUSALLY_VERIFIED",
+        "INDEPENDENT_CONFIRMATION_NOT_RUN"
+      ],
       "causal_experiment": "NOT_RUN",
       "causal_experiment_receipt_id": "NOT_RUN",
       "confidence": 0.55,

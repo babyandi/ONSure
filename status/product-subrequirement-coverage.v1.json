@@ -523,7 +523,8 @@
         "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"
+        "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java",
+        "src/test/java/io/onsure/platform/EvidenceBasedRcaServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -533,13 +534,21 @@
         "CORE"
       ],
       "missing_controls": [
-        "IMPACT_SCOPE_FIELD_INCOMPLETE",
-        "EXPLICIT_UNKNOWN_ITEMS_FIELD_INCOMPLETE"
+        "REAL_TARGET_CAUSAL_IMPACT_EXPERIMENT_NOT_RUN"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE"
       ],
-      "semantic_assertions": []
+      "semantic_assertions": [
+        {
+          "path": "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java",
+          "tokens": ["impact_scope", "unknown_items", "IMPACT_BOUNDARY_NOT_CAUSALLY_VERIFIED"]
+        },
+        {
+          "path": "src/test/java/io/onsure/platform/EvidenceBasedRcaServiceTest.java",
+          "tokens": ["sourceCandidateSeparatesObservedImpactFromExplicitUnknowns", "boundExperimentCanVerifyImpactButNeverInventIndependentConfirmation"]
+        }
+      ]
     },
     {
       "id": "FR-06-C",
