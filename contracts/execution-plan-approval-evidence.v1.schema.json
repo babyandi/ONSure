@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": [
     "contract", "plan_id", "target_id", "source_tree_sha256", "plan_file_sha256",
-    "plan_sha256", "approval_state", "approved_actions", "authority_class",
+    "plan_sha256", "approval_state", "approval_scope", "approved_actions", "authority_class",
     "approval_id", "approval_actor", "approval_key_id", "signed_receipt_sha256",
     "created_at", "final_claim_allowed", "receipt_sha256"
   ],
@@ -16,8 +16,12 @@
     "target_id": {"type": "string", "minLength": 1},
     "source_tree_sha256": {"$ref": "#/$defs/sha256"},
     "plan_file_sha256": {"$ref": "#/$defs/sha256"},
+    "original_plan_file_sha256": {"pattern": "^(?:[0-9a-f]{64}|NOT_APPLICABLE)$"},
     "plan_sha256": {"$ref": "#/$defs/sha256"},
     "approval_state": {"enum": ["AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED"]},
+    "approval_scope": {"enum": [
+      "EXACT_PLAN_ACTION_SET_LOCAL_NONFINAL", "EXACT_PLAN_ACTION_SET", "PARTIAL_PLAN_ACTION_SET"
+    ]},
     "approved_actions": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
     "authority_class": {"enum": ["INTERNAL_POLICY_AUTO_NONFINAL", "HUMAN_OR_EXTERNAL_APPROVER"]},
     "approval_id": {"type": "string", "minLength": 1},
@@ -28,5 +32,9 @@
     "final_claim_allowed": {"const": false},
     "receipt_sha256": {"$ref": "#/$defs/sha256"}
   },
+  "allOf": [{
+    "if": {"properties": {"approval_state": {"const": "USER_APPROVED"}}, "required": ["approval_state"]},
+    "then": {"required": ["original_plan_file_sha256"]}
+  }],
   "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
 }

@@ -13,6 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTENSION = ROOT / "vscode-extension"
 REQUIRED_COMMANDS = {
     "onsure.configure",
+    "onsure.selectMode",
     "onsure.refresh",
     "onsure.learnProgram",
     "onsure.runValidation",
@@ -20,6 +21,13 @@ REQUIRED_COMMANDS = {
     "onsure.openLastArtifact",
     "onsure.clearToken",
 }
+REQUIRED_VIEWS = {
+    "onsure.workspace", "onsure.profile", "onsure.inventory", "onsure.requirements",
+    "onsure.threats", "onsure.plan", "onsure.runs", "onsure.findings",
+    "onsure.improvement", "onsure.evidence", "onsure.git", "onsure.approvals",
+    "onsure.runtime", "onsure.admin",
+}
+REQUIRED_MODES = {"ASK", "PLAN", "ACT", "VERIFY", "IMPROVE", "AUTOPILOT", "AUDIT", "OFFLINE"}
 
 
 def main() -> int:
@@ -46,8 +54,13 @@ def main() -> int:
     if not required_activation.issubset(activation):
         errors.append(f"ACTIVATION_EVENT_MISSING:{sorted(required_activation - activation)}")
     views = package.get("contributes", {}).get("views", {}).get("onsure", [])
-    if not any(item.get("id") == "onsure.workspace" for item in views):
-        errors.append("ONSURE_WORKSPACE_VIEW_MISSING")
+    view_ids = {item.get("id") for item in views}
+    if not REQUIRED_VIEWS.issubset(view_ids):
+        errors.append(f"ONSURE_VIEW_SET_MISSING:{sorted(REQUIRED_VIEWS - view_ids)}")
+    mode_property = (package.get("contributes", {}).get("configuration", {})
+                     .get("properties", {}).get("onsure.defaultWorkMode", {}))
+    if set(mode_property.get("enum", [])) != REQUIRED_MODES:
+        errors.append("ONSURE_WORK_MODE_SET_INVALID")
     if package.get("main") != "./extension.js":
         errors.append("EXTENSION_MAIN_INVALID")
     if package.get("engines", {}).get("vscode") is None:
@@ -62,6 +75,7 @@ def main() -> int:
         "SELF_VALIDATION_NONFINAL", "independent_otester", "openLastArtifact",
         "runWorkflowRequest", "requireInsideWorkspace", "fs.readFileSync",
         "Workflow request file must be inside the active workspace",
+        "WORK_MODES", "VIEW_IDS", "MODE_CHANGE", "onsure.selectMode",
     ):
         if token not in source:
             errors.append(f"SOURCE_TOKEN_MISSING:{token}")

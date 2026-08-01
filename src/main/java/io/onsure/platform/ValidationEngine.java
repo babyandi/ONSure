@@ -25,6 +25,24 @@ import java.util.UUID;
 public final class ValidationEngine {
     public static final String REPORT_CONTRACT = "ONSURE_VALIDATION_REPORT_V1";
     public record RunResult(Path runRoot, ValidationReport report) {}
+    public record ApprovedExecutionPlanBundle(
+            Path approvedPlanFile,
+            Path originalPlanFile,
+            Path signedApprovalReceipt,
+            Path trustedKeyRegistry,
+            Path approvalReplayLedger) {
+        public ApprovedExecutionPlanBundle {
+            approvedPlanFile = requirePath(approvedPlanFile, "approvedPlanFile");
+            originalPlanFile = requirePath(originalPlanFile, "originalPlanFile");
+            signedApprovalReceipt = requirePath(signedApprovalReceipt, "signedApprovalReceipt");
+            trustedKeyRegistry = requirePath(trustedKeyRegistry, "trustedKeyRegistry");
+            approvalReplayLedger = requirePath(approvalReplayLedger, "approvalReplayLedger");
+        }
+        private static Path requirePath(Path value, String name) {
+            if (value == null) throw new IllegalArgumentException(name + " required");
+            return value.toAbsolutePath().normalize();
+        }
+    }
 
     private final TargetAdapterRegistry adapterRegistry;
     private final List<ValidatorStage> stages;
@@ -54,14 +72,12 @@ public final class ValidationEngine {
         int afterInventory = indexOf(values, "SOURCE_INVENTORY") + 1;
         values.add(afterInventory, new ProgramLearningStage());
         values.add(afterInventory + 1, new RiskPlanningStage());
-
         int runtimeIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
         values.add(runtimeIndex, new FixtureRegistryStage());
         runtimeIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
         values.add(runtimeIndex, new BehaviorLearningStage());
         runtimeIndex = indexOf(values, "FIXTURE_HARNESS_ORACLE");
         values.add(runtimeIndex, new OReviewStage());
-
         int afterLegacyRca = indexOf(values, "FAILURE_MODE_AND_RCA") + 1;
         values.add(afterLegacyRca, new EvidenceBasedRcaStage());
         values.add(afterLegacyRca + 1, new PatchPlanningStage());
@@ -81,11 +97,22 @@ public final class ValidationEngine {
     }
 
     public RunResult run(ValidationTarget target) throws Exception {
-        return run(target, null);
+        return runInternal(target, null);
     }
 
-    /** Runs with a previously signed and source-bound execution plan. */
-    public RunResult run(ValidationTarget target, Path approvedExecutionPlanFile) throws Exception {
+    /** Legacy approved-plan-only entry is intentionally prohibited. */
+    @Deprecated
+    public RunResult run(ValidationTarget target, Path approvedExecutionPlanFile) {
+        throw new IllegalArgumentException("APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED");
+    }
+
+    public RunResult run(
+            ValidationTarget target, ApprovedExecutionPlanBundle approvalBundle) throws Exception {
+        return runInternal(target, Objects.requireNonNull(approvalBundle, "approvalBundle"));
+    }
+
+    private RunResult runInternal(
+            ValidationTarget target, ApprovedExecutionPlanBundle approvalBundle) throws Exception {
         TargetAdapter adapter = adapterRegistry.require(target);
         Instant created = Instant.now();
         String jobId = createJobId(target.targetId(), created);
@@ -94,14 +121,24 @@ public final class ValidationEngine {
                 jobId, target.targetId(), JobStatus.RUNNING, created, created, null, null);
         ValidationContext context = new ValidationContext(target, running, adapter, runRoot);
         context.putAttribute("registered_adapter_ids", adapterRegistry.adapterIds());
-        if (approvedExecutionPlanFile != null) {
-            context.putAttribute("approved_execution_plan_file",
-                    approvedExecutionPlanFile.toAbsolutePath().normalize().toString());
+        if (approvalBundle != null) {
+            context.putAttribute("approved_execution_plan_file", approvalBundle.approvedPlanFile().toString());
+            context.putAttribute("original_execution_plan_file", approvalBundle.originalPlanFile().toString());
+            context.putAttribute("signed_plan_approval_receipt", approvalBundle.signedApprovalReceipt().toString());
+            context.putAttribute("plan_approval_key_registry", approvalBundle.trustedKeyRegistry().toString());
+            context.putAttribute("plan_approval_replay_ledger", approvalBundle.approvalReplayLedger().toString());
         }
 
         Exception executionFailure = null;
         for (ValidatorStage stage : stages) {
             if (!stage.supports(context)) continue;
+            String requiredAction = ExecutionPlanActionPolicy.requiredAction(stage.stageId());
+            if (requiredAction != null
+                    && context.attributes().containsKey("execution_plan_approved_actions")
+                    && !ExecutionPlanActionPolicy.isApproved(context, requiredAction)) {
+                context.addStageResult(ExecutionPlanActionPolicy.notApproved(stage.stageId(), requiredAction));
+                continue;
+            }
             try {
                 context.addStageResult(stage.execute(context));
             } catch (Exception e) {
@@ -159,13 +196,15 @@ public final class ValidationEngine {
         summary.put("program_profile_state", context.attributes().getOrDefault("program_profile_state", "NOT_RUN"));
         summary.put("execution_plan_id", context.attributes().getOrDefault("execution_plan_id", "NOT_RUN"));
         summary.put("execution_plan_approval", context.attributes().getOrDefault("execution_plan_approval", "NOT_RUN"));
-        summary.put("execution_plan_approval_sha256",
-                context.attributes().getOrDefault("execution_plan_approval_sha256", "NOT_RUN"));
+        summary.put("execution_plan_approval_scope", context.attributes().getOrDefault("execution_plan_approval_scope", "NOT_RUN"));
+        summary.put("execution_plan_approved_actions", context.attributes().getOrDefault("execution_plan_approved_actions", List.of()));
+        summary.put("execution_plan_unapproved_actions", context.attributes().getOrDefault("execution_plan_unapproved_actions", List.of()));
+        summary.put("execution_plan_partial", context.attributes().getOrDefault("execution_plan_partial", false));
+        summary.put("execution_plan_approval_sha256", context.attributes().getOrDefault("execution_plan_approval_sha256", "NOT_RUN"));
         summary.put("behavior_profile_id", context.attributes().getOrDefault("behavior_profile_id", "NOT_RUN"));
         summary.put("behavior_profile_state", context.attributes().getOrDefault("behavior_profile_state", "NOT_RUN"));
         summary.put("behavior_profile_stable", context.attributes().getOrDefault("behavior_profile_stable", "NOT_RUN"));
-        summary.put("behavior_profile_coverage_class",
-                context.attributes().getOrDefault("behavior_profile_coverage_class", "NOT_RUN"));
+        summary.put("behavior_profile_coverage_class", context.attributes().getOrDefault("behavior_profile_coverage_class", "NOT_RUN"));
         summary.put("review_id", context.attributes().getOrDefault("review_id", "NOT_RUN"));
         summary.put("review_quality_decision", context.attributes().getOrDefault("review_quality_decision", "NOT_RUN"));
         summary.put("adapter_id", context.adapter().adapterId());

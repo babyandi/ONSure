@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.onsure.assurance.ApprovalReceiptVerifier;
 import io.onsure.assurance.Decision;
@@ -99,8 +100,18 @@ class GitWorkflowServiceTest {
                 "Fix proof-bound finding", temp.resolve("change-set.json"));
         assertEquals("fix/proof-bound", result.get("branch"));
         assertEquals("PROHIBITED", result.get("merge_state"));
+        assertEquals(approval.get("expires_at"), result.get("approval_expires_at"));
         assertTrue(result.get("commit_sha").toString().matches("[0-9a-f]{40,64}"));
         assertTrue(gitOutput(worktree, "status", "--porcelain", "--untracked-files=all").isBlank());
+    }
+
+    @Test
+    void expiredDeliveryApprovalCannotReachPushTransition() {
+        JsonNode approval = mapper.valueToTree(Map.of(
+                "expires_at", Instant.now().minusSeconds(1).toString()));
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> GitWorkflowService.requireApprovalNotExpired(approval, Instant.now()));
+        assertEquals("GIT_DELIVERY_APPROVAL_EXPIRED", failure.getMessage());
     }
 
     @Test

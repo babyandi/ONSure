@@ -8,6 +8,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 /** Builds a source-bound static Program Profile without claiming runtime understanding. */
 public final class ProgramLearningService {
@@ -111,14 +111,21 @@ public final class ProgramLearningService {
     private GitBaseline gitBaseline(Path root) throws Exception {
         CommandResult top = git(root, List.of("rev-parse", "--show-toplevel"), 15);
         if (top.exitCode() != 0) return null;
+        requireCompleteGitOutput(top);
         CommandResult commit = git(root, List.of("rev-parse", "HEAD"), 15);
+        requireCompleteGitOutput(commit);
         if (commit.exitCode() != 0 || !commit.output().strip().matches("[0-9a-f]{40,64}")) {
             throw new IllegalStateException("PROGRAM_GIT_COMMIT_UNVERIFIED");
         }
         CommandResult status = git(root,
                 List.of("status", "--porcelain", "--untracked-files=all", "--", "."), 30);
+        requireCompleteGitOutput(status);
         if (status.exitCode() != 0) throw new IllegalStateException("PROGRAM_GIT_STATUS_UNVERIFIED");
         return new GitBaseline(commit.output().strip(), status.output().isBlank());
+    }
+
+    private static void requireCompleteGitOutput(CommandResult result) {
+        if (result.outputTruncated()) throw new IllegalStateException("PROGRAM_GIT_OUTPUT_LIMIT_EXCEEDED");
     }
 
     private static Map<String, Integer> languageInventory(List<Path> files) {
@@ -174,7 +181,7 @@ public final class ProgramLearningService {
         return List.copyOf(values);
     }
 
-    private List<Map<String, Object>> dataFlows(Path root, List<Path> files) {
+    private List<Map<String, Object>> dataFlows(Path root, List<Path> files) throws Exception {
         List<Map<String, Object>> values = new ArrayList<>();
         for (Path file : files) {
             String relative = Hashing.relative(root, file);
@@ -267,21 +274,17 @@ public final class ProgramLearningService {
 
     private static CommandResult git(Path root, List<String> arguments, long timeoutSeconds) throws Exception {
         List<String> command = new ArrayList<>();
-        command.add("git"); command.add("-C"); command.add(root.toString()); command.addAll(arguments);
-        ProcessBuilder builder = new ProcessBuilder(command).redirectErrorStream(true);
-        Map<String, String> environment = builder.environment();
-        String path = environment.get("PATH");
-        environment.clear();
+        command.add("git");
+        command.add("-C");
+        command.add(root.toString());
+        command.addAll(arguments);
+        Map<String, String> environment = new LinkedHashMap<>();
+        String path = System.getenv("PATH");
         if (path != null) environment.put("PATH", path);
         environment.put("GIT_TERMINAL_PROMPT", "0");
-        Process process = builder.start();
-        byte[] output = process.getInputStream().readAllBytes();
-        boolean completed = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
-        if (!completed) {
-            process.destroyForcibly();
-            throw new IllegalStateException("PROGRAM_GIT_COMMAND_TIMEOUT");
-        }
-        return new CommandResult(process.exitValue(), new String(output, StandardCharsets.UTF_8));
+        BoundedProcessRunner.Result result = BoundedProcessRunner.run(
+                command, root, Duration.ofSeconds(timeoutSeconds), environment, "PROGRAM_GIT");
+        return new CommandResult(result.exitCode(), result.output(), result.outputTruncated());
     }
 
     private static void requireId(String value, String error) {
@@ -295,5 +298,5 @@ public final class ProgramLearningService {
     }
 
     private record GitBaseline(String commit, boolean clean) {}
-    private record CommandResult(int exitCode, String output) {}
+    private record CommandResult(int exitCode, String output, boolean outputTruncated) {}
 }

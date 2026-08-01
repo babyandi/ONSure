@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-for command in java javac mvn git sha256sum cmp; do
+for command in java javac mvn git python3 sha256sum cmp; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "ONSURE_CORE_MODULAR_FAIL MISSING_COMMAND_$command" >&2
     exit 69
@@ -24,16 +24,19 @@ JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
 
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 OUT="${ONSURE_CORE_MODULAR_OUTPUT:-$ROOT/.onsure/core-modular/$STAMP}"
+AUTHORITY_ROOT="${TMPDIR:-/tmp}/onsure-core-modular-authority/$(git rev-parse HEAD)/$STAMP"
 mkdir -p "$OUT/run-1" "$OUT/run-2"
 
 run_once() {
   local run="$1"
   rm -rf modules/onsure-core/target modules/onsure-adapter-oruda/target
-  mvn -B -ntp -f pom-modular.xml -pl modules/onsure-core -am test \
+  mvn -B -ntp -f pom-modular.xml -pl modules/onsure-core -am \
+    -Donsure.approvalAuthorityBase="$AUTHORITY_ROOT/$run" test \
     | tee "$OUT/$run/maven.log"
   find modules/onsure-core/target -type f -name '*.class' -print0 \
     | sort -z | xargs -0 sha256sum > "$OUT/$run/classes.sha256"
   grep -h '^Tests run:' modules/onsure-core/target/surefire-reports/*.txt \
+    | python3 "$ROOT/scripts/normalize-surefire-summary.py" \
     | LC_ALL=C sort > "$OUT/$run/test-summary.txt"
 }
 

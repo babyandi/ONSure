@@ -21,7 +21,6 @@ JAVAC_MAJOR="$(javac -version 2>&1 | awk '{split($2,v,"."); print v[1]}')"
   exit 72
 }
 
-# This runner includes the optional ORUDA fixture pack and therefore uses the explicit profile.
 bash "$ROOT/scripts/preflight-local-assurance.sh" --profile oruda
 bash "$ROOT/scripts/preflight-universal-harness.sh"
 OUT="$ROOT/receipts/validator-fixture-e2e/$(date -u +%Y%m%dT%H%M%SZ)-$$"
@@ -31,6 +30,7 @@ run_tests() {
   local output="$1"
   rm -rf target
   mvn -B -ntp \
+    -Donsure.allowTrustedFixtureAutoApproval=true \
     -Dtest=ImplementationAuthorityContractTest,ValidationPlatformE2ETest,ProductExecutionBoundaryTest,OrudaExecutionPackageCatalogTest,OrudaDocumentMaterializerTest,OrudaPackageExecutionRegistryTest,OrudaMvf001E2ETest,ExecutionResultClassifierTest,OrudaEvidenceLineageAndCandidateTest,OrudaFinalLockGateTest,UniversalHarnessContractTest,OracleEngineTest,UniversalHarnessRunnerTest,FinalCandidateAndRegressionTest \
     test | tee "$output/maven.log"
   grep -h '^Tests run:' target/surefire-reports/*.txt \
@@ -53,9 +53,11 @@ cmp "$OUT/test-1/test-classes.sha256" "$OUT/test-2/test-classes.sha256"
 mvn -B -ntp -DskipTests compile dependency:build-classpath \
   -Dmdep.outputFile="$OUT/classpath.txt" >/dev/null
 CP="$ROOT/target/classes:$(cat "$OUT/classpath.txt")"
-java -cp "$CP" io.onsure.platform.ProductPlatformE2EMain "$OUT/execution-1" \
+java -Donsure.allowTrustedFixtureAutoApproval=true -cp "$CP" \
+  io.onsure.platform.ProductPlatformE2EMain "$OUT/execution-1" \
   | tee "$OUT/execution-1/execution.log"
-java -cp "$CP" io.onsure.platform.ProductPlatformE2EMain "$OUT/execution-2" \
+java -Donsure.allowTrustedFixtureAutoApproval=true -cp "$CP" \
+  io.onsure.platform.ProductPlatformE2EMain "$OUT/execution-2" \
   | tee "$OUT/execution-2/execution.log"
 
 cmp "$OUT/execution-1/normalized-result.json" "$OUT/execution-2/normalized-result.json"

@@ -10,7 +10,7 @@ import java.util.Set;
 
 /** Fail-closed completeness policy for one nonfinal product validation run. */
 public final class ValidationCompletionGate {
-    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V6";
+    public static final String CONTRACT = "ONSURE_VALIDATION_COMPLETION_GATE_V7";
 
     public record Evaluation(boolean eligible, List<String> reasons) {
         public Evaluation { reasons = List.copyOf(reasons); }
@@ -49,18 +49,24 @@ public final class ValidationCompletionGate {
         requireAttributeAndFile(context, "execution_plan_approval_sha256",
                 "execution-plan-approval.json", "EXECUTION_PLAN_APPROVAL_EVIDENCE",
                 "EXECUTION_PLAN_APPROVAL", reasons);
-        requireArtifact(context, "review_id", "review-result.json",
-                "OREVIEW_RESULT", "OREVIEW", reasons);
-        requireAttributeAndFile(context, "evidence_based_rca_sha256", "evidence-based-rca.json",
-                "EVIDENCE_BASED_RCA_SET", "EVIDENCE_BASED_RCA", reasons);
-        requireArtifact(context, "patch_plan_id", "patch-plan.json",
-                "PATCH_PLAN_CANDIDATE", "PATCH_PLAN", reasons);
+        if (approved(context, "REVIEW")) {
+            requireArtifact(context, "review_id", "review-result.json",
+                    "OREVIEW_RESULT", "OREVIEW", reasons);
+        }
+        if (approved(context, "RCA")) {
+            requireAttributeAndFile(context, "evidence_based_rca_sha256", "evidence-based-rca.json",
+                    "EVIDENCE_BASED_RCA_SET", "EVIDENCE_BASED_RCA", reasons);
+        }
+        if (approved(context, "IMPROVEMENT_PLAN")) {
+            requireArtifact(context, "patch_plan_id", "patch-plan.json",
+                    "PATCH_PLAN_CANDIDATE", "PATCH_PLAN", reasons);
+        }
         Object approval = context.attributes().get("execution_plan_approval");
         if (!(approval instanceof String state)
                 || !List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED").contains(state)) {
             reasons.add("EXECUTION_PLAN_NOT_APPROVED");
         }
-        if (aiTarget) {
+        if (aiTarget && approved(context, "BEHAVIOR_LEARNING")) {
             requireArtifact(context, "behavior_profile_id", "behavior-profile.json",
                     "BEHAVIOR_PROFILE_CANDIDATE", "BEHAVIOR_PROFILE", reasons);
         }
@@ -69,6 +75,10 @@ public final class ValidationCompletionGate {
             reasons.add("IMMUTABLE_SOURCE_REFERENCE_UNVERIFIED");
         }
         return new Evaluation(reasons.isEmpty(), reasons);
+    }
+
+    private static boolean approved(ValidationContext context, String action) {
+        return ExecutionPlanActionPolicy.isApproved(context, action);
     }
 
     private static void requireArtifact(

@@ -1,12 +1,10 @@
 package io.onsure.platform;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /** Verifies that a validation run is bound to the exact source bytes it claims. */
 public final class SourceReferenceBinding {
@@ -65,6 +63,9 @@ public final class SourceReferenceBinding {
 
     private static String runGit(Path root, List<String> arguments) throws Exception {
         CommandResult result = runGitResult(root, arguments);
+        if (result.outputTruncated()) {
+            throw new IllegalStateException("IMMUTABLE_GIT_OUTPUT_LIMIT_EXCEEDED");
+        }
         if (result.exitCode() != 0) {
             throw new IllegalStateException("IMMUTABLE_GIT_REFERENCE_UNVERIFIED:" + result.output().strip());
         }
@@ -72,28 +73,20 @@ public final class SourceReferenceBinding {
     }
 
     private static CommandResult runGitResult(Path root, List<String> arguments) throws Exception {
-        List<String> command = new ArrayList<>();
+        List<String> command = new java.util.ArrayList<>();
         command.add("git");
         command.add("-C");
         command.add(root.toString());
         command.addAll(arguments);
-        ProcessBuilder builder = new ProcessBuilder(command).redirectErrorStream(true);
-        Map<String, String> environment = builder.environment();
-        String path = environment.get("PATH");
-        environment.clear();
+        Map<String, String> environment = new LinkedHashMap<>();
+        String path = System.getenv("PATH");
         if (path != null) environment.put("PATH", path);
         environment.put("GIT_TERMINAL_PROMPT", "0");
-        Process process = builder.start();
-        byte[] output = process.getInputStream().readAllBytes();
-        boolean completed = process.waitFor(15, TimeUnit.SECONDS);
-        if (!completed) {
-            process.toHandle().descendants().forEach(ProcessHandle::destroyForcibly);
-            process.destroyForcibly();
-            throw new IllegalStateException("IMMUTABLE_GIT_COMMAND_TIMEOUT");
-        }
-        return new CommandResult(process.exitValue(), new String(output, StandardCharsets.UTF_8));
+        BoundedProcessRunner.Result result = BoundedProcessRunner.run(
+                command, root, Duration.ofSeconds(15), environment, "IMMUTABLE_GIT");
+        return new CommandResult(result.exitCode(), result.output(), result.outputTruncated());
     }
 
     private record GitProbe(boolean repository, Path root) {}
-    private record CommandResult(int exitCode, String output) {}
+    private record CommandResult(int exitCode, String output, boolean outputTruncated) {}
 }

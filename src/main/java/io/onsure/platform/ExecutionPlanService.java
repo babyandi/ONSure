@@ -20,10 +20,15 @@ import java.util.TreeMap;
 /** Generates a risk-based, approval-aware execution plan from a Program Profile. */
 public final class ExecutionPlanService {
     public static final String CONTRACT = "ONSURE_EXECUTION_PLAN_V1";
+    public static final String TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY =
+            "onsure.allowTrustedFixtureAutoApproval";
     public static final Set<String> APPROVABLE_ACTIONS = Set.of(
             "STATIC_ANALYSIS", "AI_BEHAVIOR_VALIDATION", "BEHAVIOR_LEARNING",
             "FIXTURE_EXECUTION", "REVIEW", "RCA", "IMPROVEMENT_PLAN",
             "REGRESSION_LOCK", "EVIDENCE_GENERATION");
+    private static final Set<String> TRUSTED_FIXTURE_PROFILES = Set.of(
+            "LOCAL_E2E", "LOCAL_MVF_E2E", "LOCAL_FIXTURE",
+            "TRUSTED_LOCAL_FIXTURE", "LOCAL_E2E_TRUSTED_FIXTURE", "LOCAL_DEVELOPMENT");
 
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
@@ -50,8 +55,7 @@ public final class ExecutionPlanService {
         String riskLevel = riskScore >= 80 ? "CRITICAL"
                 : riskScore >= 60 ? "HIGH"
                 : riskScore >= 35 ? "MEDIUM" : "LOW";
-        boolean developmentAutoApproval = target.executionProfile().matches(
-                "(?:LOCAL_E2E|LOCAL_MVF_E2E|LOCAL_FIXTURE|TRUSTED_LOCAL_FIXTURE|LOCAL_DEVELOPMENT)");
+        boolean developmentAutoApproval = trustedFixtureAutoApproval(target.executionProfile());
         String approvalState = developmentAutoApproval
                 ? "AUTO_APPROVED_DEVELOPMENT_NONFINAL" : "AWAITING_USER_APPROVAL";
 
@@ -82,8 +86,10 @@ public final class ExecutionPlanService {
 
         Map<String, Object> approval = new LinkedHashMap<>();
         approval.put("state", approvalState);
-        approval.put("scope", developmentAutoApproval ? "LOCAL_NONFINAL_VALIDATION_ONLY" : "NO_EXECUTION");
-        approval.put("approver", developmentAutoApproval ? "POLICY:LOCAL_DEVELOPMENT" : "NOT_ASSIGNED");
+        approval.put("scope", developmentAutoApproval
+                ? "EXACT_PLAN_ACTION_SET_LOCAL_NONFINAL" : "NO_EXECUTION");
+        approval.put("approver", developmentAutoApproval
+                ? "POLICY:TRUSTED_FIXTURE_PROCESS_GATE" : "NOT_ASSIGNED");
         approval.put("revocable", true);
         approval.put("approved_actions", developmentAutoApproval ? allowedActions : List.of());
         approval.put("signed_receipt_required", !developmentAutoApproval);
@@ -126,6 +132,11 @@ public final class ExecutionPlanService {
         return Map.copyOf(plan);
     }
 
+    static boolean trustedFixtureAutoApproval(String executionProfile) {
+        return Boolean.getBoolean(TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY)
+                && TRUSTED_FIXTURE_PROFILES.contains(executionProfile);
+    }
+
     public void requireApproved(Map<String, Object> plan) throws Exception {
         if (!CONTRACT.equals(plan.get("contract"))) {
             throw new IllegalArgumentException("EXECUTION_PLAN_CONTRACT_INVALID");
@@ -139,19 +150,36 @@ public final class ExecutionPlanService {
         if (!List.of("AUTO_APPROVED_DEVELOPMENT_NONFINAL", "USER_APPROVED").contains(state)) {
             throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_REQUIRED");
         }
+        if ("AUTO_APPROVED_DEVELOPMENT_NONFINAL".equals(state)
+                && !Boolean.getBoolean(TRUSTED_FIXTURE_AUTO_APPROVAL_PROPERTY)) {
+            throw new IllegalStateException("EXECUTION_PLAN_FIXTURE_AUTO_APPROVAL_PROCESS_GATE_DISABLED");
+        }
         Set<String> allowed = stringSet(plan.get("allowed_actions"));
         Set<String> approved = stringSet(approval.get("approved_actions"));
-        if (allowed.isEmpty() || !allowed.equals(approved) || !APPROVABLE_ACTIONS.containsAll(approved)) {
-            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INCOMPLETE");
+        if (allowed.isEmpty() || approved.isEmpty() || !allowed.containsAll(approved)
+                || !APPROVABLE_ACTIONS.containsAll(approved)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_ACTION_SET_INVALID");
+        }
+        String scope = String.valueOf(approval.get("scope"));
+        String expectedScope = allowed.equals(approved)
+                ? ("AUTO_APPROVED_DEVELOPMENT_NONFINAL".equals(state)
+                        ? "EXACT_PLAN_ACTION_SET_LOCAL_NONFINAL" : "EXACT_PLAN_ACTION_SET")
+                : "PARTIAL_PLAN_ACTION_SET";
+        if (!expectedScope.equals(scope)) {
+            throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_SCOPE_MISMATCH");
         }
         if ("USER_APPROVED".equals(state)) {
             for (String field : List.of(
                     "approval_id", "approval_actor", "approval_key_id",
-                    "approval_receipt_sha256", "approved_at", "expires_at")) {
+                    "original_plan_file_sha256", "approval_receipt_sha256",
+                    "approved_at", "expires_at")) {
                 Object value = approval.get(field);
                 if (!(value instanceof String text) || text.isBlank()) {
                     throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_LINEAGE_MISSING:" + field);
                 }
+            }
+            if (!String.valueOf(approval.get("original_plan_file_sha256")).matches("[0-9a-f]{64}")) {
+                throw new IllegalStateException("EXECUTION_PLAN_ORIGINAL_FILE_DIGEST_INVALID");
             }
             if (!String.valueOf(approval.get("approval_receipt_sha256")).matches("[0-9a-f]{64}")) {
                 throw new IllegalStateException("EXECUTION_PLAN_APPROVAL_RECEIPT_DIGEST_INVALID");
