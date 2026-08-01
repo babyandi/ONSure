@@ -136,6 +136,18 @@ class ProductWorkflowServicesTest {
         assertEquals(original, Files.readString(file));
         assertEquals(false, plan.get("direct_main_write_allowed"));
         assertEquals(false, plan.get("merge_allowed"));
+        Map<?, ?> assessment = (Map<?, ?>) plan.get("preapply_assessment");
+        assertEquals(75, assessment.get("risk_score"));
+        assertEquals("HIGH", assessment.get("risk_level"));
+        assertEquals(true, assessment.get("approval_required"));
+        Map<?, ?> impact = (Map<?, ?>) assessment.get("impact_scope");
+        assertEquals(List.of("agent.txt"), impact.get("changed_files"));
+        assertEquals(List.of("finding-patch-001"), impact.get("finding_ids"));
+        assertEquals(1, impact.get("hunk_count"));
+        Map<?, ?> rollback = (Map<?, ?>) assessment.get("rollback_preview");
+        assertEquals("BYTE_EXACT_PREIMAGE_BACKUP", rollback.get("method"));
+        assertEquals("SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH", rollback.get("verification"));
+        assertEquals(false, rollback.get("target_source_mutated_before_approval"));
     }
 
     private static void git(Path root, String... arguments) throws Exception {

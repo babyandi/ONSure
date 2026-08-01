@@ -44,6 +44,39 @@
         }
       }
     },
+    "preapply_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["risk_score", "risk_level", "impact_scope", "rollback_preview", "approval_required"],
+      "properties": {
+        "risk_score": {"type": "integer", "minimum": 0, "maximum": 100},
+        "risk_level": {"enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]},
+        "impact_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["changed_files", "finding_ids", "hunk_count", "assessment_basis"],
+          "properties": {
+            "changed_files": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+            "finding_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+            "hunk_count": {"type": "integer", "minimum": 0},
+            "assessment_basis": {"const": "APPROVAL_BOUNDED_HUNKS_AND_LINKED_FINDING_SEVERITY"}
+          }
+        },
+        "rollback_preview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "backup_scope", "verification", "worktree_required", "target_source_mutated_before_approval"],
+          "properties": {
+            "method": {"const": "BYTE_EXACT_PREIMAGE_BACKUP"},
+            "backup_scope": {"const": "APPROVED_HUNKS_ONLY"},
+            "verification": {"const": "SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH"},
+            "worktree_required": {"const": true},
+            "target_source_mutated_before_approval": {"const": false}
+          }
+        },
+        "approval_required": {"type": "boolean"}
+      }
+    },
     "default_approval": {"const": "DENY"},
     "worktree_required": {"const": true},
     "direct_main_write_allowed": {"const": false},

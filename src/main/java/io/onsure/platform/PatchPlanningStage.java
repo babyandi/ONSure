@@ -80,6 +80,8 @@ public final class PatchPlanningStage implements ValidatorStage {
         plan.put("evidence_based_rca_sha256",
                 context.attributes().getOrDefault("evidence_based_rca_sha256", "NOT_RUN"));
         plan.put("hunks", List.of());
+        plan.put("preapply_assessment",
+                ImprovementWorkflowService.buildPreapplyAssessment(List.of(), context.findings()));
         plan.put("default_approval", "DENY");
         plan.put("worktree_required", true);
         plan.put("direct_main_write_allowed", false);

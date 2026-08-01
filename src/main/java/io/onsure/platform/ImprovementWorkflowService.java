@@ -21,6 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /** Creates bounded patch candidates and applies only explicitly approved hunks in an isolated worktree. */
 public final class ImprovementWorkflowService {
@@ -87,6 +88,7 @@ public final class ImprovementWorkflowService {
         plan.put("evidence_based_rca_sha256",
                 context.attributes().getOrDefault("evidence_based_rca_sha256", "NOT_RUN"));
         plan.put("hunks", List.copyOf(hunks));
+        plan.put("preapply_assessment", buildPreapplyAssessment(hunks, context.findings()));
         plan.put("default_approval", "DENY");
         plan.put("worktree_required", true);
         plan.put("direct_main_write_allowed", false);
@@ -98,6 +100,56 @@ public final class ImprovementWorkflowService {
         plan.put("patch_plan_sha256", sha256(mapper.writeValueAsBytes(plan)));
         writeAtomic(outputFile, plan);
         return Map.copyOf(plan);
+    }
+
+    static Map<String, Object> buildPreapplyAssessment(
+            List<Map<String, Object>> hunks, List<ValidationModel.Finding> findings) {
+        Set<String> changedFiles = new TreeSet<>();
+        Set<String> findingIds = new TreeSet<>();
+        for (Map<String, Object> hunk : hunks) {
+            changedFiles.add(String.valueOf(hunk.get("relative_path")));
+            findingIds.add(String.valueOf(hunk.get("finding_id")));
+        }
+        int riskScore = findings.stream()
+                .filter(finding -> findingIds.contains(finding.findingId()))
+                .mapToInt(finding -> severityRiskScore(finding.severity()))
+                .max()
+                .orElse(0);
+        String riskLevel = riskScore >= 100 ? "CRITICAL"
+                : riskScore >= 75 ? "HIGH"
+                : riskScore >= 50 ? "MEDIUM"
+                : riskScore >= 25 ? "LOW" : "NONE";
+
+        Map<String, Object> impactScope = new LinkedHashMap<>();
+        impactScope.put("changed_files", List.copyOf(changedFiles));
+        impactScope.put("finding_ids", List.copyOf(findingIds));
+        impactScope.put("hunk_count", hunks.size());
+        impactScope.put("assessment_basis", "APPROVAL_BOUNDED_HUNKS_AND_LINKED_FINDING_SEVERITY");
+
+        Map<String, Object> rollbackPreview = new LinkedHashMap<>();
+        rollbackPreview.put("method", "BYTE_EXACT_PREIMAGE_BACKUP");
+        rollbackPreview.put("backup_scope", "APPROVED_HUNKS_ONLY");
+        rollbackPreview.put("verification", "SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH");
+        rollbackPreview.put("worktree_required", true);
+        rollbackPreview.put("target_source_mutated_before_approval", false);
+
+        Map<String, Object> assessment = new LinkedHashMap<>();
+        assessment.put("risk_score", riskScore);
+        assessment.put("risk_level", riskLevel);
+        assessment.put("impact_scope", Map.copyOf(impactScope));
+        assessment.put("rollback_preview", Map.copyOf(rollbackPreview));
+        assessment.put("approval_required", !hunks.isEmpty());
+        return Map.copyOf(assessment);
+    }
+
+    private static int severityRiskScore(ValidationModel.Severity severity) {
+        return switch (severity) {
+            case CRITICAL -> 100;
+            case HIGH -> 75;
+            case MEDIUM -> 50;
+            case LOW -> 25;
+            case INFO -> 10;
+        };
     }
 
     @Deprecated

@@ -608,13 +608,14 @@
       "id": "FR-07-B",
       "name": "Pre-apply change risk impact rollback preview",
       "normative_phrase": "수정 계획, 변경 파일, 위험도, 영향 범위와 롤백 방법을 적용 전에 제시해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
+        "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java",
+        "src/test/java/io/onsure/platform/ProductWorkflowServicesTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -623,15 +624,20 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "PATCH_RISK_SCORE_MISSING",
-        "IMPACT_SCOPE_INCOMPLETE",
-        "ROLLBACK_METHOD_PREVIEW_INCOMPLETE"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE"
       ],
-      "semantic_assertions": []
+      "semantic_assertions": [
+        {
+          "path": "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
+          "tokens": ["preapply_assessment", "risk_score", "impact_scope", "BYTE_EXACT_PREIMAGE_BACKUP", "SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH"]
+        },
+        {
+          "path": "src/test/java/io/onsure/platform/ProductWorkflowServicesTest.java",
+          "tokens": ["patchPlanRequiresApprovalAndDoesNotModifySource", "preapply_assessment", "target_source_mutated_before_approval"]
+        }
+      ]
     },
     {
       "id": "FR-07-C",
@@ -1292,8 +1298,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 4,
-    "partial": 31,
+    "implemented": 5,
+    "partial": 30,
     "stub": 5,
     "design_only": 3,
     "verification_not_run": 43
