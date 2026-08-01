@@ -9,6 +9,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+PYTHON_SCAN_EXCLUDED_DIRS = {".git", ".onsure", ".venv", "node_modules", "venv"}
 COUNT_AUTHORITY = "contracts/omission-failure-injection-counts.v1.json"
 REQUIRED = [
     "contracts/codespace-free-remediation-plan.v1.json",
@@ -116,11 +117,13 @@ def main() -> int:
         for path in sorted(workflow_root.glob("*.yml")) + sorted(workflow_root.glob("*.yaml")):
             errors.append(f"GITHUB_ACTIONS_WORKFLOW_FORBIDDEN:{path.name}")
     for path in ROOT.rglob("*.py"):
-        if ".onsure" not in path.parts:
-            try:
-                py_compile.compile(str(path), doraise=True)
-            except Exception as exc:
-                errors.append(f"PYTHON_INVALID:{path.relative_to(ROOT)}:{exc}")
+        relative = path.relative_to(ROOT)
+        if not PYTHON_SCAN_EXCLUDED_DIRS.isdisjoint(relative.parts):
+            continue
+        try:
+            py_compile.compile(str(path), doraise=True)
+        except Exception as exc:
+            errors.append(f"PYTHON_INVALID:{relative}:{exc}")
     for relative in REQUIRED:
         path = ROOT / relative
         if not path.is_file():
