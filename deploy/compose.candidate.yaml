@@ -1,0 +1,24 @@
+services:
+  onsure-local-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.candidate
+    image: onsure-local-api:candidate
+    user: "65532:65532"
+    read_only: true
+    network_mode: none
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 1g
+    cpus: 1.0
+    environment:
+      ONSURE_LOCAL_API_TOKEN: ${ONSURE_LOCAL_API_TOKEN:?external token required}
+      ONSURE_WORKSPACE_ROOT: /onsure-product
+      ONSURE_LOCAL_API_PORT: "47311"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m,uid=65532,gid=65532,mode=0700
+      - /onsure-product/.onsure:rw,noexec,nosuid,nodev,size=512m,uid=65532,gid=65532,mode=0700
+    volumes:
+      - ..:/onsure-product:ro
+    restart: "no"

@@ -12,6 +12,7 @@ import pathlib
 import tarfile
 import tempfile
 import urllib.parse
+import subprocess
 from typing import Any, Iterable
 
 from onsure_product_root import resolve_product_root
@@ -24,6 +25,7 @@ BUILD_DESCRIPTORS = (
     "pom.xml", "pom-modular.xml", "vscode-extension/package.json",
     "vscode-extension/package-lock.json", "assurance/dependencies/onsure.cdx.json",
     "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
+    "assurance/dependencies/onsure-vscode-dependency-inventory.v1.json",
 )
 
 
@@ -63,6 +65,8 @@ def plan(maven_repository: pathlib.Path, sbom_path: pathlib.Path = SBOM) -> dict
     mismatched: list[str] = []
     for component in sorted(sbom.get("components", []), key=lambda value: value.get("purl", "")):
         group, artifact, version = coordinates(str(component.get("purl", "")))
+        if group == "io.onsure":
+            continue
         relative = pathlib.Path(*group.split(".")) / artifact / version
         for extension in ("jar", "pom"):
             local = repository / relative / f"{artifact}-{version}.{extension}"
@@ -197,6 +201,113 @@ def verify(archive_path: pathlib.Path) -> dict[str, Any]:
     }
 
 
+def build_repository_pack(repository: pathlib.Path, output: pathlib.Path) -> dict[str, Any]:
+    repository = repository.resolve()
+    output = output.resolve()
+    if not repository.is_dir() or repository.is_symlink():
+        raise ValueError("AIRGAP_OFFLINE_REPOSITORY_INVALID")
+    if output.exists():
+        raise ValueError("AIRGAP_OUTPUT_ALREADY_EXISTS")
+    files = sorted(path for path in repository.rglob("*") if path.is_file() and not path.is_symlink())
+    if not files:
+        raise ValueError("AIRGAP_OFFLINE_REPOSITORY_EMPTY")
+    if any(path.is_symlink() for path in repository.rglob("*")):
+        raise ValueError("AIRGAP_OFFLINE_REPOSITORY_SYMLINK_FORBIDDEN")
+    manifest = {
+        "contract": "ONSURE_MAVEN_OFFLINE_REPOSITORY_MANIFEST_V1",
+        "source_sbom_sha256": sha256(SBOM),
+        "entry_count": len(files),
+        "entries": {path.relative_to(repository).as_posix(): sha256(path) for path in files},
+        "network_used_during_bootstrap": True,
+        "offline_rehearsal_required": True,
+        "release_authority": False,
+        "final_claim_allowed": False,
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=output.name + ".", dir=output.parent)
+    os.close(descriptor)
+    os.unlink(temporary_name)
+    temporary = pathlib.Path(temporary_name)
+    try:
+        with tarfile.open(temporary, "x", format=tarfile.PAX_FORMAT) as archive:
+            for source in files:
+                target = "maven2/" + source.relative_to(repository).as_posix()
+                info = archive.gettarinfo(str(source), target)
+                info.uid = info.gid = 0
+                info.uname = info.gname = ""
+                info.mtime = 0
+                info.mode = 0o644
+                with source.open("rb") as stream:
+                    archive.addfile(info, stream)
+            encoded = (json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            info = tarfile.TarInfo("MAVEN-OFFLINE-MANIFEST.json")
+            info.size, info.mode, info.mtime = len(encoded), 0o644, 0
+            archive.addfile(info, io.BytesIO(encoded))
+        os.replace(temporary, output)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return verify_repository_pack(output)
+
+
+def verify_repository_pack(archive_path: pathlib.Path) -> dict[str, Any]:
+    archive_path = archive_path.resolve()
+    with tarfile.open(archive_path, "r") as archive:
+        members = archive.getmembers()
+        if any(member.issym() or member.islnk() or pathlib.PurePosixPath(member.name).is_absolute()
+               or ".." in pathlib.PurePosixPath(member.name).parts for member in members):
+            raise ValueError("AIRGAP_ARCHIVE_PATH_INVALID")
+        manifest = json.load(archive.extractfile("MAVEN-OFFLINE-MANIFEST.json"))
+        actual = {}
+        for member in members:
+            if member.isfile() and member.name.startswith("maven2/"):
+                actual[member.name.removeprefix("maven2/")] = hashlib.sha256(
+                    archive.extractfile(member).read()).hexdigest()
+        if actual != manifest["entries"]:
+            raise ValueError("AIRGAP_OFFLINE_REPOSITORY_DIGEST_MISMATCH")
+    return {
+        "contract": "ONSURE_MAVEN_OFFLINE_REPOSITORY_VERIFICATION_V1",
+        "decision": "PASS_NONFINAL",
+        "archive_sha256": sha256(archive_path),
+        "verified_entry_count": len(actual),
+        "source_sbom_sha256": manifest["source_sbom_sha256"],
+        "offline_build_rehearsal": "NOT_RUN",
+        "final_claim_allowed": False,
+    }
+
+
+def rehearse_repository_pack(archive_path: pathlib.Path) -> dict[str, Any]:
+    verified = verify_repository_pack(archive_path)
+    temporary_root = ROOT / ".onsure/tmp"
+    temporary_root.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="onsure-maven-offline-", dir=temporary_root) as directory:
+        root = pathlib.Path(directory)
+        with tarfile.open(archive_path, "r") as archive:
+            members = archive.getmembers()
+            if any(member.issym() or member.islnk() or pathlib.PurePosixPath(member.name).is_absolute()
+                   or ".." in pathlib.PurePosixPath(member.name).parts for member in members):
+                raise ValueError("AIRGAP_ARCHIVE_PATH_INVALID")
+            archive.extractall(root, filter="data")
+        repository = root / "maven2"
+        commands = [
+            ["mvn", "-B", "-ntp", "-q", "-o", f"-Dmaven.repo.local={repository}", "clean", "verify"],
+            ["mvn", "-B", "-ntp", "-q", "-o", f"-Dmaven.repo.local={repository}",
+             "-f", "pom-modular.xml", "clean", "package"],
+        ]
+        for command in commands:
+            environment = dict(os.environ)
+            environment["TMPDIR"] = str(root)
+            process = subprocess.run(
+                command, cwd=ROOT, env=environment, text=True, capture_output=True, check=False)
+            if process.returncode:
+                raise ValueError("AIRGAP_OFFLINE_BUILD_FAILED:" + process.stderr[-2000:])
+    verified.update({
+        "contract": "ONSURE_MAVEN_OFFLINE_REHEARSAL_V1",
+        "offline_build_rehearsal": "PASS",
+        "network_access_used": False,
+    })
+    return verified
+
+
 def atomic_json(path: pathlib.Path, value: dict[str, Any]) -> None:
     path = path.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -215,12 +326,26 @@ def atomic_json(path: pathlib.Path, value: dict[str, Any]) -> None:
 
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=("plan", "build", "verify"))
+    parser.add_argument("action", choices=(
+        "plan", "build", "verify", "repository-build", "repository-verify", "repository-rehearse"))
     parser.add_argument("--maven-repository", type=pathlib.Path)
     parser.add_argument("--manifest", type=pathlib.Path)
     parser.add_argument("--archive", type=pathlib.Path)
+    parser.add_argument("--offline-repository", type=pathlib.Path)
     args = parser.parse_args(argv)
-    if args.action == "verify":
+    if args.action == "repository-build":
+        if not args.offline_repository or not args.archive:
+            raise ValueError("AIRGAP_OFFLINE_REPOSITORY_AND_ARCHIVE_REQUIRED")
+        result = build_repository_pack(args.offline_repository, args.archive)
+    elif args.action == "repository-verify":
+        if not args.archive:
+            raise ValueError("AIRGAP_ARCHIVE_REQUIRED")
+        result = verify_repository_pack(args.archive)
+    elif args.action == "repository-rehearse":
+        if not args.archive:
+            raise ValueError("AIRGAP_ARCHIVE_REQUIRED")
+        result = rehearse_repository_pack(args.archive)
+    elif args.action == "verify":
         if not args.archive:
             raise ValueError("AIRGAP_ARCHIVE_REQUIRED")
         result = verify(args.archive)

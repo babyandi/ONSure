@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_AIRGAP_REHEARSAL_EVIDENCE_V1",
+  "maven_dependency_pack": {
+    "archive_sha256": "0c1504e6c35b167604d12cb5ec5ae7105200329a497ef161dc0fd51420dd3e69",
+    "size_bytes": 2764800,
+    "verified_entry_count": 15,
+    "verification": "PASS_NONFINAL"
+  },
+  "maven_offline_repository_pack": {
+    "archive_sha256": "885c65925f71eb7ef15ee7636251d415e4140229b668160212f3771cd1967c7a",
+    "size_bytes": 25958400,
+    "verified_entry_count": 713,
+    "canonical_clean_verify_offline": "PASS",
+    "modular_clean_package_offline": "PASS",
+    "network_access_used_during_rehearsal": false
+  },
+  "npm_cache_pack": {
+    "archive_sha256": "587b0eae4c6b9453048d429fe1c14e81a2e1133422328293072b0baecc5db235",
+    "size_bytes": 17950720,
+    "cache_file_count": 442,
+    "offline_npm_ci": "PASS",
+    "network_access_used_during_verification": false
+  },
+  "external_signature": "NOT_RUN",
+  "archives_committed": false,
+  "decision": "PASS_NONFINAL",
+  "final_claim_allowed": false
+}

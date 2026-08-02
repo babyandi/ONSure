@@ -1,0 +1,72 @@
+{
+  "command": [
+    "python3",
+    "scripts/validate_onsure_build_boundary.py"
+  ],
+  "contract": "ONSURE_RUNTIME_ASSURANCE_EVIDENCE_V1",
+  "decision": "PASS_NONFINAL",
+  "evidence_type": "BOUNDED_COMMAND_BENCHMARK",
+  "final_claim_allowed": false,
+  "iterations": 5,
+  "metrics": {
+    "maximum_ms": 98.591,
+    "median_ms": 85.774,
+    "minimum_ms": 83.573,
+    "p95_ms": 93.196,
+    "successful_iterations": 5
+  },
+  "observations": [
+    {
+      "elapsed_ms": 83.67,
+      "exit_code": 0,
+      "iteration": 1,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 1165,
+      "stdout_sha256": "5b69c398426077fe170e2ffc62263ddb6ea4b5efbc8231f53e1b0c17a0a059b3",
+      "timed_out": false
+    },
+    {
+      "elapsed_ms": 83.573,
+      "exit_code": 0,
+      "iteration": 2,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 1165,
+      "stdout_sha256": "5b69c398426077fe170e2ffc62263ddb6ea4b5efbc8231f53e1b0c17a0a059b3",
+      "timed_out": false
+    },
+    {
+      "elapsed_ms": 93.196,
+      "exit_code": 0,
+      "iteration": 3,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 1165,
+      "stdout_sha256": "5b69c398426077fe170e2ffc62263ddb6ea4b5efbc8231f53e1b0c17a0a059b3",
+      "timed_out": false
+    },
+    {
+      "elapsed_ms": 98.591,
+      "exit_code": 0,
+      "iteration": 4,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 1165,
+      "stdout_sha256": "5b69c398426077fe170e2ffc62263ddb6ea4b5efbc8231f53e1b0c17a0a059b3",
+      "timed_out": false
+    },
+    {
+      "elapsed_ms": 85.774,
+      "exit_code": 0,
+      "iteration": 5,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 1165,
+      "stdout_sha256": "5b69c398426077fe170e2ffc62263ddb6ea4b5efbc8231f53e1b0c17a0a059b3",
+      "timed_out": false
+    }
+  ],
+  "performance_slo_asserted": false,
+  "timeout_seconds": 30.0
+}

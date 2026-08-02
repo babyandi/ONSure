@@ -1,0 +1,13 @@
+{
+  "archive": ".onsure/airgap/onsure-synthetic-dr.tar",
+  "archive_sha256": "fabd3dc5bbd75dc810f539f3625d7f81060b87a68cf9d2b8d6b82782d2f897af",
+  "contract": "ONSURE_RUNTIME_ASSURANCE_EVIDENCE_V1",
+  "corrupted_archive_rejected": true,
+  "decision": "PASS_NONFINAL",
+  "evidence_type": "SYNTHETIC_DR_REHEARSAL",
+  "file_count": 2,
+  "final_claim_allowed": false,
+  "isolated_restore_verified": true,
+  "production_dr_claimed": false,
+  "source_mutated": false
+}

@@ -31,6 +31,30 @@ def digest(path: pathlib.Path) -> str:
     return value.hexdigest()
 
 
+def artifact_reference(path: pathlib.Path) -> str:
+    """Return a portable evidence reference without binding a host workspace path."""
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(ROOT).as_posix()
+    except ValueError:
+        return resolved.name
+
+
+def product_state_path(path: pathlib.Path, error: str) -> pathlib.Path:
+    original = path.absolute()
+    resolved = original.resolve()
+    state_root = (ROOT / ".onsure").resolve()
+    if state_root not in resolved.parents or original.is_symlink():
+        raise ValueError(error)
+    return resolved
+
+
+def temporary_root() -> pathlib.Path:
+    root = (ROOT / ".onsure/tmp").resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
 def atomic_json(path: pathlib.Path, body: dict[str, Any]) -> None:
     path = path.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -110,15 +134,71 @@ def benchmark(command: list[str], iterations: int, timeout: float) -> dict[str, 
     }
 
 
+def benchmark_against_baseline(
+    command: list[str], iterations: int, timeout: float,
+    baseline: dict[str, Any], maximum_p95_regression_percent: float,
+) -> dict[str, Any]:
+    if maximum_p95_regression_percent < 0 or maximum_p95_regression_percent > 500:
+        raise ValueError("BENCHMARK_REGRESSION_BOUND_INVALID")
+    expected = float(baseline.get("metrics", {}).get("p95_ms", 0))
+    if expected <= 0:
+        raise ValueError("BENCHMARK_BASELINE_P95_INVALID")
+    result = benchmark(command, iterations, timeout)
+    actual = float(result["metrics"]["p95_ms"])
+    threshold = expected * (1 + maximum_p95_regression_percent / 100)
+    within = actual <= threshold and result["decision"] == "PASS_NONFINAL"
+    result.update({
+        "evidence_type": "BOUNDED_COMMAND_BENCHMARK_COMPARISON",
+        "baseline_p95_ms": expected,
+        "maximum_p95_regression_percent": maximum_p95_regression_percent,
+        "maximum_allowed_p95_ms": round(threshold, 3),
+        "baseline_within_threshold": within,
+        "performance_slo_asserted": True,
+        "decision": "PASS_NONFINAL" if within else "FAIL",
+    })
+    return result
+
+
+def soak(command: list[str], duration_seconds: float, interval_seconds: float, timeout: float) -> dict[str, Any]:
+    if not command or duration_seconds <= 0 or duration_seconds > 3600 \
+            or interval_seconds < 0 or interval_seconds > 60 or timeout <= 0 or timeout > 300:
+        raise ValueError("SOAK_BOUNDS_INVALID")
+    started = time.monotonic()
+    iterations: list[dict[str, Any]] = []
+    while time.monotonic() - started < duration_seconds and len(iterations) < 10_000:
+        result = benchmark(command, 1, timeout)
+        observation = dict(result["observations"][0])
+        observation["soak_iteration"] = len(iterations) + 1
+        iterations.append(observation)
+        if observation["exit_code"] != 0:
+            break
+        if interval_seconds:
+            time.sleep(min(interval_seconds, max(0, duration_seconds - (time.monotonic() - started))))
+    success = bool(iterations) and all(item["exit_code"] == 0 for item in iterations)
+    return {
+        "contract": CONTRACT,
+        "evidence_type": "BOUNDED_SOAK_TEST",
+        "command": command,
+        "requested_duration_seconds": duration_seconds,
+        "actual_duration_seconds": round(time.monotonic() - started, 3),
+        "iteration_count": len(iterations),
+        "observations": iterations,
+        "decision": "PASS_NONFINAL" if success else "FAIL",
+        "production_capacity_claimed": False,
+        "final_claim_allowed": False,
+    }
+
+
 def fault_probe(mode: str, timeout: float = 0.2) -> dict[str, Any]:
     scenarios = {
         "nonzero_exit": [sys.executable, "-c", "raise SystemExit(23)"],
         "timeout": [sys.executable, "-c", "import time; time.sleep(5)"],
+        "synthetic_enospc": [sys.executable, "-c", "import errno; raise OSError(errno.ENOSPC, 'synthetic')"],
     }
     if mode not in scenarios:
         raise ValueError("FAULT_MODE_INVALID")
     evidence = benchmark(scenarios[mode], 1, timeout if mode == "timeout" else 5.0)
-    contained = evidence["observations"][0]["exit_code"] in (23, "TIMEOUT")
+    contained = evidence["observations"][0]["exit_code"] in (1, 23, "TIMEOUT")
     evidence.update({
         "evidence_type": "FAULT_CONTAINMENT_PROBE",
         "fault_mode": mode,
@@ -129,8 +209,8 @@ def fault_probe(mode: str, timeout: float = 0.2) -> dict[str, Any]:
 
 
 def safe_files(source: pathlib.Path) -> list[pathlib.Path]:
-    source = source.resolve()
-    if not source.is_dir() or ROOT not in source.parents or ".onsure" not in source.parts:
+    source = product_state_path(source, "RECOVERY_SOURCE_MUST_BE_ONSURE_DIRECTORY")
+    if not source.is_dir():
         raise ValueError("RECOVERY_SOURCE_MUST_BE_ONSURE_DIRECTORY")
     files: list[pathlib.Path] = []
     for path in sorted(source.rglob("*")):
@@ -144,7 +224,7 @@ def safe_files(source: pathlib.Path) -> list[pathlib.Path]:
 def backup(source: pathlib.Path, archive: pathlib.Path) -> dict[str, Any]:
     source = source.resolve()
     files = safe_files(source)
-    archive = archive.resolve()
+    archive = product_state_path(archive, "RECOVERY_ARCHIVE_MUST_BE_ONSURE_DIRECTORY")
     if archive.exists():
         raise ValueError("RECOVERY_ARCHIVE_ALREADY_EXISTS")
     archive.parent.mkdir(parents=True, exist_ok=True)
@@ -166,7 +246,7 @@ def backup(source: pathlib.Path, archive: pathlib.Path) -> dict[str, Any]:
     return {
         "contract": CONTRACT,
         "evidence_type": "RECOVERY_BACKUP",
-        "archive": str(archive),
+        "archive": artifact_reference(archive),
         "archive_sha256": digest(archive),
         "file_count": len(files),
         "customer_data_classification": "NOT_INSPECTED",
@@ -177,10 +257,10 @@ def backup(source: pathlib.Path, archive: pathlib.Path) -> dict[str, Any]:
 
 
 def verify_restore(archive: pathlib.Path) -> dict[str, Any]:
-    archive = archive.resolve()
+    archive = product_state_path(archive, "RECOVERY_ARCHIVE_MUST_BE_ONSURE_DIRECTORY")
     if not archive.is_file() or archive.is_symlink():
         raise ValueError("RECOVERY_ARCHIVE_INVALID")
-    with tempfile.TemporaryDirectory(prefix="onsure-recovery-verify-") as directory:
+    with tempfile.TemporaryDirectory(prefix="onsure-recovery-verify-", dir=temporary_root()) as directory:
         root = pathlib.Path(directory)
         with tarfile.open(archive, "r") as source:
             members = source.getmembers()
@@ -208,6 +288,38 @@ def verify_restore(archive: pathlib.Path) -> dict[str, Any]:
     }
 
 
+def dr_rehearsal(source: pathlib.Path, archive: pathlib.Path) -> dict[str, Any]:
+    created = backup(source, archive)
+    verified = verify_restore(archive)
+    with tempfile.TemporaryDirectory(prefix="onsure-dr-corruption-", dir=temporary_root()) as directory:
+        corrupted = pathlib.Path(directory) / "corrupted.tar"
+        shutil.copyfile(archive, corrupted)
+        data = bytearray(corrupted.read_bytes())
+        if not data:
+            raise ValueError("DR_ARCHIVE_EMPTY")
+        data[min(len(data) - 1, 1024)] ^= 0x01
+        corrupted.write_bytes(data)
+        corruption_rejected = False
+        try:
+            verify_restore(corrupted)
+        except (ValueError, tarfile.TarError, json.JSONDecodeError, OSError):
+            corruption_rejected = True
+    decision = verified["restore_verified"] and corruption_rejected
+    return {
+        "contract": CONTRACT,
+        "evidence_type": "SYNTHETIC_DR_REHEARSAL",
+        "archive": artifact_reference(archive),
+        "archive_sha256": created["archive_sha256"],
+        "file_count": created["file_count"],
+        "isolated_restore_verified": verified["restore_verified"],
+        "corrupted_archive_rejected": corruption_rejected,
+        "source_mutated": False,
+        "decision": "PASS_NONFINAL" if decision else "FAIL",
+        "production_dr_claimed": False,
+        "final_claim_allowed": False,
+    }
+
+
 def health() -> dict[str, Any]:
     usage = shutil.disk_usage(ROOT)
     return {
@@ -228,11 +340,16 @@ def health() -> dict[str, Any]:
 
 def main(argv: Iterable[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=("benchmark", "fault", "backup", "restore-verify", "health"))
+    parser.add_argument("action", choices=(
+        "benchmark", "benchmark-compare", "soak", "fault", "backup", "restore-verify", "dr-rehearsal", "health"))
     parser.add_argument("--output", type=pathlib.Path)
     parser.add_argument("--iterations", type=int, default=3)
     parser.add_argument("--timeout", type=float, default=30.0)
-    parser.add_argument("--mode", choices=("nonzero_exit", "timeout"))
+    parser.add_argument("--mode", choices=("nonzero_exit", "timeout", "synthetic_enospc"))
+    parser.add_argument("--baseline", type=pathlib.Path)
+    parser.add_argument("--maximum-p95-regression-percent", type=float, default=20.0)
+    parser.add_argument("--duration", type=float, default=10.0)
+    parser.add_argument("--interval", type=float, default=0.1)
     parser.add_argument("--source", type=pathlib.Path)
     parser.add_argument("--archive", type=pathlib.Path)
     parser.add_argument("command", nargs=argparse.REMAINDER)
@@ -240,6 +357,18 @@ def main(argv: Iterable[str] | None = None) -> int:
     if args.action == "benchmark":
         command = args.command[1:] if args.command[:1] == ["--"] else args.command
         result = benchmark(command, args.iterations, args.timeout)
+    elif args.action == "benchmark-compare":
+        if not args.baseline:
+            raise ValueError("BENCHMARK_BASELINE_REQUIRED")
+        command = args.command[1:] if args.command[:1] == ["--"] else args.command
+        result = benchmark_against_baseline(
+            command, args.iterations, args.timeout,
+            json.loads(args.baseline.read_text(encoding="utf-8")),
+            args.maximum_p95_regression_percent,
+        )
+    elif args.action == "soak":
+        command = args.command[1:] if args.command[:1] == ["--"] else args.command
+        result = soak(command, args.duration, args.interval, args.timeout)
     elif args.action == "fault":
         result = fault_probe(args.mode or "nonzero_exit", args.timeout)
     elif args.action == "backup":
@@ -250,6 +379,10 @@ def main(argv: Iterable[str] | None = None) -> int:
         if not args.archive:
             raise ValueError("RESTORE_ARCHIVE_REQUIRED")
         result = verify_restore(args.archive)
+    elif args.action == "dr-rehearsal":
+        if not args.source or not args.archive:
+            raise ValueError("DR_SOURCE_AND_ARCHIVE_REQUIRED")
+        result = dr_rehearsal(args.source, args.archive)
     else:
         result = health()
     if args.output:

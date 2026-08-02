@@ -191,8 +191,11 @@ class AutopilotContractTest(unittest.TestCase):
     def test_identity_bound_orphan_exit_never_infers_pass(self):
         with tempfile.TemporaryDirectory() as directory:
             state_path = pathlib.Path(directory) / "checkpoint.json"
+            exit_signal = pathlib.Path(directory) / "exit.signal"
             process = subprocess.Popen(
-                [sys.executable, "-c", "import time; time.sleep(0.25)"],
+                [sys.executable, "-c",
+                 "import pathlib,sys,time; p=pathlib.Path(sys.argv[1]); "
+                 "\nwhile not p.exists(): time.sleep(0.01)", str(exit_signal)],
                 start_new_session=True,
             )
             waiter = threading.Thread(target=process.wait)
@@ -210,6 +213,7 @@ class AutopilotContractTest(unittest.TestCase):
                 MODULE.request_control(self.contract, state_path, "RUNNING")
                 MODULE.recover_interrupted_state(state)
                 waiter.start()
+                exit_signal.write_text("exit\n", encoding="utf-8")
                 self.assertTrue(MODULE.recover_identity_bound_orphans(
                     self.contract, state_path, state))
                 self.assertEqual("RCA_REQUIRED", entry["state"])

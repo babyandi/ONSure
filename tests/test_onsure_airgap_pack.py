@@ -79,6 +79,19 @@ class ONSureAirgapPackTest(unittest.TestCase):
             finally:
                 airgap.BUILD_DESCRIPTORS = original_descriptors
 
+    def test_offline_repository_pack_is_digest_bound(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            repository = root / "repository"
+            artifact = repository / "example/sample/1/sample-1.jar"
+            artifact.parent.mkdir(parents=True)
+            artifact.write_bytes(b"offline")
+            archive = root / "repository.tar"
+            built = airgap.build_repository_pack(repository, archive)
+            verified = airgap.verify_repository_pack(archive)
+            self.assertEqual("PASS_NONFINAL", built["decision"])
+            self.assertEqual(1, verified["verified_entry_count"])
+
 
 if __name__ == "__main__":
     unittest.main()

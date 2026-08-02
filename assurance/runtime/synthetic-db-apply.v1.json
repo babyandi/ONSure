@@ -1,0 +1,14 @@
+{
+  "action": "APPLY",
+  "changed_migration_ids": [
+    "001_create_assurance_event"
+  ],
+  "contract": "ONSURE_SYNTHETIC_DB_MIGRATION_REHEARSAL_V1",
+  "customer_data_used": false,
+  "database_engine": "SQLITE_SYNTHETIC_ONLY",
+  "database_sha256": "97c24d67d15d4721b27c12de07d54f3c2a797f73639f70df3df96dc0034312a0",
+  "decision": "PASS_NONFINAL",
+  "final_claim_allowed": false,
+  "lock_enforced": true,
+  "production_migration_authorized": false
+}

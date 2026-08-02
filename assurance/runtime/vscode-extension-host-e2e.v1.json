@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_VSCODE_EXTENSION_HOST_E2E_EVIDENCE_V1",
+  "vscode_version": "1.95.3",
+  "test_electron_version": "2.5.2",
+  "container_base": "onsure-goal-validator:node20",
+  "xvfb": true,
+  "non_root": true,
+  "capabilities_dropped": true,
+  "no_new_privileges": true,
+  "first_run_download": "PASS",
+  "first_run_extension_host_exit_code": 0,
+  "offline_rerun_network_mode": "none",
+  "offline_rerun_extension_host_exit_code": 0,
+  "offline_network_attempts": "BLOCKED_BY_CONTAINER_NETWORK_NAMESPACE",
+  "github_actions_used": false,
+  "decision": "PASS_NONFINAL",
+  "final_claim_allowed": false
+}
