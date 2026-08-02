@@ -109,6 +109,11 @@ public final class ExecutionPlanService {
                 "estimated_seconds", estimatedSeconds,
                 "memory_limit_mb", estimatedMemoryMb,
                 "process_limit", 64,
+                "estimated_input_tokens", 0,
+                "estimated_output_tokens", 0,
+                "token_estimate_basis", "NO_MODEL_INVOCATION_PLANNED",
+                "data_transfer_scope", "WORKSPACE_LOCAL_ONLY",
+                "estimated_external_transfer_bytes", 0,
                 "network_egress", "DENY_BY_DEFAULT",
                 "paid_service_allowed", false));
         plan.put("permissions", Map.of(

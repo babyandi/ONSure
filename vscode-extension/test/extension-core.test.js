@@ -7,6 +7,11 @@ const { createHash } = require('crypto');
 const { pathToFileURL } = require('url');
 const {
   LocalApiError,
+  WORK_MODES,
+  modePolicy,
+  requireModeCapability,
+  workflowCapability,
+  requireModeWorkflow,
   normalizeBaseUrl,
   registrationRequests,
   learnRequest,
@@ -34,6 +39,28 @@ const identity = Object.freeze({
   targetId: 'target-001',
   targetType: 'GENERAL_SOFTWARE',
   sourceRoot: root
+});
+
+test('semantic work modes enforce an exact fail-closed capability matrix', () => {
+  assert.deepEqual(WORK_MODES, ['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
+  assert.equal(modePolicy('offline').externalNetworkAllowed, false);
+  assert.equal(modePolicy('OFFLINE').sourceMutationAllowed, false);
+  assert.equal(modePolicy('IMPROVE').deliveryAllowed, true);
+  assert.equal(modePolicy('ACT').sourceMutationAllowed, true);
+  for (const mode of WORK_MODES) {
+    assert.equal(modePolicy(mode).finalClaimAllowed, false);
+    assert.equal(modePolicy(mode).mergeAllowed, false);
+    assert.doesNotThrow(() => requireModeCapability(mode, 'READ'));
+  }
+  assert.throws(() => requireModeCapability('ASK', 'VERIFY'), /MODE_CAPABILITY_DENIED:ASK:VERIFY/);
+  assert.throws(() => requireModeCapability('PLAN', 'IMPROVE'), /MODE_CAPABILITY_DENIED:PLAN:IMPROVE/);
+  assert.throws(() => requireModeCapability('AUDIT', 'BUSINESS'), /MODE_CAPABILITY_DENIED:AUDIT:BUSINESS/);
+  assert.throws(() => requireModeCapability('OFFLINE', 'DELIVER'), /MODE_CAPABILITY_DENIED:OFFLINE:DELIVER/);
+  assert.doesNotThrow(() => requireModeWorkflow('VERIFY', 'validation.run'));
+  assert.doesNotThrow(() => requireModeWorkflow('IMPROVE', 'git.draft-pr'));
+  assert.equal(workflowCapability('license.read'), 'READ');
+  assert.throws(() => workflowCapability('future.unclassified'), /NOT_MODE_CLASSIFIED/);
+  assert.throws(() => requireModeWorkflow('AUTOPILOT', 'patch.apply'), /MODE_CAPABILITY_DENIED/);
 });
 
 test('snapshot and controlled delivery requests stay identity and approval bound', () => {
@@ -125,13 +152,18 @@ test('dedicated surfaces render profile plan run finding evidence and git state'
       } },
       plan: { state: 'AVAILABLE', path: '/tmp/plan.json', body: {
         plan_id: 'PLAN-1', approval: { state: 'AWAITING_USER_APPROVAL' }, risk: { level: 'HIGH', score: 70 },
-        allowed_actions: ['REVIEW'], resource_budget: { network_egress: 'DENY_BY_DEFAULT' }
+        allowed_actions: ['REVIEW'], resource_budget: {
+          network_egress: 'DENY_BY_DEFAULT', estimated_input_tokens: 0,
+          estimated_output_tokens: 0, data_transfer_scope: 'WORKSPACE_LOCAL_ONLY',
+          estimated_external_transfer_bytes: 0
+        }
       } },
       approved_plan: { state: 'NOT_PRESENT' }, validation_store: { body: { revision: 1 } }, run_count: 1,
       runs: [{ run_root: '/tmp/run', job_id: 'JOB-1', decision: 'FAIL', job_status: 'COMPLETED', artifacts: [
         { name: 'findings.json', size_bytes: 10 }, { name: 'patch-plan.json', size_bytes: 20 }
       ] }],
       latest_run: { run_root: '/tmp/run', finding_count: 1, evidence_count: 1,
+        stage_checkpoint: { body: { state: 'STAGES_FINISHED', current_stage_id: 'INTERNAL_PRODUCT_AUDIT' } },
         findings: [{ findingId: 'F-1', title: 'Unsafe', severity: 'HIGH', status: 'OPEN' }],
         evidence: [{ evidenceId: 'E-1', type: 'SOURCE', subject: 'Main.java' }],
         artifacts: [{ name: 'patch-plan.json', size_bytes: 20 }] }
@@ -146,6 +178,7 @@ test('dedicated surfaces render profile plan run finding evidence and git state'
   assert.equal(surfaceRows('onsure.findings', model)[0].label, 'Unsafe');
   assert.equal(surfaceRows('onsure.evidence', model)[0].label, 'E-1');
   assert.equal(surfaceRows('onsure.runs', model)[0].children[0].command, 'onsure.openArtifact');
+  assert.equal(surfaceRows('onsure.runtime', model)[3].label, 'Validation Stage');
 });
 
 test('local API URL accepts only explicit loopback HTTP ports', () => {

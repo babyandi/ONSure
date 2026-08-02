@@ -31,7 +31,8 @@ final class LocalWorkspaceSnapshotService {
             "review-result.json", "findings.json", "evidence.json", "evidence-based-rca.json",
             "failure-modes.json", "rca.json", "patch-plan.json", "remediation-plans.json",
             "fixture-results.json", "stage-results.json", "regression-lock.json",
-            "improvement-proof.json", "rollback-receipt.json", "rag-preparation-candidate.json");
+            "improvement-proof.json", "rollback-receipt.json", "rag-preparation-candidate.json",
+            ValidationStageCheckpointJournal.FILE_NAME);
 
     private final Path workspaceRoot;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
@@ -133,6 +134,9 @@ final class LocalWorkspaceSnapshotService {
         value.put("evidence", limitedArray(evidence));
         value.put("evidence_count", evidence != null && evidence.isArray() ? evidence.size() : 0);
         value.put("artifacts", artifacts(runRoot));
+        value.put("stage_checkpoint", document(
+                runRoot.resolve(ValidationStageCheckpointJournal.FILE_NAME),
+                "VALIDATION_STAGE_CHECKPOINT"));
         value.put("final_claim_allowed", false);
         return Map.copyOf(value);
     }

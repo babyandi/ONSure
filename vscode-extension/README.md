@@ -14,6 +14,15 @@ active workspace. All results are `SELF_VALIDATION_NONFINAL`.
 The extension rejects non-loopback URLs, browser-origin API access, paths outside the active
 workspace and a registered target whose persisted source root differs from the active workspace.
 
+## Semantic work modes
+
+`ONSure: Select Work Mode` applies an exact capability matrix rather than changing a label.
+Ask and Plan cannot run validation, source mutation or delivery; Verify and Audit can run only
+read/verification operations; Improve owns approved patch and Draft PR delivery; Autopilot only
+controls the repository-owned controller. Offline permits local registration, learning, planning
+and verification but denies delivery and external network use. Unclassified workflow operations
+fail closed. Every mode prohibits merge and Final claims.
+
 ## Controlled validation flow
 
 Run these commands in order:
@@ -68,12 +77,22 @@ Completed stages are not rerun after restart. An interrupted stage whose process
 recovered explicitly; a still-running orphan PID fails closed because safe process reattachment
 is not yet implemented.
 
+Each Java validation run also writes `stage-checkpoint.json`. The digest-sealed checkpoint records
+the ordered stage plan and every started/completed/failed boundary, and the Runtime view exposes
+its latest state. It deliberately declares `context_replay_supported=false`; restarting a killed
+ValidationEngine still requires a new run until aggregate context replay is implemented.
+
+Execution plans expose estimated input/output tokens, external transfer bytes and the approved
+data-transfer scope. Current local plans declare zero provider tokens and workspace-local transfer;
+this is an explicit no-model plan, not a measured provider quote.
+
 ## Current limit
 
-Dedicated read views, digest-bound Hunk diff preview, Hunk/whole-file external signing requests
-and CLI/Local API/VS Code Autopilot controls are implemented. Core-stage cooperative checkpoints,
-orphan-process reattachment, semantic Ask/Plan/Act agent modes, and
-installed VS Code Extension Host end-to-end automation remain partial or `NOT_RUN`.
+Dedicated read views, digest-bound Hunk diff preview, Hunk/whole-file external signing requests,
+semantic fail-closed modes, Java stage checkpoints, budget rows and CLI/Local API/VS Code Autopilot
+controls are implemented. Validation context replay, orphan-process reattachment, conversational
+AI behavior for Ask/Plan, real provider price quotes and installed VS Code Extension Host
+end-to-end automation remain partial or `NOT_RUN`.
 Independent OTester/OAudit are still required before any release claim.
 
 `npm run package` invokes the repository-owned deterministic VSIX wrapper. It normalizes ZIP entry

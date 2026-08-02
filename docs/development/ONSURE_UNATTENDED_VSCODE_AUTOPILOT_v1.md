@@ -62,5 +62,10 @@ PR 승인·병합은 2026-07-25 사용자의 명시적 지시에 따라 허용�
 - `status/verification-status.v1.json`
 - `status/remaining-work-register.v1.json`
 
+Java ValidationEngine은 각 run root의 `stage-checkpoint.json`에 별도 단계 경계를 원자적으로
+기록한다. 이 파일은 stage 순서·시작·완료·실패와 이전 checkpoint digest를 봉인하지만,
+현재 `context_replay_supported=false`다. 따라서 JVM 중단 후 기존 in-memory aggregate를
+재사용하지 않고 새 validation run을 시작해야 한다.
+
 실행 중 가변 상태와 Receipt는 `.onsure/autopilot/`에 저장한다. 이 디렉터리는
 로컬 실행 증적이며 Git에 커밋하지 않는다.

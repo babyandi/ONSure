@@ -41,6 +41,9 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - 등록 identity snapshot 기반 14개 VS Code 전용 View와 재시작 상태 복구
 - 서명 Patch 승인 → 격리 Worktree → Improvement Proof → 승인 Commit·Draft PR 연결
 - digest 검증 Hunk diff·외부 서명 요청과 checkpoint 기반 Autopilot pause/resume/cancel
+- Ask/Plan/Act/Verify/Improve/Autopilot/Audit/Offline별 fail-closed 실행 권한
+- ValidationEngine 단계별 digest-chain checkpoint와 Runtime 상태 표시
+- Provider/Model 교체 adapter 계약과 토큰·데이터 전송 예산 표시
 
 ## 이번 메타감사에서 확인된 검출기 사각지대
 
@@ -101,11 +104,10 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - 프로젝트 전용 정보와 익명화된 범용 패턴의 분리·검증
 - MVP 수용 시나리오 11개 전 항목 및 실제 저장소 2회 연속 성공
 - 외부 signer 실제 연동과 승인 request/receipt 교환 Full-Chain
-- Ask·Plan·Act·Autopilot 모드
+- Ask/Plan의 대화형 AI 응답 생성과 설치 Extension Host 사용자 여정
 - VS Code 부분 Plan 승인 UX
-- Core stage cooperative checkpoint와 orphan process 재연결
-- Provider·Model 교체성
-- Token·비용·데이터 전송 범위 가시화
+- Core checkpoint의 in-memory context 재생과 orphan process 재연결
+- 실제 Local/Remote Provider 구현 및 가격 견적 연동
 - 외부 제품용 Public SDK
 - Identity·RBAC·Cross-tenant 격리
 - Approval Replay Ledger의 외부 Anchor
@@ -154,14 +156,15 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 통합 브랜치의 로컬 및 원격 독립 clone 검증은 Java 242개, Python 104개, Node 7개,
+현재 통합 브랜치의 최신 로컬 검증은 Java 246개, Python 104개, Node 8개,
 Modular package 11개, 공개 API 238개, SBOM, operational boundary와 VSIX package를 통과했다.
-VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
-`d7e75a3fac896d024ed64944821d06142e7525027942b52fa4b0b91e927843cd`를 두 환경에서 동일하게 생성했다.
-627개 중첩 full rehearsal도 cutover와 rollback 모두 통과했으며 결과는 migration readiness 문서에 기록한다.
+최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
+`ec496fb71e787bd978c29784fbe193be433329018df96636b901354a59161595`를 생성했다.
+최신 로컬 633개 중첩 full rehearsal는 cutover와 rollback을 모두 통과했고,
+같은 Manifest의 원격 독립 clone 재검증은 커밋·push 후 수행한다.
 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을
 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖
-canonical build에서 242/242를 통과한다. VS Code Extension Host E2E, MVP Full-Chain과 독립 검토는
+canonical build에서 246/246을 통과한다. VS Code Extension Host E2E, MVP Full-Chain과 독립 검토는
 아직 실행되지 않았다.
 
 ```text

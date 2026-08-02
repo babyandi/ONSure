@@ -169,6 +169,10 @@ class ExecutionPlanApprovalServiceTest {
         value.put("fixture_count", 2);
         value.put("resource_budget", Map.of(
                 "estimated_seconds", 60, "memory_limit_mb", 1024, "process_limit", 64,
+                "estimated_input_tokens", 0, "estimated_output_tokens", 0,
+                "token_estimate_basis", "NO_MODEL_INVOCATION_PLANNED",
+                "data_transfer_scope", "WORKSPACE_LOCAL_ONLY",
+                "estimated_external_transfer_bytes", 0,
                 "network_egress", "DENY_BY_DEFAULT", "paid_service_allowed", false));
         value.put("permissions", Map.of(
                 "read_source", true, "execute_reviewed_fixtures", true,

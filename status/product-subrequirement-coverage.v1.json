@@ -1139,12 +1139,15 @@
       "verification_state": "NON_FINAL",
       "code_refs": [
         "scripts/onsure-autopilot.py",
+        "src/main/java/io/onsure/platform/ValidationStageCheckpointJournal.java",
+        "src/main/java/io/onsure/platform/ValidationEngine.java",
         "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
         "src/main/java/io/onsure/platform/LocalWorkspaceSnapshotService.java",
         "vscode-extension/extension.js"
       ],
       "test_refs": [
         "tests/test_onsure_autopilot.py",
+        "src/test/java/io/onsure/platform/ValidationStageCheckpointJournalTest.java",
         "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalWorkspaceSnapshotServiceTest.java",
         "vscode-extension/test/extension-core.test.js"
       ],
@@ -1156,12 +1159,13 @@
         "VSCODE"
       ],
       "implemented_surfaces": [
+        "CORE",
         "CLI",
         "LOCAL_API",
         "VSCODE"
       ],
       "missing_controls": [
-        "CORE_COOPERATIVE_JOB_CHECKPOINT_MISSING",
+        "CORE_CHECKPOINT_CONTEXT_REPLAY_NOT_IMPLEMENTED",
         "RUNNING_CONTROLLER_CRASH_ORPHAN_REATTACH_MISSING",
         "VSCODE_EXTENSION_HOST_CONTROL_FLOW_NOT_RUN"
       ],
@@ -1175,18 +1179,25 @@
       "id": "NFR-05",
       "name": "Replaceable provider and model",
       "normative_phrase": "Provider와 모델 교체 가능성",
-      "implementation_status": "DESIGN_ONLY",
-      "verification_state": "NOT_RUN",
-      "code_refs": [],
-      "test_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NON_FINAL",
+      "code_refs": [
+        "contracts/model-provider-adapter.v1.schema.json",
+        "src/main/java/io/onsure/platform/ModelProviderAdapterRegistry.java"
+      ],
+      "test_refs": [
+        "src/test/java/io/onsure/platform/ModelProviderAdapterRegistryTest.java"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE"
       ],
-      "implemented_surfaces": [],
+      "implemented_surfaces": [
+        "CORE"
+      ],
       "missing_controls": [
-        "MODEL_PROVIDER_ADAPTER_CONTRACT_MISSING",
-        "PROVIDER_COMPATIBILITY_TEST_MISSING"
+        "REAL_LOCAL_MODEL_PROVIDER_NOT_IMPLEMENTED",
+        "REAL_REMOTE_PROVIDER_NOT_IMPLEMENTED"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
@@ -1198,24 +1209,28 @@
       "id": "NFR-06",
       "name": "Execution budget visibility",
       "normative_phrase": "실행 비용·Token·데이터 전송 범위 가시화",
-      "implementation_status": "STUB",
-      "verification_state": "NOT_RUN",
+      "implementation_status": "PARTIAL",
+      "verification_state": "NON_FINAL",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/io/onsure/platform/ExecutionPlanService.java",
+        "vscode-extension/extension-core.js"
       ],
-      "test_refs": [],
+      "test_refs": [
+        "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "vscode-extension/test/extension-core.test.js"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE",
         "VSCODE"
       ],
       "implemented_surfaces": [
-        "CORE"
+        "CORE",
+        "VSCODE"
       ],
       "missing_controls": [
-        "TOKEN_ESTIMATE_MISSING",
-        "DATA_TRANSFER_SCOPE_MISSING",
-        "VSCODE_BUDGET_VIEW_MISSING"
+        "REAL_PROVIDER_COST_QUOTE_NOT_IMPLEMENTED",
+        "VSCODE_EXTENSION_HOST_BUDGET_VIEW_NOT_RUN"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
@@ -1285,10 +1300,10 @@
   "summary": {
     "total": 43,
     "implemented": 3,
-    "partial": 32,
-    "stub": 5,
-    "design_only": 3,
-    "verification_not_run": 42
+    "partial": 34,
+    "stub": 4,
+    "design_only": 2,
+    "verification_not_run": 40
   },
   "assurance": {
     "current_main_local_gate": "NOT_RUN",

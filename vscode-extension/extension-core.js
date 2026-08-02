@@ -8,6 +8,96 @@ const ID_PATTERN = /^[A-Za-z0-9._-]{1,128}$/;
 const EXISTING_REGISTRATION_CODES = Object.freeze(new Set([
   'WORKSPACE_EXISTS', 'PROJECT_EXISTS', 'TARGET_EXISTS'
 ]));
+const WORK_MODES = Object.freeze(['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
+const MODE_CAPABILITIES = Object.freeze({
+  ASK: Object.freeze(['READ', 'REGISTER']),
+  PLAN: Object.freeze(['READ', 'REGISTER', 'LEARN', 'PLAN']),
+  ACT: Object.freeze(['READ', 'REGISTER', 'LEARN', 'PLAN', 'VERIFY', 'IMPROVE', 'BUSINESS']),
+  VERIFY: Object.freeze(['READ', 'VERIFY']),
+  IMPROVE: Object.freeze(['READ', 'VERIFY', 'IMPROVE', 'DELIVER']),
+  AUTOPILOT: Object.freeze(['READ', 'AUTOPILOT_CONTROL']),
+  AUDIT: Object.freeze(['READ', 'VERIFY']),
+  OFFLINE: Object.freeze(['READ', 'REGISTER', 'LEARN', 'PLAN', 'VERIFY'])
+});
+const OPERATION_CAPABILITIES = Object.freeze({
+  'project.register-workspace': 'REGISTER',
+  'project.register': 'REGISTER',
+  'project.register-target': 'REGISTER',
+  'project.read-target': 'READ',
+  'project.list-targets': 'READ',
+  'program.learn': 'LEARN',
+  'plan.generate': 'PLAN',
+  'plan.approve': 'PLAN',
+  'validation.run': 'VERIFY',
+  'patch.apply': 'IMPROVE',
+  'patch.rollback': 'IMPROVE',
+  'improvement.prove': 'IMPROVE',
+  'git.commit': 'DELIVER',
+  'git.draft-pr': 'DELIVER',
+  'license.issue': 'BUSINESS',
+  'license.activate': 'BUSINESS',
+  'license.validate': 'VERIFY',
+  'license.authorize': 'VERIFY',
+  'license.reserve': 'BUSINESS',
+  'license.commit-reservation': 'BUSINESS',
+  'license.release-reservation': 'BUSINESS',
+  'license.suspend': 'BUSINESS',
+  'license.revoke': 'BUSINESS',
+  'license.read': 'READ',
+  'case.open': 'BUSINESS',
+  'case.preflight': 'VERIFY',
+  'case.quote': 'BUSINESS',
+  'case.accept-order': 'BUSINESS',
+  'case.record-payment': 'BUSINESS',
+  'case.verify-payment': 'VERIFY',
+  'case.start-work': 'BUSINESS',
+  'case.deliver': 'BUSINESS',
+  'case.accept-delivery': 'BUSINESS',
+  'case.request-refund': 'BUSINESS',
+  'case.record-refund': 'BUSINESS',
+  'case.verify-refund': 'VERIFY',
+  'case.legal-hold': 'BUSINESS',
+  'case.delete': 'BUSINESS',
+  'case.cancel': 'BUSINESS',
+  'case.read': 'READ'
+});
+
+function requireWorkMode(value) {
+  const mode = String(value || '').toUpperCase();
+  if (!WORK_MODES.includes(mode)) throw new Error('ONSure work mode is invalid.');
+  return mode;
+}
+
+function modePolicy(value) {
+  const mode = requireWorkMode(value);
+  return Object.freeze({
+    mode,
+    capabilities: MODE_CAPABILITIES[mode],
+    externalNetworkAllowed: !['OFFLINE', 'ASK', 'PLAN', 'VERIFY', 'AUTOPILOT', 'AUDIT'].includes(mode),
+    deliveryAllowed: MODE_CAPABILITIES[mode].includes('DELIVER'),
+    sourceMutationAllowed: ['ACT', 'IMPROVE'].includes(mode),
+    finalClaimAllowed: false,
+    mergeAllowed: false
+  });
+}
+
+function requireModeCapability(modeValue, capability) {
+  const policy = modePolicy(modeValue);
+  if (!policy.capabilities.includes(capability)) {
+    throw new Error(`ONSURE_MODE_CAPABILITY_DENIED:${policy.mode}:${capability}`);
+  }
+  return policy;
+}
+
+function workflowCapability(operation) {
+  const capability = OPERATION_CAPABILITIES[String(operation || '')];
+  if (!capability) throw new Error(`ONSURE_WORKFLOW_OPERATION_NOT_MODE_CLASSIFIED:${operation}`);
+  return capability;
+}
+
+function requireModeWorkflow(mode, operation) {
+  return requireModeCapability(mode, workflowCapability(operation));
+}
 
 class LocalApiError extends Error {
   constructor(code, message, status) {
@@ -431,12 +521,18 @@ function surfaceRows(viewId, model = {}) {
       {
         const checkpoint = snapshot.autopilot?.checkpoint?.body || {};
         const control = snapshot.autopilot?.control?.body || {};
+        const validationCheckpoint = latest.stage_checkpoint?.body || {};
       return [
         row('Local API', status.state || 'UNKNOWN', 'server-process'),
         row('Autopilot State', checkpoint.state || 'NOT_STARTED', 'debug-pause'),
         row('Autopilot Control', control.desired_state || 'NOT_REQUESTED', 'settings'),
+        row('Validation Stage', validationCheckpoint.current_stage_id || 'NOT_RUN', 'pulse'),
+        row('Validation Checkpoint', validationCheckpoint.state || 'NOT_PRESENT', 'save'),
         row('Validation Store Revision', snapshot.validation_store?.body?.revision || 0, 'database'),
         row('Run Count', snapshot.run_count || 0, 'run-all'),
+        row('Token Estimate', `${plan.resource_budget?.estimated_input_tokens ?? 0} in / ${plan.resource_budget?.estimated_output_tokens ?? 0} out`, 'symbol-number'),
+        row('Data Transfer', plan.resource_budget?.data_transfer_scope || 'NOT_PLANNED', 'arrow-swap'),
+        row('External Transfer', `${plan.resource_budget?.estimated_external_transfer_bytes ?? 0} bytes`, 'cloud-upload'),
         row('Paid Service', plan.resource_budget?.paid_service_allowed ?? false, 'credit-card'),
         row('Network', plan.resource_budget?.network_egress || 'DENY_BY_DEFAULT', 'globe')
       ];
@@ -498,7 +594,14 @@ function isExistingRegistration(error) {
 
 module.exports = {
   ID_PATTERN,
+  WORK_MODES,
+  MODE_CAPABILITIES,
   LocalApiError,
+  requireWorkMode,
+  modePolicy,
+  requireModeCapability,
+  workflowCapability,
+  requireModeWorkflow,
   normalizeBaseUrl,
   registrationRequests,
   learnRequest,

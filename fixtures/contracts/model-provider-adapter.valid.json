@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_MODEL_PROVIDER_ADAPTER_V1",
+  "provider_id": "local-deterministic",
+  "model_id": "fixture-model",
+  "model_version": "1",
+  "execution_class": "LOCAL_DETERMINISTIC",
+  "supports_offline": true,
+  "maximum_input_tokens": 4096,
+  "maximum_output_tokens": 1024,
+  "allowed_data_scopes": ["DIGEST_ONLY", "REDACTED_CONTEXT"],
+  "compatibility_contract": "ONSURE_MODEL_PROVIDER_COMPATIBILITY_V1",
+  "final_claim_allowed": false
+}

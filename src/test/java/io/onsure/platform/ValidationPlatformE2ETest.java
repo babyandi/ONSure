@@ -211,6 +211,7 @@ class ValidationPlatformE2ETest {
                 "validation-report.json", "validation-report.md", "validation-report.html",
                 "program-profile.json", "execution-plan.json", "execution-plan-approval.json",
                 "review-result.json", "evidence-based-rca.json", "patch-plan.json", "manifest.sha256"));
+        files.add(ValidationStageCheckpointJournal.FILE_NAME);
         if (behaviorExpected) files.add("behavior-profile.json");
         for (String file : files) assertTrue(Files.isRegularFile(runRoot.resolve(file)), file);
         assertTrue(Files.isRegularFile(runRoot.getParent().getParent().resolve("failure-mode-registry.json")));

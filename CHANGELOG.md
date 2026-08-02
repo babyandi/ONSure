@@ -26,6 +26,10 @@
 - 재시작 후 Profile·Plan·Run·Patch/Proof/Git receipt 복구 및 승인형 Patch·Commit·Draft PR 명령
 - source digest 검증 Hunk diff, 선택 Hunk 외부 서명 요청 계약과 승인 purpose 정합화
 - subprocess group 기반 Autopilot pause/resume/cancel 및 CLI·Local API·VS Code control journal
+- Ask/Plan/Act/Verify/Improve/Autopilot/Audit/Offline별 exact capability matrix와 미분류 Workflow 기본 거부
+- ValidationEngine의 digest-chain stage checkpoint 및 Local API·VS Code Runtime 표시
+- Model Provider adapter schema/registry와 두 교체형 deterministic provider compatibility test
+- 실행계획의 Token·데이터 전송 예산 필드와 VS Code Runtime 예산 표시
 
 ### Changed
 

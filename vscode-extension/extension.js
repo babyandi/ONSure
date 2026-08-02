@@ -6,7 +6,11 @@ const path = require('path');
 const { randomUUID } = require('crypto');
 const {
   ID_PATTERN,
+  WORK_MODES,
   LocalApiError,
+  requireWorkMode,
+  requireModeCapability,
+  requireModeWorkflow,
   normalizeBaseUrl,
   registrationRequests,
   learnRequest,
@@ -44,7 +48,6 @@ const LAST_CHANGE_SET_KEY = 'onsure.lastGitChangeSet';
 const LAST_DRAFT_PR_RECEIPT_KEY = 'onsure.lastDraftPrReceipt';
 const REGISTERED_IDENTITY_KEY = 'onsure.registeredIdentity';
 const WORK_MODE_KEY = 'onsure.workMode';
-const WORK_MODES = Object.freeze(['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
 const VIEW_IDS = Object.freeze([
   'onsure.workspace', 'onsure.profile', 'onsure.inventory', 'onsure.requirements',
   'onsure.threats', 'onsure.plan', 'onsure.runs', 'onsure.findings',
@@ -298,7 +301,17 @@ async function activate(context) {
     providers.forEach(provider => provider.refresh());
   }
 
+  function currentWorkMode() {
+    return requireWorkMode(context.workspaceState.get(WORK_MODE_KEY)
+      || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK');
+  }
+
+  function requireCapability(capability) {
+    return requireModeCapability(currentWorkMode(), capability);
+  }
+
   async function executeWorkflow(operation, request, title) {
+    requireModeWorkflow(currentWorkMode(), operation);
     const workflow = await vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: `ONSure: ${title}`,
@@ -314,6 +327,7 @@ async function activate(context) {
   }
 
   async function registerActiveWorkspace() {
+    requireCapability('REGISTER');
     const root = workspaceRoot();
     const defaultId = path.basename(root).replace(/[^A-Za-z0-9._-]/g, '-').slice(0, 128) || 'onsure-project';
     const workspaceId = await vscode.window.showInputBox({
@@ -369,6 +383,7 @@ async function activate(context) {
   }
 
   async function loadLatestPatchReview() {
+    requireCapability('READ');
     const root = workspaceRoot();
     identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
     const current = await model.load(true);
@@ -401,6 +416,7 @@ async function activate(context) {
   }
 
   async function savePatchSigningRequest(review, selectedHunkIds, selectionScope) {
+    requireCapability('IMPROVE');
     const branch = await vscode.window.showInputBox({
       title: 'Requested Isolated Patch Branch',
       value: `codex/${review.targetId}-approved-patch`,
@@ -426,6 +442,7 @@ async function activate(context) {
   }
 
   async function controlAutopilot(action) {
+    requireCapability('AUTOPILOT_CONTROL');
     const root = workspaceRoot();
     identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
     const response = await client.request(
@@ -484,6 +501,7 @@ async function activate(context) {
     vscode.commands.registerCommand('onsure.refresh', async () => refreshAll()),
     vscode.commands.registerCommand('onsure.autopilotStatus', async () => {
       try {
+        requireCapability('READ');
         const current = await model.load(true);
         if (current.error) throw new Error(current.error);
         await showJson('Autopilot checkpoint — NONFINAL',
@@ -710,6 +728,7 @@ async function activate(context) {
     }),
     vscode.commands.registerCommand('onsure.applyApprovedPatch', async () => {
       try {
+        requireCapability('IMPROVE');
         const root = workspaceRoot();
         identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
         const runRoot = context.workspaceState.get(LAST_RUN_KEY);
@@ -731,6 +750,7 @@ async function activate(context) {
     }),
     vscode.commands.registerCommand('onsure.proveImprovement', async () => {
       try {
+        requireCapability('IMPROVE');
         const root = workspaceRoot();
         identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
         const patchReceipt = context.workspaceState.get(LAST_PATCH_RECEIPT_KEY);
@@ -756,6 +776,7 @@ async function activate(context) {
     }),
     vscode.commands.registerCommand('onsure.gitCommit', async () => {
       try {
+        requireCapability('DELIVER');
         const worktree = context.workspaceState.get(LAST_WORKTREE_KEY);
         const patchReceipt = context.workspaceState.get(LAST_PATCH_RECEIPT_KEY);
         const proof = context.workspaceState.get(LAST_IMPROVEMENT_PROOF_KEY);
@@ -785,6 +806,7 @@ async function activate(context) {
     }),
     vscode.commands.registerCommand('onsure.gitDraftPr', async () => {
       try {
+        requireCapability('DELIVER');
         const worktree = context.workspaceState.get(LAST_WORKTREE_KEY);
         const changeSet = context.workspaceState.get(LAST_CHANGE_SET_KEY);
         if (!worktree || !changeSet) {

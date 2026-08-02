@@ -47,6 +47,10 @@ class LocalWorkspaceSnapshotServiceTest {
                 [{"evidenceId":"E-001","type":"SOURCE","subject":"src/Main.java"}]
                 """);
         Files.writeString(run.resolve("patch-plan.json"), "{}\n");
+        Files.writeString(run.resolve("stage-checkpoint.json"), """
+                {"contract":"ONSURE_VALIDATION_STAGE_CHECKPOINT_V1","state":"STAGES_FINISHED",
+                 "sequence":5,"final_claim_allowed":false}
+                """);
 
         Map<String, Object> snapshot = new LocalWorkspaceSnapshotService(temp)
                 .snapshot("project-001", "target-001");
@@ -66,6 +70,8 @@ class LocalWorkspaceSnapshotServiceTest {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> artifacts = (List<Map<String, Object>>) latest.get("artifacts");
         assertTrue(artifacts.stream().anyMatch(value -> "patch-plan.json".equals(value.get("name"))));
+        assertTrue(artifacts.stream().anyMatch(value -> "stage-checkpoint.json".equals(value.get("name"))));
+        assertEquals("AVAILABLE", map(latest.get("stage_checkpoint")).get("state"));
         assertFalse(Boolean.TRUE.equals(snapshot.get("final_claim_allowed")));
     }
 

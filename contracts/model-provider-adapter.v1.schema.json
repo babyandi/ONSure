@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/model-provider-adapter.v1.schema.json",
+  "title": "ONSure Model Provider Adapter Descriptor V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "provider_id", "model_id", "model_version", "execution_class",
+    "supports_offline", "maximum_input_tokens", "maximum_output_tokens",
+    "allowed_data_scopes", "compatibility_contract", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_MODEL_PROVIDER_ADAPTER_V1"},
+    "provider_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "model_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "model_version": {"type": "string", "minLength": 1, "maxLength": 128},
+    "execution_class": {"enum": ["LOCAL_DETERMINISTIC", "LOCAL_MODEL", "REMOTE_PROVIDER"]},
+    "supports_offline": {"type": "boolean"},
+    "maximum_input_tokens": {"type": "integer", "minimum": 1},
+    "maximum_output_tokens": {"type": "integer", "minimum": 1},
+    "allowed_data_scopes": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"enum": ["DIGEST_ONLY", "REDACTED_CONTEXT", "FULL_APPROVED_CONTEXT"]}
+    },
+    "compatibility_contract": {"const": "ONSURE_MODEL_PROVIDER_COMPATIBILITY_V1"},
+    "final_claim_allowed": {"const": false}
+  }
+}
