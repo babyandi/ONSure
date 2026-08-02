@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.Decision;
 import io.onsure.assurance.ExclusiveFileLock;
+import io.onsure.common.RagCandidatePreparer;
+import io.onsure.common.RagCandidateRequest;
+import io.onsure.common.Sha256;
 import io.onsure.platform.ValidationModel.ValidationReport;
-import io.onsure.rag.RagPreparationService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -72,8 +74,8 @@ public final class FileValidationStore {
             writeJson(run.resolve("stage-results.json"), context.stageResults());
             writeJson(run.resolve("regression-lock.json"), context.regressionLock());
             writeJson(run.resolve("validation-report.json"), report);
-            Map<String, Object> ragCandidate = new RagPreparationService()
-                    .prepareOwnCandidate(report, root.resolve("rag-preparation"));
+            Map<String, Object> ragCandidate = new RagCandidatePreparer()
+                    .prepare(candidateRequest(report), root.resolve("rag-preparation"));
             writeJson(run.resolve("rag-preparation-candidate.json"), ragCandidate);
             new ValidationReportExporter().export(report, run);
             new FailureModeRegistry(root.resolve("failure-mode-registry.json"))
@@ -89,6 +91,16 @@ public final class FileValidationStore {
         Path run = runRoot.toAbsolutePath().normalize();
         if (!run.startsWith(root)) throw new IllegalArgumentException("run path escapes store root");
         return mapper.readValue(run.resolve("validation-report.json").toFile(), ValidationReport.class);
+    }
+
+    private RagCandidateRequest candidateRequest(ValidationReport report) throws Exception {
+        return new RagCandidateRequest(
+                report.jobId(), report.reportId(), report.target().targetId(),
+                report.target().immutableSourceReference(), report.decision().name(),
+                report.findings().size(), report.failureModes().size(), report.rcaRecords().size(),
+                report.fixtureResults().stream()
+                        .anyMatch(value -> !"PASS".equals(value.decision().name())),
+                Sha256.digest(mapper.writeValueAsBytes(report)));
     }
 
     private Map<String, Object> storageContext(ValidationContext context) {

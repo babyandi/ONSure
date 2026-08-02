@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.onsure.assurance.Decision;
+import io.onsure.common.Sha256;
 import io.onsure.platform.ValidationModel;
 import io.onsure.platform.ValidationModel.FailureMode;
 import io.onsure.platform.ValidationModel.JobStatus;
@@ -17,6 +19,7 @@ import io.onsure.platform.ValidationModel.ValidationTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -24,7 +27,56 @@ import org.junit.jupiter.api.io.TempDir;
 
 class RagPreparationServiceTest {
     @TempDir Path temp;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper()
+            .findAndRegisterModules()
+            .enable(SerializationFeature.INDENT_OUTPUT);
+
+    @Test
+    void platformNeutralRequestMatchesLegacyReportAdapter() throws Exception {
+        Path target = Files.createDirectories(temp.resolve("target"));
+        ValidationReport report = report(target, true);
+        RagPreparationRequest request = request(report);
+        RagPreparationService service = new RagPreparationService();
+
+        Map<String, Object> legacy = service.prepareOwnCandidate(
+                report, temp.resolve("legacy-store"));
+        Map<String, Object> neutral = service.prepareOwnCandidate(
+                request, temp.resolve("neutral-store"));
+
+        assertEquals(withoutPreparedAt(legacy), withoutPreparedAt(neutral));
+        assertEquals(request.sourceReportSha256(), neutral.get("source_report_sha256"));
+        assertEquals(service.learningProfile(report), service.learningProfile(request));
+        Map<String, Object> bootstrap = service.bootstrapTargetEnvironment(request, target, true);
+        assertEquals(request.targetId(), bootstrap.get("owner"));
+        assertEquals(request.targetSourceReference(), bootstrap.get("target_source_ref"));
+    }
+
+    @Test
+    void platformNeutralRequestRejectsInvalidEvidenceMetadata() throws Exception {
+        ValidationReport report = report(temp.resolve("target"), false);
+        RagPreparationRequest valid = request(report);
+
+        assertThrows(IllegalArgumentException.class, () -> new RagPreparationRequest(
+                valid.jobId(), valid.reportId(), valid.targetId(), valid.targetName(),
+                valid.targetType(), valid.targetSourceRoot(), valid.targetSourceReference(),
+                valid.validationDecision(), -1, valid.failureModeCount(), valid.rcaCount(),
+                valid.nonPassingFixture(), valid.sourceReportSha256()));
+        assertThrows(IllegalArgumentException.class, () -> new RagPreparationRequest(
+                valid.jobId(), valid.reportId(), valid.targetId(), valid.targetName(),
+                valid.targetType(), valid.targetSourceRoot(), valid.targetSourceReference(),
+                valid.validationDecision(), valid.findingCount(), valid.failureModeCount(),
+                valid.rcaCount(), valid.nonPassingFixture(), "not-a-digest"));
+        assertThrows(IllegalArgumentException.class, () -> new RagPreparationRequest(
+                valid.jobId(), valid.reportId(), valid.targetId(), valid.targetName(),
+                "UNKNOWN_TARGET", valid.targetSourceRoot(), valid.targetSourceReference(),
+                valid.validationDecision(), valid.findingCount(), valid.failureModeCount(),
+                valid.rcaCount(), valid.nonPassingFixture(), valid.sourceReportSha256()));
+        assertThrows(IllegalArgumentException.class, () -> new RagPreparationRequest(
+                valid.jobId(), valid.reportId(), valid.targetId(), valid.targetName(),
+                valid.targetType(), valid.targetSourceRoot(), valid.targetSourceReference(),
+                "UNKNOWN_DECISION", valid.findingCount(), valid.failureModeCount(),
+                valid.rcaCount(), valid.nonPassingFixture(), valid.sourceReportSha256()));
+    }
 
     @Test
     void onsureKeepsItsOwnCandidateAndTargetOwnsExplicitlyBootstrappedEnvironment() throws Exception {
@@ -121,5 +173,22 @@ class RagPreparationServiceTest {
                 "ONSURE_VALIDATION_REPORT_V1", "report-1", job.jobId(),
                 validationTarget, Decision.PASS, now, List.of(), List.of(), modes,
                 List.of(), List.of(), null, Map.of());
+    }
+
+    private RagPreparationRequest request(ValidationReport report) throws Exception {
+        return new RagPreparationRequest(
+                report.jobId(), report.reportId(), report.target().targetId(),
+                report.target().targetName(), report.target().targetType().name(),
+                report.target().sourceRoot(), report.target().immutableSourceReference(),
+                report.decision().name(), report.findings().size(), report.failureModes().size(),
+                report.rcaRecords().size(), report.fixtureResults().stream()
+                        .anyMatch(value -> value.decision() != Decision.PASS),
+                Sha256.digest(mapper.writeValueAsBytes(report)));
+    }
+
+    private static Map<String, Object> withoutPreparedAt(Map<String, Object> candidate) {
+        Map<String, Object> copy = new LinkedHashMap<>(candidate);
+        copy.remove("prepared_at");
+        return copy;
     }
 }
