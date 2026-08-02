@@ -225,7 +225,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "aedb6b7e0d82ff94d6a23292ab245f356fff0eb61f6f9459f5a8ba0e6a4ed958",
+      "sha256": "00c42064f411100459ff289b8c59e5aff34fe9d277f952205cf4590f2899967a",
       "size_bytes": 15217
     },
     {
@@ -4562,8 +4562,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "73bd19694abdde1f6b7138910e7bbfb4c5bbcda8609d5303041c29f359ca5e5a",
-      "size_bytes": 7582
+      "sha256": "fdff8614452a2af3358d55d746113af599be9ecbff4a683cb582dd01308e8245",
+      "size_bytes": 7871
     },
     {
       "current_path": "scripts/onsure_product_root.py",
@@ -8957,8 +8957,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "02b59559087c5fec219047b4a4148c11aedc335658bf48f6fe2e7497f2a1fc65",
-      "size_bytes": 2550
+      "sha256": "a4722c3d900464e3f50c6d17331cfc12f34ccd0adb7fde41fb037f2aaa744bc2",
+      "size_bytes": 3094
     },
     {
       "current_path": "tests/test_onsure_product_metadata.py",
@@ -9166,6 +9166,6 @@
       "NO_PATTERN_MATCH": 607,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 6910302
+    "total_size_bytes": 6911135
   }
 }

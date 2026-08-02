@@ -1,6 +1,8 @@
 import pathlib
+import subprocess
 import sys
 import unittest
+from unittest import mock
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -69,6 +71,18 @@ class ONSurePrOverlapTest(unittest.TestCase):
             matrix["pull_requests"][1]["decision"],
         )
         self.assertFalse(matrix["automatic_merge_allowed"])
+
+    def test_missing_shallow_clone_pr_object_is_not_an_error(self):
+        pr = {
+            "number": 27,
+            "headRefOid": "a" * 40,
+        }
+        missing = subprocess.CompletedProcess(
+            args=["git", "cat-file"], returncode=128, stdout="", stderr="missing"
+        )
+        with mock.patch.object(overlap.subprocess, "run", return_value=missing) as run:
+            self.assertEqual(set(), overlap.integrated_pr_numbers([pr]))
+        self.assertEqual(1, run.call_count)
 
 
 if __name__ == "__main__":

@@ -65,8 +65,18 @@ def fetch_pr(number: int) -> dict[str, object]:
 def integrated_pr_numbers(prs: list[dict[str, object]]) -> set[int]:
     integrated: set[int] = set()
     for pr in prs:
+        head = str(pr["headRefOid"])
+        available = subprocess.run(
+            ("git", "cat-file", "-e", f"{head}^{{commit}}"),
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if available.returncode != 0:
+            continue
         process = subprocess.run(
-            ("git", "merge-base", "--is-ancestor", str(pr["headRefOid"]), "HEAD"),
+            ("git", "merge-base", "--is-ancestor", head, "HEAD"),
             cwd=ROOT,
             text=True,
             capture_output=True,
