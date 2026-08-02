@@ -13,6 +13,22 @@
     "package": "mvn -B -ntp -q -f pom-modular.xml clean package",
     "release_authority": false
   },
+  "public_api": {
+    "baseline": "contracts/java-public-api-baseline.v1.json",
+    "command": "python3 scripts/onsure_java_api_baseline.py validate",
+    "scope": "ALL_COMPILED_PUBLIC_CLASSES_AND_PUBLIC_BINARY_DESCRIPTORS"
+  },
+  "supply_chain": {
+    "sbom": "assurance/dependencies/onsure.cdx.json",
+    "license_inventory": "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
+    "cyclonedx_plugin_version": "2.9.1",
+    "cyclonedx_schema": "1.6"
+  },
+  "cutover_rehearsal": {
+    "command": "python3 scripts/rehearse_onsure_nested_root.py --mode full",
+    "actual_external_repository_mutation": false,
+    "rollback_digest_verification_required": true
+  },
   "module_artifacts": {
     "onsure-core": "modules/onsure-core",
     "onsure-cli": "modules/onsure-cli",

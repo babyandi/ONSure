@@ -43,6 +43,14 @@ build:
     command: python3 scripts/validate_onsure_build_boundary.py
   migration_validation:
     command: python3 scripts/validate_monorepo_migration_readiness.py
+  public_api_validation:
+    command: python3 scripts/onsure_java_api_baseline.py validate
+    requires_compiled_classes: true
+  supply_chain_validation:
+    command: python3 scripts/onsure_supply_chain.py validate
+    cyclonedx_schema: "1.6"
+  nested_root_rehearsal:
+    command: python3 scripts/rehearse_onsure_nested_root.py --mode full
 product_root:
   environment_variable: ONSURE_PRODUCT_ROOT
   default_resolution: script_location_parent
@@ -52,6 +60,8 @@ migration:
   immutable_cutover_commit_required: true
   package_path_change_in_current_repository: false
   manifest: assurance/migration/onsure-migration-manifest.v1.json
+  open_pr_overlap: assurance/migration/onsure-open-pr-overlap.v1.json
+  merge_order_must_be_clear: true
 release:
   deployment: NOT_RUN
   production_go: false

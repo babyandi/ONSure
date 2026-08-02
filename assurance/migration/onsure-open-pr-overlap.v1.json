@@ -1,0 +1,70 @@
+{
+  "automatic_merge_allowed": false,
+  "base": "origin/main",
+  "contract": "ONSURE_OPEN_PR_OVERLAP_V1",
+  "final_claim_allowed": false,
+  "local_changed_path_count": 44,
+  "merge_decision": "HOLD_MERGE_ORDER_REQUIRED",
+  "pairwise_relationship": {
+    "ahead_by": 46,
+    "base_pr": 27,
+    "behind_by": 265,
+    "head_pr": 28,
+    "merge_base_sha": "dddf75c43ced52d22969462ebd629aa943389991",
+    "status": "DIVERGED"
+  },
+  "pull_requests": [
+    {
+      "base": "main",
+      "changed_file_count": 89,
+      "decision": "POST_MERGE_REVALIDATION_REQUIRED",
+      "draft": true,
+      "exact_path_overlap": [],
+      "head_branch": "audit/onsure-meta-omission-remediation-20260728",
+      "head_sha": "28cd02d93779f06660c49b280b208fe9fd7fcc2e",
+      "migration_gate_revalidation_paths": [
+        "pom-modular.xml",
+        "pom.xml",
+        "scripts/create-source-snapshot.py",
+        "scripts/onsure-local-gate.sh",
+        "scripts/onsure-one-shot.sh"
+      ],
+      "number": 27,
+      "state": "OPEN",
+      "title": "Audit and remediate granular feature, process, trust, and detector omissions",
+      "url": "https://github.com/babyandi/ONSure/pull/27"
+    },
+    {
+      "base": "main",
+      "changed_file_count": 160,
+      "decision": "CONFLICT_RECONCILIATION_REQUIRED",
+      "draft": true,
+      "exact_path_overlap": [
+        "tests/test_onsure_autopilot.py",
+        "tests/test_repository_contracts.py"
+      ],
+      "head_branch": "agent/onsure-final-remediation-20260729",
+      "head_sha": "41c3b410e6087af619b135b9ed0818078a50dc8a",
+      "migration_gate_revalidation_paths": [
+        "pom-modular.xml",
+        "pom.xml",
+        "requirements-validation.txt",
+        "scripts/create-source-snapshot.py",
+        "scripts/onsure-local-gate.sh",
+        "scripts/onsure-one-shot.sh"
+      ],
+      "number": 28,
+      "state": "OPEN",
+      "title": "Complete ONSure final remediation gate coverage",
+      "url": "https://github.com/babyandi/ONSure/pull/28"
+    }
+  ],
+  "repository": "babyandi/ONSure",
+  "required_actions": [
+    "CHOOSE_PR_MERGE_ORDER",
+    "REBASE_REMAINING_PRS_ON_CHOSEN_BASE",
+    "REGENERATE_API_SBOM_MANIFEST_AND_OVERLAP_BASELINES",
+    "RERUN_CANONICAL_MODULAR_NESTED_ROOT_GATES"
+  ],
+  "source": "GITHUB_READ_ONLY_CURRENT_PR_HEADS"
+}

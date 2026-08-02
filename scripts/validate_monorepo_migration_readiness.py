@@ -101,6 +101,20 @@ def main() -> int:
     if metadata_result["decision"] != "PASS_NONFINAL":
         errors.append("PRODUCT_METADATA_VALIDATION_FAILED")
 
+    api_baseline = json.loads(
+        (ROOT / "contracts/java-public-api-baseline.v1.json").read_text(encoding="utf-8")
+    )
+    license_inventory = json.loads(
+        (ROOT / "assurance/dependencies/onsure-dependency-license-inventory.v1.json")
+        .read_text(encoding="utf-8")
+    )
+    overlap = json.loads(
+        (ROOT / "assurance/migration/onsure-open-pr-overlap.v1.json")
+        .read_text(encoding="utf-8")
+    )
+    if overlap.get("automatic_merge_allowed") is not False:
+        errors.append("OPEN_PR_OVERLAP_AUTOMATIC_MERGE_AUTHORITY_DRIFT")
+
     report = {
         "contract": "ONSURE_MONOREPO_MIGRATION_READINESS_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not errors else "FAIL",
@@ -116,6 +130,13 @@ def main() -> int:
         "module_dependency_cycle_count": build_result["module_dependency_cycle_count"],
         "main_source_single_owner_count": build_result["main_source_single_owner_count"],
         "shared_source_module_count": build_result["shared_source_module_count"],
+        "public_api_baseline_class_count": api_baseline["class_count"],
+        "dependency_component_count": license_inventory["component_count"],
+        "dependency_license_review_required_count": license_inventory[
+            "dependency_license_review_required_count"
+        ],
+        "root_source_license": license_inventory["root_source_license"],
+        "open_pr_merge_decision": overlap["merge_decision"],
         "known_blockers": [
             "TRANSITIONAL_SPLIT_PACKAGE_AND_SHARED_SOURCE_ROOT",
             "PLATFORM_ORUDA_PACKAGE_CYCLE_PATH_FREEZE",

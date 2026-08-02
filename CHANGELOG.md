@@ -12,6 +12,10 @@
 - canonical/compatibility build 권위 계약과 모듈 경계 validator
 - `ONSURE_PRODUCT_ROOT` 기반 제품 루트 해석
 - `product.yaml`, 제품 전용 `AGENTS.md`, `.obuilder/` 준비 메타데이터
+- 224개 public Java class의 JVM descriptor 호환성 baseline
+- CycloneDX 1.6 SBOM과 dependency license 검토 inventory
+- 격리된 `products/onsure/` cutover·rollback 리허설
+- Draft PR #27/#28 head에 결속된 overlap·재검증 매트릭스
 
 ### Changed
 

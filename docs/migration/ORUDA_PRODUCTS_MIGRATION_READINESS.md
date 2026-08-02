@@ -124,6 +124,10 @@
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `NOT_RUN` |
 | Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `REQUIRED_NONFINAL_GATE` |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `REQUIRED_NONFINAL_GATE` |
+| Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `REQUIRES_COMPILED_CLASSES` |
+| CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `REQUIRED_NONFINAL_GATE` |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `REQUIRED_NONFINAL_GATE` |
+| 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `REQUIRED_BEFORE_MERGE_ORDER_DECISION` |
 | Deploy | 정의 없음 | `NOT_RUN / BLOCKED` |
 | DB migration | 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
 

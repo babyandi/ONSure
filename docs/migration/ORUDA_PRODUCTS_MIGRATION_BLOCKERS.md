@@ -9,6 +9,9 @@
 - 조사 시 원격 `main` 외에 열린 Draft PR #27, #28과 원격에 없는 로컬 `main` 커밋이 존재했다.
 - 실제 이관 Manifest는 어떤 변경선을 채택할지 결정된 하나의 immutable commit에서 다시 생성해야 한다.
 - 선행 작업: PR 처리 방침, 포함/제외 commit, cutover SHA와 change freeze 승인.
+- `onsure-open-pr-overlap.v1.json` 기준 #27은 build/gate 재검증이 필요하고 #28은 테스트 2개 exact overlap과 build/gate 재검증이 필요하다.
+- #27과 #28은 공통 merge base가 원격 main이고 어느 한쪽도 다른 쪽의 ancestor가 아닌 `DIVERGED` 상태다. #27 기준 #28은 ahead 46/behind 265 commit이다.
+- 현재 자동 병합 판정은 `HOLD_MERGE_ORDER_REQUIRED`이며, 병합 권한만으로 이 HOLD를 해제하지 않는다.
 
 ### 2. Split package와 공유 source-set 제거
 
@@ -32,6 +35,7 @@
 - 루트 LICENSE/NOTICE/COPYING이 없고 VS Code package는 `UNLICENSED`다.
 - GitHub repository owner나 filesystem owner는 저작권·재배포 권리의 증명이 아니다.
 - 선행 작업: 코드·문서·fixture·third-party asset별 copyright owner, inbound license, outbound license, NOTICE 의무 승인.
+- CycloneDX 1.6 SBOM 기준 runtime dependency 4개는 Apache-2.0을 선언하며 dependency 미선언 license는 0건이다. 이는 root source license 부재를 해소하지 않는다.
 
 ### 5. Manifest 데이터 분류 승인
 
@@ -93,6 +97,8 @@
 - 공개 API/CLI/receipt/schema 호환성 시험
 - 모노레포 전체 build graph와 다른 제품에 대한 역방향 영향 시험
 - rollback rehearsal
+
+격리된 임시 Git root의 `products/onsure/`에 대한 digest cutover·rollback 및 full build 리허설은 준비 gate로 제공한다. 실제 ORUDA-Products 수정이나 cutover 승인을 의미하지 않는다.
 
 ## 이번 준비 작업에서 실행 금지/미실행
 

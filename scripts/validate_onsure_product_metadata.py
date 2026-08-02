@@ -47,6 +47,12 @@ def validate_documents(
         violations.append("OBUILDER_COMPATIBILITY_COMMAND_DRIFT")
     if obuilder.get("compatibility_build", {}).get("release_authority") is not False:
         violations.append("OBUILDER_COMPATIBILITY_RELEASE_AUTHORITY")
+    if product_build.get("public_api_validation", {}).get("command") != build["public_api"]["command"]:
+        violations.append("PUBLIC_API_VALIDATION_COMMAND_DRIFT")
+    if product_build.get("supply_chain_validation", {}).get("cyclonedx_schema") != build["supply_chain"]["cyclonedx_schema"]:
+        violations.append("CYCLONEDX_SCHEMA_DRIFT")
+    if product_build.get("nested_root_rehearsal", {}).get("command") != build["cutover_rehearsal"]["command"]:
+        violations.append("NESTED_ROOT_REHEARSAL_COMMAND_DRIFT")
 
     release = product.get("release", {})
     for key in ("production_go", "commercial_go", "final_pass"):
@@ -73,6 +79,10 @@ def validate() -> dict[str, object]:
         "product.yaml",
         ".obuilder/README.md",
         ".obuilder/product-build.yaml",
+        "contracts/java-public-api-baseline.v1.json",
+        "assurance/dependencies/onsure.cdx.json",
+        "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
+        "assurance/migration/onsure-open-pr-overlap.v1.json",
     ]
     missing = [path for path in required if not (ROOT / path).is_file()]
     if missing:
