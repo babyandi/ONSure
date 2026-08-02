@@ -2,20 +2,25 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import re
 import shutil
 import subprocess
 import sys
+import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXTENSION = ROOT / "vscode-extension"
 REQUIRED_COMMANDS = {
     "onsure.configure",
+    "onsure.registerWorkspaceTarget",
     "onsure.selectMode",
     "onsure.refresh",
     "onsure.learnProgram",
+    "onsure.generatePlan",
+    "onsure.approvePlan",
     "onsure.runValidation",
     "onsure.runWorkflowRequest",
     "onsure.openLastArtifact",
@@ -33,13 +38,16 @@ REQUIRED_MODES = {"ASK", "PLAN", "ACT", "VERIFY", "IMPROVE", "AUTOPILOT", "AUDIT
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--require-node", action="store_true")
+    parser.add_argument("--require-vsix", action="store_true")
     args = parser.parse_args()
     errors: list[str] = []
 
     package_file = EXTENSION / "package.json"
     source_file = EXTENSION / "extension.js"
     icon_file = EXTENSION / "media/onsure.svg"
-    for path in (package_file, source_file, icon_file, EXTENSION / ".vscodeignore"):
+    core_file = EXTENSION / "extension-core.js"
+    test_file = EXTENSION / "test" / "extension-core.test.js"
+    for path in (package_file, source_file, core_file, test_file, icon_file, EXTENSION / ".vscodeignore"):
         if not path.is_file():
             errors.append(f"MISSING:{path.relative_to(ROOT)}")
     if errors:
@@ -67,6 +75,8 @@ def main() -> int:
         errors.append("VSCODE_ENGINE_MISSING")
     if package.get("scripts", {}).get("check") != "node --check extension.js":
         errors.append("EXTENSION_NODE_CHECK_SCRIPT_MISSING")
+    if package.get("scripts", {}).get("test") != "node --test test/*.test.js":
+        errors.append("EXTENSION_NODE_TEST_SCRIPT_MISSING")
 
     source = source_file.read_text(encoding="utf-8")
     for token in (
@@ -76,6 +86,10 @@ def main() -> int:
         "runWorkflowRequest", "requireInsideWorkspace", "fs.readFileSync",
         "Workflow request file must be inside the active workspace",
         "WORK_MODES", "VIEW_IDS", "MODE_CHANGE", "onsure.selectMode",
+        "onsure.registerWorkspaceTarget", "registrationRequests", "verifiedIdentity",
+        "identityForWorkspace", "project.read-target",
+        "plan.generate", "plan.approve", "approved_execution_plan_file",
+        "original_execution_plan_file", "signed_approval_receipt",
     ):
         if token not in source:
             errors.append(f"SOURCE_TOKEN_MISSING:{token}")
@@ -88,19 +102,68 @@ def main() -> int:
 
     node = shutil.which("node")
     node_state = "NOT_RUN"
+    node_test_state = "NOT_RUN"
     if node:
         result = subprocess.run([node, "--check", str(source_file)],
                                 text=True, capture_output=True, check=False)
         node_state = "PASS" if result.returncode == 0 else "FAIL"
         if result.returncode != 0:
             errors.append("NODE_SYNTAX_FAIL:" + result.stderr[-500:])
+        tests = subprocess.run([node, "--test", str(test_file)], cwd=EXTENSION,
+                               text=True, capture_output=True, check=False)
+        node_test_state = "PASS" if tests.returncode == 0 else "FAIL"
+        if tests.returncode != 0:
+            errors.append("NODE_TEST_FAIL:" + (tests.stdout + tests.stderr)[-1000:])
     elif args.require_node:
         errors.append("NODE_REQUIRED_NOT_INSTALLED")
 
-    return finish(errors, node_state)
+    vsix_state, vsix_evidence = validate_vsix(package, errors, args.require_vsix)
+    return finish(errors, node_state, node_test_state, vsix_state, vsix_evidence)
 
 
-def finish(errors: list[str], node_state: str) -> int:
+def validate_vsix(package: dict, errors: list[str], required: bool,
+                  extension: pathlib.Path = EXTENSION, root: pathlib.Path = ROOT) -> tuple[str, dict]:
+    candidates = sorted(extension.glob("*.vsix"), key=lambda value: value.stat().st_mtime)
+    if not candidates:
+        if required:
+            errors.append("VSIX_PACKAGE_REQUIRED_NOT_FOUND")
+            return "FAIL", {}
+        return "NOT_RUN", {}
+    package_file = candidates[-1]
+    try:
+        reported_path = str(package_file.relative_to(root))
+    except ValueError:
+        reported_path = str(package_file)
+    evidence = {
+        "vsix_path": reported_path,
+        "vsix_size_bytes": package_file.stat().st_size,
+        "vsix_sha256": hashlib.sha256(package_file.read_bytes()).hexdigest(),
+    }
+    try:
+        with zipfile.ZipFile(package_file) as archive:
+            names = set(archive.namelist())
+            required_entries = {
+                "extension/package.json", "extension/extension.js",
+                "extension/extension-core.js", "extension/readme.md",
+                "extension/media/onsure.svg",
+            }
+            missing = sorted(required_entries - names)
+            if missing:
+                errors.append(f"VSIX_REQUIRED_ENTRY_MISSING:{missing}")
+            if any(name.startswith("extension/node_modules/") for name in names):
+                errors.append("VSIX_NODE_MODULES_UNEXPECTED")
+            if any(name.startswith("extension/test/") for name in names):
+                errors.append("VSIX_TEST_SOURCE_UNEXPECTED")
+            manifest = json.loads(archive.read("extension/package.json"))
+            if manifest.get("name") != package.get("name") or manifest.get("version") != package.get("version"):
+                errors.append("VSIX_MANIFEST_IDENTITY_MISMATCH")
+    except (OSError, zipfile.BadZipFile, KeyError, json.JSONDecodeError) as failure:
+        errors.append(f"VSIX_PACKAGE_INVALID:{failure.__class__.__name__}")
+    return ("PASS" if not any(value.startswith("VSIX_") for value in errors) else "FAIL"), evidence
+
+
+def finish(errors: list[str], node_state: str, node_test_state: str = "NOT_RUN",
+           vsix_state: str = "NOT_RUN", vsix_evidence: dict | None = None) -> int:
     report = {
         "contract": "ONSURE_VSCODE_EXTENSION_STATIC_REPORT_V2",
         "decision": "PASS" if not errors else "FAIL",
@@ -110,10 +173,12 @@ def finish(errors: list[str], node_state: str) -> int:
         "secret_storage": "PASS" if not errors else "FAIL",
         "workspace_path_boundary": "PASS" if not errors else "FAIL",
         "node_syntax": node_state,
+        "node_tests": node_test_state,
         "extension_host_e2e": "NOT_RUN",
-        "vsix_package": "NOT_RUN",
+        "vsix_package": vsix_state,
         "final_claim_allowed": False,
     }
+    report.update(vsix_evidence or {})
     print(json.dumps(report, indent=2, sort_keys=True))
     if errors:
         print("ONSURE_VSCODE_EXTENSION_STATIC_FAIL", file=sys.stderr)

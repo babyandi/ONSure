@@ -5,15 +5,19 @@
   "version": "0.2.0",
   "publisher": "babyandi",
   "license": "UNLICENSED",
+  "repository": {"type": "git", "url": "https://github.com/babyandi/ONSure.git"},
   "engines": {"vscode": "^1.95.0"},
   "categories": ["Testing", "Other"],
   "main": "./extension.js",
   "activationEvents": [
     "onView:onsure.workspace",
     "onCommand:onsure.configure",
+    "onCommand:onsure.registerWorkspaceTarget",
     "onCommand:onsure.selectMode",
     "onCommand:onsure.refresh",
     "onCommand:onsure.learnProgram",
+    "onCommand:onsure.generatePlan",
+    "onCommand:onsure.approvePlan",
     "onCommand:onsure.runValidation",
     "onCommand:onsure.runWorkflowRequest",
     "onCommand:onsure.openLastArtifact",
@@ -22,9 +26,12 @@
   "contributes": {
     "commands": [
       {"command": "onsure.configure", "title": "ONSure: Configure Local API"},
+      {"command": "onsure.registerWorkspaceTarget", "title": "ONSure: Register Workspace & Target"},
       {"command": "onsure.selectMode", "title": "ONSure: Select Work Mode"},
       {"command": "onsure.refresh", "title": "ONSure: Refresh Status"},
       {"command": "onsure.learnProgram", "title": "ONSure: Learn Program"},
+      {"command": "onsure.generatePlan", "title": "ONSure: Generate Execution Plan"},
+      {"command": "onsure.approvePlan", "title": "ONSure: Verify Signed Plan Approval"},
       {"command": "onsure.runValidation", "title": "ONSure: Run Validation"},
       {"command": "onsure.runWorkflowRequest", "title": "ONSure: Run Signed Workflow Request"},
       {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"},
@@ -56,9 +63,12 @@
     "menus": {
       "view/title": [
         {"command": "onsure.refresh", "when": "view == onsure.workspace", "group": "navigation@1"},
-        {"command": "onsure.learnProgram", "when": "view == onsure.workspace", "group": "navigation@2"},
-        {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@3"},
-        {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@4"}
+        {"command": "onsure.registerWorkspaceTarget", "when": "view == onsure.workspace", "group": "navigation@2"},
+        {"command": "onsure.learnProgram", "when": "view == onsure.workspace", "group": "navigation@3"},
+        {"command": "onsure.generatePlan", "when": "view == onsure.workspace", "group": "navigation@4"},
+        {"command": "onsure.approvePlan", "when": "view == onsure.workspace", "group": "navigation@5"},
+        {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@6"},
+        {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@7"}
       ],
       "commandPalette": [
         {"command": "onsure.clearToken"}
@@ -93,6 +103,7 @@
   },
   "scripts": {
     "check": "node --check extension.js",
+    "test": "node --test test/*.test.js",
     "package": "npx @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {

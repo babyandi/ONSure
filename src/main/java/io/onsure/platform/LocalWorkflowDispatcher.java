@@ -203,6 +203,10 @@ public final class LocalWorkflowDispatcher {
         }
         Path store = outputPath(request, "store_root", ".onsure/validation-data");
         Path approvedPlan = optionalInputPath(request, "approved_execution_plan_file");
+        if (approvedPlan == null
+                && !ExecutionPlanService.trustedFixtureAutoApproval(target.executionProfile())) {
+            throw new IllegalArgumentException("APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED");
+        }
         ValidationEngine engine = ValidationEngine.defaultEngine(store);
         ValidationEngine.RunResult run;
         if (approvedPlan == null) {

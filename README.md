@@ -37,6 +37,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Rootless Bubblewrap Sandbox와 적대 Fixture
 - Bounded child-process runner
 - VS Code Extension·VSIX 및 OLicense·Service Case 상태 코어
+- VS Code의 등록 → 정적 학습 → 실행계획 생성 → 외부 서명 승인 검증 → 승인 Bundle 기반 Validation 연결
 
 ## 이번 메타감사에서 확인된 검출기 사각지대
 
@@ -111,6 +112,17 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - 독립 OTester·OAudit와 Human Acceptance
 
 ## 로컬 단일 검증
+
+VS Code Extension 개발 검증과 패키징:
+
+```bash
+cd vscode-extension
+npm test
+npm run package
+```
+
+사용 순서와 승인 경계는 `vscode-extension/README.md`를 따른다. VS Code Extension Host E2E는
+아직 `NOT_RUN`이며 VSIX 생성 성공만으로 제품 Full-Chain을 주장하지 않는다.
 
 정적 비최종 Gate:
 

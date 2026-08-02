@@ -12,7 +12,7 @@ BEHAVIOR_LEARNING               STUB
 OPLANNING                       DESIGN_ONLY
 OREVIEW                         STUB
 OIMPROVEMENT_PATCH              DESIGN_ONLY
-VSCODE_EXTENSION                DESIGN_ONLY
+VSCODE_EXTENSION                PARTIAL
 GIT_FULL_CHAIN                  DESIGN_ONLY
 WEB_COMMERCE_OLICENSE           DESIGN_ONLY
 CURRENT_SOURCE_FORMAL_RUN       NOT_RUN
@@ -51,7 +51,9 @@ FINAL_LOCK_ALLOWED              false
 - RCA는 Trace와 인과 실험 대신 Category Template을 사용한다.
 - Remediation은 Patch를 만들지 않고 계획 문구만 기록한다.
 - Before/After는 Finding Fingerprint 집합의 차이를 비교한다.
-- `.vscode/tasks.json`과 Python Runner는 실제 VS Code Extension이 아니다.
+- 실제 VS Code Extension과 Loopback Local API가 존재하고 등록·학습·Plan·서명 승인·Validation
+  경로를 연결한다. 다만 개별 Chat·Profile·Finding·Diff/Hunk·Evidence·Git UX와 Extension Host
+  Full-Chain은 아직 완료되지 않았다.
 - ProductPlatformE2E는 제품 Full-Chain이 아니라 Validator Fixture E2E다.
 
 ## 이번 기준선에서 추가된 Codespace-free 보완
@@ -76,8 +78,8 @@ FINAL_LOCK_ALLOWED              false
 5. 재현·최초 실패·Trace 기반 RCA
 6. Patch·Hunk 승인·Worktree·Rollback
 7. 동일 검증 맥락의 Before/After Proof
-8. Local Authenticated API
-9. 실제 VS Code Extension
+8. Local Authenticated API의 운영·복구·Extension Host E2E 완성
+9. VS Code의 개별 Chat·Profile·Finding·Evidence·Git UX 완성
 10. Git Commit·Push·Draft PR Full-Chain
 
 ## 최종 실행

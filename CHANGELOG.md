@@ -18,12 +18,18 @@
 - Draft PR #27/#28 head에 결속된 overlap·재검증 매트릭스
 - rootless bubblewrap 실행환경 진단기와 host 구성 가이드
 - fail-closed 배포·DB migration `DESIGN_ONLY_NONFINAL` 계약과 validator
+- VS Code Extension의 등록 Workspace·Project·Target identity 결속과 로컬 파일 URI 검증
+- VS Code용 실행계획 생성·서명 승인 확인·승인 Bundle 기반 Validation 명령
+- Node 내장 회귀 테스트와 Local API 등록·학습·Plan HTTP 통합 테스트
 
 ### Changed
 
 - 기존 hashing facade는 공개 API를 유지하면서 공통 SHA-256 primitive를 사용한다.
 - `FileValidationStore`는 RAG package를 직접 호출하지 않고 공통 중립 candidate preparer를 사용한다.
 - Manifest의 untracked 파일 mode는 Git index mode와 동일하게 정규화된다.
+- 승인되지 않은 등록 Target Validation은 내부 실행 실패 대신
+  `APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED`로 fail-closed 응답한다.
+- VS Code Learn·Validation 요청은 금지된 source 및 product-state 경로 override를 더 이상 전송하지 않는다.
 
 ### Compatibility
 

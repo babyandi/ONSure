@@ -3,11 +3,27 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const {
+  ID_PATTERN,
+  LocalApiError,
+  normalizeBaseUrl,
+  registrationRequests,
+  learnRequest,
+  validationRequest,
+  requireWorkflowBinding,
+  verifiedIdentity,
+  identityForWorkspace,
+  isExistingRegistration
+} = require('./extension-core');
 
 const TOKEN_KEY = 'onsure.localApiToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
 const LAST_PROFILE_KEY = 'onsure.lastProgramProfile';
+const LAST_PLAN_KEY = 'onsure.lastExecutionPlan';
+const LAST_APPROVED_PLAN_KEY = 'onsure.lastApprovedExecutionPlan';
+const LAST_APPROVAL_RECEIPT_KEY = 'onsure.lastExecutionPlanApprovalReceipt';
 const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
+const REGISTERED_IDENTITY_KEY = 'onsure.registeredIdentity';
 const WORK_MODE_KEY = 'onsure.workMode';
 const WORK_MODES = Object.freeze(['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
 const VIEW_IDS = Object.freeze([
@@ -22,11 +38,7 @@ class ApiClient {
 
   get baseUrl() {
     const configured = vscode.workspace.getConfiguration('onsure').get('localApiUrl');
-    const value = String(configured || '').replace(/\/$/, '');
-    if (!/^http:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):\d{2,5}$/.test(value)) {
-      throw new Error('ONSure Local API must use an explicit loopback HTTP URL.');
-    }
-    return value;
+    return normalizeBaseUrl(configured);
   }
 
   async token() {
@@ -65,7 +77,7 @@ class ApiClient {
       try { payload = text ? JSON.parse(text) : {}; }
       catch { throw new Error(`Invalid JSON from Local API (${response.status}).`); }
       if (!response.ok) {
-        throw new Error(payload.message || payload.error || `Local API returned ${response.status}.`);
+        throw new LocalApiError(payload.error, payload.message, response.status);
       }
       return payload;
     } finally {
@@ -75,10 +87,7 @@ class ApiClient {
 
   async workflow(operation, request) {
     const response = await this.request('/v1/workflow', 'POST', { operation, request });
-    if (!response.workflow || response.workflow.operation !== operation) {
-      throw new Error('Local API workflow response is not bound to the requested operation.');
-    }
-    return response.workflow;
+    return requireWorkflowBinding(response, operation);
   }
 }
 
@@ -124,9 +133,12 @@ class AssuranceTreeProvider {
     const lastProfile = this.context.workspaceState.get(LAST_PROFILE_KEY);
     const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
     const lastWorkflow = this.context.workspaceState.get(LAST_WORKFLOW_KEY);
+    const identity = this.context.workspaceState.get(REGISTERED_IDENTITY_KEY);
     const workMode = this.context.workspaceState.get(WORK_MODE_KEY)
       || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
     items.push(item('Work Mode', workMode, 'symbol-enum', 'onsure.selectMode'));
+    if (identity) items.push(item(
+      'Registered Target', `${identity.projectId}/${identity.targetId}`, 'workspace-trusted'));
     if (lastProfile) items.push(item('Last Program Profile', lastProfile, 'json'));
     if (lastRun) items.push(item('Last Run', lastRun, 'folder-opened', 'onsure.openLastArtifact'));
     if (lastWorkflow) items.push(item('Last Workflow', lastWorkflow, 'run-all'));
@@ -189,11 +201,65 @@ async function activate(context) {
     await context.workspaceState.update(LAST_WORKFLOW_KEY, operation);
     const result = workflow.result || {};
     if (result.run_root) await context.workspaceState.update(LAST_RUN_KEY, result.run_root);
-    if (result.output_file) await context.workspaceState.update(LAST_PROFILE_KEY, result.output_file);
     output.appendLine(`[${new Date().toISOString()}] ${operation}: ${JSON.stringify(result)}`);
     provider.refresh();
     await showJson(`${title} — SELF_VALIDATION_NONFINAL`, workflow);
     return workflow;
+  }
+
+  async function registerActiveWorkspace() {
+    const root = workspaceRoot();
+    const defaultId = path.basename(root).replace(/[^A-Za-z0-9._-]/g, '-').slice(0, 128) || 'onsure-project';
+    const workspaceId = await vscode.window.showInputBox({
+      title: 'ONSure Workspace ID', value: defaultId,
+      validateInput: value => ID_PATTERN.test(value) ? undefined : 'Use 1-128 letters, numbers, dot, underscore or hyphen.'
+    });
+    if (!workspaceId) return;
+    const projectId = await vscode.window.showInputBox({
+      title: 'ONSure Project ID', value: defaultId,
+      validateInput: value => ID_PATTERN.test(value) ? undefined : 'Use 1-128 letters, numbers, dot, underscore or hyphen.'
+    });
+    if (!projectId) return;
+    const targetId = await vscode.window.showInputBox({
+      title: 'ONSure Target ID', value: defaultId,
+      validateInput: value => ID_PATTERN.test(value) ? undefined : 'Use 1-128 letters, numbers, dot, underscore or hyphen.'
+    });
+    if (!targetId) return;
+    const targetType = await vscode.window.showQuickPick(
+      ['GENERAL_SOFTWARE', 'AI_APPLICATION'],
+      { title: 'ONSure Target Type', placeHolder: 'Select the registered target type.' });
+    if (!targetType) return;
+    const candidate = {
+      workspaceId, workspaceName: workspaceId,
+      projectId, projectName: projectId,
+      targetId, targetName: targetId,
+      targetType, sourceRoot: root
+    };
+    const steps = registrationRequests(candidate);
+    await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: 'ONSure: Registering workspace and target', cancellable: false
+    }, async progress => {
+      for (let index = 0; index < steps.length; index += 1) {
+        const [operation, request] = steps[index];
+        progress.report({ message: operation, increment: 100 / (steps.length + 1) });
+        try {
+          await client.workflow(operation, request);
+        } catch (error) {
+          if (!isExistingRegistration(error)) throw error;
+          output.appendLine(`[${new Date().toISOString()}] ${operation}: ${error.code}; verifying existing identity`);
+        }
+      }
+    });
+    const read = await client.workflow('project.read-target', {
+      project_id: projectId, target_id: targetId
+    });
+    const identity = verifiedIdentity(read, candidate);
+    await context.workspaceState.update(REGISTERED_IDENTITY_KEY, identity);
+    await context.workspaceState.update(LAST_WORKFLOW_KEY, 'project.read-target');
+    output.appendLine(`[${new Date().toISOString()}] REGISTERED_TARGET:${projectId}/${targetId}:SELF_VALIDATION_NONFINAL`);
+    provider.refresh();
+    await showJson('Registered target — SELF_VALIDATION_NONFINAL', read);
   }
 
   context.subscriptions.push(...views, output, statusBar,
@@ -218,6 +284,13 @@ async function activate(context) {
       await context.secrets.delete(TOKEN_KEY);
       vscode.window.showInformationMessage('ONSure Local API token cleared.');
     }),
+    vscode.commands.registerCommand('onsure.registerWorkspaceTarget', async () => {
+      try {
+        await registerActiveWorkspace();
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure registration failed: ${error.message}`);
+      }
+    }),
     vscode.commands.registerCommand('onsure.selectMode', async () => {
       const current = context.workspaceState.get(WORK_MODE_KEY)
         || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
@@ -238,47 +311,77 @@ async function activate(context) {
     vscode.commands.registerCommand('onsure.learnProgram', async () => {
       try {
         const root = workspaceRoot();
-        const projectId = await vscode.window.showInputBox({
-          title: 'Project ID', value: path.basename(root),
-          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid project ID.'
-        });
-        if (!projectId) return;
-        const programId = await vscode.window.showInputBox({
-          title: 'Program ID', value: path.basename(root),
-          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid program ID.'
-        });
-        if (!programId) return;
-        const outputFile = path.join(root, '.onsure', 'profiles', 'program-profile.json');
-        await executeWorkflow('program.learn', {
-          source_root: root, project_id: projectId, program_id: programId, output_file: outputFile
-        }, 'Learning program');
+        const identity = identityForWorkspace(
+          context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+        const outputFile = path.join(root, '.onsure', 'profiles', identity.targetId, 'program-profile.json');
+        await executeWorkflow(
+          'program.learn', learnRequest(identity), 'Learning registered program');
         await context.workspaceState.update(LAST_PROFILE_KEY, outputFile);
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure program learning failed: ${error.message}`);
       }
     }),
+    vscode.commands.registerCommand('onsure.generatePlan', async () => {
+      try {
+        const root = workspaceRoot();
+        const identity = identityForWorkspace(
+          context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+        const profileFile = context.workspaceState.get(LAST_PROFILE_KEY);
+        if (!profileFile) throw new Error('Learn the registered program before generating a plan.');
+        const planFile = path.join(root, '.onsure', 'plans', `${identity.targetId}-execution-plan.json`);
+        await executeWorkflow('plan.generate', {
+          project_id: identity.projectId,
+          target_id: identity.targetId,
+          program_profile_file: requireInsideWorkspace(profileFile)
+        }, 'Generating execution plan');
+        await context.workspaceState.update(LAST_PLAN_KEY, planFile);
+        await context.workspaceState.update(LAST_APPROVED_PLAN_KEY, undefined);
+        await context.workspaceState.update(LAST_APPROVAL_RECEIPT_KEY, undefined);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure plan generation failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.approvePlan', async () => {
+      try {
+        const root = workspaceRoot();
+        identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+        const planFile = context.workspaceState.get(LAST_PLAN_KEY);
+        if (!planFile) throw new Error('Generate an execution plan before recording approval.');
+        const selected = await vscode.window.showOpenDialog({
+          title: 'Select Signed ONSure Execution Plan Approval Receipt',
+          canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+          filters: { JSON: ['json'] }, defaultUri: vscode.Uri.file(root)
+        });
+        if (!selected?.length) return;
+        const receiptFile = requireInsideWorkspace(selected[0].fsPath);
+        await executeWorkflow('plan.approve', {
+          plan_file: requireInsideWorkspace(planFile),
+          signed_approval_receipt: receiptFile
+        }, 'Verifying signed plan approval');
+        await context.workspaceState.update(
+          LAST_APPROVED_PLAN_KEY, path.join(root, '.onsure', 'plans', 'approved-execution-plan.json'));
+        await context.workspaceState.update(LAST_APPROVAL_RECEIPT_KEY, receiptFile);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure plan approval failed: ${error.message}`);
+      }
+    }),
     vscode.commands.registerCommand('onsure.runValidation', async () => {
       try {
         const root = workspaceRoot();
-        const targetType = await vscode.window.showQuickPick(
-          ['GENERAL_SOFTWARE', 'AI_APPLICATION'],
-          { title: 'ONSure Target Type', placeHolder: 'Select the registered target type.' });
-        if (!targetType) return;
-        const targetId = await vscode.window.showInputBox({
-          title: 'Target ID', value: path.basename(root),
-          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid target ID.'
-        });
-        if (!targetId) return;
+        const identity = identityForWorkspace(
+          context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+        const originalPlan = context.workspaceState.get(LAST_PLAN_KEY);
+        const approvedPlan = context.workspaceState.get(LAST_APPROVED_PLAN_KEY);
+        const approvalReceipt = context.workspaceState.get(LAST_APPROVAL_RECEIPT_KEY);
+        if (!originalPlan || !approvedPlan || !approvalReceipt) {
+          throw new Error('Generate and approve an execution plan before validation.');
+        }
         await executeWorkflow('validation.run', {
-          source_root: root,
-          store_root: path.join(root, '.onsure', 'validation-data'),
-          target_id: targetId,
-          target_name: targetId,
-          target_type: targetType,
-          adapter_id: 'ONSURE_GENERIC_MANIFEST_V1',
-          policy_profile: 'ONSURE_DEFAULT_POLICY_V1',
-          execution_profile: vscode.workspace.getConfiguration('onsure').get('defaultExecutionProfile')
-        }, 'Running validation');
+          ...validationRequest(identity),
+          original_execution_plan_file: requireInsideWorkspace(originalPlan),
+          approved_execution_plan_file: requireInsideWorkspace(approvedPlan),
+          signed_approval_receipt: requireInsideWorkspace(approvalReceipt)
+        }, 'Validating registered target with approved plan');
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure validation failed: ${error.message}`);
       }
