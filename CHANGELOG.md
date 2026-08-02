@@ -39,6 +39,17 @@
 - 실행 권한 없는 deployment/database migration preflight 골격
 - deterministic Maven air-gap dependency pack plan/build/verify 도구
 - SBOM unique purl/SHA-256, license/vulnerability policy와 package-lock-bound npm audit evidence
+- digest-bound ValidationEngine 자동 resume와 stage replay ledger
+- approval request verifier의 CLI·Local API·VS Code patch apply 연결
+- Public SDK/API 익명화 helper와 1,000-entry 대규모 corpus 검증
+- timeout·rate-limit·비용 상한·fallback 금지를 강제하는 독립 local/mock Provider 모듈
+- SDK 구조화 오류, cursor pagination, 명시적 idempotent retry와 공개 API baseline
+- 고정 VS Code/Xvfb 컨테이너 및 network-disabled Extension Host E2E runner
+- benchmark 비교·bounded soak·ENOSPC 장애주입·합성 backup/restore/DR rehearsal
+- Maven repository와 npm cache의 실제 offline install rehearsal
+- Trivy 기반 CycloneDX 검사와 Maven module/VS Code dependency inventory 통합
+- non-root/read-only/no-network Dockerfile·Compose 후보와 합성 SQLite migration/rollback/lock runner
+- split package와 `platform ↔ platform.oruda` 순환 제거의 단계적 호환성 계획
 
 ### Changed
 
@@ -51,6 +62,7 @@
 - VS Code 14개 View는 하나의 캐시된 snapshot을 공유하며 다른 View와 동일 상태 목록을 반복하지 않는다.
 - Hunk 승인 purpose는 published receipt schema와 동일한 `PATCH_HUNK_APPROVAL`을 사용한다.
 - 취약한 transitive `brace-expansion` 1.1.16을 1.1.18로 갱신해 npm audit high 1건을 0건으로 줄였다.
+- Jackson 2.18.2를 2.18.9로 갱신해 고정 Trivy 검사에서 critical/high/medium/low를 0건으로 줄였다.
 
 ### Compatibility
 
@@ -63,4 +75,4 @@
 - 공유 Java source root 4개 모듈과 `io.onsure.platform` split package
 - package 경로 동결로 남아 있는 `platform ↔ platform.oruda` package cycle
 - 라이선스·소유권·고객 데이터에 대한 사람의 승인 미실행
-- 배포 runtime 및 DB migration 구성요소 미구현(설계 계약만 존재)
+- 실제 배포 topology와 운영 DB engine 미선정(컨테이너 후보와 합성 SQLite rehearsal만 존재)

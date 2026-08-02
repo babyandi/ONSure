@@ -35,7 +35,7 @@
 | `products/onsure/modules/` | `src/main/java`, `modules/onsure-*`, `onsure_core/` | 먼저 split package와 source-set 공유를 제거한 뒤 물리 모듈로 이동 | `BLOCKED` |
 | `products/onsure/contracts/` | `contracts/` | 상대 경로와 schema registry를 함께 이동 | `MAPPED` |
 | `products/onsure/config/` | `.devcontainer/`, `.vscode/`, `requirements-validation.txt` | 개발환경과 검증 설정을 제품 config/tooling 정책에 맞춰 분리 | `MAPPED_WITH_REVIEW` |
-| `products/onsure/deploy/` | `deploy/README.md`, operational boundary 계약 | 실행 정의는 없으며 승인 전 runtime artifact 생성 금지 | `DESIGN_ONLY_NONFINAL` |
+| `products/onsure/deploy/` | `deploy/README.md`, operational boundary 계약, Dockerfile/Compose 후보 | non-root/read-only/no-network 후보와 실제 local runtime 검사 증적을 이동. 실제 배포 권한은 포함하지 않음 | `CANDIDATE_NONFINAL` |
 | `products/onsure/tests/` | `src/test/`, `modules/*/src/test/`, `tests/`, `fixtures/` | unit/integration/contract/fixture/acceptance로 재분류하되 fixture trust 경계 유지 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/assurance/` | `harness/`, `findings/`, `status/`, assurance Java package, 로컬 receipt 규칙 | 정적 권위와 실행 증적을 분리. `.onsure/` 동적 산출물은 이관 source에서 제외 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/docs/` | `docs/`, 루트 harness 안내 문서 | 상대 링크와 authoritative document registry를 재결속 | `MAPPED` |
@@ -51,7 +51,7 @@
 | `worker` | 별도 daemon/queue worker 없음. Validation Engine과 Harness가 호출 프로세스 안에서 동기 실행 | `ValidationEngine`, `FixtureHarness`, `UniversalHarnessRunner` | 독립 실행이 필요해질 때 `components/worker/`; 현재는 core module 유지 | `NOT_IMPLEMENTED_AS_COMPONENT` |
 | `web` | 브라우저 Web UI 없음 | React/Next/Vite/Spring Web 구성 없음 | `components/web/`는 생성하지 않음 | `NOT_IMPLEMENTED` |
 | `cli` | 제품 CLI와 assurance/harness 관리 CLI | `ONSureCli`, `HarnessCli`, `Local*Main`, `modules/onsure-cli` | `components/cli/` 및 내부 `assurance/tools/` | `IMPLEMENTED` |
-| `migration` | DB schema/migration 도구와 SQL 없음, design boundary만 존재 | Flyway/Liquibase/SQL 0건 | 영속 DB 채택 전 `components/migration/` 생성 금지 | `NOT_IMPLEMENTED / DESIGN_ONLY` |
+| `migration` | 운영 DB가 아닌 SQLite 합성 migration/rollback/lock runner | `scripts/onsure_synthetic_db_migration.py`, `config/database-migration/synthetic/` | 영속 DB 채택 전 제품 migration으로 승격 금지 | `SYNTHETIC_REHEARSAL_ONLY` |
 | `workbench` | VS Code 확장 | `vscode-extension/extension.js` | `components/vscode-extension/` | `IMPLEMENTED_PARTIAL` |
 | `adapter` | Optional ORUDA target adapter | `modules/onsure-adapter-oruda`, `io.onsure.platform.oruda` | `components/adapters/oruda/` 또는 `modules/adapters/oruda/` | `IMPLEMENTED_OPTIONAL` |
 
@@ -70,7 +70,7 @@
 | VERIFICATION-RUNTIME | PARTIAL | `modules/verification-runtime` |
 | VERIFICATION-API-UI | STUB | `modules/verification-surface` |
 | VERIFICATION-SECURITY | PARTIAL | `modules/security` |
-| VERIFICATION-PERFORMANCE-RECOVERY | DESIGN_ONLY | `modules/resilience` |
+| VERIFICATION-PERFORMANCE-RECOVERY | PARTIAL_SYNTHETIC | `modules/resilience` |
 | RCA | PARTIAL | `modules/rca` |
 | IMPROVEMENT-PATCH | PARTIAL | `modules/remediation` |
 | IMPROVEMENT-PROOF | PARTIAL | `modules/remediation` |
@@ -84,9 +84,9 @@
 | TENANT-IDENTITY | STUB | `modules/identity` |
 | SANDBOX | PARTIAL | `modules/sandbox` |
 | RETENTION-DELETION | PARTIAL | `modules/governance` |
-| OBSERVABILITY-OPERATIONS | DESIGN_ONLY | `modules/operations` |
+| OBSERVABILITY-OPERATIONS | PARTIAL_SYNTHETIC | `modules/operations` |
 | DELIVERY | PARTIAL | `modules/delivery` |
-| DEPLOYMENT | DESIGN_ONLY | `deploy/` 및 `modules/deployment-contracts` 후보 |
+| DEPLOYMENT | CANDIDATE_NONFINAL | `deploy/` 및 `modules/deployment-contracts` 후보 |
 
 이 표는 package나 파일을 지금 나누라는 지시가 아니다. Capability 간 공개 계약과 의존 방향을 먼저 고정한 뒤, 한 번에 하나의 물리 모듈만 분리해야 한다.
 
@@ -112,30 +112,31 @@
 
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
-| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (current candidate local 2회 + 독립 clone, 각 251 tests) |
-| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (7 modules, 15 tests, local + 독립 clone) |
-| Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 251 tests) |
+| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (current candidate local 2회, 257 tests; 독립 clone 재검증 대상) |
+| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (8 modules, 18 tests) |
+| Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 257 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (115 tests, local + 독립 clone) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (120 tests; 독립 clone 재검증 대상) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `c982d026...`; root license warning) |
-| VS Code Extension Host | `(cd vscode-extension && npm run test:e2e:preflight && npm run test:e2e)` | `NOT_RUN / DISPLAY_OR_XVFB_REQUIRED` (harness와 dependency 준비 완료) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (통합 후보 668 files) |
+| VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (VS Code 1.95.3/Xvfb, extension host exit 0, offline network 차단 재실행 exit 0) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 703 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
-| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (140 single owners, 7 artifacts, artifact cycles 0) |
+| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (141 single owners, 8 artifacts, artifact cycles 0; split package 1/package cycle 1 유지) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (238 public classes, delta 0) |
-| CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 Maven components, npm audit 0; Maven vulnerability scan와 root license는 blocker) |
-| 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
+| CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL_WITH_RELEASE_BLOCKER` (12 Maven components, VS Code 229 inventory, Trivy 0.65.0 모든 severity 0, npm audit 0; root license blocker) |
+| 컨테이너 후보 | `python3 scripts/validate_onsure_container_candidate.py` | `PASS_NONFINAL` (build/run, UID 65532, read-only, network none, loopback ready; deployment `NOT_RUN`) |
+| 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / production DESIGN_ONLY` |
 | 배포·DB preflight | `python3 scripts/onsure_deploy_migration_skeleton.py preflight` | `PASS_NONFINAL / deployment NOT_RUN / migration NOT_APPLICABLE` |
-| Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (long-run/real DR `NOT_RUN`) |
-| Air-gap Maven plan | `python3 scripts/onsure_airgap_pack.py plan --maven-repository /explicit/repository` | `PASS_NONFINAL` (local Maven payload complete; npm payload/signature `NOT_RUN`) |
+| Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
+| Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 713-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (668 cutover + rollback files, 외부 제품 저장소 미사용) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PENDING_CURRENT_HEAD` (이전 668-file PASS; 현재 703-file 후보는 commit 후 재실행) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
-| Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
-| DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
+| Deploy | 안전 기본값 Dockerfile/Compose 후보만 존재 | `NOT_RUN / NOT_AUTHORIZED` |
+| DB migration | SQLite 합성 runner만 존재 | `PASS_SYNTHETIC_NONFINAL / PRODUCTION NOT_RUN` |
 
 이전 구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,
 Java stage checkpoint, provider adapter 경계와 token/data-transfer budget를 추가했다.
@@ -144,11 +145,11 @@ Python 104/104, Node 8/8, 633-file migration readiness/nested rehearsal가 통�
 VSIX는 두 환경에서 byte-identical SHA-256
 `8c217e6fc446fdd4938121c6faa810b1c631e3cc7be908d7e4db10ea53374afe`를 생성했다.
 
-현재 후속 후보는 validation context snapshot/replay, identity-bound orphan recovery,
-deterministic ASK/PLAN, provider SPI와 SDK 후보, 승인 exchange 검증, 지식 익명화,
-runtime/deploy/air-gap/supply-chain 도구를 추가했다. local clean Java 251/251 2회,
-modular 15/15, Python 115/115, Node 9/9, API 238/238을 통과했다. 별도 clone에서도
-동일 build/test와 npm audit 0건을 검증했고 668-file 중첩 cutover/rollback이 통과했다.
+현재 후속 후보는 자동 validation replay, local/mock provider, SDK 오류·pagination·retry,
+승인 exchange 표면 연결, 익명화 corpus, container/Xvfb E2E, 합성 runtime/DB/DR,
+Maven/npm offline pack과 Trivy/SBOM 통합을 추가했다. local clean Java 257/257 2회,
+modular 18/18, Python 120/120, Node 9/9, root API 238/238, SDK API 5/5를 검증했다.
+독립 clone과 현재 703-file 중첩 cutover/rollback 결과는 commit 후 이 표에 갱신한다.
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 
