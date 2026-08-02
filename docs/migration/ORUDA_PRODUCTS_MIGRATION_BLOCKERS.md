@@ -41,42 +41,36 @@
 - package 변경은 binary/source compatibility와 receipt/contract의 class-name 참조를 깨뜨릴 수 있다.
 - 선행 작업: deprecation/bridge 기간, Maven coordinate 변경, serialization/reflection 영향, SDK 소비자 migration과 rollback 계획.
 
-### 7. 기준선 회귀 계약 정합성
-
-- `tests/test_onsure_autopilot.py`는 merge authority가 비어 있으면 항상 거부될 것을 요구하지만 `scripts/onsure-autopilot.py`는 terminal state가 `MERGE_AUTHORIZED_READY`일 때만 이를 검사한다.
-- `tests/test_repository_contracts.py`의 구현 상태 기대값(`PARTIAL=8`, `STUB=5`, `DESIGN_ONLY=7`, 총 20)은 현재 권위 matrix의 값(`PARTIAL=22`, `STUB=2`, `DESIGN_ONLY=4`, 총 28)과 일치하지 않는다.
-- 선행 작업: 테스트 기대값만 기계적으로 갱신하지 말고 terminal-state별 merge authority 계약과 28개 Capability matrix의 권위를 먼저 확정한 뒤 기준선 회귀를 복구한다.
-
 ## P1 — 모노레포 build 편입 전
 
-### 8. 이중 build 권위 정리
+### 7. 이중 build 권위 정리
 
 - 루트 monolith `pom.xml`과 `pom-modular.xml`이 동시에 존재한다.
 - 선행 작업: release artifact 권위 하나를 지정하고 다른 build는 compatibility gate로 제한. dependency lock/SBOM 추가.
 
-### 9. 실행 구성요소 계약 확정
+### 8. 실행 구성요소 계약 확정
 
 - API와 CLI는 있으나 standalone worker, browser web, DB migration은 없다.
 - 선행 작업: 없는 구성요소를 빈 디렉터리로 “구현” 처리하지 말고 `product.yaml`에서 `NOT_PRESENT`로 선언. worker/DB가 실제 도입될 때 별도 ADR과 migration ownership 추가.
 
-### 10. 배포 정의 부재
+### 9. 배포 정의 부재
 
 - Dockerfile, Compose, Helm, Kubernetes, deploy 디렉터리가 없다.
 - 선행 작업: 지원 배포 모드, base image, runtime user, volume/network/secrets, air-gap, upgrade/rollback 정책 승인 후 작성.
 
-### 11. Repo-root 가정 제거
+### 10. Repo-root 가정 제거
 
 - 스크립트는 Git root와 루트 상대경로를 기준으로 계약·상태·fixture를 찾는다.
 - 현재 외부 workspace 절대경로는 없지만 `products/onsure/`로 들어가면 상위 모노레포 root와 제품 root가 달라진다.
 - 선행 작업: `ONSURE_PRODUCT_ROOT` 또는 실행기 계산값 하나를 권위로 정하고, 모든 출력이 제품 root 밖으로 나가지 않는지 시험.
 
-### 12. ORUDA 통합 경계 재정의
+### 11. ORUDA 통합 경계 재정의
 
 - ORUDA 코드는 외부 workspace를 직접 참조하지 않지만 ONSure 저장소 안에 optional adapter와 ORUDA 전용 receipt/materialization 구현이 존재한다.
 - 읽기 전용 비교에서 다른 제품 source와 exact-content 복사는 0건이었다. 다만 ORUDA에도 `onsure_core/cause_aware_verification.py`와 대응 test가 같은 상대경로로 존재하고 digest는 달라 divergent copy 가능성이 있다.
 - 선행 작업: adapter owner, shared-library 여부, 버전 호환표, 중복 구현 중 authoritative source를 결정.
 
-### 13. Future root metadata 부재
+### 12. Future root metadata 부재
 
 - `product.yaml`, `CHANGELOG.md`, 제품 전용 `AGENTS.md`, `.obuilder/`가 없다.
 - 선행 작업: ORUDA-Products schema와 상위 AGENTS를 먼저 확정하고, current repository에 임의 포맷을 선행 도입하지 않음.

@@ -1560,8 +1560,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "318d224211120c6db1a996a0f5a30e11d1200c46f5798e6bce50d916ba70f7d5",
-      "size_bytes": 6464
+      "sha256": "8dc6f07b3163b5288a5f59f3bdb2da64a67f19cbbfae7e6514128198fb75edc6",
+      "size_bytes": 5766
     },
     {
       "current_path": "docs/migration/ORUDA_PRODUCTS_MIGRATION_READINESS.md",
@@ -4615,7 +4615,7 @@
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
       "future_path_candidate": "products/onsure/src/main/java/io/onsure/common/Sha256.java",
-      "git_mode": "0o600",
+      "git_mode": "100644",
       "license": "UNDECLARED",
       "repository_owner": "babyandi/ONSure",
       "sensitive_information": {
@@ -6190,7 +6190,7 @@
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
       "future_path_candidate": "products/onsure/src/test/java/io/onsure/common/Sha256Test.java",
-      "git_mode": "0o600",
+      "git_mode": "100644",
       "license": "UNDECLARED",
       "repository_owner": "babyandi/ONSure",
       "sensitive_information": {
@@ -6977,8 +6977,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "19af4f592aeb48157be1f7f9c7f274b28259bdb2afdcb06b917cf0160d44b6cf",
-      "size_bytes": 2451
+      "sha256": "324b0cb37836397cb8fb161afee4935d2af7eb3bb6105e1a230acde47fa6d646",
+      "size_bytes": 2580
     },
     {
       "current_path": "tests/test_onsure_verify_run_cli.py",
@@ -7007,8 +7007,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "17cbd9ce0db280bd7a79a3956c36dc92ae39118a3af1bf861a4e7b475c6335c7",
-      "size_bytes": 1491
+      "sha256": "3d6ae037645157d1a4e70b7b108d91c302f1250df8ccbb03bffc8aa01c08bc0b",
+      "size_bytes": 1492
     },
     {
       "current_path": "tests/test_surefire_summary_normalization.py",
@@ -7141,6 +7141,6 @@
       "NO_PATTERN_MATCH": 472,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 4080172
+    "total_size_bytes": 4079604
   }
 }
