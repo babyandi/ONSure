@@ -100,7 +100,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Patch 적용 전 위험도·영향 범위·Rollback 방법 Preview
 - 프로젝트 전용 정보와 익명화된 범용 패턴의 분리·검증
 - MVP 수용 시나리오 11개 전 항목 및 실제 저장소 2회 연속 성공
-- VS Code whole-file 승인 작성 UX와 외부 signer 실제 연동
+- 외부 signer 실제 연동과 승인 request/receipt 교환 Full-Chain
 - Ask·Plan·Act·Autopilot 모드
 - VS Code 부분 Plan 승인 UX
 - Core stage cooperative checkpoint와 orphan process 재연결

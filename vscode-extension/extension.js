@@ -400,6 +400,31 @@ async function activate(context) {
     output.appendLine(`[${new Date().toISOString()}] PATCH_PREVIEW:${review.patchPlanId}:${hunk.hunk_id}:NONFINAL`);
   }
 
+  async function savePatchSigningRequest(review, selectedHunkIds, selectionScope) {
+    const branch = await vscode.window.showInputBox({
+      title: 'Requested Isolated Patch Branch',
+      value: `codex/${review.targetId}-approved-patch`,
+      prompt: 'A non-protected branch; the external signer must approve the same branch.'
+    });
+    if (!branch) return;
+    const request = hunkApprovalRequest(
+      review, selectedHunkIds, branch, new Date().toISOString(), selectionScope);
+    const safeId = review.patchPlanId.replace(/[^A-Za-z0-9._-]/g, '-');
+    const selectedFile = await vscode.window.showSaveDialog({
+      title: 'Save Unsigned Patch Approval Request',
+      filters: { JSON: ['json'] },
+      defaultUri: vscode.Uri.file(path.join(workspaceRoot(), '.onsure', 'approval-requests',
+        `${safeId}-${selectionScope.toLowerCase()}-approval-request.json`))
+    });
+    if (!selectedFile) return;
+    const saved = atomicWriteNewJson(selectedFile.fsPath, request);
+    await context.workspaceState.update(LAST_PATCH_APPROVAL_REQUEST_KEY, saved);
+    refreshAll();
+    await showJson('Unsigned patch approval request — EXTERNAL_SIGNATURE_REQUIRED', request);
+    vscode.window.showWarningMessage(
+      `ONSure created an unsigned ${selectionScope} request only. An external trusted approver must issue the signed receipt.`);
+  }
+
   async function controlAutopilot(action) {
     const root = workspaceRoot();
     identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
@@ -653,30 +678,34 @@ async function activate(context) {
           placeHolder: 'Default deny: only explicitly selected hunks enter the signing request.'
         });
         if (!selected?.length) return;
-        const branch = await vscode.window.showInputBox({
-          title: 'Requested Isolated Patch Branch',
-          value: `codex/${review.targetId}-approved-patch`,
-          prompt: 'A non-protected branch; the external signer must approve the same branch.'
-        });
-        if (!branch) return;
-        const request = hunkApprovalRequest(
-          review, selected.map(value => value.hunk.hunk_id), branch);
-        const safeId = review.patchPlanId.replace(/[^A-Za-z0-9._-]/g, '-');
-        const selectedFile = await vscode.window.showSaveDialog({
-          title: 'Save Unsigned Hunk Approval Request',
-          filters: { JSON: ['json'] },
-          defaultUri: vscode.Uri.file(path.join(workspaceRoot(), '.onsure', 'approval-requests',
-            `${safeId}-hunk-approval-request.json`))
-        });
-        if (!selectedFile) return;
-        const saved = atomicWriteNewJson(selectedFile.fsPath, request);
-        await context.workspaceState.update(LAST_PATCH_APPROVAL_REQUEST_KEY, saved);
-        refreshAll();
-        await showJson('Unsigned hunk approval request — EXTERNAL_SIGNATURE_REQUIRED', request);
-        vscode.window.showWarningMessage(
-          'ONSure created an unsigned request only. An external trusted approver must issue the signed receipt.');
+        await savePatchSigningRequest(
+          review, selected.map(value => value.hunk.hunk_id), 'HUNK');
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure approval request failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.createFileApprovalRequest', async () => {
+      try {
+        const review = await loadLatestPatchReview();
+        const files = [...new Set(review.hunks.map(hunk => hunk.relative_path))].sort();
+        const selected = await vscode.window.showQuickPick(files.map(file => {
+          const hunks = review.hunks.filter(hunk => hunk.relative_path === file);
+          return {
+            label: file,
+            description: `${hunks.length} declared hunk(s)`,
+            detail: 'Selecting a file expands to every declared hunk in that file.',
+            hunks
+          };
+        }), {
+          title: `Select Whole Files for External Signature — ${review.patchPlanId}`,
+          canPickMany: true,
+          placeHolder: 'Default deny: unselected files and hunks remain excluded.'
+        });
+        if (!selected?.length) return;
+        await savePatchSigningRequest(
+          review, selected.flatMap(value => value.hunks.map(hunk => hunk.hunk_id)), 'FILE');
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure file approval request failed: ${error.message}`);
       }
     }),
     vscode.commands.registerCommand('onsure.applyApprovedPatch', async () => {

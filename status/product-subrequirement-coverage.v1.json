@@ -635,7 +635,6 @@
         "VSCODE"
       ],
       "missing_controls": [
-        "WHOLE_FILE_APPROVAL_UI_NOT_IMPLEMENTED",
         "VSCODE_EXTENSION_HOST_HUNK_FLOW_NOT_RUN",
         "APPROVAL_REPLAY_LEDGER_EXTERNAL_ANCHOR_NOT_IMPLEMENTED"
       ],

@@ -95,8 +95,16 @@ test('patch preview and signing request remain digest hunk and safety bound', ()
     review, ['HUNK-aaaaaaaaaaaaaaaa'], 'fix/approved-patch', '2026-08-02T00:00:00Z');
   assert.equal(request.contract, 'ONSURE_HUNK_APPROVAL_REQUEST_V1');
   assert.equal(request.approval_purpose, 'PATCH_HUNK_APPROVAL');
+  assert.equal(request.selection_scope, 'HUNK');
   assert.deepEqual(request.selected_hunk_ids, ['HUNK-aaaaaaaaaaaaaaaa']);
+  assert.deepEqual(request.selected_files, ['src/policy.txt']);
+  assert.equal(request.risk_preview.level, 'LOW');
+  assert.equal(request.impact_scope.file_count, 1);
+  assert.equal(request.rollback_preview.source_workspace_write_allowed, false);
   assert.equal(request.allow_merge, false);
+  const fileRequest = hunkApprovalRequest(review, [hunk.hunk_id], 'fix/file-approved',
+    '2026-08-02T00:00:00Z', 'FILE');
+  assert.equal(fileRequest.selection_scope, 'FILE');
   assert.throws(() => previewHunk(`${source}drift`, review.hunks[0]), /digest has drifted/);
   assert.throws(() => hunkApprovalRequest(review, ['unknown'], 'fix/branch'), /declared/);
   assert.throws(() => hunkApprovalRequest(review, [hunk.hunk_id], 'main'), /non-protected/);

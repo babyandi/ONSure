@@ -43,6 +43,8 @@ The controlled improvement and delivery sequence is:
 1. Use `ONSure: Review Patch Hunk Diff` to open a source-digest-verified diff.
 2. Select explicit hunks with `ONSure: Create Hunk Signing Request`. This writes an unsigned
    `ONSURE_HUNK_APPROVAL_REQUEST_V1`; ONSure never self-signs it.
+   Alternatively, `ONSure: Create Whole-file Signing Request` expands each selected file to all
+   of its declared hunks. Both request forms include bounded risk, impact and rollback previews.
 3. Obtain the matching signed receipt from the external trusted approver, then run
    `ONSure: Apply Approved Patch`.
 4. Validate the isolated approved worktree and select baseline/current reports with
@@ -68,9 +70,9 @@ is not yet implemented.
 
 ## Current limit
 
-Dedicated read views, digest-bound Hunk diff preview, unsigned external signing requests and
-CLI/Local API/VS Code Autopilot controls are implemented. Whole-file approval UX, core-stage
-cooperative checkpoints, orphan-process reattachment, semantic Ask/Plan/Act agent modes, and
+Dedicated read views, digest-bound Hunk diff preview, Hunk/whole-file external signing requests
+and CLI/Local API/VS Code Autopilot controls are implemented. Core-stage cooperative checkpoints,
+orphan-process reattachment, semantic Ask/Plan/Act agent modes, and
 installed VS Code Extension Host end-to-end automation remain partial or `NOT_RUN`.
 Independent OTester/OAudit are still required before any release claim.
 

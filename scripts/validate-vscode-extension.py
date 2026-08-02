@@ -32,6 +32,7 @@ REQUIRED_COMMANDS = {
     "onsure.openDocument",
     "onsure.reviewPatchPlan",
     "onsure.createHunkApprovalRequest",
+    "onsure.createFileApprovalRequest",
     "onsure.applyApprovedPatch",
     "onsure.proveImprovement",
     "onsure.gitCommit",
@@ -111,6 +112,7 @@ def main() -> int:
         "LAST_CHANGE_SET_KEY", "LAST_DRAFT_PR_RECEIPT_KEY",
         "patchReview", "previewHunk", "hunkApprovalRequest",
         "ONSURE_HUNK_APPROVAL_REQUEST_V1", "EXTERNAL_SIGNATURE_REQUIRED",
+        "selection_scope", "risk_preview", "rollback_preview",
         "/v1/autopilot-control", "autopilotControlRequest", "AUTOPILOT_CONTROL",
     ):
         if token not in source and token not in core:

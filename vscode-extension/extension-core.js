@@ -205,7 +205,8 @@ function previewHunk(source, hunk) {
   return source.replace(hunk.match_text, hunk.replacement_text);
 }
 
-function hunkApprovalRequest(review, selectedHunkIds, branchName, createdAt = new Date().toISOString()) {
+function hunkApprovalRequest(
+  review, selectedHunkIds, branchName, createdAt = new Date().toISOString(), selectionScope = 'HUNK') {
   const branch = requireBranch(branchName, 'Patch branch');
   if (branch.length < 3 || ['main', 'master', 'production', 'release'].includes(branch.toLowerCase())) {
     throw new Error('Patch branch must be a non-protected branch with at least 3 characters.');
@@ -216,6 +217,11 @@ function hunkApprovalRequest(review, selectedHunkIds, branchName, createdAt = ne
     throw new Error('Select one or more declared patch hunks.');
   }
   if (Number.isNaN(Date.parse(createdAt))) throw new Error('Approval request timestamp is invalid.');
+  if (!['HUNK', 'FILE'].includes(selectionScope)) throw new Error('Approval selection scope is invalid.');
+  const selectedHunks = review.hunks.filter(value => selected.includes(value.hunk_id));
+  const selectedFiles = [...new Set(selectedHunks.map(value => value.relative_path))].sort();
+  const riskLevel = selected.length > 10 || selectedFiles.length > 5 ? 'HIGH'
+    : selected.length > 3 || selectedFiles.length > 1 ? 'MEDIUM' : 'LOW';
   return {
     contract: 'ONSURE_HUNK_APPROVAL_REQUEST_V1',
     request_id: `REQUEST-${review.patchPlanId}`,
@@ -225,8 +231,26 @@ function hunkApprovalRequest(review, selectedHunkIds, branchName, createdAt = ne
     patch_plan_id: review.patchPlanId,
     patch_plan_file: review.planFile,
     patch_plan_file_sha256: review.planFileSha256,
+    selection_scope: selectionScope,
     selected_hunk_ids: selected.sort(),
+    selected_files: selectedFiles,
     branch_name: branch,
+    risk_preview: {
+      classification: 'BOUNDED_CHANGE_SURFACE_CANDIDATE',
+      level: riskLevel,
+      factors: [`HUNKS_${selected.length}`, `FILES_${selectedFiles.length}`],
+      independent_risk_review: 'NOT_RUN'
+    },
+    impact_scope: {
+      file_count: selectedFiles.length,
+      hunk_count: selected.length,
+      finding_ids: [...new Set(selectedHunks.map(value => value.finding_id))].sort()
+    },
+    rollback_preview: {
+      method: 'PATCH_APPLY_RECEIPT_BACKUP_AND_ISOLATED_GIT_WORKTREE_REMOVAL',
+      source_workspace_write_allowed: false,
+      automatic_rollback_executed: false
+    },
     allow_direct_main_write: false,
     allow_force_push: false,
     allow_merge: false,
@@ -377,6 +401,8 @@ function surfaceRows(viewId, model = {}) {
           patch ? 'onsure.reviewPatchPlan' : undefined),
         row('External Signing Request', local.patchApprovalRequest || 'NOT_CREATED', 'edit',
           patch ? 'onsure.createHunkApprovalRequest' : undefined),
+        row('Whole-file Signing Request', patch ? 'EXPLICIT_FILE_SELECTION' : 'NOT_AVAILABLE', 'files',
+          patch ? 'onsure.createFileApprovalRequest' : undefined),
         row('Apply Approved Patch', local.patchReceipt ? 'APPLIED' : 'SIGNED_APPROVAL_REQUIRED', 'tools', 'onsure.applyApprovedPatch'),
         row('Improvement Proof', local.improvementProof ? 'AVAILABLE' : 'NOT_RUN', 'verified-filled', 'onsure.proveImprovement')
       ];
