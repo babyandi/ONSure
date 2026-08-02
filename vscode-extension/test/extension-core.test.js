@@ -108,9 +108,11 @@ test('snapshot and controlled delivery requests stay identity and approval bound
   };
   assert.equal(requireSnapshotBinding({ snapshot }, identity), snapshot);
   assert.throws(() => requireSnapshotBinding({ snapshot: { ...snapshot, target_id: 'other' } }, identity), /not bound/);
-  assert.deepEqual(patchApplyRequest(root, path.join(root, '.onsure/runs/R1'), path.join(root, 'approval.json')), {
+  assert.deepEqual(patchApplyRequest(root, path.join(root, '.onsure/runs/R1'),
+    path.join(root, 'approval-request.json'), path.join(root, 'approval.json')), {
     repository_root: root,
     patch_plan_file: path.join(root, '.onsure/runs/R1/patch-plan.json'),
+    approval_request_file: path.join(root, 'approval-request.json'),
     approval_receipt_file: path.join(root, 'approval.json')
   });
   assert.deepEqual(gitCommitRequest({

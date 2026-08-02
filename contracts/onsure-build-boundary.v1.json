@@ -39,6 +39,7 @@
     "onsure-test-fixtures": "modules/onsure-test-fixtures",
     "onsure-adapter-oruda": "modules/onsure-adapter-oruda",
     "onsure-provider-spi": "modules/onsure-provider-spi",
+    "onsure-provider-local-mock": "modules/onsure-provider-local-mock",
     "onsure-sdk": "modules/onsure-sdk"
   },
   "expected_internal_dependencies": {
@@ -48,6 +49,7 @@
     "onsure-test-fixtures": [],
     "onsure-adapter-oruda": ["onsure-core"],
     "onsure-provider-spi": [],
+    "onsure-provider-local-mock": ["onsure-provider-spi"],
     "onsure-sdk": []
   },
   "transitional_source_ownership": {

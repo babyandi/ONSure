@@ -124,6 +124,8 @@ public final class ValidationEngine {
         ValidationStageCheckpointJournal checkpoint = new ValidationStageCheckpointJournal(
                 runRoot, jobId, target.targetId(), plannedStageIds);
         ValidationContextSnapshotStore contextSnapshots = new ValidationContextSnapshotStore(runRoot);
+        ValidationStageReplayLedger replayLedger = new ValidationStageReplayLedger(
+                runRoot, jobId, target.targetId());
         context.putAttribute("registered_adapter_ids", adapterRegistry.adapterIds());
         if (approvalBundle != null) {
             context.putAttribute("approved_execution_plan_file", approvalBundle.approvedPlanFile().toString());
@@ -134,11 +136,57 @@ public final class ValidationEngine {
         }
         contextSnapshots.save(context, -1, "INITIALIZED");
 
+        return execute(target, context, checkpoint, contextSnapshots, replayLedger, 0, created, false);
+    }
+
+    RunResult resumeInternal(ValidationTarget target, Path runRoot) throws Exception {
+        TargetAdapter adapter = adapterRegistry.require(target);
+        List<String> plannedStageIds = stages.stream().map(ValidatorStage::stageId).toList();
+        ValidationContextSnapshotStore snapshots = new ValidationContextSnapshotStore(runRoot);
+        ValidationContextSnapshotStore.Restored restored = snapshots.restore(target, adapter);
+        ValidationContext context = restored.context();
+        ValidationStageCheckpointJournal checkpoint = ValidationStageCheckpointJournal.resume(
+                runRoot, context.job().jobId(), target.targetId(), plannedStageIds);
+        Map<String, Object> checkpointState = checkpoint.verifyAndRead();
+        int stageIndex = ((Number) checkpointState.get("current_stage_index")).intValue();
+        if (stageIndex < 0 || stageIndex >= plannedStageIds.size()
+                || !plannedStageIds.get(stageIndex).equals(checkpointState.get("current_stage_id"))
+                || restored.lastCompletedStageIndex() != stageIndex - 1
+                || !"STAGE_READY".equals(restored.boundaryState())) {
+            throw new IllegalStateException("VALIDATION_RESUME_CONTEXT_BOUNDARY_INVALID");
+        }
+        String stageId = plannedStageIds.get(stageIndex);
+        ValidationStageReplayLedger replay = new ValidationStageReplayLedger(
+                runRoot, context.job().jobId(), target.targetId());
+        replay.prepareReplay(stageId, stageIndex);
+        checkpoint.stageResumed(stageId, stageIndex);
+        replay.stageStarted(stageId, stageIndex);
+        context.putAttribute("validation_resume_count",
+                ((Number) context.attributes().getOrDefault("validation_resume_count", 0)).longValue() + 1L);
+        return execute(target, context, checkpoint, snapshots, replay, stageIndex,
+                context.job().createdAt(), true);
+    }
+
+    private RunResult execute(
+            ValidationTarget target,
+            ValidationContext context,
+            ValidationStageCheckpointJournal checkpoint,
+            ValidationContextSnapshotStore contextSnapshots,
+            ValidationStageReplayLedger replayLedger,
+            int startIndex,
+            Instant created,
+            boolean stageAlreadyStarted) throws Exception {
         Exception executionFailure = null;
-        int checkpointIndex = 0;
-        for (ValidatorStage stage : stages) {
-            checkpoint.stageStarted(stage.stageId(), checkpointIndex);
+        int checkpointIndex = startIndex;
+        for (int index = startIndex; index < stages.size(); index++) {
+            ValidatorStage stage = stages.get(index);
+            contextSnapshots.save(context, checkpointIndex - 1, "STAGE_READY");
+            if (!(stageAlreadyStarted && index == startIndex)) {
+                replayLedger.stageStarted(stage.stageId(), checkpointIndex);
+                checkpoint.stageStarted(stage.stageId(), checkpointIndex);
+            }
             if (!stage.supports(context)) {
+                replayLedger.stageCompleted(stage.stageId());
                 checkpoint.stageCompleted(stage.stageId(), "NOT_SUPPORTED");
                 checkpointIndex++;
                 contextSnapshots.save(context, checkpointIndex - 1, "STAGE_COMPLETED");
@@ -150,6 +198,7 @@ public final class ValidationEngine {
                     && !ExecutionPlanActionPolicy.isApproved(context, requiredAction)) {
                 StageResult result = ExecutionPlanActionPolicy.notApproved(stage.stageId(), requiredAction);
                 context.addStageResult(result);
+                replayLedger.stageCompleted(stage.stageId());
                 checkpoint.stageCompleted(stage.stageId(), result.decision().name());
                 checkpointIndex++;
                 contextSnapshots.save(context, checkpointIndex - 1, "STAGE_COMPLETED");
@@ -158,6 +207,7 @@ public final class ValidationEngine {
             try {
                 StageResult result = stage.execute(context);
                 context.addStageResult(result);
+                replayLedger.stageCompleted(stage.stageId());
                 checkpoint.stageCompleted(stage.stageId(), result.decision().name());
                 checkpointIndex++;
             } catch (Exception e) {
@@ -169,7 +219,7 @@ public final class ValidationEngine {
                 context.putAttribute("execution_failure_stage", stage.stageId());
                 context.putAttribute("execution_failure", safeMessage(e));
                 checkpoint.stageFailed(stage.stageId(), e);
-                contextSnapshots.save(context, checkpointIndex - 1, "STAGE_FAILED");
+                replayLedger.stageFailed(stage.stageId());
                 break;
             }
             contextSnapshots.save(context, checkpointIndex - 1, "STAGE_COMPLETED");
@@ -177,19 +227,22 @@ public final class ValidationEngine {
 
         Instant completed = Instant.now();
         context.job(new ValidationJob(
-                jobId, target.targetId(), executionFailure == null ? JobStatus.COMPLETED : JobStatus.FAILED,
+                context.job().jobId(), target.targetId(),
+                executionFailure == null ? JobStatus.COMPLETED : JobStatus.FAILED,
                 created, created, completed, null));
-        contextSnapshots.save(context, checkpointIndex - 1, "STAGES_FINISHED");
         Decision decision = finalDecision(context, executionFailure);
-        checkpoint.stagesFinished(decision.name());
+        if (executionFailure == null) {
+            contextSnapshots.save(context, checkpointIndex - 1, "STAGES_FINISHED");
+            checkpoint.stagesFinished(decision.name());
+        }
         ValidationReport report = createReport(context, decision, completed);
         store.persist(context, report);
         if (executionFailure != null) {
             throw new ValidationExecutionException(
                     "validation failed at " + context.attributes().get("execution_failure_stage"),
-                    executionFailure, runRoot, report);
+                    executionFailure, context.runRoot(), report);
         }
-        return new RunResult(runRoot, report);
+        return new RunResult(context.runRoot(), report);
     }
 
     private static ValidationReport createReport(ValidationContext context, Decision decision, Instant generatedAt) {

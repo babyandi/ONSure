@@ -2,9 +2,16 @@ package io.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -36,6 +43,41 @@ class PatchApprovalExchangeVerifierTest {
         mapper.writeValue(files.receipt().toFile(), receipt);
         assertThrows(IllegalArgumentException.class, () -> new PatchApprovalExchangeVerifier().verify(
                 files.request(), files.receipt(), files.plan()));
+    }
+
+    @Test
+    void verifiesTheSameBoundExchangeThroughCliAndAuthenticatedLocalApi() throws Exception {
+        FilesBundle files = files();
+        Map<String, Object> request = Map.of(
+                "approval_request_file", files.request().toString(),
+                "approval_receipt_file", files.receipt().toString(),
+                "patch_plan_file", files.plan().toString());
+        Path requestFile = temp.resolve("workflow-request.json");
+        mapper.writeValue(requestFile.toFile(), request);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        int exit = ONSureCli.run(new String[]{
+                "workflow", temp.toString(), "patch.verify-approval", requestFile.toString()
+        }, new PrintStream(output), new PrintStream(new ByteArrayOutputStream()));
+        assertEquals(0, exit);
+        assertTrue(output.toString().contains("BOUND_PENDING_CRYPTOGRAPHIC_RECEIPT_VERIFICATION"));
+
+        String token = "approval-api-token-" + "x".repeat(32);
+        LocalAuthenticatedApiServer server = new LocalAuthenticatedApiServer(temp, token);
+        int port = server.startAndGetPort(0);
+        try {
+            String body = mapper.writeValueAsString(Map.of(
+                    "operation", "patch.verify-approval", "request", request));
+            HttpResponse<String> response = HttpClient.newHttpClient().send(
+                    HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/v1/workflow"))
+                            .header("Authorization", "Bearer " + token)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(body)).build(),
+                    HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, response.statusCode(), response.body());
+            assertTrue(response.body().contains("BOUND_PENDING_CRYPTOGRAPHIC_RECEIPT_VERIFICATION"));
+        } finally {
+            server.stop();
+        }
     }
 
     private FilesBundle files() throws Exception {

@@ -761,11 +761,14 @@ async function activate(context) {
         identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
         const runRoot = context.workspaceState.get(LAST_RUN_KEY);
         if (!runRoot) throw new Error('Run validation and generate a patch plan first.');
+        const approvalRequest = context.workspaceState.get(LAST_PATCH_APPROVAL_REQUEST_KEY);
+        if (!approvalRequest) throw new Error('Create and save the bound patch approval request first.');
         const approval = await selectWorkspaceFile(
           'Select Signed ONSure Patch Approval Receipt', { JSON: ['json'] });
         if (!approval) return;
         const workflow = await executeWorkflow('patch.apply', patchApplyRequest(
-          root, requireInsideWorkspace(runRoot), approval), 'Applying approved patch in isolated worktree');
+          root, requireInsideWorkspace(runRoot), requireInsideWorkspace(approvalRequest), approval),
+        'Applying approved patch in isolated worktree');
         const worktree = requireInsideWorkspace(workflow.result?.worktree);
         const receipt = path.join(root, '.onsure', 'improvement-evidence', 'patch-apply-receipt.json');
         await context.workspaceState.update(LAST_PATCH_APPROVAL_KEY, approval);

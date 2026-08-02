@@ -29,6 +29,9 @@ const OPERATION_CAPABILITIES = Object.freeze({
   'plan.generate': 'PLAN',
   'plan.approve': 'PLAN',
   'validation.run': 'VERIFY',
+  'validation.resume': 'VERIFY',
+  'knowledge.anonymize': 'VERIFY',
+  'patch.verify-approval': 'IMPROVE',
   'patch.apply': 'IMPROVE',
   'patch.rollback': 'IMPROVE',
   'improvement.prove': 'IMPROVE',
@@ -280,11 +283,12 @@ function requireAbsolute(value, label) {
   catch { throw new Error(`${label} must be an absolute local path.`); }
 }
 
-function patchApplyRequest(workspaceRoot, runRoot, approvalReceiptFile) {
+function patchApplyRequest(workspaceRoot, runRoot, approvalRequestFile, approvalReceiptFile) {
   const run = requireAbsolute(runRoot, 'Run root');
   return {
     repository_root: requireAbsolute(workspaceRoot, 'Workspace root'),
     patch_plan_file: path.join(run, 'patch-plan.json'),
+    approval_request_file: requireAbsolute(approvalRequestFile, 'Patch approval request'),
     approval_receipt_file: requireAbsolute(approvalReceiptFile, 'Patch approval receipt')
   };
 }

@@ -47,7 +47,7 @@ class ValidationContextSnapshotStoreTest {
         assertEquals(original.stageResults(), restored.context().stageResults());
         assertEquals(original.attributes(), restored.context().attributes());
         Map<String, Object> envelope = snapshots.verifyAndRead(target);
-        assertEquals(false, envelope.get("automatic_engine_resume_supported"));
+        assertEquals(true, envelope.get("automatic_engine_resume_supported"));
         assertEquals(false, envelope.get("final_claim_allowed"));
     }
 

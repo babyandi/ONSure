@@ -64,6 +64,44 @@ final class ValidationStageCheckpointJournal {
         sealAndWrite(initial);
     }
 
+    private ValidationStageCheckpointJournal(Path runRoot, String jobId, String targetId) {
+        this.runRoot = runRoot.toAbsolutePath().normalize();
+        this.file = this.runRoot.resolve(FILE_NAME);
+        this.jobId = requireId(jobId, "job_id");
+        this.targetId = requireId(targetId, "target_id");
+    }
+
+    static ValidationStageCheckpointJournal resume(
+            Path runRoot, String jobId, String targetId, List<String> plannedStages) throws Exception {
+        ValidationStageCheckpointJournal journal = new ValidationStageCheckpointJournal(runRoot, jobId, targetId);
+        Map<String, Object> value = journal.verifyAndRead();
+        if (!plannedStages.equals(strings(value.get("planned_stage_ids")))) {
+            throw new IllegalStateException("VALIDATION_CHECKPOINT_STAGE_PLAN_DRIFT");
+        }
+        if (!List.of("STAGE_RUNNING", "STAGE_FAILED").contains(String.valueOf(value.get("state")))) {
+            throw new IllegalStateException("VALIDATION_CHECKPOINT_NOT_RESUMABLE");
+        }
+        return journal;
+    }
+
+    void stageResumed(String stageId, int index) throws Exception {
+        Map<String, Object> next = next();
+        List<String> planned = strings(next.get("planned_stage_ids"));
+        List<String> completed = strings(next.get("completed_stage_ids"));
+        if (index < 0 || index >= planned.size() || !stageId.equals(planned.get(index))
+                || index != completed.size()
+                || !List.of("STAGE_RUNNING", "STAGE_FAILED").contains(String.valueOf(next.get("state")))) {
+            throw new IllegalStateException("VALIDATION_CHECKPOINT_RESUME_ORDER_INVALID");
+        }
+        next.put("state", "STAGE_RUNNING");
+        next.put("current_stage_id", stageId);
+        next.put("current_stage_index", index);
+        next.put("current_stage_decision", null);
+        next.put("failure", null);
+        next.put("resume_count", ((Number) next.getOrDefault("resume_count", 0)).longValue() + 1L);
+        sealAndWrite(next);
+    }
+
     void stageStarted(String stageId, int index) throws Exception {
         Map<String, Object> next = next();
         List<String> planned = strings(next.get("planned_stage_ids"));
@@ -157,8 +195,9 @@ final class ValidationStageCheckpointJournal {
         value.put("completed_stage_reexecution_allowed", false);
         value.put("context_replay_supported", true);
         value.put("context_snapshot_file", ValidationContextSnapshotStore.FILE_NAME);
-        value.put("automatic_engine_resume_supported", false);
-        value.put("restart_behavior", "RESTORE_VERIFIED_CONTEXT_THEN_EXPLICIT_ENGINE_RESUME_REQUIRED");
+        value.put("automatic_engine_resume_supported", true);
+        value.put("restart_behavior", "RESTORE_VERIFIED_CONTEXT_ROLLBACK_NEW_STAGE_FILES_AND_RESUME");
+        value.put("stage_replay_ledger_file", ValidationStageReplayLedger.FILE_NAME);
         value.put("final_claim_allowed", false);
         return value;
     }

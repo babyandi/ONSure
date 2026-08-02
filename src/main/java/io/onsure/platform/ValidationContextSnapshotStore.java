@@ -75,8 +75,8 @@ final class ValidationContextSnapshotStore {
         value.put("stage_results", context.stageResults());
         value.put("attributes", context.attributes());
         value.put("regression_lock", context.regressionLock());
-        value.put("automatic_engine_resume_supported", false);
-        value.put("replay_requires_explicit_resume", true);
+        value.put("automatic_engine_resume_supported", true);
+        value.put("replay_requires_explicit_resume", false);
         value.put("final_claim_allowed", false);
         Map<String, Object> normalized = mapper.convertValue(value, MAP);
         normalized.put("snapshot_sha256", digest(normalized));

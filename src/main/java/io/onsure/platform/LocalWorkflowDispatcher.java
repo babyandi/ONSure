@@ -15,7 +15,7 @@ import java.util.Set;
 
 /** Shared command boundary used by CLI, Local API and VS Code. */
 public final class LocalWorkflowDispatcher {
-    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V7";
+    public static final String CONTRACT = "ONSURE_LOCAL_WORKFLOW_DISPATCHER_V8";
     private static final Set<String> PROHIBITED_REGISTERED_EXECUTION_PROFILES = Set.of(
             "LOCAL_E2E", "LOCAL_MVF_E2E", "LOCAL_FIXTURE", "TRUSTED_LOCAL_FIXTURE",
             "LOCAL_E2E_TRUSTED_FIXTURE", "LOCAL_DEVELOPMENT");
@@ -49,6 +49,9 @@ public final class LocalWorkflowDispatcher {
             case "plan.generate" -> planGenerate(request);
             case "plan.approve" -> planApprove(request);
             case "validation.run" -> validationRun(request);
+            case "validation.resume" -> validationResume(request);
+            case "knowledge.anonymize" -> knowledgeAnonymize(request);
+            case "patch.verify-approval" -> patchVerifyApproval(request);
             case "patch.apply" -> patchApply(request);
             case "patch.rollback" -> patchRollback(request);
             case "improvement.prove" -> improvementProve(request);
@@ -237,6 +240,53 @@ public final class LocalWorkflowDispatcher {
                 "final_claim_allowed", false);
     }
 
+    private Map<String, Object> validationResume(JsonNode request) throws Exception {
+        rejectRegisteredTargetOverrides(request);
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        if (!GenericManifestTargetAdapter.ID.equals(target.adapterId())) {
+            throw new IllegalArgumentException("LOCAL_CORE_WORKFLOW_SUPPORTS_GENERIC_ADAPTER_ONLY");
+        }
+        Path store = outputPath(request, "store_root", ".onsure/validation-data");
+        Path runRoot = inputPath(request, "run_root", true);
+        if (!runRoot.startsWith(store.toAbsolutePath().normalize())) {
+            throw new IllegalArgumentException("VALIDATION_RESUME_RUN_OUTSIDE_STORE");
+        }
+        ValidationEngine.RunResult run = ValidationEngine.defaultEngine(store).resumeInternal(target, runRoot);
+        return Map.of(
+                "decision", run.report().decision().name(),
+                "run_root", run.runRoot().toString(),
+                "report", run.report(),
+                "resume_performed", true,
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> knowledgeAnonymize(JsonNode request) throws Exception {
+        Path saltFile = inputPath(request, "workspace_salt_file", true);
+        byte[] salt = Files.readAllBytes(saltFile);
+        if (salt.length < 32 || salt.length > 4096) {
+            throw new IllegalArgumentException("WORKSPACE_SALT_LENGTH_INVALID");
+        }
+        JsonNode knowledgeNode = request.path("knowledge");
+        if (!knowledgeNode.isObject()) throw new IllegalArgumentException("KNOWLEDGE_OBJECT_REQUIRED");
+        Map<String, String> knowledge = new java.util.LinkedHashMap<>();
+        knowledgeNode.fields().forEachRemaining(entry -> {
+            if (!entry.getValue().isTextual()) throw new IllegalArgumentException("KNOWLEDGE_VALUE_TEXT_REQUIRED");
+            knowledge.put(entry.getKey(), entry.getValue().asText());
+        });
+        ProjectKnowledgeSeparationService.Result result = new ProjectKnowledgeSeparationService()
+                .separate(requiredId(request, "project_id"), knowledge, salt);
+        return mapper.convertValue(result, new com.fasterxml.jackson.core.type.TypeReference<>() {});
+    }
+
+    private Map<String, Object> patchVerifyApproval(JsonNode request) throws Exception {
+        return new PatchApprovalExchangeVerifier().verify(
+                inputPath(request, "approval_request_file", true),
+                inputPath(request, "approval_receipt_file", true),
+                inputPath(request, "patch_plan_file", true));
+    }
+
     private ProductCatalog.RegisteredTarget requireRegisteredTarget(
             String projectId, String targetId) throws Exception {
         return catalog().targets(projectId).stream()
@@ -257,7 +307,14 @@ public final class LocalWorkflowDispatcher {
     }
 
     private Map<String, Object> patchApply(JsonNode request) throws Exception {
-        return new ImprovementWorkflowService().applyApprovedPlan(
+        Map<String, Object> exchange = null;
+        if (!request.path("approval_request_file").asText("").isBlank()) {
+            exchange = new PatchApprovalExchangeVerifier().verify(
+                    inputPath(request, "approval_request_file", true),
+                    inputPath(request, "approval_receipt_file", true),
+                    inputPath(request, "patch_plan_file", true));
+        }
+        Map<String, Object> applied = new ImprovementWorkflowService().applyApprovedPlan(
                 inputPath(request, "repository_root", true),
                 inputPath(request, "patch_plan_file", true),
                 inputPath(request, "approval_receipt_file", true),
@@ -265,6 +322,10 @@ public final class LocalWorkflowDispatcher {
                 approvalAuthority.replayLedgerForConsumption(),
                 outputPath(request, "worktree_root", ".onsure/worktrees/approved-patch"),
                 outputPath(request, "evidence_root", ".onsure/improvement-evidence"));
+        if (exchange == null) return applied;
+        Map<String, Object> bound = new java.util.LinkedHashMap<>(applied);
+        bound.put("approval_exchange_verification", exchange);
+        return Map.copyOf(bound);
     }
 
     private Map<String, Object> patchRollback(JsonNode request) throws Exception {

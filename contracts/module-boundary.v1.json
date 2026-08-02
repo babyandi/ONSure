@@ -8,6 +8,7 @@
     "modules/onsure-test-fixtures",
     "modules/onsure-adapter-oruda",
     "modules/onsure-provider-spi",
+    "modules/onsure-provider-local-mock",
     "modules/onsure-sdk"
   ],
   "modules": {
@@ -58,6 +59,12 @@
       "depends_on": [],
       "shared_source_root": false,
       "real_provider_implementation_included": false
+    },
+    "onsure-provider-local-mock": {
+      "depends_on": ["onsure-provider-spi"],
+      "shared_source_root": false,
+      "network_egress": false,
+      "fallback_allowed": false
     },
     "onsure-sdk": {
       "depends_on": [],

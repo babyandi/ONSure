@@ -11,6 +11,9 @@
     "plan.generate",
     "plan.approve",
     "validation.run",
+    "validation.resume",
+    "knowledge.anonymize",
+    "patch.verify-approval",
     "patch.apply",
     "patch.rollback",
     "improvement.prove",
@@ -48,7 +51,7 @@
     "all_operations_must_reach_generic_dispatcher": true,
     "dedicated_vscode_commands_required": ["program.learn", "validation.run"]
   },
-  "operation_count": 40,
+  "operation_count": 43,
   "current_source_execution": "LOCAL_RECEIPT_REQUIRED",
   "final_claim_allowed": false
 }

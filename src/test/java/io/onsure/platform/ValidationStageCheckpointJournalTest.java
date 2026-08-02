@@ -33,8 +33,9 @@ class ValidationStageCheckpointJournalTest {
         assertEquals(5L, ((Number) checkpoint.get("sequence")).longValue());
         assertEquals(6, ((List<?>) checkpoint.get("history")).size());
         assertEquals(true, checkpoint.get("context_replay_supported"));
-        assertEquals(false, checkpoint.get("automatic_engine_resume_supported"));
+        assertEquals(true, checkpoint.get("automatic_engine_resume_supported"));
         assertEquals(ValidationContextSnapshotStore.FILE_NAME, checkpoint.get("context_snapshot_file"));
+        assertEquals(ValidationStageReplayLedger.FILE_NAME, checkpoint.get("stage_replay_ledger_file"));
         assertEquals(false, checkpoint.get("final_claim_allowed"));
     }
 
