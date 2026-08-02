@@ -112,12 +112,12 @@
 
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
-| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (current candidate local 2회, 257 tests; 독립 clone 재검증 대상) |
-| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (8 modules, 18 tests) |
+| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (current candidate local 2회 + 독립 clone, 각 257 tests) |
+| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (8 modules, 18 tests, local + 독립 clone) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 257 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (120 tests; 독립 clone 재검증 대상) |
-| 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (120 tests, local + 독립 clone) |
+| 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (local + 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `c982d026...`; root license warning) |
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (VS Code 1.95.3/Xvfb, extension host exit 0, offline network 차단 재실행 exit 0) |
@@ -133,7 +133,7 @@
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 713-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PENDING_CURRENT_HEAD` (이전 668-file PASS; 현재 703-file 후보는 commit 후 재실행) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (703-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | 안전 기본값 Dockerfile/Compose 후보만 존재 | `NOT_RUN / NOT_AUTHORIZED` |
 | DB migration | SQLite 합성 runner만 존재 | `PASS_SYNTHETIC_NONFINAL / PRODUCTION NOT_RUN` |
@@ -149,7 +149,8 @@ VSIX는 두 환경에서 byte-identical SHA-256
 승인 exchange 표면 연결, 익명화 corpus, container/Xvfb E2E, 합성 runtime/DB/DR,
 Maven/npm offline pack과 Trivy/SBOM 통합을 추가했다. local clean Java 257/257 2회,
 modular 18/18, Python 120/120, Node 9/9, root API 238/238, SDK API 5/5를 검증했다.
-독립 clone과 현재 703-file 중첩 cutover/rollback 결과는 commit 후 이 표에 갱신한다.
+독립 clone에서 같은 build/test/API/SBOM/readiness/static gate를 통과했고 현재 703-file
+중첩 cutover/rollback도 외부 제품 저장소 없이 통과했다.
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 
