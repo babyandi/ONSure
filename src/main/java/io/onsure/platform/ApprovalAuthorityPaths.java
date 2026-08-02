@@ -1,6 +1,7 @@
 package io.onsure.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.onsure.assurance.ApprovalReceiptVerifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -26,6 +27,7 @@ public record ApprovalAuthorityPaths(
     private static final Set<String> AUTHORITY_OVERRIDE_FIELDS = Set.of(
             "trusted_key_registry", "approval_key_registry",
             "approval_replay_ledger", "verification_replay_ledger",
+            "approval_replay_external_anchor",
             "approval_authority_root", "approval_authority_base");
     private static final Set<String> PRODUCT_STATE_OVERRIDE_FIELDS = Set.of(
             "catalog_root", "store_root", "license_store_root", "case_store_root",
@@ -142,6 +144,15 @@ public record ApprovalAuthorityPaths(
         requireNoSymlink(authorityRoot, "APPROVAL_AUTHORITY_ROOT_SYMLINK_PROHIBITED");
         requireNoSymlink(replayLedger, "APPROVAL_REPLAY_LEDGER_SYMLINK_PROHIBITED");
         return replayLedger;
+    }
+
+    public Path replayExternalAnchor() {
+        Path anchor = ApprovalReceiptVerifier.externalAnchorFor(replayLedger);
+        if (anchor.startsWith(authorityRoot) || authorityRoot.startsWith(anchor)) {
+            throw new IllegalArgumentException("APPROVAL_REPLAY_EXTERNAL_ANCHOR_NOT_SEPARATE");
+        }
+        requireNoSymlink(anchor, "APPROVAL_REPLAY_EXTERNAL_ANCHOR_SYMLINK_PROHIBITED");
+        return anchor;
     }
 
     private static Path configuredAuthorityBase() {

@@ -351,13 +351,15 @@
         "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
         "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
         "src/main/java/io/onsure/platform/ValidationEngine.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java"
+        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java",
         "src/test/java/io/onsure/platform/ExecutionPlanActionPolicyTest.java",
         "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java"
+        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -373,7 +375,6 @@
       ],
       "missing_controls": [
         "VSCODE_PARTIAL_APPROVAL_UI_NOT_IMPLEMENTED",
-        "APPROVAL_REPLAY_LEDGER_EXTERNAL_ANCHOR_NOT_IMPLEMENTED",
         "CURRENT_MAIN_LOCAL_RECEIPT_NOT_RUN"
       ],
       "detector_controls": [
@@ -647,11 +648,13 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java"
+        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java"
+        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -662,8 +665,7 @@
         "CORE"
       ],
       "missing_controls": [
-        "VSCODE_HUNK_APPROVAL_UI_NOT_IMPLEMENTED",
-        "APPROVAL_REPLAY_LEDGER_EXTERNAL_ANCHOR_NOT_IMPLEMENTED"
+        "VSCODE_HUNK_APPROVAL_UI_NOT_IMPLEMENTED"
       ],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
@@ -1105,6 +1107,7 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
+        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java",
         "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
         "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
         "scripts/fixture-sandbox-launcher.sh"
@@ -1122,7 +1125,6 @@
         "CORE"
       ],
       "missing_controls": [
-        "APPROVAL_REPLAY_LEDGER_EXTERNAL_ANCHOR_NOT_IMPLEMENTED",
         "FULL_SECRET_PROVIDER_INTEGRATION_NOT_RUN",
         "CURRENT_MAIN_LOCAL_RECEIPT_NOT_RUN"
       ],

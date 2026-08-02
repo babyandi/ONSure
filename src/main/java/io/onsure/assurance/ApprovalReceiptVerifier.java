@@ -41,13 +41,24 @@ public final class ApprovalReceiptVerifier {
     private final Path registryFile;
     private final Path replayLedger;
     private final Path replayLock;
+    private final ApprovalReplayExternalAnchor externalAnchor;
 
     public ApprovalReceiptVerifier(Path registryFile, Path replayLedger) {
+        this(registryFile, replayLedger, ApprovalReplayExternalAnchor.derive(replayLedger));
+    }
+
+    public ApprovalReceiptVerifier(Path registryFile, Path replayLedger, Path externalAnchorFile) {
         this.registryFile = Objects.requireNonNull(registryFile, "registryFile")
                 .toAbsolutePath().normalize();
         this.replayLedger = Objects.requireNonNull(replayLedger, "replayLedger")
                 .toAbsolutePath().normalize();
         this.replayLock = this.replayLedger.resolveSibling(this.replayLedger.getFileName() + ".lock");
+        this.externalAnchor = new ApprovalReplayExternalAnchor(
+                Objects.requireNonNull(externalAnchorFile, "externalAnchorFile"));
+    }
+
+    public static Path externalAnchorFor(Path replayLedger) {
+        return ApprovalReplayExternalAnchor.derive(replayLedger);
     }
 
     public ValidationResult verify(
@@ -135,7 +146,9 @@ public final class ApprovalReceiptVerifier {
                 violations.add("APPROVAL_RECEIPT_ID_COLLISION");
             }
         } catch (Exception unreadable) {
-            violations.add("APPROVAL_RECEIPT_UNREADABLE");
+            String code = unreadable.getMessage();
+            violations.add(code != null && code.startsWith("APPROVAL_REPLAY_EXTERNAL_ANCHOR_")
+                    ? code : "APPROVAL_RECEIPT_UNREADABLE");
         }
         return violations.isEmpty() ? ValidationResult.pass() : ValidationResult.fail(violations);
     }
@@ -210,6 +223,8 @@ public final class ApprovalReceiptVerifier {
         entry.put("entry_hash", canonicalEntryHash(entry));
         lines.add(mapper.writeValueAsString(entry));
         writeLinesAtomic(replayLedger, lines);
+        externalAnchor.append(lines.size(), String.valueOf(entry.get("entry_hash")),
+                sha256(Files.readAllBytes(replayLedger)));
     }
 
     private ConsumptionState consumptionState(
@@ -220,9 +235,13 @@ public final class ApprovalReceiptVerifier {
 
     private ConsumptionState consumptionStateUnlocked(
             String approvalId, String contract, String purpose, String receiptSha) throws Exception {
-        if (!Files.exists(replayLedger)) return ConsumptionState.NONE;
+        if (!Files.exists(replayLedger)) {
+            externalAnchor.verify(0, GENESIS, GENESIS);
+            return ConsumptionState.NONE;
+        }
         String previous = GENESIS;
         long sequence = 1L;
+        ConsumptionState matched = ConsumptionState.NONE;
         for (String line : Files.readAllLines(replayLedger, StandardCharsets.UTF_8)) {
             if (line.isBlank()) throw new IllegalStateException("APPROVAL_REPLAY_LEDGER_BLANK");
             Map<String, Object> entry = objectMap(unwrapJson(mapper.readTree(line)));
@@ -245,12 +264,13 @@ public final class ApprovalReceiptVerifier {
             if (approvalId.equals(entry.get("approval_id"))
                     && contract.equals(entry.get("approval_contract"))
                     && purpose.equals(entry.get("approval_purpose"))) {
-                return receiptSha.equals(entry.get("receipt_sha256"))
+                matched = receiptSha.equals(entry.get("receipt_sha256"))
                         ? ConsumptionState.EXACT_RECEIPT
                         : ConsumptionState.APPROVAL_ID_COLLISION;
             }
         }
-        return ConsumptionState.NONE;
+        externalAnchor.verify(sequence - 1, previous, sha256(Files.readAllBytes(replayLedger)));
+        return matched;
     }
 
     private String canonicalEntryHash(Map<String, Object> entry) throws Exception {

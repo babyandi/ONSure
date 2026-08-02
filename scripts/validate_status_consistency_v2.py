@@ -152,7 +152,8 @@ def main() -> int:
         errors.append("APPROVAL_CONTAINED_WORKTREE_DISCOVERY_MISSING")
     if authority.get("receipt_verify_consume_binding") != APPROVAL_SNAPSHOT_STATE:
         errors.append("APPROVAL_RECEIPT_SNAPSHOT_BINDING_MISSING")
-    if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
+    if authority.get("external_replay_anchor") \
+            != "IMPLEMENTED_APPEND_ONLY_OUTSIDE_MUTABLE_AUTHORITY_ROOT_LOCAL_FULL_GATE_REQUIRED":
         errors.append("APPROVAL_EXTERNAL_ANCHOR_STATE_MISMATCH")
     if authority.get("current_source_execution") != "NOT_RUN":
         errors.append("APPROVAL_AUTHORITY_RUNTIME_OVERCLAIMED")

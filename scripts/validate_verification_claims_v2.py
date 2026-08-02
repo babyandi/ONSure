@@ -94,8 +94,23 @@ def validate() -> list[str]:
         errors.append("APPROVAL_REGISTRY_LOCK_MISSING")
     if authority.get("receipt_verify_consume_binding") != APPROVAL_SNAPSHOT_STATE:
         errors.append("APPROVAL_RECEIPT_SNAPSHOT_BINDING_MISSING")
-    if authority.get("external_replay_anchor") != "NOT_IMPLEMENTED":
-        errors.append("APPROVAL_REPLAY_EXTERNAL_ANCHOR_OVERCLAIMED")
+    if authority.get("external_replay_anchor") \
+            != "IMPLEMENTED_APPEND_ONLY_OUTSIDE_MUTABLE_AUTHORITY_ROOT_LOCAL_FULL_GATE_REQUIRED":
+        errors.append("APPROVAL_REPLAY_EXTERNAL_ANCHOR_STATE_INVALID")
+    anchor_source = ROOT / "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java"
+    anchor_test = ROOT / "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java"
+    if not anchor_source.is_file() or not anchor_test.is_file():
+        errors.append("APPROVAL_REPLAY_EXTERNAL_ANCHOR_IMPLEMENTATION_MISSING")
+    else:
+        source_text = anchor_source.read_text(encoding="utf-8")
+        test_text = anchor_test.read_text(encoding="utf-8")
+        for token in ("previous_anchor_hash", "ledger_sha256", "APPROVAL_REPLAY_EXTERNAL_ANCHOR_HEAD_MISMATCH"):
+            if token not in source_text:
+                errors.append(f"APPROVAL_REPLAY_EXTERNAL_ANCHOR_SOURCE_TOKEN_MISSING:{token}")
+        for token in ("externalAnchorRejectsRollbackToStaleLedgerSnapshot",
+                      "externalAnchorRejectsWholeLedgerRewriteEvenWithValidInternalHashes"):
+            if token not in test_text:
+                errors.append(f"APPROVAL_REPLAY_EXTERNAL_ANCHOR_TEST_MISSING:{token}")
     if authority.get("current_source_execution") != "NOT_RUN":
         errors.append("APPROVAL_AUTHORITY_CURRENT_SOURCE_EXECUTION_OVERCLAIMED")
 
@@ -168,7 +183,7 @@ def main() -> int:
         "failure_injection_authority": COUNT_AUTHORITY,
         "registered_failure_injections": counts.get("total"),
         "mvp_full_chain": "NOT_RUN",
-        "approval_external_replay_anchor": "NOT_IMPLEMENTED",
+        "approval_external_replay_anchor": "IMPLEMENTED_LOCAL_FULL_GATE_REQUIRED",
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))

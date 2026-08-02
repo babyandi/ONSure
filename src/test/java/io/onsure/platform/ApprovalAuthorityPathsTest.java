@@ -26,6 +26,8 @@ class ApprovalAuthorityPathsTest {
         assertFalse(workspace.toAbsolutePath().normalize().startsWith(paths.authorityRoot()));
         assertEquals("trusted-key-registry.json", paths.trustedKeyRegistry().getFileName().toString());
         assertEquals("approval-replay-ledger.jsonl", paths.replayLedger().getFileName().toString());
+        assertFalse(paths.replayExternalAnchor().startsWith(paths.authorityRoot()));
+        assertTrue(paths.replayExternalAnchor().startsWith(authorityBase.toAbsolutePath().normalize()));
     }
 
     @Test
@@ -84,6 +86,7 @@ class ApprovalAuthorityPathsTest {
             for (String field : new String[] {
                     "trusted_key_registry", "approval_key_registry",
                     "approval_replay_ledger", "verification_replay_ledger",
+                    "approval_replay_external_anchor",
                     "approval_authority_root", "approval_authority_base"}) {
                 IllegalArgumentException failure = assertThrows(IllegalArgumentException.class,
                         () -> dispatcher.dispatch("program.learn", mapper.valueToTree(Map.of(
