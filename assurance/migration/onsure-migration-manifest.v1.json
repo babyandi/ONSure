@@ -1575,8 +1575,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "0bda988a14b61e307bd17b6a6c3b087b62f8af1cc4c666a7ade54ff6048e5fdf",
-      "size_bytes": 11814
+      "sha256": "eed884bdebb9ffbb0a85b518f23dd60354f0f0387f8d0aef59d2538b3310a052",
+      "size_bytes": 11922
     },
     {
       "current_path": "docs/onsure/harness/UNIVERSAL_HARNESS_V1_RUNBOOK.md",
@@ -4611,6 +4611,21 @@
       "size_bytes": 625
     },
     {
+      "current_path": "src/main/java/io/onsure/common/Sha256.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/common/Sha256.java",
+      "git_mode": "0o600",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "4f1e5b60abaaf92ad46158413dce31686dd1a93a1961418a23f18af0dd06bedd",
+      "size_bytes": 1217
+    },
+    {
       "current_path": "src/main/java/io/onsure/harness/FinalCandidateGate.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -4682,8 +4697,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ab5bbc8c1fdc11fd5ca95610e6ffb2f91d5cbfc7e4d60ca7185e17af321f97b4",
-      "size_bytes": 1820
+      "sha256": "aadcf9589c0d3621f3feafe49a4cdac8adcb03614893af9be4141c0b555b4615",
+      "size_bytes": 1515
     },
     {
       "current_path": "src/main/java/io/onsure/harness/JsonSupport.java",
@@ -5027,8 +5042,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "7d149d18bffd5c0eb94050e58944f95fb6156c27e2eed8f2629cb4ea368cdcdd",
-      "size_bytes": 6483
+      "sha256": "5195e2362b38001cebae63df9a50b3a033cd190754be77d1e53399f3ad79e311",
+      "size_bytes": 6248
     },
     {
       "current_path": "src/main/java/io/onsure/platform/ImprovementProofService.java",
@@ -6171,6 +6186,21 @@
       "size_bytes": 1594
     },
     {
+      "current_path": "src/test/java/io/onsure/common/Sha256Test.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/common/Sha256Test.java",
+      "git_mode": "0o600",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "e7b59d9454f4371c91b0f1193f6c52d51bccb3b88745b813c3a03afe22efaf00",
+      "size_bytes": 1234
+    },
+    {
       "current_path": "src/test/java/io/onsure/harness/FinalCandidateAndRegressionTest.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -6347,8 +6377,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "9611c930d3ce683ea6a6af87bcdb29c520d09496ad1e5126761095163af26649",
-      "size_bytes": 1996
+      "sha256": "1f85373cacc6a1829e47fb827425cdc2194aecd5f8825aab638d4808ad52357d",
+      "size_bytes": 2377
     },
     {
       "current_path": "src/test/java/io/onsure/platform/ImplementationAuthorityContractTest.java",
@@ -7103,14 +7133,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 471,
+    "file_count": 473,
     "license_counts": {
-      "UNDECLARED": 471
+      "UNDECLARED": 473
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 470,
+      "NO_PATTERN_MATCH": 472,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 4077772
+    "total_size_bytes": 4080172
   }
 }

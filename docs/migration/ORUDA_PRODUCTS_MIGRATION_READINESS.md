@@ -96,7 +96,7 @@
 |---|---|---|---|
 | Canonical receipt serialization, 서명 검증, replay/file ledger | ONSure assurance | 공통 후보 | ONSure decision vocabulary와 저장 경로를 인터페이스 밖으로 분리하고 두 번째 실제 소비자를 검증 |
 | `BoundedProcessRunner`와 sandbox launch 계약 | ONSure platform | 공통 후보 | OS별 실행 정책, timeout/output/resource contract를 제품 독립 schema로 고정 |
-| Hashing, source identity, immutable source binding | ONSure platform/harness | 공통 후보 | 중복 `Hashing` 구현을 하나의 API로 수렴하고 호환성 시험 추가 |
+| SHA-256 primitive, source identity, immutable source binding | ONSure common/platform/harness | 공통 후보 | `io.onsure.common.Sha256`로 digest primitive를 수렴하고 기존 facade 호환성을 유지. source-tree 정책은 두 번째 실제 소비자 확인 후 별도 추출 |
 | Universal fixture/oracle harness | ONSure harness | 공통 후보 | ONSure Final/HOLD 권위를 제거하지 않은 채 실행 primitive만 분리 |
 | JSON Schema 검증·계약 registry 도구 | ONSure scripts/contracts | 공통 후보 | 모노레포 공용 schema lifecycle과 versioning owner 확정 |
 | Cause-aware verification Python | ONSure `onsure_core/` | 공통 후보/중복 검토 | ORUDA의 같은 상대경로 구현과 API·digest가 달라 divergent copy 여부 결정 |

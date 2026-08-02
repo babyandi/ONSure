@@ -1,14 +1,13 @@
 package io.onsure.platform;
 
+import io.onsure.common.Sha256;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -17,19 +16,15 @@ final class Hashing {
     private Hashing() {}
 
     static String sha256(String value) {
-        return sha256(value.getBytes(StandardCharsets.UTF_8));
+        return Sha256.digest(value);
     }
 
     static String sha256(byte[] value) {
-        try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        return Sha256.digest(value);
     }
 
     static String file(Path file) throws Exception {
-        return sha256(Files.readAllBytes(file));
+        return Sha256.digest(file);
     }
 
     /** Returns the exact deterministic file set used for source identity. */

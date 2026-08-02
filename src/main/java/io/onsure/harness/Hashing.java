@@ -1,30 +1,23 @@
 package io.onsure.harness;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import io.onsure.common.Sha256;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.util.Comparator;
-import java.util.HexFormat;
 import java.util.List;
 
 public final class Hashing {
     private Hashing() {}
 
     public static String sha256(String value) {
-        return sha256(value.getBytes(StandardCharsets.UTF_8));
+        return Sha256.digest(value);
     }
 
     public static String sha256(byte[] value) {
-        try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        return Sha256.digest(value);
     }
 
     public static String sha256(Path file) throws Exception {
-        return sha256(Files.readAllBytes(file));
+        return Sha256.digest(file);
     }
 
     public static String environmentDigest(String label) {
