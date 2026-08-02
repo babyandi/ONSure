@@ -1,6 +1,15 @@
 {
   "contract": "ONSURE_MODULE_BOUNDARY_V1",
   "version": "1.0.0",
+  "modular_aggregator_modules": [
+    "modules/onsure-core",
+    "modules/onsure-cli",
+    "modules/onsure-local-api",
+    "modules/onsure-test-fixtures",
+    "modules/onsure-adapter-oruda",
+    "modules/onsure-provider-spi",
+    "modules/onsure-sdk"
+  ],
   "modules": {
     "onsure-core": {
       "allowed_package_prefixes": [
@@ -40,6 +49,20 @@
     "onsure-test-fixtures": {
       "depends_on": ["onsure-core"],
       "separate_test_suites": ["core", "oruda", "full-chain"]
+    },
+    "onsure-local-api": {
+      "depends_on": ["onsure-core"],
+      "network_bind_default": "LOOPBACK_ONLY"
+    },
+    "onsure-provider-spi": {
+      "depends_on": [],
+      "shared_source_root": false,
+      "real_provider_implementation_included": false
+    },
+    "onsure-sdk": {
+      "depends_on": [],
+      "shared_source_root": false,
+      "transport": "LOOPBACK_HTTP_ONLY"
     }
   },
   "rules": [

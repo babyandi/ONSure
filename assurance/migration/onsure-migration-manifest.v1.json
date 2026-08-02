@@ -855,8 +855,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "3816f1005a4aa39d987a103c301ccdb1c139413d76279e0c4a4c69c4b408ad38",
-      "size_bytes": 1650
+      "sha256": "dbc3df56fc3efa6a0a7fe494c53a449b7df6640379fea6dea6c3fd6701b4ba76",
+      "size_bytes": 2296
     },
     {
       "current_path": "contracts/official-learning-ledger.v1.json",
@@ -4802,8 +4802,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "b89e6b2390c95a552c2041401b72302d44a4326ffe3ce71b96bed534b8616466",
-      "size_bytes": 6204
+      "sha256": "01a1aa9e468899cc1103e438b63c8829a4ed34ac8a56fee5280a951d5c94dcc7",
+      "size_bytes": 6163
     },
     {
       "current_path": "scripts/check-shell-syntax.sh",
@@ -10066,6 +10066,6 @@
       "NO_PATTERN_MATCH": 667,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 7270514
+    "total_size_bytes": 7271119
   }
 }

@@ -68,13 +68,9 @@ def main() -> int:
 
     aggregator = ET.parse(ROOT / "pom-modular.xml").getroot()
     modules = text_values(aggregator, "m:modules/m:module")
-    expected_modules = {
-        "modules/onsure-core",
-        "modules/onsure-cli",
-        "modules/onsure-local-api",
-        "modules/onsure-test-fixtures",
-        "modules/onsure-adapter-oruda",
-    }
+    expected_modules = set(contract.get("modular_aggregator_modules", []))
+    if not expected_modules:
+        violations.append("MODULAR_AGGREGATOR_CONTRACT_EMPTY")
     if modules != expected_modules:
         violations.append(f"MODULAR_AGGREGATOR_MODULE_SET:{sorted(modules)}")
 
