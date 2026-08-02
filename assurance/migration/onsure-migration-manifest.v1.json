@@ -4712,8 +4712,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "e24c503820f4367f6dec7c3a3b4603524676a1d9d6e4789b92097f98a474afec",
-      "size_bytes": 2838
+      "sha256": "f523caf25d59dbf7a1fa14e4f448781dceb3c8fd94f7622c43e6cfb1f5372dcc",
+      "size_bytes": 4240
     },
     {
       "current_path": "scripts/preflight-local-assurance.sh",
@@ -9167,8 +9167,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "98471844f4e6a73e1557b9fa590c2219db04c6d4876e9c9fd8d714d4a52f7116",
-      "size_bytes": 2342
+      "sha256": "1219cda1636a6e17761842293742f91bb7950cda1b67c81b12f91fd253fc9ca6",
+      "size_bytes": 3014
     },
     {
       "current_path": "tests/test_repository_contracts.py",
@@ -9391,6 +9391,6 @@
       "NO_PATTERN_MATCH": 622,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 6976177
+    "total_size_bytes": 6978251
   }
 }

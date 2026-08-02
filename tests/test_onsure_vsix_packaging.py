@@ -20,10 +20,18 @@ class ONSureVsixPackagingTest(unittest.TestCase):
             root = pathlib.Path(directory)
             first = root / "first.vsix"
             second = root / "second.vsix"
+            content_types_first = b'''<?xml version="1.0" encoding="utf-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension=".z" ContentType="text/z"/><Default Extension=".a" ContentType="text/a"/></Types>
+'''
+            content_types_second = b'''<?xml version="1.0" encoding="utf-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default ContentType="text/a" Extension=".a"/><Default ContentType="text/z" Extension=".z"/></Types>
+'''
             with zipfile.ZipFile(first, "w") as archive:
+                archive.writestr("[Content_Types].xml", content_types_first)
                 archive.writestr("extension/z.txt", "z")
                 archive.writestr("extension/a.txt", "a")
             with zipfile.ZipFile(second, "w") as archive:
+                archive.writestr("[Content_Types].xml", content_types_second)
                 old = zipfile.ZipInfo("extension/a.txt", (2001, 2, 3, 4, 5, 6))
                 archive.writestr(old, "a")
                 archive.writestr("extension/z.txt", "z")
