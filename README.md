@@ -77,8 +77,8 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - `status/mvp-acceptance-coverage.v1.json` — 10단계 사용자 여정과 2회 연속 성공 조건
 - `scripts/validate-mvp-acceptance-coverage.py`
 - `scripts/validate-mvp-status-consistency.py`
-- `contracts/workflow-operation-registry.v1.json` — 40개 Workflow Operation 단일 권위
-- `scripts/validate-workflow-surface-parity.py` — 40개 Workflow·3개 제품 표면
+- `contracts/workflow-operation-registry.v1.json` — 41개 Workflow Operation 단일 권위
+- `scripts/validate-workflow-surface-parity.py` — 41개 Workflow·3개 제품 표면
 - `scripts/validate-critical-callpaths.py`
 - `contracts/validation-case-registry.v1.json` — 성공·실패·공격 사례 단일 권위 목록
 - `scripts/validate-validation-case-registry.py`

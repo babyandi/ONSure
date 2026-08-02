@@ -21,7 +21,6 @@
     {
       "priority": "P1",
       "capabilities": [
-        "Append-only externally anchored evidence ledger",
         "Role and signing-key separation across learning promotion",
         "Scenario generation and fixture registry by target type",
         "Build, dependency, API, container, performance and recovery validation",

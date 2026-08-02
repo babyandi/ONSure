@@ -52,6 +52,7 @@ public final class LocalWorkflowDispatcher {
             case "patch.apply" -> patchApply(request);
             case "patch.rollback" -> patchRollback(request);
             case "improvement.prove" -> improvementProve(request);
+            case "knowledge.separate" -> knowledgeSeparate(request);
             case "git.commit" -> gitCommit(request);
             case "git.draft-pr" -> gitDraftPr(request);
             case "license.issue" -> licenseIssue(request);
@@ -151,6 +152,32 @@ public final class LocalWorkflowDispatcher {
         ProductCatalog catalog = catalog();
         return Map.of("targets", catalog.targets(requiredId(request, "project_id")),
                 "catalog_revision", catalog.revision(), "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> knowledgeSeparate(JsonNode request) throws Exception {
+        Path source = inputPath(request, "source_memory_file", true);
+        List<KnowledgeSeparationService.IndependentReproduction> reproductions = new java.util.ArrayList<>();
+        JsonNode values = request.path("independent_reproductions");
+        if (values.isArray()) {
+            for (JsonNode value : values) {
+                reproductions.add(new KnowledgeSeparationService.IndependentReproduction(
+                        requiredId(value, "project_id"), requiredId(value, "receipt_id"),
+                        value.path("passed").asBoolean(false)));
+            }
+        }
+        KnowledgeSeparationService.SeparationResult separated =
+                new KnowledgeSeparationService(workspaceRoot.resolve(".onsure/knowledge-memory"))
+                        .separate(source, reproductions,
+                                request.path("rights_review_approved").asBoolean(false),
+                                request.path("privacy_review_approved").asBoolean(false));
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("decision", separated.decision());
+        result.put("project_record_file", separated.projectRecordFile().toString());
+        result.put("reusable_pattern_file", separated.reusablePatternFile() == null
+                ? "NOT_CREATED" : separated.reusablePatternFile().toString());
+        result.put("violations", separated.violations());
+        result.put("final_claim_allowed", false);
+        return Map.copyOf(result);
     }
 
     private Map<String, Object> programLearn(JsonNode request) throws Exception {

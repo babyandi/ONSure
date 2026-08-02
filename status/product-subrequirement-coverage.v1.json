@@ -1019,12 +1019,16 @@
       "id": "FR-12-B",
       "name": "Project-specific and anonymized reusable knowledge separation",
       "normative_phrase": "프로젝트 전용 정보와 범용화 가능한 익명 패턴을 분리해야 합니다.",
-      "implementation_status": "STUB",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/rag/RagPreparationService.java"
+        "src/main/java/io/onsure/rag/RagPreparationService.java",
+        "src/main/java/io/onsure/platform/KnowledgeSeparationService.java",
+        "contracts/reusable-pattern-memory.v1.schema.json"
       ],
-      "test_refs": [],
+      "test_refs": [
+        "src/test/java/io/onsure/platform/KnowledgeSeparationServiceTest.java"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE"
@@ -1032,15 +1036,20 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "DEIDENTIFICATION_PIPELINE_MISSING",
-        "PROJECT_GENERIC_PATTERN_CLASSIFIER_MISSING",
-        "ANONYMIZATION_VERIFICATION_MISSING"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE"
       ],
-      "semantic_assertions": []
+      "semantic_assertions": [
+        {
+          "path": "src/main/java/io/onsure/platform/KnowledgeSeparationService.java",
+          "tokens": ["ALLOWLISTED_TAXONOMY_ONLY", "lineage_commitment_sha256", "cross_project_retrieval_allowed", "REUSABLE_PATTERN_PRIVACY_REVIEW_REQUIRED"]
+        },
+        {
+          "path": "src/test/java/io/onsure/platform/KnowledgeSeparationServiceTest.java",
+          "tokens": ["rawProjectMemoryNeverEntersAllowlistedReusablePattern", "insufficientOrUnreviewedEvidenceStaysProjectOnlyOnHold"]
+        }
+      ]
     },
     {
       "id": "FR-12-C",
@@ -1300,9 +1309,9 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 5,
+    "implemented": 6,
     "partial": 30,
-    "stub": 5,
+    "stub": 4,
     "design_only": 3,
     "verification_not_run": 43
   },
