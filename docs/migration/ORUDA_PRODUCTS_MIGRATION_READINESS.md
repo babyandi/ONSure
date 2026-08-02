@@ -116,11 +116,12 @@
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 241 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (96 tests, 통합 local + 원격 독립 clone) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (101 tests, 통합 local + 원격 독립 clone) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
-| VS Code package | `(cd vscode-extension && npm install --ignore-scripts --no-audit --no-fund && npm run check && npm run package)` | `PASS_NONFINAL` (`onsure-0.2.0.vsix`; repository/license warning) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (통합 후보 617 files) |
+| VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (local + 독립 clone byte-identical VSIX; root license warning) |
+| VSIX 검증 | `python3 scripts/validate-vscode-extension.py --require-node --require-vsix` | `PASS_NONFINAL` (4 Node tests, package/content SHA-256 검증, Extension Host E2E `NOT_RUN`) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (통합 후보 623 files) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
 | Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (134 single owners, artifact cycles 0) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
@@ -128,14 +129,19 @@
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (617 cutover + rollback files, local + 원격 독립 clone full) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (623 cutover + rollback files, local + 원격 독립 clone full) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
 | DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 
-통합 operational implementation HEAD `74df782823b187397b2c1125a9b9050596e2a560`과 evidence HEAD `1d69ce39b8a5fe61ff1a98f4dbaaa9d684d37407`에서 local 및 원격 독립 clone 검증을 수행했다. 권위 build 241/241, modular package, API 238/238, Python 96/96, SBOM, build/operational boundary, VSIX package와 중첩 full rehearsal 617개가 통과했다. 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
+VS Code 등록·승인 흐름 implementation HEAD `bf1ace9`, 생성 의존성 경계 fix `c566fe1`,
+재현 VSIX implementation/fix HEAD `980d823`·`f5f55d5`에서 local 및 원격 독립 clone 검증을
+수행했다. 권위 build 241/241, modular package, API 238/238, Python 101/101, Node 4/4, SBOM,
+build/operational boundary, byte-identical VSIX package와 중첩 full rehearsal 623개가 통과했다.
+전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network
+namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 
 `pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.
 
