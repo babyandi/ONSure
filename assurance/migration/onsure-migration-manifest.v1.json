@@ -4427,8 +4427,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "0c95068f60dddf477273a9c96b8d47fea9a00f4762e6df4b45e3338c67f1e604",
-      "size_bytes": 6059
+      "sha256": "b89e6b2390c95a552c2041401b72302d44a4326ffe3ce71b96bed534b8616466",
+      "size_bytes": 6204
     },
     {
       "current_path": "scripts/check-shell-syntax.sh",
@@ -9421,6 +9421,6 @@
       "NO_PATTERN_MATCH": 624,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 7024359
+    "total_size_bytes": 7024504
   }
 }

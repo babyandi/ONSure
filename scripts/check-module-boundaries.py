@@ -83,6 +83,7 @@ def main() -> int:
     required_core_excludes = {
         "io/onsure/platform/ONSureCli.java",
         "io/onsure/platform/LocalAuthenticatedApiServer.java",
+        "io/onsure/platform/LocalWorkspaceSnapshotService.java",
         "io/onsure/platform/OrudaTargetAdapter.java",
         "io/onsure/platform/ProductPlatformE2EMain.java",
         "io/onsure/platform/oruda/**",
@@ -107,7 +108,10 @@ def main() -> int:
 
     api_pom = ET.parse(ROOT / "modules/onsure-local-api/pom.xml").getroot()
     api_includes = text_values(api_pom, ".//m:includes/m:include")
-    if api_includes != {"io/onsure/platform/LocalAuthenticatedApiServer.java"}:
+    if api_includes != {
+        "io/onsure/platform/LocalAuthenticatedApiServer.java",
+        "io/onsure/platform/LocalWorkspaceSnapshotService.java",
+    }:
         violations.append(f"LOCAL_API_POM_INCLUDE_SET:{sorted(api_includes)}")
 
     for module in expected_modules:
