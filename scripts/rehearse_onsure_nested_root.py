@@ -78,6 +78,16 @@ def rehearse(mode: str) -> dict[str, object]:
         run(["git", "init", "-q", "-b", "main"], monorepo)
         run(["git", "config", "user.name", "ONSure Rehearsal"], monorepo)
         run(["git", "config", "user.email", "rehearsal@invalid.local"], monorepo)
+        run(
+            [
+                "git",
+                "remote",
+                "add",
+                "origin",
+                "https://github.com/babyandi/ONSure.git",
+            ],
+            monorepo,
+        )
         run(["git", "add", "products/onsure"], monorepo)
         run(["git", "commit", "-q", "-m", "rehearsal baseline"], monorepo)
         environment = {"ONSURE_PRODUCT_ROOT": str(product)}

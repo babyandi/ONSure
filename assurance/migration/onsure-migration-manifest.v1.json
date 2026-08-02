@@ -4667,8 +4667,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f2f811b54123674299cb61d3ca1568ec64fb5d9eddde54c4f07a42da54fc5e02",
-      "size_bytes": 5124
+      "sha256": "d9122f4deac83cdd4c06693ff424faac429b79b72b1b715777d062f8dfdc525b",
+      "size_bytes": 5354
     },
     {
       "current_path": "scripts/run-core-modular-twice.sh",
@@ -9166,6 +9166,6 @@
       "NO_PATTERN_MATCH": 607,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 6909956
+    "total_size_bytes": 6910186
   }
 }
