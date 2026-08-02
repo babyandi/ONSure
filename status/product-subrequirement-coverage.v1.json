@@ -978,26 +978,30 @@
       "id": "FR-11-B",
       "name": "Public API or SDK",
       "normative_phrase": "CI와 외부 제품에서 사용할 공개 API 또는 SDK 경계를 제공해야 합니다.",
-      "implementation_status": "STUB",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
+        "modules/onsure-sdk/src/main/java/io/onsure/sdk/v1/ONSureSdkV1.java",
+        "contracts/public-sdk-boundary.v1.json",
+        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
       ],
       "test_refs": [
-        "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
+        "modules/onsure-sdk/src/test/java/io/onsure/sdk/v1/ONSureSdkV1Test.java",
+        "scripts/check-module-boundaries.py"
       ],
       "evidence_refs": [],
       "required_surfaces": [
         "PUBLIC_API_OR_SDK"
       ],
-      "implemented_surfaces": [],
+      "implemented_surfaces": [
+        "PUBLIC_API_OR_SDK"
+      ],
       "missing_controls": [
-        "LOOPBACK_API_IS_NOT_PUBLIC_SDK",
-        "VERSIONED_EXTERNAL_SDK_MISSING"
+        "EXTERNAL_CONSUMER_ARTIFACT_TEST_NOT_RUN",
+        "CURRENT_MAIN_MODULAR_GATE_NOT_RUN"
       ],
       "detector_controls": [
-        "SUBREQ_MISSING_CONTROL_GATE",
-        "SUBREQ_SURFACE_GATE"
+        "SUBREQ_REFERENCE_GATE"
       ],
       "semantic_assertions": []
     },
@@ -1344,9 +1348,9 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 10,
+    "implemented": 11,
     "partial": 29,
-    "stub": 3,
+    "stub": 2,
     "design_only": 1,
     "verification_not_run": 43
   },

@@ -37,6 +37,13 @@
       "depends_on": ["onsure-core"],
       "optional_runtime_modules": ["onsure-adapter-oruda"]
     },
+    "onsure-sdk": {
+      "depends_on": ["onsure-core"],
+      "public_package_prefixes": ["io.onsure.sdk.v1"],
+      "internal_dependency_transitive": false,
+      "authority_paths_caller_selectable": false,
+      "raw_dispatch_public": false
+    },
     "onsure-test-fixtures": {
       "depends_on": ["onsure-core"],
       "separate_test_suites": ["core", "oruda", "full-chain"]

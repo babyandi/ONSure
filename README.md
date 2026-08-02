@@ -103,6 +103,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Provider·Model 교체성
 - Token·비용·데이터 전송 범위 가시화
 - 외부 제품용 Public SDK
+- `io.onsure:onsure-sdk` v1 강타입 경계(고정 승인 권위·제품 소유 출력 경로, raw dispatch 비공개)
 - Identity·RBAC·Cross-tenant 격리
 - Approval Replay Ledger의 외부 Anchor
 - 제품 SBOM·취약점·라이선스 Pack

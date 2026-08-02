@@ -61,14 +61,15 @@
       "category": "TRUST_ROOT_SUBSTITUTION",
       "title": "Workflow callers could select trusted key registries and replay ledgers",
       "prior_miss_reason": "TRUST_ROOT_PATH_WAS_TREATED_AS_ORDINARY_REQUEST_DATA",
-      "fix_state": "IMPLEMENTED_NONFINAL_WITH_EXTERNAL_ANCHOR_HOLD",
+      "fix_state": "IMPLEMENTED_NONFINAL_WITH_EXTERNAL_ANCHOR_AND_TYPED_SDK_HOLD",
       "fix_refs": [
         "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java"
+        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "modules/onsure-sdk/src/main/java/io/onsure/sdk/v1/ONSureSdkV1.java",
+        "modules/onsure-sdk/src/test/java/io/onsure/sdk/v1/ONSureSdkV1Test.java"
       ],
       "remaining_gaps": [
-        "EXTERNAL_REPLAY_LEDGER_HEAD_ANCHOR",
-        "RAW_JAVA_PATH_API_BEFORE_PUBLIC_SDK"
+        "INDEPENDENT_PUBLIC_SDK_CONSUMER_ARTIFACT_TEST_NOT_RUN"
       ]
     },
     {

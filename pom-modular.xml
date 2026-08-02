@@ -39,6 +39,7 @@
   </build>
   <modules>
     <module>modules/onsure-core</module>
+    <module>modules/onsure-sdk</module>
     <module>modules/onsure-cli</module>
     <module>modules/onsure-local-api</module>
     <module>modules/onsure-test-fixtures</module>
