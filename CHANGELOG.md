@@ -21,6 +21,7 @@
 - VS Code Extension의 등록 Workspace·Project·Target identity 결속과 로컬 파일 URI 검증
 - VS Code용 실행계획 생성·서명 승인 확인·승인 Bundle 기반 Validation 명령
 - Node 내장 회귀 테스트와 Local API 등록·학습·Plan HTTP 통합 테스트
+- ZIP 순서·timestamp·compression을 정규화하는 재현 가능 VSIX 패키징 도구
 
 ### Changed
 

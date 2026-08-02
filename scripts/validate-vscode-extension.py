@@ -77,6 +77,8 @@ def main() -> int:
         errors.append("EXTENSION_NODE_CHECK_SCRIPT_MISSING")
     if package.get("scripts", {}).get("test") != "node --test test/*.test.js":
         errors.append("EXTENSION_NODE_TEST_SCRIPT_MISSING")
+    if package.get("scripts", {}).get("package") != "python3 ../scripts/package_onsure_vsix.py":
+        errors.append("EXTENSION_DETERMINISTIC_PACKAGE_SCRIPT_MISSING")
 
     source = source_file.read_text(encoding="utf-8")
     for token in (
@@ -134,6 +136,7 @@ def validate_vsix(package: dict, errors: list[str], required: bool,
         reported_path = str(package_file.relative_to(root))
     except ValueError:
         reported_path = str(package_file)
+    entries: list[tuple[str, bytes]] = []
     evidence = {
         "vsix_path": reported_path,
         "vsix_size_bytes": package_file.stat().st_size,
@@ -142,6 +145,7 @@ def validate_vsix(package: dict, errors: list[str], required: bool,
     try:
         with zipfile.ZipFile(package_file) as archive:
             names = set(archive.namelist())
+            entries = [(info.filename, archive.read(info.filename)) for info in archive.infolist()]
             required_entries = {
                 "extension/package.json", "extension/extension.js",
                 "extension/extension-core.js", "extension/readme.md",
@@ -159,6 +163,15 @@ def validate_vsix(package: dict, errors: list[str], required: bool,
                 errors.append("VSIX_MANIFEST_IDENTITY_MISMATCH")
     except (OSError, zipfile.BadZipFile, KeyError, json.JSONDecodeError) as failure:
         errors.append(f"VSIX_PACKAGE_INVALID:{failure.__class__.__name__}")
+    if entries:
+        digest = hashlib.sha256()
+        for name, data in sorted(entries):
+            encoded = name.encode("utf-8")
+            digest.update(len(encoded).to_bytes(8, "big"))
+            digest.update(encoded)
+            digest.update(len(data).to_bytes(8, "big"))
+            digest.update(hashlib.sha256(data).digest())
+        evidence["vsix_content_sha256"] = digest.hexdigest()
     return ("PASS" if not any(value.startswith("VSIX_") for value in errors) else "FAIL"), evidence
 
 

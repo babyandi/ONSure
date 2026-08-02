@@ -36,3 +36,7 @@ The Activity Bar contribution and controlled Local API path are implemented. Ded
 Profile, Findings, Diff/Hunk Approval, Evidence and Git/PR interaction models remain partial.
 An installed VS Code Extension Host end-to-end run and independent OTester/OAudit are still
 required before any release claim.
+
+`npm run package` invokes the repository-owned deterministic VSIX wrapper. It normalizes ZIP entry
+order, timestamps and compression so clean clones of the same source produce the same package
+SHA-256. The generated `.vsix` remains ignored build output and is not a migration input.
