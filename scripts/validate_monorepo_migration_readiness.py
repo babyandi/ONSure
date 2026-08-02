@@ -10,6 +10,7 @@ import sys
 
 import onsure_monorepo_manifest as manifest
 import validate_onsure_build_boundary as build_boundary
+import validate_onsure_operational_boundary as operational_boundary
 import validate_onsure_product_metadata as product_metadata
 
 
@@ -100,6 +101,9 @@ def main() -> int:
     metadata_result = product_metadata.validate()
     if metadata_result["decision"] != "PASS_NONFINAL":
         errors.append("PRODUCT_METADATA_VALIDATION_FAILED")
+    operational_result = operational_boundary.validate()
+    if operational_result["decision"] != "PASS_NONFINAL":
+        errors.append("OPERATIONAL_BOUNDARY_VALIDATION_FAILED")
 
     api_baseline = json.loads(
         (ROOT / "contracts/java-public-api-baseline.v1.json").read_text(encoding="utf-8")
@@ -127,6 +131,12 @@ def main() -> int:
         "high_risk_secret_pattern_count": high_risk,
         "build_boundary_decision": build_result["decision"],
         "product_metadata_decision": metadata_result["decision"],
+        "operational_boundary_decision": operational_result["decision"],
+        "deployment_runtime_status": operational_result["deployment_runtime_status"],
+        "database_migration_component_status": operational_result[
+            "database_migration_component_status"
+        ],
+        "github_actions_used": operational_result["github_actions_used"],
         "module_dependency_cycle_count": build_result["module_dependency_cycle_count"],
         "main_source_single_owner_count": build_result["main_source_single_owner_count"],
         "shared_source_module_count": build_result["shared_source_module_count"],
@@ -141,8 +151,8 @@ def main() -> int:
             "TRANSITIONAL_SPLIT_PACKAGE_AND_SHARED_SOURCE_ROOT",
             "PLATFORM_ORUDA_PACKAGE_CYCLE_PATH_FREEZE",
             "ROOT_LICENSE_UNDECLARED",
-            "DEPLOYMENT_DEFINITION_NOT_PRESENT",
-            "DATABASE_MIGRATION_COMPONENT_NOT_PRESENT",
+            "DEPLOYMENT_RUNTIME_NOT_IMPLEMENTED",
+            "DATABASE_MIGRATION_RUNTIME_NOT_IMPLEMENTED",
         ],
         "final_claim_allowed": False,
     }

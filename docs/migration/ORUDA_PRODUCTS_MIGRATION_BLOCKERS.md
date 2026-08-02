@@ -64,10 +64,11 @@
 - API와 CLI는 있으나 standalone worker, browser web, DB migration은 없다.
 - 선행 작업: 없는 구성요소를 빈 디렉터리로 “구현” 처리하지 말고 `product.yaml`에서 `NOT_PRESENT`로 선언. worker/DB가 실제 도입될 때 별도 ADR과 migration ownership 추가.
 
-### 9. 배포 정의 부재
+### 9. 배포 runtime 정의 부재
 
-- Dockerfile, Compose, Helm, Kubernetes, deploy 디렉터리가 없다.
-- 선행 작업: 지원 배포 모드, base image, runtime user, volume/network/secrets, air-gap, upgrade/rollback 정책 승인 후 작성.
+- `deploy/README.md`와 `contracts/onsure-operational-boundary.v1.json`에 `DESIGN_ONLY_NONFINAL` 경계를 추가했다. Dockerfile, Compose, Helm과 Kubernetes runtime 정의는 없다.
+- validator가 non-root, read-only artifact, loopback 기본값, 외부 secret provider, immutable receipt와 rollback 요구를 봉인하며 실제 배포 권한은 거부한다.
+- 선행 작업: 지원 배포 모드, base image, runtime user, volume/network/secrets, air-gap, upgrade/rollback 정책 승인 후 실행 정의 작성.
 
 ### 10. Repo-root 가정 제거
 

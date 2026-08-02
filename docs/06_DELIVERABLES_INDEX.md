@@ -103,6 +103,8 @@
 - [x] 모델 Provider 추상화 원칙
 - [ ] Java Runtime 상태 모델 Migration
 - [ ] 상세 DB 모델
+- [x] 배포·DB migration 비최종 운영 경계 계약
+- [x] bubblewrap 실행환경 진단과 구성 가이드
 - [ ] Local Authenticated API 명세
 - [ ] 멀티테넌시·격리 상세 설계
 
@@ -160,6 +162,7 @@
 - [ ] SLA·지원 정책
 - [ ] 개인정보·데이터 보존·Legal Hold 정책
 - [ ] 릴리스·업그레이드·호환성 정책
+- [x] 배포 runtime·DB migration 도입 전 fail-closed 설계 기준
 
 ## K. ORUDA 관계
 
@@ -190,7 +193,8 @@ bash scripts/onsure-one-shot.sh --profile oruda
 ## 현재 판정
 
 - Standalone product Full-Chain: `BLOCKED`
-- Current source formal execution: `NOT_RUN`
+- Current source canonical execution: `PASS_NONFINAL`
+- Full sandbox execution: `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED`
 - Independent OTester/OAudit: `NOT_RUN`
 - FinalLock: `false`
 - Production GO: `false`

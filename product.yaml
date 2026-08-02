@@ -23,6 +23,7 @@ components:
     module: modules/onsure-cli
   migration:
     status: NOT_PRESENT
+    design_contract: contracts/onsure-operational-boundary.v1.json
   vscode_extension:
     status: IMPLEMENTED_PARTIAL
     path: vscode-extension
@@ -49,6 +50,11 @@ build:
   supply_chain_validation:
     command: python3 scripts/onsure_supply_chain.py validate
     cyclonedx_schema: "1.6"
+  operational_boundary_validation:
+    command: python3 scripts/validate_onsure_operational_boundary.py
+  bubblewrap_environment_diagnostic:
+    command: python3 scripts/onsure_bubblewrap_diagnostics.py
+    github_actions_required: false
   nested_root_rehearsal:
     command: python3 scripts/rehearse_onsure_nested_root.py --mode full
 product_root:
@@ -63,7 +69,7 @@ migration:
   open_pr_overlap: assurance/migration/onsure-open-pr-overlap.v1.json
   merge_order_must_be_clear: true
 release:
-  deployment: NOT_RUN
+  deployment: DESIGN_ONLY_NONFINAL
   production_go: false
   commercial_go: false
   final_pass: false

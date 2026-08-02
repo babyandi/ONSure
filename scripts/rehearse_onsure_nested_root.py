@@ -98,6 +98,7 @@ def rehearse(mode: str) -> dict[str, object]:
         commands = [
             ["python3", "scripts/validate_onsure_build_boundary.py"],
             ["python3", "scripts/validate_onsure_product_metadata.py"],
+            ["python3", "scripts/validate_onsure_operational_boundary.py"],
             ["python3", "scripts/validate_monorepo_migration_readiness.py"],
         ]
         if mode == "full":

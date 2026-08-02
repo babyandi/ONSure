@@ -35,7 +35,7 @@
 | `products/onsure/modules/` | `src/main/java`, `modules/onsure-*`, `onsure_core/` | 먼저 split package와 source-set 공유를 제거한 뒤 물리 모듈로 이동 | `BLOCKED` |
 | `products/onsure/contracts/` | `contracts/` | 상대 경로와 schema registry를 함께 이동 | `MAPPED` |
 | `products/onsure/config/` | `.devcontainer/`, `.vscode/`, `requirements-validation.txt` | 개발환경과 검증 설정을 제품 config/tooling 정책에 맞춰 분리 | `MAPPED_WITH_REVIEW` |
-| `products/onsure/deploy/` | 배포 정의 없음 | 지원 배포 형태가 승인된 뒤 신규 작성 | `NOT_PRESENT` |
+| `products/onsure/deploy/` | `deploy/README.md`, operational boundary 계약 | 실행 정의는 없으며 승인 전 runtime artifact 생성 금지 | `DESIGN_ONLY_NONFINAL` |
 | `products/onsure/tests/` | `src/test/`, `modules/*/src/test/`, `tests/`, `fixtures/` | unit/integration/contract/fixture/acceptance로 재분류하되 fixture trust 경계 유지 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/assurance/` | `harness/`, `findings/`, `status/`, assurance Java package, 로컬 receipt 규칙 | 정적 권위와 실행 증적을 분리. `.onsure/` 동적 산출물은 이관 source에서 제외 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/docs/` | `docs/`, 루트 harness 안내 문서 | 상대 링크와 authoritative document registry를 재결속 | `MAPPED` |
@@ -51,7 +51,7 @@
 | `worker` | 별도 daemon/queue worker 없음. Validation Engine과 Harness가 호출 프로세스 안에서 동기 실행 | `ValidationEngine`, `FixtureHarness`, `UniversalHarnessRunner` | 독립 실행이 필요해질 때 `components/worker/`; 현재는 core module 유지 | `NOT_IMPLEMENTED_AS_COMPONENT` |
 | `web` | 브라우저 Web UI 없음 | React/Next/Vite/Spring Web 구성 없음 | `components/web/`는 생성하지 않음 | `NOT_IMPLEMENTED` |
 | `cli` | 제품 CLI와 assurance/harness 관리 CLI | `ONSureCli`, `HarnessCli`, `Local*Main`, `modules/onsure-cli` | `components/cli/` 및 내부 `assurance/tools/` | `IMPLEMENTED` |
-| `migration` | DB schema/migration 도구와 SQL 없음 | Flyway/Liquibase/SQL 0건 | 영속 DB 채택 전 `components/migration/` 생성 금지 | `NOT_IMPLEMENTED` |
+| `migration` | DB schema/migration 도구와 SQL 없음, design boundary만 존재 | Flyway/Liquibase/SQL 0건 | 영속 DB 채택 전 `components/migration/` 생성 금지 | `NOT_IMPLEMENTED / DESIGN_ONLY` |
 | `workbench` | VS Code 확장 | `vscode-extension/extension.js` | `components/vscode-extension/` | `IMPLEMENTED_PARTIAL` |
 | `adapter` | Optional ORUDA target adapter | `modules/onsure-adapter-oruda`, `io.onsure.platform.oruda` | `components/adapters/oruda/` 또는 `modules/adapters/oruda/` | `IMPLEMENTED_OPTIONAL` |
 
@@ -126,10 +126,12 @@
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (238 public classes, delta 0) |
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
+| 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
+| bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
 | 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (608 cutover + rollback files, local full + 독립 clone static) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
-| Deploy | 정의 없음 | `NOT_RUN / BLOCKED` |
-| DB migration | 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
+| Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
+| DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 

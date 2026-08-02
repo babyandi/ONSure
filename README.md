@@ -124,6 +124,13 @@ Java 17·Maven·Sandbox·VSIX 포함 전체 로컬 비최종 Gate:
 bash scripts/onsure-local-gate.sh --mode full --profile core
 ```
 
+배포·DB migration 설계 경계와 bubblewrap host 진단:
+
+```bash
+python3 scripts/validate_onsure_operational_boundary.py
+python3 scripts/onsure_bubblewrap_diagnostics.py
+```
+
 최종 단계 Source-bound One-Shot:
 
 ```bash
@@ -132,10 +139,10 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 브랜치의 새 Python 실패주입과 독립형 Java 17 호환 Smoke 일부는 수행됐지만, **현재 브랜치 전체 Java 17 Maven/JUnit·Modular·Sandbox·VSIX Local Gate와 MVP Full-Chain은 아직 실행되지 않았습니다.**
+현재 통합 브랜치는 Java 241개, Python 90개, Modular package, 공개 API 238개, SBOM, 독립 clone과 VSIX package를 통과했다. 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖 canonical build에서 241/241을 통과한다. MVP Full-Chain과 독립 검토는 아직 실행되지 않았다.
 
 ```text
-Assurance      SELF_VALIDATION_NONFINAL
+Assurance      SELF_VALIDATION_NONFINAL / HOST_SANDBOX_BLOCKED
 MVP Full-Chain NOT_RUN
 FinalLock      false
 Production GO  false

@@ -76,6 +76,7 @@ run_step automation-boundary python3 scripts/validate-ci-boundary.py
 run_step verification-claims python3 scripts/validate-verification-claims.py
 run_step module-boundary python3 scripts/check-module-boundaries.py
 run_step repository-contracts python3 scripts/validate-repository-contracts.py
+run_step operational-boundary python3 scripts/validate_onsure_operational_boundary.py
 run_step codespace-free-remediation "$VALIDATION_PYTHON" scripts/validate-codespace-free-remediation.py
 run_step omission-tests python3 -m unittest tests.test_omission_detection_gates -v
 run_step automation-tests python3 -m unittest tests.test_ci_boundary -v
@@ -116,7 +117,7 @@ static_steps={
     "final-product-requirements","final-acceptance-coverage","final-authority-consistency","mvp-acceptance",
     "mvp-status-consistency","workflow-surface-parity","critical-callpaths",
     "validation-case-registry-static","status-consistency","automation-boundary",
-    "verification-claims","module-boundary","repository-contracts",
+    "verification-claims","module-boundary","repository-contracts","operational-boundary",
     "codespace-free-remediation","omission-tests","automation-tests",
     "verification-claim-tests","full-python-regression","shell-syntax",
 }

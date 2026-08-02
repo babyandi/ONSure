@@ -16,6 +16,8 @@
 - CycloneDX 1.6 SBOM과 dependency license 검토 inventory
 - 격리된 `products/onsure/` cutover·rollback 리허설
 - Draft PR #27/#28 head에 결속된 overlap·재검증 매트릭스
+- rootless bubblewrap 실행환경 진단기와 host 구성 가이드
+- fail-closed 배포·DB migration `DESIGN_ONLY_NONFINAL` 계약과 validator
 
 ### Changed
 
@@ -34,4 +36,4 @@
 - 공유 Java source root 4개 모듈과 `io.onsure.platform` split package
 - package 경로 동결로 남아 있는 `platform ↔ platform.oruda` package cycle
 - 라이선스·소유권·고객 데이터에 대한 사람의 승인 미실행
-- 배포 및 DB migration 구성요소 부재
+- 배포 runtime 및 DB migration 구성요소 미구현(설계 계약만 존재)

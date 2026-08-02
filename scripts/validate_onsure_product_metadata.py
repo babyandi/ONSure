@@ -53,6 +53,16 @@ def validate_documents(
         violations.append("CYCLONEDX_SCHEMA_DRIFT")
     if product_build.get("nested_root_rehearsal", {}).get("command") != build["cutover_rehearsal"]["command"]:
         violations.append("NESTED_ROOT_REHEARSAL_COMMAND_DRIFT")
+    operational_command = "python3 scripts/validate_onsure_operational_boundary.py"
+    if product_build.get("operational_boundary_validation", {}).get("command") != operational_command:
+        violations.append("OPERATIONAL_BOUNDARY_COMMAND_DRIFT")
+    if operational_command not in obuilder.get("required_nonfinal_gates", []):
+        violations.append("OBUILDER_OPERATIONAL_BOUNDARY_GATE")
+    diagnostic = product_build.get("bubblewrap_environment_diagnostic", {})
+    if diagnostic.get("command") != "python3 scripts/onsure_bubblewrap_diagnostics.py":
+        violations.append("BUBBLEWRAP_DIAGNOSTIC_COMMAND_DRIFT")
+    if diagnostic.get("github_actions_required") is not False:
+        violations.append("BUBBLEWRAP_GITHUB_ACTIONS_BOUNDARY")
 
     release = product.get("release", {})
     for key in ("production_go", "commercial_go", "final_pass"):
@@ -83,6 +93,7 @@ def validate() -> dict[str, object]:
         "assurance/dependencies/onsure.cdx.json",
         "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
         "assurance/migration/onsure-open-pr-overlap.v1.json",
+        "contracts/onsure-operational-boundary.v1.json",
     ]
     missing = [path for path in required if not (ROOT / path).is_file()]
     if missing:
