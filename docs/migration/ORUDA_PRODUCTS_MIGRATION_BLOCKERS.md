@@ -21,6 +21,7 @@
 
 - 정적 import graph에서 `io.onsure.platform ↔ io.onsure.rag` 순환이 확인됐다.
 - ORUDA adapter 영역은 `platform ↔ platform.oruda` 양방향 결합을 가진다.
+- `RagPreparationRequest`가 primitive/`Path` 기반 신규 경계를 제공하지만, 기존 공개 API 호환을 위한 `ValidationReport` overload가 아직 `rag → platform` compile edge를 유지한다.
 - 선행 작업: Core-owned port를 정의하고 RAG/adapter가 port를 구현하도록 의존 역전. Core에서 ORUDA class import 0건을 물리적으로 검증.
 
 ### 4. 라이선스와 소유권 확정

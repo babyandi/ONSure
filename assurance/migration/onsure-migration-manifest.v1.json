@@ -1560,8 +1560,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8dc6f07b3163b5288a5f59f3bdb2da64a67f19cbbfae7e6514128198fb75edc6",
-      "size_bytes": 5766
+      "sha256": "5ffde0a8e509036c891d366959c97e45dffca33cd0fd1c371796783813375572",
+      "size_bytes": 5975
     },
     {
       "current_path": "docs/migration/ORUDA_PRODUCTS_MIGRATION_READINESS.md",
@@ -1575,8 +1575,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "eed884bdebb9ffbb0a85b518f23dd60354f0f0387f8d0aef59d2538b3310a052",
-      "size_bytes": 11922
+      "sha256": "99dec83c67e4b72fee86a2265d9e21a3bce273e7f67bdab3a7e1aa97e25d30c4",
+      "size_bytes": 12157
     },
     {
       "current_path": "docs/onsure/harness/UNIVERSAL_HARNESS_V1_RUNBOOK.md",
@@ -5856,6 +5856,21 @@
       "size_bytes": 7767
     },
     {
+      "current_path": "src/main/java/io/onsure/rag/RagPreparationRequest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/rag/RagPreparationRequest.java",
+      "git_mode": "0o600",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "4b62a31e82676d6047c20524800feb19af9e33179e706c81c40369bb925ddb2a",
+      "size_bytes": 2743
+    },
+    {
       "current_path": "src/main/java/io/onsure/rag/RagPreparationService.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -5867,8 +5882,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "a27a572c741a607c16d40950a7b387d35f928f711d8fd1bf45b9cddcd27ee305",
-      "size_bytes": 12404
+      "sha256": "e32a7d8c459f31643d9fc4cf4c140d9720716caf178189f2d7425d074e67003b",
+      "size_bytes": 14019
     },
     {
       "current_path": "src/test/java/io/onsure/assurance/AdversarialFixtureCatalogTest.java",
@@ -6722,8 +6737,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f742408e597198b556848baf61f8024fbad1fc5d3e18aa22eb49178fd17bb412",
-      "size_bytes": 6532
+      "sha256": "4d90cc23ede0578ddf4140bd2c175e648de77e899984bad2df9732671a7d8648",
+      "size_bytes": 10770
     },
     {
       "current_path": "status/design-capability-coverage.v2.json",
@@ -7133,14 +7148,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 473,
+    "file_count": 474,
     "license_counts": {
-      "UNDECLARED": 473
+      "UNDECLARED": 474
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 472,
+      "NO_PATTERN_MATCH": 473,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 4079604
+    "total_size_bytes": 4088644
   }
 }

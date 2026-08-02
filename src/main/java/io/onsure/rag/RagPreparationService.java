@@ -2,14 +2,13 @@ package io.onsure.rag;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.onsure.common.Sha256;
 import io.onsure.platform.ValidationModel.ValidationReport;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
 import java.time.Instant;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,37 +32,41 @@ public final class RagPreparationService {
 
     public Map<String, Object> prepareOwnCandidate(
             ValidationReport report, Path onsureManagedRoot) throws Exception {
+        return prepareOwnCandidate(request(report), onsureManagedRoot);
+    }
+
+    public Map<String, Object> prepareOwnCandidate(
+            RagPreparationRequest request, Path onsureManagedRoot) throws Exception {
         Path root = normalized(onsureManagedRoot);
         Files.createDirectories(root);
 
-        String valueDecision = valueDecision(report);
+        String valueDecision = valueDecision(request);
         Map<String, Object> candidate = new LinkedHashMap<>();
         candidate.put("contract", CANDIDATE_CONTRACT);
-        candidate.put("candidate_id", "RAG-" + report.jobId());
+        candidate.put("candidate_id", "RAG-" + request.jobId());
         candidate.put("owner", "ONSURE");
         candidate.put("source_type", "VALIDATION");
-        candidate.put("target_id", report.target().targetId());
-        candidate.put("target_source_ref", report.target().immutableSourceReference());
-        candidate.put("validation_report_id", report.reportId());
-        candidate.put("validation_decision", report.decision().name());
+        candidate.put("target_id", request.targetId());
+        candidate.put("target_source_ref", request.targetSourceReference());
+        candidate.put("validation_report_id", request.reportId());
+        candidate.put("validation_decision", request.validationDecision());
         candidate.put("value_decision", valueDecision);
         candidate.put("rag_environment_required", !"LOCAL_ONLY".equals(valueDecision));
-        candidate.put("reason_codes", reasonCodes(report));
+        candidate.put("reason_codes", reasonCodes(request));
         candidate.put("prepared_at", Instant.now().toString());
         candidate.put("embedding_status", "NOT_RUN");
         candidate.put("rag_index_status", "NOT_CREATED");
         candidate.put("training_status", "NOT_RUN");
         candidate.put("application_status", "NOT_RUN");
-        candidate.put("source_report_sha256",
-                sha256(reportPathBytes(report)));
+        candidate.put("source_report_sha256", request.sourceReportSha256());
 
-        writeJson(root.resolve("candidates").resolve(report.jobId() + ".json"), candidate);
-        writeJson(root.resolve("receipts").resolve(report.jobId() + ".json"), Map.of(
+        writeJson(root.resolve("candidates").resolve(request.jobId() + ".json"), candidate);
+        writeJson(root.resolve("receipts").resolve(request.jobId() + ".json"), Map.of(
                 "contract", "ONSURE_RAG_PREPARATION_RECEIPT_V1",
                 "candidate_id", candidate.get("candidate_id"),
                 "owner", "ONSURE",
                 "value_decision", valueDecision,
-                "candidate_sha256", sha256(mapper.writeValueAsBytes(candidate)),
+                "candidate_sha256", Sha256.digest(mapper.writeValueAsBytes(candidate)),
                 "actual_ingestion_performed", false));
         return Map.copyOf(candidate);
     }
@@ -73,12 +76,21 @@ public final class RagPreparationService {
         if (!explicitlyAuthorized) {
             throw new IllegalStateException("TARGET_RAG_BOOTSTRAP_AUTHORIZATION_REQUIRED");
         }
-        String decision = valueDecision(report);
+        return bootstrapTargetEnvironment(request(report), targetRoot, explicitlyAuthorized);
+    }
+
+    public Map<String, Object> bootstrapTargetEnvironment(
+            RagPreparationRequest request, Path targetRoot, boolean explicitlyAuthorized)
+            throws Exception {
+        if (!explicitlyAuthorized) {
+            throw new IllegalStateException("TARGET_RAG_BOOTSTRAP_AUTHORIZATION_REQUIRED");
+        }
+        String decision = valueDecision(request);
         if ("LOCAL_ONLY".equals(decision)) {
             throw new IllegalStateException("TARGET_RAG_ENVIRONMENT_NOT_REQUIRED");
         }
         Path normalizedTarget = normalized(targetRoot);
-        if (!normalizedTarget.equals(report.target().sourceRoot())) {
+        if (!normalizedTarget.equals(request.targetSourceRoot())) {
             throw new IllegalArgumentException("TARGET_RAG_OWNER_ROOT_MISMATCH");
         }
         Path environment = normalizedTarget.resolve(TARGET_ENVIRONMENT).normalize();
@@ -103,7 +115,7 @@ public final class RagPreparationService {
         writeTextIfMissing(environment.resolve("chunks/chunks.jsonl"), "");
         writeJsonIfMissing(environment.resolve("manifest.json"), Map.of(
                 "contract", "TARGET_PROGRAM_RAG_MANIFEST_V1",
-                "owner_target_id", report.target().targetId(),
+                "owner_target_id", request.targetId(),
                 "preparation_status", "ENVIRONMENT_READY",
                 "embedding_status", "NOT_RUN",
                 "rag_index_status", "NOT_CREATED",
@@ -114,10 +126,10 @@ public final class RagPreparationService {
                         "manifest.json", "ingest_guide.md",
                         "learning/profile.json", "learning/policy.json")));
         writeJsonIfMissing(environment.resolve("learning/profile.json"),
-                learningProfile(report));
+                learningProfile(request));
         writeJsonIfMissing(environment.resolve("learning/policy.json"), Map.of(
                 "contract", "TARGET_PROGRAM_AUTO_LEARNING_POLICY_V1",
-                "owner_target_id", report.target().targetId(),
+                "owner_target_id", request.targetId(),
                 "automatic_learning_enabled", false,
                 "require_explicit_candidate_approval", true,
                 "require_immutable_source", true,
@@ -131,15 +143,15 @@ public final class RagPreparationService {
 
         Map<String, Object> receipt = new LinkedHashMap<>();
         receipt.put("contract", BOOTSTRAP_CONTRACT);
-        receipt.put("owner", report.target().targetId());
-        receipt.put("target_source_ref", report.target().immutableSourceReference());
-        receipt.put("trigger_candidate", "RAG-" + report.jobId());
+        receipt.put("owner", request.targetId());
+        receipt.put("target_source_ref", request.targetSourceReference());
+        receipt.put("trigger_candidate", "RAG-" + request.jobId());
         receipt.put("value_decision", decision);
         receipt.put("environment", TARGET_ENVIRONMENT);
         receipt.put("created_at", Instant.now().toString());
         receipt.put("actual_ingestion_performed", false);
-        receipt.put("receipt_sha256", sha256(mapper.writeValueAsBytes(receipt)));
-        writeJson(environment.resolve("receipts/bootstrap-" + report.jobId() + ".json"), receipt);
+        receipt.put("receipt_sha256", Sha256.digest(mapper.writeValueAsBytes(receipt)));
+        writeJson(environment.resolve("receipts/bootstrap-" + request.jobId() + ".json"), receipt);
         return Map.copyOf(receipt);
     }
 
@@ -148,10 +160,13 @@ public final class RagPreparationService {
      * The decision is evidence-based and is not permission to mutate or train the target.
      */
     public Map<String, Object> learningProfile(ValidationReport report) {
-        String id = report.target().targetId().toLowerCase(java.util.Locale.ROOT);
-        String name = report.target().targetName().toLowerCase(java.util.Locale.ROOT);
-        boolean adaptiveType = report.target().targetType()
-                == io.onsure.platform.ValidationModel.TargetType.AI_APPLICATION;
+        return learningProfile(request(report));
+    }
+
+    public Map<String, Object> learningProfile(RagPreparationRequest request) {
+        String id = request.targetId().toLowerCase(java.util.Locale.ROOT);
+        String name = request.targetName().toLowerCase(java.util.Locale.ROOT);
+        boolean adaptiveType = "AI_APPLICATION".equals(request.targetType());
         boolean designProgram = id.contains("odesign") || name.contains("odesign")
                 || id.contains("oui") || name.contains("oui")
                 || id.contains("oreport") || name.contains("oreport")
@@ -163,14 +178,14 @@ public final class RagPreparationService {
                 : List.of("NO_ADAPTIVE_LEARNING_CHARACTERISTIC_DETECTED");
         Map<String, Object> profile = new LinkedHashMap<>();
         profile.put("contract", LEARNING_PROFILE_CONTRACT);
-        profile.put("owner_target_id", report.target().targetId());
-        profile.put("target_source_ref", report.target().immutableSourceReference());
+        profile.put("owner_target_id", request.targetId());
+        profile.put("target_source_ref", request.targetSourceReference());
         profile.put("learning_required", required);
         profile.put("rag_preparation_required", required);
         profile.put("automatic_learning_capable", required);
         profile.put("automatic_learning_enabled", false);
         profile.put("reason_codes", reasons);
-        profile.put("decision_source_report_id", report.reportId());
+        profile.put("decision_source_report_id", request.reportId());
         profile.put("actual_learning_performed", false);
         return Map.copyOf(profile);
     }
@@ -186,17 +201,45 @@ public final class RagPreparationService {
         return "LOCAL_ONLY";
     }
 
-    private static List<String> reasonCodes(ValidationReport report) {
+    static String valueDecision(RagPreparationRequest request) {
+        if (request.rcaCount() > 0 || request.failureModeCount() > 0) {
+            return "RAG_READY";
+        }
+        if (request.findingCount() > 0 || request.nonPassingFixture()) {
+            return "RAG_REVIEW_REQUIRED";
+        }
+        return "LOCAL_ONLY";
+    }
+
+    private static List<String> reasonCodes(RagPreparationRequest request) {
         var reasons = new java.util.ArrayList<String>();
-        if (!report.failureModes().isEmpty()) reasons.add("REUSABLE_FAILURE_MODE");
-        if (!report.rcaRecords().isEmpty()) reasons.add("RCA_AND_REMEDIATION");
-        if (!report.findings().isEmpty()) reasons.add("VALIDATION_FINDING");
+        if (request.failureModeCount() > 0) reasons.add("REUSABLE_FAILURE_MODE");
+        if (request.rcaCount() > 0) reasons.add("RCA_AND_REMEDIATION");
+        if (request.findingCount() > 0) reasons.add("VALIDATION_FINDING");
         if (reasons.isEmpty()) reasons.add("NO_REUSABLE_KNOWLEDGE_DETECTED");
         return List.copyOf(reasons);
     }
 
-    private byte[] reportPathBytes(ValidationReport report) throws Exception {
-        return mapper.writeValueAsBytes(report);
+    private RagPreparationRequest request(ValidationReport report) {
+        try {
+            return new RagPreparationRequest(
+                    report.jobId(),
+                    report.reportId(),
+                    report.target().targetId(),
+                    report.target().targetName(),
+                    report.target().targetType().name(),
+                    report.target().sourceRoot(),
+                    report.target().immutableSourceReference(),
+                    report.decision().name(),
+                    report.findings().size(),
+                    report.failureModes().size(),
+                    report.rcaRecords().size(),
+                    report.fixtureResults().stream()
+                            .anyMatch(value -> !"PASS".equals(value.decision().name())),
+                    Sha256.digest(mapper.writeValueAsBytes(report)));
+        } catch (Exception e) {
+            throw new IllegalStateException("RAG_REPORT_ADAPTER_FAILED", e);
+        }
     }
 
     private void writeJson(Path file, Object value) throws Exception {
@@ -232,8 +275,4 @@ public final class RagPreparationService {
         return path.toAbsolutePath().normalize();
     }
 
-    private static String sha256(byte[] bytes) throws Exception {
-        return HexFormat.of().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(bytes));
-    }
 }

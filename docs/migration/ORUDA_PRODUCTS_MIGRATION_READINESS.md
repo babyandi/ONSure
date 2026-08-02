@@ -99,6 +99,7 @@
 | SHA-256 primitive, source identity, immutable source binding | ONSure common/platform/harness | 공통 후보 | `io.onsure.common.Sha256`로 digest primitive를 수렴하고 기존 facade 호환성을 유지. source-tree 정책은 두 번째 실제 소비자 확인 후 별도 추출 |
 | Universal fixture/oracle harness | ONSure harness | 공통 후보 | ONSure Final/HOLD 권위를 제거하지 않은 채 실행 primitive만 분리 |
 | JSON Schema 검증·계약 registry 도구 | ONSure scripts/contracts | 공통 후보 | 모노레포 공용 schema lifecycle과 versioning owner 확정 |
+| RAG preparation request contract | ONSure `io.onsure.rag` | 제품 경계 후보 | `RagPreparationRequest`를 신규 호출 경계로 사용하고, 기존 `ValidationReport` overload는 호환 기간 후 platform adapter로 격리 |
 | Cause-aware verification Python | ONSure `onsure_core/` | 공통 후보/중복 검토 | ORUDA의 같은 상대경로 구현과 API·digest가 달라 divergent copy 여부 결정 |
 | Product Catalog, Program/Behavior Learning, OReview, RCA, remediation, service case, OLicense | ONSure | 제품 전용 | 공통화하지 않음. ONSure product semantics와 evidence authority 유지 |
 | ORUDA adapter와 ORUDA receipt/materialization classes | ONSure optional adapter | 제품 통합 전용 | Core와 package/compile cycle을 제거하고 adapter SPI만 의존하도록 역전 |
