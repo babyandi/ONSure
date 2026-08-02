@@ -1,5 +1,5 @@
 {
-  "component_count": 4,
+  "component_count": 12,
   "contract": "ONSURE_DEPENDENCY_LICENSE_INVENTORY_V1",
   "cyclonedx_plugin": "org.cyclonedx:cyclonedx-maven-plugin:2.9.1",
   "cyclonedx_schema": "1.6",
@@ -12,9 +12,9 @@
         "Apache-2.0"
       ],
       "name": "jackson-annotations",
-      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar",
       "scope": "required",
-      "version": "2.18.2"
+      "version": "2.18.9"
     },
     {
       "group": "com.fasterxml.jackson.core",
@@ -23,9 +23,9 @@
         "Apache-2.0"
       ],
       "name": "jackson-core",
-      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar",
       "scope": "required",
-      "version": "2.18.2"
+      "version": "2.18.9"
     },
     {
       "group": "com.fasterxml.jackson.core",
@@ -34,9 +34,9 @@
         "Apache-2.0"
       ],
       "name": "jackson-databind",
-      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
       "scope": "required",
-      "version": "2.18.2"
+      "version": "2.18.9"
     },
     {
       "group": "com.fasterxml.jackson.datatype",
@@ -45,13 +45,86 @@
         "Apache-2.0"
       ],
       "name": "jackson-datatype-jsr310",
-      "purl": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar",
       "scope": "required",
-      "version": "2.18.2"
+      "version": "2.18.9"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-adapter-oruda",
+      "purl": "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-cli",
+      "purl": "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-core",
+      "purl": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-local-api",
+      "purl": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-provider-local-mock",
+      "purl": "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-provider-spi",
+      "purl": "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-sdk",
+      "purl": "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
+      "name": "onsure-test-fixtures",
+      "purl": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
     }
   ],
   "dependency_license_counts": {
-    "Apache-2.0": 4
+    "Apache-2.0": 4,
+    "PROJECT_SOURCE_LICENSE_INHERITS_ROOT": 8
   },
   "dependency_license_review_required_count": 0,
   "final_claim_allowed": false,
@@ -62,5 +135,5 @@
   ],
   "root_source_license": "UNDECLARED",
   "source_sbom": "assurance/dependencies/onsure.cdx.json",
-  "source_sbom_sha256": "83e06fbe74695abcd297dd312e752ce4f8d27351caa20dff55eb07242eca6b2c"
+  "source_sbom_sha256": "fa469e3c7f6fd0e13f5a4fff9d13a9c7dfb2b3199c63fe8c421cec775415441b"
 }

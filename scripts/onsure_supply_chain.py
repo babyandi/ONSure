@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import pathlib
+import base64
 import subprocess
 import sys
 from collections import Counter
@@ -23,15 +24,18 @@ DEFAULT_SBOM = ROOT / "assurance/dependencies/onsure.cdx.json"
 DEFAULT_INVENTORY = ROOT / "assurance/dependencies/onsure-dependency-license-inventory.v1.json"
 DEFAULT_VULNERABILITY = ROOT / "assurance/dependencies/onsure-vulnerability-scan.v1.json"
 DEFAULT_NPM_AUDIT = ROOT / "assurance/dependencies/onsure-npm-audit.v1.json"
+DEFAULT_VSCODE_INVENTORY = ROOT / "assurance/dependencies/onsure-vscode-dependency-inventory.v1.json"
 POLICY_PATH = ROOT / "contracts/onsure-supply-chain-policy.v1.json"
 
 
-def run_cyclonedx() -> dict[str, object]:
+def run_cyclonedx(pom: str = "pom.xml") -> dict[str, object]:
     command = [
         "mvn",
         "-B",
         "-ntp",
         "-q",
+        "-f",
+        pom,
         f"org.cyclonedx:cyclonedx-maven-plugin:{PLUGIN_VERSION}:makeAggregateBom",
         "-Dcyclonedx.outputFormat=json",
         "-Dcyclonedx.skipAttach=true",
@@ -42,6 +46,80 @@ def run_cyclonedx() -> dict[str, object]:
     if not RAW_SBOM.is_file():
         raise ValueError("CYCLONEDX_SBOM_MISSING")
     return json.loads(RAW_SBOM.read_text(encoding="utf-8"))
+
+
+def vscode_inventory() -> dict[str, object]:
+    lock_path = ROOT / "vscode-extension/package-lock.json"
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages: list[dict[str, object]] = []
+    for location, value in sorted(lock.get("packages", {}).items()):
+        if not location or not location.startswith("node_modules/"):
+            continue
+        name = location.removeprefix("node_modules/")
+        version = str(value.get("version", ""))
+        if not version:
+            raise ValueError("VSCODE_DEPENDENCY_VERSION_MISSING:" + name)
+        integrity = str(value.get("integrity", ""))
+        integrity_algorithm = "NOT_AVAILABLE"
+        integrity_hex = "NOT_AVAILABLE"
+        if "-" in integrity:
+            algorithm, encoded = integrity.split("-", 1)
+            try:
+                integrity_hex = base64.b64decode(encoded, validate=True).hex()
+                integrity_algorithm = algorithm.upper()
+            except ValueError:
+                raise ValueError("VSCODE_DEPENDENCY_INTEGRITY_INVALID:" + name)
+        packages.append({
+            "name": name,
+            "version": version,
+            "purl": f"pkg:npm/{name.replace('@', '%40')}@{version}",
+            "license": value.get("license", "NOT_DECLARED_IN_LOCK"),
+            "integrity_algorithm": integrity_algorithm,
+            "integrity_hex": integrity_hex,
+            "development_only": bool(value.get("dev", False)),
+            "optional": bool(value.get("optional", False)),
+        })
+    return {
+        "contract": "ONSURE_VSCODE_DEPENDENCY_INVENTORY_V1",
+        "package_lock": "vscode-extension/package-lock.json",
+        "package_lock_sha256": file_sha256(lock_path),
+        "component_count": len(packages),
+        "components": packages,
+        "artifact_sha256_available": False,
+        "lock_integrity_recorded": True,
+        "final_claim_allowed": False,
+    }
+
+
+def merged_cyclonedx(vscode: dict[str, object]) -> dict[str, object]:
+    root_sbom = run_cyclonedx("pom.xml")
+    modular_sbom = run_cyclonedx("pom-modular.xml")
+    merged = json.loads(json.dumps(root_sbom))
+    by_purl = {str(item.get("purl")): item for item in merged.get("components", [])}
+    for component in modular_sbom.get("components", []):
+        value = json.loads(json.dumps(component))
+        purl = str(value.get("purl", ""))
+        if str(value.get("group")) == "io.onsure":
+            artifact = str(value.get("name"))
+            jar = ROOT / "modules" / artifact / "target" / f"{artifact}-0.1.0-SNAPSHOT.jar"
+            if not jar.is_file():
+                raise ValueError("MODULAR_SBOM_ARTIFACT_NOT_BUILT:" + artifact)
+            value["hashes"] = [{"alg": "SHA-256", "content": file_sha256(jar)}]
+            value["properties"] = [{"name": "onsure:module_boundary", "value": "ISOLATED_CANDIDATE"}]
+        by_purl[purl] = value
+    merged["components"] = list(by_purl.values())
+    metadata = merged.setdefault("metadata", {})
+    metadata["properties"] = sorted([
+        {"name": "onsure:modular_pom", "value": "pom-modular.xml"},
+        {"name": "onsure:vscode_dependency_inventory", "value": DEFAULT_VSCODE_INVENTORY.relative_to(ROOT).as_posix()},
+        {"name": "onsure:vscode_dependency_inventory_sha256", "value": hashlib.sha256(
+            (json.dumps(vscode, sort_keys=True, separators=(",", ":")) + "\n").encode()).hexdigest()},
+    ], key=lambda item: item["name"])
+    dependencies = {str(item.get("ref")): item for item in merged.get("dependencies", [])}
+    for dependency in modular_sbom.get("dependencies", []):
+        dependencies[str(dependency.get("ref"))] = json.loads(json.dumps(dependency))
+    merged["dependencies"] = list(dependencies.values())
+    return merged
 
 
 def normalize_sbom(body: dict[str, object]) -> dict[str, object]:
@@ -86,10 +164,12 @@ def build_inventory(sbom: dict[str, object]) -> dict[str, object]:
     review_required = 0
     for component in sbom.get("components", []):
         licenses = license_ids(component)
-        status = "DECLARED" if licenses else "REVIEW_REQUIRED"
-        if not licenses:
+        project_module = component.get("group") == "io.onsure"
+        status = "PROJECT_SOURCE_LICENSE_INHERITS_ROOT" if project_module else (
+            "DECLARED" if licenses else "REVIEW_REQUIRED")
+        if not licenses and not project_module:
             review_required += 1
-        for value in licenses or ["UNDECLARED"]:
+        for value in licenses or (["PROJECT_SOURCE_LICENSE_INHERITS_ROOT"] if project_module else ["UNDECLARED"]):
             license_counts[value] += 1
         dependencies.append({
             "group": component.get("group", ""),
@@ -135,12 +215,13 @@ def write_json(path: pathlib.Path, body: dict[str, object]) -> None:
     )
 
 
-def generate() -> tuple[dict[str, object], dict[str, object]]:
-    sbom = normalize_sbom(run_cyclonedx())
+def generate() -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+    vscode = vscode_inventory()
+    sbom = normalize_sbom(merged_cyclonedx(vscode))
     if sbom.get("specVersion") != SCHEMA_VERSION:
         raise ValueError(f"CYCLONEDX_SCHEMA_DRIFT:{sbom.get('specVersion')}")
     inventory = build_inventory(sbom)
-    return sbom, inventory
+    return sbom, inventory, vscode
 
 
 def file_sha256(path: pathlib.Path) -> str:
@@ -174,6 +255,8 @@ def validate_policy(
     denied = set(license_policy.get("denied", []))
     review = set(license_policy.get("human_compatibility_review_required", []))
     for dependency in inventory.get("dependencies", []):
+        if dependency.get("group") == "io.onsure":
+            continue
         licenses = dependency.get("licenses", []) or ["UNDECLARED"]
         if denied.intersection(licenses):
             violations.append("DEPENDENCY_LICENSE_DENIED:" + str(dependency.get("purl", "")))
@@ -234,9 +317,10 @@ def validate_policy(
 def validate() -> dict[str, object]:
     if not DEFAULT_SBOM.is_file() or not DEFAULT_INVENTORY.is_file():
         raise ValueError("SUPPLY_CHAIN_BASELINE_MISSING")
-    actual_sbom, actual_inventory = generate()
+    actual_sbom, actual_inventory, actual_vscode = generate()
     expected_sbom = json.loads(DEFAULT_SBOM.read_text(encoding="utf-8"))
     expected_inventory = json.loads(DEFAULT_INVENTORY.read_text(encoding="utf-8"))
+    expected_vscode = json.loads(DEFAULT_VSCODE_INVENTORY.read_text(encoding="utf-8"))
     policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
     vulnerability = json.loads(DEFAULT_VULNERABILITY.read_text(encoding="utf-8"))
     npm_audit = json.loads(DEFAULT_NPM_AUDIT.read_text(encoding="utf-8"))
@@ -245,6 +329,8 @@ def validate() -> dict[str, object]:
         violations.append("CYCLONEDX_SBOM_DRIFT")
     if actual_inventory != expected_inventory:
         violations.append("DEPENDENCY_LICENSE_INVENTORY_DRIFT")
+    if actual_vscode != expected_vscode:
+        violations.append("VSCODE_DEPENDENCY_INVENTORY_DRIFT")
     policy_violations, release_blockers = validate_policy(
         actual_sbom, actual_inventory, policy, vulnerability, npm_audit
     )
@@ -263,6 +349,7 @@ def validate() -> dict[str, object]:
         "vulnerability_scan_state": vulnerability["state"],
         "npm_audit_state": npm_audit["state"],
         "npm_vulnerability_total": npm_audit["vulnerabilities"]["total"],
+        "vscode_dependency_component_count": actual_vscode["component_count"],
         "final_claim_allowed": False,
     }
 
@@ -272,9 +359,10 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("mode", choices=("generate", "validate"))
     args = parser.parse_args(argv)
     if args.mode == "generate":
-        sbom, inventory = generate()
+        sbom, inventory, vscode = generate()
         write_json(DEFAULT_SBOM, sbom)
         write_json(DEFAULT_INVENTORY, inventory)
+        write_json(DEFAULT_VSCODE_INVENTORY, vscode)
         print(
             "ONSURE_SUPPLY_CHAIN_GENERATED "
             f"components={inventory['component_count']} schema={sbom['specVersion']}"

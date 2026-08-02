@@ -2,7 +2,7 @@
   "bomFormat": "CycloneDX",
   "components": [
     {
-      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.2?type=jar",
+      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar",
       "description": "Core annotations used for value types, used by Jackson data binding package.",
       "externalReferences": [
         {
@@ -11,7 +11,7 @@
         },
         {
           "type": "distribution-intake",
-          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+          "url": "https://central.sonatype.com/api/v1/publisher"
         },
         {
           "type": "issue-tracker",
@@ -26,35 +26,35 @@
       "hashes": [
         {
           "alg": "MD5",
-          "content": "79d38d3c51068a2bbc40268d02f80763"
+          "content": "de16119eb690bcc4f81286edefeb0dd1"
         },
         {
           "alg": "SHA-1",
-          "content": "985d77751ebc7fce5db115a986bc9aa82f973f4a"
+          "content": "c19aab861fcdf6e2f185ad84fb23f0a8383097f8"
         },
         {
           "alg": "SHA-256",
-          "content": "581bd61000ef7648943f781ca05689e56d03f6052748365a8e2b3a9b5d3fa32f"
+          "content": "798c85b86e7420d0b4eb91e7b3e37d4bee673c61de37a616ba51a7539631e6b7"
         },
         {
           "alg": "SHA-384",
-          "content": "cc68a2e188dfb8a3687542b7e6b0d2b8323536dd82716a545f73320915e5f9602cc7a3c3d67a15f5adb579c31d5ed96f"
+          "content": "1d0eaf0449d64b46776afcd311aa6763d96a13eeb7da80776758f6d102ee49c42ee8a861d43d2438ad52cfc02e9b54fa"
         },
         {
           "alg": "SHA-512",
-          "content": "d375e5761052e202e409400637cdc9ce0f45cf01a90628f36ca3c81757ac30695cc6e60146cbf14685c5c50912ad932564eb794ea76ab8461ce1786a02eab867"
+          "content": "9e277537563103f19df34d2e23a9b42b751787b95d60db20294c24efe3d05ad161ee76811fbaeb3995ed66b46667647d7695da5f393494c954a08527aeefc7e3"
         },
         {
           "alg": "SHA3-256",
-          "content": "9cb3a706d1bc0401a7bdd9c42a6ec048cd7bebce9f60f395e44c254a67ea230b"
+          "content": "3ae4f7aaa3045b1d1826240ad3edf3ee9fcbfe78f014713432fec624fb06f7e1"
         },
         {
           "alg": "SHA3-384",
-          "content": "ffcc40615a2d6f0c0382595da8601f7501dfb78f6f78718e9f05f309253379e9d9101d82bc7aaf8735746eafa190d8c9"
+          "content": "a08b144cff5d97a3698a7a8db7dfbd9cb907989e0447cb2ee5a715f6aa2cbd4efaa3af115fa6cd66dc91cb5c49c66578"
         },
         {
           "alg": "SHA3-512",
-          "content": "f1a5af82d49e1db5898b4caa487a4ae061cf31b5db25e2172fdba59970dab3308618f7e34f6fcf0842b7c9da958c274d69022d10d85f3e862be88a44ef8b7fc6"
+          "content": "04b2fd0a6aa5dbe59b60f1a484af4fb13a2392455a0a32dbd6aef8d1a8574b8fb632510d9e77d844aa3f0987b08cb6203f88e10d29afc0c8607b1b6b481aac30"
         }
       ],
       "licenses": [
@@ -66,13 +66,13 @@
       ],
       "name": "jackson-annotations",
       "publisher": "FasterXML",
-      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar",
       "scope": "required",
       "type": "library",
-      "version": "2.18.2"
+      "version": "2.18.9"
     },
     {
-      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.2?type=jar",
+      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar",
       "description": "Core Jackson processing abstractions (aka Streaming API), implementation for JSON",
       "externalReferences": [
         {
@@ -81,7 +81,7 @@
         },
         {
           "type": "distribution-intake",
-          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+          "url": "https://central.sonatype.com/api/v1/publisher"
         },
         {
           "type": "issue-tracker",
@@ -96,35 +96,35 @@
       "hashes": [
         {
           "alg": "MD5",
-          "content": "bf935e6eca3a57defa13918661905cb0"
+          "content": "1fc67064d7629afbb056aab4309533e4"
         },
         {
           "alg": "SHA-1",
-          "content": "fb64ccac5c27dca8819418eb4e443a9f496d9ee7"
+          "content": "0ca645ad40f7be06d1a0bbdf9f363d3838b41f40"
         },
         {
           "alg": "SHA-256",
-          "content": "d8054ae7c0d1c2d2f55d28e46026ebe5892881f3fab5f439233184381c3b4a1f"
+          "content": "e03144f48c8d5307da2894570b4972aab8c72f22440f8dcdb745be2485ce2024"
         },
         {
           "alg": "SHA-384",
-          "content": "7c5183b4e0ceb3d9dd089e29253832fdbe5f126a7b8c08fa66ab46f5050eb3b8fd792e00bd914f49000719e547586e23"
+          "content": "eaafd62742bdc88bc4e6389d68f7099798021bfdb6c93b2233f98a8686b1340e7beaadae17c548b94872e882f6d08159"
         },
         {
           "alg": "SHA-512",
-          "content": "2223f6d8235c6831b488dd2723a4569e4dab6c2371f0e39f867b57a3a443e093d1fce05dc070a350fa306d7e952888cb09c7c816254147b01083d122964fc3a5"
+          "content": "089038fd291cc259f12877bc25b6cba1c786465a3413171e82bc851c396bec7c2b73045fc25b19e814242fbfc8159cccaf7aed766cffe188b5cacbecd57f5865"
         },
         {
           "alg": "SHA3-256",
-          "content": "c99bd2cc1f13748357bf002d92d83f9f2d14d777c5e3fb7ed38c6891c76dbcb8"
+          "content": "142fd339d30943888e34a050981a9d1d1012f49957f54315a16ec2446dc8533a"
         },
         {
           "alg": "SHA3-384",
-          "content": "2a973e2dcd1b65eb63f783878c542fa804254c880d47180717cd5ab239670b529c61ca4de647d4683cf4b459b6a7f5df"
+          "content": "a367d877dafe237d3cf884acf1b14f2008716823b2149e54b24d608e84d979d8d1d9b19f3ad29aed4cc946f21b838eb9"
         },
         {
           "alg": "SHA3-512",
-          "content": "10b0328f2cd2a347f8c3eb8ed1967036b8940fe9b444ac27ffdb66bd373686a13fe7ec7498de5b81af1a301ed4afeb85aece0afb782aa6cadcf78362fa7ea5ae"
+          "content": "949bb80fdd3ac24c59da3137fbe95a71565f32bfbc92298292b466c086f900f396d1e1d407c01761d1a520a0851f759a523f8331898d2d3adea546ddd8a83e36"
         }
       ],
       "licenses": [
@@ -136,13 +136,13 @@
       ],
       "name": "jackson-core",
       "publisher": "FasterXML",
-      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar",
       "scope": "required",
       "type": "library",
-      "version": "2.18.2"
+      "version": "2.18.9"
     },
     {
-      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.2?type=jar",
+      "bom-ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
       "description": "General data-binding functionality for Jackson: works on core streaming API",
       "externalReferences": [
         {
@@ -151,7 +151,7 @@
         },
         {
           "type": "distribution-intake",
-          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+          "url": "https://central.sonatype.com/api/v1/publisher"
         },
         {
           "type": "issue-tracker",
@@ -166,35 +166,35 @@
       "hashes": [
         {
           "alg": "MD5",
-          "content": "1b56887bcd3eaea1ff710eb673e610b0"
+          "content": "9acf7de1c5ad5b5bc0dd72bd8459e7ef"
         },
         {
           "alg": "SHA-1",
-          "content": "deef8697b92141fb6caf7aa86966cff4eec9b04f"
+          "content": "093f3c1564ae82c1f5c034883f9ce45782054e04"
         },
         {
           "alg": "SHA-256",
-          "content": "4b364e6850dc89172fcf1d4dd26b8ff5488eda44ff4657e22dd265203dd5ab3c"
+          "content": "71595a3f7ff58344ec0496a9f9ec9f623ef7b85b45402d88f1ca261f1bc4b42c"
         },
         {
           "alg": "SHA-384",
-          "content": "77607f963531b8b7a963e0691ec0196d0877f13763fcd7485fbbe14a37054a9babd343aecc96c8d29ec2480546cd1e4d"
+          "content": "b171f56a845b5722f39e4f2edd8a83e6700fafb37f0a78ab0cb0546443654a43b21cf45c88dbac3574e5f80710074e5d"
         },
         {
           "alg": "SHA-512",
-          "content": "bbdfaaffaaab2a032a754cd9dade06552e9f79fd39ae396873315415219b37e0675fde0a02953efe0701e17be4c282b118a96fcb752f53ca37ab89624f0a52ac"
+          "content": "1ce9e558e10ae7e86bd50a43ab9ea90d3ba8e7437e9d2b73eee6c648a4bf7583d532007fd03696c6e01b943e894f0956ebb5344049b011b609273f68eaf6934e"
         },
         {
           "alg": "SHA3-256",
-          "content": "ced61fd9988c4418e98f5bd061a3aa099dd4e0a0074a272e87803262c2177bf8"
+          "content": "8fb8c229144a416287713e5ccb4a321cb6a722722a0e0f7df61f1c7efc7b6808"
         },
         {
           "alg": "SHA3-384",
-          "content": "e02fdf4bba51730989da3efac6e0dfce5649215ec78c7d21713386d36874d621f65ea9881399ef80c87a9436877453a1"
+          "content": "039864fb011921c635dca34c585349e864b82463d03812f9d14695bddcd74d600eb0795514cd4c62ec5ea714afc67dfa"
         },
         {
           "alg": "SHA3-512",
-          "content": "6f6610e9bbbfd344ebd716a7709a19bdcf0180f214437473602db312a5e6d6e592bed40776ce9a445ab6b7b5c0fd9291fd11257a6b06e5dbf4b971fe996b2972"
+          "content": "f9a5c5f4674016810a9a6141e9f4386ee895dabd3670cff2e1a0f5112c2cf27ce413cc75b7163a191a79ba159f3069b68e115252b9e2a2da2b3605abb696fd44"
         }
       ],
       "licenses": [
@@ -206,13 +206,13 @@
       ],
       "name": "jackson-databind",
       "publisher": "FasterXML",
-      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
       "scope": "required",
       "type": "library",
-      "version": "2.18.2"
+      "version": "2.18.9"
     },
     {
-      "bom-ref": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.2?type=jar",
+      "bom-ref": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar",
       "description": "Add-on module to support JSR-310 (Java 8 Date & Time API) data types.",
       "externalReferences": [
         {
@@ -221,7 +221,7 @@
         },
         {
           "type": "distribution-intake",
-          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+          "url": "https://central.sonatype.com/api/v1/publisher"
         },
         {
           "type": "issue-tracker",
@@ -236,35 +236,35 @@
       "hashes": [
         {
           "alg": "MD5",
-          "content": "aaf3adb28aa9de74b3bb87118f93113f"
+          "content": "401fa13bfd9c767c167fe6f4bf29bc14"
         },
         {
           "alg": "SHA-1",
-          "content": "7b6ff96adf421f4c6edbd694e797dd8fe434510a"
+          "content": "d6ebc27eb97997116c699c022038d9dc31780945"
         },
         {
           "alg": "SHA-256",
-          "content": "e2d202d4606e23aeaf8a5a9632db06f5fefd5b63d251c3f503f9faaa78530e5c"
+          "content": "1b35df59d068f97e7b89e1cc2244644ffeadbf31aff970dc112fff0cabba8e9c"
         },
         {
           "alg": "SHA-384",
-          "content": "cabe852eef9298f16699feecd3ddd9589712be714c4cf8d0a581edc84d40ec4e72c5ecdb676c5f7a6a8d4aa994295a31"
+          "content": "3e53fb36283827874e27af40f87f65254a3841cf53fb0d52346ba03e11603db56a9cade718b0a318e56d629e0f72d5d6"
         },
         {
           "alg": "SHA-512",
-          "content": "bc1cb3e193996ba0b876baefa99122672bbe617f2de582f5208609efb1bb5886832857406de5b0fd7969fce8c07dba0a672b3f077bac2f7efbc3d0cc252c1ee9"
+          "content": "d1e4fadf07c80ba1eb994f7d18566226301564e22fbd1af04d81aba7045c5222011714c0533563f45d0d07489a02551717e3ba8fcf8dd54b249c1aacdfa8d51c"
         },
         {
           "alg": "SHA3-256",
-          "content": "9941830e2ad393b33e3999095cab945f4e768b1022310d13f9c57beb8817e429"
+          "content": "7b2350fbab0fde26bab21835abe81188ad20485914bde9b88fb269a1dfb1d29c"
         },
         {
           "alg": "SHA3-384",
-          "content": "0564445841652897541e3ff99accacc4fb57887b97189938e6a5759de1d9a79685229b255b798f3e34cc098bb966807e"
+          "content": "5f80eee011860d44f91d76fd78b9630f0c71dbca18198fdeba0a4f433352558563f691112d9b4d62a000d5566244e9ac"
         },
         {
           "alg": "SHA3-512",
-          "content": "bb85164ff9331af6c8d872712e6f3b1757855ef73ab81e24b4c8631f3eae1bc187aa8e6fd68b60f44808b2691eb364edbf55423eff1be3040b3658d9f656a3d1"
+          "content": "917914f844b02013bb25af0e5315d5899f748b20de6b49252e9e8f4435f8f263dd72e15ee01c9f9f6f16ee7e5f78b6976f78ff6282b7adf496b661476370c203"
         }
       ],
       "licenses": [
@@ -276,42 +276,262 @@
       ],
       "name": "jackson-datatype-jsr310",
       "publisher": "FasterXML",
-      "purl": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.2?type=jar",
+      "purl": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar",
       "scope": "required",
       "type": "library",
-      "version": "2.18.2"
+      "version": "2.18.9"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6a7129e91630f68fbf9f170d515412e6149decb1605045ee132c16c4293c5c89"
+        }
+      ],
+      "name": "onsure-adapter-oruda",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fa7e1dc876656850377b95a7277174dd3351f81db755cd4c7192a7785be8b74e"
+        }
+      ],
+      "name": "onsure-cli",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "59eb540823f67a165079295c7f5f13934227c4f6684404e531e39d4581de8064"
+        }
+      ],
+      "name": "onsure-core",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "433d65573b89d7af7f949c9c66299d50383d0d2fa8351f9865bacc79371c40ad"
+        }
+      ],
+      "name": "onsure-local-api",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "11be1fa5911925ab8197f0c53c286cef159297c4c37e3dc6263d4bff90eb7267"
+        }
+      ],
+      "name": "onsure-provider-local-mock",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "47be40d183f8888ec782b62cd6cbc38fcebe3d6fac347d373a2d50efb006968e"
+        }
+      ],
+      "name": "onsure-provider-spi",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0bcd459e46862e5b556a38115ba8e923106f9b1778e549b2ad0588490006fabe"
+        }
+      ],
+      "name": "onsure-sdk",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c03c425a5e8a1d16abcc5b56f24af09170e81a2e2692cbc168042427443f6568"
+        }
+      ],
+      "name": "onsure-test-fixtures",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
     }
   ],
   "dependencies": [
     {
       "dependsOn": [],
-      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.2?type=jar"
+      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar"
     },
     {
       "dependsOn": [],
-      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.2?type=jar"
+      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar"
     },
     {
       "dependsOn": [
-        "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.2?type=jar",
-        "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.2?type=jar"
+        "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar"
       ],
-      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.2?type=jar"
+      "ref": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar"
     },
     {
       "dependsOn": [
-        "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.2?type=jar",
-        "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.2?type=jar",
-        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.2?type=jar"
+        "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar"
       ],
-      "ref": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.2?type=jar"
+      "ref": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar"
     },
     {
       "dependsOn": [
-        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.2?type=jar",
-        "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.2?type=jar"
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar"
       ],
       "ref": "pkg:maven/io.onsure/onsure-assurance-validator@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-modular-parent@0.1.0-SNAPSHOT?type=pom"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar"
     }
   ],
   "metadata": {
@@ -330,12 +550,16 @@
     ],
     "properties": [
       {
-        "name": "maven.goal",
-        "value": "makeAggregateBom"
+        "name": "onsure:modular_pom",
+        "value": "pom-modular.xml"
       },
       {
-        "name": "maven.scopes",
-        "value": "compile,provided,runtime,system"
+        "name": "onsure:vscode_dependency_inventory",
+        "value": "assurance/dependencies/onsure-vscode-dependency-inventory.v1.json"
+      },
+      {
+        "name": "onsure:vscode_dependency_inventory_sha256",
+        "value": "40d1a17bcf424ff3a54040c55270aaf5fc263ad00134c452c83b8acf60e1725d"
       }
     ],
     "tools": {

@@ -1,0 +1,2301 @@
+{
+  "artifact_sha256_available": false,
+  "component_count": 229,
+  "components": [
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7cd0235a703f9d9da3cf7d64c51fc0a916944fc7b01c1c3f5ae048a2c2b49a8332d42f5ee556a56c37c5748c49cd538e61a62457f6f61754b81ff6878aa7d542",
+      "license": "MIT",
+      "name": "@azure/abort-controller",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/abort-controller@2.2.0",
+      "version": "2.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "2146727724d49039d876cb4e5bda4538e5109418c07a92b9b5e8a10c4df1eb2c6c3c9b3f86c01a698a5e1b1771ae0b4e8896c12928ca5bb30393b00485be0b46",
+      "license": "MIT",
+      "name": "@azure/core-auth",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/core-auth@1.11.0",
+      "version": "1.11.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "2634163ba6a439c938e4f1ff5c1af1cec4060222ab7c59789b98a0809d08b4c233e68991b9f3975a9a823e976328ddef283ce5494bc58da31bed9c1fd20bc074",
+      "license": "MIT",
+      "name": "@azure/core-client",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/core-client@1.11.0",
+      "version": "1.11.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "6ccb3c7a424b8d7f303d5fbd20f0607acd522cfcae0ed13d83980b0d63a9c7329ca0e1509e92c691b713d6d770dc56809834b58273e632627acbf4f907dea420",
+      "license": "MIT",
+      "name": "@azure/core-rest-pipeline",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/core-rest-pipeline@1.25.0",
+      "version": "1.25.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "786c310f402d9dcaf1781338b46f11e793dcdeb757d61356d9689b240818a42540e84f779afbd51fe2dcb2ca158ce06b48a592e79c84207b24d17f1cb4799f39",
+      "license": "MIT",
+      "name": "@azure/core-tracing",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/core-tracing@1.4.0",
+      "version": "1.4.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f67da958aeb5bde02e374576d2df653aea15e0214c772019d72819cef04693fa410494626ff3e32fd3cb5dafda23609c3e9c877ea56cc71a8b09897ab9995f0f",
+      "license": "MIT",
+      "name": "@azure/core-util",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/core-util@1.14.0",
+      "version": "1.14.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e42ff6583e556f59479d94b5e9d35044f32337aa15fd4a5b6be0bd9c122cd793e63a2e80dd91ace0baf6bbad33c384b4e208bebb77045e2a9354fecce0fcf793",
+      "license": "MIT",
+      "name": "@azure/identity",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity@4.13.1",
+      "version": "4.13.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "adb004db92947e353fb375c751d26071ea023f97443a9331f39274e2417e40c76d6bbdd792e1bd2461c78a7721f972282a905daa58e29fe2aa511a49ae24b32c",
+      "license": "MIT",
+      "name": "@azure/logger",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/logger@1.4.0",
+      "version": "1.4.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "cc18511b300129223b85f5a1e446999ab8a5e726d9ee2981375a84665e6c0d369e96bfa5f129cf8d93b9d10e1d9ca9e6df8ed83c89413129d7299ca1dd8bb90d",
+      "license": "MIT",
+      "name": "@azure/msal-browser",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/msal-browser@5.17.1",
+      "version": "5.17.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c8386d04e18309d2bd8a943d837fb09a53043e7671da95da0e270377d8d8c91d4bfbb9446ef1288530e6179a9e8d90eeb596379bda563f1798c73342ef4d40db",
+      "license": "MIT",
+      "name": "@azure/msal-common",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/msal-common@16.11.2",
+      "version": "16.11.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7e7a8ea4660057e8b4447e16e4707a3b2d4886a199a02767a7b63649af64d7c1654fc68190203b2fc1efd7d8541cb0d42ba9158d43b6f407e7197eb08001f236",
+      "license": "MIT",
+      "name": "@azure/msal-node",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/msal-node@5.4.2",
+      "version": "5.4.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "0289099b8b6e0478a5953f85a4cb7143ad27f0e6f25c16adabb8c3dbf240f5dc5b0c3a242909bc28c86de626c6ccb554f4824320a2b84cf2a0307118327de532",
+      "license": "BlueOak-1.0.0",
+      "name": "@isaacs/cliui",
+      "optional": false,
+      "purl": "pkg:npm/%40isaacs/cliui@9.0.0",
+      "version": "9.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "255503f17dad7c33168dc8cbb38c95c7156b4bcc91e6f9e1dfce860174fd423efd9c1c715d2687150660e45c1e2e64fc1e53d0de48a2ea7a1407e67d44dec3bd",
+      "license": "MIT",
+      "name": "@typespec/ts-http-runtime",
+      "optional": false,
+      "purl": "pkg:npm/%40typespec/ts-http-runtime@0.3.7",
+      "version": "0.3.7"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f2e929c6fe3061ed2258c450535f2387324e1e478629b9f0ef15915f7670d56240e1c10a6c772698b3dd3eb3ed2faae10dcae509937ec4a469bf4f67e2044762",
+      "license": "MIT",
+      "name": "@vscode/test-electron",
+      "optional": false,
+      "purl": "pkg:npm/%40vscode/test-electron@2.5.2",
+      "version": "2.5.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e13a9d52aff22a54131dc40c93f0da991eb7d9babff88243a2649b7b138c79efd40185aa626d171d603ab1c1ac96c0a9cd8fac096121865d27a9d381d175b593",
+      "license": "MIT",
+      "name": "@vscode/vsce",
+      "optional": false,
+      "purl": "pkg:npm/%40vscode/vsce@3.2.2",
+      "version": "3.2.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f08bda46fb45cb35271869777f9fb50a7a2bdcba9a516be16948c060ef18dfd39462539fddc45df9da30b9060ba5970fdeec121be9944708c404e4aae12389d2",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign",
+      "optional": false,
+      "purl": "pkg:npm/%40vscode/vsce-sign@2.0.9",
+      "version": "2.0.9"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c0a90906cbca17e7f419fb14b864f4b525b49192fced0820122a8da8aebff21beab17be9c7c3ac4c47379a713591e8e4879afea94c90ecfb45f236583749a8f1",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-alpine-arm64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-alpine-arm64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "62800696674adfdbca8bd8c0d7c8b8b9f05b77de4ea8627146f1779fa65b0b2ce2c32dcef8980ea4850fc6fe6d8de3ba8107f1dbda818af43c6594d417605ad3",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-alpine-x64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-alpine-x64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e4730768944842ea339bf5d02222620345bdba175b970c25d9934349201e5c63bd62107d307e42e0a2073a6bf28d49cacb8502ba23f8dd52a92315b55563f8b5",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-darwin-arm64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-darwin-arm64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "db91ac51b4c088d7c74ae448b6841a7d7388a719588fe2176f8fea6abad7bbb9266c7f788e59b9b1d59208aaeb444b3cf86b171756fe977381ed5272e63b3293",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-darwin-x64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-darwin-x64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5277447365e5ab81ecb8c3e7c2eef8db4baa71e5e3b38c9be56f04dbf524687041f4e582c0c777fdb45eff578b7b70fc90fa71cdc69e4f25e22b745dcd2ff508",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-linux-arm",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-linux-arm@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "71f6f5a8aee5ca0b4c6b8354976e7cda73fb6a588b62e0c456901b5c93240ead6a13ea25230fdeb3e0bc8f52c9c2f711ab5236c961ad4a7dc4903a7d0eae4574",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-linux-arm64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-linux-arm64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "fe895eae5d40e2c3aa74ffa18ef275b1b42328dd3b6370d59f13b88276e7fda86d42f16b761522d06d55b195c33637ea997c39ec398f8b90129e3ffc3c666100",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-linux-x64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-linux-x64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "8af33f3221886343c93590681ad95104cff10e9c1b765096a26516b8b988c5b8b50b17bfd67a2862b110a1a1c3f288d5460cdd40453332c45bc85e5c2498183a",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-win32-arm64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-win32-arm64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "9a0b61f4abf37bebbc0abb98326847c3a660cb71915f64be11de684a890310ae6f3c4c0618a9e6b97b9af6d98586899e0278602672f80c29dadd388db86ac14d",
+      "license": "SEE LICENSE IN LICENSE.txt",
+      "name": "@vscode/vsce-sign-win32-x64",
+      "optional": true,
+      "purl": "pkg:npm/%40vscode/vsce-sign-win32-x64@2.0.6",
+      "version": "2.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "32703e613f1fc1f24f801c779bad0c36a6a49b7d173a4c88a07d72ea1b9342f0b43f0646ee48bc35a70b05cacf6cda28f2f119cbb269ba4efe8cc3be094a2f4d",
+      "license": "MIT",
+      "name": "agent-base",
+      "optional": false,
+      "purl": "pkg:npm/agent-base@7.1.4",
+      "version": "7.1.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "06add2992a721476968cf93c21ff7273ab2f33c739e9d079040b56e106f0e631d3c305d77132e844c9290c9a7a54bd17ce559a0874d7ae415444c6260f4b0baa",
+      "license": "MIT",
+      "name": "ansi-regex",
+      "optional": false,
+      "purl": "pkg:npm/ansi-regex@6.2.2",
+      "version": "6.2.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "553d1923a91945d4e1f18c89c3748c6d89bfbbe36a7ec03112958ed0f7fdb2af3f7bde16c713a93cac7d151d459720ad3950cd390fbc9ed96a17189173eaf9a8",
+      "license": "MIT",
+      "name": "ansi-styles",
+      "optional": false,
+      "purl": "pkg:npm/ansi-styles@3.2.1",
+      "version": "3.2.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f3ef56a9e6db173a57f4e47e59ae8edbd6ac22881e44ccdc1ad00835da4c1c7c80835d1fd3969215505b704a867ff3d7c35123019faadbf6c4060dc3beeacadd",
+      "license": "Python-2.0",
+      "name": "argparse",
+      "optional": false,
+      "purl": "pkg:npm/argparse@2.0.1",
+      "version": "2.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "39e8bd387e2d461d18a94dc6c615fbf5d33f9b0560bdb64969235a464f9bb21923d12e5c7c772061a92b7818eb1f06ad5ca6f3f88a087582f1aca8a6d8c8d6d1",
+      "license": "MIT",
+      "name": "asynckit",
+      "optional": false,
+      "purl": "pkg:npm/asynckit@0.4.0",
+      "version": "0.4.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "479785b241af3a6dd4fc6cde02ec51914b0097486b0301a05a7eb301dd8aad99ab12159956a2dec3838eba96d095752ea23533a46b6aeb64a6761274e8df3ca2",
+      "license": "MIT",
+      "name": "azure-devops-node-api",
+      "optional": false,
+      "purl": "pkg:npm/azure-devops-node-api@12.5.0",
+      "version": "12.5.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "de849e50ed13315ebb84dd4099b5ec2b8c9aa94eed8e21e56f144364ea47d0a5bdf82797e1b440697d009f1b74b71d8cae94695b041a3f02252121098585393f",
+      "license": "MIT",
+      "name": "balanced-match",
+      "optional": false,
+      "purl": "pkg:npm/balanced-match@1.0.2",
+      "version": "1.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "00aa5a6251e7f2de1255b3870b2f9be7e28a82f478bebb03f2f6efadb890269b3b7ca0d3923903af2ea38b4ad42630b49336cd78f2f0cf1abc8b2a68e35a9e58",
+      "license": "MIT",
+      "name": "base64-js",
+      "optional": true,
+      "purl": "pkg:npm/base64-js@1.5.1",
+      "version": "1.5.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "d56d3b70cf604ba0dc2e97ab65f1528fe6d62ed68f1923875a13e21b35e6bd525b44b746f36b07fca9fc12d5b556a595039e0029fda1e64e416e721bc05de1eb",
+      "license": "MIT",
+      "name": "bl",
+      "optional": true,
+      "purl": "pkg:npm/bl@4.1.0",
+      "version": "4.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "25939203b328f6c34607cf948d283374bb68916024cb5cdbced3375912c26d9ef4ff771300d99098e751ef2da0f89d1ed965f2c32d724b8ebcb58f88aeea84c3",
+      "license": "ISC",
+      "name": "boolbase",
+      "optional": false,
+      "purl": "pkg:npm/boolbase@1.0.0",
+      "version": "1.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "11d7a9fd7f5f1aa54d9b328156c0d820eb43fb3d6db9ecd5ef42c18dd0acb7d4eabbbea5b27bd1899ea84e27359fefc12305fa4031803bde0f3783764800efb7",
+      "license": "MIT",
+      "name": "brace-expansion",
+      "optional": false,
+      "purl": "pkg:npm/brace-expansion@1.1.18",
+      "version": "1.1.18"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "10773220f050e0148696f8c1d7a9392a0009dbb088b0763fd8906609145ea38f32f6b43731a533597dca56505ae14eccc97d361dd563d0aec2dd6681de3bbb15",
+      "license": "MIT",
+      "name": "buffer",
+      "optional": true,
+      "purl": "pkg:npm/buffer@5.7.1",
+      "version": "5.7.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "54ef47b7ffa9dd237b48a5aa72b804ce319b4522584f1f90d694d00b4c2b5aa1f1d2fa49ada43a1ad1f1f2dbdc835ae52b56f2854e6071cc603a08fb0744c391",
+      "license": "MIT",
+      "name": "buffer-crc32",
+      "optional": false,
+      "purl": "pkg:npm/buffer-crc32@0.2.13",
+      "version": "0.2.13"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "cd1a54883c1dff193a003a8f3004c6f2f73d54fae4724ed3d3b388c748278e62409c79d35573501b7bdfbd636e899224c2ef4aaca740d6224a7ec7d357113a34",
+      "license": "BSD-3-Clause",
+      "name": "buffer-equal-constant-time",
+      "optional": false,
+      "purl": "pkg:npm/buffer-equal-constant-time@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b63c0ce5ec4c83a046448fa43664e7b4db2f7594b55fc045612ead9c9da1747d2457133afde559db1cbe16a4ad496bd89ad7c53032c8c6eae8ac7c0329f0f3e5",
+      "license": "MIT",
+      "name": "bundle-name",
+      "optional": false,
+      "purl": "pkg:npm/bundle-name@4.1.0",
+      "version": "4.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "4a9d5a6e52748af0e44b38dc68977112e9cde7f5ef92c149dac30115fabac74af285057fd9bfcac057b6d5c329987b4f3928a3f0af7dff049fa04b9339b9ae31",
+      "license": "MIT",
+      "name": "call-bind-apply-helpers",
+      "optional": false,
+      "purl": "pkg:npm/call-bind-apply-helpers@1.0.2",
+      "version": "1.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "fb2b3df7b53dea9a382b1fc0069042aa103d12ec49690583420ef6f791f8841a61bf72198346e804abb0629b78617a7a319e4099942753fb72313951a5a49e8e",
+      "license": "MIT",
+      "name": "call-bound",
+      "optional": false,
+      "purl": "pkg:npm/call-bound@1.0.4",
+      "version": "1.0.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "32d8be7fd96924d730178b5657cfcead34ed1758198be7fc16a97201da2eada95c156150585dbe3600874a18e409bf881412eaf5bb99c04d71724414e29792b9",
+      "license": "MIT",
+      "name": "chalk",
+      "optional": false,
+      "purl": "pkg:npm/chalk@2.4.2",
+      "version": "2.4.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "583af26dcfe0285a53610bad2882ba52f7dcbb18a32197cc7d76989bc34cb0f431498bdffb5ddf5d4278af3b4619b25c050fc6179e60beb67405cd1b8ff9aabe",
+      "license": "MIT",
+      "name": "cheerio",
+      "optional": false,
+      "purl": "pkg:npm/cheerio@1.2.0",
+      "version": "1.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f6ff641b42efceb95cba782d9c9b6918dc58f9fcc40902a12b8106257daf0727a388c5fce0c14d430e14c4f265ddb15b4ccc3e0dfb37ed7688902c1365f2e1e2",
+      "license": "BSD-2-Clause",
+      "name": "cheerio-select",
+      "optional": false,
+      "purl": "pkg:npm/cheerio-select@2.1.0",
+      "version": "2.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "8c9d1bab36b296626d567360cd37923acf033dabe96d8804aff6f460bf3fd863b7c4912122716684a3149c42508d9ba62bb297185854cbcf4faec25695a90156",
+      "license": "ISC",
+      "name": "chownr",
+      "optional": true,
+      "purl": "pkg:npm/chownr@1.1.4",
+      "version": "1.1.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "6828f83b9c0acacce33260d3e2d663f77931cb274dfcae733d64827baff4015fc0035a6a7b9641230d1ad997cf415ee52f9ff26f91ec52b789e94140175b4443",
+      "license": "MIT",
+      "name": "cli-cursor",
+      "optional": false,
+      "purl": "pkg:npm/cli-cursor@5.0.0",
+      "version": "5.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "cb0a95fb9326c8be04ef26d780acace03ba065b5f4142e8b9f0ae18eeca42239caf64f0e41a710edac462a78c35d63619ecd31a2dddb648e61e791fcca8f5c26",
+      "license": "MIT",
+      "name": "cli-spinners",
+      "optional": false,
+      "purl": "pkg:npm/cli-spinners@2.9.2",
+      "version": "2.9.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "81fac757a64f92ab84c6f321f483a42ac07334393ab03b99e83741194064bc59d30aa0b1ce9baae3c4724a03f40276aa424c36cf29ce163f72972e93d50d86e5",
+      "license": "MIT",
+      "name": "cockatiel",
+      "optional": false,
+      "purl": "pkg:npm/cockatiel@3.2.1",
+      "version": "3.2.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "41f014b5dfaf15d02d150702f020b262dd5f616c52a8088ad9c483eb30c1f0dddca6c10102f471a7dcce1a0e86fd21c7258013f3cfdacff22e0c600bb0d55b1a",
+      "license": "MIT",
+      "name": "color-convert",
+      "optional": false,
+      "purl": "pkg:npm/color-convert@1.9.3",
+      "version": "1.9.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ef67d27a784cc361d931354778203d2829a91086f35a242c8cdf811dc05b4bdbebd66b6dfaf2633dd92c20135498a016f131540cf24ae52514dd0844f4d1170f",
+      "license": "MIT",
+      "name": "color-name",
+      "optional": false,
+      "purl": "pkg:npm/color-name@1.1.3",
+      "version": "1.1.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "1503783117ee25e1dfedc05b04c2455e12920eafb690002b06599106f72f144e410751d9297b5214048385d973f73398c3187c943767be630e7bffb971da0476",
+      "license": "MIT",
+      "name": "combined-stream",
+      "optional": false,
+      "purl": "pkg:npm/combined-stream@1.0.8",
+      "version": "1.0.8"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "570f2a1caddb64cf72fcfd74bb75626fca3f0dd92f0363ad3ed66f0fcef540a8f2ef85a3d5648a1482cc3d13d27544b1e5114ad5aae527312d0383e41609dbb8",
+      "license": "MIT",
+      "name": "commander",
+      "optional": false,
+      "purl": "pkg:npm/commander@12.1.0",
+      "version": "12.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "fd2aefe1db30c903417e8846a73f68e986f71b3dd2ad40ea047e6b4ee84647b6a1b656d82a7571c366c214c4658da03b1171da5d9f30b07768745bdb9212a6aa",
+      "license": "MIT",
+      "name": "concat-map",
+      "optional": false,
+      "purl": "pkg:npm/concat-map@0.0.1",
+      "version": "0.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "65006f8b50dca49e060ea6a78ee719d878f7c043b9a590d2f3d0566e472bbddc64b09a2bc140c365a997f65745929f5ac369660432e090e6c40380d6349f4561",
+      "license": "MIT",
+      "name": "core-util-is",
+      "optional": false,
+      "purl": "pkg:npm/core-util-is@1.0.3",
+      "version": "1.0.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b95d903963f69d6ceccb668ca7c69189b862f5d9731791e0879487681f4e893184c834e2249cb1d2ecb9d505ddc966ed00736e6b85c9cd429c6b73b3294777bc",
+      "license": "MIT",
+      "name": "cross-spawn",
+      "optional": false,
+      "purl": "pkg:npm/cross-spawn@7.0.6",
+      "version": "7.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "4e2cd3cd475d1bfc582c0dcd5e87453347d26cd8b35e338a86a890430be196ca5a759a249f5283cb4359152d30b84b9b218015e7f735fe502bd1369a157117cf",
+      "license": "BSD-2-Clause",
+      "name": "css-select",
+      "optional": false,
+      "purl": "pkg:npm/css-select@5.2.2",
+      "version": "5.2.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "bbf3b7bf06e9b7384cb372f57d013cd9948b1d041fb68e60c99cf0b5e54813279a63915ced1e1d6a917f06f46849815ea9f064e26d15d5569fab93e3bf6e70bc",
+      "license": "BSD-2-Clause",
+      "name": "css-what",
+      "optional": false,
+      "purl": "pkg:npm/css-what@6.2.2",
+      "version": "6.2.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "446c305a7c10be455f6af295b76d8518bc3ec5849dcc04709b4aeee83853540dee994e6165cdbc57790ee2cb6062bcab4e52e9baf808f468a28e5b408cd6dca8",
+      "license": "MIT",
+      "name": "debug",
+      "optional": false,
+      "purl": "pkg:npm/debug@4.4.3",
+      "version": "4.4.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "696df9c9933a05bff8a099599dc307d8b0a866d2574d1c444b5eef137868462a305369161da24a1644810e70d1f9c9bd27ef5085799113221fbf4a638bd7a309",
+      "license": "MIT",
+      "name": "decompress-response",
+      "optional": true,
+      "purl": "pkg:npm/decompress-response@6.0.0",
+      "version": "6.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "2ce1f120e68f61d1e5251b4241f0c8559b5fc3fb9f33cfab563eb8f51207cdc9bfbc6c1045716de8e3ea2055ac9b65c432b34812d591eb8b18d4b10a0f6bc038",
+      "license": "MIT",
+      "name": "deep-extend",
+      "optional": true,
+      "purl": "pkg:npm/deep-extend@0.6.0",
+      "version": "0.6.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "1fd2cc2ebe73c086d2c6b9af8a41ae23fe4a1a167c136cc7decb643203392e93960eeb463362596a3e3ad147677f56bef78eb373b60182ba845b06e4ef31ef1b",
+      "license": "MIT",
+      "name": "default-browser",
+      "optional": false,
+      "purl": "pkg:npm/default-browser@5.5.0",
+      "version": "5.5.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c75542c5d5f8b7ef3055f775b28ffdc3ebd0e2fc7b94a776429e6d0d1bad12bc2647ce4e8267d7ed194b44c59a7d1318ee16c489721bb9d36b8ce00f6bf84bf1",
+      "license": "MIT",
+      "name": "default-browser-id",
+      "optional": false,
+      "purl": "pkg:npm/default-browser-id@5.0.1",
+      "version": "5.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "37e31e5d8a2aaf7a4e827f317f244f44437b8076a42d88e1b07856193ddf58088be08900b74883c35e108a2126d9b137d1ce575f9ab416d000dc22b97fdfc152",
+      "license": "MIT",
+      "name": "define-lazy-prop",
+      "optional": false,
+      "purl": "pkg:npm/define-lazy-prop@3.0.0",
+      "version": "3.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "672483ecd7fdd5a2c1d11c4be0a1ab28705797b11db350c098475ca156b05e72c3ed20e1a4d82db88236680920edaed04b8d63c4f499d7ba7855d1a730793731",
+      "license": "MIT",
+      "name": "delayed-stream",
+      "optional": false,
+      "purl": "pkg:npm/delayed-stream@1.0.0",
+      "version": "1.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "06d8f604e38ef37a375b21f9f5ef0c817b3111055c6ab9143a9118aee6c1d2eaf09cdd74c90dfae2bb22072535d67665a966199b4e62fe87fb8a8e26ce2841b5",
+      "license": "Apache-2.0",
+      "name": "detect-libc",
+      "optional": true,
+      "purl": "pkg:npm/detect-libc@2.1.2",
+      "version": "2.1.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c08900af28aab7f9d5e4440aa90a68dd24e848e57d2740e76c9ab02bb5affd3adcf76cc801867816532ef893c55b50df185b7cd594c21a00c469b7df5de2f226",
+      "license": "MIT",
+      "name": "dom-serializer",
+      "optional": false,
+      "purl": "pkg:npm/dom-serializer@2.0.0",
+      "version": "2.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "38b113063eb0d0eb1a801c1d5e73dd37472731f17da2937af5ca3eed9adb7cf1ab7693d5341523d36b298ba07537bc0284b4223e7e02487ff326f5f0e7a8261f",
+      "license": "BSD-2-Clause",
+      "name": "domelementtype",
+      "optional": false,
+      "purl": "pkg:npm/domelementtype@2.3.0",
+      "version": "2.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "720c25bffd621508859d4f7a5d78113a1f314de7adb272620ec4dced36022c577dfbf58d908a8f4f188cffca5277c548ae15c64dfd4dcb5ab586ab95a83241e7",
+      "license": "BSD-2-Clause",
+      "name": "domhandler",
+      "optional": false,
+      "purl": "pkg:npm/domhandler@5.0.3",
+      "version": "5.0.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ea464ac946a3943baa9472955f5c3b832b258fd30f217cc8162cffac6bb7e6e0b5c0c8be90c850c06865e25b7dba70bd55bf4836763d677fd9037f8584048b6b",
+      "license": "BSD-2-Clause",
+      "name": "domutils",
+      "optional": false,
+      "purl": "pkg:npm/domutils@3.2.2",
+      "version": "3.2.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "28837f9c3241411717c3430b561644f62407986ebca80548060f42aa65188e64088608a3f54e4c16faea9142f915bb72cb366e39e3add3375e45ee1463b72df8",
+      "license": "MIT",
+      "name": "dunder-proto",
+      "optional": false,
+      "purl": "pkg:npm/dunder-proto@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "9da825dd162b6cdbfa91091e248a6de8d259cbcb702c1ff6bedcfac8df59e2f44a1cde3f41924811baa88402d283029d9e4b2e63793901d769e6583cb15a1571",
+      "license": "Apache-2.0",
+      "name": "ecdsa-sig-formatter",
+      "optional": false,
+      "purl": "pkg:npm/ecdsa-sig-formatter@1.0.11",
+      "version": "1.0.11"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b68508f38612e589b15b6d7d7ab9e2583d022153a8e3ac46282a2578d41180ecc3a2b8018b5bf80fbd7f385ce00fd18ed9418a22fd42dd2a7c0c09f4fa3e70ec",
+      "license": "MIT",
+      "name": "emoji-regex",
+      "optional": false,
+      "purl": "pkg:npm/emoji-regex@10.6.0",
+      "version": "10.6.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e60beadb44fabdfa5e915b6aad842c482159d70120e7ec16d3f41a64c5a416be81a83dcd7cab34acb0b1e2bad59525897996f934126054bb302bfc3631653e1b",
+      "license": "MIT",
+      "name": "encoding-sniffer",
+      "optional": false,
+      "purl": "pkg:npm/encoding-sniffer@0.2.1",
+      "version": "0.2.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a2810673a1cfdbac57abf37e18218e4f424a08b0c6aead9b41466b43b832ac989900d27ff180d3c53a5005718c9fe59b2105cd569c96ca69bb2985480909f23a",
+      "license": "MIT",
+      "name": "end-of-stream",
+      "optional": true,
+      "purl": "pkg:npm/end-of-stream@1.4.5",
+      "version": "1.4.5"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5748631f87463e1f40a39a74328458e8156ab700a3873eaf2392d3f00279e47fb883dff8bdb1f1d48e787d2d17b9c94b8431c0acf40288c8c3c6368bf1f3f187",
+      "license": "BSD-2-Clause",
+      "name": "entities",
+      "optional": false,
+      "purl": "pkg:npm/entities@4.5.0",
+      "version": "4.5.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7b79d17e07d4678acd18bdb7da05205f4e90372c9ecf4e0a76316b17e2d34683979ab3a014a0e0e0109db235bc1274faf5ea9d606991a49c223d560dac2696de",
+      "license": "MIT",
+      "name": "es-define-property",
+      "optional": false,
+      "purl": "pkg:npm/es-define-property@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "65fe47d8ac6ddb18d3bdb26f3f66562c4202c40ea3fa1026333225ca9cb8c5c060d6f2959f1f3d5b2d066d2fa47f9730095145cdd0858765d20853542d2e9cb3",
+      "license": "MIT",
+      "name": "es-errors",
+      "optional": false,
+      "purl": "pkg:npm/es-errors@1.3.0",
+      "version": "1.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "1d6701a0de8d8a57aab52c9d2b616a1db4bf2e80ddda9aab9d01cbc89cc18f890ea7f932d8c58c37af78c4e7e42bcfd29d4b16d831fb11fc9597274a0ac9b567",
+      "license": "MIT",
+      "name": "es-object-atoms",
+      "optional": false,
+      "purl": "pkg:npm/es-object-atoms@1.1.2",
+      "version": "1.1.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "8fabd6cdfac655fc97c607be3b4c79b21e9cbf10288346bfe1175dd8adfacc2315e5e27effeb4e0278113bc70e0cc3566d545d5659866502f6612df247c6c850",
+      "license": "MIT",
+      "name": "es-set-tostringtag",
+      "optional": false,
+      "purl": "pkg:npm/es-set-tostringtag@2.1.0",
+      "version": "2.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "bdb468ac1e455105af95ad7a53c47faa06852326b6a86cf00eb366099b982ab6dd494306e88d5908641179f911561b8e9081959deec1437e4349fa35aaf26a16",
+      "license": "MIT",
+      "name": "escape-string-regexp",
+      "optional": false,
+      "purl": "pkg:npm/escape-string-regexp@1.0.5",
+      "version": "1.0.5"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5d87ee28cbe3e0edf97ffa4e5cb39b9dd211bf243effee8084e0e1f8e2968fd4bde3df291c79ff20cb331fe82dd1f04245630d7e4d594a9e71dc089f9a7236be",
+      "license": "(MIT OR WTFPL)",
+      "name": "expand-template",
+      "optional": true,
+      "purl": "pkg:npm/expand-template@2.0.3",
+      "version": "2.0.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "704d6ab01fd5c32428cd9faad5d1b147c2c160d65ea1f84475434648c6d00f71b0da50335fd65bdee214e846dcfc59b28e8f405967e79f4014087aad7afb3ff2",
+      "license": "MIT",
+      "name": "fd-slicer",
+      "optional": false,
+      "purl": "pkg:npm/fd-slicer@1.1.0",
+      "version": "1.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "8085e32aab45b96120cc544903d58241e4892d90e380950e302333c6dbc5abfdfb2a88ccd41146b9faac0b2d2be2a4909982ec65831ec91ab321638cba9d37b3",
+      "license": "ISC",
+      "name": "foreground-child",
+      "optional": false,
+      "purl": "pkg:npm/foreground-child@3.3.1",
+      "version": "3.3.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "bca6ad021e129557e06eff98b66862463844309b18a6c1b5636acc42d47e49549bcadb120f5606cc321cac026674579cf3cbbff95a069b19e5fbcd202f5b5109",
+      "license": "MIT",
+      "name": "form-data",
+      "optional": false,
+      "purl": "pkg:npm/form-data@4.0.6",
+      "version": "4.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "cba380c284887fb1728cc22ff78bbe6f9add85e6448f347adc64f26499b9aa1e018bed988302c2708fdf3c56642f93d28b13ade9934a9bec3e1dfa7f05c8b0a3",
+      "license": "MIT",
+      "name": "fs-constants",
+      "optional": true,
+      "purl": "pkg:npm/fs-constants@1.0.0",
+      "version": "1.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ed71cdc47eea5fdc46e66230c6486e993a31fcc21135c3a00ebc56b0cb76a40af6dd61e9e8cad194dec50521690a9afea153b417be38894811f369c931f1b648",
+      "license": "MIT",
+      "name": "function-bind",
+      "optional": false,
+      "purl": "pkg:npm/function-bind@1.1.2",
+      "version": "1.1.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "4116ef0c86f1e9892551ee91c5e4de95e311d32bf77181fa3ec3d91dc9d59fbc6fef33b504737caf45c44eef27e987b743e6a1b526ab7375a0b4d5a67a12017c",
+      "license": "MIT",
+      "name": "get-east-asian-width",
+      "optional": false,
+      "purl": "pkg:npm/get-east-asian-width@1.6.0",
+      "version": "1.6.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f5f4a349aa2cfdf448548a7ec5226513a95fc21112ecb36d29a08121a987b23af69dad418800493e8d263a38f3f062435116ab9823c6a9a89583999f8dbf7c09",
+      "license": "MIT",
+      "name": "get-intrinsic",
+      "optional": false,
+      "purl": "pkg:npm/get-intrinsic@1.3.0",
+      "version": "1.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b1349f063a17069f3d26f20a21e7eac3b53608279bb1cef892263a6b0886a202ada1219b823604fc6ffe97db05dcc5853cd73d21ca0e0b83837ca1dfc459a9d2",
+      "license": "MIT",
+      "name": "get-proto",
+      "optional": false,
+      "purl": "pkg:npm/get-proto@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "4b21f2dd3d6fd8d5179f6f4eb1677198ae91c070febe48f7bfc7a7f00381675c0143f842010e5b0104c3d36916e16f6d529ff7421e89f2bf44be7b62c8298e3b",
+      "license": "MIT",
+      "name": "github-from-package",
+      "optional": true,
+      "purl": "pkg:npm/github-from-package@0.0.0",
+      "version": "0.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "bee37029268a8aa9bb8344c7501bb6c7b7244acdd724b5c4fb6b2c2fbfcc7d318f2cb72b250ff852ad428cf4ed3b9702222471aaf37a4f0cb5a8ec212f45e373",
+      "license": "BlueOak-1.0.0",
+      "name": "glob",
+      "optional": false,
+      "purl": "pkg:npm/glob@11.1.0",
+      "version": "11.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "04bae011c453c17da8ea01b118e08dc8cbc64a9df96287ee633c3d87520c4d198aaadb40659554ebb6dd6fd3ebdaf50703cfa3de2dad25f8cee82ebee26c864c",
+      "license": "MIT",
+      "name": "glob/node_modules/balanced-match",
+      "optional": false,
+      "purl": "pkg:npm/glob/node_modules/balanced-match@4.0.4",
+      "version": "4.0.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "49c43822ebc8105d533253fb66dfaf8c9ffff7394f6f64837315b13376e4f2ceade8619d27b28ed5d09c4e274e3c929e3d6df42c4ff6713ef00b23e1a3dfd6c6",
+      "license": "MIT",
+      "name": "glob/node_modules/brace-expansion",
+      "optional": false,
+      "purl": "pkg:npm/glob/node_modules/brace-expansion@5.0.9",
+      "version": "5.0.9"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "be92d012cf952c2af59d4d015d2d3b99a628170943007d209e042ebadb71230bad0c510c1ead9b957fbcbe98310dd2b72753f08c22627a9efb3a2b536782e5d4",
+      "license": "BlueOak-1.0.0",
+      "name": "glob/node_modules/minimatch",
+      "optional": false,
+      "purl": "pkg:npm/glob/node_modules/minimatch@10.2.6",
+      "version": "10.2.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "65429187afe4505a0089302d4d83d9277870f70371c7e04804e8a39e51bd3e7ac9b027128ecd70cb20fabc9a5a62d827cc3aca6114aa7f738ee917daf77c6c46",
+      "license": "MIT",
+      "name": "gopd",
+      "optional": false,
+      "purl": "pkg:npm/gopd@1.2.0",
+      "version": "1.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b0a25fd7e71e401af848c92f427043343b5fe135e95615466ad7aed2df75f1b977d059db1369b8bcd2d7f9559efdda6395bf87ba0198cd6eee4171fdf073c463",
+      "license": "MIT",
+      "name": "has-flag",
+      "optional": false,
+      "purl": "pkg:npm/has-flag@3.0.0",
+      "version": "3.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "d5c0cd77027625aa2199bdec8383a629a301c2e0b8f2c6278b91d4c360efb02f0b8c64cb2bd87e79bd57e91cae3877b8853d142c25baf22a26863528294aa53d",
+      "license": "MIT",
+      "name": "has-symbols",
+      "optional": false,
+      "purl": "pkg:npm/has-symbols@1.1.0",
+      "version": "1.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "36a00307c5633c52ccd95d15bc751ec30c2cc3465605a21d828fa2787b4ade16ac2f3e2a78246361ca9f07a010ac182044aa69285f0be76fd5a9d56c3b8ec397",
+      "license": "MIT",
+      "name": "has-tostringtag",
+      "optional": false,
+      "purl": "pkg:npm/has-tostringtag@1.0.2",
+      "version": "1.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "4f651b7db044177db089ea5722c3254d6f7e743602eb0321fedfef600e2db8e30aa96cff9f7bebd4d152c508b23fece4da65eca0c03f8bfeea57a2cabadd6dd4",
+      "license": "MIT",
+      "name": "hasown",
+      "optional": false,
+      "purl": "pkg:npm/hasown@2.0.4",
+      "version": "2.0.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "9320ae10e5a326a66e0db447ccbf15f77373421c0807bd681564b2cd5a3e28f648fa99d03cfc6e71d92b399be42d19eb7f9511b1033e209d3d0f0dbd71100b20",
+      "license": "ISC",
+      "name": "hosted-git-info",
+      "optional": false,
+      "purl": "pkg:npm/hosted-git-info@4.1.0",
+      "version": "4.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "55366433d196440b44a6f7a1ecc485e928e3ae935534d5497c5ba9ef14d8dd4a45b66ebb7e8cbd1c35579de2ed155b78a4ccf9919b6035cbc29e23456f586511",
+      "license": "MIT",
+      "name": "htmlparser2",
+      "optional": false,
+      "purl": "pkg:npm/htmlparser2@10.1.0",
+      "version": "10.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "4d6ae02ce1544131fdf78614ca5d724f8bb26af6399cd0799ae7dff91b566aa3550802b8d3c6f96679db34050458b4c2a6e9bdc3a6ab4fbd22d57750e1478e3c",
+      "license": "BSD-2-Clause",
+      "name": "htmlparser2/node_modules/entities",
+      "optional": false,
+      "purl": "pkg:npm/htmlparser2/node_modules/entities@7.0.1",
+      "version": "7.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "4f58240226180d6631dd5e419b2bbb1dc7dcbcbee652b4d688ceb239f6b73c8a6156227f8053dbbe2750faf7aa48e1dc8bf3f105c0da6de50d0b3a4e3832598a",
+      "license": "MIT",
+      "name": "http-proxy-agent",
+      "optional": false,
+      "purl": "pkg:npm/http-proxy-agent@7.0.2",
+      "version": "7.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "bcaf4fe7f8947dd97de4023e255c94b88715b5de287efb6b3abdc736d336cb10bd6e731b11da77c74d4e8503678dbf082588b7f159531379815f071fbf2c2e4b",
+      "license": "MIT",
+      "name": "https-proxy-agent",
+      "optional": false,
+      "purl": "pkg:npm/https-proxy-agent@7.0.6",
+      "version": "7.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e1f0a4efdc2c84c773329dab1f4eaa5ab244e22a25a8b842507f8e8ae22053ef91074fbde0d9432fcd5ab4eec65f9e6e50ab9ea34b711cdb6f13223a0fb59d33",
+      "license": "MIT",
+      "name": "iconv-lite",
+      "optional": false,
+      "purl": "pkg:npm/iconv-lite@0.6.3",
+      "version": "0.6.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "75ccaa843bd7d42e3a95765c56a0a92be16d31141574830debf0dfe63b36ce8b94b2a1bb23ab05c62b480beeca60adbd29d5ce2c776ef732f8b059e85509ea68",
+      "license": "BSD-3-Clause",
+      "name": "ieee754",
+      "optional": true,
+      "purl": "pkg:npm/ieee754@1.2.1",
+      "version": "1.2.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5d7385b72a838cd0c043155f631b85ee0f4897f21b5a69a5420d8c60a387f04c484f5aa0eb1738cf24b71da10401382cd5bb5fcf1ab5e5c894898ee08d25d119",
+      "license": "MIT",
+      "name": "immediate",
+      "optional": false,
+      "purl": "pkg:npm/immediate@3.0.6",
+      "version": "3.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "93fbc6697e3f6256b75b3c8c0af4d039761e207bea38ab67a8176ecd31e9ce9419cc0b2428c859d8af849c189233dcc64a820578ca572b16b8758799210a9ec1",
+      "license": "ISC",
+      "name": "inherits",
+      "optional": false,
+      "purl": "pkg:npm/inherits@2.0.4",
+      "version": "2.0.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "255ff2ba0576bb35b988c4528990320ed41dfa7c6d5278de2edd1a70d770f7c90a2ebbee455c81f34b6c444384ef2bc65606a5859e913570a61079142812b17b",
+      "license": "ISC",
+      "name": "ini",
+      "optional": true,
+      "purl": "pkg:npm/ini@1.3.8",
+      "version": "1.3.8"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7a58dc8040e5127b3fec05c5a2c0792bfda708ce0fec540f90673f0d62f2e6b985116bd96b21ab8a4d5df7f4086399c9e1ff58b15bc1900ea42691e7f6b21275",
+      "license": "MIT",
+      "name": "is-docker",
+      "optional": false,
+      "purl": "pkg:npm/is-docker@3.0.0",
+      "version": "3.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "28860b08226085f1d9c6a8d8044eeb132d0e06e4dde710874bbb47560bc22e4c7b4ad2286b1c0d5b784200b80452315f79193e306fd0c66a7fbed113105ded44",
+      "license": "MIT",
+      "name": "is-inside-container",
+      "optional": false,
+      "purl": "pkg:npm/is-inside-container@1.0.0",
+      "version": "1.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a8fd6fa3341123e04c38f723173ae35ee42f75a936a47354319a1e1b67916e24aacaf6c47ffc10b44393397d60ba4e84deddfa4646aa892b7c03fe981253712d",
+      "license": "MIT",
+      "name": "is-interactive",
+      "optional": false,
+      "purl": "pkg:npm/is-interactive@2.0.0",
+      "version": "2.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "984d341a7cdae44101dc3b341df3329656736c1ae62ce5f7bdf5a88fd03d3c49d37eb6ad43f05c6893ae3219e48635ef6f6f85918dd5b87aad006a533e682515",
+      "license": "MIT",
+      "name": "is-unicode-supported",
+      "optional": false,
+      "purl": "pkg:npm/is-unicode-supported@2.1.0",
+      "version": "2.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7baaef7540a240202eba666c971449591fc3a2ae15a4f47cda4a9c96f712d1e7e0b78df44a5188934e6f742379f3e56bce0b4871f34e0e3a335627a5c9c0f84b",
+      "license": "MIT",
+      "name": "is-wsl",
+      "optional": false,
+      "purl": "pkg:npm/is-wsl@3.1.1",
+      "version": "3.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "54b82121634ce842d0ce8ef3c26720d0d99357258a623bc878cf37ca3a74c110d39949eb33aefc7d06dc281a3a9f6089105d2cce81bfff2b60f932a56bcf402d",
+      "license": "MIT",
+      "name": "isarray",
+      "optional": false,
+      "purl": "pkg:npm/isarray@1.0.0",
+      "version": "1.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "447c4c2e9f659ca1c61d19e0f5016144231b600715a67ebdb2648672addfdfac638155564e18f8aaa2db4cb96aed2b23f01f9f210d44b8210623694ab3241e23",
+      "license": "ISC",
+      "name": "isexe",
+      "optional": false,
+      "purl": "pkg:npm/isexe@2.0.0",
+      "version": "2.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ca4915470ad8bc59b59dbd8025f28a60faf47a617a2225c3614685c78667f59b881fb32bcc4677b03e5196a197351a47b6f5072723a70841713a5343b46a3bc2",
+      "license": "BlueOak-1.0.0",
+      "name": "jackspeak",
+      "optional": false,
+      "purl": "pkg:npm/jackspeak@4.2.3",
+      "version": "4.2.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "1d4807eb92b27a3ad414fbc714f6ea398d2bb058a9dc1a39c1be2782f762d44a426165100c2e55f98ee6670b3e0cb92be0cfffcd02686a7bb548ffbcec3bf5a1",
+      "license": "MIT",
+      "name": "jsonc-parser",
+      "optional": false,
+      "purl": "pkg:npm/jsonc-parser@3.3.1",
+      "version": "3.3.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "313ff13f40abb9b15134b34abf12760587f2e776649befb96d7f5db6e3dba80790a5355ed0c4131616a8f3e0a9fff126269db8e31b7a0ebc3f1951060948f8d2",
+      "license": "MIT",
+      "name": "jsonwebtoken",
+      "optional": false,
+      "purl": "pkg:npm/jsonwebtoken@9.0.3",
+      "version": "9.0.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c570ef79cc93a462eba85aef92b512a31c5f248e401fb53ccf1c6d55c969b14b4c0aae09436f742d8f005b973b1a09ebfd8fe82be6d031ba8adaa9ad937a4de2",
+      "license": "(MIT OR GPL-3.0-or-later)",
+      "name": "jszip",
+      "optional": false,
+      "purl": "pkg:npm/jszip@3.10.1",
+      "version": "3.10.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f29d00524e173838087b04a2d25f04a63b3e1159d688aecda03204194d07844efe67263c0f520c63ba1dbb9951ac55c683bd4bd79286f10acf9ae9b8e514ed74",
+      "license": "MIT",
+      "name": "jszip/node_modules/readable-stream",
+      "optional": false,
+      "purl": "pkg:npm/jszip/node_modules/readable-stream@2.3.8",
+      "version": "2.3.8"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "19dd94641243917958ec66c9c5fb04f3f9ef2a45045351b7f1cd6c88de903fa6bd3d3f4c98707c1a7a6c71298c252a05f0b388aedf2e77fc0fb688f2b381bafa",
+      "license": "MIT",
+      "name": "jszip/node_modules/safe-buffer",
+      "optional": false,
+      "purl": "pkg:npm/jszip/node_modules/safe-buffer@5.1.2",
+      "version": "5.1.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "9ff4a19ef0e2e851db6d57ef8aba3e5a88e2173bfeb3c30f30705ccd578f7d4a4324bc282d3d21b759786300426e2f29240bde104767907c8fc933ff9b345fc2",
+      "license": "MIT",
+      "name": "jszip/node_modules/string_decoder",
+      "optional": false,
+      "purl": "pkg:npm/jszip/node_modules/string_decoder@1.1.1",
+      "version": "1.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "851174e1fa8920ff006db92ae4d28637405baf7271950faa859b9f5d5af40efba32b2f776426d764c1c32f810eb687526c25b13aa47c312d6d5c0e61c2a0970e",
+      "license": "MIT",
+      "name": "jwa",
+      "optional": false,
+      "purl": "pkg:npm/jwa@2.0.1",
+      "version": "2.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "10a23f33fcaa3e7706514878e31cf43f14a275716bffeaf4a40ef4fa0218863bfe7adef2c4cfacdbd63e5460e4a2f4687d07a6d1fb3b52f7f8f9898077245db8",
+      "license": "MIT",
+      "name": "jws",
+      "optional": false,
+      "purl": "pkg:npm/jws@4.0.1",
+      "version": "4.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "54f0fc9ad56d9b924db40d8012b97a0a1a74e8905fcbb762150ed341085da563a5e8cac2441f9e45bbc0654b1b1904bd92232ad1ca09b32d16d2f1e90c2916b1",
+      "license": "MIT",
+      "name": "keytar",
+      "optional": true,
+      "purl": "pkg:npm/keytar@7.9.0",
+      "version": "7.9.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "aac75af87f234da51a37fc79bf35b6af373ef11c384c043fe0a8c1e3a2302b9547f8895579e7a37bf128651a625ef22a8c580af3841f7ea3f3b462375412c6d4",
+      "license": "MIT",
+      "name": "leven",
+      "optional": false,
+      "purl": "pkg:npm/leven@3.1.0",
+      "version": "3.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "51a88c27379646512e8f302ec392e8918d4be5e70d41864a7e6c99f4bef00c76ffa797ad29ac5786884172bc341186f2f86fcd039daf452378377f5dc47008c1",
+      "license": "MIT",
+      "name": "lie",
+      "optional": false,
+      "purl": "pkg:npm/lie@3.3.0",
+      "version": "3.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "38d4e6da308c0156638106bf172d6449c5ecb8ea05e4d3d3b28141744d4a548676bc087fafdf81aa8fb48c83420589dabd33d0673dfc43315399eefd10da0ddd",
+      "license": "MIT",
+      "name": "linkify-it",
+      "optional": false,
+      "purl": "pkg:npm/linkify-it@5.0.2",
+      "version": "5.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5b7071ea67644531ad9492123af543fe56ea8d394f3d40d33279576459d5c22f4d289ead88093a2d5765859326d7b5598acaa129c833a4ee56cfdd4f0ade5bd3",
+      "license": "MIT",
+      "name": "lodash.includes",
+      "optional": false,
+      "purl": "pkg:npm/lodash.includes@4.3.0",
+      "version": "4.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "073e66ba9cb64956cf1d4441f7c540730f9a1e1e2f455e483cd8482d40ac3b3466b13992435ee322eaa8a407a7b56a1e864b7119df5efe16c85eaf7cd3fd5026",
+      "license": "MIT",
+      "name": "lodash.isboolean",
+      "optional": false,
+      "purl": "pkg:npm/lodash.isboolean@3.0.3",
+      "version": "3.0.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "0c1c2d11637671a1d0f7f8a688d784039cacd49a11b517d8ddded5f7092ab5bc9c9c0993bd14666c72835786b411873aefcfdd89ad23aed7b8b6363054169950",
+      "license": "MIT",
+      "name": "lodash.isinteger",
+      "optional": false,
+      "purl": "pkg:npm/lodash.isinteger@4.0.4",
+      "version": "4.0.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "418ab3a5fc0edff0967f75cff99fad910b1f68b2ff1275255d6564224e4550f738b017537a112a64e36ec91b763faecf5c093e35799305c73def3c3db75150af",
+      "license": "MIT",
+      "name": "lodash.isnumber",
+      "optional": false,
+      "purl": "pkg:npm/lodash.isnumber@3.0.3",
+      "version": "3.0.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a125f3696ca908c1e43c2dcdbc111a3c77f42ac0399af3eb38f810583b1b83c9fba2b676f743340660bf8e0459e2f709e834c0863aec49881db16fc5f8c14e04",
+      "license": "MIT",
+      "name": "lodash.isplainobject",
+      "optional": false,
+      "purl": "pkg:npm/lodash.isplainobject@4.0.6",
+      "version": "4.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "d302717f11f5c203b71ab6ee3fe7534e4ee8a7ee8be354025db188344983fa7cbf1bf782a86cf1c82b21ef5e7d4be9a00c37286ab9c1c3a3c2d4f4b9fb050683",
+      "license": "MIT",
+      "name": "lodash.isstring",
+      "optional": false,
+      "purl": "pkg:npm/lodash.isstring@4.0.1",
+      "version": "4.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "49be3ceda4ce0abf5dad054bf292313b356169f3a364df54539e2188df0f537b8089257b971d7260da5b3667b1d8f2ba752268353489514b304fae75cb0c3732",
+      "license": "MIT",
+      "name": "lodash.once",
+      "optional": false,
+      "purl": "pkg:npm/lodash.once@4.1.1",
+      "version": "4.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "8b6e26f2ba708663c84b8cec70dccae8c484864d035166bff226105b185f7d5f23908e0f86fb3717eaae2f9c6f4b481d411d05c9308c307df763bf1d0d3cf323",
+      "license": "MIT",
+      "name": "log-symbols",
+      "optional": false,
+      "purl": "pkg:npm/log-symbols@6.0.0",
+      "version": "6.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ecdcc12f4acde9f3145be7fb03a228e21e34a90946fb11a6b4cc5f6e71ff2bb4c0b6df094165502beea0d145ca31e549a3257912490db04ad0f29543ddb2c76c",
+      "license": "MIT",
+      "name": "log-symbols/node_modules/chalk",
+      "optional": false,
+      "purl": "pkg:npm/log-symbols/node_modules/chalk@5.6.2",
+      "version": "5.6.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e37af6991bf3fbc25120a9d627ede3f09b6344a67a1a68f37da13faa20499e290d9d8bffe9b6a0449d64521364f11e445ff1a4a1b0feafeb1fc423c9b222812d",
+      "license": "MIT",
+      "name": "log-symbols/node_modules/is-unicode-supported",
+      "optional": false,
+      "purl": "pkg:npm/log-symbols/node_modules/is-unicode-supported@1.3.0",
+      "version": "1.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "268e9d274e029928eece7c09492de951e5a677f1f47df4e59175e0c198be7aad540a6a90c0287e78bb183980b063df758b615a878875044302c78a938466ec88",
+      "license": "ISC",
+      "name": "lru-cache",
+      "optional": false,
+      "purl": "pkg:npm/lru-cache@6.0.0",
+      "version": "6.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "44212c3e347eb2bd31f80b98a7ad35b4a4e48051b86043cb0b31d24f7710fdf865264a80933d4bdbf41ba758fdab0e52070407141a16f3e868379c6cb0e1744f",
+      "license": "MIT",
+      "name": "markdown-it",
+      "optional": false,
+      "purl": "pkg:npm/markdown-it@14.3.0",
+      "version": "14.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "fc85ed6f0124e474cfc84c32297ea11a4617c4cf676e3eb807e8a55499c2fd1e81d291f91b85776f4a556cbec3063e2d921040a696d05257fa17a5e5f4b1eed6",
+      "license": "MIT",
+      "name": "math-intrinsics",
+      "optional": false,
+      "purl": "pkg:npm/math-intrinsics@1.1.0",
+      "version": "1.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "d7e1c168ec74ce2fdd41686df2b36ff4c61ff6aaa9a8bfe4c48d215c8994e98e78ef333a4a78bc05089bb7b89f80c718b50838d5aa3722f77a72748cf3a8a7a6",
+      "license": "MIT",
+      "name": "mdurl",
+      "optional": false,
+      "purl": "pkg:npm/mdurl@2.1.0",
+      "version": "2.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c74567f2ca48fb0b89d4ee92ee09db69083c3f187834d1dbeca4883661162a23c4e1128ea65be28e7f8d92662699180febc99cef48f611b793151b2bb306907a",
+      "license": "MIT",
+      "name": "mime",
+      "optional": false,
+      "purl": "pkg:npm/mime@1.6.0",
+      "version": "1.6.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b0f538b95edd625bed589c70c311c3d0fba285536213b4f201b439496c43081f66518bce82ba103b061040e28f27c0886c4fb51135653a82b5502da7537818be",
+      "license": "MIT",
+      "name": "mime-db",
+      "optional": false,
+      "purl": "pkg:npm/mime-db@1.52.0",
+      "version": "1.52.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "64363e6cf9b9cd34c5f98a42ac053d9cad148080983d3d10b53d4d65616fe2cfbe4cd91c815693d20ebee11dae238323423cf2b07075cf1b962f9d21cda7978b",
+      "license": "MIT",
+      "name": "mime-types",
+      "optional": false,
+      "purl": "pkg:npm/mime-types@2.1.35",
+      "version": "2.1.35"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "54fefd5d43f15760a28183f78d6c005054a4bb668aa811fbb9301aa4558206abadb1b983a3de8a639a3cba1e94fbf612227e4ec499d7a7bddb795929a8c20684",
+      "license": "MIT",
+      "name": "mimic-function",
+      "optional": false,
+      "purl": "pkg:npm/mimic-function@5.0.1",
+      "version": "5.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "cf4c9623ee050ebaf0792f199ade048f91dd266932d79f8bd9ee96827dfe88ae5f5b36fa4f77e1345ab6f8c79345bd3ae1ce96af837fc2fd03cd04e33731cd19",
+      "license": "MIT",
+      "name": "mimic-response",
+      "optional": true,
+      "purl": "pkg:npm/mimic-response@3.1.0",
+      "version": "3.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5608d652c9e74fa9fe35493a799abbef37857695b62d60f33facc51ab09b1d789836e9790f3aa4d871d0e6e147d83356e576e9f3e8d5cda78db7de2cb04125e3",
+      "license": "ISC",
+      "name": "minimatch",
+      "optional": false,
+      "purl": "pkg:npm/minimatch@3.1.5",
+      "version": "3.1.5"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "db2c8047ca8190ddd8ba17896a7529582e54ddb6f9a2c0f2c0d07c4730d5943c031dba1c009bdeaaa8f5bbcf92543ee39164f8cafb070a95aaa96a80c5bd3308",
+      "license": "MIT",
+      "name": "minimist",
+      "optional": true,
+      "purl": "pkg:npm/minimist@1.2.8",
+      "version": "1.2.8"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b44047a839c8a0cff5ad7304d738246bd83a43695ca029311cbb9cece0c9e41c5b3f977873667970682d5c092ee7ddb4d02c7b762b874ce61f4810fc9fa9a6f0",
+      "license": "BlueOak-1.0.0",
+      "name": "minipass",
+      "optional": false,
+      "purl": "pkg:npm/minipass@7.1.3",
+      "version": "7.1.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "80a2dc444321b6e651c1101fa8fdd1156f932b826a029541b4e21fb55823b8006902da7184f19a0dc7ef6e136f0f407c883d6852bfedc57df936371a63a36cfc",
+      "license": "MIT",
+      "name": "mkdirp-classic",
+      "optional": true,
+      "purl": "pkg:npm/mkdirp-classic@0.5.3",
+      "version": "0.5.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e85973b9b4cb646dc9d9afcd542025784863ceae68c601f268253dc985ef70bb2fa1568726afece715c8ebf5d73fab73ed1f7100eb479d23bfb57b45dd645394",
+      "license": "MIT",
+      "name": "ms",
+      "optional": false,
+      "purl": "pkg:npm/ms@2.1.3",
+      "version": "2.1.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "9e76d658e9285b252c4e32ab8600f475ccf6da67644a7a58a9b123226da787086ec654a4a72c09981a3c87466a25d929ef799bf744acb0790de2bb1168101f00",
+      "license": "ISC",
+      "name": "mute-stream",
+      "optional": false,
+      "purl": "pkg:npm/mute-stream@0.0.8",
+      "version": "0.0.8"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "1846eb6246df17b32835aa21da2186f383277ff5997c1d0674612c33cc33ec4c69c7f2e559fe54f2df67bc92974a9deaaf922c11b2b4e1c04686897f2b03ac58",
+      "license": "MIT",
+      "name": "napi-build-utils",
+      "optional": true,
+      "purl": "pkg:npm/napi-build-utils@2.0.0",
+      "version": "2.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5b964d3b92913c1e53918986543f45e98aa1b2095727313a7ada5b993f9fe84404961897fd44c6e79d5c9ec446bcb1b77f264483d1f068398d9a3e67c09e33f6",
+      "license": "MIT",
+      "name": "node-abi",
+      "optional": true,
+      "purl": "pkg:npm/node-abi@3.94.0",
+      "version": "3.94.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ef7b04f7edd468b6181660ec1599ea0889f33f287732a23064ef5cc39f3222a01984e36bada6eb63261edd3b88aad2223ae4d7561b066aef2172b861c12b0321",
+      "license": "MIT",
+      "name": "node-addon-api",
+      "optional": true,
+      "purl": "pkg:npm/node-addon-api@4.3.0",
+      "version": "4.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "96a8eb8e668ea009d67cc9813cbf97367ca7661dbeb30c625f7594134b38c841c8ea6f80c2b2b65193a2988465dd7ff841cb55a92f008998c5ab2386acc5dbff",
+      "license": "BSD-2-Clause",
+      "name": "nth-check",
+      "optional": false,
+      "purl": "pkg:npm/nth-check@2.1.1",
+      "version": "2.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5baee22e5e09d845c41936df78709f7eb8c37e2b6f2c0360d14957df01545124f1f762974457a0307515812a84fb0be101b8b85aa8c683d733cac4d5d84a5b7b",
+      "license": "MIT",
+      "name": "object-inspect",
+      "optional": false,
+      "purl": "pkg:npm/object-inspect@1.13.4",
+      "version": "1.13.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "94d689808fb643951140191c7042874d038f697754c67659125413658d0c15402e684a9ed44f8dcaf81dcff688c8d8ba67d3333b976fd47f27e7cfc610ba77fb",
+      "license": "ISC",
+      "name": "once",
+      "optional": true,
+      "purl": "pkg:npm/once@1.4.0",
+      "version": "1.4.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "55726373cec549c17cf2e69f4b726594382f026f9cfd295fcf4ea5a2b8f6b80637e2b954bb436dfaff30ade88899cae00238c81e9d6b5e94c394b386c36f56c1",
+      "license": "MIT",
+      "name": "onetime",
+      "optional": false,
+      "purl": "pkg:npm/onetime@7.0.0",
+      "version": "7.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "6200697491cfc90d94139c7e8654977277a3cc0bc3d1bdb65363ae00ffbc3a79494fe3e358fc6d8261aa28a73e4604cceb753d80dd18ceb61cef5476593fe14c",
+      "license": "MIT",
+      "name": "open",
+      "optional": false,
+      "purl": "pkg:npm/open@10.2.0",
+      "version": "10.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c1e3fe059f0c54d9e50a6f1cd1075cd56496ab8427ec8fbd0891a6ed06a58ba838e1efcf5336e336a257e4d27d96394d328b1f26f8357ca10620b9252bd7309f",
+      "license": "MIT",
+      "name": "ora",
+      "optional": false,
+      "purl": "pkg:npm/ora@8.2.0",
+      "version": "8.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ecdcc12f4acde9f3145be7fb03a228e21e34a90946fb11a6b4cc5f6e71ff2bb4c0b6df094165502beea0d145ca31e549a3257912490db04ad0f29543ddb2c76c",
+      "license": "MIT",
+      "name": "ora/node_modules/chalk",
+      "optional": false,
+      "purl": "pkg:npm/ora/node_modules/chalk@5.6.2",
+      "version": "5.6.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5046484b7fdbcb8382f2f2f73f67535d1113a5e6cb236362239bc8ae3683ff952dae4157fed35bc234d2440182ffeec2028da921c05a4605a670104772c68223",
+      "license": "BlueOak-1.0.0",
+      "name": "package-json-from-dist",
+      "optional": false,
+      "purl": "pkg:npm/package-json-from-dist@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e212c1f0fcb8cd971ee6ce3277d5f3a29ab056fff218d855d4197c353982ab5efadc778adbe130553bfe95e19e2f5dc39e1db07dbaa8c153d70883b4cf8b5a63",
+      "license": "(MIT AND Zlib)",
+      "name": "pako",
+      "optional": false,
+      "purl": "pkg:npm/pako@1.0.11",
+      "version": "1.0.11"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "120d4eb8d9ed04c1f4a23bc4292aef0d29f02e6bd5b94392772947fe94823cd308b292e5c1e2722165c213e93fe619b7723fc405463099692384100b34fe0b5d",
+      "license": "MIT",
+      "name": "parse-semver",
+      "optional": false,
+      "purl": "pkg:npm/parse-semver@1.1.1",
+      "version": "1.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "701ce79d0f4a8c9a94ebb079d91302eb908c6ab2b6eb4d161676e471a8b05aadf1cbfe61685265b21827a63a2f31527e1df7f8f5df06127d1bf3b0b9a43435d2",
+      "license": "ISC",
+      "name": "parse-semver/node_modules/semver",
+      "optional": false,
+      "purl": "pkg:npm/parse-semver/node_modules/semver@5.7.2",
+      "version": "5.7.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "2089ef53b7da6e5df8aa68bd818f17395c61632332b87db150da5bdaaf3f63eef9e762a57a3911beabc3d7d9cca145bfb901866ea36903a4ee7eee452f905983",
+      "license": "MIT",
+      "name": "parse5",
+      "optional": false,
+      "purl": "pkg:npm/parse5@7.3.0",
+      "version": "7.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "aeec39c722acea5ae9a3dc7dac266a6599c8527b480a34007745ac9a9dfde9497d94dfe1fa27e0555d71d606478bc7ae7a3eb04dfa6a5fc8fe045431174352fe",
+      "license": "MIT",
+      "name": "parse5-htmlparser2-tree-adapter",
+      "optional": false,
+      "purl": "pkg:npm/parse5-htmlparser2-tree-adapter@7.1.0",
+      "version": "7.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "27279073d8b014b9f94dbbefa8008817f5571ba69b383781dc5c26bff4c674b9362df6d691ac92198ef66ade3e4f2ec490f663f39e2ee02ac80aa364daa21ba3",
+      "license": "MIT",
+      "name": "parse5-parser-stream",
+      "optional": false,
+      "purl": "pkg:npm/parse5-parser-stream@7.1.2",
+      "version": "7.1.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "68df7b357585e805814da85f54e22b07f352864ce2e47ec5f6bd6cf660f77038f82a8e5fdaa86156860c89b5c5ec694bbde6ff0f68a859acbc97123ded57a7de",
+      "license": "BSD-2-Clause",
+      "name": "parse5/node_modules/entities",
+      "optional": false,
+      "purl": "pkg:npm/parse5/node_modules/entities@6.0.1",
+      "version": "6.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a2399e374a9dfb2d23b3312da18e3caf43deab97703049089423aee90e5fe3595f92cc17b8ab58ae18284e92e7c887079b6e1486ac7ee53aa6d889d2c0b844e9",
+      "license": "MIT",
+      "name": "path-key",
+      "optional": false,
+      "purl": "pkg:npm/path-key@3.1.1",
+      "version": "3.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "dcefe2555b0900fb0e9e9c1621e0fe77acffecf9aa029c9078f52d0a77636ad8fff48e4bca51efb79aa5b856814f7239877af57a37d1d39e9cf850aff8d9cd5e",
+      "license": "BlueOak-1.0.0",
+      "name": "path-scurry",
+      "optional": false,
+      "purl": "pkg:npm/path-scurry@2.0.2",
+      "version": "2.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e297ccd457f4c79d28d2d4306f9b9cc3f4733720f4fd824c13a215712b5a959b8c5b176ddec47786e4ad4edc73e0f526bd97d182ebc37a36acbd0da489f475d6",
+      "license": "BlueOak-1.0.0",
+      "name": "path-scurry/node_modules/lru-cache",
+      "optional": false,
+      "purl": "pkg:npm/path-scurry/node_modules/lru-cache@11.5.2",
+      "version": "11.5.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "1776acbf8d94b97721773b7ec57a9f5b538695505efa6c5ada6a88d29839c801d93ef16663763a76b49ffc643503ce9681610df4ace1fd6ae029aea219c1d72e",
+      "license": "MIT",
+      "name": "pend",
+      "optional": false,
+      "purl": "pkg:npm/pend@1.2.0",
+      "version": "1.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f0c7f671b57bc757173d420b003188df0ba17ea5afb622c0d627254c36c54599204504b436ab0f6698676bd57e1f24c469d85eb8f9a368932c6f329014eccbba",
+      "license": "MIT",
+      "name": "prebuild-install",
+      "optional": true,
+      "purl": "pkg:npm/prebuild-install@7.1.3",
+      "version": "7.1.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "de8b943a9421b60adb39ad7b27bfaec4e4e92136166863fbfc0868477f80fbfd5ef6c92bcde9468bf757cc4632bdbc6e6c417a5a7db2a6c7132a22891459f56a",
+      "license": "MIT",
+      "name": "process-nextick-args",
+      "optional": false,
+      "purl": "pkg:npm/process-nextick-args@2.0.1",
+      "version": "2.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "552eec8dce8a47b7b5ba4445850498e4b336b8158050f88e3dafc0de690a9a23304a64455084edd31ba3fbf95eb209c2bfe74f204625933adcc9782ab881cc70",
+      "license": "MIT",
+      "name": "pump",
+      "optional": true,
+      "purl": "pkg:npm/pump@3.0.4",
+      "version": "3.0.4"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "bb11481d4d189476210d0b55e11f49e9ae7648bc76f010a34fee227a1ec819b83054958efa49b8df5738c9195111402c026b7fb8c8d05324073443dfd0cdfd08",
+      "license": "MIT",
+      "name": "punycode.js",
+      "optional": false,
+      "purl": "pkg:npm/punycode.js@2.3.1",
+      "version": "2.3.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "3bd825df30a5e61e5b970d4a194cd02a1039a145d297caf0508339a344b79c25cc9624afcb90f3c7bfc325c23e4b08080aff889de499c21061d684b210703bd4",
+      "license": "BSD-3-Clause",
+      "name": "qs",
+      "optional": false,
+      "purl": "pkg:npm/qs@6.15.3",
+      "version": "6.15.3"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "cb76c682a2a3dd005dc4b6cb9289a5a2192fb00f207408944254812670617e7f813f18386dceb677c4dc056d79c1abc37e07b10a071c72485c66fcb0c9060f3b",
+      "license": "(BSD-2-Clause OR MIT OR Apache-2.0)",
+      "name": "rc",
+      "optional": true,
+      "purl": "pkg:npm/rc@1.2.8",
+      "version": "1.2.8"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ad238a3585266b1cb4a26d4136330de1eccd4fa54a2bedb117818185cf359a41fb2fad22e9da7ca8f62b92774d2d3dd03e9868208de668bf4f542f579a11f055",
+      "license": "ISC",
+      "name": "read",
+      "optional": false,
+      "purl": "pkg:npm/read@1.0.7",
+      "version": "1.0.7"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f6efec9e20ab6370f959db04447cc71381b66025eaa06e454c7522082e1221bafa5dc2d9058d39c9af442a361e93d3b9c4e0308c6abed497460404bb43d49ca0",
+      "license": "MIT",
+      "name": "readable-stream",
+      "optional": true,
+      "purl": "pkg:npm/readable-stream@3.6.2",
+      "version": "3.6.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a0c03675caf0eaed187f12505e6df8d9b14a5ff138b06f6b6d3ccef69b54711fdef00df7707baf4ad8983b01fb7ecce4665675cffb5af400283e4d85e2a20e1c",
+      "license": "MIT",
+      "name": "restore-cursor",
+      "optional": false,
+      "purl": "pkg:npm/restore-cursor@5.1.0",
+      "version": "5.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "0cf7b9a5515a02c8a749a57a42343a81d89e7560dc4426d4ba241f41adb099657bfb10bd6c6ba5188f3e4dd466a059003da05793c0ab01b9e56362129e2278ed",
+      "license": "MIT",
+      "name": "run-applescript",
+      "optional": false,
+      "purl": "pkg:npm/run-applescript@7.1.0",
+      "version": "7.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ae9dd2a34eca71d9a629b1af81a37141226bedb1954959394bd12ad45fa9a5b468ef4f9879a0f1930e4377c34f37e183e9b8e7626d95b8fb825e6a6e62f9825d",
+      "license": "MIT",
+      "name": "safe-buffer",
+      "optional": false,
+      "purl": "pkg:npm/safe-buffer@5.2.1",
+      "version": "5.2.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "619a372bcd920fb462ca2d04d4440fa232f3ee4a5ea6749023d2323db1c78355d75debdbe5d248eeda72376003c467106c71bbbdcc911e4d1c6f0a9c42b894b6",
+      "license": "MIT",
+      "name": "safer-buffer",
+      "optional": false,
+      "purl": "pkg:npm/safer-buffer@2.1.2",
+      "version": "2.1.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e36b415702d69da42f5b9cdce076d9ad3b9671c1020997c18bdd850eec2dab16ac1fe25b3c1dff14e29bd66db6d8ae364785b1bb1cf332c4ecc1fce0b52bbae1",
+      "license": "BlueOak-1.0.0",
+      "name": "sax",
+      "optional": false,
+      "purl": "pkg:npm/sax@1.6.1",
+      "version": "1.6.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "63bfca0ec6fc2e3a28669c1aa86cae94ee8342592c8029dc7211c693eb19218e1206f52870c044147e54af57c8e1d57e26f974c3a723bee71a222e34a6e462a0",
+      "license": "ISC",
+      "name": "semver",
+      "optional": false,
+      "purl": "pkg:npm/semver@7.8.5",
+      "version": "7.8.5"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "3004c9759a7cb0ba8397febc2df4266cff3328f2d0355e81219a0882bb1c14343e46cbcafc1c5e0d03a0cb128aa21d32ffc87706a5459c2a90fe077eade8885c",
+      "license": "MIT",
+      "name": "setimmediate",
+      "optional": false,
+      "purl": "pkg:npm/setimmediate@1.0.5",
+      "version": "1.0.5"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "907c6bdb366962d766acdd6a0e3aeb5ff675ad1d641bc0f1fa09292b51b87979af5ecc26704d614d6056614ce5ada630d7fc99a7a62e0d8efb62dbdb3747660c",
+      "license": "MIT",
+      "name": "shebang-command",
+      "optional": false,
+      "purl": "pkg:npm/shebang-command@2.0.0",
+      "version": "2.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "efef9d161b5cc77df9dee05aabc0c347836ec417ad0730bb6503a19934089c711de9b4ab5dd884cb30af1b4ed9e3851874b4a1594c97b7933fca1cfc7a471bd4",
+      "license": "MIT",
+      "name": "shebang-regex",
+      "optional": false,
+      "purl": "pkg:npm/shebang-regex@3.0.0",
+      "version": "3.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "eb1e9d2bacc97694f3178b1078d631c2dbc1cdfe848381ad95eb12f781cebd3b9d51ec8ad965c06887e60e0b32b2562b441785225b22e78018b05194ba19afad",
+      "license": "MIT",
+      "name": "side-channel",
+      "optional": false,
+      "purl": "pkg:npm/side-channel@1.1.1",
+      "version": "1.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "9a39ffd1b8bfa145118dce5797b21a5a2fce24926e9aea0915025f0c3c8ee3afa1056b1f69533ae53047ab67a864187397d11c8713a28e991b442f12541414d3",
+      "license": "MIT",
+      "name": "side-channel-list",
+      "optional": false,
+      "purl": "pkg:npm/side-channel-list@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5428c235f80cb1bcb7b53768d369db8ed33f7b0adaea33c79a94e17a7913621f291bdb9c67fd4ff12a38bb814605e93f063a4e56c0c23282c0fe2b8128815744",
+      "license": "MIT",
+      "name": "side-channel-map",
+      "optional": false,
+      "purl": "pkg:npm/side-channel-map@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "58f4bf1ef1d04d89c78ac2e8f4c72a0473899361641cefed969be5772ae77a6e1a790a7885a8b7832b61b3083aa74d684a84e5e7cadca621408c5d9baf6024d8",
+      "license": "MIT",
+      "name": "side-channel-weakmap",
+      "optional": false,
+      "purl": "pkg:npm/side-channel-weakmap@1.0.2",
+      "version": "1.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "6f3c99d5ef3cc3d3b588d25b2a73a5bd84eb58f0e5e3a3b56c6d03dd7227bfef6d90faf1acdf235144e21650e4926296827d4ce827c8035dd2b86a8e6bd2a8af",
+      "license": "ISC",
+      "name": "signal-exit",
+      "optional": false,
+      "purl": "pkg:npm/signal-exit@4.1.0",
+      "version": "4.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "71216d00fb518658efebd20ad214d5650f8e7c4f6778f8bfaed266c395231de57256ba04a895cfd6c173b4a532d6a53ec6fcf7bbfb1f6092daf78edbee700dd9",
+      "license": "MIT",
+      "name": "simple-concat",
+      "optional": true,
+      "purl": "pkg:npm/simple-concat@1.0.1",
+      "version": "1.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "6ebbfba795a01f48e6409af56430df2833927965a0f8e572a46f7d03fe6f6063ea27aa7189a1cbcbc9f1b458c103ba0c6b4d5e6c0f607e1d6e30216a3ae5f1bc",
+      "license": "MIT",
+      "name": "simple-get",
+      "optional": true,
+      "purl": "pkg:npm/simple-get@4.0.1",
+      "version": "4.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "5210df1e603dd9802536709f866ab455e34be5b0db8991a0eec67622f3ec5ee6c692235af440beb544ec8c146c614033f3b6ed23aff5c1fe17a15bd0dee46799",
+      "license": "MIT",
+      "name": "stdin-discarder",
+      "optional": false,
+      "purl": "pkg:npm/stdin-discarder@0.2.2",
+      "version": "0.2.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b6c693224296f5be0df80123f92540f96849cd5effccc85c4aeefc98b2964a4edc5cc3921ec04a15652cd1f5b0abc4322b73202414115fa19b8b89186ddbc691",
+      "license": "MIT",
+      "name": "string-width",
+      "optional": false,
+      "purl": "pkg:npm/string-width@7.2.0",
+      "version": "7.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "864457f14d568c915df0bb03276c90ff0596c5aa2912c0015355df90cf00fa3d3ef392401a9a6dd7a72bd56860e8a21b6f8a2453a32a97a04e8febaea7fc0a78",
+      "license": "MIT",
+      "name": "string_decoder",
+      "optional": true,
+      "purl": "pkg:npm/string_decoder@1.3.0",
+      "version": "1.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "c833cc363a785b27d80641e78c844b7dc6b58ba28cc860adb1582829eff3d7eeafba481a10d76018166df9998a3dce206afbc46793a01df1ddadace180dc86ef",
+      "license": "MIT",
+      "name": "strip-ansi",
+      "optional": false,
+      "purl": "pkg:npm/strip-ansi@7.2.0",
+      "version": "7.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e2007c9dad3b7de715564388e91b387bb4fa34e4e48b91262fb4d476e4ece9bbb711d9d2c9c9ed549e2b7bc920640fb0c7d22e788d98d756df6e0c2dcee13429",
+      "license": "MIT",
+      "name": "strip-json-comments",
+      "optional": true,
+      "purl": "pkg:npm/strip-json-comments@2.0.1",
+      "version": "2.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "423563c1d5c8b78d3c308880a825f8a142ac814d84a801b3b363e9926e1a4186e39be644584716e127c5353af8b8c35999ad1ecb87f99602eb901d1a5f440ca3",
+      "license": "MIT",
+      "name": "supports-color",
+      "optional": false,
+      "purl": "pkg:npm/supports-color@5.5.0",
+      "version": "5.5.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "39ba1377c9a632164334f57e52341c2bdc8a01ab57bb6689fabd70e229b53ad7783387e5da1c2f7685d4c486071531d62bfdf2dc56ab04fef4bf7bf098694ec7",
+      "license": "MIT",
+      "name": "tar-fs",
+      "optional": true,
+      "purl": "pkg:npm/tar-fs@2.1.5",
+      "version": "2.1.5"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ba37aa6dc780060c0c6711099e4d870d8d83967519fbda0471bd4acd355f6078a8d1413a746ef59fad1df03d88e2a36f95e5abad7a668e9b7bbd9785d4b9cc65",
+      "license": "MIT",
+      "name": "tar-stream",
+      "optional": true,
+      "purl": "pkg:npm/tar-stream@2.2.0",
+      "version": "2.2.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7b4be8b48a69e14a36009612cd51d5eb109c6b0ba27b3dc3cea0c06eb4dcdd8c4192994de9ef9d335dd97887199c383f4294ae536cdf677af3c18f2e9049da5f",
+      "license": "MIT",
+      "name": "tmp",
+      "optional": false,
+      "purl": "pkg:npm/tmp@0.2.7",
+      "version": "0.2.7"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a0916ef781d06fe29576e49440bef09e99aa9df98bb0e03f9c087a6fa107d30084a0ad3f98f79753a737c0a0d5f373243ae1cf447b525ca294f7d2016b34bfdb",
+      "license": "0BSD",
+      "name": "tslib",
+      "optional": false,
+      "purl": "pkg:npm/tslib@2.8.1",
+      "version": "2.8.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "d61fcb9eaf726a3298d8f11b05a74f5e3dd5c6c0c3bbce383a7680a39d9456623322fc30b413c8b8dbe48eecc19535a97c9c946c6ddecf42920626d0923e288e",
+      "license": "MIT",
+      "name": "tunnel",
+      "optional": false,
+      "purl": "pkg:npm/tunnel@0.0.6",
+      "version": "0.0.6"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "31c9cd895d65f1161e63cb41804a6ea1d082d662d475b48df826012fb909b093489ce3fc5230c3130764e8cc3ad2f74b2ebaf934729984c00e4ab476359b90fb",
+      "license": "Apache-2.0",
+      "name": "tunnel-agent",
+      "optional": true,
+      "purl": "pkg:npm/tunnel-agent@0.6.0",
+      "version": "0.6.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "e54bdf329775a1e96650f45b6da567abeac73fb9e0d9c138aa842441e02ac512fa3e4964c6c334837dbf1cbd327efaee2baa23439c7c104f87178615e83b6e08",
+      "license": "MIT",
+      "name": "typed-rest-client",
+      "optional": false,
+      "purl": "pkg:npm/typed-rest-client@1.8.11",
+      "version": "1.8.11"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "0110c99a986676f524e86970ef2f434366c590a047c101cb8b696c687e8f3e6cff29af6c14e06c065ba8ce10e5b569a7bfdbbf705e91b7cef39d14cf57eca9fc",
+      "license": "MIT",
+      "name": "uc.micro",
+      "optional": false,
+      "purl": "pkg:npm/uc.micro@2.1.0",
+      "version": "2.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "0d7b43dd9b4443373b33c9b8717a2dc8747e1404b5f02eb86ac058639bea65ec5f62bc8d3670dcd365b884a837add42ea8e61ab358e4b1e5f4fa76578d35e7bd",
+      "license": "MIT",
+      "name": "underscore",
+      "optional": false,
+      "purl": "pkg:npm/underscore@1.13.8",
+      "version": "1.13.8"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "203c5f95e2e699b4ac91f5925004e23759df9f6ac3baf9cc3aa6f909647dda221fa2303451dfae94e000110e7b2cfafdad69acade5327f9970c9aa3eec634d57",
+      "license": "MIT",
+      "name": "undici",
+      "optional": false,
+      "purl": "pkg:npm/undici@7.29.0",
+      "version": "7.29.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "8e4d7e40fe9926ac8e8ae108f4011641f8eefe70763f0e3aea46c0d0b1199631f029e32077d5ab0048041b18cf0c3dbe4cd6db6f7eeb4f28447eb0977ee2979c",
+      "license": "MIT",
+      "name": "url-join",
+      "optional": false,
+      "purl": "pkg:npm/url-join@4.0.1",
+      "version": "4.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "10f0f9ab5b97c85c49a42acb9c27359c79eade039ae83641a1c008888d93692080ed5089d5424331a802cc891736c5187c3d5d68afff2d3110f318886eb1ed73",
+      "license": "MIT",
+      "name": "util-deprecate",
+      "optional": false,
+      "purl": "pkg:npm/util-deprecate@1.0.2",
+      "version": "1.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "eaa37884974cc1f601b44dd80534c78687ae52b0c13d999b41ac5602a4802d5fcc7849d1e73d7177c50ab9dd910241683e4981fa1962d536529f28bce31cf5bd",
+      "license": "MIT",
+      "name": "whatwg-encoding",
+      "optional": false,
+      "purl": "pkg:npm/whatwg-encoding@3.1.1",
+      "version": "3.1.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "41a2b187478d222da613da76bc47737da80e28709c8f5a49e7a1041c640e571a7cafdfe2b332d4515eeff3dc7d3b5a7f4fe3654cce56ee35baf9ccf816ad5856",
+      "license": "MIT",
+      "name": "whatwg-mimetype",
+      "optional": false,
+      "purl": "pkg:npm/whatwg-mimetype@4.0.0",
+      "version": "4.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "04b2374e5d535b73ef97bd25df2ab763ae22f9ac29c17aac181616924a8cb676d782b303fb28fbae15b492e103c7325a6171a3116e6881aa4a34c10a34c8e26c",
+      "license": "ISC",
+      "name": "which",
+      "optional": false,
+      "purl": "pkg:npm/which@2.0.2",
+      "version": "2.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "9784a9fc346c7a8afdc0be84bd5dbe4ee427eb774c90f8d9feca7d5e48214c46d5f4a94f4b5c54b19deeeff2103b8c31b5c141e1b82940f45c477402bdeccf71",
+      "license": "ISC",
+      "name": "wrappy",
+      "optional": true,
+      "purl": "pkg:npm/wrappy@1.0.2",
+      "version": "1.0.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "87715b8ac6b69ca18fc42a66f3d1e4df79412ec9da181bdcb50a2968148e5bfb88b3a1537b5013c809ca149af356cf6fa4676c4deef7585dd5e2522c93819a73",
+      "license": "MIT",
+      "name": "wsl-utils",
+      "optional": false,
+      "purl": "pkg:npm/wsl-utils@0.1.0",
+      "version": "0.1.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "76b3c59e44098a4fcefae3caa6a4a0af6da6a6e147a8a75b4bcdf988042b502ef72f61795a46e821177adda8bfd9883a2358f389f3c5287d8d4caf9c7e096420",
+      "license": "MIT",
+      "name": "xml2js",
+      "optional": false,
+      "purl": "pkg:npm/xml2js@0.5.0",
+      "version": "0.5.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7c396c23f905131ee02ef6de71cd3fa212c6e747ee810a7caf21f3313b96f6f49ad462745d858a9e1b14c7ba227b71bdf3eaf9e9a4d0214078921b78d91dc9bc",
+      "license": "MIT",
+      "name": "xmlbuilder",
+      "optional": false,
+      "purl": "pkg:npm/xmlbuilder@11.0.1",
+      "version": "11.0.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "df074689d672ab93c1d3ce172c44b94e9392440df08d7025216321ba6da445cbffe354a7d9e990d1dc9c416e2e6572de8f02af83a12cbdb76554bf8560472dec",
+      "license": "ISC",
+      "name": "yallist",
+      "optional": false,
+      "purl": "pkg:npm/yallist@4.0.0",
+      "version": "4.0.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a786bd23a5fa9eee888681a606a01c6c9cb59a50b88f6eef10f657f45e0be3fbd94f72f2ab5564147c3f57f3d4701f41ba8f831b7887913d31dd0c9ae7ccdcde",
+      "license": "MIT",
+      "name": "yauzl",
+      "optional": false,
+      "purl": "pkg:npm/yauzl@2.10.0",
+      "version": "2.10.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a6110d8b63cb8879c76fa401568b7e7499da019d31a2c8fba777d697ece7223043967308d8fb19089677d3a04f4c539a1dfe6a743108f31e6a16b48e04de6faf",
+      "license": "MIT",
+      "name": "yazl",
+      "optional": false,
+      "purl": "pkg:npm/yazl@2.5.1",
+      "version": "2.5.1"
+    }
+  ],
+  "contract": "ONSURE_VSCODE_DEPENDENCY_INVENTORY_V1",
+  "final_claim_allowed": false,
+  "lock_integrity_recorded": true,
+  "package_lock": "vscode-extension/package-lock.json",
+  "package_lock_sha256": "576faf5014fb61edbafaeeeceba1c363b73bcea14ab3c56f19d43a1287579152"
+}

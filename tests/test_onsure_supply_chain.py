@@ -48,7 +48,12 @@ class ONSureSupplyChainTest(unittest.TestCase):
         )
         self.assertEqual([], violations)
         self.assertIn("ROOT_SOURCE_LICENSE_UNDECLARED", blockers)
-        self.assertIn("VULNERABILITY_SCAN_NOT_RUN", blockers)
+        self.assertNotIn("VULNERABILITY_SCAN_NOT_RUN", blockers)
+        self.assertEqual("COMPLETED", vulnerability["state"])
+        self.assertEqual(
+            0,
+            sum(vulnerability[level] for level in ("critical", "high", "medium", "low")),
+        )
 
         changed = json.loads(json.dumps(sbom))
         changed["components"][0]["hashes"] = []
