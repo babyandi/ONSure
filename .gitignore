@@ -11,4 +11,5 @@ validation-data/
 .onsure/final-stage/
 .onsure/local-gate/
 __pycache__/
+vscode-extension/node_modules/
 vscode-extension/*.vsix
