@@ -129,7 +129,7 @@
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (625 cutover + rollback files; 현재 변경분 독립 clone 재검증 예정) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (625 cutover + rollback files, local + 원격 독립 clone full) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
 | DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
@@ -140,6 +140,9 @@ VS Code 등록·승인 흐름 implementation HEAD `bf1ace9`, 생성 의존성 �
 재현 VSIX implementation/fix HEAD `980d823`·`f5f55d5`, workspace snapshot/전용 view HEAD
 `0db1f12`·`aa30f84`를 통합했다. 현재 local 권위 build 241/241, modular package 9/9,
 API 238/238, Python 101/101, Node 6/6, SBOM과 build/operational boundary가 통과했다.
+원격 독립 clone HEAD `9fbe9433d458d1746aca0bcfc6637184cfe6bf12`에서도 같은 test 수와
+625개 중첩 cutover/rollback을 통과했고, 외부 제품 저장소 사용은 0건이었다. 로컬과 clone의
+VSIX SHA-256은 모두 `905482f2f9139674ad9a957042e093d1760dd44b0d8b44e30ddc9b0b664c2166`이다.
 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network
 namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 
