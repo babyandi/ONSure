@@ -171,11 +171,12 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 clean Java 251개를 2회, Python 115개, Node 9개,
-Modular package 15개, 공개 API 238개, SBOM/npm audit, operational boundary와 VSIX package를 통과했다.
+현재 변경 후보의 로컬 및 독립 clone 검증은 Java 251개, Python 115개, Node 9개,
+Modular package 15개, 공개 API 238개, SBOM/npm audit와 operational boundary를 통과했고,
+로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `c982d0269107ef174bf380f728ce112504a67f605da5a69bb238f187bc2dfb5d`를 생성했다.
-Manifest 후보는 668개 파일이며 중첩 full rehearsal과 독립 clone은 최종 commit에서 다시 실행한다.
+Manifest 후보 668개를 대상으로 격리된 중첩 full rehearsal의 cutover와 rollback digest를 모두 검증했다.
 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을
 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖
 canonical build에서 251/251을 통과한다. VS Code Extension Host E2E, MVP Full-Chain과 독립 검토는
