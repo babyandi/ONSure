@@ -1575,8 +1575,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "9d8eba6d8d8592ed7379c7d587110ec11bb5cf84c8e0d5f5a88d3c0792722262",
-      "size_bytes": 11541
+      "sha256": "0bda988a14b61e307bd17b6a6c3b087b62f8af1cc4c666a7ade54ff6048e5fdf",
+      "size_bytes": 11814
     },
     {
       "current_path": "docs/onsure/harness/UNIVERSAL_HARNESS_V1_RUNBOOK.md",
@@ -3542,8 +3542,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "4e49ccb38fabdda0a54e38158ced4c47697c28fc3a776c6f210faf9afbabf91b",
-      "size_bytes": 7522
+      "sha256": "b823c651c4835862b51dfcac32ff9f5023c1b7d7ff3d41d3bbd9b1b4cabcfe0a",
+      "size_bytes": 7642
     },
     {
       "current_path": "scripts/onsure_verify_run.py",
@@ -7096,9 +7096,12 @@
     ],
     "method": "HIGH_CONFIDENCE_SECRET_PATTERNS_AND_PATH_HEURISTICS"
   },
-  "source_commit": "dddf75c43ced52d22969462ebd629aa943389991",
+  "source_basis": {
+    "commit_binding": "OMITTED_TO_AVOID_MANIFEST_COMMIT_SELF_REFERENCE",
+    "immutable_cutover_commit_required": true,
+    "scope": "GIT_TRACKED_PLUS_UNTRACKED_NONIGNORED_FILES"
+  },
   "source_repository": "babyandi/ONSure",
-  "source_worktree_included": true,
   "summary": {
     "file_count": 471,
     "license_counts": {
@@ -7108,6 +7111,6 @@
       "NO_PATTERN_MATCH": 470,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 4077379
+    "total_size_bytes": 4077772
   }
 }

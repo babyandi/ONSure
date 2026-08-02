@@ -145,8 +145,11 @@ def build_manifest(output: pathlib.Path = DEFAULT_OUTPUT) -> dict[str, object]:
         "contract": "ONSURE_MONOREPO_MIGRATION_MANIFEST_CANDIDATE_V1",
         "decision": "CANDIDATE_NONFINAL",
         "source_repository": "babyandi/ONSure",
-        "source_commit": run_git("rev-parse", "HEAD").decode("utf-8").strip(),
-        "source_worktree_included": True,
+        "source_basis": {
+            "scope": "GIT_TRACKED_PLUS_UNTRACKED_NONIGNORED_FILES",
+            "commit_binding": "OMITTED_TO_AVOID_MANIFEST_COMMIT_SELF_REFERENCE",
+            "immutable_cutover_commit_required": True,
+        },
         "current_java_namespace": CURRENT_NAMESPACE,
         "future_java_namespace_candidate": FUTURE_NAMESPACE,
         "future_product_root_candidate": FUTURE_ROOT,

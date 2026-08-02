@@ -133,6 +133,7 @@ Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 �
 - 검증기: `scripts/validate_monorepo_migration_readiness.py`
 - 각 파일 항목: 현재/미래 후보 경로, SHA-256, byte 크기, Git mode, filesystem owner/group, repository owner, license, 민감정보 pattern 결과
 - Manifest 자신의 digest는 재귀 문제 때문에 목록에서 제외하고 그 사유를 top-level에 기록한다.
+- Manifest를 포함하는 commit SHA를 Manifest 안에 다시 넣는 자기참조도 피한다. 조사 기준 commit은 이 문서에 기록하고, 실제 cutover에서는 외부 서명 receipt가 immutable source commit과 Manifest digest를 함께 결속해야 한다.
 - filesystem owner는 이관 권리자가 아니라 검사 host의 메타데이터다. 저작권·재라이선스 권리는 별도 확인이 필요하다.
 
 ## 완료 판정 규칙
