@@ -5,7 +5,7 @@
   "receipt_contract": "ONSURE_HUNK_APPROVAL_RECEIPT_V1",
   "approval_purpose": "PATCH_HUNK_APPROVAL",
   "patch_plan_id": "PATCH-job-sample-001",
-  "patch_plan_file": "/reviewed/workspace/.onsure/validation-data/target/JOB/patch-plan.json",
+  "patch_plan_file": "WORKSPACE_ROOT/.onsure/validation-data/target/JOB/patch-plan.json",
   "patch_plan_file_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "selected_hunk_ids": ["HUNK-aaaaaaaaaaaaaaaa"],
   "branch_name": "fix/sample-approved-patch",
