@@ -90,6 +90,10 @@ def rehearse(mode: str) -> dict[str, object]:
         )
         run(["git", "add", "products/onsure"], monorepo)
         run(["git", "commit", "-q", "-m", "rehearsal baseline"], monorepo)
+        run(
+            ["git", "update-ref", "refs/remotes/origin/main", "HEAD"],
+            monorepo,
+        )
         environment = {"ONSURE_PRODUCT_ROOT": str(product)}
         commands = [
             ["python3", "scripts/validate_onsure_build_boundary.py"],
