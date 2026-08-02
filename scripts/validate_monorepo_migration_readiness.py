@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Validate non-mutating ONSure monorepo migration preparation artifacts."""
+
+from __future__ import annotations
+
+import json
+import pathlib
+import re
+import sys
+
+import onsure_monorepo_manifest as manifest
+
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+MANIFEST = ROOT / "assurance/migration/onsure-migration-manifest.v1.json"
+ABSOLUTE_WORKSPACE_PATTERNS = (
+    re.compile(r"/" + "workspace/"),
+    re.compile(r"/" + r"home/[A-Za-z0-9._-]+/"),
+    re.compile(
+        r"(?i)(?<![A-Za-z0-9_])[A-Z]:[\\/]{1,2}"
+        r"(?:Users|workspace|projects|repos|src)[\\/]"
+    ),
+)
+EXTERNAL_PRODUCT_SOURCE = re.compile(
+    r"(?:/" + r"workspace/(?:ORUDA|aTops|AsterDB)|\.\./(?:ORUDA|aTops|AsterDB)|"
+    r"[A-Za-z]:\\\\[^\r\n]*(?:ORUDA|aTops|AsterDB))",
+    re.IGNORECASE,
+)
+
+
+def text_files() -> list[pathlib.Path]:
+    return [
+        path
+        for path in manifest.candidate_paths(MANIFEST)
+        if not path.is_symlink() and path.stat().st_size <= 5_000_000
+    ]
+
+
+def contains_absolute_workspace(text: str) -> bool:
+    return any(pattern.search(text) for pattern in ABSOLUTE_WORKSPACE_PATTERNS)
+
+
+def main() -> int:
+    errors: list[str] = []
+    if not MANIFEST.is_file():
+        errors.append("MANIFEST_MISSING")
+        body: dict[str, object] = {}
+    else:
+        body = json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+    expected = manifest.build_manifest(MANIFEST)
+    if body and body != expected:
+        errors.append("MANIFEST_CONTENT_OR_DIGEST_DRIFT")
+
+    java_files = list((ROOT / "src/main/java").rglob("*.java"))
+    for path in java_files:
+        text = path.read_text(encoding="utf-8")
+        package = re.search(r"^package\s+([\w.]+);", text, re.MULTILINE)
+        if not package or not package.group(1).startswith(manifest.CURRENT_NAMESPACE):
+            errors.append(f"CURRENT_JAVA_NAMESPACE_DRIFT:{path.relative_to(ROOT)}")
+        if manifest.FUTURE_NAMESPACE in text:
+            errors.append(f"FUTURE_NAMESPACE_APPLIED_PREMATURELY:{path.relative_to(ROOT)}")
+
+    for pom in (ROOT / "pom.xml", ROOT / "pom-modular.xml"):
+        text = pom.read_text(encoding="utf-8")
+        if "<groupId>io.onsure</groupId>" not in text:
+            errors.append(f"MAVEN_GROUP_ID_DRIFT:{pom.name}")
+
+    absolute_reference_files: list[str] = []
+    external_product_reference_files: list[str] = []
+    for path in text_files():
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        if contains_absolute_workspace(text):
+            absolute_reference_files.append(relative)
+        if relative.startswith(("src/", "modules/", "onsure_core/")) and EXTERNAL_PRODUCT_SOURCE.search(text):
+            external_product_reference_files.append(relative)
+    if absolute_reference_files:
+        errors.append("ABSOLUTE_WORKSPACE_REFERENCES:" + ",".join(sorted(absolute_reference_files)))
+    if external_product_reference_files:
+        errors.append(
+            "EXTERNAL_PRODUCT_SOURCE_REFERENCES:"
+            + ",".join(sorted(external_product_reference_files))
+        )
+
+    high_risk = int(
+        expected["summary"]["sensitivity_counts"].get("HIGH_RISK_PATTERN_MATCH", 0)
+    )
+    if high_risk:
+        errors.append(f"HIGH_RISK_SECRET_PATTERNS:{high_risk}")
+
+    report = {
+        "contract": "ONSURE_MONOREPO_MIGRATION_READINESS_VALIDATION_V1",
+        "decision": "PASS_NONFINAL" if not errors else "FAIL",
+        "errors": errors,
+        "current_java_namespace": manifest.CURRENT_NAMESPACE,
+        "future_java_namespace_candidate": manifest.FUTURE_NAMESPACE,
+        "absolute_workspace_reference_count": len(absolute_reference_files),
+        "external_product_source_reference_count": len(external_product_reference_files),
+        "manifest_file_count": expected["summary"]["file_count"],
+        "high_risk_secret_pattern_count": high_risk,
+        "known_blockers": [
+            "SPLIT_JAVA_PACKAGES_ACROSS_MAVEN_ARTIFACTS",
+            "PACKAGE_DEPENDENCY_CYCLES",
+            "ROOT_LICENSE_UNDECLARED",
+            "DEPLOYMENT_DEFINITION_NOT_PRESENT",
+            "DATABASE_MIGRATION_COMPONENT_NOT_PRESENT",
+        ],
+        "final_claim_allowed": False,
+    }
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0 if not errors else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
