@@ -141,9 +141,10 @@ VS Code 등록·승인 흐름 implementation HEAD `bf1ace9`, 생성 의존성 �
 `0db1f12`·`aa30f84`와 Hunk review/Autopilot control HEAD `d7c989a`를 통합했다.
 local 및 원격 독립 clone HEAD `f5849782cdc49e52c4b724173e93b1a8b8950bfe`에서 권위 build
 242/242, modular package 11/11, API 238/238, Python 104/104, Node 7/7, SBOM,
-build/operational boundary와 627개 중첩 cutover/rollback이 통과했다. 두 환경의 VSIX SHA-256은
-whole-file approval preview 이전 HEAD에서는 동일했다. 현재 VSIX SHA-256
-`d7e75a3fac896d024ed64944821d06142e7525027942b52fa4b0b91e927843cd`의 독립 재현을 진행한다.
+build/operational boundary와 627개 중첩 cutover/rollback이 통과했다. whole-file approval preview
+HEAD `e14995c29d29b86fedec31a16311a42160412dcc`에서도 Python 104/104, Node 7/7,
+627개 중첩 rehearsal과 독립 clone을 통과했다. 최종 VSIX SHA-256은 두 환경 모두
+`d7e75a3fac896d024ed64944821d06142e7525027942b52fa4b0b91e927843cd`이다.
 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network
 namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 
