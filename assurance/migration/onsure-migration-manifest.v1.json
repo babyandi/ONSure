@@ -105,8 +105,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "0a43a0a3aaef022ee7cc81d6d699819a0094ac768699dd75cfd05781a3d95e96",
-      "size_bytes": 2620
+      "sha256": "d7bbb0c13da326984936c1e514a3c17bba493dd792863c5998d2c99b34a943c8",
+      "size_bytes": 2958
     },
     {
       "current_path": "README.md",
@@ -120,8 +120,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "4a8cef59b6485ce9c799f00d16cb157c223bf0e6028652e188690a6128abfd80",
-      "size_bytes": 8451
+      "sha256": "d8b1756cbe1aa4df0c2fc674d09999140bda45a4f90121a8976366a6f87defda",
+      "size_bytes": 8631
     },
     {
       "current_path": "assets/onsure-remediation/README.md",
@@ -2055,8 +2055,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "4505f6f5d87adffa4c9e0357041202aff7081f6b53029eca73943bc5a5595dea",
-      "size_bytes": 15253
+      "sha256": "8b3225be9382a5f1f16f53a1097549b2098489396d6cf4ee3ee81640094e3a67",
+      "size_bytes": 15240
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -4157,8 +4157,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "43e499ba40b49e5fcfcd0be8c424e6a11e13e5cd26c3d33d2b36ed13a72a369b",
-      "size_bytes": 2445
+      "sha256": "7f1dedebe33ba33beeb76020ff887b3f52df956c6a62f816859bf430ceb4878c",
+      "size_bytes": 2530
     },
     {
       "current_path": "modules/onsure-core/src/test/java/io/onsure/platform/CoreModuleSmokeTest.java",
@@ -4187,8 +4187,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "371711afe3095ff52920ae07f3fac96b9b68b6ef057887b03098df9a0d04d0db",
-      "size_bytes": 2255
+      "sha256": "68e742a1a651226b92a26a1344c0768cb1c0751a6ad933917a0db9d643bb576a",
+      "size_bytes": 2364
     },
     {
       "current_path": "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java",
@@ -4202,8 +4202,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "01d3a6445483c820edab207f49079b93a85a3767d94fb26903ce83c55985a8cf",
-      "size_bytes": 9205
+      "sha256": "5aecc47eefcd29e1e1568a0d227b3efdb39bceb3ad018ae26492cd4a2ee6f045",
+      "size_bytes": 10457
     },
     {
       "current_path": "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerTest.java",
@@ -4219,6 +4219,21 @@
       },
       "sha256": "9c961fea35f28278a21d097287437ea4f590e26a19c6249203ea33bf4ab8244c",
       "size_bytes": 2840
+    },
+    {
+      "current_path": "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalWorkspaceSnapshotServiceTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-local-api/src/test/java/io/onsure/platform/LocalWorkspaceSnapshotServiceTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "74d562d46e865f089bb49b4487bcbf71c05277d5903414e47edd85374ef45be9",
+      "size_bytes": 5968
     },
     {
       "current_path": "modules/onsure-test-fixtures/pom.xml",
@@ -5387,8 +5402,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "e7ff6843283e6fbccdd341d9adfe0eac001f082736b0a3ee2c713ff7b485d2e8",
-      "size_bytes": 9547
+      "sha256": "0cd6d33c2c5bf3d8cede05944186f2cf2e0dc65542ec44be18276eb055145144",
+      "size_bytes": 10058
     },
     {
       "current_path": "scripts/validate-workflow-surface-parity.py",
@@ -6812,8 +6827,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "c7aad71fb4d59193df2d7959a526c6220d41997233dba33a7df552b751517156",
-      "size_bytes": 16161
+      "sha256": "652ec6f7e985e48191a2948c6ea361c43ebddd117cdd86e6b06e6a4c4abed16c",
+      "size_bytes": 16957
     },
     {
       "current_path": "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
@@ -6829,6 +6844,21 @@
       },
       "sha256": "ef5f71bb95af3b0e6431a3c34bfa866fcef7eee5b558f63c89a27d23dad2fded",
       "size_bytes": 29648
+    },
+    {
+      "current_path": "src/main/java/io/onsure/platform/LocalWorkspaceSnapshotService.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/LocalWorkspaceSnapshotService.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "95a3b26759f55581d7c5d896cbdc0e37857de55462885d4f485bb8e897852b1c",
+      "size_bytes": 10166
     },
     {
       "current_path": "src/main/java/io/onsure/platform/MessageDigest.java",
@@ -9257,8 +9287,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "bbe6fc7e41da84249976330069ef7e12632260a3ad7747b9939a27b2cb9a4c14",
-      "size_bytes": 2044
+      "sha256": "0979a89394ef3aa02c532c74032f894d892e978e3c38d1447343befd2d5be7e1",
+      "size_bytes": 3209
     },
     {
       "current_path": "vscode-extension/extension-core.js",
@@ -9272,8 +9302,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "283c6a93a647ae0751b1d51a1bca3c146e714ff8805af04349c35aa07f1fbc58",
-      "size_bytes": 5158
+      "sha256": "17adb27d084c5c05c8d7571c316670bb1c90fe2f03d9c88901ed16c247f4cf5f",
+      "size_bytes": 16182
     },
     {
       "current_path": "vscode-extension/extension.js",
@@ -9287,8 +9317,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "9242f78e6717126a61bb96ef162db8992cc7c1bd2e03eb7a0345fea2d075e505",
-      "size_bytes": 20361
+      "sha256": "cd692e7e8e74a669aead13f633e02a0fb3486b4fd728c7f22104f3c1a7271d23",
+      "size_bytes": 29157
     },
     {
       "current_path": "vscode-extension/media/onsure.svg",
@@ -9332,8 +9362,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "4bdfb5d3e2da0d2f3d2ff96f99612bfe01843faea871f092ddeec3bd72f01dc1",
-      "size_bytes": 5013
+      "sha256": "5123d1b995cfb6a693ebda5ebd31b61a501c51f0dab7a8e9edfaa0b5965cefdc",
+      "size_bytes": 6163
     },
     {
       "current_path": "vscode-extension/test/extension-core.test.js",
@@ -9347,8 +9377,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "727bb8590ec0e1f26b9706d67694ae10f759db42e6746691048d061823b8ef2a",
-      "size_bytes": 3774
+      "sha256": "62a5e0222b15a628a1c015e32d2bee3a510570b4d020ba951da86ad153b01ef7",
+      "size_bytes": 7889
     }
   ],
   "final_claim_allowed": false,
@@ -9383,14 +9413,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 623,
+    "file_count": 625,
     "license_counts": {
-      "UNDECLARED": 623
+      "UNDECLARED": 625
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 622,
+      "NO_PATTERN_MATCH": 624,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 6978717
+    "total_size_bytes": 7024359
   }
 }

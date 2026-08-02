@@ -120,16 +120,16 @@
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (local + 독립 clone byte-identical VSIX; root license warning) |
-| VSIX 검증 | `python3 scripts/validate-vscode-extension.py --require-node --require-vsix` | `PASS_NONFINAL` (4 Node tests, package/content SHA-256 검증, Extension Host E2E `NOT_RUN`) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (통합 후보 623 files) |
+| VSIX 검증 | `python3 scripts/validate-vscode-extension.py --require-node --require-vsix` | `PASS_NONFINAL` (6 Node tests, package/content SHA-256 검증, Extension Host E2E `NOT_RUN`) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (통합 후보 625 files) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
-| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (134 single owners, artifact cycles 0) |
+| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (135 single owners, artifact cycles 0) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (238 public classes, delta 0) |
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (623 cutover + rollback files, local + 원격 독립 clone full) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (625 cutover + rollback files; 현재 변경분 독립 clone 재검증 예정) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
 | DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
@@ -137,9 +137,9 @@
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 
 VS Code 등록·승인 흐름 implementation HEAD `bf1ace9`, 생성 의존성 경계 fix `c566fe1`,
-재현 VSIX implementation/fix HEAD `980d823`·`f5f55d5`에서 local 및 원격 독립 clone 검증을
-수행했다. 권위 build 241/241, modular package, API 238/238, Python 101/101, Node 4/4, SBOM,
-build/operational boundary, byte-identical VSIX package와 중첩 full rehearsal 623개가 통과했다.
+재현 VSIX implementation/fix HEAD `980d823`·`f5f55d5`, workspace snapshot/전용 view HEAD
+`0db1f12`·`aa30f84`를 통합했다. 현재 local 권위 build 241/241, modular package 9/9,
+API 238/238, Python 101/101, Node 6/6, SBOM과 build/operational boundary가 통과했다.
 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network
 namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 

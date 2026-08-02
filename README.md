@@ -153,10 +153,11 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 통합 브랜치는 로컬과 원격 독립 clone에서 Java 241개, Python 101개, Node 4개,
-Modular package, 공개 API 238개, SBOM, operational boundary, 623개 중첩 full rehearsal과
-VSIX package를 통과했다. VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 두 환경에서
-동일한 SHA-256 `cd1e45c825130f45cf64b36834c3980bf50faf7f4bfd6e030bafdd1e68f668d2`를 생성했다.
+현재 통합 브랜치의 로컬 검증은 Java 241개, Python 101개, Node 6개,
+Modular package 9개, 공개 API 238개, SBOM, operational boundary와 VSIX package를 통과했다.
+VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
+`905482f2f9139674ad9a957042e093d1760dd44b0d8b44e30ddc9b0b664c2166`를 생성했다.
+이 변경분의 원격 독립 clone과 625개 중첩 full rehearsal 결과는 migration readiness 문서에 기록한다.
 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을
 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖
 canonical build에서 241/241을 통과한다. VS Code Extension Host E2E, MVP Full-Chain과 독립 검토는
