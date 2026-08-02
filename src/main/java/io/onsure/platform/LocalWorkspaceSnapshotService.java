@@ -2,10 +2,14 @@ package io.onsure.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HexFormat;
@@ -13,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /** Package-private read model for the loopback VS Code surface. */
 final class LocalWorkspaceSnapshotService {
@@ -75,6 +80,13 @@ final class LocalWorkspaceSnapshotService {
                 "draft_pr_receipt", document(
                         workspaceRoot.resolve(".onsure/git/draft-pr-receipt.json"),
                         "DRAFT_PR_RECEIPT")));
+        result.put("autopilot", Map.of(
+                "checkpoint", document(
+                        workspaceRoot.resolve(".onsure/autopilot/checkpoint.json"),
+                        "AUTOPILOT_CHECKPOINT"),
+                "control", document(
+                        workspaceRoot.resolve(".onsure/autopilot/control.json"),
+                        "AUTOPILOT_CONTROL")));
         result.put("validation_store", document(
                 validationRoot.resolve("store-revision.json"), "VALIDATION_STORE_REVISION"));
         result.put("runs", List.copyOf(runs));
@@ -179,12 +191,25 @@ final class LocalWorkspaceSnapshotService {
 
     private boolean safeDirectory(Path path) {
         return path.startsWith(workspaceRoot)
+                && noSymlinkComponents(path)
                 && Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)
                 && !Files.isSymbolicLink(path);
     }
 
-    private static boolean safeFile(Path path) {
-        return Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(path);
+    private boolean safeFile(Path path) {
+        return path.startsWith(workspaceRoot) && noSymlinkComponents(path)
+                && Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(path);
+    }
+
+    private boolean noSymlinkComponents(Path path) {
+        Path normalized = path.toAbsolutePath().normalize();
+        if (!normalized.startsWith(workspaceRoot)) return false;
+        Path current = workspaceRoot;
+        for (Path component : workspaceRoot.relativize(normalized)) {
+            current = current.resolve(component);
+            if (Files.isSymbolicLink(current)) return false;
+        }
+        return true;
     }
 
     private long modified(Path path) {
@@ -210,5 +235,98 @@ final class LocalWorkspaceSnapshotService {
     private static String sha256(Path file) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                 .digest(Files.readAllBytes(file)));
+    }
+}
+
+/** Writes only the fixed restart-safe Autopilot control journal for an existing checkpoint. */
+final class LocalAutopilotControlService {
+    private static final long MAX_BYTES = 1_048_576L;
+    private final Path workspaceRoot;
+    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+
+    LocalAutopilotControlService(Path workspaceRoot) {
+        this.workspaceRoot = workspaceRoot.toAbsolutePath().normalize();
+        if (!Files.isDirectory(this.workspaceRoot, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(this.workspaceRoot)) {
+            throw new IllegalArgumentException("WORKSPACE_ROOT_INVALID");
+        }
+    }
+
+    Map<String, Object> request(String action) throws Exception {
+        String desired = switch (String.valueOf(action)) {
+            case "PAUSE" -> "PAUSED";
+            case "RESUME" -> "RUNNING";
+            case "CANCEL" -> "CANCELLED";
+            default -> throw new IllegalArgumentException("AUTOPILOT_ACTION_INVALID");
+        };
+        Path root = workspaceRoot.resolve(".onsure/autopilot").normalize();
+        Path checkpointFile = root.resolve("checkpoint.json");
+        JsonNode checkpoint = read(checkpointFile, "AUTOPILOT_CHECKPOINT_INVALID");
+        if (!"ONSURE_UNATTENDED_AUTOPILOT_V1".equals(checkpoint.path("contract").asText())) {
+            throw new IllegalStateException("AUTOPILOT_CHECKPOINT_CONTRACT_INVALID");
+        }
+        String contractSha = checkpoint.path("contract_sha256").asText();
+        if (!contractSha.matches("[0-9a-f]{64}")) {
+            throw new IllegalStateException("AUTOPILOT_CHECKPOINT_DIGEST_INVALID");
+        }
+        String state = checkpoint.path("state").asText();
+        Set<String> controllable = Set.of("RUNNING", "RECOVERING", "PAUSED");
+        if (!controllable.contains(state)) {
+            throw new IllegalStateException("AUTOPILOT_CONTROL_STATE_INVALID:" + state);
+        }
+        Map<String, Object> control = new LinkedHashMap<>();
+        control.put("contract", "ONSURE_AUTOPILOT_CONTROL_V1");
+        control.put("contract_sha256", contractSha);
+        control.put("desired_state", desired);
+        control.put("requested_at", Instant.now().toString());
+        control.put("final_claim_allowed", false);
+        writeAtomic(root.resolve("control.json"), control);
+        return Map.copyOf(control);
+    }
+
+    private JsonNode read(Path file, String code) throws Exception {
+        if (!file.startsWith(workspaceRoot)
+                || !noSymlinkComponents(file)
+                || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(file) || Files.size(file) > MAX_BYTES) {
+            throw new IllegalStateException(code);
+        }
+        return mapper.readTree(file.toFile());
+    }
+
+    private void writeAtomic(Path file, Map<String, Object> value) throws Exception {
+        Path parent = file.getParent();
+        if (!parent.startsWith(workspaceRoot)
+                || !noSymlinkComponents(parent)
+                || !Files.isDirectory(parent, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(parent)) {
+            throw new IllegalStateException("AUTOPILOT_CONTROL_ROOT_INVALID");
+        }
+        Path temporary = parent.resolve(file.getFileName() + "." + UUID.randomUUID() + ".tmp");
+        try {
+            Files.writeString(temporary, mapper.writeValueAsString(value) + "\n",
+                    StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.CREATE_NEW);
+            try {
+                Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
+                Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+    }
+
+    private boolean noSymlinkComponents(Path path) {
+        Path normalized = path.toAbsolutePath().normalize();
+        if (!normalized.startsWith(workspaceRoot)) return false;
+        Path current = workspaceRoot;
+        for (Path component : workspaceRoot.relativize(normalized)) {
+            current = current.resolve(component);
+            if (Files.isSymbolicLink(current)) return false;
+        }
+        return true;
     }
 }

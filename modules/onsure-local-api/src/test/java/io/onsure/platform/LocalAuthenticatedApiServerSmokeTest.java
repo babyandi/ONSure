@@ -145,6 +145,22 @@ class LocalAuthenticatedApiServerSmokeTest {
             assertEquals("AVAILABLE", snapshot.path("profile").path("state").asText());
             assertEquals("AVAILABLE", snapshot.path("plan").path("state").asText());
             assertEquals(0, snapshot.path("run_count").asInt(-1));
+
+            Path autopilot = temp.resolve(".onsure/autopilot");
+            Files.createDirectories(autopilot);
+            mapper.writeValue(autopilot.resolve("checkpoint.json").toFile(), Map.of(
+                    "contract", "ONSURE_UNATTENDED_AUTOPILOT_V1",
+                    "contract_sha256", "a".repeat(64), "state", "RUNNING"));
+            HttpResponse<String> pauseResponse = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                                    "http://127.0.0.1:" + port + "/v1/autopilot-control"))
+                            .header("Authorization", "Bearer " + token)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString("{\"action\":\"PAUSE\"}"))
+                            .build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, pauseResponse.statusCode(), pauseResponse.body());
+            assertEquals("PAUSED", mapper.readTree(pauseResponse.body())
+                    .path("control").path("desired_state").asText());
             assertTrue(!snapshot.path("final_claim_allowed").asBoolean(true));
 
             assertWorkflowFailure(client, port, token, "validation.run", Map.of(

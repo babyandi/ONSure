@@ -40,21 +40,38 @@ documents are openable only when they remain inside the active workspace.
 
 The controlled improvement and delivery sequence is:
 
-1. Select a signed patch approval and run `ONSure: Apply Approved Patch`.
-2. Validate the isolated approved worktree and select baseline/current reports with
+1. Use `ONSure: Review Patch Hunk Diff` to open a source-digest-verified diff.
+2. Select explicit hunks with `ONSure: Create Hunk Signing Request`. This writes an unsigned
+   `ONSURE_HUNK_APPROVAL_REQUEST_V1`; ONSure never self-signs it.
+3. Obtain the matching signed receipt from the external trusted approver, then run
+   `ONSure: Apply Approved Patch`.
+4. Validate the isolated approved worktree and select baseline/current reports with
    `ONSure: Prove Improvement`.
-3. Select a signed delivery approval and run `ONSure: Commit Approved Worktree`.
-4. Select the reviewed PR body and run `ONSure: Open Approved Draft PR`.
+5. Select a signed delivery approval and run `ONSure: Commit Approved Worktree`.
+6. Select the reviewed PR body and run `ONSure: Open Approved Draft PR`.
 
 The Java services revalidate signed receipts, digests, expiry, branch, changed-file set and
 replay state. Direct main writes, force push and merge remain prohibited. The extension never
 claims that a self-validation result is final.
 
+## Restart-safe Autopilot control
+
+Start the repository-owned controller from a trusted terminal with
+`python3 scripts/onsure-autopilot.py run`. Its CLI, Local API and Runtime view share the fixed
+`.onsure/autopilot/checkpoint.json` and `control.json` journal. The Runtime view can request
+pause, resume and cancellation. The controller applies those requests to the full subprocess
+group and never reports client-side HTTP abort as execution cancellation.
+
+Completed stages are not rerun after restart. An interrupted stage whose process is gone is
+recovered explicitly; a still-running orphan PID fails closed because safe process reattachment
+is not yet implemented.
+
 ## Current limit
 
-Dedicated read views and signed controlled actions are implemented. Inline diff preview,
-per-hunk approval authoring, long-running pause/resume/cancel, semantic Ask/Plan/Act agent modes,
-and installed VS Code Extension Host end-to-end automation remain partial or `NOT_RUN`.
+Dedicated read views, digest-bound Hunk diff preview, unsigned external signing requests and
+CLI/Local API/VS Code Autopilot controls are implemented. Whole-file approval UX, core-stage
+cooperative checkpoints, orphan-process reattachment, semantic Ask/Plan/Act agent modes, and
+installed VS Code Extension Host end-to-end automation remain partial or `NOT_RUN`.
 Independent OTester/OAudit are still required before any release claim.
 
 `npm run package` invokes the repository-owned deterministic VSIX wrapper. It normalizes ZIP entry

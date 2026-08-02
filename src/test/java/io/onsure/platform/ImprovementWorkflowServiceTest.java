@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.onsure.assurance.ApprovalReceiptVerifier;
 import io.onsure.assurance.Decision;
@@ -21,6 +22,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class ImprovementWorkflowServiceTest {
+    @Test
+    void approvalPurposeMatchesPublishedReceiptContract() throws Exception {
+        JsonNode schema = mapper.readTree(Path.of(
+                "contracts/hunk-approval-receipt.v1.schema.json").toFile());
+        assertEquals(schema.path("properties").path("approval_purpose").path("const").asText(),
+                ImprovementWorkflowService.APPROVAL_PURPOSE);
+    }
+
     @TempDir Path temp;
     private final ObjectMapper mapper = new ObjectMapper();
 

@@ -2,6 +2,7 @@
 
 const path = require('path');
 const { fileURLToPath } = require('url');
+const { createHash } = require('crypto');
 
 const ID_PATTERN = /^[A-Za-z0-9._-]{1,128}$/;
 const EXISTING_REGISTRATION_CODES = Object.freeze(new Set([
@@ -98,6 +99,14 @@ function snapshotRequest(identity) {
   };
 }
 
+function autopilotControlRequest(action) {
+  const value = String(action || '').toUpperCase();
+  if (!['PAUSE', 'RESUME', 'CANCEL'].includes(value)) {
+    throw new Error('Autopilot control action is invalid.');
+  }
+  return { action: value };
+}
+
 function requireSnapshotBinding(response, identity) {
   const snapshot = response?.snapshot;
   if (!snapshot || snapshot.contract !== 'ONSURE_LOCAL_WORKSPACE_SNAPSHOT_V1'
@@ -124,6 +133,107 @@ function patchApplyRequest(workspaceRoot, runRoot, approvalReceiptFile) {
     repository_root: requireAbsolute(workspaceRoot, 'Workspace root'),
     patch_plan_file: path.join(run, 'patch-plan.json'),
     approval_receipt_file: requireAbsolute(approvalReceiptFile, 'Patch approval receipt')
+  };
+}
+
+function patchReview(plan, artifact, runRoot) {
+  if (!plan || plan.contract !== 'ONSURE_PATCH_PLAN_V1'
+      || !artifact || artifact.name !== 'patch-plan.json'
+      || !/^[0-9a-f]{64}$/.test(String(artifact.sha256 || ''))) {
+    throw new Error('Patch plan artifact is invalid or unbound.');
+  }
+  if (!plan.patch_plan_id || !plan.target_id
+      || plan.default_approval !== 'DENY' || plan.worktree_required !== true
+      || plan.direct_main_write_allowed !== false || plan.force_push_allowed !== false
+      || plan.merge_allowed !== false || plan.final_claim_allowed !== false) {
+    throw new Error('Patch plan safety boundary is invalid.');
+  }
+  if (!Array.isArray(plan.hunks) || plan.hunks.length < 1 || plan.hunks.length > 200) {
+    throw new Error('Patch plan must contain 1-200 reviewable hunks.');
+  }
+  const ids = new Set();
+  const hunks = plan.hunks.map(value => {
+    const hunk = { ...value };
+    if (!ID_PATTERN.test(String(hunk.hunk_id || '')) || ids.has(hunk.hunk_id)
+        || !ID_PATTERN.test(String(hunk.finding_id || ''))
+        || hunk.occurrence !== 1 || hunk.change_class !== 'APPROVAL_REQUIRED'
+        || hunk.approval_state !== 'PENDING') {
+      throw new Error('Patch plan hunk identity or approval state is invalid.');
+    }
+    ids.add(hunk.hunk_id);
+    hunk.relative_path = requireRelativePatchPath(hunk.relative_path);
+    for (const field of ['preimage_sha256']) {
+      if (!/^[0-9a-f]{64}$/.test(String(hunk[field] || ''))) {
+        throw new Error(`Patch hunk ${field} is invalid.`);
+      }
+    }
+    for (const field of ['match_text', 'replacement_text']) {
+      if (typeof hunk[field] !== 'string' || !hunk[field] || hunk[field].length > 65536) {
+        throw new Error(`Patch hunk ${field} is invalid.`);
+      }
+    }
+    return Object.freeze(hunk);
+  });
+  const root = requireAbsolute(runRoot, 'Run root');
+  return Object.freeze({
+    runRoot: root,
+    planFile: path.join(root, 'patch-plan.json'),
+    planFileSha256: artifact.sha256,
+    patchPlanId: String(plan.patch_plan_id),
+    targetId: String(plan.target_id),
+    hunks: Object.freeze(hunks)
+  });
+}
+
+function requireRelativePatchPath(value) {
+  const candidate = String(value || '');
+  const normalized = path.posix.normalize(candidate);
+  if (!candidate || candidate.includes('\\') || candidate.includes('\0')
+      || path.posix.isAbsolute(candidate) || normalized !== candidate
+      || normalized === '..' || normalized.startsWith('../')) {
+    throw new Error('Patch hunk path must be a normalized workspace-relative POSIX path.');
+  }
+  return candidate;
+}
+
+function previewHunk(source, hunk) {
+  if (typeof source !== 'string') throw new Error('Patch preview source must be UTF-8 text.');
+  const digest = createHash('sha256').update(Buffer.from(source, 'utf8')).digest('hex');
+  if (digest !== hunk.preimage_sha256) throw new Error('Patch preview source digest has drifted.');
+  const count = source.split(hunk.match_text).length - 1;
+  if (count !== 1) throw new Error('Patch preview match is not unique.');
+  return source.replace(hunk.match_text, hunk.replacement_text);
+}
+
+function hunkApprovalRequest(review, selectedHunkIds, branchName, createdAt = new Date().toISOString()) {
+  const branch = requireBranch(branchName, 'Patch branch');
+  if (branch.length < 3 || ['main', 'master', 'production', 'release'].includes(branch.toLowerCase())) {
+    throw new Error('Patch branch must be a non-protected branch with at least 3 characters.');
+  }
+  const selected = [...new Set(selectedHunkIds || [])];
+  const declared = new Set(review?.hunks?.map(value => value.hunk_id) || []);
+  if (!selected.length || selected.length > 200 || selected.some(value => !declared.has(value))) {
+    throw new Error('Select one or more declared patch hunks.');
+  }
+  if (Number.isNaN(Date.parse(createdAt))) throw new Error('Approval request timestamp is invalid.');
+  return {
+    contract: 'ONSURE_HUNK_APPROVAL_REQUEST_V1',
+    request_id: `REQUEST-${review.patchPlanId}`,
+    request_state: 'AWAITING_EXTERNAL_SIGNATURE',
+    receipt_contract: 'ONSURE_HUNK_APPROVAL_RECEIPT_V1',
+    approval_purpose: 'PATCH_HUNK_APPROVAL',
+    patch_plan_id: review.patchPlanId,
+    patch_plan_file: review.planFile,
+    patch_plan_file_sha256: review.planFileSha256,
+    selected_hunk_ids: selected.sort(),
+    branch_name: branch,
+    allow_direct_main_write: false,
+    allow_force_push: false,
+    allow_merge: false,
+    created_at: createdAt,
+    signer_must_supply: ['approval_id', 'nonce', 'actor', 'key_id', 'signature_algorithm',
+      'signature', 'approved_at', 'expires_at'],
+    final_claim_allowed: false
   };
 }
 
@@ -263,6 +373,10 @@ function surfaceRows(viewId, model = {}) {
       return [
         row('Patch Plan', patch ? 'AVAILABLE' : 'NOT_PRESENT', 'diff', patch ? 'onsure.openArtifact' : undefined,
           patch ? [latest.run_root, patch.name] : undefined),
+        row('Review Patch Hunks', patch ? 'DIGEST_BOUND_PREVIEW' : 'NOT_AVAILABLE', 'diff',
+          patch ? 'onsure.reviewPatchPlan' : undefined),
+        row('External Signing Request', local.patchApprovalRequest || 'NOT_CREATED', 'edit',
+          patch ? 'onsure.createHunkApprovalRequest' : undefined),
         row('Apply Approved Patch', local.patchReceipt ? 'APPLIED' : 'SIGNED_APPROVAL_REQUIRED', 'tools', 'onsure.applyApprovedPatch'),
         row('Improvement Proof', local.improvementProof ? 'AVAILABLE' : 'NOT_RUN', 'verified-filled', 'onsure.proveImprovement')
       ];
@@ -283,17 +397,24 @@ function surfaceRows(viewId, model = {}) {
       return [
         row('Execution Plan', plan.approval?.state || 'NOT_PRESENT', 'verified'),
         row('Approved Plan Artifact', snapshot.approved_plan?.state || 'NOT_PRESENT', 'file-symlink-file'),
+        row('Hunk Signing Request', local.patchApprovalRequest || 'NOT_CREATED', 'edit'),
         row('Patch Approval', local.patchApproval || 'NOT_PRESENT', 'diff'),
         row('Git Delivery Approval', local.deliveryApproval || 'NOT_PRESENT', 'git-commit')
       ];
     case 'onsure.runtime':
+      {
+        const checkpoint = snapshot.autopilot?.checkpoint?.body || {};
+        const control = snapshot.autopilot?.control?.body || {};
       return [
         row('Local API', status.state || 'UNKNOWN', 'server-process'),
+        row('Autopilot State', checkpoint.state || 'NOT_STARTED', 'debug-pause'),
+        row('Autopilot Control', control.desired_state || 'NOT_REQUESTED', 'settings'),
         row('Validation Store Revision', snapshot.validation_store?.body?.revision || 0, 'database'),
         row('Run Count', snapshot.run_count || 0, 'run-all'),
         row('Paid Service', plan.resource_budget?.paid_service_allowed ?? false, 'credit-card'),
         row('Network', plan.resource_budget?.network_egress || 'DENY_BY_DEFAULT', 'globe')
       ];
+      }
     case 'onsure.admin':
       return [
         row('Workspace', identity?.workspaceId || 'NOT_REGISTERED', 'workspace-trusted'),
@@ -357,8 +478,12 @@ module.exports = {
   learnRequest,
   validationRequest,
   snapshotRequest,
+  autopilotControlRequest,
   requireSnapshotBinding,
   patchApplyRequest,
+  patchReview,
+  previewHunk,
+  hunkApprovalRequest,
   gitCommitRequest,
   gitDraftPrRequest,
   surfaceRows,

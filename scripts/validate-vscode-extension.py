@@ -18,6 +18,10 @@ REQUIRED_COMMANDS = {
     "onsure.registerWorkspaceTarget",
     "onsure.selectMode",
     "onsure.refresh",
+    "onsure.autopilotStatus",
+    "onsure.autopilotPause",
+    "onsure.autopilotResume",
+    "onsure.autopilotCancel",
     "onsure.learnProgram",
     "onsure.generatePlan",
     "onsure.approvePlan",
@@ -26,6 +30,8 @@ REQUIRED_COMMANDS = {
     "onsure.openLastArtifact",
     "onsure.openArtifact",
     "onsure.openDocument",
+    "onsure.reviewPatchPlan",
+    "onsure.createHunkApprovalRequest",
     "onsure.applyApprovedPatch",
     "onsure.proveImprovement",
     "onsure.gitCommit",
@@ -103,6 +109,9 @@ def main() -> int:
         "patch.apply", "improvement.prove", "git.commit", "git.draft-pr",
         "LAST_PATCH_RECEIPT_KEY", "LAST_IMPROVEMENT_PROOF_KEY",
         "LAST_CHANGE_SET_KEY", "LAST_DRAFT_PR_RECEIPT_KEY",
+        "patchReview", "previewHunk", "hunkApprovalRequest",
+        "ONSURE_HUNK_APPROVAL_REQUEST_V1", "EXTERNAL_SIGNATURE_REQUIRED",
+        "/v1/autopilot-control", "autopilotControlRequest", "AUTOPILOT_CONTROL",
     ):
         if token not in source and token not in core:
             errors.append(f"SOURCE_TOKEN_MISSING:{token}")

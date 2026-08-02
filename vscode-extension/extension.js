@@ -3,6 +3,7 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const { randomUUID } = require('crypto');
 const {
   ID_PATTERN,
   LocalApiError,
@@ -11,8 +12,12 @@ const {
   learnRequest,
   validationRequest,
   snapshotRequest,
+  autopilotControlRequest,
   requireSnapshotBinding,
   patchApplyRequest,
+  patchReview,
+  previewHunk,
+  hunkApprovalRequest,
   gitCommitRequest,
   gitDraftPrRequest,
   surfaceRows,
@@ -31,6 +36,7 @@ const LAST_APPROVAL_RECEIPT_KEY = 'onsure.lastExecutionPlanApprovalReceipt';
 const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
 const LAST_WORKTREE_KEY = 'onsure.lastApprovedWorktree';
 const LAST_PATCH_APPROVAL_KEY = 'onsure.lastPatchApprovalReceipt';
+const LAST_PATCH_APPROVAL_REQUEST_KEY = 'onsure.lastPatchApprovalRequest';
 const LAST_PATCH_RECEIPT_KEY = 'onsure.lastPatchApplyReceipt';
 const LAST_IMPROVEMENT_PROOF_KEY = 'onsure.lastImprovementProof';
 const LAST_DELIVERY_APPROVAL_KEY = 'onsure.lastDeliveryApproval';
@@ -104,6 +110,21 @@ class ApiClient {
   }
 }
 
+class PatchPreviewProvider {
+  constructor() { this.documents = new Map(); }
+
+  provideTextDocumentContent(uri) {
+    return this.documents.get(uri.toString()) || '';
+  }
+
+  document(relativePath, content) {
+    const uri = vscode.Uri.parse(
+      `onsure-patch-preview:/${encodeURIComponent(relativePath)}?id=${randomUUID()}`);
+    this.documents.set(uri.toString(), content);
+    return uri;
+  }
+}
+
 class WorkspaceModel {
   constructor(context, client) {
     this.context = context;
@@ -120,6 +141,7 @@ class WorkspaceModel {
       lastWorkflow: this.context.workspaceState.get(LAST_WORKFLOW_KEY),
       worktreeRoot: this.context.workspaceState.get(LAST_WORKTREE_KEY),
       patchApproval: this.context.workspaceState.get(LAST_PATCH_APPROVAL_KEY),
+      patchApprovalRequest: this.context.workspaceState.get(LAST_PATCH_APPROVAL_REQUEST_KEY),
       patchReceipt: this.context.workspaceState.get(LAST_PATCH_RECEIPT_KEY),
       improvementProof: this.context.workspaceState.get(LAST_IMPROVEMENT_PROOF_KEY),
       deliveryApproval: this.context.workspaceState.get(LAST_DELIVERY_APPROVAL_KEY),
@@ -241,8 +263,25 @@ async function selectWorkspaceFile(title, filters, defaultValue) {
   return selected?.length ? requireInsideWorkspace(selected[0].fsPath) : undefined;
 }
 
+function atomicWriteNewJson(file, value) {
+  const destination = requireInsideWorkspace(file);
+  if (fs.existsSync(destination)) throw new Error('Approval request output already exists.');
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  const temporary = `${destination}.${randomUUID()}.tmp`;
+  try {
+    fs.writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`, {
+      encoding: 'utf8', flag: 'wx', mode: 0o600
+    });
+    fs.renameSync(temporary, destination);
+  } finally {
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+  }
+  return destination;
+}
+
 async function activate(context) {
   const client = new ApiClient(context);
+  const patchPreviews = new PatchPreviewProvider();
   const model = new WorkspaceModel(context, client);
   const providers = VIEW_IDS.map(viewId => new AssuranceTreeProvider(viewId, model));
   const views = VIEW_IDS.map((viewId, index) =>
@@ -329,7 +368,50 @@ async function activate(context) {
     await showJson('Registered target — SELF_VALIDATION_NONFINAL', read);
   }
 
+  async function loadLatestPatchReview() {
+    const root = workspaceRoot();
+    identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+    const current = await model.load(true);
+    if (current.error) throw new Error(current.error);
+    const latest = current.snapshot?.latest_run;
+    if (!latest?.run_root) throw new Error('No validation run is available for patch review.');
+    const artifact = latest.artifacts?.find(value => value.name === 'patch-plan.json');
+    if (!artifact) throw new Error('The latest validation run has no patch plan.');
+    const response = await client.request('/v1/run-artifact', 'POST', {
+      run_root: requireInsideWorkspace(latest.run_root), artifact: 'patch-plan.json'
+    });
+    if (response.sha256 !== artifact.sha256) {
+      throw new Error('Patch plan changed between snapshot and artifact read.');
+    }
+    return patchReview(response.body, artifact, latest.run_root);
+  }
+
+  async function showPatchHunk(review, hunk) {
+    const sourceFile = requireInsideWorkspace(path.join(workspaceRoot(), hunk.relative_path));
+    const stat = fs.lstatSync(sourceFile);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 2 * 1024 * 1024) {
+      throw new Error('Patch preview source must be a non-symlink regular file up to 2 MiB.');
+    }
+    const source = fs.readFileSync(sourceFile, 'utf8');
+    const preview = previewHunk(source, hunk);
+    const previewUri = patchPreviews.document(hunk.relative_path, preview);
+    await vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(sourceFile), previewUri,
+      `ONSure ${hunk.hunk_id} — ${hunk.relative_path} — NONFINAL`, { preview: false });
+    output.appendLine(`[${new Date().toISOString()}] PATCH_PREVIEW:${review.patchPlanId}:${hunk.hunk_id}:NONFINAL`);
+  }
+
+  async function controlAutopilot(action) {
+    const root = workspaceRoot();
+    identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+    const response = await client.request(
+      '/v1/autopilot-control', 'POST', autopilotControlRequest(action));
+    output.appendLine(`[${new Date().toISOString()}] AUTOPILOT_CONTROL:${action}:NONFINAL`);
+    refreshAll();
+    await showJson(`Autopilot ${action} control`, response);
+  }
+
   context.subscriptions.push(...views, output, statusBar,
+    vscode.workspace.registerTextDocumentContentProvider('onsure-patch-preview', patchPreviews),
     vscode.commands.registerCommand('onsure.configure', async () => {
       const current = vscode.workspace.getConfiguration('onsure').get('localApiUrl') || 'http://127.0.0.1:47311';
       const url = await vscode.window.showInputBox({
@@ -375,6 +457,35 @@ async function activate(context) {
       refreshAll();
     }),
     vscode.commands.registerCommand('onsure.refresh', async () => refreshAll()),
+    vscode.commands.registerCommand('onsure.autopilotStatus', async () => {
+      try {
+        const current = await model.load(true);
+        if (current.error) throw new Error(current.error);
+        await showJson('Autopilot checkpoint — NONFINAL',
+          current.snapshot?.autopilot || { checkpoint: { state: 'NOT_PRESENT' } });
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure Autopilot status failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.autopilotPause', async () => {
+      try { await controlAutopilot('PAUSE'); }
+      catch (error) { vscode.window.showErrorMessage(`ONSure Autopilot pause failed: ${error.message}`); }
+    }),
+    vscode.commands.registerCommand('onsure.autopilotResume', async () => {
+      try { await controlAutopilot('RESUME'); }
+      catch (error) { vscode.window.showErrorMessage(`ONSure Autopilot resume failed: ${error.message}`); }
+    }),
+    vscode.commands.registerCommand('onsure.autopilotCancel', async () => {
+      try {
+        const confirmed = await vscode.window.showWarningMessage(
+          'Cancel the running ONSure Autopilot subprocess group? This does not roll back completed stages.',
+          { modal: true }, 'Request Cancellation');
+        if (confirmed !== 'Request Cancellation') return;
+        await controlAutopilot('CANCEL');
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure Autopilot cancel failed: ${error.message}`);
+      }
+    }),
     vscode.commands.registerCommand('onsure.learnProgram', async () => {
       try {
         const root = workspaceRoot();
@@ -508,6 +619,64 @@ async function activate(context) {
         await vscode.window.showTextDocument(document, { preview: false });
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure document open failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.reviewPatchPlan', async () => {
+      try {
+        const review = await loadLatestPatchReview();
+        const selected = await vscode.window.showQuickPick(review.hunks.map(hunk => ({
+          label: hunk.hunk_id,
+          description: hunk.relative_path,
+          detail: `${hunk.finding_id} — ${hunk.expected_effect || 'Approval-required change'}`,
+          hunk
+        })), {
+          title: `Review Patch Hunks — ${review.patchPlanId}`,
+          placeHolder: 'Select one hunk to open a digest-verified diff preview.'
+        });
+        if (!selected) return;
+        await showPatchHunk(review, selected.hunk);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure patch review failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.createHunkApprovalRequest', async () => {
+      try {
+        const review = await loadLatestPatchReview();
+        const selected = await vscode.window.showQuickPick(review.hunks.map(hunk => ({
+          label: hunk.hunk_id,
+          description: hunk.relative_path,
+          detail: `${hunk.finding_id} — ${hunk.expected_effect || 'Approval-required change'}`,
+          hunk
+        })), {
+          title: `Select Hunks for External Signature — ${review.patchPlanId}`,
+          canPickMany: true,
+          placeHolder: 'Default deny: only explicitly selected hunks enter the signing request.'
+        });
+        if (!selected?.length) return;
+        const branch = await vscode.window.showInputBox({
+          title: 'Requested Isolated Patch Branch',
+          value: `codex/${review.targetId}-approved-patch`,
+          prompt: 'A non-protected branch; the external signer must approve the same branch.'
+        });
+        if (!branch) return;
+        const request = hunkApprovalRequest(
+          review, selected.map(value => value.hunk.hunk_id), branch);
+        const safeId = review.patchPlanId.replace(/[^A-Za-z0-9._-]/g, '-');
+        const selectedFile = await vscode.window.showSaveDialog({
+          title: 'Save Unsigned Hunk Approval Request',
+          filters: { JSON: ['json'] },
+          defaultUri: vscode.Uri.file(path.join(workspaceRoot(), '.onsure', 'approval-requests',
+            `${safeId}-hunk-approval-request.json`))
+        });
+        if (!selectedFile) return;
+        const saved = atomicWriteNewJson(selectedFile.fsPath, request);
+        await context.workspaceState.update(LAST_PATCH_APPROVAL_REQUEST_KEY, saved);
+        refreshAll();
+        await showJson('Unsigned hunk approval request — EXTERNAL_SIGNATURE_REQUIRED', request);
+        vscode.window.showWarningMessage(
+          'ONSure created an unsigned request only. An external trusted approver must issue the signed receipt.');
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure approval request failed: ${error.message}`);
       }
     }),
     vscode.commands.registerCommand('onsure.applyApprovedPatch', async () => {

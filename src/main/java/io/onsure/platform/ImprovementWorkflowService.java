@@ -28,7 +28,7 @@ public final class ImprovementWorkflowService {
     public static final String APPROVAL_CONTRACT = "ONSURE_HUNK_APPROVAL_RECEIPT_V1";
     public static final String APPLY_RECEIPT_CONTRACT = "ONSURE_PATCH_APPLY_RECEIPT_V1";
     public static final String ROLLBACK_RECEIPT_CONTRACT = "ONSURE_PATCH_ROLLBACK_RECEIPT_V1";
-    public static final String APPROVAL_PURPOSE = "HUNK_APPROVAL";
+    public static final String APPROVAL_PURPOSE = "PATCH_HUNK_APPROVAL";
     private static final Map<String, String> SAFE_MARKER_REPLACEMENTS = Map.of(
             "ALLOW_UNTRUSTED_TOOL", "DENY_UNTRUSTED_TOOL",
             "SELF_APPROVE", "REQUIRE_INDEPENDENT_APPROVAL",

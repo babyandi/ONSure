@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
+const { createHash } = require('crypto');
 const { pathToFileURL } = require('url');
 const {
   LocalApiError,
@@ -11,8 +12,12 @@ const {
   learnRequest,
   validationRequest,
   snapshotRequest,
+  autopilotControlRequest,
   requireSnapshotBinding,
   patchApplyRequest,
+  patchReview,
+  previewHunk,
+  hunkApprovalRequest,
   gitCommitRequest,
   gitDraftPrRequest,
   surfaceRows,
@@ -35,6 +40,9 @@ test('snapshot and controlled delivery requests stay identity and approval bound
   assert.deepEqual(snapshotRequest(identity), {
     project_id: 'project-001', target_id: 'target-001'
   });
+  assert.deepEqual(autopilotControlRequest('pause'), { action: 'PAUSE' });
+  assert.deepEqual(autopilotControlRequest('RESUME'), { action: 'RESUME' });
+  assert.throws(() => autopilotControlRequest('kill'), /invalid/);
   const snapshot = {
     contract: 'ONSURE_LOCAL_WORKSPACE_SNAPSHOT_V1',
     project_id: identity.projectId,
@@ -63,6 +71,39 @@ test('snapshot and controlled delivery requests stay identity and approval bound
     worktreeRoot: root, changeSet: root, deliveryApproval: root, baseBranch: '../main',
     title: 'Unsafe branch', bodyFile: root
   }), /Base branch/);
+});
+
+test('patch preview and signing request remain digest hunk and safety bound', () => {
+  const source = 'policy=ALLOW_UNTRUSTED_TOOL\n';
+  const hunk = {
+    hunk_id: 'HUNK-aaaaaaaaaaaaaaaa', finding_id: 'FINDING-001',
+    relative_path: 'src/policy.txt',
+    preimage_sha256: createHash('sha256').update(source).digest('hex'),
+    match_text: 'ALLOW_UNTRUSTED_TOOL', replacement_text: 'DENY_UNTRUSTED_TOOL',
+    occurrence: 1, change_class: 'APPROVAL_REQUIRED', approval_state: 'PENDING'
+  };
+  const plan = {
+    contract: 'ONSURE_PATCH_PLAN_V1', patch_plan_id: 'PATCH-job-001', target_id: 'target-001',
+    hunks: [hunk], default_approval: 'DENY', worktree_required: true,
+    direct_main_write_allowed: false, force_push_allowed: false, merge_allowed: false,
+    final_claim_allowed: false
+  };
+  const review = patchReview(plan, { name: 'patch-plan.json', sha256: 'a'.repeat(64) },
+    path.join(root, '.onsure/validation-data/target-001/JOB-001'));
+  assert.equal(previewHunk(source, review.hunks[0]), 'policy=DENY_UNTRUSTED_TOOL\n');
+  const request = hunkApprovalRequest(
+    review, ['HUNK-aaaaaaaaaaaaaaaa'], 'fix/approved-patch', '2026-08-02T00:00:00Z');
+  assert.equal(request.contract, 'ONSURE_HUNK_APPROVAL_REQUEST_V1');
+  assert.equal(request.approval_purpose, 'PATCH_HUNK_APPROVAL');
+  assert.deepEqual(request.selected_hunk_ids, ['HUNK-aaaaaaaaaaaaaaaa']);
+  assert.equal(request.allow_merge, false);
+  assert.throws(() => previewHunk(`${source}drift`, review.hunks[0]), /digest has drifted/);
+  assert.throws(() => hunkApprovalRequest(review, ['unknown'], 'fix/branch'), /declared/);
+  assert.throws(() => hunkApprovalRequest(review, [hunk.hunk_id], 'main'), /non-protected/);
+  assert.throws(() => patchReview({ ...plan, merge_allowed: true },
+    { name: 'patch-plan.json', sha256: 'a'.repeat(64) }, root), /safety boundary/);
+  assert.throws(() => patchReview({ ...plan, hunks: [{ ...hunk, relative_path: '../escape' }] },
+    { name: 'patch-plan.json', sha256: 'a'.repeat(64) }, root), /workspace-relative/);
 });
 
 test('dedicated surfaces render profile plan run finding evidence and git state', () => {

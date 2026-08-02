@@ -18,6 +18,9 @@ VS Code에서 `Tasks: Run Task`를 열고 다음 작업을 실행한다.
 
 ```bash
 python3 scripts/onsure-autopilot.py resume
+python3 scripts/onsure-autopilot.py pause
+python3 scripts/onsure-autopilot.py cancel
+python3 scripts/onsure-autopilot.py status
 ```
 
 VS Code나 PC가 중단되어도 같은 명령이 마지막 PASS 다음 단계부터 재개한다.

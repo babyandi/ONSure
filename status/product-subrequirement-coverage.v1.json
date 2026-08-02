@@ -616,11 +616,14 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java"
+        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "vscode-extension/extension.js",
+        "vscode-extension/extension-core.js"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java"
+        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "vscode-extension/test/extension-core.test.js"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -628,10 +631,12 @@
         "VSCODE"
       ],
       "implemented_surfaces": [
-        "CORE"
+        "CORE",
+        "VSCODE"
       ],
       "missing_controls": [
-        "VSCODE_HUNK_APPROVAL_UI_NOT_IMPLEMENTED",
+        "WHOLE_FILE_APPROVAL_UI_NOT_IMPLEMENTED",
+        "VSCODE_EXTENSION_HOST_HUNK_FLOW_NOT_RUN",
         "APPROVAL_REPLAY_LEDGER_EXTERNAL_ANCHOR_NOT_IMPLEMENTED"
       ],
       "detector_controls": [
@@ -1131,10 +1136,19 @@
       "id": "NFR-04",
       "name": "Pause and resume long-running work",
       "normative_phrase": "중단·재개 가능한 장기 작업",
-      "implementation_status": "DESIGN_ONLY",
-      "verification_state": "NOT_RUN",
-      "code_refs": [],
-      "test_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NON_FINAL",
+      "code_refs": [
+        "scripts/onsure-autopilot.py",
+        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/io/onsure/platform/LocalWorkspaceSnapshotService.java",
+        "vscode-extension/extension.js"
+      ],
+      "test_refs": [
+        "tests/test_onsure_autopilot.py",
+        "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalWorkspaceSnapshotServiceTest.java",
+        "vscode-extension/test/extension-core.test.js"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE",
@@ -1142,11 +1156,15 @@
         "LOCAL_API",
         "VSCODE"
       ],
-      "implemented_surfaces": [],
+      "implemented_surfaces": [
+        "CLI",
+        "LOCAL_API",
+        "VSCODE"
+      ],
       "missing_controls": [
-        "JOB_CHECKPOINT_MISSING",
-        "CANCEL_RESUME_API_MISSING",
-        "RESTART_SAFE_QUEUE_MISSING"
+        "CORE_COOPERATIVE_JOB_CHECKPOINT_MISSING",
+        "RUNNING_CONTROLLER_CRASH_ORPHAN_REATTACH_MISSING",
+        "VSCODE_EXTENSION_HOST_CONTROL_FLOW_NOT_RUN"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
@@ -1268,10 +1286,10 @@
   "summary": {
     "total": 43,
     "implemented": 3,
-    "partial": 31,
+    "partial": 32,
     "stub": 5,
-    "design_only": 4,
-    "verification_not_run": 43
+    "design_only": 3,
+    "verification_not_run": 42
   },
   "assurance": {
     "current_main_local_gate": "NOT_RUN",

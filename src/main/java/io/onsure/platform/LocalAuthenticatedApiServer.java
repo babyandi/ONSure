@@ -85,6 +85,7 @@ public final class LocalAuthenticatedApiServer {
                 exchange, "validation.run")));
         server.createContext("/v1/run-artifact", authenticated(this::runArtifact));
         server.createContext("/v1/workspace-snapshot", authenticated(this::workspaceSnapshot));
+        server.createContext("/v1/autopilot-control", authenticated(this::autopilotControl));
         executor = Executors.newFixedThreadPool(4, runnable -> {
             Thread thread = new Thread(runnable, "onsure-local-api");
             thread.setDaemon(true);
@@ -248,6 +249,21 @@ public final class LocalAuthenticatedApiServer {
                 "contract", CONTRACT,
                 "request_id", requestId(),
                 "snapshot", snapshot,
+                "final_claim_allowed", false));
+    }
+
+    private void autopilotControl(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        JsonNode request = readJson(exchange);
+        Map<String, Object> control = new LocalAutopilotControlService(workspaceRoot)
+                .request(request.path("action").asText());
+        respond(exchange, 200, Map.of(
+                "contract", CONTRACT,
+                "request_id", requestId(),
+                "control", control,
                 "final_claim_allowed", false));
     }
 

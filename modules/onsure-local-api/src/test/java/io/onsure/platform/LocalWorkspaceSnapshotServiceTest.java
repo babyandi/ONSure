@@ -16,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class LocalWorkspaceSnapshotServiceTest {
     @TempDir Path temp;
+    @TempDir Path outside;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
     @Test
@@ -86,6 +87,54 @@ class LocalWorkspaceSnapshotServiceTest {
             assertEquals(0, service.snapshot("project-001", "target-001").get("run_count"));
         } catch (UnsupportedOperationException | java.nio.file.FileSystemException ignored) {
             // Platform does not support test symlinks; identity rejection remains verified.
+        }
+    }
+
+    @Test
+    void autopilotControlIsCheckpointBoundAndVisibleInSnapshot() throws Exception {
+        registerTarget();
+        LocalAutopilotControlService controls = new LocalAutopilotControlService(temp);
+        assertThrows(IllegalStateException.class, () -> controls.request("PAUSE"));
+
+        Path root = temp.resolve(".onsure/autopilot");
+        Files.createDirectories(root);
+        Path checkpoint = root.resolve("checkpoint.json");
+        mapper.writeValue(checkpoint.toFile(), Map.of(
+                "contract", "ONSURE_UNATTENDED_AUTOPILOT_V1",
+                "contract_sha256", "a".repeat(64),
+                "state", "RUNNING"));
+        Map<String, Object> control = controls.request("PAUSE");
+        assertEquals("PAUSED", control.get("desired_state"));
+        assertFalse(Boolean.TRUE.equals(control.get("final_claim_allowed")));
+
+        Map<String, Object> snapshot = new LocalWorkspaceSnapshotService(temp)
+                .snapshot("project-001", "target-001");
+        Map<String, Object> autopilot = map(snapshot.get("autopilot"));
+        assertEquals("AVAILABLE", map(autopilot.get("checkpoint")).get("state"));
+        assertEquals("AVAILABLE", map(autopilot.get("control")).get("state"));
+
+        mapper.writeValue(checkpoint.toFile(), Map.of(
+                "contract", "ONSURE_UNATTENDED_AUTOPILOT_V1",
+                "contract_sha256", "a".repeat(64),
+                "state", "WAITING_HUMAN_GATE"));
+        assertThrows(IllegalStateException.class, () -> controls.request("RESUME"));
+        assertThrows(IllegalArgumentException.class, () -> controls.request("UNKNOWN"));
+    }
+
+    @Test
+    void ignoresIntermediateSymlinkThatEscapesWorkspace() throws Exception {
+        registerTarget();
+        Path outsideRun = outside.resolve("target-001/JOB-OUTSIDE");
+        Files.createDirectories(outsideRun);
+        Files.writeString(outsideRun.resolve("job.json"),
+                "{\"jobId\":\"JOB-OUTSIDE\",\"status\":\"COMPLETED\"}");
+        try {
+            Files.createSymbolicLink(temp.resolve(".onsure/validation-data"), outside);
+            Map<String, Object> snapshot = new LocalWorkspaceSnapshotService(temp)
+                    .snapshot("project-001", "target-001");
+            assertEquals(0, snapshot.get("run_count"));
+        } catch (UnsupportedOperationException | java.nio.file.FileSystemException ignored) {
+            // Platform does not support test symlinks; other safety assertions remain active.
         }
     }
 

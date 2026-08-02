@@ -24,6 +24,8 @@
 - ZIP 순서·timestamp·compression을 정규화하는 재현 가능 VSIX 패키징 도구
 - 등록 identity에 결속된 Local Workspace Snapshot API와 14개 VS Code 전용 read view
 - 재시작 후 Profile·Plan·Run·Patch/Proof/Git receipt 복구 및 승인형 Patch·Commit·Draft PR 명령
+- source digest 검증 Hunk diff, 선택 Hunk 외부 서명 요청 계약과 승인 purpose 정합화
+- subprocess group 기반 Autopilot pause/resume/cancel 및 CLI·Local API·VS Code control journal
 
 ### Changed
 
@@ -34,6 +36,7 @@
   `APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED`로 fail-closed 응답한다.
 - VS Code Learn·Validation 요청은 금지된 source 및 product-state 경로 override를 더 이상 전송하지 않는다.
 - VS Code 14개 View는 하나의 캐시된 snapshot을 공유하며 다른 View와 동일 상태 목록을 반복하지 않는다.
+- Hunk 승인 purpose는 published receipt schema와 동일한 `PATCH_HUNK_APPROVAL`을 사용한다.
 
 ### Compatibility
 
