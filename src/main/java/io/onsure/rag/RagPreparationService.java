@@ -2,6 +2,7 @@ package io.onsure.rag;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.onsure.common.RagCandidatePreparer;
 import io.onsure.common.Sha256;
 import io.onsure.platform.ValidationModel.ValidationReport;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +22,7 @@ import java.util.Map;
  * validation never mutates the target program implicitly.
  */
 public final class RagPreparationService {
-    public static final String CANDIDATE_CONTRACT = "ONSURE_RAG_CANDIDATE_V1";
+    public static final String CANDIDATE_CONTRACT = RagCandidatePreparer.CANDIDATE_CONTRACT;
     public static final String BOOTSTRAP_CONTRACT = "ONSURE_TARGET_RAG_BOOTSTRAP_RECEIPT_V1";
     public static final String TARGET_ENVIRONMENT = ".onsure/rag-preparation";
     public static final String LEARNING_PROFILE_CONTRACT = "ONSURE_PROGRAM_LEARNING_PROFILE_V1";
@@ -37,38 +38,7 @@ public final class RagPreparationService {
 
     public Map<String, Object> prepareOwnCandidate(
             RagPreparationRequest request, Path onsureManagedRoot) throws Exception {
-        Path root = normalized(onsureManagedRoot);
-        Files.createDirectories(root);
-
-        String valueDecision = valueDecision(request);
-        Map<String, Object> candidate = new LinkedHashMap<>();
-        candidate.put("contract", CANDIDATE_CONTRACT);
-        candidate.put("candidate_id", "RAG-" + request.jobId());
-        candidate.put("owner", "ONSURE");
-        candidate.put("source_type", "VALIDATION");
-        candidate.put("target_id", request.targetId());
-        candidate.put("target_source_ref", request.targetSourceReference());
-        candidate.put("validation_report_id", request.reportId());
-        candidate.put("validation_decision", request.validationDecision());
-        candidate.put("value_decision", valueDecision);
-        candidate.put("rag_environment_required", !"LOCAL_ONLY".equals(valueDecision));
-        candidate.put("reason_codes", reasonCodes(request));
-        candidate.put("prepared_at", Instant.now().toString());
-        candidate.put("embedding_status", "NOT_RUN");
-        candidate.put("rag_index_status", "NOT_CREATED");
-        candidate.put("training_status", "NOT_RUN");
-        candidate.put("application_status", "NOT_RUN");
-        candidate.put("source_report_sha256", request.sourceReportSha256());
-
-        writeJson(root.resolve("candidates").resolve(request.jobId() + ".json"), candidate);
-        writeJson(root.resolve("receipts").resolve(request.jobId() + ".json"), Map.of(
-                "contract", "ONSURE_RAG_PREPARATION_RECEIPT_V1",
-                "candidate_id", candidate.get("candidate_id"),
-                "owner", "ONSURE",
-                "value_decision", valueDecision,
-                "candidate_sha256", Sha256.digest(mapper.writeValueAsBytes(candidate)),
-                "actual_ingestion_performed", false));
-        return Map.copyOf(candidate);
+        return new RagCandidatePreparer().prepare(request.candidateRequest(), onsureManagedRoot);
     }
 
     public Map<String, Object> bootstrapTargetEnvironment(
@@ -202,22 +172,7 @@ public final class RagPreparationService {
     }
 
     static String valueDecision(RagPreparationRequest request) {
-        if (request.rcaCount() > 0 || request.failureModeCount() > 0) {
-            return "RAG_READY";
-        }
-        if (request.findingCount() > 0 || request.nonPassingFixture()) {
-            return "RAG_REVIEW_REQUIRED";
-        }
-        return "LOCAL_ONLY";
-    }
-
-    private static List<String> reasonCodes(RagPreparationRequest request) {
-        var reasons = new java.util.ArrayList<String>();
-        if (request.failureModeCount() > 0) reasons.add("REUSABLE_FAILURE_MODE");
-        if (request.rcaCount() > 0) reasons.add("RCA_AND_REMEDIATION");
-        if (request.findingCount() > 0) reasons.add("VALIDATION_FINDING");
-        if (reasons.isEmpty()) reasons.add("NO_REUSABLE_KNOWLEDGE_DETECTED");
-        return List.copyOf(reasons);
+        return RagCandidatePreparer.valueDecision(request.candidateRequest());
     }
 
     private RagPreparationRequest request(ValidationReport report) {

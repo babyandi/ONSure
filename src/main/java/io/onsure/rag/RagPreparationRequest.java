@@ -1,5 +1,6 @@
 package io.onsure.rag;
 
+import io.onsure.common.RagCandidateRequest;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Objects;
@@ -61,5 +62,12 @@ public record RagPreparationRequest(
     private static String requireText(String value, String error) {
         if (value == null || value.isBlank()) throw new IllegalArgumentException(error);
         return value;
+    }
+
+    RagCandidateRequest candidateRequest() {
+        return new RagCandidateRequest(
+                jobId, reportId, targetId, targetSourceReference, validationDecision,
+                findingCount, failureModeCount, rcaCount, nonPassingFixture,
+                sourceReportSha256);
     }
 }
