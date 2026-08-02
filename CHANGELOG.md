@@ -22,6 +22,8 @@
 - VS Code용 실행계획 생성·서명 승인 확인·승인 Bundle 기반 Validation 명령
 - Node 내장 회귀 테스트와 Local API 등록·학습·Plan HTTP 통합 테스트
 - ZIP 순서·timestamp·compression을 정규화하는 재현 가능 VSIX 패키징 도구
+- 등록 identity에 결속된 Local Workspace Snapshot API와 14개 VS Code 전용 read view
+- 재시작 후 Profile·Plan·Run·Patch/Proof/Git receipt 복구 및 승인형 Patch·Commit·Draft PR 명령
 
 ### Changed
 
@@ -31,6 +33,7 @@
 - 승인되지 않은 등록 Target Validation은 내부 실행 실패 대신
   `APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED`로 fail-closed 응답한다.
 - VS Code Learn·Validation 요청은 금지된 source 및 product-state 경로 override를 더 이상 전송하지 않는다.
+- VS Code 14개 View는 하나의 캐시된 snapshot을 공유하며 다른 View와 동일 상태 목록을 반복하지 않는다.
 
 ### Compatibility
 

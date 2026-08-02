@@ -38,6 +38,8 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Bounded child-process runner
 - VS Code Extension·VSIX 및 OLicense·Service Case 상태 코어
 - VS Code의 등록 → 정적 학습 → 실행계획 생성 → 외부 서명 승인 검증 → 승인 Bundle 기반 Validation 연결
+- 등록 identity snapshot 기반 14개 VS Code 전용 View와 재시작 상태 복구
+- 서명 Patch 승인 → 격리 Worktree → Improvement Proof → 승인 Commit·Draft PR 연결
 
 ## 이번 메타감사에서 확인된 검출기 사각지대
 
@@ -97,9 +99,9 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Patch 적용 전 위험도·영향 범위·Rollback 방법 Preview
 - 프로젝트 전용 정보와 익명화된 범용 패턴의 분리·검증
 - MVP 수용 시나리오 11개 전 항목 및 실제 저장소 2회 연속 성공
-- VS Code의 Chat·Profile·Learning·Verification·Findings·Improvement·Evidence·Git/PR 개별 View
+- VS Code inline Diff preview와 파일·Hunk 단위 승인 작성 UX
 - Ask·Plan·Act·Autopilot 모드
-- VS Code 부분 Plan 승인 및 파일·Hunk 승인 UX
+- VS Code 부분 Plan 승인 UX
 - 장기 작업 Checkpoint·Cancel·Pause·Resume·재시작 복구
 - Provider·Model 교체성
 - Token·비용·데이터 전송 범위 가시화

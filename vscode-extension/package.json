@@ -21,6 +21,12 @@
     "onCommand:onsure.runValidation",
     "onCommand:onsure.runWorkflowRequest",
     "onCommand:onsure.openLastArtifact",
+    "onCommand:onsure.openArtifact",
+    "onCommand:onsure.openDocument",
+    "onCommand:onsure.applyApprovedPatch",
+    "onCommand:onsure.proveImprovement",
+    "onCommand:onsure.gitCommit",
+    "onCommand:onsure.gitDraftPr",
     "onCommand:onsure.clearToken"
   ],
   "contributes": {
@@ -35,6 +41,12 @@
       {"command": "onsure.runValidation", "title": "ONSure: Run Validation"},
       {"command": "onsure.runWorkflowRequest", "title": "ONSure: Run Signed Workflow Request"},
       {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"},
+      {"command": "onsure.openArtifact", "title": "ONSure: Open Run Artifact"},
+      {"command": "onsure.openDocument", "title": "ONSure: Open Workspace Document"},
+      {"command": "onsure.applyApprovedPatch", "title": "ONSure: Apply Approved Patch"},
+      {"command": "onsure.proveImprovement", "title": "ONSure: Prove Improvement"},
+      {"command": "onsure.gitCommit", "title": "ONSure: Commit Approved Worktree"},
+      {"command": "onsure.gitDraftPr", "title": "ONSure: Open Approved Draft PR"},
       {"command": "onsure.clearToken", "title": "ONSure: Clear Local API Token"}
     ],
     "viewsContainers": {
@@ -68,7 +80,11 @@
         {"command": "onsure.generatePlan", "when": "view == onsure.workspace", "group": "navigation@4"},
         {"command": "onsure.approvePlan", "when": "view == onsure.workspace", "group": "navigation@5"},
         {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@6"},
-        {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@7"}
+        {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@7"},
+        {"command": "onsure.applyApprovedPatch", "when": "view == onsure.improvement", "group": "navigation@1"},
+        {"command": "onsure.proveImprovement", "when": "view == onsure.improvement", "group": "navigation@2"},
+        {"command": "onsure.gitCommit", "when": "view == onsure.git", "group": "navigation@1"},
+        {"command": "onsure.gitDraftPr", "when": "view == onsure.git", "group": "navigation@2"}
       ],
       "commandPalette": [
         {"command": "onsure.clearToken"}

@@ -10,6 +10,12 @@ const {
   registrationRequests,
   learnRequest,
   validationRequest,
+  snapshotRequest,
+  requireSnapshotBinding,
+  patchApplyRequest,
+  gitCommitRequest,
+  gitDraftPrRequest,
+  surfaceRows,
   requireWorkflowBinding,
   verifiedIdentity,
   identityForWorkspace,
@@ -23,6 +29,74 @@ const identity = Object.freeze({
   targetId: 'target-001',
   targetType: 'GENERAL_SOFTWARE',
   sourceRoot: root
+});
+
+test('snapshot and controlled delivery requests stay identity and approval bound', () => {
+  assert.deepEqual(snapshotRequest(identity), {
+    project_id: 'project-001', target_id: 'target-001'
+  });
+  const snapshot = {
+    contract: 'ONSURE_LOCAL_WORKSPACE_SNAPSHOT_V1',
+    project_id: identity.projectId,
+    target_id: identity.targetId,
+    registered_target: { target: { sourceRoot: pathToFileURL(root).href } }
+  };
+  assert.equal(requireSnapshotBinding({ snapshot }, identity), snapshot);
+  assert.throws(() => requireSnapshotBinding({ snapshot: { ...snapshot, target_id: 'other' } }, identity), /not bound/);
+  assert.deepEqual(patchApplyRequest(root, path.join(root, '.onsure/runs/R1'), path.join(root, 'approval.json')), {
+    repository_root: root,
+    patch_plan_file: path.join(root, '.onsure/runs/R1/patch-plan.json'),
+    approval_receipt_file: path.join(root, 'approval.json')
+  });
+  assert.deepEqual(gitCommitRequest({
+    worktreeRoot: path.join(root, '.onsure/worktree'), patchReceipt: path.join(root, 'patch.json'),
+    improvementProof: path.join(root, 'proof.json'), deliveryApproval: path.join(root, 'delivery.json'),
+    commitMessage: 'fix approved finding'
+  }).commit_message, 'fix approved finding');
+  assert.deepEqual(gitDraftPrRequest({
+    worktreeRoot: path.join(root, '.onsure/worktree'), changeSet: path.join(root, 'change.json'),
+    deliveryApproval: path.join(root, 'delivery.json'), baseBranch: 'release/2026.08',
+    title: 'Approved improvement', bodyFile: path.join(root, 'body.md')
+  }).base_branch, 'release/2026.08');
+  assert.throws(() => gitCommitRequest({ ...identity, commitMessage: 'bad\nmessage' }), /Commit message/);
+  assert.throws(() => gitDraftPrRequest({
+    worktreeRoot: root, changeSet: root, deliveryApproval: root, baseBranch: '../main',
+    title: 'Unsafe branch', bodyFile: root
+  }), /Base branch/);
+});
+
+test('dedicated surfaces render profile plan run finding evidence and git state', () => {
+  const model = {
+    status: { state: 'RUNNING', independent_otester: 'NOT_RUN', independent_oaudit: 'NOT_RUN' },
+    local: { identity, workMode: 'PLAN', changeSet: '/tmp/change.json' },
+    snapshot: {
+      profile: { state: 'AVAILABLE', path: '/tmp/profile.json', body: {
+        profile_id: 'PROFILE-1', state: 'PROFILE_CANDIDATE', purpose: 'Validate software',
+        components: [{}], dependencies: [{}, {}], ai_components: [], data_flows: [], language_inventory: { Java: 1 }
+      } },
+      plan: { state: 'AVAILABLE', path: '/tmp/plan.json', body: {
+        plan_id: 'PLAN-1', approval: { state: 'AWAITING_USER_APPROVAL' }, risk: { level: 'HIGH', score: 70 },
+        allowed_actions: ['REVIEW'], resource_budget: { network_egress: 'DENY_BY_DEFAULT' }
+      } },
+      approved_plan: { state: 'NOT_PRESENT' }, validation_store: { body: { revision: 1 } }, run_count: 1,
+      runs: [{ run_root: '/tmp/run', job_id: 'JOB-1', decision: 'FAIL', job_status: 'COMPLETED', artifacts: [
+        { name: 'findings.json', size_bytes: 10 }, { name: 'patch-plan.json', size_bytes: 20 }
+      ] }],
+      latest_run: { run_root: '/tmp/run', finding_count: 1, evidence_count: 1,
+        findings: [{ findingId: 'F-1', title: 'Unsafe', severity: 'HIGH', status: 'OPEN' }],
+        evidence: [{ evidenceId: 'E-1', type: 'SOURCE', subject: 'Main.java' }],
+        artifacts: [{ name: 'patch-plan.json', size_bytes: 20 }] }
+    }
+  };
+  for (const view of [
+    'onsure.workspace', 'onsure.profile', 'onsure.inventory', 'onsure.requirements',
+    'onsure.threats', 'onsure.plan', 'onsure.runs', 'onsure.findings',
+    'onsure.improvement', 'onsure.evidence', 'onsure.git', 'onsure.approvals',
+    'onsure.runtime', 'onsure.admin'
+  ]) assert.ok(surfaceRows(view, model).length > 0, view);
+  assert.equal(surfaceRows('onsure.findings', model)[0].label, 'Unsafe');
+  assert.equal(surfaceRows('onsure.evidence', model)[0].label, 'E-1');
+  assert.equal(surfaceRows('onsure.runs', model)[0].children[0].command, 'onsure.openArtifact');
 });
 
 test('local API URL accepts only explicit loopback HTTP ports', () => {

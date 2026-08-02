@@ -10,6 +10,12 @@ const {
   registrationRequests,
   learnRequest,
   validationRequest,
+  snapshotRequest,
+  requireSnapshotBinding,
+  patchApplyRequest,
+  gitCommitRequest,
+  gitDraftPrRequest,
+  surfaceRows,
   requireWorkflowBinding,
   verifiedIdentity,
   identityForWorkspace,
@@ -23,6 +29,13 @@ const LAST_PLAN_KEY = 'onsure.lastExecutionPlan';
 const LAST_APPROVED_PLAN_KEY = 'onsure.lastApprovedExecutionPlan';
 const LAST_APPROVAL_RECEIPT_KEY = 'onsure.lastExecutionPlanApprovalReceipt';
 const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
+const LAST_WORKTREE_KEY = 'onsure.lastApprovedWorktree';
+const LAST_PATCH_APPROVAL_KEY = 'onsure.lastPatchApprovalReceipt';
+const LAST_PATCH_RECEIPT_KEY = 'onsure.lastPatchApplyReceipt';
+const LAST_IMPROVEMENT_PROOF_KEY = 'onsure.lastImprovementProof';
+const LAST_DELIVERY_APPROVAL_KEY = 'onsure.lastDeliveryApproval';
+const LAST_CHANGE_SET_KEY = 'onsure.lastGitChangeSet';
+const LAST_DRAFT_PR_RECEIPT_KEY = 'onsure.lastDraftPrReceipt';
 const REGISTERED_IDENTITY_KEY = 'onsure.registeredIdentity';
 const WORK_MODE_KEY = 'onsure.workMode';
 const WORK_MODES = Object.freeze(['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
@@ -91,67 +104,87 @@ class ApiClient {
   }
 }
 
-class AssuranceTreeProvider {
+class WorkspaceModel {
   constructor(context, client) {
     this.context = context;
     this.client = client;
+    this.value = {};
+    this.pending = null;
+  }
+
+  local() {
+    return {
+      identity: this.context.workspaceState.get(REGISTERED_IDENTITY_KEY),
+      workMode: this.context.workspaceState.get(WORK_MODE_KEY)
+        || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK',
+      lastWorkflow: this.context.workspaceState.get(LAST_WORKFLOW_KEY),
+      worktreeRoot: this.context.workspaceState.get(LAST_WORKTREE_KEY),
+      patchApproval: this.context.workspaceState.get(LAST_PATCH_APPROVAL_KEY),
+      patchReceipt: this.context.workspaceState.get(LAST_PATCH_RECEIPT_KEY),
+      improvementProof: this.context.workspaceState.get(LAST_IMPROVEMENT_PROOF_KEY),
+      deliveryApproval: this.context.workspaceState.get(LAST_DELIVERY_APPROVAL_KEY),
+      changeSet: this.context.workspaceState.get(LAST_CHANGE_SET_KEY),
+      draftPrReceipt: this.context.workspaceState.get(LAST_DRAFT_PR_RECEIPT_KEY)
+    };
+  }
+
+  async load(force = false) {
+    if (!force && this.pending) return this.pending;
+    if (!force && this.value.loaded) return this.value;
+    this.pending = this.fetch();
+    try { this.value = await this.pending; }
+    finally { this.pending = null; }
+    return this.value;
+  }
+
+  async fetch() {
+    const local = this.local();
+    try {
+      const status = await this.client.request('/v1/status');
+      let snapshot;
+      if (local.identity) {
+        const identity = identityForWorkspace(local.identity, workspaceRoot());
+        const response = await this.client.request(
+          '/v1/workspace-snapshot', 'POST', snapshotRequest(identity));
+        snapshot = requireSnapshotBinding(response, identity);
+        await restoreSnapshotState(this.context, snapshot);
+      }
+      return { loaded: true, status, snapshot, local: this.local() };
+    } catch (error) {
+      return { loaded: true, error: error.message, local: this.local() };
+    }
+  }
+
+  invalidate() { this.value = {}; }
+}
+
+class AssuranceTreeProvider {
+  constructor(viewId, model) {
+    this.viewId = viewId;
+    this.model = model;
     this._onDidChangeTreeData = new vscode.EventEmitter();
     this.onDidChangeTreeData = this._onDidChangeTreeData.event;
-    this.status = null;
-    this.error = null;
   }
 
   refresh() { this._onDidChangeTreeData.fire(undefined); }
-  getTreeItem(element) { return element; }
+  getTreeItem(element) { return treeItem(element); }
 
   async getChildren(element) {
     if (element) return element.children || [];
-    try {
-      this.status = await this.client.request('/v1/status');
-      this.error = null;
-    } catch (error) {
-      this.error = error.message;
-    }
-    const items = [];
-    if (this.error) {
-      items.push(item('Local API', 'Unavailable', 'error', 'onsure.configure'));
-      items.push(item('Reason', this.error, 'warning'));
-    } else if (this.status) {
-      items.push(item('Runtime', this.status.state || 'UNKNOWN', 'server-process'));
-      items.push(item('Program Learning', this.status.program_learning || 'UNKNOWN', 'symbol-class'));
-      items.push(item('Behavior Learning', this.status.behavior_learning || 'UNKNOWN', 'pulse'));
-      items.push(item('Planning / Review / RCA', this.status.planning_review_rca || 'UNKNOWN', 'checklist'));
-      items.push(item('Validation', this.status.validation || 'UNKNOWN', 'beaker'));
-      items.push(item('Improvement', this.status.patch_application || 'UNKNOWN', 'diff'));
-      items.push(item('Improvement Proof', this.status.improvement_proof || 'UNKNOWN', 'verified-filled'));
-      items.push(item('Git Delivery', this.status.git_delivery || 'UNKNOWN', 'git-pull-request'));
-      items.push(item('OLicense', this.status.license || 'UNKNOWN', 'key'));
-      items.push(item('Service Case', this.status.service_case || 'UNKNOWN', 'briefcase'));
-      items.push(item('Independent OTester', this.status.independent_otester || 'NOT_RUN', 'shield'));
-      items.push(item('Independent OAudit', this.status.independent_oaudit || 'NOT_RUN', 'verified'));
-    }
-    const lastProfile = this.context.workspaceState.get(LAST_PROFILE_KEY);
-    const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
-    const lastWorkflow = this.context.workspaceState.get(LAST_WORKFLOW_KEY);
-    const identity = this.context.workspaceState.get(REGISTERED_IDENTITY_KEY);
-    const workMode = this.context.workspaceState.get(WORK_MODE_KEY)
-      || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
-    items.push(item('Work Mode', workMode, 'symbol-enum', 'onsure.selectMode'));
-    if (identity) items.push(item(
-      'Registered Target', `${identity.projectId}/${identity.targetId}`, 'workspace-trusted'));
-    if (lastProfile) items.push(item('Last Program Profile', lastProfile, 'json'));
-    if (lastRun) items.push(item('Last Run', lastRun, 'folder-opened', 'onsure.openLastArtifact'));
-    if (lastWorkflow) items.push(item('Last Workflow', lastWorkflow, 'run-all'));
-    return items;
+    return surfaceRows(this.viewId, await this.model.load());
   }
 }
 
-function item(label, description, icon, command) {
-  const value = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
-  value.description = String(description);
-  value.tooltip = `${label}: ${description}`;
-  value.iconPath = new vscode.ThemeIcon(icon);
-  if (command) value.command = { command, title: label };
+function treeItem(element) {
+  const collapsible = element.children?.length
+    ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None;
+  const value = new vscode.TreeItem(element.label, collapsible);
+  value.description = element.description;
+  value.tooltip = `${element.label}: ${element.description}`;
+  value.iconPath = new vscode.ThemeIcon(element.icon);
+  if (element.command) value.command = {
+    command: element.command, title: element.label, arguments: element.args || []
+  };
   return value;
 }
 
@@ -180,17 +213,51 @@ async function showJson(title, value) {
   vscode.window.setStatusBarMessage(`ONSure: ${title}`, 5000);
 }
 
+async function restoreSnapshotState(context, snapshot) {
+  const updates = [
+    [LAST_PROFILE_KEY, snapshot.profile?.path],
+    [LAST_PLAN_KEY, snapshot.plan?.path],
+    [LAST_APPROVED_PLAN_KEY, snapshot.approved_plan?.path],
+    [LAST_RUN_KEY, snapshot.latest_run?.run_root],
+    [LAST_PATCH_RECEIPT_KEY, snapshot.delivery?.patch_apply_receipt?.path],
+    [LAST_IMPROVEMENT_PROOF_KEY, snapshot.delivery?.improvement_proof?.path],
+    [LAST_CHANGE_SET_KEY, snapshot.delivery?.change_set?.path],
+    [LAST_DRAFT_PR_RECEIPT_KEY, snapshot.delivery?.draft_pr_receipt?.path]
+  ];
+  const hasAppliedPatch = snapshot.delivery?.patch_apply_receipt?.state === 'AVAILABLE';
+  updates.push([LAST_WORKTREE_KEY, hasAppliedPatch
+    ? path.join(workspaceRoot(), '.onsure', 'worktrees', 'approved-patch') : undefined]);
+  for (const [key, value] of updates) {
+    await context.workspaceState.update(key, value ? requireInsideWorkspace(value) : undefined);
+  }
+}
+
+async function selectWorkspaceFile(title, filters, defaultValue) {
+  const root = workspaceRoot();
+  const selected = await vscode.window.showOpenDialog({
+    title, canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+    filters, defaultUri: vscode.Uri.file(defaultValue || root)
+  });
+  return selected?.length ? requireInsideWorkspace(selected[0].fsPath) : undefined;
+}
+
 async function activate(context) {
   const client = new ApiClient(context);
-  const provider = new AssuranceTreeProvider(context, client);
-  const views = VIEW_IDS.map(viewId =>
-    vscode.window.createTreeView(viewId, { treeDataProvider: provider }));
+  const model = new WorkspaceModel(context, client);
+  const providers = VIEW_IDS.map(viewId => new AssuranceTreeProvider(viewId, model));
+  const views = VIEW_IDS.map((viewId, index) =>
+    vscode.window.createTreeView(viewId, { treeDataProvider: providers[index] }));
   const output = vscode.window.createOutputChannel('ONSure');
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   statusBar.text = '$(shield) ONSure: NON_FINAL';
   statusBar.tooltip = 'ONSure self-validation is nonfinal until independent gates pass.';
   statusBar.command = 'onsure.refresh';
   statusBar.show();
+
+  function refreshAll() {
+    model.invalidate();
+    providers.forEach(provider => provider.refresh());
+  }
 
   async function executeWorkflow(operation, request, title) {
     const workflow = await vscode.window.withProgress({
@@ -202,7 +269,7 @@ async function activate(context) {
     const result = workflow.result || {};
     if (result.run_root) await context.workspaceState.update(LAST_RUN_KEY, result.run_root);
     output.appendLine(`[${new Date().toISOString()}] ${operation}: ${JSON.stringify(result)}`);
-    provider.refresh();
+    refreshAll();
     await showJson(`${title} — SELF_VALIDATION_NONFINAL`, workflow);
     return workflow;
   }
@@ -258,7 +325,7 @@ async function activate(context) {
     await context.workspaceState.update(REGISTERED_IDENTITY_KEY, identity);
     await context.workspaceState.update(LAST_WORKFLOW_KEY, 'project.read-target');
     output.appendLine(`[${new Date().toISOString()}] REGISTERED_TARGET:${projectId}/${targetId}:SELF_VALIDATION_NONFINAL`);
-    provider.refresh();
+    refreshAll();
     await showJson('Registered target — SELF_VALIDATION_NONFINAL', read);
   }
 
@@ -278,7 +345,7 @@ async function activate(context) {
         validateInput: value => value.length >= 32 ? undefined : 'Token must contain at least 32 characters.'
       });
       if (token) await context.secrets.store(TOKEN_KEY, token);
-      provider.refresh();
+      refreshAll();
     }),
     vscode.commands.registerCommand('onsure.clearToken', async () => {
       await context.secrets.delete(TOKEN_KEY);
@@ -305,9 +372,9 @@ async function activate(context) {
       await context.workspaceState.update(WORK_MODE_KEY, selected.label);
       statusBar.text = `$(shield) ONSure: ${selected.label} / NON_FINAL`;
       output.appendLine(`[${new Date().toISOString()}] MODE_CHANGE:${current}->${selected.label}:SELF_VALIDATION_NONFINAL`);
-      provider.refresh();
+      refreshAll();
     }),
-    vscode.commands.registerCommand('onsure.refresh', async () => provider.refresh()),
+    vscode.commands.registerCommand('onsure.refresh', async () => refreshAll()),
     vscode.commands.registerCommand('onsure.learnProgram', async () => {
       try {
         const root = workspaceRoot();
@@ -423,9 +490,136 @@ async function activate(context) {
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure artifact open failed: ${error.message}`);
       }
+    }),
+    vscode.commands.registerCommand('onsure.openArtifact', async (runRoot, artifact) => {
+      try {
+        const result = await client.request('/v1/run-artifact', 'POST', {
+          run_root: requireInsideWorkspace(runRoot), artifact: String(artifact)
+        });
+        await showJson(String(artifact), result.body);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure artifact open failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.openDocument', async file => {
+      try {
+        const document = await vscode.workspace.openTextDocument(
+          vscode.Uri.file(requireInsideWorkspace(file)));
+        await vscode.window.showTextDocument(document, { preview: false });
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure document open failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.applyApprovedPatch', async () => {
+      try {
+        const root = workspaceRoot();
+        identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+        const runRoot = context.workspaceState.get(LAST_RUN_KEY);
+        if (!runRoot) throw new Error('Run validation and generate a patch plan first.');
+        const approval = await selectWorkspaceFile(
+          'Select Signed ONSure Patch Approval Receipt', { JSON: ['json'] });
+        if (!approval) return;
+        const workflow = await executeWorkflow('patch.apply', patchApplyRequest(
+          root, requireInsideWorkspace(runRoot), approval), 'Applying approved patch in isolated worktree');
+        const worktree = requireInsideWorkspace(workflow.result?.worktree);
+        const receipt = path.join(root, '.onsure', 'improvement-evidence', 'patch-apply-receipt.json');
+        await context.workspaceState.update(LAST_PATCH_APPROVAL_KEY, approval);
+        await context.workspaceState.update(LAST_WORKTREE_KEY, worktree);
+        await context.workspaceState.update(LAST_PATCH_RECEIPT_KEY, receipt);
+        refreshAll();
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure approved patch failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.proveImprovement', async () => {
+      try {
+        const root = workspaceRoot();
+        identityForWorkspace(context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+        const patchReceipt = context.workspaceState.get(LAST_PATCH_RECEIPT_KEY);
+        if (!patchReceipt) throw new Error('Apply an approved patch before proving improvement.');
+        const baseline = await selectWorkspaceFile(
+          'Select Baseline Validation Report', { JSON: ['json'] }, context.workspaceState.get(LAST_RUN_KEY));
+        if (!baseline) return;
+        const current = await selectWorkspaceFile(
+          'Select Current Validation Report from Approved Worktree', { JSON: ['json'] },
+          context.workspaceState.get(LAST_WORKTREE_KEY));
+        if (!current) return;
+        await executeWorkflow('improvement.prove', {
+          baseline_report_file: baseline,
+          current_report_file: current,
+          patch_apply_receipt_file: requireInsideWorkspace(patchReceipt)
+        }, 'Proving improvement against regression evidence');
+        await context.workspaceState.update(LAST_IMPROVEMENT_PROOF_KEY,
+          path.join(root, '.onsure', 'improvement-evidence', 'improvement-proof.json'));
+        refreshAll();
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure improvement proof failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.gitCommit', async () => {
+      try {
+        const worktree = context.workspaceState.get(LAST_WORKTREE_KEY);
+        const patchReceipt = context.workspaceState.get(LAST_PATCH_RECEIPT_KEY);
+        const proof = context.workspaceState.get(LAST_IMPROVEMENT_PROOF_KEY);
+        if (!worktree || !patchReceipt || !proof) {
+          throw new Error('Approved worktree, patch receipt, and improvement proof are required.');
+        }
+        const deliveryApproval = await selectWorkspaceFile(
+          'Select Signed ONSure Git Delivery Approval', { JSON: ['json'] });
+        if (!deliveryApproval) return;
+        const commitMessage = await vscode.window.showInputBox({
+          title: 'Approved Commit Message', prompt: 'One line, up to 200 characters.',
+          validateInput: value => value && value.length <= 200 && !/[\r\n]/.test(value)
+            ? undefined : 'Enter 1-200 characters on one line.'
+        });
+        if (!commitMessage) return;
+        await executeWorkflow('git.commit', gitCommitRequest({
+          worktreeRoot: worktree, patchReceipt, improvementProof: proof,
+          deliveryApproval, commitMessage
+        }), 'Committing approved worktree');
+        await context.workspaceState.update(LAST_DELIVERY_APPROVAL_KEY, deliveryApproval);
+        await context.workspaceState.update(LAST_CHANGE_SET_KEY,
+          path.join(workspaceRoot(), '.onsure', 'git', 'change-set.json'));
+        refreshAll();
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure Git commit failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.gitDraftPr', async () => {
+      try {
+        const worktree = context.workspaceState.get(LAST_WORKTREE_KEY);
+        const changeSet = context.workspaceState.get(LAST_CHANGE_SET_KEY);
+        if (!worktree || !changeSet) {
+          throw new Error('Approved commit and change set are required.');
+        }
+        const deliveryApproval = context.workspaceState.get(LAST_DELIVERY_APPROVAL_KEY)
+          || await selectWorkspaceFile(
+            'Select Consumed ONSure Git Delivery Approval', { JSON: ['json'] });
+        if (!deliveryApproval) return;
+        const baseBranch = await vscode.window.showInputBox({
+          title: 'Approved Base Branch', value: 'main', prompt: 'Must match the signed delivery approval.'
+        });
+        if (!baseBranch) return;
+        const title = await vscode.window.showInputBox({
+          title: 'Draft PR Title', validateInput: value => value && value.length <= 250 && !/[\r\n]/.test(value)
+            ? undefined : 'Enter 1-250 characters on one line.'
+        });
+        if (!title) return;
+        const bodyFile = await selectWorkspaceFile(
+          'Select Draft PR Body Markdown', { Markdown: ['md', 'markdown'], Text: ['txt'] });
+        if (!bodyFile) return;
+        await executeWorkflow('git.draft-pr', gitDraftPrRequest({
+          worktreeRoot: worktree, changeSet, deliveryApproval, baseBranch, title, bodyFile
+        }), 'Pushing approved branch and opening Draft PR');
+        await context.workspaceState.update(LAST_DRAFT_PR_RECEIPT_KEY,
+          path.join(workspaceRoot(), '.onsure', 'git', 'draft-pr-receipt.json'));
+        refreshAll();
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure Draft PR failed: ${error.message}`);
+      }
     })
   );
-  provider.refresh();
+  refreshAll();
 }
 
 function deactivate() {}

@@ -24,6 +24,12 @@ REQUIRED_COMMANDS = {
     "onsure.runValidation",
     "onsure.runWorkflowRequest",
     "onsure.openLastArtifact",
+    "onsure.openArtifact",
+    "onsure.openDocument",
+    "onsure.applyApprovedPatch",
+    "onsure.proveImprovement",
+    "onsure.gitCommit",
+    "onsure.gitDraftPr",
     "onsure.clearToken",
 }
 REQUIRED_VIEWS = {
@@ -81,6 +87,7 @@ def main() -> int:
         errors.append("EXTENSION_DETERMINISTIC_PACKAGE_SCRIPT_MISSING")
 
     source = source_file.read_text(encoding="utf-8")
+    core = core_file.read_text(encoding="utf-8")
     for token in (
         "context.secrets.get", "context.secrets.store", "context.secrets.delete",
         "Authorization", "127\\.0\\.0\\.1", "localhost", "/v1/workflow",
@@ -92,8 +99,12 @@ def main() -> int:
         "identityForWorkspace", "project.read-target",
         "plan.generate", "plan.approve", "approved_execution_plan_file",
         "original_execution_plan_file", "signed_approval_receipt",
+        "/v1/workspace-snapshot", "requireSnapshotBinding", "surfaceRows",
+        "patch.apply", "improvement.prove", "git.commit", "git.draft-pr",
+        "LAST_PATCH_RECEIPT_KEY", "LAST_IMPROVEMENT_PROOF_KEY",
+        "LAST_CHANGE_SET_KEY", "LAST_DRAFT_PR_RECEIPT_KEY",
     ):
-        if token not in source:
+        if token not in source and token not in core:
             errors.append(f"SOURCE_TOKEN_MISSING:{token}")
     if re.search(r"https://(?!127\.0\.0\.1|localhost|\[::1\])", source):
         errors.append("NON_LOOPBACK_URL_LITERAL_FOUND")

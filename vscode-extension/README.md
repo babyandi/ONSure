@@ -30,12 +30,32 @@ Validation does not accept source, target-policy or product-state path overrides
 target using the reviewed execution profile cannot execute fixtures without the original plan,
 derived approved plan and consumed signed approval receipt.
 
+## Dedicated assurance surfaces and recovery
+
+The 14 Activity Bar views use one identity-bound `/v1/workspace-snapshot` read model. Profile,
+plan, run, finding, evidence, approval, runtime and Git delivery rows are no longer duplicate
+status lists. Restarting the Extension Host recovers fixed workspace artifacts for the active
+registered target; a source-root or identity mismatch fails closed. Run artifacts and snapshot
+documents are openable only when they remain inside the active workspace.
+
+The controlled improvement and delivery sequence is:
+
+1. Select a signed patch approval and run `ONSure: Apply Approved Patch`.
+2. Validate the isolated approved worktree and select baseline/current reports with
+   `ONSure: Prove Improvement`.
+3. Select a signed delivery approval and run `ONSure: Commit Approved Worktree`.
+4. Select the reviewed PR body and run `ONSure: Open Approved Draft PR`.
+
+The Java services revalidate signed receipts, digests, expiry, branch, changed-file set and
+replay state. Direct main writes, force push and merge remain prohibited. The extension never
+claims that a self-validation result is final.
+
 ## Current limit
 
-The Activity Bar contribution and controlled Local API path are implemented. Dedicated Chat,
-Profile, Findings, Diff/Hunk Approval, Evidence and Git/PR interaction models remain partial.
-An installed VS Code Extension Host end-to-end run and independent OTester/OAudit are still
-required before any release claim.
+Dedicated read views and signed controlled actions are implemented. Inline diff preview,
+per-hunk approval authoring, long-running pause/resume/cancel, semantic Ask/Plan/Act agent modes,
+and installed VS Code Extension Host end-to-end automation remain partial or `NOT_RUN`.
+Independent OTester/OAudit are still required before any release claim.
 
 `npm run package` invokes the repository-owned deterministic VSIX wrapper. It normalizes ZIP entry
 order, timestamps and compression so clean clones of the same source produce the same package
