@@ -112,11 +112,11 @@
 
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
-| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (현재 local 2회, 각 242 tests; 독립 clone 재검증 예정) |
+| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (local 2회 + 원격 독립 clone, 각 242 tests) |
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 242 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (104 tests, 현재 local; 독립 clone 재검증 예정) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (104 tests, local + 원격 독립 clone) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (local + 독립 clone byte-identical VSIX; root license warning) |
@@ -129,7 +129,7 @@
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (627 cutover + rollback files; 현재 변경분 재검증 예정) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (627 cutover + rollback files, local + 원격 독립 clone full) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
 | DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
@@ -139,9 +139,10 @@ Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 �
 VS Code 등록·승인 흐름 implementation HEAD `bf1ace9`, 생성 의존성 경계 fix `c566fe1`,
 재현 VSIX implementation/fix HEAD `980d823`·`f5f55d5`, workspace snapshot/전용 view HEAD
 `0db1f12`·`aa30f84`와 Hunk review/Autopilot control HEAD `d7c989a`를 통합했다.
-현재 local 권위 build 242/242, modular package 11/11, API 238/238, Python 104/104,
-Node 7/7, SBOM과 build/operational boundary가 통과했다. 현재 변경분의 원격 독립 clone,
-627개 중첩 cutover/rollback과 byte-identical VSIX는 재검증 후 이 문서에 추가 기록한다.
+local 및 원격 독립 clone HEAD `f5849782cdc49e52c4b724173e93b1a8b8950bfe`에서 권위 build
+242/242, modular package 11/11, API 238/238, Python 104/104, Node 7/7, SBOM,
+build/operational boundary와 627개 중첩 cutover/rollback이 통과했다. 두 환경의 VSIX SHA-256은
+`9d2d77b9f31acc9db3ebdc1efeb9504eac2f441336c1c7424b064be6cf1c08ef`로 동일하다.
 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network
 namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 
