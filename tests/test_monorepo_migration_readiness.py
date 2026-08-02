@@ -1,4 +1,5 @@
 import pathlib
+import stat
 import sys
 import unittest
 
@@ -30,6 +31,11 @@ class MonorepoMigrationManifestTest(unittest.TestCase):
             "Apache-2.0",
             manifest.detect_license(b"// SPDX-License-Identifier: Apache-2.0\n"),
         )
+
+    def test_untracked_modes_match_git_index_modes_before_and_after_commit(self):
+        self.assertEqual("100644", manifest.normalized_git_mode(stat.S_IFREG | 0o644))
+        self.assertEqual("100755", manifest.normalized_git_mode(stat.S_IFREG | 0o755))
+        self.assertEqual("120000", manifest.normalized_git_mode(stat.S_IFLNK | 0o777))
 
     def test_absolute_workspace_detection_avoids_escaped_message_false_positive(self):
         self.assertTrue(

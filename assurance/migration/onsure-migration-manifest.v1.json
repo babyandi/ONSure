@@ -3542,8 +3542,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "b823c651c4835862b51dfcac32ff9f5023c1b7d7ff3d41d3bbd9b1b4cabcfe0a",
-      "size_bytes": 7642
+      "sha256": "4f6fe147b6c0da11142b74609138c3504938980557531a2ba17b3c025780ab78",
+      "size_bytes": 7943
     },
     {
       "current_path": "scripts/onsure_verify_run.py",
@@ -5860,7 +5860,7 @@
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
       "future_path_candidate": "products/onsure/src/main/java/io/onsure/rag/RagPreparationRequest.java",
-      "git_mode": "0o600",
+      "git_mode": "100644",
       "license": "UNDECLARED",
       "repository_owner": "babyandi/ONSure",
       "sensitive_information": {
@@ -6947,8 +6947,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ad52f03743ee93353e729384c1638b10c5998623a38af177eebb602481f52c96",
-      "size_bytes": 1895
+      "sha256": "da13ba9b5e06049483f4542eadeed307151dd353c5ec59a55c3275985f85e0b6",
+      "size_bytes": 2251
     },
     {
       "current_path": "tests/test_odesign_oui_learning.py",
@@ -7156,6 +7156,6 @@
       "NO_PATTERN_MATCH": 473,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 4088644
+    "total_size_bytes": 4089301
   }
 }

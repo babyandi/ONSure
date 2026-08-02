@@ -11,6 +11,7 @@ import pathlib
 import pwd
 import grp
 import re
+import stat as stat_module
 import subprocess
 from collections import Counter
 from typing import Iterable
@@ -108,6 +109,13 @@ def future_path(relative_path: str) -> str:
     return f"{FUTURE_ROOT}/{relative_path}"
 
 
+def normalized_git_mode(filesystem_mode: int) -> str:
+    """Return the Git index mode an untracked filesystem entry will receive."""
+    if stat_module.S_ISLNK(filesystem_mode):
+        return "120000"
+    return "100755" if filesystem_mode & 0o111 else "100644"
+
+
 def file_entry(path: pathlib.Path, modes: dict[str, str]) -> dict[str, object]:
     relative = path.relative_to(ROOT).as_posix()
     raw = content_bytes(path)
@@ -125,7 +133,7 @@ def file_entry(path: pathlib.Path, modes: dict[str, str]) -> dict[str, object]:
         "future_path_candidate": future_path(relative),
         "sha256": hashlib.sha256(raw).hexdigest(),
         "size_bytes": len(raw),
-        "git_mode": modes.get(relative, oct(stat.st_mode & 0o777)),
+        "git_mode": modes.get(relative, normalized_git_mode(stat.st_mode)),
         "filesystem_owner": owner,
         "filesystem_group": group,
         "repository_owner": "babyandi/ONSure",
