@@ -39,7 +39,10 @@ def main() -> int:
     package_file = EXTENSION / "package.json"
     source_file = EXTENSION / "extension.js"
     icon_file = EXTENSION / "media/onsure.svg"
-    for path in (package_file, source_file, icon_file, EXTENSION / ".vscodeignore"):
+    policy_file = EXTENSION / "work-mode-policy.js"
+    view_model_file = EXTENSION / "view-model.js"
+    for path in (package_file, source_file, policy_file, view_model_file,
+                 icon_file, EXTENSION / ".vscodeignore"):
         if not path.is_file():
             errors.append(f"MISSING:{path.relative_to(ROOT)}")
     if errors:
@@ -57,6 +60,9 @@ def main() -> int:
     view_ids = {item.get("id") for item in views}
     if not REQUIRED_VIEWS.issubset(view_ids):
         errors.append(f"ONSURE_VIEW_SET_MISSING:{sorted(REQUIRED_VIEWS - view_ids)}")
+    required_view_activation = {f"onView:{view_id}" for view_id in REQUIRED_VIEWS}
+    if not required_view_activation.issubset(activation):
+        errors.append(f"VIEW_ACTIVATION_EVENT_MISSING:{sorted(required_view_activation - activation)}")
     mode_property = (package.get("contributes", {}).get("configuration", {})
                      .get("properties", {}).get("onsure.defaultWorkMode", {}))
     if set(mode_property.get("enum", [])) != REQUIRED_MODES:
@@ -68,7 +74,8 @@ def main() -> int:
     if package.get("scripts", {}).get("check") != "node --check extension.js":
         errors.append("EXTENSION_NODE_CHECK_SCRIPT_MISSING")
 
-    source = source_file.read_text(encoding="utf-8")
+    source = "\n".join(path.read_text(encoding="utf-8") for path in
+                       (source_file, policy_file, view_model_file))
     for token in (
         "context.secrets.get", "context.secrets.store", "context.secrets.delete",
         "Authorization", "127\\.0\\.0\\.1", "localhost", "/v1/workflow",
@@ -76,6 +83,7 @@ def main() -> int:
         "runWorkflowRequest", "requireInsideWorkspace", "fs.readFileSync",
         "Workflow request file must be inside the active workspace",
         "WORK_MODES", "VIEW_IDS", "MODE_CHANGE", "onsure.selectMode",
+        "authorize(mode, classifyOperation(operation), operation)", "rowsForView",
     ):
         if token not in source:
             errors.append(f"SOURCE_TOKEN_MISSING:{token}")
@@ -94,6 +102,27 @@ def main() -> int:
         node_state = "PASS" if result.returncode == 0 else "FAIL"
         if result.returncode != 0:
             errors.append("NODE_SYNTAX_FAIL:" + result.stderr[-500:])
+        behavior_script = r'''
+const policy = require('./work-mode-policy');
+const views = require('./view-model');
+function check(value, message) { if (!value) throw new Error(message); }
+check(policy.WORK_MODES.length === 8, 'MODE_COUNT');
+check(!policy.authorize('ASK', 'ACT', 'patch.apply').allowed, 'ASK_MUTATION_ALLOWED');
+check(policy.authorize('PLAN', 'PLAN', 'plan.create').allowed, 'PLAN_DENIED');
+check(!policy.authorize('PLAN', 'ACT', 'git.commit').allowed, 'PLAN_ACT_ALLOWED');
+check(policy.authorize('ACT', 'ACT', 'git.commit').allowed, 'ACT_DENIED');
+check(policy.authorize('AUTOPILOT', 'AUTOPILOT', 'job.control').allowed, 'AUTOPILOT_DENIED');
+check(!policy.authorize('AUTOPILOT', 'ACT', 'git.merge').allowed, 'AUTOPILOT_MERGE_ALLOWED');
+check(!policy.authorize('OFFLINE', 'ACT', 'git.push').allowed, 'OFFLINE_PUSH_ALLOWED');
+check(views.VIEW_IDS.length === 14, 'VIEW_COUNT');
+const rendered = views.VIEW_IDS.map(id => JSON.stringify(views.rowsForView(id, {status:{}, mode:'ASK'})));
+check(new Set(rendered).size === 14, 'VIEW_MODELS_NOT_DISTINCT');
+'''
+        behavior = subprocess.run(
+            [node, "-e", behavior_script], cwd=EXTENSION,
+            text=True, capture_output=True, check=False)
+        if behavior.returncode != 0:
+            errors.append("VSCODE_BEHAVIOR_MODEL_FAIL:" + behavior.stderr[-500:])
     elif args.require_node:
         errors.append("NODE_REQUIRED_NOT_INSTALLED")
 

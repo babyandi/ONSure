@@ -3,6 +3,8 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const { WORK_MODES, classifyOperation, authorize } = require('./work-mode-policy');
+const { VIEW_IDS, rowsForView } = require('./view-model');
 
 const TOKEN_KEY = 'onsure.localApiToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
@@ -10,13 +12,6 @@ const LAST_PROFILE_KEY = 'onsure.lastProgramProfile';
 const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
 const LAST_RESTORE_KEY = 'onsure.lastRestartRestore';
 const WORK_MODE_KEY = 'onsure.workMode';
-const WORK_MODES = Object.freeze(['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
-const VIEW_IDS = Object.freeze([
-  'onsure.workspace', 'onsure.profile', 'onsure.inventory', 'onsure.requirements',
-  'onsure.threats', 'onsure.plan', 'onsure.runs', 'onsure.findings',
-  'onsure.improvement', 'onsure.evidence', 'onsure.git', 'onsure.approvals',
-  'onsure.runtime', 'onsure.admin'
-]);
 
 class ApiClient {
   constructor(context) { this.context = context; }
@@ -84,9 +79,10 @@ class ApiClient {
 }
 
 class AssuranceTreeProvider {
-  constructor(context, client) {
+  constructor(context, client, viewId) {
     this.context = context;
     this.client = client;
+    this.viewId = viewId;
     this._onDidChangeTreeData = new vscode.EventEmitter();
     this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     this.status = null;
@@ -108,19 +104,6 @@ class AssuranceTreeProvider {
     if (this.error) {
       items.push(item('Local API', 'Unavailable', 'error', 'onsure.configure'));
       items.push(item('Reason', this.error, 'warning'));
-    } else if (this.status) {
-      items.push(item('Runtime', this.status.state || 'UNKNOWN', 'server-process'));
-      items.push(item('Program Learning', this.status.program_learning || 'UNKNOWN', 'symbol-class'));
-      items.push(item('Behavior Learning', this.status.behavior_learning || 'UNKNOWN', 'pulse'));
-      items.push(item('Planning / Review / RCA', this.status.planning_review_rca || 'UNKNOWN', 'checklist'));
-      items.push(item('Validation', this.status.validation || 'UNKNOWN', 'beaker'));
-      items.push(item('Improvement', this.status.patch_application || 'UNKNOWN', 'diff'));
-      items.push(item('Improvement Proof', this.status.improvement_proof || 'UNKNOWN', 'verified-filled'));
-      items.push(item('Git Delivery', this.status.git_delivery || 'UNKNOWN', 'git-pull-request'));
-      items.push(item('OLicense', this.status.license || 'UNKNOWN', 'key'));
-      items.push(item('Service Case', this.status.service_case || 'UNKNOWN', 'briefcase'));
-      items.push(item('Independent OTester', this.status.independent_otester || 'NOT_RUN', 'shield'));
-      items.push(item('Independent OAudit', this.status.independent_oaudit || 'NOT_RUN', 'verified'));
     }
     const lastProfile = this.context.workspaceState.get(LAST_PROFILE_KEY);
     const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
@@ -128,12 +111,15 @@ class AssuranceTreeProvider {
     const lastRestore = this.context.workspaceState.get(LAST_RESTORE_KEY);
     const workMode = this.context.workspaceState.get(WORK_MODE_KEY)
       || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
-    items.push(item('Work Mode', workMode, 'symbol-enum', 'onsure.selectMode'));
-    if (lastProfile) items.push(item('Last Program Profile', lastProfile, 'json'));
-    if (lastRun) items.push(item('Last Run', lastRun, 'folder-opened', 'onsure.openLastArtifact'));
-    if (lastWorkflow) items.push(item('Last Workflow', lastWorkflow, 'run-all'));
-    if (lastRestore) {
-      items.push(item('Restart Recovery', `${lastRestore.recovered_count || 0} job(s) paused`, 'debug-restart'));
+    const state = {
+      status: this.status || {}, mode: workMode, profile: lastProfile, run: lastRun,
+      workflow: lastWorkflow,
+      restore: lastRestore ? `${lastRestore.recovered_count || 0} job(s) paused` : undefined
+    };
+    for (const row of rowsForView(this.viewId, state)) {
+      const command = row.label === 'Mode' ? 'onsure.selectMode'
+        : row.label === 'Last Run' && lastRun ? 'onsure.openLastArtifact' : undefined;
+      items.push(item(row.label, row.description, row.icon, command));
     }
     return items;
   }
@@ -175,9 +161,10 @@ async function showJson(title, value) {
 
 async function activate(context) {
   const client = new ApiClient(context);
-  const provider = new AssuranceTreeProvider(context, client);
-  const views = VIEW_IDS.map(viewId =>
-    vscode.window.createTreeView(viewId, { treeDataProvider: provider }));
+  const providers = VIEW_IDS.map(viewId => new AssuranceTreeProvider(context, client, viewId));
+  const views = providers.map((provider, index) =>
+    vscode.window.createTreeView(VIEW_IDS[index], { treeDataProvider: provider }));
+  const refreshViews = () => providers.forEach(provider => provider.refresh());
   const output = vscode.window.createOutputChannel('ONSure');
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   statusBar.text = '$(shield) ONSure: NON_FINAL';
@@ -198,6 +185,10 @@ async function activate(context) {
   statusBar.show();
 
   async function executeWorkflow(operation, request, title) {
+    const mode = context.workspaceState.get(WORK_MODE_KEY)
+      || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
+    const decision = authorize(mode, classifyOperation(operation), operation);
+    if (!decision.allowed) throw new Error(`Work mode policy denied ${operation}: ${decision.reason}`);
     const workflow = await vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: `ONSure: ${title}`,
@@ -208,7 +199,7 @@ async function activate(context) {
     if (result.run_root) await context.workspaceState.update(LAST_RUN_KEY, result.run_root);
     if (result.output_file) await context.workspaceState.update(LAST_PROFILE_KEY, result.output_file);
     output.appendLine(`[${new Date().toISOString()}] ${operation}: ${JSON.stringify(result)}`);
-    provider.refresh();
+    refreshViews();
     await showJson(`${title} — SELF_VALIDATION_NONFINAL`, workflow);
     return workflow;
   }
@@ -229,7 +220,7 @@ async function activate(context) {
         validateInput: value => value.length >= 32 ? undefined : 'Token must contain at least 32 characters.'
       });
       if (token) await context.secrets.store(TOKEN_KEY, token);
-      provider.refresh();
+      refreshViews();
     }),
     vscode.commands.registerCommand('onsure.clearToken', async () => {
       await context.secrets.delete(TOKEN_KEY);
@@ -249,9 +240,9 @@ async function activate(context) {
       await context.workspaceState.update(WORK_MODE_KEY, selected.label);
       statusBar.text = `$(shield) ONSure: ${selected.label} / NON_FINAL`;
       output.appendLine(`[${new Date().toISOString()}] MODE_CHANGE:${current}->${selected.label}:SELF_VALIDATION_NONFINAL`);
-      provider.refresh();
+      refreshViews();
     }),
-    vscode.commands.registerCommand('onsure.refresh', async () => provider.refresh()),
+    vscode.commands.registerCommand('onsure.refresh', async () => refreshViews()),
     vscode.commands.registerCommand('onsure.learnProgram', async () => {
       try {
         const root = workspaceRoot();
@@ -339,7 +330,7 @@ async function activate(context) {
       }
     })
   );
-  provider.refresh();
+  refreshViews();
 }
 
 function deactivate() {}

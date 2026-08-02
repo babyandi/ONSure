@@ -97,7 +97,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - 프로젝트 전용 정보와 익명화된 범용 패턴의 분리·검증
 - MVP 수용 시나리오 11개 전 항목 및 실제 저장소 2회 연속 성공
 - VS Code의 Chat·Profile·Learning·Verification·Findings·Improvement·Evidence·Git/PR 개별 View
-- Ask·Plan·Act·Autopilot 모드
+- Ask·Plan·Act·Verify·Improve·Autopilot·Audit·Offline 모드와 fail-closed 작업 권한
 - VS Code 부분 Plan 승인 및 파일·Hunk 승인 UX
 - 장기 작업 Checkpoint·Cancel·Pause·Resume·재시작 복구
 - Provider·Model 교체성

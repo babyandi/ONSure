@@ -755,7 +755,7 @@
       "id": "FR-09-A",
       "name": "Required VS Code views",
       "normative_phrase": "Chat, Program Profile, Learning, Verification, Findings, Improvement, Evidence, Git & PR View를 제공해야 합니다.",
-      "implementation_status": "STUB",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "vscode-extension/package.json",
@@ -772,13 +772,10 @@
         "VSCODE"
       ],
       "missing_controls": [
-        "ONLY_SINGLE_PROGRAM_ASSURANCE_VIEW_EXISTS",
-        "CHAT_VIEW_MISSING",
-        "FINDINGS_VIEW_MISSING",
-        "GIT_PR_VIEW_MISSING"
+        "EXTENSION_HOST_E2E_NOT_RUN"
       ],
       "detector_controls": [
-        "SUBREQ_MISSING_CONTROL_GATE"
+        "SUBREQ_REFERENCE_GATE"
       ],
       "semantic_assertions": []
     },
@@ -786,24 +783,28 @@
       "id": "FR-09-B",
       "name": "Ask Plan Act Autopilot modes",
       "normative_phrase": "Ask, Plan, Act, Autopilot 모드를 제공해야 합니다.",
-      "implementation_status": "DESIGN_ONLY",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
-      "code_refs": [],
-      "test_refs": [],
+      "code_refs": [
+        "vscode-extension/extension.js",
+        "vscode-extension/work-mode-policy.js",
+        "vscode-extension/package.json"
+      ],
+      "test_refs": [
+        "scripts/validate-vscode-extension.py"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "VSCODE"
       ],
-      "implemented_surfaces": [],
+      "implemented_surfaces": [
+        "VSCODE"
+      ],
       "missing_controls": [
-        "ASK_MODE_MISSING",
-        "PLAN_MODE_MISSING",
-        "ACT_MODE_MISSING",
-        "AUTOPILOT_MODE_MISSING"
+        "EXTENSION_HOST_E2E_NOT_RUN"
       ],
       "detector_controls": [
-        "SUBREQ_MISSING_CONTROL_GATE",
-        "SUBREQ_SURFACE_GATE"
+        "SUBREQ_REFERENCE_GATE"
       ],
       "semantic_assertions": []
     },
@@ -1343,10 +1344,10 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 8,
+    "implemented": 10,
     "partial": 29,
-    "stub": 4,
-    "design_only": 2,
+    "stub": 3,
+    "design_only": 1,
     "verification_not_run": 43
   },
   "assurance": {
