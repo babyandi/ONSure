@@ -104,10 +104,14 @@ def main() -> int:
         if subreq.get("summary", {}).get(field) != expected:
             errors.append(f"PRODUCT_SUBREQUIREMENT_SUMMARY_MISMATCH:{field}")
     partial = next((item for item in sub_items if item.get("id") == "FR-04-C"), {})
-    if partial.get("implementation_status") != "PARTIAL":
+    if partial.get("implementation_status") != "IMPLEMENTED":
         errors.append("PARTIAL_APPROVAL_SUBREQUIREMENT_STATE_INVALID")
-    if "VSCODE_PARTIAL_APPROVAL_UI_NOT_IMPLEMENTED" not in partial.get("missing_controls", []):
-        errors.append("PARTIAL_APPROVAL_UI_GAP_NOT_RECORDED")
+    if "VSCODE" not in partial.get("implemented_surfaces", []):
+        errors.append("PARTIAL_APPROVAL_VSCODE_SURFACE_MISSING")
+    if "vscode-extension/approval-review.js" not in partial.get("code_refs", []):
+        errors.append("PARTIAL_APPROVAL_UI_CODE_REF_MISSING")
+    if "EXTENSION_HOST_INTERACTIVE_E2E_NOT_RUN" not in partial.get("missing_controls", []):
+        errors.append("PARTIAL_APPROVAL_INTERACTIVE_E2E_GAP_NOT_RECORDED")
 
     stages = process.get("stages", [])
     artifacts = process.get("artifacts", [])

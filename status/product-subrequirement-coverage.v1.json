@@ -345,21 +345,24 @@
       "id": "FR-04-C",
       "name": "Full or partial scenario approval",
       "normative_phrase": "사용자가 시나리오를 전체·부분 승인할 수 있어야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
         "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
         "src/main/java/io/onsure/platform/ValidationEngine.java",
         "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java"
+        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java",
+        "vscode-extension/approval-review.js",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java",
         "src/test/java/io/onsure/platform/ExecutionPlanActionPolicyTest.java",
         "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java",
         "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java"
+        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java",
+        "scripts/validate-vscode-extension.py"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -371,11 +374,12 @@
       "implemented_surfaces": [
         "CORE",
         "CLI",
-        "LOCAL_API"
+        "LOCAL_API",
+        "VSCODE"
       ],
       "missing_controls": [
-        "VSCODE_PARTIAL_APPROVAL_UI_NOT_IMPLEMENTED",
-        "CURRENT_MAIN_LOCAL_RECEIPT_NOT_RUN"
+        "CURRENT_MAIN_LOCAL_RECEIPT_NOT_RUN",
+        "EXTENSION_HOST_INTERACTIVE_E2E_NOT_RUN"
       ],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE",
@@ -644,17 +648,20 @@
       "id": "FR-07-C",
       "name": "Whole file and hunk approval",
       "normative_phrase": "전체·파일·Hunk 단위 승인을 지원해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
         "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java"
+        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java",
+        "vscode-extension/approval-review.js",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java",
         "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java"
+        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java",
+        "scripts/validate-vscode-extension.py"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -662,10 +669,11 @@
         "VSCODE"
       ],
       "implemented_surfaces": [
-        "CORE"
+        "CORE",
+        "VSCODE"
       ],
       "missing_controls": [
-        "VSCODE_HUNK_APPROVAL_UI_NOT_IMPLEMENTED"
+        "EXTENSION_HOST_INTERACTIVE_E2E_NOT_RUN"
       ],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
@@ -1348,8 +1356,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 11,
-    "partial": 29,
+    "implemented": 13,
+    "partial": 27,
     "stub": 2,
     "design_only": 1,
     "verification_not_run": 43

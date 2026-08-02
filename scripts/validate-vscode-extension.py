@@ -18,6 +18,8 @@ REQUIRED_COMMANDS = {
     "onsure.learnProgram",
     "onsure.runValidation",
     "onsure.runWorkflowRequest",
+    "onsure.approvePlan",
+    "onsure.applyApprovedPatch",
     "onsure.openLastArtifact",
     "onsure.clearToken",
 }
@@ -41,7 +43,8 @@ def main() -> int:
     icon_file = EXTENSION / "media/onsure.svg"
     policy_file = EXTENSION / "work-mode-policy.js"
     view_model_file = EXTENSION / "view-model.js"
-    for path in (package_file, source_file, policy_file, view_model_file,
+    approval_review_file = EXTENSION / "approval-review.js"
+    for path in (package_file, source_file, policy_file, view_model_file, approval_review_file,
                  icon_file, EXTENSION / ".vscodeignore"):
         if not path.is_file():
             errors.append(f"MISSING:{path.relative_to(ROOT)}")
@@ -75,7 +78,7 @@ def main() -> int:
         errors.append("EXTENSION_NODE_CHECK_SCRIPT_MISSING")
 
     source = "\n".join(path.read_text(encoding="utf-8") for path in
-                       (source_file, policy_file, view_model_file))
+                       (source_file, policy_file, view_model_file, approval_review_file))
     for token in (
         "context.secrets.get", "context.secrets.store", "context.secrets.delete",
         "Authorization", "127\\.0\\.0\\.1", "localhost", "/v1/workflow",
@@ -84,6 +87,8 @@ def main() -> int:
         "Workflow request file must be inside the active workspace",
         "WORK_MODES", "VIEW_IDS", "MODE_CHANGE", "onsure.selectMode",
         "authorize(mode, classifyOperation(operation), operation)", "rowsForView",
+        "reviewPlanApproval", "reviewHunkApproval", "confirmApprovalReview",
+        "Consume Signed Approval", "signature_verification",
     ):
         if token not in source:
             errors.append(f"SOURCE_TOKEN_MISSING:{token}")
@@ -105,6 +110,7 @@ def main() -> int:
         behavior_script = r'''
 const policy = require('./work-mode-policy');
 const views = require('./view-model');
+const approval = require('./approval-review');
 function check(value, message) { if (!value) throw new Error(message); }
 check(policy.WORK_MODES.length === 8, 'MODE_COUNT');
 check(!policy.authorize('ASK', 'ACT', 'patch.apply').allowed, 'ASK_MUTATION_ALLOWED');
@@ -114,9 +120,26 @@ check(policy.authorize('ACT', 'ACT', 'git.commit').allowed, 'ACT_DENIED');
 check(policy.authorize('AUTOPILOT', 'AUTOPILOT', 'job.control').allowed, 'AUTOPILOT_DENIED');
 check(!policy.authorize('AUTOPILOT', 'ACT', 'git.merge').allowed, 'AUTOPILOT_MERGE_ALLOWED');
 check(!policy.authorize('OFFLINE', 'ACT', 'git.push').allowed, 'OFFLINE_PUSH_ALLOWED');
+check(policy.classifyOperation('plan.approve') === 'ACT', 'PLAN_APPROVAL_NOT_ACT');
 check(views.VIEW_IDS.length === 14, 'VIEW_COUNT');
 const rendered = views.VIEW_IDS.map(id => JSON.stringify(views.rowsForView(id, {status:{}, mode:'ASK'})));
 check(new Set(rendered).size === 14, 'VIEW_MODELS_NOT_DISTINCT');
+const plan = {contract:'ONSURE_EXECUTION_PLAN_V1', plan_id:'p1', allowed_actions:['A','B']};
+const planReceipt = {contract:'ONSURE_EXECUTION_PLAN_APPROVAL_V1', plan_id:'p1',
+  approved_actions:['A'], actor:'human', expires_at:'later', allow_final_claim:false,
+  allow_merge:false, allow_deploy:false};
+check(approval.reviewPlanApproval(plan, planReceipt).scope === 'PARTIAL', 'PLAN_PARTIAL_REVIEW');
+let unsafePlanBlocked = false;
+try { approval.reviewPlanApproval(plan, {...planReceipt, allow_merge:true}); }
+catch { unsafePlanBlocked = true; }
+check(unsafePlanBlocked, 'UNSAFE_PLAN_APPROVAL_ALLOWED');
+const patch = {contract:'ONSURE_PATCH_PLAN_V1', patch_plan_id:'x',
+  hunks:[{hunk_id:'h1',relative_path:'a'},{hunk_id:'h2',relative_path:'b'}],
+  preapply_assessment:{risk_level:'HIGH',rollback_preview:{method:'BYTE_EXACT_PREIMAGE_BACKUP'}}};
+const hunkReceipt = {contract:'ONSURE_HUNK_APPROVAL_RECEIPT_V1', patch_plan_id:'x',
+  approved_hunk_ids:['h2'], actor:'human', branch_name:'fix/x', allow_direct_main_write:false,
+  allow_force_push:false, allow_merge:false};
+check(approval.reviewHunkApproval(patch, hunkReceipt).scope === 'PARTIAL', 'HUNK_PARTIAL_REVIEW');
 '''
         behavior = subprocess.run(
             [node, "-e", behavior_script], cwd=EXTENSION,

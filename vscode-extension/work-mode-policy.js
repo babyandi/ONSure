@@ -19,6 +19,7 @@ const PROHIBITED_OPERATION = /(?:merge|final(?:lock)?|production|commercial[._-]
 
 function classifyOperation(operation) {
   const value = String(operation || '');
+  if (value === 'plan.approve') return 'ACT';
   if (/^(?:status|artifact|job\.read)/.test(value)) return 'READ';
   if (/^(?:program\.learn|plan\.)/.test(value)) return 'PLAN';
   if (/^(?:validation\.|review\.|rca\.)/.test(value)) return 'VERIFY';

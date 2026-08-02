@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { WORK_MODES, classifyOperation, authorize } = require('./work-mode-policy');
 const { VIEW_IDS, rowsForView } = require('./view-model');
+const { reviewPlanApproval, reviewHunkApproval } = require('./approval-review');
 
 const TOKEN_KEY = 'onsure.localApiToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
@@ -157,6 +158,36 @@ async function showJson(title, value) {
   });
   await vscode.window.showTextDocument(document, { preview: false });
   vscode.window.setStatusBarMessage(`ONSure: ${title}`, 5000);
+}
+
+async function selectJsonFile(title) {
+  const selected = await vscode.window.showOpenDialog({
+    title, canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+    filters: { JSON: ['json'] }, defaultUri: vscode.Uri.file(workspaceRoot())
+  });
+  if (!selected?.length) return undefined;
+  return requireInsideWorkspace(selected[0].fsPath);
+}
+
+function readBoundedJson(file) {
+  const raw = fs.readFileSync(file, 'utf8');
+  if (raw.length > 1024 * 1024) throw new Error('Approval input exceeds 1 MiB.');
+  const value = JSON.parse(raw);
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Approval input must be a JSON object.');
+  }
+  return value;
+}
+
+async function confirmApprovalReview(review) {
+  await showJson(`${review.review_type} — SIGNATURE NOT YET CONSUMED`, review);
+  const count = review.approved_actions?.length || review.approved_hunk_ids?.length || 0;
+  const answer = await vscode.window.showWarningMessage(
+    `Consume ${review.scope.toLowerCase()} approval for ${count} item(s)? ` +
+      'The Core will verify the signature, fixed trust root, expiry and replay state.',
+    { modal: true, detail: 'This action consumes the signed receipt. It cannot authorize Merge, Final or GO.' },
+    'Consume Signed Approval');
+  return answer === 'Consume Signed Approval';
 }
 
 async function activate(context) {
@@ -312,6 +343,37 @@ async function activate(context) {
         await executeWorkflow(envelope.operation, envelope.request, envelope.operation);
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure workflow failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.approvePlan', async () => {
+      try {
+        const planFile = await selectJsonFile('Select original Execution Plan JSON');
+        if (!planFile) return;
+        const receiptFile = await selectJsonFile('Select signed Execution Plan Approval Receipt JSON');
+        if (!receiptFile) return;
+        const review = reviewPlanApproval(readBoundedJson(planFile), readBoundedJson(receiptFile));
+        if (!await confirmApprovalReview(review)) return;
+        await executeWorkflow('plan.approve', {
+          plan_file: planFile, signed_approval_receipt: receiptFile
+        }, `${review.scope} plan approval`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure plan approval failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.applyApprovedPatch', async () => {
+      try {
+        const planFile = await selectJsonFile('Select Patch Plan JSON');
+        if (!planFile) return;
+        const receiptFile = await selectJsonFile('Select signed Hunk Approval Receipt JSON');
+        if (!receiptFile) return;
+        const review = reviewHunkApproval(readBoundedJson(planFile), readBoundedJson(receiptFile));
+        if (!await confirmApprovalReview(review)) return;
+        await executeWorkflow('patch.apply', {
+          repository_root: workspaceRoot(), patch_plan_file: planFile,
+          approval_receipt_file: receiptFile
+        }, `${review.scope} hunk approval`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure approved patch failed: ${error.message}`);
       }
     }),
     vscode.commands.registerCommand('onsure.openLastArtifact', async () => {
