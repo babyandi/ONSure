@@ -44,6 +44,12 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Ask/Plan/Act/Verify/Improve/Autopilot/Audit/Offline별 fail-closed 실행 권한
 - ValidationEngine 단계별 digest-chain checkpoint와 Runtime 상태 표시
 - Provider/Model 교체 adapter 계약과 토큰·데이터 전송 예산 표시
+- stage-bound validation context snapshot과 명시적 typed replay
+- process birth identity에 결속된 Autopilot orphan control 복구
+- snapshot 기반 결정론적 ASK/PLAN과 독립 Provider SPI·Public SDK 후보 모듈
+- 승인 request/receipt/plan scope verifier와 HMAC 기반 프로젝트 지식 익명화 후보
+- 성능·장애·복구·관측성 도구, 배포/DB preflight, Maven air-gap pack
+- SBOM component SHA-256·license policy·Maven/npm vulnerability evidence gate
 
 ## 이번 메타감사에서 확인된 검출기 사각지대
 
@@ -101,18 +107,18 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Behavior Profile의 취약 조건 분류와 Production 정책 Telemetry
 - RCA의 명시적 영향 범위와 미확인 사항
 - Patch 적용 전 위험도·영향 범위·Rollback 방법 Preview
-- 프로젝트 전용 정보와 익명화된 범용 패턴의 분리·검증
+- 프로젝트 지식 익명화의 실제 data-owner corpus 검증과 공통 지식 승격 UX
 - MVP 수용 시나리오 11개 전 항목 및 실제 저장소 2회 연속 성공
 - 외부 signer 실제 연동과 승인 request/receipt 교환 Full-Chain
-- Ask/Plan의 대화형 AI 응답 생성과 설치 Extension Host 사용자 여정
+- 실제 Provider 기반 Ask/Plan 응답과 설치 Extension Host 사용자 여정
 - VS Code 부분 Plan 승인 UX
-- Core checkpoint의 in-memory context 재생과 orphan process 재연결
+- Core checkpoint 자동 engine resume와 stage side-effect idempotency
 - 실제 Local/Remote Provider 구현 및 가격 견적 연동
-- 외부 제품용 Public SDK
+- Public SDK publish·외부 소비자 호환성 검증
 - Identity·RBAC·Cross-tenant 격리
 - Approval Replay Ledger의 외부 Anchor
-- 제품 SBOM·취약점·라이선스 Pack
-- 성능·장애·복구·운영·배포 Pack
+- 승인된 Maven vulnerability scan DB와 root source license
+- 장시간 성능·운영 DR 및 실제 배포/DB 실행 Pack
 - 실제 Payment Provider와 Production Model Telemetry
 - 독립 OTester·OAudit와 Human Acceptance
 
@@ -127,7 +133,7 @@ npm run package
 ```
 
 사용 순서와 승인 경계는 `vscode-extension/README.md`를 따른다. VS Code Extension Host E2E는
-아직 `NOT_RUN`이며 VSIX 생성 성공만으로 제품 Full-Chain을 주장하지 않는다.
+환경은 구성됐지만 현재 host의 display/xvfb 부재로 `NOT_RUN`이며 VSIX 생성 성공만으로 제품 Full-Chain을 주장하지 않는다.
 
 정적 비최종 Gate:
 
@@ -145,7 +151,16 @@ bash scripts/onsure-local-gate.sh --mode full --profile core
 
 ```bash
 python3 scripts/validate_onsure_operational_boundary.py
+python3 scripts/onsure_deploy_migration_skeleton.py preflight
+python3 scripts/onsure_runtime_assurance.py health
 python3 scripts/onsure_bubblewrap_diagnostics.py
+```
+
+공급망과 air-gap plan:
+
+```bash
+python3 scripts/onsure_supply_chain.py validate
+python3 scripts/onsure_airgap_pack.py plan --maven-repository /explicit/path/to/maven-repository
 ```
 
 최종 단계 Source-bound One-Shot:
@@ -156,14 +171,14 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 통합 브랜치의 최신 로컬 및 원격 독립 clone 검증은 Java 246개, Python 104개, Node 8개,
-Modular package 11개, 공개 API 238개, SBOM, operational boundary와 VSIX package를 통과했다.
+현재 변경 후보의 로컬 검증은 clean Java 251개를 2회, Python 115개, Node 9개,
+Modular package 15개, 공개 API 238개, SBOM/npm audit, operational boundary와 VSIX package를 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
-`8c217e6fc446fdd4938121c6faa810b1c631e3cc7be908d7e4db10ea53374afe`를 두 환경에서 동일하게 생성했다.
-최신 633개 중첩 full rehearsal도 로컬과 원격 독립 clone에서 cutover와 rollback을 모두 통과했다.
+`c982d0269107ef174bf380f728ce112504a67f605da5a69bb238f187bc2dfb5d`를 생성했다.
+Manifest 후보는 668개 파일이며 중첩 full rehearsal과 독립 clone은 최종 commit에서 다시 실행한다.
 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을
 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖
-canonical build에서 246/246을 통과한다. VS Code Extension Host E2E, MVP Full-Chain과 독립 검토는
+canonical build에서 251/251을 통과한다. VS Code Extension Host E2E, MVP Full-Chain과 독립 검토는
 아직 실행되지 않았다.
 
 ```text

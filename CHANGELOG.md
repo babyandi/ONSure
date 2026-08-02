@@ -30,6 +30,15 @@
 - ValidationEngine의 digest-chain stage checkpoint 및 Local API·VS Code Runtime 표시
 - Model Provider adapter schema/registry와 두 교체형 deterministic provider compatibility test
 - 실행계획의 Token·데이터 전송 예산 필드와 VS Code Runtime 예산 표시
+- stage 경계 validation context snapshot, digest/target/run 결속과 명시적 typed replay
+- PID·PGID·start tick·command digest 기반 Autopilot orphan control 복구
+- snapshot 기반 결정론적 ASK/PLAN 명령과 VS Code Extension Host E2E harness/preflight
+- 독립 `onsure-provider-spi` 및 loopback-only `onsure-sdk` Maven 후보 모듈
+- approval request/receipt/plan scope verifier와 HMAC 프로젝트 지식 익명화·공통 후보 분리
+- bounded 성능·장애·backup/restore·observability 도구
+- 실행 권한 없는 deployment/database migration preflight 골격
+- deterministic Maven air-gap dependency pack plan/build/verify 도구
+- SBOM unique purl/SHA-256, license/vulnerability policy와 package-lock-bound npm audit evidence
 
 ### Changed
 
@@ -41,6 +50,7 @@
 - VS Code Learn·Validation 요청은 금지된 source 및 product-state 경로 override를 더 이상 전송하지 않는다.
 - VS Code 14개 View는 하나의 캐시된 snapshot을 공유하며 다른 View와 동일 상태 목록을 반복하지 않는다.
 - Hunk 승인 purpose는 published receipt schema와 동일한 `PATCH_HUNK_APPROVAL`을 사용한다.
+- 취약한 transitive `brace-expansion` 1.1.16을 1.1.18로 갱신해 npm audit high 1건을 0건으로 줄였다.
 
 ### Compatibility
 

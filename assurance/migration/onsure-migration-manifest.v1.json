@@ -105,8 +105,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "d278d0e92715ec182f5c51e88c0b2bfd5be0310daac449d05e833ad5c317e93e",
-      "size_bytes": 3658
+      "sha256": "09fa36a0553b8ea82ba9bb118ae2b43a32c7911e0b73fa235b6ed02ba70468fd",
+      "size_bytes": 4534
     },
     {
       "current_path": "README.md",
@@ -120,8 +120,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "5f478ce7acba7e75282eb3c6cd37ce62c7172667ba09b227373281a7d31ed9a1",
-      "size_bytes": 9079
+      "sha256": "e8562717fd7aa4d31a4cd1564f4008103412d741656c171a5608f40601914ccd",
+      "size_bytes": 9962
     },
     {
       "current_path": "assets/onsure-remediation/README.md",
@@ -165,8 +165,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8fd8ce6e1c5b74162d58618763ba758c98c8f34782641c97954471ef035cbb7b",
-      "size_bytes": 554
+      "sha256": "048ce46443f285af33bf8422c70f380684e69e14b56e546904883cad5e4cb8ad",
+      "size_bytes": 1266
     },
     {
       "current_path": "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
@@ -182,6 +182,36 @@
       },
       "sha256": "7f0f2206d18ddd3613c747fd81a4a7abcffe9018eaad5c2c6e2fc98b14b92f3b",
       "size_bytes": 2087
+    },
+    {
+      "current_path": "assurance/dependencies/onsure-npm-audit.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/assurance/dependencies/onsure-npm-audit.v1.json",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "c79be225049b71b5ca111909134616702ed40d065ebe5813d6d729070b72b7e1",
+      "size_bytes": 609
+    },
+    {
+      "current_path": "assurance/dependencies/onsure-vulnerability-scan.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/assurance/dependencies/onsure-vulnerability-scan.v1.json",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "a19f15b15401cc582bf558eda3b525bc029e3363559748fa6f7c522c8647a0b6",
+      "size_bytes": 643
     },
     {
       "current_path": "assurance/dependencies/onsure.cdx.json",
@@ -240,8 +270,23 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f253aa387fc647743bd9fce6b298dfcefd0450f59813c5d7762905773bb9fba1",
-      "size_bytes": 694
+      "sha256": "18df14b056d9db78c47c0dfb9f3c511c74c8be083b8485b7e4f2672763c2a82a",
+      "size_bytes": 934
+    },
+    {
+      "current_path": "config/database-migration/migration-plan.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/config/database-migration/migration-plan.v1.json",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "703ce94463f3c9660eca4af18b1804cc9c669b87619da3f38716cf5d597624cc",
+      "size_bytes": 604
     },
     {
       "current_path": "contracts/acceptance-runtime-results.v1.json",
@@ -257,6 +302,21 @@
       },
       "sha256": "33bc45b1764beb5310df21de89ab31881ae5a0b99a361f216d6f2e75aac48348",
       "size_bytes": 339
+    },
+    {
+      "current_path": "contracts/airgap-dependency-pack.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/contracts/airgap-dependency-pack.v1.json",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "a2f023cb9c0c88c034a4a4f1c4e8430917be386621dded523b50b7a679bdc974",
+      "size_bytes": 675
     },
     {
       "current_path": "contracts/assurance-lanes.v1.json",
@@ -855,8 +915,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "39ec9cffb46627861a3c43bb3c0a091fa45bb96f16d3ca7cb6f101df6631a550",
-      "size_bytes": 2795
+      "sha256": "9b156a5d0f4ad6b6a13e5134139923131bf8da9cf177a904f085d66787b3d61b",
+      "size_bytes": 3175
     },
     {
       "current_path": "contracts/onsure-operational-boundary.v1.json",
@@ -872,6 +932,21 @@
       },
       "sha256": "b146c50e446fa1c5891060c41ab6d0ad1704df6d8cf346aef1c98dde8e1e2b87",
       "size_bytes": 2313
+    },
+    {
+      "current_path": "contracts/onsure-supply-chain-policy.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/contracts/onsure-supply-chain-policy.v1.json",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "d8dfb653d1834257e16830df1db6f80fc058c3af635d17462f33980db2e24b71",
+      "size_bytes": 1094
     },
     {
       "current_path": "contracts/oreview-result.v1.schema.json",
@@ -1380,8 +1455,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f1bf02102f5ebb2b6b1374797e0704096907fc3c1e82f918a41ecb4344b2778c",
-      "size_bytes": 1793
+      "sha256": "99b1ddc9f10ac1ef2d5cd5634d5c0c3477d35d45dc7f90a649993bba9a06cbc5",
+      "size_bytes": 1903
     },
     {
       "current_path": "contracts/validation-case-registry.v1.json",
@@ -1440,8 +1515,23 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "b3ddf4a5fd4a30defdf26de9d8c3f886b73ee56c356032dc9a1fe653aaeb02b3",
-      "size_bytes": 642
+      "sha256": "e77d28d41cc20e44b7ddbe2d8e7cf248bf5140c3eabf327f2540a13358e4d7a5",
+      "size_bytes": 890
+    },
+    {
+      "current_path": "deploy/deployment-plan.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/deploy/deployment-plan.v1.json",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "c1411b26ec6ef026236d8f77c1d5201a35ed4083a3f180875ed64557286e98b5",
+      "size_bytes": 797
     },
     {
       "current_path": "docs/00_PRODUCT_BASELINE.md",
@@ -1740,8 +1830,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "cb843689716072767fa28c6a1272bd918ff085ea3ef5e431e6617bbbd45783ec",
-      "size_bytes": 3505
+      "sha256": "2894ef70b119f68bed26f7de78bf79b3725f70b9d756171c2f14075efef646b8",
+      "size_bytes": 3634
     },
     {
       "current_path": "docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md",
@@ -1864,6 +1954,21 @@
       "size_bytes": 1696
     },
     {
+      "current_path": "docs/development/ONSURE_ADVANCED_RUNTIME_PREPARATION_v1.md",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/docs/development/ONSURE_ADVANCED_RUNTIME_PREPARATION_v1.md",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "da92ae4f90edc079394145cde4ee19e973a0abb7e065eb37a9eea5b8ba8e6511",
+      "size_bytes": 4155
+    },
+    {
       "current_path": "docs/development/ONSURE_COMPLETION_CHECKLIST_v1.md",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -1905,8 +2010,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "681b04e7d87599204a19ad4b5abeb417655275c9a54377bf89815eb0a4755af0",
-      "size_bytes": 3840
+      "sha256": "db1bef1ac56ae39ac7e4aa7590f0e0d0dc5641a7350b6cf8ac0e65e7453a6d7f",
+      "size_bytes": 4481
     },
     {
       "current_path": "docs/development/ONSURE_UNATTENDED_VSCODE_AUTOPILOT_v1.md",
@@ -2070,8 +2175,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ea46040cf8982ae3431def4d6adf66837e43793097ecf53eb41c58fe6296e455",
-      "size_bytes": 8614
+      "sha256": "8e7906b29137dd026a94fd51c6cce4b7f282d6d2b0104f8341471555619baf8d",
+      "size_bytes": 8975
     },
     {
       "current_path": "docs/migration/ORUDA_PRODUCTS_MIGRATION_READINESS.md",
@@ -2085,8 +2190,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "7478e44e8122b14b3a92b5ca7c6d3fc2f507cf68c993decc7b80dfb3744b0be4",
-      "size_bytes": 16151
+      "sha256": "68512b54566044eee8541a042ec2a8ee5c0cd492800c117208b47349acf785d5",
+      "size_bytes": 17182
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -4296,6 +4401,216 @@
       "size_bytes": 8923
     },
     {
+      "current_path": "modules/onsure-provider-spi/README.md",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/README.md",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "de598cb9ac43704f66565e985b5c9ec0579c547abe267578eb32c132a0d1c285",
+      "size_bytes": 614
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/pom.xml",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/pom.xml",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "22cbd2bccaadb1b2f0fec350aface8bf9acb729df0f7caa911b8566b49a42318",
+      "size_bytes": 722
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/CompletionRequest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/CompletionRequest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "0f7472d3938f0582b760da3dcec12498202758d7df54837b3e69481dec2872e4",
+      "size_bytes": 1714
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/CompletionResponse.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/CompletionResponse.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "a74140e0e70b5dfa46a34a55689357c87e9db1b490f5b3bc767b4377f2c1ba5a",
+      "size_bytes": 1239
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ModelProvider.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ModelProvider.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "a520a7058e5318a616410fde3dbf517dba267f5f4f320037856423a8a05cd43f",
+      "size_bytes": 489
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderContext.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderContext.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "1eaed95afae63617a51feabe11b1c2c9b19945334d44124b22317a52a783c692",
+      "size_bytes": 665
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderDescriptor.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderDescriptor.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "cafe0a8c9aafba0b7e9abb2b621664cb91f5d1cbb45e4a22a922d804d0662e3b",
+      "size_bytes": 1313
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderException.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderException.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "556111d880d0cf71b10214ee8ee4f4c3a166285556f660dc9e44eae4de594daf",
+      "size_bytes": 636
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderHealth.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/main/java/io/onsure/provider/spi/ProviderHealth.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "034396d4a4241c4ec7b52be7f5bf2c5b70abd9ef53270529ed7d9166eeb92b46",
+      "size_bytes": 445
+    },
+    {
+      "current_path": "modules/onsure-provider-spi/src/test/java/io/onsure/provider/spi/ModelProviderContractTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-provider-spi/src/test/java/io/onsure/provider/spi/ModelProviderContractTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "9b18d1db2d354c2c8846ef214f53f2fb36d4b26078b3807123afa94beb7b411d",
+      "size_bytes": 2231
+    },
+    {
+      "current_path": "modules/onsure-sdk/README.md",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-sdk/README.md",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "fcf8d9bb4cfa634624e8ad466ff070a2a33775cc3af8c4f72e48ef7733590ef1",
+      "size_bytes": 513
+    },
+    {
+      "current_path": "modules/onsure-sdk/pom.xml",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-sdk/pom.xml",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "266c2aa3c66c64f9d2fb18c2462ce847197f07169d0c9210e66f8e42acec6bd6",
+      "size_bytes": 832
+    },
+    {
+      "current_path": "modules/onsure-sdk/src/main/java/io/onsure/sdk/v1/ONSureClient.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-sdk/src/main/java/io/onsure/sdk/v1/ONSureClient.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "be571e7640dd3554920e57466cc625989d455874109c7655f9efbd6f14bee1eb",
+      "size_bytes": 5412
+    },
+    {
+      "current_path": "modules/onsure-sdk/src/test/java/io/onsure/sdk/v1/ONSureClientTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-sdk/src/test/java/io/onsure/sdk/v1/ONSureClientTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "fae1281e9e3a4b295d73652a074a9f82af4b2d87720055014e66693fdbf32a03",
+      "size_bytes": 3106
+    },
+    {
       "current_path": "modules/onsure-test-fixtures/pom.xml",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -4382,8 +4697,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "18910f622c811e7c433a4949dacf816bb81ed9e020e05dcba590481cdfefe0ff",
-      "size_bytes": 2119
+      "sha256": "99d02af1600f95ac433af9772a12b59670778b4cc73ab6e8c825bb12e1538102",
+      "size_bytes": 2477
     },
     {
       "current_path": "pom.xml",
@@ -4607,8 +4922,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "3b4081d0bca0ac54073e9e03f2e607e2e488cb4ac4374260801d5c498bdb0ed7",
-      "size_bytes": 18771
+      "sha256": "ebc9009ac83ffba2dfe99cadf7844191263f5dab5a7d99733bab24aeeadd9ca3",
+      "size_bytes": 25200
     },
     {
       "current_path": "scripts/onsure-final-stage.sh",
@@ -4671,6 +4986,21 @@
       "size_bytes": 6802
     },
     {
+      "current_path": "scripts/onsure_airgap_pack.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/scripts/onsure_airgap_pack.py",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "16cd9a322955384026da381f27508c445312812c4cdebb36241291736ac49bf4",
+      "size_bytes": 10081
+    },
+    {
       "current_path": "scripts/onsure_bubblewrap_diagnostics.py",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -4684,6 +5014,21 @@
       },
       "sha256": "9b179cbdcb4809e5e5930e94ba38236a6b730bd3123febcd7b87b9cb97a1881b",
       "size_bytes": 4548
+    },
+    {
+      "current_path": "scripts/onsure_deploy_migration_skeleton.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/scripts/onsure_deploy_migration_skeleton.py",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "7edb4b24e1ff3232448c0725b83ef581990d5d862007be2309e7979167a56e96",
+      "size_bytes": 4461
     },
     {
       "current_path": "scripts/onsure_java_api_baseline.py",
@@ -4746,6 +5091,21 @@
       "size_bytes": 1249
     },
     {
+      "current_path": "scripts/onsure_runtime_assurance.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/scripts/onsure_runtime_assurance.py",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "7bee365bdd2309dce381e0ef165b718e0a840a9585b9a39f35a62c9c480451dc",
+      "size_bytes": 10548
+    },
+    {
       "current_path": "scripts/onsure_supply_chain.py",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -4757,8 +5117,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "18be64dfca929b82fad2c937acce178891378d83348ae97308ac57827067afd1",
-      "size_bytes": 7504
+      "sha256": "24e937f982a8c80d473f53c556cd0cc4ba06123c10c43ae10c2f60d86b4e714f",
+      "size_bytes": 13376
     },
     {
       "current_path": "scripts/onsure_verify_run.py",
@@ -5537,8 +5897,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "a61db2143b5bade7071601161555d7bfb1d1f91344ad900f8a58776203b8a0ed",
-      "size_bytes": 5674
+      "sha256": "b9dcf4fb51fff097d7790831aa4490f65b7411f8b439b09af9b68786cbbbd1d6",
+      "size_bytes": 6194
     },
     {
       "current_path": "scripts/validate_onsure_product_metadata.py",
@@ -7011,6 +7371,21 @@
       "size_bytes": 4390
     },
     {
+      "current_path": "src/main/java/io/onsure/platform/PatchApprovalExchangeVerifier.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/PatchApprovalExchangeVerifier.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "b83af340466dd7783cf93fcc0404e2c95b8cc9fbccf9e855990a9c837aad5f02",
+      "size_bytes": 10653
+    },
+    {
       "current_path": "src/main/java/io/onsure/platform/PatchPlanningStage.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -7114,6 +7489,21 @@
       },
       "sha256": "7600dda5d8976028352601917254ee1a2f7dc43094ce687674fd960e19e66ad0",
       "size_bytes": 12608
+    },
+    {
+      "current_path": "src/main/java/io/onsure/platform/ProjectKnowledgeSeparationService.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/ProjectKnowledgeSeparationService.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "082ee74d566e22a2e3edc75a1fbcbd22661eaac0e6f7ecb43f86ea55c37c1527",
+      "size_bytes": 4769
     },
     {
       "current_path": "src/main/java/io/onsure/platform/RegisteredExecutionPlanGenerationService.java",
@@ -7281,6 +7671,21 @@
       "size_bytes": 3934
     },
     {
+      "current_path": "src/main/java/io/onsure/platform/ValidationContextSnapshotStore.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/ValidationContextSnapshotStore.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "937bec06aeefe9564ba63a0e46c5fac06f97909a8cdea14a5fae47dc55c1675e",
+      "size_bytes": 8236
+    },
+    {
       "current_path": "src/main/java/io/onsure/platform/ValidationEngine.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -7292,8 +7697,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "eeae396c3ead0e71216084e4c713a937f667e0264233b2f0d9a4416f1ecb2c41",
-      "size_bytes": 17211
+      "sha256": "5bd1329dead3f39add4b5e12010d87be24222817cbb86f9628c6ae74160edca2",
+      "size_bytes": 17798
     },
     {
       "current_path": "src/main/java/io/onsure/platform/ValidationModel.java",
@@ -7337,8 +7742,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "1949a82e93b9b5c1a9e0eb496070724223791238347a9c6d6f758f5d8061decc",
-      "size_bytes": 12974
+      "sha256": "4ef70f5f2369573419ff9406b43f89b55564ed3315d0088572b85113e7d7a986",
+      "size_bytes": 13143
     },
     {
       "current_path": "src/main/java/io/onsure/platform/ValidatorStage.java",
@@ -8451,6 +8856,21 @@
       "size_bytes": 1948
     },
     {
+      "current_path": "src/test/java/io/onsure/platform/PatchApprovalExchangeVerifierTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/platform/PatchApprovalExchangeVerifierTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "cc48fb8d3387c6a58575a0b78b024a77fdb63d7aff119b4c921063ff226e7ece",
+      "size_bytes": 5855
+    },
+    {
       "current_path": "src/test/java/io/onsure/platform/ProductExecutionBoundaryTest.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -8526,6 +8946,21 @@
       "size_bytes": 9709
     },
     {
+      "current_path": "src/test/java/io/onsure/platform/ProjectKnowledgeSeparationServiceTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/platform/ProjectKnowledgeSeparationServiceTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "a5fabc2d94df445af5ca8bde212afe5d91732d48c52e1cb556adb72dffae2070",
+      "size_bytes": 1798
+    },
+    {
       "current_path": "src/test/java/io/onsure/platform/ServiceCaseLifecycleServiceTest.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -8556,6 +8991,21 @@
       "size_bytes": 7025
     },
     {
+      "current_path": "src/test/java/io/onsure/platform/ValidationContextSnapshotStoreTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/platform/ValidationContextSnapshotStoreTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "ac9621498d2d960d442397c00cb5d3232bcf03de6daffc8561643d83a62c1841",
+      "size_bytes": 3955
+    },
+    {
       "current_path": "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -8567,8 +9017,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "da30498184892a2ea9ffb0daa9edf2528dd5e818d26121ce5abf80506152b62a",
-      "size_bytes": 12536
+      "sha256": "4973a2abe53bd10894b12066c6150fb11a01385478fcff19abfe2623f6eec853",
+      "size_bytes": 12597
     },
     {
       "current_path": "src/test/java/io/onsure/platform/ValidationStageCheckpointJournalTest.java",
@@ -8582,8 +9032,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f8a8d1ce41a7b34845aef9e1f655de20695c5b2a1fafa2a6aae9ed806d71f16f",
-      "size_bytes": 2706
+      "sha256": "c9d4c8485b39ebdad263f699904d80671c3efcc821d7962c5a0c5806cb7e4327",
+      "size_bytes": 2892
     },
     {
       "current_path": "src/test/java/io/onsure/platform/oruda/ExecutionResultClassifierTest.java",
@@ -9156,6 +9606,21 @@
       "size_bytes": 6375
     },
     {
+      "current_path": "tests/test_onsure_airgap_pack.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/tests/test_onsure_airgap_pack.py",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "91954fb43b7ea2a60a15458de072fd70a06673055c1a2f6d2ddff0bb381fbe18",
+      "size_bytes": 3833
+    },
+    {
       "current_path": "tests/test_onsure_autopilot.py",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -9167,8 +9632,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8f030e776bca39c803ac7513b1d50905a30b4476854afbc86fcf6f68e51899c6",
-      "size_bytes": 7023
+      "sha256": "d7d567f8e2f4cfa85d25cd1c4cfa6eb44da9224531f51c998a54018246bc3c53",
+      "size_bytes": 10915
     },
     {
       "current_path": "tests/test_onsure_bubblewrap_diagnostics.py",
@@ -9214,6 +9679,21 @@
       },
       "sha256": "71d6bdd865300c7e774d3b8c33cc06993254c72dd0e6d758c4560a643000747f",
       "size_bytes": 1678
+    },
+    {
+      "current_path": "tests/test_onsure_deploy_migration_skeleton.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/tests/test_onsure_deploy_migration_skeleton.py",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "b2cb52fad3345106c5a33ac96f53429c615159b5be44f8499dae7a70327407aa",
+      "size_bytes": 1542
     },
     {
       "current_path": "tests/test_onsure_java_api_baseline.py",
@@ -9276,6 +9756,21 @@
       "size_bytes": 1619
     },
     {
+      "current_path": "tests/test_onsure_runtime_assurance.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/tests/test_onsure_runtime_assurance.py",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "eab00bff63dfcd711fc250e8d87c9fa37580538ea4a9a779f52695f75aaecc1d",
+      "size_bytes": 2190
+    },
+    {
       "current_path": "tests/test_onsure_supply_chain.py",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -9287,8 +9782,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "cb315036fbafcc476fc4b7c6bbf692e6945e7cc72dbc94abf5c0f446323d4a2f",
-      "size_bytes": 1510
+      "sha256": "b72015e6a8d4e38f2c8360ff6a53ff112de7da4b8fa5779a0276b3c613045df2",
+      "size_bytes": 3220
     },
     {
       "current_path": "tests/test_onsure_verify_run_cli.py",
@@ -9407,8 +9902,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "a673dc8b0e91dac5a41fab976860f4f1cf698a03f0cbd1df2a2a03550e8c2a96",
-      "size_bytes": 5719
+      "sha256": "a41ddcb2d977eca04f367d2bc5432e44cde84a5c387c75c9e4c81d758068b3f4",
+      "size_bytes": 6687
     },
     {
       "current_path": "vscode-extension/extension-core.js",
@@ -9422,8 +9917,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "986c022bca4c94d9e3a993b1f84e140ca1b3a85ed2a96b5a7cdbb7c033d36a76",
-      "size_bytes": 27249
+      "sha256": "0c4bbf7073d166639be94350686173e1e74180ac3da6785b65bf613d425075c8",
+      "size_bytes": 30497
     },
     {
       "current_path": "vscode-extension/extension.js",
@@ -9437,8 +9932,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "c45ea16ef83c64e83ccaaaa5aae8e263e4b4467ef22084a579dfce44baf92370",
-      "size_bytes": 39260
+      "sha256": "2c5b20baee410fa223964162dd761cc03a68e3a8002b255dc391151a0916df0d",
+      "size_bytes": 40552
     },
     {
       "current_path": "vscode-extension/media/onsure.svg",
@@ -9467,8 +9962,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "93ea09e2a3869a38e52025cdef3c652752c4b303ced4e9fcd83a4434a7891f91",
-      "size_bytes": 92403
+      "sha256": "576faf5014fb61edbafaeeeceba1c363b73bcea14ab3c56f19d43a1287579152",
+      "size_bytes": 105989
     },
     {
       "current_path": "vscode-extension/package.json",
@@ -9482,8 +9977,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "58d715b7aa036ed0b8de266178cff4987d94baac438e90a7d5203b3da0b05850",
-      "size_bytes": 7870
+      "sha256": "0edf770df5244b931ed94b7d627055df241569938dcd756acc11809bd73d5daa",
+      "size_bytes": 10366
     },
     {
       "current_path": "vscode-extension/test/extension-core.test.js",
@@ -9497,8 +9992,38 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "c1602fc8b995c3734f97103070997d2b116e7a793004d7037724dd8bb337f644",
-      "size_bytes": 12712
+      "sha256": "b2c2ec88339531100fa501a7366aec352e873108958633da6256c568d7ee5d7c",
+      "size_bytes": 14293
+    },
+    {
+      "current_path": "vscode-extension/test/extension-host/index.js",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/vscode-extension/test/extension-host/index.js",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "512da6a4e3acbabf25a03037f8b728ce42222a30420bdd059044ea45c2f4622d",
+      "size_bytes": 1003
+    },
+    {
+      "current_path": "vscode-extension/test/run-extension-host-e2e.js",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/vscode-extension/test/run-extension-host-e2e.js",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "ff9fe2e806a4b67d9d51bfc0ac4347ed8e595576e47943472eda07cdb289ce57",
+      "size_bytes": 3242
     }
   ],
   "final_claim_allowed": false,
@@ -9533,14 +10058,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 633,
+    "file_count": 668,
     "license_counts": {
-      "UNDECLARED": 633
+      "UNDECLARED": 668
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 632,
+      "NO_PATTERN_MATCH": 667,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 7121274
+    "total_size_bytes": 7270514
   }
 }

@@ -19,7 +19,7 @@
 
 - `io.onsure.platform` source가 `onsure-core`, `onsure-cli`, `onsure-local-api`, `onsure-adapter-oruda` artifact에 Maven include/exclude로 분산된다.
 - 모듈 POM들이 `../../src/main/java`를 공통 source root로 직접 추가한다.
-- `scripts/validate_onsure_build_boundary.py`가 통합 기준 134개 main source의 단일 논리 owner, 허용 split package 1개, 공유 source module 4개를 baseline으로 봉인한다.
+- `scripts/validate_onsure_build_boundary.py`가 통합 기준 140개 main source의 단일 논리 owner, 허용 split package 1개, 공유 source module 4개를 baseline으로 봉인한다. 신규 `onsure-provider-spi`와 `onsure-sdk`는 shared source를 사용하지 않는다.
 - 이 상태로 모노레포 module graph에 넣으면 package ownership, JPMS, incremental build와 dependency visibility가 불명확하다.
 - 현재 package·파일 경로 동결 조건에서는 물리 이동으로 이를 제거할 수 없으므로 `BLOCKED_BY_PACKAGE_AND_PATH_FREEZE`다.
 - 선행 작업: cutover 승인 후 각 artifact 전용 source directory, 명시적 public SPI/API, 한 package당 단일 owner.
@@ -57,7 +57,8 @@
 
 - `pom.xml`을 독립 release 후보 검증 권위로, `pom-modular.xml`을 미래 분해 compatibility gate로 지정했다.
 - `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml` 간 드리프트를 자동 검증한다.
-- 남은 선행 작업: dependency lock/SBOM과 실제 모노레포 build owner 승인.
+- 별도 source를 가진 Provider SPI와 Public SDK 후보를 compatibility build에 추가했고 artifact graph cycle은 0건이다.
+- 남은 선행 작업: dependency lock/SBOM, SPI/SDK versioning과 실제 모노레포 build owner 승인.
 
 ### 8. 실행 구성요소 계약 확정
 
@@ -66,8 +67,9 @@
 
 ### 9. 배포 runtime 정의 부재
 
-- `deploy/README.md`와 `contracts/onsure-operational-boundary.v1.json`에 `DESIGN_ONLY_NONFINAL` 경계를 추가했다. Dockerfile, Compose, Helm과 Kubernetes runtime 정의는 없다.
+- `deploy/README.md`, preflight plan과 `contracts/onsure-operational-boundary.v1.json`에 `DESIGN_ONLY_NONFINAL` 경계를 추가했다. Dockerfile, Compose, Helm과 Kubernetes runtime 정의는 없다.
 - validator가 non-root, read-only artifact, loopback 기본값, 외부 secret provider, immutable receipt와 rollback 요구를 봉인하며 실제 배포 권한은 거부한다.
+- DB migration plan도 engine/tool을 선택하지 않고 apply를 `NOT_AUTHORIZED`로 고정한다.
 - 선행 작업: 지원 배포 모드, base image, runtime user, volume/network/secrets, air-gap, upgrade/rollback 정책 승인 후 실행 정의 작성.
 
 ### 10. Repo-root 가정 제거

@@ -44,6 +44,11 @@ FINAL_LOCK_ALLOWED              false
 - Learning Candidate부터 Applied Lock까지의 Ledger 골격
 - RAG 준비 Candidate와 Target Learning 요청·사후 기록
 - 중단·재개 가능한 Repository Autopilot 보조 Runner
+- stage-bound validation context snapshot과 명시적 typed replay
+- process birth identity에 결속된 orphan pause/resume/cancel 복구
+- 결정론적 local ASK/PLAN, Provider SPI와 loopback Public SDK 후보 모듈
+- 승인 exchange 결속, 프로젝트 지식 익명화·공통 후보 분리
+- runtime assurance, deploy/migration preflight, Maven air-gap 및 강화된 공급망 gate
 
 ## 축소·모의 구현으로 분류하는 이유
 
@@ -55,6 +60,8 @@ FINAL_LOCK_ALLOWED              false
   경로를 연결한다. 다만 개별 Chat·Profile·Finding·Diff/Hunk·Evidence·Git UX와 Extension Host
   Full-Chain은 아직 완료되지 않았다.
 - ProductPlatformE2E는 제품 Full-Chain이 아니라 Validator Fixture E2E다.
+- VS Code Extension Host E2E harness는 준비됐지만 현재 host의 display/xvfb 부재로 실제 실행은 `NOT_RUN`이다.
+- Maven vulnerability scan과 root source license 승인은 `NOT_RUN/BLOCKED`이며 npm audit만 0건으로 검증됐다.
 
 ## 이번 기준선에서 추가된 Codespace-free 보완
 
