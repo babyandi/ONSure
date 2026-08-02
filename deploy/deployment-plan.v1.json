@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_DEPLOYMENT_EXECUTION_SKELETON_V1",
+  "state": "PREFLIGHT_ONLY_NOT_AUTHORIZED",
+  "artifact": "target/onsure-assurance-validator-0.1.0-SNAPSHOT.jar",
+  "artifact_immutable_digest_required": true,
+  "runtime": {
+    "identity": "NON_ROOT_UID_65532",
+    "application_filesystem": "READ_ONLY",
+    "api_bind": "127.0.0.1",
+    "api_port": 47311,
+    "evidence_volume": "SEPARATE_WRITABLE_VOLUME_REQUIRED",
+    "secret_source": "EXTERNAL_PROVIDER_REQUIRED",
+    "secret_values_in_plan": false
+  },
+  "container_image": "NOT_SELECTED",
+  "orchestrator": "NOT_SELECTED",
+  "install_command": "NOT_AUTHORIZED",
+  "rollback_command": "NOT_AUTHORIZED",
+  "public_network_exposure": false,
+  "deployment_authorized": false,
+  "production_go": false,
+  "final_claim_allowed": false
+}

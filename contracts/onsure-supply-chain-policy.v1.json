@@ -1,0 +1,32 @@
+{
+  "contract": "ONSURE_SUPPLY_CHAIN_POLICY_V1",
+  "cyclonedx_schema": "1.6",
+  "component_identity": "UNIQUE_PURL_REQUIRED",
+  "component_digest": "SHA-256_REQUIRED",
+  "dependency_license_policy": {
+    "denied": ["LicenseRef-Proprietary-Dependency", "SSPL-1.0"],
+    "human_compatibility_review_required": [
+      "AGPL-3.0-only", "AGPL-3.0-or-later", "GPL-2.0-only", "GPL-3.0-only",
+      "LGPL-2.1-only", "LGPL-3.0-only", "BUSL-1.1", "UNDECLARED"
+    ],
+    "declared_license_is_legal_approval": false
+  },
+  "vulnerability_gate": {
+    "required_for_release": true,
+    "accepted_scanners": ["OWASP_DEPENDENCY_CHECK", "TRIVY", "GRYPE"],
+    "maximum_critical": 0,
+    "maximum_high": 0,
+    "maximum_age_hours": 24,
+    "suppression_requires_owner_expiry_and_rationale": true
+  },
+  "npm_audit_gate": {
+    "required_for_vscode_package": true,
+    "maximum_critical": 0,
+    "maximum_high": 0,
+    "lockfile_binding_required": true
+  },
+  "root_source_license_required_for_release": true,
+  "github_actions_required": false,
+  "release_authority": false,
+  "final_claim_allowed": false
+}

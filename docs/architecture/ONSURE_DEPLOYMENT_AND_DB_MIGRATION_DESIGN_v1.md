@@ -8,10 +8,11 @@
 - 배포 권한: `false`
 - DB migration component: `NOT_PRESENT`
 - DB engine과 migration tool: `NOT_SELECTED`
+- 실행 preflight 골격: `IMPLEMENTED / EXECUTION_NOT_AUTHORIZED`
 - GitHub Actions: 사용하지 않음
 - Production/Commercial GO와 Final PASS: `false`
 
-이 문서는 Dockerfile, Helm chart나 SQL migration을 추가하라는 지시가 아니다. 운영 topology와 영속성 요구가 승인되기 전에 실행 파일을 만들면 존재하지 않는 component를 구현 완료로 오인하게 된다.
+이 문서는 Dockerfile, Helm chart나 SQL migration을 추가하라는 지시가 아니다. `deployment-plan.v1.json`, `migration-plan.v1.json`과 preflight runner는 안전 조건을 검증하지만 deploy/migrate/rollback을 항상 거부한다.
 
 ## 2. 배포 후보 경계
 
@@ -85,6 +86,7 @@ DB를 사용하지 않기로 결정하는 경우에도 `NO_DATABASE` ADR을 남�
 
 ```bash
 python3 scripts/validate_onsure_operational_boundary.py
+python3 scripts/onsure_deploy_migration_skeleton.py preflight
 ```
 
 validator는 배포 권한, premature tool 선택, public network, secret commit, destructive DDL, rollback 누락과 GitHub Actions 사용을 fail-closed로 거부한다.

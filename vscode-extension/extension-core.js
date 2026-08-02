@@ -99,6 +99,69 @@ function requireModeWorkflow(mode, operation) {
   return requireModeCapability(mode, workflowCapability(operation));
 }
 
+function conversationResponse(modeValue, promptValue, model = {}) {
+  const mode = requireWorkMode(modeValue);
+  if (!['ASK', 'PLAN'].includes(mode)) {
+    throw new Error('ONSURE_CONVERSATION_MODE_REQUIRES_ASK_OR_PLAN');
+  }
+  const prompt = String(promptValue || '').trim();
+  if (!prompt || prompt.length > 4000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(prompt)) {
+    throw new Error('ONSURE conversation prompt must contain 1-4000 safe text characters.');
+  }
+  const snapshot = model.snapshot || {};
+  const local = model.local || {};
+  const profile = snapshot.profile || {};
+  const plan = snapshot.plan || {};
+  const latest = snapshot.latest_run || {};
+  const evidence = [];
+  if (profile.path) evidence.push(profile.path);
+  if (plan.path) evidence.push(plan.path);
+  if (latest.run_root) evidence.push(latest.run_root);
+  const identity = local.identity || {};
+  const lines = [
+    `# ONSure ${mode} response`, '',
+    `- Prompt: ${prompt}`,
+    `- Project: ${identity.projectId || snapshot.project_id || 'NOT_REGISTERED'}`,
+    `- Target: ${identity.targetId || snapshot.target_id || 'NOT_REGISTERED'}`,
+    `- Program profile: ${profile.state || 'NOT_RUN'}`,
+    `- Execution plan: ${plan.state || plan.body?.approval?.state || 'NOT_RUN'}`,
+    `- Latest validation: ${latest.decision || 'NOT_RUN'}`,
+    `- Open findings: ${latest.finding_count ?? 'NOT_RUN'}`,
+    '',
+  ];
+  if (mode === 'ASK') {
+    lines.push('## Evidence-bound answer', '');
+    lines.push(latest.run_root
+      ? 'The current answer is limited to the registered snapshot and latest persisted validation run.'
+      : 'No persisted validation run is available, so factual conclusions about program quality are NOT_RUN.');
+    lines.push('', 'This response is read-only, workspace-local, and never a final assurance decision.');
+  } else {
+    const steps = [];
+    if (!identity.projectId && !snapshot.project_id) steps.push('Register the active workspace, project, and target.');
+    if (!profile.path) steps.push('Learn and review a candidate program profile.');
+    if (!plan.path) steps.push('Generate a risk- and resource-bounded execution plan.');
+    if (plan.body?.approval?.state !== 'APPROVED') steps.push('Obtain and verify explicit plan approval.');
+    if (!latest.run_root) steps.push('Run validation after approval and preserve evidence receipts.');
+    if (latest.finding_count > 0) steps.push('Review findings, RCA, and approval-required remediation hunks.');
+    steps.push('Run independent verification and audit before any release claim.');
+    lines.push('## Proposed non-executing plan', '');
+    steps.forEach((step, index) => lines.push(`${index + 1}. ${step}`));
+    lines.push('', 'No step was executed by this PLAN response.');
+  }
+  return Object.freeze({
+    contract: 'ONSURE_LOCAL_CONVERSATION_RESPONSE_V1',
+    mode,
+    prompt_sha256: createHash('sha256').update(Buffer.from(prompt, 'utf8')).digest('hex'),
+    response_markdown: lines.join('\n'),
+    evidence_references: Object.freeze([...new Set(evidence)]),
+    deterministic_local_response: true,
+    provider_invoked: false,
+    external_network_allowed: false,
+    source_mutation_allowed: false,
+    final_claim_allowed: false
+  });
+}
+
 class LocalApiError extends Error {
   constructor(code, message, status) {
     super(message || code || `Local API returned ${status}.`);
@@ -602,6 +665,7 @@ module.exports = {
   requireModeCapability,
   workflowCapability,
   requireModeWorkflow,
+  conversationResponse,
   normalizeBaseUrl,
   registrationRequests,
   learnRequest,

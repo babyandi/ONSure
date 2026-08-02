@@ -155,8 +155,10 @@ final class ValidationStageCheckpointJournal {
         value.put("updated_at", now.toString());
         value.put("cooperative_stage_boundary", true);
         value.put("completed_stage_reexecution_allowed", false);
-        value.put("context_replay_supported", false);
-        value.put("restart_behavior", "RESTART_VALIDATION_FROM_NEW_RUN_REQUIRED");
+        value.put("context_replay_supported", true);
+        value.put("context_snapshot_file", ValidationContextSnapshotStore.FILE_NAME);
+        value.put("automatic_engine_resume_supported", false);
+        value.put("restart_behavior", "RESTORE_VERIFIED_CONTEXT_THEN_EXPLICIT_ENGINE_RESUME_REQUIRED");
         value.put("final_claim_allowed", false);
         return value;
     }

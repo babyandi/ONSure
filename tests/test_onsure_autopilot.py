@@ -6,6 +6,7 @@ import sys
 import tempfile
 import threading
 import time
+import subprocess
 import unittest
 
 
@@ -143,8 +144,86 @@ class AutopilotContractTest(unittest.TestCase):
                     contract, stage, cancel_state, cancel_entry, state_path, os.environ.copy())
                 self.assertEqual("CANCELLED", outcome)
                 self.assertNotEqual(0, result.returncode)
+
+                stage["command"] = [sys.executable, "-c", "print('CONTROLLED_PASS')"]
+                quick_state = MODULE.initial_state(contract, {"head": "f" * 40, "clean": True})
+                quick_entry = quick_state["stages"][stage["id"]]
+                quick_entry.update({"state": "RUNNING", "attempts": 1})
+                MODULE.atomic_json(state_path, quick_state)
+                MODULE.request_control(contract, state_path, "RUNNING")
+                result, outcome = MODULE.run_controlled_stage(
+                    contract, stage, quick_state, quick_entry, state_path, os.environ.copy())
+                self.assertEqual("COMPLETED", outcome)
+                self.assertEqual(0, result.returncode)
+                self.assertNotIn("process_identity", quick_entry)
             finally:
                 MODULE.ROOT = original_root
+
+    def test_orphan_recovery_is_bound_to_process_birth_identity(self):
+        process = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(5)"],
+            start_new_session=True,
+        )
+        try:
+            state = MODULE.initial_state(self.contract, {"head": "d" * 40, "clean": True})
+            entry = next(iter(state["stages"].values()))
+            entry.update({
+                "state": "RUNNING",
+                "attempts": 1,
+                "process_pid": process.pid,
+                "process_group_id": process.pid,
+                "process_identity": MODULE.process_identity(process.pid),
+            })
+            self.assertTrue(MODULE.recover_interrupted_state(state))
+            self.assertEqual("ORPHAN_RUNNING", entry["state"])
+            self.assertEqual("RECOVERING_ORPHAN", state["state"])
+
+            forged = json.loads(json.dumps(state))
+            forged_entry = next(iter(forged["stages"].values()))
+            forged_entry["state"] = "RUNNING"
+            forged_entry["process_identity"]["start_time_ticks"] += 1
+            with self.assertRaisesRegex(RuntimeError, "ORPHAN_PROCESS_IDENTITY_MISMATCH"):
+                MODULE.recover_interrupted_state(forged)
+        finally:
+            os.killpg(process.pid, 15)
+            process.wait(timeout=5)
+
+    def test_identity_bound_orphan_exit_never_infers_pass(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_path = pathlib.Path(directory) / "checkpoint.json"
+            process = subprocess.Popen(
+                [sys.executable, "-c", "import time; time.sleep(0.25)"],
+                start_new_session=True,
+            )
+            waiter = threading.Thread(target=process.wait)
+            try:
+                state = MODULE.initial_state(self.contract, {"head": "e" * 40, "clean": True})
+                entry = next(iter(state["stages"].values()))
+                entry.update({
+                    "state": "RUNNING",
+                    "attempts": 1,
+                    "process_pid": process.pid,
+                    "process_group_id": process.pid,
+                    "process_identity": MODULE.process_identity(process.pid),
+                })
+                MODULE.atomic_json(state_path, state)
+                MODULE.request_control(self.contract, state_path, "RUNNING")
+                MODULE.recover_interrupted_state(state)
+                waiter.start()
+                self.assertTrue(MODULE.recover_identity_bound_orphans(
+                    self.contract, state_path, state))
+                self.assertEqual("RCA_REQUIRED", entry["state"])
+                self.assertEqual(
+                    "ORPHAN_COMPLETION_EVIDENCE_UNAVAILABLE",
+                    entry["failure"]["classification"],
+                )
+                self.assertNotIn("process_pid", entry)
+            finally:
+                if process.poll() is None:
+                    os.killpg(process.pid, 15)
+                process.wait(timeout=5)
+                if waiter.is_alive():
+                    waiter.join(timeout=5)
 
 
 if __name__ == "__main__":

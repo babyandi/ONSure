@@ -93,7 +93,9 @@ def validate() -> dict[str, object]:
     violations = validate_documents(boundary, product, obuilder)
     required_files = [
         "deploy/README.md",
+        "deploy/deployment-plan.v1.json",
         "config/database-migration/README.md",
+        "config/database-migration/migration-plan.v1.json",
         "docs/architecture/ONSURE_DEPLOYMENT_AND_DB_MIGRATION_DESIGN_v1.md",
         "docs/operations/ONSURE_BUBBLEWRAP_EXECUTION_ENVIRONMENT_v1.md",
         "scripts/onsure_bubblewrap_diagnostics.py",
@@ -101,6 +103,12 @@ def validate() -> dict[str, object]:
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
         violations.append("OPERATIONAL_DESIGN_FILE_MISSING:" + ",".join(missing))
+    if not missing:
+        from onsure_deploy_migration_skeleton import validate_plans
+
+        deployment = json.loads((ROOT / "deploy/deployment-plan.v1.json").read_text(encoding="utf-8"))
+        migration = json.loads((ROOT / "config/database-migration/migration-plan.v1.json").read_text(encoding="utf-8"))
+        violations.extend("EXECUTION_SKELETON:" + item for item in validate_plans(deployment, migration))
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",

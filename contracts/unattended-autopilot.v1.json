@@ -1,13 +1,14 @@
 {
   "contract": "ONSURE_UNATTENDED_AUTOPILOT_V1",
-  "version": 4,
+  "version": 5,
   "checkpoint_dir": ".onsure/autopilot",
   "control_journal": ".onsure/autopilot/control.json",
   "supported_controls": ["PAUSE", "RESUME", "CANCEL"],
   "process_group_control": true,
   "restart_recovery": {
     "interrupted_process_absent": "RETRY_SAME_STAGE_WITH_ATTEMPT_ROLLBACK",
-    "orphan_process_present": "FAIL_CLOSED",
+    "orphan_process_present": "IDENTITY_BOUND_CONTROL_REATTACH_THEN_RCA",
+    "process_identity_binding": "LINUX_PROC_PID_PGID_START_TIME_COMMAND_SHA256",
     "completed_stage_reexecution": false
   },
   "maximum_stage_attempts": 1,

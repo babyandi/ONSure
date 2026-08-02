@@ -12,6 +12,7 @@ const {
   requireModeCapability,
   workflowCapability,
   requireModeWorkflow,
+  conversationResponse,
   normalizeBaseUrl,
   registrationRequests,
   learnRequest,
@@ -61,6 +62,35 @@ test('semantic work modes enforce an exact fail-closed capability matrix', () =>
   assert.equal(workflowCapability('license.read'), 'READ');
   assert.throws(() => workflowCapability('future.unclassified'), /NOT_MODE_CLASSIFIED/);
   assert.throws(() => requireModeWorkflow('AUTOPILOT', 'patch.apply'), /MODE_CAPABILITY_DENIED/);
+});
+
+test('ASK and PLAN conversations are deterministic local and non-executing', () => {
+  const model = {
+    local: { identity },
+    snapshot: {
+      project_id: identity.projectId, target_id: identity.targetId,
+      profile: { state: 'AVAILABLE', path: '/tmp/profile.json' },
+      plan: { state: 'AVAILABLE', path: '/tmp/plan.json', body: { approval: { state: 'AWAITING_USER_APPROVAL' } } },
+      latest_run: { run_root: '/tmp/run', decision: 'HOLD', finding_count: 2 }
+    }
+  };
+  const ask = conversationResponse('ask', 'What is the current state?', model);
+  assert.equal(ask.contract, 'ONSURE_LOCAL_CONVERSATION_RESPONSE_V1');
+  assert.equal(ask.mode, 'ASK');
+  assert.equal(ask.provider_invoked, false);
+  assert.equal(ask.external_network_allowed, false);
+  assert.equal(ask.source_mutation_allowed, false);
+  assert.equal(ask.final_claim_allowed, false);
+  assert.match(ask.response_markdown, /Latest validation: HOLD/);
+  assert.deepEqual(ask.evidence_references, ['/tmp/profile.json', '/tmp/plan.json', '/tmp/run']);
+  assert.equal(conversationResponse('ASK', 'What is the current state?', model).prompt_sha256,
+    ask.prompt_sha256);
+
+  const plan = conversationResponse('PLAN', 'Prepare the next validation', model);
+  assert.match(plan.response_markdown, /Obtain and verify explicit plan approval/);
+  assert.match(plan.response_markdown, /No step was executed/);
+  assert.throws(() => conversationResponse('ACT', 'change it', model), /REQUIRES_ASK_OR_PLAN/);
+  assert.throws(() => conversationResponse('ASK', ' ', model), /1-4000/);
 });
 
 test('snapshot and controlled delivery requests stay identity and approval bound', () => {

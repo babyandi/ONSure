@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_DATABASE_MIGRATION_EXECUTION_SKELETON_V1",
+  "state": "PREFLIGHT_ONLY_NOT_APPLICABLE",
+  "database_component_present": false,
+  "database_engine": "NOT_SELECTED",
+  "migration_tool": "NOT_SELECTED",
+  "schema_owner": "UNASSIGNED",
+  "ordered_migrations": [],
+  "migration_lock_required": true,
+  "backup_restore_proof_required": true,
+  "signed_receipt_required": true,
+  "destructive_ddl_allowed": false,
+  "customer_data_fixture_allowed": false,
+  "apply_command": "NOT_AUTHORIZED",
+  "migration_authorized": false,
+  "rollback_required": true,
+  "final_claim_allowed": false
+}

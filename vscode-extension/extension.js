@@ -11,6 +11,7 @@ const {
   requireWorkMode,
   requireModeCapability,
   requireModeWorkflow,
+  conversationResponse,
   normalizeBaseUrl,
   registrationRequests,
   learnRequest,
@@ -233,6 +234,14 @@ async function showJson(title, value) {
   const document = await vscode.workspace.openTextDocument({
     language: 'json',
     content: JSON.stringify(value, null, 2)
+  });
+  await vscode.window.showTextDocument(document, { preview: false });
+  vscode.window.setStatusBarMessage(`ONSure: ${title}`, 5000);
+}
+
+async function showMarkdown(title, value) {
+  const document = await vscode.workspace.openTextDocument({
+    language: 'markdown', content: value
   });
   await vscode.window.showTextDocument(document, { preview: false });
   vscode.window.setStatusBarMessage(`ONSure: ${title}`, 5000);
@@ -497,6 +506,25 @@ async function activate(context) {
       statusBar.text = `$(shield) ONSure: ${selected.label} / NON_FINAL`;
       output.appendLine(`[${new Date().toISOString()}] MODE_CHANGE:${current}->${selected.label}:SELF_VALIDATION_NONFINAL`);
       refreshAll();
+    }),
+    vscode.commands.registerCommand('onsure.askOrPlan', async () => {
+      const mode = currentWorkMode();
+      if (!['ASK', 'PLAN'].includes(mode)) {
+        throw new Error('Select ASK or PLAN work mode before starting a conversation.');
+      }
+      const prompt = await vscode.window.showInputBox({
+        title: `ONSure ${mode}`,
+        prompt: mode === 'ASK'
+          ? 'Ask about the registered project and persisted validation evidence.'
+          : 'Describe the outcome to plan without executing it.',
+        ignoreFocusOut: true,
+        validateInput: value => value.trim().length && value.length <= 4000
+          ? undefined : 'Enter 1-4000 characters.'
+      });
+      if (!prompt) return;
+      const response = conversationResponse(mode, prompt, await model.load(true));
+      output.appendLine(`[${new Date().toISOString()}] ${mode}: ${response.prompt_sha256}`);
+      await showMarkdown(`${mode} — LOCAL NONFINAL`, response.response_markdown);
     }),
     vscode.commands.registerCommand('onsure.refresh', async () => refreshAll()),
     vscode.commands.registerCommand('onsure.autopilotStatus', async () => {

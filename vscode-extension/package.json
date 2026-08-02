@@ -5,15 +5,24 @@
   "version": "0.2.0",
   "publisher": "babyandi",
   "license": "UNLICENSED",
-  "repository": {"type": "git", "url": "https://github.com/babyandi/ONSure.git"},
-  "engines": {"vscode": "^1.95.0"},
-  "categories": ["Testing", "Other"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/babyandi/ONSure.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Testing",
+    "Other"
+  ],
   "main": "./extension.js",
   "activationEvents": [
     "onView:onsure.workspace",
     "onCommand:onsure.configure",
     "onCommand:onsure.registerWorkspaceTarget",
     "onCommand:onsure.selectMode",
+    "onCommand:onsure.askOrPlan",
     "onCommand:onsure.refresh",
     "onCommand:onsure.autopilotStatus",
     "onCommand:onsure.autopilotPause",
@@ -38,78 +47,284 @@
   ],
   "contributes": {
     "commands": [
-      {"command": "onsure.configure", "title": "ONSure: Configure Local API"},
-      {"command": "onsure.registerWorkspaceTarget", "title": "ONSure: Register Workspace & Target"},
-      {"command": "onsure.selectMode", "title": "ONSure: Select Work Mode"},
-      {"command": "onsure.refresh", "title": "ONSure: Refresh Status"},
-      {"command": "onsure.autopilotStatus", "title": "ONSure: Show Autopilot Checkpoint"},
-      {"command": "onsure.autopilotPause", "title": "ONSure: Pause Autopilot"},
-      {"command": "onsure.autopilotResume", "title": "ONSure: Resume Autopilot"},
-      {"command": "onsure.autopilotCancel", "title": "ONSure: Cancel Autopilot"},
-      {"command": "onsure.learnProgram", "title": "ONSure: Learn Program"},
-      {"command": "onsure.generatePlan", "title": "ONSure: Generate Execution Plan"},
-      {"command": "onsure.approvePlan", "title": "ONSure: Verify Signed Plan Approval"},
-      {"command": "onsure.runValidation", "title": "ONSure: Run Validation"},
-      {"command": "onsure.runWorkflowRequest", "title": "ONSure: Run Signed Workflow Request"},
-      {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"},
-      {"command": "onsure.openArtifact", "title": "ONSure: Open Run Artifact"},
-      {"command": "onsure.openDocument", "title": "ONSure: Open Workspace Document"},
-      {"command": "onsure.reviewPatchPlan", "title": "ONSure: Review Patch Hunk Diff"},
-      {"command": "onsure.createHunkApprovalRequest", "title": "ONSure: Create Hunk Signing Request"},
-      {"command": "onsure.createFileApprovalRequest", "title": "ONSure: Create Whole-file Signing Request"},
-      {"command": "onsure.applyApprovedPatch", "title": "ONSure: Apply Approved Patch"},
-      {"command": "onsure.proveImprovement", "title": "ONSure: Prove Improvement"},
-      {"command": "onsure.gitCommit", "title": "ONSure: Commit Approved Worktree"},
-      {"command": "onsure.gitDraftPr", "title": "ONSure: Open Approved Draft PR"},
-      {"command": "onsure.clearToken", "title": "ONSure: Clear Local API Token"}
+      {
+        "command": "onsure.configure",
+        "title": "ONSure: Configure Local API"
+      },
+      {
+        "command": "onsure.registerWorkspaceTarget",
+        "title": "ONSure: Register Workspace & Target"
+      },
+      {
+        "command": "onsure.selectMode",
+        "title": "ONSure: Select Work Mode"
+      },
+      {
+        "command": "onsure.askOrPlan",
+        "title": "ONSure: Ask or Plan from Local Evidence"
+      },
+      {
+        "command": "onsure.refresh",
+        "title": "ONSure: Refresh Status"
+      },
+      {
+        "command": "onsure.autopilotStatus",
+        "title": "ONSure: Show Autopilot Checkpoint"
+      },
+      {
+        "command": "onsure.autopilotPause",
+        "title": "ONSure: Pause Autopilot"
+      },
+      {
+        "command": "onsure.autopilotResume",
+        "title": "ONSure: Resume Autopilot"
+      },
+      {
+        "command": "onsure.autopilotCancel",
+        "title": "ONSure: Cancel Autopilot"
+      },
+      {
+        "command": "onsure.learnProgram",
+        "title": "ONSure: Learn Program"
+      },
+      {
+        "command": "onsure.generatePlan",
+        "title": "ONSure: Generate Execution Plan"
+      },
+      {
+        "command": "onsure.approvePlan",
+        "title": "ONSure: Verify Signed Plan Approval"
+      },
+      {
+        "command": "onsure.runValidation",
+        "title": "ONSure: Run Validation"
+      },
+      {
+        "command": "onsure.runWorkflowRequest",
+        "title": "ONSure: Run Signed Workflow Request"
+      },
+      {
+        "command": "onsure.openLastArtifact",
+        "title": "ONSure: Open Last Artifact"
+      },
+      {
+        "command": "onsure.openArtifact",
+        "title": "ONSure: Open Run Artifact"
+      },
+      {
+        "command": "onsure.openDocument",
+        "title": "ONSure: Open Workspace Document"
+      },
+      {
+        "command": "onsure.reviewPatchPlan",
+        "title": "ONSure: Review Patch Hunk Diff"
+      },
+      {
+        "command": "onsure.createHunkApprovalRequest",
+        "title": "ONSure: Create Hunk Signing Request"
+      },
+      {
+        "command": "onsure.createFileApprovalRequest",
+        "title": "ONSure: Create Whole-file Signing Request"
+      },
+      {
+        "command": "onsure.applyApprovedPatch",
+        "title": "ONSure: Apply Approved Patch"
+      },
+      {
+        "command": "onsure.proveImprovement",
+        "title": "ONSure: Prove Improvement"
+      },
+      {
+        "command": "onsure.gitCommit",
+        "title": "ONSure: Commit Approved Worktree"
+      },
+      {
+        "command": "onsure.gitDraftPr",
+        "title": "ONSure: Open Approved Draft PR"
+      },
+      {
+        "command": "onsure.clearToken",
+        "title": "ONSure: Clear Local API Token"
+      }
     ],
     "viewsContainers": {
       "activitybar": [
-        {"id": "onsure", "title": "ONSure", "icon": "media/onsure.svg"}
+        {
+          "id": "onsure",
+          "title": "ONSure",
+          "icon": "media/onsure.svg"
+        }
       ]
     },
     "views": {
       "onsure": [
-        {"id": "onsure.workspace", "name": "Chat / Session"},
-        {"id": "onsure.profile", "name": "Project & Program Profile"},
-        {"id": "onsure.inventory", "name": "Asset / Data / AI Inventory"},
-        {"id": "onsure.requirements", "name": "Requirements & Trace"},
-        {"id": "onsure.threats", "name": "Threat Model & Financial Controls"},
-        {"id": "onsure.plan", "name": "Verification Plan"},
-        {"id": "onsure.runs", "name": "Runs & Live Terminal"},
-        {"id": "onsure.findings", "name": "Findings & RCA"},
-        {"id": "onsure.improvement", "name": "Improvement / Diff / Hunk Approval"},
-        {"id": "onsure.evidence", "name": "Evidence & Receipts"},
-        {"id": "onsure.git", "name": "Git / Branch / Commit / PR"},
-        {"id": "onsure.approvals", "name": "Approvals & Exceptions"},
-        {"id": "onsure.runtime", "name": "Runtime / Cost / Data Egress"},
-        {"id": "onsure.admin", "name": "Admin / Policy / Identity"}
+        {
+          "id": "onsure.workspace",
+          "name": "Chat / Session"
+        },
+        {
+          "id": "onsure.profile",
+          "name": "Project & Program Profile"
+        },
+        {
+          "id": "onsure.inventory",
+          "name": "Asset / Data / AI Inventory"
+        },
+        {
+          "id": "onsure.requirements",
+          "name": "Requirements & Trace"
+        },
+        {
+          "id": "onsure.threats",
+          "name": "Threat Model & Financial Controls"
+        },
+        {
+          "id": "onsure.plan",
+          "name": "Verification Plan"
+        },
+        {
+          "id": "onsure.runs",
+          "name": "Runs & Live Terminal"
+        },
+        {
+          "id": "onsure.findings",
+          "name": "Findings & RCA"
+        },
+        {
+          "id": "onsure.improvement",
+          "name": "Improvement / Diff / Hunk Approval"
+        },
+        {
+          "id": "onsure.evidence",
+          "name": "Evidence & Receipts"
+        },
+        {
+          "id": "onsure.git",
+          "name": "Git / Branch / Commit / PR"
+        },
+        {
+          "id": "onsure.approvals",
+          "name": "Approvals & Exceptions"
+        },
+        {
+          "id": "onsure.runtime",
+          "name": "Runtime / Cost / Data Egress"
+        },
+        {
+          "id": "onsure.admin",
+          "name": "Admin / Policy / Identity"
+        }
       ]
     },
     "menus": {
       "view/title": [
-        {"command": "onsure.refresh", "when": "view == onsure.workspace", "group": "navigation@1"},
-        {"command": "onsure.registerWorkspaceTarget", "when": "view == onsure.workspace", "group": "navigation@2"},
-        {"command": "onsure.learnProgram", "when": "view == onsure.workspace", "group": "navigation@3"},
-        {"command": "onsure.generatePlan", "when": "view == onsure.workspace", "group": "navigation@4"},
-        {"command": "onsure.approvePlan", "when": "view == onsure.workspace", "group": "navigation@5"},
-        {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@6"},
-        {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@7"},
-        {"command": "onsure.reviewPatchPlan", "when": "view == onsure.improvement", "group": "navigation@1"},
-        {"command": "onsure.createHunkApprovalRequest", "when": "view == onsure.improvement", "group": "navigation@2"},
-        {"command": "onsure.createFileApprovalRequest", "when": "view == onsure.improvement", "group": "navigation@3"},
-        {"command": "onsure.applyApprovedPatch", "when": "view == onsure.improvement", "group": "navigation@4"},
-        {"command": "onsure.proveImprovement", "when": "view == onsure.improvement", "group": "navigation@5"},
-        {"command": "onsure.gitCommit", "when": "view == onsure.git", "group": "navigation@1"},
-        {"command": "onsure.gitDraftPr", "when": "view == onsure.git", "group": "navigation@2"},
-        {"command": "onsure.autopilotStatus", "when": "view == onsure.runtime", "group": "navigation@1"},
-        {"command": "onsure.autopilotPause", "when": "view == onsure.runtime", "group": "navigation@2"},
-        {"command": "onsure.autopilotResume", "when": "view == onsure.runtime", "group": "navigation@3"},
-        {"command": "onsure.autopilotCancel", "when": "view == onsure.runtime", "group": "navigation@4"}
+        {
+          "command": "onsure.refresh",
+          "when": "view == onsure.workspace",
+          "group": "navigation@1"
+        },
+        {
+          "command": "onsure.registerWorkspaceTarget",
+          "when": "view == onsure.workspace",
+          "group": "navigation@2"
+        },
+        {
+          "command": "onsure.askOrPlan",
+          "when": "view == onsure.workspace",
+          "group": "navigation@2.5"
+        },
+        {
+          "command": "onsure.learnProgram",
+          "when": "view == onsure.workspace",
+          "group": "navigation@3"
+        },
+        {
+          "command": "onsure.generatePlan",
+          "when": "view == onsure.workspace",
+          "group": "navigation@4"
+        },
+        {
+          "command": "onsure.approvePlan",
+          "when": "view == onsure.workspace",
+          "group": "navigation@5"
+        },
+        {
+          "command": "onsure.runValidation",
+          "when": "view == onsure.workspace",
+          "group": "navigation@6"
+        },
+        {
+          "command": "onsure.runWorkflowRequest",
+          "when": "view == onsure.workspace",
+          "group": "navigation@7"
+        },
+        {
+          "command": "onsure.reviewPatchPlan",
+          "when": "view == onsure.improvement",
+          "group": "navigation@1"
+        },
+        {
+          "command": "onsure.createHunkApprovalRequest",
+          "when": "view == onsure.improvement",
+          "group": "navigation@2"
+        },
+        {
+          "command": "onsure.createFileApprovalRequest",
+          "when": "view == onsure.improvement",
+          "group": "navigation@3"
+        },
+        {
+          "command": "onsure.applyApprovedPatch",
+          "when": "view == onsure.improvement",
+          "group": "navigation@4"
+        },
+        {
+          "command": "onsure.proveImprovement",
+          "when": "view == onsure.improvement",
+          "group": "navigation@5"
+        },
+        {
+          "command": "onsure.gitCommit",
+          "when": "view == onsure.git",
+          "group": "navigation@1"
+        },
+        {
+          "command": "onsure.gitDraftPr",
+          "when": "view == onsure.git",
+          "group": "navigation@2"
+        },
+        {
+          "command": "onsure.autopilotStatus",
+          "when": "view == onsure.runtime",
+          "group": "navigation@1"
+        },
+        {
+          "command": "onsure.autopilotPause",
+          "when": "view == onsure.runtime",
+          "group": "navigation@2"
+        },
+        {
+          "command": "onsure.autopilotResume",
+          "when": "view == onsure.runtime",
+          "group": "navigation@3"
+        },
+        {
+          "command": "onsure.autopilotCancel",
+          "when": "view == onsure.runtime",
+          "group": "navigation@4"
+        }
       ],
       "commandPalette": [
-        {"command": "onsure.clearToken"}
-        ,{"command": "onsure.selectMode"}
+        {
+          "command": "onsure.clearToken"
+        },
+        {
+          "command": "onsure.selectMode"
+        },
+        {
+          "command": "onsure.askOrPlan"
+        }
       ]
     },
     "configuration": {
@@ -122,7 +337,10 @@
         },
         "onsure.defaultTargetType": {
           "type": "string",
-          "enum": ["GENERAL_SOFTWARE", "AI_APPLICATION"],
+          "enum": [
+            "GENERAL_SOFTWARE",
+            "AI_APPLICATION"
+          ],
           "default": "GENERAL_SOFTWARE"
         },
         "onsure.defaultExecutionProfile": {
@@ -131,7 +349,16 @@
         },
         "onsure.defaultWorkMode": {
           "type": "string",
-          "enum": ["ASK", "PLAN", "ACT", "VERIFY", "IMPROVE", "AUTOPILOT", "AUDIT", "OFFLINE"],
+          "enum": [
+            "ASK",
+            "PLAN",
+            "ACT",
+            "VERIFY",
+            "IMPROVE",
+            "AUTOPILOT",
+            "AUDIT",
+            "OFFLINE"
+          ],
           "default": "ASK",
           "description": "Fail-closed ONSure work mode. Merge, GO and FinalLock remain prohibited."
         }
@@ -141,9 +368,12 @@
   "scripts": {
     "check": "node --check extension.js",
     "test": "node --test test/*.test.js",
+    "test:e2e:preflight": "node test/run-extension-host-e2e.js --preflight",
+    "test:e2e": "node test/run-extension-host-e2e.js",
     "package": "python3 ../scripts/package_onsure_vsix.py"
   },
   "devDependencies": {
+    "@vscode/test-electron": "2.5.2",
     "@vscode/vsce": "3.2.2"
   }
 }

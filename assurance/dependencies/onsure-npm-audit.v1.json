@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_NPM_AUDIT_EVIDENCE_V1",
+  "state": "COMPLETED",
+  "package_lock": "vscode-extension/package-lock.json",
+  "package_lock_sha256": "576faf5014fb61edbafaeeeceba1c363b73bcea14ab3c56f19d43a1287579152",
+  "command": "npm audit --json",
+  "npm_version": "11.16.0",
+  "scanned_at": "2026-08-02T00:00:00Z",
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "remediation": "Updated transitive brace-expansion from vulnerable 1.1.16 to 1.1.18 and 5.0.9.",
+  "release_authority": false,
+  "final_claim_allowed": false
+}

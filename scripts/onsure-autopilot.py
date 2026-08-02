@@ -14,6 +14,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -85,8 +86,12 @@ def validate_contract(contract: dict[str, Any]) -> None:
     recovery = contract.get("restart_recovery", {})
     if recovery.get("interrupted_process_absent") \
             != "RETRY_SAME_STAGE_WITH_ATTEMPT_ROLLBACK" \
-            or recovery.get("orphan_process_present") != "FAIL_CLOSED" \
+            or recovery.get("orphan_process_present") \
+            != "IDENTITY_BOUND_CONTROL_REATTACH_THEN_RCA" \
             or recovery.get("completed_stage_reexecution") is not False:
+        raise RuntimeError("RESTART_RECOVERY_CONTRACT_INVALID")
+    if recovery.get("process_identity_binding") \
+            != "LINUX_PROC_PID_PGID_START_TIME_COMMAND_SHA256":
         raise RuntimeError("RESTART_RECOVERY_CONTRACT_INVALID")
     terminal_state = contract.get("terminal_gate", {}).get("state")
     if terminal_state not in ALLOWED_TERMINAL_STATES:
@@ -181,16 +186,33 @@ def recover_interrupted_state(state: dict[str, Any]) -> bool:
             continue
         pid = entry.get("process_pid")
         if isinstance(pid, int) and process_exists(pid):
-            raise RuntimeError(f"ORPHAN_STAGE_PROCESS_STILL_RUNNING:{pid}")
+            expected = entry.get("process_identity")
+            observed = process_identity(pid)
+            if not isinstance(expected, dict) or expected != observed:
+                raise RuntimeError(f"ORPHAN_PROCESS_IDENTITY_MISMATCH:{pid}")
+            if entry.get("process_group_id") != observed["process_group_id"]:
+                raise RuntimeError(f"ORPHAN_PROCESS_GROUP_MISMATCH:{pid}")
+            entry["state"] = "ORPHAN_RUNNING"
+            entry["recoveries"] = int(entry.get("recoveries", 0)) + 1
+            entry["last_interruption"] = "CONTROLLER_RESTART_IDENTITY_BOUND_ORPHAN"
+            state["state"] = "RECOVERING_ORPHAN"
+            state["control_state"] = "RUNNING"
+            state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+            recovered = True
+            continue
         entry["state"] = "PENDING"
         entry["attempts"] = max(0, int(entry.get("attempts", 0)) - 1)
         entry["recoveries"] = int(entry.get("recoveries", 0)) + 1
         entry["last_interruption"] = "CONTROLLER_RESTART_PROCESS_NOT_PRESENT"
         entry.pop("process_pid", None)
         entry.pop("process_group_id", None)
+        entry.pop("process_identity", None)
         recovered = True
     if recovered:
-        state["state"] = "RECOVERING"
+        state["state"] = "RECOVERING_ORPHAN" if any(
+            entry.get("state") == "ORPHAN_RUNNING"
+            for entry in state.get("stages", {}).values()
+        ) else "RECOVERING"
         state["control_state"] = "RUNNING"
         state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
     return recovered
@@ -204,6 +226,116 @@ def process_exists(pid: int) -> bool:
         return False
     except PermissionError:
         return True
+
+
+def process_identity(pid: int) -> dict[str, Any]:
+    """Bind an orphan to Linux process birth identity, not a reusable PID alone."""
+    if not isinstance(pid, int) or pid <= 1:
+        raise RuntimeError("PROCESS_IDENTITY_PID_INVALID")
+    proc = pathlib.Path("/proc") / str(pid)
+    try:
+        stat = (proc / "stat").read_text(encoding="utf-8")
+        _, separator, tail = stat.rpartition(")")
+        fields = tail.strip().split()
+        if separator != ")" or len(fields) < 20:
+            raise RuntimeError("PROCESS_IDENTITY_STAT_INVALID")
+        process_group_id = int(fields[2])
+        start_time_ticks = int(fields[19])
+        command = (proc / "cmdline").read_bytes()
+    except (FileNotFoundError, ProcessLookupError):
+        raise RuntimeError(f"PROCESS_IDENTITY_NOT_PRESENT:{pid}") from None
+    except (OSError, ValueError) as error:
+        raise RuntimeError(f"PROCESS_IDENTITY_UNAVAILABLE:{pid}:{error}") from error
+    if not command:
+        raise RuntimeError(f"PROCESS_IDENTITY_COMMAND_UNAVAILABLE:{pid}")
+    return {
+        "pid": pid,
+        "process_group_id": process_group_id,
+        "start_time_ticks": start_time_ticks,
+        "command_sha256": digest_bytes(command),
+    }
+
+
+def capture_spawned_process_identity(
+        process: subprocess.Popen[str], attempts: int = 20) -> dict[str, Any] | None:
+    """Capture post-exec identity, while allowing an already completed short command."""
+    last_error: RuntimeError | None = None
+    for _ in range(attempts):
+        if process.poll() is not None:
+            return None
+        try:
+            return process_identity(process.pid)
+        except RuntimeError as error:
+            last_error = error
+            time.sleep(0.005)
+    if process.poll() is not None:
+        return None
+    terminate_group(process)
+    raise RuntimeError(f"SPAWNED_PROCESS_IDENTITY_UNAVAILABLE:{last_error}")
+
+
+def recover_identity_bound_orphans(
+        contract: dict[str, Any], state_path: pathlib.Path,
+        state: dict[str, Any]) -> bool:
+    """Control an exact orphan group until exit; never infer PASS without captured evidence."""
+    recovered = False
+    for stage_id, entry in state.get("stages", {}).items():
+        if entry.get("state") != "ORPHAN_RUNNING":
+            continue
+        pid = int(entry["process_pid"])
+        process_group = int(entry["process_group_id"])
+        paused = False
+        while process_exists(pid):
+            if process_identity(pid) != entry.get("process_identity"):
+                raise RuntimeError(f"ORPHAN_PROCESS_IDENTITY_CHANGED:{pid}")
+            desired = desired_control(contract, state_path)
+            if desired == "PAUSED" and not paused:
+                signal_group(process_group, signal.SIGSTOP)
+                paused = True
+                entry["state"] = "PAUSED"
+                state["state"] = "PAUSED"
+                state["control_state"] = "PAUSED"
+                atomic_json(state_path, state)
+                entry["state"] = "ORPHAN_RUNNING"
+            elif desired == "RUNNING" and paused:
+                signal_group(process_group, signal.SIGCONT)
+                paused = False
+                state["state"] = "RECOVERING_ORPHAN"
+                state["control_state"] = "RUNNING"
+                atomic_json(state_path, state)
+            elif desired == "CANCELLED":
+                if paused:
+                    signal_group(process_group, signal.SIGCONT)
+                terminate_orphan_group(pid, process_group)
+                entry["orphan_cancel_requested"] = True
+                break
+            time.sleep(0.1)
+        entry["state"] = "RCA_REQUIRED"
+        entry["failure"] = {
+            "exit_code": "NOT_AVAILABLE_AFTER_CONTROLLER_RESTART",
+            "marker_present": False,
+            "classification": "ORPHAN_COMPLETION_EVIDENCE_UNAVAILABLE",
+            "stage_id": stage_id,
+            "identity_bound_recovery": True,
+        }
+        entry.pop("process_pid", None)
+        entry.pop("process_group_id", None)
+        entry.pop("process_identity", None)
+        state["state"] = "BLOCKED_RCA_REQUIRED"
+        state["control_state"] = "RUNNING"
+        state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+        atomic_json(state_path, state)
+        recovered = True
+    return recovered
+
+
+def terminate_orphan_group(pid: int, process_group: int) -> None:
+    signal_group(process_group, signal.SIGTERM)
+    deadline = time.monotonic() + 5.0
+    while process_exists(pid) and time.monotonic() < deadline:
+        time.sleep(0.1)
+    if process_exists(pid):
+        signal_group(process_group, signal.SIGKILL)
 
 
 def controller_active(state_path: pathlib.Path) -> bool:
@@ -252,6 +384,14 @@ def run_controlled_stage(
     )
     entry["process_pid"] = process.pid
     entry["process_group_id"] = process.pid
+    identity = capture_spawned_process_identity(process)
+    if identity is None:
+        stdout, stderr = process.communicate()
+        entry.pop("process_pid", None)
+        entry.pop("process_group_id", None)
+        return subprocess.CompletedProcess(
+            stage["command"], process.returncode, stdout, stderr), "COMPLETED"
+    entry["process_identity"] = identity
     atomic_json(state_path, state)
     paused = False
     while True:
@@ -290,6 +430,7 @@ def run_controlled_stage(
                 break
     entry.pop("process_pid", None)
     entry.pop("process_group_id", None)
+    entry.pop("process_identity", None)
     return subprocess.CompletedProcess(
         stage["command"], process.returncode, stdout, stderr), outcome
 
@@ -330,6 +471,9 @@ def execute(contract: dict[str, Any], state_path: pathlib.Path) -> int:
                 raise RuntimeError("CHECKPOINT_SOURCE_CHANGED")
             if recover_interrupted_state(state):
                 atomic_json(state_path, state)
+                if recover_identity_bound_orphans(contract, state_path, state):
+                    print("ONSURE_AUTOPILOT_BLOCKED ORPHAN RCA_REQUIRED", file=sys.stderr)
+                    return 74
         else:
             state = initial_state(contract, snapshot)
             atomic_json(state_path, state)

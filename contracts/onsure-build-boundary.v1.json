@@ -21,6 +21,9 @@
   "supply_chain": {
     "sbom": "assurance/dependencies/onsure.cdx.json",
     "license_inventory": "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
+    "vulnerability_evidence": "assurance/dependencies/onsure-vulnerability-scan.v1.json",
+    "npm_audit_evidence": "assurance/dependencies/onsure-npm-audit.v1.json",
+    "policy": "contracts/onsure-supply-chain-policy.v1.json",
     "cyclonedx_plugin_version": "2.9.1",
     "cyclonedx_schema": "1.6"
   },
@@ -34,14 +37,18 @@
     "onsure-cli": "modules/onsure-cli",
     "onsure-local-api": "modules/onsure-local-api",
     "onsure-test-fixtures": "modules/onsure-test-fixtures",
-    "onsure-adapter-oruda": "modules/onsure-adapter-oruda"
+    "onsure-adapter-oruda": "modules/onsure-adapter-oruda",
+    "onsure-provider-spi": "modules/onsure-provider-spi",
+    "onsure-sdk": "modules/onsure-sdk"
   },
   "expected_internal_dependencies": {
     "onsure-core": [],
     "onsure-cli": ["onsure-core"],
     "onsure-local-api": ["onsure-core"],
     "onsure-test-fixtures": [],
-    "onsure-adapter-oruda": ["onsure-core"]
+    "onsure-adapter-oruda": ["onsure-core"],
+    "onsure-provider-spi": [],
+    "onsure-sdk": []
   },
   "transitional_source_ownership": {
     "shared_source_root": "src/main/java",

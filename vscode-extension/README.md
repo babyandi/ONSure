@@ -74,13 +74,35 @@ pause, resume and cancellation. The controller applies those requests to the ful
 group and never reports client-side HTTP abort as execution cancellation.
 
 Completed stages are not rerun after restart. An interrupted stage whose process is gone is
-recovered explicitly; a still-running orphan PID fails closed because safe process reattachment
-is not yet implemented.
+recovered explicitly. A still-running orphan is controlled only when PID, process group, Linux
+start tick and command digest all match. Its lost stdout/marker evidence is never inferred as PASS;
+completion is blocked as `RCA_REQUIRED`.
 
 Each Java validation run also writes `stage-checkpoint.json`. The digest-sealed checkpoint records
 the ordered stage plan and every started/completed/failed boundary, and the Runtime view exposes
-its latest state. It deliberately declares `context_replay_supported=false`; restarting a killed
-ValidationEngine still requires a new run until aggregate context replay is implemented.
+its latest state. `stage-context.json` now preserves a digest-bound typed aggregate that can be
+restored explicitly. Automatic engine resume remains disabled until stage side effects have a
+complete idempotency contract.
+
+ASK and PLAN provide deterministic workspace-local responses from the registered snapshot. ASK is
+read-only and PLAN only proposes ordered steps; neither invokes a provider, uses external network,
+mutates source, executes a plan or makes a final claim.
+
+## Extension Host E2E
+
+The separate smoke host pins `@vscode/test-electron` and VS Code `1.95.3`. The first VS Code binary
+download may require network, and Linux headless execution needs `xvfb-run` or a display. GitHub
+Actions are not used.
+
+```bash
+npm ci --ignore-scripts
+npm run test:e2e:preflight
+npm run test:e2e
+```
+
+The smoke test activates the extension, checks core command registration and verifies ASK's
+provider/network/source-mutation/final-claim denials. Missing display or dependencies are reported
+as `NOT_RUN` rather than a fabricated pass.
 
 Execution plans expose estimated input/output tokens, external transfer bytes and the approved
 data-transfer scope. Current local plans declare zero provider tokens and workspace-local transfer;
@@ -89,10 +111,10 @@ this is an explicit no-model plan, not a measured provider quote.
 ## Current limit
 
 Dedicated read views, digest-bound Hunk diff preview, Hunk/whole-file external signing requests,
-semantic fail-closed modes, Java stage checkpoints, budget rows and CLI/Local API/VS Code Autopilot
-controls are implemented. Validation context replay, orphan-process reattachment, conversational
-AI behavior for Ask/Plan, real provider price quotes and installed VS Code Extension Host
-end-to-end automation remain partial or `NOT_RUN`.
+semantic fail-closed modes, Java context snapshots, deterministic ASK/PLAN, budget rows and
+identity-bound CLI/Local API/VS Code Autopilot controls are implemented. Automatic validation
+engine resume, real provider price quotes and installed Extension Host execution remain partial or
+`NOT_RUN` where their runtime prerequisites are absent.
 Independent OTester/OAudit are still required before any release claim.
 
 `npm run package` invokes the repository-owned deterministic VSIX wrapper. It normalizes ZIP entry
