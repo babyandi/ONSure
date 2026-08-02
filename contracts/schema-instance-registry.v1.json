@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "pairs": [
     {"schema": "contracts/program-profile.v1.schema.json", "instances": ["fixtures/contracts/program-profile.valid.json"]},
     {"schema": "contracts/behavior-profile.v1.schema.json", "instances": ["fixtures/contracts/behavior-profile.valid.json"], "invalid_instances": ["fixtures/contracts/behavior-profile.invalid.json"]},
@@ -8,6 +8,8 @@
     {"schema": "contracts/failure-memory.v1.schema.json", "instances": ["fixtures/contracts/failure-memory.valid.json"]},
     {"schema": "contracts/improvement-memory.v1.schema.json", "instances": ["fixtures/contracts/improvement-memory.valid.json"]},
     {"schema": "contracts/reusable-pattern-memory.v1.schema.json", "instances": ["fixtures/contracts/reusable-pattern-memory.valid.json"]},
+    {"schema": "contracts/durable-job-state.v1.schema.json", "instances": ["fixtures/contracts/durable-job-state.valid.json"]},
+    {"schema": "contracts/restart-restore-receipt.v1.schema.json", "instances": ["fixtures/contracts/restart-restore-receipt.valid.json"]},
     {"schema": "contracts/evidence-receipt.v1.schema.json", "instances": ["fixtures/contracts/evidence-receipt.valid.json"]},
     {"schema": "contracts/execution-plan.v1.schema.json", "instances": ["fixtures/contracts/execution-plan.valid.json"]},
     {"schema": "contracts/execution-plan-approval-evidence.v1.schema.json", "instances": ["fixtures/contracts/execution-plan-approval-evidence.valid.json"]},

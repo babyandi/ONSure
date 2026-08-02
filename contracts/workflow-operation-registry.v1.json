@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_WORKFLOW_OPERATION_REGISTRY_V1",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "operations": [
     "project.register-workspace",
     "project.register",
@@ -15,6 +15,10 @@
     "patch.rollback",
     "improvement.prove",
     "knowledge.separate",
+    "job.create",
+    "job.control",
+    "job.read",
+    "job.recover",
     "git.commit",
     "git.draft-pr",
     "license.issue",
@@ -49,7 +53,7 @@
     "all_operations_must_reach_generic_dispatcher": true,
     "dedicated_vscode_commands_required": ["program.learn", "validation.run"]
   },
-  "operation_count": 41,
+  "operation_count": 45,
   "current_source_execution": "LOCAL_RECEIPT_REQUIRED",
   "final_claim_allowed": false
 }

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/restart-restore-receipt.v1.schema.json",
+  "title": "ONSure Restart Restore Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "recovered_jobs", "recovered_count", "actor", "restored_at", "assurance_class", "final_claim_allowed", "receipt_sha256"],
+  "properties": {
+    "contract": {"const": "ONSURE_RESTART_RESTORE_RECEIPT_V1"},
+    "recovered_jobs": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["job_id", "status", "revision", "ledger_head"],
+        "properties": {
+          "job_id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["PAUSED", "RECOVERY_HOLD"]},
+          "revision": {"type": "integer", "minimum": 1},
+          "ledger_head": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "recovered_count": {"type": "integer", "minimum": 0},
+    "actor": {"type": "string", "minLength": 1},
+    "restored_at": {"type": "string", "format": "date-time"},
+    "assurance_class": {"const": "SELF_VALIDATION_NONFINAL"},
+    "final_claim_allowed": {"const": false},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

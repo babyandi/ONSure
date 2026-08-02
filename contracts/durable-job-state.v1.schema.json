@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/durable-job-state.v1.schema.json",
+  "title": "ONSure Durable Job State v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "job_id", "operation", "request_sha256", "status", "checkpoint", "approval_history", "approval_history_restored", "restart_count", "created_at", "completed_at", "cancellation_reason", "final_claim_allowed", "revision", "ledger_sequence", "ledger_head", "updated_at", "state_sha256"],
+  "properties": {
+    "contract": {"const": "ONSURE_DURABLE_JOB_STATE_V1"},
+    "job_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "operation": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "status": {"enum": ["QUEUED", "RUNNING", "PAUSED", "RECOVERY_HOLD", "COMPLETED", "CANCELLED"]},
+    "checkpoint": {
+      "oneOf": [
+        {"type": "object", "maxProperties": 0},
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["stage_id", "cursor", "artifact_refs", "approval_history_sha256", "created_at", "checkpoint_sha256"],
+          "properties": {
+            "stage_id": {"type": "string", "minLength": 1},
+            "cursor": {"type": "string", "minLength": 1},
+            "artifact_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+            "approval_history_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "created_at": {"type": "string", "format": "date-time"},
+            "checkpoint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    },
+    "approval_history": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["approval_id", "approval_contract", "approval_purpose", "actor", "key_id", "receipt_sha256"],
+        "properties": {
+          "approval_id": {"type": "string", "minLength": 1},
+          "approval_contract": {"type": "string", "minLength": 1},
+          "approval_purpose": {"type": "string", "minLength": 1},
+          "actor": {"type": "string", "minLength": 1},
+          "key_id": {"type": "string", "minLength": 1},
+          "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "approval_history_restored": {"type": "boolean"},
+    "restart_count": {"type": "integer", "minimum": 0},
+    "created_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": ["string", "null"], "format": "date-time"},
+    "cancellation_reason": {"type": ["string", "null"]},
+    "final_claim_allowed": {"const": false},
+    "revision": {"type": "integer", "minimum": 1},
+    "ledger_sequence": {"type": "integer", "minimum": 1},
+    "ledger_head": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "state_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

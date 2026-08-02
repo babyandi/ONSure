@@ -32,6 +32,7 @@ public record ApprovalAuthorityPaths(
     private static final Set<String> PRODUCT_STATE_OVERRIDE_FIELDS = Set.of(
             "catalog_root", "store_root", "license_store_root", "case_store_root",
             "memory_root", "project_memory_root", "reusable_pattern_root",
+            "jobs_root", "checkpoint_root", "queue_root",
             "output_file", "approved_plan_file", "evidence_root", "rollback_receipt_file");
     private static final Map<String, Set<String>> OPERATION_STATE_OVERRIDE_FIELDS = Map.of(
             "patch.apply", Set.of("worktree_root"));

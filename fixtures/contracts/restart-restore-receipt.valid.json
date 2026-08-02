@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_RESTART_RESTORE_RECEIPT_V1",
+  "recovered_jobs": [{
+    "job_id": "job-sample-001",
+    "status": "PAUSED",
+    "revision": 4,
+    "ledger_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }],
+  "recovered_count": 1,
+  "actor": "restart-controller",
+  "restored_at": "2026-08-02T00:05:00Z",
+  "assurance_class": "SELF_VALIDATION_NONFINAL",
+  "final_claim_allowed": false,
+  "receipt_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

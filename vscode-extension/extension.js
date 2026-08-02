@@ -8,6 +8,7 @@ const TOKEN_KEY = 'onsure.localApiToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
 const LAST_PROFILE_KEY = 'onsure.lastProgramProfile';
 const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
+const LAST_RESTORE_KEY = 'onsure.lastRestartRestore';
 const WORK_MODE_KEY = 'onsure.workMode';
 const WORK_MODES = Object.freeze(['ASK', 'PLAN', 'ACT', 'VERIFY', 'IMPROVE', 'AUTOPILOT', 'AUDIT', 'OFFLINE']);
 const VIEW_IDS = Object.freeze([
@@ -124,12 +125,16 @@ class AssuranceTreeProvider {
     const lastProfile = this.context.workspaceState.get(LAST_PROFILE_KEY);
     const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
     const lastWorkflow = this.context.workspaceState.get(LAST_WORKFLOW_KEY);
+    const lastRestore = this.context.workspaceState.get(LAST_RESTORE_KEY);
     const workMode = this.context.workspaceState.get(WORK_MODE_KEY)
       || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
     items.push(item('Work Mode', workMode, 'symbol-enum', 'onsure.selectMode'));
     if (lastProfile) items.push(item('Last Program Profile', lastProfile, 'json'));
     if (lastRun) items.push(item('Last Run', lastRun, 'folder-opened', 'onsure.openLastArtifact'));
     if (lastWorkflow) items.push(item('Last Workflow', lastWorkflow, 'run-all'));
+    if (lastRestore) {
+      items.push(item('Restart Recovery', `${lastRestore.recovered_count || 0} job(s) paused`, 'debug-restart'));
+    }
     return items;
   }
 }
@@ -178,6 +183,18 @@ async function activate(context) {
   statusBar.text = '$(shield) ONSure: NON_FINAL';
   statusBar.tooltip = 'ONSure self-validation is nonfinal until independent gates pass.';
   statusBar.command = 'onsure.refresh';
+  const existingToken = await context.secrets.get(TOKEN_KEY);
+  if (existingToken) {
+    try {
+      const restored = await client.workflow('job.recover', {
+        actor: 'vscode-extension-restart-controller'
+      });
+      await context.workspaceState.update(LAST_RESTORE_KEY, restored.result);
+      output.appendLine(`Restart recovery: ${JSON.stringify(restored.result)}`);
+    } catch (error) {
+      output.appendLine(`Restart recovery deferred (nonfinal): ${error.message}`);
+    }
+  }
   statusBar.show();
 
   async function executeWorkflow(operation, request, title) {

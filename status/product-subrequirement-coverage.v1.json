@@ -811,13 +811,16 @@
       "id": "FR-09-C",
       "name": "Restart-safe state restoration",
       "normative_phrase": "Extension 재시작 후 작업 상태와 승인 이력을 복구해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "vscode-extension/extension.js"
+        "vscode-extension/extension.js",
+        "src/main/java/io/onsure/platform/DurableJobService.java",
+        "contracts/restart-restore-receipt.v1.schema.json"
       ],
       "test_refs": [
-        "scripts/validate-vscode-extension.py"
+        "scripts/validate-vscode-extension.py",
+        "src/test/java/io/onsure/platform/DurableJobServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -825,17 +828,27 @@
         "VSCODE"
       ],
       "implemented_surfaces": [
+        "CORE",
         "VSCODE"
       ],
-      "missing_controls": [
-        "ACTIVE_JOB_CHECKPOINT_RESTORE_MISSING",
-        "APPROVAL_HISTORY_RESTORE_MISSING",
-        "SERVER_SIDE_RESTART_RECOVERY_MISSING"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
       ],
-      "semantic_assertions": []
+      "semantic_assertions": [
+        {
+          "path": "src/main/java/io/onsure/platform/DurableJobService.java",
+          "tokens": ["recoverAllAfterRestart", "approval_history_restored", "RECOVERY_HOLD", "JOB_APPROVAL_HISTORY_CHECKPOINT_MISMATCH"]
+        },
+        {
+          "path": "vscode-extension/extension.js",
+          "tokens": ["job.recover", "LAST_RESTORE_KEY", "vscode-extension-restart-controller"]
+        },
+        {
+          "path": "src/test/java/io/onsure/platform/DurableJobServiceTest.java",
+          "tokens": ["restartRestoresCheckpointAndConsumedApprovalHistoryAsPaused", "runningJobWithoutCheckpointRecoversToHold"]
+        }
+      ]
     },
     {
       "id": "FR-10-A",
@@ -1173,10 +1186,17 @@
       "id": "NFR-04",
       "name": "Pause and resume long-running work",
       "normative_phrase": "중단·재개 가능한 장기 작업",
-      "implementation_status": "DESIGN_ONLY",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
-      "code_refs": [],
-      "test_refs": [],
+      "code_refs": [
+        "src/main/java/io/onsure/platform/DurableJobService.java",
+        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+        "contracts/durable-job-state.v1.schema.json"
+      ],
+      "test_refs": [
+        "src/test/java/io/onsure/platform/DurableJobServiceTest.java",
+        "scripts/validate-workflow-surface-parity.py"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE",
@@ -1184,17 +1204,31 @@
         "LOCAL_API",
         "VSCODE"
       ],
-      "implemented_surfaces": [],
-      "missing_controls": [
-        "JOB_CHECKPOINT_MISSING",
-        "CANCEL_RESUME_API_MISSING",
-        "RESTART_SAFE_QUEUE_MISSING"
+      "implemented_surfaces": [
+        "CORE",
+        "CLI",
+        "LOCAL_API",
+        "VSCODE"
       ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
         "SUBREQ_SURFACE_GATE"
       ],
-      "semantic_assertions": []
+      "semantic_assertions": [
+        {
+          "path": "src/main/java/io/onsure/platform/DurableJobService.java",
+          "tokens": ["checkpoint", "pause", "resume", "cancel", "JOB_REVISION_CONFLICT", "recoverAllAfterRestart"]
+        },
+        {
+          "path": "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+          "tokens": ["job.create", "job.control", "job.read", "job.recover"]
+        },
+        {
+          "path": "src/test/java/io/onsure/platform/DurableJobServiceTest.java",
+          "tokens": ["checkpointPauseResumeCancelAndRevisionCasAreEnforced"]
+        }
+      ]
     },
     {
       "id": "NFR-05",
@@ -1309,10 +1343,10 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 6,
-    "partial": 30,
+    "implemented": 8,
+    "partial": 29,
     "stub": 4,
-    "design_only": 3,
+    "design_only": 2,
     "verification_not_run": 43
   },
   "assurance": {

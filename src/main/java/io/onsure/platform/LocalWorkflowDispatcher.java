@@ -53,6 +53,10 @@ public final class LocalWorkflowDispatcher {
             case "patch.rollback" -> patchRollback(request);
             case "improvement.prove" -> improvementProve(request);
             case "knowledge.separate" -> knowledgeSeparate(request);
+            case "job.create" -> jobCreate(request);
+            case "job.control" -> jobControl(request);
+            case "job.read" -> jobRead(request);
+            case "job.recover" -> jobRecover(request);
             case "git.commit" -> gitCommit(request);
             case "git.draft-pr" -> gitDraftPr(request);
             case "license.issue" -> licenseIssue(request);
@@ -178,6 +182,63 @@ public final class LocalWorkflowDispatcher {
         result.put("violations", separated.violations());
         result.put("final_claim_allowed", false);
         return Map.copyOf(result);
+    }
+
+    private DurableJobService jobs() {
+        return new DurableJobService(workspaceRoot.resolve(".onsure/jobs"));
+    }
+
+    private Map<String, Object> jobCreate(JsonNode request) throws Exception {
+        return jobs().create(requiredId(request, "job_id"), requiredId(request, "job_operation"),
+                requiredDigest(request, "request_sha256"), actor(request));
+    }
+
+    private Map<String, Object> jobControl(JsonNode request) throws Exception {
+        DurableJobService jobs = jobs();
+        String jobId = requiredId(request, "job_id");
+        long revision = request.path("expected_revision").asLong(-1);
+        String action = requiredText(request, "action");
+        return switch (action) {
+            case "START" -> jobs.start(jobId, revision, actor(request));
+            case "PAUSE" -> jobs.pause(jobId, revision, actor(request));
+            case "RESUME" -> jobs.resume(jobId, revision, actor(request));
+            case "COMPLETE" -> jobs.complete(jobId, revision, actor(request));
+            case "CANCEL" -> jobs.cancel(jobId, revision,
+                    requiredText(request, "reason"), actor(request));
+            case "CHECKPOINT" -> jobCheckpoint(jobs, jobId, revision, request);
+            default -> throw new IllegalArgumentException("JOB_CONTROL_ACTION_INVALID:" + action);
+        };
+    }
+
+    private Map<String, Object> jobCheckpoint(
+            DurableJobService jobs, String jobId, long revision, JsonNode request) throws Exception {
+        List<DurableJobService.ApprovalBinding> bindings =
+                approvalBindings(request.path("approval_bindings"));
+        return jobs.checkpoint(
+                jobId, revision, requiredId(request, "stage_id"),
+                requiredText(request, "cursor"), stringList(request.path("artifact_refs")), bindings,
+                bindings.isEmpty() ? null : approvalAuthority.requireTrustedKeyRegistry(),
+                bindings.isEmpty() ? null : approvalAuthority.replayLedgerForConsumption(), actor(request));
+    }
+
+    private List<DurableJobService.ApprovalBinding> approvalBindings(JsonNode values) {
+        if (!values.isArray()) return List.of();
+        java.util.ArrayList<DurableJobService.ApprovalBinding> result = new java.util.ArrayList<>();
+        for (JsonNode value : values) {
+            result.add(new DurableJobService.ApprovalBinding(
+                    inputPath(value, "receipt_file", true),
+                    requiredText(value, "expected_contract"),
+                    requiredText(value, "expected_purpose")));
+        }
+        return List.copyOf(result);
+    }
+
+    private Map<String, Object> jobRead(JsonNode request) throws Exception {
+        return jobs().read(requiredId(request, "job_id"));
+    }
+
+    private Map<String, Object> jobRecover(JsonNode request) throws Exception {
+        return jobs().recoverAllAfterRestart(actor(request));
     }
 
     private Map<String, Object> programLearn(JsonNode request) throws Exception {

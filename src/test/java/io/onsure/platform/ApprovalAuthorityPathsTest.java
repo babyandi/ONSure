@@ -112,6 +112,7 @@ class ApprovalAuthorityPathsTest {
             for (String field : new String[] {
                     "catalog_root", "store_root", "license_store_root", "case_store_root",
                     "memory_root", "project_memory_root", "reusable_pattern_root",
+                    "jobs_root", "checkpoint_root", "queue_root",
                     "output_file", "approved_plan_file", "evidence_root", "rollback_receipt_file"}) {
                 IllegalArgumentException failure = assertThrows(IllegalArgumentException.class,
                         () -> dispatcher.dispatch("program.learn", mapper.valueToTree(Map.of(
