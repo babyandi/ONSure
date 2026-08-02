@@ -130,6 +130,23 @@ class LocalAuthenticatedApiServerSmokeTest {
             assertTrue(Files.isRegularFile(
                     temp.resolve(".onsure/plans/target-001-execution-plan.json")));
 
+            HttpResponse<String> snapshotResponse = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                                    "http://127.0.0.1:" + port + "/v1/workspace-snapshot"))
+                            .header("Authorization", "Bearer " + token)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(Map.of(
+                                    "project_id", "project-001", "target_id", "target-001"))))
+                            .build(),
+                    HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, snapshotResponse.statusCode(), snapshotResponse.body());
+            JsonNode snapshot = mapper.readTree(snapshotResponse.body()).path("snapshot");
+            assertEquals(LocalWorkspaceSnapshotService.CONTRACT, snapshot.path("contract").asText());
+            assertEquals("AVAILABLE", snapshot.path("profile").path("state").asText());
+            assertEquals("AVAILABLE", snapshot.path("plan").path("state").asText());
+            assertEquals(0, snapshot.path("run_count").asInt(-1));
+            assertTrue(!snapshot.path("final_claim_allowed").asBoolean(true));
+
             assertWorkflowFailure(client, port, token, "validation.run", Map.of(
                     "project_id", "project-001", "target_id", "target-001"),
                     400, "APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED");

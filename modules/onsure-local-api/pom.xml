@@ -42,7 +42,10 @@
         <version>${compiler.version}</version>
         <configuration>
           <release>${maven.compiler.release}</release>
-          <includes><include>io/onsure/platform/LocalAuthenticatedApiServer.java</include></includes>
+          <includes>
+            <include>io/onsure/platform/LocalAuthenticatedApiServer.java</include>
+            <include>io/onsure/platform/LocalWorkspaceSnapshotService.java</include>
+          </includes>
           <compilerArgs><arg>--add-modules</arg><arg>jdk.httpserver</arg></compilerArgs>
         </configuration>
       </plugin>

@@ -84,6 +84,7 @@ public final class LocalAuthenticatedApiServer {
         server.createContext("/v1/validate", authenticated(exchange -> compatibilityWorkflow(
                 exchange, "validation.run")));
         server.createContext("/v1/run-artifact", authenticated(this::runArtifact));
+        server.createContext("/v1/workspace-snapshot", authenticated(this::workspaceSnapshot));
         executor = Executors.newFixedThreadPool(4, runnable -> {
             Thread thread = new Thread(runnable, "onsure-local-api");
             thread.setDaemon(true);
@@ -233,6 +234,21 @@ public final class LocalAuthenticatedApiServer {
                 "artifact", artifact,
                 "body", body,
                 "sha256", HexFormat.of().formatHex(digest(Files.readAllBytes(file)))));
+    }
+
+    private void workspaceSnapshot(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        JsonNode request = readJson(exchange);
+        Map<String, Object> snapshot = new LocalWorkspaceSnapshotService(workspaceRoot).snapshot(
+                request.path("project_id").asText(), request.path("target_id").asText());
+        respond(exchange, 200, Map.of(
+                "contract", CONTRACT,
+                "request_id", requestId(),
+                "snapshot", snapshot,
+                "final_claim_allowed", false));
     }
 
     private JsonNode readJson(HttpExchange exchange) throws Exception {
