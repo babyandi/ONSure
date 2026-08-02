@@ -1,0 +1,66 @@
+{
+  "component_count": 4,
+  "contract": "ONSURE_DEPENDENCY_LICENSE_INVENTORY_V1",
+  "cyclonedx_plugin": "org.cyclonedx:cyclonedx-maven-plugin:2.9.1",
+  "cyclonedx_schema": "1.6",
+  "decision": "REVIEW_REQUIRED",
+  "dependencies": [
+    {
+      "group": "com.fasterxml.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-annotations",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.2?type=jar",
+      "scope": "required",
+      "version": "2.18.2"
+    },
+    {
+      "group": "com.fasterxml.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-core",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.2?type=jar",
+      "scope": "required",
+      "version": "2.18.2"
+    },
+    {
+      "group": "com.fasterxml.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-databind",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.2?type=jar",
+      "scope": "required",
+      "version": "2.18.2"
+    },
+    {
+      "group": "com.fasterxml.jackson.datatype",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-datatype-jsr310",
+      "purl": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.2?type=jar",
+      "scope": "required",
+      "version": "2.18.2"
+    }
+  ],
+  "dependency_license_counts": {
+    "Apache-2.0": 4
+  },
+  "dependency_license_review_required_count": 0,
+  "final_claim_allowed": false,
+  "limitations": [
+    "DECLARED_DEPENDENCY_LICENSE_IS_NOT_LEGAL_APPROVAL",
+    "TRANSITIVE_NOTICE_AND_ATTRIBUTION_REQUIREMENTS_REQUIRE_HUMAN_REVIEW",
+    "SOURCE_FILE_COPYRIGHT_AND_INBOUND_RIGHTS_REQUIRE_HUMAN_ATTESTATION"
+  ],
+  "root_source_license": "UNDECLARED",
+  "source_sbom": "assurance/dependencies/onsure.cdx.json",
+  "source_sbom_sha256": "83e06fbe74695abcd297dd312e752ce4f8d27351caa20dff55eb07242eca6b2c"
+}
