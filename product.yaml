@@ -1,0 +1,59 @@
+schema_version: onsure-product-candidate/v1
+product:
+  id: onsure
+  name: ONSure
+  repository: babyandi/ONSure
+  status: PREPARATION_ONLY_NONFINAL
+  current_root: .
+  future_root_candidate: products/onsure
+namespace:
+  current_java: io.onsure
+  future_java_candidate: kr.co.oruda.products.onsure
+  rename_authorized: false
+components:
+  api:
+    status: IMPLEMENTED_LOCAL_ONLY
+    module: modules/onsure-local-api
+  worker:
+    status: NOT_PRESENT
+  web:
+    status: NOT_PRESENT
+  cli:
+    status: IMPLEMENTED
+    module: modules/onsure-cli
+  migration:
+    status: NOT_PRESENT
+  vscode_extension:
+    status: IMPLEMENTED_PARTIAL
+    path: vscode-extension
+  oruda_adapter:
+    status: IMPLEMENTED_OPTIONAL
+    module: modules/onsure-adapter-oruda
+build:
+  canonical:
+    command: mvn -B -ntp -q clean verify
+    pom: pom.xml
+  modular_compatibility:
+    command: mvn -B -ntp -q -f pom-modular.xml clean package
+    pom: pom-modular.xml
+    release_authority: false
+  python_test:
+    command: python3 -m unittest discover -s tests
+  boundary_validation:
+    command: python3 scripts/validate_onsure_build_boundary.py
+  migration_validation:
+    command: python3 scripts/validate_monorepo_migration_readiness.py
+product_root:
+  environment_variable: ONSURE_PRODUCT_ROOT
+  default_resolution: script_location_parent
+  external_workspace_reference_allowed: false
+migration:
+  actual_cutover_authorized: false
+  immutable_cutover_commit_required: true
+  package_path_change_in_current_repository: false
+  manifest: assurance/migration/onsure-migration-manifest.v1.json
+release:
+  deployment: NOT_RUN
+  production_go: false
+  commercial_go: false
+  final_pass: false

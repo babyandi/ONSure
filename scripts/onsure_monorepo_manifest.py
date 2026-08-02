@@ -16,8 +16,9 @@ import subprocess
 from collections import Counter
 from typing import Iterable
 
+from onsure_product_root import resolve_product_root
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT = resolve_product_root()
 DEFAULT_OUTPUT = ROOT / "assurance/migration/onsure-migration-manifest.v1.json"
 CURRENT_NAMESPACE = "io.onsure"
 FUTURE_NAMESPACE = "kr.co.oruda.products.onsure"

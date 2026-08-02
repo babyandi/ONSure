@@ -9,9 +9,11 @@ import re
 import sys
 
 import onsure_monorepo_manifest as manifest
+import validate_onsure_build_boundary as build_boundary
+import validate_onsure_product_metadata as product_metadata
 
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT = manifest.ROOT
 MANIFEST = ROOT / "assurance/migration/onsure-migration-manifest.v1.json"
 ABSOLUTE_WORKSPACE_PATTERNS = (
     re.compile(r"/" + "workspace/"),
@@ -92,6 +94,13 @@ def main() -> int:
     if high_risk:
         errors.append(f"HIGH_RISK_SECRET_PATTERNS:{high_risk}")
 
+    build_result = build_boundary.validate()
+    if build_result["decision"] != "PASS_NONFINAL":
+        errors.append("BUILD_BOUNDARY_VALIDATION_FAILED")
+    metadata_result = product_metadata.validate()
+    if metadata_result["decision"] != "PASS_NONFINAL":
+        errors.append("PRODUCT_METADATA_VALIDATION_FAILED")
+
     report = {
         "contract": "ONSURE_MONOREPO_MIGRATION_READINESS_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not errors else "FAIL",
@@ -102,9 +111,14 @@ def main() -> int:
         "external_product_source_reference_count": len(external_product_reference_files),
         "manifest_file_count": expected["summary"]["file_count"],
         "high_risk_secret_pattern_count": high_risk,
+        "build_boundary_decision": build_result["decision"],
+        "product_metadata_decision": metadata_result["decision"],
+        "module_dependency_cycle_count": build_result["module_dependency_cycle_count"],
+        "main_source_single_owner_count": build_result["main_source_single_owner_count"],
+        "shared_source_module_count": build_result["shared_source_module_count"],
         "known_blockers": [
-            "SPLIT_JAVA_PACKAGES_ACROSS_MAVEN_ARTIFACTS",
-            "PACKAGE_DEPENDENCY_CYCLES",
+            "TRANSITIONAL_SPLIT_PACKAGE_AND_SHARED_SOURCE_ROOT",
+            "PLATFORM_ORUDA_PACKAGE_CYCLE_PATH_FREEZE",
             "ROOT_LICENSE_UNDECLARED",
             "DEPLOYMENT_DEFINITION_NOT_PRESENT",
             "DATABASE_MIGRATION_COMPONENT_NOT_PRESENT",

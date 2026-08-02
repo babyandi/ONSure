@@ -15,9 +15,9 @@
 ## 조사 기준선
 
 - GitHub 기본 브랜치: `main`
-- 열린 Draft PR: [#27](https://github.com/babyandi/ONSure/pull/27), [#28](https://github.com/babyandi/ONSure/pull/28)
+- 열린 Draft PR: [#27](https://github.com/babyandi/ONSure/pull/27), [#28](https://github.com/babyandi/ONSure/pull/28), [#29](https://github.com/babyandi/ONSure/pull/29)
 - 원격 `main`과 로컬 `main`은 조사 시점에 61개 커밋 차이가 있었다. 이 문서는 PR이나 로컬 미발행 커밋이 아니라 원격 `main`만 기준으로 한다.
-- 루트 `AGENTS.md`: 없음
+- 루트 `AGENTS.md`: 이관 준비 후보가 Draft PR #29에 추가됨
 - 추적 파일: 465개, 약 4.0 MB(준비 산출물 추가 전)
 - Git submodule, Git LFS, symlink: 없음
 - 실행 비트가 설정된 추적 파일: 6개
@@ -27,10 +27,10 @@
 
 | 미래 경로 | 현재 근거 | 이관 시 처리 후보 | 현재 상태 |
 |---|---|---|---|
-| `products/onsure/product.yaml` | `contracts/product-scope.v1.json`, Maven 좌표, VS Code manifest | 제품 ID, owner, component, build/package/deploy 명령을 모노레포 schema에 맞춰 신규 작성 | `NOT_PRESENT` |
-| `products/onsure/AGENTS.md` | 루트 지침 파일 없음 | ORUDA-Products 상위 지침을 상속하고 ONSure 전용 경계만 최소 작성 | `NOT_PRESENT` |
+| `products/onsure/product.yaml` | `product.yaml`, `contracts/product-scope.v1.json`, Maven 좌표 | 현재 후보를 ORUDA-Products 최종 schema에 맞춰 변환·검증 | `CANDIDATE_NONFINAL` |
+| `products/onsure/AGENTS.md` | `AGENTS.md` | 현재 제품 경계를 유지하며 상위 모노레포 지침 상속 관계만 추가 | `CANDIDATE_NONFINAL` |
 | `products/onsure/README.md` | `README.md` | 상대 링크를 제품 루트 기준으로 검증한 뒤 이동 | `MAPPED` |
-| `products/onsure/CHANGELOG.md` | Git history 외 별도 파일 없음 | 이관 기준 release와 호환성 변경을 기록해 신규 작성 | `NOT_PRESENT` |
+| `products/onsure/CHANGELOG.md` | `CHANGELOG.md` | immutable cutover SHA와 실제 release 항목을 별도 승인 후 추가 | `CANDIDATE_NONFINAL` |
 | `products/onsure/components/` | Local API, CLI, VS Code 확장, 동기식 검증 실행기 | 아래 실행 구성요소 표에 따라 배치. 독립 worker/web/migration은 구현으로 가장하지 않음 | `PARTIAL` |
 | `products/onsure/modules/` | `src/main/java`, `modules/onsure-*`, `onsure_core/` | 먼저 split package와 source-set 공유를 제거한 뒤 물리 모듈로 이동 | `BLOCKED` |
 | `products/onsure/contracts/` | `contracts/` | 상대 경로와 schema registry를 함께 이동 | `MAPPED` |
@@ -40,8 +40,8 @@
 | `products/onsure/assurance/` | `harness/`, `findings/`, `status/`, assurance Java package, 로컬 receipt 규칙 | 정적 권위와 실행 증적을 분리. `.onsure/` 동적 산출물은 이관 source에서 제외 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/docs/` | `docs/`, 루트 harness 안내 문서 | 상대 링크와 authoritative document registry를 재결속 | `MAPPED` |
 | `products/onsure/assets/` | `vscode-extension/media/` | VS Code 자산을 component 소유로 유지하거나 product assets 정책에 등록 | `PARTIAL` |
-| `products/onsure/scripts/` | `scripts/` | repo-root 가정과 출력 경로를 제품 루트 인자로 치환한 뒤 이동 | `BLOCKED` |
-| `products/onsure/.obuilder/` | 없음 | OBuilder 계약과 모노레포 규약 확정 후 신규 작성 | `NOT_PRESENT` |
+| `products/onsure/scripts/` | `scripts/`, `ONSURE_PRODUCT_ROOT` resolver | 이관 준비·경계 검증 스크립트는 제품 root 중립화 완료. 나머지 실행 스크립트는 단계적으로 치환 | `PARTIAL` |
+| `products/onsure/.obuilder/` | `.obuilder/product-build.yaml` | ORUDA-Products 최종 schema 확정 후 후보를 변환·재검증 | `CANDIDATE_NONFINAL` |
 
 ## 실행 구성요소 분류
 
@@ -112,7 +112,7 @@
 
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
-| Root clean build/package | `mvn -B -ntp clean package` | `NOT_RUN` |
+| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL` |
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `NOT_RUN` |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `NOT_RUN` |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `NOT_RUN` |
@@ -122,10 +122,14 @@
 | VS Code package | `(cd vscode-extension && npm install --ignore-scripts --no-audit --no-fund && npm run check && npm run package)` | `NOT_RUN` |
 | Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `NOT_RUN` |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `NOT_RUN` |
+| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `REQUIRED_NONFINAL_GATE` |
+| 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `REQUIRED_NONFINAL_GATE` |
 | Deploy | 정의 없음 | `NOT_RUN / BLOCKED` |
 | DB migration | 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
+
+`pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.
 
 ## Manifest 후보
 

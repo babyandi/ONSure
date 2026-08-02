@@ -14,15 +14,18 @@
 
 - `io.onsure.platform` source가 `onsure-core`, `onsure-cli`, `onsure-local-api`, `onsure-adapter-oruda` artifact에 Maven include/exclude로 분산된다.
 - 모듈 POM들이 `../../src/main/java`를 공통 source root로 직접 추가한다.
+- `scripts/validate_onsure_build_boundary.py`가 현재 127개 main source의 단일 논리 owner, 허용 split package 1개, 공유 source module 4개를 baseline으로 봉인한다.
 - 이 상태로 모노레포 module graph에 넣으면 package ownership, JPMS, incremental build와 dependency visibility가 불명확하다.
-- 선행 작업: 각 artifact 전용 source directory, 명시적 public SPI/API, 한 package당 단일 owner.
+- 현재 package·파일 경로 동결 조건에서는 물리 이동으로 이를 제거할 수 없으므로 `BLOCKED_BY_PACKAGE_AND_PATH_FREEZE`다.
+- 선행 작업: cutover 승인 후 각 artifact 전용 source directory, 명시적 public SPI/API, 한 package당 단일 owner.
 
 ### 3. 패키지 의존 순환 제거
 
-- 정적 import graph에서 `io.onsure.platform ↔ io.onsure.rag` 순환이 확인됐다.
-- ORUDA adapter 영역은 `platform ↔ platform.oruda` 양방향 결합을 가진다.
-- `RagPreparationRequest`가 primitive/`Path` 기반 신규 경계를 제공하지만, 기존 공개 API 호환을 위한 `ValidationReport` overload가 아직 `rag → platform` compile edge를 유지한다.
-- 선행 작업: Core-owned port를 정의하고 RAG/adapter가 port를 구현하도록 의존 역전. Core에서 ORUDA class import 0건을 물리적으로 검증.
+- `FileValidationStore`의 RAG 직접 호출을 `io.onsure.common.RagCandidatePreparer`로 치환해 `platform → rag` import를 0건으로 만들었다.
+- 기존 공개 API 호환을 위한 `ValidationReport` overload 때문에 `rag → platform` 단방향 compile edge는 유지한다.
+- Maven artifact graph는 순환 0건이며 adapter가 core에만 의존한다.
+- `platform ↔ platform.oruda` package cycle은 기존 package 경로 동결 때문에 남아 있고 신규 cycle은 자동 차단한다.
+- 선행 작업: cutover 호환 기간에 ORUDA adapter package를 전용 namespace로 이동하고 legacy bridge를 설계한다.
 
 ### 4. 라이선스와 소유권 확정
 
@@ -46,8 +49,9 @@
 
 ### 7. 이중 build 권위 정리
 
-- 루트 monolith `pom.xml`과 `pom-modular.xml`이 동시에 존재한다.
-- 선행 작업: release artifact 권위 하나를 지정하고 다른 build는 compatibility gate로 제한. dependency lock/SBOM 추가.
+- `pom.xml`을 독립 release 후보 검증 권위로, `pom-modular.xml`을 미래 분해 compatibility gate로 지정했다.
+- `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml` 간 드리프트를 자동 검증한다.
+- 남은 선행 작업: dependency lock/SBOM과 실제 모노레포 build owner 승인.
 
 ### 8. 실행 구성요소 계약 확정
 
@@ -61,9 +65,11 @@
 
 ### 10. Repo-root 가정 제거
 
-- 스크립트는 Git root와 루트 상대경로를 기준으로 계약·상태·fixture를 찾는다.
+- Manifest, migration readiness, build boundary, product metadata 스크립트는 `ONSURE_PRODUCT_ROOT` 또는 스크립트 위치 기준 제품 root를 사용한다.
+- 절대경로 override, marker 확인, 제품 root 밖 path escape 거부를 테스트한다.
+- 기존 실행·gate 스크립트 일부는 여전히 Git root와 루트 상대경로를 기준으로 계약·상태·fixture를 찾는다.
 - 현재 외부 workspace 절대경로는 없지만 `products/onsure/`로 들어가면 상위 모노레포 root와 제품 root가 달라진다.
-- 선행 작업: `ONSURE_PRODUCT_ROOT` 또는 실행기 계산값 하나를 권위로 정하고, 모든 출력이 제품 root 밖으로 나가지 않는지 시험.
+- 선행 작업: 남은 실행 스크립트를 같은 resolver 계약으로 단계적 전환하고 모든 출력을 시험.
 
 ### 11. ORUDA 통합 경계 재정의
 
@@ -73,8 +79,9 @@
 
 ### 12. Future root metadata 부재
 
-- `product.yaml`, `CHANGELOG.md`, 제품 전용 `AGENTS.md`, `.obuilder/`가 없다.
-- 선행 작업: ORUDA-Products schema와 상위 AGENTS를 먼저 확정하고, current repository에 임의 포맷을 선행 도입하지 않음.
+- `product.yaml`, `CHANGELOG.md`, 제품 전용 `AGENTS.md`, `.obuilder/product-build.yaml` 비최종 후보를 추가했다.
+- 후보는 독립 build 권위, 구성요소의 `NOT_PRESENT`, 금지된 release 권한을 fail-closed로 검증한다.
+- 선행 작업: ORUDA-Products 최종 schema와 상위 AGENTS 확정 후 후보 변환·검증. 현재 후보를 최종 schema로 주장하지 않음.
 
 ## P2 — 실제 cutover 및 사후 검증
 

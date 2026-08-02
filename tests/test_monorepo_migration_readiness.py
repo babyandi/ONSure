@@ -8,6 +8,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import onsure_monorepo_manifest as manifest  # noqa: E402
+import onsure_product_root as product_root  # noqa: E402
 import validate_monorepo_migration_readiness as readiness  # noqa: E402
 
 
@@ -47,6 +48,13 @@ class MonorepoMigrationManifestTest(unittest.TestCase):
         windows_path = r"C:" + "\\\\" + r"Users\\user\\repo"
         self.assertTrue(readiness.contains_absolute_workspace(windows_path))
         self.assertFalse(readiness.contains_absolute_workspace(r"error:\\n"))
+
+    def test_explicit_product_root_is_absolute_bounded_and_marker_checked(self):
+        self.assertEqual(ROOT, product_root.resolve_product_root(ROOT))
+        with self.assertRaisesRegex(ValueError, "MUST_BE_ABSOLUTE"):
+            product_root.resolve_product_root(pathlib.Path("relative-root"))
+        with self.assertRaisesRegex(ValueError, "PATH_ESCAPE"):
+            product_root.product_path(ROOT, "../outside")
 
 
 if __name__ == "__main__":
