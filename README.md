@@ -139,7 +139,7 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 통합 브랜치는 Java 241개, Python 90개, Modular package, 공개 API 238개, SBOM, 독립 clone과 VSIX package를 통과했다. 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖 canonical build에서 241/241을 통과한다. MVP Full-Chain과 독립 검토는 아직 실행되지 않았다.
+현재 통합 브랜치는 Java 241개, Python 96개, Modular package, 공개 API 238개, SBOM과 operational boundary를 통과했다. 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖 canonical build에서 241/241을 통과한다. MVP Full-Chain과 독립 검토는 아직 실행되지 않았다.
 
 ```text
 Assurance      SELF_VALIDATION_NONFINAL / HOST_SANDBOX_BLOCKED
