@@ -69,7 +69,7 @@ def safe_status() -> dict:
             "public_key_must_be_inside_authority_root": True,
             "registry_cross_process_lock": True,
             "receipt_verify_consume_binding": "IMMUTABLE_SNAPSHOT_RETURNED_AND_CONSUMED_LOCAL_EXECUTION_REQUIRED",
-            "external_replay_anchor": "NOT_IMPLEMENTED",
+            "external_replay_anchor": "IMPLEMENTED_APPEND_ONLY_OUTSIDE_MUTABLE_AUTHORITY_ROOT_LOCAL_FULL_GATE_REQUIRED",
             "current_source_execution": "NOT_RUN",
         },
         "sandbox_attack_tests": {
@@ -122,6 +122,8 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
             (root / ".github/workflows").mkdir(parents=True)
             (root / "scripts").mkdir(parents=True)
             (root / "src/test/java/io/onsure/platform").mkdir(parents=True)
+            (root / "src/test/java/io/onsure/assurance").mkdir(parents=True)
+            (root / "src/main/java/io/onsure/assurance").mkdir(parents=True)
             (root / "status/verification-status.v1.json").write_text(
                 json.dumps(status or safe_status()), encoding="utf-8")
             (root / "status/mvp-acceptance-coverage.v1.json").write_text(
@@ -140,6 +142,13 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
                 "BoundedProcessRunnerTest.java", "GitWorkflowServiceTest.java"):
                 (root / "src/test/java/io/onsure/platform" / name).write_text(
                     f"class {name.removesuffix('.java')} {{}}\n", encoding="utf-8")
+            (root / "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java").write_text(
+                "previous_anchor_hash ledger_sha256 APPROVAL_REPLAY_EXTERNAL_ANCHOR_HEAD_MISMATCH\n",
+                encoding="utf-8")
+            (root / "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java").write_text(
+                "externalAnchorRejectsRollbackToStaleLedgerSnapshot "
+                "externalAnchorRejectsWholeLedgerRewriteEvenWithValidInternalHashes\n",
+                encoding="utf-8")
             with mock.patch.object(MODULE, "ROOT", root):
                 return MODULE.validate()
 
@@ -189,9 +198,9 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
         status = safe_status(); status["approval_authority_boundary"].pop("contained_worktree_authority_discovery")
         self.assertIn("APPROVAL_AUTHORITY_WORKTREE_DISCOVERY_MISSING", self.run_case(status=status))
 
-    def test_unimplemented_external_replay_anchor_cannot_be_claimed_complete(self):
+    def test_invalid_external_replay_anchor_state_is_rejected(self):
         status = safe_status(); status["approval_authority_boundary"]["external_replay_anchor"] = "PASS"
-        self.assertIn("APPROVAL_REPLAY_EXTERNAL_ANCHOR_OVERCLAIMED", self.run_case(status=status))
+        self.assertIn("APPROVAL_REPLAY_EXTERNAL_ANCHOR_STATE_INVALID", self.run_case(status=status))
 
     def test_mvp_acceptance_steps_cannot_be_claimed_complete(self):
         status = safe_status(); status["legacy_mvp_acceptance"]["state"] = "PASS"
