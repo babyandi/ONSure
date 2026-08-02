@@ -128,14 +128,14 @@
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (617 cutover + rollback files, local full; 독립 clone 재검증 중) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (617 cutover + rollback files, local + 원격 독립 clone full) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
 | DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 
-통합 operational implementation HEAD `74df782823b187397b2c1125a9b9050596e2a560`에서 권위 build 241/241, modular package, API 238/238, Python 96/96, SBOM, build boundary, operational boundary와 local 중첩 full rehearsal 617개를 검증했다. 원격 독립 clone은 overlap baseline 재생성 후 다시 실행한다. 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
+통합 operational implementation HEAD `74df782823b187397b2c1125a9b9050596e2a560`과 evidence HEAD `1d69ce39b8a5fe61ff1a98f4dbaaa9d684d37407`에서 local 및 원격 독립 clone 검증을 수행했다. 권위 build 241/241, modular package, API 238/238, Python 96/96, SBOM, build/operational boundary, VSIX package와 중첩 full rehearsal 617개가 통과했다. 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 
 `pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.
 

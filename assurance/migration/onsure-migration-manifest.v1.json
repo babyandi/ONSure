@@ -120,8 +120,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "138af1db829de178661c648c24f07e42368f48dc41f38fe77b84986061e5e62f",
-      "size_bytes": 7697
+      "sha256": "2c722eca70287b23f34089e0b3590e889278164bfc6675f68a4278f0f5d4e368",
+      "size_bytes": 7777
     },
     {
       "current_path": "assets/onsure-remediation/README.md",
@@ -2055,8 +2055,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f3572a910679fa1774cbf1c684f19d1c44981112065c228dd25f9d7f7aa64a21",
-      "size_bytes": 14984
+      "sha256": "b1c0b4133f880845423cad5841d86ffd6aecac337ecaa56da18eedb6ea1f32da",
+      "size_bytes": 15015
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -9301,6 +9301,6 @@
       "NO_PATTERN_MATCH": 616,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 6938975
+    "total_size_bytes": 6939086
   }
 }
