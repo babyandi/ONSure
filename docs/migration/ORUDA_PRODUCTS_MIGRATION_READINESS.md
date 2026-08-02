@@ -15,7 +15,7 @@
 ## 조사 기준선
 
 - GitHub 기본 브랜치: `main`
-- 열린 Draft PR: [#27](https://github.com/babyandi/ONSure/pull/27), [#28](https://github.com/babyandi/ONSure/pull/28), [#29](https://github.com/babyandi/ONSure/pull/29)
+- 현재 열린 Draft 통합 PR: [#30](https://github.com/babyandi/ONSure/pull/30). 기존 [#27](https://github.com/babyandi/ONSure/pull/27), [#28](https://github.com/babyandi/ONSure/pull/28), [#29](https://github.com/babyandi/ONSure/pull/29)는 #30에 통합된 뒤 병합 없이 닫혔다.
 - 원격 `main`과 로컬 `main`은 조사 시점에 61개 커밋 차이가 있었다. 이 문서는 PR이나 로컬 미발행 커밋이 아니라 원격 `main`만 기준으로 한다.
 - 루트 `AGENTS.md`: 이관 준비 후보가 Draft PR #29에 추가됨
 - 추적 파일: 465개, 약 4.0 MB(준비 산출물 추가 전)

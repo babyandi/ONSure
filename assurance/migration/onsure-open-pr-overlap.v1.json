@@ -117,7 +117,7 @@
         "scripts/onsure-one-shot.sh"
       ],
       "number": 27,
-      "state": "OPEN",
+      "state": "CLOSED",
       "title": "Audit and remediate granular feature, process, trust, and detector omissions",
       "url": "https://github.com/babyandi/ONSure/pull/27"
     },
@@ -273,7 +273,7 @@
         "scripts/onsure-one-shot.sh"
       ],
       "number": 28,
-      "state": "OPEN",
+      "state": "CLOSED",
       "title": "Complete ONSure final remediation gate coverage",
       "url": "https://github.com/babyandi/ONSure/pull/28"
     }

@@ -225,8 +225,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "00c42064f411100459ff289b8c59e5aff34fe9d277f952205cf4590f2899967a",
-      "size_bytes": 15217
+      "sha256": "88d029344160c90037cf5517451c23d81b83549ee898dd660714a33cc3bc3e9c",
+      "size_bytes": 15221
     },
     {
       "current_path": "contracts/acceptance-runtime-results.v1.json",
@@ -1980,8 +1980,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "0e4bb687d1e81e4f574db4e5cdfbacbcadf8bed0683f4b8ea040776bc0f04e69",
-      "size_bytes": 8149
+      "sha256": "a3f309808dc99e4c915a86412038934a74032512d441684f093c8760692f188e",
+      "size_bytes": 8296
     },
     {
       "current_path": "docs/migration/ORUDA_PRODUCTS_MIGRATION_READINESS.md",
@@ -1995,8 +1995,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "d2e452264bf1452cf8df733316a65903a6f8e88960934cb101ce50967316039b",
-      "size_bytes": 14503
+      "sha256": "457f61c5aa4fb2424ee55c393c1eb5f7a927cbec272e6d7b91473e09d1bd5c76",
+      "size_bytes": 14624
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -9166,6 +9166,6 @@
       "NO_PATTERN_MATCH": 607,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 6911341
+    "total_size_bytes": 6911613
   }
 }

@@ -12,6 +12,7 @@
 - #27과 #28은 공통 merge base가 원격 main이고 어느 한쪽도 다른 쪽의 ancestor가 아닌 `DIVERGED` 상태였다. #27 기준 #28은 ahead 46/behind 265 commit이었다.
 - 겹치는 86개 파일 중 63개는 tip 내용이 동일했다. 차이가 있는 23개는 #28의 후속 gate·authority·Java 수정이 더 최신이며, #27 전용 파일 3개는 호출되지 않는 구버전 검증기였다.
 - 통합 순서는 #28을 권위 변경선으로 채택하고 #27을 #28에 의해 대체된 변경선으로 분류했다. #29 이관 준비 변경은 #28 위에서 충돌을 해소했다.
+- #27, #28, #29는 통합 근거와 #30 링크를 남긴 뒤 병합 없이 닫았다. 각 head commit과 브랜치는 #30 history에 보존된다.
 - 현재 overlap 판정은 `INTEGRATION_ORDER_RESOLVED`다. 이는 자동 main 병합 허용이나 #27/#28/#29의 Draft 상태 해제를 의미하지 않는다.
 
 ### 2. Split package와 공유 source-set 제거
