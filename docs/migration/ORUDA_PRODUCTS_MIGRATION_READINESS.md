@@ -112,12 +112,12 @@
 
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
-| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (통합 local 241 tests; 독립 clone 재검증 필요) |
-| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (통합 local; 독립 clone 재검증 필요) |
-| Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 통합 local 241 tests) |
+| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (통합 local + 원격 독립 clone, 각 241 tests) |
+| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
+| Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 241 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (통합 local; 최종 개수와 독립 clone 재검증 필요) |
-| 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `REVALIDATION_REQUIRED_ON_INTEGRATION_HEAD` |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (90 tests, 통합 local + 원격 독립 clone) |
+| 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm install --ignore-scripts --no-audit --no-fund && npm run check && npm run package)` | `PASS_NONFINAL` (`onsure-0.2.0.vsix`; repository/license warning) |
 | Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (통합 후보 608 files) |
@@ -126,14 +126,14 @@
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (238 public classes, delta 0) |
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `REVALIDATION_REQUIRED_ON_INTEGRATION_HEAD` |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (608 cutover + rollback files, local full + 독립 clone static) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | 정의 없음 | `NOT_RUN / BLOCKED` |
 | DB migration | 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 
-기존 #29 implementation HEAD의 독립 검증과 별도로, #28 권위 변경선과 #29를 합친 통합 tree에서 권위 build 241/241, modular package, API 238/238, Python·SBOM·build boundary를 다시 검증했다. 통합 commit을 발행한 뒤 원격 shallow clone과 중첩 제품 root 검증을 다시 실행해 이 표의 `REVALIDATION_REQUIRED`를 실제 결과로 교체한다.
+#28 권위 변경선과 #29를 합친 통합 implementation HEAD `0dde4088d4f046b7fe9bbb691a0ba82c730343bd`에서 local과 원격 독립 clone 검증을 수행했다. 권위 build 241/241, modular package, API 238/238, Python 90/90, SBOM, build boundary, 정적 gate, VSIX package가 통과했다. 중첩 제품 root는 local full과 독립 clone static에서 608개 cutover·rollback 파일을 확인했다. 전체 gate의 9개 실패는 canonical build 실패가 아니라 현재 host가 bubblewrap loopback network namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 
 `pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.
 
