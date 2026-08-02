@@ -120,8 +120,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "bd5533c463daf337d5e87008079869431809093d2588dbfb1cbefa59e49b15f3",
-      "size_bytes": 8786
+      "sha256": "4194c8b1cbd8ce4a440e89c0305e2ca5d40cb8e51356a055764863741f65cfa3",
+      "size_bytes": 8833
     },
     {
       "current_path": "assets/onsure-remediation/README.md",
@@ -555,8 +555,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "9cbf7191b6d7beb0d6a8db0013b4120e25b28228b9388efe89e59c3908bdb549",
-      "size_bytes": 1909
+      "sha256": "bfac6e3e8d75c94daa99d8c34dbd53081e47e0d8356bda0d1cddf9521caddd6b",
+      "size_bytes": 3493
     },
     {
       "current_path": "contracts/implementation-authority.v1.json",
@@ -2070,8 +2070,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "312b948a5ddf36cbdb3dca8d33cb53ceb3ec51c13d5106799367a0875fa496dd",
-      "size_bytes": 15484
+      "sha256": "84c0b79939b771704434b72f1f8223552f7ef0eb54b6cb0ee5af5d5464b63496",
+      "size_bytes": 15584
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -3405,8 +3405,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "cfd74ae85b0ed321d4810bd8ac1c434a1c879970ebca372790e7922b8fa0e714",
-      "size_bytes": 884
+      "sha256": "bd79d8c88374d3e67533ac93aa268937fc465d75891e18043583aaa9301e0b5b",
+      "size_bytes": 1415
     },
     {
       "current_path": "fixtures/contracts/improvement-memory.valid.json",
@@ -5432,8 +5432,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "be4b80736acbf7f10ba4f7da142bd1f40c52482898b1c96ba176597e5dda3b6c",
-      "size_bytes": 10463
+      "sha256": "50913e16eb36f1b85618da99d003e09c9feb911aa8841ddb80085e6d38e46f15",
+      "size_bytes": 10566
     },
     {
       "current_path": "scripts/validate-workflow-surface-parity.py",
@@ -8822,8 +8822,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "3c54556984cd9bfd56462b37fd37852710004679493d5a6dc77a5974d1185dc1",
-      "size_bytes": 7809
+      "sha256": "32088a3b5a420f147ba60b7a6b235b7613cc0f8f1476ea7826e1e42d79b4056b",
+      "size_bytes": 7807
     },
     {
       "current_path": "status/post-merge-self-audit.v1.json",
@@ -8852,8 +8852,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ce6de7b4cffd2a7cf15513cc81dfc1309746e225e7fe36089f0e1afc5bd635d6",
-      "size_bytes": 40103
+      "sha256": "d6f3ce258f7e3f9027c7531221f2281aa264cf8747225968ed231a2acf270cef",
+      "size_bytes": 40053
     },
     {
       "current_path": "status/remaining-work-register.v1.json",
@@ -9317,8 +9317,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "c135bfc1e62b343c927f4325d72d92dc6efaad302f56429987f9f465a2c6a2d3",
-      "size_bytes": 4250
+      "sha256": "a02869aa5d76a9d3ea0829ff1af3b4ea845b46d3029c958f589e83c19c0c0d58",
+      "size_bytes": 4426
     },
     {
       "current_path": "vscode-extension/extension-core.js",
@@ -9332,8 +9332,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ab351232d7af8c063f7794376ddc6ae02083362435bcdfd3d003598e23411bc6",
-      "size_bytes": 21902
+      "sha256": "6ae36fe98704140934130991249a088e45f3292f823db2da0f32f863db597875",
+      "size_bytes": 23224
     },
     {
       "current_path": "vscode-extension/extension.js",
@@ -9347,8 +9347,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "1940a780cca232ca77a0f1f9109d6c578ed1c00c1501a17f9052a32cd4447893",
-      "size_bytes": 37270
+      "sha256": "5d866412eeb4c88bfd53cde9ef71f6bfff2ff956a5ebac7d4ca8655ba096cbbc",
+      "size_bytes": 38600
     },
     {
       "current_path": "vscode-extension/media/onsure.svg",
@@ -9392,8 +9392,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "b62cec0a2ac960bd3bb060e91022eb8edd366a5bb58b59605f20b676ac69f656",
-      "size_bytes": 7591
+      "sha256": "58d715b7aa036ed0b8de266178cff4987d94baac438e90a7d5203b3da0b05850",
+      "size_bytes": 7870
     },
     {
       "current_path": "vscode-extension/test/extension-core.test.js",
@@ -9407,8 +9407,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "a66fc2020e5236e7063784d795670a987d09457e3fc5ca0c60d799086bbbe21f",
-      "size_bytes": 10265
+      "sha256": "d2ca2b36ca4739b1239f5701a3e137537499bac83533d8c626643cfe0083ea7a",
+      "size_bytes": 10738
     }
   ],
   "final_claim_allowed": false,
@@ -9451,6 +9451,6 @@
       "NO_PATTERN_MATCH": 626,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 7071633
+    "total_size_bytes": 7077526
   }
 }
