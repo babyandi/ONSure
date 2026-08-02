@@ -112,7 +112,7 @@
 
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
-| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (latest local 2회, 각 246 tests; latest remote clone pending) |
+| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (latest local 2회 + remote independent clone, 각 246 tests) |
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (통합 local + 원격 독립 clone) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 246 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
@@ -129,15 +129,17 @@
 | CycloneDX SBOM/license inventory | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (4 components, dependency license review 0) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / DESIGN_ONLY` |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (latest local 633 cutover + rollback files; latest remote clone pending) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (latest local + remote clone, 633 cutover + rollback files) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | design contract만 존재, runtime 정의 없음 | `NOT_RUN / NOT_IMPLEMENTED` |
 | DB migration | design contract만 존재, 구성요소 없음 | `NOT_RUN / NOT_APPLICABLE_CURRENTLY` |
 
-최신 미게시 구현은 semantic work-mode 권한, Java stage checkpoint, provider adapter 경계와
-token/data-transfer budget를 추가했다. 로컬에서 canonical 246/246 2회, modular 11/11,
-API 238/238, Python 104/104, Node 8/8과 633-file migration readiness/nested rehearsal가 통과했다.
-원격 독립 clone과 633-file nested rehearsal는 구현 commit push 후 실행한다.
+구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,
+Java stage checkpoint, provider adapter 경계와 token/data-transfer budget를 추가했다.
+로컬 canonical 246/246 2회와 원격 독립 clone 246/246, modular 11/11, API 238/238,
+Python 104/104, Node 8/8, 633-file migration readiness/nested rehearsal가 통과했다.
+VSIX는 두 환경에서 byte-identical SHA-256
+`8c217e6fc446fdd4938121c6faa810b1c631e3cc7be908d7e4db10ea53374afe`를 생성했다.
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.
 

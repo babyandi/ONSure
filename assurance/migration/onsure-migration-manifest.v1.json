@@ -120,7 +120,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "4625533bcd7320c940f6c11e2f73c3f34cc7b4bef48f625a4ee914ad97d8533e",
+      "sha256": "5f478ce7acba7e75282eb3c6cd37ce62c7172667ba09b227373281a7d31ed9a1",
       "size_bytes": 9079
     },
     {
@@ -2085,8 +2085,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "d7d18647384bd258d66902b0c7560fae6bc80af1b7c4e7245b8d295547cf13a0",
-      "size_bytes": 16069
+      "sha256": "7478e44e8122b14b3a92b5ca7c6d3fc2f507cf68c993decc7b80dfb3744b0be4",
+      "size_bytes": 16151
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -9541,6 +9541,6 @@
       "NO_PATTERN_MATCH": 632,
       "REVIEW_REQUIRED": 1
     },
-    "total_size_bytes": 7121192
+    "total_size_bytes": 7121274
   }
 }
