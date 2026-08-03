@@ -35,12 +35,8 @@
         <version>${compiler.version}</version>
         <configuration>
           <release>${maven.compiler.release}</release>
+          <implicit>none</implicit>
           <excludes>
-            <exclude>io/onsure/platform/ONSureCli.java</exclude>
-            <exclude>io/onsure/platform/LocalAuthenticatedApiServer.java</exclude>
-            <exclude>io/onsure/platform/LocalWorkspaceSnapshotService.java</exclude>
-            <exclude>io/onsure/platform/OrudaTargetAdapter.java</exclude>
-            <exclude>io/onsure/platform/ProductPlatformE2EMain.java</exclude>
             <exclude>io/onsure/platform/oruda/**</exclude>
           </excludes>
         </configuration>

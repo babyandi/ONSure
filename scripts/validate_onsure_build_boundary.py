@@ -206,7 +206,8 @@ def validate() -> dict[str, object]:
         "split_packages": actual_split,
         "package_cycles": actual_cycles,
         "forbidden_import_edge_count": len(forbidden_present),
-        "physical_split_removal": "BLOCKED_BY_PACKAGE_AND_PATH_FREEZE",
+        "physical_split_removal": "COMPLETE" if not actual_split else "INCOMPLETE",
+        "shared_source_root_removal": "COMPLETE" if not shared else "STAGED_PATH_FREEZE_PRESERVED",
         "final_claim_allowed": False,
     }
 

@@ -21,8 +21,7 @@
         "io.onsure.platform"
       ],
       "forbidden_import_prefixes": [
-        "io.onsure.platform.oruda",
-        "io.onsure.platform.OrudaTargetAdapter"
+        "io.onsure.platform.oruda"
       ],
       "forbidden_source_paths": [
         "src/main/java/io/onsure/platform/oruda/",
@@ -37,8 +36,7 @@
     "onsure-adapter-oruda": {
       "depends_on": ["onsure-core"],
       "package_prefixes": [
-        "io.onsure.platform.oruda",
-        "io.onsure.platform.OrudaTargetAdapter"
+        "io.onsure.platform.oruda"
       ],
       "required_scenarios": ["ORUDA_TARGET_FAIL", "ORUDA_MVF_001_PASS"],
       "required_for_core": false
@@ -74,10 +72,10 @@
   },
   "rules": [
     "CORE_MUST_COMPILE_WITHOUT_ORUDA_MODULE",
-    "CORE_TESTS_MUST_NOT_LOAD_ORUDA_CLASSES_OR_FIXTURES",
+    "CORE_MUST_NOT_LOAD_ORUDA_EVIDENCE_PROVIDER",
     "ORUDA_ADAPTER_MUST_BE_EXPLICITLY_REGISTERED",
     "OPTIONAL_ADAPTER_FAILURE_MUST_NOT_CHANGE_CORE_AUTHORITY",
     "NO_TARGET_ADAPTER_MAY_ISSUE_ONSURE_FINAL_DECISION"
   ],
-  "physical_module_split": "IMPLEMENTATION_PREPARED_EXECUTION_NOT_RUN"
+  "physical_module_split": "SPLIT_PACKAGE_REMOVED_SHARED_ROOT_REMAINS"
 }

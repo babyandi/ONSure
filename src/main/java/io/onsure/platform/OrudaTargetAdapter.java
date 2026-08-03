@@ -5,17 +5,28 @@ import io.onsure.assurance.Decision;
 import io.onsure.assurance.ValidationResult;
 import io.onsure.platform.ValidationModel.TargetType;
 import io.onsure.platform.ValidationModel.ValidationTarget;
-import io.onsure.platform.oruda.OrudaEvidenceRegistry;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 /** ORUDA is an external first target; its claims never become ONSURE final decisions. */
 public final class OrudaTargetAdapter extends GenericManifestTargetAdapter {
     public static final String ID = "ONSURE_ORUDA_TARGET_ADAPTER_V1";
     private static final String ORUDA_MANIFEST = "oruda-target.json";
+
+    private final List<TargetEvidenceContributor> evidenceContributors;
+
+    public OrudaTargetAdapter() {
+        this(loadEvidenceContributors());
+    }
+
+    OrudaTargetAdapter(List<TargetEvidenceContributor> evidenceContributors) {
+        this.evidenceContributors = List.copyOf(evidenceContributors);
+    }
 
     @Override
     public String adapterId() { return ID; }
@@ -75,15 +86,33 @@ public final class OrudaTargetAdapter extends GenericManifestTargetAdapter {
     @Override
     public void persistAdditionalEvidence(ValidationContext context) throws Exception {
         if (context.regressionLock() == null || context.fixtureResults().isEmpty()) return;
-        OrudaEvidenceRegistry registry = new OrudaEvidenceRegistry();
-        registry.populate(context);
-        ValidationResult result = registry.verify(context.runRoot(), context.target().sourceRoot());
+        ValidationResult result = evidenceContributor().persistAndVerify(context);
         if (result.decision() != Decision.PASS) {
             throw new IllegalStateException("ORUDA_EVIDENCE_REGISTRY_VERIFY_FAIL " + result.violations());
         }
     }
 
+    TargetEvidenceContributor evidenceContributor() {
+        List<TargetEvidenceContributor> supported = evidenceContributors.stream()
+                .filter(value -> value.supports(adapterId()))
+                .toList();
+        if (supported.isEmpty()) {
+            throw new IllegalStateException("ORUDA_EVIDENCE_CONTRIBUTOR_MISSING");
+        }
+        if (supported.size() != 1) {
+            throw new IllegalStateException("ORUDA_EVIDENCE_CONTRIBUTOR_AMBIGUOUS");
+        }
+        return supported.get(0);
+    }
+
     private Path orudaManifest(ValidationTarget target) {
         return target.sourceRoot().resolve(ORUDA_MANIFEST).toAbsolutePath().normalize();
+    }
+
+    private static List<TargetEvidenceContributor> loadEvidenceContributors() {
+        List<TargetEvidenceContributor> contributors = new ArrayList<>();
+        ServiceLoader.load(TargetEvidenceContributor.class, OrudaTargetAdapter.class.getClassLoader())
+                .forEach(contributors::add);
+        return contributors;
     }
 }

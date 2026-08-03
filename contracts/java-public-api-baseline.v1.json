@@ -1,5 +1,5 @@
 {
-  "class_count": 238,
+  "class_count": 240,
   "classes": {
     "io.onsure.assurance.AdversarialFixtureReportMain": [
       "public final class io.onsure.assurance.AdversarialFixtureReportMain {",
@@ -2919,6 +2919,14 @@
       "    descriptor: ()Ljava/util/List;",
       "}"
     ],
+    "io.onsure.platform.TargetEvidenceContributor": [
+      "public interface io.onsure.platform.TargetEvidenceContributor {",
+      "  public abstract boolean supports(java.lang.String);",
+      "    descriptor: (Ljava/lang/String;)Z",
+      "  public abstract io.onsure.assurance.ValidationResult persistAndVerify(io.onsure.platform.ValidationContext) throws java.lang.Exception;",
+      "    descriptor: (Lio/onsure/platform/ValidationContext;)Lio/onsure/assurance/ValidationResult;",
+      "}"
+    ],
     "io.onsure.platform.ValidationCompletionGate": [
       "public final class io.onsure.platform.ValidationCompletionGate {",
       "  public static final java.lang.String CONTRACT;",
@@ -3853,6 +3861,16 @@
       "public final class io.onsure.platform.oruda.OrudaDocumentMaterializerMain {",
       "  public static void main(java.lang.String[]) throws java.lang.Exception;",
       "    descriptor: ([Ljava/lang/String;)V",
+      "}"
+    ],
+    "io.onsure.platform.oruda.OrudaEvidenceContributor": [
+      "public final class io.onsure.platform.oruda.OrudaEvidenceContributor implements io.onsure.platform.TargetEvidenceContributor {",
+      "  public io.onsure.platform.oruda.OrudaEvidenceContributor();",
+      "    descriptor: ()V",
+      "  public boolean supports(java.lang.String);",
+      "    descriptor: (Ljava/lang/String;)Z",
+      "  public io.onsure.assurance.ValidationResult persistAndVerify(io.onsure.platform.ValidationContext) throws java.lang.Exception;",
+      "    descriptor: (Lio/onsure/platform/ValidationContext;)Lio/onsure/assurance/ValidationResult;",
       "}"
     ],
     "io.onsure.platform.oruda.OrudaEvidenceRegistry": [

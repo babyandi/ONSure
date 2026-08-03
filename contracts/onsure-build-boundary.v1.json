@@ -54,22 +54,11 @@
   },
   "transitional_source_ownership": {
     "shared_source_root": "src/main/java",
-    "shared_source_modules": [
-      "onsure-adapter-oruda",
-      "onsure-cli",
-      "onsure-core",
-      "onsure-local-api"
-    ],
+    "shared_source_modules": ["onsure-adapter-oruda", "onsure-core"],
     "target_shared_source_module_count": 0,
-    "allowed_split_packages": {
-      "io.onsure.platform": [
-        "onsure-adapter-oruda",
-        "onsure-cli",
-        "onsure-core",
-        "onsure-local-api"
-      ]
-    },
-    "package_path_freeze_blocks_physical_split_removal": true
+    "allowed_split_packages": {},
+    "package_paths_changed": false,
+    "split_package_removal": "COMPLETE"
   },
   "dependency_boundaries": {
     "forbidden_main_import_edges": [
@@ -80,9 +69,7 @@
     "allowed_legacy_main_import_edges": [
       "io.onsure.rag->io.onsure.platform"
     ],
-    "allowed_package_cycles": [
-      ["io.onsure.platform", "io.onsure.platform.oruda"]
-    ],
+    "allowed_package_cycles": [],
     "artifact_dependency_cycles_allowed": false
   },
   "namespace": {
