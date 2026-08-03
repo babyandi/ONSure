@@ -150,8 +150,9 @@ def main() -> int:
         "known_blockers": [
             "TRANSITIONAL_SHARED_SOURCE_ROOT",
             "ROOT_LICENSE_UNDECLARED",
-            "DEPLOYMENT_RUNTIME_NOT_IMPLEMENTED",
-            "DATABASE_MIGRATION_RUNTIME_NOT_IMPLEMENTED",
+            "RHEL_INSTALL_AND_SYSTEMD_START_NOT_RUN",
+            "POSTGRESQL_MIGRATION_BACKUP_RESTORE_NOT_RUN",
+            "OPENAI_LIVE_REQUEST_NOT_RUN",
         ],
         "final_claim_allowed": False,
     }

@@ -56,20 +56,19 @@
 
 - `pom.xml`을 독립 release 후보 검증 권위로, `pom-modular.xml`을 미래 분해 compatibility gate로 지정했다.
 - `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml` 간 드리프트를 자동 검증한다.
-- 별도 source를 가진 Provider SPI, local/mock 구현과 Public SDK 후보를 compatibility build에 추가했고 artifact graph cycle은 0건이다.
-- 남은 선행 작업: dependency lock/SBOM, SPI/SDK versioning과 실제 모노레포 build owner 승인.
+- 별도 source를 가진 Provider SPI, local/mock/OpenAI 구현, PostgreSQL migration과 Public SDK 후보를 compatibility build에 추가했고 artifact graph cycle은 0건이다.
+- 남은 선행 작업: SPI/SDK versioning, 실제 OpenAI request 검증과 모노레포 build owner 승인.
 
 ### 8. 실행 구성요소 계약 확정
 
-- API와 CLI는 있으나 standalone worker와 browser web은 없다. DB migration은 운영 DB가 아닌 합성 SQLite runner만 있다.
-- 선행 작업: 없는 구성요소를 빈 디렉터리로 “구현” 처리하지 말고 `product.yaml`에서 `NOT_PRESENT`로 선언. worker/DB가 실제 도입될 때 별도 ADR과 migration ownership 추가.
+- API와 CLI, PostgreSQL/Flyway migration은 있으나 standalone worker와 browser web은 없다.
+- 선행 작업: worker/web은 `NOT_PRESENT`를 유지한다. PostgreSQL migration은 실제 DB lock·backup/restore·호환성 검증과 운영 승인 전 비최종 후보로만 취급한다.
 
-### 9. 운영 배포 runtime 정의 미확정
+### 9. RHEL 운영환경 실행 검증 미완료
 
-- non-root UID 65532, read-only root, no external network, capability drop와 loopback binding을 고정한 Dockerfile/Compose 후보를 실제 build/run 검사했다.
-- validator는 immutable receipt와 rollback 요구를 유지하며 실제 배포 권한을 거부한다.
-- 합성 SQLite migration은 apply/idempotency/rollback/lock을 시험했지만 운영 DB engine/tool을 선택하지 않았다.
-- 선행 작업: 지원 배포 모드, 승인된 base image, volume/network/secrets, 운영 DB, air-gap, upgrade/rollback 정책 승인 후 후보를 실행 정의로 승격.
+- RHEL 계열 단독 서버와 systemd, loopback PostgreSQL/Flyway, external secret, OpenAI HTTPS egress 후보를 구현했다. 이전 Docker/Compose는 선택되지 않은 합성 시험 자료다.
+- validator는 immutable package, migration authorization, rollback 요구와 실제 배포 권한 거부를 유지한다.
+- 선행 작업: 정확한 RHEL/PostgreSQL 지원 버전, SELinux/firewall, 실제 PostgreSQL lock·backup/restore, systemd start/stop, OpenAI 실호출과 upgrade/rollback 승인 시험.
 
 ### 10. Repo-root 가정 제거
 
@@ -88,7 +87,7 @@
 ### 12. Future root metadata 부재
 
 - `product.yaml`, `CHANGELOG.md`, 제품 전용 `AGENTS.md`, `.obuilder/product-build.yaml` 비최종 후보를 추가했다.
-- 후보는 독립 build 권위, 구성요소의 `NOT_PRESENT`, 금지된 release 권한을 fail-closed로 검증한다.
+- 후보는 독립 build 권위, 실제 구성요소 상태와 금지된 release 권한을 fail-closed로 검증한다.
 - 선행 작업: ORUDA-Products 최종 schema와 상위 AGENTS 확정 후 후보 변환·검증. 현재 후보를 최종 schema로 주장하지 않음.
 
 ## P2 — 실제 cutover 및 사후 검증

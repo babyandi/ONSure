@@ -31,11 +31,11 @@
 | `products/onsure/AGENTS.md` | `AGENTS.md` | 현재 제품 경계를 유지하며 상위 모노레포 지침 상속 관계만 추가 | `CANDIDATE_NONFINAL` |
 | `products/onsure/README.md` | `README.md` | 상대 링크를 제품 루트 기준으로 검증한 뒤 이동 | `MAPPED` |
 | `products/onsure/CHANGELOG.md` | `CHANGELOG.md` | immutable cutover SHA와 실제 release 항목을 별도 승인 후 추가 | `CANDIDATE_NONFINAL` |
-| `products/onsure/components/` | Local API, CLI, VS Code 확장, 동기식 검증 실행기 | 아래 실행 구성요소 표에 따라 배치. 독립 worker/web/migration은 구현으로 가장하지 않음 | `PARTIAL` |
+| `products/onsure/components/` | Local API, CLI, VS Code 확장, PostgreSQL migration, 동기식 검증 실행기 | 아래 실행 구성요소 표에 따라 배치. 독립 worker/web은 구현으로 가장하지 않음 | `PARTIAL` |
 | `products/onsure/modules/` | `src/main/java`, `modules/onsure-*`, `onsure_core/` | split package/cycle 제거 완료. 남은 공유 source root 2개를 cutover 승인 후 전용 module root로 이동 | `PARTIAL_SHARED_ROOT` |
 | `products/onsure/contracts/` | `contracts/` | 상대 경로와 schema registry를 함께 이동 | `MAPPED` |
 | `products/onsure/config/` | `.devcontainer/`, `.vscode/`, `requirements-validation.txt` | 개발환경과 검증 설정을 제품 config/tooling 정책에 맞춰 분리 | `MAPPED_WITH_REVIEW` |
-| `products/onsure/deploy/` | `deploy/README.md`, operational boundary 계약, Dockerfile/Compose 후보 | non-root/read-only/no-network 후보와 실제 local runtime 검사 증적을 이동. 실제 배포 권한은 포함하지 않음 | `CANDIDATE_NONFINAL` |
+| `products/onsure/deploy/` | RHEL systemd 단독 서버 후보, package script, 이전 container 합성 시험 자료 | non-root/read-only/loopback/외부 secret 후보와 preflight 증적을 이동. 실제 배포 권한은 포함하지 않음 | `CANDIDATE_NONFINAL` |
 | `products/onsure/tests/` | `src/test/`, `modules/*/src/test/`, `tests/`, `fixtures/` | unit/integration/contract/fixture/acceptance로 재분류하되 fixture trust 경계 유지 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/assurance/` | `harness/`, `findings/`, `status/`, assurance Java package, 로컬 receipt 규칙 | 정적 권위와 실행 증적을 분리. `.onsure/` 동적 산출물은 이관 source에서 제외 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/docs/` | `docs/`, 루트 harness 안내 문서 | 상대 링크와 authoritative document registry를 재결속 | `MAPPED` |
@@ -51,7 +51,7 @@
 | `worker` | 별도 daemon/queue worker 없음. Validation Engine과 Harness가 호출 프로세스 안에서 동기 실행 | `ValidationEngine`, `FixtureHarness`, `UniversalHarnessRunner` | 독립 실행이 필요해질 때 `components/worker/`; 현재는 core module 유지 | `NOT_IMPLEMENTED_AS_COMPONENT` |
 | `web` | 브라우저 Web UI 없음 | React/Next/Vite/Spring Web 구성 없음 | `components/web/`는 생성하지 않음 | `NOT_IMPLEMENTED` |
 | `cli` | 제품 CLI와 assurance/harness 관리 CLI | `ONSureCli`, `HarnessCli`, `Local*Main`, `modules/onsure-cli` | `components/cli/` 및 내부 `assurance/tools/` | `IMPLEMENTED` |
-| `migration` | 운영 DB가 아닌 SQLite 합성 migration/rollback/lock runner | `scripts/onsure_synthetic_db_migration.py`, `config/database-migration/synthetic/` | 영속 DB 채택 전 제품 migration으로 승격 금지 | `SYNTHETIC_REHEARSAL_ONLY` |
+| `migration` | PostgreSQL/Flyway forward-only migration과 SQLite 합성 rollback/lock runner | `modules/onsure-migration-postgresql`, `scripts/onsure_synthetic_db_migration.py` | `components/migration/` 또는 `modules/migration-postgresql/` | `IMPLEMENTED_CANDIDATE_NONFINAL` |
 | `workbench` | VS Code 확장 | `vscode-extension/extension.js` | `components/vscode-extension/` | `IMPLEMENTED_PARTIAL` |
 | `adapter` | Optional ORUDA target adapter | `modules/onsure-adapter-oruda`, `io.onsure.platform.oruda` | `components/adapters/oruda/` 또는 `modules/adapters/oruda/` | `IMPLEMENTED_OPTIONAL` |
 
@@ -128,15 +128,15 @@
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (240 public classes, 기존 238 descriptors delta 0 + additive SPI 2) |
 | CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL_WITH_RELEASE_BLOCKER` (12 Maven components, VS Code 229 inventory, Trivy 0.65.0 모든 severity 0, npm audit 0; root license blocker) |
 | 컨테이너 후보 | `python3 scripts/validate_onsure_container_candidate.py` | `PASS_NONFINAL` (build/run, UID 65532, read-only, network none, loopback ready; deployment `NOT_RUN`) |
-| 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / production DESIGN_ONLY` |
-| 배포·DB preflight | `python3 scripts/onsure_deploy_migration_skeleton.py preflight` | `PASS_NONFINAL / deployment NOT_RUN / migration NOT_APPLICABLE` |
+| 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / RHEL systemd·PostgreSQL/Flyway candidate` |
+| 배포·DB preflight | `python3 scripts/onsure_deploy_migration_skeleton.py preflight` | `PASS_NONFINAL / deployment·migration NOT_RUN_NOT_AUTHORIZED` |
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 4,823-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
 | 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (712-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
-| Deploy | 안전 기본값 Dockerfile/Compose 후보만 존재 | `NOT_RUN / NOT_AUTHORIZED` |
-| DB migration | SQLite 합성 runner만 존재 | `PASS_SYNTHETIC_NONFINAL / PRODUCTION NOT_RUN` |
+| Deploy | RHEL 단독 서버 systemd/package 후보 구현 | `PACKAGE_TEST_PENDING / INSTALL NOT_RUN / NOT_AUTHORIZED` |
+| DB migration | PostgreSQL/Flyway V1 + SQLite 합성 runner | `UNIT PASS / POSTGRESQL EXECUTION NOT_RUN` |
 
 이전 구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,
 Java stage checkpoint, provider adapter 경계와 token/data-transfer budget를 추가했다.
