@@ -15,6 +15,7 @@ from onsure_product_root import resolve_product_root
 
 ROOT = resolve_product_root()
 OUTPUT = ROOT / "assurance/runtime/onsure-rhel-systemd-security.v1.json"
+UBUNTU_OUTPUT = ROOT / "assurance/runtime/onsure-ubuntu-systemd-security.v1.json"
 UNITS = (ROOT / "deploy/rhel/onsure.service", ROOT / "deploy/rhel/onsure-migrate.service")
 MAXIMUM_EXPOSURE = 4.0
 
@@ -26,7 +27,18 @@ def command(arguments: list[str]) -> str:
     return result.stdout + result.stderr
 
 
-def analyze() -> dict[str, object]:
+def host_os() -> str:
+    values: dict[str, str] = {}
+    for line in pathlib.Path("/etc/os-release").read_text(encoding="utf-8").splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            values[key] = value.strip('"')
+    return f"{values.get('ID', 'unknown').upper()}_{values.get('VERSION_ID', 'unknown').replace('.', '_')}"
+
+
+def analyze(platform: str = "rhel") -> dict[str, object]:
+    if platform not in ("rhel", "ubuntu"):
+        raise ValueError("SYSTEMD_PLATFORM_UNSUPPORTED:" + platform)
     command(["systemd-analyze", "verify", *(str(path) for path in UNITS)])
     units: list[dict[str, object]] = []
     for path in UNITS:
@@ -45,24 +57,37 @@ def analyze() -> dict[str, object]:
             "decision": "PASS_NONFINAL" if score <= MAXIMUM_EXPOSURE else "FAIL",
         })
     version = command(["systemd-analyze", "--version"]).splitlines()[0]
-    return {
-        "contract": "ONSURE_RHEL_SYSTEMD_SECURITY_REHEARSAL_V1",
+    result: dict[str, object] = {
+        "contract": f"ONSURE_{platform.upper()}_SYSTEMD_SECURITY_REHEARSAL_V1",
         "decision": "PASS_NONFINAL" if all(item["decision"] == "PASS_NONFINAL" for item in units) else "FAIL",
+        "platform": platform.upper(),
+        "host_os": host_os(),
         "systemd_analyze_version": version,
         "analysis_mode": "OFFLINE_HOST_TOOL",
         "units": units,
-        "rhel_runtime_execution": "NOT_RUN_HOST_IS_NOT_RHEL",
         "service_enable_start": "NOT_RUN",
+        "apparmor_or_selinux_execution": "NOT_RUN",
+        "firewall_execution": "NOT_RUN",
         "final_claim_allowed": False,
     }
+    if platform == "rhel":
+        result["rhel_runtime_execution"] = "NOT_RUN_HOST_IS_NOT_RHEL"
+    else:
+        result["ubuntu_runtime_execution"] = "OFFLINE_ANALYSIS_ONLY"
+    return result
+
+
+def run(platform: str = "rhel") -> int:
+    result = analyze(platform)
+    output = OUTPUT if platform == "rhel" else UBUNTU_OUTPUT
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["decision"] == "PASS_NONFINAL" else 1
 
 
 def main() -> int:
-    result = analyze()
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps(result, indent=2, sort_keys=True))
-    return 0 if result["decision"] == "PASS_NONFINAL" else 1
+    return run("rhel")
 
 
 if __name__ == "__main__":

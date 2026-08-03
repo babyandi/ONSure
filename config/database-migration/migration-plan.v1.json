@@ -13,6 +13,7 @@
   "development_rehearsal_evidence": "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json",
   "development_rehearsal_status": "PASS_POSTGRESQL_16_14_NONFINAL",
   "rhel_production_rehearsal_status": "NOT_RUN",
+  "ubuntu_production_rehearsal_status": "NOT_RUN",
   "signed_receipt_required": true,
   "destructive_ddl_allowed": false,
   "customer_data_fixture_allowed": false,

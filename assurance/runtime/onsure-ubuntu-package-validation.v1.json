@@ -1,26 +1,26 @@
 {
-  "contract": "ONSURE_RHEL_PACKAGE_VALIDATION_V1",
+  "contract": "ONSURE_UBUNTU_PACKAGE_VALIDATION_V1",
   "decision": "PASS_NONFINAL",
   "final_claim_allowed": false,
   "install_execution": "NOT_RUN",
   "internal_checksum_count": 22,
-  "package": "target/onsure-rhel-candidate.tar.gz",
-  "package_sha256": "c1713203c3243e3a59b8d6fe884d01d49e799600cbd6c4d22bf24cddf4a7873c",
-  "package_size_bytes": 7335348,
+  "package": "target/onsure-ubuntu-candidate.tar.gz",
+  "package_sha256": "5604a24530b0a547af3c72613c88b81bafa64ecf46681e9c18ad8918997641e2",
+  "package_size_bytes": 7334933,
   "path_escape_or_nonregular_entry_count": 0,
-  "platform": "RHEL",
+  "platform": "UBUNTU",
   "regular_file_count": 23,
   "root_owned_file_count": 23,
   "runtime_execution": "NOT_RUN",
   "secret_values_present": false,
   "source_bindings": {
-    "deploy/rhel/README.md": "93f05806e90547de2a2b4dc8f1dcf4f410b12bbe71667edd1db44dedf4784138",
     "deploy/rhel/onsure-migrate.service": "fc3829d5526038de799afb729e93d774697648a048222c0f47df87e91f867f95",
     "deploy/rhel/onsure.env.example": "9ab6edcccd4e2f72b441ef84b3c43e0654b2805d9ba089b91dae0db50c91ce01",
     "deploy/rhel/onsure.service": "d1083c2cd63be7200f173f9aa90a9b32cbc4907cf3fabe20485bc0493bf45399",
     "deploy/rhel/onsure.sysusers.conf": "70c7e2196de2bd07012535543bbe2eca358741916cb93652b363fd94251da72e",
     "deploy/rhel/onsure.tmpfiles.conf": "3f9aae0bfce801db3cc6c99fe2255ba888572bb39f548de24eddb14574d2c1cd",
-    "scripts/package_onsure_rhel.sh": "f4808cac6943b562f7c7fffe24b6fc611ac1f5a58e4a9da6f288a55ed5fd7d4d",
-    "scripts/package_onsure_systemd.sh": "d15ac84fed1cdb1f0d038f9ecf6a976ca0fa2928a8e99dcfcc5e80a1d1735168"
+    "deploy/ubuntu/README.md": "213f3a248b668745cb436be07daba38c485bd8f4c1a2a67829231b488110949c",
+    "scripts/package_onsure_systemd.sh": "d15ac84fed1cdb1f0d038f9ecf6a976ca0fa2928a8e99dcfcc5e80a1d1735168",
+    "scripts/package_onsure_ubuntu.sh": "79fb0b68b06bf99f3dd6b8da1dee99b6119820d35a2f5fa8b57c0390e5f8586c"
   }
 }

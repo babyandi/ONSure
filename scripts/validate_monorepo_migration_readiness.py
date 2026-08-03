@@ -150,8 +150,8 @@ def main() -> int:
         "known_blockers": [
             "TRANSITIONAL_SHARED_SOURCE_ROOT",
             "ROOT_LICENSE_UNDECLARED",
-            "RHEL_INSTALL_AND_SYSTEMD_START_NOT_RUN",
-            "RHEL_POSTGRESQL_MIGRATION_BACKUP_RESTORE_NOT_RUN",
+            "RHEL_AND_UBUNTU_INSTALL_AND_SYSTEMD_START_NOT_RUN",
+            "RHEL_AND_UBUNTU_PRODUCTION_POSTGRESQL_REHEARSAL_NOT_RUN",
             "OPENAI_LIVE_REQUEST_NOT_RUN",
         ],
         "final_claim_allowed": False,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the standalone RHEL tar without extracting or installing it."""
+"""Validate the standalone RHEL or Ubuntu tar without extracting/installing it."""
 
 from __future__ import annotations
 
@@ -16,16 +16,21 @@ from onsure_product_root import resolve_product_root
 
 
 ROOT = resolve_product_root()
-PACKAGE = ROOT / "target/onsure-rhel-candidate.tar.gz"
-OUTPUT = ROOT / "assurance/runtime/onsure-rhel-package-validation.v1.json"
-SOURCE_FILES = (
-    ROOT / "scripts/package_onsure_rhel.sh",
+PACKAGES = {
+    "rhel": ROOT / "target/onsure-rhel-candidate.tar.gz",
+    "ubuntu": ROOT / "target/onsure-ubuntu-candidate.tar.gz",
+}
+OUTPUTS = {
+    "rhel": ROOT / "assurance/runtime/onsure-rhel-package-validation.v1.json",
+    "ubuntu": ROOT / "assurance/runtime/onsure-ubuntu-package-validation.v1.json",
+}
+SHARED_SOURCE_FILES = (
+    ROOT / "scripts/package_onsure_systemd.sh",
     ROOT / "deploy/rhel/onsure.service",
     ROOT / "deploy/rhel/onsure-migrate.service",
     ROOT / "deploy/rhel/onsure.env.example",
     ROOT / "deploy/rhel/onsure.sysusers.conf",
     ROOT / "deploy/rhel/onsure.tmpfiles.conf",
-    ROOT / "deploy/rhel/README.md",
 )
 REQUIRED_FILES = {
     "etc/onsure/onsure.env.example",
@@ -59,10 +64,23 @@ def normalized(name: str) -> str:
     return path.as_posix()
 
 
-def validate(package: pathlib.Path = PACKAGE) -> dict[str, object]:
+def source_files(platform: str) -> tuple[pathlib.Path, ...]:
+    if platform not in PACKAGES:
+        raise ValueError("PACKAGE_PLATFORM_UNSUPPORTED:" + platform)
+    return (
+        ROOT / f"scripts/package_onsure_{platform}.sh",
+        *SHARED_SOURCE_FILES,
+        ROOT / f"deploy/{platform}/README.md",
+    )
+
+
+def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dict[str, object]:
+    if platform not in PACKAGES:
+        raise ValueError("PACKAGE_PLATFORM_UNSUPPORTED:" + platform)
+    package = package or PACKAGES[platform]
     package = package.resolve()
     if not package.is_file() or ROOT not in package.parents:
-        raise ValueError("RHEL_PACKAGE_MISSING_OR_OUTSIDE_PRODUCT_ROOT")
+        raise ValueError(platform.upper() + "_PACKAGE_MISSING_OR_OUTSIDE_PRODUCT_ROOT")
     contents: dict[str, bytes] = {}
     modes: dict[str, int] = {}
     with tarfile.open(package, "r:gz") as archive:
@@ -128,8 +146,9 @@ def validate(package: pathlib.Path = PACKAGE) -> dict[str, object]:
                 raise ValueError("PACKAGE_MAIN_CLASS_MISSING:" + jar)
 
     return {
-        "contract": "ONSURE_RHEL_PACKAGE_VALIDATION_V1",
+        "contract": f"ONSURE_{platform.upper()}_PACKAGE_VALIDATION_V1",
         "decision": "PASS_NONFINAL",
+        "platform": platform.upper(),
         "package": package.relative_to(ROOT).as_posix(),
         "package_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),
         "package_size_bytes": package.stat().st_size,
@@ -140,20 +159,25 @@ def validate(package: pathlib.Path = PACKAGE) -> dict[str, object]:
         "path_escape_or_nonregular_entry_count": 0,
         "source_bindings": {
             path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-            for path in SOURCE_FILES
+            for path in source_files(platform)
         },
         "install_execution": "NOT_RUN",
-        "rhel_runtime": "NOT_RUN_HOST_IS_NOT_RHEL",
+        "runtime_execution": "NOT_RUN",
         "final_claim_allowed": False,
     }
 
 
-def main() -> int:
-    result = validate()
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+def run(platform: str = "rhel") -> int:
+    result = validate(platform=platform)
+    output = OUTPUTS[platform]
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
+
+
+def main() -> int:
+    return run("rhel")
 
 
 if __name__ == "__main__":

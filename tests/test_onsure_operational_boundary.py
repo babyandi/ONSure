@@ -31,7 +31,10 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_current_design_boundary_passes_nonfinal(self):
         result = operational.validate()
         self.assertEqual("PASS_NONFINAL", result["decision"])
-        self.assertEqual("RHEL_SYSTEMD_CANDIDATE_IMPLEMENTED", result["deployment_runtime_status"])
+        self.assertEqual(
+            "RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_IMPLEMENTED",
+            result["deployment_runtime_status"],
+        )
         self.assertEqual("POSTGRESQL_FLYWAY_CANDIDATE_IMPLEMENTED", result["database_migration_component_status"])
         self.assertFalse(result["github_actions_used"])
         self.assertFalse(result["final_claim_allowed"])
@@ -53,14 +56,23 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_rhel_systemd_candidate_has_fail_closed_runtime_controls(self):
         self.assertEqual([], operational.validate_rhel_candidate())
 
+    def test_ubuntu_candidate_is_loopback_and_fail_closed(self):
+        self.assertEqual([], operational.validate_ubuntu_candidate())
+
     def test_postgresql_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_postgresql_evidence())
 
     def test_systemd_security_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_systemd_evidence())
 
+    def test_ubuntu_systemd_rehearsal_is_offline_and_digest_bound(self):
+        self.assertEqual([], operational.validate_ubuntu_systemd_evidence())
+
     def test_rhel_package_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_rhel_package_evidence())
+
+    def test_ubuntu_package_rehearsal_is_digest_bound_and_nonproduction(self):
+        self.assertEqual([], operational.validate_ubuntu_package_evidence())
 
 
 if __name__ == "__main__":

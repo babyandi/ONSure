@@ -1,10 +1,10 @@
-# ONSure RHEL 배포·PostgreSQL Migration 설계 v1
+# ONSure RHEL/Ubuntu 배포·PostgreSQL Migration 설계 v1
 
 상태: `CANDIDATE_IMPLEMENTED / PREPARATION_ONLY / NONFINAL`
 
 ## 선택된 후보
 
-- OS/topology: RHEL 계열 단독 서버, systemd
+- OS/topology: RHEL 계열 또는 Ubuntu 24.04 LTS 단독 서버, systemd
 - Java: 17
 - API: ONSure Local API, `127.0.0.1:47311` 기본값
 - DB: 같은 서버의 loopback PostgreSQL, `onsure` database/schema/user
@@ -13,7 +13,7 @@
 - container: 사용하지 않음
 - GitHub Actions: 사용하지 않음
 
-구현 파일은 `deploy/rhel/`, `modules/onsure-migration-postgresql`과
+구현 파일은 `deploy/rhel/`, `deploy/ubuntu/`, `modules/onsure-migration-postgresql`과
 `modules/onsure-provider-openai`에 있다. 저장소가 부여하는 권한은 package/preflight/test까지다.
 서버 install, migration 실행, API key 사용, 서비스 시작과 Production/Commercial GO는 포함하지 않는다.
 
@@ -40,7 +40,8 @@ backup·restore proof, lock 경쟁 시험, 이전 application 호환성, retenti
 pending 0건, 두 동시 migration process의 실행 결과 1/0과 단일 history, 합성 event
 `pg_dump`/`pg_restore`와 복원 schema 재검증이 통과했다. 증거는
 `assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json`에 migration/package digest와 함께
-결속된다. 호스트는 RHEL이 아니므로 이 결과는 RHEL 운영 backup/restore 승인을 대신하지 않는다.
+결속된다. 이 결과는 Ubuntu 개발 호스트의 격리된 임시 cluster 리허설이며 Ubuntu 또는 RHEL 운영
+backup/restore 승인, 배포판 package 조합 인증을 대신하지 않는다.
 
 ## 명령과 실제 실행 경계
 
@@ -48,10 +49,14 @@ pending 0건, 두 동시 migration process의 실행 결과 1/0과 단일 histor
 mvn -B -ntp -q clean verify
 mvn -B -ntp -q -f pom-modular.xml clean package
 bash scripts/package_onsure_rhel.sh
+bash scripts/package_onsure_ubuntu.sh
+python3 scripts/validate_onsure_rhel_package.py
+python3 scripts/validate_onsure_ubuntu_package.py
 python3 scripts/validate_onsure_operational_boundary.py
 python3 scripts/onsure_deploy_migration_skeleton.py preflight
 python3 scripts/rehearse_onsure_postgresql.py
 ```
 
-위 명령은 build/package/preflight다. RHEL install, SELinux/firewall 변경, PostgreSQL 초기화·migrate,
-OpenAI 실호출, systemd enable/start, backup/restore와 rollback은 별도 운영 승인 전 `NOT_RUN`이다.
+위 명령은 build/package/preflight다. RHEL/Ubuntu install, SELinux/AppArmor·firewall 변경,
+PostgreSQL 초기화·migrate, OpenAI 실호출, systemd enable/start, 운영 backup/restore와 rollback은
+별도 운영 승인 전 `NOT_RUN`이다.

@@ -1,15 +1,15 @@
 {
   "analysis_mode": "OFFLINE_HOST_TOOL",
   "apparmor_or_selinux_execution": "NOT_RUN",
-  "contract": "ONSURE_RHEL_SYSTEMD_SECURITY_REHEARSAL_V1",
+  "contract": "ONSURE_UBUNTU_SYSTEMD_SECURITY_REHEARSAL_V1",
   "decision": "PASS_NONFINAL",
   "final_claim_allowed": false,
   "firewall_execution": "NOT_RUN",
   "host_os": "UBUNTU_24_04",
-  "platform": "RHEL",
-  "rhel_runtime_execution": "NOT_RUN_HOST_IS_NOT_RHEL",
+  "platform": "UBUNTU",
   "service_enable_start": "NOT_RUN",
   "systemd_analyze_version": "systemd 255 (255.4-1ubuntu8.16)",
+  "ubuntu_runtime_execution": "OFFLINE_ANALYSIS_ONLY",
   "units": [
     {
       "decision": "PASS_NONFINAL",

@@ -2,7 +2,7 @@
   "contract": "ONSURE_OPERATIONAL_BOUNDARY_V1",
   "status": "DESIGN_ONLY_NONFINAL",
   "deployment": {
-    "runtime_definition_status": "RHEL_SYSTEMD_CANDIDATE_IMPLEMENTED",
+    "runtime_definition_status": "RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_IMPLEMENTED",
     "deployment_authorized": false,
     "production_go": false,
     "candidate_topology": "RHEL_SINGLE_STANDALONE_SERVER_WITH_LOCAL_API_POSTGRESQL_AND_OPENAI_EGRESS",
@@ -18,6 +18,10 @@
       "ROLLBACK_TO_PREVIOUS_IMMUTABLE_ARTIFACT"
     ],
     "target_os": "RHEL_FAMILY",
+    "supported_candidate_operating_systems": [
+      "RHEL_FAMILY",
+      "UBUNTU_24_04_LTS"
+    ],
     "container_image": "NOT_USED",
     "orchestrator": "SYSTEMD",
     "public_network_exposure": "NOT_AUTHORIZED",
@@ -34,6 +38,7 @@
     "development_rehearsal_status": "PASS_POSTGRESQL_16_14_NONFINAL",
     "development_rehearsal_evidence": "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json",
     "rhel_production_rehearsal_status": "NOT_RUN",
+    "ubuntu_production_rehearsal_status": "NOT_RUN",
     "required_before_implementation": [
       "DATABASE_ENGINE_ADR",
       "SCHEMA_OWNER_APPROVAL",

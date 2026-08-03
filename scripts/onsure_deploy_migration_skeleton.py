@@ -80,7 +80,8 @@ def validate_plans(deployment: dict[str, object], migration: dict[str, object]) 
     if migration.get("development_rehearsal_status") != "PASS_POSTGRESQL_16_14_NONFINAL" \
             or migration.get("development_rehearsal_evidence") \
             != "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json" \
-            or migration.get("rhel_production_rehearsal_status") != "NOT_RUN":
+            or migration.get("rhel_production_rehearsal_status") != "NOT_RUN" \
+            or migration.get("ubuntu_production_rehearsal_status") != "NOT_RUN":
         violations.append("MIGRATION_REHEARSAL_STATUS")
     return violations
 

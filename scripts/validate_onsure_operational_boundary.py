@@ -20,7 +20,9 @@ POSTGRESQL_MIGRATION = ROOT / (
     "V1__create_assurance_event.sql"
 )
 SYSTEMD_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-systemd-security.v1.json"
+UBUNTU_SYSTEMD_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-systemd-security.v1.json"
 RHEL_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-package-validation.v1.json"
+UBUNTU_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-package-validation.v1.json"
 
 
 def validate_rhel_candidate() -> list[str]:
@@ -59,6 +61,54 @@ def validate_rhel_candidate() -> list[str]:
                 violations.append("RHEL_ENVIRONMENT_SECRET_VALUE_SLOT:" + secret)
     if "0.0.0.0" in app_unit or "User=root" in app_unit + migration_unit:
         violations.append("RHEL_UNIT_UNSAFE_RUNTIME")
+    return violations
+
+
+def validate_ubuntu_candidate() -> list[str]:
+    violations: list[str] = []
+    plan = json.loads(
+        (ROOT / "deploy/ubuntu/deployment-plan.v1.json").read_text(encoding="utf-8")
+    )
+    expected = {
+        "contract": "ONSURE_UBUNTU_DEPLOYMENT_CANDIDATE_V1",
+        "state": "PREFLIGHT_ONLY_NOT_AUTHORIZED",
+        "artifact": "target/onsure-ubuntu-candidate.tar.gz",
+        "target_os": "UBUNTU_24_04_LTS",
+        "topology": "SINGLE_STANDALONE_SERVER",
+        "container_image": "NOT_USED",
+        "orchestrator": "SYSTEMD",
+        "package_command": "bash scripts/package_onsure_ubuntu.sh",
+        "package_validation": "python3 scripts/validate_onsure_ubuntu_package.py",
+        "package_validation_evidence": (
+            "assurance/runtime/onsure-ubuntu-package-validation.v1.json"
+        ),
+        "systemd_security_validation": "python3 scripts/onsure_ubuntu_systemd_security.py",
+        "systemd_security_evidence": (
+            "assurance/runtime/onsure-ubuntu-systemd-security.v1.json"
+        ),
+        "shared_systemd_definition_root": "deploy/rhel",
+        "api_bind": "127.0.0.1",
+        "postgresql_bind": "127.0.0.1",
+        "apparmor_execution": "NOT_RUN",
+        "ufw_execution": "NOT_RUN",
+        "install_command": "NOT_AUTHORIZED",
+        "rollback_command": "NOT_AUTHORIZED",
+        "public_network_exposure": False,
+        "deployment_authorized": False,
+        "production_go": False,
+        "final_claim_allowed": False,
+    }
+    for field, value in expected.items():
+        if plan.get(field) != value:
+            violations.append("UBUNTU_DEPLOYMENT_PLAN_" + field.upper())
+    readme = (ROOT / "deploy/ubuntu/README.md").read_text(encoding="utf-8")
+    normalized_readme = " ".join(readme.split())
+    for required in (
+        "Ubuntu 24.04 LTS", "127.0.0.1:47311", "AppArmor", "UFW",
+        "deploy/rhel/", "NOT_RUN", "not authorized",
+    ):
+        if required not in normalized_readme:
+            violations.append("UBUNTU_README_MISSING:" + required)
     return violations
 
 
@@ -123,6 +173,35 @@ def validate_systemd_evidence() -> list[str]:
     return violations
 
 
+def validate_ubuntu_systemd_evidence() -> list[str]:
+    violations: list[str] = []
+    evidence = json.loads(UBUNTU_SYSTEMD_EVIDENCE.read_text(encoding="utf-8"))
+    if evidence.get("contract") != "ONSURE_UBUNTU_SYSTEMD_SECURITY_REHEARSAL_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("platform") != "UBUNTU" \
+            or not str(evidence.get("host_os", "")).startswith("UBUNTU_24_04") \
+            or evidence.get("ubuntu_runtime_execution") != "OFFLINE_ANALYSIS_ONLY" \
+            or evidence.get("service_enable_start") != "NOT_RUN" \
+            or evidence.get("apparmor_or_selinux_execution") != "NOT_RUN" \
+            or evidence.get("firewall_execution") != "NOT_RUN" \
+            or evidence.get("final_claim_allowed") is not False:
+        violations.append("UBUNTU_SYSTEMD_EVIDENCE_CONTRACT")
+    expected = {
+        path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in (ROOT / "deploy/rhel/onsure.service", ROOT / "deploy/rhel/onsure-migrate.service")
+    }
+    actual = {str(item.get("path")): item for item in evidence.get("units", [])}
+    if set(actual) != set(expected):
+        violations.append("UBUNTU_SYSTEMD_EVIDENCE_UNIT_SET")
+    for path, digest in expected.items():
+        item = actual.get(path, {})
+        score = item.get("exposure_score")
+        if item.get("sha256") != digest or item.get("decision") != "PASS_NONFINAL" \
+                or not isinstance(score, (int, float)) or score > 4.0:
+            violations.append("UBUNTU_SYSTEMD_EVIDENCE_UNIT_BINDING:" + path)
+    return violations
+
+
 def validate_rhel_package_evidence() -> list[str]:
     violations: list[str] = []
     evidence = json.loads(RHEL_PACKAGE_EVIDENCE.read_text(encoding="utf-8"))
@@ -131,12 +210,14 @@ def validate_rhel_package_evidence() -> list[str]:
             or evidence.get("secret_values_present") is not False \
             or evidence.get("path_escape_or_nonregular_entry_count") != 0 \
             or evidence.get("install_execution") != "NOT_RUN" \
-            or evidence.get("rhel_runtime") != "NOT_RUN_HOST_IS_NOT_RHEL" \
+            or evidence.get("platform") != "RHEL" \
+            or evidence.get("runtime_execution") != "NOT_RUN" \
             or evidence.get("final_claim_allowed") is not False:
         violations.append("RHEL_PACKAGE_EVIDENCE_CONTRACT")
     source_bindings = evidence.get("source_bindings", {})
     for relative in (
-        "scripts/package_onsure_rhel.sh", "deploy/rhel/onsure.service",
+        "scripts/package_onsure_rhel.sh", "scripts/package_onsure_systemd.sh",
+        "deploy/rhel/onsure.service",
         "deploy/rhel/onsure-migrate.service", "deploy/rhel/onsure.env.example",
         "deploy/rhel/onsure.sysusers.conf", "deploy/rhel/onsure.tmpfiles.conf",
         "deploy/rhel/README.md",
@@ -154,6 +235,35 @@ def validate_rhel_package_evidence() -> list[str]:
     return violations
 
 
+def validate_ubuntu_package_evidence() -> list[str]:
+    violations: list[str] = []
+    evidence = json.loads(UBUNTU_PACKAGE_EVIDENCE.read_text(encoding="utf-8"))
+    if evidence.get("contract") != "ONSURE_UBUNTU_PACKAGE_VALIDATION_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("platform") != "UBUNTU" \
+            or evidence.get("secret_values_present") is not False \
+            or evidence.get("path_escape_or_nonregular_entry_count") != 0 \
+            or evidence.get("install_execution") != "NOT_RUN" \
+            or evidence.get("runtime_execution") != "NOT_RUN" \
+            or evidence.get("final_claim_allowed") is not False:
+        violations.append("UBUNTU_PACKAGE_EVIDENCE_CONTRACT")
+    source_bindings = evidence.get("source_bindings", {})
+    for relative in (
+        "scripts/package_onsure_ubuntu.sh", "scripts/package_onsure_systemd.sh",
+        "deploy/rhel/onsure.service", "deploy/rhel/onsure-migrate.service",
+        "deploy/rhel/onsure.env.example", "deploy/rhel/onsure.sysusers.conf",
+        "deploy/rhel/onsure.tmpfiles.conf", "deploy/ubuntu/README.md",
+    ):
+        digest = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
+        if source_bindings.get(relative) != digest:
+            violations.append("UBUNTU_PACKAGE_EVIDENCE_SOURCE_BINDING:" + relative)
+    package = ROOT / "target/onsure-ubuntu-candidate.tar.gz"
+    if package.is_file() and evidence.get("package_sha256") \
+            != hashlib.sha256(package.read_bytes()).hexdigest():
+        violations.append("UBUNTU_PACKAGE_EVIDENCE_ARTIFACT_BINDING")
+    return violations
+
+
 def validate_documents(
     boundary: dict[str, object],
     product: dict[str, object],
@@ -168,7 +278,8 @@ def validate_documents(
         violations.append("OPERATIONAL_FINAL_AUTHORITY")
 
     deployment = boundary.get("deployment", {})
-    if deployment.get("runtime_definition_status") != "RHEL_SYSTEMD_CANDIDATE_IMPLEMENTED":
+    if deployment.get("runtime_definition_status") \
+            != "RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_IMPLEMENTED":
         violations.append("DEPLOYMENT_RUNTIME_STATUS")
     if deployment.get("deployment_authorized") is not False:
         violations.append("DEPLOYMENT_AUTHORITY")
@@ -184,6 +295,9 @@ def validate_documents(
             or deployment.get("container_image") != "NOT_USED" \
             or deployment.get("orchestrator") != "SYSTEMD":
         violations.append("DEPLOYMENT_RHEL_SYSTEMD_SELECTION")
+    if deployment.get("supported_candidate_operating_systems") \
+            != ["RHEL_FAMILY", "UBUNTU_24_04_LTS"]:
+        violations.append("DEPLOYMENT_SUPPORTED_OS_SELECTION")
 
     migration = boundary.get("database_migration", {})
     if migration.get("component_status") != "POSTGRESQL_FLYWAY_CANDIDATE_IMPLEMENTED":
@@ -199,7 +313,8 @@ def validate_documents(
     if migration.get("development_rehearsal_status") != "PASS_POSTGRESQL_16_14_NONFINAL" \
             or migration.get("development_rehearsal_evidence") \
             != "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json" \
-            or migration.get("rhel_production_rehearsal_status") != "NOT_RUN":
+            or migration.get("rhel_production_rehearsal_status") != "NOT_RUN" \
+            or migration.get("ubuntu_production_rehearsal_status") != "NOT_RUN":
         violations.append("DATABASE_MIGRATION_REHEARSAL_STATUS")
     if migration.get("destructive_ddl_default") != "DENY":
         violations.append("DESTRUCTIVE_DDL_BOUNDARY")
@@ -215,7 +330,8 @@ def validate_documents(
     product_components = product.get("components", {})
     if product_components.get("migration", {}).get("status") != "IMPLEMENTED_CANDIDATE_NONFINAL":
         violations.append("PRODUCT_MIGRATION_STATUS_DRIFT")
-    if product.get("release", {}).get("deployment") != "RHEL_SYSTEMD_CANDIDATE_NONFINAL":
+    if product.get("release", {}).get("deployment") \
+            != "RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_NONFINAL":
         violations.append("PRODUCT_DEPLOYMENT_STATUS_DRIFT")
 
     command = "python3 scripts/validate_onsure_operational_boundary.py"
@@ -246,12 +362,16 @@ def validate() -> dict[str, object]:
         "deploy/rhel/onsure.sysusers.conf",
         "deploy/rhel/onsure.tmpfiles.conf",
         "deploy/rhel/README.md",
+        "deploy/ubuntu/README.md",
+        "deploy/ubuntu/deployment-plan.v1.json",
         "config/database-migration/README.md",
         "config/database-migration/migration-plan.v1.json",
         "docs/architecture/ONSURE_DEPLOYMENT_AND_DB_MIGRATION_DESIGN_v1.md",
         "docs/operations/ONSURE_BUBBLEWRAP_EXECUTION_ENVIRONMENT_v1.md",
         "scripts/onsure_bubblewrap_diagnostics.py",
         "scripts/package_onsure_rhel.sh",
+        "scripts/package_onsure_systemd.sh",
+        "scripts/package_onsure_ubuntu.sh",
         "modules/onsure-provider-openai/pom.xml",
         "modules/onsure-migration-postgresql/pom.xml",
         "config/provider/openai-request.example.json",
@@ -261,6 +381,10 @@ def validate() -> dict[str, object]:
         "assurance/runtime/onsure-rhel-systemd-security.v1.json",
         "scripts/validate_onsure_rhel_package.py",
         "assurance/runtime/onsure-rhel-package-validation.v1.json",
+        "scripts/validate_onsure_ubuntu_package.py",
+        "assurance/runtime/onsure-ubuntu-package-validation.v1.json",
+        "scripts/onsure_ubuntu_systemd_security.py",
+        "assurance/runtime/onsure-ubuntu-systemd-security.v1.json",
     ]
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
@@ -272,9 +396,12 @@ def validate() -> dict[str, object]:
         migration = json.loads((ROOT / "config/database-migration/migration-plan.v1.json").read_text(encoding="utf-8"))
         violations.extend("EXECUTION_SKELETON:" + item for item in validate_plans(deployment, migration))
         violations.extend(validate_rhel_candidate())
+        violations.extend(validate_ubuntu_candidate())
         violations.extend(validate_postgresql_evidence())
         violations.extend(validate_systemd_evidence())
+        violations.extend(validate_ubuntu_systemd_evidence())
         violations.extend(validate_rhel_package_evidence())
+        violations.extend(validate_ubuntu_package_evidence())
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",

@@ -8,7 +8,7 @@
 
 - OpenAI Responses API용 fail-closed Provider 모듈과 file-input CLI
 - PostgreSQL/Flyway migration 소유 모듈과 forward-only V1 schema
-- 컨테이너 대신 RHEL 계열 단독 서버 systemd 배포·패키징 후보
+- 컨테이너 대신 RHEL 계열·Ubuntu 24.04 LTS 단독 서버 systemd 배포·패키징 후보
 - network/data/cost 승인, exact-model/no-retry/no-fallback 정책과 failure tests
 - Docker 없는 임시 PostgreSQL 16.14 Flyway apply/idempotency/dump/restore 리허설
 - 현재 구조와 `products/onsure/` 미래 구조 대응표

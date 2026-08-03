@@ -61,9 +61,15 @@ build:
   rhel_package_validation:
     command: python3 scripts/validate_onsure_rhel_package.py
     install_authority: false
+  ubuntu_package_validation:
+    command: python3 scripts/validate_onsure_ubuntu_package.py
+    install_authority: false
   systemd_security_validation:
     command: python3 scripts/onsure_systemd_security.py
     rhel_execution_authority: false
+  ubuntu_systemd_security_validation:
+    command: python3 scripts/onsure_ubuntu_systemd_security.py
+    service_execution_authority: false
   bubblewrap_environment_diagnostic:
     command: python3 scripts/onsure_bubblewrap_diagnostics.py
     github_actions_required: false
@@ -81,7 +87,7 @@ migration:
   open_pr_overlap: assurance/migration/onsure-open-pr-overlap.v1.json
   merge_order_must_be_clear: true
 release:
-  deployment: RHEL_SYSTEMD_CANDIDATE_NONFINAL
+  deployment: RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_NONFINAL
   production_go: false
   commercial_go: false
   final_pass: false
