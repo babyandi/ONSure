@@ -148,8 +148,7 @@ def main() -> int:
         "root_source_license": license_inventory["root_source_license"],
         "open_pr_merge_decision": overlap["merge_decision"],
         "known_blockers": [
-            "TRANSITIONAL_SPLIT_PACKAGE_AND_SHARED_SOURCE_ROOT",
-            "PLATFORM_ORUDA_PACKAGE_CYCLE_PATH_FREEZE",
+            "TRANSITIONAL_SHARED_SOURCE_ROOT",
             "ROOT_LICENSE_UNDECLARED",
             "DEPLOYMENT_RUNTIME_NOT_IMPLEMENTED",
             "DATABASE_MIGRATION_RUNTIME_NOT_IMPLEMENTED",

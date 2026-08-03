@@ -287,7 +287,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "6a7129e91630f68fbf9f170d515412e6149decb1605045ee132c16c4293c5c89"
+          "content": "9e55887cdff03be1250b573f43ca350b906d8ff3fc3f17b95b44dc0333ce0781"
         }
       ],
       "name": "onsure-adapter-oruda",
@@ -307,7 +307,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "fa7e1dc876656850377b95a7277174dd3351f81db755cd4c7192a7785be8b74e"
+          "content": "2615acfdd887a35e5064e5733b39ae7da3d810bd5a6e17d4f6c519bfa4ef0dfd"
         }
       ],
       "name": "onsure-cli",
@@ -327,7 +327,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "59eb540823f67a165079295c7f5f13934227c4f6684404e531e39d4581de8064"
+          "content": "68514029d4cef7ad2c61b3c46e5d6f737dc95dd83f13bdae9b906578666cbd0e"
         }
       ],
       "name": "onsure-core",
@@ -347,7 +347,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "433d65573b89d7af7f949c9c66299d50383d0d2fa8351f9865bacc79371c40ad"
+          "content": "0b55c096a970775eb4e6a02b8a52a5dc840fa6470af047c0c36ec50ba6276475"
         }
       ],
       "name": "onsure-local-api",

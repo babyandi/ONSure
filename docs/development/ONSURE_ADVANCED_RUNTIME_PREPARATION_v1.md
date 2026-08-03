@@ -6,17 +6,17 @@
 
 | 영역 | 구현/준비 상태 | 현재 검증 및 한계 |
 |---|---|---|
-| Java validation context 저장·재생 | `IMPLEMENTED_AUTOMATIC_RESUME` | `stage-context.json`과 `stage-replay-ledger.json`을 결속. 중단 stage의 새 파일만 제거하고 이전 파일 변경은 fail-closed 처리한 뒤 `validation.resume`으로 재생 |
+| Java validation context 저장·재생 | `IMPLEMENTED_AUTOMATIC_RESUME` | `stage-context.json`과 `stage-replay-ledger.json`을 결속. 중단 stage의 새 파일만 제거하고 이전 파일 수정·삭제·symlink는 fail-closed 처리한 뒤 `validation.resume`으로 재생 |
 | Autopilot orphan 복구 | `IMPLEMENTED_FAIL_CLOSED` | PID·PGID·Linux start tick·command SHA-256이 모두 같은 process group만 control 재연결. 유실된 stdout/marker 때문에 완료 후 `RCA_REQUIRED` |
 | ASK/PLAN | `IMPLEMENTED_LOCAL_DETERMINISTIC` | snapshot 기반 read-only/non-executing Markdown 응답. 실제 모델 provider 호출은 `false` |
-| Provider SPI | `LOCAL_IMPLEMENTATION_TESTED` | 별도 local/mock 모듈이 SPI만 의존. timeout/rate-limit/cost/fallback 금지 시험 통과. 외부 provider/credential은 `NOT_RUN` |
+| Provider SPI | `LOCAL_IMPLEMENTATION_TESTED` | 별도 local/mock 모듈이 SPI만 의존. timeout/rate-limit/cost/fallback 금지, retryability, timeout 후 worker 복구 시험 통과. 외부 provider/credential은 `NOT_RUN` |
 | Public Java SDK | `CANDIDATE_BASELINED` | loopback HTTP, 구조화 오류, idempotent retry, cursor page, 익명화 helper와 별도 SDK descriptor baseline 검증 |
 | Extension Host E2E | `CONTAINER_XVFB_PASS` | VS Code 1.95.3 고정. 첫 실행 및 `network_mode=none` 재실행 모두 extension host exit 0 |
-| 승인 request/receipt 추가 결속 | `CONNECTED_CLI_API_VSCODE` | plan path/digest, hunk/file/branch/impact/time/safety를 CLI·Local API·VS Code patch apply에서 결속. 외부 signer 검증은 기존 receipt gate 책임 |
-| 프로젝트 지식 분리 | `EXPOSED_SDK_API_CORPUS_TESTED` | Local API/SDK 노출과 1,000-entry corpus 통과. `common.*`만 후보이고 사람 검토 필수 |
+| 승인 request/receipt 추가 결속 | `CONNECTED_CLI_API_VSCODE` | plan path/digest, hunk/file/branch/impact/time/safety와 receipt 만료를 CLI·Local API·VS Code patch apply에서 결속. replay는 기존 서명 receipt ledger가 거부 |
+| 프로젝트 지식 분리 | `EXPOSED_SDK_API_CORPUS_TESTED` | Local API/SDK 노출, 1,000-entry corpus와 invalid-IPv4 오탐 회귀 통과. `common.*`만 후보이고 사람 검토 필수 |
 | 성능·장애·복구·관측성 | `SYNTHETIC_REHEARSAL_PASS` | benchmark baseline/comparison, bounded soak, synthetic ENOSPC, backup/restore/corruption rejection 증적. 운영 DR은 `NOT_RUN` |
-| 배포·DB migration | `CANDIDATE_AND_SYNTHETIC_PASS` | container build·non-root/read-only/no-network 검사와 SQLite 합성 migration/idempotency/rollback/lock 시험. 실제 deploy/DB 선택은 `NOT_RUN` |
-| Air-gap dependency pack | `OFFLINE_REHEARSAL_PASS` | 673-entry Maven repository로 canonical/modular `-o`, 442-entry npm cache로 offline `npm ci` 통과. 외부 signature `NOT_RUN` |
+| 배포·DB migration | `CANDIDATE_AND_SYNTHETIC_PASS` | container build·non-root/read-only/no-network 검사와 SQLite 합성 migration/idempotency/transaction rollback/interruption resume/digest drift/lock 시험. 실제 deploy/DB 선택은 `NOT_RUN` |
+| Air-gap dependency pack | `OFFLINE_REHEARSAL_PASS` | 4,823-entry Maven repository로 canonical/modular `-o`, 442-entry npm cache로 offline `npm ci` 통과. 외부 signature `NOT_RUN` |
 | SBOM·취약점·라이선스 | `SCANNER_COMPLETED_PARTIAL` | root+8 module CycloneDX, 229개 VS Code inventory, Trivy 0.65.0. Jackson 2.18.9 적용 후 모든 severity 0. root license 미선언 |
 
 ## 핵심 명령

@@ -15,22 +15,21 @@
 - #27, #28, #29는 통합 근거와 #30 링크를 남긴 뒤 병합 없이 닫았다. 각 head commit과 브랜치는 #30 history에 보존된다.
 - 현재 overlap 판정은 `INTEGRATION_ORDER_RESOLVED`다. 이는 자동 main 병합 허용이나 #27/#28/#29의 Draft 상태 해제를 의미하지 않는다.
 
-### 2. Split package와 공유 source-set 제거
+### 2. 공유 source-set 물리 분리
 
-- `io.onsure.platform` source가 `onsure-core`, `onsure-cli`, `onsure-local-api`, `onsure-adapter-oruda` artifact에 Maven include/exclude로 분산된다.
-- 모듈 POM들이 `../../src/main/java`를 공통 source root로 직접 추가한다.
-- `scripts/validate_onsure_build_boundary.py`가 main source의 단일 논리 owner, 허용 split package 1개, 공유 source module 4개를 baseline으로 봉인한다. 신규 `onsure-provider-spi`, `onsure-provider-local-mock`, `onsure-sdk`는 shared source를 사용하지 않는다.
-- 이 상태로 모노레포 module graph에 넣으면 package ownership, JPMS, incremental build와 dependency visibility가 불명확하다.
-- 현재 package·파일 경로 동결 조건에서는 물리 이동으로 이를 제거할 수 없으므로 `BLOCKED_BY_PACKAGE_AND_PATH_FREEZE`다.
-- 선행 작업: cutover 승인 후 각 artifact 전용 source directory, 명시적 public SPI/API, 한 package당 단일 owner.
+- `io.onsure.platform` split package는 제거되어 core가 단독 소유하고 CLI·Local API는 고유 package main entrypoint만 소유한다.
+- `platform ↔ platform.oruda` cycle도 target-neutral evidence SPI로 제거됐으며 artifact/package cycle은 모두 0건이다.
+- 다만 `onsure-core`와 `onsure-adapter-oruda`가 같은 `../../src/main/java`를 배타적 include/exclude로 읽는 공유 source module 2개는 남아 있다.
+- 현재 Java 파일 경로 동결을 유지하므로 이를 adapter 전용 source directory로 실제 이동하지 않았다.
+- 선행 작업: cutover 승인 후 두 artifact의 전용 source directory 이동, canonical/API/modular/ORUDA E2E와 Manifest digest 재검증, shared source module count 2→0.
 
-### 3. 패키지 의존 순환 제거
+### 3. 패키지 의존 순환 제거 — 완료된 준비 항목
 
-- `FileValidationStore`의 RAG 직접 호출을 `io.onsure.common.RagCandidatePreparer`로 치환해 `platform → rag` import를 0건으로 만들었다.
-- 기존 공개 API 호환을 위한 `ValidationReport` overload 때문에 `rag → platform` 단방향 compile edge는 유지한다.
-- Maven artifact graph는 순환 0건이며 adapter가 core에만 의존한다.
-- `platform ↔ platform.oruda` package cycle은 기존 package 경로 동결 때문에 남아 있고 신규 cycle은 자동 차단한다.
-- 선행 작업: cutover 호환 기간에 ORUDA adapter package를 전용 namespace로 이동하고 legacy bridge를 설계한다.
+- `FileValidationStore`의 RAG 직접 호출을 `io.onsure.common.RagCandidatePreparer`로 치환해 `platform → rag` import를 0건으로 유지한다.
+- 기존 공개 API 호환을 위한 `rag → platform` 단방향 compile edge만 유지한다.
+- ORUDA evidence persistence는 `TargetEvidenceContributor` SPI와 ServiceLoader provider로 역전했다.
+- Maven artifact cycle, split package, `platform ↔ platform.oruda` mutual package cycle은 각각 0건이다.
+- 이 완료는 shared source root 물리 이동이나 실제 모노레포 cutover 완료를 뜻하지 않는다.
 
 ### 4. 라이선스와 소유권 확정
 

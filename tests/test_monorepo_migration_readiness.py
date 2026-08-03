@@ -38,10 +38,13 @@ class MonorepoMigrationManifestTest(unittest.TestCase):
         self.assertEqual("100755", manifest.normalized_git_mode(stat.S_IFREG | 0o755))
         self.assertEqual("120000", manifest.normalized_git_mode(stat.S_IFLNK | 0o777))
 
-    def test_generated_vscode_dependencies_and_packages_are_not_migration_inputs(self):
+    def test_generated_runtime_and_vscode_outputs_are_not_migration_inputs(self):
         rules = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+        self.assertIn(".onsure/", rules)
         self.assertIn("vscode-extension/node_modules/", rules)
         self.assertIn("vscode-extension/*.vsix", rules)
+        candidates = {path.relative_to(ROOT).as_posix() for path in manifest.candidate_paths()}
+        self.assertFalse(any(path.startswith(".onsure/") for path in candidates))
 
     def test_absolute_workspace_detection_avoids_escaped_message_false_positive(self):
         self.assertTrue(

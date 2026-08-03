@@ -12,7 +12,7 @@
 - canonical/compatibility build 권위 계약과 모듈 경계 validator
 - `ONSURE_PRODUCT_ROOT` 기반 제품 루트 해석
 - `product.yaml`, 제품 전용 `AGENTS.md`, `.obuilder/` 준비 메타데이터
-- 통합 기준 238개 public Java class의 JVM descriptor 호환성 baseline
+- 기존 238개 public Java class descriptor 무변경과 additive evidence SPI 2개를 고정한 240-class JVM baseline
 - CycloneDX 1.6 SBOM과 dependency license 검토 inventory
 - 격리된 `products/onsure/` cutover·rollback 리허설
 - Draft PR #27/#28 head에 결속된 overlap·재검증 매트릭스
@@ -49,7 +49,9 @@
 - Maven repository와 npm cache의 실제 offline install rehearsal
 - Trivy 기반 CycloneDX 검사와 Maven module/VS Code dependency inventory 통합
 - non-root/read-only/no-network Dockerfile·Compose 후보와 합성 SQLite migration/rollback/lock runner
-- split package와 `platform ↔ platform.oruda` 순환 제거의 단계적 호환성 계획
+- `io.onsure.platform` 단일 core ownership, CLI·Local API module-owned entrypoint와 split package 0 baseline
+- 합성 migration transaction rollback/resume/digest-drift 및 backup archive traversal/symlink 방어
+- `TargetEvidenceContributor` ServiceLoader SPI를 통한 `platform ↔ platform.oruda` cycle 제거
 
 ### Changed
 
@@ -72,7 +74,6 @@
 
 ### Known migration blockers
 
-- 공유 Java source root 4개 모듈과 `io.onsure.platform` split package
-- package 경로 동결로 남아 있는 `platform ↔ platform.oruda` package cycle
-- 라이선스·소유권·고객 데이터에 대한 사람의 승인 미실행
+- `onsure-core`와 `onsure-adapter-oruda`가 공유하는 물리 Java source root 2개
+- root source license·소유권·고객 데이터에 대한 사람 승인 미실행
 - 실제 배포 topology와 운영 DB engine 미선정(컨테이너 후보와 합성 SQLite rehearsal만 존재)
