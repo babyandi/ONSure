@@ -23,7 +23,7 @@ class ONSureDeployMigrationSkeletonTest(unittest.TestCase):
         result = skeleton.preflight()
         self.assertEqual("PASS_NONFINAL", result["decision"])
         self.assertEqual("NOT_RUN_NOT_AUTHORIZED", result["deployment_execution"])
-        self.assertEqual("NOT_RUN_NOT_APPLICABLE", result["database_migration_execution"])
+        self.assertEqual("NOT_RUN_NOT_AUTHORIZED", result["database_migration_execution"])
         self.assertFalse(result["production_go"])
 
     def test_public_bind_and_migration_tool_selection_fail_closed(self):
@@ -32,8 +32,8 @@ class ONSureDeployMigrationSkeletonTest(unittest.TestCase):
         changed_deployment["runtime"]["api_bind"] = "0.0.0.0"
         self.assertIn("DEPLOYMENT_RUNTIME_API_BIND", skeleton.validate_plans(changed_deployment, migration))
         changed_migration = copy.deepcopy(migration)
-        changed_migration["migration_tool"] = "flyway"
-        self.assertIn("MIGRATION_PREMATURE_MIGRATION_TOOL", skeleton.validate_plans(deployment, changed_migration))
+        changed_migration["migration_tool"] = "LIQUIBASE"
+        self.assertIn("MIGRATION_POSTGRESQL_FLYWAY_SELECTION", skeleton.validate_plans(deployment, changed_migration))
 
 
 if __name__ == "__main__":

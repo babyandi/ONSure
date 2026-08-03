@@ -1,92 +1,50 @@
-# ONSure 배포·DB Migration 설계 v1
+# ONSure RHEL 배포·PostgreSQL Migration 설계 v1
 
-상태: `DESIGN_ONLY / PREPARATION_ONLY / NONFINAL`
+상태: `CANDIDATE_IMPLEMENTED / PREPARATION_ONLY / NONFINAL`
 
-## 1. 현재 판정
+## 선택된 후보
 
-- 실행 가능한 배포 정의: `NOT_IMPLEMENTED`
-- 배포 권한: `false`
-- DB migration component: `NOT_PRESENT`
-- DB engine과 migration tool: `NOT_SELECTED`
-- 실행 preflight 골격: `IMPLEMENTED / EXECUTION_NOT_AUTHORIZED`
+- OS/topology: RHEL 계열 단독 서버, systemd
+- Java: 17
+- API: ONSure Local API, `127.0.0.1:47311` 기본값
+- DB: 같은 서버의 loopback PostgreSQL, `onsure` database/schema/user
+- migration: Flyway 12.11.0 전용 Maven 모듈
+- AI: OpenAI Responses API 전용 Provider 모듈, outbound HTTPS만 필요
+- container: 사용하지 않음
 - GitHub Actions: 사용하지 않음
-- Production/Commercial GO와 Final PASS: `false`
 
-이 문서는 Dockerfile, Helm chart나 SQL migration을 추가하라는 지시가 아니다. `deployment-plan.v1.json`, `migration-plan.v1.json`과 preflight runner는 안전 조건을 검증하지만 deploy/migrate/rollback을 항상 거부한다.
+구현 파일은 `deploy/rhel/`, `modules/onsure-migration-postgresql`과
+`modules/onsure-provider-openai`에 있다. 저장소가 부여하는 권한은 package/preflight/test까지다.
+서버 install, migration 실행, API key 사용, 서비스 시작과 Production/Commercial GO는 포함하지 않는다.
 
-## 2. 배포 후보 경계
+## 런타임 경계
 
-초기 후보는 하나의 ONSure product root에서 Local API, CLI와 VS Code client를 제공하는 구조다. 외부 공개 network service는 승인하지 않는다.
+systemd unit은 `onsure` 전용 non-root 사용자, read-only `/opt/onsure`, writable
+`/var/lib/onsure`·`/var/log/onsure`, capability 제거, no-new-privileges와 loopback API를 고정한다.
+비밀값은 `/etc/onsure/onsure.env`에만 두며 repository 예시는 변수명과 비밀 아닌 기본값만 제공한다.
+OpenAI 호출은 네트워크 승인, 전송 데이터 승인과 비용 한도가 모두 있어야 한 번만 실행된다.
+모델 fallback과 provider 내부 retry는 하지 않는다.
 
-필수 속성:
+## DB 경계
 
-- non-root runtime identity
-- application artifact read-only
-- Local API loopback bind 기본값
-- secret은 repository가 아닌 외부 provider에서 주입
-- evidence용 writable volume과 application artifact 분리
-- health, readiness, audit 상태를 서로 구분
-- image/package version과 immutable source digest 결속
-- 서명된 deployment receipt와 이전 immutable artifact rollback
+Flyway runner는 loopback PostgreSQL URL만 허용하고 URL 내 credentials를 거부한다. migration은
+forward-only이며 schema history/transactional advisory lock을 사용한다. 현재 V1은 assurance event의
+메타데이터와 SHA-256 binding만 저장하고 고객 원문은 저장하지 않는다.
 
-container image와 orchestrator는 `NOT_SELECTED`다. 지원 운영환경과 air-gap 요구, base image 정책, SBOM/서명 형식, volume/network/secret 계약이 결정된 뒤 별도 ADR로 선택한다.
+`ONSURE_MIGRATION_AUTHORIZED` 기본값은 false다. 운영 migrate 전에는 PostgreSQL 버전/stream,
+backup·restore proof, lock 경쟁 시험, 이전 application 호환성, retention과 signed receipt를 사람이
+검토해야 한다. rollback은 이전 immutable application artifact와 forward-compatible schema 또는
+승인된 DB restore로 처리하며 자동 destructive undo는 제공하지 않는다.
 
-## 3. DB 도입 결정점
-
-현재 file/evidence store가 존재한다는 사실은 관계형 DB migration component가 있다는 의미가 아니다. DB가 필요해지는 capability와 consistency/tenant/retention 요구를 먼저 확정한다.
-
-도입 전 필수 결정:
-
-1. DB engine ADR와 schema owner
-2. tenant isolation과 retention/deletion/legal-hold 모델
-3. forward-only 또는 compensating migration 정책
-4. migration lock과 concurrent deploy 처리
-5. backup/restore 및 disaster-recovery proof
-6. 이전 application version과 rollback compatibility window
-7. destructive DDL 승인 절차
-8. 서명된 migration receipt와 source/schema digest
-
-DB를 사용하지 않기로 결정하는 경우에도 `NO_DATABASE` ADR을 남기고 file/evidence store의 durability, concurrency, backup과 upgrade 계약을 명시해야 한다.
-
-## 4. 단계별 구현 조건
-
-### Phase A — 현재
-
-- design contract와 validator만 유지
-- runtime deployment와 DB migration은 `NOT_RUN`
-- repository secret/customer operational data 금지
-
-### Phase B — 운영환경 승인 후
-
-- 선택된 topology의 최소 runtime package 작성
-- non-root, read-only, loopback/deny-by-default network 시험
-- install/upgrade/rollback fixture와 receipt schema 추가
-
-### Phase C — DB 채택 승인 후
-
-- 전용 migration component와 단일 schema owner 지정
-- 테스트 전용 합성 database에서 forward/rollback/restore 검증
-- application compatibility와 concurrent migration failure injection 추가
-
-### Phase D — 독립 검증
-
-- 독립 ONTester/ONAudit
-- security/compliance/data owner 승인
-- Production/Commercial GO는 별도 사람 권위로만 결정
-
-## 5. 기계 검증
-
-권위 후보:
-
-- `contracts/onsure-operational-boundary.v1.json`
-- `product.yaml`
-- `.obuilder/product-build.yaml`
-
-검증:
+## 명령과 실제 실행 경계
 
 ```bash
+mvn -B -ntp -q clean verify
+mvn -B -ntp -q -f pom-modular.xml clean package
+bash scripts/package_onsure_rhel.sh
 python3 scripts/validate_onsure_operational_boundary.py
 python3 scripts/onsure_deploy_migration_skeleton.py preflight
 ```
 
-validator는 배포 권한, premature tool 선택, public network, secret commit, destructive DDL, rollback 누락과 GitHub Actions 사용을 fail-closed로 거부한다.
+위 명령은 build/package/preflight다. RHEL install, SELinux/firewall 변경, PostgreSQL 초기화·migrate,
+OpenAI 실호출, systemd enable/start, backup/restore와 rollback은 별도 운영 승인 전 `NOT_RUN`이다.

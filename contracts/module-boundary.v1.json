@@ -9,6 +9,8 @@
     "modules/onsure-adapter-oruda",
     "modules/onsure-provider-spi",
     "modules/onsure-provider-local-mock",
+    "modules/onsure-provider-openai",
+    "modules/onsure-migration-postgresql",
     "modules/onsure-sdk"
   ],
   "modules": {
@@ -56,13 +58,28 @@
     "onsure-provider-spi": {
       "depends_on": [],
       "shared_source_root": false,
-      "real_provider_implementation_included": false
+      "real_provider_implementation_included": true
     },
     "onsure-provider-local-mock": {
       "depends_on": ["onsure-provider-spi"],
       "shared_source_root": false,
       "network_egress": false,
       "fallback_allowed": false
+    },
+    "onsure-provider-openai": {
+      "depends_on": ["onsure-provider-spi"],
+      "shared_source_root": false,
+      "network_egress": "EXPLICIT_APPROVAL_REQUIRED",
+      "customer_data_transfer": "EXPLICIT_APPROVAL_REQUIRED",
+      "fallback_allowed": false,
+      "automatic_retry_allowed": false
+    },
+    "onsure-migration-postgresql": {
+      "depends_on": [],
+      "shared_source_root": false,
+      "database_engine": "POSTGRESQL",
+      "migration_tool": "FLYWAY",
+      "execution_authorized": false
     },
     "onsure-sdk": {
       "depends_on": [],

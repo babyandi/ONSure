@@ -1,10 +1,10 @@
 {
   "contract": "ONSURE_DEPLOYMENT_EXECUTION_SKELETON_V1",
   "state": "PREFLIGHT_ONLY_NOT_AUTHORIZED",
-  "artifact": "target/onsure-assurance-validator-0.1.0-SNAPSHOT.jar",
+  "artifact": "target/onsure-rhel-candidate.tar.gz",
   "artifact_immutable_digest_required": true,
   "runtime": {
-    "identity": "NON_ROOT_UID_65532",
+    "identity": "NON_ROOT_SYSTEM_USER_ONSURE",
     "application_filesystem": "READ_ONLY",
     "api_bind": "127.0.0.1",
     "api_port": 47311,
@@ -12,8 +12,11 @@
     "secret_source": "EXTERNAL_PROVIDER_REQUIRED",
     "secret_values_in_plan": false
   },
-  "container_image": "NOT_SELECTED",
-  "orchestrator": "NOT_SELECTED",
+  "target_os": "RHEL_FAMILY",
+  "topology": "SINGLE_STANDALONE_SERVER",
+  "container_image": "NOT_USED",
+  "orchestrator": "SYSTEMD",
+  "package_command": "bash scripts/package_onsure_rhel.sh",
   "install_command": "NOT_AUTHORIZED",
   "rollback_command": "NOT_AUTHORIZED",
   "public_network_exposure": false,

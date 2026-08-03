@@ -22,8 +22,11 @@ components:
     status: IMPLEMENTED
     module: modules/onsure-cli
   migration:
-    status: NOT_PRESENT
-    design_contract: contracts/onsure-operational-boundary.v1.json
+    status: IMPLEMENTED_CANDIDATE_NONFINAL
+    module: modules/onsure-migration-postgresql
+    engine: POSTGRESQL
+    tool: FLYWAY
+    execution_authorized: false
   vscode_extension:
     status: IMPLEMENTED_PARTIAL
     path: vscode-extension
@@ -69,7 +72,7 @@ migration:
   open_pr_overlap: assurance/migration/onsure-open-pr-overlap.v1.json
   merge_order_must_be_clear: true
 release:
-  deployment: DESIGN_ONLY_NONFINAL
+  deployment: RHEL_SYSTEMD_CANDIDATE_NONFINAL
   production_go: false
   commercial_go: false
   final_pass: false

@@ -26,7 +26,7 @@ def validate_plans(deployment: dict[str, object], migration: dict[str, object]) 
         violations.append("DEPLOYMENT_STATE")
     runtime = deployment.get("runtime", {})
     required_runtime = {
-        "identity": "NON_ROOT_UID_65532",
+        "identity": "NON_ROOT_SYSTEM_USER_ONSURE",
         "application_filesystem": "READ_ONLY",
         "api_bind": "127.0.0.1",
         "evidence_volume": "SEPARATE_WRITABLE_VOLUME_REQUIRED",
@@ -42,21 +42,32 @@ def validate_plans(deployment: dict[str, object], migration: dict[str, object]) 
     if deployment.get("install_command") != "NOT_AUTHORIZED" \
             or deployment.get("rollback_command") != "NOT_AUTHORIZED":
         violations.append("DEPLOYMENT_COMMAND_AUTHORITY")
+    if deployment.get("target_os") != "RHEL_FAMILY" \
+            or deployment.get("topology") != "SINGLE_STANDALONE_SERVER" \
+            or deployment.get("container_image") != "NOT_USED" \
+            or deployment.get("orchestrator") != "SYSTEMD":
+        violations.append("DEPLOYMENT_RHEL_SYSTEMD_TOPOLOGY")
+    if deployment.get("package_command") != "bash scripts/package_onsure_rhel.sh":
+        violations.append("DEPLOYMENT_PACKAGE_COMMAND")
 
     if migration.get("contract") != "ONSURE_DATABASE_MIGRATION_EXECUTION_SKELETON_V1":
         violations.append("MIGRATION_CONTRACT")
-    if migration.get("state") != "PREFLIGHT_ONLY_NOT_APPLICABLE" \
-            or migration.get("database_component_present") is not False:
+    if migration.get("state") != "CANDIDATE_IMPLEMENTED_EXECUTION_NOT_AUTHORIZED" \
+            or migration.get("database_component_present") is not True:
         violations.append("MIGRATION_STATE")
-    for field in ("database_engine", "migration_tool"):
-        if migration.get(field) != "NOT_SELECTED":
-            violations.append("MIGRATION_PREMATURE_" + field.upper())
-    if migration.get("ordered_migrations") != []:
-        violations.append("MIGRATION_FILES_PREMATURE")
+    if migration.get("database_engine") != "POSTGRESQL" \
+            or migration.get("migration_tool") != "FLYWAY_12_11_0" \
+            or migration.get("schema_owner") != "onsure":
+        violations.append("MIGRATION_POSTGRESQL_FLYWAY_SELECTION")
+    ordered = migration.get("ordered_migrations", [])
+    if ordered != ["modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V1__create_assurance_event.sql"]:
+        violations.append("MIGRATION_ORDERED_FILES")
+    elif any(not (ROOT / path).is_file() for path in ordered):
+        violations.append("MIGRATION_FILE_MISSING")
     for field in ("migration_authorized", "destructive_ddl_allowed", "customer_data_fixture_allowed", "final_claim_allowed"):
         if migration.get(field) is not False:
             violations.append("MIGRATION_UNSAFE_" + field.upper())
-    if migration.get("apply_command") != "NOT_AUTHORIZED":
+    if migration.get("apply_command") != "AUTHORIZATION_GATED_BY_ONSURE_MIGRATION_AUTHORIZED":
         violations.append("MIGRATION_COMMAND_AUTHORITY")
     return violations
 
@@ -75,7 +86,7 @@ def preflight() -> dict[str, object]:
         "artifact_status": artifact_status,
         "artifact_sha256": artifact_sha,
         "deployment_execution": "NOT_RUN_NOT_AUTHORIZED",
-        "database_migration_execution": "NOT_RUN_NOT_APPLICABLE",
+        "database_migration_execution": "NOT_RUN_NOT_AUTHORIZED",
         "rollback_execution": "NOT_RUN_NOT_AUTHORIZED",
         "production_go": False,
         "final_claim_allowed": False,

@@ -40,6 +40,8 @@
     "onsure-adapter-oruda": "modules/onsure-adapter-oruda",
     "onsure-provider-spi": "modules/onsure-provider-spi",
     "onsure-provider-local-mock": "modules/onsure-provider-local-mock",
+    "onsure-provider-openai": "modules/onsure-provider-openai",
+    "onsure-migration-postgresql": "modules/onsure-migration-postgresql",
     "onsure-sdk": "modules/onsure-sdk"
   },
   "expected_internal_dependencies": {
@@ -50,6 +52,8 @@
     "onsure-adapter-oruda": ["onsure-core"],
     "onsure-provider-spi": [],
     "onsure-provider-local-mock": ["onsure-provider-spi"],
+    "onsure-provider-openai": ["onsure-provider-spi"],
+    "onsure-migration-postgresql": [],
     "onsure-sdk": []
   },
   "transitional_source_ownership": {

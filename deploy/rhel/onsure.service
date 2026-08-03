@@ -1,0 +1,39 @@
+[Unit]
+Description=ONSure loopback API (nonfinal candidate)
+Documentation=file:/opt/onsure/README.md
+Requires=onsure-migrate.service
+After=network-online.target postgresql.service onsure-migrate.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=onsure
+Group=onsure
+EnvironmentFile=/etc/onsure/onsure.env
+WorkingDirectory=/var/lib/onsure
+ExecStart=/usr/bin/java --add-modules jdk.httpserver -cp /opt/onsure/app/*:/opt/onsure/lib/* io.onsure.localapi.LocalApiMain
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/onsure /var/log/onsure
+
+[Install]
+WantedBy=multi-user.target
