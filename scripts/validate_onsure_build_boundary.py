@@ -31,6 +31,15 @@ def texts(root: ET.Element, xpath: str) -> list[str]:
     ]
 
 
+def plugin_configuration_texts(
+        root: ET.Element, artifact_id: str, relative_xpath: str
+) -> list[str]:
+    for plugin in root.findall("m:build/m:plugins/m:plugin", NS):
+        if text(plugin, "m:artifactId") == artifact_id:
+            return texts(plugin, "m:configuration/" + relative_xpath)
+    return []
+
+
 def matches(pattern: str, relative: str) -> bool:
     if pattern.endswith("/**"):
         return relative.startswith(pattern[:-2])
@@ -70,8 +79,12 @@ def module_state(contract: dict[str, object]) -> tuple[dict[str, set[str]], dict
         sources = texts(body, ".//m:sources/m:source")
         descriptors[artifact] = {
             "shared_source": any("../../src/main/java" in source for source in sources),
-            "includes": texts(body, ".//m:includes/m:include"),
-            "excludes": texts(body, ".//m:excludes/m:exclude"),
+            "includes": plugin_configuration_texts(
+                body, "maven-compiler-plugin", "m:includes/m:include"
+            ),
+            "excludes": plugin_configuration_texts(
+                body, "maven-compiler-plugin", "m:excludes/m:exclude"
+            ),
         }
     return dependency_graph, descriptors
 

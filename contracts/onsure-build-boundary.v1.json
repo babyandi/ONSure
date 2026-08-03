@@ -41,6 +41,7 @@
     "onsure-provider-spi": "modules/onsure-provider-spi",
     "onsure-provider-local-mock": "modules/onsure-provider-local-mock",
     "onsure-provider-openai": "modules/onsure-provider-openai",
+    "onsure-llm-gateway": "modules/onsure-llm-gateway",
     "onsure-migration-postgresql": "modules/onsure-migration-postgresql",
     "onsure-sdk": "modules/onsure-sdk"
   },
@@ -53,6 +54,7 @@
     "onsure-provider-spi": [],
     "onsure-provider-local-mock": ["onsure-provider-spi"],
     "onsure-provider-openai": ["onsure-provider-spi"],
+    "onsure-llm-gateway": ["onsure-provider-local-mock", "onsure-provider-openai", "onsure-provider-spi"],
     "onsure-migration-postgresql": [],
     "onsure-sdk": []
   },

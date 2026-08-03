@@ -49,6 +49,8 @@ FINAL_LOCK_ALLOWED              false
 - 결정론적 local ASK/PLAN, Provider SPI와 loopback Public SDK 후보 모듈
 - 승인 exchange 결속, 프로젝트 지식 익명화·공통 후보 분리
 - runtime assurance, deploy/migration preflight, Maven air-gap 및 강화된 공급망 gate
+- OpenAPI 3.1 Local API·LLM Gateway와 content-free token/cost receipt chain
+- 등록 프로그램 검증 결과·개선 후보·Gateway 상태를 표시하는 loopback 관리화면
 
 ## 축소·모의 구현으로 분류하는 이유
 

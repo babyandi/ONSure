@@ -16,6 +16,20 @@
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version><scope>test</scope></dependency>
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>contracts/openapi</directory>
+        <targetPath>openapi</targetPath>
+        <includes><include>onsure-local-api.v1.json</include></includes>
+      </resource>
+      <resource>
+        <directory>assets/admin</directory>
+        <targetPath>admin</targetPath>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.13.0</version>

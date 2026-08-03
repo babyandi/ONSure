@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>ONSure Control Room</title>
+  <link rel="stylesheet" href="/admin/styles.css">
+  <script src="/admin/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 이동</a>
+  <div class="shell">
+    <aside class="rail" aria-label="ONSure 관리 메뉴">
+      <div class="brand" aria-label="ONSure">
+        <span class="brand-mark" aria-hidden="true">OS</span>
+        <span><strong>ONSure</strong><small>Control Room</small></span>
+      </div>
+      <nav>
+        <a class="active" href="#overview">Overview</a>
+        <a href="#gateway">LLM Gateway</a>
+        <a href="#programs">Programs</a>
+        <a href="#assurance">Assurance</a>
+      </nav>
+      <div class="rail-note">
+        <span class="eyebrow">Runtime boundary</span>
+        <strong>Loopback only</strong>
+        <small>운영 최종 승인 화면이 아닙니다.</small>
+      </div>
+    </aside>
+
+    <main id="main">
+      <header class="topbar" id="overview">
+        <div>
+          <p class="eyebrow">Evidence-first operations</p>
+          <h1>검증 운영 현황</h1>
+          <p class="subtitle">프로그램 검증, 개선 후보, LLM 사용량을 실제 로컬 증적에서 조회합니다.</p>
+        </div>
+        <div class="top-actions">
+          <span id="connection-state" class="status neutral">인증 필요</span>
+          <button id="refresh" class="button secondary" type="button" disabled>새로고침</button>
+        </div>
+      </header>
+
+      <section id="auth-panel" class="auth-panel" aria-labelledby="auth-title">
+        <div>
+          <p class="eyebrow">Local authentication</p>
+          <h2 id="auth-title">Local API 토큰을 입력하세요</h2>
+          <p>토큰은 이 페이지의 메모리에만 유지되며 브라우저 저장소에 기록되지 않습니다.</p>
+        </div>
+        <form id="auth-form" autocomplete="off">
+          <label for="token">Bearer token</label>
+          <div class="auth-fields">
+            <input id="token" name="token" type="password" minlength="32" maxlength="4096"
+                   spellcheck="false" autocomplete="off" required>
+            <button class="button primary" type="submit">연결</button>
+          </div>
+          <p id="auth-error" class="form-error" role="alert"></p>
+        </form>
+      </section>
+
+      <div id="dashboard" class="dashboard" hidden>
+        <section class="metric-grid" aria-label="핵심 지표">
+          <article class="metric-card accent-blue">
+            <span>등록 프로그램</span><strong id="program-count">0</strong><small>catalog 기준</small>
+          </article>
+          <article class="metric-card accent-green">
+            <span>검증 이력 보유</span><strong id="validated-count">0</strong><small>실제 report 기준</small>
+          </article>
+          <article class="metric-card accent-purple">
+            <span>LLM Token</span><strong id="token-count">0</strong><small>input + output</small>
+          </article>
+          <article class="metric-card accent-amber">
+            <span>실제 비용</span><strong id="cost-count">0 µ</strong><small>provider evidence</small>
+          </article>
+        </section>
+
+        <section id="gateway" class="panel split-panel">
+          <div>
+            <div class="section-heading">
+              <div><p class="eyebrow">LLM boundary</p><h2>Gateway 설정</h2></div>
+              <span id="gateway-state" class="status neutral">NOT_RUN</span>
+            </div>
+            <dl class="settings-grid">
+              <div><dt>Provider</dt><dd id="provider">—</dd></div>
+              <div><dt>Model</dt><dd id="model">—</dd></div>
+              <div><dt>Binding</dt><dd id="binding">—</dd></div>
+              <div><dt>Credential</dt><dd id="credential">—</dd></div>
+              <div><dt>External transfer</dt><dd id="network-policy">DENY</dd></div>
+              <div><dt>Fallback</dt><dd id="fallback">DISABLED</dd></div>
+            </dl>
+          </div>
+          <div class="monitor-card">
+            <div class="section-heading compact">
+              <div><p class="eyebrow">Usage receipt</p><h3>LLM 모니터링</h3></div>
+              <span id="chain-state" class="status neutral">NOT_RUN</span>
+            </div>
+            <div class="usage-row"><span>성공 / 실패</span><strong id="request-result">0 / 0</strong></div>
+            <div class="usage-row"><span>Input / Output token</span><strong id="token-split">0 / 0</strong></div>
+            <div class="usage-row"><span>누적 지연</span><strong id="duration">0 ms</strong></div>
+            <div class="usage-row"><span>Chain head</span><code id="chain-head">NOT_RUN</code></div>
+            <p class="privacy-note">Prompt·응답 원문 저장: <strong id="content-storage">OFF</strong></p>
+          </div>
+        </section>
+
+        <section id="programs" class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">Validation portfolio</p><h2>프로그램 검증 현황</h2></div>
+            <span id="improvement-count" class="count-chip">개선 후보 0</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>프로그램</th><th>유형</th><th>최근 검증</th><th>Finding</th><th>개선 후보</th><th>증적</th></tr></thead>
+              <tbody id="program-rows"></tbody>
+            </table>
+            <p id="program-empty" class="empty-state" hidden>등록된 프로그램이 없습니다.</p>
+          </div>
+        </section>
+
+        <section id="assurance" class="panel assurance-panel">
+          <div>
+            <p class="eyebrow">Anti-false-pass</p>
+            <h2>검증·승인 경계</h2>
+            <p>이 화면은 실제 산출물의 projection입니다. 독립 OTester·OAudit와 Production GO를 대신하지 않습니다.</p>
+          </div>
+          <dl>
+            <div><dt>Self validation</dt><dd id="self-validation">—</dd></div>
+            <div><dt>Independent OTester</dt><dd id="otester">—</dd></div>
+            <div><dt>Independent OAudit</dt><dd id="oaudit">—</dd></div>
+            <div><dt>Production GO</dt><dd id="production-go">—</dd></div>
+          </dl>
+        </section>
+
+        <footer>
+          <span id="generated-at">마지막 조회: —</span>
+          <button id="disconnect" class="text-button" type="button">토큰 지우고 연결 해제</button>
+        </footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

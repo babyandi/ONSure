@@ -27,6 +27,7 @@ OUTPUTS = {
 SHARED_SOURCE_FILES = (
     ROOT / "scripts/package_onsure_systemd.sh",
     ROOT / "deploy/rhel/onsure.service",
+    ROOT / "deploy/rhel/onsure-llm-gateway.service",
     ROOT / "deploy/rhel/onsure-migrate.service",
     ROOT / "deploy/rhel/onsure.env.example",
     ROOT / "deploy/rhel/onsure.sysusers.conf",
@@ -37,10 +38,13 @@ REQUIRED_FILES = {
     "opt/onsure/README.md",
     "opt/onsure/app/onsure-core-0.1.0-SNAPSHOT.jar",
     "opt/onsure/app/onsure-local-api-0.1.0-SNAPSHOT.jar",
+    "opt/onsure/app/onsure-llm-gateway-0.1.0-SNAPSHOT.jar",
+    "opt/onsure/app/onsure-provider-local-mock-0.1.0-SNAPSHOT.jar",
     "opt/onsure/app/onsure-provider-openai-0.1.0-SNAPSHOT.jar",
     "opt/onsure/app/onsure-provider-spi-0.1.0-SNAPSHOT.jar",
     "opt/onsure/migration/onsure-migration-postgresql-0.1.0-SNAPSHOT.jar",
     "usr/lib/systemd/system/onsure.service",
+    "usr/lib/systemd/system/onsure-llm-gateway.service",
     "usr/lib/systemd/system/onsure-migrate.service",
     "usr/lib/sysusers.d/onsure.sysusers.conf",
     "usr/lib/tmpfiles.d/onsure.tmpfiles.conf",
@@ -48,6 +52,8 @@ REQUIRED_FILES = {
 }
 JAR_CLASSES = {
     "opt/onsure/app/onsure-local-api-0.1.0-SNAPSHOT.jar": "io/onsure/localapi/LocalApiMain.class",
+    "opt/onsure/app/onsure-llm-gateway-0.1.0-SNAPSHOT.jar": "io/onsure/gateway/llm/LlmGatewayMain.class",
+    "opt/onsure/app/onsure-provider-local-mock-0.1.0-SNAPSHOT.jar": "io/onsure/provider/localmock/LocalMockProvider.class",
     "opt/onsure/app/onsure-provider-openai-0.1.0-SNAPSHOT.jar": "io/onsure/provider/openai/OpenAiProviderMain.class",
     "opt/onsure/migration/onsure-migration-postgresql-0.1.0-SNAPSHOT.jar": (
         "io/onsure/migration/postgresql/PostgresqlMigrationMain.class"
@@ -131,7 +137,7 @@ def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dic
             raise ValueError("PACKAGE_CHECKSUM_MISMATCH:" + name)
 
     environment = contents["etc/onsure/onsure.env.example"].decode("utf-8")
-    for secret in ("OPENAI_API_KEY", "ONSURE_DB_PASSWORD", "ONSURE_LOCAL_API_TOKEN"):
+    for secret in ("OPENAI_API_KEY", "ONSURE_DB_PASSWORD", "ONSURE_LOCAL_API_TOKEN", "ONSURE_LLM_GATEWAY_TOKEN"):
         if any(line.startswith(secret + "=") for line in environment.splitlines()):
             raise ValueError("PACKAGE_SECRET_SLOT_ACTIVE:" + secret)
     for jar, expected_class in JAR_CLASSES.items():

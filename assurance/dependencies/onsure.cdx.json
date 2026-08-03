@@ -397,7 +397,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "68514029d4cef7ad2c61b3c46e5d6f737dc95dd83f13bdae9b906578666cbd0e"
+          "content": "04a935489306221d4fce189e53c82fa16afbdf7400e54061e9636b324f6a12fb"
         }
       ],
       "name": "onsure-core",
@@ -408,6 +408,26 @@
         }
       ],
       "purl": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
+      "type": "library",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "bom-ref": "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar",
+      "group": "io.onsure",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6eebe147751f54f6112d1eba5425cf7b5329d5cae0ba8f8ee61927835fef41cb"
+        }
+      ],
+      "name": "onsure-llm-gateway",
+      "properties": [
+        {
+          "name": "onsure:module_boundary",
+          "value": "ISOLATED_CANDIDATE"
+        }
+      ],
+      "purl": "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
     },
@@ -457,7 +477,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "11be1fa5911925ab8197f0c53c286cef159297c4c37e3dc6263d4bff90eb7267"
+          "content": "da240382a12e4d5bb12bad40ce1c1bf75cec33053391b0e1e31e23fa7faf71ec"
         }
       ],
       "name": "onsure-provider-local-mock",
@@ -550,67 +570,6 @@
       "purl": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
-    },
-    {
-      "bom-ref": "pkg:maven/org.checkerframework/checker-qual@3.52.0?type=jar",
-      "description": "checker-qual contains annotations (type qualifiers) that a programmerwrites to specify Java code for type-checking by the Checker Framework.",
-      "externalReferences": [
-        {
-          "type": "website",
-          "url": "https://checkerframework.org/"
-        },
-        {
-          "type": "vcs",
-          "url": "https://github.com/typetools/checker-framework.git"
-        }
-      ],
-      "group": "org.checkerframework",
-      "hashes": [
-        {
-          "alg": "MD5",
-          "content": "d7eeaac6d7810375c2484fd4faeb2f69"
-        },
-        {
-          "alg": "SHA-1",
-          "content": "9c17f496846ab1fca8975c6a50ceac0b3bbe63f0"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "0b5bb1a4bdc4e4b1217482fe598efcaab4e1fba7b37f9412639178fc8116fc05"
-        },
-        {
-          "alg": "SHA-384",
-          "content": "616909e6f24b320b838de7ae2c93179ed7bbdd36c068c64eb0830209eb376592fec63c445641995751c113da88a74f1b"
-        },
-        {
-          "alg": "SHA-512",
-          "content": "27a94a7d117913592074e4ac44f15379cfc9ce615acca29a326044b9ffb02655ea909ea45343d7d18f208f68606b478cc683ec07c28b679d6de9ac7eb755dce1"
-        },
-        {
-          "alg": "SHA3-256",
-          "content": "480754e2a2e57afd81c50afa1a4d062eae647b6be26b043c4f8147a1857cdcc4"
-        },
-        {
-          "alg": "SHA3-384",
-          "content": "ae4fbdcaaada5a981b30ddcec8e8b6305a3dabafc248564c8aae8a579e570535eedd8a1e4cf5819e3e60da4b5ce88810"
-        },
-        {
-          "alg": "SHA3-512",
-          "content": "973ede6bb29169b29a058c35141d87ecbc5b1df27c059c7d3b2a27f1ea94e4e79c245d7d56f5086dfe9500d40dd9cfdb52f6ae59404ab3ed8361c552ccc189aa"
-        }
-      ],
-      "licenses": [
-        {
-          "license": {
-            "id": "MIT"
-          }
-        }
-      ],
-      "name": "checker-qual",
-      "purl": "pkg:maven/org.checkerframework/checker-qual@3.52.0?type=jar",
-      "scope": "required",
-      "type": "library",
-      "version": "3.52.0"
     },
     {
       "bom-ref": "pkg:maven/org.flywaydb/flyway-core@12.11.0?type=jar",
@@ -735,7 +694,7 @@
       "version": "12.11.0"
     },
     {
-      "bom-ref": "pkg:maven/org.postgresql/postgresql@42.7.10?type=jar",
+      "bom-ref": "pkg:maven/org.postgresql/postgresql@42.7.12?type=jar",
       "description": "PostgreSQL JDBC Driver Postgresql",
       "externalReferences": [
         {
@@ -759,35 +718,35 @@
       "hashes": [
         {
           "alg": "MD5",
-          "content": "46b64ac0888710f255fc6584f6facf68"
+          "content": "bf3dd29ad502aeff677c4920bc6d6c9a"
         },
         {
           "alg": "SHA-1",
-          "content": "35100a3f0899551e27af8fed4a3414619a4663b3"
+          "content": "9d30cb5aaf509e58b05da3b8ef98b6f9cc93d7af"
         },
         {
           "alg": "SHA-256",
-          "content": "cab1cd67cfa25c25de4348e532298028288a877ba01c77d1619fe45416193387"
+          "content": "31fbf6f06b2217fb51d5100cee51b22625cc81640da0679b47914e54c1e6377c"
         },
         {
           "alg": "SHA-384",
-          "content": "051820472bb1b4039b5e163b24c6ec9644a097559745de4e062083e37b28bbe6c2408667c1aeccd50e81ff4c36213949"
+          "content": "15077d5c4364feaeb6cb95d76eea3f2f35438f14cb79f240457cfc9ee4a971b8efbfb9784b83c14246bff3ea786a20ab"
         },
         {
           "alg": "SHA-512",
-          "content": "6dbc306a9e5dc05af4d3aae27329053003cd88652ab5749d05a01d15d8bb8b295fdef466b39357d5b4e06db9316fb9cfffbe24ba6f2e4880c2a2ef77934a1401"
+          "content": "3759e7160591863e5100361298943df94488a6e4ee03936d20723638142fe8038c9a6a47fa8ee7e424f4ef09bb351edc89dfe2ae4acdfc0f92699a8b00196c5c"
         },
         {
           "alg": "SHA3-256",
-          "content": "2219838479d12a12fb7e6389b3f04fc65eda76e726387d9a0cdc9135f831a1eb"
+          "content": "e63380c49bbe5da35954f08fac19470cb301b8684d86d0e4410b6369dd739c2f"
         },
         {
           "alg": "SHA3-384",
-          "content": "38ffcd4bacd58cc9fee30bf6a660a9f3bdc680bcbee6d5a63f6b9f195628a3d74c03fa6111b4278018e49ed9c457ceab"
+          "content": "2f982268c9ba1fb569bf3757cf92a00320a22e5896a1f529a63774c60297602831d4f2d14e8fe4ccd7e150054a064502"
         },
         {
           "alg": "SHA3-512",
-          "content": "a37a0f3af6e1bc2f9906a320f78c69494a7ee19824f166dcafc68d90c03b671a72bda15e8e2e1e79c144f51d05ebd40b3c58343a2100a4d0e92fdefaf6e0c6e1"
+          "content": "d1da2833c59519daff56baf7ad87b81a7dd22d60a826baebb1df676921f3460d86ea2890b5c783624fd19b8feeac7c3ed4ef327254351587cf3c77a4547c8398"
         }
       ],
       "licenses": [
@@ -800,13 +759,13 @@
       ],
       "name": "postgresql",
       "publisher": "PostgreSQL Global Development Group",
-      "purl": "pkg:maven/org.postgresql/postgresql@42.7.10?type=jar",
+      "purl": "pkg:maven/org.postgresql/postgresql@42.7.12?type=jar",
       "scope": "required",
       "type": "library",
-      "version": "42.7.10"
+      "version": "42.7.12"
     },
     {
-      "bom-ref": "pkg:maven/tools.jackson.core/jackson-core@3.1.4?type=jar",
+      "bom-ref": "pkg:maven/tools.jackson.core/jackson-core@3.1.5?type=jar",
       "description": "Core Jackson processing abstractions (aka Streaming API), implementation for JSON",
       "externalReferences": [
         {
@@ -830,35 +789,35 @@
       "hashes": [
         {
           "alg": "MD5",
-          "content": "521f9137ec231cad4309ffa4de454830"
+          "content": "ed1c26680ceec80183239a74ef15a838"
         },
         {
           "alg": "SHA-1",
-          "content": "f9fd39204bd3d4922b42f6a54b81f46bd8ed575a"
+          "content": "ccd7eb3269b8d33bc097b36770f367cdfe2f1150"
         },
         {
           "alg": "SHA-256",
-          "content": "3bda1cd6eff0a8d47bdfcaeae7c2bd5311d6c8ed494ef5f3e51029bb44aa9bdf"
+          "content": "9431b7fa2673bbb618c11d865fe15e13222fd182a214ff998cb7e56afd8f35d2"
         },
         {
           "alg": "SHA-384",
-          "content": "7dfa14841ee2e2f802a9757197c2753a245e01816963436026a622c1400dafea2a7c1fc5fdff5d269753a45ab71c5284"
+          "content": "716ba8ca7cccf0aea47f9d6c82219a0b417c1935446ef4fcf997da7690357f60d350e1aa8b2726d3bc454279fa3fcafb"
         },
         {
           "alg": "SHA-512",
-          "content": "dbbfd41206f4f81b3c7691c4d28a0f9471dc724065e3b1221cce1d03f40c60e6885359f779367ed4c1c3e79b197a525f1793b31d3db07ad32f7a15294d8905c1"
+          "content": "ca302aa4954b4bb543bcffe326f67b3371ce57f781e88d505e4e9c74d7722b1e5388b5a3545b1b30a32110c2718bb555a6ec13050b8cee9f8fba94fa88d9ba3d"
         },
         {
           "alg": "SHA3-256",
-          "content": "69d72d2ae5d0f5e0861ca591138848d444f6611de007f02400f524340f602cd0"
+          "content": "e6a656f6451ac74824d1c339bb39c74e37ba546f4b565dbcc7a0777c813fa306"
         },
         {
           "alg": "SHA3-384",
-          "content": "e9be6368e92e0cff494edefd80bc19f46f6cfda3b9948519d46d4e6148056d08a8b7cec6221038de6ff44be018ff34a7"
+          "content": "f085d86c0c1f3fb77cdb901f2ae10e94842acc170fc9c5fed6f7e806e30ab37087961def920eeea6a5c6e122903b4e87"
         },
         {
           "alg": "SHA3-512",
-          "content": "261288f2b9577bfe26f6d5b0c662611f4416be7e93c67b3eb5b826ee56767245e1b58a52805f583fe24bc9fe8ae65a5d49fdfec9c44fa89ad5d1eb02b52e08e9"
+          "content": "62130e669e9f41b0f12df47588d2535666ed35b4fd3b5916b1289479dcd6e4c5ff10d343c3add423932577b44a642b1ea40dab03e5071d22678277a56ebe0b64"
         }
       ],
       "licenses": [
@@ -870,13 +829,13 @@
       ],
       "name": "jackson-core",
       "publisher": "FasterXML",
-      "purl": "pkg:maven/tools.jackson.core/jackson-core@3.1.4?type=jar",
+      "purl": "pkg:maven/tools.jackson.core/jackson-core@3.1.5?type=jar",
       "scope": "required",
       "type": "library",
-      "version": "3.1.4"
+      "version": "3.1.5"
     },
     {
-      "bom-ref": "pkg:maven/tools.jackson.core/jackson-databind@3.1.4?type=jar",
+      "bom-ref": "pkg:maven/tools.jackson.core/jackson-databind@3.1.5?type=jar",
       "description": "General data-binding functionality for Jackson: works on core streaming API",
       "externalReferences": [
         {
@@ -900,35 +859,35 @@
       "hashes": [
         {
           "alg": "MD5",
-          "content": "177c7c83c06cd3fd971fc1ec819bbe9f"
+          "content": "7b399cbb2bea1429c46c1b8c73af42b9"
         },
         {
           "alg": "SHA-1",
-          "content": "c7be3c757289893a791b2a4967ec09d1a8b6c576"
+          "content": "782178f0b1fe088803c03b85eb9a406f60519044"
         },
         {
           "alg": "SHA-256",
-          "content": "14034bfdf392b6ebec1b4bb6c1de29d604f0aa97251259a19d5f19af8719bb20"
+          "content": "3a2338d996fd3056791df8d335fa9ba8a62a706ed4245ecf81b3e583df37d08a"
         },
         {
           "alg": "SHA-384",
-          "content": "9d0357646bde12c8c0b154709e926f0e27be129821dbd86792f5e7339015be744111fe1573f072c1fb6a13aca36ddd73"
+          "content": "da6c8695a80410cb666c33b13604d695db2993fff67a86bc08c90d4014e6e76ef2107bc014bcba3ab5a9db1640d6cb21"
         },
         {
           "alg": "SHA-512",
-          "content": "f4361a8ab6dee7d5b5dbb15c7249ebf9960783c230b8b817704d53e21d1e5a05a42e570dd86a61dea2acc79edb2a3b21ccef535559b704a5c5245f19b2f09cc8"
+          "content": "897ee93528010d2956908da5ea90c37dc9d6c37388bd1aa9da954c582a7bdf986a477f248d631d833c2bc281e0827782df978ecc76d5518a33e475aa9ddcb2d9"
         },
         {
           "alg": "SHA3-256",
-          "content": "18438bae47cc5e47e8a5b8ec69d32f58a03cab0419cf84b368f11b2125a5b3a5"
+          "content": "8fa8f03e322972d87a6fe7f712714038b29bd9ddbeb3da599ec12d62fd2502c7"
         },
         {
           "alg": "SHA3-384",
-          "content": "47b940f5ac8e63b9d9a3f61ae7a53126ae9cc638b2d97493deaa374565bcb885427811ceee005cc41c20e71da5868e77"
+          "content": "e2c113d73ce6b4526cdfd6b15539ad7469314b2e95a5df33f3df4039e125e7dd62c139ec590e6aee65bf9406dc125c14"
         },
         {
           "alg": "SHA3-512",
-          "content": "2ac2f2c1b9780db84f08a84c9cee30ee143523d2f7fc53e7c59b20641f6b818b395412bb8f7e19b6ae927e09850dd1d7d3e2fb2afee39cc8beec0ef94aadd424"
+          "content": "8882ba1d58fb5ab58d06663f510a69b551a1a73bae534206a07e91d9bfb4dd898c8b00d3e72ccf773b6309bcff17f5da8bed7089deb963fc16b4e0d36ef7d3d5"
         }
       ],
       "licenses": [
@@ -940,10 +899,10 @@
       ],
       "name": "jackson-databind",
       "publisher": "FasterXML",
-      "purl": "pkg:maven/tools.jackson.core/jackson-databind@3.1.4?type=jar",
+      "purl": "pkg:maven/tools.jackson.core/jackson-databind@3.1.5?type=jar",
       "scope": "required",
       "type": "library",
-      "version": "3.1.4"
+      "version": "3.1.5"
     }
   ],
   "dependencies": [
@@ -1004,6 +963,15 @@
     },
     {
       "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-provider-openai@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar"
+      ],
+      "ref": "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar"
+    },
+    {
+      "dependsOn": [
         "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar"
       ],
       "ref": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar"
@@ -1012,7 +980,7 @@
       "dependsOn": [
         "pkg:maven/org.flywaydb/flyway-core@12.11.0?type=jar",
         "pkg:maven/org.flywaydb/flyway-database-postgresql@12.11.0?type=jar",
-        "pkg:maven/org.postgresql/postgresql@42.7.10?type=jar"
+        "pkg:maven/org.postgresql/postgresql@42.7.12?type=jar"
       ],
       "ref": "pkg:maven/io.onsure/onsure-migration-postgresql@0.1.0-SNAPSHOT?type=jar"
     },
@@ -1021,6 +989,7 @@
         "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
         "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
         "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
+        "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar",
         "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
         "pkg:maven/io.onsure/onsure-migration-postgresql@0.1.0-SNAPSHOT?type=jar",
         "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
@@ -1059,12 +1028,8 @@
       "ref": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar"
     },
     {
-      "dependsOn": [],
-      "ref": "pkg:maven/org.checkerframework/checker-qual@3.52.0?type=jar"
-    },
-    {
       "dependsOn": [
-        "pkg:maven/tools.jackson.core/jackson-databind@3.1.4?type=jar"
+        "pkg:maven/tools.jackson.core/jackson-databind@3.1.5?type=jar"
       ],
       "ref": "pkg:maven/org.flywaydb/flyway-core@12.11.0?type=jar"
     },
@@ -1075,21 +1040,19 @@
       "ref": "pkg:maven/org.flywaydb/flyway-database-postgresql@12.11.0?type=jar"
     },
     {
-      "dependsOn": [
-        "pkg:maven/org.checkerframework/checker-qual@3.52.0?type=jar"
-      ],
-      "ref": "pkg:maven/org.postgresql/postgresql@42.7.10?type=jar"
+      "dependsOn": [],
+      "ref": "pkg:maven/org.postgresql/postgresql@42.7.12?type=jar"
     },
     {
       "dependsOn": [],
-      "ref": "pkg:maven/tools.jackson.core/jackson-core@3.1.4?type=jar"
+      "ref": "pkg:maven/tools.jackson.core/jackson-core@3.1.5?type=jar"
     },
     {
       "dependsOn": [
         "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.21?type=jar",
-        "pkg:maven/tools.jackson.core/jackson-core@3.1.4?type=jar"
+        "pkg:maven/tools.jackson.core/jackson-core@3.1.5?type=jar"
       ],
-      "ref": "pkg:maven/tools.jackson.core/jackson-databind@3.1.4?type=jar"
+      "ref": "pkg:maven/tools.jackson.core/jackson-databind@3.1.5?type=jar"
     }
   ],
   "metadata": {

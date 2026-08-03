@@ -19,6 +19,7 @@ class ONSureUbuntuPackageValidationTest(unittest.TestCase):
         }
         self.assertIn("scripts/package_onsure_systemd.sh", paths)
         self.assertIn("deploy/rhel/onsure.service", paths)
+        self.assertIn("deploy/rhel/onsure-llm-gateway.service", paths)
         self.assertIn("deploy/ubuntu/README.md", paths)
         self.assertNotIn("deploy/rhel/README.md", paths)
 

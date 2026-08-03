@@ -91,6 +91,15 @@
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
       "licenses": [],
+      "name": "onsure-llm-gateway",
+      "purl": "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [],
       "name": "onsure-local-api",
       "purl": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -151,17 +160,6 @@
       "version": "0.1.0-SNAPSHOT"
     },
     {
-      "group": "org.checkerframework",
-      "license_status": "DECLARED",
-      "licenses": [
-        "MIT"
-      ],
-      "name": "checker-qual",
-      "purl": "pkg:maven/org.checkerframework/checker-qual@3.52.0?type=jar",
-      "scope": "required",
-      "version": "3.52.0"
-    },
-    {
       "group": "org.flywaydb",
       "license_status": "DECLARED",
       "licenses": [
@@ -190,9 +188,9 @@
         "BSD-2-Clause"
       ],
       "name": "postgresql",
-      "purl": "pkg:maven/org.postgresql/postgresql@42.7.10?type=jar",
+      "purl": "pkg:maven/org.postgresql/postgresql@42.7.12?type=jar",
       "scope": "required",
-      "version": "42.7.10"
+      "version": "42.7.12"
     },
     {
       "group": "tools.jackson.core",
@@ -201,9 +199,9 @@
         "Apache-2.0"
       ],
       "name": "jackson-core",
-      "purl": "pkg:maven/tools.jackson.core/jackson-core@3.1.4?type=jar",
+      "purl": "pkg:maven/tools.jackson.core/jackson-core@3.1.5?type=jar",
       "scope": "required",
-      "version": "3.1.4"
+      "version": "3.1.5"
     },
     {
       "group": "tools.jackson.core",
@@ -212,16 +210,15 @@
         "Apache-2.0"
       ],
       "name": "jackson-databind",
-      "purl": "pkg:maven/tools.jackson.core/jackson-databind@3.1.4?type=jar",
+      "purl": "pkg:maven/tools.jackson.core/jackson-databind@3.1.5?type=jar",
       "scope": "required",
-      "version": "3.1.4"
+      "version": "3.1.5"
     }
   ],
   "dependency_license_counts": {
     "Apache-2.0": 9,
     "BSD-2-Clause": 1,
-    "MIT": 1,
-    "PROJECT_SOURCE_LICENSE_INHERITS_ROOT": 10
+    "PROJECT_SOURCE_LICENSE_INHERITS_ROOT": 11
   },
   "dependency_license_review_required_count": 0,
   "final_claim_allowed": false,
@@ -232,5 +229,5 @@
   ],
   "root_source_license": "UNDECLARED",
   "source_sbom": "assurance/dependencies/onsure.cdx.json",
-  "source_sbom_sha256": "b62d0f0e907edd0aa4a15b566e6cc57737660b6ab3ecf0d58aeb918d3fa1d5a7"
+  "source_sbom_sha256": "a31a8a9f058f643b033fcb6533a595e4254f070fb5df554583f6c907ced06d0f"
 }

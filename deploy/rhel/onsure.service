@@ -2,8 +2,8 @@
 Description=ONSure loopback API (nonfinal candidate)
 Documentation=file:/opt/onsure/README.md
 Requires=onsure-migrate.service
-After=network-online.target postgresql.service onsure-migrate.service
-Wants=network-online.target
+After=network-online.target postgresql.service onsure-migrate.service onsure-llm-gateway.service
+Wants=network-online.target onsure-llm-gateway.service
 
 [Service]
 Type=simple

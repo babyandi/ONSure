@@ -84,13 +84,20 @@ public final class LocalMockProvider implements ModelProvider {
             if (delayMillis > 0) Thread.sleep(delayMillis);
             String content = responses.get(request.modelId());
             long outputTokens = Math.min(request.maximumOutputTokens(), Math.max(1L, (content.length() + 3L) / 4L));
+            long actualCost;
+            try {
+                actualCost = Math.multiplyExact(Math.addExact(inputTokens, outputTokens), costPerTokenMicros);
+            } catch (ArithmeticException overflow) {
+                throw new ProviderException("COST_LIMIT_EXCEEDED", "Actual provider cost overflowed", false);
+            }
             return new CompletionResponse(
                     request.requestId(), descriptor.providerId(), request.modelId(), content,
                     "STOP", inputTokens, outputTokens, Instant.now(), Map.of(
                     "transport", "LOCAL_IN_PROCESS",
                     "network_egress", "false",
                     "fallback_used", "false",
-                    "estimated_cost_micros", Long.toString(estimate)));
+                    "estimated_cost_micros", Long.toString(estimate),
+                    "actual_cost_micros", Long.toString(actualCost)));
         };
         Future<CompletionResponse> future = executor.submit(work);
         try {

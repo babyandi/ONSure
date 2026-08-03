@@ -44,16 +44,19 @@ mkdir -p "${stage}/usr/lib/sysusers.d" "${stage}/usr/lib/tmpfiles.d"
 cp "${product_root}/modules/onsure-core/target/onsure-core-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
 cp "${product_root}/modules/onsure-local-api/target/onsure-local-api-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
 cp "${product_root}/modules/onsure-provider-spi/target/onsure-provider-spi-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
+cp "${product_root}/modules/onsure-provider-local-mock/target/onsure-provider-local-mock-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
 cp "${product_root}/modules/onsure-provider-openai/target/onsure-provider-openai-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
+cp "${product_root}/modules/onsure-llm-gateway/target/onsure-llm-gateway-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
 cp "${product_root}/modules/onsure-migration-postgresql/target/onsure-migration-postgresql-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/migration/"
 
 mvn -B -ntp -q -f "${product_root}/pom-modular.xml" \
-  -pl modules/onsure-local-api,modules/onsure-provider-openai,modules/onsure-migration-postgresql -am \
+  -pl modules/onsure-local-api,modules/onsure-llm-gateway,modules/onsure-migration-postgresql -am \
   dependency:copy-dependencies -DincludeScope=runtime -DexcludeGroupIds=io.onsure \
   -DoutputDirectory="${stage}/opt/onsure/lib"
 
 # These distribution-neutral units remain at deploy/rhel for path compatibility.
 cp "${product_root}/deploy/rhel/onsure.service" "${stage}/usr/lib/systemd/system/"
+cp "${product_root}/deploy/rhel/onsure-llm-gateway.service" "${stage}/usr/lib/systemd/system/"
 cp "${product_root}/deploy/rhel/onsure-migrate.service" "${stage}/usr/lib/systemd/system/"
 cp "${product_root}/deploy/rhel/onsure.sysusers.conf" "${stage}/usr/lib/sysusers.d/"
 cp "${product_root}/deploy/rhel/onsure.tmpfiles.conf" "${stage}/usr/lib/tmpfiles.d/"

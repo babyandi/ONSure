@@ -24,6 +24,9 @@ ABSOLUTE_WORKSPACE_PATTERNS = (
         r"(?:Users|workspace|projects|repos|src)[\\/]"
     ),
 )
+STANDALONE_INSTALLATION_PATHS = (
+    "/var/lib/onsure/workspace",
+)
 EXTERNAL_PRODUCT_SOURCE = re.compile(
     r"(?:/" + r"workspace/(?:ORUDA|aTops|AsterDB)|\.\./(?:ORUDA|aTops|AsterDB)|"
     r"[A-Za-z]:\\\\[^\r\n]*(?:ORUDA|aTops|AsterDB))",
@@ -40,7 +43,10 @@ def text_files() -> list[pathlib.Path]:
 
 
 def contains_absolute_workspace(text: str) -> bool:
-    return any(pattern.search(text) for pattern in ABSOLUTE_WORKSPACE_PATTERNS)
+    inspected = text
+    for approved in STANDALONE_INSTALLATION_PATHS:
+        inspected = inspected.replace(approved, "ONSURE_STANDALONE_DATA_ROOT")
+    return any(pattern.search(inspected) for pattern in ABSOLUTE_WORKSPACE_PATTERNS)
 
 
 def main() -> int:

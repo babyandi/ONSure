@@ -16,7 +16,11 @@ from onsure_product_root import resolve_product_root
 ROOT = resolve_product_root()
 OUTPUT = ROOT / "assurance/runtime/onsure-rhel-systemd-security.v1.json"
 UBUNTU_OUTPUT = ROOT / "assurance/runtime/onsure-ubuntu-systemd-security.v1.json"
-UNITS = (ROOT / "deploy/rhel/onsure.service", ROOT / "deploy/rhel/onsure-migrate.service")
+UNITS = (
+    ROOT / "deploy/rhel/onsure.service",
+    ROOT / "deploy/rhel/onsure-llm-gateway.service",
+    ROOT / "deploy/rhel/onsure-migrate.service",
+)
 MAXIMUM_EXPOSURE = 4.0
 
 

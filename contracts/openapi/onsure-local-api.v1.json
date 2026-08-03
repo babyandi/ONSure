@@ -1,0 +1,451 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ONSure Local API",
+    "version": "1.0.0",
+    "description": "Loopback-only, bearer-authenticated ONSure API. Responses are nonfinal and never grant Production GO or Final PASS."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:47311",
+      "description": "Default loopback runtime"
+    }
+  ],
+  "tags": [
+    {"name": "Runtime"},
+    {"name": "Workflow"},
+    {"name": "Evidence"},
+    {"name": "Management"},
+    {"name": "Control"}
+  ],
+  "paths": {
+    "/v1/openapi.json": {
+      "get": {
+        "operationId": "getOpenApiDocument",
+        "tags": ["Runtime"],
+        "summary": "Return this OpenAPI 3.1 document",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OpenAPI document",
+            "content": {
+              "application/vnd.oai.openapi+json": {
+                "schema": {"type": "object"}
+              }
+            }
+          },
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"}
+        }
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": ["Runtime"],
+        "summary": "Read loopback runtime health",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Runtime is serving requests",
+            "content": {
+              "application/json": {"schema": {"$ref": "#/components/schemas/HealthResponse"}}
+            }
+          },
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"}
+        }
+      }
+    },
+    "/v1/status": {
+      "get": {
+        "operationId": "getStatus",
+        "tags": ["Runtime"],
+        "summary": "Read nonfinal capability status",
+        "responses": {
+          "200": {
+            "description": "Capability status",
+            "content": {
+              "application/json": {"schema": {"$ref": "#/components/schemas/StatusResponse"}}
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    },
+    "/v1/workflow": {
+      "post": {
+        "operationId": "dispatchWorkflow",
+        "tags": ["Workflow"],
+        "summary": "Dispatch an explicitly named local workflow operation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {"schema": {"$ref": "#/components/schemas/WorkflowRequest"}}
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow result",
+            "content": {
+              "application/json": {"schema": {"$ref": "#/components/schemas/WorkflowResponse"}}
+            }
+          },
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    },
+    "/v1/program-profile": {
+      "post": {
+        "operationId": "createProgramProfile",
+        "tags": ["Workflow"],
+        "summary": "Compatibility endpoint for program.learn",
+        "requestBody": {"$ref": "#/components/requestBodies/JsonObject"},
+        "responses": {
+          "200": {"$ref": "#/components/responses/CompatibilityResult"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    },
+    "/v1/validate": {
+      "post": {
+        "operationId": "runValidation",
+        "tags": ["Workflow"],
+        "summary": "Compatibility endpoint for validation.run",
+        "requestBody": {"$ref": "#/components/requestBodies/JsonObject"},
+        "responses": {
+          "200": {"$ref": "#/components/responses/CompatibilityResult"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    },
+    "/v1/run-artifact": {
+      "post": {
+        "operationId": "readRunArtifact",
+        "tags": ["Evidence"],
+        "summary": "Read a bounded JSON artifact under the registered workspace",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {"schema": {"$ref": "#/components/schemas/RunArtifactRequest"}}
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Digest-bound artifact",
+            "content": {
+              "application/json": {"schema": {"$ref": "#/components/schemas/RunArtifactResponse"}}
+            }
+          },
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    },
+    "/v1/workspace-snapshot": {
+      "post": {
+        "operationId": "getWorkspaceSnapshot",
+        "tags": ["Evidence"],
+        "summary": "Read the registered project and target runtime snapshot",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {"schema": {"$ref": "#/components/schemas/WorkspaceSnapshotRequest"}}
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workspace snapshot",
+            "content": {
+              "application/json": {"schema": {"$ref": "#/components/schemas/SnapshotResponse"}}
+            }
+          },
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    },
+    "/v1/management-overview": {
+      "get": {
+        "operationId": "getManagementOverview",
+        "tags": ["Management"],
+        "summary": "Project actual Gateway, program validation and improvement state for the local admin UI",
+        "responses": {
+          "200": {
+            "description": "Read-only management projection",
+            "content": {
+              "application/json": {"schema": {"$ref": "#/components/schemas/ManagementOverviewResponse"}}
+            }
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    },
+    "/v1/autopilot-control": {
+      "post": {
+        "operationId": "controlAutopilot",
+        "tags": ["Control"],
+        "summary": "Request a bounded Autopilot control transition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {"schema": {"$ref": "#/components/schemas/AutopilotControlRequest"}}
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Control receipt",
+            "content": {
+              "application/json": {"schema": {"$ref": "#/components/schemas/ControlResponse"}}
+            }
+          },
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"},
+          "429": {"$ref": "#/components/responses/Busy"},
+          "500": {"$ref": "#/components/responses/InternalError"}
+        }
+      }
+    }
+  },
+  "security": [{"bearerAuth": []}],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "opaque local token",
+        "description": "32-4096 character token stored only in the local runtime secret file."
+      }
+    },
+    "requestBodies": {
+      "JsonObject": {
+        "required": true,
+        "content": {
+          "application/json": {"schema": {"type": "object", "additionalProperties": true}}
+        }
+      }
+    },
+    "responses": {
+      "CompatibilityResult": {
+        "description": "Compatibility workflow result",
+        "content": {
+          "application/json": {"schema": {"$ref": "#/components/schemas/CompatibilityResponse"}}
+        }
+      },
+      "InvalidRequest": {
+        "description": "Request failed validation",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "Unauthorized": {
+        "description": "Bearer token is missing or invalid",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "Forbidden": {
+        "description": "Client or browser origin is outside the local trust boundary",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "MethodNotAllowed": {
+        "description": "HTTP method is not supported by the path",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "Busy": {
+        "description": "Four local authenticated requests are already active",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      },
+      "InternalError": {
+        "description": "Safe internal error without secret or stack-trace disclosure",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": ["contract", "state", "binding", "assurance_class", "final_claim_allowed"],
+        "properties": {
+          "contract": {"const": "ONSURE_LOCAL_AUTHENTICATED_API_V1"},
+          "state": {"const": "RUNNING"},
+          "binding": {"const": "127.0.0.1"},
+          "assurance_class": {"const": "SELF_VALIDATION_NONFINAL"},
+          "final_claim_allowed": {"const": false}
+        },
+        "additionalProperties": false
+      },
+      "StatusResponse": {
+        "type": "object",
+        "required": ["contract", "state", "request_sequence", "workspace_root", "production_go", "commercial_go"],
+        "properties": {
+          "contract": {"const": "ONSURE_LOCAL_AUTHENTICATED_API_V1"},
+          "state": {"const": "RUNNING"},
+          "request_sequence": {"type": "integer", "minimum": 1},
+          "workspace_root": {"type": "string"},
+          "production_go": {"const": false},
+          "commercial_go": {"const": false}
+        },
+        "additionalProperties": true
+      },
+      "WorkflowRequest": {
+        "type": "object",
+        "required": ["operation", "request"],
+        "properties": {
+          "operation": {"type": "string", "minLength": 1, "maxLength": 128},
+          "request": {"type": "object", "additionalProperties": true}
+        },
+        "additionalProperties": false
+      },
+      "WorkflowResponse": {
+        "allOf": [
+          {"$ref": "#/components/schemas/ResponseEnvelope"},
+          {
+            "type": "object",
+            "required": ["workflow"],
+            "properties": {"workflow": {"type": "object", "additionalProperties": true}}
+          }
+        ]
+      },
+      "CompatibilityResponse": {
+        "allOf": [
+          {"$ref": "#/components/schemas/ResponseEnvelope"},
+          {
+            "type": "object",
+            "required": ["operation", "result", "output_file", "run_root", "decision"],
+            "properties": {
+              "operation": {"type": "string"},
+              "result": {"type": "object", "additionalProperties": true},
+              "output_file": {"type": "string"},
+              "run_root": {"type": "string"},
+              "decision": {"type": "string"}
+            }
+          }
+        ]
+      },
+      "RunArtifactRequest": {
+        "type": "object",
+        "required": ["run_root"],
+        "properties": {
+          "run_root": {"type": "string"},
+          "artifact": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$", "default": "validation-report.json"}
+        },
+        "additionalProperties": false
+      },
+      "RunArtifactResponse": {
+        "type": "object",
+        "required": ["contract", "request_id", "run_root", "artifact", "body", "sha256"],
+        "properties": {
+          "contract": {"const": "ONSURE_LOCAL_AUTHENTICATED_API_V1"},
+          "request_id": {"type": "string"},
+          "run_root": {"type": "string"},
+          "artifact": {"type": "string"},
+          "body": {},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        },
+        "additionalProperties": false
+      },
+      "WorkspaceSnapshotRequest": {
+        "type": "object",
+        "required": ["project_id", "target_id"],
+        "properties": {
+          "project_id": {"type": "string", "minLength": 1},
+          "target_id": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "AutopilotControlRequest": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {"type": "string", "enum": ["PAUSE", "RESUME", "CANCEL"]}
+        },
+        "additionalProperties": false
+      },
+      "SnapshotResponse": {
+        "allOf": [
+          {"$ref": "#/components/schemas/ResponseEnvelope"},
+          {"type": "object", "required": ["snapshot"], "properties": {"snapshot": {"type": "object", "additionalProperties": true}}}
+        ]
+      },
+      "ControlResponse": {
+        "allOf": [
+          {"$ref": "#/components/schemas/ResponseEnvelope"},
+          {"type": "object", "required": ["control"], "properties": {"control": {"type": "object", "additionalProperties": true}}}
+        ]
+      },
+      "ManagementOverviewResponse": {
+        "type": "object",
+        "required": ["contract", "generated_at", "gateway", "programs", "program_count", "validated_program_count", "improvement_candidate_count", "assurance"],
+        "properties": {
+          "contract": {"const": "ONSURE_MANAGEMENT_OVERVIEW_V1"},
+          "generated_at": {"type": "string", "format": "date-time"},
+          "gateway": {"type": "object", "additionalProperties": true},
+          "programs": {"type": "array", "maxItems": 200, "items": {"type": "object", "additionalProperties": true}},
+          "program_count": {"type": "integer", "minimum": 0},
+          "validated_program_count": {"type": "integer", "minimum": 0},
+          "improvement_candidate_count": {"type": "integer", "minimum": 0},
+          "improvement_proof": {"type": "object", "additionalProperties": true},
+          "assurance": {"type": "object", "additionalProperties": true}
+        },
+        "additionalProperties": false
+      },
+      "ResponseEnvelope": {
+        "type": "object",
+        "required": ["contract", "request_id", "final_claim_allowed"],
+        "properties": {
+          "contract": {"const": "ONSURE_LOCAL_AUTHENTICATED_API_V1"},
+          "request_id": {"type": "string", "pattern": "^LOCAL-[0-9]+-[0-9]+$"},
+          "final_claim_allowed": {"const": false}
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["contract", "request_id", "decision", "error", "message", "final_claim_allowed"],
+        "properties": {
+          "contract": {"const": "ONSURE_LOCAL_AUTHENTICATED_API_V1"},
+          "request_id": {"type": "string"},
+          "decision": {"const": "FAIL"},
+          "error": {"type": "string"},
+          "message": {"type": "string"},
+          "final_claim_allowed": {"const": false}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "x-onsure-boundary": {
+    "network": "LOOPBACK_ONLY",
+    "browser_origins": "SAME_ORIGIN_ADMIN_ONLY",
+    "maximum_request_body_bytes": 1048576,
+    "maximum_concurrent_authenticated_requests": 4,
+    "production_go": false,
+    "final_claim_allowed": false
+  }
+}

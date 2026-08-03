@@ -1,0 +1,108 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ONSure LLM Gateway API",
+    "version": "1.0.0",
+    "description": "Loopback-only LLM provider boundary. Prompt and completion content are never stored in monitoring evidence."
+  },
+  "servers": [{"url": "http://127.0.0.1:47312"}],
+  "x-onsure-assurance-class": "SELF_VALIDATION_NONFINAL",
+  "x-onsure-final-claim-allowed": false,
+  "paths": {
+    "/v1/openapi.json": {
+      "get": {
+        "operationId": "getLlmGatewayOpenApi",
+        "security": [],
+        "responses": {"200": {"description": "OpenAPI 3.1 contract", "content": {"application/vnd.oai.openapi+json": {"schema": {"type": "object"}}}}}
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "getLlmGatewayHealth",
+        "security": [],
+        "responses": {"200": {"description": "Loopback gateway and provider health", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Health"}}}}}
+      }
+    },
+    "/v1/completions": {
+      "post": {
+        "operationId": "createCompletion",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CompletionRequest"}}}},
+        "responses": {
+          "200": {"description": "Completion and content-free evidence binding", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CompletionResponse"}}}},
+          "400": {"$ref": "#/components/responses/Error"},
+          "401": {"$ref": "#/components/responses/Error"},
+          "403": {"$ref": "#/components/responses/Error"},
+          "429": {"$ref": "#/components/responses/Error"},
+          "502": {"$ref": "#/components/responses/Error"},
+          "504": {"$ref": "#/components/responses/Error"}
+        }
+      }
+    },
+    "/v1/metrics": {
+      "get": {
+        "operationId": "getLlmGatewayMetrics",
+        "responses": {
+          "200": {"description": "Verified aggregate usage and receipt chain projection", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Metrics"}}}},
+          "401": {"$ref": "#/components/responses/Error"}
+        }
+      }
+    }
+  },
+  "security": [{"bearerAuth": []}],
+  "components": {
+    "securitySchemes": {"bearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "opaque-local-token"}},
+    "responses": {"Error": {"description": "Fail-closed error", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}},
+    "schemas": {
+      "Health": {
+        "type": "object", "required": ["contract", "state", "binding", "provider", "provider_health", "final_claim_allowed"],
+        "properties": {
+          "contract": {"const": "ONSURE_LLM_GATEWAY_V1"}, "state": {"type": "string"}, "binding": {"const": "127.0.0.1"},
+          "provider": {"type": "string"}, "provider_health": {"type": "string"}, "provider_health_error": {"type": "string"},
+          "evidence_ledger_configured": {"type": "boolean"}, "final_claim_allowed": {"const": false}
+        }
+      },
+      "Message": {
+        "type": "object", "required": ["role", "content"], "additionalProperties": false,
+        "properties": {"role": {"type": "string", "maxLength": 16}, "content": {"type": "string", "maxLength": 1000000}}
+      },
+      "CompletionPolicy": {
+        "type": "object", "required": ["network_egress_approved", "customer_data_approved", "maximum_estimated_cost_micros"], "additionalProperties": false,
+        "properties": {"network_egress_approved": {"type": "boolean"}, "customer_data_approved": {"type": "boolean"}, "maximum_estimated_cost_micros": {"type": "integer", "minimum": 0}}
+      },
+      "CompletionRequest": {
+        "type": "object", "required": ["request_id", "model_id", "messages", "maximum_output_tokens", "timeout_millis", "policy"], "additionalProperties": false,
+        "properties": {
+          "request_id": {"type": "string", "maxLength": 128}, "model_id": {"type": "string", "maxLength": 160},
+          "messages": {"type": "array", "minItems": 1, "maxItems": 256, "items": {"$ref": "#/components/schemas/Message"}},
+          "maximum_output_tokens": {"type": "integer", "minimum": 1, "maximum": 131072},
+          "timeout_millis": {"type": "integer", "minimum": 1, "maximum": 1800000},
+          "policy": {"$ref": "#/components/schemas/CompletionPolicy"}
+        }
+      },
+      "CompletionResponse": {
+        "type": "object", "required": ["contract", "request_id", "provider_id", "model_id", "content", "input_tokens", "output_tokens", "total_tokens", "evidence_sha256", "fallback_used", "retry_attempts", "final_claim_allowed"],
+        "properties": {
+          "contract": {"const": "ONSURE_LLM_GATEWAY_V1"}, "request_id": {"type": "string"}, "provider_id": {"type": "string"}, "model_id": {"type": "string"},
+          "content": {"type": "string"}, "finish_reason": {"type": "string"}, "input_tokens": {"type": "integer", "minimum": 0}, "output_tokens": {"type": "integer", "minimum": 0},
+          "total_tokens": {"type": "integer", "minimum": 0}, "estimated_cost_micros": {"type": "integer", "minimum": 0}, "actual_cost_micros": {"type": "integer", "minimum": 0},
+          "duration_millis": {"type": "integer", "minimum": 0}, "evidence_sequence": {"type": "integer", "minimum": 1}, "evidence_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "fallback_used": {"const": false}, "retry_attempts": {"const": 0}, "final_claim_allowed": {"const": false}
+        }
+      },
+      "Metrics": {
+        "type": "object", "required": ["contract", "request_count", "success_count", "failure_count", "total_tokens", "chain_valid", "prompt_or_completion_content_recorded", "final_claim_allowed"],
+        "properties": {
+          "contract": {"const": "ONSURE_LLM_MONITORING_V1"}, "request_count": {"type": "integer", "minimum": 0}, "success_count": {"type": "integer", "minimum": 0}, "failure_count": {"type": "integer", "minimum": 0},
+          "input_tokens": {"type": "integer", "minimum": 0}, "output_tokens": {"type": "integer", "minimum": 0}, "total_tokens": {"type": "integer", "minimum": 0},
+          "estimated_cost_micros": {"type": "integer", "minimum": 0}, "actual_cost_micros": {"type": "integer", "minimum": 0}, "total_duration_millis": {"type": "integer", "minimum": 0},
+          "chain_valid": {"const": true}, "chain_head_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "last_observed_at": {"type": "string"},
+          "prompt_or_completion_content_recorded": {"const": false}, "final_claim_allowed": {"const": false}
+        }
+      },
+      "Error": {
+        "type": "object", "required": ["contract", "decision", "error", "message", "final_claim_allowed"],
+        "properties": {"contract": {"const": "ONSURE_LLM_GATEWAY_V1"}, "decision": {"const": "FAIL"}, "error": {"type": "string"}, "message": {"type": "string"}, "final_claim_allowed": {"const": false}}
+      }
+    }
+  }
+}

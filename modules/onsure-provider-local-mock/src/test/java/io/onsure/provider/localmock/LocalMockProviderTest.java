@@ -21,6 +21,7 @@ class LocalMockProviderTest {
             assertEquals("deterministic answer", response.content());
             assertEquals("false", response.evidence().get("network_egress"));
             assertEquals("false", response.evidence().get("fallback_used"));
+            assertEquals("7", response.evidence().get("actual_cost_micros"));
             assertFalse(provider.descriptor().networkEgressRequired());
         }
     }

@@ -28,6 +28,7 @@ UBUNTU_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-package-valida
 def validate_rhel_candidate() -> list[str]:
     violations: list[str] = []
     app_unit = (ROOT / "deploy/rhel/onsure.service").read_text(encoding="utf-8")
+    gateway_unit = (ROOT / "deploy/rhel/onsure-llm-gateway.service").read_text(encoding="utf-8")
     migration_unit = (ROOT / "deploy/rhel/onsure-migrate.service").read_text(encoding="utf-8")
     environment = (ROOT / "deploy/rhel/onsure.env.example").read_text(encoding="utf-8")
     required_app = (
@@ -45,21 +46,33 @@ def validate_rhel_candidate() -> list[str]:
         "IPAddressDeny=any", "IPAddressAllow=localhost",
         "io.onsure.migration.postgresql.PostgresqlMigrationMain migrate",
     )
+    required_gateway = (
+        "User=onsure", "Group=onsure", "NoNewPrivileges=yes", "ProtectSystem=strict",
+        "ProtectHome=yes", "PrivateDevices=yes", "CapabilityBoundingSet=",
+        "RemoveIPC=yes", "ProtectProc=invisible", "RestrictNamespaces=yes",
+        "ReadWritePaths=/var/lib/onsure /var/log/onsure",
+        "io.onsure.gateway.llm.LlmGatewayMain",
+    )
     for value in required_app:
         if value not in app_unit:
             violations.append("RHEL_APP_UNIT_MISSING:" + value)
     for value in required_migration:
         if value not in migration_unit:
             violations.append("RHEL_MIGRATION_UNIT_MISSING:" + value)
+    for value in required_gateway:
+        if value not in gateway_unit:
+            violations.append("RHEL_GATEWAY_UNIT_MISSING:" + value)
     if "ONSURE_WORKSPACE_ROOT=/var/lib/onsure/workspace" not in environment \
             or "ONSURE_DB_URL=jdbc:postgresql://127.0.0.1:5432/onsure" not in environment \
-            or "ONSURE_MIGRATION_AUTHORIZED=false" not in environment:
+            or "ONSURE_MIGRATION_AUTHORIZED=false" not in environment \
+            or "ONSURE_LLM_GATEWAY_PORT=47312" not in environment \
+            or "ONSURE_LLM_PROVIDER=local-mock" not in environment:
         violations.append("RHEL_ENVIRONMENT_FAIL_CLOSED_DEFAULTS")
-    for secret in ("OPENAI_API_KEY", "ONSURE_DB_PASSWORD", "ONSURE_LOCAL_API_TOKEN"):
+    for secret in ("OPENAI_API_KEY", "ONSURE_DB_PASSWORD", "ONSURE_LOCAL_API_TOKEN", "ONSURE_LLM_GATEWAY_TOKEN"):
         for line in environment.splitlines():
             if not line.lstrip().startswith("#") and line.startswith(secret + "="):
                 violations.append("RHEL_ENVIRONMENT_SECRET_VALUE_SLOT:" + secret)
-    if "0.0.0.0" in app_unit or "User=root" in app_unit + migration_unit:
+    if "0.0.0.0" in app_unit + gateway_unit or "User=root" in app_unit + gateway_unit + migration_unit:
         violations.append("RHEL_UNIT_UNSAFE_RUNTIME")
     return violations
 
@@ -159,7 +172,11 @@ def validate_systemd_evidence() -> list[str]:
         violations.append("SYSTEMD_EVIDENCE_CONTRACT")
     expected = {
         path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in (ROOT / "deploy/rhel/onsure.service", ROOT / "deploy/rhel/onsure-migrate.service")
+        for path in (
+            ROOT / "deploy/rhel/onsure.service",
+            ROOT / "deploy/rhel/onsure-llm-gateway.service",
+            ROOT / "deploy/rhel/onsure-migrate.service",
+        )
     }
     actual = {str(item.get("path")): item for item in evidence.get("units", [])}
     if set(actual) != set(expected):
@@ -188,7 +205,11 @@ def validate_ubuntu_systemd_evidence() -> list[str]:
         violations.append("UBUNTU_SYSTEMD_EVIDENCE_CONTRACT")
     expected = {
         path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in (ROOT / "deploy/rhel/onsure.service", ROOT / "deploy/rhel/onsure-migrate.service")
+        for path in (
+            ROOT / "deploy/rhel/onsure.service",
+            ROOT / "deploy/rhel/onsure-llm-gateway.service",
+            ROOT / "deploy/rhel/onsure-migrate.service",
+        )
     }
     actual = {str(item.get("path")): item for item in evidence.get("units", [])}
     if set(actual) != set(expected):
@@ -218,6 +239,7 @@ def validate_rhel_package_evidence() -> list[str]:
     for relative in (
         "scripts/package_onsure_rhel.sh", "scripts/package_onsure_systemd.sh",
         "deploy/rhel/onsure.service",
+        "deploy/rhel/onsure-llm-gateway.service",
         "deploy/rhel/onsure-migrate.service", "deploy/rhel/onsure.env.example",
         "deploy/rhel/onsure.sysusers.conf", "deploy/rhel/onsure.tmpfiles.conf",
         "deploy/rhel/README.md",
@@ -250,7 +272,8 @@ def validate_ubuntu_package_evidence() -> list[str]:
     source_bindings = evidence.get("source_bindings", {})
     for relative in (
         "scripts/package_onsure_ubuntu.sh", "scripts/package_onsure_systemd.sh",
-        "deploy/rhel/onsure.service", "deploy/rhel/onsure-migrate.service",
+        "deploy/rhel/onsure.service", "deploy/rhel/onsure-llm-gateway.service",
+        "deploy/rhel/onsure-migrate.service",
         "deploy/rhel/onsure.env.example", "deploy/rhel/onsure.sysusers.conf",
         "deploy/rhel/onsure.tmpfiles.conf", "deploy/ubuntu/README.md",
     ):
@@ -357,6 +380,7 @@ def validate() -> dict[str, object]:
         "deploy/README.md",
         "deploy/deployment-plan.v1.json",
         "deploy/rhel/onsure.service",
+        "deploy/rhel/onsure-llm-gateway.service",
         "deploy/rhel/onsure-migrate.service",
         "deploy/rhel/onsure.env.example",
         "deploy/rhel/onsure.sysusers.conf",
@@ -373,6 +397,7 @@ def validate() -> dict[str, object]:
         "scripts/package_onsure_systemd.sh",
         "scripts/package_onsure_ubuntu.sh",
         "modules/onsure-provider-openai/pom.xml",
+        "modules/onsure-llm-gateway/pom.xml",
         "modules/onsure-migration-postgresql/pom.xml",
         "config/provider/openai-request.example.json",
         "scripts/rehearse_onsure_postgresql.py",

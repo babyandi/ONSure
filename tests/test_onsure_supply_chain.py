@@ -48,10 +48,10 @@ class ONSureSupplyChainTest(unittest.TestCase):
         )
         self.assertEqual([], violations)
         self.assertIn("ROOT_SOURCE_LICENSE_UNDECLARED", blockers)
-        self.assertIn("VULNERABILITY_SCAN_NOT_RUN", blockers)
-        self.assertEqual("NOT_RUN", vulnerability["state"])
+        self.assertNotIn("VULNERABILITY_SCAN_NOT_RUN", blockers)
+        self.assertEqual("COMPLETED", vulnerability["state"])
         self.assertTrue(all(
-            vulnerability[level] == "NOT_RUN"
+            vulnerability[level] == 0
             for level in ("critical", "high", "medium", "low")
         ))
 

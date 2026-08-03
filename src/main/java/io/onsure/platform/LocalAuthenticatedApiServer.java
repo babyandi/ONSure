@@ -8,8 +8,10 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -18,6 +20,7 @@ import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.HexFormat;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -29,6 +32,14 @@ public final class LocalAuthenticatedApiServer {
     private static final int MAX_BODY_BYTES = 1_048_576;
     private static final int MAX_ARTIFACT_BYTES = 10_485_760;
     private static final int DEFAULT_PORT = 47311;
+    private static final String OPENAPI_RESOURCE = "/openapi/onsure-local-api.v1.json";
+    private static final String ADMIN_INDEX_RESOURCE = "/admin/index.html";
+    private static final String ADMIN_SCRIPT_RESOURCE = "/admin/app.js";
+    private static final String ADMIN_STYLE_RESOURCE = "/admin/styles.css";
+    private static final Set<String> ROUTE_PATHS = Set.of(
+            "/v1/openapi.json", "/v1/health", "/v1/status", "/v1/workflow",
+            "/v1/program-profile", "/v1/validate", "/v1/run-artifact",
+            "/v1/workspace-snapshot", "/v1/autopilot-control", "/v1/management-overview");
 
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
@@ -38,6 +49,7 @@ public final class LocalAuthenticatedApiServer {
     private final byte[] tokenDigest;
     private final AtomicLong requestSequence = new AtomicLong();
     private final Semaphore concurrentRequests = new Semaphore(4, true);
+    private final JsonNode openApiDocument;
     private HttpServer server;
     private ExecutorService executor;
 
@@ -52,6 +64,7 @@ public final class LocalAuthenticatedApiServer {
             throw new IllegalArgumentException("LOCAL_API_TOKEN_LENGTH_INVALID");
         }
         this.tokenDigest = digest(token.getBytes(StandardCharsets.UTF_8));
+        this.openApiDocument = loadOpenApiDocument();
     }
 
     public synchronized void start(int port) throws Exception {
@@ -65,6 +78,7 @@ public final class LocalAuthenticatedApiServer {
         }
         server = HttpServer.create(new InetSocketAddress(
                 InetAddress.getByName("127.0.0.1"), port), 32);
+        server.createContext("/v1/openapi.json", this::openApi);
         server.createContext("/v1/health", exchange -> {
             if (!"GET".equals(exchange.getRequestMethod())) {
                 respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET is required."));
@@ -86,6 +100,8 @@ public final class LocalAuthenticatedApiServer {
         server.createContext("/v1/run-artifact", authenticated(this::runArtifact));
         server.createContext("/v1/workspace-snapshot", authenticated(this::workspaceSnapshot));
         server.createContext("/v1/autopilot-control", authenticated(this::autopilotControl));
+        server.createContext("/v1/management-overview", authenticated(this::managementOverview));
+        server.createContext("/admin", this::adminAsset);
         executor = Executors.newFixedThreadPool(4, runnable -> {
             Thread thread = new Thread(runnable, "onsure-local-api");
             thread.setDaemon(true);
@@ -94,6 +110,18 @@ public final class LocalAuthenticatedApiServer {
         server.setExecutor(executor);
         server.start();
         return server.getAddress().getPort();
+    }
+
+    static Set<String> routePaths() {
+        return ROUTE_PATHS;
+    }
+
+    private void openApi(HttpExchange exchange) throws java.io.IOException {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET is required."));
+            return;
+        }
+        respond(exchange, 200, openApiDocument, "application/vnd.oai.openapi+json;version=3.1.0");
     }
 
     public synchronized void stop() {
@@ -116,7 +144,7 @@ public final class LocalAuthenticatedApiServer {
                     return;
                 }
                 String origin = exchange.getRequestHeaders().getFirst("Origin");
-                if (origin != null && !origin.isBlank() && !"null".equals(origin)) {
+                if (!allowedOrigin(exchange, origin)) {
                     respond(exchange, 403, error("BROWSER_ORIGIN_PROHIBITED", "Browser origins are not accepted."));
                     return;
                 }
@@ -267,6 +295,63 @@ public final class LocalAuthenticatedApiServer {
                 "final_claim_allowed", false));
     }
 
+    private void managementOverview(HttpExchange exchange) throws Exception {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET is required."));
+            return;
+        }
+        respond(exchange, 200, new LocalManagementOverviewService(workspaceRoot).overview());
+    }
+
+    private void adminAsset(HttpExchange exchange) throws java.io.IOException {
+        if (!isLoopback(exchange)) {
+            respond(exchange, 403, error("NON_LOOPBACK_CLIENT", "Loopback client required."));
+            return;
+        }
+        if (!"GET".equals(exchange.getRequestMethod()) && !"HEAD".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET or HEAD is required."));
+            return;
+        }
+        String path = exchange.getRequestURI().getPath();
+        String resource;
+        String contentType;
+        if ("/admin".equals(path) || "/admin/".equals(path) || "/admin/index.html".equals(path)) {
+            resource = ADMIN_INDEX_RESOURCE;
+            contentType = "text/html; charset=utf-8";
+        } else if ("/admin/app.js".equals(path)) {
+            resource = ADMIN_SCRIPT_RESOURCE;
+            contentType = "text/javascript; charset=utf-8";
+        } else if ("/admin/styles.css".equals(path)) {
+            resource = ADMIN_STYLE_RESOURCE;
+            contentType = "text/css; charset=utf-8";
+        } else {
+            respond(exchange, 404, error("NOT_FOUND", "Admin asset not found."));
+            return;
+        }
+        try (InputStream input = LocalAuthenticatedApiServer.class.getResourceAsStream(resource)) {
+            if (input == null) {
+                respond(exchange, 500, error("ADMIN_RESOURCE_MISSING", "Admin asset unavailable."));
+                return;
+            }
+            byte[] bytes = input.readAllBytes();
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.getResponseHeaders().set("Cache-Control", "no-store");
+            exchange.getResponseHeaders().set("Pragma", "no-cache");
+            exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
+            exchange.getResponseHeaders().set("X-Frame-Options", "DENY");
+            exchange.getResponseHeaders().set("Referrer-Policy", "no-referrer");
+            exchange.getResponseHeaders().set("Content-Security-Policy",
+                    "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
+                            + "img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+            exchange.sendResponseHeaders(200, "HEAD".equals(exchange.getRequestMethod()) ? -1 : bytes.length);
+            if (!"HEAD".equals(exchange.getRequestMethod())) {
+                try (var output = exchange.getResponseBody()) { output.write(bytes); }
+            }
+        } finally {
+            exchange.close();
+        }
+    }
+
     private JsonNode readJson(HttpExchange exchange) throws Exception {
         Headers headers = exchange.getRequestHeaders();
         String contentType = headers.getFirst("Content-Type");
@@ -301,8 +386,13 @@ public final class LocalAuthenticatedApiServer {
     }
 
     private void respond(HttpExchange exchange, int status, Object body) throws java.io.IOException {
+        respond(exchange, status, body, "application/json; charset=utf-8");
+    }
+
+    private void respond(HttpExchange exchange, int status, Object body, String contentType)
+            throws java.io.IOException {
         byte[] bytes = mapper.writeValueAsBytes(body);
-        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        exchange.getResponseHeaders().set("Content-Type", contentType);
         exchange.getResponseHeaders().set("Cache-Control", "no-store");
         exchange.getResponseHeaders().set("Pragma", "no-cache");
         exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
@@ -311,6 +401,24 @@ public final class LocalAuthenticatedApiServer {
         exchange.sendResponseHeaders(status, bytes.length);
         try (var output = exchange.getResponseBody()) { output.write(bytes); }
         finally { exchange.close(); }
+    }
+
+    private JsonNode loadOpenApiDocument() {
+        try (InputStream input = LocalAuthenticatedApiServer.class.getResourceAsStream(OPENAPI_RESOURCE)) {
+            if (input == null) throw new IllegalStateException("OPENAPI_RESOURCE_MISSING");
+            JsonNode document = mapper.readTree(input);
+            if (!"3.1.0".equals(document.path("openapi").asText())) {
+                throw new IllegalStateException("OPENAPI_VERSION_INVALID");
+            }
+            Set<String> documented = new java.util.TreeSet<>();
+            document.path("paths").fieldNames().forEachRemaining(documented::add);
+            if (!documented.equals(new java.util.TreeSet<>(ROUTE_PATHS))) {
+                throw new IllegalStateException("OPENAPI_ROUTE_DRIFT");
+            }
+            return document;
+        } catch (java.io.IOException invalid) {
+            throw new IllegalStateException("OPENAPI_RESOURCE_INVALID", invalid);
+        }
     }
 
     private Map<String, Object> error(String code, String message) {
@@ -331,6 +439,20 @@ public final class LocalAuthenticatedApiServer {
         return exchange.getRemoteAddress() != null
                 && exchange.getRemoteAddress().getAddress() != null
                 && exchange.getRemoteAddress().getAddress().isLoopbackAddress();
+    }
+
+    private static boolean allowedOrigin(HttpExchange exchange, String origin) {
+        if (origin == null || origin.isBlank() || "null".equals(origin)) return true;
+        try {
+            URI value = URI.create(origin);
+            return "http".equals(value.getScheme())
+                    && "127.0.0.1".equals(value.getHost())
+                    && value.getPort() == exchange.getLocalAddress().getPort()
+                    && (value.getPath() == null || value.getPath().isEmpty())
+                    && value.getQuery() == null && value.getFragment() == null;
+        } catch (IllegalArgumentException invalid) {
+            return false;
+        }
     }
 
     private static Path requireWorkspace(Path value) {

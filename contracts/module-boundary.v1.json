@@ -10,6 +10,7 @@
     "modules/onsure-provider-spi",
     "modules/onsure-provider-local-mock",
     "modules/onsure-provider-openai",
+    "modules/onsure-llm-gateway",
     "modules/onsure-migration-postgresql",
     "modules/onsure-sdk"
   ],
@@ -71,6 +72,14 @@
       "shared_source_root": false,
       "network_egress": "EXPLICIT_APPROVAL_REQUIRED",
       "customer_data_transfer": "EXPLICIT_APPROVAL_REQUIRED",
+      "fallback_allowed": false,
+      "automatic_retry_allowed": false
+    },
+    "onsure-llm-gateway": {
+      "depends_on": ["onsure-provider-spi", "onsure-provider-local-mock", "onsure-provider-openai"],
+      "shared_source_root": false,
+      "network_bind_default": "LOOPBACK_ONLY",
+      "prompt_or_completion_storage": false,
       "fallback_allowed": false,
       "automatic_retry_allowed": false
     },

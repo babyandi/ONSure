@@ -61,8 +61,9 @@
 
 ### 8. 실행 구성요소 계약 확정
 
-- API와 CLI, PostgreSQL/Flyway migration은 있으나 standalone worker와 browser web은 없다.
-- 선행 작업: worker/web은 `NOT_PRESENT`를 유지한다. 임시 PostgreSQL 16.14의 apply/idempotency/validate/dump/restore는 통과했지만 RHEL PostgreSQL lock 경쟁·운영 backup/restore·호환성 검증과 승인 전 비최종 후보로만 취급한다.
+- API, LLM Gateway, local browser 관리화면, CLI, PostgreSQL/Flyway migration이 있다. standalone queue worker는 없다.
+- 관리화면은 조회 전용 local projection이며 외부 인증·다중 사용자·공개 network surface가 아니다.
+- 선행 작업: worker는 `NOT_PRESENT`를 유지한다. Gateway의 실제 OpenAI credential/비용 정책과 외부 signer 승인, browser 보안 독립 검증이 필요하다. 임시 PostgreSQL 16.14의 apply/idempotency/validate/dump/restore는 통과했지만 RHEL PostgreSQL lock 경쟁·운영 backup/restore·호환성 검증과 승인 전 비최종 후보로만 취급한다.
 
 ### 9. RHEL/Ubuntu 운영환경 실행 검증 미완료
 

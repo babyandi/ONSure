@@ -31,7 +31,7 @@
 | `products/onsure/AGENTS.md` | `AGENTS.md` | 현재 제품 경계를 유지하며 상위 모노레포 지침 상속 관계만 추가 | `CANDIDATE_NONFINAL` |
 | `products/onsure/README.md` | `README.md` | 상대 링크를 제품 루트 기준으로 검증한 뒤 이동 | `MAPPED` |
 | `products/onsure/CHANGELOG.md` | `CHANGELOG.md` | immutable cutover SHA와 실제 release 항목을 별도 승인 후 추가 | `CANDIDATE_NONFINAL` |
-| `products/onsure/components/` | Local API, CLI, VS Code 확장, PostgreSQL migration, 동기식 검증 실행기 | 아래 실행 구성요소 표에 따라 배치. 독립 worker/web은 구현으로 가장하지 않음 | `PARTIAL` |
+| `products/onsure/components/` | Local API, LLM Gateway, local web 관리화면, CLI, VS Code 확장, PostgreSQL migration, 동기식 검증 실행기 | 아래 실행 구성요소 표에 따라 배치. 독립 worker는 구현으로 가장하지 않음 | `PARTIAL` |
 | `products/onsure/modules/` | `src/main/java`, `modules/onsure-*`, `onsure_core/` | split package/cycle 제거 완료. 남은 공유 source root 2개를 cutover 승인 후 전용 module root로 이동 | `PARTIAL_SHARED_ROOT` |
 | `products/onsure/contracts/` | `contracts/` | 상대 경로와 schema registry를 함께 이동 | `MAPPED` |
 | `products/onsure/config/` | `.devcontainer/`, `.vscode/`, `requirements-validation.txt` | 개발환경과 검증 설정을 제품 config/tooling 정책에 맞춰 분리 | `MAPPED_WITH_REVIEW` |
@@ -39,7 +39,7 @@
 | `products/onsure/tests/` | `src/test/`, `modules/*/src/test/`, `tests/`, `fixtures/` | unit/integration/contract/fixture/acceptance로 재분류하되 fixture trust 경계 유지 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/assurance/` | `harness/`, `findings/`, `status/`, assurance Java package, 로컬 receipt 규칙 | 정적 권위와 실행 증적을 분리. `.onsure/` 동적 산출물은 이관 source에서 제외 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/docs/` | `docs/`, 루트 harness 안내 문서 | 상대 링크와 authoritative document registry를 재결속 | `MAPPED` |
-| `products/onsure/assets/` | `vscode-extension/media/` | VS Code 자산을 component 소유로 유지하거나 product assets 정책에 등록 | `PARTIAL` |
+| `products/onsure/assets/` | `vscode-extension/media/`, `assets/admin/` | VS Code·관리화면 자산을 component 소유로 유지하거나 product assets 정책에 등록 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/scripts/` | `scripts/`, `ONSURE_PRODUCT_ROOT` resolver | 이관 준비·경계 검증 스크립트는 제품 root 중립화 완료. 나머지 실행 스크립트는 단계적으로 치환 | `PARTIAL` |
 | `products/onsure/.obuilder/` | `.obuilder/product-build.yaml` | ORUDA-Products 최종 schema 확정 후 후보를 변환·재검증 | `CANDIDATE_NONFINAL` |
 
@@ -48,8 +48,9 @@
 | 분류 | 현재 구현 | 엔트리포인트/근거 | 미래 위치 후보 | 판정 |
 |---|---|---|---|---|
 | `api` | Loopback bearer-token Local API | `LocalAuthenticatedApiServer`, `modules/onsure-local-api` | `components/api/` | `IMPLEMENTED_LOCAL_ONLY` |
+| `api` | Loopback LLM Gateway | `LlmGatewayServer`, `modules/onsure-llm-gateway` | `components/llm-gateway/` | `IMPLEMENTED_LOCAL_ONLY_NONFINAL` |
 | `worker` | 별도 daemon/queue worker 없음. Validation Engine과 Harness가 호출 프로세스 안에서 동기 실행 | `ValidationEngine`, `FixtureHarness`, `UniversalHarnessRunner` | 독립 실행이 필요해질 때 `components/worker/`; 현재는 core module 유지 | `NOT_IMPLEMENTED_AS_COMPONENT` |
-| `web` | 브라우저 Web UI 없음 | React/Next/Vite/Spring Web 구성 없음 | `components/web/`는 생성하지 않음 | `NOT_IMPLEMENTED` |
+| `web` | Local API가 제공하는 설정·검증·증적 관리화면 | `assets/admin/`, `/admin`, `/v1/management-overview` | `components/web/` 또는 `components/api/assets/` | `IMPLEMENTED_LOCAL_ONLY` |
 | `cli` | 제품 CLI와 assurance/harness 관리 CLI | `ONSureCli`, `HarnessCli`, `Local*Main`, `modules/onsure-cli` | `components/cli/` 및 내부 `assurance/tools/` | `IMPLEMENTED` |
 | `migration` | PostgreSQL/Flyway forward-only migration과 SQLite 합성 rollback/lock runner | `modules/onsure-migration-postgresql`, `scripts/onsure_synthetic_db_migration.py` | `components/migration/` 또는 `modules/migration-postgresql/` | `IMPLEMENTED_CANDIDATE_NONFINAL` |
 | `workbench` | VS Code 확장 | `vscode-extension/extension.js` | `components/vscode-extension/` | `IMPLEMENTED_PARTIAL` |
@@ -79,6 +80,8 @@
 | LEARNING-MEMORY | PARTIAL | `modules/learning-memory` |
 | VSCODE-EXTENSION | PARTIAL | `components/vscode-extension` |
 | LOCAL-AUTHENTICATED-API | PARTIAL | `components/api` |
+| LLM-GATEWAY-MONITORING | PARTIAL_NONFINAL | `components/llm-gateway` 및 `modules/provider-*` |
+| MANAGEMENT-WEB | PARTIAL_LOCAL_ONLY | `components/web` |
 | WEB-SERVICE-CASE | PARTIAL | `modules/service-case` |
 | OLICENSE | PARTIAL | `modules/licensing` |
 | TENANT-IDENTITY | STUB | `modules/identity` |
@@ -113,27 +116,27 @@
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
 | 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (current candidate local 2회 + 독립 clone, 각 263 tests) |
-| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (8 modules, 22 tests, local + 독립 clone) |
+| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (11 modules, 36 tests; 독립 clone 재검증 대상) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 263 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (124 tests, local + 독립 clone) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (139 tests; 독립 clone 재검증 대상) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (local + 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `dbe72cc7da5d...`; root license warning) |
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (VS Code 1.95.3/Xvfb, extension host exit 0, offline network 차단 재실행 exit 0) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 712 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 763 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
-| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (143 single owners, 8 artifacts, artifact/package cycles 0; split package 0, shared source modules 2) |
+| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (144 single owners, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 2) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (240 public classes, 기존 238 descriptors delta 0 + additive SPI 2) |
-| CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL_WITH_RELEASE_BLOCKER` (12 Maven components, VS Code 229 inventory, Trivy 0.65.0 모든 severity 0, npm audit 0; root license blocker) |
+| CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL_WITH_RELEASE_BLOCKER` (21 Maven components, VS Code 229 inventory, Trivy 0.65.0 모든 severity 0, npm audit 0; root license blocker) |
 | 컨테이너 후보 | `python3 scripts/validate_onsure_container_candidate.py` | `PASS_NONFINAL` (build/run, UID 65532, read-only, network none, loopback ready; deployment `NOT_RUN`) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / RHEL·Ubuntu systemd 및 PostgreSQL/Flyway candidate` |
 | 배포·DB preflight | `python3 scripts/onsure_deploy_migration_skeleton.py preflight` | `PASS_NONFINAL / deployment·migration NOT_RUN_NOT_AUTHORIZED` |
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 4,823-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (712-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (763-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | RHEL/Ubuntu 단독 서버 systemd/package 후보 구현 | `두 tar 내부 checksum·ownership·secret/path 검사 PASS_NONFINAL / INSTALL NOT_RUN / NOT_AUTHORIZED` |
 | DB migration | PostgreSQL/Flyway V1 + Ubuntu 호스트의 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / PRODUCTION NOT_RUN` |
@@ -141,15 +144,16 @@
 이전 구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,
 Java stage checkpoint, provider adapter 경계와 token/data-transfer budget를 추가했다.
 로컬 canonical 246/246 2회와 원격 독립 clone 246/246, modular 11/11, API 238/238,
-Python 104/104, Node 8/8, 633-file migration readiness/nested rehearsal가 통과했다.
+현재 변경 후보는 Python 139/139, Node 9/9를 통과했다. 763-file migration readiness/nested
+rehearsal과 독립 clone 결과는 Manifest가 commit SHA에 재결속된 뒤 다시 기록한다.
 VSIX는 두 환경에서 byte-identical SHA-256
 `8c217e6fc446fdd4938121c6faa810b1c631e3cc7be908d7e4db10ea53374afe`를 생성했다.
 
 현재 후속 후보는 자동 validation replay, local/mock provider, SDK 오류·pagination·retry,
 승인 exchange 표면 연결, 익명화 corpus, container/Xvfb E2E, 합성 runtime/DB/DR,
 Maven/npm offline pack과 Trivy/SBOM 통합을 추가했다. local clean Java 263/263 2회,
-modular 22/22, Python 124/124, Node 9/9, root API 240/240(기존 238 descriptor 무변경), SDK API 5/5를 검증했다.
-독립 clone에서 같은 build/test/API/SBOM/readiness/static gate를 통과했고 현재 712-file
+modular 36/36, Python 139/139, Node 9/9, root API 240/240(기존 238 descriptor 무변경), SDK API 5/5를 검증했다.
+독립 clone에서 같은 build/test/API/SBOM/readiness/static gate를 통과했고 현재 763-file
 중첩 cutover/rollback도 외부 제품 저장소 없이 통과했다.
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.

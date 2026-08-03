@@ -55,6 +55,9 @@ class MonorepoMigrationManifestTest(unittest.TestCase):
         )
         windows_path = r"C:" + "\\\\" + r"Users\\user\\repo"
         self.assertTrue(readiness.contains_absolute_workspace(windows_path))
+        self.assertFalse(readiness.contains_absolute_workspace(
+            "/var/lib/onsure/workspace/.onsure/llm-evidence"
+        ))
         self.assertFalse(readiness.contains_absolute_workspace(r"error:\\n"))
 
     def test_explicit_product_root_is_absolute_bounded_and_marker_checked(self):

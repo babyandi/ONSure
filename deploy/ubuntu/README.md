@@ -3,7 +3,8 @@
 Status: `CANDIDATE_IMPLEMENTED / INSTALL_NOT_RUN / PRODUCTION_NOT_AUTHORIZED`.
 
 This non-container candidate runs ONSure and PostgreSQL on one Ubuntu 24.04 LTS server. ONSure is
-managed by systemd, the Local API binds only to `127.0.0.1:47311`, and PostgreSQL must listen only
+managed by systemd, the Local API binds only to `127.0.0.1:47311`, the LLM Gateway binds only to
+`127.0.0.1:47312`, and PostgreSQL must listen only
 on loopback. Optional OpenAI Responses provider traffic is outbound HTTPS; no inbound public port is
 required or authorized.
 
@@ -31,7 +32,7 @@ Review-only commands (no installation):
 ```bash
 bash scripts/package_onsure_ubuntu.sh
 python3 scripts/validate_onsure_ubuntu_package.py
-systemd-analyze verify deploy/rhel/onsure.service deploy/rhel/onsure-migrate.service
+systemd-analyze verify deploy/rhel/onsure.service deploy/rhel/onsure-llm-gateway.service deploy/rhel/onsure-migrate.service
 python3 scripts/onsure_ubuntu_systemd_security.py
 python3 scripts/validate_onsure_operational_boundary.py
 ```

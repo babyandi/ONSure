@@ -17,7 +17,14 @@ components:
   worker:
     status: NOT_PRESENT
   web:
-    status: NOT_PRESENT
+    status: IMPLEMENTED_LOCAL_ONLY
+    path: assets/admin
+    served_by: modules/onsure-local-api
+  llm_gateway:
+    status: IMPLEMENTED_LOCAL_ONLY_NONFINAL
+    module: modules/onsure-llm-gateway
+    provider_spi: modules/onsure-provider-spi
+    monitoring: CONTENT_FREE_DIGEST_CHAIN
   cli:
     status: IMPLEMENTED
     module: modules/onsure-cli

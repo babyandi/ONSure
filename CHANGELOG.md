@@ -6,6 +6,11 @@
 
 ### Added
 
+- OpenAPI 3.1 정본과 구현 route drift 검증을 갖춘 Local API·LLM Gateway 계약
+- exact Provider/no-retry/no-fallback LLM Gateway와 content-free append-only token·비용 evidence ledger
+- LLM 설정·사용량·증적 chain, 등록 프로그램 검증 결과와 개선 후보를 표시하는 loopback 관리화면
+- RHEL/Ubuntu systemd package용 별도 `onsure-llm-gateway.service`
+
 - OpenAI Responses API용 fail-closed Provider 모듈과 file-input CLI
 - PostgreSQL/Flyway migration 소유 모듈과 forward-only V1 schema
 - 컨테이너 대신 RHEL 계열·Ubuntu 24.04 LTS 단독 서버 systemd 배포·패키징 후보
@@ -74,6 +79,7 @@
 ### Compatibility
 
 - Java namespace와 Maven coordinate 변경 없음
+- 기존 Local API 경로와 공개 Java API는 유지하고 신규 endpoint/module만 additive로 추가
 - 기존 `RagPreparationService`의 `ValidationReport` overload 유지
 - 실제 ORUDA-Products 이동, main 병합, 배포, Production GO, Final PASS 없음
 
