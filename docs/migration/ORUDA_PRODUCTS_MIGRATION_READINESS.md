@@ -136,7 +136,7 @@
 | 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (712-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | RHEL 단독 서버 systemd/package 후보 구현 | `PACKAGE_TEST_PENDING / INSTALL NOT_RUN / NOT_AUTHORIZED` |
-| DB migration | PostgreSQL/Flyway V1 + SQLite 합성 runner | `UNIT PASS / POSTGRESQL EXECUTION NOT_RUN` |
+| DB migration | PostgreSQL/Flyway V1 + 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / RHEL PRODUCTION NOT_RUN` |
 
 이전 구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,
 Java stage checkpoint, provider adapter 경계와 token/data-transfer budget를 추가했다.

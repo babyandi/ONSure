@@ -33,6 +33,7 @@ cp "${product_root}/deploy/rhel/onsure.sysusers.conf" "${stage}/usr/lib/sysusers
 cp "${product_root}/deploy/rhel/onsure.tmpfiles.conf" "${stage}/usr/lib/tmpfiles.d/"
 cp "${product_root}/deploy/rhel/onsure.env.example" "${stage}/etc/onsure/"
 cp "${product_root}/deploy/rhel/README.md" "${stage}/opt/onsure/README.md"
+chmod 0640 "${stage}/etc/onsure/onsure.env.example"
 
 (cd "${stage}" && find . -type f ! -name SHA256SUMS -print0 | sort -z \
   | xargs -0 sha256sum > SHA256SUMS)

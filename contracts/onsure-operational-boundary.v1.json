@@ -31,6 +31,9 @@
     "migration_tool": "FLYWAY_12_11_0",
     "schema_owner": "onsure",
     "current_command": "NOT_RUN_NOT_AUTHORIZED",
+    "development_rehearsal_status": "PASS_POSTGRESQL_16_14_NONFINAL",
+    "development_rehearsal_evidence": "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json",
+    "rhel_production_rehearsal_status": "NOT_RUN",
     "required_before_implementation": [
       "DATABASE_ENGINE_ADR",
       "SCHEMA_OWNER_APPROVAL",

@@ -36,6 +36,12 @@ backup·restore proof, lock 경쟁 시험, 이전 application 호환성, retenti
 검토해야 한다. rollback은 이전 immutable application artifact와 forward-compatible schema 또는
 승인된 DB restore로 처리하며 자동 destructive undo는 제공하지 않는다.
 
+개발 호스트의 임시 loopback PostgreSQL 16.14에서는 V1 apply 1건, 재적용 0건, validate,
+pending 0건, 두 동시 migration process의 실행 결과 1/0과 단일 history, 합성 event
+`pg_dump`/`pg_restore`와 복원 schema 재검증이 통과했다. 증거는
+`assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json`에 migration/package digest와 함께
+결속된다. 호스트는 RHEL이 아니므로 이 결과는 RHEL 운영 backup/restore 승인을 대신하지 않는다.
+
 ## 명령과 실제 실행 경계
 
 ```bash
@@ -44,6 +50,7 @@ mvn -B -ntp -q -f pom-modular.xml clean package
 bash scripts/package_onsure_rhel.sh
 python3 scripts/validate_onsure_operational_boundary.py
 python3 scripts/onsure_deploy_migration_skeleton.py preflight
+python3 scripts/rehearse_onsure_postgresql.py
 ```
 
 위 명령은 build/package/preflight다. RHEL install, SELinux/firewall 변경, PostgreSQL 초기화·migrate,

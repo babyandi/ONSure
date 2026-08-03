@@ -53,6 +53,15 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_rhel_systemd_candidate_has_fail_closed_runtime_controls(self):
         self.assertEqual([], operational.validate_rhel_candidate())
 
+    def test_postgresql_rehearsal_is_digest_bound_and_nonproduction(self):
+        self.assertEqual([], operational.validate_postgresql_evidence())
+
+    def test_systemd_security_rehearsal_is_digest_bound_and_nonproduction(self):
+        self.assertEqual([], operational.validate_systemd_evidence())
+
+    def test_rhel_package_rehearsal_is_digest_bound_and_nonproduction(self):
+        self.assertEqual([], operational.validate_rhel_package_evidence())
+
 
 if __name__ == "__main__":
     unittest.main()

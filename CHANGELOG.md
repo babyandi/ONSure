@@ -10,6 +10,7 @@
 - PostgreSQL/Flyway migration 소유 모듈과 forward-only V1 schema
 - 컨테이너 대신 RHEL 계열 단독 서버 systemd 배포·패키징 후보
 - network/data/cost 승인, exact-model/no-retry/no-fallback 정책과 failure tests
+- Docker 없는 임시 PostgreSQL 16.14 Flyway apply/idempotency/dump/restore 리허설
 - 현재 구조와 `products/onsure/` 미래 구조 대응표
 - 전체 이관 대상 파일 기준 Manifest 후보와 비최종 readiness validator
 - 공통 SHA-256 primitive 및 플랫폼 중립 RAG preparation request

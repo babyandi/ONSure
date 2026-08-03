@@ -49,6 +49,14 @@ def validate_plans(deployment: dict[str, object], migration: dict[str, object]) 
         violations.append("DEPLOYMENT_RHEL_SYSTEMD_TOPOLOGY")
     if deployment.get("package_command") != "bash scripts/package_onsure_rhel.sh":
         violations.append("DEPLOYMENT_PACKAGE_COMMAND")
+    if deployment.get("package_validation") != "python3 scripts/validate_onsure_rhel_package.py" \
+            or deployment.get("package_validation_evidence") \
+            != "assurance/runtime/onsure-rhel-package-validation.v1.json" \
+            or deployment.get("systemd_security_validation") \
+            != "python3 scripts/onsure_systemd_security.py" \
+            or deployment.get("systemd_security_evidence") \
+            != "assurance/runtime/onsure-rhel-systemd-security.v1.json":
+        violations.append("DEPLOYMENT_VALIDATION_EVIDENCE")
 
     if migration.get("contract") != "ONSURE_DATABASE_MIGRATION_EXECUTION_SKELETON_V1":
         violations.append("MIGRATION_CONTRACT")
@@ -69,6 +77,11 @@ def validate_plans(deployment: dict[str, object], migration: dict[str, object]) 
             violations.append("MIGRATION_UNSAFE_" + field.upper())
     if migration.get("apply_command") != "AUTHORIZATION_GATED_BY_ONSURE_MIGRATION_AUTHORIZED":
         violations.append("MIGRATION_COMMAND_AUTHORITY")
+    if migration.get("development_rehearsal_status") != "PASS_POSTGRESQL_16_14_NONFINAL" \
+            or migration.get("development_rehearsal_evidence") \
+            != "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json" \
+            or migration.get("rhel_production_rehearsal_status") != "NOT_RUN":
+        violations.append("MIGRATION_REHEARSAL_STATUS")
     return violations
 
 

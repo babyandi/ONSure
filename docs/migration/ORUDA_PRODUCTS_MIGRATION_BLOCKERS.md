@@ -62,13 +62,13 @@
 ### 8. 실행 구성요소 계약 확정
 
 - API와 CLI, PostgreSQL/Flyway migration은 있으나 standalone worker와 browser web은 없다.
-- 선행 작업: worker/web은 `NOT_PRESENT`를 유지한다. PostgreSQL migration은 실제 DB lock·backup/restore·호환성 검증과 운영 승인 전 비최종 후보로만 취급한다.
+- 선행 작업: worker/web은 `NOT_PRESENT`를 유지한다. 임시 PostgreSQL 16.14의 apply/idempotency/validate/dump/restore는 통과했지만 RHEL PostgreSQL lock 경쟁·운영 backup/restore·호환성 검증과 승인 전 비최종 후보로만 취급한다.
 
 ### 9. RHEL 운영환경 실행 검증 미완료
 
 - RHEL 계열 단독 서버와 systemd, loopback PostgreSQL/Flyway, external secret, OpenAI HTTPS egress 후보를 구현했다. 이전 Docker/Compose는 선택되지 않은 합성 시험 자료다.
 - validator는 immutable package, migration authorization, rollback 요구와 실제 배포 권한 거부를 유지한다.
-- 선행 작업: 정확한 RHEL/PostgreSQL 지원 버전, SELinux/firewall, 실제 PostgreSQL lock·backup/restore, systemd start/stop, OpenAI 실호출과 upgrade/rollback 승인 시험.
+- 선행 작업: 정확한 RHEL/PostgreSQL 지원 버전, SELinux/firewall, RHEL PostgreSQL lock·backup/restore, systemd start/stop, OpenAI 실호출과 upgrade/rollback 승인 시험.
 
 ### 10. Repo-root 가정 제거
 

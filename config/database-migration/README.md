@@ -16,5 +16,13 @@ java -jar modules/onsure-migration-postgresql/target/onsure-migration-postgresql
 python3 scripts/onsure_synthetic_db_migration.py apply --database /synthetic/path.db --lock /synthetic/path.lock
 ```
 
-실 PostgreSQL migrate, lock 경쟁, backup/restore, rollback compatibility와 서명 receipt는 `NOT_RUN`이다.
+RHEL 운영 PostgreSQL migrate, lock 경쟁, backup/restore, rollback compatibility와 서명 receipt는 `NOT_RUN`이다.
 destructive DDL, 고객 데이터 fixture와 자동 rollback은 기본 거부한다.
+
+Docker 없이 임시 loopback PostgreSQL server를 사용할 수 있는 개발 호스트에서는 다음 명령이 실제
+Flyway apply/idempotency/validate와 `pg_dump`/`pg_restore`를 실행한다. system PostgreSQL service와
+고객 데이터는 사용하지 않으며 RHEL 운영 증거로 승격하지 않는다.
+
+```bash
+python3 scripts/rehearse_onsure_postgresql.py
+```

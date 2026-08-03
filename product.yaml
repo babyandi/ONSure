@@ -55,6 +55,15 @@ build:
     cyclonedx_schema: "1.6"
   operational_boundary_validation:
     command: python3 scripts/validate_onsure_operational_boundary.py
+  postgresql_rehearsal:
+    command: python3 scripts/rehearse_onsure_postgresql.py
+    production_authority: false
+  rhel_package_validation:
+    command: python3 scripts/validate_onsure_rhel_package.py
+    install_authority: false
+  systemd_security_validation:
+    command: python3 scripts/onsure_systemd_security.py
+    rhel_execution_authority: false
   bubblewrap_environment_diagnostic:
     command: python3 scripts/onsure_bubblewrap_diagnostics.py
     github_actions_required: false

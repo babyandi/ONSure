@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_RHEL_PACKAGE_VALIDATION_V1",
+  "decision": "PASS_NONFINAL",
+  "final_claim_allowed": false,
+  "install_execution": "NOT_RUN",
+  "internal_checksum_count": 22,
+  "package": "target/onsure-rhel-candidate.tar.gz",
+  "package_sha256": "c1713203c3243e3a59b8d6fe884d01d49e799600cbd6c4d22bf24cddf4a7873c",
+  "package_size_bytes": 7335348,
+  "path_escape_or_nonregular_entry_count": 0,
+  "regular_file_count": 23,
+  "rhel_runtime": "NOT_RUN_HOST_IS_NOT_RHEL",
+  "root_owned_file_count": 23,
+  "secret_values_present": false,
+  "source_bindings": {
+    "deploy/rhel/README.md": "93f05806e90547de2a2b4dc8f1dcf4f410b12bbe71667edd1db44dedf4784138",
+    "deploy/rhel/onsure-migrate.service": "fc3829d5526038de799afb729e93d774697648a048222c0f47df87e91f867f95",
+    "deploy/rhel/onsure.env.example": "9ab6edcccd4e2f72b441ef84b3c43e0654b2805d9ba089b91dae0db50c91ce01",
+    "deploy/rhel/onsure.service": "d1083c2cd63be7200f173f9aa90a9b32cbc4907cf3fabe20485bc0493bf45399",
+    "deploy/rhel/onsure.sysusers.conf": "70c7e2196de2bd07012535543bbe2eca358741916cb93652b363fd94251da72e",
+    "deploy/rhel/onsure.tmpfiles.conf": "3f9aae0bfce801db3cc6c99fe2255ba888572bb39f548de24eddb14574d2c1cd",
+    "scripts/package_onsure_rhel.sh": "9210d92e195a92b967f531f3c1a443ccbb77571ad0271f32cc5448ccf30b312c"
+  }
+}

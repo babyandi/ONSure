@@ -28,9 +28,16 @@ Suggested review-only checks (they do not install anything):
 
 ```bash
 systemd-analyze verify deploy/rhel/onsure.service deploy/rhel/onsure-migrate.service
+python3 scripts/onsure_systemd_security.py
+python3 scripts/validate_onsure_rhel_package.py
 python3 scripts/validate_onsure_operational_boundary.py
 python3 scripts/onsure_deploy_migration_skeleton.py preflight
 ```
 
 Actual package copy, PostgreSQL initialization, firewall/SELinux changes, service enablement,
 migration execution, rollback and Production GO are `NOT_RUN` and not authorized by this repository.
+
+현재 비-RHEL 개발 호스트의 `systemd-analyze security --offline=yes` 결과는 API unit 2.8,
+migration unit 2.7(`OK`, 낮을수록 제한이 강함)이다. tar validator는 root ownership,
+경로 탈출·symlink 부재, 내부 SHA-256 전수 일치, main class와 비밀값 미포함을 확인한다.
+두 결과는 unit/source digest에 결속되지만 실제 RHEL enable/start와 SELinux 검증을 대신하지 않는다.

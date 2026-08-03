@@ -1,0 +1,25 @@
+{
+  "analysis_mode": "OFFLINE_HOST_TOOL",
+  "contract": "ONSURE_RHEL_SYSTEMD_SECURITY_REHEARSAL_V1",
+  "decision": "PASS_NONFINAL",
+  "final_claim_allowed": false,
+  "rhel_runtime_execution": "NOT_RUN_HOST_IS_NOT_RHEL",
+  "service_enable_start": "NOT_RUN",
+  "systemd_analyze_version": "systemd 255 (255.4-1ubuntu8.16)",
+  "units": [
+    {
+      "decision": "PASS_NONFINAL",
+      "exposure_score": 2.8,
+      "maximum_allowed": 4.0,
+      "path": "deploy/rhel/onsure.service",
+      "sha256": "d1083c2cd63be7200f173f9aa90a9b32cbc4907cf3fabe20485bc0493bf45399"
+    },
+    {
+      "decision": "PASS_NONFINAL",
+      "exposure_score": 2.7,
+      "maximum_allowed": 4.0,
+      "path": "deploy/rhel/onsure-migrate.service",
+      "sha256": "fc3829d5526038de799afb729e93d774697648a048222c0f47df87e91f867f95"
+    }
+  ]
+}

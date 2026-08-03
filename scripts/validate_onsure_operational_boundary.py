@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
 
 import yaml
@@ -13,6 +14,13 @@ from onsure_product_root import resolve_product_root
 
 ROOT = resolve_product_root()
 CONTRACT = ROOT / "contracts/onsure-operational-boundary.v1.json"
+POSTGRESQL_EVIDENCE = ROOT / "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json"
+POSTGRESQL_MIGRATION = ROOT / (
+    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/"
+    "V1__create_assurance_event.sql"
+)
+SYSTEMD_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-systemd-security.v1.json"
+RHEL_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-package-validation.v1.json"
 
 
 def validate_rhel_candidate() -> list[str]:
@@ -23,11 +31,16 @@ def validate_rhel_candidate() -> list[str]:
     required_app = (
         "User=onsure", "Group=onsure", "NoNewPrivileges=yes", "ProtectSystem=strict",
         "ProtectHome=yes", "PrivateDevices=yes", "CapabilityBoundingSet=",
+        "RemoveIPC=yes", "KeyringMode=private", "ProtectHostname=yes",
+        "ProtectProc=invisible", "ProcSubset=pid", "RestrictNamespaces=yes",
+        "SystemCallArchitectures=native",
         "ReadWritePaths=/var/lib/onsure /var/log/onsure",
         "io.onsure.localapi.LocalApiMain",
     )
     required_migration = (
         "User=onsure", "NoNewPrivileges=yes", "ProtectSystem=strict",
+        "RemoveIPC=yes", "ProtectProc=invisible", "RestrictNamespaces=yes",
+        "IPAddressDeny=any", "IPAddressAllow=localhost",
         "io.onsure.migration.postgresql.PostgresqlMigrationMain migrate",
     )
     for value in required_app:
@@ -46,6 +59,98 @@ def validate_rhel_candidate() -> list[str]:
                 violations.append("RHEL_ENVIRONMENT_SECRET_VALUE_SLOT:" + secret)
     if "0.0.0.0" in app_unit or "User=root" in app_unit + migration_unit:
         violations.append("RHEL_UNIT_UNSAFE_RUNTIME")
+    return violations
+
+
+def validate_postgresql_evidence() -> list[str]:
+    violations: list[str] = []
+    evidence = json.loads(POSTGRESQL_EVIDENCE.read_text(encoding="utf-8"))
+    expected = {
+        "contract": "ONSURE_POSTGRESQL_FLYWAY_REHEARSAL_V1",
+        "decision": "PASS_NONFINAL",
+        "migration_first_executed": 1,
+        "migration_second_executed": 0,
+        "pending_after_migration": 0,
+        "restored_event_count": 1,
+        "restored_history_count": 1,
+        "restored_schema_validation": "PASS_NONFINAL",
+        "concurrent_migration_executed_counts": [0, 1],
+        "concurrent_migration_history_count": 1,
+        "customer_data_used": False,
+        "system_postgresql_service_modified": False,
+        "production_migration": "NOT_RUN",
+        "rhel_runtime": "NOT_RUN_HOST_IS_NOT_RHEL",
+        "final_claim_allowed": False,
+    }
+    for field, value in expected.items():
+        if evidence.get(field) != value:
+            violations.append("POSTGRESQL_EVIDENCE_" + field.upper())
+    migration_path = POSTGRESQL_MIGRATION.relative_to(ROOT).as_posix()
+    migration_sha = hashlib.sha256(POSTGRESQL_MIGRATION.read_bytes()).hexdigest()
+    if evidence.get("migration") != migration_path \
+            or evidence.get("migration_sha256") != migration_sha:
+        violations.append("POSTGRESQL_EVIDENCE_MIGRATION_BINDING")
+    if not str(evidence.get("postgresql_version", "")).startswith("16."):
+        violations.append("POSTGRESQL_EVIDENCE_VERSION")
+    if not str(evidence.get("package_sha256", "")).isalnum() \
+            or len(str(evidence.get("package_sha256", ""))) != 64:
+        violations.append("POSTGRESQL_EVIDENCE_PACKAGE_DIGEST")
+    return violations
+
+
+def validate_systemd_evidence() -> list[str]:
+    violations: list[str] = []
+    evidence = json.loads(SYSTEMD_EVIDENCE.read_text(encoding="utf-8"))
+    if evidence.get("contract") != "ONSURE_RHEL_SYSTEMD_SECURITY_REHEARSAL_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("rhel_runtime_execution") != "NOT_RUN_HOST_IS_NOT_RHEL" \
+            or evidence.get("service_enable_start") != "NOT_RUN" \
+            or evidence.get("final_claim_allowed") is not False:
+        violations.append("SYSTEMD_EVIDENCE_CONTRACT")
+    expected = {
+        path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in (ROOT / "deploy/rhel/onsure.service", ROOT / "deploy/rhel/onsure-migrate.service")
+    }
+    actual = {str(item.get("path")): item for item in evidence.get("units", [])}
+    if set(actual) != set(expected):
+        violations.append("SYSTEMD_EVIDENCE_UNIT_SET")
+    for path, digest in expected.items():
+        item = actual.get(path, {})
+        score = item.get("exposure_score")
+        if item.get("sha256") != digest or item.get("decision") != "PASS_NONFINAL" \
+                or not isinstance(score, (int, float)) or score > 4.0:
+            violations.append("SYSTEMD_EVIDENCE_UNIT_BINDING:" + path)
+    return violations
+
+
+def validate_rhel_package_evidence() -> list[str]:
+    violations: list[str] = []
+    evidence = json.loads(RHEL_PACKAGE_EVIDENCE.read_text(encoding="utf-8"))
+    if evidence.get("contract") != "ONSURE_RHEL_PACKAGE_VALIDATION_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("secret_values_present") is not False \
+            or evidence.get("path_escape_or_nonregular_entry_count") != 0 \
+            or evidence.get("install_execution") != "NOT_RUN" \
+            or evidence.get("rhel_runtime") != "NOT_RUN_HOST_IS_NOT_RHEL" \
+            or evidence.get("final_claim_allowed") is not False:
+        violations.append("RHEL_PACKAGE_EVIDENCE_CONTRACT")
+    source_bindings = evidence.get("source_bindings", {})
+    for relative in (
+        "scripts/package_onsure_rhel.sh", "deploy/rhel/onsure.service",
+        "deploy/rhel/onsure-migrate.service", "deploy/rhel/onsure.env.example",
+        "deploy/rhel/onsure.sysusers.conf", "deploy/rhel/onsure.tmpfiles.conf",
+        "deploy/rhel/README.md",
+    ):
+        digest = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
+        if source_bindings.get(relative) != digest:
+            violations.append("RHEL_PACKAGE_EVIDENCE_SOURCE_BINDING:" + relative)
+    package = ROOT / "target/onsure-rhel-candidate.tar.gz"
+    if package.is_file() and evidence.get("package_sha256") \
+            != hashlib.sha256(package.read_bytes()).hexdigest():
+        violations.append("RHEL_PACKAGE_EVIDENCE_ARTIFACT_BINDING")
+    postgresql = json.loads(POSTGRESQL_EVIDENCE.read_text(encoding="utf-8"))
+    if postgresql.get("package_sha256") != evidence.get("package_sha256"):
+        violations.append("RHEL_PACKAGE_POSTGRESQL_EVIDENCE_BINDING")
     return violations
 
 
@@ -91,6 +196,11 @@ def validate_documents(
         violations.append("DATABASE_POSTGRESQL_FLYWAY_SELECTION")
     if migration.get("current_command") != "NOT_RUN_NOT_AUTHORIZED":
         violations.append("DATABASE_MIGRATION_COMMAND_STATUS")
+    if migration.get("development_rehearsal_status") != "PASS_POSTGRESQL_16_14_NONFINAL" \
+            or migration.get("development_rehearsal_evidence") \
+            != "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json" \
+            or migration.get("rhel_production_rehearsal_status") != "NOT_RUN":
+        violations.append("DATABASE_MIGRATION_REHEARSAL_STATUS")
     if migration.get("destructive_ddl_default") != "DENY":
         violations.append("DESTRUCTIVE_DDL_BOUNDARY")
     if migration.get("customer_data_fixture_default") != "DENY":
@@ -145,6 +255,12 @@ def validate() -> dict[str, object]:
         "modules/onsure-provider-openai/pom.xml",
         "modules/onsure-migration-postgresql/pom.xml",
         "config/provider/openai-request.example.json",
+        "scripts/rehearse_onsure_postgresql.py",
+        "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json",
+        "scripts/onsure_systemd_security.py",
+        "assurance/runtime/onsure-rhel-systemd-security.v1.json",
+        "scripts/validate_onsure_rhel_package.py",
+        "assurance/runtime/onsure-rhel-package-validation.v1.json",
     ]
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
@@ -156,6 +272,9 @@ def validate() -> dict[str, object]:
         migration = json.loads((ROOT / "config/database-migration/migration-plan.v1.json").read_text(encoding="utf-8"))
         violations.extend("EXECUTION_SKELETON:" + item for item in validate_plans(deployment, migration))
         violations.extend(validate_rhel_candidate())
+        violations.extend(validate_postgresql_evidence())
+        violations.extend(validate_systemd_evidence())
+        violations.extend(validate_rhel_package_evidence())
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",
