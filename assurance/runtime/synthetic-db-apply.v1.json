@@ -6,7 +6,7 @@
   "contract": "ONSURE_SYNTHETIC_DB_MIGRATION_REHEARSAL_V1",
   "customer_data_used": false,
   "database_engine": "SQLITE_SYNTHETIC_ONLY",
-  "database_sha256": "97c24d67d15d4721b27c12de07d54f3c2a797f73639f70df3df96dc0034312a0",
+  "database_sha256": "b45666ff3d341b48edca15d623550371fc3843276138e9431fbd9dcd271a38dd",
   "decision": "PASS_NONFINAL",
   "final_claim_allowed": false,
   "lock_enforced": true,

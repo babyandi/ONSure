@@ -63,6 +63,18 @@ class ProjectKnowledgeSeparationServiceTest {
     }
 
     @Test
+    void preservesNeutralKnowledgeAndInvalidIpv4LikeLabelsToLimitFalsePositives() throws Exception {
+        byte[] salt = "workspace-scoped-false-positive-salt-01".getBytes(StandardCharsets.UTF_8);
+        String neutral = "Use exponential backoff with jitter; build 999.999.999.999 is a label.";
+        var result = new ProjectKnowledgeSeparationService().separate(
+                "Project-Neutral", Map.of("common.retry", neutral), salt);
+
+        assertEquals(neutral, result.anonymizedProjectKnowledge().get("common.retry"));
+        assertEquals(neutral, result.commonKnowledgeCandidates().get("retry"));
+        assertFalse(result.redactionCategories().contains("IP"));
+    }
+
+    @Test
     void exposesAnonymizationThroughTheSharedLocalApiDispatcherWithoutReturningSalt() throws Exception {
         Path salt = temp.resolve("workspace-salt.bin");
         Files.write(salt, "dispatcher-workspace-salt-value-00001".getBytes(StandardCharsets.UTF_8));

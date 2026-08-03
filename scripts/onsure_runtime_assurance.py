@@ -304,7 +304,31 @@ def dr_rehearsal(source: pathlib.Path, archive: pathlib.Path) -> dict[str, Any]:
             verify_restore(corrupted)
         except (ValueError, tarfile.TarError, json.JSONDecodeError, OSError):
             corruption_rejected = True
-    decision = verified["restore_verified"] and corruption_rejected
+    with tempfile.TemporaryDirectory(prefix="onsure-dr-adversarial-", dir=temporary_root()) as directory:
+        adversarial_root = pathlib.Path(directory)
+        traversal = adversarial_root / "traversal.tar"
+        with tarfile.open(traversal, "w") as output:
+            payload = b"escape"
+            member = tarfile.TarInfo("../escape.txt")
+            member.size = len(payload)
+            output.addfile(member, __import__("io").BytesIO(payload))
+        path_traversal_rejected = False
+        try:
+            verify_restore(traversal)
+        except ValueError as error:
+            path_traversal_rejected = "RECOVERY_ARCHIVE_PATH_INVALID" in str(error)
+
+        symlink_source = adversarial_root / "symlink-source"
+        symlink_source.mkdir()
+        (symlink_source / "outside-link").symlink_to(ROOT / "README.md")
+        symlink_source_rejected = False
+        try:
+            safe_files(symlink_source)
+        except ValueError as error:
+            symlink_source_rejected = "RECOVERY_SOURCE_SYMLINK_FORBIDDEN" in str(error)
+
+    decision = (verified["restore_verified"] and corruption_rejected
+                and path_traversal_rejected and symlink_source_rejected)
     return {
         "contract": CONTRACT,
         "evidence_type": "SYNTHETIC_DR_REHEARSAL",
@@ -313,6 +337,8 @@ def dr_rehearsal(source: pathlib.Path, archive: pathlib.Path) -> dict[str, Any]:
         "file_count": created["file_count"],
         "isolated_restore_verified": verified["restore_verified"],
         "corrupted_archive_rejected": corruption_rejected,
+        "path_traversal_archive_rejected": path_traversal_rejected,
+        "symlink_source_rejected": symlink_source_rejected,
         "source_mutated": False,
         "decision": "PASS_NONFINAL" if decision else "FAIL",
         "production_dr_claimed": False,

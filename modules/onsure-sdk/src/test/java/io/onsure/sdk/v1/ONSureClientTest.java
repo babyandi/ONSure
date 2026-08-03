@@ -62,6 +62,30 @@ class ONSureClientTest {
     }
 
     @Test
+    void neverRetriesNonIdempotentWorkflowPosts() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        AtomicInteger workflowCalls = new AtomicInteger();
+        server.createContext("/v1/workflow", exchange -> {
+            workflowCalls.incrementAndGet();
+            byte[] response = "{\"error\":\"LOCAL_API_BUSY\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(503, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+        try {
+            ONSureClient client = ONSureClient.connect(
+                    URI.create("http://127.0.0.1:" + server.getAddress().getPort()), "c".repeat(32),
+                    Duration.ofSeconds(2), new RetryPolicy(5, Duration.ZERO, Duration.ZERO));
+            ONSureClient.ApiResponse response = client.workflow("case.create", Map.of("case_id", "c-1"));
+            assertEquals(503, response.statusCode());
+            assertEquals(1, workflowCalls.get());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
     void exposesStructuredErrorsBoundedRetryPaginationAndAnonymization() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         ObjectMapper mapper = new ObjectMapper();

@@ -2,6 +2,7 @@ package io.onsure.provider.localmock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.onsure.provider.spi.CompletionRequest;
@@ -45,6 +46,25 @@ class LocalMockProviderTest {
         }
     }
 
+    @Test
+    void reportsRetryabilityAndRejectsClosedOrInvalidDelayCalls() throws Exception {
+        try (LocalMockProvider provider = provider(10, 0)) {
+            ProviderException invalid = assertCode("MOCK_DELAY_INVALID", () -> provider.complete(
+                    request("local/exact", Duration.ofSeconds(1), Map.of("mock.delay_millis", "-1")), context(0)));
+            assertFalse(invalid.retryable());
+            ProviderException timeout = assertCode("PROVIDER_TIMEOUT", () -> provider.complete(
+                    request("local/exact", Duration.ofMillis(5), Map.of("mock.delay_millis", "100")), context(0)));
+            assertTrue(timeout.retryable());
+            assertEquals("deterministic answer", provider.complete(
+                    request("local/exact", Duration.ofSeconds(1), Map.of()), context(0)).content());
+        }
+        LocalMockProvider closed = provider(10, 0);
+        closed.close();
+        ProviderException failure = assertCode("PROVIDER_CLOSED", () -> closed.complete(
+                request("local/exact", Duration.ofSeconds(1), Map.of()), context(0)));
+        assertFalse(failure.retryable());
+    }
+
     private static LocalMockProvider provider(int rate, long cost) {
         return new LocalMockProvider("local-mock", Map.of("local/exact", "deterministic answer"), rate, cost);
     }
@@ -58,9 +78,10 @@ class LocalMockProviderTest {
         return new ProviderContext(false, false, cost, Map.of());
     }
 
-    private static void assertCode(String code, ThrowingCall call) {
+    private static ProviderException assertCode(String code, ThrowingCall call) {
         ProviderException failure = assertThrows(ProviderException.class, call::run);
         assertEquals(code, failure.code());
+        return failure;
     }
 
     @FunctionalInterface private interface ThrowingCall { void run() throws Exception; }

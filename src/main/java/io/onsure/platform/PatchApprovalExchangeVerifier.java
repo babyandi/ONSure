@@ -105,6 +105,7 @@ final class PatchApprovalExchangeVerifier {
         Instant approvedAt = Instant.parse(text(receipt, "approved_at"));
         Instant expiresAt = Instant.parse(text(receipt, "expires_at"));
         require(!approvedAt.isBefore(created) && expiresAt.isAfter(approvedAt), "TIME_WINDOW");
+        require(expiresAt.isAfter(Instant.now()), "RECEIPT_EXPIRED");
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("contract", CONTRACT);

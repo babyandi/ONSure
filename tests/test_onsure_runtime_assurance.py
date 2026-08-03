@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pathlib
 import sys
+import tarfile
 import tempfile
 import unittest
 
@@ -52,10 +53,37 @@ class ONSureRuntimeAssuranceTest(unittest.TestCase):
                 dr = runtime.dr_rehearsal(state, dr_archive)
                 self.assertTrue(dr["isolated_restore_verified"])
                 self.assertTrue(dr["corrupted_archive_rejected"])
+                self.assertTrue(dr["path_traversal_archive_rejected"])
+                self.assertTrue(dr["symlink_source_rejected"])
                 self.assertFalse(dr["source_mutated"])
         finally:
             (state / "checkpoint.json").unlink(missing_ok=True)
             state.rmdir()
+
+    def test_restore_rejects_path_traversal_archive_without_writing_outside(self):
+        state_root = ROOT / ".onsure"
+        state_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=state_root) as directory:
+            archive = pathlib.Path(directory) / "traversal.tar"
+            escaped = pathlib.Path(directory).parent / "escaped-by-archive.txt"
+            with tarfile.open(archive, "w") as output:
+                payload = b"escape"
+                member = tarfile.TarInfo("../escaped-by-archive.txt")
+                member.size = len(payload)
+                output.addfile(member, __import__("io").BytesIO(payload))
+            with self.assertRaisesRegex(ValueError, "RECOVERY_ARCHIVE_PATH_INVALID"):
+                runtime.verify_restore(archive)
+            self.assertFalse(escaped.exists())
+
+    def test_backup_rejects_symlinked_state_content(self):
+        state_root = ROOT / ".onsure"
+        state_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=state_root) as directory:
+            source = pathlib.Path(directory) / "state"
+            source.mkdir()
+            (source / "outside-link").symlink_to(ROOT / "README.md")
+            with self.assertRaisesRegex(ValueError, "RECOVERY_SOURCE_SYMLINK_FORBIDDEN"):
+                runtime.backup(source, pathlib.Path(directory) / "backup.tar")
 
     def test_health_is_local_and_does_not_probe_network_or_customer_data(self):
         result = runtime.health()

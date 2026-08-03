@@ -46,6 +46,25 @@ class PatchApprovalExchangeVerifierTest {
     }
 
     @Test
+    void rejectsExpiredReceiptBeforeCryptographicVerification() throws Exception {
+        FilesBundle files = files();
+        Map<String, Object> request = mapper.readValue(files.request().toFile(), Map.class);
+        Map<String, Object> receipt = mapper.readValue(files.receipt().toFile(), Map.class);
+        Instant old = Instant.now().minus(2, ChronoUnit.HOURS).truncatedTo(ChronoUnit.SECONDS);
+        request.put("created_at", old.toString());
+        receipt.put("approved_at", old.plusSeconds(1).toString());
+        receipt.put("expires_at", old.plus(1, ChronoUnit.HOURS).toString());
+        mapper.writeValue(files.request().toFile(), request);
+        mapper.writeValue(files.receipt().toFile(), receipt);
+
+        IllegalArgumentException error = assertThrows(
+                IllegalArgumentException.class,
+                () -> new PatchApprovalExchangeVerifier().verify(
+                        files.request(), files.receipt(), files.plan()));
+        assertTrue(error.getMessage().contains("RECEIPT_EXPIRED"));
+    }
+
+    @Test
     void verifiesTheSameBoundExchangeThroughCliAndAuthenticatedLocalApi() throws Exception {
         FilesBundle files = files();
         Map<String, Object> request = Map.of(

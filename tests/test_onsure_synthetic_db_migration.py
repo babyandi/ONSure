@@ -36,6 +36,57 @@ class SyntheticMigrationTest(unittest.TestCase):
             finally:
                 migration.ROOT = original_root
 
+    def test_failed_migration_rolls_back_partial_schema_releases_lock_and_can_resume(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            migration_root = root / "migrations"
+            migration_root.mkdir()
+            up = migration_root / "001_atomic.up.sql"
+            down = migration_root / "001_atomic.down.sql"
+            up.write_text("CREATE TABLE half_created(id TEXT);\nINVALID SQL;\n", encoding="utf-8")
+            down.write_text("DROP TABLE IF EXISTS half_created;\n", encoding="utf-8")
+            original_root, original_migrations = migration.ROOT, migration.MIGRATIONS
+            migration.ROOT, migration.MIGRATIONS = root, migration_root
+            try:
+                database, lock = root / ".onsure/synthetic.db", root / ".onsure/migration.lock"
+                with self.assertRaises(sqlite3.Error):
+                    migration.apply(database, lock)
+                self.assertFalse(lock.exists())
+                with sqlite3.connect(database) as connection:
+                    table = connection.execute(
+                        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='half_created'").fetchone()
+                    history = connection.execute(
+                        "SELECT 1 FROM onsure_schema_history WHERE migration_id='001_atomic'").fetchone()
+                self.assertIsNone(table)
+                self.assertIsNone(history)
+
+                up.write_text("CREATE TABLE half_created(id TEXT);\n", encoding="utf-8")
+                resumed = migration.apply(database, lock)
+                self.assertEqual(["001_atomic"], resumed["changed_migration_ids"])
+            finally:
+                migration.ROOT, migration.MIGRATIONS = original_root, original_migrations
+
+    def test_applied_migration_digest_drift_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            migration_root = root / "migrations"
+            migration_root.mkdir()
+            up = migration_root / "001_drift.up.sql"
+            down = migration_root / "001_drift.down.sql"
+            up.write_text("CREATE TABLE drift_guard(id TEXT);\n", encoding="utf-8")
+            down.write_text("DROP TABLE IF EXISTS drift_guard;\n", encoding="utf-8")
+            original_root, original_migrations = migration.ROOT, migration.MIGRATIONS
+            migration.ROOT, migration.MIGRATIONS = root, migration_root
+            try:
+                database, lock = root / ".onsure/synthetic.db", root / ".onsure/migration.lock"
+                migration.apply(database, lock)
+                up.write_text("CREATE TABLE drift_guard(id TEXT, changed TEXT);\n", encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "DIGEST_DRIFT"):
+                    migration.apply(database, lock)
+                self.assertFalse(lock.exists())
+            finally:
+                migration.ROOT, migration.MIGRATIONS = original_root, original_migrations
+
     def test_exclusive_lock_fails_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)

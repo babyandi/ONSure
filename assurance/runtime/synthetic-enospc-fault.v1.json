@@ -12,15 +12,15 @@
   "final_claim_allowed": false,
   "iterations": 1,
   "metrics": {
-    "maximum_ms": 206.645,
-    "median_ms": 206.645,
-    "minimum_ms": 206.645,
-    "p95_ms": 206.645,
+    "maximum_ms": 85.598,
+    "median_ms": 85.598,
+    "minimum_ms": 85.598,
+    "p95_ms": 85.598,
     "successful_iterations": 0
   },
   "observations": [
     {
-      "elapsed_ms": 206.645,
+      "elapsed_ms": 85.598,
       "exit_code": 1,
       "iteration": 1,
       "stderr_bytes": 104,

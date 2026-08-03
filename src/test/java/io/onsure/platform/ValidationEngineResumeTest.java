@@ -83,6 +83,28 @@ class ValidationEngineResumeTest {
     }
 
     @Test
+    void refusesReplayWhenInterruptedStageDeletedAPreexistingFile() throws Exception {
+        ValidationTarget target = target();
+        ValidatorStage first = stage("FIRST", context -> {
+            Files.writeString(context.runRoot().resolve("sealed.txt"), "sealed");
+            return result("FIRST");
+        });
+        ValidatorStage second = stage("SECOND", context -> {
+            Files.delete(context.runRoot().resolve("sealed.txt"));
+            throw new IllegalStateException("synthetic interruption");
+        });
+        ValidationEngine engine = new ValidationEngine(
+                List.of(new GenericManifestTargetAdapter()), List.of(first, second),
+                new FileValidationStore(temp.resolve("runs-deleted")));
+        ValidationEngine.ValidationExecutionException failure = assertThrows(
+                ValidationEngine.ValidationExecutionException.class, () -> engine.run(target));
+
+        IllegalStateException rejected = assertThrows(
+                IllegalStateException.class, () -> engine.resumeInternal(target, failure.runRoot()));
+        assertTrue(rejected.getMessage().contains("PREEXISTING_FILE_CHANGED:sealed.txt"));
+    }
+
+    @Test
     void refusesReplayWhenInterruptedStageCreatedASymbolicLink() throws Exception {
         ValidationTarget target = target();
         ValidatorStage stage = stage("SYMLINK", context -> {

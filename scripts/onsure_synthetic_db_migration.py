@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import sqlite3
 import tempfile
 from typing import Any
@@ -66,6 +67,22 @@ def migrations() -> list[tuple[str, pathlib.Path, pathlib.Path]]:
     return result
 
 
+def execute_transactional_script(
+        connection: sqlite3.Connection,
+        sql: str,
+        history_sql: str,
+        history_parameters: tuple[str, ...]) -> None:
+    if re.search(r"(?im)^\s*(BEGIN|COMMIT|ROLLBACK|ATTACH|DETACH|PRAGMA)\b", sql):
+        raise ValueError("SYNTHETIC_MIGRATION_TRANSACTION_CONTROL_FORBIDDEN")
+    try:
+        connection.executescript("BEGIN IMMEDIATE;\n" + sql)
+        connection.execute(history_sql, history_parameters)
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+
+
 def apply(database: pathlib.Path, lock: pathlib.Path) -> dict[str, Any]:
     database = synthetic_path(database, ".db")
     lock = synthetic_path(lock, ".lock")
@@ -73,6 +90,7 @@ def apply(database: pathlib.Path, lock: pathlib.Path) -> dict[str, Any]:
     applied: list[str] = []
     with MigrationLock(lock), sqlite3.connect(database) as connection:
         connection.execute("CREATE TABLE IF NOT EXISTS onsure_schema_history (migration_id TEXT PRIMARY KEY, up_sha256 TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)")
+        connection.commit()
         for migration_id, up, _ in migrations():
             existing = connection.execute(
                 "SELECT up_sha256 FROM onsure_schema_history WHERE migration_id = ?", (migration_id,)).fetchone()
@@ -81,11 +99,13 @@ def apply(database: pathlib.Path, lock: pathlib.Path) -> dict[str, Any]:
                 if existing[0] != digest:
                     raise ValueError("SYNTHETIC_MIGRATION_DIGEST_DRIFT:" + migration_id)
                 continue
-            connection.executescript(up.read_text(encoding="utf-8"))
-            connection.execute("INSERT INTO onsure_schema_history(migration_id, up_sha256) VALUES (?, ?)",
-                               (migration_id, digest))
+            execute_transactional_script(
+                connection,
+                up.read_text(encoding="utf-8"),
+                "INSERT INTO onsure_schema_history(migration_id, up_sha256) VALUES (?, ?)",
+                (migration_id, digest),
+            )
             applied.append(migration_id)
-        connection.commit()
     return evidence("APPLY", database, applied)
 
 
@@ -99,10 +119,13 @@ def rollback(database: pathlib.Path, lock: pathlib.Path) -> dict[str, Any]:
                 "SELECT 1 FROM onsure_schema_history WHERE migration_id = ?", (migration_id,)).fetchone()
             if not existing:
                 continue
-            connection.executescript(down.read_text(encoding="utf-8"))
-            connection.execute("DELETE FROM onsure_schema_history WHERE migration_id = ?", (migration_id,))
+            execute_transactional_script(
+                connection,
+                down.read_text(encoding="utf-8"),
+                "DELETE FROM onsure_schema_history WHERE migration_id = ?",
+                (migration_id,),
+            )
             rolled_back.append(migration_id)
-        connection.commit()
     return evidence("ROLLBACK", database, rolled_back)
 
 
