@@ -78,6 +78,7 @@ ID는 `<pack-id>.` prefix를 사용하고 다음 검증군에만 기여할 수 �
 
 환경·구조·검증기 메타검증·증적 판정 gate는 Core 전용이며 Pack이 교체할 수 없다.
 메타검증은 일곱 검증군 전체와 실패·재시도·차단, 연결 E2E 여섯 facet,
+그 여섯 facet의 실제 artifact 계보를 재계산하는 `WORKFLOW_LINEAGE`,
 중단·재개·rollback·재실행 네 facet이 Profile에 존재하는지 다시 계산한다. 하나라도
 누락되면 `VALIDATOR_PROFILE_COVERAGE_INVALID`로 실패한다.
 Pack 명령도 no-network sandbox가 지원하는 offline Maven, Gradle, Python test, npm
@@ -91,6 +92,9 @@ module/renderer asset은 `SOURCE_DIRECTORY` 또는 Pack의 offline 실행 Step�
 다시 읽어 `outputSha256`과 대조하고, 각 Step의 `environmentSha256`이 실행 영수증의
 `environment_evidence.sha256`과 같은지 확인한다. 로그 누락·경로 이탈·symlink·변조,
 환경 digest 불일치, 역전된 실행 시각은 `PASS_EVIDENCE_INTEGRITY_INVALID`로 실패한다.
+7번 운영·복구까지 끝난 뒤 영수증 봉인 직전에 전체 PASS 로그를 다시 읽는
+`ONSURE_PASS_EVIDENCE_FINALIZATION_V1` 검사를 수행한다. 운영·복구 로그를 포함한 최종 대조가
+실패하면 기존 증적 Step이 통과했더라도 `EVIDENCE_DECISION`과 전체 판정을 `FAIL`로 내린다.
 
 기본 Detector는 Java `ServiceLoader`에서 설치된 Pack을 ID 순으로 불러온다. 배포자가
 검토한 별도 JAR의 `META-INF/services/io.onsure.platform.ValidationPack`만 로딩 대상이며,
@@ -128,9 +132,19 @@ PostgreSQL Pack은 최대 탐색 깊이·파일 수와 생성물 제외 규칙�
 
 `NodeScriptValidationPack`은 `test:negative`, `test:retry`, `test:blocking`,
 `test:e2e-request`, `render`, `test:readback`, `test:tester`, `test:audit`,
-`test:exposure`, `test:interruption`, `test:resume`, `test:rollback`, `test:rerun`을
+`test:exposure`, `test:lineage`, `test:interruption`, `test:resume`, `test:rollback`, `test:rerun`을
 각 검증 facet에 대응시킨다. 선언되지 않은 facet은 일반 integration test 통과로 대체하지
 않으며 Core placeholder가 `NOT_RUN`으로 남긴다.
+
+`test:lineage`는 snapshot의 `.onsure/workflow-lineage.v1.json`에
+`ONSURE_PORTABLE_WORKFLOW_LINEAGE_V1` 영수증을 생성한다. Core는 스크립트 종료 코드만 신뢰하지
+않고 request·artifact·schema 파일을 다시 읽어 SHA-256을 계산한다. 각 handoff의 producer output,
+consumer input, artifact, producer/consumer schema digest가 실제 파일과 같아야 하며 permit subject,
+read-back, tester, audit, expected/actual exposure도 같은 run ID·request digest·artifact와 permit ID에
+결속돼야 한다. 다른 run이나 request에 발급된 permit 재사용은 실패한다.
+지원하지 않는 JSON Schema keyword는 통과시키지 않고 `INCONCLUSIVE`, 누락·변조·경로 이탈·symlink,
+handoff 재사용·permit 시간창 오류는 `FAIL`이다. 이는 self-validation 영수증이므로 독립 OTester,
+독립 OAudit 또는 외부 signer를 대체하지 않는다.
 
 ## 8. 범용성 수용기준
 

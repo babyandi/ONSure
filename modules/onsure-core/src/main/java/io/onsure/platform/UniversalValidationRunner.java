@@ -137,6 +137,7 @@ public final class UniversalValidationRunner {
                         logRoot, environmentSha256);
             } else {
                 execution = executor.execute(step, snapshot.snapshotRoot().resolve(step.workingDirectory()));
+                execution = verifyExecutableEvidence(step, execution, snapshot.snapshotRoot());
             }
             Instant stepCompleted = Instant.now();
             Path logFile = logRoot.resolve(step.stepId() + ".log");
@@ -153,10 +154,16 @@ public final class UniversalValidationRunner {
             }
         }
 
+        StepExecution finalEvidence = validateEvidence(results, logRoot, environmentSha256);
+        Path finalEvidenceLog = logRoot.resolve("evidence.finalize.log");
+        atomicWrite(finalEvidenceLog, finalEvidence.output().getBytes(StandardCharsets.UTF_8));
         Map<Phase, Outcome> phaseOutcomes = new EnumMap<>(profile.phaseOutcomes(outcomes));
         if (sourceMutation) phaseOutcomes.put(Phase.STRUCTURE_STATIC, Outcome.FAIL);
         Map<VerificationGroup, Outcome> groupOutcomes = new EnumMap<>(profile.groupOutcomes(outcomes));
         if (sourceMutation) groupOutcomes.put(VerificationGroup.STRUCTURE, Outcome.FAIL);
+        if (finalEvidence.outcome() == Outcome.FAIL) {
+            groupOutcomes.put(VerificationGroup.EVIDENCE_DECISION, Outcome.FAIL);
+        }
         Outcome overall = UniversalValidationProfile.aggregate(new ArrayList<>(groupOutcomes.values()));
         Instant completed = Instant.now();
         Path receipt = root.resolve(RECEIPT_FILE);
@@ -178,6 +185,16 @@ public final class UniversalValidationRunner {
         body.put("verification_group_outcomes", groupOutcomes);
         body.put("overall_outcome", overall);
         body.put("steps", results);
+        Map<String, Object> finalEvidenceIntegrity = new LinkedHashMap<>();
+        finalEvidenceIntegrity.put("contract", "ONSURE_PASS_EVIDENCE_FINALIZATION_V1");
+        finalEvidenceIntegrity.put("outcome", finalEvidence.outcome());
+        finalEvidenceIntegrity.put("verified_pass_step_count", results.stream()
+                .filter(result -> result.outcome() == Outcome.PASS_NONFINAL).count());
+        finalEvidenceIntegrity.put("output_sha256", Hashing.sha256(finalEvidence.output()));
+        finalEvidenceIntegrity.put("environment_sha256", environmentSha256);
+        finalEvidenceIntegrity.put("log_file", finalEvidenceLog.toString());
+        finalEvidenceIntegrity.put("reason", finalEvidence.reason());
+        body.put("final_evidence_integrity", finalEvidenceIntegrity);
         body.put("not_run_reasons", profile.notRunReasons());
         body.put("started_at", started.toString());
         body.put("completed_at", completed.toString());
@@ -216,6 +233,7 @@ public final class UniversalValidationRunner {
                 case E2E_TESTER_CHECK -> missingPack("E2E_TESTER_CHECK_PACK_NOT_INSTALLED");
                 case E2E_AUDIT_CHECK -> missingPack("E2E_AUDIT_CHECK_PACK_NOT_INSTALLED");
                 case E2E_EXPOSURE_DECISION -> missingPack("E2E_EXPOSURE_DECISION_PACK_NOT_INSTALLED");
+                case WORKFLOW_LINEAGE -> missingPack("WORKFLOW_LINEAGE_PACK_NOT_INSTALLED");
                 case INTERRUPTION_TEST -> missingPack("INTERRUPTION_TEST_PACK_NOT_INSTALLED");
                 case RESUME_TEST -> missingPack("RESUME_TEST_PACK_NOT_INSTALLED");
                 case ROLLBACK_TEST -> missingPack("ROLLBACK_TEST_PACK_NOT_INSTALLED");
@@ -231,6 +249,22 @@ public final class UniversalValidationRunner {
 
     private static StepExecution missingPack(String reason) {
         return new StepExecution(Outcome.NOT_RUN, -1, "", false, reason);
+    }
+
+    static StepExecution verifyExecutableEvidence(
+            Step step, StepExecution execution, Path snapshotRoot) {
+        if (execution.outcome() != Outcome.PASS_NONFINAL || step.kind() != StepKind.WORKFLOW_LINEAGE) {
+            return execution;
+        }
+        StepExecution verified = new WorkflowLineageReceiptVerifier().verify(snapshotRoot);
+        String combined = execution.output() + "\n--- ONSURE WORKFLOW LINEAGE READ-BACK ---\n"
+                + verified.output();
+        if (verified.outcome() != Outcome.PASS_NONFINAL) {
+            return new StepExecution(verified.outcome(), verified.exitCode(), combined,
+                    execution.outputTruncated() || verified.outputTruncated(), verified.reason());
+        }
+        return new StepExecution(Outcome.PASS_NONFINAL, execution.exitCode(), combined,
+                execution.outputTruncated(), verified.reason());
     }
 
     private StepExecution validateEnvironment(Profile profile, Path snapshotRoot) throws Exception {
@@ -319,7 +353,8 @@ public final class UniversalValidationRunner {
         List<StepKind> requiredE2eKinds = List.of(
                 StepKind.E2E_REQUEST_FLOW, StepKind.E2E_RENDER_OR_PRODUCE,
                 StepKind.E2E_ARTIFACT_READBACK, StepKind.E2E_TESTER_CHECK,
-                StepKind.E2E_AUDIT_CHECK, StepKind.E2E_EXPOSURE_DECISION);
+                StepKind.E2E_AUDIT_CHECK, StepKind.E2E_EXPOSURE_DECISION,
+                StepKind.WORKFLOW_LINEAGE);
         List<StepKind> requiredRecoveryKinds = List.of(
                 StepKind.INTERRUPTION_TEST, StepKind.RESUME_TEST,
                 StepKind.ROLLBACK_TEST, StepKind.RERUN_TEST);

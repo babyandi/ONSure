@@ -65,6 +65,14 @@ public final class NodeScriptValidationPack implements ValidationPack {
         functionalGate.add(declaredOrPlaceholder(scripts, "test:retry", "functional.retry-paths"));
         functionalGate.add(declaredOrPlaceholder(scripts, "test:blocking", "functional.blocking-paths"));
         addDeclared(steps, scripts, END_TO_END, Phase.END_TO_END_LINEAGE, functionalGate);
+        if (scripts.hasNonNull("test:lineage")) {
+            List<String> e2eGate = END_TO_END.keySet().stream().sorted()
+                    .map(script -> declaredOrPlaceholder(scripts, script, placeholderForE2e(script)))
+                    .toList();
+            steps.add(new Step(stepId("test:lineage"), Phase.END_TO_END_LINEAGE,
+                    StepKind.WORKFLOW_LINEAGE, true,
+                    List.of("npm", "--offline", "run", "test:lineage"), Path.of(""), TIMEOUT, e2eGate));
+        }
         addDeclared(steps, scripts, OPERATIONS, Phase.OPERATIONAL_RESILIENCE, List.of("evidence.verify"));
         return steps.isEmpty() ? Contribution.none()
                 : new Contribution(Set.of("NODE_VALIDATION_SCRIPTS"), steps);
@@ -85,6 +93,18 @@ public final class NodeScriptValidationPack implements ValidationPack {
 
     private static String declaredOrPlaceholder(JsonNode scripts, String script, String placeholder) {
         return scripts.hasNonNull(script) ? stepId(script) : placeholder;
+    }
+
+    private static String placeholderForE2e(String script) {
+        return switch (script) {
+            case "test:e2e-request" -> "e2e.request-flow";
+            case "render" -> "e2e.render-or-produce";
+            case "test:readback" -> "e2e.artifact-readback";
+            case "test:tester" -> "e2e.tester-check";
+            case "test:audit" -> "e2e.audit-check";
+            case "test:exposure" -> "e2e.exposure-decision";
+            default -> throw new IllegalArgumentException("NODE_E2E_SCRIPT_UNMAPPED:" + script);
+        };
     }
 
     private static String stepId(String script) {

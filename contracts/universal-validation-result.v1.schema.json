@@ -71,6 +71,23 @@
         }
       }
     },
+    "final_evidence_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract", "outcome", "verified_pass_step_count", "output_sha256",
+        "environment_sha256", "log_file", "reason"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_PASS_EVIDENCE_FINALIZATION_V1"},
+        "outcome": {"enum": ["PASS_NONFINAL", "FAIL"]},
+        "verified_pass_step_count": {"type": "integer", "minimum": 0},
+        "output_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "environment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "log_file": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
     "not_run_reasons": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
     "started_at": {"type": "string", "format": "date-time"},
     "completed_at": {"type": "string", "format": "date-time"},

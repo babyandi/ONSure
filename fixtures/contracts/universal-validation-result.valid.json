@@ -8,6 +8,10 @@
   "source_mutation_detected": false,
   "technologies": ["OPENAPI"],
   "environment_requirements": [],
+  "environment_evidence": {
+    "description": "Linux\n6.8.0\namd64\nOpenJDK\n17",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
   "phase_outcomes": {
     "STRUCTURE_STATIC": "PASS_NONFINAL",
     "COMPONENT_AND_NEGATIVE": "PASS_NONFINAL",
@@ -39,6 +43,15 @@
     "startedAt": "2026-08-04T00:00:00Z",
     "completedAt": "2026-08-04T00:00:01Z"
   }],
+  "final_evidence_integrity": {
+    "contract": "ONSURE_PASS_EVIDENCE_FINALIZATION_V1",
+    "outcome": "PASS_NONFINAL",
+    "verified_pass_step_count": 1,
+    "output_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "environment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "log_file": "/isolated/run/step-logs/evidence.finalize.log",
+    "reason": "PASS_EVIDENCE_INTEGRITY_VERIFIED"
+  },
   "not_run_reasons": {
     "END_TO_END_LINEAGE": "END_TO_END_ENTRYPOINT_NOT_DISCOVERED",
     "OPERATIONAL_RESILIENCE": "OPERATIONAL_PROFILE_AND_ISOLATED_RUNTIME_NOT_CONFIGURED"

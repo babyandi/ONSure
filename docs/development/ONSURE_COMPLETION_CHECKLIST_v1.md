@@ -5,7 +5,8 @@
 - [ ] ONSURE 제품 핵심부 — `PARTIAL`
 - [ ] 범용 검증 엔진 — `PARTIAL`; 4개 보증 수준·7개 순차 검증군·Pack SPI·격리 Runner 구현, sandbox 실제 실행 차단
 - [ ] 검증 대상 등록소와 대상 어댑터 — `PARTIAL`; 등록 source의 `validation_mode=UNIVERSAL`과 Manifest 비의존 언어 탐지 구현, binary/package intake 미완료
-- [ ] 일반 프로그램 종단간 시험 대상 — 중립 Node 15개 host script `PASS_NONFINAL`, ONSure sandbox 실행 `BLOCKED_ENVIRONMENT`
+- [ ] 일반 프로그램 종단간 시험 대상 — 중립 Node 17개 host script와 portable lineage Java read-back
+  `PASS_NONFINAL`, artifact 변조 차단 `FAIL`, ONSure sandbox 실행 `BLOCKED_ENVIRONMENT`
 - [ ] AI 프로그램 종단간 시험 대상 — `NOT_RUN_REAL_TARGET`
 - [ ] 실패 유형·근본원인분석·개선 계획 — `PARTIAL`; 인과 재현과 실제 Patch 전후 입증 미완료
 - [x] 시험 데이터·하네스·오라클 등록 골격
@@ -41,6 +42,7 @@
 - [x] Public Java API 265개; 기존 259개 변경·삭제 0, 표준 Pack API 6개 추가
 - [x] Python 176개 회귀 테스트
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
+- [x] portable Workflow lineage 계약·실제 artifact/schema/permit digest read-back과 변조 차단
 - [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED`)
 - [ ] 제품 플랫폼 종단간 시험 2회
 - [ ] 범용 하네스 독립 실행 2회

@@ -148,6 +148,11 @@ class StandardValidationProfileDetectorTest {
         assertEquals(List.of("environment.preflight", "structure.inventory", "validator.meta-check"),
                 profile.steps().subList(0, 3).stream().map(UniversalValidationProfile.Step::stepId).toList());
         assertTrue(profile.steps().stream().anyMatch(step -> step.stepId().equals("renderer.connected-audit")));
+        var lineage = profile.steps().stream()
+                .filter(step -> step.stepId().equals("renderer.connected-audit")).findFirst().orElseThrow();
+        assertTrue(lineage.dependsOn().containsAll(List.of(
+                "e2e.request-flow", "e2e.render-or-produce", "e2e.artifact-readback",
+                "e2e.tester-check", "e2e.audit-check", "e2e.exposure-decision")));
         int evidenceIndex = profile.steps().stream().map(UniversalValidationProfile.Step::stepId).toList()
                 .indexOf("evidence.verify");
         int recoveryIndex = profile.steps().stream().map(UniversalValidationProfile.Step::stepId).toList()
@@ -194,7 +199,8 @@ class StandardValidationProfileDetectorTest {
                   "test":"node --test","test:negative":"node --test","test:retry":"node --test",
                   "test:blocking":"node --test","test:e2e-request":"node --test","render":"node --test",
                   "test:readback":"node --test","test:tester":"node --test","test:audit":"node --test",
-                  "test:exposure":"node --test","test:interruption":"node --test","test:resume":"node --test",
+                  "test:exposure":"node --test","test:lineage":"node generate-lineage.js",
+                  "test:interruption":"node --test","test:resume":"node --test",
                   "test:rollback":"node --test","test:rerun":"node --test"
                 }}
                 """);
@@ -211,6 +217,7 @@ class StandardValidationProfileDetectorTest {
                 UniversalValidationProfile.StepKind.BLOCKING_TEST,
                 UniversalValidationProfile.StepKind.E2E_ARTIFACT_READBACK,
                 UniversalValidationProfile.StepKind.E2E_AUDIT_CHECK,
+                UniversalValidationProfile.StepKind.WORKFLOW_LINEAGE,
                 UniversalValidationProfile.StepKind.RERUN_TEST)) {
             assertTrue(profile.steps().stream().anyMatch(step -> step.kind() == kind));
         }

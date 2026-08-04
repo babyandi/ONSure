@@ -15,7 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -62,6 +67,12 @@ class UniversalValidationRunnerTest {
         assertTrue(receipt.path("environment_evidence").path("description").isTextual());
         assertEquals(result.steps().get(0).environmentSha256(),
                 receipt.path("environment_evidence").path("sha256").asText());
+        assertEquals("PASS_NONFINAL", receipt.path("final_evidence_integrity").path("outcome").asText());
+        Path finalEvidenceLog = Path.of(
+                receipt.path("final_evidence_integrity").path("log_file").asText());
+        assertTrue(Files.isRegularFile(finalEvidenceLog));
+        assertEquals(Hashing.file(finalEvidenceLog),
+                receipt.path("final_evidence_integrity").path("output_sha256").asText());
         assertTrue(receipt.path("steps").get(0).path("startedAt").isTextual());
         assertTrue(Files.isRegularFile(Path.of(receipt.path("steps").get(0).path("logFile").asText())));
         var inventory = result.steps().stream().filter(step -> step.stepId().equals("structure.inventory"))
@@ -281,5 +292,118 @@ class UniversalValidationRunnerTest {
                 java.util.List.of(pass), logs, environmentSha);
         assertEquals(FAIL, tampered.outcome());
         assertTrue(tampered.output().contains("LOG_SHA256_MISMATCH"));
+    }
+
+    @Test
+    void completesAllSevenGroupsOnlyWithVerifiedLineageAndFinalEvidence() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("complete-source"));
+        Files.writeString(source.resolve("program.txt"), "portable workflow");
+        var profile = completeProfile(source);
+        var runner = new UniversalValidationRunner((step, root) -> {
+            if (step.kind() == UniversalValidationProfile.StepKind.WORKFLOW_LINEAGE) {
+                WorkflowLineageTestFixture.write(root, "Complete workflow");
+            }
+            return new UniversalValidationRunner.StepExecution(
+                    PASS_NONFINAL, 0, "pass:" + step.stepId(), false, "SYNTHETIC_EXECUTED");
+        });
+
+        var result = runner.run(profile, temp.resolve("complete-run"));
+
+        assertEquals(PASS_NONFINAL, result.overallOutcome());
+        assertTrue(result.groupOutcomes().values().stream().allMatch(outcome -> outcome == PASS_NONFINAL));
+        var receipt = new ObjectMapper().readTree(result.receiptFile().toFile());
+        assertEquals("PASS_NONFINAL", receipt.path("final_evidence_integrity").path("outcome").asText());
+        assertEquals(result.steps().stream().filter(step -> step.outcome() == PASS_NONFINAL).count(),
+                receipt.path("final_evidence_integrity").path("verified_pass_step_count").asLong());
+    }
+
+    @Test
+    void finalEvidenceSealIncludesOperationsAndFailsOnPostStepLogMutation() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("tampered-source"));
+        Files.writeString(source.resolve("program.txt"), "portable workflow");
+        var profile = completeProfile(source);
+        Path run = temp.resolve("tampered-run");
+        var runner = new UniversalValidationRunner((step, root) -> {
+            if (step.kind() == UniversalValidationProfile.StepKind.WORKFLOW_LINEAGE) {
+                WorkflowLineageTestFixture.write(root, "Tamper workflow");
+            }
+            if (step.kind() == UniversalValidationProfile.StepKind.RERUN_TEST) {
+                Files.writeString(run.resolve("step-logs/environment.preflight.log"), "tampered");
+            }
+            return new UniversalValidationRunner.StepExecution(
+                    PASS_NONFINAL, 0, "pass:" + step.stepId(), false, "SYNTHETIC_EXECUTED");
+        });
+
+        var result = runner.run(profile, run);
+
+        assertEquals(FAIL, result.overallOutcome());
+        assertEquals(FAIL, result.groupOutcomes().get(
+                UniversalValidationProfile.VerificationGroup.EVIDENCE_DECISION));
+        var receipt = new ObjectMapper().readTree(result.receiptFile().toFile());
+        assertEquals("FAIL", receipt.path("final_evidence_integrity").path("outcome").asText());
+        assertTrue(Files.readString(Path.of(
+                receipt.path("final_evidence_integrity").path("log_file").asText()))
+                .contains("LOG_SHA256_MISMATCH"));
+    }
+
+    private static UniversalValidationProfile.Profile completeProfile(Path source) {
+        List<UniversalValidationProfile.Step> steps = new ArrayList<>();
+        steps.add(internalStep("environment.preflight", STRUCTURE_STATIC,
+                UniversalValidationProfile.StepKind.ENVIRONMENT_PREFLIGHT, List.of()));
+        steps.add(internalStep("structure.inventory", STRUCTURE_STATIC,
+                UniversalValidationProfile.StepKind.INVENTORY, List.of("environment.preflight")));
+        steps.add(internalStep("validator.meta-check", STRUCTURE_STATIC,
+                UniversalValidationProfile.StepKind.VALIDATOR_META_CHECK, List.of("structure.inventory")));
+        List<String> functionalIds = new ArrayList<>();
+        for (var kind : List.of(
+                UniversalValidationProfile.StepKind.NEGATIVE_TEST,
+                UniversalValidationProfile.StepKind.RETRY_TEST,
+                UniversalValidationProfile.StepKind.BLOCKING_TEST)) {
+            String id = "functional." + kind.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+            steps.add(executableStep(id, COMPONENT_AND_NEGATIVE, kind, List.of("validator.meta-check")));
+            functionalIds.add(id);
+        }
+        List<String> e2eIds = new ArrayList<>();
+        for (var kind : List.of(
+                UniversalValidationProfile.StepKind.E2E_REQUEST_FLOW,
+                UniversalValidationProfile.StepKind.E2E_RENDER_OR_PRODUCE,
+                UniversalValidationProfile.StepKind.E2E_ARTIFACT_READBACK,
+                UniversalValidationProfile.StepKind.E2E_TESTER_CHECK,
+                UniversalValidationProfile.StepKind.E2E_AUDIT_CHECK,
+                UniversalValidationProfile.StepKind.E2E_EXPOSURE_DECISION)) {
+            String id = "e2e." + kind.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+            steps.add(executableStep(id, END_TO_END_LINEAGE, kind, functionalIds));
+            e2eIds.add(id);
+        }
+        steps.add(executableStep("e2e.workflow-lineage", END_TO_END_LINEAGE,
+                UniversalValidationProfile.StepKind.WORKFLOW_LINEAGE, e2eIds));
+        steps.add(internalStep("evidence.verify", END_TO_END_LINEAGE,
+                UniversalValidationProfile.StepKind.EVIDENCE_VERIFICATION,
+                List.of("e2e.workflow-lineage")));
+        for (var kind : List.of(
+                UniversalValidationProfile.StepKind.INTERRUPTION_TEST,
+                UniversalValidationProfile.StepKind.RESUME_TEST,
+                UniversalValidationProfile.StepKind.ROLLBACK_TEST,
+                UniversalValidationProfile.StepKind.RERUN_TEST)) {
+            String id = "operations." + kind.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+            steps.add(executableStep(id, OPERATIONAL_RESILIENCE, kind, List.of("evidence.verify")));
+        }
+        return new UniversalValidationProfile.Profile(
+                "complete-portable", source, Set.of("SYNTHETIC"), List.of(), steps, Map.of());
+    }
+
+    private static UniversalValidationProfile.Step internalStep(
+            String id, UniversalValidationProfile.Phase phase,
+            UniversalValidationProfile.StepKind kind, List<String> dependencies) {
+        return new UniversalValidationProfile.Step(
+                id, phase, kind, true, List.of(), Path.of(""), Duration.ofMinutes(2), dependencies);
+    }
+
+    private static UniversalValidationProfile.Step executableStep(
+            String id, UniversalValidationProfile.Phase phase,
+            UniversalValidationProfile.StepKind kind, List<String> dependencies) {
+        return new UniversalValidationProfile.Step(
+                id, phase, kind, true, List.of("npm", "--offline", "run", "synthetic"),
+                Path.of(""), Duration.ofMinutes(2), dependencies);
     }
 }

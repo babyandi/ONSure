@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "pairs": [
     {"schema": "contracts/program-profile.v1.schema.json", "instances": ["fixtures/contracts/program-profile.valid.json"]},
     {"schema": "contracts/behavior-profile.v1.schema.json", "instances": ["fixtures/contracts/behavior-profile.valid.json"], "invalid_instances": ["fixtures/contracts/behavior-profile.invalid.json"]},
@@ -26,7 +26,8 @@
     {"schema": "contracts/service-case-state.v1.schema.json", "instances": ["fixtures/contracts/service-case-state.valid.json"]},
     {"schema": "contracts/service-verification-receipt.v1.schema.json", "instances": ["fixtures/contracts/service-verification-receipt.valid.json"], "invalid_instances": ["fixtures/contracts/service-verification-receipt.invalid.json"]},
     {"schema": "contracts/tenant-context.v1.schema.json", "instances": ["fixtures/contracts/tenant-context.valid.json"]},
-    {"schema": "contracts/universal-validation-result.v1.schema.json", "instances": ["fixtures/contracts/universal-validation-result.valid.json"], "invalid_instances": ["fixtures/contracts/universal-validation-result.invalid.json"]}
+    {"schema": "contracts/universal-validation-result.v1.schema.json", "instances": ["fixtures/contracts/universal-validation-result.valid.json"], "invalid_instances": ["fixtures/contracts/universal-validation-result.invalid.json"]},
+    {"schema": "contracts/portable-workflow-lineage.v1.schema.json", "instances": ["fixtures/contracts/portable-workflow-lineage.valid.json"], "invalid_instances": ["fixtures/contracts/portable-workflow-lineage.invalid.json"]}
   ],
   "negative_instances_required_before_final": true,
   "runtime_validation": "NOT_RUN",

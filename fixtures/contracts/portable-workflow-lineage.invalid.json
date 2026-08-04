@@ -1,0 +1,32 @@
+{
+  "contract": "ONSURE_PORTABLE_WORKFLOW_LINEAGE_V1",
+  "run_id": "invalid",
+  "request": {"path": "request.json", "sha256": "not-a-digest"},
+  "artifact": {
+    "path": "artifact.json",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "schema_path": "schema.json",
+    "schema_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "media_type": "application/json"
+  },
+  "handoffs": [],
+  "permit": {
+    "permit_id": "permit",
+    "run_id": "invalid",
+    "request_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "decision": "ALLOW",
+    "issued_at": "2026-08-04T00:00:00Z",
+    "expires_at": "2026-08-04T00:10:00Z"
+  },
+  "read_back": {"artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "tester": {"decision": "PASS", "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "audit": {"decision": "PASS", "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "exposure": {
+    "expected_decision": "ALLOW",
+    "actual_decision": "DENY",
+    "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "permit_id": "permit"
+  },
+  "generated_at": "2026-08-04T00:05:00Z"
+}

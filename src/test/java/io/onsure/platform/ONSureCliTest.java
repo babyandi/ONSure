@@ -63,4 +63,17 @@ class ONSureCliTest {
         assertTrue(Files.isRegularFile(temp.resolve("universal-run/universal-validation-result.json")));
         assertTrue(Files.notExists(target.resolve("onsure-target.json")));
     }
+
+    @Test
+    void lineageCommandReadBackVerifiesPortableReceipt() throws Exception {
+        WorkflowLineageTestFixture.write(temp, "CLI lineage");
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+
+        int exit = ONSureCli.run(new String[] {"lineage", temp.toString()},
+                new PrintStream(stdout), new PrintStream(new ByteArrayOutputStream()));
+
+        assertEquals(0, exit);
+        assertTrue(stdout.toString().contains("WORKFLOW_LINEAGE_DIGEST_SCHEMA_PERMIT_VERIFIED"));
+        assertTrue(stdout.toString().contains("ONSURE_WORKFLOW_LINEAGE_VERIFICATION_NONFINAL"));
+    }
 }

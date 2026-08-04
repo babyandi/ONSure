@@ -15,6 +15,7 @@
     "test:tester": "node --test test/unit.test.js",
     "test:audit": "node --test test/integration.test.js",
     "test:exposure": "node --test test/integration.test.js",
+    "test:lineage": "node scripts/write-lineage.js",
     "test:interruption": "node --test --test-name-pattern=interruption test/recovery.test.js",
     "test:resume": "node --test --test-name-pattern=resume test/recovery.test.js",
     "test:rollback": "node --test --test-name-pattern=rollback test/recovery.test.js",

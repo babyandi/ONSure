@@ -38,6 +38,19 @@ public final class ONSureCli {
         if (args.length == 10 && "validate".equals(args[0])) {
             return legacyValidate(args, out);
         }
+        if (args.length == 2 && "lineage".equals(args[0])) {
+            Path snapshotRoot = Path.of(args[1]).toAbsolutePath().normalize();
+            var result = new WorkflowLineageReceiptVerifier().verify(snapshotRoot);
+            out.println(mapper().writeValueAsString(result));
+            out.println("ONSURE_WORKFLOW_LINEAGE_VERIFICATION_NONFINAL " + snapshotRoot);
+            return switch (result.outcome()) {
+                case PASS_NONFINAL -> 0;
+                case FAIL -> 2;
+                case BLOCKED -> 3;
+                case NOT_RUN -> 4;
+                case INCONCLUSIVE -> 5;
+            };
+        }
         if (args.length == 4 && "universal".equals(args[0])) {
             Path sourceRoot = Path.of(args[1]).toAbsolutePath().normalize();
             Path runRoot = Path.of(args[3]).toAbsolutePath().normalize();
@@ -56,6 +69,7 @@ public final class ONSureCli {
         err.println("usage:");
         err.println("  ONSureCli workflow <workspace-root> <operation> <request-json-file>");
         err.println("  ONSureCli universal <source-root> <profile-id> <run-root>");
+        err.println("  ONSureCli lineage <snapshot-root>");
         err.println("  ONSureCli validate <source-root> <target-id> <target-name> "
                 + "<GENERAL_SOFTWARE|AI_APPLICATION|AI_AGENTIC_PLATFORM> <adapter-id> "
                 + "<immutable-source-ref> <policy-profile> <execution-profile> <store-root>");

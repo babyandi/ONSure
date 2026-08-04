@@ -74,6 +74,7 @@ public final class StandardValidationProfileDetector {
         addMissingFunctionalPathChecks(functional, meta.stepId());
         List<String> functionalGate = functional.stream().filter(Step::required).map(Step::stepId).toList();
         addMissingEndToEndChecks(endToEnd, functionalGate);
+        bindLineageToConnectedFacets(endToEnd);
         addMissingOperationalChecks(operations, "evidence.verify");
         List<String> evidenceDependencies = new ArrayList<>();
         evidenceDependencies.add(meta.stepId());
@@ -154,6 +155,13 @@ public final class StandardValidationProfileDetector {
         addMissingKind(endToEnd, functionalGate, StepKind.E2E_TESTER_CHECK, "e2e.tester-check");
         addMissingKind(endToEnd, functionalGate, StepKind.E2E_AUDIT_CHECK, "e2e.audit-check");
         addMissingKind(endToEnd, functionalGate, StepKind.E2E_EXPOSURE_DECISION, "e2e.exposure-decision");
+        List<String> connectedFacets = endToEnd.stream()
+                .filter(step -> Set.of(
+                        StepKind.E2E_REQUEST_FLOW, StepKind.E2E_RENDER_OR_PRODUCE,
+                        StepKind.E2E_ARTIFACT_READBACK, StepKind.E2E_TESTER_CHECK,
+                        StepKind.E2E_AUDIT_CHECK, StepKind.E2E_EXPOSURE_DECISION).contains(step.kind()))
+                .map(Step::stepId).toList();
+        addMissingKind(endToEnd, connectedFacets, StepKind.WORKFLOW_LINEAGE, "e2e.workflow-lineage");
     }
 
     private static void addMissingOperationalChecks(List<Step> operations, String evidenceStepId) {
@@ -161,6 +169,25 @@ public final class StandardValidationProfileDetector {
         addMissingKind(operations, evidenceStepId, StepKind.RESUME_TEST, "operations.resume");
         addMissingKind(operations, evidenceStepId, StepKind.ROLLBACK_TEST, "operations.rollback");
         addMissingKind(operations, evidenceStepId, StepKind.RERUN_TEST, "operations.rerun");
+    }
+
+    private static void bindLineageToConnectedFacets(List<Step> endToEnd) {
+        Set<StepKind> facets = Set.of(
+                StepKind.E2E_REQUEST_FLOW, StepKind.E2E_RENDER_OR_PRODUCE,
+                StepKind.E2E_ARTIFACT_READBACK, StepKind.E2E_TESTER_CHECK,
+                StepKind.E2E_AUDIT_CHECK, StepKind.E2E_EXPOSURE_DECISION);
+        List<String> facetIds = endToEnd.stream().filter(step -> facets.contains(step.kind()))
+                .filter(Step::required).map(Step::stepId).toList();
+        for (int index = 0; index < endToEnd.size(); index++) {
+            Step step = endToEnd.get(index);
+            if (step.kind() != StepKind.WORKFLOW_LINEAGE) continue;
+            LinkedHashSet<String> dependencies = new LinkedHashSet<>(step.dependsOn());
+            dependencies.addAll(facetIds);
+            endToEnd.set(index, new Step(step.stepId(), step.phase(), step.kind(), step.required(),
+                    step.command(), step.workingDirectory(), step.timeout(), List.copyOf(dependencies)));
+        }
+        endToEnd.sort(java.util.Comparator.comparingInt(
+                step -> step.kind() == StepKind.WORKFLOW_LINEAGE ? 1 : 0));
     }
 
     private static void addMissingKind(List<Step> functional, String metaStepId, StepKind kind,
