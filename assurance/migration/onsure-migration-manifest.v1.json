@@ -160,8 +160,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "634c3b2c105eb9b80a1c8c09916659bf58dfd7e7471e33ffba4930c311a80c7a",
-      "size_bytes": 14166
+      "sha256": "9e072f040281ccd87b437f78f40c2f6d0150aa182a10130a1ab720a34734296a",
+      "size_bytes": 14229
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -658,6 +658,22 @@
       },
       "sha256": "165c9bc56743d47b2ca1752af1b152a651e484ba7535a0f964a1693768dc3cd0",
       "size_bytes": 480
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "assurance/runtime/oreport-readonly-validation-observation.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/assurance/runtime/oreport-readonly-validation-observation.v1.json",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "c9becb965bff980a68f839c93b3a81d26f706b54a2df3ce722dfb4b14c049afa",
+      "size_bytes": 14970
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2000,8 +2016,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "2e5ba5f9f32eab0b29bd1ffb4c360940aa466ee122a3e1a7f689f8201451a318",
-      "size_bytes": 4127
+      "sha256": "7190d9564c135982e81558b67179a6e97a217c81f10d06cf32e131299cf47470",
+      "size_bytes": 4288
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2162,6 +2178,22 @@
       },
       "sha256": "99b1ddc9f10ac1ef2d5cd5634d5c0c3477d35d45dc7f90a649993bba9a06cbc5",
       "size_bytes": 1903
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "contracts/universal-validation-observation.v1.schema.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/contracts/universal-validation-observation.v1.schema.json",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "86201a9637b3d3c2db2730e2cb2997b9c05b6656a98cfa19d6c900ee95a03c0b",
+      "size_bytes": 4384
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -4434,6 +4466,22 @@
       },
       "sha256": "37b00e56c493b347da617a71c14ff48f1a6e916cb426c2abef5e91c2e9b5f520",
       "size_bytes": 2757
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "docs/verification/OREPORT_READONLY_VALIDATION_OBSERVATION_20260804.md",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/docs/verification/OREPORT_READONLY_VALIDATION_OBSERVATION_20260804.md",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "20019a8cdad88a4c580531e3cc057bd17728959dd278b2fba15121d2e029d0e6",
+      "size_bytes": 3943
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -8466,8 +8514,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "6a984cdc70c9818a7ce0345e774252f25cd1533a22e0311f78238474dc65eb12",
-      "size_bytes": 35795
+      "sha256": "a2c76e9cc2d97402c9d370935a7b5c4d0bd2f4064ced1b8f64bcb92dc4b05a55",
+      "size_bytes": 38459
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -10619,6 +10667,22 @@
     },
     {
       "copyright_owner": "ORUDA Labs",
+      "current_path": "scripts/seal_universal_validation_observation.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/scripts/seal_universal_validation_observation.py",
+      "git_mode": "100755",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "27804c02921bd0ba4ee6004091739795f159171801e7f47d5e356804591f77f6",
+      "size_bytes": 7616
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
       "current_path": "scripts/summarize-local-assurance.sh",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -12486,8 +12550,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "6a23be146e7b381ff39c51322c54b906d504472aaba1cce7ab254bb17144ef32",
-      "size_bytes": 22947
+      "sha256": "2391fd8047648d97cd77485e31a2de81b658f49bca165cb799137f511a1841e0",
+      "size_bytes": 24294
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -13723,6 +13787,22 @@
     },
     {
       "copyright_owner": "ORUDA Labs",
+      "current_path": "tests/test_seal_universal_validation_observation.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/tests/test_seal_universal_validation_observation.py",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "23f3437cba1a193c4edd5dcb7a29175273f0b8b090ed38d6e032df1072ca4503",
+      "size_bytes": 3455
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
       "current_path": "tests/test_surefire_summary_normalization.py",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -14015,14 +14095,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 873,
+    "file_count": 878,
     "license_counts": {
-      "LicenseRef-ORUDA-Labs-Proprietary": 873
+      "LicenseRef-ORUDA-Labs-Proprietary": 878
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 870,
+      "NO_PATTERN_MATCH": 875,
       "REVIEW_REQUIRED": 3
     },
-    "total_size_bytes": 8476452
+    "total_size_bytes": 8515055
   }
 }

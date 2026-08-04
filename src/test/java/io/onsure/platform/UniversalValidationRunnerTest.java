@@ -1,5 +1,6 @@
 package io.onsure.platform;
 
+import static io.onsure.platform.UniversalValidationProfile.Outcome.BLOCKED;
 import static io.onsure.platform.UniversalValidationProfile.Outcome.FAIL;
 import static io.onsure.platform.UniversalValidationProfile.Outcome.NOT_RUN;
 import static io.onsure.platform.UniversalValidationProfile.Outcome.PASS_NONFINAL;
@@ -26,6 +27,30 @@ import org.junit.jupiter.api.io.TempDir;
 
 class UniversalValidationRunnerTest {
     @TempDir Path temp;
+
+    @Test
+    void blocksNodeExecutionWhenPackageManifestAndLockDependencySetsDrift() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("node-lock-drift"));
+        Files.writeString(source.resolve("package.json"), """
+                {"scripts":{"test":"node --test"}}
+                """);
+        Files.writeString(source.resolve("package-lock.json"), """
+                {"lockfileVersion":3,"packages":{"":{"dependencies":{"renderer":"1.0.0"}}}}
+                """);
+        var profile = new StandardValidationProfileDetector().detect("node-lock-drift", source);
+
+        var result = new UniversalValidationRunner((step, root) ->
+                new UniversalValidationRunner.StepExecution(PASS_NONFINAL, 0, "pass", false, "test"))
+                .run(profile, temp.resolve("node-lock-drift-run"));
+
+        var preflight = result.steps().stream()
+                .filter(step -> step.stepId().equals("environment.preflight"))
+                .findFirst().orElseThrow();
+        assertEquals(BLOCKED, preflight.outcome());
+        assertTrue(Files.readString(Path.of(preflight.logFile()))
+                .contains("node.manifest-lock-dependency-mismatch:dependencies"));
+        assertEquals(BLOCKED, result.overallOutcome());
+    }
 
     @Test
     void runsDetectedStepsInSnapshotAndPreservesUnexecutedPhases() throws Exception {

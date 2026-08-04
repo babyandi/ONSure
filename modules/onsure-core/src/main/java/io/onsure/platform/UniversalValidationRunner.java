@@ -28,6 +28,9 @@ import java.util.Set;
 /** Runs one target-neutral profile and persists a non-final, four-phase receipt. */
 public final class UniversalValidationRunner {
     private static final long MAX_OPENAPI_CONTRACT_BYTES = 16L * 1024 * 1024;
+    private static final long MAX_NODE_MANIFEST_BYTES = 5L * 1024 * 1024;
+    private static final List<String> NODE_DEPENDENCY_SECTIONS = List.of(
+            "dependencies", "devDependencies", "optionalDependencies", "peerDependencies");
     private static final List<Path> TRUSTED_EXECUTABLE_DIRECTORIES = List.of(
             Path.of("/usr/local/sbin"), Path.of("/usr/local/bin"), Path.of("/usr/sbin"),
             Path.of("/usr/bin"), Path.of("/sbin"), Path.of("/bin"));
@@ -280,6 +283,7 @@ public final class UniversalValidationRunner {
                 (requirement.required() ? missing : optionalMissing).add(requirement.requirementId());
             }
         }
+        missing.addAll(validateNodeManifestLock(snapshotRoot));
         String report = "os=" + System.getProperty("os.name", "unknown") + "\njava="
                 + System.getProperty("java.version", "unknown") + "\nrequired_executables=" + requiredExecutables
                 + "\ndeclared_requirements=" + profile.environmentRequirements().stream()
@@ -300,6 +304,52 @@ public final class UniversalValidationRunner {
         }
         return new StepExecution(Outcome.PASS_NONFINAL, 0, report + "\n" + probe.output(), false,
                 "REQUIRED_EXECUTABLES_AND_SANDBOX_AVAILABLE");
+    }
+
+    private List<String> validateNodeManifestLock(Path snapshotRoot) {
+        Path manifest = snapshotRoot.resolve("package.json").normalize();
+        Path lock = snapshotRoot.resolve("package-lock.json").normalize();
+        if (!Files.exists(manifest, java.nio.file.LinkOption.NOFOLLOW_LINKS)
+                || !Files.exists(lock, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return List.of();
+        if (!safeNodeManifest(manifest) || !safeNodeManifest(lock)) {
+            return List.of("node.manifest-lock-file-invalid");
+        }
+        try {
+            JsonNode packageBody = mapper.readTree(Files.readAllBytes(manifest));
+            JsonNode lockBody = mapper.readTree(Files.readAllBytes(lock));
+            JsonNode lockRoot = lockBody.path("packages").path("");
+            if (!packageBody.isObject() || !lockRoot.isObject()) {
+                return List.of("node.manifest-lock-root-invalid");
+            }
+            List<String> drift = new ArrayList<>();
+            for (String section : NODE_DEPENDENCY_SECTIONS) {
+                Map<String, String> declared = dependencyMap(packageBody.path(section));
+                Map<String, String> locked = dependencyMap(lockRoot.path(section));
+                if (!declared.equals(locked)) drift.add(section);
+            }
+            return drift.isEmpty() ? List.of()
+                    : List.of("node.manifest-lock-dependency-mismatch:" + String.join(",", drift));
+        } catch (Exception error) {
+            return List.of("node.manifest-lock-read-failed:" + error.getClass().getSimpleName());
+        }
+    }
+
+    private static boolean safeNodeManifest(Path path) {
+        try {
+            return Files.isRegularFile(path, java.nio.file.LinkOption.NOFOLLOW_LINKS)
+                    && !Files.isSymbolicLink(path) && Files.size(path) <= MAX_NODE_MANIFEST_BYTES;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static Map<String, String> dependencyMap(JsonNode value) {
+        if (!value.isObject()) return Map.of();
+        Map<String, String> result = new java.util.TreeMap<>();
+        value.fields().forEachRemaining(entry -> result.put(
+                entry.getKey(), entry.getValue().isTextual()
+                        ? entry.getValue().asText() : entry.getValue().toString()));
+        return Map.copyOf(result);
     }
 
     private static boolean requirementPresent(
