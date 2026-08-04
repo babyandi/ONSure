@@ -1,9 +1,10 @@
 {
   "component_count": 21,
   "contract": "ONSURE_DEPENDENCY_LICENSE_INVENTORY_V1",
+  "copyright_holder": "ORUDA Labs",
   "cyclonedx_plugin": "org.cyclonedx:cyclonedx-maven-plugin:2.9.1",
   "cyclonedx_schema": "1.6",
-  "decision": "REVIEW_REQUIRED",
+  "decision": "PASS_NONFINAL",
   "dependencies": [
     {
       "group": "com.fasterxml.jackson.core",
@@ -63,7 +64,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-adapter-oruda",
       "purl": "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -72,7 +75,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-cli",
       "purl": "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -81,7 +86,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-core",
       "purl": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -90,7 +97,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-llm-gateway",
       "purl": "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -99,7 +108,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-local-api",
       "purl": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -108,7 +119,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-migration-postgresql",
       "purl": "pkg:maven/io.onsure/onsure-migration-postgresql@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -117,7 +130,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-provider-local-mock",
       "purl": "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -126,7 +141,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-provider-openai",
       "purl": "pkg:maven/io.onsure/onsure-provider-openai@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -135,7 +152,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-provider-spi",
       "purl": "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -144,7 +163,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-sdk",
       "purl": "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -153,7 +174,9 @@
     {
       "group": "io.onsure",
       "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
-      "licenses": [],
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
       "name": "onsure-test-fixtures",
       "purl": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar",
       "scope": "",
@@ -218,16 +241,17 @@
   "dependency_license_counts": {
     "Apache-2.0": 9,
     "BSD-2-Clause": 1,
-    "PROJECT_SOURCE_LICENSE_INHERITS_ROOT": 11
+    "LicenseRef-ORUDA-Labs-Proprietary": 11
   },
   "dependency_license_review_required_count": 0,
   "final_claim_allowed": false,
   "limitations": [
     "DECLARED_DEPENDENCY_LICENSE_IS_NOT_LEGAL_APPROVAL",
     "TRANSITIVE_NOTICE_AND_ATTRIBUTION_REQUIREMENTS_REQUIRE_HUMAN_REVIEW",
-    "SOURCE_FILE_COPYRIGHT_AND_INBOUND_RIGHTS_REQUIRE_HUMAN_ATTESTATION"
+    "INBOUND_RIGHTS_ARE_OWNER_ATTESTED_NOT_INDEPENDENTLY_VERIFIED"
   ],
-  "root_source_license": "UNDECLARED",
+  "rights_declaration": "contracts/onsure-rights-declaration.v1.json",
+  "root_source_license": "LicenseRef-ORUDA-Labs-Proprietary",
   "source_sbom": "assurance/dependencies/onsure.cdx.json",
-  "source_sbom_sha256": "dd9d8676a271fc5656c9b414b1ac8b843da7312473c011727fd24c7c2cf1cdeb"
+  "source_sbom_sha256": "c3fd4faa343de7d5c47b146a70c3d8020a0aff027ba419fbe51e90a6a47501ec"
 }

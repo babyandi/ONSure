@@ -63,7 +63,8 @@ FINAL_LOCK_ALLOWED              false
   Full-Chain은 아직 완료되지 않았다.
 - ProductPlatformE2E는 제품 Full-Chain이 아니라 Validator Fixture E2E다.
 - VS Code Extension Host E2E harness는 준비됐지만 현재 host의 display/xvfb 부재로 실제 실행은 `NOT_RUN`이다.
-- Maven vulnerability scan과 root source license 승인은 `NOT_RUN/BLOCKED`이며 npm audit만 0건으로 검증됐다.
+- Maven/npm vulnerability totals는 0이고 `ORUDA Labs` proprietary root license와
+  third-party notice가 반영됐다. 독립 법률 검토와 고객 배포계약은 `NOT_RUN`이다.
 
 ## 이번 기준선에서 추가된 Codespace-free 보완
 

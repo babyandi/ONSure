@@ -3,17 +3,21 @@
   "decision": "PASS_NONFINAL",
   "final_claim_allowed": false,
   "install_execution": "NOT_RUN",
-  "internal_checksum_count": 24,
+  "internal_checksum_count": 29,
   "package": "target/onsure-ubuntu-candidate.tar.gz",
-  "package_sha256": "f65b57d71700c2648bacab13d01c9f0371b30f0a3dd499acd2fc17a28d3685cc",
-  "package_size_bytes": 7299504,
+  "package_sha256": "0a6c84ce0b9fa8220d3ffe2e0acb6ae5dddc63afbc21732497c765b2fdefc051",
+  "package_size_bytes": 7310078,
   "path_escape_or_nonregular_entry_count": 0,
   "platform": "UBUNTU",
-  "regular_file_count": 25,
-  "root_owned_file_count": 25,
+  "proprietary_license_included": true,
+  "regular_file_count": 30,
+  "root_owned_file_count": 30,
   "runtime_execution": "NOT_RUN",
   "secret_values_present": false,
   "source_bindings": {
+    "LICENSE": "ca88d351f5fee5e673d010d4fa08e5c19abb0d17feaef56daf9c5425de11a154",
+    "NOTICE": "1823ec1021e0c7b7f4924c941ba0d96c302b1facc102f1b91be0abf0a1d54867",
+    "THIRD_PARTY_NOTICES.md": "08881adefad2a389686518f0a619b4376015b4849b38bf80dc37b254bea410d4",
     "deploy/rhel/onsure-llm-gateway.service": "ed9105be6a4f7d9f23aa318d498a206cd477cb08aa780224d2ecfb744ef48e2c",
     "deploy/rhel/onsure-migrate.service": "fc3829d5526038de799afb729e93d774697648a048222c0f47df87e91f867f95",
     "deploy/rhel/onsure.env.example": "83c3360b66309641ce01283e369d6cdb72caa7895f8ad7aa2a0c2d5905b0370a",
@@ -21,7 +25,9 @@
     "deploy/rhel/onsure.sysusers.conf": "70c7e2196de2bd07012535543bbe2eca358741916cb93652b363fd94251da72e",
     "deploy/rhel/onsure.tmpfiles.conf": "c02e4ac00b023f8908033eb6fb10326e2764ad8fc2da25c29439ca8d9848dd2d",
     "deploy/ubuntu/README.md": "ea31795ce4cf2c2c6bd6c5be75ee31a9e57e19b29c182ffd8164c2db4ca3d3be",
-    "scripts/package_onsure_systemd.sh": "1fbf924bac1383da0556bca0f28d8cbdbee2dca9019db76ebe2e8ad64a0d84f1",
+    "scripts/package_onsure_systemd.sh": "f55031feadbf039eac1c8b257f79c01ade1ddad080bc6a519c4799f633b557ab",
     "scripts/package_onsure_ubuntu.sh": "79fb0b68b06bf99f3dd6b8da1dee99b6119820d35a2f5fa8b57c0390e5f8586c"
-  }
+  },
+  "third_party_notices_included": true,
+  "upstream_license_text_count": 2
 }

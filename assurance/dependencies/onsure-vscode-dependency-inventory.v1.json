@@ -2297,5 +2297,5 @@
   "final_claim_allowed": false,
   "lock_integrity_recorded": true,
   "package_lock": "vscode-extension/package-lock.json",
-  "package_lock_sha256": "576faf5014fb61edbafaeeeceba1c363b73bcea14ab3c56f19d43a1287579152"
+  "package_lock_sha256": "53b4f10a8179d9552b8084aa83ead01610bf5973a906fe16efc6d4909366ace9"
 }

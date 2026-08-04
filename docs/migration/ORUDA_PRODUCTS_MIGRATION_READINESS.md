@@ -119,24 +119,24 @@
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (11 modules, 37 tests; 독립 clone 재검증 대상) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 281 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (local + 독립 clone 각 141 tests) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local 142 tests; prior independent clone 141 tests) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (local + 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
-| VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `dbe72cc7da5d...`; root license warning) |
+| VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `aff3faec3ce3...`; proprietary LICENSE/third-party notice 포함) |
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (VS Code 1.95.3/Xvfb, extension host exit 0, offline network 차단 재실행 exit 0) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 778 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 785 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
-| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (144 single owners, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 2) |
+| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (150 single owners, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 2) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (240 public classes, 기존 238 descriptors delta 0 + additive SPI 2) |
-| CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL_WITH_RELEASE_BLOCKER` (21 Maven components, VS Code 229 inventory, Trivy 0.65.0 모든 severity 0, npm audit 0; root license blocker) |
+| CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (ORUDA Labs proprietary root 11, Apache-2.0 9, BSD-2-Clause 1; VS Code 229, Trivy/npm audit vulnerability 0, license blocker 0) |
 | 컨테이너 후보 | `python3 scripts/validate_onsure_container_candidate.py` | `PASS_NONFINAL` (build/run, UID 65532, read-only, network none, loopback ready; deployment `NOT_RUN`) |
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / RHEL·Ubuntu systemd 및 PostgreSQL/Flyway candidate` |
 | 배포·DB preflight | `python3 scripts/onsure_deploy_migration_skeleton.py preflight` | `PASS_NONFINAL / deployment·migration NOT_RUN_NOT_AUTHORIZED` |
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 4,823-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (778-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (785-file cutover + rollback 재검증 대상, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | RHEL/Ubuntu 단독 서버 systemd/package 후보 구현 | `두 tar 내부 checksum·ownership·secret/path 검사 PASS_NONFINAL / INSTALL NOT_RUN / NOT_AUTHORIZED` |
 | DB migration | PostgreSQL/Flyway V1 + Ubuntu 호스트의 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / PRODUCTION NOT_RUN` |
@@ -181,6 +181,14 @@ namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 별도 clone은 remote `origin/main`만 추가로 fetch한 뒤 canonical 281/281, Python 141/141,
 API 240/240, migration readiness와 static gate를 외부 제품 workspace 없이 통과했다.
 
+소유자 제공 선언에 따라 root copyright holder는 `ORUDA Labs`, outbound license는
+`LicenseRef-ORUDA-Labs-Proprietary`로 기록했다. 다른 개발자·회사·외주, 외부 저장소 source
+복사와 외부 asset 복사는 모두 `NONE_ATTESTED`다. RHEL·Ubuntu package는 `LICENSE`, `NOTICE`,
+`THIRD_PARTY_NOTICES.md`와 번들 JAR에서 추출한 upstream license 원문 2개를 포함하며 30개
+파일/29개 내부 checksum에 결속한다. 현재 RHEL SHA-256은 `00e031e2ba9c...`, Ubuntu는
+`0a6c84ce0b9f...`다. 이 소유자
+선언은 독립 법률 검토, 고객 배포계약, Production GO 또는 Final PASS를 대신하지 않는다.
+
 `pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.
 
 ## Manifest 후보
@@ -191,7 +199,7 @@ API 240/240, migration readiness와 static gate를 외부 제품 workspace 없�
 - 각 파일 항목: 현재/미래 후보 경로, SHA-256, byte 크기, Git mode, filesystem owner/group, repository owner, license, 민감정보 pattern 결과
 - Manifest 자신의 digest는 재귀 문제 때문에 목록에서 제외하고 그 사유를 top-level에 기록한다.
 - Manifest를 포함하는 commit SHA를 Manifest 안에 다시 넣는 자기참조도 피한다. 조사 기준 commit은 이 문서에 기록하고, 실제 cutover에서는 외부 서명 receipt가 immutable source commit과 Manifest digest를 함께 결속해야 한다.
-- filesystem owner는 이관 권리자가 아니라 검사 host의 메타데이터다. 저작권·재라이선스 권리는 별도 확인이 필요하다.
+- filesystem owner는 이관 권리자가 아니라 검사 host의 메타데이터다. 저작권자는 별도 owner declaration으로 `ORUDA Labs`에 결속한다.
 
 ## 완료 판정 규칙
 

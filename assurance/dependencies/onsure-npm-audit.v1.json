@@ -2,10 +2,10 @@
   "contract": "ONSURE_NPM_AUDIT_EVIDENCE_V1",
   "state": "COMPLETED",
   "package_lock": "vscode-extension/package-lock.json",
-  "package_lock_sha256": "576faf5014fb61edbafaeeeceba1c363b73bcea14ab3c56f19d43a1287579152",
+  "package_lock_sha256": "53b4f10a8179d9552b8084aa83ead01610bf5973a906fe16efc6d4909366ace9",
   "command": "npm audit --json",
   "npm_version": "11.16.0",
-  "scanned_at": "2026-08-02T00:00:00Z",
+  "scanned_at": "2026-08-04T07:12:47Z",
   "vulnerabilities": {
     "info": 0,
     "low": 0,

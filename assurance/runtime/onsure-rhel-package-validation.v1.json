@@ -3,17 +3,21 @@
   "decision": "PASS_NONFINAL",
   "final_claim_allowed": false,
   "install_execution": "NOT_RUN",
-  "internal_checksum_count": 24,
+  "internal_checksum_count": 29,
   "package": "target/onsure-rhel-candidate.tar.gz",
-  "package_sha256": "e6a855582777e67ec30da737baa8bd8c36e11e82262c08c22b5cb908109e964e",
-  "package_size_bytes": 7299728,
+  "package_sha256": "00e031e2ba9cd3dada7d1b27cdceb1a41bc3668e28b276b884f1cd7437389351",
+  "package_size_bytes": 7310307,
   "path_escape_or_nonregular_entry_count": 0,
   "platform": "RHEL",
-  "regular_file_count": 25,
-  "root_owned_file_count": 25,
+  "proprietary_license_included": true,
+  "regular_file_count": 30,
+  "root_owned_file_count": 30,
   "runtime_execution": "NOT_RUN",
   "secret_values_present": false,
   "source_bindings": {
+    "LICENSE": "ca88d351f5fee5e673d010d4fa08e5c19abb0d17feaef56daf9c5425de11a154",
+    "NOTICE": "1823ec1021e0c7b7f4924c941ba0d96c302b1facc102f1b91be0abf0a1d54867",
+    "THIRD_PARTY_NOTICES.md": "08881adefad2a389686518f0a619b4376015b4849b38bf80dc37b254bea410d4",
     "deploy/rhel/README.md": "c5ce47857b7090a7589c07c3dd3d7ce1d56ef97efd890b33d004e9f52d40c9b9",
     "deploy/rhel/onsure-llm-gateway.service": "ed9105be6a4f7d9f23aa318d498a206cd477cb08aa780224d2ecfb744ef48e2c",
     "deploy/rhel/onsure-migrate.service": "fc3829d5526038de799afb729e93d774697648a048222c0f47df87e91f867f95",
@@ -22,6 +26,8 @@
     "deploy/rhel/onsure.sysusers.conf": "70c7e2196de2bd07012535543bbe2eca358741916cb93652b363fd94251da72e",
     "deploy/rhel/onsure.tmpfiles.conf": "c02e4ac00b023f8908033eb6fb10326e2764ad8fc2da25c29439ca8d9848dd2d",
     "scripts/package_onsure_rhel.sh": "f4808cac6943b562f7c7fffe24b6fc611ac1f5a58e4a9da6f288a55ed5fd7d4d",
-    "scripts/package_onsure_systemd.sh": "1fbf924bac1383da0556bca0f28d8cbdbee2dca9019db76ebe2e8ad64a0d84f1"
-  }
+    "scripts/package_onsure_systemd.sh": "f55031feadbf039eac1c8b257f79c01ade1ddad080bc6a519c4799f633b557ab"
+  },
+  "third_party_notices_included": true,
+  "upstream_license_text_count": 2
 }

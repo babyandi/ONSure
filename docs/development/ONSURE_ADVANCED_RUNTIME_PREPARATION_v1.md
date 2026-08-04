@@ -17,7 +17,7 @@
 | 성능·장애·복구·관측성 | `SYNTHETIC_REHEARSAL_PASS` | benchmark baseline/comparison, bounded soak, synthetic ENOSPC, backup/restore/corruption rejection 증적. 운영 DR은 `NOT_RUN` |
 | 배포·DB migration | `CANDIDATE_AND_SYNTHETIC_PASS` | container build·non-root/read-only/no-network 검사와 SQLite 합성 migration/idempotency/transaction rollback/interruption resume/digest drift/lock 시험. 실제 deploy/DB 선택은 `NOT_RUN` |
 | Air-gap dependency pack | `OFFLINE_REHEARSAL_PASS` | 4,823-entry Maven repository로 canonical/modular `-o`, 442-entry npm cache로 offline `npm ci` 통과. 외부 signature `NOT_RUN` |
-| SBOM·취약점·라이선스 | `SCANNER_COMPLETED_PARTIAL` | root+8 module CycloneDX, 229개 VS Code inventory, Trivy 0.65.0. Jackson 2.18.9 적용 후 모든 severity 0. root license 미선언 |
+| SBOM·취약점·라이선스 | `SCANNER_COMPLETED_PARTIAL` | CycloneDX, 229개 VS Code inventory, Trivy 0.65.0 모든 severity 0. `ORUDA Labs` proprietary owner 선언 및 third-party notice 반영; 독립 법률 검토는 비최종 |
 
 ## 핵심 명령
 
@@ -44,6 +44,6 @@ python3 scripts/onsure_supply_chain.py validate
 - 배포 topology/base image/orchestrator 및 database 도입 ADR
 - air-gap pack 외부 signature
 - Trivy DB update timestamp의 별도 24시간 freshness 증적
-- root source license, copyright, redistribution/NOTICE 승인
+- proprietary 고객 배포계약과 법적 명칭의 최종 확인
 
 독립 OTester·OAudit와 Human Acceptance는 모두 `NOT_RUN`이며 이 문서의 PASS는 비최종 자체검증 상한을 넘지 않는다.

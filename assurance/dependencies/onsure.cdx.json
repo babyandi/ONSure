@@ -357,7 +357,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "9e55887cdff03be1250b573f43ca350b906d8ff3fc3f17b95b44dc0333ce0781"
+          "content": "54f9cc7ddf8d0fd156a80338ab52babc8bbe18bc420b2924925904fb1061630f"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-adapter-oruda",
@@ -367,6 +375,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -377,7 +386,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "2615acfdd887a35e5064e5733b39ae7da3d810bd5a6e17d4f6c519bfa4ef0dfd"
+          "content": "c600f9623ce37b9ee4539c759115fb8dbccc0e4ec333de6c3e21b2fe59d7e3ff"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-cli",
@@ -387,6 +404,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -400,6 +418,14 @@
           "content": "60dc2bc0489f896442c587a6a5cb315005d5c40dc4c954e0e5108afe45193467"
         }
       ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
+        }
+      ],
       "name": "onsure-core",
       "properties": [
         {
@@ -407,6 +433,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -420,6 +447,14 @@
           "content": "518d88bb1f67cc29fa24bb05d579a287da474e69b017cdc7c50069fb47fbc78e"
         }
       ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
+        }
+      ],
       "name": "onsure-llm-gateway",
       "properties": [
         {
@@ -427,6 +462,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -437,7 +473,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "0b55c096a970775eb4e6a02b8a52a5dc840fa6470af047c0c36ec50ba6276475"
+          "content": "66c6395a4d2fa5030d166bcc94d5780a49e505281393e63c1bae71a7d42ec1f1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-local-api",
@@ -447,6 +491,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -457,7 +502,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "dd4a96ef98be6a31d5b47a1f054125ef008c24e1d79b7cf17a1046d8cea481a4"
+          "content": "9cfe9b2519f3bf6301ba7435446b5861b934d386fe0ae2f85af1f5688987834e"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-migration-postgresql",
@@ -467,6 +520,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-migration-postgresql@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -477,7 +531,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "da240382a12e4d5bb12bad40ce1c1bf75cec33053391b0e1e31e23fa7faf71ec"
+          "content": "f67752b3f9b1edcbb44476243de710f2a8b37f79478c8291856aca28cbe1a428"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-provider-local-mock",
@@ -487,6 +549,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -497,7 +560,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "21b9e2e47cea7e40f8bb4de6d05eb5b0aabbe6705bff782804419bd7db488b5a"
+          "content": "d8b9af66645733f012235fa28fa74823a6b2a241516b1f32bff7480c479d9f56"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-provider-openai",
@@ -507,6 +578,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-provider-openai@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -517,7 +589,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "47be40d183f8888ec782b62cd6cbc38fcebe3d6fac347d373a2d50efb006968e"
+          "content": "fff1c531ef7a7a8b714326a6d58e642863b1c4c082d2343b7e17543a27e96864"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-provider-spi",
@@ -527,6 +607,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -537,7 +618,15 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "0bcd459e46862e5b556a38115ba8e923106f9b1778e549b2ad0588490006fabe"
+          "content": "5e82af2a0830bcc05c9b9100af0b75b4b39d79a381e6de2eae058e517da578dd"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
         }
       ],
       "name": "onsure-sdk",
@@ -547,6 +636,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -560,6 +650,14 @@
           "content": "61e2a0e05e1878500f27688289102695bf712494fd8031400a348bf93e633f8e"
         }
       ],
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
+        }
+      ],
       "name": "onsure-test-fixtures",
       "properties": [
         {
@@ -567,6 +665,7 @@
           "value": "ISOLATED_CANDIDATE"
         }
       ],
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -1059,7 +1158,16 @@
     "component": {
       "bom-ref": "pkg:maven/io.onsure/onsure-assurance-validator@0.1.0-SNAPSHOT?type=jar",
       "group": "io.onsure",
+      "licenses": [
+        {
+          "license": {
+            "name": "LicenseRef-ORUDA-Labs-Proprietary",
+            "url": "https://github.com/babyandi/ONSure/blob/main/LICENSE"
+          }
+        }
+      ],
       "name": "onsure-assurance-validator",
+      "publisher": "ORUDA Labs",
       "purl": "pkg:maven/io.onsure/onsure-assurance-validator@0.1.0-SNAPSHOT?type=jar",
       "type": "library",
       "version": "0.1.0-SNAPSHOT"
@@ -1080,7 +1188,7 @@
       },
       {
         "name": "onsure:vscode_dependency_inventory_sha256",
-        "value": "40d1a17bcf424ff3a54040c55270aaf5fc263ad00134c452c83b8acf60e1725d"
+        "value": "7f7c8b4f8ac058f7b00704fca30532c75815400f80493bf9e7d475b01e226341"
       }
     ],
     "tools": {
