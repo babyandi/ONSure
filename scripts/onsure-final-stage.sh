@@ -89,6 +89,8 @@ fi
 # Package the extension in an isolated copy so node_modules never influences source identity.
 EXT_BUILD="$OUT/vscode-extension-build"
 cp -R "$ROOT/vscode-extension" "$EXT_BUILD"
+mkdir -p "$OUT/scripts"
+cp "$ROOT/scripts/package_onsure_vsix.py" "$OUT/scripts/package_onsure_vsix.py"
 (
   cd "$EXT_BUILD"
   npm ci --ignore-scripts --no-audit --no-fund \

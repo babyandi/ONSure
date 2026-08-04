@@ -17,6 +17,17 @@ SPEC.loader.exec_module(MODULE)
 
 
 class VscodeExtensionValidatorTest(unittest.TestCase):
+    def test_isolated_gate_packaging_copies_the_canonical_packager(self) -> None:
+        required = (
+            'cp "$ROOT/scripts/package_onsure_vsix.py" '
+            '"$OUT/scripts/package_onsure_vsix.py"'
+        )
+        for relative in ("scripts/onsure-local-gate.sh", "scripts/onsure-final-stage.sh"):
+            self.assertIn(required, (ROOT / relative).read_text(encoding="utf-8"), relative)
+        packager = (ROOT / "scripts/package_onsure_vsix.py").read_text(encoding="utf-8")
+        self.assertIn('parser.add_argument("--out"', packager)
+        self.assertIn('"--out", str(output)', packager)
+
     def test_valid_vsix_is_digest_bound_and_excludes_test_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             extension = pathlib.Path(directory)

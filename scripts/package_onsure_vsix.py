@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
@@ -13,7 +14,7 @@ import zipfile
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-EXTENSION = ROOT / "vscode-extension"
+DEFAULT_EXTENSION = ROOT / "vscode-extension"
 FIXED_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
 CONTENT_TYPES = "[Content_Types].xml"
 CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types"
@@ -100,12 +101,30 @@ def canonicalize_vsix(package_file: pathlib.Path) -> dict[str, object]:
     }
 
 
+def resolve_extension_root() -> pathlib.Path:
+    current = pathlib.Path.cwd().resolve()
+    candidate = current if (current / "package.json").is_file() else DEFAULT_EXTENSION.resolve()
+    if ROOT != candidate and ROOT not in candidate.parents:
+        raise ValueError("VSIX_EXTENSION_ROOT_OUTSIDE_PRODUCT")
+    for required in ("package.json", "extension.js"):
+        if not (candidate / required).is_file():
+            raise ValueError("VSIX_EXTENSION_ROOT_INVALID:" + required)
+    return candidate
+
+
 def main() -> int:
-    package = json.loads((EXTENSION / "package.json").read_text(encoding="utf-8"))
-    output = EXTENSION / f"{package['name']}-{package['version']}.vsix"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=pathlib.Path)
+    args = parser.parse_args()
+    extension = resolve_extension_root()
+    package = json.loads((extension / "package.json").read_text(encoding="utf-8"))
+    output = (args.out or extension / f"{package['name']}-{package['version']}.vsix").resolve()
+    if ROOT != output.parent and ROOT not in output.parents or output.is_symlink():
+        raise ValueError("VSIX_OUTPUT_OUTSIDE_PRODUCT")
+    output.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        ["npx", "@vscode/vsce", "package", "--no-dependencies"],
-        cwd=EXTENSION,
+        ["npx", "@vscode/vsce", "package", "--no-dependencies", "--out", str(output)],
+        cwd=extension,
         check=True,
     )
     report = canonicalize_vsix(output)
