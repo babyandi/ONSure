@@ -49,28 +49,30 @@
     ],
     "docker_server_version": "29.6.2",
     "docker_socket_mounted": false,
-    "image_id": "sha256:5a1ff1e4b75768a419af6456fafa6291dcc34db94d263e2b083662be971c3dcf",
+    "image_id": "sha256:021f18ccb289833fd27503c49223ffb04b82ca98dc1dc7bf4ab0e8c54f9172bb",
     "image_pull": "NOT_RUN_LOCAL_IMAGE_ONLY",
-    "image_reference": "onsure-goal-validator:node20",
+    "image_reference": "onsure-validation-runtime:java17-node20-v1",
     "network": "NONE",
     "no_new_privileges": true,
     "original_source_mounted": false,
     "reason_code": "OCI_SANDBOX_BOUNDARIES_VERIFIED",
     "root_filesystem": "READ_ONLY",
     "validation_probe_execution": "PASS_NONFINAL",
-    "validation_probe_output_sha256": "851a85263ad8727566025d31433051ae55b9350032f2a37dbd3b5641a6b0d250"
+    "validation_probe_output_sha256": "405955e66b26f942945aae67ec729bbf64b489c47229c32ffd99b6097b353cb2"
   },
   "production_authority": false,
-  "receipt_sha256": "fc043917a7b7d48976020005c327caffa3b19cf5c82ae74541a3e02f1d91367c",
+  "receipt_sha256": "9dc4119507479a2562d6215c9af8e06ca18a22e56b7813fdb95ba8da8857fb7b",
   "selected_backend": "OCI_DOCKER",
   "source_bindings": {
     "contracts/sandbox-boundary.v1.json": "fe3093aaf09904c0d14c0c61b1c0efdb53cfcb387312377594b88a3b22ada322",
+    "deploy/validation/Dockerfile": "9c058d90d0f9fa4046107cd02517bd9e6503c00e6498dabdaf1027bd4449d95e",
     "fixtures/sandbox-boundary/sandbox-boundary-runner.sh": "312b4367d4ed11b21b106951d1e262032697412bcd65b19d4851e3202891e964",
+    "scripts/build-onsure-validation-image.sh": "8fecfad2fd0e5e026ce045ab5afb11e0ebe0a0b413fdbb25979d35972e05c127",
     "scripts/fixture-sandbox-launcher.sh": "99cedef77d0832c08fbee566a608aaa3e7de6f44a062fb0ddbca4ce6ff7f7f96",
-    "scripts/onsure-sandbox-backend.sh": "a0294a2a84145ac2b1edf06ec7059b7b9e3e3ee5b7193b4673a5f21c3b7072ba",
+    "scripts/onsure-sandbox-backend.sh": "052dd2dafc03e7c6cb2fb03bd367bfab746d03cd0a81b0f3cf55f7b08d3fb1f0",
     "scripts/test-fixture-sandbox-boundary.sh": "431bec0d6afe1c4929313c529a100d76b96f2cd29410a861baa3ad0c576560c6",
     "scripts/validation-sandbox-launcher.sh": "88335daf15ce58ef589b6ff994cf5924e50f25b2ab1fa3a5057562cfbb8b5302"
   },
   "source_code_dirty_paths": [],
-  "source_commit": "61eeece293b01159237b9cefb82919704b4b35f9"
+  "source_commit": "bf42f532a7022268b4c3fc1585506944f1f22a25"
 }
