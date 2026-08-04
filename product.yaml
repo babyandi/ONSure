@@ -90,6 +90,10 @@ build:
     command: python3 scripts/onsure_ubuntu_host_preflight.py --runtime-root <external-runtime-root>
     read_only: true
     production_authority: false
+  ubuntu_privileged_policy_validation:
+    command: python3 scripts/validate_onsure_ubuntu_privileged_policy.py
+    observation_source: OWNER_PROVIDED_READ_ONLY_COMMAND_OUTPUT
+    production_authority: false
   systemd_security_validation:
     command: python3 scripts/onsure_systemd_security.py
     rhel_execution_authority: false

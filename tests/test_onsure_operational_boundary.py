@@ -91,6 +91,9 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_ubuntu_host_preflight_is_read_only_and_nonproduction(self):
         self.assertEqual([], operational.validate_ubuntu_host_preflight_evidence())
 
+    def test_privileged_policy_observation_keeps_remediation_open(self):
+        self.assertEqual([], operational.validate_ubuntu_privileged_policy_evidence())
+
 
 if __name__ == "__main__":
     unittest.main()

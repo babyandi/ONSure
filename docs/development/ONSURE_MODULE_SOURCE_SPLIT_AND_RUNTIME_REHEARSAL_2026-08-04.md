@@ -34,7 +34,7 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
   dump/restore and restored validation pass. Production migration was not run.
 - Synthetic SQLite: apply 1, idempotent apply 0 and rollback 1 pass under the required `.onsure/`
   product-state boundary; an outside-state path was correctly rejected.
-- Nested `products/onsure/` cutover and rollback: 799/799 files, 10 commands, no external product
+- Nested `products/onsure/` cutover and rollback: 802/802 files, 10 commands, no external product
   repository.
 - VS Code 1.95.3 Extension Host on Node 22: online Xvfb run exit 0 and cached
   `--network none` rerun exit 0; Node engine mismatch warnings 0.
@@ -43,6 +43,9 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
   verification user units score 6.7/6.7 and therefore cannot substitute for the offline-qualified
   2.8/2.8 Production system unit candidates. AppArmor profile and UFW policy verification remain
   `NOT_RUN_INSUFFICIENT_PRIVILEGE` and block Production acceptance.
+- Owner-provided privileged observation confirms PostgreSQL `localhost:5432` with SSL on, while
+  UFW still publicly allows 5432 on IPv4/IPv6 and no dedicated ONSure AppArmor enforce profile is
+  present. The sanitized evidence remains `REVIEW_REQUIRED` until both gaps are remediated.
 - VS Code Ubuntu runtime surface: Local API/Gateway RUNNING, content-free token/cost metrics and
   receipt chain valid; runtime tokens were not written to evidence.
 

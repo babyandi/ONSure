@@ -26,6 +26,9 @@ UBUNTU_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-package-valida
 UBUNTU_LIFECYCLE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json"
 VSCODE_RUNTIME_EVIDENCE = ROOT / "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json"
 UBUNTU_HOST_PREFLIGHT_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-host-preflight.v1.json"
+UBUNTU_PRIVILEGED_POLICY_EVIDENCE = ROOT / (
+    "assurance/runtime/onsure-ubuntu-privileged-policy-observation.v1.json"
+)
 SYSTEMD_UNITS = (
     ROOT / "deploy/rhel/onsure.service",
     ROOT / "deploy/rhel/onsure-llm-gateway.service",
@@ -365,6 +368,18 @@ def validate_ubuntu_host_preflight_evidence() -> list[str]:
     return []
 
 
+def validate_ubuntu_privileged_policy_evidence() -> list[str]:
+    from validate_onsure_ubuntu_privileged_policy import validate
+
+    evidence = json.loads(UBUNTU_PRIVILEGED_POLICY_EVIDENCE.read_text(encoding="utf-8"))
+    result = validate(evidence)
+    if result.get("decision") != "PASS_NONFINAL" \
+            or result.get("observed_production_ready") is not False \
+            or result.get("final_claim_allowed") is not False:
+        return ["UBUNTU_PRIVILEGED_POLICY_EVIDENCE_CONTRACT"]
+    return []
+
+
 def validate_documents(
     boundary: dict[str, object],
     product: dict[str, object],
@@ -497,6 +512,8 @@ def validate() -> dict[str, object]:
         "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json",
         "scripts/onsure_ubuntu_host_preflight.py",
         "assurance/runtime/onsure-ubuntu-host-preflight.v1.json",
+        "scripts/validate_onsure_ubuntu_privileged_policy.py",
+        "assurance/runtime/onsure-ubuntu-privileged-policy-observation.v1.json",
     ]
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
@@ -517,6 +534,7 @@ def validate() -> dict[str, object]:
         violations.extend(validate_ubuntu_lifecycle_evidence())
         violations.extend(validate_vscode_runtime_evidence())
         violations.extend(validate_ubuntu_host_preflight_evidence())
+        violations.extend(validate_ubuntu_privileged_policy_evidence())
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",
