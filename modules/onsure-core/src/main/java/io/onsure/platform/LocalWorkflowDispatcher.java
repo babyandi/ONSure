@@ -227,8 +227,16 @@ public final class LocalWorkflowDispatcher {
             String runId = requiredId(request, "run_id");
             Path runRoot = outputPath(request, "run_root",
                     ".onsure/universal-validation/" + targetId + "/" + runId);
-            var profile = new StandardValidationProfileDetector().detect(targetId, target.sourceRoot());
-            UniversalValidationRunner.RunResult run = new UniversalValidationRunner().run(profile, runRoot);
+            Path environmentProfileFile = optionalInputPath(request, "environment_profile_file");
+            EnvironmentRequirementProfile.Loaded environmentProfile = environmentProfileFile == null
+                    ? null : EnvironmentRequirementProfile.load(environmentProfileFile);
+            var declaredRequirements = environmentProfile == null
+                    ? java.util.List.<UniversalValidationProfile.EnvironmentRequirement>of()
+                    : environmentProfile.requirements();
+            var profile = new StandardValidationProfileDetector().detect(
+                    targetId, target.sourceRoot(), declaredRequirements);
+            UniversalValidationRunner.RunResult run = new UniversalValidationRunner().run(
+                    profile, runRoot, environmentProfile);
             return Map.of(
                     "validation_mode", "UNIVERSAL",
                     "registered_project_id", projectId,

@@ -30,21 +30,23 @@ public final class StandardValidationProfileDetector {
     }
 
     public Profile detect(String profileId, Path sourceRoot) throws Exception {
+        return detect(profileId, sourceRoot, List.of());
+    }
+
+    Profile detect(String profileId, Path sourceRoot,
+            List<EnvironmentRequirement> declaredEnvironmentRequirements) throws Exception {
         Path root = requireRoot(sourceRoot);
         Set<String> technologies = new LinkedHashSet<>();
+        List<Step> environment = new ArrayList<>();
         List<Step> functional = new ArrayList<>();
         List<Step> endToEnd = new ArrayList<>();
         List<Step> operations = new ArrayList<>();
-        List<EnvironmentRequirement> environmentRequirements = new ArrayList<>();
+        List<EnvironmentRequirement> environmentRequirements = new ArrayList<>(
+                declaredEnvironmentRequirements == null ? List.of() : declaredEnvironmentRequirements);
         EnumMap<Phase, String> notRun = new EnumMap<>(Phase.class);
 
         Step preflight = step("environment.preflight", Phase.STRUCTURE_STATIC,
                 StepKind.ENVIRONMENT_PREFLIGHT, true, List.of(), Duration.ofMinutes(2), List.of());
-        Step inventory = step("structure.inventory", Phase.STRUCTURE_STATIC, StepKind.INVENTORY,
-                true, List.of(), Duration.ofMinutes(2), List.of(preflight.stepId()));
-        Step meta = step("validator.meta-check", Phase.STRUCTURE_STATIC, StepKind.VALIDATOR_META_CHECK,
-                true, List.of(), Duration.ofMinutes(2), List.of(inventory.stepId()));
-
         for (ValidationPack pack : packs) {
             ValidationPack.Contribution contribution = pack.detect(root);
             if (contribution == null) throw new IllegalArgumentException("VALIDATION_PACK_RESULT_REQUIRED:" + pack.id());
@@ -53,6 +55,7 @@ public final class StandardValidationProfileDetector {
             for (Step contributed : contribution.steps()) {
                 validateContribution(pack, contributed);
                 switch (contributed.kind().group()) {
+                    case ENVIRONMENT_DEPENDENCY -> environment.add(contributed);
                     case STAGE_FUNCTIONAL -> functional.add(contributed);
                     case CONNECTED_E2E -> endToEnd.add(contributed);
                     case OPERATIONS_RECOVERY -> operations.add(contributed);
@@ -61,6 +64,14 @@ public final class StandardValidationProfileDetector {
                 }
             }
         }
+
+        List<String> environmentGate = new ArrayList<>();
+        environmentGate.add(preflight.stepId());
+        environment.stream().filter(Step::required).map(Step::stepId).forEach(environmentGate::add);
+        Step inventory = step("structure.inventory", Phase.STRUCTURE_STATIC, StepKind.INVENTORY,
+                true, List.of(), Duration.ofMinutes(2), environmentGate);
+        Step meta = step("validator.meta-check", Phase.STRUCTURE_STATIC, StepKind.VALIDATOR_META_CHECK,
+                true, List.of(), Duration.ofMinutes(2), List.of(inventory.stepId()));
 
         if (endToEnd.isEmpty()) {
             notRun.put(Phase.END_TO_END_LINEAGE, "END_TO_END_ENTRYPOINT_NOT_DISCOVERED");
@@ -85,6 +96,7 @@ public final class StandardValidationProfileDetector {
                 StepKind.EVIDENCE_VERIFICATION, true, List.of(), Duration.ofMinutes(2), evidenceDependencies);
         List<Step> steps = new ArrayList<>();
         steps.add(preflight);
+        steps.addAll(environment);
         steps.add(inventory);
         steps.add(meta);
         steps.addAll(functional);
@@ -137,6 +149,17 @@ public final class StandardValidationProfileDetector {
     private static void validateContribution(ValidationPack pack, Step step) {
         if (step == null || !step.stepId().startsWith(pack.id() + ".")) {
             throw new IllegalArgumentException("VALIDATION_PACK_STEP_PREFIX_INVALID:" + pack.id());
+        }
+        if (step.kind().group() == UniversalValidationProfile.VerificationGroup.ENVIRONMENT_DEPENDENCY) {
+            boolean trustedNodePreparation = pack instanceof NodeValidationPack
+                    && step.kind() == StepKind.ENVIRONMENT_PREFLIGHT
+                    && "node.dependencies".equals(step.stepId())
+                    && step.command().equals(List.of("npm", "--offline", "ci", "--ignore-scripts"))
+                    && step.dependsOn().equals(List.of("environment.preflight"));
+            if (!trustedNodePreparation) {
+                throw new IllegalArgumentException("VALIDATION_PACK_RESERVED_GROUP:"
+                        + pack.id() + ":" + step.stepId());
+            }
         }
     }
 

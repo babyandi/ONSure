@@ -113,6 +113,12 @@ public final class UniversalValidationRunner {
     }
 
     public RunResult run(Profile profile, Path runRoot) throws Exception {
+        return run(profile, runRoot, null);
+    }
+
+    RunResult run(Profile profile, Path runRoot,
+            EnvironmentRequirementProfile.Loaded environmentProfile) throws Exception {
+        verifyEnvironmentProfileBinding(profile, environmentProfile);
         Instant started = Instant.now();
         Path root = requireRunRoot(profile.sourceRoot(), runRoot);
         Files.createDirectories(root);
@@ -180,6 +186,16 @@ public final class UniversalValidationRunner {
         body.put("source_mutation_detected", sourceMutation);
         body.put("technologies", profile.technologies().stream().sorted().toList());
         body.put("environment_requirements", profile.environmentRequirements());
+        body.put("environment_requirements_sha256",
+                EnvironmentRequirementProfile.semanticDigest(profile.environmentRequirements()));
+        if (environmentProfile != null) {
+            verifyEnvironmentProfileBinding(profile, environmentProfile);
+            body.put("external_environment_profile", Map.of(
+                    "contract", EnvironmentRequirementProfile.CONTRACT,
+                    "profile_id", environmentProfile.profileId(),
+                    "semantic_sha256", environmentProfile.semanticSha256(),
+                    "source_file_sha256", environmentProfile.sourceFileSha256()));
+        }
         Map<String, Object> environmentEvidence = new LinkedHashMap<>();
         environmentEvidence.put("description", environmentDescription);
         environmentEvidence.put("sha256", environmentSha256);
@@ -211,6 +227,17 @@ public final class UniversalValidationRunner {
                 Map.copyOf(phaseOutcomes), Map.copyOf(groupOutcomes), overall, List.copyOf(results),
                 profile.notRunReasons(), started, completed, false,
                 "SELF_VALIDATION_NONFINAL", receipt, receiptSha);
+    }
+
+    private static void verifyEnvironmentProfileBinding(Profile profile,
+            EnvironmentRequirementProfile.Loaded environmentProfile) throws Exception {
+        if (environmentProfile == null) return;
+        if (!profile.environmentRequirements().containsAll(environmentProfile.requirements())) {
+            throw new IllegalArgumentException("ENVIRONMENT_PROFILE_REQUIREMENT_BINDING_MISMATCH");
+        }
+        if (!Hashing.file(environmentProfile.sourceFile()).equals(environmentProfile.sourceFileSha256())) {
+            throw new IllegalStateException("ENVIRONMENT_PROFILE_SOURCE_CHANGED");
+        }
     }
 
     private StepExecution executeInternal(Profile profile, Step step, Path snapshotRoot,
@@ -277,8 +304,11 @@ public final class UniversalValidationRunner {
         requiredExecutables.stream().filter(executable -> executablePath(executable) == null)
                 .map(executable -> "command:" + executable).forEach(missing::add);
         List<String> optionalMissing = new ArrayList<>();
+        List<String> requirementObservations = new ArrayList<>();
         for (var requirement : profile.environmentRequirements()) {
             boolean present = requirementPresent(requirement, snapshotRoot);
+            requirementObservations.add(requirement.requirementId() + ":" + requirement.kind() + ":"
+                    + (present ? "PASS_NONFINAL" : requirement.required() ? "MISSING_REQUIRED" : "MISSING_OPTIONAL"));
             if (!present) {
                 (requirement.required() ? missing : optionalMissing).add(requirement.requirementId());
             }
@@ -288,6 +318,9 @@ public final class UniversalValidationRunner {
                 + System.getProperty("java.version", "unknown") + "\nrequired_executables=" + requiredExecutables
                 + "\ndeclared_requirements=" + profile.environmentRequirements().stream()
                         .map(value -> value.requirementId() + ":" + value.kind()).toList()
+                + "\nenvironment_requirements_sha256="
+                + EnvironmentRequirementProfile.semanticDigest(profile.environmentRequirements())
+                + "\nrequirement_observations=" + requirementObservations
                 + "\nmissing_required=" + missing + "\nmissing_optional=" + optionalMissing;
         if (!missing.isEmpty()) {
             return new StepExecution(Outcome.BLOCKED, -1, report, false,

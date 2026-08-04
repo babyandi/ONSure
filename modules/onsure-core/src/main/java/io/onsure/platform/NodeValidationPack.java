@@ -35,19 +35,19 @@ public final class NodeValidationPack implements ValidationPack {
             requirements.add(new EnvironmentRequirement(
                     "node.lockfile", RequirementKind.SOURCE_FILE, "package-lock.json", true));
             preparation = "node.dependencies";
-            steps.add(step(preparation, Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
+            steps.add(step(preparation, Phase.STRUCTURE_STATIC, StepKind.ENVIRONMENT_PREFLIGHT,
                     List.of("npm", "--offline", "ci", "--ignore-scripts"), BUILD_TIMEOUT,
-                    List.of("validator.meta-check")));
+                    List.of("environment.preflight")));
         }
         if (scripts.hasNonNull("test")) {
             steps.add(step("node.tests", Phase.COMPONENT_AND_NEGATIVE, StepKind.UNIT_TEST,
                     List.of("npm", "--offline", "test"), TEST_TIMEOUT,
-                    List.of(preparation == null ? "validator.meta-check" : preparation)));
+                    functionalDependencies(preparation)));
         }
         if (scripts.hasNonNull("build")) {
             steps.add(step("node.build", Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
                     List.of("npm", "--offline", "run", "build"), BUILD_TIMEOUT,
-                    List.of(preparation == null ? "validator.meta-check" : preparation)));
+                    functionalDependencies(preparation)));
         }
         if (scripts.hasNonNull("test:integration")) {
             steps.add(step("node.integration", Phase.END_TO_END_LINEAGE, StepKind.INTEGRATION_TEST,
@@ -55,5 +55,11 @@ public final class NodeValidationPack implements ValidationPack {
                     List.of(scripts.hasNonNull("test") ? "node.tests" : "validator.meta-check")));
         }
         return new Contribution(Set.of("NODE"), requirements, steps);
+    }
+
+    private static List<String> functionalDependencies(String preparation) {
+        return preparation == null
+                ? List.of("validator.meta-check")
+                : List.of(preparation, "validator.meta-check");
     }
 }

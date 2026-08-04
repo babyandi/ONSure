@@ -42,4 +42,36 @@ class LocalWorkflowDispatcherUniversalTest {
         assertTrue(Files.isRegularFile(run.receiptFile()));
         assertFalse(Files.exists(source.resolve("onsure-target.json")));
     }
+
+    @Test
+    void sharedWorkflowAppliesWorkspaceBoundExternalEnvironmentProfile() throws Exception {
+        Path source = Files.createDirectories(temp.resolve("profile-source"));
+        Files.writeString(source.resolve("openapi.yaml"), "openapi: 3.1.0\npaths: {}\n");
+        Path profile = temp.resolve("environment-profile.json");
+        Files.writeString(profile, """
+                {"contract":"ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1","profile_id":"api-preflight",
+                 "requirements":[{"requirement_id":"clamav.required","kind":"EXECUTABLE",
+                 "value":"onsure-clamscan-definitely-missing","required":true}]}
+                """);
+        var dispatcher = new LocalWorkflowDispatcher(temp);
+        dispatcher.dispatch("project.register-workspace", mapper.valueToTree(Map.of(
+                "workspace_id", "workspace", "workspace_name", "Workspace")));
+        dispatcher.dispatch("project.register", mapper.valueToTree(Map.of(
+                "project_id", "project", "workspace_id", "workspace", "project_name", "Project")));
+        dispatcher.dispatch("project.register-target", mapper.valueToTree(Map.of(
+                "project_id", "project", "target_id", "profile-target", "target_name", "Profile Target",
+                "target_type", "GENERAL_SOFTWARE", "source_root", source.toString())));
+
+        Map<String, Object> envelope = dispatcher.dispatch("validation.run", mapper.valueToTree(Map.of(
+                "project_id", "project", "target_id", "profile-target", "validation_mode", "UNIVERSAL",
+                "run_id", "run-profile", "environment_profile_file", profile.toString())));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) envelope.get("result");
+        UniversalValidationRunner.RunResult run = (UniversalValidationRunner.RunResult) result.get("run");
+        assertEquals(UniversalValidationProfile.Outcome.BLOCKED, run.overallOutcome());
+        assertEquals("clamav.required", run.environmentRequirements().get(0).requirementId());
+        assertTrue(Files.readString(run.receiptFile()).contains("\"external_environment_profile\""));
+        assertFalse(Files.exists(source.resolve("environment-profile.json")));
+    }
 }

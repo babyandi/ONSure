@@ -136,6 +136,22 @@ mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
   -Dexec.args="universal /absolute/source-root profile-id /absolute/empty-run-root"
 ```
 
+대상 원본을 수정하지 않고 renderer, font, ClamAV, 서명 Fixture와 실행 권한을 필수조건으로
+추가하려면 ONSure workspace에 `ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1` 파일을 만들고
+다섯 번째 인자로 전달한다. 예시는 `config/validation/environment-requirements.example.json`이다.
+프로필은 엄격히 파싱되며 의미 digest와 원본 파일 SHA-256이 실행 영수증에 기록된다.
+
+```bash
+mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+  -Dexec.mainClass=io.onsure.platform.ONSureCli \
+  -Dexec.args="universal /absolute/source-root profile-id /absolute/empty-run-root /absolute/environment-profile.json"
+```
+
+등록 Workflow/API에서는 `validation.run` 요청의 `environment_profile_file`에 workspace 내부
+프로필 경로를 전달한다. Node dependency가 있으면 내장 Pack이 구조 검사 전에 고정된
+`npm --offline ci --ignore-scripts`를 격리 snapshot에서 실행한다. lock/manifest drift 또는
+offline cache 누락은 1단계 `BLOCKED`이며 2~7단계는 실행하지 않는다.
+
 등록된 Target은 기존 `validation.run` 요청에 `validation_mode=UNIVERSAL`을 지정해 실행한다.
 실행 전 후보만 검토하려면 다음 명령을 사용한다. Node script, Maven module, Java/Python main,
 OpenAPI operation, DB migration과 배포 정의를 source digest에 결속해 표시하지만 대상 명령은
@@ -231,13 +247,13 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 336개(조건부 11개 skip 포함), Python 199개, Node 9개,
+현재 변경 후보의 로컬 검증은 Java 343개(조건부 11개 skip 포함), Python 199개, Node 9개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `fb2f0bf6c5051ebf6197ec8e0f21c8d77fd3316b348016f1ccbd4fdb5dfd9589`를 생성했으며
 동일 입력 2회 패키징 결과가 byte-identical했다.
-Manifest 후보는 신규 구현을 포함한 880개 파일이며 정확한 파일 수와
+Manifest 후보는 신규 구현을 포함한 886개 파일이며 정확한 파일 수와
 digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는

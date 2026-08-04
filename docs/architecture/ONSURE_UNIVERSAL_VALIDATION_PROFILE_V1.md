@@ -70,23 +70,29 @@ Java SPI는 `io.onsure.platform.ValidationPack`이다. 기본 구현은
 `NodeValidationPack`, `OpenApiValidationPack`, `PostgresqlValidationPack`이며 Core가
 항상 고정된 표준 Pack 집합으로 설치한다. Core에 명시적으로 설치한 신뢰된
 Pack만 사용하며 대상 저장소가 임의 Java class나 command를 주입할 수 없다. Pack step
-ID는 `<pack-id>.` prefix를 사용하고 다음 검증군에만 기여할 수 있다.
+ID는 `<pack-id>.` prefix를 사용하고 원칙적으로 다음 검증군에만 기여할 수 있다.
 
 - `STAGE_FUNCTIONAL`
 - `CONNECTED_E2E`
 - `OPERATIONS_RECOVERY`
 
-환경·구조·검증기 메타검증·증적 판정 gate는 Core 전용이며 Pack이 교체할 수 없다.
+환경·구조·검증기 메타검증·증적 판정 gate는 Core 전용이며 Pack이 교체할 수 없다. 유일한
+예외는 Core에 고정 설치된 `NodeValidationPack`의 정확한 `node.dependencies` 명령
+`npm --offline ci --ignore-scripts`다. 이 Step은 핵심 `environment.preflight` 뒤, 구조 inventory
+앞에서 격리 snapshot에만 설치하며 외부 Pack이 같은 검증군이나 명령을 기여하면 거부한다.
 메타검증은 일곱 검증군 전체와 실패·재시도·차단, 연결 E2E 여섯 facet,
 그 여섯 facet의 실제 artifact 계보를 재계산하는 `WORKFLOW_LINEAGE`,
 중단·재개·rollback·재실행 네 facet이 Profile에 존재하는지 다시 계산한다. 하나라도
 누락되면 `VALIDATOR_PROFILE_COVERAGE_INVALID`로 실패한다.
 Pack 명령도 no-network sandbox가 지원하는 offline Maven, Gradle, Python test, npm
 명령으로 제한된다. Renderer, font, malware scanner, signer fixture처럼 제품별인 항목은
-Pack이 typed `EnvironmentRequirement`로 탐지·선언하며 필수 항목이 누락되면 환경 단계에서
+Pack이 typed `EnvironmentRequirement`로 탐지·선언하거나, 운영자가 대상 원본 밖의 엄격한
+`ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1`으로 선언한다. 필수 항목이 누락되면 환경 단계에서
 `BLOCKED`로 판정한다. 지원 종류는 executable, source file/directory, executable source
-file, font family다. ClamAV는 `EXECUTABLE=clamscan`, 서명 Fixture는 `SOURCE_FILE`, Node
-module/renderer asset은 `SOURCE_DIRECTORY` 또는 Pack의 offline 실행 Step으로 선언한다.
+file, font family다. ClamAV는 `EXECUTABLE=clamscan`, 서명 Fixture는 `SOURCE_FILE`, launcher
+권한은 `EXECUTABLE_SOURCE_FILE`, renderer asset은 `SOURCE_DIRECTORY`, font는 `FONT_FAMILY`로
+선언한다. 외부 프로필의 의미 digest와 파일 digest를 영수증에 결속하고 실행 종료 전 파일
+불변성을 다시 확인한다. Node module은 manifest/lock 집합 대조 후 위 고정 offline 설치로 확인한다.
 
 증적 판정은 PASS 필드의 존재만 검사하지 않는다. 신뢰된 실행 로그 경로 안의 실제 파일을
 다시 읽어 `outputSha256`과 대조하고, 각 Step의 `environmentSha256`이 실행 영수증의

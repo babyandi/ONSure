@@ -1,0 +1,7 @@
+{
+  "contract": "ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1",
+  "profile_id": "unsafe-path",
+  "requirements": [
+    {"requirement_id": "signing.fixture", "kind": "SOURCE_FILE", "value": "../outside-secret.json", "required": true}
+  ]
+}

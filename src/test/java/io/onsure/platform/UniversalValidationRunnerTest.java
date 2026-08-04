@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -50,6 +51,37 @@ class UniversalValidationRunnerTest {
         assertTrue(Files.readString(Path.of(preflight.logFile()))
                 .contains("node.manifest-lock-dependency-mismatch:dependencies"));
         assertEquals(BLOCKED, result.overallOutcome());
+    }
+
+    @Test
+    void performsFixedOfflineNodeInstallInEnvironmentGroupBeforeStructure() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("node-offline-preflight"));
+        Files.writeString(source.resolve("package.json"), """
+                {"dependencies":{"renderer":"1.0.0"},"scripts":{"test":"node --test"}}
+                """);
+        Files.writeString(source.resolve("package-lock.json"), """
+                {"lockfileVersion":3,"packages":{"":{"dependencies":{"renderer":"1.0.0"}}}}
+                """);
+        var profile = new StandardValidationProfileDetector().detect("node-offline-preflight", source);
+        List<String> executed = new ArrayList<>();
+
+        var result = new UniversalValidationRunner((step, root) -> {
+            executed.add(step.stepId());
+            if (step.stepId().equals("node.dependencies")) {
+                assertEquals(List.of("npm", "--offline", "ci", "--ignore-scripts"), step.command());
+                return new UniversalValidationRunner.StepExecution(
+                        BLOCKED, 1, "ENOTCACHED", false, "OFFLINE_DEPENDENCY_CACHE_INCOMPLETE");
+            }
+            throw new AssertionError("later command must not execute: " + step.stepId());
+        }).run(profile, temp.resolve("node-offline-preflight-run"));
+
+        assertEquals(List.of("node.dependencies"), executed);
+        assertEquals(BLOCKED, result.groupOutcomes().get(
+                UniversalValidationProfile.VerificationGroup.ENVIRONMENT_DEPENDENCY));
+        assertEquals(NOT_RUN, result.groupOutcomes().get(
+                UniversalValidationProfile.VerificationGroup.STRUCTURE));
+        assertEquals(NOT_RUN, result.steps().stream()
+                .filter(step -> step.stepId().equals("structure.inventory")).findFirst().orElseThrow().outcome());
     }
 
     @Test
@@ -222,6 +254,50 @@ class UniversalValidationRunnerTest {
 
         assertEquals(UniversalValidationProfile.Outcome.BLOCKED, result.overallOutcome());
         assertEquals("REQUIRED_ENVIRONMENT_MISSING:signer.fixture", result.steps().get(0).reason());
+    }
+
+    @Test
+    void verifiesEveryDeclaredEnvironmentRequirementKindAndRecordsSemanticDigest() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("all-environment-kinds"));
+        Files.writeString(source.resolve("openapi.yaml"), "openapi: 3.1.0\npaths: {}\n");
+        Files.createDirectory(source.resolve("renderer"));
+        Files.writeString(source.resolve("renderer/runtime.marker"), "renderer\n");
+        Files.writeString(source.resolve("signing.json"), "{}\n");
+        Files.writeString(source.resolve("render.sh"), "#!/bin/sh\nexit 0\n");
+        source.resolve("render.sh").toFile().setExecutable(false, false);
+        var requirements = List.of(
+                new UniversalValidationProfile.EnvironmentRequirement(
+                        "tool.available", UniversalValidationProfile.RequirementKind.EXECUTABLE, "sh", true),
+                new UniversalValidationProfile.EnvironmentRequirement(
+                        "renderer.directory", UniversalValidationProfile.RequirementKind.SOURCE_DIRECTORY,
+                        "renderer", true),
+                new UniversalValidationProfile.EnvironmentRequirement(
+                        "signing.fixture", UniversalValidationProfile.RequirementKind.SOURCE_FILE,
+                        "signing.json", true),
+                new UniversalValidationProfile.EnvironmentRequirement(
+                        "renderer.launcher", UniversalValidationProfile.RequirementKind.EXECUTABLE_SOURCE_FILE,
+                        "render.sh", true),
+                new UniversalValidationProfile.EnvironmentRequirement(
+                        "font.missing", UniversalValidationProfile.RequirementKind.FONT_FAMILY,
+                        "ONSure Definitely Missing Font 7f5c8e", true));
+        var detected = new StandardValidationProfileDetector().detect(
+                "all-environment-kinds", source, requirements);
+
+        var result = new UniversalValidationRunner((step, root) -> {
+            throw new AssertionError("command execution not expected after blocked preflight");
+        }).run(detected, temp.resolve("all-environment-kinds-run"));
+
+        var preflight = result.steps().get(0);
+        String report = Files.readString(Path.of(preflight.logFile()));
+        assertEquals(BLOCKED, preflight.outcome());
+        assertTrue(report.contains("tool.available:EXECUTABLE:PASS_NONFINAL"));
+        assertTrue(report.contains("renderer.directory:SOURCE_DIRECTORY:PASS_NONFINAL"));
+        assertTrue(report.contains("signing.fixture:SOURCE_FILE:PASS_NONFINAL"));
+        assertTrue(report.contains("renderer.launcher:EXECUTABLE_SOURCE_FILE:MISSING_REQUIRED"));
+        assertTrue(report.contains("font.missing:FONT_FAMILY:MISSING_REQUIRED"));
+        assertTrue(report.matches("(?s).*environment_requirements_sha256=[0-9a-f]{64}.*"));
+        JsonNode receipt = new ObjectMapper().readTree(result.receiptFile().toFile());
+        assertTrue(receipt.path("environment_requirements_sha256").asText().matches("[0-9a-f]{64}"));
     }
 
     @Test

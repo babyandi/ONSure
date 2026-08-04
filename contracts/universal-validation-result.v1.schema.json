@@ -33,6 +33,18 @@
         }
       }
     },
+    "environment_requirements_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "external_environment_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "profile_id", "semantic_sha256", "source_file_sha256"],
+      "properties": {
+        "contract": {"const": "ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1"},
+        "profile_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+        "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
     "environment_evidence": {
       "type": "object",
       "additionalProperties": false,

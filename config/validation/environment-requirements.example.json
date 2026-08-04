@@ -1,0 +1,11 @@
+{
+  "contract": "ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1",
+  "profile_id": "document-workflow-preflight",
+  "requirements": [
+    {"requirement_id": "renderer.runtime", "kind": "SOURCE_DIRECTORY", "value": "runtime/renderer", "required": true},
+    {"requirement_id": "renderer.font", "kind": "FONT_FAMILY", "value": "Noto Sans CJK KR", "required": true},
+    {"requirement_id": "malware.clamav", "kind": "EXECUTABLE", "value": "clamscan", "required": true},
+    {"requirement_id": "signing.fixture", "kind": "SOURCE_FILE", "value": "fixtures/signing/receipt.json", "required": true},
+    {"requirement_id": "renderer.launcher", "kind": "EXECUTABLE_SOURCE_FILE", "value": "scripts/render.sh", "required": true}
+  ]
+}

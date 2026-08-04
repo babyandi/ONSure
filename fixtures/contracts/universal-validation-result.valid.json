@@ -8,6 +8,7 @@
   "source_mutation_detected": false,
   "technologies": ["OPENAPI"],
   "environment_requirements": [],
+  "environment_requirements_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "environment_evidence": {
     "description": "Linux\n6.8.0\namd64\nOpenJDK\n17",
     "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"

@@ -188,7 +188,11 @@ class StandardValidationProfileDetectorTest {
         var preparation = profile.steps().stream().filter(step -> step.stepId().equals("node.dependencies"))
                 .findFirst().orElseThrow();
         assertEquals(List.of("npm", "--offline", "ci", "--ignore-scripts"), preparation.command());
-        assertEquals(List.of("node.dependencies"), profile.steps().stream()
+        assertEquals(UniversalValidationProfile.StepKind.ENVIRONMENT_PREFLIGHT, preparation.kind());
+        assertEquals(List.of("environment.preflight"), preparation.dependsOn());
+        assertTrue(profile.steps().stream().filter(step -> step.stepId().equals("structure.inventory"))
+                .findFirst().orElseThrow().dependsOn().contains("node.dependencies"));
+        assertEquals(List.of("node.dependencies", "validator.meta-check"), profile.steps().stream()
                 .filter(step -> step.stepId().equals("node.tests")).findFirst().orElseThrow().dependsOn());
     }
 

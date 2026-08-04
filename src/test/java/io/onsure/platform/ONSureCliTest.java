@@ -65,6 +65,33 @@ class ONSureCliTest {
     }
 
     @Test
+    void universalCommandAppliesExternalEnvironmentProfileWithoutModifyingTarget() throws Exception {
+        Path target = Files.createDirectory(temp.resolve("external-profile-target"));
+        Files.writeString(target.resolve("openapi.yaml"), "openapi: 3.1.0\npaths: {}\n");
+        Path profile = temp.resolve("environment-profile.json");
+        Files.writeString(profile, """
+                {"contract":"ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1","profile_id":"external",
+                 "requirements":[{"requirement_id":"fixture.required","kind":"SOURCE_FILE",
+                 "value":"fixtures/signing.json","required":true}]}
+                """);
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+
+        int exit = ONSureCli.run(new String[] {
+                "universal", target.toString(), "external-profile",
+                temp.resolve("external-profile-run").toString(), profile.toString()
+        }, new PrintStream(stdout), new PrintStream(new ByteArrayOutputStream()));
+
+        assertEquals(3, exit);
+        assertTrue(stdout.toString().contains("\"overallOutcome\" : \"BLOCKED\""));
+        assertTrue(stdout.toString().contains("fixture.required"));
+        String receipt = Files.readString(
+                temp.resolve("external-profile-run/universal-validation-result.json"));
+        assertTrue(receipt.contains("\"external_environment_profile\""));
+        assertTrue(receipt.matches("(?s).*\"source_file_sha256\"\s*:\s*\"[0-9a-f]{64}\".*"));
+        assertTrue(Files.notExists(target.resolve("fixtures")));
+    }
+
+    @Test
     void lineageCommandReadBackVerifiesPortableReceipt() throws Exception {
         WorkflowLineageTestFixture.write(temp, "CLI lineage");
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
