@@ -126,8 +126,9 @@ def main() -> int:
         errors.append("OPEN_PR_OVERLAP_AUTOMATIC_MERGE_AUTHORITY_DRIFT")
 
     known_blockers = [
-        "RHEL_AND_UBUNTU_INSTALL_AND_SYSTEMD_START_NOT_RUN",
-        "RHEL_AND_UBUNTU_PRODUCTION_POSTGRESQL_REHEARSAL_NOT_RUN",
+        "RHEL_INSTALL_AND_SYSTEMD_START_NOT_RUN",
+        "UBUNTU_PRODUCTION_ACCEPTANCE_NOT_RUN",
+        "PRODUCTION_POSTGRESQL_REHEARSAL_NOT_RUN",
         "OPENAI_LIVE_REQUEST_NOT_RUN",
     ]
     if build_result["shared_source_module_count"]:

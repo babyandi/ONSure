@@ -115,16 +115,16 @@
 
 | 목적 | 명령 | 기준 상태 |
 |---|---|---|
-| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (current candidate local 2회 + 독립 clone, 각 281 tests) |
-| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (11 modules, 37 tests; 독립 clone 재검증 대상) |
-| Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 281 tests) |
+| 권위 root clean verify | `mvn -B -ntp -q clean verify` | `CANONICAL / PASS_NONFINAL` (current candidate local 2회 + 독립 clone, 각 282 tests) |
+| 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (11 modules, 37 tests; 독립 clone 포함) |
+| Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 282 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
 | Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local + 독립 clone 각 142 tests) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (local + 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
-| VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `aff3faec3ce3...`; proprietary LICENSE/third-party notice 포함) |
+| VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `ec2b910700d2...`; proprietary LICENSE/third-party notice 포함) |
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (VS Code 1.95.3/Xvfb, extension host exit 0, offline network 차단 재실행 exit 0) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 785 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 786 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
 | Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (171 module-owned main sources, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 0) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
@@ -134,11 +134,11 @@
 | 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / RHEL·Ubuntu systemd 및 PostgreSQL/Flyway candidate` |
 | 배포·DB preflight | `python3 scripts/onsure_deploy_migration_skeleton.py preflight` | `PASS_NONFINAL / deployment·migration NOT_RUN_NOT_AUTHORIZED` |
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
-| Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 4,823-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
+| Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 5,205-entry offline canonical/modular, dependency 27-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (785-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (786-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
-| Deploy | RHEL/Ubuntu 단독 서버 systemd/package 후보 구현 | `두 tar 내부 checksum·ownership·secret/path 검사 PASS_NONFINAL / INSTALL NOT_RUN / NOT_AUTHORIZED` |
+| Deploy | RHEL/Ubuntu 단독 서버 systemd/package 후보 구현 | `두 tar 검사 PASS_NONFINAL / Ubuntu 검증 runtime active·20/20 health·3회 restart PASS_NONFINAL / RHEL INSTALL NOT_RUN` |
 | DB migration | PostgreSQL/Flyway V1 + Ubuntu 호스트의 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / PRODUCTION NOT_RUN` |
 
 이전 구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,
@@ -178,7 +178,8 @@ namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 컨테이너가 최초 `npm ci`를 비-root로 자체 준비하도록 보강했고, Xvfb online 실행과
 `--network none` cached offline 실행이 모두 exit 0을 반환했다. 전체 gate는 최신 HEAD에서도
 동일한 `BWRAP_LOOPBACK_PERMISSION_DENIED`로 환경 차단됐으며 보안 우회는 적용하지 않았다.
-별도 clone은 remote `origin/main`만 추가로 fetch한 뒤 canonical 281/281, Python 142/142,
+별도 clone은 commit `849bca0ca261a1a0ddf89caa85cb777aad6a1bdb`에서 canonical 282/282,
+modular 37/37, Python 142/142,
 API 240/240, proprietary supply-chain validation, migration readiness와 static gate를 외부
 제품 workspace 없이 통과했다.
 
@@ -186,8 +187,8 @@ API 240/240, proprietary supply-chain validation, migration readiness와 static 
 `LicenseRef-ORUDA-Labs-Proprietary`로 기록했다. 다른 개발자·회사·외주, 외부 저장소 source
 복사와 외부 asset 복사는 모두 `NONE_ATTESTED`다. RHEL·Ubuntu package는 `LICENSE`, `NOTICE`,
 `THIRD_PARTY_NOTICES.md`와 번들 JAR에서 추출한 upstream license 원문 2개를 포함하며 30개
-파일/29개 내부 checksum에 결속한다. 현재 RHEL SHA-256은 `00e031e2ba9c...`, Ubuntu는
-`0a6c84ce0b9f...`다. 이 소유자
+파일/29개 내부 checksum에 결속한다. 현재 RHEL SHA-256은 `fd9ebcbe7991...`, Ubuntu는
+`e640f8bdbe55...`다. 이 소유자
 선언은 독립 법률 검토, 고객 배포계약, Production GO 또는 Final PASS를 대신하지 않는다.
 
 `pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.

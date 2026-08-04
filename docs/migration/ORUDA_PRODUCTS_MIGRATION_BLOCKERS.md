@@ -21,7 +21,7 @@
 - `platform ↔ platform.oruda` cycle도 target-neutral evidence SPI로 제거됐으며 artifact/package cycle은 모두 0건이다.
 - `onsure-core`와 `onsure-adapter-oruda`는 각각 전용 `src/main/java`를 소유하며 공유 source module은 0건이다.
 - root canonical build는 두 module-owned root를 입력으로 사용해 기존 단일 artifact와 `io.onsure` 공개 API를 유지한다.
-- canonical 281 tests, modular 37 tests와 공개 API 240/240을 경로 이동 직후 재검증했다. Manifest와 독립 clone은 최종 후보에서 다시 생성한다.
+- canonical 282 tests 2회, modular 37 tests, 공개 API 240/240과 독립 clone을 재검증했다. Manifest와 nested cutover/rollback은 786파일을 검증한다.
 
 ### 3. 패키지 의존 순환 제거 — 완료된 준비 항목
 
@@ -71,12 +71,12 @@
 - 관리화면은 조회 전용 local projection이며 외부 인증·다중 사용자·공개 network surface가 아니다.
 - 선행 작업: worker는 `NOT_PRESENT`를 유지한다. Gateway의 실제 OpenAI credential/비용 정책과 외부 signer 승인, browser 보안 독립 검증이 필요하다. 임시 PostgreSQL 16.14의 apply/idempotency/validate/dump/restore는 통과했지만 RHEL PostgreSQL lock 경쟁·운영 backup/restore·호환성 검증과 승인 전 비최종 후보로만 취급한다.
 
-### 9. RHEL/Ubuntu 운영환경 실행 검증 미완료
+### 9. RHEL/Ubuntu 운영환경 실행 검증 — Ubuntu 검증 완료, RHEL 미실행
 
 - RHEL 계열과 Ubuntu 24.04 LTS 단독 서버 systemd, loopback PostgreSQL/Flyway, external secret, OpenAI HTTPS egress 후보를 구현했다. 이전 Docker/Compose는 선택되지 않은 합성 시험 자료다.
 - validator는 immutable package, migration authorization, rollback 요구와 실제 배포 권한 거부를 유지한다.
-- 현재 Ubuntu 호스트에서는 package와 offline systemd 보안 분석, 임시 PostgreSQL 16.14 migration/backup/restore만 검증했다.
-- 선행 작업: 정확한 배포판/PostgreSQL 지원 조합, RHEL SELinux와 Ubuntu AppArmor, firewall, 운영 PostgreSQL lock·backup/restore, systemd start/stop, OpenAI 실호출과 upgrade/rollback 승인 시험.
+- 현재 Ubuntu 호스트의 별도 검증 runtime root에는 immutable package를 배치했고, 사용자 systemd API·Gateway 2개 서비스의 enable/start, Flyway validate, loopback health 20/20, 3회 restart/recovery와 PostgreSQL custom-format backup을 검증했다. 이는 Production 배포나 Production acceptance가 아니다.
+- 선행 작업: 정확한 배포판/PostgreSQL 지원 조합, RHEL SELinux 설치·실행, Ubuntu AppArmor·firewall 운영 정책, Production PostgreSQL lock·backup/restore, OpenAI 실호출과 upgrade/rollback 승인 시험.
 
 ### 10. Repo-root 가정 제거
 
@@ -120,5 +120,7 @@
 | Maven 공개 coordinate 변경 | `NOT_RUN` |
 | 다른 제품 저장소 수정 | `NOT_RUN` |
 | main 병합 | `NOT_RUN` |
-| 배포 | `NOT_RUN` |
+| Ubuntu 검증 런타임 배치·systemd 실행 | `PASS_NONFINAL` |
+| RHEL 실제 설치·systemd 실행 | `NOT_RUN` |
+| Production 배포·acceptance | `NOT_RUN / NOT_AUTHORIZED` |
 | Production GO / Final PASS | `NOT_RUN / PROHIBITED` |

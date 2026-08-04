@@ -24,7 +24,7 @@ bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted
 `kernel.unprivileged_userns_clone=1`, user/network namespace 한도는 각각 `30865`였다.
 namespace 생성 한도는 열려 있지만 outer runtime이 private network namespace의 loopback
 주소 설정을 거부한다. 최신 full core gate는 이 때문에 sandbox fixture를 사용하는 9개
-Java 시험이 실패했고, 동일 HEAD의 sandbox 비강제 canonical clean verify는 281/281을
+Java 시험이 실패했고, 동일 HEAD의 sandbox 비강제 canonical clean verify는 282/282를
 2회 연속 통과했다.
 
 ## 필수 환경
