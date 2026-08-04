@@ -62,11 +62,20 @@ case "${1:-}" in
     }
     ;;
   bash)
-    [[ "${2:-}" == 'gradlew' && -f "$ONSURE_SNAPSHOT_ROOT/gradlew" \
-      && ! -L "$ONSURE_SNAPSHOT_ROOT/gradlew" && " $* " == *' --offline '* ]] || {
-      echo 'ONSURE_VALIDATION_SANDBOX_FAIL GRADLE_COMMAND_DENIED' >&2
-      exit 65
-    }
+    if [[ "${ONSURE_SANDBOX_PROBE:-}" == '1' ]]; then
+      [[ "${2:-}" == '.onsure/internal/environment-probe.sh' \
+        && -f "$ONSURE_SNAPSHOT_ROOT/.onsure/internal/environment-probe.sh" \
+        && ! -L "$ONSURE_SNAPSHOT_ROOT/.onsure/internal/environment-probe.sh" ]] || {
+        echo 'ONSURE_VALIDATION_SANDBOX_FAIL ENVIRONMENT_PROBE_DENIED' >&2
+        exit 65
+      }
+    else
+      [[ "${2:-}" == 'gradlew' && -f "$ONSURE_SNAPSHOT_ROOT/gradlew" \
+        && ! -L "$ONSURE_SNAPSHOT_ROOT/gradlew" && " $* " == *' --offline '* ]] || {
+        echo 'ONSURE_VALIDATION_SANDBOX_FAIL GRADLE_COMMAND_DENIED' >&2
+        exit 65
+      }
+    fi
     ;;
   *)
     echo "ONSURE_VALIDATION_SANDBOX_FAIL EXECUTABLE_DENIED_${1:-EMPTY}" >&2

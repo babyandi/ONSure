@@ -46,6 +46,13 @@ public final class UniversalValidationRunner {
             return new StepExecution(Outcome.PASS_NONFINAL, 0, "INJECTED_EXECUTOR", false,
                     "SANDBOX_PROBE_NOT_REQUIRED_FOR_INJECTED_EXECUTOR");
         }
+
+        default StepExecution probe(
+                Path snapshotRoot,
+                List<String> requiredExecutables,
+                List<UniversalValidationProfile.EnvironmentRequirement> requirements) throws Exception {
+            return probe(snapshotRoot);
+        }
     }
 
     public record StepExecution(
@@ -326,11 +333,18 @@ public final class UniversalValidationRunner {
             return new StepExecution(Outcome.BLOCKED, -1, report, false,
                     "REQUIRED_ENVIRONMENT_MISSING:" + String.join(",", missing));
         }
-        if (requiredExecutables.isEmpty()) {
+        boolean requiresSandboxRequirementProbe = profile.environmentRequirements().stream()
+                .filter(UniversalValidationProfile.EnvironmentRequirement::required)
+                .anyMatch(requirement -> requirement.kind()
+                        == UniversalValidationProfile.RequirementKind.EXECUTABLE
+                        || requirement.kind()
+                        == UniversalValidationProfile.RequirementKind.FONT_FAMILY);
+        if (requiredExecutables.isEmpty() && !requiresSandboxRequirementProbe) {
             return new StepExecution(Outcome.PASS_NONFINAL, 0, report, false,
                     "INTERNAL_VALIDATORS_REQUIRE_NO_PROCESS_SANDBOX");
         }
-        StepExecution probe = executor.probe(snapshotRoot);
+        StepExecution probe = executor.probe(
+                snapshotRoot, requiredExecutables, profile.environmentRequirements());
         if (probe.outcome() != Outcome.PASS_NONFINAL) {
             return new StepExecution(probe.outcome(), probe.exitCode(), report + "\n" + probe.output(),
                     probe.outputTruncated(), probe.reason());

@@ -38,6 +38,8 @@ OUTPUT_ID="$(docker image inspect --format '{{.Id}}' "$OUTPUT_REFERENCE")"
   exit 70
 }
 docker run --rm --pull never --network none --read-only --cap-drop ALL \
-  --security-opt no-new-privileges:true --entrypoint python3 "$OUTPUT_ID" \
-  -c 'import jsonschema, yaml'
+  --security-opt no-new-privileges:true --entrypoint bash "$OUTPUT_ID" \
+  -c 'python3 -c "import jsonschema, yaml" \
+    && clamscan --version \
+    && fc-match --format="%{family}" -- "Noto Sans CJK KR" | grep -F "Noto Sans CJK KR" >/dev/null'
 printf 'ONSURE_VALIDATION_IMAGE_BUILD_PASS %s %s\n' "$OUTPUT_REFERENCE" "$OUTPUT_ID"

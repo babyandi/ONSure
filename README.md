@@ -140,6 +140,8 @@ mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
 추가하려면 ONSure workspace에 `ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1` 파일을 만들고
 다섯 번째 인자로 전달한다. 예시는 `config/validation/environment-requirements.example.json`이다.
 프로필은 엄격히 파싱되며 의미 digest와 원본 파일 SHA-256이 실행 영수증에 기록된다.
+실행파일과 폰트는 host 탐지만으로 통과시키지 않고 실제 선택된 no-network sandbox 내부에서
+다시 확인한다. 검증 이미지 후보에는 고정된 ClamAV와 Noto CJK font package가 포함된다.
 
 ```bash
 mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
@@ -254,7 +256,7 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 346개(조건부 11개 skip 포함), Python 201개, Node 10개,
+현재 변경 후보의 로컬 검증은 Java 347개(조건부 11개 skip 포함), Python 201개, Node 10개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256

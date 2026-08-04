@@ -3,7 +3,9 @@ package io.onsure.platform;
 import io.onsure.platform.UniversalValidationProfile.Outcome;
 import io.onsure.platform.UniversalValidationProfile.Step;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,6 +15,40 @@ import java.util.Map;
 /** Executes a detected command only through the no-network writable-snapshot sandbox. */
 final class SandboxedValidationStepExecutor implements UniversalValidationRunner.StepExecutor {
     private static final String LAUNCHER = "scripts/validation-sandbox-launcher.sh";
+    private static final Path ENVIRONMENT_PROBE = Path.of(
+            ".onsure", "internal", "environment-probe.sh");
+    private static final String ENVIRONMENT_PROBE_SCRIPT = """
+            #!/usr/bin/env bash
+            set -euo pipefail
+            while [[ $# -gt 0 ]]; do
+              kind="$1"
+              shift
+              [[ $# -gt 0 ]] || { echo 'ONSURE_ENVIRONMENT_PROBE_ARGUMENT_MISSING' >&2; exit 64; }
+              value="$1"
+              shift
+              case "$kind" in
+                --executable)
+                  command -v "$value" >/dev/null 2>&1 || {
+                    echo "ONSURE_ENVIRONMENT_PROBE_MISSING executable:$value" >&2
+                    exit 69
+                  }
+                  ;;
+                --font)
+                  command -v fc-match >/dev/null 2>&1 || {
+                    echo 'ONSURE_ENVIRONMENT_PROBE_MISSING executable:fc-match' >&2
+                    exit 69
+                  }
+                  actual="$(fc-match --format '%{family}\n' "$value" 2>/dev/null || true)"
+                  [[ "${actual,,}" == *"${value,,}"* ]] || {
+                    echo "ONSURE_ENVIRONMENT_PROBE_MISSING font:$value" >&2
+                    exit 69
+                  }
+                  ;;
+                *) echo 'ONSURE_ENVIRONMENT_PROBE_KIND_INVALID' >&2; exit 64 ;;
+              esac
+            done
+            echo 'ONSURE_ENVIRONMENT_PROBE_PASS'
+            """;
 
     @Override
     public UniversalValidationRunner.StepExecution execute(Step step, Path snapshotRoot) {
@@ -75,19 +111,66 @@ final class SandboxedValidationStepExecutor implements UniversalValidationRunner
 
     @Override
     public UniversalValidationRunner.StepExecution probe(Path snapshotRoot) {
+        return probe(snapshotRoot, List.of(), List.of());
+    }
+
+    @Override
+    public UniversalValidationRunner.StepExecution probe(
+            Path snapshotRoot,
+            List<String> requiredExecutables,
+            List<UniversalValidationProfile.EnvironmentRequirement> requirements) {
         Path launcher;
         try {
             launcher = findLauncher();
+            Path root = snapshotRoot.toAbsolutePath().normalize();
+            Path probe = root.resolve(ENVIRONMENT_PROBE).normalize();
+            if (!probe.startsWith(root) || Files.exists(probe, LinkOption.NOFOLLOW_LINKS)) {
+                return blocked("ENVIRONMENT_PROBE_PATH_UNSAFE");
+            }
+            Files.createDirectories(probe.getParent());
+            Files.writeString(probe, ENVIRONMENT_PROBE_SCRIPT,
+                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             Map<String, String> environment = new LinkedHashMap<>();
             environment.put("PATH", "/usr/sbin:/usr/bin:/sbin:/bin");
             environment.put("ONSURE_SANDBOX_PROBE", "1");
+            List<String> sandboxCommand = new ArrayList<>(List.of(
+                    "bash", ENVIRONMENT_PROBE.toString().replace('\\', '/')));
+            requiredExecutables.stream().distinct().sorted().forEach(executable -> {
+                sandboxCommand.add("--executable");
+                sandboxCommand.add(executable);
+            });
+            requirements.stream()
+                    .filter(UniversalValidationProfile.EnvironmentRequirement::required)
+                    .filter(requirement -> requirement.kind()
+                            == UniversalValidationProfile.RequirementKind.EXECUTABLE)
+                    .map(UniversalValidationProfile.EnvironmentRequirement::value)
+                    .distinct().sorted().forEach(executable -> {
+                        sandboxCommand.add("--executable");
+                        sandboxCommand.add(executable);
+                    });
+            requirements.stream()
+                    .filter(UniversalValidationProfile.EnvironmentRequirement::required)
+                    .filter(requirement -> requirement.kind()
+                            == UniversalValidationProfile.RequirementKind.FONT_FAMILY)
+                    .map(UniversalValidationProfile.EnvironmentRequirement::value)
+                    .distinct().sorted().forEach(font -> {
+                        sandboxCommand.add("--font");
+                        sandboxCommand.add(font);
+                    });
+            List<String> command = new ArrayList<>(List.of(
+                    hostBash().toString(), launcher.toString(), root.toString(), "15"));
+            command.addAll(sandboxCommand);
             BoundedProcessRunner.Result result = BoundedProcessRunner.run(
-                    List.of(hostBash().toString(), launcher.toString(), snapshotRoot.toString(), "15", "true"),
-                    snapshotRoot, Duration.ofSeconds(20), BoundedProcessRunner.DEFAULT_MAX_OUTPUT_BYTES,
+                    command, root, Duration.ofSeconds(20), BoundedProcessRunner.DEFAULT_MAX_OUTPUT_BYTES,
                     environment, "UNIVERSAL_VALIDATION_SANDBOX_PROBE");
             if (result.exitCode() == 0) {
                 return new UniversalValidationRunner.StepExecution(
                         Outcome.PASS_NONFINAL, 0, result.output(), result.outputTruncated(), "SANDBOX_PROBE_PASS");
+            }
+            if (result.output().contains("ONSURE_ENVIRONMENT_PROBE_MISSING")) {
+                return new UniversalValidationRunner.StepExecution(
+                        Outcome.BLOCKED, result.exitCode(), result.output(), result.outputTruncated(),
+                        "SANDBOX_ENVIRONMENT_REQUIREMENT_MISSING");
             }
             return new UniversalValidationRunner.StepExecution(
                     Outcome.BLOCKED, result.exitCode(), result.output(), result.outputTruncated(),

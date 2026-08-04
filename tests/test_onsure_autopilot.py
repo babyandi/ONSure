@@ -207,8 +207,9 @@ class AutopilotContractTest(unittest.TestCase):
                     "attempts": 1,
                     "process_pid": process.pid,
                     "process_group_id": process.pid,
-                    "process_identity": MODULE.process_identity(process.pid),
+                    "process_identity": MODULE.capture_spawned_process_identity(process),
                 })
+                self.assertIsNotNone(entry["process_identity"])
                 MODULE.atomic_json(state_path, state)
                 MODULE.request_control(self.contract, state_path, "RUNNING")
                 MODULE.recover_interrupted_state(state)

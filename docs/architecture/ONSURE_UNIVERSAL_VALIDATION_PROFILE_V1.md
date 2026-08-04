@@ -92,7 +92,9 @@ Pack이 typed `EnvironmentRequirement`로 탐지·선언하거나, 운영자가 
 file, font family다. ClamAV는 `EXECUTABLE=clamscan`, 서명 Fixture는 `SOURCE_FILE`, launcher
 권한은 `EXECUTABLE_SOURCE_FILE`, renderer asset은 `SOURCE_DIRECTORY`, font는 `FONT_FAMILY`로
 선언한다. 외부 프로필의 의미 digest와 파일 digest를 영수증에 결속하고 실행 종료 전 파일
-불변성을 다시 확인한다. Node module은 manifest/lock 집합 대조 후 위 고정 offline 설치로 확인한다.
+불변성을 다시 확인한다. `EXECUTABLE`과 `FONT_FAMILY`는 host 확인 뒤 선택된 sandbox 내부의
+고정 probe에서 다시 확인하며, host에만 존재하면 `SANDBOX_ENVIRONMENT_REQUIREMENT_MISSING`으로
+차단한다. Node module은 manifest/lock 집합 대조 후 위 고정 offline 설치로 확인한다.
 
 CLI `universal`, 등록 Workflow `validation.run`, VS Code의 seven-group universal 명령,
 관리 API `/v1/programs/validate`의

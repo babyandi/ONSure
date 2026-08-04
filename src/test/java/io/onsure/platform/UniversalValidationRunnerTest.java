@@ -238,6 +238,47 @@ class UniversalValidationRunnerTest {
     }
 
     @Test
+    void passesDeclaredExecutablesAndFontsToTheSandboxProbe() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("sandbox-requirements"));
+        Files.writeString(source.resolve("openapi.yaml"), "openapi: 3.1.0\npaths: {}\n");
+        var requirements = List.of(
+                new UniversalValidationProfile.EnvironmentRequirement(
+                        "shell", UniversalValidationProfile.RequirementKind.EXECUTABLE, "sh", true),
+                new UniversalValidationProfile.EnvironmentRequirement(
+                        "font", UniversalValidationProfile.RequirementKind.FONT_FAMILY,
+                        "ONSure Definitely Missing Optional Font", false));
+        var profile = new StandardValidationProfileDetector().detect(
+                "sandbox-requirements", source, requirements);
+        List<String> probedExecutables = new ArrayList<>();
+        List<UniversalValidationProfile.EnvironmentRequirement> probedRequirements = new ArrayList<>();
+        var runner = new UniversalValidationRunner(new UniversalValidationRunner.StepExecutor() {
+            @Override
+            public UniversalValidationRunner.StepExecution execute(
+                    UniversalValidationProfile.Step step, Path root) {
+                throw new AssertionError("command execution not expected");
+            }
+
+            @Override
+            public UniversalValidationRunner.StepExecution probe(
+                    Path root, List<String> executables,
+                    List<UniversalValidationProfile.EnvironmentRequirement> declared) {
+                probedExecutables.addAll(executables);
+                probedRequirements.addAll(declared);
+                return new UniversalValidationRunner.StepExecution(
+                        BLOCKED, 69, "missing font in sandbox", false,
+                        "SANDBOX_ENVIRONMENT_REQUIREMENT_MISSING");
+            }
+        });
+
+        var result = runner.run(profile, temp.resolve("sandbox-requirements-run"));
+
+        assertTrue(probedExecutables.isEmpty());
+        assertEquals(requirements, probedRequirements);
+        assertEquals(BLOCKED, result.overallOutcome());
+        assertEquals("SANDBOX_ENVIRONMENT_REQUIREMENT_MISSING", result.steps().get(0).reason());
+    }
+
+    @Test
     void blocksRequiredPackFixtureMissingFromSnapshot() throws Exception {
         Path source = Files.createDirectory(temp.resolve("source"));
         Files.writeString(source.resolve("openapi.yaml"), "openapi: 3.1.0\npaths: {}\n");
