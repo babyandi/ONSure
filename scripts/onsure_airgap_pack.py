@@ -299,7 +299,14 @@ def rehearse_repository_pack(archive_path: pathlib.Path) -> dict[str, Any]:
             process = subprocess.run(
                 command, cwd=ROOT, env=environment, text=True, capture_output=True, check=False)
             if process.returncode:
-                raise ValueError("AIRGAP_OFFLINE_BUILD_FAILED:" + process.stderr[-2000:])
+                combined = (process.stdout + "\n" + process.stderr).strip()
+                detail = combined[-4000:] if combined else "NO_MAVEN_OUTPUT"
+                raise ValueError(
+                    "AIRGAP_OFFLINE_BUILD_FAILED:"
+                    + " ".join(command[:6])
+                    + ":"
+                    + detail
+                )
     verified.update({
         "contract": "ONSURE_MAVEN_OFFLINE_REHEARSAL_V1",
         "offline_build_rehearsal": "PASS",

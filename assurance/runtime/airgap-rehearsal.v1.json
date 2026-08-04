@@ -1,21 +1,21 @@
 {
   "contract": "ONSURE_AIRGAP_REHEARSAL_EVIDENCE_V1",
   "maven_dependency_pack": {
-    "archive_sha256": "e339dfc13594725ec8e04b88ecc9e025cd658b1e760dd04521d159def3369a69",
-    "size_bytes": 2764800,
-    "verified_entry_count": 15,
+    "archive_sha256": "55444627515a986c40832ec32ce93955eef2e46e4250840816bf2a61a2c5ea62",
+    "size_bytes": 7485440,
+    "verified_entry_count": 27,
     "verification": "PASS_NONFINAL"
   },
   "maven_offline_repository_pack": {
-    "archive_sha256": "d3c9c765e3f942bcb7c5b268a150fa819a5fcba7e9b0e671a6a6fa9dddad226e",
-    "size_bytes": 279910400,
-    "verified_entry_count": 4823,
+    "archive_sha256": "e9346cedaecb4fbac73a68301fcf00312ed3d1c7c34e8245c7a34bf516dde117",
+    "size_bytes": 297932800,
+    "verified_entry_count": 5205,
     "canonical_clean_verify_offline": "PASS",
     "modular_clean_package_offline": "PASS",
     "network_access_used_during_rehearsal": false
   },
   "npm_cache_pack": {
-    "archive_sha256": "ca090c44a0e4b1eab20882c33146d5a4fb13930be63da462b24d9b31b51ca2c4",
+    "archive_sha256": "fbe3d213ab3de7dbf34e444cbf93fb66a5c4473bb493e44216022ad14aad2728",
     "size_bytes": 17950720,
     "cache_file_count": 442,
     "offline_npm_ci": "PASS",
