@@ -76,7 +76,9 @@
 - Ubuntu 24.04 LTS 단독 서버 systemd, loopback PostgreSQL/Flyway, external secret, OpenAI HTTPS egress를 주 대상으로 확정했다. RHEL 정의는 호환성 후보로만 보존하며 이전 Docker/Compose는 선택되지 않은 합성 시험 자료다.
 - validator는 immutable package, migration authorization, rollback 요구와 실제 배포 권한 거부를 유지한다.
 - 현재 Ubuntu 호스트의 별도 검증 runtime root에는 immutable package를 배치했고, 사용자 systemd API·Gateway 2개 서비스의 enable/start, Flyway validate, loopback health 20/20, 3회 restart/recovery와 PostgreSQL custom-format backup을 검증했다. 이는 Production 배포나 Production acceptance가 아니다.
-- 선행 작업: 정확한 Ubuntu/PostgreSQL 지원 조합, AppArmor·firewall 운영 정책, Production PostgreSQL lock·backup/restore, OpenAI 실호출과 upgrade/rollback 승인 시험.
+- 선행 작업: 정확한 Ubuntu/PostgreSQL 지원 조합, AppArmor·firewall 운영 정책, 검증용 user
+  unit(현재 exposure 6.7)이 아닌 offline-qualified system unit 후보(2.8)의 설치 승인,
+  Production PostgreSQL lock·backup/restore, OpenAI 실호출과 upgrade/rollback 승인 시험.
 
 ### 10. Repo-root 가정 제거
 

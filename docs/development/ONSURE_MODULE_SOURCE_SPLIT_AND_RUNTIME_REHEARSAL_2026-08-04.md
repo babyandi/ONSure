@@ -26,9 +26,9 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - Canonical `clean verify`: 282/282, repeated twice. Independent clone at `1125d2b`: 282/282,
   Python 154/154 and public API 240/240.
 - Modular package: 37/37 locally and in the independent clone; public API baseline: 240/240.
-- Python: 159/159; Node: 9/9; deterministic VSIX package pass with SHA-256
+- Python: 161/161; Node: 9/9; deterministic VSIX package pass with SHA-256
   `fb2f0bf6c5051ebf6197ec8e0f21c8d77fd3316b348016f1ccbd4fdb5dfd9589`.
-- Ubuntu candidate SHA-256: `e6b53761183aa3f8635ce59929b3043d60bd0ca8bfe01901bfe5fddf04410dea`.
+- Ubuntu candidate SHA-256: `7a989de5645e31e0a7bbfe86afdd13da74fcadb826ffa31e3b885301607e875b`.
 - RHEL compatibility candidate SHA-256: `74ec4e2c844f4fd7570fb3e8f7de5d541de04220a0a263c0aa88659ff47685d8`.
 - Disposable PostgreSQL 16.14/Flyway: first migration 1, second 0, concurrent `[0,1]`, pending 0,
   dump/restore and restored validation pass. Production migration was not run.
@@ -39,8 +39,10 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - VS Code 1.95.3 Extension Host on Node 22: online Xvfb run exit 0 and cached
   `--network none` rerun exit 0; Node engine mismatch warnings 0.
 - Ubuntu 24.04 read-only host preflight: both user services active/enabled, API/Gateway/PostgreSQL
-  loopback-only, runtime configuration mode `0600`, and no secret values read. AppArmor profile and
-  UFW policy verification remain `NOT_RUN_INSUFFICIENT_PRIVILEGE` and block Production acceptance.
+  loopback-only, runtime configuration mode `0600`, and no secret values read. The current
+  verification user units score 6.7/6.7 and therefore cannot substitute for the offline-qualified
+  2.8/2.8 Production system unit candidates. AppArmor profile and UFW policy verification remain
+  `NOT_RUN_INSUFFICIENT_PRIVILEGE` and block Production acceptance.
 - VS Code Ubuntu runtime surface: Local API/Gateway RUNNING, content-free token/cost metrics and
   receipt chain valid; runtime tokens were not written to evidence.
 

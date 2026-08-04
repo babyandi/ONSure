@@ -15,6 +15,7 @@ from typing import Iterable
 
 SERVICES = ("onsure-runtime.service", "onsure-llm-gateway.service")
 PORTS = (47311, 47312, 5432)
+MAXIMUM_PRODUCTION_SYSTEMD_EXPOSURE = 4.0
 
 
 def run(command: list[str]) -> tuple[int, str]:
@@ -57,6 +58,11 @@ def parse_listeners(text: str) -> dict[int, list[str]]:
     return listeners
 
 
+def parse_systemd_exposure(text: str) -> float | None:
+    match = re.search(r"Overall exposure level for [^:]+:\s+([0-9]+(?:\.[0-9]+)?)", text)
+    return float(match.group(1)) if match else None
+
+
 def evaluate(observation: dict[str, object]) -> dict[str, object]:
     errors: list[str] = []
     blockers = ["PRODUCTION_ACCEPTANCE_NOT_AUTHORIZED"]
@@ -66,7 +72,9 @@ def evaluate(observation: dict[str, object]) -> dict[str, object]:
         errors.append("UBUNTU_24_04_REQUIRED")
 
     services = observation.get("services", {})
+    exposure_scores = observation.get("systemd_exposure_scores", {})
     service_result: dict[str, dict[str, bool]] = {}
+    systemd_result: dict[str, dict[str, object]] = {}
     for name in SERVICES:
         current = services.get(name, {}) if isinstance(services, dict) else {}
         active = isinstance(current, dict) and current.get("active") is True
@@ -76,6 +84,18 @@ def evaluate(observation: dict[str, object]) -> dict[str, object]:
             errors.append("SERVICE_NOT_ACTIVE:" + name)
         if not enabled:
             errors.append("SERVICE_NOT_ENABLED:" + name)
+        score = exposure_scores.get(name) if isinstance(exposure_scores, dict) else None
+        score_valid = isinstance(score, (int, float)) and not isinstance(score, bool)
+        within_production_maximum = score_valid and score <= MAXIMUM_PRODUCTION_SYSTEMD_EXPOSURE
+        systemd_result[name] = {
+            "exposure_score": score,
+            "maximum_production_score": MAXIMUM_PRODUCTION_SYSTEMD_EXPOSURE,
+            "within_production_maximum": within_production_maximum,
+        }
+        if not score_valid:
+            blockers.append("SYSTEMD_EXPOSURE_NOT_VERIFIED:" + name)
+        elif not within_production_maximum:
+            blockers.append("SYSTEMD_EXPOSURE_ABOVE_PRODUCTION_MAXIMUM:" + name)
 
     listeners = observation.get("listeners", {})
     listener_result: dict[str, dict[str, object]] = {}
@@ -123,6 +143,7 @@ def evaluate(observation: dict[str, object]) -> dict[str, object]:
             and os_release.get("VERSION_ID") == "24.04"
         ) else "UNSUPPORTED",
         "services": service_result,
+        "systemd_security": systemd_result,
         "listeners": listener_result,
         "apparmor": {
             "module_enabled": module_enabled, "profile_status": profile_status
@@ -143,6 +164,7 @@ def evaluate(observation: dict[str, object]) -> dict[str, object]:
 def observe(runtime_root: pathlib.Path) -> dict[str, object]:
     os_release = parse_os_release(pathlib.Path("/etc/os-release").read_text(encoding="utf-8"))
     services: dict[str, dict[str, bool]] = {}
+    systemd_exposure_scores: dict[str, float | None] = {}
     for name in SERVICES:
         active_code, active_output = run(["systemctl", "--user", "is-active", name])
         enabled_code, enabled_output = run(["systemctl", "--user", "is-enabled", name])
@@ -150,6 +172,12 @@ def observe(runtime_root: pathlib.Path) -> dict[str, object]:
             "active": active_code == 0 and active_output.splitlines()[:1] == ["active"],
             "enabled": enabled_code == 0 and enabled_output.splitlines()[:1] == ["enabled"],
         }
+        security_code, security_output = run([
+            "systemd-analyze", "--user", "security", name, "--no-pager"
+        ])
+        systemd_exposure_scores[name] = (
+            parse_systemd_exposure(security_output) if security_code == 0 else None
+        )
 
     _, socket_output = run(["ss", "-H", "-ltn"])
     parameter = pathlib.Path("/sys/module/apparmor/parameters/enabled")
@@ -182,6 +210,7 @@ def observe(runtime_root: pathlib.Path) -> dict[str, object]:
     return {
         "os_release": os_release,
         "services": services,
+        "systemd_exposure_scores": systemd_exposure_scores,
         "listeners": parse_listeners(socket_output),
         "apparmor": {"module_enabled": module_enabled, "profile_status": profile_status},
         "ufw": {"status": ufw_status},

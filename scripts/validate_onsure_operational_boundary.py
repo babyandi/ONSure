@@ -345,6 +345,7 @@ def validate_ubuntu_host_preflight_evidence() -> list[str]:
     evidence = json.loads(UBUNTU_HOST_PREFLIGHT_EVIDENCE.read_text(encoding="utf-8"))
     services = evidence.get("services", {})
     listeners = evidence.get("listeners", {})
+    systemd_security = evidence.get("systemd_security", {})
     if evidence.get("contract") != "ONSURE_UBUNTU_HOST_PREFLIGHT_V1" \
             or evidence.get("decision") != "PASS_NONFINAL" \
             or evidence.get("host_os") != "UBUNTU_24_04" \
@@ -352,6 +353,8 @@ def validate_ubuntu_host_preflight_evidence() -> list[str]:
                    for name in ("onsure-runtime.service", "onsure-llm-gateway.service")) \
             or any(listeners.get(str(port), {}).get("loopback_only") is not True
                    for port in (47311, 47312, 5432)) \
+            or any(not isinstance(systemd_security.get(name, {}).get("exposure_score"), (int, float))
+                   for name in ("onsure-runtime.service", "onsure-llm-gateway.service")) \
             or evidence.get("runtime_config", {}).get("mode") != "0600" \
             or evidence.get("runtime_config", {}).get("secret_values_read") is not False \
             or evidence.get("runtime_config", {}).get("path_disclosed") is not False \

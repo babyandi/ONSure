@@ -52,10 +52,12 @@ python3 scripts/onsure_ubuntu_host_preflight.py \
   --output assurance/runtime/onsure-ubuntu-host-preflight.v1.json
 ```
 
-The preflight checks Ubuntu 24.04, user services, loopback listeners, configuration file mode,
-AppArmor and UFW using read-only operations. Insufficient permission to inspect AppArmor profiles
-or the UFW policy is recorded as `NOT_RUN_INSUFFICIENT_PRIVILEGE` and remains a Production blocker.
-The configuration contents, tokens and database password are never read.
+The preflight checks Ubuntu 24.04, user services, their `systemd-analyze security` exposure,
+loopback listeners, configuration file mode, AppArmor and UFW using read-only operations. A user
+unit score above the package candidate's Production maximum of 4.0 is an explicit blocker, not a
+runtime failure. Insufficient permission to inspect AppArmor profiles or the UFW policy is recorded
+as `NOT_RUN_INSUFFICIENT_PRIVILEGE` and remains a Production blocker. The configuration contents,
+tokens and database password are never read.
 
 The lifecycle rehearsal verifies archive paths and internal checksums, performs immutable install,
 idempotent reinstall, upgrade and rollback inside `.onsure/`, and confirms that no host path was

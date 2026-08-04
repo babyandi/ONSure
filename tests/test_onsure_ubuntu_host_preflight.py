@@ -16,6 +16,7 @@ def ready_observation() -> dict[str, object]:
         "services": {
             name: {"active": True, "enabled": True} for name in preflight.SERVICES
         },
+        "systemd_exposure_scores": {name: 2.8 for name in preflight.SERVICES},
         "listeners": {47311: ["127.0.0.1"], 47312: ["::ffff:127.0.0.1"], 5432: ["127.0.0.1"]},
         "apparmor": {"module_enabled": True, "profile_status": "NOT_RUN_INSUFFICIENT_PRIVILEGE"},
         "ufw": {"status": "NOT_RUN_INSUFFICIENT_PRIVILEGE"},
@@ -55,6 +56,30 @@ class ONSureUbuntuHostPreflightTest(unittest.TestCase):
         )
         self.assertEqual(["[::ffff:127.0.0.1]"], parsed[47312])
         self.assertEqual(["127.0.0.1"], parsed[5432])
+
+    def test_user_unit_above_production_exposure_is_explicit_blocker(self):
+        observation = ready_observation()
+        observation["systemd_exposure_scores"]["onsure-runtime.service"] = 6.7
+        result = preflight.evaluate(observation)
+        self.assertEqual("PASS_NONFINAL", result["decision"])
+        self.assertIn(
+            "SYSTEMD_EXPOSURE_ABOVE_PRODUCTION_MAXIMUM:onsure-runtime.service",
+            result["production_blockers"],
+        )
+        self.assertFalse(
+            result["systemd_security"]["onsure-runtime.service"][
+                "within_production_maximum"
+            ]
+        )
+
+    def test_systemd_exposure_parser_fails_closed(self):
+        self.assertEqual(
+            2.8,
+            preflight.parse_systemd_exposure(
+                "Overall exposure level for onsure.service: 2.8 OK :-)"
+            ),
+        )
+        self.assertIsNone(preflight.parse_systemd_exposure("score unavailable"))
 
 
 if __name__ == "__main__":

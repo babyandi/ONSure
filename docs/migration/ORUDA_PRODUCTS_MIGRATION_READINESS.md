@@ -119,12 +119,12 @@
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (11 modules, 37 tests; 독립 clone 포함) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 282 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local 159 tests; prior independent clone 154 tests) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local 161 tests; latest independent clone 159 tests) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (local + 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, Gateway 운영 View, VSIX SHA-256 `fb2f0bf6c505...`; proprietary LICENSE/third-party notice 포함) |
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (Node 22, VS Code 1.95.3/Xvfb, 양쪽 extension host exit 0, engine mismatch 경고 0, offline network 차단) |
-| Ubuntu host preflight | `python3 scripts/onsure_ubuntu_host_preflight.py --runtime-root <external-runtime-root>` | `PASS_NONFINAL` (Ubuntu 24.04, 2 services active/enabled, 3 ports loopback-only, config 0600, secret read 0; AppArmor/UFW 정책은 권한 부족 `NOT_RUN`) |
+| Ubuntu host preflight | `python3 scripts/onsure_ubuntu_host_preflight.py --runtime-root <external-runtime-root>` | `PASS_NONFINAL` (Ubuntu 24.04, 2 services active/enabled, 3 ports loopback-only, config 0600, secret read 0; verification user units 6.7/6.7 and AppArmor/UFW privilege checks remain Production blockers) |
 | VS Code ↔ Ubuntu runtime | `python3 scripts/rehearse_onsure_vscode_runtime.py` | `PASS_NONFINAL` (Local API RUNNING, Gateway RUNNING/local-mock, token 23, cost 23, chain valid, content 저장 없음, token 노출 없음) |
 | Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 799 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
@@ -191,7 +191,7 @@ API 240/240, proprietary supply-chain validation, migration readiness와 static 
 복사와 외부 asset 복사는 모두 `NONE_ATTESTED`다. RHEL·Ubuntu package는 `LICENSE`, `NOTICE`,
 `THIRD_PARTY_NOTICES.md`와 번들 JAR에서 추출한 upstream license 원문 2개를 포함하며 33개
 파일/32개 내부 checksum에 결속한다. 현재 RHEL SHA-256은 `74ec4e2c844f...`, Ubuntu는
-`e6b53761183a...`다. 이 소유자
+`7a989de5645e...`다. 이 소유자
 선언은 독립 법률 검토, 고객 배포계약, Production GO 또는 Final PASS를 대신하지 않는다.
 
 `pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.

@@ -4,11 +4,11 @@
   "final_claim_allowed": false,
   "host_filesystem_modified": false,
   "idempotent_reinstall": true,
-  "install_release": "162819aba6a98821dc5333c864b2a14b4b950705df2c7fcb900c8c96f34de347",
+  "install_release": "ce2bfcdae1bfab21169685b2b567aa3a21794264c327e4758ef37fd3ece18ad6",
   "package_file_count": 33,
-  "package_sha256": "e6b53761183aa3f8635ce59929b3043d60bd0ca8bfe01901bfe5fddf04410dea",
+  "package_sha256": "7a989de5645e31e0a7bbfe86afdd13da74fcadb826ffa31e3b885301607e875b",
   "production_execution": "NOT_RUN",
-  "rollback_previous_release": "81d652411519aec4c456e211c1138a70682ef7243c20d897a1c3e79589687bc6",
-  "rollback_restored_release": "162819aba6a98821dc5333c864b2a14b4b950705df2c7fcb900c8c96f34de347",
-  "upgrade_release": "81d652411519aec4c456e211c1138a70682ef7243c20d897a1c3e79589687bc6"
+  "rollback_previous_release": "2a741e02412041fa38b305b8d26746594b8fe4c117919a6bab919ba760bfbc16",
+  "rollback_restored_release": "ce2bfcdae1bfab21169685b2b567aa3a21794264c327e4758ef37fd3ece18ad6",
+  "upgrade_release": "2a741e02412041fa38b305b8d26746594b8fe4c117919a6bab919ba760bfbc16"
 }
