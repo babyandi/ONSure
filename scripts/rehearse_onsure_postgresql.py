@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
 import os
 import pathlib
+import platform
 import shutil
 import socket
 import subprocess
@@ -26,6 +28,58 @@ MIGRATION = ROOT / (
     "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/"
     "V1__create_assurance_event.sql"
 )
+EVIDENCE_PREFIX = "assurance/runtime/"
+
+
+def sha256_file(path: pathlib.Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as body:
+        for chunk in iter(lambda: body.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def source_commit() -> str:
+    value = run("SOURCE_COMMIT", ["git", "rev-parse", "HEAD"])
+    if len(value) != 40 or any(character not in "0123456789abcdef" for character in value):
+        raise ValueError("SOURCE_COMMIT_INVALID")
+    return value
+
+
+def source_code_dirty_paths() -> list[str]:
+    tracked = run("SOURCE_DIRTY_TRACKED", ["git", "diff", "--name-only", "HEAD", "--", "."])
+    untracked = run("SOURCE_DIRTY_UNTRACKED", ["git", "ls-files", "--others", "--exclude-standard"])
+    values = {line.strip() for line in (tracked + "\n" + untracked).splitlines() if line.strip()}
+    return sorted(value for value in values if not value.startswith(EVIDENCE_PREFIX))
+
+
+def environment_facts(binaries: pathlib.Path) -> dict[str, object]:
+    tools: dict[str, object] = {}
+    for name in ("postgres", "initdb", "pg_ctl", "createdb", "psql", "pg_dump", "pg_restore"):
+        path = (binaries / name).resolve()
+        tools[name] = {"path": str(path), "sha256": sha256_file(path)}
+    java = shutil.which("java")
+    if not java:
+        raise ValueError("JAVA_EXECUTABLE_NOT_AVAILABLE")
+    java_path = pathlib.Path(java).resolve()
+    tools["java"] = {"path": str(java_path), "sha256": sha256_file(java_path)}
+    return {
+        "os": platform.system(),
+        "os_release": platform.release(),
+        "machine": platform.machine(),
+        "python_version": platform.python_version(),
+        "uid": os.getuid(),
+        "gid": os.getgid(),
+        "tools": tools,
+    }
+
+
+def receipt_digest(value: dict[str, object]) -> str:
+    normalized = dict(value)
+    normalized.pop("receipt_sha256", None)
+    return hashlib.sha256(json.dumps(
+        normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+    ).encode("utf-8")).hexdigest()
 
 
 def postgres_bin() -> pathlib.Path:
@@ -141,6 +195,7 @@ def concurrent_migrate(runtime: pathlib.Path, environment: dict[str, str]) -> li
 
 
 def rehearse(package: pathlib.Path) -> dict[str, object]:
+    started_at = dt.datetime.now(dt.timezone.utc)
     package = package.resolve()
     if not package.is_file() or ROOT not in package.parents:
         raise ValueError("RHEL_PACKAGE_REQUIRED_INSIDE_PRODUCT_ROOT")
@@ -148,6 +203,14 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
     required = ("initdb", "pg_ctl", "createdb", "psql", "pg_dump", "pg_restore")
     if any(not (binaries / name).is_file() for name in required):
         raise ValueError("POSTGRESQL_TOOLCHAIN_INCOMPLETE")
+    dirty_paths = source_code_dirty_paths()
+    if dirty_paths:
+        raise ValueError("SOURCE_CODE_WORKTREE_DIRTY:" + ",".join(dirty_paths[:20]))
+    commit = source_commit()
+    evidence_environment = environment_facts(binaries)
+    environment_sha256 = hashlib.sha256(json.dumps(
+        evidence_environment, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+    ).encode("utf-8")).hexdigest()
 
     with tempfile.TemporaryDirectory(prefix="onsure-postgresql-rehearsal-") as temporary:
         base = pathlib.Path(temporary)
@@ -179,18 +242,18 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 str(binaries / "createdb"), "-h", str(sockets), "-p", str(port),
                 "-U", "postgres", "-O", "onsure", "onsure",
             ])
-            environment = dict(os.environ)
-            environment.update({
+            runtime_environment = dict(os.environ)
+            runtime_environment.update({
                 "ONSURE_DB_URL": f"jdbc:postgresql://127.0.0.1:{port}/onsure?sslmode=disable",
                 "ONSURE_DB_USER": "onsure",
                 "ONSURE_DB_PASSWORD": "synthetic-rehearsal-password",
                 "ONSURE_DB_SCHEMA": "onsure",
                 "ONSURE_MIGRATION_AUTHORIZED": "true",
             })
-            first = run("MIGRATE_FIRST", java_command(runtime, "migrate"), environment)
-            second = run("MIGRATE_SECOND", java_command(runtime, "migrate"), environment)
-            validation = run("MIGRATE_VALIDATE", java_command(runtime, "validate"), environment)
-            info = run("MIGRATE_INFO", java_command(runtime, "info"), environment)
+            first = run("MIGRATE_FIRST", java_command(runtime, "migrate"), runtime_environment)
+            second = run("MIGRATE_SECOND", java_command(runtime, "migrate"), runtime_environment)
+            validation = run("MIGRATE_VALIDATE", java_command(runtime, "validate"), runtime_environment)
+            info = run("MIGRATE_INFO", java_command(runtime, "info"), runtime_environment)
             if "executed=1" not in first or "executed=0" not in second \
                     or "PASS_NONFINAL" not in validation or "pending=0" not in info:
                 raise ValueError("MIGRATION_RESULT_CONTRACT_INVALID")
@@ -205,6 +268,8 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 str(binaries / "pg_dump"), "-Fc", "-h", str(sockets), "-p", str(port),
                 "-U", "postgres", "-d", "onsure", "-f", str(backup),
             ])
+            backup_sha256 = sha256_file(backup)
+            backup_size = backup.stat().st_size
             run("CREATE_RESTORE_DB", [
                 str(binaries / "createdb"), "-h", str(sockets), "-p", str(port),
                 "-U", "postgres", "-O", "onsure", "onsure_restore",
@@ -222,7 +287,7 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 binaries, sockets, port, "onsure_restore",
                 "SELECT count(*) FROM onsure.flyway_schema_history WHERE success AND version IS NOT NULL;",
             )
-            restored_environment = dict(environment)
+            restored_environment = dict(runtime_environment)
             restored_environment["ONSURE_DB_URL"] = (
                 f"jdbc:postgresql://127.0.0.1:{port}/onsure_restore?sslmode=disable"
             )
@@ -244,7 +309,7 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 str(binaries / "createdb"), "-h", str(sockets), "-p", str(port),
                 "-U", "postgres", "-O", "onsure", "onsure_concurrent",
             ])
-            concurrent_environment = dict(environment)
+            concurrent_environment = dict(runtime_environment)
             concurrent_environment["ONSURE_DB_URL"] = (
                 f"jdbc:postgresql://127.0.0.1:{port}/onsure_concurrent?sslmode=disable"
             )
@@ -256,13 +321,21 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
             if concurrent_executed != [0, 1] or concurrent_history != "1":
                 raise ValueError("CONCURRENT_MIGRATION_IDEMPOTENCY_INVALID")
             version = psql(binaries, sockets, port, "postgres", "SHOW server_version;")
-            return {
+            completed_at = dt.datetime.now(dt.timezone.utc)
+            result: dict[str, object] = {
                 "contract": "ONSURE_POSTGRESQL_FLYWAY_REHEARSAL_V1",
                 "decision": "PASS_NONFINAL",
+                "source_commit": commit,
+                "source_code_dirty_paths": [],
+                "started_at": started_at.isoformat().replace("+00:00", "Z"),
+                "completed_at": completed_at.isoformat().replace("+00:00", "Z"),
+                "environment": evidence_environment,
+                "environment_sha256": environment_sha256,
                 "postgresql_version": version,
-                "package_sha256": hashlib.sha256(package.read_bytes()).hexdigest(),
+                "package_sha256": sha256_file(package),
+                "package_size_bytes": package.stat().st_size,
                 "migration": MIGRATION.relative_to(ROOT).as_posix(),
-                "migration_sha256": hashlib.sha256(MIGRATION.read_bytes()).hexdigest(),
+                "migration_sha256": sha256_file(MIGRATION),
                 "network_binding": "127.0.0.1_EPHEMERAL",
                 "migration_first_executed": 1,
                 "migration_second_executed": 0,
@@ -270,6 +343,8 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 "restored_event_count": 1,
                 "restored_history_count": 1,
                 "restored_schema_validation": "PASS_NONFINAL",
+                "backup_sha256": backup_sha256,
+                "backup_size_bytes": backup_size,
                 "concurrent_migration_executed_counts": [0, 1],
                 "concurrent_migration_history_count": 1,
                 "customer_data_used": False,
@@ -278,6 +353,8 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 "rhel_runtime": "NOT_RUN_HOST_IS_NOT_RHEL",
                 "final_claim_allowed": False,
             }
+            result["receipt_sha256"] = receipt_digest(result)
+            return result
         finally:
             if started:
                 stopped = subprocess.run(

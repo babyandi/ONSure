@@ -48,6 +48,30 @@ class ONSurePostgresqlRehearsalTest(unittest.TestCase):
         self.assertTrue((path / "postgres").is_file())
         self.assertTrue((path / "initdb").is_file())
 
+    def test_environment_facts_bind_every_executed_tool_without_secrets(self):
+        installed = any(path.is_file() for path in pathlib.Path("/usr/lib/postgresql").glob("*/bin/postgres"))
+        if not installed and shutil.which("postgres") is None:
+            self.skipTest("PostgreSQL server binaries are optional for the unit suite")
+        facts = rehearsal.environment_facts(rehearsal.postgres_bin())
+        self.assertEqual(
+            {"postgres", "initdb", "pg_ctl", "createdb", "psql", "pg_dump", "pg_restore", "java"},
+            set(facts["tools"]),
+        )
+        for tool in facts["tools"].values():
+            self.assertRegex(tool["sha256"], r"^[0-9a-f]{64}$")
+        self.assertNotIn("password", str(facts).lower())
+
+    def test_receipt_digest_excludes_only_its_own_digest(self):
+        receipt = {"contract": "TEST", "decision": "PASS_NONFINAL", "value": 1}
+        digest = rehearsal.receipt_digest(receipt)
+        receipt["receipt_sha256"] = digest
+        self.assertEqual(digest, rehearsal.receipt_digest(receipt))
+        receipt["value"] = 2
+        self.assertNotEqual(digest, rehearsal.receipt_digest(receipt))
+
+    def test_source_commit_is_full_sha(self):
+        self.assertRegex(rehearsal.source_commit(), r"^[0-9a-f]{40}$")
+
 
 if __name__ == "__main__":
     unittest.main()
