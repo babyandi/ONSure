@@ -74,6 +74,7 @@ public final class StandardValidationProfileDetector {
         addMissingFunctionalPathChecks(functional, meta.stepId());
         List<String> functionalGate = functional.stream().filter(Step::required).map(Step::stepId).toList();
         addMissingEndToEndChecks(endToEnd, functionalGate);
+        bindConnectedFacetsToFunctionalGate(endToEnd, functionalGate);
         bindLineageToConnectedFacets(endToEnd);
         addMissingOperationalChecks(operations, "evidence.verify");
         List<String> evidenceDependencies = new ArrayList<>();
@@ -188,6 +189,17 @@ public final class StandardValidationProfileDetector {
         }
         endToEnd.sort(java.util.Comparator.comparingInt(
                 step -> step.kind() == StepKind.WORKFLOW_LINEAGE ? 1 : 0));
+    }
+
+    private static void bindConnectedFacetsToFunctionalGate(
+            List<Step> endToEnd, List<String> functionalGate) {
+        for (int index = 0; index < endToEnd.size(); index++) {
+            Step step = endToEnd.get(index);
+            LinkedHashSet<String> dependencies = new LinkedHashSet<>(step.dependsOn());
+            dependencies.addAll(functionalGate);
+            endToEnd.set(index, new Step(step.stepId(), step.phase(), step.kind(), step.required(),
+                    step.command(), step.workingDirectory(), step.timeout(), List.copyOf(dependencies)));
+        }
     }
 
     private static void addMissingKind(List<Step> functional, String metaStepId, StepKind kind,

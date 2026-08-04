@@ -271,6 +271,44 @@ class StandardValidationProfileDetectorTest {
     }
 
     @Test
+    void mavenValidationConventionsFillConnectedAndOperationalFacets() throws Exception {
+        Path tests = Files.createDirectories(temp.resolve("src/test/java/example"));
+        Files.writeString(temp.resolve("pom.xml"), "<project/>");
+        Files.writeString(tests.resolve("SecurityAdversarialTest.java"),
+                "class SecurityAdversarialTest { void retryResumeApprovalBoundary() {} }");
+        Files.writeString(tests.resolve("ConnectedWorkflowValidationTest.java"),
+                "class ConnectedWorkflowValidationTest {}");
+        Files.writeString(tests.resolve("OperationalResilienceValidationTest.java"),
+                "class OperationalResilienceValidationTest {}");
+
+        var profile = new StandardValidationProfileDetector().detect("maven-complete", temp);
+
+        assertFalse(profile.steps().stream().map(UniversalValidationProfile.Step::stepId)
+                .anyMatch(id -> id.startsWith("functional.") || id.startsWith("e2e.")
+                        || id.startsWith("operations.")));
+        for (var kind : List.of(
+                UniversalValidationProfile.StepKind.E2E_REQUEST_FLOW,
+                UniversalValidationProfile.StepKind.E2E_RENDER_OR_PRODUCE,
+                UniversalValidationProfile.StepKind.E2E_ARTIFACT_READBACK,
+                UniversalValidationProfile.StepKind.E2E_TESTER_CHECK,
+                UniversalValidationProfile.StepKind.E2E_AUDIT_CHECK,
+                UniversalValidationProfile.StepKind.E2E_EXPOSURE_DECISION,
+                UniversalValidationProfile.StepKind.WORKFLOW_LINEAGE,
+                UniversalValidationProfile.StepKind.INTERRUPTION_TEST,
+                UniversalValidationProfile.StepKind.RESUME_TEST,
+                UniversalValidationProfile.StepKind.ROLLBACK_TEST,
+                UniversalValidationProfile.StepKind.RERUN_TEST)) {
+            assertTrue(profile.steps().stream().anyMatch(step -> step.kind() == kind), kind.toString());
+        }
+        var request = profile.steps().stream()
+                .filter(step -> step.kind() == UniversalValidationProfile.StepKind.E2E_REQUEST_FLOW)
+                .findFirst().orElseThrow();
+        assertTrue(request.dependsOn().containsAll(List.of(
+                "maven.clean-verify", "maven.negative-paths",
+                "maven.retry-paths", "maven.blocking-paths")));
+    }
+
+    @Test
     void detectsNestedPostgresqlFlywayMigrationAndInventoriesIt() throws Exception {
         Path source = Files.createDirectory(temp.resolve("source"));
         Files.writeString(source.resolve("pom-modular.xml"), """
