@@ -184,7 +184,15 @@ class ValidationPlatformE2ETest {
     }
 
     private static boolean gitMetadataAvailable() {
-        return Files.exists(Path.of(".git"));
+        try {
+            Process process = new ProcessBuilder(
+                    "git", "rev-parse", "--is-inside-work-tree")
+                    .redirectErrorStream(true).start();
+            return process.waitFor() == 0
+                    && new String(process.getInputStream().readAllBytes()).trim().equals("true");
+        } catch (Exception unavailable) {
+            return false;
+        }
     }
 
     private static StageResult stage(ValidationEngine.RunResult result, String id) {
