@@ -193,8 +193,9 @@ npm run package
 ```
 
 사용 순서와 승인 경계는 `vscode-extension/README.md`를 따른다. Extension Host E2E는
-`scripts/run-vscode-extension-host-e2e-container.sh`로 고정 VS Code/Xvfb 컨테이너에서 실행하며,
-network-disabled 재실행까지 통과해도 제품 Full-Chain 완료를 주장하지 않는다.
+`python3 scripts/rehearse_vscode_extension_host.py`로 고정 VS Code/Xvfb 컨테이너의 online과
+network-disabled 재실행을 묶고 source/image/log digest 증적을 생성한다. 통과하더라도 제품
+Full-Chain 완료를 주장하지 않는다.
 
 정적 비최종 Gate:
 
@@ -259,7 +260,7 @@ Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational bou
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `30d27a88c4247cefabb10e316bd2bfafa0a3b9bb3afcfdc89470afb410fec089`를 생성했으며
 동일 입력 2회 패키징 결과가 byte-identical했다.
-Manifest 후보는 신규 구현을 포함한 886개 파일이며 정확한 파일 수와
+Manifest 후보는 신규 구현을 포함한 887개 파일이며 정확한 파일 수와
 digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는
@@ -273,7 +274,8 @@ digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으�
 결속되어 있으며 원본 소스 변경은 0건이다.
 Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
 VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
-실행됐지만 MVP Full-Chain, 독립 OTester/OAudit와 Human Acceptance는 아직 실행되지 않았다.
+실행됐고 source/image/online·offline log digest receipt를 남겼지만 MVP Full-Chain,
+독립 OTester/OAudit와 Human Acceptance는 아직 실행되지 않았다.
 
 ```text
 Assurance      SELF_VALIDATION_NONFINAL / LOCAL_OCI_SANDBOX

@@ -822,6 +822,8 @@ def validate() -> dict[str, object]:
         "assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json",
         "scripts/rehearse_onsure_vscode_runtime.py",
         "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json",
+        "scripts/rehearse_vscode_extension_host.py",
+        "assurance/runtime/vscode-extension-host-e2e.v1.json",
         "scripts/onsure_ubuntu_host_preflight.py",
         "assurance/runtime/onsure-ubuntu-host-preflight.v1.json",
         "scripts/validate_onsure_ubuntu_privileged_policy.py",
