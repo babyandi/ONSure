@@ -2790,8 +2790,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "70530a9c8b0612b574ae7d9b362025bca5610d127e28a1121f48b0dcb95b3933",
-      "size_bytes": 19726
+      "sha256": "c7fab0d7898a8b93425fafb9ae47ce756552b2ee8e099416fd6951be1b7241c2",
+      "size_bytes": 19894
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -11720,6 +11720,6 @@
       "NO_PATTERN_MATCH": 775,
       "REVIEW_REQUIRED": 3
     },
-    "total_size_bytes": 7930394
+    "total_size_bytes": 7930562
   }
 }
