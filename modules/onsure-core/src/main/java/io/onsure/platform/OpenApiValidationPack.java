@@ -15,11 +15,18 @@ public final class OpenApiValidationPack implements ValidationPack {
 
     @Override
     public Contribution detect(Path root) {
-        if (StandardValidationPackSupport.firstFile(root, "openapi.yaml", "openapi.yml", "openapi.json",
-                "contracts/openapi/onsure-local-api.v1.json",
-                "contracts/openapi/onsure-llm-gateway.v1.json") == null) return Contribution.none();
-        return new Contribution(Set.of("OPENAPI"), List.of(step(
-                "openapi.contract", Phase.COMPONENT_AND_NEGATIVE, StepKind.API_CONTRACT,
-                List.of(), Duration.ofMinutes(2), List.of("validator.meta-check"))));
+        try {
+            List<Path> contracts = StandardValidationPackSupport.findOpenApiContracts(root);
+            if (contracts.isEmpty()) return Contribution.none();
+            List<UniversalValidationProfile.Step> steps = new java.util.ArrayList<>();
+            for (int index = 0; index < contracts.size(); index++) {
+                String id = index == 0 ? "openapi.contract" : "openapi.contract-" + (index + 1);
+                steps.add(step(id, Phase.COMPONENT_AND_NEGATIVE, StepKind.API_CONTRACT,
+                        List.of(), Duration.ofMinutes(2), List.of("validator.meta-check")));
+            }
+            return new Contribution(Set.of("OPENAPI"), steps);
+        } catch (java.io.IOException error) {
+            throw new IllegalStateException("OPENAPI_CONTRACT_DISCOVERY_FAILED", error);
+        }
     }
 }

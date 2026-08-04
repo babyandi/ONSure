@@ -33,7 +33,7 @@ Tester, Auditor 이름은 Pack의 역할 선언으로 받으며 ONSURE Core의 �
 | 3 | `VALIDATOR_META` | 검증 Profile이 탐지된 필수 항목과 실패 경로를 실제 검사하는지 검사 |
 | 4 | `STAGE_FUNCTIONAL` | 단계별 정상·실패·재시도·차단 경로의 build·unit·negative·contract 실행 |
 | 5 | `CONNECTED_E2E` | 요청부터 최종 산출물 read-back·tester·audit·노출 판정까지 실제 연결 실행 |
-| 6 | `EVIDENCE_DECISION` | 모든 PASS의 output hash·environment hash·시작/종료 시각·reason 결속 확인 |
+| 6 | `EVIDENCE_DECISION` | 모든 PASS의 실제 log read-back SHA-256·environment hash·시작/종료 시각·reason 결속 확인 |
 | 7 | `OPERATIONS_RECOVERY` | 의존성 누락·중단·재개·rollback·재실행·성능·backup/restore |
 
 앞 검증군의 필수 Step이 통과하지 않으면 의존 검증군은 실행하지 않고 원인을 포함한
@@ -87,6 +87,11 @@ Pack이 typed `EnvironmentRequirement`로 탐지·선언하며 필수 항목이 
 file, font family다. ClamAV는 `EXECUTABLE=clamscan`, 서명 Fixture는 `SOURCE_FILE`, Node
 module/renderer asset은 `SOURCE_DIRECTORY` 또는 Pack의 offline 실행 Step으로 선언한다.
 
+증적 판정은 PASS 필드의 존재만 검사하지 않는다. 신뢰된 실행 로그 경로 안의 실제 파일을
+다시 읽어 `outputSha256`과 대조하고, 각 Step의 `environmentSha256`이 실행 영수증의
+`environment_evidence.sha256`과 같은지 확인한다. 로그 누락·경로 이탈·symlink·변조,
+환경 digest 불일치, 역전된 실행 시각은 `PASS_EVIDENCE_INTEGRITY_INVALID`로 실패한다.
+
 기본 Detector는 Java `ServiceLoader`에서 설치된 Pack을 ID 순으로 불러온다. 배포자가
 검토한 별도 JAR의 `META-INF/services/io.onsure.platform.ValidationPack`만 로딩 대상이며,
 검증 대상 source 안의 provider class나 descriptor는 classpath에 추가하지 않는다. 테스트와
@@ -109,8 +114,9 @@ embedding SDK는 `StandardValidationProfileDetector(List<ValidationPack>)`으로
 - `gradlew` + Gradle build file: Gradle offline `clean test`
 - `pyproject.toml`, `pytest.ini`, `requirements.txt`, `tests/`: pytest 또는 unittest
 - `package.json`: 선언된 build/test/integration script와 built-in `NodeScriptValidationPack`
-- `openapi.yaml|yml|json`, ONSURE Local API 계약: 중복 key, 3.0/3.1, info,
-  path/method, operationId 유일성, responses, local `$ref` AST 검증
+- `openapi.yaml|yml|json`, `contracts/openapi/`의 모든 제품 계약: 계약마다 독립 Step과
+  로그를 만들고 중복 key, 3.0/3.1, info, path/method, operationId 유일성, responses,
+  local `$ref` AST 검증. 상위 제품을 검증할 때 fixture/test/generated subtree 계약은 제외
 - `db/migration`, `migrations`: migration 정적 검증; 승인된 합성 DB 없으면 4차 `NOT_RUN`
 
 PostgreSQL Pack은 최대 탐색 깊이·파일 수와 생성물 제외 규칙을 적용해 중첩 Maven 모듈의

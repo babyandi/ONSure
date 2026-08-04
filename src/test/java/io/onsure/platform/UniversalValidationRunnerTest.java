@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -58,6 +59,9 @@ class UniversalValidationRunnerTest {
         var receipt = new ObjectMapper().readTree(result.receiptFile().toFile());
         assertFalse(receipt.path("final_claim_allowed").asBoolean(true));
         assertEquals("NOT_RUN", receipt.path("overall_outcome").asText());
+        assertTrue(receipt.path("environment_evidence").path("description").isTextual());
+        assertEquals(result.steps().get(0).environmentSha256(),
+                receipt.path("environment_evidence").path("sha256").asText());
         assertTrue(receipt.path("steps").get(0).path("startedAt").isTextual());
         assertTrue(Files.isRegularFile(Path.of(receipt.path("steps").get(0).path("logFile").asText())));
         var inventory = result.steps().stream().filter(step -> step.stepId().equals("structure.inventory"))
@@ -219,5 +223,63 @@ class UniversalValidationRunnerTest {
         String log = Files.readString(Path.of(openApi.logFile()));
         assertTrue(log.contains("OPENAPI_OPERATION_ID_DUPLICATED:duplicate"));
         assertTrue(log.contains("OPENAPI_LOCAL_REF_MISSING:#/components/responses/Missing"));
+    }
+
+    @Test
+    void validatesEveryDiscoveredOpenApiContractIndependently() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("source"));
+        Path contracts = Files.createDirectories(source.resolve("contracts/openapi"));
+        Files.writeString(contracts.resolve("a-service.json"), """
+                {"openapi":"3.1.0","info":{"title":"a","version":"1"},"paths":{
+                  "/health":{"get":{"operationId":"healthA","responses":{"200":{"description":"ok"}}}}
+                }}
+                """);
+        Files.writeString(contracts.resolve("b-service.json"), """
+                {"openapi":"3.1.0","info":{"title":"b"},"paths":{}}
+                """);
+        Path fixture = Files.createDirectories(source.resolve("fixtures/example"));
+        Files.writeString(fixture.resolve("openapi.yaml"), "openapi: invalid-fixture\n");
+        var profile = new StandardValidationProfileDetector().detect("multi-openapi", source);
+
+        assertTrue(profile.steps().stream().anyMatch(step -> step.stepId().equals("openapi.contract")));
+        assertTrue(profile.steps().stream().anyMatch(step -> step.stepId().equals("openapi.contract-2")));
+        assertEquals(2, profile.steps().stream().filter(step ->
+                step.stepId().startsWith("openapi.contract")).count());
+        var result = new UniversalValidationRunner((step, root) ->
+                new UniversalValidationRunner.StepExecution(PASS_NONFINAL, 0, "pass", false, "test"))
+                .run(profile, temp.resolve("run"));
+
+        assertEquals(PASS_NONFINAL, result.steps().stream()
+                .filter(step -> step.stepId().equals("openapi.contract")).findFirst().orElseThrow().outcome());
+        var second = result.steps().stream().filter(step -> step.stepId().equals("openapi.contract-2"))
+                .findFirst().orElseThrow();
+        assertEquals(FAIL, second.outcome());
+        String log = Files.readString(Path.of(second.logFile()));
+        assertTrue(log.contains("OPENAPI_INFO_REQUIRED_FIELDS_MISSING"));
+        assertTrue(log.contains("OPENAPI_PATHS_EMPTY_OR_INVALID"));
+    }
+
+    @Test
+    void evidenceMetaValidationDetectsTamperedPassLog() throws Exception {
+        Path logs = Files.createDirectory(temp.resolve("logs"));
+        Path log = logs.resolve("structure.inventory.log");
+        Files.writeString(log, "inventory-pass");
+        String environmentSha = Hashing.sha256("test-environment");
+        Instant started = Instant.now();
+        var pass = new UniversalValidationRunner.StepResult(
+                "structure.inventory", STRUCTURE_STATIC,
+                UniversalValidationProfile.StepKind.INVENTORY, true, PASS_NONFINAL, 0,
+                Hashing.file(log), environmentSha, log.toString(), false,
+                "INVENTORY_VALID", started, started.plusMillis(1));
+
+        var valid = UniversalValidationRunner.validateEvidence(
+                java.util.List.of(pass), logs, environmentSha);
+        assertEquals(PASS_NONFINAL, valid.outcome());
+
+        Files.writeString(log, "tampered-after-pass");
+        var tampered = UniversalValidationRunner.validateEvidence(
+                java.util.List.of(pass), logs, environmentSha);
+        assertEquals(FAIL, tampered.outcome());
+        assertTrue(tampered.output().contains("LOG_SHA256_MISMATCH"));
     }
 }

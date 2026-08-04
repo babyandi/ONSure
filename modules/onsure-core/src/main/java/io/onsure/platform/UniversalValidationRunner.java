@@ -120,7 +120,8 @@ public final class UniversalValidationRunner {
         Map<String, Outcome> outcomes = new LinkedHashMap<>();
         List<StepResult> results = new ArrayList<>();
         boolean sourceMutation = false;
-        String environmentSha256 = Hashing.sha256(environmentDescription());
+        String environmentDescription = environmentDescription();
+        String environmentSha256 = Hashing.sha256(environmentDescription);
         Path logRoot = root.resolve("step-logs");
         Files.createDirectories(logRoot);
         for (Step step : profile.steps()) {
@@ -132,7 +133,8 @@ public final class UniversalValidationRunner {
                 execution = new StepExecution(Outcome.NOT_RUN, -1, "", false,
                         "DEPENDENCY_NOT_PASS:" + String.join(",", unsatisfied));
             } else if (!step.executable()) {
-                execution = executeInternal(profile, step, snapshot.snapshotRoot(), results);
+                execution = executeInternal(profile, step, snapshot.snapshotRoot(), results,
+                        logRoot, environmentSha256);
             } else {
                 execution = executor.execute(step, snapshot.snapshotRoot().resolve(step.workingDirectory()));
             }
@@ -168,6 +170,10 @@ public final class UniversalValidationRunner {
         body.put("source_mutation_detected", sourceMutation);
         body.put("technologies", profile.technologies().stream().sorted().toList());
         body.put("environment_requirements", profile.environmentRequirements());
+        Map<String, Object> environmentEvidence = new LinkedHashMap<>();
+        environmentEvidence.put("description", environmentDescription);
+        environmentEvidence.put("sha256", environmentSha256);
+        body.put("environment_evidence", environmentEvidence);
         body.put("phase_outcomes", phaseOutcomes);
         body.put("verification_group_outcomes", groupOutcomes);
         body.put("overall_outcome", overall);
@@ -188,15 +194,16 @@ public final class UniversalValidationRunner {
     }
 
     private StepExecution executeInternal(Profile profile, Step step, Path snapshotRoot,
-            List<StepResult> previousResults) {
+            List<StepResult> previousResults, Path logRoot, String environmentSha256) {
         try {
             return switch (step.kind()) {
                 case ENVIRONMENT_PREFLIGHT -> validateEnvironment(profile, snapshotRoot);
                 case INVENTORY -> validateStructureInventory(snapshotRoot);
                 case VALIDATOR_META_CHECK -> validateProfile(profile);
-                case API_CONTRACT -> validateOpenApi(snapshotRoot);
+                case API_CONTRACT -> validateOpenApi(snapshotRoot, step);
                 case DATABASE_MIGRATION -> validateMigrations(snapshotRoot);
-                case EVIDENCE_VERIFICATION -> validateEvidence(previousResults);
+                case EVIDENCE_VERIFICATION -> validateEvidence(
+                        previousResults, logRoot, environmentSha256);
                 case NEGATIVE_TEST -> new StepExecution(Outcome.NOT_RUN, -1, "", false,
                         "NEGATIVE_AND_FAILURE_PATH_PACK_NOT_INSTALLED");
                 case RETRY_TEST -> new StepExecution(Outcome.NOT_RUN, -1, "", false,
@@ -382,18 +389,48 @@ public final class UniversalValidationRunner {
                 "SOURCE_SNAPSHOT_AND_STRUCTURE_SIGNALS_INVENTORIED");
     }
 
-    private StepExecution validateEvidence(List<StepResult> results) {
-        List<String> invalid = results.stream()
-                .filter(result -> result.outcome() == Outcome.PASS_NONFINAL)
-                .filter(result -> result.outputSha256() == null || result.outputSha256().isBlank()
-                        || result.environmentSha256() == null || result.environmentSha256().isBlank()
-                        || result.logFile() == null || result.logFile().isBlank()
-                        || result.startedAt() == null || result.completedAt() == null)
-                .map(StepResult::stepId).toList();
+    static StepExecution validateEvidence(
+            List<StepResult> results, Path logRoot, String expectedEnvironmentSha256) {
+        Path trustedLogRoot = logRoot.toAbsolutePath().normalize();
+        List<String> invalid = new ArrayList<>();
+        for (StepResult result : results) {
+            if (result.outcome() != Outcome.PASS_NONFINAL) continue;
+            String invalidReason = invalidPassEvidence(
+                    result, trustedLogRoot, expectedEnvironmentSha256);
+            if (invalidReason != null) invalid.add(result.stepId() + ":" + invalidReason);
+        }
         String report = "prior_step_count=" + results.size() + "\ninvalid_pass_evidence=" + invalid;
         return new StepExecution(invalid.isEmpty() ? Outcome.PASS_NONFINAL : Outcome.FAIL,
                 invalid.isEmpty() ? 0 : 1, report, false,
-                invalid.isEmpty() ? "PASS_EVIDENCE_FIELDS_PRESENT" : "PASS_EVIDENCE_FIELDS_MISSING");
+                invalid.isEmpty() ? "PASS_EVIDENCE_INTEGRITY_VERIFIED" : "PASS_EVIDENCE_INTEGRITY_INVALID");
+    }
+
+    private static String invalidPassEvidence(
+            StepResult result, Path logRoot, String expectedEnvironmentSha256) {
+        try {
+            if (result.outputSha256() == null || !result.outputSha256().matches("[0-9a-f]{64}")) {
+                return "OUTPUT_SHA256_INVALID";
+            }
+            if (result.environmentSha256() == null
+                    || !result.environmentSha256().equals(expectedEnvironmentSha256)) {
+                return "ENVIRONMENT_SHA256_MISMATCH";
+            }
+            if (result.logFile() == null || result.logFile().isBlank()) return "LOG_FILE_MISSING";
+            Path log = Path.of(result.logFile()).toAbsolutePath().normalize();
+            if (!log.startsWith(logRoot) || Files.isSymbolicLink(log)
+                    || !Files.isRegularFile(log, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+                return "LOG_FILE_UNTRUSTED_OR_MISSING";
+            }
+            if (!Hashing.file(log).equals(result.outputSha256())) return "LOG_SHA256_MISMATCH";
+            if (result.reason() == null || result.reason().isBlank()
+                    || result.startedAt() == null || result.completedAt() == null
+                    || result.completedAt().isBefore(result.startedAt())) {
+                return "RECEIPT_METADATA_INVALID";
+            }
+            return null;
+        } catch (Exception error) {
+            return "EVIDENCE_READ_ERROR:" + error.getClass().getSimpleName();
+        }
     }
 
     private static String environmentDescription() {
@@ -416,11 +453,14 @@ public final class UniversalValidationRunner {
         return null;
     }
 
-    private StepExecution validateOpenApi(Path root) throws Exception {
-        Path contract = firstFile(root, "openapi.yaml", "openapi.yml", "openapi.json",
-                "contracts/openapi/onsure-local-api.v1.json",
-                "contracts/openapi/onsure-llm-gateway.v1.json");
-        if (contract == null) return new StepExecution(Outcome.NOT_RUN, -1, "", false, "OPENAPI_NOT_FOUND");
+    private StepExecution validateOpenApi(Path root, Step step) throws Exception {
+        List<Path> contracts = StandardValidationPackSupport.findOpenApiContracts(root);
+        int index = openApiContractIndex(step.stepId());
+        if (index < 0 || index >= contracts.size()) {
+            return new StepExecution(Outcome.FAIL, 1, "step=" + step.stepId(), false,
+                    "OPENAPI_PROFILE_CONTRACT_INDEX_INVALID");
+        }
+        Path contract = contracts.get(index);
         if (Files.size(contract) > MAX_OPENAPI_CONTRACT_BYTES) {
             return new StepExecution(Outcome.FAIL, 1, "contract=" + contract.getFileName(), false,
                     "OPENAPI_CONTRACT_TOO_LARGE");
@@ -473,6 +513,15 @@ public final class UniversalValidationRunner {
         return new StepExecution(Outcome.PASS_NONFINAL, 0, report, false, "OPENAPI_CONTRACT_VALID");
     }
 
+    private static int openApiContractIndex(String stepId) {
+        if ("openapi.contract".equals(stepId)) return 0;
+        if (stepId != null && stepId.startsWith("openapi.contract-")) {
+            try { return Integer.parseInt(stepId.substring("openapi.contract-".length())) - 1; }
+            catch (NumberFormatException ignored) { return -1; }
+        }
+        return -1;
+    }
+
     private static void inspectReferences(JsonNode root, JsonNode current,
             List<String> errors, List<String> limitations) {
         if (current.isObject()) {
@@ -504,14 +553,6 @@ public final class UniversalValidationRunner {
         String inventory = scripts.stream().map(path -> root.relativize(path).toString().replace('\\', '/'))
                 .reduce("", (left, right) -> left + right + "\n");
         return new StepExecution(Outcome.PASS_NONFINAL, 0, inventory, false, "MIGRATION_STATIC_INVENTORY_VALID");
-    }
-
-    private static Path firstFile(Path root, String... names) {
-        for (String name : names) {
-            Path path = root.resolve(name).normalize();
-            if (path.startsWith(root) && Files.isRegularFile(path) && !Files.isSymbolicLink(path)) return path;
-        }
-        return null;
     }
 
     private static void atomicWrite(Path target, byte[] bytes) throws Exception {

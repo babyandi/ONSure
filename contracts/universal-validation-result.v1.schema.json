@@ -33,6 +33,15 @@
         }
       }
     },
+    "environment_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "sha256"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
     "phase_outcomes": {"$ref": "#/$defs/phaseOutcomes"},
     "verification_group_outcomes": {"$ref": "#/$defs/groupOutcomes"},
     "overall_outcome": {"$ref": "#/$defs/outcome"},

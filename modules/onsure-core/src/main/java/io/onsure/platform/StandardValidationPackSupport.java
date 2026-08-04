@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /** Bounded read-only helpers shared by installed standard validation packs. */
@@ -23,7 +24,8 @@ final class StandardValidationPackSupport {
     private static final long MAX_CONFIG_BYTES = 5L * 1024 * 1024;
     private static final int MAX_DETECTION_ENTRIES = 50_000;
     private static final Set<String> SKIPPED_DIRECTORIES = Set.of(
-            ".git", ".onsure", "target", "build", "node_modules", "__pycache__", ".venv", "venv");
+            ".git", ".onsure", "target", "build", "node_modules", "__pycache__", ".venv", "venv",
+            "fixtures", "test", "tests");
 
     private StandardValidationPackSupport() {}
 
@@ -61,9 +63,46 @@ final class StandardValidationPackSupport {
         }
     }
 
-    static Path firstFile(Path root, String... candidates) {
-        for (String candidate : candidates) if (file(root, candidate)) return root.resolve(candidate);
-        return null;
+    static List<Path> findOpenApiContracts(Path root) throws IOException {
+        Set<Path> found = new LinkedHashSet<>();
+        for (String candidate : List.of("openapi.yaml", "openapi.yml", "openapi.json",
+                "contracts/openapi/onsure-local-api.v1.json",
+                "contracts/openapi/onsure-llm-gateway.v1.json")) {
+            if (file(root, candidate)) found.add(root.resolve(candidate));
+        }
+        int[] inspected = {0};
+        Files.walkFileTree(root, Set.of(), 8, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attributes) {
+                if (++inspected[0] > MAX_DETECTION_ENTRIES) {
+                    throw new IllegalArgumentException("VALIDATION_DETECTION_ENTRY_LIMIT_EXCEEDED");
+                }
+                if (!directory.equals(root) && (Files.isSymbolicLink(directory)
+                        || SKIPPED_DIRECTORIES.contains(directory.getFileName().toString()))) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
+                if (++inspected[0] > MAX_DETECTION_ENTRIES) {
+                    throw new IllegalArgumentException("VALIDATION_DETECTION_ENTRY_LIMIT_EXCEEDED");
+                }
+                if (!attributes.isRegularFile() || Files.isSymbolicLink(file)) return FileVisitResult.CONTINUE;
+                String name = file.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
+                String parent = file.getParent() == null ? ""
+                        : root.relativize(file.getParent()).toString().replace('\\', '/');
+                boolean extension = name.endsWith(".json") || name.endsWith(".yaml") || name.endsWith(".yml");
+                if (extension && (name.contains("openapi") || parent.equals("contracts/openapi"))) {
+                    found.add(file);
+                    if (found.size() > 256) throw new IllegalArgumentException("OPENAPI_CONTRACT_LIMIT_EXCEEDED");
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return found.stream().sorted(Comparator.comparing(path ->
+                root.relativize(path).toString().replace('\\', '/'))).toList();
     }
 
     static Path findMigrationDirectory(Path root) throws IOException {
