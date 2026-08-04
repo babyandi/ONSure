@@ -108,6 +108,18 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_sandbox_rehearsal_is_digest_bound_and_fail_closed(self):
         self.assertEqual([], operational.validate_sandbox_evidence())
 
+    def test_universal_java_python_node_and_self_evidence_is_digest_bound(self):
+        self.assertEqual([], operational.validate_universal_evidence())
+
+    def test_universal_evidence_rejects_false_pass_and_receipt_tampering(self):
+        evidence = json.loads(operational.UNIVERSAL_EVIDENCE.read_text(encoding="utf-8"))
+        evidence["runs"][0]["steps"][0]["outcome"] = "FAIL"
+        violations = operational.validate_universal_evidence_body(
+            evidence, verify_repository=False,
+        )
+        self.assertIn("UNIVERSAL_EVIDENCE_STEP_BINDING:self", violations)
+        self.assertIn("UNIVERSAL_EVIDENCE_RECEIPT_DIGEST", violations)
+
     def test_sandbox_rehearsal_rejects_image_and_receipt_tampering(self):
         evidence = json.loads(
             operational.SANDBOX_EVIDENCE.read_text(encoding="utf-8")

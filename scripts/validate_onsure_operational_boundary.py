@@ -20,6 +20,7 @@ ROOT = resolve_product_root()
 CONTRACT = ROOT / "contracts/onsure-operational-boundary.v1.json"
 POSTGRESQL_EVIDENCE = ROOT / "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json"
 SANDBOX_EVIDENCE = ROOT / "assurance/runtime/onsure-sandbox-backends.v1.json"
+UNIVERSAL_EVIDENCE = ROOT / "assurance/runtime/onsure-universal-validation-evidence.v1.json"
 POSTGRESQL_MIGRATION = ROOT / (
     "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/"
     "V1__create_assurance_event.sql"
@@ -374,6 +375,89 @@ def validate_sandbox_evidence() -> list[str]:
     return validate_sandbox_evidence_body(evidence)
 
 
+def validate_universal_evidence_body(
+    evidence: dict[str, object], *, verify_repository: bool = True,
+) -> list[str]:
+    violations: list[str] = []
+    expected = {
+        "contract": "ONSURE_UNIVERSAL_VALIDATION_EVIDENCE_SET_V1",
+        "decision": "PASS_NONFINAL",
+        "production_authority": False,
+        "final_claim_allowed": False,
+    }
+    for field, value in expected.items():
+        if evidence.get(field) != value:
+            violations.append("UNIVERSAL_EVIDENCE_" + field.upper())
+    if re.fullmatch(r"sha256:[0-9a-f]{64}", str(evidence.get("oci_image_id", ""))) is None:
+        violations.append("UNIVERSAL_EVIDENCE_OCI_IMAGE_ID")
+    source = str(evidence.get("source_commit", ""))
+    if re.fullmatch(r"[0-9a-f]{40}", source) is None:
+        violations.append("UNIVERSAL_EVIDENCE_SOURCE_COMMIT")
+    elif verify_repository and _git_worktree_available():
+        ancestor = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", source, "HEAD"],
+            cwd=ROOT, capture_output=True, check=False,
+        )
+        if ancestor.returncode != 0:
+            violations.append("UNIVERSAL_EVIDENCE_SOURCE_ANCESTRY")
+    runs = evidence.get("runs")
+    expected_targets = {"self", "java", "python", "node"}
+    expected_phases = {
+        "STRUCTURE_STATIC", "COMPONENT_AND_NEGATIVE",
+        "END_TO_END_LINEAGE", "OPERATIONAL_RESILIENCE",
+    }
+    expected_groups = {
+        "ENVIRONMENT_DEPENDENCY", "STRUCTURE", "VALIDATOR_META", "STAGE_FUNCTIONAL",
+        "CONNECTED_E2E", "EVIDENCE_DECISION", "OPERATIONS_RECOVERY",
+    }
+    if not isinstance(runs, list):
+        violations.append("UNIVERSAL_EVIDENCE_RUNS")
+    else:
+        targets = {run.get("target_id") for run in runs if isinstance(run, dict)}
+        if len(runs) != 4 or targets != expected_targets:
+            violations.append("UNIVERSAL_EVIDENCE_TARGET_SET")
+        for run in runs:
+            if not isinstance(run, dict):
+                violations.append("UNIVERSAL_EVIDENCE_RUN_BODY")
+                continue
+            target = str(run.get("target_id", "UNKNOWN"))
+            if run.get("overall_outcome") != "PASS_NONFINAL" \
+                    or run.get("source_mutation_detected") is not False \
+                    or run.get("source_digest") != run.get("snapshot_digest"):
+                violations.append("UNIVERSAL_EVIDENCE_RUN_OUTCOME:" + target)
+            if run.get("phase_outcomes") != {key: "PASS_NONFINAL" for key in expected_phases}:
+                violations.append("UNIVERSAL_EVIDENCE_PHASES:" + target)
+            if run.get("verification_group_outcomes") != {
+                    key: "PASS_NONFINAL" for key in expected_groups}:
+                violations.append("UNIVERSAL_EVIDENCE_GROUPS:" + target)
+            steps = run.get("steps")
+            if not isinstance(steps, list) or not steps \
+                    or run.get("verified_pass_step_count") != len(steps):
+                violations.append("UNIVERSAL_EVIDENCE_STEP_COUNT:" + target)
+                continue
+            for step in steps:
+                if not isinstance(step, dict) or step.get("outcome") != "PASS_NONFINAL" \
+                        or step.get("exit_code") != 0 \
+                        or not _full_sha256(step.get("output_sha256")) \
+                        or step.get("environment_sha256") != run.get("environment_sha256"):
+                    violations.append("UNIVERSAL_EVIDENCE_STEP_BINDING:" + target)
+                    break
+            for field in ("source_digest", "snapshot_digest", "environment_sha256",
+                          "result_sha256", "finalization_sha256"):
+                if not _full_sha256(run.get(field)):
+                    violations.append("UNIVERSAL_EVIDENCE_RUN_DIGEST:" + target + ":" + field)
+    normalized = dict(evidence)
+    receipt = normalized.pop("receipt_sha256", None)
+    if not _full_sha256(receipt) or receipt != _canonical_sha256(normalized):
+        violations.append("UNIVERSAL_EVIDENCE_RECEIPT_DIGEST")
+    return violations
+
+
+def validate_universal_evidence() -> list[str]:
+    evidence = json.loads(UNIVERSAL_EVIDENCE.read_text(encoding="utf-8"))
+    return validate_universal_evidence_body(evidence)
+
+
 def validate_systemd_evidence() -> list[str]:
     violations: list[str] = []
     evidence = json.loads(SYSTEMD_EVIDENCE.read_text(encoding="utf-8"))
@@ -710,6 +794,8 @@ def validate() -> dict[str, object]:
         "scripts/build-onsure-validation-image.sh",
         "deploy/validation/Dockerfile",
         "assurance/runtime/onsure-sandbox-backends.v1.json",
+        "scripts/seal_universal_validation_evidence.py",
+        "assurance/runtime/onsure-universal-validation-evidence.v1.json",
         "scripts/package_onsure_rhel.sh",
         "scripts/package_onsure_systemd.sh",
         "scripts/package_onsure_ubuntu.sh",
@@ -757,6 +843,7 @@ def validate() -> dict[str, object]:
         violations.extend(validate_ubuntu_candidate())
         violations.extend(validate_postgresql_evidence())
         violations.extend(validate_sandbox_evidence())
+        violations.extend(validate_universal_evidence())
         violations.extend(validate_systemd_evidence())
         violations.extend(validate_ubuntu_systemd_evidence())
         violations.extend(validate_rhel_package_evidence())

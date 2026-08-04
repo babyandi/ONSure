@@ -221,20 +221,23 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 318개, Python 192개, Node 9개,
+현재 변경 후보의 로컬 검증은 Java 332개(조건부 11개 skip 포함), Python 194개, Node 9개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `c982d0269107ef174bf380f728ce112504a67f605da5a69bb238f187bc2dfb5d`를 생성했다.
-Manifest 후보는 기존 668개 기준선에서 신규 구현을 포함해 계속 확장되며 정확한 파일 수와
+Manifest 후보는 신규 구현을 포함한 873개 파일이며 정확한 파일 수와
 digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는
 이 실패를 약화하지 않고, 로컬에 이미 존재하는 검증 이미지가 있을 때만 immutable image ID로
 고정한 `OCI_DOCKER` backend를 선택한다. 이 backend는 image pull·network·host 원본 mount를
 금지하고 read-only rootfs, capability 0, no-new-privileges, AppArmor/seccomp, PID·CPU·memory·timeout
-한도를 적용한다. 12개 sandbox boundary probe와 중립 Node Fixture의 정상·실패·재시도·차단·
-E2E·복구 17개 script, portable lineage read-back이 이 격리 경로에서 `PASS_NONFINAL`이다.
+한도를 적용한다. 12개 sandbox boundary probe와 ONSure 자체 및 중립 Java·Python·Node 대상의
+정상·실패·재시도·차단·연결 E2E·portable lineage read-back·중단·재개·롤백·재실행이 이 격리
+경로에서 `PASS_NONFINAL`이다. 4개 실행의 86개 PASS 단계는
+`assurance/runtime/onsure-universal-validation-evidence.v1.json`에 로그·환경·결과 digest로
+결속되어 있으며 원본 소스 변경은 0건이다.
 Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
 VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
 실행됐지만 MVP Full-Chain, 독립 OTester/OAudit와 Human Acceptance는 아직 실행되지 않았다.
