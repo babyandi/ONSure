@@ -26,6 +26,8 @@ class LocalProgramManagementServiceTest {
         Files.writeString(source.resolve("LICENSE"), "test only\n");
         Files.createDirectories(source.resolve(".venv/bin"));
         Files.createSymbolicLink(source.resolve(".venv/bin/python"), Path.of("/usr/bin/python3"));
+        Files.createDirectories(source.resolve("module/target.root-owned-backup"));
+        Files.createSymbolicLink(source.resolve("module/target.root-owned-backup/outside"), Path.of("/root/secret"));
         LocalProgramManagementService service = new LocalProgramManagementService(workspace);
         Map<String, Object> registered = service.register(mapper.valueToTree(Map.of(
                 "workspace_id", "local", "workspace_name", "Local",
