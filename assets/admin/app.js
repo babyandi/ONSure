@@ -204,10 +204,17 @@
     button.disabled = true;
     setText("program-action-state", "격리 snapshot 검증 실행 중…");
     try {
-      const result = await api("/v1/programs/validate", {method: "POST", body: JSON.stringify({
+      const request = {
         project_id: projectId, target_id: targetId, profile: byId("validation-profile").value
+      };
+      const environmentProfile = byId("environment-profile").value.trim();
+      if (request.profile === "UNIVERSAL" && environmentProfile) {
+        request.environment_profile_file = environmentProfile;
+      }
+      const result = await api("/v1/programs/validate", {method: "POST", body: JSON.stringify({
+        ...request
       })});
-      setText("program-action-state", `${result.decision} / finding ${result.finding_count} / source mutation ${result.source_mutation_detected}`);
+      setText("program-action-state", `${result.profile || request.profile} / ${result.decision} / finding ${result.finding_count} / source mutation ${result.source_mutation_detected}`);
       await loadOverview();
     } catch (error) {
       setText("program-action-state", error instanceof Error ? error.message : "검증 실패");

@@ -151,6 +151,9 @@ mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
 프로필 경로를 전달한다. Node dependency가 있으면 내장 Pack이 구조 검사 전에 고정된
 `npm --offline ci --ignore-scripts`를 격리 snapshot에서 실행한다. lock/manifest drift 또는
 offline cache 누락은 1단계 `BLOCKED`이며 2~7단계는 실행하지 않는다.
+관리화면의 프로그램 검증 프로필도 `UNIVERSAL`을 선택하면 `/v1/programs/validate`가 같은
+Runner를 사용한다. 선택한 workspace 내부 환경 프로필, 원본 불변성, universal receipt digest,
+검증군 판정이 `validation-report.json` projection과 관리 감사 이력에 함께 기록된다.
 
 등록된 Target은 기존 `validation.run` 요청에 `validation_mode=UNIVERSAL`을 지정해 실행한다.
 실행 전 후보만 검토하려면 다음 명령을 사용한다. Node script, Maven module, Java/Python main,
@@ -247,7 +250,7 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 343개(조건부 11개 skip 포함), Python 199개, Node 9개,
+현재 변경 후보의 로컬 검증은 Java 345개(조건부 11개 skip 포함), Python 199개, Node 9개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256

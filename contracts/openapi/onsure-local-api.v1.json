@@ -415,7 +415,12 @@
         "properties": {
           "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
           "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
-          "profile": {"type": "string", "enum": ["INSPECT_ONLY", "MAVEN_STANDARD"]}
+          "profile": {"type": "string", "enum": ["UNIVERSAL", "INSPECT_ONLY", "MAVEN_STANDARD"]},
+          "environment_profile_file": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional workspace-contained ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1 file used only by UNIVERSAL."
+          }
         },
         "additionalProperties": false
       },

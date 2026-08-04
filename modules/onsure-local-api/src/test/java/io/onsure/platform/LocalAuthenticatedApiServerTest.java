@@ -58,6 +58,8 @@ class LocalAuthenticatedApiServerTest {
                             .GET().build(), HttpResponse.BodyHandlers.ofString());
             assertEquals(200, admin.statusCode());
             assertTrue(admin.body().contains("ONSure Control Room"));
+            assertTrue(admin.body().contains("value=\"UNIVERSAL\""));
+            assertTrue(admin.body().contains("environment-profile"));
             assertTrue(admin.headers().firstValue("Content-Security-Policy").orElse("")
                     .contains("script-src 'self'"));
 
@@ -66,6 +68,7 @@ class LocalAuthenticatedApiServerTest {
                             .GET().build(), HttpResponse.BodyHandlers.ofString());
             assertEquals(200, script.statusCode());
             assertTrue(script.body().contains("/v1/management-overview"));
+            assertTrue(script.body().contains("environment_profile_file"));
             assertTrue(!script.body().contains("localStorage"));
             assertTrue(!script.body().contains("sessionStorage"));
 

@@ -34,6 +34,17 @@ class LocalManagementApiRbacTest {
         Files.writeString(source.resolve("LICENSE"), "test\n");
         Files.writeString(source.resolve("src/main/java/example/App.java"),
                 "package example; public class App {}\n");
+        Path neutral = temp.resolve("neutral-source");
+        Files.createDirectories(neutral);
+        Files.writeString(neutral.resolve("openapi.yaml"), """
+                openapi: 3.1.0
+                info: {title: neutral, version: '1'}
+                paths:
+                  /health:
+                    get:
+                      operationId: getHealth
+                      responses: {'200': {description: healthy}}
+                """);
         LocalAuthenticatedApiServer server = new LocalAuthenticatedApiServer(workspace, ADMIN, Map.of(
                 "ONSURE_LOCAL_API_VIEWER_TOKEN", VIEWER,
                 "ONSURE_LOCAL_API_OPERATOR_TOKEN", OPERATOR,
@@ -68,8 +79,17 @@ class LocalManagementApiRbacTest {
                     "project_id", "project", "target_id", "target", "profile", "INSPECT_ONLY"));
             assertEquals(200, validation.statusCode(), validation.body());
             assertFalse(json(validation).path("source_mutation_detected").asBoolean(true));
+            HttpResponse<String> neutralRegistered = post(port, "/v1/programs", OPERATOR,
+                    registration(neutral, "neutral"));
+            assertEquals(200, neutralRegistered.statusCode(), neutralRegistered.body());
+            HttpResponse<String> universal = post(port, "/v1/programs/validate", OPERATOR, Map.of(
+                    "project_id", "project", "target_id", "neutral", "profile", "UNIVERSAL"));
+            assertEquals(200, universal.statusCode(), universal.body());
+            assertEquals("UNIVERSAL", json(universal).path("profile").asText());
+            assertEquals("NOT_RUN", json(universal).path("decision").asText());
+            assertTrue(json(universal).path("receipt_sha256").asText().matches("[0-9a-f]{64}"));
             JsonNode programs = json(get(port, "/v1/programs", VIEWER));
-            assertEquals(1, programs.path("program_count").asInt());
+            assertEquals(2, programs.path("program_count").asInt());
 
             HttpResponse<String> requested = post(port, "/v1/gateway-settings/requests", ADMIN, Map.of(
                     "provider", "local-mock", "model", "new-model", "requests_per_second", 20,
@@ -83,7 +103,7 @@ class LocalManagementApiRbacTest {
             assertEquals(200, approved.statusCode(), approved.body());
             assertEquals("APPROVED_PENDING_EXTERNAL_APPLY", json(approved).path("state").asText());
             JsonNode audit = json(get(port, "/v1/audit-events", VIEWER));
-            assertEquals(4, audit.path("event_count").asInt());
+            assertEquals(6, audit.path("event_count").asInt());
             assertTrue(audit.path("chain_valid").asBoolean());
         } finally {
             server.stop();
@@ -91,10 +111,14 @@ class LocalManagementApiRbacTest {
     }
 
     private Map<String, Object> registration(Path source) {
+        return registration(source, "target");
+    }
+
+    private Map<String, Object> registration(Path source, String targetId) {
         return Map.ofEntries(
                 Map.entry("workspace_id", "local"), Map.entry("workspace_name", "Local"),
                 Map.entry("project_id", "project"), Map.entry("project_name", "Project"),
-                Map.entry("target_id", "target"), Map.entry("target_name", "Target"),
+                Map.entry("target_id", targetId), Map.entry("target_name", targetId),
                 Map.entry("target_type", "GENERAL_SOFTWARE"), Map.entry("source_root", source.toString()));
     }
 

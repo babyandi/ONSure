@@ -109,8 +109,13 @@ final class LocalProgramManagementService {
         String projectId = id(request, "project_id");
         String targetId = id(request, "target_id");
         String profile = request.path("profile").asText("INSPECT_ONLY");
-        if (!Set.of("INSPECT_ONLY", "MAVEN_STANDARD").contains(profile)) {
+        if (!Set.of("INSPECT_ONLY", "MAVEN_STANDARD", "UNIVERSAL").contains(profile)) {
             throw new IllegalArgumentException("PROGRAM_VALIDATION_PROFILE_INVALID");
+        }
+        if (!"UNIVERSAL".equals(profile)
+                && request.hasNonNull("environment_profile_file")
+                && !request.path("environment_profile_file").asText("").isBlank()) {
+            throw new IllegalArgumentException("ENVIRONMENT_PROFILE_REQUIRES_UNIVERSAL_VALIDATION");
         }
         ProductCatalog.RegisteredTarget registered = registered(projectId, targetId);
         ValidationTarget target = registered.target();
@@ -119,6 +124,9 @@ final class LocalProgramManagementService {
         String runId = "readonly-" + RUN_TIME.format(Instant.now()) + "-" + UUID.randomUUID();
         Path runRoot = workspaceRoot.resolve(".onsure/validation-data").resolve(targetId).resolve(runId).normalize();
         if (!runRoot.startsWith(workspaceRoot)) throw new IllegalStateException("PROGRAM_RUN_ROOT_INVALID");
+        if ("UNIVERSAL".equals(profile)) {
+            return validateUniversal(request, projectId, targetId, target, source, before, runId, runRoot);
+        }
         Files.createDirectories(runRoot);
 
         List<Map<String, Object>> commands = new ArrayList<>();
@@ -194,6 +202,99 @@ final class LocalProgramManagementService {
         } finally {
             deleteSandbox(sandbox);
         }
+    }
+
+    private Map<String, Object> validateUniversal(
+            JsonNode request, String projectId, String targetId, ValidationTarget target,
+            Path source, TreeObservation before, String runId, Path runRoot) throws Exception {
+        boolean sourceReferenceMatches = ("sha256:" + before.digest())
+                .equals(target.immutableSourceReference());
+        if (!sourceReferenceMatches) {
+            throw new IllegalArgumentException("PROGRAM_SOURCE_REFERENCE_DRIFT");
+        }
+        Path environmentProfileFile = optionalWorkspaceFile(request, "environment_profile_file");
+        EnvironmentRequirementProfile.Loaded environmentProfile = environmentProfileFile == null
+                ? null : EnvironmentRequirementProfile.load(environmentProfileFile);
+        List<UniversalValidationProfile.EnvironmentRequirement> requirements = environmentProfile == null
+                ? List.of() : environmentProfile.requirements();
+        UniversalValidationProfile.Profile detected = new StandardValidationProfileDetector().detect(
+                targetId, source, requirements);
+        UniversalValidationRunner.RunResult run = new UniversalValidationRunner().run(
+                detected, runRoot, environmentProfile);
+        TreeObservation after = inclusiveTreeDigest(source);
+        if (!before.digest().equals(after.digest()) || before.fileCount() != after.fileCount()
+                || before.byteCount() != after.byteCount() || run.sourceMutationDetected()) {
+            throw new IllegalStateException("READ_ONLY_SOURCE_CHANGED_DURING_VALIDATION");
+        }
+        List<Map<String, Object>> findings = universalFindings(run);
+        List<Map<String, Object>> remediation = remediation(findings);
+        List<Map<String, Object>> evidence = List.of(
+                Map.of("evidence_id", "source-tree", "type", "SOURCE_DIGEST",
+                        "sha256", before.digest(), "file_count", before.fileCount(),
+                        "byte_count", before.byteCount(), "read_only", true),
+                Map.of("evidence_id", "universal-receipt", "type", "UNIVERSAL_VALIDATION_RECEIPT",
+                        "sha256", run.receiptSha256(), "path", run.receiptFile().toString(),
+                        "overall_outcome", run.overallOutcome().name(), "final_claim_allowed", false));
+        String decision = run.overallOutcome().name();
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("contract", CONTRACT);
+        report.put("reportId", "report-" + runId);
+        report.put("jobId", runId);
+        report.put("projectId", projectId);
+        report.put("targetId", targetId);
+        report.put("targetName", target.targetName());
+        report.put("targetType", target.targetType().name());
+        report.put("decision", decision);
+        report.put("generatedAt", run.completedAt().toString());
+        report.put("profile", "UNIVERSAL");
+        report.put("sourceDigestBefore", before.digest());
+        report.put("sourceDigestAfter", after.digest());
+        report.put("sourceMutationDetected", false);
+        report.put("sourceReferenceMatches", sourceReferenceMatches);
+        report.put("universalReceipt", run.receiptFile().toString());
+        report.put("universalReceiptSha256", run.receiptSha256());
+        report.put("phaseOutcomes", run.phaseOutcomes());
+        report.put("verificationGroupOutcomes", run.groupOutcomes());
+        report.put("findings", findings);
+        report.put("summary", Map.of(
+                "step_count", run.steps().size(),
+                "pass_nonfinal_step_count", run.steps().stream()
+                        .filter(step -> step.outcome() == UniversalValidationProfile.Outcome.PASS_NONFINAL).count(),
+                "not_run_step_count", run.steps().stream()
+                        .filter(step -> step.outcome() == UniversalValidationProfile.Outcome.NOT_RUN).count(),
+                "evidence_count", evidence.size()));
+        report.put("assurance_class", "SELF_VALIDATION_NONFINAL");
+        report.put("independent_otester", "NOT_RUN");
+        report.put("independent_oaudit", "NOT_RUN");
+        report.put("final_claim_allowed", false);
+        write(runRoot.resolve("validation-report.json"), report);
+        write(runRoot.resolve("evidence.json"), evidence);
+        write(runRoot.resolve("remediation-plans.json"), remediation);
+        return Map.ofEntries(
+                Map.entry("contract", CONTRACT), Map.entry("profile", "UNIVERSAL"),
+                Map.entry("run_id", runId), Map.entry("run_root", runRoot.toString()),
+                Map.entry("receipt_file", run.receiptFile().toString()),
+                Map.entry("receipt_sha256", run.receiptSha256()), Map.entry("decision", decision),
+                Map.entry("finding_count", findings.size()), Map.entry("evidence_count", evidence.size()),
+                Map.entry("improvement_candidate_count", remediation.size()),
+                Map.entry("source_mutation_detected", false), Map.entry("final_claim_allowed", false));
+    }
+
+    private List<Map<String, Object>> universalFindings(UniversalValidationRunner.RunResult run) {
+        List<Map<String, Object>> values = new ArrayList<>();
+        for (UniversalValidationRunner.StepResult step : run.steps()) {
+            if (!Set.of(
+                    UniversalValidationProfile.Outcome.FAIL,
+                    UniversalValidationProfile.Outcome.BLOCKED,
+                    UniversalValidationProfile.Outcome.INCONCLUSIVE).contains(step.outcome())) continue;
+            values.add(finding(
+                    "UNIVERSAL_STEP_" + step.stepId().replaceAll("[^A-Za-z0-9]", "_").toUpperCase(
+                            java.util.Locale.ROOT),
+                    step.outcome() == UniversalValidationProfile.Outcome.FAIL ? "HIGH" : "MEDIUM",
+                    step.stepId() + " 단계가 " + step.outcome() + " 상태입니다.",
+                    "digest-bound step log와 reason " + step.reason() + "을 검토한 뒤 동일 snapshot에서 재실행하십시오."));
+        }
+        return List.copyOf(values);
     }
 
     private ProductCatalog catalog() {
@@ -409,6 +510,18 @@ final class LocalProgramManagementService {
         if (source.getParent() == null || !Files.isDirectory(source, LinkOption.NOFOLLOW_LINKS)
                 || Files.isSymbolicLink(source)) throw new IllegalArgumentException("PROGRAM_SOURCE_ROOT_INVALID");
         return source;
+    }
+
+    private Path optionalWorkspaceFile(JsonNode request, String field) {
+        JsonNode value = request.path(field);
+        if (value.isMissingNode() || value.isNull() || value.asText("").isBlank()) return null;
+        Path file = Path.of(value.asText()).toAbsolutePath().normalize();
+        if (!file.startsWith(workspaceRoot)
+                || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(file)) {
+            throw new IllegalArgumentException("PROGRAM_INPUT_FILE_INVALID:" + field);
+        }
+        return file;
     }
 
     private static String id(JsonNode request, String field) {

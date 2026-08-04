@@ -131,7 +131,9 @@
             </form>
             <div class="inline-control">
               <label for="validation-profile">검증 프로필</label>
-              <select id="validation-profile"><option value="INSPECT_ONLY">INSPECT_ONLY</option><option value="MAVEN_STANDARD">MAVEN_STANDARD</option></select>
+              <select id="validation-profile"><option value="UNIVERSAL">UNIVERSAL</option><option value="INSPECT_ONLY">INSPECT_ONLY</option><option value="MAVEN_STANDARD">MAVEN_STANDARD</option></select>
+              <label for="environment-profile">환경 요구 프로필</label>
+              <input id="environment-profile" placeholder="workspace 내부 JSON 경로 (선택)" spellcheck="false">
               <span id="program-action-state" class="form-note">원본은 수정하지 않습니다.</span>
             </div>
           </details>
