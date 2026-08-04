@@ -215,4 +215,41 @@ class StandardValidationProfileDetectorTest {
             assertTrue(profile.steps().stream().anyMatch(step -> step.kind() == kind));
         }
     }
+
+    @Test
+    void standardCapabilitiesAreImplementedByIndependentValidationPacks() {
+        List<ValidationPack> packs = List.of(
+                new MavenValidationPack(), new GradleValidationPack(), new PythonValidationPack(),
+                new NodeValidationPack(), new OpenApiValidationPack(), new PostgresqlValidationPack());
+
+        assertEquals(List.of("maven", "gradle", "python", "node", "openapi", "postgresql"),
+                packs.stream().map(ValidationPack::id).toList());
+    }
+
+    @Test
+    void detectsNestedPostgresqlFlywayMigrationAndInventoriesIt() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("source"));
+        Files.writeString(source.resolve("pom-modular.xml"), """
+                <project><dependencies><dependency><artifactId>postgresql</artifactId></dependency></dependencies></project>
+                """);
+        Path migration = Files.createDirectories(source.resolve(
+                "modules/database/src/main/resources/db/migration/postgresql"));
+        Files.writeString(migration.resolve("V1__create_event.sql"),
+                "create table assurance_event(id bigint primary key);\n");
+
+        var profile = new StandardValidationProfileDetector(List.of()).detect("postgresql-nested", source);
+
+        assertTrue(profile.technologies().containsAll(Set.of("DATABASE_MIGRATIONS", "POSTGRESQL")));
+        assertTrue(profile.steps().stream().anyMatch(step ->
+                step.stepId().equals("postgresql.migration-static")
+                        && step.kind() == UniversalValidationProfile.StepKind.DATABASE_MIGRATION));
+        var result = new UniversalValidationRunner((step, root) ->
+                new UniversalValidationRunner.StepExecution(PASS_NONFINAL, 0, "pass", false, "test"))
+                .run(profile, temp.resolve("run"));
+        var migrationResult = result.steps().stream()
+                .filter(step -> step.stepId().equals("postgresql.migration-static"))
+                .findFirst().orElseThrow();
+        assertEquals(PASS_NONFINAL, migrationResult.outcome());
+        assertTrue(Files.readString(Path.of(migrationResult.logFile())).contains("V1__create_event.sql"));
+    }
 }

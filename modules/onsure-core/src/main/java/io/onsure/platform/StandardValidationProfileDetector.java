@@ -1,7 +1,5 @@
 package io.onsure.platform;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.onsure.platform.UniversalValidationProfile.Phase;
 import io.onsure.platform.UniversalValidationProfile.Profile;
 import io.onsure.platform.UniversalValidationProfile.Step;
@@ -19,10 +17,6 @@ import java.util.Set;
 
 /** Detects a conservative validation profile without requiring target-owned ONSure files. */
 public final class StandardValidationProfileDetector {
-    private static final long MAX_DETECTION_CONFIG_BYTES = 5L * 1024 * 1024;
-    private static final Duration BUILD_TIMEOUT = Duration.ofMinutes(20);
-    private static final Duration TEST_TIMEOUT = Duration.ofMinutes(15);
-    private final ObjectMapper mapper = new ObjectMapper();
     private final List<ValidationPack> packs;
 
     public StandardValidationProfileDetector() {
@@ -30,7 +24,9 @@ public final class StandardValidationProfileDetector {
     }
 
     public StandardValidationProfileDetector(List<ValidationPack> packs) {
-        this.packs = validatePacks(packs);
+        List<ValidationPack> combined = new ArrayList<>(standardPacks());
+        if (packs != null) combined.addAll(packs);
+        this.packs = validatePacks(combined);
     }
 
     public Profile detect(String profileId, Path sourceRoot) throws Exception {
@@ -48,99 +44,6 @@ public final class StandardValidationProfileDetector {
                 true, List.of(), Duration.ofMinutes(2), List.of(preflight.stepId()));
         Step meta = step("validator.meta-check", Phase.STRUCTURE_STATIC, StepKind.VALIDATOR_META_CHECK,
                 true, List.of(), Duration.ofMinutes(2), List.of(inventory.stepId()));
-
-        if (file(root, "pom.xml")) {
-            technologies.add("JAVA");
-            technologies.add("MAVEN");
-            functional.add(step("maven.clean-verify", Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
-                    true, List.of("mvn", "-B", "-ntp", "-o", "clean", "verify"), BUILD_TIMEOUT,
-                    List.of(meta.stepId())));
-            String pom = readDetectionConfig(root.resolve("pom.xml"));
-            if (pom.contains("maven-failsafe-plugin")) {
-                endToEnd.add(step("maven.integration", Phase.END_TO_END_LINEAGE, StepKind.INTEGRATION_TEST,
-                        true, List.of("mvn", "-B", "-ntp", "-o", "verify"), BUILD_TIMEOUT,
-                        List.of("maven.clean-verify")));
-            }
-        } else if (file(root, "gradlew") && (file(root, "build.gradle") || file(root, "build.gradle.kts"))) {
-            technologies.add("JAVA");
-            technologies.add("GRADLE");
-            functional.add(step("gradle.clean-test", Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
-                    true, List.of("bash", "gradlew", "--offline", "clean", "test"), BUILD_TIMEOUT,
-                    List.of(meta.stepId())));
-        }
-
-        boolean python = file(root, "pyproject.toml") || file(root, "pytest.ini")
-                || file(root, "requirements.txt") || directory(root, "tests");
-        if (python) {
-            technologies.add("PYTHON");
-            boolean pytest = file(root, "pytest.ini") || contains(root.resolve("pyproject.toml"), "pytest")
-                    || contains(root.resolve("requirements.txt"), "pytest");
-            List<String> command = pytest
-                    ? List.of("python3", "-m", "pytest", "-q")
-                    : List.of("python3", "-m", "unittest", "discover", "-s", "tests");
-            functional.add(step("python.tests", Phase.COMPONENT_AND_NEGATIVE, StepKind.UNIT_TEST,
-                    true, command, TEST_TIMEOUT, List.of(meta.stepId())));
-            if (directory(root, "tests/integration")) {
-                List<String> integrationCommand = pytest
-                        ? List.of("python3", "-m", "pytest", "-q", "tests/integration")
-                        : List.of("python3", "-m", "unittest", "discover", "-s", "tests/integration");
-                endToEnd.add(step("python.integration", Phase.END_TO_END_LINEAGE, StepKind.INTEGRATION_TEST,
-                        true, integrationCommand,
-                        TEST_TIMEOUT, List.of("python.tests")));
-            }
-        }
-
-        if (file(root, "package.json")) {
-            technologies.add("NODE");
-            JsonNode packageJson = mapper.readTree(readDetectionConfig(root.resolve("package.json")));
-            JsonNode scripts = packageJson.path("scripts");
-            boolean dependencies = packageJson.path("dependencies").size() > 0
-                    || packageJson.path("devDependencies").size() > 0
-                    || packageJson.path("optionalDependencies").size() > 0;
-            String nodePreparation = null;
-            if (dependencies) {
-                environmentRequirements.add(new EnvironmentRequirement(
-                        "node.lockfile", UniversalValidationProfile.RequirementKind.SOURCE_FILE,
-                        "package-lock.json", true));
-                nodePreparation = "node.dependencies";
-                functional.add(step(nodePreparation, Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
-                        true, List.of("npm", "--offline", "ci", "--ignore-scripts"), BUILD_TIMEOUT,
-                        List.of(meta.stepId())));
-            }
-            if (scripts.hasNonNull("test")) {
-                functional.add(step("node.tests", Phase.COMPONENT_AND_NEGATIVE, StepKind.UNIT_TEST,
-                        true, List.of("npm", "--offline", "test"), TEST_TIMEOUT,
-                        nodePreparation == null ? List.of(meta.stepId()) : List.of(nodePreparation)));
-            }
-            if (scripts.hasNonNull("test:integration")) {
-                endToEnd.add(step("node.integration", Phase.END_TO_END_LINEAGE, StepKind.INTEGRATION_TEST,
-                        true, List.of("npm", "--offline", "run", "test:integration"), TEST_TIMEOUT,
-                        scripts.hasNonNull("test") ? List.of("node.tests") : List.of(meta.stepId())));
-            }
-            if (scripts.hasNonNull("build")) {
-                functional.add(step("node.build", Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
-                        true, List.of("npm", "--offline", "run", "build"), BUILD_TIMEOUT,
-                        nodePreparation == null ? List.of(meta.stepId()) : List.of(nodePreparation)));
-            }
-        }
-
-        if (firstFile(root, "openapi.yaml", "openapi.yml", "openapi.json",
-                "contracts/openapi/onsure-local-api.v1.json",
-                "contracts/openapi/onsure-llm-gateway.v1.json") != null) {
-            technologies.add("OPENAPI");
-            functional.add(step("openapi.contract", Phase.COMPONENT_AND_NEGATIVE, StepKind.API_CONTRACT,
-                    true, List.of(), Duration.ofMinutes(2), List.of(meta.stepId())));
-        }
-
-        if (directory(root, "db/migration") || directory(root, "src/main/resources/db/migration")
-                || directory(root, "migrations")) {
-            technologies.add("DATABASE_MIGRATIONS");
-            functional.add(step("database.migration-static", Phase.COMPONENT_AND_NEGATIVE,
-                    StepKind.DATABASE_MIGRATION, true, List.of(), Duration.ofMinutes(2),
-                    List.of(meta.stepId())));
-            notRun.put(Phase.OPERATIONAL_RESILIENCE,
-                    "DATABASE_RUNTIME_AND_APPROVED_SYNTHETIC_CONNECTION_NOT_CONFIGURED");
-        }
 
         for (ValidationPack pack : packs) {
             ValidationPack.Contribution contribution = pack.detect(root);
@@ -164,7 +67,9 @@ public final class StandardValidationProfileDetector {
         }
         if (operations.isEmpty()) {
             notRun.putIfAbsent(Phase.OPERATIONAL_RESILIENCE,
-                    "OPERATIONAL_PROFILE_AND_ISOLATED_RUNTIME_NOT_CONFIGURED");
+                    technologies.contains("DATABASE_MIGRATIONS")
+                            ? "DATABASE_RUNTIME_AND_APPROVED_SYNTHETIC_CONNECTION_NOT_CONFIGURED"
+                            : "OPERATIONAL_PROFILE_AND_ISOLATED_RUNTIME_NOT_CONFIGURED");
         }
         addMissingFunctionalPathChecks(functional, meta.stepId());
         List<String> functionalGate = functional.stream().filter(Step::required).map(Step::stepId).toList();
@@ -201,36 +106,6 @@ public final class StandardValidationProfileDetector {
         return root;
     }
 
-    private static boolean file(Path root, String relative) {
-        Path value = root.resolve(relative).normalize();
-        return value.startsWith(root) && Files.isRegularFile(value, LinkOption.NOFOLLOW_LINKS)
-                && !Files.isSymbolicLink(value);
-    }
-
-    private static boolean directory(Path root, String relative) {
-        Path value = root.resolve(relative).normalize();
-        return value.startsWith(root) && Files.isDirectory(value, LinkOption.NOFOLLOW_LINKS)
-                && !Files.isSymbolicLink(value);
-    }
-
-    private static boolean contains(Path file, String token) {
-        try { return Files.isRegularFile(file) && readDetectionConfig(file).contains(token); }
-        catch (Exception ignored) { return false; }
-    }
-
-    private static String readDetectionConfig(Path file) throws Exception {
-        if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(file)
-                || Files.size(file) > MAX_DETECTION_CONFIG_BYTES) {
-            throw new IllegalArgumentException("VALIDATION_CONFIG_INVALID_OR_TOO_LARGE:" + file.getFileName());
-        }
-        return Files.readString(file);
-    }
-
-    private static Path firstFile(Path root, String... candidates) {
-        for (String candidate : candidates) if (file(root, candidate)) return root.resolve(candidate);
-        return null;
-    }
-
     private static List<ValidationPack> validatePacks(List<ValidationPack> values) {
         if (values == null) return List.of();
         List<ValidationPack> result = List.copyOf(values);
@@ -249,6 +124,12 @@ public final class StandardValidationProfileDetector {
         java.util.ServiceLoader.load(ValidationPack.class).forEach(discovered::add);
         discovered.sort(java.util.Comparator.comparing(ValidationPack::id));
         return List.copyOf(discovered);
+    }
+
+    private static List<ValidationPack> standardPacks() {
+        return List.of(
+                new GradleValidationPack(), new MavenValidationPack(), new NodeValidationPack(),
+                new OpenApiValidationPack(), new PostgresqlValidationPack(), new PythonValidationPack());
     }
 
     private static void validateContribution(ValidationPack pack, Step step) {

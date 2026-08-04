@@ -492,7 +492,7 @@ public final class UniversalValidationRunner {
     }
 
     private StepExecution validateMigrations(Path root) throws Exception {
-        Path directory = firstDirectory(root, "db/migration", "src/main/resources/db/migration", "migrations");
+        Path directory = StandardValidationPackSupport.findMigrationDirectory(root);
         if (directory == null) return new StepExecution(Outcome.NOT_RUN, -1, "", false, "MIGRATION_ROOT_NOT_FOUND");
         List<Path> scripts;
         try (var stream = Files.walk(directory)) {
@@ -510,14 +510,6 @@ public final class UniversalValidationRunner {
         for (String name : names) {
             Path path = root.resolve(name).normalize();
             if (path.startsWith(root) && Files.isRegularFile(path) && !Files.isSymbolicLink(path)) return path;
-        }
-        return null;
-    }
-
-    private static Path firstDirectory(Path root, String... names) {
-        for (String name : names) {
-            Path path = root.resolve(name).normalize();
-            if (path.startsWith(root) && Files.isDirectory(path) && !Files.isSymbolicLink(path)) return path;
         }
         return null;
     }

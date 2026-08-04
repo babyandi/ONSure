@@ -38,7 +38,7 @@
 - [x] Maven 확인
 - [x] `mvn -B -ntp -q clean verify` 2회
 - [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
-- [x] Public Java API 259개 delta 0
+- [x] Public Java API 265개; 기존 259개 변경·삭제 0, 표준 Pack API 6개 추가
 - [x] Python 176개 회귀 테스트
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
 - [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED`)

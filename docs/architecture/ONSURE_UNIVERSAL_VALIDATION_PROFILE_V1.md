@@ -65,7 +65,10 @@ Profile은 다음을 포함한다.
 수 없다. Java/Maven, Java/Gradle, Python, Node/TypeScript, OpenAPI, PostgreSQL Pack은
 서로 독립적으로 조합 가능해야 한다.
 
-Java SPI는 `io.onsure.platform.ValidationPack`이다. Core에 명시적으로 설치한 신뢰된
+Java SPI는 `io.onsure.platform.ValidationPack`이다. 기본 구현은
+`MavenValidationPack`, `GradleValidationPack`, `PythonValidationPack`,
+`NodeValidationPack`, `OpenApiValidationPack`, `PostgresqlValidationPack`이며 Core가
+항상 고정된 표준 Pack 집합으로 설치한다. Core에 명시적으로 설치한 신뢰된
 Pack만 사용하며 대상 저장소가 임의 Java class나 command를 주입할 수 없다. Pack step
 ID는 `<pack-id>.` prefix를 사용하고 다음 검증군에만 기여할 수 있다.
 
@@ -109,6 +112,11 @@ embedding SDK는 `StandardValidationProfileDetector(List<ValidationPack>)`으로
 - `openapi.yaml|yml|json`, ONSURE Local API 계약: 중복 key, 3.0/3.1, info,
   path/method, operationId 유일성, responses, local `$ref` AST 검증
 - `db/migration`, `migrations`: migration 정적 검증; 승인된 합성 DB 없으면 4차 `NOT_RUN`
+
+PostgreSQL Pack은 최대 탐색 깊이·파일 수와 생성물 제외 규칙을 적용해 중첩 Maven 모듈의
+`src/main/resources/db/migration`도 읽기 전용으로 찾는다. Flyway/PostgreSQL 표식과 SQL을
+정적 inventory하되 승인된 합성 DB 접속이 없는 경우 apply·lock·rollback·restore를 통과로
+간주하지 않고 운영복구 단계를 `NOT_RUN`으로 유지한다.
 
 탐지는 대상 저장소에 `onsure-target.json`을 생성하거나 요구하지 않는다.
 
