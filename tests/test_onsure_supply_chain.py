@@ -2,6 +2,7 @@ import pathlib
 import json
 import sys
 import unittest
+from unittest import mock
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -11,6 +12,16 @@ import onsure_supply_chain as supply_chain  # noqa: E402
 
 
 class ONSureSupplyChainTest(unittest.TestCase):
+    def test_modular_artifacts_are_cleanly_rebuilt_before_hashing(self):
+        completed = mock.Mock(returncode=0, stderr="")
+        with mock.patch.object(supply_chain.subprocess, "run", return_value=completed) as run:
+            supply_chain.build_modular_artifacts()
+        command = run.call_args.args[0]
+        self.assertIn("pom-modular.xml", command)
+        self.assertIn("clean", command)
+        self.assertIn("package", command)
+        self.assertIn("-Dmaven.test.skip=true", command)
+
     def test_normalization_removes_nondeterministic_identity_and_timestamp(self):
         body = {
             "serialNumber": "urn:uuid:changes",

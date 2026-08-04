@@ -28,6 +28,17 @@ DEFAULT_VSCODE_INVENTORY = ROOT / "assurance/dependencies/onsure-vscode-dependen
 POLICY_PATH = ROOT / "contracts/onsure-supply-chain-policy.v1.json"
 
 
+def build_modular_artifacts() -> None:
+    """Rebuild module JARs before hashing so stale target output cannot validate an SBOM."""
+    command = [
+        "mvn", "-B", "-ntp", "-q", "-f", "pom-modular.xml",
+        "clean", "package", "-Dmaven.test.skip=true",
+    ]
+    process = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False)
+    if process.returncode != 0:
+        raise ValueError("MODULAR_SBOM_BUILD_FAILED:" + process.stderr[-2000:])
+
+
 def run_cyclonedx(pom: str = "pom.xml") -> dict[str, object]:
     command = [
         "mvn",
@@ -92,6 +103,7 @@ def vscode_inventory() -> dict[str, object]:
 
 
 def merged_cyclonedx(vscode: dict[str, object]) -> dict[str, object]:
+    build_modular_artifacts()
     root_sbom = run_cyclonedx("pom.xml")
     modular_sbom = run_cyclonedx("pom-modular.xml")
     merged = json.loads(json.dumps(root_sbom))
