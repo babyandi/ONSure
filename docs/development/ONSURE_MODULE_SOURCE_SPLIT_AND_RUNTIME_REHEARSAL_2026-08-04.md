@@ -23,7 +23,8 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 
 ## Build, package and database rehearsal
 
-- Canonical `clean verify`: 282/282, repeated twice. Independent clone: 282/282.
+- Canonical `clean verify`: 282/282, repeated twice. Independent clone at `1125d2b`: 282/282,
+  Python 154/154 and public API 240/240.
 - Modular package: 37/37 locally and in the independent clone; public API baseline: 240/240.
 - Python: 142/142; Node: 9/9; deterministic VSIX package pass.
 - Ubuntu candidate SHA-256: `90096dd910f0092911d8de9f78f71ffe5e1d660dc136bb99c53947d753fe9236`.

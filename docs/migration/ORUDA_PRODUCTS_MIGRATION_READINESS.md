@@ -181,8 +181,7 @@ namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 컨테이너가 최초 `npm ci`를 비-root로 자체 준비하도록 보강했고, Xvfb online 실행과
 `--network none` cached offline 실행이 모두 exit 0을 반환했다. 전체 gate는 최신 HEAD에서도
 동일한 `BWRAP_LOOPBACK_PERMISSION_DENIED`로 환경 차단됐으며 보안 우회는 적용하지 않았다.
-별도 clone은 commit `849bca0ca261a1a0ddf89caa85cb777aad6a1bdb`에서 canonical 282/282,
-modular 37/37, Python 142/142,
+별도 clone은 최신 운영 기능 commit `1125d2b`에서 canonical 282/282, Python 154/154,
 API 240/240, proprietary supply-chain validation, migration readiness와 static gate를 외부
 제품 workspace 없이 통과했다.
 
