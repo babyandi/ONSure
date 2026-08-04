@@ -76,7 +76,7 @@ def main() -> int:
     implementation_items = implementation.get("items", [])
     implementation_ids = {item.get("id") for item in implementation_items}
     if implementation.get("contract") != "ONSURE_IMPLEMENTATION_STATUS_V1" \
-            or implementation.get("version") != "2.1.0":
+            or implementation.get("version") != "2.2.0":
         errors.append("IMPLEMENTATION_STATUS_AUTHORITY_VERSION_STALE")
     if implementation_ids != IMPLEMENTATION_IDS or len(implementation_items) != len(IMPLEMENTATION_IDS):
         errors.append("IMPLEMENTATION_STATUS_ITEM_SET_MISMATCH")
@@ -95,7 +95,7 @@ def main() -> int:
 
     completion = (ROOT / "docs/development/ONSURE_COMPLETION_CHECKLIST_v1.md").read_text(
         encoding="utf-8")
-    for expected in ("Java 346개", "Python 199개", "Node 10"):
+    for expected in ("Java 346개", "Python 201개", "Node 10"):
         if expected not in (readme + "\n" + completion):
             errors.append("COMPLETION_COUNT_STALE:" + expected)
     gradle_source = (ROOT / "modules/onsure-core/src/main/java/io/onsure/platform/GradleValidationPack.java") \
@@ -112,6 +112,12 @@ def main() -> int:
             or gradle_run.get("verified_pass_step_count") != 20 \
             or gradle_run.get("source_mutation_detected") is not False:
         errors.append("UNIVERSAL_EXTERNAL_GRADLE_EVIDENCE_INVALID")
+    repeatability = load("assurance/runtime/onsure-self-repeatability.v1.json")
+    if repeatability.get("decision") != "PASS_NONFINAL" \
+            or repeatability.get("run_count") != 2 \
+            or repeatability.get("verified_pass_step_count_per_run") != 26 \
+            or repeatability.get("source_mutation_detected") is not False:
+        errors.append("UNIVERSAL_SELF_REPEATABILITY_EVIDENCE_INVALID")
 
     vscode_evidence = load("assurance/runtime/vscode-extension-host-e2e.v1.json")
     claimed_payload = vscode_evidence.pop("evidence_payload_sha256", None)
@@ -138,7 +144,7 @@ def main() -> int:
             errors.append("REMAINING_WORK_STATE_STALE:" + item_id)
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V18",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V20",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "workflow_operation_authority": WORKFLOW_AUTHORITY,

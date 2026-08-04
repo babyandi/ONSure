@@ -21,6 +21,7 @@ CONTRACT = ROOT / "contracts/onsure-operational-boundary.v1.json"
 POSTGRESQL_EVIDENCE = ROOT / "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json"
 SANDBOX_EVIDENCE = ROOT / "assurance/runtime/onsure-sandbox-backends.v1.json"
 UNIVERSAL_EVIDENCE = ROOT / "assurance/runtime/onsure-universal-validation-evidence.v1.json"
+UNIVERSAL_REPEATABILITY_EVIDENCE = ROOT / "assurance/runtime/onsure-self-repeatability.v1.json"
 POSTGRESQL_MIGRATION = ROOT / (
     "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/"
     "V1__create_assurance_event.sql"
@@ -463,6 +464,48 @@ def validate_universal_evidence() -> list[str]:
     return validate_universal_evidence_body(evidence)
 
 
+def validate_universal_repeatability_evidence() -> list[str]:
+    evidence = json.loads(UNIVERSAL_REPEATABILITY_EVIDENCE.read_text(encoding="utf-8"))
+    violations: list[str] = []
+    for field, expected in {
+        "contract": "ONSURE_UNIVERSAL_VALIDATION_REPEATABILITY_V1",
+        "decision": "PASS_NONFINAL", "run_count": 2,
+        "verified_pass_step_count_per_run": 26, "source_mutation_detected": False,
+        "production_authority": False, "final_claim_allowed": False,
+    }.items():
+        if evidence.get(field) != expected:
+            violations.append("UNIVERSAL_REPEATABILITY_" + field.upper())
+    for field in ("semantic_projection_sha256", "source_digest", "environment_sha256"):
+        if not _full_sha256(evidence.get(field)):
+            violations.append("UNIVERSAL_REPEATABILITY_DIGEST:" + field)
+    runs = evidence.get("runs")
+    if not isinstance(runs, list) or len(runs) != 2:
+        violations.append("UNIVERSAL_REPEATABILITY_RUNS")
+    else:
+        if len({run.get("profile_id") for run in runs}) != 2 \
+                or len({run.get("result_sha256") for run in runs}) != 2:
+            violations.append("UNIVERSAL_REPEATABILITY_RUN_DISTINCTNESS")
+        for run in runs:
+            for field in ("result_sha256", "finalization_sha256", "observation_sha256"):
+                if not _full_sha256(run.get(field)):
+                    violations.append("UNIVERSAL_REPEATABILITY_RUN_DIGEST:" + field)
+    source = str(evidence.get("source_commit", ""))
+    if re.fullmatch(r"[0-9a-f]{40}", source) is None:
+        violations.append("UNIVERSAL_REPEATABILITY_SOURCE_COMMIT")
+    elif _git_worktree_available() and subprocess.run(
+            ["git", "cat-file", "-e", source + "^{commit}"], cwd=ROOT,
+            capture_output=True, check=False).returncode == 0 \
+            and subprocess.run(
+                ["git", "merge-base", "--is-ancestor", source, "HEAD"], cwd=ROOT,
+                capture_output=True, check=False).returncode != 0:
+        violations.append("UNIVERSAL_REPEATABILITY_SOURCE_ANCESTRY")
+    normalized = dict(evidence)
+    receipt = normalized.pop("receipt_sha256", None)
+    if not _full_sha256(receipt) or receipt != _canonical_sha256(normalized):
+        violations.append("UNIVERSAL_REPEATABILITY_RECEIPT_DIGEST")
+    return violations
+
+
 def validate_systemd_evidence() -> list[str]:
     violations: list[str] = []
     evidence = json.loads(SYSTEMD_EVIDENCE.read_text(encoding="utf-8"))
@@ -801,6 +844,8 @@ def validate() -> dict[str, object]:
         "assurance/runtime/onsure-sandbox-backends.v1.json",
         "scripts/seal_universal_validation_evidence.py",
         "assurance/runtime/onsure-universal-validation-evidence.v1.json",
+        "scripts/seal_universal_validation_repeatability.py",
+        "assurance/runtime/onsure-self-repeatability.v1.json",
         "scripts/package_onsure_rhel.sh",
         "scripts/package_onsure_systemd.sh",
         "scripts/package_onsure_ubuntu.sh",
@@ -851,6 +896,7 @@ def validate() -> dict[str, object]:
         violations.extend(validate_postgresql_evidence())
         violations.extend(validate_sandbox_evidence())
         violations.extend(validate_universal_evidence())
+        violations.extend(validate_universal_repeatability_evidence())
         violations.extend(validate_systemd_evidence())
         violations.extend(validate_ubuntu_systemd_evidence())
         violations.extend(validate_rhel_package_evidence())

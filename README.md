@@ -254,13 +254,13 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 346개(조건부 11개 skip 포함), Python 199개, Node 10개,
+현재 변경 후보의 로컬 검증은 Java 346개(조건부 11개 skip 포함), Python 201개, Node 10개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `30d27a88c4247cefabb10e316bd2bfafa0a3b9bb3afcfdc89470afb410fec089`를 생성했으며
 동일 입력 2회 패키징 결과가 byte-identical했다.
-Manifest 후보는 신규 구현을 포함한 887개 파일이며 정확한 파일 수와
+Manifest 후보는 신규 구현을 포함한 890개 파일이며 정확한 파일 수와
 digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는
@@ -272,6 +272,8 @@ digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으�
 경로에서 `PASS_NONFINAL`이다. 5개 실행의 106개 PASS 단계는
 `assurance/runtime/onsure-universal-validation-evidence.v1.json`에 로그·환경·결과 digest로
 결속되어 있으며 원본 소스 변경은 0건이다.
+최신 ONSure source는 같은 digest로 26개 필수 Step을 2회 반복해 모든 안정 의미 판정이
+일치했으며 `assurance/runtime/onsure-self-repeatability.v1.json`에 별도 결속되어 있다.
 Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
 VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
 실행됐고 source/image/online·offline log digest receipt를 남겼지만 MVP Full-Chain,

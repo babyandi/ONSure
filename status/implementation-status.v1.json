@@ -1,7 +1,7 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_STATUS_V1",
-  "version": "2.1.0",
-  "assessment_base_commit": "86d6172e537cfaa0109d511e88069617fab849c6",
+  "version": "2.2.0",
+  "assessment_base_commit": "5ef44b380ad6dff5bb1c612169602f914849a3a0",
   "assessment_date": "2026-08-04",
   "authority": "status/design-capability-coverage.v2.json",
   "items": [
@@ -11,7 +11,8 @@
       "evidence": [
         "modules/onsure-core/src/main/java/io/onsure/platform/UniversalValidationRunner.java",
         "modules/onsure-core/src/main/java/io/onsure/platform/StandardValidationProfileDetector.java",
-        "assurance/runtime/onsure-universal-validation-evidence.v1.json"
+        "assurance/runtime/onsure-universal-validation-evidence.v1.json",
+        "assurance/runtime/onsure-self-repeatability.v1.json"
       ],
       "remaining": ["INDEPENDENT_THIRD_PARTY_ASSURANCE_NOT_RUN"]
     },
@@ -135,7 +136,7 @@
     }
   ],
   "summary": {
-    "development_state": "PARTIAL_LOCAL_SELF_VALIDATION_PASS_NONFINAL",
+    "development_state": "PARTIAL_REPEATABLE_LOCAL_SELF_VALIDATION_PASS_NONFINAL",
     "standalone_product_full_chain": "PARTIAL",
     "formal_execution_current_source": "PASS_NONFINAL_LOCAL_SELF_AND_INDEPENDENT_GRADLE_TARGET",
     "independent_assurance": "NOT_RUN",

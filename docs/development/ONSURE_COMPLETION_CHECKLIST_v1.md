@@ -41,7 +41,7 @@
 - [x] `mvn -B -ntp -q clean verify` 2회
 - [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
 - [x] Public Java API 265개; 기존 259개 변경·삭제 0, 표준 Pack API 6개 추가
-- [x] Python 199개 회귀 테스트
+- [x] Python 201개 회귀 테스트
 - [x] Gradle 표준 Pack의 offline build, 부정·재시도·차단, 연결 E2E, 운영 복구 convention 탐지와
   독립 외부 Gradle 대상 20개 필수 Step 실제 실행 (`PASS_NONFINAL`, 원본 변경 0건)
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
@@ -51,7 +51,7 @@
   12개 경계 probe와 중립 Node 4차 검증 `PASS_NONFINAL`
 - [ ] 제품 플랫폼 종단간 시험 2회
 - [ ] 범용 하네스 독립 실행 2회
-- [ ] ONSURE 자체 보증 2회
+- [x] ONSURE 자체 보증 2회 — 동일 source digest, 각 26개 필수 Step과 안정 의미 판정 일치
 - [ ] 실패 발생 시 근본원인분석·수정·전체 회귀검증
 - [ ] 개발 관문 `PASS`
 - [ ] 증적 SHA-256 읽기 전용 재검증 — 범용 Runner의 PASS log·환경 digest 검증 구현,
