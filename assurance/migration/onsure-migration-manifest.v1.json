@@ -30,8 +30,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "399d56c403f056132ed3d29fdd2e02763c437333419d3233deee30254cac55c4",
-      "size_bytes": 205
+      "sha256": "1ded24ffc15bfdf2e4996c994bcfac5284a77268cbed898cdb7d565078d49b0e",
+      "size_bytes": 236
     },
     {
       "current_path": ".obuilder/README.md",
@@ -2790,8 +2790,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "cec7a755c4ed45b8b96b92a0786c5f1d22d5f21a42270b1cdeef8c13a1e5d52c",
-      "size_bytes": 18887
+      "sha256": "70530a9c8b0612b574ae7d9b362025bca5610d127e28a1121f48b0dcb95b3933",
+      "size_bytes": 19726
     },
     {
       "current_path": "docs/official-baseline/v2026.07.28/00_ONSURE_산출물_통합대장_및_정본관리계획_공식정본_통합본.docx",
@@ -3330,8 +3330,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "0663170598af82a488e3ebf4d9c78333481085dd5c9d83d6f6b4637713ff8fc6",
-      "size_bytes": 2641
+      "sha256": "453737f813fef894c07e337b34f3b8d213019b630d8c8e593b927e20c982cb55",
+      "size_bytes": 3146
     },
     {
       "current_path": "docs/operations/ONSURE_FIRST_APPLIED_CASE_RUNBOOK_v1.md",
@@ -6636,8 +6636,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "5fc74b748a472dfe336dc4473552e22cba4826a85f063d85a0d96c4feeaa4582",
-      "size_bytes": 835
+      "sha256": "16914538c23d8bc340cc172658b71babd12918fd7ffde803c3c610c3178983a0",
+      "size_bytes": 1119
     },
     {
       "current_path": "scripts/run_odesign_oui_learning.py",
@@ -10506,8 +10506,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ccedb957728a02941ec76745311643c7149432ed0a6419a8183a49e47da36ae5",
-      "size_bytes": 10363
+      "sha256": "649a5479517c2d871e1f388ad9d7f53dc38c4f61313a81011148f225632984d2",
+      "size_bytes": 14127
     },
     {
       "current_path": "src/test/java/io/onsure/platform/ValidationCompletionGateTest.java",
@@ -11720,6 +11720,6 @@
       "NO_PATTERN_MATCH": 775,
       "REVIEW_REQUIRED": 3
     },
-    "total_size_bytes": 7924971
+    "total_size_bytes": 7930394
   }
 }
