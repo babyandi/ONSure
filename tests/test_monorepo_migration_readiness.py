@@ -26,7 +26,7 @@ class MonorepoMigrationManifestTest(unittest.TestCase):
         self.assertEqual(["GITHUB_TOKEN"], result["reasons"])
         self.assertNotIn("abcdefghijklmnopqrstuvwxyz", str(result))
 
-    def test_license_defaults_to_undeclared_and_honors_spdx(self):
+    def test_license_detector_keeps_raw_undeclared_state_and_honors_spdx(self):
         self.assertEqual("UNDECLARED", manifest.detect_license(b"plain source"))
         self.assertEqual(
             "Apache-2.0",

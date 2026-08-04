@@ -48,6 +48,13 @@ class ONSureSupplyChainTest(unittest.TestCase):
         self.assertEqual(1, inventory["dependency_license_review_required_count"])
         self.assertEqual("REVIEW_REQUIRED", inventory["decision"])
 
+    def test_proprietary_root_license_is_bound_to_owner_attestation_and_distribution_copy(self):
+        self.assertEqual(supply_chain.ROOT_LICENSE_ID, supply_chain.root_license_status())
+        self.assertEqual(
+            (supply_chain.ROOT / "LICENSE").read_bytes(),
+            (supply_chain.ROOT / "vscode-extension/LICENSE").read_bytes(),
+        )
+
     def test_policy_requires_unique_purl_sha256_and_sbom_bound_vulnerability_evidence(self):
         sbom = json.loads(supply_chain.DEFAULT_SBOM.read_text(encoding="utf-8"))
         inventory = supply_chain.build_inventory(sbom)
@@ -58,7 +65,7 @@ class ONSureSupplyChainTest(unittest.TestCase):
             sbom, inventory, policy, vulnerability, npm_audit
         )
         self.assertEqual([], violations)
-        self.assertIn("ROOT_SOURCE_LICENSE_UNDECLARED", blockers)
+        self.assertNotIn("ROOT_SOURCE_LICENSE_INVALID", blockers)
         self.assertNotIn("VULNERABILITY_SCAN_NOT_RUN", blockers)
         self.assertEqual("COMPLETED", vulnerability["state"])
         self.assertTrue(all(

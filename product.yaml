@@ -6,6 +6,14 @@ product:
   status: PREPARATION_ONLY_NONFINAL
   current_root: .
   future_root_candidate: products/onsure
+ownership:
+  copyright_holder: ORUDA Labs
+  copyright_year_start: 2026
+  inbound_rights_declaration: contracts/onsure-rights-declaration.v1.json
+license:
+  identifier: LicenseRef-ORUDA-Labs-Proprietary
+  distribution_policy: PROPRIETARY_WRITTEN_AGREEMENT_REQUIRED
+  third_party_notices: THIRD_PARTY_NOTICES.md
 namespace:
   current_java: io.onsure
   future_java_candidate: kr.co.oruda.products.onsure

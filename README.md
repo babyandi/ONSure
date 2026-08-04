@@ -118,7 +118,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Public SDK publish·외부 소비자 호환성 검증
 - Identity·RBAC·Cross-tenant 격리
 - Approval Replay Ledger의 외부 Anchor
-- 승인된 Maven vulnerability scan DB와 root source license
+- proprietary 고객 배포계약과 독립 라이선스/NOTICE 검토
 - 장시간 성능·운영 DR 및 실제 배포/DB 실행 Pack
 - 실제 Payment Provider와 Production Model Telemetry
 - 독립 OTester·OAudit와 Human Acceptance

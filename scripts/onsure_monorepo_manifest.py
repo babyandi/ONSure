@@ -23,6 +23,9 @@ DEFAULT_OUTPUT = ROOT / "assurance/migration/onsure-migration-manifest.v1.json"
 CURRENT_NAMESPACE = "io.onsure"
 FUTURE_NAMESPACE = "kr.co.oruda.products.onsure"
 FUTURE_ROOT = "products/onsure"
+ROOT_LICENSE = "LicenseRef-ORUDA-Labs-Proprietary"
+COPYRIGHT_HOLDER = "ORUDA Labs"
+RIGHTS_DECLARATION = "contracts/onsure-rights-declaration.v1.json"
 
 HIGH_RISK_PATTERNS: tuple[tuple[str, re.Pattern[bytes]], ...] = (
     ("PRIVATE_KEY_PEM", re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
@@ -129,6 +132,7 @@ def file_entry(path: pathlib.Path, modes: dict[str, str]) -> dict[str, object]:
         group = grp.getgrgid(stat.st_gid).gr_name
     except KeyError:
         group = str(stat.st_gid)
+    detected_license = detect_license(raw)
     return {
         "current_path": relative,
         "future_path_candidate": future_path(relative),
@@ -138,7 +142,8 @@ def file_entry(path: pathlib.Path, modes: dict[str, str]) -> dict[str, object]:
         "filesystem_owner": owner,
         "filesystem_group": group,
         "repository_owner": "babyandi/ONSure",
-        "license": detect_license(raw),
+        "license": ROOT_LICENSE if detected_license == "UNDECLARED" else detected_license,
+        "copyright_owner": COPYRIGHT_HOLDER,
         "sensitive_information": sensitivity(path, raw),
     }
 
@@ -170,10 +175,12 @@ def build_manifest(output: pathlib.Path = DEFAULT_OUTPUT) -> dict[str, object]:
         "ownership_interpretation": {
             "repository_owner": "GitHub repository owner, not a copyright conclusion",
             "filesystem_owner": "inspection-host metadata, to be normalized during migration",
-            "copyright_owner": "UNDETERMINED",
+            "copyright_owner": COPYRIGHT_HOLDER,
+            "rights_declaration": RIGHTS_DECLARATION,
+            "attestation_class": "OWNER_ATTESTED_NONFINAL",
         },
         "license_interpretation": {
-            "default": "UNDECLARED",
+            "default": ROOT_LICENSE,
             "root_license_file_present": any(
                 item["current_path"].upper().startswith(("LICENSE", "COPYING", "NOTICE"))
                 for item in files

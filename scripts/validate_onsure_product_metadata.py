@@ -31,6 +31,16 @@ def validate_documents(
         violations.append("FUTURE_JAVA_NAMESPACE_CANDIDATE")
     if namespace.get("rename_authorized") is not False:
         violations.append("NAMESPACE_RENAME_AUTHORITY")
+    ownership = product.get("ownership", {})
+    license_body = product.get("license", {})
+    if ownership.get("copyright_holder") != "ORUDA Labs":
+        violations.append("COPYRIGHT_HOLDER")
+    if ownership.get("inbound_rights_declaration") != "contracts/onsure-rights-declaration.v1.json":
+        violations.append("INBOUND_RIGHTS_DECLARATION")
+    if license_body.get("identifier") != "LicenseRef-ORUDA-Labs-Proprietary":
+        violations.append("ROOT_LICENSE_IDENTIFIER")
+    if license_body.get("distribution_policy") != "PROPRIETARY_WRITTEN_AGREEMENT_REQUIRED":
+        violations.append("ROOT_DISTRIBUTION_POLICY")
 
     canonical = build["canonical_build"]
     compatibility = build["compatibility_build"]
@@ -87,9 +97,15 @@ def validate() -> dict[str, object]:
         "README.md",
         "CHANGELOG.md",
         "product.yaml",
+        "LICENSE",
+        "NOTICE",
+        "THIRD_PARTY_NOTICES.md",
+        "vscode-extension/LICENSE",
+        "vscode-extension/THIRD_PARTY_NOTICES.md",
         ".obuilder/README.md",
         ".obuilder/product-build.yaml",
         "contracts/java-public-api-baseline.v1.json",
+        "contracts/onsure-rights-declaration.v1.json",
         "assurance/dependencies/onsure.cdx.json",
         "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
         "assurance/migration/onsure-open-pr-overlap.v1.json",

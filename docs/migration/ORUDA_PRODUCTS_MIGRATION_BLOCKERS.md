@@ -31,12 +31,18 @@
 - Maven artifact cycle, split package, `platform ↔ platform.oruda` mutual package cycle은 각각 0건이다.
 - 이 완료는 shared source root 물리 이동이나 실제 모노레포 cutover 완료를 뜻하지 않는다.
 
-### 4. 라이선스와 소유권 확정
+### 4. 라이선스와 소유권 확정 — 소유자 선언 반영 완료, 비최종
 
-- 루트 LICENSE/NOTICE/COPYING이 없고 VS Code package는 `UNLICENSED`다.
-- GitHub repository owner나 filesystem owner는 저작권·재배포 권리의 증명이 아니다.
-- 선행 작업: 코드·문서·fixture·third-party asset별 copyright owner, inbound license, outbound license, NOTICE 의무 승인.
-- CycloneDX 1.6 SBOM 기준 runtime dependency 4개는 Apache-2.0을 선언하며 dependency 미선언 license는 0건이다. 이는 root source license 부재를 해소하지 않는다.
+- 소유자 제공 선언에 따라 copyright holder를 `ORUDA Labs`, outbound license를
+  `LicenseRef-ORUDA-Labs-Proprietary`로 기록했다.
+- 다른 개발자·회사·외주 참여, 다른 저장소 source 복사, 외부 asset 복사는 각각
+  `NONE_ATTESTED`다. 권위 기록은 `contracts/onsure-rights-declaration.v1.json`이다.
+- 루트 `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md`, Maven/npm/product metadata와
+  RHEL·Ubuntu 배포 패키지의 legal directory를 결속한다.
+- Apache-2.0 및 BSD-2-Clause dependency는 ONSure proprietary license로 재허가하지 않으며
+  각자의 license와 notice 의무를 유지한다.
+- `ORUDA Labs`가 계약·법인등록상의 정식 명칭과 다를 경우 외부 배포 전에 교정해야 한다.
+  이 선언은 Production GO나 Final PASS 권한을 부여하지 않는다.
 
 ### 5. Manifest 데이터 분류 승인
 

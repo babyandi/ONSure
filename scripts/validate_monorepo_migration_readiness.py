@@ -125,6 +125,15 @@ def main() -> int:
     if overlap.get("automatic_merge_allowed") is not False:
         errors.append("OPEN_PR_OVERLAP_AUTOMATIC_MERGE_AUTHORITY_DRIFT")
 
+    known_blockers = [
+        "TRANSITIONAL_SHARED_SOURCE_ROOT",
+        "RHEL_AND_UBUNTU_INSTALL_AND_SYSTEMD_START_NOT_RUN",
+        "RHEL_AND_UBUNTU_PRODUCTION_POSTGRESQL_REHEARSAL_NOT_RUN",
+        "OPENAI_LIVE_REQUEST_NOT_RUN",
+    ]
+    if license_inventory.get("root_source_license") != manifest.ROOT_LICENSE:
+        known_blockers.append("ROOT_LICENSE_INVALID")
+
     report = {
         "contract": "ONSURE_MONOREPO_MIGRATION_READINESS_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not errors else "FAIL",
@@ -152,14 +161,10 @@ def main() -> int:
             "dependency_license_review_required_count"
         ],
         "root_source_license": license_inventory["root_source_license"],
+        "copyright_holder": license_inventory.get("copyright_holder", "UNDETERMINED"),
+        "rights_declaration": license_inventory.get("rights_declaration", "NOT_RECORDED"),
         "open_pr_merge_decision": overlap["merge_decision"],
-        "known_blockers": [
-            "TRANSITIONAL_SHARED_SOURCE_ROOT",
-            "ROOT_LICENSE_UNDECLARED",
-            "RHEL_AND_UBUNTU_INSTALL_AND_SYSTEMD_START_NOT_RUN",
-            "RHEL_AND_UBUNTU_PRODUCTION_POSTGRESQL_REHEARSAL_NOT_RUN",
-            "OPENAI_LIVE_REQUEST_NOT_RUN",
-        ],
+        "known_blockers": known_blockers,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, indent=2, sort_keys=True))

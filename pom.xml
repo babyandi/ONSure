@@ -3,6 +3,16 @@
   <groupId>io.onsure</groupId>
   <artifactId>onsure-assurance-validator</artifactId>
   <version>0.1.0-SNAPSHOT</version>
+  <name>ONSure Assurance Validator</name>
+  <organization><name>ORUDA Labs</name></organization>
+  <licenses>
+    <license>
+      <name>LicenseRef-ORUDA-Labs-Proprietary</name>
+      <url>https://github.com/babyandi/ONSure/blob/main/LICENSE</url>
+      <distribution>manual</distribution>
+      <comments>Copyright (c) 2026 ORUDA Labs. All rights reserved.</comments>
+    </license>
+  </licenses>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,6 +38,15 @@
       <resource>
         <directory>assets/admin</directory>
         <targetPath>admin</targetPath>
+      </resource>
+      <resource>
+        <directory>${project.basedir}</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+          <include>THIRD_PARTY_NOTICES.md</include>
+        </includes>
       </resource>
     </resources>
     <plugins>

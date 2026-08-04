@@ -6,6 +6,16 @@
   <artifactId>onsure-modular-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <name>ONSure Modular Compatibility Parent</name>
+  <organization><name>ORUDA Labs</name></organization>
+  <licenses>
+    <license>
+      <name>LicenseRef-ORUDA-Labs-Proprietary</name>
+      <url>https://github.com/babyandi/ONSure/blob/main/LICENSE</url>
+      <distribution>manual</distribution>
+      <comments>Copyright (c) 2026 ORUDA Labs. All rights reserved.</comments>
+    </license>
+  </licenses>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,6 +41,20 @@
     </dependencies>
   </dependencyManagement>
   <build>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${maven.multiModuleProjectDirectory}</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+          <include>THIRD_PARTY_NOTICES.md</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

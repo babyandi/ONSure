@@ -36,6 +36,11 @@ SHARED_SOURCE_FILES = (
 REQUIRED_FILES = {
     "etc/onsure/onsure.env.example",
     "opt/onsure/README.md",
+    "opt/onsure/legal/LICENSE",
+    "opt/onsure/legal/NOTICE",
+    "opt/onsure/legal/THIRD_PARTY_NOTICES.md",
+    "opt/onsure/legal/APACHE-2.0.txt",
+    "opt/onsure/legal/POSTGRESQL-LICENSE.txt",
     "opt/onsure/app/onsure-core-0.1.0-SNAPSHOT.jar",
     "opt/onsure/app/onsure-local-api-0.1.0-SNAPSHOT.jar",
     "opt/onsure/app/onsure-llm-gateway-0.1.0-SNAPSHOT.jar",
@@ -77,6 +82,9 @@ def source_files(platform: str) -> tuple[pathlib.Path, ...]:
         ROOT / f"scripts/package_onsure_{platform}.sh",
         *SHARED_SOURCE_FILES,
         ROOT / f"deploy/{platform}/README.md",
+        ROOT / "LICENSE",
+        ROOT / "NOTICE",
+        ROOT / "THIRD_PARTY_NOTICES.md",
     )
 
 
@@ -122,6 +130,22 @@ def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dic
         raise ValueError("PACKAGE_UNEXPECTED_FILE:" + ",".join(unexpected))
     if modes["etc/onsure/onsure.env.example"] != 0o640:
         raise ValueError("PACKAGE_ENVIRONMENT_MODE")
+    for legal_file in ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"):
+        packaged = contents[f"opt/onsure/legal/{legal_file}"]
+        if packaged != (ROOT / legal_file).read_bytes():
+            raise ValueError("PACKAGE_LEGAL_FILE_DRIFT:" + legal_file)
+    upstream_license_sources = {
+        "opt/onsure/legal/APACHE-2.0.txt": (
+            "opt/onsure/lib/jackson-annotations-2.18.9.jar", "META-INF/LICENSE"
+        ),
+        "opt/onsure/legal/POSTGRESQL-LICENSE.txt": (
+            "opt/onsure/lib/postgresql-42.7.12.jar", "META-INF/LICENSE"
+        ),
+    }
+    for legal_path, (jar_path, entry) in upstream_license_sources.items():
+        with zipfile.ZipFile(io.BytesIO(contents[jar_path])) as archive:
+            if contents[legal_path] != archive.read(entry):
+                raise ValueError("PACKAGE_UPSTREAM_LICENSE_DRIFT:" + legal_path)
 
     checksums: dict[str, str] = {}
     for line in contents["SHA256SUMS"].decode("utf-8").splitlines():
@@ -167,6 +191,9 @@ def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dic
             path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in source_files(platform)
         },
+        "proprietary_license_included": True,
+        "third_party_notices_included": True,
+        "upstream_license_text_count": len(upstream_license_sources),
         "install_execution": "NOT_RUN",
         "runtime_execution": "NOT_RUN",
         "final_claim_allowed": False,

@@ -26,6 +26,9 @@ DEFAULT_VULNERABILITY = ROOT / "assurance/dependencies/onsure-vulnerability-scan
 DEFAULT_NPM_AUDIT = ROOT / "assurance/dependencies/onsure-npm-audit.v1.json"
 DEFAULT_VSCODE_INVENTORY = ROOT / "assurance/dependencies/onsure-vscode-dependency-inventory.v1.json"
 POLICY_PATH = ROOT / "contracts/onsure-supply-chain-policy.v1.json"
+RIGHTS_PATH = ROOT / "contracts/onsure-rights-declaration.v1.json"
+ROOT_LICENSE_ID = "LicenseRef-ORUDA-Labs-Proprietary"
+ROOT_COPYRIGHT_HOLDER = "ORUDA Labs"
 
 
 def build_modular_artifacts() -> None:
@@ -170,6 +173,30 @@ def license_ids(component: dict[str, object]) -> list[str]:
     return sorted(set(values))
 
 
+def root_license_status() -> str:
+    required = (ROOT / "LICENSE", ROOT / "NOTICE", ROOT / "THIRD_PARTY_NOTICES.md", RIGHTS_PATH)
+    if any(not path.is_file() for path in required):
+        return "UNDECLARED"
+    declaration = json.loads(RIGHTS_PATH.read_text(encoding="utf-8"))
+    license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+    notice_text = (ROOT / "NOTICE").read_text(encoding="utf-8")
+    if declaration.get("contract") != "ONSURE_RIGHTS_DECLARATION_V1" \
+            or declaration.get("copyright_holder") != ROOT_COPYRIGHT_HOLDER \
+            or declaration.get("outbound_license") != ROOT_LICENSE_ID \
+            or declaration.get("other_developers_companies_or_contractors") != "NONE_ATTESTED" \
+            or declaration.get("copied_external_repository_source") != "NONE_ATTESTED" \
+            or declaration.get("copied_external_assets") != "NONE_ATTESTED" \
+            or declaration.get("production_release_authority") is not False \
+            or ROOT_LICENSE_ID not in license_text \
+            or ROOT_COPYRIGHT_HOLDER not in license_text \
+            or ROOT_COPYRIGHT_HOLDER not in notice_text:
+        return "DECLARATION_INVALID"
+    extension_license = ROOT / "vscode-extension/LICENSE"
+    if not extension_license.is_file() or extension_license.read_bytes() != (ROOT / "LICENSE").read_bytes():
+        return "DISTRIBUTION_LICENSE_DRIFT"
+    return ROOT_LICENSE_ID
+
+
 def build_inventory(sbom: dict[str, object]) -> dict[str, object]:
     dependencies: list[dict[str, object]] = []
     license_counts: Counter[str] = Counter()
@@ -194,13 +221,10 @@ def build_inventory(sbom: dict[str, object]) -> dict[str, object]:
         })
     dependencies.sort(key=lambda item: str(item["purl"]))
     raw = json.dumps(sbom, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    root_license_present = any(
-        (ROOT / name).is_file()
-        for name in ("LICENSE", "LICENSE.md", "NOTICE", "COPYING")
-    )
+    root_license = root_license_status()
     return {
         "contract": "ONSURE_DEPENDENCY_LICENSE_INVENTORY_V1",
-        "decision": "REVIEW_REQUIRED" if review_required or not root_license_present else "PASS_NONFINAL",
+        "decision": "REVIEW_REQUIRED" if review_required or root_license != ROOT_LICENSE_ID else "PASS_NONFINAL",
         "source_sbom": DEFAULT_SBOM.relative_to(ROOT).as_posix(),
         "source_sbom_sha256": hashlib.sha256(raw).hexdigest(),
         "cyclonedx_plugin": f"org.cyclonedx:cyclonedx-maven-plugin:{PLUGIN_VERSION}",
@@ -208,12 +232,14 @@ def build_inventory(sbom: dict[str, object]) -> dict[str, object]:
         "component_count": len(dependencies),
         "dependency_license_counts": dict(sorted(license_counts.items())),
         "dependency_license_review_required_count": review_required,
-        "root_source_license": "UNDECLARED" if not root_license_present else "PRESENT_REVIEW_REQUIRED",
+        "root_source_license": root_license,
+        "copyright_holder": ROOT_COPYRIGHT_HOLDER if root_license == ROOT_LICENSE_ID else "UNDETERMINED",
+        "rights_declaration": RIGHTS_PATH.relative_to(ROOT).as_posix(),
         "dependencies": dependencies,
         "limitations": [
             "DECLARED_DEPENDENCY_LICENSE_IS_NOT_LEGAL_APPROVAL",
             "TRANSITIVE_NOTICE_AND_ATTRIBUTION_REQUIREMENTS_REQUIRE_HUMAN_REVIEW",
-            "SOURCE_FILE_COPYRIGHT_AND_INBOUND_RIGHTS_REQUIRE_HUMAN_ATTESTATION",
+            "INBOUND_RIGHTS_ARE_OWNER_ATTESTED_NOT_INDEPENDENTLY_VERIFIED",
         ],
         "final_claim_allowed": False,
     }
@@ -251,6 +277,10 @@ def validate_policy(
             or policy.get("cyclonedx_schema") != SCHEMA_VERSION \
             or policy.get("final_claim_allowed") is not False:
         violations.append("SUPPLY_CHAIN_POLICY_INVALID")
+    if policy.get("root_source_license") != ROOT_LICENSE_ID \
+            or policy.get("copyright_holder") != ROOT_COPYRIGHT_HOLDER \
+            or policy.get("rights_declaration_required") != RIGHTS_PATH.relative_to(ROOT).as_posix():
+        violations.append("SUPPLY_CHAIN_ROOT_RIGHTS_POLICY_INVALID")
     components = sbom.get("components", [])
     purls = [str(component.get("purl", "")) for component in components]
     if any(not value for value in purls) or len(set(purls)) != len(purls):
@@ -274,8 +304,8 @@ def validate_policy(
             violations.append("DEPENDENCY_LICENSE_DENIED:" + str(dependency.get("purl", "")))
         if review.intersection(licenses):
             blockers.append("DEPENDENCY_LICENSE_COMPATIBILITY_REVIEW:" + str(dependency.get("purl", "")))
-    if inventory.get("root_source_license") == "UNDECLARED":
-        blockers.append("ROOT_SOURCE_LICENSE_UNDECLARED")
+    if inventory.get("root_source_license") != ROOT_LICENSE_ID:
+        blockers.append("ROOT_SOURCE_LICENSE_INVALID")
 
     if vulnerability.get("contract") != "ONSURE_VULNERABILITY_SCAN_EVIDENCE_V1" \
             or vulnerability.get("final_claim_allowed") is not False:

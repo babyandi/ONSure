@@ -90,5 +90,5 @@
 ### Known migration blockers
 
 - `onsure-core`와 `onsure-adapter-oruda`가 공유하는 물리 Java source root 2개
-- root source license·소유권·고객 데이터에 대한 사람 승인 미실행
+- root source license·소유권은 ORUDA Labs proprietary owner 선언으로 반영; 고객 데이터 승인과 독립 법률 검토는 미실행
 - 실제 배포 topology와 운영 DB engine 미선정(컨테이너 후보와 합성 SQLite rehearsal만 존재)

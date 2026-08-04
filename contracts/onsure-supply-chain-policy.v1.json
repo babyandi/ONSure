@@ -26,6 +26,9 @@
     "lockfile_binding_required": true
   },
   "root_source_license_required_for_release": true,
+  "root_source_license": "LicenseRef-ORUDA-Labs-Proprietary",
+  "copyright_holder": "ORUDA Labs",
+  "rights_declaration_required": "contracts/onsure-rights-declaration.v1.json",
   "github_actions_required": false,
   "release_authority": false,
   "final_claim_allowed": false

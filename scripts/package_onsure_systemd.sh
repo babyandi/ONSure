@@ -4,6 +4,7 @@ set -euo pipefail
 product_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 platform="${1:?PLATFORM_REQUIRED}"
 output="${2:-${product_root}/target/onsure-${platform}-candidate.tar.gz}"
+command -v unzip >/dev/null 2>&1 || { echo "MISSING_COMMAND:unzip" >&2; exit 69; }
 
 case "${platform}" in
   rhel|ubuntu) ;;
@@ -38,6 +39,7 @@ if [[ -f "${preserve_dir}/onsure-${other_platform}-candidate.tar.gz" ]]; then
 fi
 stage="$(mktemp -d "${product_root}/target/onsure-${platform}-stage.XXXXXX")"
 mkdir -p "${stage}/opt/onsure/app" "${stage}/opt/onsure/migration" "${stage}/opt/onsure/lib"
+mkdir -p "${stage}/opt/onsure/legal"
 mkdir -p "${stage}/etc/onsure" "${stage}/usr/lib/systemd/system"
 mkdir -p "${stage}/usr/lib/sysusers.d" "${stage}/usr/lib/tmpfiles.d"
 
@@ -54,6 +56,12 @@ mvn -B -ntp -q -f "${product_root}/pom-modular.xml" \
   dependency:copy-dependencies -DincludeScope=runtime -DexcludeGroupIds=io.onsure \
   -DoutputDirectory="${stage}/opt/onsure/lib"
 
+# Materialize the exact upstream license texts from bundled runtime JARs.
+unzip -p "${stage}/opt/onsure/lib/jackson-annotations-2.18.9.jar" META-INF/LICENSE \
+  > "${stage}/opt/onsure/legal/APACHE-2.0.txt"
+unzip -p "${stage}/opt/onsure/lib/postgresql-42.7.12.jar" META-INF/LICENSE \
+  > "${stage}/opt/onsure/legal/POSTGRESQL-LICENSE.txt"
+
 # These distribution-neutral units remain at deploy/rhel for path compatibility.
 cp "${product_root}/deploy/rhel/onsure.service" "${stage}/usr/lib/systemd/system/"
 cp "${product_root}/deploy/rhel/onsure-llm-gateway.service" "${stage}/usr/lib/systemd/system/"
@@ -62,6 +70,9 @@ cp "${product_root}/deploy/rhel/onsure.sysusers.conf" "${stage}/usr/lib/sysusers
 cp "${product_root}/deploy/rhel/onsure.tmpfiles.conf" "${stage}/usr/lib/tmpfiles.d/"
 cp "${product_root}/deploy/rhel/onsure.env.example" "${stage}/etc/onsure/"
 cp "${product_root}/deploy/${platform}/README.md" "${stage}/opt/onsure/README.md"
+cp "${product_root}/LICENSE" "${stage}/opt/onsure/legal/LICENSE"
+cp "${product_root}/NOTICE" "${stage}/opt/onsure/legal/NOTICE"
+cp "${product_root}/THIRD_PARTY_NOTICES.md" "${stage}/opt/onsure/legal/THIRD_PARTY_NOTICES.md"
 chmod 0640 "${stage}/etc/onsure/onsure.env.example"
 
 (cd "${stage}" && find . -type f ! -name SHA256SUMS -print0 | sort -z \
