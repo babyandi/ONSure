@@ -225,7 +225,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "163837d2f4e67c2a457b1388c2460e9541f7468586295dbe2ffceebd8b35ac68",
+      "sha256": "ef2146b9a673ddd233e3d9d32dfecf1788a432cab289744f79063dd03a5d8969",
       "size_bytes": 7209
     },
     {
@@ -270,7 +270,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8baa22232818ea639697a3b12ea48a72f13247ca9d3d2eb7553c7dd42760bfef",
+      "sha256": "da6ee17f1d4ae65392c082a0fb7e539f812550bebe27c5ba6ab4ca4c4d10de53",
       "size_bytes": 754
     },
     {
@@ -285,7 +285,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "91e10c0738e221db357aaed13ffa7c2ef01c0498905041d220ab044ce3a62435",
+      "sha256": "3a95db9a573f8547d0a9a95160a624d672e51ceb1297a4613ae39cfc93f3405c",
       "size_bytes": 37941
     },
     {
@@ -405,7 +405,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "e523e8b885803c66b88e9445e8fa1a74a42564380bd9a63089957b2d8d9de4b8",
+      "sha256": "e71064540302db46219e496d372129006c92820051a9249d2f05ca9aef648038",
       "size_bytes": 1010
     },
     {
@@ -420,7 +420,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "c1dcf3e9b303dbd5464f1fcd8f8fa079571de4a09e10386bd1bdc4424f83d047",
+      "sha256": "f1946c1a15e8d217ba8af3b78fd38572e04f20db4ee8e1fe98ad038144f2f42a",
       "size_bytes": 1539
     },
     {
@@ -450,7 +450,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "7b02b48c52bbf2df0c245cbe12005b4f8b8747a0a8aed1095582203a0cef4eb2",
+      "sha256": "bb774eacd0bc16273303bc22730f8d05bca3763f82427b3c501ec85a99b9a162",
       "size_bytes": 1549
     },
     {
@@ -2460,8 +2460,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "1f3afcee609a175e11984ba3f485c9f6aa2269582fa31e7ce6a77aa8f07253f2",
-      "size_bytes": 5369
+      "sha256": "61cd69dc2537e9ae8f5e72211d4446284beba3755683935a5fe780a5a8265ca4",
+      "size_bytes": 5625
     },
     {
       "current_path": "docs/architecture/ONSURE_MODULE_DECOUPLING_PLAN_v1.md",
@@ -8571,8 +8571,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "595a3261db614f38bb3c1df998c385a1b276dbd13525496c8fcd52ea856844b6",
-      "size_bytes": 24410
+      "sha256": "711389a2e5379a0fc1340b85d3ec18b9c29a8875887bcfabf3cc20ac3100d337",
+      "size_bytes": 24604
     },
     {
       "current_path": "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
@@ -10266,8 +10266,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "0a3e5603e83d326136e08c4f97ba81f5bced3461b15abf18f6da31d442cec6e3",
-      "size_bytes": 2861
+      "sha256": "f9682b85559e8492222bcf71582851685426522b30f0cff711b09281362b2dcb",
+      "size_bytes": 3224
     },
     {
       "current_path": "src/test/java/io/onsure/platform/ModelProviderAdapterRegistryTest.java",
@@ -11630,6 +11630,6 @@
       "NO_PATTERN_MATCH": 769,
       "REVIEW_REQUIRED": 3
     },
-    "total_size_bytes": 7880424
+    "total_size_bytes": 7881237
   }
 }
