@@ -187,6 +187,8 @@ public final class LocalAuthenticatedApiServer {
                 handler.handle(exchange);
             } catch (IllegalArgumentException invalid) {
                 respond(exchange, 400, error("INVALID_REQUEST", safe(invalid)));
+            } catch (SecurityException denied) {
+                respond(exchange, 403, error("FORBIDDEN", safe(denied)));
             } catch (Exception failure) {
                 respond(exchange, 500, error("INTERNAL_ERROR", safe(failure)));
             } finally {
@@ -242,7 +244,8 @@ public final class LocalAuthenticatedApiServer {
         JsonNode envelope = readJson(exchange);
         String operation = envelope.path("operation").asText();
         JsonNode request = envelope.path("request");
-        Map<String, Object> result = new LocalWorkflowDispatcher(workspaceRoot)
+        Map<String, Object> result = new LocalWorkflowDispatcher(
+                workspaceRoot, workflowIdentity(identity(exchange)))
                 .dispatch(operation, request);
         respond(exchange, 200, Map.of(
                 "contract", CONTRACT,
@@ -256,7 +259,8 @@ public final class LocalAuthenticatedApiServer {
             respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
             return;
         }
-        Map<String, Object> result = new LocalWorkflowDispatcher(workspaceRoot)
+        Map<String, Object> result = new LocalWorkflowDispatcher(
+                workspaceRoot, workflowIdentity(identity(exchange)))
                 .dispatch(operation, readJson(exchange));
         @SuppressWarnings("unchecked")
         Map<String, Object> payload = (Map<String, Object>) result.get("result");
@@ -277,6 +281,13 @@ public final class LocalAuthenticatedApiServer {
             return;
         }
         JsonNode request = readJson(exchange);
+        Map<String, Object> body = new TenantRbacService(workspaceRoot).execute(
+                workflowIdentity(identity(exchange)), "artifact.read", request,
+                () -> readRunArtifact(request));
+        respond(exchange, 200, body);
+    }
+
+    private Map<String, Object> readRunArtifact(JsonNode request) throws Exception {
         Path runRoot = requiredWorkspacePath(request, "run_root", true);
         String artifact = request.path("artifact").asText("validation-report.json");
         if (!artifact.matches("[A-Za-z0-9._-]{1,128}")) {
@@ -292,13 +303,13 @@ public final class LocalAuthenticatedApiServer {
             throw new IllegalArgumentException("RUN_ARTIFACT_TOO_LARGE");
         }
         JsonNode body = mapper.readTree(file.toFile());
-        respond(exchange, 200, Map.of(
+        return Map.of(
                 "contract", CONTRACT,
                 "request_id", requestId(),
                 "run_root", runRoot.toString(),
                 "artifact", artifact,
                 "body", body,
-                "sha256", Hashing.sha256(Files.readAllBytes(file))));
+                "sha256", Hashing.sha256(Files.readAllBytes(file)));
     }
 
     private void workspaceSnapshot(HttpExchange exchange) throws Exception {
@@ -504,6 +515,14 @@ public final class LocalAuthenticatedApiServer {
         if (value.isBlank()) throw new IllegalArgumentException(field.toUpperCase() + "_MISSING");
         Path path = Path.of(value).toAbsolutePath().normalize();
         if (!path.startsWith(workspaceRoot)) throw new IllegalArgumentException("PATH_OUTSIDE_WORKSPACE:" + field);
+        Path current = path;
+        while (current != null && current.startsWith(workspaceRoot)) {
+            if (Files.exists(current, LinkOption.NOFOLLOW_LINKS) && Files.isSymbolicLink(current)) {
+                throw new IllegalArgumentException("PATH_SYMLINK_PROHIBITED:" + field);
+            }
+            if (current.equals(workspaceRoot)) break;
+            current = current.getParent();
+        }
         if (mustExist && (!Files.exists(path, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(path))) {
             throw new IllegalArgumentException("PATH_INVALID:" + field);
         }
@@ -588,6 +607,16 @@ public final class LocalAuthenticatedApiServer {
         return identity;
     }
 
+    private static AuthenticatedWorkflowIdentity workflowIdentity(LocalAccessControl.Identity identity) {
+        AuthenticatedWorkflowIdentity.Role role = switch (identity.role()) {
+            case VIEWER -> AuthenticatedWorkflowIdentity.Role.VIEWER;
+            case OPERATOR -> AuthenticatedWorkflowIdentity.Role.OPERATOR;
+            case ADMIN -> AuthenticatedWorkflowIdentity.Role.ADMIN;
+            case APPROVER -> AuthenticatedWorkflowIdentity.Role.APPROVER;
+        };
+        return AuthenticatedWorkflowIdentity.local(identity.actor(), role, "LOCAL_WORKSPACE");
+    }
+
     private static Path requireWorkspace(Path value) {
         if (value == null) throw new IllegalArgumentException("WORKSPACE_ROOT_REQUIRED");
         Path path = value.toAbsolutePath().normalize();
@@ -598,7 +627,9 @@ public final class LocalAuthenticatedApiServer {
     }
 
     private static String safe(Exception failure) {
-        if (failure instanceof IllegalArgumentException || failure instanceof IllegalStateException) {
+        if (failure instanceof IllegalArgumentException
+                || failure instanceof IllegalStateException
+                || failure instanceof SecurityException) {
             String value = failure.getMessage();
             return value == null || value.isBlank() ? failure.getClass().getSimpleName() : value;
         }

@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,10 +26,18 @@ public final class LocalWorkflowDispatcher {
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
     private final Path workspaceRoot;
     private final ApprovalAuthorityPaths approvalAuthority;
+    private final AuthenticatedWorkflowIdentity identity;
 
     public LocalWorkflowDispatcher(Path workspaceRoot) {
+        this(workspaceRoot, null);
+    }
+
+    /** Internal API path whose tenant and actor derive from a server-authenticated identity. */
+    LocalWorkflowDispatcher(
+            Path workspaceRoot, AuthenticatedWorkflowIdentity authenticatedIdentity) {
         this.workspaceRoot = requireWorkspace(workspaceRoot);
         this.approvalAuthority = ApprovalAuthorityPaths.forWorkspace(this.workspaceRoot);
+        this.identity = authenticatedIdentity;
     }
 
     public Map<String, Object> dispatch(String operation, JsonNode request) throws Exception {
@@ -38,6 +47,14 @@ public final class LocalWorkflowDispatcher {
         if (request == null || !request.isObject()) {
             throw new IllegalArgumentException("WORKFLOW_REQUEST_OBJECT_REQUIRED");
         }
+        if (identity != null) {
+            return new TenantRbacService(workspaceRoot).execute(
+                    identity, operation, request, () -> dispatchAuthorized(operation, request));
+        }
+        return dispatchAuthorized(operation, request);
+    }
+
+    private Map<String, Object> dispatchAuthorized(String operation, JsonNode request) throws Exception {
         approvalAuthority.rejectRequestOverrides(operation, request);
         Map<String, Object> result = switch (operation) {
             case "project.register-workspace" -> projectRegisterWorkspace(request);
@@ -85,15 +102,20 @@ public final class LocalWorkflowDispatcher {
             case "case.read" -> caseRead(request);
             default -> throw new IllegalArgumentException("WORKFLOW_OPERATION_UNSUPPORTED:" + operation);
         };
-        return Map.of(
-                "contract", CONTRACT,
-                "operation", operation,
-                "result", result,
-                "approval_authority", approvalAuthority.authorityRoot().toString(),
-                "assurance_class", "SELF_VALIDATION_NONFINAL",
-                "independent_otester", "NOT_RUN",
-                "independent_oaudit", "NOT_RUN",
-                "final_claim_allowed", false);
+        Map<String, Object> envelope = new LinkedHashMap<>();
+        envelope.put("contract", CONTRACT);
+        envelope.put("operation", operation);
+        envelope.put("result", result);
+        if (identity != null) {
+            envelope.put("authenticated_actor", identity.actorId());
+            envelope.put("authenticated_tenant", identity.tenantId());
+        }
+        envelope.put("approval_authority", approvalAuthority.authorityRoot().toString());
+        envelope.put("assurance_class", "SELF_VALIDATION_NONFINAL");
+        envelope.put("independent_otester", "NOT_RUN");
+        envelope.put("independent_oaudit", "NOT_RUN");
+        envelope.put("final_claim_allowed", false);
+        return Map.copyOf(envelope);
     }
 
     private ProductCatalog catalog() {
@@ -502,11 +524,24 @@ public final class LocalWorkflowDispatcher {
     }
 
     private Map<String, Object> tenant(JsonNode request) {
+        if (identity != null) {
+            return Map.of(
+                    "contract", "ONSURE_TENANT_CONTEXT_V1",
+                    "organization_id", identity.organizationId(),
+                    "tenant_id", identity.tenantId(),
+                    "workspace_id", identity.workspaceId(),
+                    "actor_id", identity.actorId(),
+                    "roles", identity.roles().stream().map(Enum::name).sorted().toList(),
+                    "data_region", identity.dataRegion(),
+                    "created_at", Instant.now().toString());
+        }
         JsonNode value = request.path("tenant_context");
         return mapper.convertValue(value, new com.fasterxml.jackson.core.type.TypeReference<>() {});
     }
 
-    private String actor(JsonNode request) { return requiredId(request, "actor"); }
+    private String actor(JsonNode request) {
+        return identity == null ? requiredId(request, "actor") : identity.actorId();
+    }
     private Instant observedAt(JsonNode request) { return Instant.parse(requiredText(request, "observed_at")); }
 
     private Path inputPath(JsonNode request, String field, boolean mustExist) {

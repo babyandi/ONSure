@@ -45,6 +45,22 @@ class LocalManagementApiRbacTest {
             assertEquals("VIEWER", viewerSession.path("role").asText());
             assertEquals(403, post(port, "/v1/programs", VIEWER, registration(source)).statusCode());
 
+            HttpResponse<String> substitutedActor = post(port, "/v1/workflow", ADMIN, Map.of(
+                    "operation", "project.register-workspace",
+                    "request", Map.of(
+                            "workspace_id", "rbac-workspace",
+                            "workspace_name", "RBAC workspace",
+                            "actor", "forged-actor")));
+            assertEquals(403, substitutedActor.statusCode(), substitutedActor.body());
+            HttpResponse<String> authenticatedWorkflow = post(port, "/v1/workflow", ADMIN, Map.of(
+                    "operation", "project.register-workspace",
+                    "request", Map.of(
+                            "workspace_id", "rbac-workspace",
+                            "workspace_name", "RBAC workspace")));
+            assertEquals(200, authenticatedWorkflow.statusCode(), authenticatedWorkflow.body());
+            assertEquals("local-admin", json(authenticatedWorkflow)
+                    .path("workflow").path("authenticated_actor").asText());
+
             HttpResponse<String> registered = post(port, "/v1/programs", OPERATOR, registration(source));
             assertEquals(200, registered.statusCode(), registered.body());
             assertTrue(json(registered).path("read_only_registration").asBoolean());
