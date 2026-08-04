@@ -150,9 +150,20 @@ def oci_diagnostic() -> dict[str, object]:
         and "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12" in attacks.stdout
     probe_pass = probe.returncode == 0 \
         and f"ONSURE_VALIDATION_SANDBOX_BACKEND OCI_DOCKER {image_id}" in probe.stdout
+    capabilities = run([
+        "docker", "run", "--rm", "--pull", "never", "--network", "none",
+        "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
+        "--entrypoint", "bash", image_id, "-c",
+        "set -euo pipefail; java -version 2>&1; node --version; npm --version; "
+        "mvn --version | head -1; clamscan --version; "
+        "fc-match --format='%{family}' -- 'Noto Sans CJK KR' | grep -F 'Noto Sans CJK KR'",
+    ], environment={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+                    "DOCKER_HOST": "unix:///var/run/docker.sock"}, timeout=60)
+    capability_pass = capabilities.returncode == 0
+    all_pass = attack_pass and probe_pass and capability_pass
     return {
-        "decision": "PASS_NONFINAL" if attack_pass and probe_pass else "BLOCKED_ENVIRONMENT",
-        "reason_code": "OCI_SANDBOX_BOUNDARIES_VERIFIED" if attack_pass and probe_pass
+        "decision": "PASS_NONFINAL" if all_pass else "BLOCKED_ENVIRONMENT",
+        "reason_code": "OCI_SANDBOX_BOUNDARIES_AND_CAPABILITIES_VERIFIED" if all_pass
         else "OCI_SANDBOX_PROBE_FAILED",
         "docker_server_version": docker_version.stdout.strip(),
         "docker_security_options": json.loads(security.stdout) if security.returncode == 0 else [],
@@ -167,6 +178,14 @@ def oci_diagnostic() -> dict[str, object]:
         "validation_probe_execution": "PASS_NONFINAL" if probe_pass else "FAIL",
         "validation_probe_output_sha256": hashlib.sha256(
             probe.stdout.encode("utf-8")
+        ).hexdigest(),
+        "environment_capability_execution": "PASS_NONFINAL" if capability_pass else "FAIL",
+        "environment_capability_count": 6 if capability_pass else 0,
+        "environment_capabilities": [
+            "JAVA", "MAVEN", "NODE", "NPM", "CLAMAV", "NOTO_SANS_CJK_KR",
+        ] if capability_pass else [],
+        "environment_capability_output_sha256": hashlib.sha256(
+            (capabilities.stdout + capabilities.stderr).encode("utf-8")
         ).hexdigest(),
         "network": "NONE",
         "root_filesystem": "READ_ONLY",

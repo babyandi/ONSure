@@ -51,6 +51,17 @@ class ONSureSandboxBackendsTest(unittest.TestCase):
         self.assertNotIn("--network host", combined)
         self.assertNotIn("/var/run/docker.sock", combined)
 
+    def test_validation_image_and_probe_cover_declared_document_dependencies(self):
+        image = (ROOT / "deploy/validation/Dockerfile").read_text(encoding="utf-8")
+        launcher = (ROOT / "scripts/validation-sandbox-launcher.sh").read_text(encoding="utf-8")
+        executor = (ROOT / "modules/onsure-core/src/main/java/io/onsure/platform/"
+                    "SandboxedValidationStepExecutor.java").read_text(encoding="utf-8")
+        for package in ("clamav", "fontconfig", "fonts-noto-cjk"):
+            self.assertIn(package, image)
+        self.assertIn(".onsure/internal/environment-probe.sh", launcher)
+        self.assertIn("ONSURE_ENVIRONMENT_PROBE_MISSING", executor)
+        self.assertIn("--font", executor)
+
     def test_invalid_oci_image_reference_fails_closed_before_execution(self):
         command = """
 set -euo pipefail

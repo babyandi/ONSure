@@ -310,11 +310,13 @@ def validate_sandbox_evidence_body(
     else:
         oci_expected = {
             "decision": "PASS_NONFINAL",
-            "reason_code": "OCI_SANDBOX_BOUNDARIES_VERIFIED",
+            "reason_code": "OCI_SANDBOX_BOUNDARIES_AND_CAPABILITIES_VERIFIED",
             "image_pull": "NOT_RUN_LOCAL_IMAGE_ONLY",
             "boundary_attack_execution": "PASS_NONFINAL",
             "boundary_attack_probe_count": 12,
             "validation_probe_execution": "PASS_NONFINAL",
+            "environment_capability_execution": "PASS_NONFINAL",
+            "environment_capability_count": 6,
             "network": "NONE",
             "root_filesystem": "READ_ONLY",
             "capabilities": "DROP_ALL",
@@ -327,7 +329,11 @@ def validate_sandbox_evidence_body(
                 violations.append("SANDBOX_EVIDENCE_OCI_" + field.upper())
         if re.fullmatch(r"sha256:[0-9a-f]{64}", str(oci.get("image_id", ""))) is None:
             violations.append("SANDBOX_EVIDENCE_OCI_IMAGE_ID")
-        for field in ("boundary_attack_output_sha256", "validation_probe_output_sha256"):
+        if oci.get("environment_capabilities") != [
+                "JAVA", "MAVEN", "NODE", "NPM", "CLAMAV", "NOTO_SANS_CJK_KR"]:
+            violations.append("SANDBOX_EVIDENCE_OCI_ENVIRONMENT_CAPABILITIES")
+        for field in ("boundary_attack_output_sha256", "validation_probe_output_sha256",
+                      "environment_capability_output_sha256"):
             if not _full_sha256(oci.get(field)):
                 violations.append("SANDBOX_EVIDENCE_OCI_" + field.upper())
         security = oci.get("docker_security_options")

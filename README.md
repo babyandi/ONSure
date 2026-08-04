@@ -256,7 +256,7 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 347개(조건부 11개 skip 포함), Python 201개, Node 10개,
+현재 변경 후보의 로컬 검증은 Java 347개(조건부 11개 skip 포함), Python 202개, Node 10개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
