@@ -9,8 +9,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -177,6 +183,79 @@ class TenantRbacServiceTest {
         IllegalArgumentException failure = assertThrows(
                 IllegalArgumentException.class, () -> new TenantRbacService(temp));
         assertEquals("TENANT_RBAC_STATE_SYMLINK", failure.getMessage());
+    }
+
+    @Test
+    void concurrentTenantsCannotBothClaimTheSameResource() throws Exception {
+        TenantRbacService serviceA = new TenantRbacService(temp);
+        TenantRbacService serviceB = new TenantRbacService(temp);
+        AuthenticatedWorkflowIdentity tenantA = identity(
+                "tenant-a", "actor-a", AuthenticatedWorkflowIdentity.Role.OPERATOR);
+        AuthenticatedWorkflowIdentity tenantB = identity(
+                "tenant-b", "actor-b", AuthenticatedWorkflowIdentity.Role.OPERATOR);
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<String> claimA = executor.submit(() -> claimAfterBarrier(
+                    serviceA, tenantA, ready, start, "tenant-a-created"));
+            Future<String> claimB = executor.submit(() -> claimAfterBarrier(
+                    serviceB, tenantB, ready, start, "tenant-b-created"));
+            ready.await();
+            start.countDown();
+
+            int successes = 0;
+            int crossTenantDenials = 0;
+            for (Future<String> claim : List.of(claimA, claimB)) {
+                try {
+                    assertTrue(claim.get().endsWith("-created"));
+                    successes++;
+                } catch (ExecutionException failure) {
+                    assertEquals("CROSS_TENANT_RESOURCE_WRITE_DENIED:workspace:shared-workspace",
+                            failure.getCause().getMessage());
+                    crossTenantDenials++;
+                }
+            }
+            assertEquals(1, successes);
+            assertEquals(1, crossTenantDenials);
+        } finally {
+            executor.shutdownNow();
+        }
+        assertTrue(serviceA.verify().valid());
+        assertTrue(serviceB.verify().valid());
+    }
+
+    @Test
+    void tamperedOwnershipLedgerIsDetectedAndFailsClosed() throws Exception {
+        TenantRbacService service = new TenantRbacService(temp);
+        AuthenticatedWorkflowIdentity tenantA = identity(
+                "tenant-a", "actor-a", AuthenticatedWorkflowIdentity.Role.OPERATOR);
+        service.execute(tenantA, "project.register-workspace",
+                request(Map.of("workspace_id", "workspace-1")), () -> "created");
+        Path ledger = temp.resolve(".onsure/identity/resource-bindings/ledger.jsonl");
+        Files.writeString(ledger, Files.readString(ledger).replace(
+                "ONSURE_IDENTITY_BOOTSTRAP", "TAMPERED_IDENTITY_BOOTSTRAP"));
+
+        DurableStateLedger.Verification verification = service.verify();
+        assertFalse(verification.valid());
+        assertTrue(verification.violations().contains("LEDGER_EVENT_TAMPERED"));
+        IllegalStateException denied = assertThrows(IllegalStateException.class, () ->
+                service.execute(tenantA, "project.register-workspace",
+                        request(Map.of("workspace_id", "workspace-2")), () -> "must-not-run"));
+        assertTrue(denied.getMessage().startsWith("STATE_LEDGER_INVALID:"));
+    }
+
+    private String claimAfterBarrier(
+            TenantRbacService service,
+            AuthenticatedWorkflowIdentity identity,
+            CountDownLatch ready,
+            CountDownLatch start,
+            String result) throws Exception {
+        ready.countDown();
+        start.await();
+        return service.execute(identity, "project.register-workspace",
+                request(Map.of("workspace_id", "shared-workspace")), () -> result);
     }
 
     private AuthenticatedWorkflowIdentity identity(
