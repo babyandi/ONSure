@@ -49,7 +49,8 @@
 - [x] portable Workflow lineage 계약·실제 artifact/schema/permit digest read-back과 변조 차단
 - [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED` 유지)
 - [x] 검증 전용 OCI sandbox: image pull 금지·immutable ID·network none·read-only rootfs·capability 0,
-  12개 경계 probe와 중립 Node 4차 검증 `PASS_NONFINAL`
+  12개 경계 probe, Java·Maven·Node·npm·ClamAV·Noto CJK capability 및 중립 Node 4차 검증
+  `PASS_NONFINAL`
 - [ ] 제품 플랫폼 종단간 시험 2회
 - [ ] 범용 하네스 독립 실행 2회
 - [x] ONSURE 자체 보증 2회 — 동일 source digest, 각 26개 필수 Step과 안정 의미 판정 일치

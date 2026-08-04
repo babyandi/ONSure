@@ -76,7 +76,7 @@ def main() -> int:
     implementation_items = implementation.get("items", [])
     implementation_ids = {item.get("id") for item in implementation_items}
     if implementation.get("contract") != "ONSURE_IMPLEMENTATION_STATUS_V1" \
-            or implementation.get("version") != "2.2.0":
+            or implementation.get("version") != "2.3.0":
         errors.append("IMPLEMENTATION_STATUS_AUTHORITY_VERSION_STALE")
     if implementation_ids != IMPLEMENTATION_IDS or len(implementation_items) != len(IMPLEMENTATION_IDS):
         errors.append("IMPLEMENTATION_STATUS_ITEM_SET_MISMATCH")
@@ -142,9 +142,12 @@ def main() -> int:
         state = str(remaining_by_id.get(item_id, {}).get("state", ""))
         if not state or any(value in state for value in prohibited):
             errors.append("REMAINING_WORK_STATE_STALE:" + item_id)
+    sandbox_state = str(remaining_by_id.get("P0-SANDBOX-ADVERSARIAL-COVERAGE", {}).get("state", ""))
+    if "12_OF_12_OCI" not in sandbox_state or "6_ENVIRONMENT_CAPABILITIES" not in sandbox_state:
+        errors.append("REMAINING_WORK_SANDBOX_EVIDENCE_STALE")
 
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V22",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V23",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "workflow_operation_authority": WORKFLOW_AUTHORITY,

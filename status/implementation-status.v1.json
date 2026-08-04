@@ -1,7 +1,7 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_STATUS_V1",
-  "version": "2.2.0",
-  "assessment_base_commit": "5ef44b380ad6dff5bb1c612169602f914849a3a0",
+  "version": "2.3.0",
+  "assessment_base_commit": "7d50a05ba479f56e48d33ac0ee4c92f0f28b8829",
   "assessment_date": "2026-08-04",
   "authority": "status/design-capability-coverage.v2.json",
   "items": [
@@ -12,7 +12,8 @@
         "modules/onsure-core/src/main/java/io/onsure/platform/UniversalValidationRunner.java",
         "modules/onsure-core/src/main/java/io/onsure/platform/StandardValidationProfileDetector.java",
         "assurance/runtime/onsure-universal-validation-evidence.v1.json",
-        "assurance/runtime/onsure-self-repeatability.v1.json"
+        "assurance/runtime/onsure-self-repeatability.v1.json",
+        "assurance/runtime/onsure-sandbox-backends.v1.json"
       ],
       "remaining": ["INDEPENDENT_THIRD_PARTY_ASSURANCE_NOT_RUN"]
     },
