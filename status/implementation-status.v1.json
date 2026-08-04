@@ -1,32 +1,143 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_STATUS_V1",
-  "version": "1.1.0",
-  "assessment_origin_commit": "189c7075e33254c9b71bda3e2e9bb2a121337b72",
-  "runtime_source_commit": null,
-  "assessment_date": "2026-07-26",
-  "authority": "status/implementation-matrix.v1.json",
+  "version": "2.0.0",
+  "assessment_base_commit": "15ada1a9b9ff83a87147f9dba818984e4b3ab690",
+  "assessment_date": "2026-08-04",
+  "authority": "status/design-capability-coverage.v2.json",
   "items": [
-    {"id": "VALIDATOR-FIXTURE-ENGINE", "state": "PARTIAL", "evidence": "io.onsure.platform and io.onsure.harness"},
-    {"id": "CORE-ORUDA-ISOLATION", "state": "PARTIAL", "evidence": "Runtime adapter registration separated; compile-time imports and single Maven module remain"},
-    {"id": "FILE-EVIDENCE-STORE", "state": "PARTIAL", "evidence": "modules/onsure-core/src/main/java/io/onsure/platform/FileValidationStore.java"},
-    {"id": "OFFICIAL-LEARNING-LEDGER", "state": "PARTIAL", "evidence": "modules/onsure-core/src/main/java/io/onsure/learning/OfficialLearningLedger.java"},
-    {"id": "RAG-PREPARATION-CONTROL", "state": "PARTIAL", "evidence": "io.onsure.rag"},
-    {"id": "UNATTENDED-RUNNER", "state": "STUB", "evidence": "scripts/onsure-autopilot.py and .vscode/tasks.json"},
-    {"id": "PROGRAM-LEARNING", "state": "STUB", "evidence": "Hash and approval recording without repository understanding"},
-    {"id": "BEHAVIOR-LEARNING", "state": "STUB", "evidence": "Marker scan without repeated behavior observation"},
-    {"id": "OREVIEW", "state": "STUB", "evidence": "Limited marker-based static stage"},
-    {"id": "ATOMIC-TRACEABILITY", "state": "STUB", "evidence": "20 capability groups only; atomic requirements and receipts not mapped"},
-    {"id": "OPLANNING", "state": "DESIGN_ONLY", "evidence": null},
-    {"id": "OIMPROVEMENT-PATCH", "state": "DESIGN_ONLY", "evidence": null},
-    {"id": "VSCODE-EXTENSION", "state": "DESIGN_ONLY", "evidence": null},
-    {"id": "GIT-FULL-CHAIN", "state": "DESIGN_ONLY", "evidence": null},
-    {"id": "WEB-COMMERCE-OLICENSE", "state": "DESIGN_ONLY", "evidence": null}
+    {
+      "id": "VALIDATOR-FIXTURE-ENGINE",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "modules/onsure-core/src/main/java/io/onsure/platform/UniversalValidationRunner.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/StandardValidationProfileDetector.java",
+        "assurance/runtime/onsure-universal-validation-evidence.v1.json"
+      ],
+      "remaining": ["INDEPENDENT_REAL_TARGET_ASSURANCE_NOT_RUN"]
+    },
+    {
+      "id": "CORE-ORUDA-ISOLATION",
+      "state": "IMPLEMENTED_PASS_NONFINAL",
+      "evidence": [
+        "pom-modular.xml",
+        "scripts/check-module-boundaries.py",
+        "assurance/migration/onsure-migration-manifest.v1.json"
+      ],
+      "remaining": []
+    },
+    {
+      "id": "FILE-EVIDENCE-STORE",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "modules/onsure-core/src/main/java/io/onsure/platform/FileValidationStore.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/DurableStateLedger.java"
+      ],
+      "remaining": ["EXTERNAL_IMMUTABLE_LEDGER_ANCHOR_NOT_IMPLEMENTED"]
+    },
+    {
+      "id": "OFFICIAL-LEARNING-LEDGER",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": ["modules/onsure-core/src/main/java/io/onsure/learning/OfficialLearningLedger.java"],
+      "remaining": ["INCREMENTAL_PROFILE_LINEAGE_INCOMPLETE"]
+    },
+    {
+      "id": "RAG-PREPARATION-CONTROL",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": ["modules/onsure-core/src/main/java/io/onsure/rag"],
+      "remaining": ["DIRECT_PRODUCTION_RAG_TELEMETRY_NOT_RUN"]
+    },
+    {
+      "id": "UNATTENDED-RUNNER",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "scripts/onsure-autopilot.py",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ValidationStageCheckpointJournal.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ValidationStageReplayLedger.java"
+      ],
+      "remaining": ["ORPHAN_PROCESS_REATTACHMENT_INCOMPLETE"]
+    },
+    {
+      "id": "PROGRAM-LEARNING",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "modules/onsure-core/src/main/java/io/onsure/platform/ProgramLearningService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/StaticWorkflowInventory.java"
+      ],
+      "remaining": ["INCREMENTAL_PARENT_PROFILE_LINEAGE_NOT_IMPLEMENTED"]
+    },
+    {
+      "id": "BEHAVIOR-LEARNING",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": ["modules/onsure-core/src/main/java/io/onsure/platform/BehaviorLearningService.java"],
+      "remaining": ["DIRECT_PRODUCTION_BEHAVIOR_TELEMETRY_NOT_RUN"]
+    },
+    {
+      "id": "OREVIEW",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": ["modules/onsure-core/src/main/java/io/onsure/platform/OReviewStage.java"],
+      "remaining": ["REAL_TARGET_CAUSAL_REVIEW_NOT_RUN"]
+    },
+    {
+      "id": "ATOMIC-TRACEABILITY",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "contracts/atomic-requirement.v1.schema.json",
+        "contracts/requirements-traceability.v1.json",
+        "status/product-subrequirement-coverage.v1.json"
+      ],
+      "remaining": ["REQUIREMENT_TO_RUNTIME_RECEIPT_RECONCILIATION_INCOMPLETE"]
+    },
+    {
+      "id": "OPLANNING",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java"
+      ],
+      "remaining": ["VSCODE_INTERACTIVE_PARTIAL_APPROVAL_JOURNEY_INCOMPLETE"]
+    },
+    {
+      "id": "OIMPROVEMENT-PATCH",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementProofService.java"
+      ],
+      "remaining": ["REAL_TARGET_CAUSAL_BEFORE_AFTER_NOT_RUN"]
+    },
+    {
+      "id": "VSCODE-EXTENSION",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "vscode-extension/extension.js",
+        "vscode-extension/extension-core.js",
+        "assurance/runtime/vscode-extension-host-e2e.v1.json"
+      ],
+      "remaining": ["INTERACTIVE_APPROVAL_AND_RESTART_FULL_CHAIN_NOT_RUN"]
+    },
+    {
+      "id": "GIT-FULL-CHAIN",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "modules/onsure-core/src/main/java/io/onsure/platform/GitWorkflowService.java",
+        "contracts/draft-pr-receipt.v1.schema.json"
+      ],
+      "remaining": ["PRODUCT_DRIVEN_SIGNED_REMOTE_DELIVERY_FULL_CHAIN_NOT_RUN"]
+    },
+    {
+      "id": "WEB-COMMERCE-OLICENSE",
+      "state": "PARTIAL_PASS_NONFINAL",
+      "evidence": [
+        "modules/onsure-core/src/main/java/io/onsure/platform/ServiceCaseLifecycleService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/LicenseLifecycleService.java"
+      ],
+      "remaining": ["REAL_PAYMENT_REFUND_AND_ENTITLEMENT_PROVIDER_NOT_RUN"]
+    }
   ],
   "summary": {
-    "post_merge_self_audit": "P0_OPEN",
-    "active_issue": 20,
-    "standalone_product_full_chain": "BLOCKED",
-    "formal_execution_current_source": "NOT_RUN",
+    "development_state": "PARTIAL_LOCAL_SELF_VALIDATION_PASS_NONFINAL",
+    "standalone_product_full_chain": "PARTIAL",
+    "formal_execution_current_source": "PASS_NONFINAL_LOCAL_SELF_VALIDATION",
     "independent_assurance": "NOT_RUN",
     "final_lock_allowed": false,
     "production_go": false,

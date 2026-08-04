@@ -128,7 +128,10 @@ embedding SDK는 `StandardValidationProfileDetector(List<ValidationPack>)`으로
 ## 7. 초기 표준 탐지
 
 - `pom.xml`: Maven offline `clean verify`
-- `gradlew` + Gradle build file: Gradle offline `clean test`
+- `gradlew` + Gradle build file: Gradle offline `clean test`, 이름 기반 부정·재시도·차단 경로,
+  `ConnectedWorkflowValidationTest`의 request→produce→read-back→tester→audit→exposure→lineage,
+  `OperationalResilienceValidationTest`의 interruption·resume·rollback·rerun 및 선언된
+  `integrationTest` task
 - `pyproject.toml`, `pytest.ini`, `requirements.txt`, `tests/`: pytest 또는 unittest
 - `package.json`: 선언된 build/test/integration script와 built-in `NodeScriptValidationPack`
 - `openapi.yaml|yml|json`, `contracts/openapi/`의 모든 제품 계약: 계약마다 독립 Step과

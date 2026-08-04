@@ -313,6 +313,64 @@ class StandardValidationProfileDetectorTest {
     }
 
     @Test
+    void gradleValidationConventionsFillFunctionalConnectedAndOperationalFacets() throws Exception {
+        Path root = Files.createDirectory(temp.resolve("gradle-complete"));
+        Path tests = Files.createDirectories(root.resolve("src/test/java/example"));
+        Files.writeString(root.resolve("gradlew"), "#!/usr/bin/env sh\nexit 0\n");
+        Files.writeString(root.resolve("build.gradle.kts"), "tasks.register(\"integrationTest\")\n");
+        Files.writeString(tests.resolve("SecurityAdversarialTest.java"),
+                "class SecurityAdversarialTest { void retryResumeApprovalBoundary() {} }");
+        Files.writeString(tests.resolve("ConnectedWorkflowValidationTest.java"),
+                "class ConnectedWorkflowValidationTest {}");
+        Files.writeString(tests.resolve("OperationalResilienceValidationTest.java"),
+                "class OperationalResilienceValidationTest {}");
+
+        var profile = new StandardValidationProfileDetector().detect("gradle-complete", root);
+
+        assertTrue(profile.technologies().containsAll(Set.of("JAVA", "GRADLE")));
+        for (var kind : List.of(
+                UniversalValidationProfile.StepKind.NEGATIVE_TEST,
+                UniversalValidationProfile.StepKind.RETRY_TEST,
+                UniversalValidationProfile.StepKind.BLOCKING_TEST,
+                UniversalValidationProfile.StepKind.E2E_REQUEST_FLOW,
+                UniversalValidationProfile.StepKind.E2E_RENDER_OR_PRODUCE,
+                UniversalValidationProfile.StepKind.E2E_ARTIFACT_READBACK,
+                UniversalValidationProfile.StepKind.E2E_TESTER_CHECK,
+                UniversalValidationProfile.StepKind.E2E_AUDIT_CHECK,
+                UniversalValidationProfile.StepKind.E2E_EXPOSURE_DECISION,
+                UniversalValidationProfile.StepKind.WORKFLOW_LINEAGE,
+                UniversalValidationProfile.StepKind.INTERRUPTION_TEST,
+                UniversalValidationProfile.StepKind.RESUME_TEST,
+                UniversalValidationProfile.StepKind.ROLLBACK_TEST,
+                UniversalValidationProfile.StepKind.RERUN_TEST,
+                UniversalValidationProfile.StepKind.INTEGRATION_TEST)) {
+            assertTrue(profile.steps().stream().anyMatch(step -> step.kind() == kind), kind.toString());
+        }
+        var negative = profile.steps().stream()
+                .filter(step -> step.stepId().equals("gradle.negative-paths"))
+                .findFirst().orElseThrow();
+        assertEquals(List.of("bash", "gradlew", "--offline", "test", "--tests", "*Negative*",
+                "--tests", "*Failure*", "--tests", "*Adversarial*", "--tests", "*Tamper*",
+                "--tests", "*Invalid*"), negative.command());
+        assertEquals(List.of("gradle.clean-test"), negative.dependsOn());
+        var request = profile.steps().stream()
+                .filter(step -> step.kind() == UniversalValidationProfile.StepKind.E2E_REQUEST_FLOW)
+                .findFirst().orElseThrow();
+        assertEquals(List.of("bash", "gradlew", "--offline", "-Donsure.validation.connected=true",
+                "test", "--tests", "ConnectedWorkflowValidationTest.requestFlow"), request.command());
+        assertTrue(request.dependsOn().containsAll(List.of(
+                "gradle.clean-test", "gradle.negative-paths",
+                "gradle.retry-paths", "gradle.blocking-paths")));
+        var resume = profile.steps().stream()
+                .filter(step -> step.kind() == UniversalValidationProfile.StepKind.RESUME_TEST)
+                .findFirst().orElseThrow();
+        assertEquals(List.of("evidence.verify"), resume.dependsOn());
+        assertEquals(List.of("bash", "gradlew", "--offline", "integrationTest"),
+                profile.steps().stream().filter(step -> step.stepId().equals("gradle.integration"))
+                        .findFirst().orElseThrow().command());
+    }
+
+    @Test
     void pythonValidationConventionsFillConnectedAndOperationalFacetsWithFixedCommands() throws Exception {
         Path tests = Files.createDirectories(temp.resolve("tests"));
         Files.writeString(tests.resolve("__init__.py"), "");

@@ -41,7 +41,9 @@
 - [x] `mvn -B -ntp -q clean verify` 2회
 - [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
 - [x] Public Java API 265개; 기존 259개 변경·삭제 0, 표준 Pack API 6개 추가
-- [x] Python 192개 회귀 테스트
+- [x] Python 199개 회귀 테스트
+- [x] Gradle 표준 Pack의 offline build, 부정·재시도·차단, 연결 E2E, 운영 복구 convention 탐지
+  (실제 외부 Gradle 대상 전체 실행은 `NOT_RUN`)
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
 - [x] portable Workflow lineage 계약·실제 artifact/schema/permit digest read-back과 변조 차단
 - [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED` 유지)

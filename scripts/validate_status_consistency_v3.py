@@ -2,12 +2,20 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import pathlib
 import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WORKFLOW_AUTHORITY = "contracts/workflow-operation-registry.v1.json"
+IMPLEMENTATION_IDS = {
+    "VALIDATOR-FIXTURE-ENGINE", "CORE-ORUDA-ISOLATION", "FILE-EVIDENCE-STORE",
+    "OFFICIAL-LEARNING-LEDGER", "RAG-PREPARATION-CONTROL", "UNATTENDED-RUNNER",
+    "PROGRAM-LEARNING", "BEHAVIOR-LEARNING", "OREVIEW", "ATOMIC-TRACEABILITY",
+    "OPLANNING", "OIMPROVEMENT-PATCH", "VSCODE-EXTENSION", "GIT-FULL-CHAIN",
+    "WEB-COMMERCE-OLICENSE",
+}
 
 
 def load(relative: str):
@@ -64,12 +72,70 @@ def main() -> int:
     if f"— {len(operations)}개 Workflow" not in readme:
         errors.append("README_WORKFLOW_COUNT_MISMATCH")
 
+    implementation = load("status/implementation-status.v1.json")
+    implementation_items = implementation.get("items", [])
+    implementation_ids = {item.get("id") for item in implementation_items}
+    if implementation.get("contract") != "ONSURE_IMPLEMENTATION_STATUS_V1" \
+            or implementation.get("version") != "2.0.0":
+        errors.append("IMPLEMENTATION_STATUS_AUTHORITY_VERSION_STALE")
+    if implementation_ids != IMPLEMENTATION_IDS or len(implementation_items) != len(IMPLEMENTATION_IDS):
+        errors.append("IMPLEMENTATION_STATUS_ITEM_SET_MISMATCH")
+    for item in implementation_items:
+        if item.get("state") not in {"PARTIAL_PASS_NONFINAL", "IMPLEMENTED_PASS_NONFINAL"}:
+            errors.append("IMPLEMENTATION_STATUS_STATE_INVALID:" + str(item.get("id")))
+        for relative in item.get("evidence", []):
+            if not isinstance(relative, str) or not (ROOT / relative).exists():
+                errors.append("IMPLEMENTATION_STATUS_EVIDENCE_MISSING:" + str(item.get("id"))
+                              + ":" + str(relative))
+    summary = implementation.get("summary", {})
+    if summary.get("independent_assurance") != "NOT_RUN" \
+            or any(summary.get(field) is not False
+                   for field in ("final_lock_allowed", "production_go", "commercial_go")):
+        errors.append("IMPLEMENTATION_STATUS_UNSAFE_ASSURANCE")
+
+    completion = (ROOT / "docs/development/ONSURE_COMPLETION_CHECKLIST_v1.md").read_text(
+        encoding="utf-8")
+    for expected in ("Java 346개", "Python 199개", "Node 10"):
+        if expected not in (readme + "\n" + completion):
+            errors.append("COMPLETION_COUNT_STALE:" + expected)
+    gradle_source = (ROOT / "modules/onsure-core/src/main/java/io/onsure/platform/GradleValidationPack.java") \
+        .read_text(encoding="utf-8")
+    for token in ("negative-paths", "gradle.connected-", "gradle.operations-", "integrationTest"):
+        if token not in gradle_source:
+            errors.append("GRADLE_STANDARD_PACK_FACET_MISSING:" + token)
+
+    vscode_evidence = load("assurance/runtime/vscode-extension-host-e2e.v1.json")
+    claimed_payload = vscode_evidence.pop("evidence_payload_sha256", None)
+    actual_payload = hashlib.sha256(json.dumps(
+        vscode_evidence, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    if claimed_payload != actual_payload or vscode_evidence.get("decision") != "PASS_NONFINAL":
+        errors.append("VSCODE_EXTENSION_HOST_EVIDENCE_INVALID")
+    for relative, digest in vscode_evidence.get("source_file_sha256", {}).items():
+        file = ROOT / relative
+        if not file.is_file() or hashlib.sha256(file.read_bytes()).hexdigest() != digest:
+            errors.append("VSCODE_EXTENSION_HOST_SOURCE_BINDING_INVALID:" + str(relative))
+    remaining_by_id = {item.get("id"): item for item in remaining.get("items", [])}
+    stale_states = {
+        "P0-VSCODE-LOCAL-API": ("PREVIOUS_HEAD", "EXTENSION_HOST_NOT_RUN"),
+        "P0-PUBLIC-SDK": ("STUB",),
+        "P0-TENANT-IDENTITY": ("STUB",),
+        "P1-PERFORMANCE-RECOVERY": ("DESIGN_ONLY",),
+        "P1-OBSERVABILITY-OPERATIONS": ("DESIGN_ONLY",),
+        "P1-DEPLOYMENT": ("DESIGN_ONLY",),
+    }
+    for item_id, prohibited in stale_states.items():
+        state = str(remaining_by_id.get(item_id, {}).get("state", ""))
+        if not state or any(value in state for value in prohibited):
+            errors.append("REMAINING_WORK_STATE_STALE:" + item_id)
+
     report = {
-        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V16",
+        "contract": "ONSURE_STATUS_CONSISTENCY_REPORT_V17",
         "decision": "PASS" if not errors else "FAIL",
         "errors": sorted(set(errors)),
         "workflow_operation_authority": WORKFLOW_AUTHORITY,
         "workflow_operation_count": len(operations),
+        "implementation_status_item_count": len(implementation_items),
+        "vscode_extension_host_evidence_payload_sha256": claimed_payload,
         "mvp_acceptance_items": len(load("status/mvp-acceptance-coverage.v1.json").get("acceptance_items", [])),
         "final_claim_allowed": False,
     }
