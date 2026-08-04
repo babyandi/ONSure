@@ -111,6 +111,11 @@ build:
   bubblewrap_environment_diagnostic:
     command: python3 scripts/onsure_bubblewrap_diagnostics.py
     github_actions_required: false
+  sandbox_backend_diagnostic:
+    command: python3 scripts/onsure_sandbox_diagnostics.py
+    local_oci_only: true
+    changes_deployment_topology: false
+    github_actions_required: false
   nested_root_rehearsal:
     command: python3 scripts/rehearse_onsure_nested_root.py --mode full
 product_root:

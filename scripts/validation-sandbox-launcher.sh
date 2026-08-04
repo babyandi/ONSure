@@ -13,6 +13,15 @@ ONSURE_TIMEOUT_SECONDS="$2"
 ONSURE_SANDBOX_WORKDIR="/""workspace"
 shift 2
 
+ONSURE_SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+ONSURE_BACKEND_HELPER="$ONSURE_SCRIPT_ROOT/onsure-sandbox-backend.sh"
+[[ -f "$ONSURE_BACKEND_HELPER" && ! -L "$ONSURE_BACKEND_HELPER" ]] || {
+  echo 'ONSURE_VALIDATION_SANDBOX_FAIL BACKEND_HELPER_MISSING' >&2
+  exit 69
+}
+# shellcheck source=onsure-sandbox-backend.sh
+source "$ONSURE_BACKEND_HELPER"
+
 [[ "$ONSURE_TIMEOUT_SECONDS" =~ ^[0-9]+$ \
   && "$ONSURE_TIMEOUT_SECONDS" -ge 1 \
   && "$ONSURE_TIMEOUT_SECONDS" -le 7200 ]] || {
@@ -20,7 +29,7 @@ shift 2
   exit 64
 }
 
-for required_command in bwrap prlimit timeout bash env mktemp readlink dirname; do
+for required_command in prlimit timeout bash env mktemp readlink dirname; do
   command -v "$required_command" >/dev/null 2>&1 || {
     echo "ONSURE_VALIDATION_SANDBOX_FAIL MISSING_COMMAND_${required_command}" >&2
     exit 69
@@ -72,6 +81,98 @@ for argument in "$@"; do
     exit 65
   }
 done
+
+ONSURE_REQUESTED_BACKEND="${ONSURE_VALIDATION_SANDBOX_BACKEND:-AUTO}"
+onsure_select_sandbox_backend "$ONSURE_REQUESTED_BACKEND" || {
+  onsure_sandbox_backend_cleanup
+  echo "ONSURE_VALIDATION_SANDBOX_FAIL BACKEND_UNAVAILABLE_$ONSURE_REQUESTED_BACKEND" >&2
+  exit 69
+}
+ONSURE_SELECTED_BACKEND="$ONSURE_SELECTED_SANDBOX_BACKEND"
+
+if [[ "$ONSURE_SELECTED_BACKEND" == 'OCI_DOCKER' ]]; then
+  trap onsure_sandbox_backend_cleanup EXIT
+  for required_command in docker id; do
+    command -v "$required_command" >/dev/null 2>&1 || {
+      onsure_sandbox_backend_cleanup
+      echo "ONSURE_VALIDATION_SANDBOX_FAIL MISSING_COMMAND_$required_command" >&2
+      exit 69
+    }
+  done
+  [[ "$ONSURE_SNAPSHOT_ROOT" != *','* && "$ONSURE_SNAPSHOT_ROOT" != *':'* \
+      && "$ONSURE_SNAPSHOT_ROOT" != *$'\n'* ]] || {
+    echo 'ONSURE_VALIDATION_SANDBOX_FAIL OCI_MOUNT_PATH_UNSUPPORTED' >&2
+    exit 65
+  }
+  mkdir -p "$ONSURE_SNAPSHOT_ROOT/.onsure-sandbox-home"
+  ONSURE_CONTAINER_NAME="onsure-validation-${UID}-$$-${RANDOM}"
+  ONSURE_OCI_MOUNTS=(--mount "type=bind,src=$ONSURE_SNAPSHOT_ROOT,dst=$ONSURE_SANDBOX_WORKDIR")
+  if [[ -n "${ONSURE_MAVEN_CACHE:-}" && -d "${ONSURE_MAVEN_CACHE}" \
+      && ! -L "${ONSURE_MAVEN_CACHE}" && "${ONSURE_MAVEN_CACHE}" != *','* \
+      && "${ONSURE_MAVEN_CACHE}" != *':'* ]]; then
+    ONSURE_OCI_MOUNTS+=(--mount "type=bind,src=${ONSURE_MAVEN_CACHE},dst=/onsure-cache/m2,readonly")
+  fi
+  if [[ -n "${ONSURE_NPM_CACHE:-}" && -d "${ONSURE_NPM_CACHE}" \
+      && ! -L "${ONSURE_NPM_CACHE}" && "${ONSURE_NPM_CACHE}" != *','* \
+      && "${ONSURE_NPM_CACHE}" != *':'* ]]; then
+    ONSURE_OCI_MOUNTS+=(--mount "type=bind,src=${ONSURE_NPM_CACHE},dst=/onsure-cache/npm,readonly")
+  fi
+  cleanup_oci() {
+    docker rm -f "$ONSURE_CONTAINER_NAME" >/dev/null 2>&1 || true
+    onsure_sandbox_backend_cleanup
+  }
+  trap cleanup_oci EXIT
+  set +e
+  timeout --signal=KILL --kill-after=2s "${ONSURE_TIMEOUT_SECONDS}s" \
+    docker run --rm --pull never \
+      --name "$ONSURE_CONTAINER_NAME" \
+      --label io.onsure.sandbox=validation \
+      --init \
+      --network none \
+      --read-only \
+      --cap-drop ALL \
+      --security-opt no-new-privileges:true \
+      --security-opt apparmor=docker-default \
+      --user "$(id -u):$(id -g)" \
+      --pids-limit 128 \
+      --memory 8589934592 --memory-swap 8589934592 \
+      --cpus 4 \
+      --ulimit nofile=512:512 \
+      --ulimit fsize=536870912:536870912 \
+      --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=536870912,mode=1777,uid=$(id -u),gid=$(id -g)" \
+      "${ONSURE_OCI_MOUNTS[@]}" \
+      --workdir "$ONSURE_SANDBOX_WORKDIR" \
+      --env PATH=/opt/java/openjdk/bin:/usr/local/bin:/usr/bin:/bin \
+      --env "HOME=$ONSURE_SANDBOX_WORKDIR/.onsure-sandbox-home" \
+      --env TMPDIR=/tmp \
+      --env LANG=C.UTF-8 \
+      --env LC_ALL=C.UTF-8 \
+      --env MAVEN_OPTS=-Dmaven.repo.local=/onsure-cache/m2 \
+      --env npm_config_cache=/onsure-cache/npm \
+      --env npm_config_logs_dir=/tmp/npm-logs \
+      --env npm_config_update_notifier=false \
+      --env npm_config_audit=false \
+      --env npm_config_fund=false \
+      --entrypoint /usr/bin/prlimit \
+      "$ONSURE_SANDBOX_OCI_IMAGE_ID" \
+        --cpu="$ONSURE_TIMEOUT_SECONDS" \
+        --as=8589934592 \
+        --nofile=512 \
+        --fsize=536870912 \
+        -- \
+        "$@"
+  status=$?
+  set -e
+  if [[ $status -eq 0 && "${ONSURE_SANDBOX_PROBE:-}" == '1' ]]; then
+    echo "ONSURE_VALIDATION_SANDBOX_BACKEND OCI_DOCKER $ONSURE_SANDBOX_OCI_IMAGE_ID"
+  fi
+  exit "$status"
+fi
+
+command -v bwrap >/dev/null 2>&1 || {
+  echo 'ONSURE_VALIDATION_SANDBOX_FAIL MISSING_COMMAND_bwrap' >&2
+  exit 69
+}
 
 ONSURE_EMPTY_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/onsure-validation-root.XXXXXX")"
 cleanup() {
@@ -154,4 +255,7 @@ timeout --signal=KILL --kill-after=2s "${ONSURE_TIMEOUT_SECONDS}s" \
       "$@"
 status=$?
 set -e
+if [[ $status -eq 0 && "${ONSURE_SANDBOX_PROBE:-}" == '1' ]]; then
+  echo 'ONSURE_VALIDATION_SANDBOX_BACKEND ROOTLESS_BWRAP'
+fi
 exit "$status"

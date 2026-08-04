@@ -49,6 +49,12 @@ case "${1:-}" in
     link_status=$?
     set -e
     if [[ $link_status -eq 0 ]]; then
+      if [[ "${ONSURE_SANDBOX_BACKEND_ACTUAL:-}" == 'OCI_DOCKER' \
+          && -n "${ONSURE_HOST_PASSWD_SHA256:-}" \
+          && "$(sha256sum escape-link | awk '{print $1}')" != "$ONSURE_HOST_PASSWD_SHA256" ]]; then
+        echo 'SYMLINK_ESCAPE_BLOCKED runtime_root_isolated=true'
+        exit 0
+      fi
       echo 'SYMLINK_ESCAPE_ALLOWED'
       exit 1
     fi
@@ -79,14 +85,26 @@ case "${1:-}" in
     nofile="$(ulimit -n)"
     fsize="$(ulimit -f)"
     nproc="$(ulimit -u)"
+    pids_max="$(cat /sys/fs/cgroup/pids.max 2>/dev/null || printf 'max')"
     vmem="$(ulimit -v)"
+    memory_max="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || printf 'max')"
     cpu="$(ulimit -t)"
     [[ "$nofile" -le 256 ]]
     [[ "$fsize" -le 2048 ]]
-    [[ "$nproc" -le 64 ]]
-    [[ "$vmem" -le 8388608 ]]
+    if [[ "$nproc" =~ ^[0-9]+$ ]]; then
+      (( nproc <= 64 ))
+    else
+      [[ "$pids_max" =~ ^[0-9]+$ ]]
+      (( pids_max <= 64 ))
+    fi
+    if [[ "$vmem" =~ ^[0-9]+$ ]]; then
+      (( vmem <= 8388608 ))
+    else
+      [[ "$memory_max" =~ ^[0-9]+$ ]]
+      (( memory_max <= 8589934592 ))
+    fi
     [[ "$cpu" -le 300 ]]
-    echo "RESOURCE_LIMITS_ENFORCED nofile=$nofile fsize=$fsize nproc=$nproc vmem=$vmem cpu=$cpu"
+    echo "RESOURCE_LIMITS_ENFORCED nofile=$nofile fsize=$fsize nproc=$nproc pids_max=$pids_max vmem=$vmem memory_max=$memory_max cpu=$cpu"
     ;;
   timeout)
     sleep 30

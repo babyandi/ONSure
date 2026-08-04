@@ -227,16 +227,18 @@ Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational bou
 `c982d0269107ef174bf380f728ce112504a67f605da5a69bb238f187bc2dfb5d`를 생성했다.
 Manifest 후보는 기존 668개 기준선에서 신규 구현을 포함한 854개로 확장됐다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
-전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을
-거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖
-canonical build에서 318/318을 통과한다. 중립 Node Fixture의 정상·실패·재시도·차단·E2E·복구
-17개 script와 Node 생성 lineage receipt의 Java read-back은 호스트에서 통과했고, artifact 변조는
-종료 코드 2로 차단했다. 실제 Runner 격리 판정은 같은 AppArmor 제한 때문에 `BLOCKED`다.
+현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는
+이 실패를 약화하지 않고, 로컬에 이미 존재하는 검증 이미지가 있을 때만 immutable image ID로
+고정한 `OCI_DOCKER` backend를 선택한다. 이 backend는 image pull·network·host 원본 mount를
+금지하고 read-only rootfs, capability 0, no-new-privileges, AppArmor/seccomp, PID·CPU·memory·timeout
+한도를 적용한다. 12개 sandbox boundary probe와 중립 Node Fixture의 정상·실패·재시도·차단·
+E2E·복구 17개 script, portable lineage read-back이 이 격리 경로에서 `PASS_NONFINAL`이다.
+Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
 VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
 실행됐지만 MVP Full-Chain, 독립 OTester/OAudit와 Human Acceptance는 아직 실행되지 않았다.
 
 ```text
-Assurance      SELF_VALIDATION_NONFINAL / HOST_SANDBOX_BLOCKED
+Assurance      SELF_VALIDATION_NONFINAL / LOCAL_OCI_SANDBOX
 MVP Full-Chain NOT_RUN
 FinalLock      false
 Production GO  false

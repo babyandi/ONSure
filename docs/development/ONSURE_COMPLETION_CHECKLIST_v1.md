@@ -3,10 +3,11 @@
 ## 구현 상태
 
 - [ ] ONSURE 제품 핵심부 — `PARTIAL`
-- [ ] 범용 검증 엔진 — `PARTIAL`; 4개 보증 수준·7개 순차 검증군·Pack SPI·격리 Runner 구현, sandbox 실제 실행 차단
+- [ ] 범용 검증 엔진 — `PARTIAL`; 4개 보증 수준·7개 순차 검증군·Pack SPI·격리 Runner와
+  검증 전용 OCI fallback 실제 실행 완료, 독립 대상·감사 미완료
 - [ ] 검증 대상 등록소와 대상 어댑터 — `PARTIAL`; 등록 source의 `validation_mode=UNIVERSAL`과 Manifest 비의존 언어 탐지 구현, binary/package intake 미완료
-- [ ] 일반 프로그램 종단간 시험 대상 — 중립 Node 17개 host script와 portable lineage Java read-back
-  `PASS_NONFINAL`, artifact 변조 차단 `FAIL`, ONSure sandbox 실행 `BLOCKED_ENVIRONMENT`
+- [x] 일반 프로그램 종단간 시험 대상 — 중립 Node 17개 script와 portable lineage Java read-back을
+  OCI sandbox에서 전 7개 검증군 `PASS_NONFINAL`, artifact 변조 차단 `FAIL`
 - [ ] AI 프로그램 종단간 시험 대상 — `NOT_RUN_REAL_TARGET`
 - [ ] 실패 유형·근본원인분석·개선 계획 — `PARTIAL`; 인과 재현과 실제 Patch 전후 입증 미완료
 - [x] 시험 데이터·하네스·오라클 등록 골격
@@ -43,7 +44,9 @@
 - [x] Python 176개 회귀 테스트
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
 - [x] portable Workflow lineage 계약·실제 artifact/schema/permit digest read-back과 변조 차단
-- [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED`)
+- [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED` 유지)
+- [x] 검증 전용 OCI sandbox: image pull 금지·immutable ID·network none·read-only rootfs·capability 0,
+  12개 경계 probe와 중립 Node 4차 검증 `PASS_NONFINAL`
 - [ ] 제품 플랫폼 종단간 시험 2회
 - [ ] 범용 하네스 독립 실행 2회
 - [ ] ONSURE 자체 보증 2회
@@ -67,7 +70,7 @@
 최종 후보 조건을 충족해도 최종 잠금은 자동 허용하지 않는다. 별도 승인·독립 감사·최종 영수증 검증이 필요하다.
 
 ```text
-현재 개발 상태      PARTIAL_HOST_SANDBOX_BLOCKED
+현재 개발 상태      PARTIAL_LOCAL_OCI_SANDBOX_PASS
 개발 관문           HOLD
 최종 후보           BLOCKED
 최종 잠금           NOT_ALLOWED

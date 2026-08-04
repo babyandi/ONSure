@@ -73,6 +73,13 @@ def validate_documents(
         violations.append("BUBBLEWRAP_DIAGNOSTIC_COMMAND_DRIFT")
     if diagnostic.get("github_actions_required") is not False:
         violations.append("BUBBLEWRAP_GITHUB_ACTIONS_BOUNDARY")
+    sandbox_diagnostic = product_build.get("sandbox_backend_diagnostic", {})
+    if sandbox_diagnostic.get("command") != "python3 scripts/onsure_sandbox_diagnostics.py":
+        violations.append("SANDBOX_BACKEND_DIAGNOSTIC_COMMAND_DRIFT")
+    if sandbox_diagnostic.get("local_oci_only") is not True \
+            or sandbox_diagnostic.get("changes_deployment_topology") is not False \
+            or sandbox_diagnostic.get("github_actions_required") is not False:
+        violations.append("SANDBOX_BACKEND_DIAGNOSTIC_BOUNDARY")
 
     release = product.get("release", {})
     for key in ("production_go", "commercial_go", "final_pass"):

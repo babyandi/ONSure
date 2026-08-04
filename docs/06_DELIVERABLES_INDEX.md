@@ -194,7 +194,9 @@ bash scripts/onsure-one-shot.sh --profile oruda
 
 - Standalone product Full-Chain: `BLOCKED`
 - Current source canonical execution: `PASS_NONFINAL`
-- Full sandbox execution: `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED`
+- Rootless bubblewrap: `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED`
+- Local OCI validation fallback: `PASS_NONFINAL`; immutable local image, network none, read-only
+  rootfs, capability 0. 배포 topology와 Production authority는 변경하지 않음
 - Independent OTester/OAudit: `NOT_RUN`
 - FinalLock: `false`
 - Production GO: `false`

@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public final class FixtureHarness {
     private static final Set<String> ALLOWED_EXECUTABLES = Set.of("bash");
     private static final Set<String> ALLOWED_SANDBOX_BACKENDS = Set.of(
-            "ROOTLESS_BWRAP", "CI_SUDO_UNSHARE_BWRAP");
+            "AUTO", "ROOTLESS_BWRAP", "OCI_DOCKER", "CI_SUDO_UNSHARE_BWRAP");
     private static final int MAX_ARGUMENTS = 64;
     private static final int MAX_COMMAND_CHARACTERS = 8192;
     private static final int MAX_OUTPUT_BYTES = 65_536;
@@ -75,7 +75,7 @@ public final class FixtureHarness {
     }
 
     public static String sandboxBackend() {
-        return System.getenv().getOrDefault(SANDBOX_BACKEND_ENV, "ROOTLESS_BWRAP");
+        return System.getenv().getOrDefault(SANDBOX_BACKEND_ENV, "AUTO");
     }
 
     public void register(Oracle oracle) {
