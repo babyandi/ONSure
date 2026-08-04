@@ -10,7 +10,12 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
+def git_metadata_available() -> bool:
+    return (ROOT / ".git").exists()
+
+
 class RepositoryContractsTest(unittest.TestCase):
+    @unittest.skipUnless(git_metadata_available(), "repository contract needs Git index metadata")
     def test_repository_contracts_are_self_consistent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             report = pathlib.Path(directory) / "report.json"

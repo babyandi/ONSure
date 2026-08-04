@@ -167,9 +167,11 @@ class ValidationPlatformE2ETest {
             ValidationEngine.RunResult result, boolean ai, Decision expectedReview) {
         for (String stageId : Set.of(
                 "PROGRAM_LEARNING", "RISK_BASED_EXECUTION_PLANNING",
-                "EVIDENCE_BASED_RCA", "PATCH_PLANNING")) {
+                "EVIDENCE_BASED_RCA")) {
             assertEquals(Decision.PASS, stage(result, stageId).decision(), stageId);
         }
+        assertEquals(gitMetadataAvailable() ? Decision.PASS : Decision.HOLD,
+                stage(result, "PATCH_PLANNING").decision(), "PATCH_PLANNING");
         assertEquals(expectedReview, stage(result, "OREVIEW").decision());
         if (ai) assertEquals(Decision.PASS, stage(result, "BEHAVIOR_LEARNING").decision());
         assertEquals("PROFILE_CANDIDATE", result.report().summary().get("program_profile_state"));
@@ -179,6 +181,10 @@ class ValidationPlatformE2ETest {
                 .matches("[0-9a-f]{64}"));
         assertFalse(result.report().summary().get("review_id").equals("NOT_RUN"));
         assertFalse(result.report().summary().get("patch_plan_id").equals("NOT_RUN"));
+    }
+
+    private static boolean gitMetadataAvailable() {
+        return Files.exists(Path.of(".git"));
     }
 
     private static StageResult stage(ValidationEngine.RunResult result, String id) {

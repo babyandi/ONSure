@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Shared fail-closed backend selection for ONSure validation sandboxes.
 
-ONSURE_SANDBOX_DEFAULT_OCI_IMAGE='onsure-goal-validator:node20'
+ONSURE_SANDBOX_DEFAULT_OCI_IMAGE='onsure-validation-runtime:java17-node20-v1'
 
 onsure_bwrap_probe() {
   command -v bwrap >/dev/null 2>&1 || return 1

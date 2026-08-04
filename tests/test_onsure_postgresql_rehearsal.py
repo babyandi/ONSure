@@ -70,6 +70,8 @@ class ONSurePostgresqlRehearsalTest(unittest.TestCase):
         self.assertNotEqual(digest, rehearsal.receipt_digest(receipt))
 
     def test_source_commit_is_full_sha(self):
+        if not (ROOT / ".git").exists():
+            self.skipTest("source commit evidence requires Git metadata")
         self.assertRegex(rehearsal.source_commit(), r"^[0-9a-f]{40}$")
 
 

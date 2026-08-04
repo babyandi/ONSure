@@ -82,7 +82,9 @@ Rollback은 `sudo apparmor_parser -R /etc/apparmor.d/usr.bin.bwrap-onsure` 후 �
 - PID·CPU·memory·nofile·fsize·wall-clock limit과 종료 시 container 강제 제거
 - host 환경은 전달하지 않고 build cache와 `ONSURE_FIXTURE_*` allowlist만 사용
 
-기본 offline image 이름은 `onsure-goal-validator:node20`이다. 다른 image는
+기본 offline image 이름은 `onsure-validation-runtime:java17-node20-v1`이다. 이 image는
+`scripts/build-onsure-validation-image.sh`가 로컬 base image를 immutable ID로 결속해 만들며,
+ONSure 자체 Python 검증에 필요한 고정 PyYAML/jsonschema 패키지를 포함한다. 다른 image는
 `ONSURE_VALIDATION_OCI_IMAGE`로 지정할 수 있지만 immutable local ID로 해석되지 않으면 거부한다.
 
 ## 권장 실행 위치

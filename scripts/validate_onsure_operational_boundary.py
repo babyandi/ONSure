@@ -340,6 +340,8 @@ def validate_sandbox_evidence_body(
         "scripts/validation-sandbox-launcher.sh",
         "scripts/test-fixture-sandbox-boundary.sh",
         "fixtures/sandbox-boundary/sandbox-boundary-runner.sh",
+        "deploy/validation/Dockerfile",
+        "scripts/build-onsure-validation-image.sh",
     )
     if not isinstance(bindings, dict) or set(bindings) != set(required_bindings):
         violations.append("SANDBOX_EVIDENCE_SOURCE_BINDING_SET")
@@ -705,6 +707,8 @@ def validate() -> dict[str, object]:
         "docs/operations/ONSURE_BUBBLEWRAP_EXECUTION_ENVIRONMENT_v1.md",
         "scripts/onsure_bubblewrap_diagnostics.py",
         "scripts/onsure_sandbox_diagnostics.py",
+        "scripts/build-onsure-validation-image.sh",
+        "deploy/validation/Dockerfile",
         "assurance/runtime/onsure-sandbox-backends.v1.json",
         "scripts/package_onsure_rhel.sh",
         "scripts/package_onsure_systemd.sh",

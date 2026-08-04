@@ -26,6 +26,8 @@ BOUND_FILES = (
     "scripts/validation-sandbox-launcher.sh",
     "scripts/test-fixture-sandbox-boundary.sh",
     "fixtures/sandbox-boundary/sandbox-boundary-runner.sh",
+    "deploy/validation/Dockerfile",
+    "scripts/build-onsure-validation-image.sh",
 )
 
 
@@ -83,7 +85,9 @@ def bwrap_diagnostic() -> dict[str, object]:
 
 
 def oci_diagnostic() -> dict[str, object]:
-    image = os.environ.get("ONSURE_VALIDATION_OCI_IMAGE", "onsure-goal-validator:node20")
+    image = os.environ.get(
+        "ONSURE_VALIDATION_OCI_IMAGE", "onsure-validation-runtime:java17-node20-v1"
+    )
     if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]{0,254}", image) is None:
         return {
             "decision": "BLOCKED_ENVIRONMENT",

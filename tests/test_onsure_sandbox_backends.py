@@ -71,7 +71,7 @@ onsure_sandbox_backend_cleanup
         if shutil.which("docker") is None:
             self.skipTest("Docker is an optional validation backend")
         image = subprocess.run(
-            ["docker", "image", "inspect", "onsure-goal-validator:node20"],
+            ["docker", "image", "inspect", "onsure-validation-runtime:java17-node20-v1"],
             cwd=ROOT, capture_output=True, check=False,
         )
         if image.returncode != 0:
