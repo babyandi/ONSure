@@ -102,7 +102,7 @@ migration:
   open_pr_overlap: assurance/migration/onsure-open-pr-overlap.v1.json
   merge_order_must_be_clear: true
 release:
-  deployment: RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_NONFINAL
+  deployment: UBUNTU_SYSTEMD_PRIMARY_RHEL_COMPATIBILITY_CANDIDATE_NONFINAL
   production_go: false
   commercial_go: false
   final_pass: false

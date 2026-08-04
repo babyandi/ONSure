@@ -1,10 +1,11 @@
-# ONSure RHEL/Ubuntu 배포·PostgreSQL Migration 설계 v1
+# ONSure Ubuntu 배포·PostgreSQL Migration 설계 v1
 
 상태: `CANDIDATE_IMPLEMENTED / PREPARATION_ONLY / NONFINAL`
 
 ## 선택된 후보
 
-- OS/topology: RHEL 계열 또는 Ubuntu 24.04 LTS 단독 서버, systemd
+- OS/topology: Ubuntu 24.04 LTS 단독 서버, systemd
+- compatibility candidate: RHEL 계열 정의는 보존하되 선택된 운영 대상이 아님
 - Java: 17
 - API: ONSure Local API, `127.0.0.1:47311` 기본값
 - DB: 같은 서버의 loopback PostgreSQL, `onsure` database/schema/user
@@ -48,15 +49,13 @@ backup/restore 승인, 배포판 package 조합 인증을 대신하지 않는다
 ```bash
 mvn -B -ntp -q clean verify
 mvn -B -ntp -q -f pom-modular.xml clean package
-bash scripts/package_onsure_rhel.sh
 bash scripts/package_onsure_ubuntu.sh
-python3 scripts/validate_onsure_rhel_package.py
 python3 scripts/validate_onsure_ubuntu_package.py
 python3 scripts/validate_onsure_operational_boundary.py
 python3 scripts/onsure_deploy_migration_skeleton.py preflight
 python3 scripts/rehearse_onsure_postgresql.py
 ```
 
-위 명령은 build/package/preflight다. RHEL/Ubuntu install, SELinux/AppArmor·firewall 변경,
+위 명령은 build/package/preflight다. Ubuntu Production install, AppArmor·firewall 변경,
 PostgreSQL 초기화·migrate, OpenAI 실호출, systemd enable/start, 운영 backup/restore와 rollback은
 별도 운영 승인 전 `NOT_RUN`이다.

@@ -35,6 +35,8 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
             "RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_IMPLEMENTED",
             result["deployment_runtime_status"],
         )
+        boundary, _, _ = self.documents()
+        self.assertEqual("UBUNTU_24_04_LTS", boundary["deployment"]["target_os"])
         self.assertEqual("POSTGRESQL_FLYWAY_CANDIDATE_IMPLEMENTED", result["database_migration_component_status"])
         self.assertFalse(result["github_actions_used"])
         self.assertFalse(result["final_claim_allowed"])

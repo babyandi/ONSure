@@ -42,20 +42,20 @@ def validate_plans(deployment: dict[str, object], migration: dict[str, object]) 
     if deployment.get("install_command") != "NOT_AUTHORIZED" \
             or deployment.get("rollback_command") != "NOT_AUTHORIZED":
         violations.append("DEPLOYMENT_COMMAND_AUTHORITY")
-    if deployment.get("target_os") != "RHEL_FAMILY" \
+    if deployment.get("target_os") != "UBUNTU_24_04_LTS" \
             or deployment.get("topology") != "SINGLE_STANDALONE_SERVER" \
             or deployment.get("container_image") != "NOT_USED" \
             or deployment.get("orchestrator") != "SYSTEMD":
-        violations.append("DEPLOYMENT_RHEL_SYSTEMD_TOPOLOGY")
-    if deployment.get("package_command") != "bash scripts/package_onsure_rhel.sh":
+        violations.append("DEPLOYMENT_UBUNTU_SYSTEMD_TOPOLOGY")
+    if deployment.get("package_command") != "bash scripts/package_onsure_ubuntu.sh":
         violations.append("DEPLOYMENT_PACKAGE_COMMAND")
-    if deployment.get("package_validation") != "python3 scripts/validate_onsure_rhel_package.py" \
+    if deployment.get("package_validation") != "python3 scripts/validate_onsure_ubuntu_package.py" \
             or deployment.get("package_validation_evidence") \
-            != "assurance/runtime/onsure-rhel-package-validation.v1.json" \
+            != "assurance/runtime/onsure-ubuntu-package-validation.v1.json" \
             or deployment.get("systemd_security_validation") \
-            != "python3 scripts/onsure_systemd_security.py" \
+            != "python3 scripts/onsure_ubuntu_systemd_security.py" \
             or deployment.get("systemd_security_evidence") \
-            != "assurance/runtime/onsure-rhel-systemd-security.v1.json":
+            != "assurance/runtime/onsure-ubuntu-systemd-security.v1.json":
         violations.append("DEPLOYMENT_VALIDATION_EVIDENCE")
 
     if migration.get("contract") != "ONSURE_DATABASE_MIGRATION_EXECUTION_SKELETON_V1":

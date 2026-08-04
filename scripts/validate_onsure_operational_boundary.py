@@ -314,12 +314,12 @@ def validate_documents(
         violations.append("SECRET_REPOSITORY_BOUNDARY")
     if deployment.get("rollback_required") is not True:
         violations.append("DEPLOYMENT_ROLLBACK_REQUIRED")
-    if deployment.get("target_os") != "RHEL_FAMILY" \
+    if deployment.get("target_os") != "UBUNTU_24_04_LTS" \
             or deployment.get("container_image") != "NOT_USED" \
             or deployment.get("orchestrator") != "SYSTEMD":
-        violations.append("DEPLOYMENT_RHEL_SYSTEMD_SELECTION")
+        violations.append("DEPLOYMENT_UBUNTU_SYSTEMD_SELECTION")
     if deployment.get("supported_candidate_operating_systems") \
-            != ["RHEL_FAMILY", "UBUNTU_24_04_LTS"]:
+            != ["UBUNTU_24_04_LTS", "RHEL_FAMILY"]:
         violations.append("DEPLOYMENT_SUPPORTED_OS_SELECTION")
 
     migration = boundary.get("database_migration", {})
@@ -354,7 +354,7 @@ def validate_documents(
     if product_components.get("migration", {}).get("status") != "IMPLEMENTED_CANDIDATE_NONFINAL":
         violations.append("PRODUCT_MIGRATION_STATUS_DRIFT")
     if product.get("release", {}).get("deployment") \
-            != "RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_NONFINAL":
+            != "UBUNTU_SYSTEMD_PRIMARY_RHEL_COMPATIBILITY_CANDIDATE_NONFINAL":
         violations.append("PRODUCT_DEPLOYMENT_STATUS_DRIFT")
 
     command = "python3 scripts/validate_onsure_operational_boundary.py"

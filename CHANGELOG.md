@@ -69,6 +69,8 @@
 
 ### Changed
 
+- canonical standalone deployment target를 Ubuntu 24.04 LTS/systemd로 확정하고 RHEL 정의는
+  compatibility candidate로 유지한다.
 - `onsure-core`와 `onsure-adapter-oruda`를 module-owned source root로 물리 분리하고
   canonical 단일 artifact, `io.onsure` namespace와 공개 API 240/240을 유지한다.
 - ValidationEngine resume가 replay-ledger digest 위변조도 명시적으로 거부하도록 회귀시험을 보강한다.

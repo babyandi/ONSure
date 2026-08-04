@@ -25,6 +25,9 @@ class ONSureDeployMigrationSkeletonTest(unittest.TestCase):
         self.assertEqual("NOT_RUN_NOT_AUTHORIZED", result["deployment_execution"])
         self.assertEqual("NOT_RUN_NOT_AUTHORIZED", result["database_migration_execution"])
         self.assertFalse(result["production_go"])
+        deployment, _ = self.plans()
+        self.assertEqual("UBUNTU_24_04_LTS", deployment["target_os"])
+        self.assertEqual("bash scripts/package_onsure_ubuntu.sh", deployment["package_command"])
 
     def test_public_bind_and_migration_tool_selection_fail_closed(self):
         deployment, migration = self.plans()

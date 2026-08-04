@@ -35,7 +35,7 @@
 | `products/onsure/modules/` | `modules/onsure-*`, `onsure_core/` | core와 ORUDA adapter의 전용 source root, split package/cycle/shared root 0건을 그대로 이동 | `MAPPED_MODULE_OWNED` |
 | `products/onsure/contracts/` | `contracts/` | 상대 경로와 schema registry를 함께 이동 | `MAPPED` |
 | `products/onsure/config/` | `.devcontainer/`, `.vscode/`, `requirements-validation.txt` | 개발환경과 검증 설정을 제품 config/tooling 정책에 맞춰 분리 | `MAPPED_WITH_REVIEW` |
-| `products/onsure/deploy/` | RHEL/Ubuntu 24.04 LTS systemd 단독 서버 후보, package script, 이전 container 합성 시험 자료 | non-root/read-only/loopback/외부 secret 후보와 배포판별 preflight 증적을 이동. 실제 배포 권한은 포함하지 않음 | `CANDIDATE_NONFINAL` |
+| `products/onsure/deploy/` | Ubuntu 24.04 LTS systemd 단독 서버 주 대상, RHEL 호환 후보, package script, 이전 container 합성 시험 자료 | non-root/read-only/loopback/외부 secret 후보와 배포판별 preflight 증적을 이동. 실제 Production 배포 권한은 포함하지 않음 | `CANDIDATE_NONFINAL` |
 | `products/onsure/tests/` | `src/test/`, `modules/*/src/test/`, `tests/`, `fixtures/` | unit/integration/contract/fixture/acceptance로 재분류하되 fixture trust 경계 유지 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/assurance/` | `harness/`, `findings/`, `status/`, assurance Java package, 로컬 receipt 규칙 | 정적 권위와 실행 증적을 분리. `.onsure/` 동적 산출물은 이관 source에서 제외 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/docs/` | `docs/`, 루트 harness 안내 문서 | 상대 링크와 authoritative document registry를 재결속 | `MAPPED` |
@@ -131,14 +131,14 @@
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (240 public classes, 기존 238 descriptors delta 0 + additive SPI 2) |
 | CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (ORUDA Labs proprietary root 11, Apache-2.0 9, BSD-2-Clause 1; VS Code 229, Trivy/npm audit vulnerability 0, license blocker 0) |
 | 컨테이너 후보 | `python3 scripts/validate_onsure_container_candidate.py` | `PASS_NONFINAL` (build/run, UID 65532, read-only, network none, loopback ready; deployment `NOT_RUN`) |
-| 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / RHEL·Ubuntu systemd 및 PostgreSQL/Flyway candidate` |
+| 배포·DB migration 설계 경계 | `python3 scripts/validate_onsure_operational_boundary.py` | `PASS_NONFINAL / Ubuntu systemd primary, RHEL compatibility candidate, PostgreSQL/Flyway` |
 | 배포·DB preflight | `python3 scripts/onsure_deploy_migration_skeleton.py preflight` | `PASS_NONFINAL / deployment·migration NOT_RUN_NOT_AUTHORIZED` |
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 5,205-entry offline canonical/modular, dependency 27-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
 | 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (786-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
-| Deploy | RHEL/Ubuntu 단독 서버 systemd/package 후보 구현 | `두 tar 검사 PASS_NONFINAL / Ubuntu 검증 runtime active·20/20 health·3회 restart PASS_NONFINAL / RHEL INSTALL NOT_RUN` |
+| Deploy | Ubuntu 단독 서버 systemd/package 주 대상, RHEL 호환 후보 | `Ubuntu tar·검증 runtime active·20/20 health·3회 restart PASS_NONFINAL / Production acceptance NOT_RUN` |
 | DB migration | PostgreSQL/Flyway V1 + Ubuntu 호스트의 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / PRODUCTION NOT_RUN` |
 
 이전 구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,

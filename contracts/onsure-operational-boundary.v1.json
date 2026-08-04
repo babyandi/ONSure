@@ -5,7 +5,7 @@
     "runtime_definition_status": "RHEL_AND_UBUNTU_SYSTEMD_CANDIDATES_IMPLEMENTED",
     "deployment_authorized": false,
     "production_go": false,
-    "candidate_topology": "RHEL_SINGLE_STANDALONE_SERVER_WITH_LOCAL_API_POSTGRESQL_AND_OPENAI_EGRESS",
+    "candidate_topology": "UBUNTU_SINGLE_STANDALONE_SERVER_WITH_LOCAL_API_POSTGRESQL_AND_OPENAI_EGRESS",
     "required_runtime_properties": [
       "NON_ROOT_IDENTITY",
       "READ_ONLY_APPLICATION_ARTIFACTS",
@@ -17,10 +17,10 @@
       "SIGNED_DEPLOYMENT_RECEIPT",
       "ROLLBACK_TO_PREVIOUS_IMMUTABLE_ARTIFACT"
     ],
-    "target_os": "RHEL_FAMILY",
+    "target_os": "UBUNTU_24_04_LTS",
     "supported_candidate_operating_systems": [
-      "RHEL_FAMILY",
-      "UBUNTU_24_04_LTS"
+      "UBUNTU_24_04_LTS",
+      "RHEL_FAMILY"
     ],
     "container_image": "NOT_USED",
     "orchestrator": "SYSTEMD",
