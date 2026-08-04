@@ -1,5 +1,5 @@
 {
-  "baseline_p95_ms": 52.381,
+  "baseline_p95_ms": 56.548,
   "baseline_within_threshold": true,
   "command": [
     "python3",
@@ -10,67 +10,67 @@
   "evidence_type": "BOUNDED_COMMAND_BENCHMARK_COMPARISON",
   "final_claim_allowed": false,
   "iterations": 5,
-  "maximum_allowed_p95_ms": 78.572,
-  "maximum_p95_regression_percent": 50.0,
+  "maximum_allowed_p95_ms": 67.858,
+  "maximum_p95_regression_percent": 20.0,
   "metrics": {
-    "maximum_ms": 53.176,
-    "median_ms": 51.695,
-    "minimum_ms": 51.439,
-    "p95_ms": 52.124,
+    "maximum_ms": 59.936,
+    "median_ms": 55.575,
+    "minimum_ms": 53.958,
+    "p95_ms": 56.861,
     "successful_iterations": 5
   },
   "observations": [
     {
-      "elapsed_ms": 51.653,
+      "elapsed_ms": 59.936,
       "exit_code": 0,
       "iteration": 1,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 51.439,
+      "elapsed_ms": 55.575,
       "exit_code": 0,
       "iteration": 2,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 53.176,
+      "elapsed_ms": 56.861,
       "exit_code": 0,
       "iteration": 3,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 52.124,
+      "elapsed_ms": 53.958,
       "exit_code": 0,
       "iteration": 4,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 51.695,
+      "elapsed_ms": 54.94,
       "exit_code": 0,
       "iteration": 5,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     }
   ],
   "performance_slo_asserted": true,
-  "timeout_seconds": 30
+  "timeout_seconds": 30.0
 }

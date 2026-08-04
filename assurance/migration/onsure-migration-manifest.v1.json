@@ -105,8 +105,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ac3fbdfa07262aa84ad4407a34ebec896b49ae591ac369902e75cd964534582f",
-      "size_bytes": 6732
+      "sha256": "8d72cbc8e0f9a4655ba00f19ca5226beb3b71c8a443144f5f4d13bcc6ca28d38",
+      "size_bytes": 7087
     },
     {
       "current_path": "README.md",
@@ -120,8 +120,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "96d39c03dde06858adb794bfd50290fa44823adb44c8252d465e1bc479ecb529",
-      "size_bytes": 11168
+      "sha256": "900e58470dc7ab67f0bbedf05a8492737393088fa36067dae93922b967588882",
+      "size_bytes": 11527
     },
     {
       "current_path": "assets/admin/app.js",
@@ -135,8 +135,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "daa7cc17fce4f1f9d86686f20792b022c9ef1c870390213c82bec0225d3a6d32",
-      "size_bytes": 6033
+      "sha256": "d791fa5ede91c7bd087902e630e3680e598acd0f4784e53e28889c50d3d0b6bd",
+      "size_bytes": 13120
     },
     {
       "current_path": "assets/admin/index.html",
@@ -150,8 +150,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "dee4264a5eabe0c45d637982af3fd1ec4df4840618e715c6573994b25c65ce5a",
-      "size_bytes": 6678
+      "sha256": "1e3d4afe18e55a1d0d0ac1c0ba56848ba08af4752647588d0c9005fb167815eb",
+      "size_bytes": 10462
     },
     {
       "current_path": "assets/admin/styles.css",
@@ -165,8 +165,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "028785d6b5c8ea9fc6b10fd7d45e94fa1b2ec8d0be2b6df92e419798824bda1e",
-      "size_bytes": 9106
+      "sha256": "8a20593e62c2efc98d954de468fbc06592dbcd8024ed356a4157f1fd633ae411",
+      "size_bytes": 10497
     },
     {
       "current_path": "assets/onsure-remediation/README.md",
@@ -225,7 +225,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "faa3738bbc3fdb92702d402ee2dd381d3b57dbad975ec23bf83d284c682f4121",
+      "sha256": "163837d2f4e67c2a457b1388c2460e9541f7468586295dbe2ffceebd8b35ac68",
       "size_bytes": 7209
     },
     {
@@ -270,7 +270,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "65e901173afd52e8e2143e8e14a1fcfd9d697fb2199ff820324b622fbd63a995",
+      "sha256": "8baa22232818ea639697a3b12ea48a72f13247ca9d3d2eb7553c7dd42760bfef",
       "size_bytes": 754
     },
     {
@@ -285,7 +285,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "54d68388d55f3f8399adb63cf5cc5a690a2d4497aeeed348b9fdd0769ceab0c1",
+      "sha256": "91e10c0738e221db357aaed13ffa7c2ef01c0498905041d220ab044ce3a62435",
       "size_bytes": 37941
     },
     {
@@ -345,8 +345,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "916a90bf3a62c2e77c7bfa4fbc674cbbcc61903d14fed9d0e2d79f0ebf75fc68",
-      "size_bytes": 2226
+      "sha256": "38c97c77d8cb40323cd7f1e5e46643576023a333e932a4a0aa5f5bed7644be7c",
+      "size_bytes": 2233
     },
     {
       "current_path": "assurance/runtime/build-boundary-benchmark-comparison.v1.json",
@@ -360,8 +360,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "b3b00bfafc450eb7faa1d94545b5491cd5908c0d14173029e42b70a9ce0d570a",
-      "size_bytes": 2380
+      "sha256": "6ae5d2883fea7459ab9b13103c0415d13614f699a85bfbeaeb403331e87c72b9",
+      "size_bytes": 2386
     },
     {
       "current_path": "assurance/runtime/build-boundary-soak.v1.json",
@@ -375,8 +375,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "67d27338c470720e17c9d2593df0c11a31cc8b9418fc9a8c7287e03ee3d9e867",
-      "size_bytes": 4111
+      "sha256": "647605ca6d904f38d06a71f9a70ea7357a41df25c27e09a3225b7b1c4033cc78",
+      "size_bytes": 3008
     },
     {
       "current_path": "assurance/runtime/container-candidate.v1.json",
@@ -405,7 +405,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "b63393c42e49c81efcc08a12d0cfe93ac32d76dfde81cfab0507b124e5cd9c64",
+      "sha256": "e523e8b885803c66b88e9445e8fa1a74a42564380bd9a63089957b2d8d9de4b8",
       "size_bytes": 1010
     },
     {
@@ -420,7 +420,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "7a432492dfd6e6bbd27dcc688ffcb5a306898892165fd88c3c530a767cb3c88c",
+      "sha256": "c1dcf3e9b303dbd5464f1fcd8f8fa079571de4a09e10386bd1bdc4424f83d047",
       "size_bytes": 1539
     },
     {
@@ -450,7 +450,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8fbcf8ebdafea1d9a0a3b8989479e4d0c2279712f429e46fe98f5d00104d996d",
+      "sha256": "7b02b48c52bbf2df0c245cbe12005b4f8b8747a0a8aed1095582203a0cef4eb2",
       "size_bytes": 1549
     },
     {
@@ -525,8 +525,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8536edb83e54df276e7fb1d57e186c1e25f83c0d96eb559d286ceea53909935f",
-      "size_bytes": 535
+      "sha256": "7f15ed4cd6b878937a5d390aef9cc3852d1458071dbcd1e3d28ea9d95f71d6c4",
+      "size_bytes": 544
     },
     {
       "current_path": "assurance/runtime/synthetic-enospc-fault.v1.json",
@@ -540,7 +540,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "13bf5f1e67c36e454d285e4a1a7c48113d73dce6745dbfe54d3a4a699388edf7",
+      "sha256": "47c5461b3e4240309e0db0c6ea5e22e03bdf549ff2385b1057b1cf70eda7c0cd",
       "size_bytes": 944
     },
     {
@@ -1320,8 +1320,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "cacef2df50961f7c21b5049aa962cf1a24786f7a15c386f5826ac1fc4354fc78",
-      "size_bytes": 6907
+      "sha256": "2ec9bc5745d86085630571962aaa410cd884418deee4b3da4e53329613536d4d",
+      "size_bytes": 7134
     },
     {
       "current_path": "contracts/openapi/onsure-local-api.v1.json",
@@ -1335,8 +1335,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ff0f2bed6b905f21dc8507650e160941cbb5217c71f47cf4d90a93a5475566e0",
-      "size_bytes": 17246
+      "sha256": "7c201fbda8088f2922cb1ab242704413061dc6c81956be3a3a07a26030b74636",
+      "size_bytes": 24489
     },
     {
       "current_path": "contracts/oreview-result.v1.schema.json",
@@ -2010,8 +2010,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "674546f2b49fcb3dfe0c6abd3e48d18152a13a2dab271b2701af8426dd293b95",
-      "size_bytes": 1153
+      "sha256": "83c3360b66309641ce01283e369d6cdb72caa7895f8ad7aa2a0c2d5905b0370a",
+      "size_bytes": 1591
     },
     {
       "current_path": "deploy/rhel/onsure.service",
@@ -2460,8 +2460,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "09a37b2f8d9e217bcb6fed6fc30a30c1a2387a056369268dcacb7fc976188c24",
-      "size_bytes": 4318
+      "sha256": "1f3afcee609a175e11984ba3f485c9f6aa2269582fa31e7ce6a77aa8f07253f2",
+      "size_bytes": 5369
     },
     {
       "current_path": "docs/architecture/ONSURE_MODULE_DECOUPLING_PLAN_v1.md",
@@ -2775,7 +2775,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "03486f4e96b114099f6f96ff244ba6f940d390c7f33a960a103f80f235fc0f9d",
+      "sha256": "cec7a755c4ed45b8b96b92a0786c5f1d22d5f21a42270b1cdeef8c13a1e5d52c",
       "size_bytes": 18887
     },
     {
@@ -4997,8 +4997,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "23ac9b1b175b5fd629afecac1b8fb1962dd95dfb41edbf6e74a465c5d2991d78",
-      "size_bytes": 12752
+      "sha256": "ba4c72849b28eb9d8b84beedfe7f21328d692e293b5f8a737454151b1a52f542",
+      "size_bytes": 13268
     },
     {
       "current_path": "modules/onsure-llm-gateway/src/main/java/io/onsure/gateway/llm/LlmGatewayMain.java",
@@ -5057,8 +5057,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "590da0af4d814400057ef4ce103ac2aedf56890870eb383b03b7f2128db6427e",
-      "size_bytes": 8569
+      "sha256": "0c0017adf303377fa446a1d20891f447e9a47d7d0ed1e14367b1a358b1da16fa",
+      "size_bytes": 8861
     },
     {
       "current_path": "modules/onsure-local-api/pom.xml",
@@ -5134,6 +5134,21 @@
       },
       "sha256": "369c5ff63caab1475639410a94170c23bd9bc75922986e655a59c7cec42497b7",
       "size_bytes": 6258
+    },
+    {
+      "current_path": "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalManagementApiRbacTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/modules/onsure-local-api/src/test/java/io/onsure/platform/LocalManagementApiRbacTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "57e11bb95c968013a795de0aa39fbecb33c80a1afe9095f31d0a50961cb0868d",
+      "size_bytes": 5852
     },
     {
       "current_path": "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalManagementOverviewServiceTest.java",
@@ -7026,8 +7041,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ac4feb546ff09464784f0fe7e6457d54ec23fd1d3f54387ca10c26c49c010f47",
-      "size_bytes": 6728
+      "sha256": "a02a885101ddd99824d89164a69c164a6f5847ddda64df7788c6deaf538d1147",
+      "size_bytes": 6843
     },
     {
       "current_path": "scripts/validate_codespace_free_remediation_v2.py",
@@ -8470,6 +8485,21 @@
       "size_bytes": 21565
     },
     {
+      "current_path": "src/main/java/io/onsure/platform/LocalAccessControl.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/LocalAccessControl.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "84071663c6777ec15d6c1f2cf021be383e02ef81e3c6694518bcbca55cce7c76",
+      "size_bytes": 3901
+    },
+    {
       "current_path": "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -8481,8 +8511,38 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ac0964d724efac2ab259b939db276899693226b7aa9be0d7cb983bdfee3b58d5",
-      "size_bytes": 23891
+      "sha256": "896a48be9b9b2703e6c78c59f33e44ee55339ab871c5fb28df8b2ab5d801268d",
+      "size_bytes": 31172
+    },
+    {
+      "current_path": "src/main/java/io/onsure/platform/LocalGatewaySettingsService.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/LocalGatewaySettingsService.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "66b562c728064d544134d0475efd6af854f928b76558bcbf05fb275d2508ce7d",
+      "size_bytes": 12745
+    },
+    {
+      "current_path": "src/main/java/io/onsure/platform/LocalManagementAuditLedger.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/LocalManagementAuditLedger.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "d7611820162a36146d077b0886a109607a0e40af3f752ca583dfe9ec641544ab",
+      "size_bytes": 7561
     },
     {
       "current_path": "src/main/java/io/onsure/platform/LocalManagementOverviewService.java",
@@ -8496,8 +8556,23 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "04259e775962cd31ec35fe0a6c12fd36b528c9c696cd01765c74d21f53384a5c",
-      "size_bytes": 14955
+      "sha256": "8091a35d0c307a1e6ebc8eab2e1e4a5318058cff4a15a3c5378b59a561f3c189",
+      "size_bytes": 15237
+    },
+    {
+      "current_path": "src/main/java/io/onsure/platform/LocalProgramManagementService.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/main/java/io/onsure/platform/LocalProgramManagementService.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "595a3261db614f38bb3c1df998c385a1b276dbd13525496c8fcd52ea856844b6",
+      "size_bytes": 24410
     },
     {
       "current_path": "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
@@ -8961,8 +9036,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "00d6e271398bbbd1af5d440fb36230b8b29334dc53401d9086dafb69c14642b3",
-      "size_bytes": 20952
+      "sha256": "58723c05d6ba2e6aa95b99f4eea44c38b6dbe84878b000c831f01c59c0791307",
+      "size_bytes": 21159
     },
     {
       "current_path": "src/main/java/io/onsure/platform/ValidationModel.java",
@@ -10135,6 +10210,66 @@
       "size_bytes": 4596
     },
     {
+      "current_path": "src/test/java/io/onsure/platform/LocalAccessControlTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/platform/LocalAccessControlTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "de3deadcda89fe4032a01ebc3f51d655aaf9b73a58a924f4e1664164339828c2",
+      "size_bytes": 2563
+    },
+    {
+      "current_path": "src/test/java/io/onsure/platform/LocalGatewaySettingsServiceTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/platform/LocalGatewaySettingsServiceTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "f5833b5d02e1050eaa6ffdf74c6204bbeced15f8adc70551e3735c5603379c27",
+      "size_bytes": 4710
+    },
+    {
+      "current_path": "src/test/java/io/onsure/platform/LocalManagementAuditLedgerTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/platform/LocalManagementAuditLedgerTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "1bb0ec6d5c89f723a644aa595b5c1c2837aa354b7bf2d31fbb70f3bd0351babb",
+      "size_bytes": 1752
+    },
+    {
+      "current_path": "src/test/java/io/onsure/platform/LocalProgramManagementServiceTest.java",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/src/test/java/io/onsure/platform/LocalProgramManagementServiceTest.java",
+      "git_mode": "100644",
+      "license": "UNDECLARED",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "0a3e5603e83d326136e08c4f97ba81f5bced3461b15abf18f6da31d442cec6e3",
+      "size_bytes": 2861
+    },
+    {
       "current_path": "src/test/java/io/onsure/platform/ModelProviderAdapterRegistryTest.java",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -10341,8 +10476,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "1ee0ac816cfd637de8c73e4028567867bce7df33e62b738db93ae175d2cd9d9c",
-      "size_bytes": 7938
+      "sha256": "af0715bf3e1bbe75d254d7e0fda0356f6ec0a92acf43f057243cf13a1e47b88a",
+      "size_bytes": 9138
     },
     {
       "current_path": "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java",
@@ -11487,14 +11622,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 763,
+    "file_count": 772,
     "license_counts": {
-      "UNDECLARED": 763
+      "UNDECLARED": 772
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 760,
+      "NO_PATTERN_MATCH": 769,
       "REVIEW_REQUIRED": 3
     },
-    "total_size_bytes": 7783322
+    "total_size_bytes": 7880424
   }
 }

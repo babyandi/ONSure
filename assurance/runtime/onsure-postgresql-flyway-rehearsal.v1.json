@@ -13,7 +13,7 @@
   "migration_second_executed": 0,
   "migration_sha256": "043bb2acc6e2451093a4c5a3cbcd1227e87293c075a55d984899d4e791e2f4d8",
   "network_binding": "127.0.0.1_EPHEMERAL",
-  "package_sha256": "d4a8c96a30e583ec1f183095200c7d665e5c3de67fdd7cbccda8731ecce60559",
+  "package_sha256": "90cab20c53ab27f9ced85082f4b5497424a2075553fccd3950343f2b61c28071",
   "pending_after_migration": 0,
   "postgresql_version": "16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)",
   "production_migration": "NOT_RUN",

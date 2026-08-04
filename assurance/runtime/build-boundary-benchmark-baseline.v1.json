@@ -9,64 +9,64 @@
   "final_claim_allowed": false,
   "iterations": 5,
   "metrics": {
-    "maximum_ms": 54.518,
-    "median_ms": 52.057,
-    "minimum_ms": 51.063,
-    "p95_ms": 52.381,
+    "maximum_ms": 58.496,
+    "median_ms": 54.466,
+    "minimum_ms": 53.925,
+    "p95_ms": 56.548,
     "successful_iterations": 5
   },
   "observations": [
     {
-      "elapsed_ms": 52.381,
+      "elapsed_ms": 54.466,
       "exit_code": 0,
       "iteration": 1,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 54.518,
+      "elapsed_ms": 54.021,
       "exit_code": 0,
       "iteration": 2,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 52.057,
+      "elapsed_ms": 53.925,
       "exit_code": 0,
       "iteration": 3,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 51.663,
+      "elapsed_ms": 58.496,
       "exit_code": 0,
       "iteration": 4,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     },
     {
-      "elapsed_ms": 51.063,
+      "elapsed_ms": 56.548,
       "exit_code": 0,
       "iteration": 5,
       "stderr_bytes": 0,
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "stdout_bytes": 994,
-      "stdout_sha256": "704d5dd83539cdade5615ab346868f1611e10c9aa2b02d4466e5f602db13579f",
+      "stdout_bytes": 1231,
+      "stdout_sha256": "175488272eca401d3c0fc3713455e759f623968b9e81e340444cbb991d220380",
       "timed_out": false
     }
   ],
   "performance_slo_asserted": false,
-  "timeout_seconds": 30
+  "timeout_seconds": 30.0
 }

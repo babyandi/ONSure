@@ -124,7 +124,7 @@
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `dbe72cc7da5d...`; root license warning) |
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (VS Code 1.95.3/Xvfb, extension host exit 0, offline network 차단 재실행 exit 0) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 763 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 772 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
 | Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (144 single owners, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 2) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
@@ -136,7 +136,7 @@
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 4,823-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (763-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (772-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | RHEL/Ubuntu 단독 서버 systemd/package 후보 구현 | `두 tar 내부 checksum·ownership·secret/path 검사 PASS_NONFINAL / INSTALL NOT_RUN / NOT_AUTHORIZED` |
 | DB migration | PostgreSQL/Flyway V1 + Ubuntu 호스트의 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / PRODUCTION NOT_RUN` |
@@ -144,7 +144,7 @@
 이전 구현 HEAD `3e2dbcae1c821522b87d6adbda95ef81082cbbbd`는 semantic work-mode 권한,
 Java stage checkpoint, provider adapter 경계와 token/data-transfer budget를 추가했다.
 로컬 canonical 246/246 2회와 원격 독립 clone 246/246, modular 11/11, API 238/238,
-현재 변경 후보는 Python 139/139, Node 9/9를 통과했다. 763-file migration readiness/nested
+현재 변경 후보는 Python 139/139, Node 9/9를 통과했다. 772-file migration readiness/nested
 rehearsal과 독립 clone 결과는 Manifest가 commit SHA에 재결속된 뒤 다시 기록한다.
 VSIX는 두 환경에서 byte-identical SHA-256
 `8c217e6fc446fdd4938121c6faa810b1c631e3cc7be908d7e4db10ea53374afe`를 생성했다.
@@ -153,7 +153,7 @@ VSIX는 두 환경에서 byte-identical SHA-256
 승인 exchange 표면 연결, 익명화 corpus, container/Xvfb E2E, 합성 runtime/DB/DR,
 Maven/npm offline pack과 Trivy/SBOM 통합을 추가했다. local clean Java 263/263 2회,
 modular 36/36, Python 139/139, Node 9/9, root API 240/240(기존 238 descriptor 무변경), SDK API 5/5를 검증했다.
-독립 clone에서 같은 build/test/API/SBOM/readiness/static gate를 통과했고 현재 763-file
+독립 clone에서 같은 build/test/API/SBOM/readiness/static gate를 통과했고 현재 772-file
 중첩 cutover/rollback도 외부 제품 저장소 없이 통과했다.
 
 Standalone 검증은 임시 디렉터리에 `babyandi/ONSure`만 clone한 뒤 위 Maven/Python 명령을 수행한다. `ORUDA`, `aTops`, `AsterDB` workspace는 clone하거나 mount하지 않는다.

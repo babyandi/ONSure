@@ -397,7 +397,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "04a935489306221d4fce189e53c82fa16afbdf7400e54061e9636b324f6a12fb"
+          "content": "d25455d65c8595a4f1f76ecaab36d31f7de9fe7246b3d1b376cc5b27ba1ddfa5"
         }
       ],
       "name": "onsure-core",
@@ -417,7 +417,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "6eebe147751f54f6112d1eba5425cf7b5329d5cae0ba8f8ee61927835fef41cb"
+          "content": "518d88bb1f67cc29fa24bb05d579a287da474e69b017cdc7c50069fb47fbc78e"
         }
       ],
       "name": "onsure-llm-gateway",
