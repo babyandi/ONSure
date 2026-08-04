@@ -25,6 +25,7 @@ RHEL_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-package-validation
 UBUNTU_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-package-validation.v1.json"
 UBUNTU_LIFECYCLE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json"
 VSCODE_RUNTIME_EVIDENCE = ROOT / "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json"
+UBUNTU_HOST_PREFLIGHT_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-host-preflight.v1.json"
 SYSTEMD_UNITS = (
     ROOT / "deploy/rhel/onsure.service",
     ROOT / "deploy/rhel/onsure-llm-gateway.service",
@@ -340,6 +341,27 @@ def validate_vscode_runtime_evidence() -> list[str]:
     return []
 
 
+def validate_ubuntu_host_preflight_evidence() -> list[str]:
+    evidence = json.loads(UBUNTU_HOST_PREFLIGHT_EVIDENCE.read_text(encoding="utf-8"))
+    services = evidence.get("services", {})
+    listeners = evidence.get("listeners", {})
+    if evidence.get("contract") != "ONSURE_UBUNTU_HOST_PREFLIGHT_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("host_os") != "UBUNTU_24_04" \
+            or any(services.get(name) != {"active": True, "enabled": True}
+                   for name in ("onsure-runtime.service", "onsure-llm-gateway.service")) \
+            or any(listeners.get(str(port), {}).get("loopback_only") is not True
+                   for port in (47311, 47312, 5432)) \
+            or evidence.get("runtime_config", {}).get("mode") != "0600" \
+            or evidence.get("runtime_config", {}).get("secret_values_read") is not False \
+            or evidence.get("runtime_config", {}).get("path_disclosed") is not False \
+            or evidence.get("host_modified") is not False \
+            or evidence.get("production_acceptance") != "NOT_RUN" \
+            or evidence.get("final_claim_allowed") is not False:
+        return ["UBUNTU_HOST_PREFLIGHT_EVIDENCE_CONTRACT"]
+    return []
+
+
 def validate_documents(
     boundary: dict[str, object],
     product: dict[str, object],
@@ -470,6 +492,8 @@ def validate() -> dict[str, object]:
         "assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json",
         "scripts/rehearse_onsure_vscode_runtime.py",
         "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json",
+        "scripts/onsure_ubuntu_host_preflight.py",
+        "assurance/runtime/onsure-ubuntu-host-preflight.v1.json",
     ]
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
@@ -489,6 +513,7 @@ def validate() -> dict[str, object]:
         violations.extend(validate_ubuntu_package_evidence())
         violations.extend(validate_ubuntu_lifecycle_evidence())
         violations.extend(validate_vscode_runtime_evidence())
+        violations.extend(validate_ubuntu_host_preflight_evidence())
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",

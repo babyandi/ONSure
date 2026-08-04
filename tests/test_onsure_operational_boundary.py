@@ -88,6 +88,9 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_vscode_ubuntu_runtime_evidence_is_content_free_and_nonproduction(self):
         self.assertEqual([], operational.validate_vscode_runtime_evidence())
 
+    def test_ubuntu_host_preflight_is_read_only_and_nonproduction(self):
+        self.assertEqual([], operational.validate_ubuntu_host_preflight_evidence())
+
 
 if __name__ == "__main__":
     unittest.main()

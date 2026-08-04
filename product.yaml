@@ -86,6 +86,10 @@ build:
     command: python3 scripts/rehearse_onsure_vscode_runtime.py
     requires_runtime_secrets: true
     production_authority: false
+  ubuntu_host_preflight:
+    command: python3 scripts/onsure_ubuntu_host_preflight.py --runtime-root <external-runtime-root>
+    read_only: true
+    production_authority: false
   systemd_security_validation:
     command: python3 scripts/onsure_systemd_security.py
     rhel_execution_authority: false

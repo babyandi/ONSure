@@ -2,7 +2,7 @@
   "contract": "ONSURE_VSCODE_EXTENSION_HOST_E2E_EVIDENCE_V1",
   "vscode_version": "1.95.3",
   "test_electron_version": "2.5.2",
-  "container_base": "onsure-goal-validator:node20",
+  "container_base": "node:22-bookworm-slim",
   "xvfb": true,
   "non_root": true,
   "capabilities_dropped": true,
@@ -12,6 +12,7 @@
   "offline_rerun_network_mode": "none",
   "offline_rerun_extension_host_exit_code": 0,
   "offline_network_attempts": "BLOCKED_BY_CONTAINER_NETWORK_NAMESPACE",
+  "node_engine_mismatch_warnings": 0,
   "github_actions_used": false,
   "decision": "PASS_NONFINAL",
   "final_claim_allowed": false

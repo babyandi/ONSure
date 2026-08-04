@@ -1,9 +1,9 @@
-FROM onsure-goal-validator:node20
+FROM node:22-bookworm-slim
 
 USER root
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       xvfb xauth libgtk-3-0 libnss3 libasound2t64 libxss1 libgbm1 libdrm2 \
+       xvfb xauth libgtk-3-0 libnss3 libasound2 libxss1 libgbm1 libdrm2 \
        libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libatk-bridge2.0-0 \
        libatspi2.0-0 libcups2 fonts-dejavu-core ca-certificates \
     && rm -rf /var/lib/apt/lists/*

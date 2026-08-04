@@ -96,9 +96,9 @@ mutates source, executes a plan or makes a final claim.
 
 ## Extension Host E2E
 
-The separate smoke host pins `@vscode/test-electron` and VS Code `1.95.3`. The first VS Code binary
-download may require network, and Linux headless execution needs `xvfb-run` or a display. GitHub
-Actions are not used.
+The separate Node 22 smoke host pins `@vscode/test-electron` and VS Code `1.95.3`. The first VS Code
+binary download may require network, and Linux headless execution needs `xvfb-run` or a display.
+GitHub Actions are not used.
 
 ```bash
 npm ci --ignore-scripts

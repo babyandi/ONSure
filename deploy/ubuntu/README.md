@@ -44,6 +44,19 @@ python3 scripts/validate_onsure_operational_boundary.py
 python3 scripts/onsure_ubuntu_lifecycle.py rehearse
 ```
 
+The current login user's actual host state can be checked without reading secret values:
+
+```bash
+python3 scripts/onsure_ubuntu_host_preflight.py \
+  --runtime-root <external-runtime-root> \
+  --output assurance/runtime/onsure-ubuntu-host-preflight.v1.json
+```
+
+The preflight checks Ubuntu 24.04, user services, loopback listeners, configuration file mode,
+AppArmor and UFW using read-only operations. Insufficient permission to inspect AppArmor profiles
+or the UFW policy is recorded as `NOT_RUN_INSUFFICIENT_PRIVILEGE` and remains a Production blocker.
+The configuration contents, tokens and database password are never read.
+
 The lifecycle rehearsal verifies archive paths and internal checksums, performs immutable install,
 idempotent reinstall, upgrade and rollback inside `.onsure/`, and confirms that no host path was
 modified.

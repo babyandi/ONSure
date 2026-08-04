@@ -62,7 +62,9 @@ FINAL_LOCK_ALLOWED              false
   경로를 연결한다. 다만 개별 Chat·Profile·Finding·Diff/Hunk·Evidence·Git UX와 Extension Host
   Full-Chain은 아직 완료되지 않았다.
 - ProductPlatformE2E는 제품 Full-Chain이 아니라 Validator Fixture E2E다.
-- VS Code Extension Host E2E harness는 준비됐지만 현재 host의 display/xvfb 부재로 실제 실행은 `NOT_RUN`이다.
+- VS Code 1.95.3 Extension Host E2E는 Node 22/Xvfb 컨테이너에서 온라인 준비 실행과
+  `--network none` 오프라인 재실행 모두 종료 코드 0으로 검증했다. 이는 비최종 개발 증적이며
+  설치 사용자 전체 여정 또는 독립 OTester 승인을 대체하지 않는다.
 - Maven/npm vulnerability totals는 0이고 `ORUDA Labs` proprietary root license와
   third-party notice가 반영됐다. 독립 법률 검토와 고객 배포계약은 `NOT_RUN`이다.
 

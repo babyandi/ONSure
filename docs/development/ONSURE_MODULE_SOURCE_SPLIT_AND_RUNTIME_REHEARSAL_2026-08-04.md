@@ -26,16 +26,21 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - Canonical `clean verify`: 282/282, repeated twice. Independent clone at `1125d2b`: 282/282,
   Python 154/154 and public API 240/240.
 - Modular package: 37/37 locally and in the independent clone; public API baseline: 240/240.
-- Python: 142/142; Node: 9/9; deterministic VSIX package pass.
-- Ubuntu candidate SHA-256: `90096dd910f0092911d8de9f78f71ffe5e1d660dc136bb99c53947d753fe9236`.
+- Python: 159/159; Node: 9/9; deterministic VSIX package pass with SHA-256
+  `fb2f0bf6c5051ebf6197ec8e0f21c8d77fd3316b348016f1ccbd4fdb5dfd9589`.
+- Ubuntu candidate SHA-256: `e6b53761183aa3f8635ce59929b3043d60bd0ca8bfe01901bfe5fddf04410dea`.
 - RHEL compatibility candidate SHA-256: `74ec4e2c844f4fd7570fb3e8f7de5d541de04220a0a263c0aa88659ff47685d8`.
 - Disposable PostgreSQL 16.14/Flyway: first migration 1, second 0, concurrent `[0,1]`, pending 0,
   dump/restore and restored validation pass. Production migration was not run.
 - Synthetic SQLite: apply 1, idempotent apply 0 and rollback 1 pass under the required `.onsure/`
   product-state boundary; an outside-state path was correctly rejected.
-- Nested `products/onsure/` cutover and rollback: 796/796 files, 10 commands, no external product
+- Nested `products/onsure/` cutover and rollback: 799/799 files, 10 commands, no external product
   repository.
-- VS Code 1.95.3 Extension Host: online Xvfb run exit 0 and cached `--network none` rerun exit 0.
+- VS Code 1.95.3 Extension Host on Node 22: online Xvfb run exit 0 and cached
+  `--network none` rerun exit 0; Node engine mismatch warnings 0.
+- Ubuntu 24.04 read-only host preflight: both user services active/enabled, API/Gateway/PostgreSQL
+  loopback-only, runtime configuration mode `0600`, and no secret values read. AppArmor profile and
+  UFW policy verification remain `NOT_RUN_INSUFFICIENT_PRIVILEGE` and block Production acceptance.
 - VS Code Ubuntu runtime surface: Local API/Gateway RUNNING, content-free token/cost metrics and
   receipt chain valid; runtime tokens were not written to evidence.
 
