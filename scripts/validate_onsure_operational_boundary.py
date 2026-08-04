@@ -19,6 +19,7 @@ from onsure_product_root import resolve_product_root
 ROOT = resolve_product_root()
 CONTRACT = ROOT / "contracts/onsure-operational-boundary.v1.json"
 POSTGRESQL_EVIDENCE = ROOT / "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json"
+SANDBOX_EVIDENCE = ROOT / "assurance/runtime/onsure-sandbox-backends.v1.json"
 POSTGRESQL_MIGRATION = ROOT / (
     "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/"
     "V1__create_assurance_event.sql"
@@ -278,6 +279,97 @@ def validate_postgresql_evidence_body(
 def validate_postgresql_evidence() -> list[str]:
     evidence = json.loads(POSTGRESQL_EVIDENCE.read_text(encoding="utf-8"))
     return validate_postgresql_evidence_body(evidence)
+
+
+def validate_sandbox_evidence_body(
+    evidence: dict[str, object], *, verify_repository: bool = True,
+) -> list[str]:
+    violations: list[str] = []
+    expected = {
+        "contract": "ONSURE_SANDBOX_BACKEND_DIAGNOSTIC_V1",
+        "decision": "PASS_NONFINAL",
+        "source_code_dirty_paths": [],
+        "github_actions_used": False,
+        "deployment_topology_changed": False,
+        "production_authority": False,
+        "final_claim_allowed": False,
+    }
+    for field, value in expected.items():
+        if evidence.get(field) != value:
+            violations.append("SANDBOX_EVIDENCE_" + field.upper())
+    available = evidence.get("available_backends")
+    selected = evidence.get("selected_backend")
+    if not isinstance(available, list) or selected not in available \
+            or selected not in {"ROOTLESS_BWRAP", "OCI_DOCKER"}:
+        violations.append("SANDBOX_EVIDENCE_BACKEND_SELECTION")
+    oci = evidence.get("oci")
+    if not isinstance(oci, dict):
+        violations.append("SANDBOX_EVIDENCE_OCI_BODY")
+    else:
+        oci_expected = {
+            "decision": "PASS_NONFINAL",
+            "reason_code": "OCI_SANDBOX_BOUNDARIES_VERIFIED",
+            "image_pull": "NOT_RUN_LOCAL_IMAGE_ONLY",
+            "boundary_attack_execution": "PASS_NONFINAL",
+            "boundary_attack_probe_count": 12,
+            "validation_probe_execution": "PASS_NONFINAL",
+            "network": "NONE",
+            "root_filesystem": "READ_ONLY",
+            "capabilities": "DROP_ALL",
+            "no_new_privileges": True,
+            "docker_socket_mounted": False,
+            "original_source_mounted": False,
+        }
+        for field, value in oci_expected.items():
+            if oci.get(field) != value:
+                violations.append("SANDBOX_EVIDENCE_OCI_" + field.upper())
+        if re.fullmatch(r"sha256:[0-9a-f]{64}", str(oci.get("image_id", ""))) is None:
+            violations.append("SANDBOX_EVIDENCE_OCI_IMAGE_ID")
+        for field in ("boundary_attack_output_sha256", "validation_probe_output_sha256"):
+            if not _full_sha256(oci.get(field)):
+                violations.append("SANDBOX_EVIDENCE_OCI_" + field.upper())
+        security = oci.get("docker_security_options")
+        if not isinstance(security, list) or "name=apparmor" not in security \
+                or not any(str(value).startswith("name=seccomp") for value in security):
+            violations.append("SANDBOX_EVIDENCE_OCI_SECURITY_OPTIONS")
+    bindings = evidence.get("source_bindings")
+    required_bindings = (
+        "contracts/sandbox-boundary.v1.json",
+        "scripts/onsure-sandbox-backend.sh",
+        "scripts/fixture-sandbox-launcher.sh",
+        "scripts/validation-sandbox-launcher.sh",
+        "scripts/test-fixture-sandbox-boundary.sh",
+        "fixtures/sandbox-boundary/sandbox-boundary-runner.sh",
+    )
+    if not isinstance(bindings, dict) or set(bindings) != set(required_bindings):
+        violations.append("SANDBOX_EVIDENCE_SOURCE_BINDING_SET")
+    else:
+        for relative in required_bindings:
+            if bindings.get(relative) != hashlib.sha256((ROOT / relative).read_bytes()).hexdigest():
+                violations.append("SANDBOX_EVIDENCE_SOURCE_BINDING:" + relative)
+    normalized = dict(evidence)
+    receipt = normalized.pop("receipt_sha256", None)
+    if not _full_sha256(receipt) or receipt != _canonical_sha256(normalized):
+        violations.append("SANDBOX_EVIDENCE_RECEIPT_DIGEST")
+    source = evidence.get("source_commit")
+    if not isinstance(source, str) or re.fullmatch(r"[0-9a-f]{40}", source) is None:
+        violations.append("SANDBOX_EVIDENCE_SOURCE_COMMIT")
+    elif verify_repository and _git_worktree_available():
+        source_object = subprocess.run(
+            ["git", "cat-file", "-e", source + "^{commit}"],
+            cwd=ROOT, capture_output=True, check=False,
+        )
+        if source_object.returncode == 0 and subprocess.run(
+            ["git", "merge-base", "--is-ancestor", source, "HEAD"],
+            cwd=ROOT, capture_output=True, check=False,
+        ).returncode != 0:
+            violations.append("SANDBOX_EVIDENCE_SOURCE_ANCESTRY")
+    return violations
+
+
+def validate_sandbox_evidence() -> list[str]:
+    evidence = json.loads(SANDBOX_EVIDENCE.read_text(encoding="utf-8"))
+    return validate_sandbox_evidence_body(evidence)
 
 
 def validate_systemd_evidence() -> list[str]:
@@ -612,6 +704,8 @@ def validate() -> dict[str, object]:
         "docs/architecture/ONSURE_DEPLOYMENT_AND_DB_MIGRATION_DESIGN_v1.md",
         "docs/operations/ONSURE_BUBBLEWRAP_EXECUTION_ENVIRONMENT_v1.md",
         "scripts/onsure_bubblewrap_diagnostics.py",
+        "scripts/onsure_sandbox_diagnostics.py",
+        "assurance/runtime/onsure-sandbox-backends.v1.json",
         "scripts/package_onsure_rhel.sh",
         "scripts/package_onsure_systemd.sh",
         "scripts/package_onsure_ubuntu.sh",
@@ -658,6 +752,7 @@ def validate() -> dict[str, object]:
         violations.extend(validate_rhel_candidate())
         violations.extend(validate_ubuntu_candidate())
         violations.extend(validate_postgresql_evidence())
+        violations.extend(validate_sandbox_evidence())
         violations.extend(validate_systemd_evidence())
         violations.extend(validate_ubuntu_systemd_evidence())
         violations.extend(validate_rhel_package_evidence())

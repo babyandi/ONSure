@@ -1,0 +1,76 @@
+{
+  "available_backends": [
+    "OCI_DOCKER"
+  ],
+  "bubblewrap": {
+    "bwrap_version": "bubblewrap 0.9.0",
+    "contract": "ONSURE_BUBBLEWRAP_ENVIRONMENT_DIAGNOSTIC_V1",
+    "decision": "BLOCKED_ENVIRONMENT",
+    "final_claim_allowed": false,
+    "github_actions_required": false,
+    "namespace_limits": {
+      "kernel.unprivileged_userns_clone": "1",
+      "user.max_net_namespaces": "30865",
+      "user.max_user_namespaces": "30865"
+    },
+    "next_command": "READ docs/operations/ONSURE_BUBBLEWRAP_EXECUTION_ENVIRONMENT_v1.md",
+    "platform": {
+      "machine": "x86_64",
+      "release": "6.8.0-136-generic",
+      "system": "Linux"
+    },
+    "probe_exit_code": 1,
+    "probe_output": "bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted",
+    "reason_code": "BWRAP_LOOPBACK_PERMISSION_DENIED",
+    "required_security_properties": [
+      "ROOTLESS_USER_NAMESPACE",
+      "PRIVATE_NETWORK_NAMESPACE",
+      "LOOPBACK_CONFIGURATION_INSIDE_PRIVATE_NAMESPACE",
+      "CAPABILITY_DROP_ALL",
+      "READ_ONLY_SOURCE_BIND"
+    ],
+    "security_fallback_allowed": false
+  },
+  "contract": "ONSURE_SANDBOX_BACKEND_DIAGNOSTIC_V1",
+  "decision": "PASS_NONFINAL",
+  "deployment_topology_changed": false,
+  "final_claim_allowed": false,
+  "github_actions_used": false,
+  "oci": {
+    "boundary_attack_execution": "PASS_NONFINAL",
+    "boundary_attack_output_sha256": "fc460d6b64289d2ce639f3fb5c503b339d0f957b584100e5e76bc3af4917866d",
+    "boundary_attack_probe_count": 12,
+    "capabilities": "DROP_ALL",
+    "decision": "PASS_NONFINAL",
+    "docker_security_options": [
+      "name=apparmor",
+      "name=seccomp,profile=builtin",
+      "name=cgroupns"
+    ],
+    "docker_server_version": "29.6.2",
+    "docker_socket_mounted": false,
+    "image_id": "sha256:5a1ff1e4b75768a419af6456fafa6291dcc34db94d263e2b083662be971c3dcf",
+    "image_pull": "NOT_RUN_LOCAL_IMAGE_ONLY",
+    "image_reference": "onsure-goal-validator:node20",
+    "network": "NONE",
+    "no_new_privileges": true,
+    "original_source_mounted": false,
+    "reason_code": "OCI_SANDBOX_BOUNDARIES_VERIFIED",
+    "root_filesystem": "READ_ONLY",
+    "validation_probe_execution": "PASS_NONFINAL",
+    "validation_probe_output_sha256": "851a85263ad8727566025d31433051ae55b9350032f2a37dbd3b5641a6b0d250"
+  },
+  "production_authority": false,
+  "receipt_sha256": "fc043917a7b7d48976020005c327caffa3b19cf5c82ae74541a3e02f1d91367c",
+  "selected_backend": "OCI_DOCKER",
+  "source_bindings": {
+    "contracts/sandbox-boundary.v1.json": "fe3093aaf09904c0d14c0c61b1c0efdb53cfcb387312377594b88a3b22ada322",
+    "fixtures/sandbox-boundary/sandbox-boundary-runner.sh": "312b4367d4ed11b21b106951d1e262032697412bcd65b19d4851e3202891e964",
+    "scripts/fixture-sandbox-launcher.sh": "99cedef77d0832c08fbee566a608aaa3e7de6f44a062fb0ddbca4ce6ff7f7f96",
+    "scripts/onsure-sandbox-backend.sh": "a0294a2a84145ac2b1edf06ec7059b7b9e3e3ee5b7193b4673a5f21c3b7072ba",
+    "scripts/test-fixture-sandbox-boundary.sh": "431bec0d6afe1c4929313c529a100d76b96f2cd29410a861baa3ad0c576560c6",
+    "scripts/validation-sandbox-launcher.sh": "88335daf15ce58ef589b6ff994cf5924e50f25b2ab1fa3a5057562cfbb8b5302"
+  },
+  "source_code_dirty_paths": [],
+  "source_commit": "61eeece293b01159237b9cefb82919704b4b35f9"
+}

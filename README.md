@@ -184,6 +184,7 @@ python3 scripts/onsure_deploy_migration_skeleton.py preflight
 python3 scripts/validate_onsure_container_candidate.py
 python3 scripts/onsure_runtime_assurance.py health
 python3 scripts/onsure_bubblewrap_diagnostics.py
+python3 scripts/onsure_sandbox_diagnostics.py
 ```
 
 공급망과 air-gap plan:
@@ -220,12 +221,13 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 318개, Python 176개, Node 9개,
+현재 변경 후보의 로컬 검증은 Java 318개, Python 192개, Node 9개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `c982d0269107ef174bf380f728ce112504a67f605da5a69bb238f187bc2dfb5d`를 생성했다.
-Manifest 후보는 기존 668개 기준선에서 신규 구현을 포함한 854개로 확장됐다. 최신 commit에
+Manifest 후보는 기존 668개 기준선에서 신규 구현을 포함해 계속 확장되며 정확한 파일 수와
+digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는
 이 실패를 약화하지 않고, 로컬에 이미 존재하는 검증 이미지가 있을 때만 immutable image ID로

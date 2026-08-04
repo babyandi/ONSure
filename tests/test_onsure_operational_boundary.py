@@ -105,6 +105,44 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
         self.assertIn("POSTGRESQL_EVIDENCE_SOURCE_DIRTY", violations)
         self.assertIn("POSTGRESQL_EVIDENCE_TIME_WINDOW", violations)
 
+    def test_sandbox_rehearsal_is_digest_bound_and_fail_closed(self):
+        self.assertEqual([], operational.validate_sandbox_evidence())
+
+    def test_sandbox_rehearsal_rejects_image_and_receipt_tampering(self):
+        evidence = json.loads(
+            operational.SANDBOX_EVIDENCE.read_text(encoding="utf-8")
+        )
+        evidence["oci"]["image_id"] = "sha256:" + "0" * 64
+        violations = operational.validate_sandbox_evidence_body(
+            evidence, verify_repository=False,
+        )
+        self.assertIn("SANDBOX_EVIDENCE_RECEIPT_DIGEST", violations)
+
+    def test_sandbox_rehearsal_rejects_weakened_security_options(self):
+        evidence = json.loads(
+            operational.SANDBOX_EVIDENCE.read_text(encoding="utf-8")
+        )
+        evidence["oci"]["docker_security_options"] = ["name=cgroupns"]
+        violations = operational.validate_sandbox_evidence_body(
+            evidence, verify_repository=False,
+        )
+        self.assertIn("SANDBOX_EVIDENCE_OCI_SECURITY_OPTIONS", violations)
+        self.assertIn("SANDBOX_EVIDENCE_RECEIPT_DIGEST", violations)
+
+    def test_sandbox_rehearsal_rejects_source_binding_tampering(self):
+        evidence = json.loads(
+            operational.SANDBOX_EVIDENCE.read_text(encoding="utf-8")
+        )
+        evidence["source_bindings"]["contracts/sandbox-boundary.v1.json"] = "0" * 64
+        violations = operational.validate_sandbox_evidence_body(
+            evidence, verify_repository=False,
+        )
+        self.assertIn(
+            "SANDBOX_EVIDENCE_SOURCE_BINDING:contracts/sandbox-boundary.v1.json",
+            violations,
+        )
+        self.assertIn("SANDBOX_EVIDENCE_RECEIPT_DIGEST", violations)
+
     def test_systemd_security_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_systemd_evidence())
 
