@@ -23,6 +23,9 @@ final class StandardValidationPackSupport {
     static final Duration TEST_TIMEOUT = Duration.ofMinutes(15);
     private static final long MAX_CONFIG_BYTES = 5L * 1024 * 1024;
     private static final int MAX_DETECTION_ENTRIES = 50_000;
+    private static final int MAX_TEST_SIGNAL_FILES = 5_000;
+    private static final long MAX_TEST_SIGNAL_FILE_BYTES = 1024L * 1024L;
+    private static final long MAX_TEST_SIGNAL_TOTAL_BYTES = 64L * 1024L * 1024L;
     private static final Set<String> SKIPPED_DIRECTORIES = Set.of(
             ".git", ".onsure", "target", "build", "node_modules", "__pycache__", ".venv", "venv",
             "fixtures", "test", "tests");
@@ -52,6 +55,56 @@ final class StandardValidationPackSupport {
             throw new IllegalArgumentException("VALIDATION_CONFIG_INVALID_OR_TOO_LARGE:" + file.getFileName());
         }
         return Files.readString(file);
+    }
+
+    static boolean testSignal(Path root, String relativeRoot, Set<String> extensions,
+            List<String> tokens) throws IOException {
+        Path testRoot = root.resolve(relativeRoot).normalize();
+        if (!testRoot.startsWith(root) || !Files.isDirectory(testRoot, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(testRoot)) {
+            return false;
+        }
+        Set<String> normalizedExtensions = extensions.stream()
+                .map(value -> value.toLowerCase(java.util.Locale.ROOT)).collect(java.util.stream.Collectors.toSet());
+        List<String> normalizedTokens = tokens.stream()
+                .map(value -> value.toLowerCase(java.util.Locale.ROOT)).toList();
+        int[] files = {0};
+        long[] bytes = {0};
+        boolean[] found = {false};
+        Files.walkFileTree(testRoot, Set.of(), 16, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attributes) {
+                if (Files.isSymbolicLink(directory)) return FileVisitResult.SKIP_SUBTREE;
+                return found[0] ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
+                if (found[0]) return FileVisitResult.TERMINATE;
+                if (!attributes.isRegularFile() || Files.isSymbolicLink(file)) return FileVisitResult.CONTINUE;
+                if (++files[0] > MAX_TEST_SIGNAL_FILES) {
+                    throw new IllegalArgumentException("VALIDATION_TEST_SIGNAL_FILE_LIMIT_EXCEEDED");
+                }
+                String name = file.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
+                if (normalizedExtensions.stream().noneMatch(name::endsWith)) return FileVisitResult.CONTINUE;
+                if (normalizedTokens.stream().anyMatch(name::contains)) {
+                    found[0] = true;
+                    return FileVisitResult.TERMINATE;
+                }
+                if (attributes.size() > MAX_TEST_SIGNAL_FILE_BYTES) return FileVisitResult.CONTINUE;
+                bytes[0] += attributes.size();
+                if (bytes[0] > MAX_TEST_SIGNAL_TOTAL_BYTES) {
+                    throw new IllegalArgumentException("VALIDATION_TEST_SIGNAL_BYTE_LIMIT_EXCEEDED");
+                }
+                String content = Files.readString(file).toLowerCase(java.util.Locale.ROOT);
+                if (normalizedTokens.stream().anyMatch(content::contains)) {
+                    found[0] = true;
+                    return FileVisitResult.TERMINATE;
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return found[0];
     }
 
     static boolean contains(Path file, String token) {

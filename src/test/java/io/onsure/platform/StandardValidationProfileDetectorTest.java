@@ -234,6 +234,43 @@ class StandardValidationProfileDetectorTest {
     }
 
     @Test
+    void mavenAndPythonNamedTestsFillFunctionalPathFacetsWithFixedOfflineCommands() throws Exception {
+        Path maven = Files.createDirectories(temp.resolve("maven/src/test/java/example"));
+        Files.writeString(temp.resolve("maven/pom.xml"), "<project/>");
+        Files.writeString(maven.resolve("SecurityAdversarialTest.java"), "class SecurityAdversarialTest {}");
+        Files.writeString(maven.resolve("ResumeReplayTest.java"), "class ResumeReplayTest {}");
+        Files.writeString(maven.resolve("ApprovalBoundaryTest.java"), "class ApprovalBoundaryTest {}");
+        var mavenProfile = new StandardValidationProfileDetector().detect("maven-facets", temp.resolve("maven"));
+        for (var kind : List.of(
+                UniversalValidationProfile.StepKind.NEGATIVE_TEST,
+                UniversalValidationProfile.StepKind.RETRY_TEST,
+                UniversalValidationProfile.StepKind.BLOCKING_TEST)) {
+            var step = mavenProfile.steps().stream().filter(value -> value.kind() == kind)
+                    .findFirst().orElseThrow();
+            assertEquals("mvn", step.command().get(0));
+            assertTrue(step.command().contains("-o"));
+            assertEquals(List.of("maven.clean-verify"), step.dependsOn());
+        }
+        assertFalse(mavenProfile.steps().stream().map(UniversalValidationProfile.Step::stepId)
+                .anyMatch(id -> id.startsWith("functional.")));
+
+        Path python = Files.createDirectories(temp.resolve("python/tests"));
+        Files.writeString(python.resolve("test_security.py"), "def test_tamper_is_blocked(): pass\n");
+        Files.writeString(python.resolve("test_recovery.py"), "def test_retry_and_resume(): pass\n");
+        var pythonProfile = new StandardValidationProfileDetector().detect("python-facets", temp.resolve("python"));
+        for (var kind : List.of(
+                UniversalValidationProfile.StepKind.NEGATIVE_TEST,
+                UniversalValidationProfile.StepKind.RETRY_TEST,
+                UniversalValidationProfile.StepKind.BLOCKING_TEST)) {
+            var step = pythonProfile.steps().stream().filter(value -> value.kind() == kind)
+                    .findFirst().orElseThrow();
+            assertEquals(List.of("python3", "-m", "unittest", "discover", "-v", "-s", "tests"),
+                    step.command());
+            assertEquals(List.of("python.tests"), step.dependsOn());
+        }
+    }
+
+    @Test
     void detectsNestedPostgresqlFlywayMigrationAndInventoriesIt() throws Exception {
         Path source = Files.createDirectory(temp.resolve("source"));
         Files.writeString(source.resolve("pom-modular.xml"), """
