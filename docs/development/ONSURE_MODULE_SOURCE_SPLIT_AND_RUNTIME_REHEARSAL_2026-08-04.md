@@ -26,15 +26,17 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - Canonical `clean verify`: 282/282, repeated twice. Independent clone: 282/282.
 - Modular package: 37/37 locally and in the independent clone; public API baseline: 240/240.
 - Python: 142/142; Node: 9/9; deterministic VSIX package pass.
-- Ubuntu candidate SHA-256: `e640f8bdbe55b939362cc755a090bf572d8d7b9e1755be3e4bbaf83c56d7a1a5`.
-- RHEL candidate SHA-256: `fd9ebcbe7991f6ddf1e381ec76f9a7ec99d2e3f228dc0e9f8e13e72af8ba6edb`.
+- Ubuntu candidate SHA-256: `90096dd910f0092911d8de9f78f71ffe5e1d660dc136bb99c53947d753fe9236`.
+- RHEL compatibility candidate SHA-256: `74ec4e2c844f4fd7570fb3e8f7de5d541de04220a0a263c0aa88659ff47685d8`.
 - Disposable PostgreSQL 16.14/Flyway: first migration 1, second 0, concurrent `[0,1]`, pending 0,
   dump/restore and restored validation pass. Production migration was not run.
 - Synthetic SQLite: apply 1, idempotent apply 0 and rollback 1 pass under the required `.onsure/`
   product-state boundary; an outside-state path was correctly rejected.
-- Nested `products/onsure/` cutover and rollback: 786/786 files, 10 commands, no external product
+- Nested `products/onsure/` cutover and rollback: 796/796 files, 10 commands, no external product
   repository.
 - VS Code 1.95.3 Extension Host: online Xvfb run exit 0 and cached `--network none` rerun exit 0.
+- VS Code Ubuntu runtime surface: Local API/Gateway RUNNING, content-free token/cost metrics and
+  receipt chain valid; runtime tokens were not written to evidence.
 
 ## Supply chain and air-gap
 

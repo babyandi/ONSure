@@ -21,7 +21,7 @@
 - `platform ↔ platform.oruda` cycle도 target-neutral evidence SPI로 제거됐으며 artifact/package cycle은 모두 0건이다.
 - `onsure-core`와 `onsure-adapter-oruda`는 각각 전용 `src/main/java`를 소유하며 공유 source module은 0건이다.
 - root canonical build는 두 module-owned root를 입력으로 사용해 기존 단일 artifact와 `io.onsure` 공개 API를 유지한다.
-- canonical 282 tests 2회, modular 37 tests, 공개 API 240/240과 독립 clone을 재검증했다. Manifest와 nested cutover/rollback은 786파일을 검증한다.
+- canonical 282 tests 2회, modular 37 tests, 공개 API 240/240과 독립 clone을 재검증했다. Manifest와 nested cutover/rollback은 796파일을 검증한다.
 
 ### 3. 패키지 의존 순환 제거 — 완료된 준비 항목
 

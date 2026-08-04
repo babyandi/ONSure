@@ -79,6 +79,13 @@ build:
   ubuntu_package_validation:
     command: python3 scripts/validate_onsure_ubuntu_package.py
     install_authority: false
+  ubuntu_lifecycle_rehearsal:
+    command: python3 scripts/onsure_ubuntu_lifecycle.py rehearse
+    production_authority: false
+  vscode_ubuntu_runtime_rehearsal:
+    command: python3 scripts/rehearse_onsure_vscode_runtime.py
+    requires_runtime_secrets: true
+    production_authority: false
   systemd_security_validation:
     command: python3 scripts/onsure_systemd_security.py
     rhel_execution_authority: false

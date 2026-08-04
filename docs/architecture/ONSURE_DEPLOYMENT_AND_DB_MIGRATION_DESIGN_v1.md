@@ -37,6 +37,11 @@ backup·restore proof, lock 경쟁 시험, 이전 application 호환성, retenti
 검토해야 한다. rollback은 이전 immutable application artifact와 forward-compatible schema 또는
 승인된 DB restore로 처리하며 자동 destructive undo는 제공하지 않는다.
 
+Ubuntu package는 `onsure-backup.service`와 daily persistent timer를 포함한다. backup runner는
+loopback PostgreSQL만 허용하고 custom format 생성, `pg_restore --list`, mode 0600, SHA-256 sidecar,
+exclusive lock과 최대 99일 retention을 강제한다. repository는 timer를 enable하거나 Production
+database에 실행하지 않는다.
+
 개발 호스트의 임시 loopback PostgreSQL 16.14에서는 V1 apply 1건, 재적용 0건, validate,
 pending 0건, 두 동시 migration process의 실행 결과 1/0과 단일 history, 합성 event
 `pg_dump`/`pg_restore`와 복원 schema 재검증이 통과했다. 증거는
@@ -53,6 +58,7 @@ bash scripts/package_onsure_ubuntu.sh
 python3 scripts/validate_onsure_ubuntu_package.py
 python3 scripts/validate_onsure_operational_boundary.py
 python3 scripts/onsure_deploy_migration_skeleton.py preflight
+python3 scripts/onsure_ubuntu_lifecycle.py rehearse
 python3 scripts/rehearse_onsure_postgresql.py
 ```
 

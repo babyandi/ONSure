@@ -20,6 +20,7 @@ UNITS = (
     ROOT / "deploy/rhel/onsure.service",
     ROOT / "deploy/rhel/onsure-llm-gateway.service",
     ROOT / "deploy/rhel/onsure-migrate.service",
+    ROOT / "deploy/ubuntu/onsure-backup.service",
 )
 MAXIMUM_EXPOSURE = 4.0
 

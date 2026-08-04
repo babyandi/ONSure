@@ -479,8 +479,12 @@ function surfaceRows(viewId, model = {}) {
   const status = model.status || {};
   const snapshot = model.snapshot || {};
   const local = model.local || {};
+  const gateway = model.gateway || { state: 'NOT_CONFIGURED', metrics: {} };
+  const gatewayMetrics = gateway.metrics || {};
   if (model.error) return [
     row('Local API', 'Unavailable', 'error', 'onsure.configure'),
+    row('LLM Gateway', model.gateway?.state || 'NOT_CONFIGURED',
+      model.gateway?.state === 'RUNNING' ? 'server-process' : 'warning'),
     row('Reason', model.error, 'warning')
   ];
   const profile = snapshot.profile?.body || {};
@@ -591,6 +595,7 @@ function surfaceRows(viewId, model = {}) {
         const validationCheckpoint = latest.stage_checkpoint?.body || {};
       return [
         row('Local API', status.state || 'UNKNOWN', 'server-process'),
+        row('LLM Gateway', gateway.state || 'UNKNOWN', 'server-process'),
         row('Autopilot State', checkpoint.state || 'NOT_STARTED', 'debug-pause'),
         row('Autopilot Control', control.desired_state || 'NOT_REQUESTED', 'settings'),
         row('Validation Stage', validationCheckpoint.current_stage_id || 'NOT_RUN', 'pulse'),
@@ -601,7 +606,10 @@ function surfaceRows(viewId, model = {}) {
         row('Data Transfer', plan.resource_budget?.data_transfer_scope || 'NOT_PLANNED', 'arrow-swap'),
         row('External Transfer', `${plan.resource_budget?.estimated_external_transfer_bytes ?? 0} bytes`, 'cloud-upload'),
         row('Paid Service', plan.resource_budget?.paid_service_allowed ?? false, 'credit-card'),
-        row('Network', plan.resource_budget?.network_egress || 'DENY_BY_DEFAULT', 'globe')
+        row('Network', plan.resource_budget?.network_egress || 'DENY_BY_DEFAULT', 'globe'),
+        row('Gateway Tokens', gatewayMetrics.total_tokens || 0, 'symbol-number'),
+        row('Gateway Cost', `${gatewayMetrics.actual_cost_micros || 0} µ`, 'credit-card'),
+        row('Gateway Receipt Chain', gatewayMetrics.chain_valid === true ? 'VALID' : 'NOT_VERIFIED', 'verified')
       ];
       }
     case 'onsure.admin':
@@ -609,6 +617,10 @@ function surfaceRows(viewId, model = {}) {
         row('Workspace', identity?.workspaceId || 'NOT_REGISTERED', 'workspace-trusted'),
         row('Project', identity?.projectId || 'NOT_REGISTERED', 'project'),
         row('Target', identity?.targetId || 'NOT_REGISTERED', 'target'),
+        row('LLM Gateway', gateway.state || 'NOT_CONFIGURED', 'server-process'),
+        row('LLM Requests', `${gatewayMetrics.success_count || 0} success / ${gatewayMetrics.failure_count || 0} failure`, 'pulse'),
+        row('LLM Evidence', gatewayMetrics.prompt_or_completion_content_recorded === false
+          ? 'CONTENT_FREE' : 'NOT_VERIFIED', 'shield'),
         row('Independent OTester', status.independent_otester || 'NOT_RUN', 'shield'),
         row('Independent OAudit', status.independent_oaudit || 'NOT_RUN', 'verified')
       ];

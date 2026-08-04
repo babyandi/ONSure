@@ -112,8 +112,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8d623ecec3a0aef1198c22ebc94177f2d4d98c4d545538dedcd6f18c3df1f410",
-      "size_bytes": 7554
+      "sha256": "24a523174241108ec96faa4b28dd5c03dd0c0eb8d93e98d58338628e727605da",
+      "size_bytes": 7869
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -336,7 +336,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "efb3eaef825d15c228da871ea0b118ca9e6eab6a2682f625cf8f3daeb9b9c53a",
+      "sha256": "3e720b02a6656524c7adc4c84dde021863f2e7e2e4d8a45613c36603c84fd92b",
       "size_bytes": 754
     },
     {
@@ -480,7 +480,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "94a70ccd970ed61f54de591b6e036692fad6c57bc2716ec74f77d39376ca4a8d",
+      "sha256": "6937850b1f216316b6b825cca751dbe25d546c0e0e6355a1398cdaa1369460c1",
       "size_bytes": 1010
     },
     {
@@ -496,8 +496,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "16c35c874400495a40fe9f9297670da7f97e68049b939257c0798fc4e64ef6f8",
-      "size_bytes": 1918
+      "sha256": "2a88424eeadc9f1b911c9c9f4272c199acb46c514d5ef676715b19f67f3fc3d3",
+      "size_bytes": 2252
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -512,8 +512,24 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "3cbfde96c56991c4882172bbf80a2c54f887782651f5fbe82d82aa1f555d0dca",
-      "size_bytes": 1193
+      "sha256": "ff1f4e51ac2c810604f4f39bf79e66e60d811d656ad12ea022270ead6565eed8",
+      "size_bytes": 1436
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "d5eb213b0c6dc25fec15ee680d1ea7bcbae2cc568c58fdc630f40f2983f6789a",
+      "size_bytes": 718
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -528,8 +544,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "5b4c11c1394426ea22a43dce3132f84a6dd52cf80422cf3c092f10676fca8d98",
-      "size_bytes": 1928
+      "sha256": "2d85eb9694855652e66a2345f1bfe76a4f169815faf3929f8558f8d6d3c375fb",
+      "size_bytes": 2262
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -544,8 +560,24 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "a3b633f865a985cb66ba375b735cd8ef01d70501566548fa453feda7fe6e5c98",
-      "size_bytes": 1196
+      "sha256": "4c65e7ea4d1d3e42930e9786e2a1167cd365c8e8a4425803307b7fb71990b6f5",
+      "size_bytes": 1439
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "165c9bc56743d47b2ca1752af1b152a651e484ba7535a0f964a1693768dc3cd0",
+      "size_bytes": 480
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -656,8 +688,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "4f9994c3ab1adf2499dd04d69e6e346b55be0fa7f0df800cfdcb339203c3a2e8",
-      "size_bytes": 1693
+      "sha256": "a770dd511565e2aeeebad89d62afa6b88820d936d105fe3f31ba45e4c33a2128",
+      "size_bytes": 1699
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2208,8 +2240,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "83c3360b66309641ce01283e369d6cdb72caa7895f8ad7aa2a0c2d5905b0370a",
-      "size_bytes": 1591
+      "sha256": "f77b8f254a6087f3243d937fa2e002d802aef2ba1911b353a106fa92b6227635",
+      "size_bytes": 1823
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2256,8 +2288,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "c02e4ac00b023f8908033eb6fb10326e2764ad8fc2da25c29439ca8d9848dd2d",
-      "size_bytes": 287
+      "sha256": "0e401ad5595bca4ad6563a7f7007ef1b4df81a114fa38a8fbb82d62c70a920fc",
+      "size_bytes": 334
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2272,8 +2304,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ea31795ce4cf2c2c6bd6c5be75ee31a9e57e19b29c182ffd8164c2db4ca3d3be",
-      "size_bytes": 2402
+      "sha256": "de37b02f0ca9b602bbc81c676d2f4f987474bbce7a8f3dbc55f876fe04d2e31b",
+      "size_bytes": 3051
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2290,6 +2322,54 @@
       },
       "sha256": "fe53e505a4d914e6bd92ec3ac42a15ff993b69fa78ed3402240b12b5f9b0a1cf",
       "size_bytes": 1137
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "deploy/ubuntu/onsure-backup.service",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/deploy/ubuntu/onsure-backup.service",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "91052d0c1f9a687a4bd838fa321df79e9f3e23acaae91e0e7e3d85f6cb5add11",
+      "size_bytes": 825
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "deploy/ubuntu/onsure-backup.timer",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/deploy/ubuntu/onsure-backup.timer",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "0a1cfb9e37a91f79dd05cc1000d0847b13f1ef4a0f9817508b6471c277cedab8",
+      "size_bytes": 219
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "deploy/ubuntu/onsure-postgresql-backup",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/deploy/ubuntu/onsure-postgresql-backup",
+      "git_mode": "100755",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "a22b994a7d5122f3264b12ec3340f1f646a7f58123be15b7466c465d251dfea4",
+      "size_bytes": 1929
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2608,8 +2688,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "73756535e6f7a94926f3e6357662d5fddde5d7f2ab05f452d31ab769b70997e3",
-      "size_bytes": 3424
+      "sha256": "bd1652d5379669d56ecb7037edec4797c4482c7bd7d015802bd6905f4389285d",
+      "size_bytes": 3830
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -2848,8 +2928,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "37134101d14dc6b2eb1ea44f32461b1610cf9f14dca3ce187be8dca97b110e88",
-      "size_bytes": 4398
+      "sha256": "a195943e6cbbe0dd92ce09dbc2044c931b8e5638c385f4cca0ca97adc0d11cb8",
+      "size_bytes": 4577
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -3056,7 +3136,7 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "05a8d4533ebd96c57a4132e5727b5ef3ba7c3675382257228e317640e334b27d",
+      "sha256": "592e617283d115350b0e96006d1394004d0dd31ee98790f41af962dbbd5098a8",
       "size_bytes": 10015
     },
     {
@@ -3072,8 +3152,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "aa8f2a94d6cc926a17faa2fee185137c73a4f4627ec564f1c75130aa76fc6e02",
-      "size_bytes": 20703
+      "sha256": "6841c62f4343d1437bcaeb8c6163cdc4ff553167385584bc683cbf9e5151832d",
+      "size_bytes": 21362
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -8678,8 +8758,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "efb976ad5993f1db66a67aca44f69dee003092a187e9391a389184418899a0d3",
-      "size_bytes": 3723
+      "sha256": "fa4396166c649d3020a6efbee5cffe410ee77afbb34cbf759fbd8c8918c43927",
+      "size_bytes": 4015
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -9158,8 +9238,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "ae601cb1c98dfa2fea17a858084dcaf69234d1c61898373e35776c9c5d39f64d",
-      "size_bytes": 3815
+      "sha256": "7e2a593f76319d0b7bb2b7974e0971a6e474e9b82f3759c3e0ab2a67dc995a5f",
+      "size_bytes": 3865
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -9176,6 +9256,22 @@
       },
       "sha256": "20f70632cd5e94626724ded3cd71cbd70fb4e78d5e1e9453a308b7f660954003",
       "size_bytes": 4568
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "scripts/onsure_ubuntu_lifecycle.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/scripts/onsure_ubuntu_lifecycle.py",
+      "git_mode": "100755",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "4b0a526272e6777fdf246f65d342e2b8cc463d0cb9f245d8605c1f6e79503d7d",
+      "size_bytes": 8424
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -9238,8 +9334,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f55031feadbf039eac1c8b257f79c01ade1ddad080bc6a519c4799f633b557ab",
-      "size_bytes": 4248
+      "sha256": "53762f138ec4b999cb1886fa9f9e03387c559391dcb857b9eb0eef8aa334d92d",
+      "size_bytes": 4614
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -9352,6 +9448,22 @@
       },
       "sha256": "efce9a40533c0130a2635cb7523de65d8e069a75d12a800c38db530b969ceb4a",
       "size_bytes": 13192
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "scripts/rehearse_onsure_vscode_runtime.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/scripts/rehearse_onsure_vscode_runtime.py",
+      "git_mode": "100755",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "a763a933bdd5acce2b05bc79c2b609a8e516e0f4bc6c4aa524118ec9829abbd0",
+      "size_bytes": 4618
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -10022,8 +10134,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "50913e16eb36f1b85618da99d003e09c9feb911aa8841ddb80085e6d38e46f15",
-      "size_bytes": 10566
+      "sha256": "a6ab2f2cb937b8cf9f9f625673f49ecddd2edcc54496d3d3d71dc7738fb5a087",
+      "size_bytes": 10632
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -10118,8 +10230,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "9fd27ba69bd5fd846b7f9335cd5231398acd392386c067dada7f5459f5a28bfc",
-      "size_bytes": 22915
+      "sha256": "bd26f7316f987831291a680f832b7c1b5833e088f0c6031b2b9f310ab414bfa5",
+      "size_bytes": 26483
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -10150,8 +10262,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "d69dbba5782a4066be425a8737ed09520cb271e205a463d8616f2863039acf96",
-      "size_bytes": 9595
+      "sha256": "8a14b7ff12844e7c3d93160598e0c09bd8ca3435901113141cda54354c06be4f",
+      "size_bytes": 10016
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12150,8 +12262,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "1c1a58ddb0c6d5daaea0b599543dd255f525c83712d9dbd3bc71c9bad1af1e77",
-      "size_bytes": 3277
+      "sha256": "adf3b2df9d241b2095d939a398871f008ece3f3626e1a751db6aa237c20bcc12",
+      "size_bytes": 3959
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12267,6 +12379,38 @@
     },
     {
       "copyright_owner": "ORUDA Labs",
+      "current_path": "tests/test_onsure_ubuntu_backup.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/tests/test_onsure_ubuntu_backup.py",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "e030ec2d86a80c8d44299d070a0e4325da9aa6c0e6c523732dd11ea14d0b7c16",
+      "size_bytes": 1537
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "tests/test_onsure_ubuntu_lifecycle.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/tests/test_onsure_ubuntu_lifecycle.py",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "2e2e0c11f3c0f3b02f9af62a9d5a4e9036d8d6f0fc756911c74c2e9215dc946c",
+      "size_bytes": 2258
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
       "current_path": "tests/test_onsure_ubuntu_package_validation.py",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -12278,8 +12422,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "4c34ebdbfab18db2451d7c5ad84362af086d0465aa14eaac9893d86ec2a70b77",
-      "size_bytes": 1065
+      "sha256": "41ca0a00967dd02e76845fa06182e19295c91ad71c0aae87a9548bfcdca1c039",
+      "size_bytes": 1270
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12296,6 +12440,22 @@
       },
       "sha256": "5a91842b40bbb07108e6a84b653a3e51a34a3107b989002c451d502a1366bed8",
       "size_bytes": 3339
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "tests/test_onsure_vscode_runtime.py",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/tests/test_onsure_vscode_runtime.py",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "625b8e77bd37142dd6171460fb4ff5bf06156331b8d0d56d54ba73cf346f44f5",
+      "size_bytes": 1986
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12422,8 +12582,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "f28cbb4c660acc371c309cba2114bd5808417f50d0587a4d6f0589dbf3ebb21d",
-      "size_bytes": 6853
+      "sha256": "85d1ae1af910fd308d158191789d6a62050ace80242ae8d502ffb000ed20d2a9",
+      "size_bytes": 7180
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12454,8 +12614,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "8587d6d247c397bda0bb113d5c78dc2d0c6df4f67b5028a79e137182c5b77daf",
-      "size_bytes": 30715
+      "sha256": "02cecfe2e2de881de5620906952fc15f2af90634ca137214457ba849328c3329",
+      "size_bytes": 31702
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12470,8 +12630,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "250740520e6ff8423cea432a9ac740059a27a8b194e33de1fb150c4cb24cc199",
-      "size_bytes": 40800
+      "sha256": "2f5478e4cd77a74ed8b2dbb238a53630785077dc7fe06d744db9a8e1e1b52d9b",
+      "size_bytes": 43633
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12518,8 +12678,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "9518a6b00b01fd5b91bd9a0a2e9d77739915b5c079d211ed388e1012f26a5cc7",
-      "size_bytes": 10378
+      "sha256": "889b356e50bd8b2b0988b6305f4bdbc15bd466505258af5729f722da44b6dd58",
+      "size_bytes": 10608
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12534,8 +12694,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "6e86cfaf3f1b029e7cc98f7fd7adeb19e5fbd878c223409fd74ef8639c9937ba",
-      "size_bytes": 14408
+      "sha256": "438557660623be2c754b167fdd951a1c95d759fb2c4ae40a0385cc33cb7b4679",
+      "size_bytes": 14775
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12566,8 +12726,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "512da6a4e3acbabf25a03037f8b728ce42222a30420bdd059044ea45c2f4622d",
-      "size_bytes": 1003
+      "sha256": "42d234f55e85efe5d5fa01667904d2ab6c3aae26e4f3d03399c2a72c854b4632",
+      "size_bytes": 1267
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -12620,14 +12780,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 786,
+    "file_count": 796,
     "license_counts": {
-      "LicenseRef-ORUDA-Labs-Proprietary": 786
+      "LicenseRef-ORUDA-Labs-Proprietary": 796
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 783,
+      "NO_PATTERN_MATCH": 793,
       "REVIEW_REQUIRED": 3
     },
-    "total_size_bytes": 7960986
+    "total_size_bytes": 7998285
   }
 }

@@ -31,6 +31,13 @@
       "maximum_allowed": 4.0,
       "path": "deploy/rhel/onsure-migrate.service",
       "sha256": "fc3829d5526038de799afb729e93d774697648a048222c0f47df87e91f867f95"
+    },
+    {
+      "decision": "PASS_NONFINAL",
+      "exposure_score": 2.9,
+      "maximum_allowed": 4.0,
+      "path": "deploy/ubuntu/onsure-backup.service",
+      "sha256": "91052d0c1f9a687a4bd838fa321df79e9f3e23acaae91e0e7e3d85f6cb5add11"
     }
   ]
 }

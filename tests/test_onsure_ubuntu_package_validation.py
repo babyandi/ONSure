@@ -21,6 +21,9 @@ class ONSureUbuntuPackageValidationTest(unittest.TestCase):
         self.assertIn("deploy/rhel/onsure.service", paths)
         self.assertIn("deploy/rhel/onsure-llm-gateway.service", paths)
         self.assertIn("deploy/ubuntu/README.md", paths)
+        self.assertIn("deploy/ubuntu/onsure-backup.service", paths)
+        self.assertIn("deploy/ubuntu/onsure-backup.timer", paths)
+        self.assertIn("deploy/ubuntu/onsure-postgresql-backup", paths)
         self.assertNotIn("deploy/rhel/README.md", paths)
 
     def test_unknown_platform_is_rejected(self):

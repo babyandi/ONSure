@@ -33,6 +33,7 @@ const {
 } = require('./extension-core');
 
 const TOKEN_KEY = 'onsure.localApiToken';
+const GATEWAY_TOKEN_KEY = 'onsure.llmGatewayToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
 const LAST_PROFILE_KEY = 'onsure.lastProgramProfile';
 const LAST_PLAN_KEY = 'onsure.lastExecutionPlan';
@@ -114,6 +115,50 @@ class ApiClient {
   }
 }
 
+class GatewayClient {
+  constructor(context) { this.context = context; }
+
+  get baseUrl() {
+    const configured = vscode.workspace.getConfiguration('onsure').get('llmGatewayUrl');
+    return normalizeBaseUrl(configured || 'http://127.0.0.1:47312');
+  }
+
+  async request(route, token) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(`${this.baseUrl}${route}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
+      const text = await response.text();
+      let payload;
+      try { payload = text ? JSON.parse(text) : {}; }
+      catch { throw new Error(`Invalid JSON from LLM Gateway (${response.status}).`); }
+      if (!response.ok) throw new Error(`LLM Gateway returned HTTP ${response.status}.`);
+      return payload;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async snapshot() {
+    const token = await this.context.secrets.get(GATEWAY_TOKEN_KEY);
+    if (!token) return { state: 'NOT_CONFIGURED', metrics: {} };
+    try {
+      const [health, metrics] = await Promise.all([
+        this.request('/v1/health', token), this.request('/v1/metrics', token)
+      ]);
+      return { state: health.state || 'UNKNOWN', health, metrics };
+    } catch (error) {
+      return { state: 'UNAVAILABLE', error: error.message, metrics: {} };
+    }
+  }
+}
+
 class PatchPreviewProvider {
   constructor() { this.documents = new Map(); }
 
@@ -130,9 +175,10 @@ class PatchPreviewProvider {
 }
 
 class WorkspaceModel {
-  constructor(context, client) {
+  constructor(context, client, gateway) {
     this.context = context;
     this.client = client;
+    this.gateway = gateway;
     this.value = {};
     this.pending = null;
   }
@@ -165,6 +211,7 @@ class WorkspaceModel {
 
   async fetch() {
     const local = this.local();
+    const gateway = await this.gateway.snapshot();
     try {
       const status = await this.client.request('/v1/status');
       let snapshot;
@@ -175,9 +222,9 @@ class WorkspaceModel {
         snapshot = requireSnapshotBinding(response, identity);
         await restoreSnapshotState(this.context, snapshot);
       }
-      return { loaded: true, status, snapshot, local: this.local() };
+      return { loaded: true, status, snapshot, gateway, local: this.local() };
     } catch (error) {
-      return { loaded: true, error: error.message, local: this.local() };
+      return { loaded: true, error: error.message, gateway, local: this.local() };
     }
   }
 
@@ -293,8 +340,9 @@ function atomicWriteNewJson(file, value) {
 
 async function activate(context) {
   const client = new ApiClient(context);
+  const gateway = new GatewayClient(context);
   const patchPreviews = new PatchPreviewProvider();
-  const model = new WorkspaceModel(context, client);
+  const model = new WorkspaceModel(context, client, gateway);
   const providers = VIEW_IDS.map(viewId => new AssuranceTreeProvider(viewId, model));
   const views = VIEW_IDS.map((viewId, index) =>
     vscode.window.createTreeView(viewId, { treeDataProvider: providers[index] }));
@@ -478,11 +526,28 @@ async function activate(context) {
         validateInput: value => value.length >= 32 ? undefined : 'Token must contain at least 32 characters.'
       });
       if (token) await context.secrets.store(TOKEN_KEY, token);
+      const currentGateway = vscode.workspace.getConfiguration('onsure').get('llmGatewayUrl')
+        || 'http://127.0.0.1:47312';
+      const gatewayUrl = await vscode.window.showInputBox({
+        title: 'ONSure LLM Gateway URL', value: String(currentGateway),
+        validateInput: value => /^http:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):\d{2,5}\/?$/.test(value)
+          ? undefined : 'Use a loopback URL such as http://127.0.0.1:47312.'
+      });
+      if (gatewayUrl) await vscode.workspace.getConfiguration('onsure').update(
+        'llmGatewayUrl', gatewayUrl.replace(/\/$/, ''), vscode.ConfigurationTarget.Workspace);
+      const gatewayToken = await vscode.window.showInputBox({
+        title: 'ONSure LLM Gateway Token', password: true, ignoreFocusOut: true,
+        prompt: 'Optional. Stored only in VS Code SecretStorage.',
+        validateInput: value => !value || value.length >= 32
+          ? undefined : 'Token must contain at least 32 characters.'
+      });
+      if (gatewayToken) await context.secrets.store(GATEWAY_TOKEN_KEY, gatewayToken);
       refreshAll();
     }),
     vscode.commands.registerCommand('onsure.clearToken', async () => {
       await context.secrets.delete(TOKEN_KEY);
-      vscode.window.showInformationMessage('ONSure Local API token cleared.');
+      await context.secrets.delete(GATEWAY_TOKEN_KEY);
+      vscode.window.showInformationMessage('ONSure Local API and LLM Gateway tokens cleared.');
     }),
     vscode.commands.registerCommand('onsure.registerWorkspaceTarget', async () => {
       try {

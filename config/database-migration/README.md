@@ -16,7 +16,7 @@ java -jar modules/onsure-migration-postgresql/target/onsure-migration-postgresql
 python3 scripts/onsure_synthetic_db_migration.py apply --database /synthetic/path.db --lock /synthetic/path.lock
 ```
 
-RHEL 운영 PostgreSQL migrate, lock 경쟁, backup/restore, rollback compatibility와 서명 receipt는 `NOT_RUN`이다.
+Ubuntu Production PostgreSQL migrate, lock 경쟁, backup/restore, rollback compatibility와 서명 receipt는 `NOT_RUN`이다.
 destructive DDL, 고객 데이터 fixture와 자동 rollback은 기본 거부한다.
 
 Docker 없이 임시 loopback PostgreSQL server를 사용할 수 있는 개발 호스트에서는 다음 명령이 실제

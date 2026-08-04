@@ -97,6 +97,7 @@ def main() -> int:
     core = core_file.read_text(encoding="utf-8")
     for token in (
         "context.secrets.get", "context.secrets.store", "context.secrets.delete",
+        "onsure.llmGatewayToken", "llmGatewayUrl", "/v1/metrics",
         "Authorization", "127\\.0\\.0\\.1", "localhost", "/v1/workflow",
         "SELF_VALIDATION_NONFINAL", "independent_otester", "openLastArtifact",
         "runWorkflowRequest", "requireInsideWorkspace", "fs.readFileSync",

@@ -176,6 +176,10 @@ test('patch preview and signing request remain digest hunk and safety bound', ()
 test('dedicated surfaces render profile plan run finding evidence and git state', () => {
   const model = {
     status: { state: 'RUNNING', independent_otester: 'NOT_RUN', independent_oaudit: 'NOT_RUN' },
+    gateway: { state: 'RUNNING', metrics: {
+      total_tokens: 23, actual_cost_micros: 23, success_count: 1, failure_count: 0,
+      chain_valid: true, prompt_or_completion_content_recorded: false
+    } },
     local: { identity, workMode: 'PLAN', changeSet: '/tmp/change.json' },
     snapshot: {
       profile: { state: 'AVAILABLE', path: '/tmp/profile.json', body: {
@@ -210,7 +214,9 @@ test('dedicated surfaces render profile plan run finding evidence and git state'
   assert.equal(surfaceRows('onsure.findings', model)[0].label, 'Unsafe');
   assert.equal(surfaceRows('onsure.evidence', model)[0].label, 'E-1');
   assert.equal(surfaceRows('onsure.runs', model)[0].children[0].command, 'onsure.openArtifact');
-  assert.equal(surfaceRows('onsure.runtime', model)[3].label, 'Validation Stage');
+  assert.equal(surfaceRows('onsure.runtime', model)[4].label, 'Validation Stage');
+  assert.equal(surfaceRows('onsure.runtime', model).at(-1).description, 'VALID');
+  assert.equal(surfaceRows('onsure.admin', model)[3].description, 'RUNNING');
 });
 
 test('local API URL accepts only explicit loopback HTTP ports', () => {

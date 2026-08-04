@@ -335,6 +335,11 @@
           "default": "http://127.0.0.1:47311",
           "description": "Loopback-only ONSure Local API URL."
         },
+        "onsure.llmGatewayUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:47312",
+          "description": "Loopback-only ONSure LLM Gateway URL for content-free health and usage monitoring."
+        },
         "onsure.defaultTargetType": {
           "type": "string",
           "enum": [

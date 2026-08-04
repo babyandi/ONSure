@@ -27,6 +27,12 @@ Ubuntu operator review must cover:
 - External injection of API, database and Local API secrets; examples contain no active secret slot.
 - Immutable package digest approval, migration authorization and rollback rehearsal.
 
+The candidate includes a fail-closed daily PostgreSQL backup timer. It writes custom-format,
+mode-0600 backups under `/var/lib/onsure/backups`, validates every new archive with
+`pg_restore --list`, records a SHA-256 sidecar, serializes execution with `flock`, permits only a
+loopback database host and applies bounded retention. The timer is packaged but is not enabled by
+the repository.
+
 Review-only commands (no installation):
 
 ```bash
@@ -35,7 +41,12 @@ python3 scripts/validate_onsure_ubuntu_package.py
 systemd-analyze verify deploy/rhel/onsure.service deploy/rhel/onsure-llm-gateway.service deploy/rhel/onsure-migrate.service
 python3 scripts/onsure_ubuntu_systemd_security.py
 python3 scripts/validate_onsure_operational_boundary.py
+python3 scripts/onsure_ubuntu_lifecycle.py rehearse
 ```
+
+The lifecycle rehearsal verifies archive paths and internal checksums, performs immutable install,
+idempotent reinstall, upgrade and rollback inside `.onsure/`, and confirms that no host path was
+modified.
 
 Package installation, `apt` changes, AppArmor/UFW changes, PostgreSQL service modification,
 systemd enable/start, migration, rollback, deployment and Production GO are `NOT_RUN` and not

@@ -40,6 +40,7 @@ fi
 stage="$(mktemp -d "${product_root}/target/onsure-${platform}-stage.XXXXXX")"
 mkdir -p "${stage}/opt/onsure/app" "${stage}/opt/onsure/migration" "${stage}/opt/onsure/lib"
 mkdir -p "${stage}/opt/onsure/legal"
+mkdir -p "${stage}/opt/onsure/bin"
 mkdir -p "${stage}/etc/onsure" "${stage}/usr/lib/systemd/system"
 mkdir -p "${stage}/usr/lib/sysusers.d" "${stage}/usr/lib/tmpfiles.d"
 
@@ -66,6 +67,10 @@ unzip -p "${stage}/opt/onsure/lib/postgresql-42.7.12.jar" META-INF/LICENSE \
 cp "${product_root}/deploy/rhel/onsure.service" "${stage}/usr/lib/systemd/system/"
 cp "${product_root}/deploy/rhel/onsure-llm-gateway.service" "${stage}/usr/lib/systemd/system/"
 cp "${product_root}/deploy/rhel/onsure-migrate.service" "${stage}/usr/lib/systemd/system/"
+cp "${product_root}/deploy/ubuntu/onsure-backup.service" "${stage}/usr/lib/systemd/system/"
+cp "${product_root}/deploy/ubuntu/onsure-backup.timer" "${stage}/usr/lib/systemd/system/"
+cp "${product_root}/deploy/ubuntu/onsure-postgresql-backup" "${stage}/opt/onsure/bin/"
+chmod 0755 "${stage}/opt/onsure/bin/onsure-postgresql-backup"
 cp "${product_root}/deploy/rhel/onsure.sysusers.conf" "${stage}/usr/lib/sysusers.d/"
 cp "${product_root}/deploy/rhel/onsure.tmpfiles.conf" "${stage}/usr/lib/tmpfiles.d/"
 cp "${product_root}/deploy/rhel/onsure.env.example" "${stage}/etc/onsure/"

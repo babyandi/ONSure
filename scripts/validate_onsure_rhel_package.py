@@ -32,6 +32,9 @@ SHARED_SOURCE_FILES = (
     ROOT / "deploy/rhel/onsure.env.example",
     ROOT / "deploy/rhel/onsure.sysusers.conf",
     ROOT / "deploy/rhel/onsure.tmpfiles.conf",
+    ROOT / "deploy/ubuntu/onsure-backup.service",
+    ROOT / "deploy/ubuntu/onsure-backup.timer",
+    ROOT / "deploy/ubuntu/onsure-postgresql-backup",
 )
 REQUIRED_FILES = {
     "etc/onsure/onsure.env.example",
@@ -51,6 +54,9 @@ REQUIRED_FILES = {
     "usr/lib/systemd/system/onsure.service",
     "usr/lib/systemd/system/onsure-llm-gateway.service",
     "usr/lib/systemd/system/onsure-migrate.service",
+    "usr/lib/systemd/system/onsure-backup.service",
+    "usr/lib/systemd/system/onsure-backup.timer",
+    "opt/onsure/bin/onsure-postgresql-backup",
     "usr/lib/sysusers.d/onsure.sysusers.conf",
     "usr/lib/tmpfiles.d/onsure.tmpfiles.conf",
     "SHA256SUMS",
@@ -130,6 +136,8 @@ def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dic
         raise ValueError("PACKAGE_UNEXPECTED_FILE:" + ",".join(unexpected))
     if modes["etc/onsure/onsure.env.example"] != 0o640:
         raise ValueError("PACKAGE_ENVIRONMENT_MODE")
+    if modes["opt/onsure/bin/onsure-postgresql-backup"] != 0o755:
+        raise ValueError("PACKAGE_BACKUP_SCRIPT_MODE")
     for legal_file in ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"):
         packaged = contents[f"opt/onsure/legal/{legal_file}"]
         if packaged != (ROOT / legal_file).read_bytes():

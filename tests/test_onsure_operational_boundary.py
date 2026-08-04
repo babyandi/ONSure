@@ -61,6 +61,12 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_ubuntu_candidate_is_loopback_and_fail_closed(self):
         self.assertEqual([], operational.validate_ubuntu_candidate())
 
+    def test_ubuntu_backup_timer_is_content_free_and_fail_closed(self):
+        script = (ROOT / "deploy/ubuntu/onsure-postgresql-backup").read_text(encoding="utf-8")
+        self.assertIn("ONSURE_BACKUP_NON_LOOPBACK_DATABASE_DENIED", script)
+        self.assertIn("pg_restore --list", script)
+        self.assertNotIn("echo ${ONSURE_DB_PASSWORD}", script)
+
     def test_postgresql_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_postgresql_evidence())
 
@@ -75,6 +81,12 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
 
     def test_ubuntu_package_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_ubuntu_package_evidence())
+
+    def test_ubuntu_lifecycle_rehearsal_is_digest_bound_and_nonproduction(self):
+        self.assertEqual([], operational.validate_ubuntu_lifecycle_evidence())
+
+    def test_vscode_ubuntu_runtime_evidence_is_content_free_and_nonproduction(self):
+        self.assertEqual([], operational.validate_vscode_runtime_evidence())
 
 
 if __name__ == "__main__":

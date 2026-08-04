@@ -6,6 +6,9 @@
 
 ### Added
 
+- Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
+- loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계
+- VS Code Runtime/Admin View의 SecretStorage 기반 LLM Gateway health·token·cost·receipt-chain 표시
 - Local API least-privilege VIEWER/OPERATOR/ADMIN/APPROVER roles, read-only external program
   registration, isolated Maven validation and append-only management audit evidence
 - two-person secret-free Gateway setting request/approval flow with external apply boundary

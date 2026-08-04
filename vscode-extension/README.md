@@ -11,6 +11,11 @@ active workspace. All results are `SELF_VALIDATION_NONFINAL`.
 2. Configure the same loopback URL and token with `ONSure: Configure Local API`.
 3. Add an `onsure-target.json` conforming to `ONSURE_TARGET_MANIFEST_V1` to the target root.
 
+The same configuration command can store a distinct optional LLM Gateway token in VS Code
+SecretStorage. `onsure.llmGatewayUrl` defaults to `http://127.0.0.1:47312`. Runtime and Admin views
+then show content-free health, token/cost totals and receipt-chain validity; the extension never
+requests prompt or completion content.
+
 The extension rejects non-loopback URLs, browser-origin API access, paths outside the active
 workspace and a registered target whose persisted source root differs from the active workspace.
 

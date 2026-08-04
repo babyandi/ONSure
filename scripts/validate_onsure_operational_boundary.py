@@ -23,6 +23,14 @@ SYSTEMD_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-systemd-security.v1.jso
 UBUNTU_SYSTEMD_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-systemd-security.v1.json"
 RHEL_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-package-validation.v1.json"
 UBUNTU_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-package-validation.v1.json"
+UBUNTU_LIFECYCLE_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json"
+VSCODE_RUNTIME_EVIDENCE = ROOT / "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json"
+SYSTEMD_UNITS = (
+    ROOT / "deploy/rhel/onsure.service",
+    ROOT / "deploy/rhel/onsure-llm-gateway.service",
+    ROOT / "deploy/rhel/onsure-migrate.service",
+    ROOT / "deploy/ubuntu/onsure-backup.service",
+)
 
 
 def validate_rhel_candidate() -> list[str]:
@@ -122,6 +130,25 @@ def validate_ubuntu_candidate() -> list[str]:
     ):
         if required not in normalized_readme:
             violations.append("UBUNTU_README_MISSING:" + required)
+    backup_service = (ROOT / "deploy/ubuntu/onsure-backup.service").read_text(encoding="utf-8")
+    backup_timer = (ROOT / "deploy/ubuntu/onsure-backup.timer").read_text(encoding="utf-8")
+    backup_script = (ROOT / "deploy/ubuntu/onsure-postgresql-backup").read_text(encoding="utf-8")
+    for required in (
+        "User=onsure", "NoNewPrivileges=yes", "ProtectSystem=strict",
+        "ReadWritePaths=/var/lib/onsure/backups",
+        "ExecStart=/usr/bin/bash /opt/onsure/bin/onsure-postgresql-backup",
+    ):
+        if required not in backup_service:
+            violations.append("UBUNTU_BACKUP_SERVICE_MISSING:" + required)
+    for required in ("OnCalendar=", "RandomizedDelaySec=", "Persistent=true"):
+        if required not in backup_timer:
+            violations.append("UBUNTU_BACKUP_TIMER_MISSING:" + required)
+    for required in (
+        "umask 077", "pg_dump", "pg_restore --list", "flock -n",
+        "ONSURE_BACKUP_NON_LOOPBACK_DATABASE_DENIED", "chmod 0600",
+    ):
+        if required not in backup_script:
+            violations.append("UBUNTU_BACKUP_SCRIPT_MISSING:" + required)
     return violations
 
 
@@ -172,11 +199,7 @@ def validate_systemd_evidence() -> list[str]:
         violations.append("SYSTEMD_EVIDENCE_CONTRACT")
     expected = {
         path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in (
-            ROOT / "deploy/rhel/onsure.service",
-            ROOT / "deploy/rhel/onsure-llm-gateway.service",
-            ROOT / "deploy/rhel/onsure-migrate.service",
-        )
+        for path in SYSTEMD_UNITS
     }
     actual = {str(item.get("path")): item for item in evidence.get("units", [])}
     if set(actual) != set(expected):
@@ -205,11 +228,7 @@ def validate_ubuntu_systemd_evidence() -> list[str]:
         violations.append("UBUNTU_SYSTEMD_EVIDENCE_CONTRACT")
     expected = {
         path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in (
-            ROOT / "deploy/rhel/onsure.service",
-            ROOT / "deploy/rhel/onsure-llm-gateway.service",
-            ROOT / "deploy/rhel/onsure-migrate.service",
-        )
+        for path in SYSTEMD_UNITS
     }
     actual = {str(item.get("path")): item for item in evidence.get("units", [])}
     if set(actual) != set(expected):
@@ -285,6 +304,40 @@ def validate_ubuntu_package_evidence() -> list[str]:
             != hashlib.sha256(package.read_bytes()).hexdigest():
         violations.append("UBUNTU_PACKAGE_EVIDENCE_ARTIFACT_BINDING")
     return violations
+
+
+def validate_ubuntu_lifecycle_evidence() -> list[str]:
+    violations: list[str] = []
+    evidence = json.loads(UBUNTU_LIFECYCLE_EVIDENCE.read_text(encoding="utf-8"))
+    package = json.loads(UBUNTU_PACKAGE_EVIDENCE.read_text(encoding="utf-8"))
+    if evidence.get("contract") != "ONSURE_UBUNTU_LIFECYCLE_REHEARSAL_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("idempotent_reinstall") is not True \
+            or evidence.get("host_filesystem_modified") is not False \
+            or evidence.get("production_execution") != "NOT_RUN" \
+            or evidence.get("final_claim_allowed") is not False:
+        violations.append("UBUNTU_LIFECYCLE_EVIDENCE_CONTRACT")
+    if evidence.get("package_sha256") != package.get("package_sha256"):
+        violations.append("UBUNTU_LIFECYCLE_PACKAGE_BINDING")
+    if evidence.get("rollback_restored_release") != evidence.get("install_release"):
+        violations.append("UBUNTU_LIFECYCLE_ROLLBACK_BINDING")
+    return violations
+
+
+def validate_vscode_runtime_evidence() -> list[str]:
+    evidence = json.loads(VSCODE_RUNTIME_EVIDENCE.read_text(encoding="utf-8"))
+    if evidence.get("contract") != "ONSURE_VSCODE_UBUNTU_RUNTIME_REHEARSAL_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("local_api_state") != "RUNNING" \
+            or evidence.get("llm_gateway_state") != "RUNNING" \
+            or evidence.get("chain_valid") is not True \
+            or evidence.get("content_recorded") is not False \
+            or evidence.get("tokens_disclosed") is not False \
+            or evidence.get("source_mutation") is not False \
+            or evidence.get("production_acceptance") != "NOT_RUN" \
+            or evidence.get("final_claim_allowed") is not False:
+        return ["VSCODE_UBUNTU_RUNTIME_EVIDENCE_CONTRACT"]
+    return []
 
 
 def validate_documents(
@@ -388,6 +441,9 @@ def validate() -> dict[str, object]:
         "deploy/rhel/README.md",
         "deploy/ubuntu/README.md",
         "deploy/ubuntu/deployment-plan.v1.json",
+        "deploy/ubuntu/onsure-backup.service",
+        "deploy/ubuntu/onsure-backup.timer",
+        "deploy/ubuntu/onsure-postgresql-backup",
         "config/database-migration/README.md",
         "config/database-migration/migration-plan.v1.json",
         "docs/architecture/ONSURE_DEPLOYMENT_AND_DB_MIGRATION_DESIGN_v1.md",
@@ -410,6 +466,10 @@ def validate() -> dict[str, object]:
         "assurance/runtime/onsure-ubuntu-package-validation.v1.json",
         "scripts/onsure_ubuntu_systemd_security.py",
         "assurance/runtime/onsure-ubuntu-systemd-security.v1.json",
+        "scripts/onsure_ubuntu_lifecycle.py",
+        "assurance/runtime/onsure-ubuntu-lifecycle-rehearsal.v1.json",
+        "scripts/rehearse_onsure_vscode_runtime.py",
+        "assurance/runtime/onsure-vscode-ubuntu-runtime-rehearsal.v1.json",
     ]
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
@@ -427,6 +487,8 @@ def validate() -> dict[str, object]:
         violations.extend(validate_ubuntu_systemd_evidence())
         violations.extend(validate_rhel_package_evidence())
         violations.extend(validate_ubuntu_package_evidence())
+        violations.extend(validate_ubuntu_lifecycle_evidence())
+        violations.extend(validate_vscode_runtime_evidence())
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",
