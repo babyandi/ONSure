@@ -1,4 +1,5 @@
 {
+  "apparmor_profile_count": 0,
   "contract": "ONSURE_RHEL_PACKAGE_VALIDATION_V1",
   "decision": "PASS_NONFINAL",
   "final_claim_allowed": false,
@@ -29,7 +30,7 @@
     "deploy/ubuntu/onsure-backup.timer": "0a1cfb9e37a91f79dd05cc1000d0847b13f1ef4a0f9817508b6471c277cedab8",
     "deploy/ubuntu/onsure-postgresql-backup": "a22b994a7d5122f3264b12ec3340f1f646a7f58123be15b7466c465d251dfea4",
     "scripts/package_onsure_rhel.sh": "f4808cac6943b562f7c7fffe24b6fc611ac1f5a58e4a9da6f288a55ed5fd7d4d",
-    "scripts/package_onsure_systemd.sh": "53762f138ec4b999cb1886fa9f9e03387c559391dcb857b9eb0eef8aa334d92d"
+    "scripts/package_onsure_systemd.sh": "438ea24b33c9f30d067c715169cff15957b79c53974dbda457ce8c7ce9e3aca8"
   },
   "third_party_notices_included": true,
   "upstream_license_text_count": 2

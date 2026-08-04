@@ -61,6 +61,12 @@ REQUIRED_FILES = {
     "usr/lib/tmpfiles.d/onsure.tmpfiles.conf",
     "SHA256SUMS",
 }
+UBUNTU_REQUIRED_FILES = {
+    "etc/apparmor.d/onsure",
+    "usr/lib/systemd/system/onsure.service.d/10-apparmor.conf",
+    "usr/lib/systemd/system/onsure-llm-gateway.service.d/10-apparmor.conf",
+    "usr/lib/systemd/system/onsure-migrate.service.d/10-apparmor.conf",
+}
 JAR_CLASSES = {
     "opt/onsure/app/onsure-local-api-0.1.0-SNAPSHOT.jar": "io/onsure/localapi/LocalApiMain.class",
     "opt/onsure/app/onsure-llm-gateway-0.1.0-SNAPSHOT.jar": "io/onsure/gateway/llm/LlmGatewayMain.class",
@@ -84,9 +90,18 @@ def normalized(name: str) -> str:
 def source_files(platform: str) -> tuple[pathlib.Path, ...]:
     if platform not in PACKAGES:
         raise ValueError("PACKAGE_PLATFORM_UNSUPPORTED:" + platform)
+    platform_files: tuple[pathlib.Path, ...] = ()
+    if platform == "ubuntu":
+        platform_files = (
+            ROOT / "deploy/ubuntu/apparmor.d/onsure",
+            ROOT / "deploy/ubuntu/systemd/onsure.service.d/10-apparmor.conf",
+            ROOT / "deploy/ubuntu/systemd/onsure-llm-gateway.service.d/10-apparmor.conf",
+            ROOT / "deploy/ubuntu/systemd/onsure-migrate.service.d/10-apparmor.conf",
+        )
     return (
         ROOT / f"scripts/package_onsure_{platform}.sh",
         *SHARED_SOURCE_FILES,
+        *platform_files,
         ROOT / f"deploy/{platform}/README.md",
         ROOT / "LICENSE",
         ROOT / "NOTICE",
@@ -124,12 +139,13 @@ def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dic
                 raise ValueError("PACKAGE_FILE_UNREADABLE:" + name)
             contents[name] = extracted.read()
             modes[name] = member.mode & 0o777
-    missing = sorted(REQUIRED_FILES - set(contents))
+    required_files = REQUIRED_FILES | (UBUNTU_REQUIRED_FILES if platform == "ubuntu" else set())
+    missing = sorted(required_files - set(contents))
     if missing:
         raise ValueError("PACKAGE_REQUIRED_FILE_MISSING:" + ",".join(missing))
     unexpected = sorted(
         name for name in contents
-        if name not in REQUIRED_FILES
+        if name not in required_files
         and not re.fullmatch(r"opt/onsure/lib/[A-Za-z0-9_.-]+\.jar", name)
     )
     if unexpected:
@@ -138,6 +154,26 @@ def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dic
         raise ValueError("PACKAGE_ENVIRONMENT_MODE")
     if modes["opt/onsure/bin/onsure-postgresql-backup"] != 0o755:
         raise ValueError("PACKAGE_BACKUP_SCRIPT_MODE")
+    if platform == "ubuntu":
+        for name in UBUNTU_REQUIRED_FILES:
+            if modes[name] != 0o644:
+                raise ValueError("PACKAGE_APPARMOR_MODE:" + name)
+        profile = contents["etc/apparmor.d/onsure"].decode("utf-8")
+        for name in ("onsure-api", "onsure-llm-gateway", "onsure-migrate"):
+            if f"profile {name} " not in profile:
+                raise ValueError("PACKAGE_APPARMOR_PROFILE_MISSING:" + name)
+        dropins = {
+            "onsure.service": "onsure-api",
+            "onsure-llm-gateway.service": "onsure-llm-gateway",
+            "onsure-migrate.service": "onsure-migrate",
+        }
+        for unit, profile_name in dropins.items():
+            value = contents[
+                f"usr/lib/systemd/system/{unit}.d/10-apparmor.conf"
+            ].decode("utf-8")
+            if "Requires=apparmor.service" not in value \
+                    or f"AppArmorProfile={profile_name}" not in value:
+                raise ValueError("PACKAGE_APPARMOR_DROPIN:" + unit)
     for legal_file in ("LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"):
         packaged = contents[f"opt/onsure/legal/{legal_file}"]
         if packaged != (ROOT / legal_file).read_bytes():
@@ -202,6 +238,7 @@ def validate(package: pathlib.Path | None = None, platform: str = "rhel") -> dic
         "proprietary_license_included": True,
         "third_party_notices_included": True,
         "upstream_license_text_count": len(upstream_license_sources),
+        "apparmor_profile_count": 3 if platform == "ubuntu" else 0,
         "install_execution": "NOT_RUN",
         "runtime_execution": "NOT_RUN",
         "final_claim_allowed": False,

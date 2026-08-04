@@ -26,15 +26,16 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - Canonical `clean verify`: 282/282, repeated twice. Independent clone at `1125d2b`: 282/282,
   Python 154/154 and public API 240/240.
 - Modular package: 37/37 locally and in the independent clone; public API baseline: 240/240.
-- Python: 161/161; Node: 9/9; deterministic VSIX package pass with SHA-256
+- Python: 169/169; Node: 9/9; deterministic VSIX package pass with SHA-256
   `fb2f0bf6c5051ebf6197ec8e0f21c8d77fd3316b348016f1ccbd4fdb5dfd9589`.
-- Ubuntu candidate SHA-256: `7a989de5645e31e0a7bbfe86afdd13da74fcadb826ffa31e3b885301607e875b`.
+- Ubuntu candidate SHA-256: `84098d26467a2465c2bef3618ef78c7dd03fe9ccd3dd297c508228c750bb69e2`
+  (37 files, 36 internal checksums, 3 named AppArmor profiles).
 - RHEL compatibility candidate SHA-256: `74ec4e2c844f4fd7570fb3e8f7de5d541de04220a0a263c0aa88659ff47685d8`.
 - Disposable PostgreSQL 16.14/Flyway: first migration 1, second 0, concurrent `[0,1]`, pending 0,
   dump/restore and restored validation pass. Production migration was not run.
 - Synthetic SQLite: apply 1, idempotent apply 0 and rollback 1 pass under the required `.onsure/`
   product-state boundary; an outside-state path was correctly rejected.
-- Nested `products/onsure/` cutover and rollback: 802/802 files, 10 commands, no external product
+- Nested `products/onsure/` cutover and rollback: 809/809 files, 10 commands, no external product
   repository.
 - VS Code 1.95.3 Extension Host on Node 22: online Xvfb run exit 0 and cached
   `--network none` rerun exit 0; Node engine mismatch warnings 0.
@@ -46,6 +47,9 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - Owner-provided privileged observation confirms PostgreSQL `localhost:5432` with SSL on, while
   UFW still publicly allows 5432 on IPv4/IPv6 and no dedicated ONSure AppArmor enforce profile is
   present. The sanitized evidence remains `REVIEW_REQUIRED` until both gaps are remediated.
+- AppArmor package candidates for API, Gateway and migration parse successfully without kernel
+  loading and are bound through Ubuntu-only systemd drop-ins. Complain workload rehearsal and
+  enforce execution remain `NOT_RUN`.
 - VS Code Ubuntu runtime surface: Local API/Gateway RUNNING, content-free token/cost metrics and
   receipt chain valid; runtime tokens were not written to evidence.
 

@@ -43,6 +43,12 @@ mkdir -p "${stage}/opt/onsure/legal"
 mkdir -p "${stage}/opt/onsure/bin"
 mkdir -p "${stage}/etc/onsure" "${stage}/usr/lib/systemd/system"
 mkdir -p "${stage}/usr/lib/sysusers.d" "${stage}/usr/lib/tmpfiles.d"
+if [[ "${platform}" == "ubuntu" ]]; then
+  mkdir -p "${stage}/etc/apparmor.d"
+  mkdir -p "${stage}/usr/lib/systemd/system/onsure.service.d"
+  mkdir -p "${stage}/usr/lib/systemd/system/onsure-llm-gateway.service.d"
+  mkdir -p "${stage}/usr/lib/systemd/system/onsure-migrate.service.d"
+fi
 
 cp "${product_root}/modules/onsure-core/target/onsure-core-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
 cp "${product_root}/modules/onsure-local-api/target/onsure-local-api-0.1.0-SNAPSHOT.jar" "${stage}/opt/onsure/app/"
@@ -71,6 +77,19 @@ cp "${product_root}/deploy/ubuntu/onsure-backup.service" "${stage}/usr/lib/syste
 cp "${product_root}/deploy/ubuntu/onsure-backup.timer" "${stage}/usr/lib/systemd/system/"
 cp "${product_root}/deploy/ubuntu/onsure-postgresql-backup" "${stage}/opt/onsure/bin/"
 chmod 0755 "${stage}/opt/onsure/bin/onsure-postgresql-backup"
+if [[ "${platform}" == "ubuntu" ]]; then
+  cp "${product_root}/deploy/ubuntu/apparmor.d/onsure" "${stage}/etc/apparmor.d/onsure"
+  cp "${product_root}/deploy/ubuntu/systemd/onsure.service.d/10-apparmor.conf" \
+    "${stage}/usr/lib/systemd/system/onsure.service.d/"
+  cp "${product_root}/deploy/ubuntu/systemd/onsure-llm-gateway.service.d/10-apparmor.conf" \
+    "${stage}/usr/lib/systemd/system/onsure-llm-gateway.service.d/"
+  cp "${product_root}/deploy/ubuntu/systemd/onsure-migrate.service.d/10-apparmor.conf" \
+    "${stage}/usr/lib/systemd/system/onsure-migrate.service.d/"
+  chmod 0644 "${stage}/etc/apparmor.d/onsure"
+  chmod 0644 "${stage}/usr/lib/systemd/system/onsure.service.d/10-apparmor.conf"
+  chmod 0644 "${stage}/usr/lib/systemd/system/onsure-llm-gateway.service.d/10-apparmor.conf"
+  chmod 0644 "${stage}/usr/lib/systemd/system/onsure-migrate.service.d/10-apparmor.conf"
+fi
 cp "${product_root}/deploy/rhel/onsure.sysusers.conf" "${stage}/usr/lib/sysusers.d/"
 cp "${product_root}/deploy/rhel/onsure.tmpfiles.conf" "${stage}/usr/lib/tmpfiles.d/"
 cp "${product_root}/deploy/rhel/onsure.env.example" "${stage}/etc/onsure/"

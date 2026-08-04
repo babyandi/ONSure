@@ -29,6 +29,7 @@ UBUNTU_HOST_PREFLIGHT_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-host-pr
 UBUNTU_PRIVILEGED_POLICY_EVIDENCE = ROOT / (
     "assurance/runtime/onsure-ubuntu-privileged-policy-observation.v1.json"
 )
+UBUNTU_APPARMOR_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-apparmor-candidate.v1.json"
 SYSTEMD_UNITS = (
     ROOT / "deploy/rhel/onsure.service",
     ROOT / "deploy/rhel/onsure-llm-gateway.service",
@@ -380,6 +381,25 @@ def validate_ubuntu_privileged_policy_evidence() -> list[str]:
     return []
 
 
+def validate_ubuntu_apparmor_evidence() -> list[str]:
+    evidence = json.loads(UBUNTU_APPARMOR_EVIDENCE.read_text(encoding="utf-8"))
+    profile = ROOT / "deploy/ubuntu/apparmor.d/onsure"
+    if evidence.get("contract") != "ONSURE_UBUNTU_APPARMOR_CANDIDATE_VALIDATION_V1" \
+            or evidence.get("decision") != "PASS_NONFINAL" \
+            or evidence.get("profile_sha256") != hashlib.sha256(profile.read_bytes()).hexdigest() \
+            or evidence.get("profiles") != [
+                "onsure-api", "onsure-llm-gateway", "onsure-migrate"
+            ] \
+            or evidence.get("parser_mode") != "SKIP_KERNEL_LOAD" \
+            or evidence.get("kernel_policy_loaded") is not False \
+            or evidence.get("complain_rehearsal") != "NOT_RUN" \
+            or evidence.get("enforce_execution") != "NOT_RUN" \
+            or evidence.get("production_acceptance") != "NOT_RUN" \
+            or evidence.get("final_claim_allowed") is not False:
+        return ["UBUNTU_APPARMOR_EVIDENCE_CONTRACT"]
+    return []
+
+
 def validate_documents(
     boundary: dict[str, object],
     product: dict[str, object],
@@ -514,6 +534,12 @@ def validate() -> dict[str, object]:
         "assurance/runtime/onsure-ubuntu-host-preflight.v1.json",
         "scripts/validate_onsure_ubuntu_privileged_policy.py",
         "assurance/runtime/onsure-ubuntu-privileged-policy-observation.v1.json",
+        "deploy/ubuntu/apparmor.d/onsure",
+        "deploy/ubuntu/systemd/onsure.service.d/10-apparmor.conf",
+        "deploy/ubuntu/systemd/onsure-llm-gateway.service.d/10-apparmor.conf",
+        "deploy/ubuntu/systemd/onsure-migrate.service.d/10-apparmor.conf",
+        "scripts/validate_onsure_ubuntu_apparmor.py",
+        "assurance/runtime/onsure-ubuntu-apparmor-candidate.v1.json",
     ]
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
@@ -535,6 +561,7 @@ def validate() -> dict[str, object]:
         violations.extend(validate_vscode_runtime_evidence())
         violations.extend(validate_ubuntu_host_preflight_evidence())
         violations.extend(validate_ubuntu_privileged_policy_evidence())
+        violations.extend(validate_ubuntu_apparmor_evidence())
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",

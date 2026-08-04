@@ -119,15 +119,16 @@
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (11 modules, 37 tests; 독립 clone 포함) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 282 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local 165 tests; latest independent clone 159 tests) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local 169 tests; latest independent clone 159 tests) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (local + 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, Gateway 운영 View, VSIX SHA-256 `fb2f0bf6c505...`; proprietary LICENSE/third-party notice 포함) |
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (Node 22, VS Code 1.95.3/Xvfb, 양쪽 extension host exit 0, engine mismatch 경고 0, offline network 차단) |
 | Ubuntu host preflight | `python3 scripts/onsure_ubuntu_host_preflight.py --runtime-root <external-runtime-root>` | `PASS_NONFINAL` (Ubuntu 24.04, 2 services active/enabled, 3 ports loopback-only, config 0600, secret read 0; verification user units 6.7/6.7 and AppArmor/UFW privilege checks remain Production blockers) |
 | Ubuntu privileged policy | `python3 scripts/validate_onsure_ubuntu_privileged_policy.py` | `PASS_NONFINAL / REVIEW_REQUIRED` (PostgreSQL listens on localhost with SSL on, but UFW publicly allows 5432 for IPv4/IPv6 and no dedicated ONSure AppArmor profile is enforced) |
+| Ubuntu AppArmor candidate | `python3 scripts/validate_onsure_ubuntu_apparmor.py` | `PASS_NONFINAL` (3 named profiles and exact systemd drop-ins parse with `--skip-kernel-load`; complain workload rehearsal/enforce remain `NOT_RUN`) |
 | VS Code ↔ Ubuntu runtime | `python3 scripts/rehearse_onsure_vscode_runtime.py` | `PASS_NONFINAL` (Local API RUNNING, Gateway RUNNING/local-mock, token 23, cost 23, chain valid, content 저장 없음, token 노출 없음) |
-| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 802 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
+| Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 809 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
 | Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (171 module-owned main sources, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 0) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
@@ -139,10 +140,10 @@
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 5,205-entry offline canonical/modular, dependency 27-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (802-file cutover + rollback, 10 commands, 임시 tree 제거, 외부 제품 저장소 미사용) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (809-file cutover + rollback, 10 commands, 임시 tree 제거, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | Ubuntu 단독 서버 systemd/package 주 대상, RHEL 호환 후보 | `Ubuntu tar·검증 runtime active·20/20 health·3회 restart PASS_NONFINAL / Production acceptance NOT_RUN` |
-| Ubuntu lifecycle | `python3 scripts/onsure_ubuntu_lifecycle.py rehearse` | `PASS_NONFINAL` (33-file package checksum, immutable install, idempotent reinstall, upgrade, rollback; host path 변경 없음) |
+| Ubuntu lifecycle | `python3 scripts/onsure_ubuntu_lifecycle.py rehearse` | `PASS_NONFINAL` (37-file package checksum, immutable install, idempotent reinstall, upgrade, rollback; host path 변경 없음) |
 | PostgreSQL backup timer | package의 `onsure-backup.service`/`.timer` | `PASS_NONFINAL` (loopback, flock, custom format, pg_restore list, mode 0600, SHA-256, retention; Production enable/run NOT_RUN) |
 | DB migration | PostgreSQL/Flyway V1 + Ubuntu 호스트의 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / PRODUCTION NOT_RUN` |
 
@@ -190,9 +191,9 @@ API 240/240, proprietary supply-chain validation, migration readiness와 static 
 소유자 제공 선언에 따라 root copyright holder는 `ORUDA Labs`, outbound license는
 `LicenseRef-ORUDA-Labs-Proprietary`로 기록했다. 다른 개발자·회사·외주, 외부 저장소 source
 복사와 외부 asset 복사는 모두 `NONE_ATTESTED`다. RHEL·Ubuntu package는 `LICENSE`, `NOTICE`,
-`THIRD_PARTY_NOTICES.md`와 번들 JAR에서 추출한 upstream license 원문 2개를 포함하며 33개
-파일/32개 내부 checksum에 결속한다. 현재 RHEL SHA-256은 `74ec4e2c844f...`, Ubuntu는
-`7a989de5645e...`다. 이 소유자
+`THIRD_PARTY_NOTICES.md`와 번들 JAR에서 추출한 upstream license 원문 2개를 포함한다.
+Ubuntu 후보는 AppArmor profile/drop-in을 포함한 37개 파일/36개 내부 checksum에 결속한다.
+현재 RHEL SHA-256은 `74ec4e2c844f...`, Ubuntu는 `84098d26467a...`다. 이 소유자
 선언은 독립 법률 검토, 고객 배포계약, Production GO 또는 Final PASS를 대신하지 않는다.
 
 `pom.xml`은 현재 독립 release 후보 검증의 권위 build다. `pom-modular.xml`은 미래 물리 분해를 위한 compatibility gate이며 release 권위를 갖지 않는다. 이 결정은 `contracts/onsure-build-boundary.v1.json`, `product.yaml`, `.obuilder/product-build.yaml`에서 동일하게 검증한다.

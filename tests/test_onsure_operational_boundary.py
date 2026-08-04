@@ -94,6 +94,9 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_privileged_policy_observation_keeps_remediation_open(self):
         self.assertEqual([], operational.validate_ubuntu_privileged_policy_evidence())
 
+    def test_apparmor_candidate_is_parse_only_and_not_enforced(self):
+        self.assertEqual([], operational.validate_ubuntu_apparmor_evidence())
+
 
 if __name__ == "__main__":
     unittest.main()

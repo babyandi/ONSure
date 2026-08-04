@@ -59,6 +59,17 @@ runtime failure. Insufficient permission to inspect AppArmor profiles or the UFW
 as `NOT_RUN_INSUFFICIENT_PRIVILEGE` and remains a Production blocker. The configuration contents,
 tokens and database password are never read.
 
+The Ubuntu package also contains three named AppArmor profile candidates (`onsure-api`,
+`onsure-llm-gateway` and `onsure-migrate`) plus systemd drop-ins that bind each service to its exact
+profile. Packaging and validation use `apparmor_parser --skip-kernel-load`; they do not load policy,
+restart a service or claim that normal workloads have been learned. Before an approved install,
+operators must exercise the profiles in a non-production complain rehearsal, inspect audit denials,
+correct only the required least-privilege paths and then separately authorize enforce mode.
+
+```bash
+python3 scripts/validate_onsure_ubuntu_apparmor.py
+```
+
 The lifecycle rehearsal verifies archive paths and internal checksums, performs immutable install,
 idempotent reinstall, upgrade and rollback inside `.onsure/`, and confirms that no host path was
 modified.
