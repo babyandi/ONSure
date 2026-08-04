@@ -45,7 +45,7 @@ class ValidationEngineResumeTest {
         ValidationEngine.ValidationExecutionException failure = assertThrows(
                 ValidationEngine.ValidationExecutionException.class, () -> engine.run(target));
 
-        ValidationEngine.RunResult resumed = engine.resumeInternal(target, failure.runRoot());
+        ValidationEngine.RunResult resumed = engine.resume(target, failure.runRoot());
 
         assertEquals(2, attempts.get());
         assertTrue(Files.isRegularFile(resumed.runRoot().resolve("completed-stage-output.txt")));
@@ -58,6 +58,25 @@ class ValidationEngineResumeTest {
         assertEquals("ROLLED_BACK_FOR_REPLAY", ledger.path("entries").get(0).path("state").asText());
         assertEquals(2, ledger.path("entries").get(0).path("removed_new_directory_count").asInt());
         assertEquals("COMPLETED", ledger.path("entries").get(1).path("state").asText());
+        assertThrows(IllegalStateException.class, () -> engine.resume(target, resumed.runRoot()));
+    }
+
+    @Test
+    void refusesResumeAfterCheckpointDigestTampering() throws Exception {
+        ValidationTarget target = target();
+        ValidatorStage stage = stage("FAIL_ONCE", context -> {
+            throw new IllegalStateException("synthetic interruption");
+        });
+        ValidationEngine engine = new ValidationEngine(
+                List.of(new GenericManifestTargetAdapter()), List.of(stage),
+                new FileValidationStore(temp.resolve("runs-checkpoint-tamper")));
+        ValidationEngine.ValidationExecutionException failure = assertThrows(
+                ValidationEngine.ValidationExecutionException.class, () -> engine.run(target));
+        Path checkpoint = failure.runRoot().resolve(ValidationStageCheckpointJournal.FILE_NAME);
+        Files.writeString(checkpoint, Files.readString(checkpoint).replace("STAGE_FAILED", "STAGE_READY"));
+        IllegalStateException rejected = assertThrows(
+                IllegalStateException.class, () -> engine.resume(target, failure.runRoot()));
+        assertEquals("VALIDATION_CHECKPOINT_DIGEST_INVALID", rejected.getMessage());
     }
 
     @Test

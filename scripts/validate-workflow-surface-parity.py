@@ -58,7 +58,7 @@ def validate_texts(
         if token not in cli:
             errors.append(f"WORKFLOW_CLI_GENERIC_ROUTE_MISSING:{token}")
     for token in ('server.createContext("/v1/workflow"', '.dispatch(operation, request)',
-                  'authenticated(this::workflow)'):
+                  'LocalAccessControl.Permission.DISPATCH_WORKFLOW', 'this::workflow'):
         if token not in api:
             errors.append(f"WORKFLOW_LOCAL_API_GENERIC_ROUTE_MISSING:{token}")
     for token in ('onsure.runWorkflowRequest', 'envelope.operation',
@@ -88,7 +88,9 @@ def self_test(root: pathlib.Path = ROOT) -> list[str]:
     expected = expected_operations(root)
     dispatcher = '\n'.join(f'case "{item}" -> handler();' for item in sorted(expected))
     cli = '"workflow".equals(args[0]); dispatcher.dispatch(operation, request); ONSURE_WORKFLOW_COMPLETE_NONFINAL'
-    api = 'server.createContext("/v1/workflow", authenticated(this::workflow)); dispatcher.dispatch(operation, request);'
+    api = ('server.createContext("/v1/workflow", authenticated('
+           'LocalAccessControl.Permission.DISPATCH_WORKFLOW, this::workflow)); '
+           'dispatcher.dispatch(operation, request);')
     vscode = 'onsure.runWorkflowRequest; envelope.operation; executeWorkflow(envelope.operation, envelope.request); program.learn; validation.run'
     missed: list[str] = []
 
@@ -123,7 +125,7 @@ def main() -> int:
     except ValueError:
         operation_count = -1
     report = {
-        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V4",
+        "contract": "ONSURE_WORKFLOW_SURFACE_PARITY_REPORT_V5",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,

@@ -32,6 +32,17 @@ Gateway API 정본은 `contracts/openapi/onsure-llm-gateway.v1.json`, Local API 
 `contracts/openapi/onsure-local-api.v1.json`이다. 두 서버는 기동 시 구현 route와 OpenAPI path가
 정확히 일치하지 않으면 실패한다.
 
+Local API는 기존 ADMIN bearer token의 호환성을 유지하면서 선택적 `VIEWER`, `OPERATOR`,
+`APPROVER` token을 분리한다. token digest만 session projection에 노출되며 원문 token은 audit,
+receipt 또는 브라우저 저장소에 기록하지 않는다. `/v1/programs`는 외부 source를 읽기 전용으로
+등록하고, `/v1/programs/validate`의 `MAVEN_STANDARD` profile은 원본이 아니라 bounded snapshot에서
+고정 Maven/Python/API 명령을 실행한다. 실행 전후 원본 digest가 다르면 결과 생성을 거부한다.
+
+Gateway 변경은 `/v1/gateway-settings/requests`에서 secret-free 요청을 만들고, 요청자와 다른
+`APPROVER` identity가 `/v1/gateway-settings/approvals`에서 결정한다. 승인 상태는
+`APPROVED_PENDING_EXTERNAL_APPLY`이며 API가 환경파일을 쓰거나 서비스를 자동 재시작하지 않는다.
+모든 성공한 상태 변경은 `/v1/audit-events`의 append-only digest chain에 기록한다.
+
 ## Evidence와 모니터링
 
 Gateway는 매 호출마다 다음 metadata를 0600 JSONL ledger에 append하고 이전 entry digest에
@@ -41,6 +52,7 @@ Gateway는 매 호출마다 다음 metadata를 0600 JSONL ledger에 append하고
 - provider/model, success/failure, retryability
 - input/output token, estimated/actual cost
 - duration, provider request evidence, observed time
+- retryable failure count, average duration, ledger byte/sequence
 - fallback=false, retry count=0, final claim=false
 
 Prompt·message·completion·API key·bearer token 원문은 ledger에 저장하지 않는다. 관리화면은

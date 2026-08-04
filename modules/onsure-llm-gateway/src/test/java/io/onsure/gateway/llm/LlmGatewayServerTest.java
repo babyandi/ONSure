@@ -68,6 +68,9 @@ class LlmGatewayServerTest {
             JsonNode metrics = mapper.readTree(metricsResponse.body());
             assertEquals(1, metrics.path("request_count").asInt());
             assertEquals(1, metrics.path("success_count").asInt());
+            assertEquals(1, metrics.path("last_sequence").asInt());
+            assertTrue(metrics.path("ledger_bytes").asLong() > 0);
+            assertTrue(metrics.path("average_duration_millis").asLong() >= 0);
             assertTrue(metrics.path("chain_valid").asBoolean());
             assertFalse(metrics.path("prompt_or_completion_content_recorded").asBoolean(true));
         }
@@ -98,6 +101,7 @@ class LlmGatewayServerTest {
             JsonNode metrics = mapper.readTree(get(port, "/v1/metrics", TOKEN, null).body());
             assertEquals(1, metrics.path("failure_count").asInt());
             assertEquals(0, metrics.path("success_count").asInt());
+            assertEquals(0, metrics.path("retryable_failure_count").asInt());
         }
         Files.writeString(ledger.file(), Files.readString(ledger.file()).replace(
                 "gateway-request-denied", "gateway-request-changed"));

@@ -236,6 +236,107 @@
           "500": {"$ref": "#/components/responses/InternalError"}
         }
       }
+    },
+    "/v1/session": {
+      "get": {
+        "operationId": "getLocalSession",
+        "tags": ["Management"],
+        "summary": "Return the authenticated local actor and immutable role",
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"}
+        }
+      }
+    },
+    "/v1/programs": {
+      "get": {
+        "operationId": "listPrograms",
+        "tags": ["Management"],
+        "summary": "List registered programs and their latest validation projection",
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      },
+      "post": {
+        "operationId": "registerReadOnlyProgram",
+        "tags": ["Management"],
+        "summary": "Register an existing source directory without modifying it",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProgramRegistrationRequest"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/v1/programs/validate": {
+      "post": {
+        "operationId": "validateReadOnlyProgramSnapshot",
+        "tags": ["Management"],
+        "summary": "Inspect or build an isolated bounded source snapshot and record nonfinal evidence",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProgramValidationRequest"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/v1/gateway-settings/requests": {
+      "get": {
+        "operationId": "listGatewaySettingRequests",
+        "tags": ["Management"],
+        "summary": "List current Gateway settings and content-free change requests",
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      },
+      "post": {
+        "operationId": "requestGatewaySettingChange",
+        "tags": ["Management"],
+        "summary": "Create a secret-free Gateway setting change request; does not apply it",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/GatewaySettingRequest"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/v1/gateway-settings/approvals": {
+      "post": {
+        "operationId": "decideGatewaySettingRequest",
+        "tags": ["Management"],
+        "summary": "Approve or reject using a distinct APPROVER identity; automatic apply remains disabled",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/GatewaySettingApproval"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/v1/audit-events": {
+      "get": {
+        "operationId": "listManagementAuditEvents",
+        "tags": ["Evidence"],
+        "summary": "Return the bounded append-only management audit projection",
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
     }
   },
   "security": [{"bearerAuth": []}],
@@ -257,6 +358,10 @@
       }
     },
     "responses": {
+      "GenericObject": {
+        "description": "Nonfinal local management result",
+        "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true}}}
+      },
       "CompatibilityResult": {
         "description": "Compatibility workflow result",
         "content": {
@@ -272,7 +377,7 @@
         "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
       },
       "Forbidden": {
-        "description": "Client or browser origin is outside the local trust boundary",
+        "description": "Client, browser origin or authenticated role is outside the required trust boundary",
         "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErrorResponse"}}}
       },
       "MethodNotAllowed": {
@@ -289,6 +394,53 @@
       }
     },
     "schemas": {
+      "ProgramRegistrationRequest": {
+        "type": "object",
+        "required": ["workspace_id", "workspace_name", "project_id", "project_name", "target_id", "target_name", "target_type", "source_root"],
+        "properties": {
+          "workspace_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "workspace_name": {"type": "string", "minLength": 1, "maxLength": 200},
+          "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "project_name": {"type": "string", "minLength": 1, "maxLength": 200},
+          "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "target_name": {"type": "string", "minLength": 1, "maxLength": 200},
+          "target_type": {"type": "string", "enum": ["GENERAL_SOFTWARE", "AI_APPLICATION", "AI_AGENTIC_PLATFORM"]},
+          "source_root": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      },
+      "ProgramValidationRequest": {
+        "type": "object",
+        "required": ["project_id", "target_id", "profile"],
+        "properties": {
+          "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "profile": {"type": "string", "enum": ["INSPECT_ONLY", "MAVEN_STANDARD"]}
+        },
+        "additionalProperties": false
+      },
+      "GatewaySettingRequest": {
+        "type": "object",
+        "required": ["provider", "model", "requests_per_second", "cost_per_token_micros", "reason"],
+        "properties": {
+          "provider": {"type": "string", "enum": ["local-mock", "openai"]},
+          "model": {"type": "string", "pattern": "^[A-Za-z0-9._:/-]{1,160}$"},
+          "requests_per_second": {"type": "integer", "minimum": 1, "maximum": 10000},
+          "cost_per_token_micros": {"type": "integer", "minimum": 0, "maximum": 1000000000},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 500}
+        },
+        "additionalProperties": false
+      },
+      "GatewaySettingApproval": {
+        "type": "object",
+        "required": ["request_id", "decision", "reason"],
+        "properties": {
+          "request_id": {"type": "string", "pattern": "^gateway-setting-[0-9a-f-]{36}$"},
+          "decision": {"type": "string", "enum": ["APPROVE", "REJECT"]},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 500}
+        },
+        "additionalProperties": false
+      },
       "HealthResponse": {
         "type": "object",
         "required": ["contract", "state", "binding", "assurance_class", "final_claim_allowed"],

@@ -92,9 +92,9 @@
       "Metrics": {
         "type": "object", "required": ["contract", "request_count", "success_count", "failure_count", "total_tokens", "chain_valid", "prompt_or_completion_content_recorded", "final_claim_allowed"],
         "properties": {
-          "contract": {"const": "ONSURE_LLM_MONITORING_V1"}, "request_count": {"type": "integer", "minimum": 0}, "success_count": {"type": "integer", "minimum": 0}, "failure_count": {"type": "integer", "minimum": 0},
+          "contract": {"const": "ONSURE_LLM_MONITORING_V1"}, "request_count": {"type": "integer", "minimum": 0}, "success_count": {"type": "integer", "minimum": 0}, "failure_count": {"type": "integer", "minimum": 0}, "retryable_failure_count": {"type": "integer", "minimum": 0},
           "input_tokens": {"type": "integer", "minimum": 0}, "output_tokens": {"type": "integer", "minimum": 0}, "total_tokens": {"type": "integer", "minimum": 0},
-          "estimated_cost_micros": {"type": "integer", "minimum": 0}, "actual_cost_micros": {"type": "integer", "minimum": 0}, "total_duration_millis": {"type": "integer", "minimum": 0},
+          "estimated_cost_micros": {"type": "integer", "minimum": 0}, "actual_cost_micros": {"type": "integer", "minimum": 0}, "total_duration_millis": {"type": "integer", "minimum": 0}, "average_duration_millis": {"type": "integer", "minimum": 0}, "ledger_bytes": {"type": "integer", "minimum": 0}, "last_sequence": {"type": "integer", "minimum": 0},
           "chain_valid": {"const": true}, "chain_head_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "last_observed_at": {"type": "string"},
           "prompt_or_completion_content_recorded": {"const": false}, "final_claim_allowed": {"const": false}
         }

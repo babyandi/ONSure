@@ -179,6 +179,9 @@ http://127.0.0.1:47311/admin
 
 관리화면은 Local API token을 브라우저 메모리에만 유지하며, 실제 `.onsure` catalog/validation/
 improvement 산출물과 Gateway의 content-free token·비용·digest-chain projection을 표시한다.
+선택적 VIEWER/OPERATOR/APPROVER token으로 조회·프로그램 실행·Gateway 승인 권한을 분리한다.
+프로그램 검증은 원본 대신 bounded snapshot에서 수행하며, Gateway 설정 변경은 distinct approver가
+결정한 뒤에도 외부 적용 대기 상태로 남고 모든 상태 변경은 append-only 감사 chain에 기록된다.
 Gateway 환경변수와 단독 서버 실행 경계는
 `docs/architecture/ONSURE_LLM_GATEWAY_AND_MANAGEMENT_UI_v1.md`를 따른다.
 

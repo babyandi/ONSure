@@ -186,7 +186,8 @@ final class LocalManagementOverviewService {
         Map<String, Object> result = new LinkedHashMap<>();
         for (String field : List.of(
                 "request_count", "success_count", "failure_count", "input_tokens", "output_tokens",
-                "total_tokens", "estimated_cost_micros", "actual_cost_micros", "total_duration_millis")) {
+                "total_tokens", "estimated_cost_micros", "actual_cost_micros", "total_duration_millis",
+                "retryable_failure_count", "average_duration_millis", "ledger_bytes", "last_sequence")) {
             result.put(field, Math.max(0L, value.path(field).asLong(0)));
         }
         result.put("chain_valid", value.path("chain_valid").asBoolean(false));
@@ -204,6 +205,8 @@ final class LocalManagementOverviewService {
                 Map.entry("input_tokens", 0L), Map.entry("output_tokens", 0L),
                 Map.entry("total_tokens", 0L), Map.entry("estimated_cost_micros", 0L),
                 Map.entry("actual_cost_micros", 0L), Map.entry("total_duration_millis", 0L),
+                Map.entry("retryable_failure_count", 0L), Map.entry("average_duration_millis", 0L),
+                Map.entry("ledger_bytes", 0L), Map.entry("last_sequence", 0L),
                 Map.entry("chain_valid", false), Map.entry("chain_head_sha256", "NOT_RUN"),
                 Map.entry("last_observed_at", "NOT_RUN"),
                 Map.entry("prompt_or_completion_content_recorded", false),

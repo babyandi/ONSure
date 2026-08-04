@@ -85,12 +85,17 @@ public final class LlmEvidenceLedger {
         result.put("request_count", value.requestCount());
         result.put("success_count", value.successCount());
         result.put("failure_count", value.failureCount());
+        result.put("retryable_failure_count", value.retryableFailureCount());
         result.put("input_tokens", value.inputTokens());
         result.put("output_tokens", value.outputTokens());
         result.put("total_tokens", Math.addExact(value.inputTokens(), value.outputTokens()));
         result.put("estimated_cost_micros", value.estimatedCostMicros());
         result.put("actual_cost_micros", value.actualCostMicros());
         result.put("total_duration_millis", value.totalDurationMillis());
+        result.put("average_duration_millis", value.requestCount() == 0
+                ? 0L : value.totalDurationMillis() / value.requestCount());
+        result.put("ledger_bytes", Files.size(file));
+        result.put("last_sequence", value.requestCount());
         result.put("chain_valid", true);
         result.put("chain_head_sha256", value.chainHead());
         result.put("last_observed_at", value.lastObservedAt());
@@ -112,7 +117,8 @@ public final class LlmEvidenceLedger {
         if (Files.size(file) > MAXIMUM_LEDGER_BYTES) throw new IOException("LLM_EVIDENCE_LEDGER_SIZE_LIMIT");
         List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
         String previous = ZERO_DIGEST;
-        long success = 0, failure = 0, input = 0, output = 0, estimated = 0, actual = 0, duration = 0;
+        long success = 0, failure = 0, retryableFailure = 0;
+        long input = 0, output = 0, estimated = 0, actual = 0, duration = 0;
         String lastObservedAt = "NOT_RUN";
         long sequence = 0;
         for (String line : lines) {
@@ -134,6 +140,7 @@ public final class LlmEvidenceLedger {
             boolean passed = "SUCCESS".equals(entry.get("outcome"));
             success += passed ? 1 : 0;
             failure += passed ? 0 : 1;
+            retryableFailure += !passed && Boolean.TRUE.equals(entry.get("retryable")) ? 1 : 0;
             input = Math.addExact(input, number(entry, "input_tokens"));
             output = Math.addExact(output, number(entry, "output_tokens"));
             estimated = Math.addExact(estimated, number(entry, "estimated_cost_micros"));
@@ -144,7 +151,7 @@ public final class LlmEvidenceLedger {
                 throw new IOException("LLM_EVIDENCE_CONTAINS_CONTENT_OR_SECRET");
             }
         }
-        return new Summary(sequence, success, failure, input, output, estimated, actual,
+        return new Summary(sequence, success, failure, retryableFailure, input, output, estimated, actual,
                 duration, previous, lastObservedAt);
     }
 
@@ -243,7 +250,7 @@ public final class LlmEvidenceLedger {
         }
     }
 
-    private record Summary(long requestCount, long successCount, long failureCount,
+    private record Summary(long requestCount, long successCount, long failureCount, long retryableFailureCount,
                            long inputTokens, long outputTokens, long estimatedCostMicros,
                            long actualCostMicros, long totalDurationMillis, String chainHead,
                            String lastObservedAt) {}

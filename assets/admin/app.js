@@ -2,6 +2,7 @@
   "use strict";
 
   let bearerToken = "";
+  let sessionRole = "";
   const byId = (id) => document.getElementById(id);
   const number = new Intl.NumberFormat("ko-KR");
 
@@ -47,6 +48,69 @@
       row.append(cell(formatNumber(validation.finding_count)));
       row.append(cell(formatNumber(program.improvement_candidate_count)));
       row.append(cell(`${formatNumber(validation.evidence_count)}건`));
+      const actions = document.createElement("td");
+      const run = document.createElement("button");
+      run.type = "button";
+      run.className = "button secondary compact-button";
+      run.textContent = "검증";
+      run.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole);
+      run.addEventListener("click", () => validateProgram(program.project_id, program.program_id, run));
+      actions.append(run);
+      row.append(actions);
+      body.append(row);
+    }
+  }
+
+  function renderGatewayRequests(data) {
+    const body = byId("gateway-request-rows");
+    const requests = Array.isArray(data.requests) ? data.requests : [];
+    body.replaceChildren();
+    byId("gateway-request-empty").hidden = requests.length !== 0;
+    const current = data.current || {};
+    if (current.model) byId("gateway-model").value = current.model;
+    if (current.provider) byId("gateway-provider").value = current.provider;
+    byId("gateway-rate").value = current.requests_per_second ?? 20;
+    byId("gateway-cost").value = current.cost_per_token_micros ?? 0;
+    for (const item of requests) {
+      const row = document.createElement("tr");
+      row.append(cell(compactDigest(item.request_sha256)));
+      const change = item.change || {};
+      row.append(cell(`${change.provider || "—"} / ${change.model || "—"}`));
+      const state = document.createElement("td");
+      const badge = document.createElement("span");
+      setStatus(badge, item.state);
+      state.append(badge);
+      if (sessionRole === "APPROVER" && item.state === "AWAITING_APPROVAL") {
+        const approve = document.createElement("button");
+        approve.type = "button";
+        approve.className = "text-button inline-action";
+        approve.textContent = "승인";
+        approve.addEventListener("click", () => decideGateway(item.request_id, "APPROVE", approve));
+        const reject = document.createElement("button");
+        reject.type = "button";
+        reject.className = "text-button inline-action danger-text";
+        reject.textContent = "거절";
+        reject.addEventListener("click", () => decideGateway(item.request_id, "REJECT", reject));
+        state.append(approve, reject);
+      }
+      row.append(state);
+      row.append(cell(item.requested_by || "—"));
+      body.append(row);
+    }
+  }
+
+  function renderAudit(data) {
+    const body = byId("audit-rows");
+    const events = Array.isArray(data.events) ? data.events : [];
+    body.replaceChildren();
+    byId("audit-empty").hidden = events.length !== 0;
+    setStatus(byId("audit-chain"), data.chain_valid ? "VALID" : "INVALID");
+    for (const event of events) {
+      const row = document.createElement("tr");
+      row.append(cell(event.observed_at || "—"));
+      row.append(cell(`${event.actor || "—"} / ${event.role || "—"}`));
+      row.append(cell(event.action || "—"));
+      row.append(cell(event.outcome || "—"));
       body.append(row);
     }
   }
@@ -77,6 +141,8 @@
     setText("request-result", `${formatNumber(metrics.success_count)} / ${formatNumber(metrics.failure_count)}`);
     setText("token-split", `${formatNumber(metrics.input_tokens)} / ${formatNumber(metrics.output_tokens)}`);
     setText("duration", `${formatNumber(metrics.total_duration_millis)} ms`);
+    setText("average-retry", `${formatNumber(metrics.average_duration_millis)} ms / ${formatNumber(metrics.retryable_failure_count)}`);
+    setText("ledger-size", `${formatNumber(metrics.ledger_bytes)} / ${formatNumber(metrics.last_sequence)}`);
     setText("chain-head", compactDigest(metrics.chain_head_sha256));
     setText("content-storage", metrics.prompt_or_completion_content_recorded ? "ON" : "OFF");
     setText("improvement-count", `개선 후보 ${formatNumber(data.improvement_candidate_count)}`);
@@ -92,19 +158,39 @@
     setStatus(byId("connection-state"), "RUNNING");
   }
 
+  async function api(path, options = {}) {
+    const response = await fetch(path, {
+      ...options,
+      headers: {
+        "Authorization": `Bearer ${bearerToken}`,
+        "Accept": "application/json",
+        ...(options.body ? {"Content-Type": "application/json"} : {}),
+        ...(options.headers || {})
+      },
+      cache: "no-store",
+      credentials: "omit"
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.message || `요청 실패 (${response.status})`);
+    return body;
+  }
+
   async function loadOverview() {
     if (!bearerToken) return;
     byId("refresh").disabled = true;
     byId("auth-error").textContent = "";
     try {
-      const response = await fetch("/v1/management-overview", {
-        method: "GET",
-        headers: { "Authorization": `Bearer ${bearerToken}`, "Accept": "application/json" },
-        cache: "no-store",
-        credentials: "omit"
-      });
-      if (!response.ok) throw new Error(response.status === 401 ? "토큰이 올바르지 않습니다." : `조회 실패 (${response.status})`);
-      render(await response.json());
+      const session = await api("/v1/session");
+      sessionRole = session.role || "";
+      byId("session-identity").textContent = `${session.actor || "—"} / ${sessionRole || "—"}`;
+      const [overview, settings, audit] = await Promise.all([
+        api("/v1/management-overview"), api("/v1/gateway-settings/requests"), api("/v1/audit-events")
+      ]);
+      render(overview);
+      renderGatewayRequests(settings);
+      renderAudit(audit);
+      byId("program-form").querySelector("button").disabled = !["ADMIN", "OPERATOR"].includes(sessionRole);
+      byId("gateway-form").querySelector("button").disabled = sessionRole !== "ADMIN";
     } catch (error) {
       setStatus(byId("connection-state"), "UNAVAILABLE");
       byId("auth-error").textContent = error instanceof Error ? error.message : "조회에 실패했습니다.";
@@ -112,6 +198,33 @@
     } finally {
       byId("refresh").disabled = !bearerToken;
     }
+  }
+
+  async function validateProgram(projectId, targetId, button) {
+    button.disabled = true;
+    setText("program-action-state", "격리 snapshot 검증 실행 중…");
+    try {
+      const result = await api("/v1/programs/validate", {method: "POST", body: JSON.stringify({
+        project_id: projectId, target_id: targetId, profile: byId("validation-profile").value
+      })});
+      setText("program-action-state", `${result.decision} / finding ${result.finding_count} / source mutation ${result.source_mutation_detected}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "검증 실패");
+    } finally { button.disabled = false; }
+  }
+
+  async function decideGateway(requestId, decision, button) {
+    button.disabled = true;
+    try {
+      await api("/v1/gateway-settings/approvals", {method: "POST", body: JSON.stringify({
+        request_id: requestId, decision, reason: "관리화면에서 별도 승인자 검토"
+      })});
+      setText("gateway-action-state", `${requestId}: ${decision}`);
+      await loadOverview();
+    } catch (error) {
+      setText("gateway-action-state", error instanceof Error ? error.message : "승인 처리 실패");
+    } finally { button.disabled = false; }
   }
 
   byId("auth-form").addEventListener("submit", (event) => {
@@ -122,8 +235,43 @@
     loadOverview();
   });
   byId("refresh").addEventListener("click", loadOverview);
+  byId("program-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector("button");
+    button.disabled = true;
+    try {
+      const result = await api("/v1/programs", {method: "POST", body: JSON.stringify({
+        workspace_id: "local-runtime", workspace_name: "Local runtime",
+        project_id: "onsure-validation", project_name: "ONSure validation",
+        target_id: byId("program-id").value, target_name: byId("program-name").value,
+        target_type: byId("program-type").value, source_root: byId("program-source").value
+      })});
+      setText("program-action-state", `${result.target_id} 등록 완료 / read-only ${result.read_only_registration}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "등록 실패");
+    } finally { button.disabled = false; }
+  });
+  byId("gateway-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector("button");
+    button.disabled = true;
+    try {
+      const result = await api("/v1/gateway-settings/requests", {method: "POST", body: JSON.stringify({
+        provider: byId("gateway-provider").value, model: byId("gateway-model").value,
+        requests_per_second: Number(byId("gateway-rate").value),
+        cost_per_token_micros: Number(byId("gateway-cost").value), reason: byId("gateway-reason").value
+      })});
+      setText("gateway-action-state", `${result.request_id}: ${result.state}`);
+      byId("gateway-reason").value = "";
+      await loadOverview();
+    } catch (error) {
+      setText("gateway-action-state", error instanceof Error ? error.message : "요청 실패");
+    } finally { button.disabled = false; }
+  });
   byId("disconnect").addEventListener("click", () => {
     bearerToken = "";
+    sessionRole = "";
     byId("dashboard").hidden = true;
     byId("auth-panel").hidden = false;
     byId("refresh").disabled = true;

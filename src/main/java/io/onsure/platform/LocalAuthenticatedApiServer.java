@@ -12,13 +12,10 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.time.Instant;
-import java.util.HexFormat;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -39,14 +36,17 @@ public final class LocalAuthenticatedApiServer {
     private static final Set<String> ROUTE_PATHS = Set.of(
             "/v1/openapi.json", "/v1/health", "/v1/status", "/v1/workflow",
             "/v1/program-profile", "/v1/validate", "/v1/run-artifact",
-            "/v1/workspace-snapshot", "/v1/autopilot-control", "/v1/management-overview");
+            "/v1/workspace-snapshot", "/v1/autopilot-control", "/v1/management-overview",
+            "/v1/session", "/v1/programs", "/v1/programs/validate",
+            "/v1/gateway-settings/requests", "/v1/gateway-settings/approvals", "/v1/audit-events");
 
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
     private final Path workspaceRoot;
-    private final byte[] tokenDigest;
+    private final Map<String, String> environment;
+    private final LocalAccessControl accessControl;
     private final AtomicLong requestSequence = new AtomicLong();
     private final Semaphore concurrentRequests = new Semaphore(4, true);
     private final JsonNode openApiDocument;
@@ -59,11 +59,13 @@ public final class LocalAuthenticatedApiServer {
     }
 
     public LocalAuthenticatedApiServer(Path workspaceRoot, String token) {
+        this(workspaceRoot, token, System.getenv());
+    }
+
+    LocalAuthenticatedApiServer(Path workspaceRoot, String token, Map<String, String> environment) {
         this.workspaceRoot = requireWorkspace(workspaceRoot);
-        if (token == null || token.length() < 32 || token.length() > 4096) {
-            throw new IllegalArgumentException("LOCAL_API_TOKEN_LENGTH_INVALID");
-        }
-        this.tokenDigest = digest(token.getBytes(StandardCharsets.UTF_8));
+        this.environment = Map.copyOf(environment == null ? Map.of() : environment);
+        this.accessControl = new LocalAccessControl(token, this.environment);
         this.openApiDocument = loadOpenApiDocument();
     }
 
@@ -91,16 +93,34 @@ public final class LocalAuthenticatedApiServer {
                     "assurance_class", "SELF_VALIDATION_NONFINAL",
                     "final_claim_allowed", false));
         });
-        server.createContext("/v1/status", authenticated(this::status));
-        server.createContext("/v1/workflow", authenticated(this::workflow));
-        server.createContext("/v1/program-profile", authenticated(exchange -> compatibilityWorkflow(
-                exchange, "program.learn")));
-        server.createContext("/v1/validate", authenticated(exchange -> compatibilityWorkflow(
-                exchange, "validation.run")));
-        server.createContext("/v1/run-artifact", authenticated(this::runArtifact));
-        server.createContext("/v1/workspace-snapshot", authenticated(this::workspaceSnapshot));
-        server.createContext("/v1/autopilot-control", authenticated(this::autopilotControl));
-        server.createContext("/v1/management-overview", authenticated(this::managementOverview));
+        server.createContext("/v1/status", authenticated(LocalAccessControl.Permission.VIEW, this::status));
+        server.createContext("/v1/session", authenticated(LocalAccessControl.Permission.VIEW, this::session));
+        server.createContext("/v1/workflow", authenticated(
+                LocalAccessControl.Permission.DISPATCH_WORKFLOW, this::workflow));
+        server.createContext("/v1/program-profile", authenticated(
+                LocalAccessControl.Permission.OPERATE_PROGRAMS,
+                exchange -> compatibilityWorkflow(exchange, "program.learn")));
+        server.createContext("/v1/validate", authenticated(
+                LocalAccessControl.Permission.OPERATE_PROGRAMS,
+                exchange -> compatibilityWorkflow(exchange, "validation.run")));
+        server.createContext("/v1/run-artifact", authenticated(
+                LocalAccessControl.Permission.VIEW, this::runArtifact));
+        server.createContext("/v1/workspace-snapshot", authenticated(
+                LocalAccessControl.Permission.VIEW, this::workspaceSnapshot));
+        server.createContext("/v1/autopilot-control", authenticated(
+                LocalAccessControl.Permission.CONTROL, this::autopilotControl));
+        server.createContext("/v1/management-overview", authenticated(
+                LocalAccessControl.Permission.VIEW, this::managementOverview));
+        server.createContext("/v1/programs", authenticated(
+                LocalAccessControl.Permission.VIEW, this::programs));
+        server.createContext("/v1/programs/validate", authenticated(
+                LocalAccessControl.Permission.OPERATE_PROGRAMS, this::programValidate));
+        server.createContext("/v1/gateway-settings/requests", authenticated(
+                LocalAccessControl.Permission.VIEW, this::gatewaySettingRequests));
+        server.createContext("/v1/gateway-settings/approvals", authenticated(
+                LocalAccessControl.Permission.APPROVE_SETTINGS, this::gatewaySettingApprovals));
+        server.createContext("/v1/audit-events", authenticated(
+                LocalAccessControl.Permission.VIEW, this::auditEvents));
         server.createContext("/admin", this::adminAsset);
         executor = Executors.newFixedThreadPool(4, runnable -> {
             Thread thread = new Thread(runnable, "onsure-local-api");
@@ -135,7 +155,7 @@ public final class LocalAuthenticatedApiServer {
         }
     }
 
-    private HttpHandler authenticated(CheckedHttpHandler handler) {
+    private HttpHandler authenticated(LocalAccessControl.Permission permission, CheckedHttpHandler handler) {
         return exchange -> {
             boolean acquired = false;
             try {
@@ -149,13 +169,16 @@ public final class LocalAuthenticatedApiServer {
                     return;
                 }
                 String authorization = exchange.getRequestHeaders().getFirst("Authorization");
-                if (authorization == null || !authorization.startsWith("Bearer ")
-                        || !MessageDigest.isEqual(
-                                digest(authorization.substring("Bearer ".length())
-                                        .getBytes(StandardCharsets.UTF_8)), tokenDigest)) {
+                LocalAccessControl.Identity identity = accessControl.authenticate(authorization);
+                if (identity == null) {
                     respond(exchange, 401, error("UNAUTHORIZED", "A valid local bearer token is required."));
                     return;
                 }
+                if (!LocalAccessControl.allowed(identity, permission)) {
+                    respond(exchange, 403, error("ROLE_PERMISSION_DENIED", "The authenticated role lacks this permission."));
+                    return;
+                }
+                exchange.setAttribute("onsure.identity", identity);
                 acquired = concurrentRequests.tryAcquire();
                 if (!acquired) {
                     respond(exchange, 429, error("LOCAL_API_BUSY", "Concurrent request limit reached."));
@@ -170,6 +193,19 @@ public final class LocalAuthenticatedApiServer {
                 if (acquired) concurrentRequests.release();
             }
         };
+    }
+
+    private void session(HttpExchange exchange) throws java.io.IOException {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        respond(exchange, 200, Map.of(
+                "contract", "ONSURE_LOCAL_SESSION_V1",
+                "actor", identity.actor(), "role", identity.role().name(),
+                "token_sha256", identity.tokenSha256(),
+                "final_claim_allowed", false));
     }
 
     private void status(HttpExchange exchange) throws java.io.IOException {
@@ -262,7 +298,7 @@ public final class LocalAuthenticatedApiServer {
                 "run_root", runRoot.toString(),
                 "artifact", artifact,
                 "body", body,
-                "sha256", HexFormat.of().formatHex(digest(Files.readAllBytes(file)))));
+                "sha256", Hashing.sha256(Files.readAllBytes(file))));
     }
 
     private void workspaceSnapshot(HttpExchange exchange) throws Exception {
@@ -301,6 +337,95 @@ public final class LocalAuthenticatedApiServer {
             return;
         }
         respond(exchange, 200, new LocalManagementOverviewService(workspaceRoot).overview());
+    }
+
+    private void programs(HttpExchange exchange) throws Exception {
+        if ("GET".equals(exchange.getRequestMethod())) {
+            Map<String, Object> overview = new LocalManagementOverviewService(workspaceRoot).overview();
+            respond(exchange, 200, Map.of(
+                    "contract", LocalProgramManagementService.CONTRACT,
+                    "programs", overview.get("programs"),
+                    "program_count", overview.get("program_count"),
+                    "final_claim_allowed", false));
+            return;
+        }
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET or POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        if (!LocalAccessControl.allowed(identity, LocalAccessControl.Permission.OPERATE_PROGRAMS)) {
+            respond(exchange, 403, error("ROLE_PERMISSION_DENIED", "Operator role is required."));
+            return;
+        }
+        Map<String, Object> registered = new LocalProgramManagementService(workspaceRoot).register(readJson(exchange));
+        new LocalManagementAuditLedger(workspaceRoot).append(
+                identity, "PROGRAM_REGISTER", "ACCEPTED", Map.of(
+                        "project_id", registered.get("project_id"),
+                        "target_id", registered.get("target_id"),
+                        "observed_source_sha256", registered.get("observed_source_sha256")));
+        respond(exchange, 200, registered);
+    }
+
+    private void programValidate(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        Map<String, Object> validation = new LocalProgramManagementService(workspaceRoot).validate(readJson(exchange));
+        new LocalManagementAuditLedger(workspaceRoot).append(
+                identity, "PROGRAM_VALIDATE", "COMPLETED", Map.of(
+                        "run_id", validation.get("run_id"), "decision", validation.get("decision"),
+                        "finding_count", validation.get("finding_count"),
+                        "source_mutation_detected", validation.get("source_mutation_detected")));
+        respond(exchange, 200, validation);
+    }
+
+    private void gatewaySettingRequests(HttpExchange exchange) throws Exception {
+        LocalGatewaySettingsService settings = new LocalGatewaySettingsService(workspaceRoot, environment);
+        if ("GET".equals(exchange.getRequestMethod())) {
+            respond(exchange, 200, settings.list(50));
+            return;
+        }
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET or POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        if (!LocalAccessControl.allowed(identity, LocalAccessControl.Permission.REQUEST_SETTINGS)) {
+            respond(exchange, 403, error("ROLE_PERMISSION_DENIED", "Administrator role is required."));
+            return;
+        }
+        Map<String, Object> requested = settings.request(readJson(exchange), identity);
+        new LocalManagementAuditLedger(workspaceRoot).append(
+                identity, "GATEWAY_SETTING_REQUEST", "AWAITING_APPROVAL", Map.of(
+                        "request_id", requested.get("request_id"),
+                        "request_sha256", requested.get("request_sha256")));
+        respond(exchange, 200, requested);
+    }
+
+    private void gatewaySettingApprovals(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        Map<String, Object> decision = new LocalGatewaySettingsService(workspaceRoot, environment)
+                .approve(readJson(exchange), identity);
+        new LocalManagementAuditLedger(workspaceRoot).append(
+                identity, "GATEWAY_SETTING_APPROVAL", String.valueOf(decision.get("state")), Map.of(
+                        "request_id", decision.get("request_id"),
+                        "request_sha256", decision.get("request_sha256")));
+        respond(exchange, 200, decision);
+    }
+
+    private void auditEvents(HttpExchange exchange) throws Exception {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET is required."));
+            return;
+        }
+        respond(exchange, 200, new LocalManagementAuditLedger(workspaceRoot).recent(100));
     }
 
     private void adminAsset(HttpExchange exchange) throws java.io.IOException {
@@ -455,6 +580,14 @@ public final class LocalAuthenticatedApiServer {
         }
     }
 
+    private static LocalAccessControl.Identity identity(HttpExchange exchange) {
+        Object value = exchange.getAttribute("onsure.identity");
+        if (!(value instanceof LocalAccessControl.Identity identity)) {
+            throw new IllegalStateException("AUTHENTICATED_IDENTITY_MISSING");
+        }
+        return identity;
+    }
+
     private static Path requireWorkspace(Path value) {
         if (value == null) throw new IllegalArgumentException("WORKSPACE_ROOT_REQUIRED");
         Path path = value.toAbsolutePath().normalize();
@@ -462,11 +595,6 @@ public final class LocalAuthenticatedApiServer {
             throw new IllegalArgumentException("WORKSPACE_ROOT_INVALID");
         }
         return path;
-    }
-
-    private static byte[] digest(byte[] value) {
-        try { return MessageDigest.getInstance("SHA-256").digest(value); }
-        catch (Exception failure) { throw new IllegalStateException(failure); }
     }
 
     private static String safe(Exception failure) {

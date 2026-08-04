@@ -20,6 +20,8 @@
         <a class="active" href="#overview">Overview</a>
         <a href="#gateway">LLM Gateway</a>
         <a href="#programs">Programs</a>
+        <a href="#changes">Change requests</a>
+        <a href="#audit">Audit</a>
         <a href="#assurance">Assurance</a>
       </nav>
       <div class="rail-note">
@@ -37,6 +39,7 @@
           <p class="subtitle">프로그램 검증, 개선 후보, LLM 사용량을 실제 로컬 증적에서 조회합니다.</p>
         </div>
         <div class="top-actions">
+          <span id="session-identity" class="identity-chip">—</span>
           <span id="connection-state" class="status neutral">인증 필요</span>
           <button id="refresh" class="button secondary" type="button" disabled>새로고침</button>
         </div>
@@ -98,6 +101,8 @@
             <div class="usage-row"><span>성공 / 실패</span><strong id="request-result">0 / 0</strong></div>
             <div class="usage-row"><span>Input / Output token</span><strong id="token-split">0 / 0</strong></div>
             <div class="usage-row"><span>누적 지연</span><strong id="duration">0 ms</strong></div>
+            <div class="usage-row"><span>평균 지연 / retryable 실패</span><strong id="average-retry">0 ms / 0</strong></div>
+            <div class="usage-row"><span>Ledger bytes / sequence</span><strong id="ledger-size">0 / 0</strong></div>
             <div class="usage-row"><span>Chain head</span><code id="chain-head">NOT_RUN</code></div>
             <p class="privacy-note">Prompt·응답 원문 저장: <strong id="content-storage">OFF</strong></p>
           </div>
@@ -110,10 +115,56 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>프로그램</th><th>유형</th><th>최근 검증</th><th>Finding</th><th>개선 후보</th><th>증적</th></tr></thead>
+              <thead><tr><th>프로그램</th><th>유형</th><th>최근 검증</th><th>Finding</th><th>개선 후보</th><th>증적</th><th>실행</th></tr></thead>
               <tbody id="program-rows"></tbody>
             </table>
             <p id="program-empty" class="empty-state" hidden>등록된 프로그램이 없습니다.</p>
+          </div>
+          <details class="operation-box">
+            <summary>읽기 전용 프로그램 등록</summary>
+            <form id="program-form" class="control-form" autocomplete="off">
+              <label>Source root<input id="program-source" name="source_root" placeholder="/path/to/program" required></label>
+              <label>Target ID<input id="program-id" name="target_id" value="onsure-source" pattern="[A-Za-z0-9._-]+" required></label>
+              <label>Target name<input id="program-name" name="target_name" value="ONSure source" required></label>
+              <label>Type<select id="program-type" name="target_type"><option>GENERAL_SOFTWARE</option><option>AI_APPLICATION</option><option>AI_AGENTIC_PLATFORM</option></select></label>
+              <button class="button primary" type="submit">등록</button>
+            </form>
+            <div class="inline-control">
+              <label for="validation-profile">검증 프로필</label>
+              <select id="validation-profile"><option value="INSPECT_ONLY">INSPECT_ONLY</option><option value="MAVEN_STANDARD">MAVEN_STANDARD</option></select>
+              <span id="program-action-state" class="form-note">원본은 수정하지 않습니다.</span>
+            </div>
+          </details>
+        </section>
+
+        <section id="changes" class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">Two-person control</p><h2>Gateway 설정 변경 요청</h2></div>
+            <span class="count-chip">자동 적용 OFF</span>
+          </div>
+          <form id="gateway-form" class="control-form" autocomplete="off">
+            <label>Provider<select id="gateway-provider"><option value="local-mock">local-mock</option><option value="openai">openai</option></select></label>
+            <label>Model<input id="gateway-model" pattern="[A-Za-z0-9._:/-]+" required></label>
+            <label>Requests/sec<input id="gateway-rate" type="number" min="1" max="10000" value="20" required></label>
+            <label>Cost/token µ<input id="gateway-cost" type="number" min="0" max="1000000000" value="0" required></label>
+            <label class="wide">사유<input id="gateway-reason" maxlength="500" required></label>
+            <button class="button primary" type="submit">승인 요청</button>
+          </form>
+          <p id="gateway-action-state" class="form-note">ADMIN 요청 후 별도 APPROVER 토큰으로 승인해야 합니다.</p>
+          <div class="table-wrap compact-table">
+            <table><thead><tr><th>Request</th><th>변경</th><th>상태</th><th>요청자</th></tr></thead><tbody id="gateway-request-rows"></tbody></table>
+            <p id="gateway-request-empty" class="empty-state">변경 요청이 없습니다.</p>
+          </div>
+        </section>
+
+        <section id="audit" class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">Append-only evidence</p><h2>관리 감사 이력</h2></div>
+            <span id="audit-chain" class="status neutral">NOT_RUN</span>
+          </div>
+          <div class="table-wrap compact-table">
+            <table><thead><tr><th>시각</th><th>Actor / Role</th><th>Action</th><th>Outcome</th></tr></thead><tbody id="audit-rows"></tbody></table>
+            <p id="audit-empty" class="empty-state">감사 이벤트가 없습니다.</p>
           </div>
         </section>
 

@@ -6,6 +6,10 @@
 
 ### Added
 
+- Local API least-privilege VIEWER/OPERATOR/ADMIN/APPROVER roles, read-only external program
+  registration, isolated Maven validation and append-only management audit evidence
+- two-person secret-free Gateway setting request/approval flow with external apply boundary
+- retryable failure, average latency, ledger size and sequence LLM monitoring metrics
 - OpenAPI 3.1 정본과 구현 route drift 검증을 갖춘 Local API·LLM Gateway 계약
 - exact Provider/no-retry/no-fallback LLM Gateway와 content-free append-only token·비용 evidence ledger
 - LLM 설정·사용량·증적 chain, 등록 프로그램 검증 결과와 개선 후보를 표시하는 loopback 관리화면

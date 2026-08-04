@@ -139,6 +139,11 @@ public final class ValidationEngine {
         return execute(target, context, checkpoint, contextSnapshots, replayLedger, 0, created, false);
     }
 
+    /** Local workflow entry: completed stages are never re-executed. */
+    RunResult resume(ValidationTarget target, Path runRoot) throws Exception {
+        return resumeInternal(target, runRoot);
+    }
+
     RunResult resumeInternal(ValidationTarget target, Path runRoot) throws Exception {
         TargetAdapter adapter = adapterRegistry.require(target);
         List<String> plannedStageIds = stages.stream().map(ValidatorStage::stageId).toList();
