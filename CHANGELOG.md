@@ -69,6 +69,9 @@
 
 ### Changed
 
+- `onsure-core`와 `onsure-adapter-oruda`를 module-owned source root로 물리 분리하고
+  canonical 단일 artifact, `io.onsure` namespace와 공개 API 240/240을 유지한다.
+- ValidationEngine resume가 replay-ledger digest 위변조도 명시적으로 거부하도록 회귀시험을 보강한다.
 - 기존 hashing facade는 공개 API를 유지하면서 공통 SHA-256 primitive를 사용한다.
 - `FileValidationStore`는 RAG package를 직접 호출하지 않고 공통 중립 candidate preparer를 사용한다.
 - Manifest의 untracked 파일 mode는 Git index mode와 동일하게 정규화된다.
@@ -89,6 +92,5 @@
 
 ### Known migration blockers
 
-- `onsure-core`와 `onsure-adapter-oruda`가 공유하는 물리 Java source root 2개
 - root source license·소유권은 ORUDA Labs proprietary owner 선언으로 반영; 고객 데이터 승인과 독립 법률 검토는 미실행
-- 실제 배포 topology와 운영 DB engine 미선정(컨테이너 후보와 합성 SQLite rehearsal만 존재)
+- Ubuntu/RHEL 단독 서버와 PostgreSQL topology는 선택됨; 운영 데이터 승인·실제 Production migration·RHEL 호스트 검증은 미실행

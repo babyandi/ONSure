@@ -61,7 +61,7 @@ def main() -> int:
     if body and body != expected:
         errors.append("MANIFEST_CONTENT_OR_DIGEST_DRIFT")
 
-    java_files = list((ROOT / "src/main/java").rglob("*.java"))
+    java_files = list((ROOT / "modules").glob("*/src/main/java/**/*.java"))
     for path in java_files:
         text = path.read_text(encoding="utf-8")
         package = re.search(r"^package\s+([\w.]+);", text, re.MULTILINE)
@@ -126,11 +126,12 @@ def main() -> int:
         errors.append("OPEN_PR_OVERLAP_AUTOMATIC_MERGE_AUTHORITY_DRIFT")
 
     known_blockers = [
-        "TRANSITIONAL_SHARED_SOURCE_ROOT",
         "RHEL_AND_UBUNTU_INSTALL_AND_SYSTEMD_START_NOT_RUN",
         "RHEL_AND_UBUNTU_PRODUCTION_POSTGRESQL_REHEARSAL_NOT_RUN",
         "OPENAI_LIVE_REQUEST_NOT_RUN",
     ]
+    if build_result["shared_source_module_count"]:
+        known_blockers.insert(0, "TRANSITIONAL_SHARED_SOURCE_ROOT")
     if license_inventory.get("root_source_license") != manifest.ROOT_LICENSE:
         known_blockers.append("ROOT_LICENSE_INVALID")
 

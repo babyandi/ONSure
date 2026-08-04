@@ -27,7 +27,7 @@
         "io.onsure.platform.oruda"
       ],
       "forbidden_source_paths": [
-        "src/main/java/io/onsure/platform/oruda/",
+        "modules/onsure-adapter-oruda/src/main/java/io/onsure/platform/oruda/",
         "src/test/java/io/onsure/platform/oruda/"
       ],
       "required_scenarios": [
@@ -103,5 +103,5 @@
     "OPTIONAL_ADAPTER_FAILURE_MUST_NOT_CHANGE_CORE_AUTHORITY",
     "NO_TARGET_ADAPTER_MAY_ISSUE_ONSURE_FINAL_DECISION"
   ],
-  "physical_module_split": "SPLIT_PACKAGE_REMOVED_SHARED_ROOT_REMAINS"
+  "physical_module_split": "COMPLETE_SHARED_ROOT_REMOVED"
 }

@@ -57,18 +57,17 @@ receipt, environment inventory, and captured output. It must not be reported as 
 
 ## Module split decision
 
-`onsure-core` and `onsure-adapter-oruda` still select disjoint packages from the same canonical
-`src/main/java` root. Split packages, artifact cycles, forbidden imports, and direct target-source
-dependencies are already zero. Reducing the shared source module count from 2 to 0 requires moving the
-canonical files into module-owned roots. That would conflict with the active path-freeze requirement, so
-the physical move is deliberately not performed in this change. Copying or generating duplicate source
-trees would only hide the coupling and is prohibited as a false remediation.
+The preserved original worktree still reflects the earlier path-freeze decision. In the isolated
+`codex/` integration worktree, the owner's later explicit module-split instruction authorized moving the
+canonical files into module-owned roots. No source tree was copied or generated: Git renames preserve one
+owner per file, and the shared source module count is now 0.
 
 ## Disposition
 
 - Preserve the original 270-file worktree for its owner to reconcile.
 - Do not commit the incompatible namespace rename.
 - Integrate only independently reviewed semantic fixes under `io.onsure`.
-- Keep physical module source relocation as `BLOCKED_BY_PATH_FREEZE`, not `PASS` or `NOT_RUN`.
+- Treat physical module source relocation as `PASS_NONFINAL` only on the isolated integration branch;
+  the preserved original worktree remains untouched.
 - Re-run canonical, modular, public API, independent clone, package, and 772-file nested migration gates
   after every accepted remediation commit.

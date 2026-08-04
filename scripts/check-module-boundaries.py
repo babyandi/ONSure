@@ -25,11 +25,7 @@ def tracked_java() -> list[pathlib.Path]:
 
 
 def physical_core_source(relative: str) -> bool:
-    if relative.startswith("modules/onsure-core/src/"):
-        return True
-    if not relative.startswith("src/main/java/"):
-        return False
-    return not relative.startswith("src/main/java/io/onsure/platform/oruda/")
+    return relative.startswith("modules/onsure-core/src/")
 
 
 def text_values(root: ET.Element, xpath: str) -> set[str]:
@@ -62,21 +58,18 @@ def main() -> int:
         violations.append(f"MODULAR_AGGREGATOR_MODULE_SET:{sorted(modules)}")
 
     core_pom = ET.parse(ROOT / "modules/onsure-core/pom.xml").getroot()
-    core_excludes = text_values(core_pom, ".//m:excludes/m:exclude")
-    required_core_excludes = {"io/onsure/platform/oruda/**"}
-    if not required_core_excludes.issubset(core_excludes):
-        violations.append(f"CORE_POM_EXCLUDES_MISSING:{sorted(required_core_excludes - core_excludes)}")
-
     if text_values(core_pom, ".//m:compilerArgs/m:arg") or text_values(core_pom, ".//m:implicit") != {"none"}:
         violations.append("CORE_POM_IMPLICIT_COMPILATION_NOT_DISABLED")
 
     adapter_pom = ET.parse(ROOT / "modules/onsure-adapter-oruda/pom.xml").getroot()
-    adapter_includes = text_values(adapter_pom, ".//m:includes/m:include")
-    required_adapter_includes = {"io/onsure/platform/oruda/**"}
-    if not required_adapter_includes.issubset(adapter_includes):
-        violations.append(f"ORUDA_POM_INCLUDES_MISSING:{sorted(required_adapter_includes - adapter_includes)}")
     if text_values(adapter_pom, ".//m:compilerArgs/m:arg") or text_values(adapter_pom, ".//m:implicit") != {"none"}:
         violations.append("ORUDA_POM_IMPLICIT_COMPILATION_NOT_DISABLED")
+    if text_values(core_pom, ".//m:sources/m:source") or text_values(adapter_pom, ".//m:sources/m:source"):
+        violations.append("SHARED_SOURCE_CONFIGURATION_PRESENT")
+    if not (ROOT / "modules/onsure-core/src/main/java").is_dir():
+        violations.append("CORE_OWNED_SOURCE_ROOT_MISSING")
+    if not (ROOT / "modules/onsure-adapter-oruda/src/main/java").is_dir():
+        violations.append("ORUDA_OWNED_SOURCE_ROOT_MISSING")
 
     cli_pom = ET.parse(ROOT / "modules/onsure-cli/pom.xml").getroot()
     cli_includes = text_values(cli_pom, ".//m:includes/m:include")
@@ -102,7 +95,7 @@ def main() -> int:
         "physical_module_compile": "REQUIRED_BY_MODULAR_BUILD",
         "split_package_count_target": 0,
         "package_cycle_count_target": 0,
-        "shared_source_root_removal": "STAGED_PATH_FREEZE_PRESERVED",
+        "shared_source_root_removal": "COMPLETE",
         "final_claim_allowed": False,
     }
     print(json.dumps(result, indent=2, sort_keys=True))

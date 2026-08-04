@@ -80,6 +80,26 @@ class ValidationEngineResumeTest {
     }
 
     @Test
+    void refusesResumeAfterReplayLedgerDigestTampering() throws Exception {
+        ValidationTarget target = target();
+        ValidatorStage stage = stage("FAIL_ONCE", context -> {
+            throw new IllegalStateException("synthetic interruption");
+        });
+        ValidationEngine engine = new ValidationEngine(
+                List.of(new GenericManifestTargetAdapter()), List.of(stage),
+                new FileValidationStore(temp.resolve("runs-ledger-tamper")));
+        ValidationEngine.ValidationExecutionException failure = assertThrows(
+                ValidationEngine.ValidationExecutionException.class, () -> engine.run(target));
+        Path ledger = failure.runRoot().resolve(ValidationStageReplayLedger.FILE_NAME);
+        Files.writeString(ledger, Files.readString(ledger).replace("INTERRUPTED", "STARTED"));
+
+        IllegalStateException rejected = assertThrows(
+                IllegalStateException.class, () -> engine.resumeInternal(target, failure.runRoot()));
+
+        assertEquals("STAGE_REPLAY_LEDGER_DIGEST_INVALID", rejected.getMessage());
+    }
+
+    @Test
     void refusesReplayWhenInterruptedStageChangedAPreexistingFile() throws Exception {
         ValidationTarget target = target();
         ValidatorStage first = stage("FIRST", context -> {

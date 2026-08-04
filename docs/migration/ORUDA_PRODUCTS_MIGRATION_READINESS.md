@@ -32,7 +32,7 @@
 | `products/onsure/README.md` | `README.md` | 상대 링크를 제품 루트 기준으로 검증한 뒤 이동 | `MAPPED` |
 | `products/onsure/CHANGELOG.md` | `CHANGELOG.md` | immutable cutover SHA와 실제 release 항목을 별도 승인 후 추가 | `CANDIDATE_NONFINAL` |
 | `products/onsure/components/` | Local API, LLM Gateway, local web 관리화면, CLI, VS Code 확장, PostgreSQL migration, 동기식 검증 실행기 | 아래 실행 구성요소 표에 따라 배치. 독립 worker는 구현으로 가장하지 않음 | `PARTIAL` |
-| `products/onsure/modules/` | `src/main/java`, `modules/onsure-*`, `onsure_core/` | split package/cycle 제거 완료. 남은 공유 source root 2개를 cutover 승인 후 전용 module root로 이동 | `PARTIAL_SHARED_ROOT` |
+| `products/onsure/modules/` | `modules/onsure-*`, `onsure_core/` | core와 ORUDA adapter의 전용 source root, split package/cycle/shared root 0건을 그대로 이동 | `MAPPED_MODULE_OWNED` |
 | `products/onsure/contracts/` | `contracts/` | 상대 경로와 schema registry를 함께 이동 | `MAPPED` |
 | `products/onsure/config/` | `.devcontainer/`, `.vscode/`, `requirements-validation.txt` | 개발환경과 검증 설정을 제품 config/tooling 정책에 맞춰 분리 | `MAPPED_WITH_REVIEW` |
 | `products/onsure/deploy/` | RHEL/Ubuntu 24.04 LTS systemd 단독 서버 후보, package script, 이전 container 합성 시험 자료 | non-root/read-only/loopback/외부 secret 후보와 배포판별 preflight 증적을 이동. 실제 배포 권한은 포함하지 않음 | `CANDIDATE_NONFINAL` |
@@ -60,7 +60,7 @@
 
 | Capability | 현재 상태 | 미래 module 후보 |
 |---|---|---|
-| CORE-ISOLATION | PARTIAL | `modules/core` |
+| CORE-ISOLATION | IMPLEMENTED_NONFINAL | `modules/core` |
 | WORKSPACE-INTAKE | PARTIAL | `modules/intake` |
 | PROGRAM-LEARNING | PARTIAL | `modules/learning` |
 | BEHAVIOR-LEARNING | PARTIAL | `modules/learning` |
@@ -105,7 +105,7 @@
 | RAG preparation request contract | ONSure `io.onsure.rag` | 제품 경계 후보 | `RagPreparationRequest`를 신규 호출 경계로 사용하고, 기존 `ValidationReport` overload는 호환 기간 후 platform adapter로 격리 |
 | Cause-aware verification Python | ONSure `onsure_core/` | 공통 후보/중복 검토 | ORUDA의 같은 상대경로 구현과 API·digest가 달라 divergent copy 여부 결정 |
 | Product Catalog, Program/Behavior Learning, OReview, RCA, remediation, service case, OLicense | ONSure | 제품 전용 | 공통화하지 않음. ONSure product semantics와 evidence authority 유지 |
-| ORUDA adapter와 ORUDA receipt/materialization classes | ONSure optional adapter | 제품 통합 전용 | target-neutral evidence SPI 역전 완료. 실제 source root 이동과 adapter version owner 확정 필요 |
+| ORUDA adapter와 ORUDA receipt/materialization classes | ONSure optional adapter | 제품 통합 전용 | target-neutral evidence SPI 역전과 adapter 전용 source root 완료. adapter version owner 확정 필요 |
 
 공통 후보는 이번 작업에서 복사·이동·추출하지 않는다. “두 제품에서 이름이 같다”는 이유만으로 공유 라이브러리로 승격하지 않는다.
 
@@ -126,7 +126,7 @@
 | VS Code Extension Host | `bash scripts/run-vscode-extension-host-e2e-container.sh` 후 `--offline` | `PASS_NONFINAL` (VS Code 1.95.3/Xvfb, extension host exit 0, offline network 차단 재실행 exit 0) |
 | Manifest 생성 | `python3 scripts/onsure_monorepo_manifest.py` | `PASS_NONFINAL` (현재 변경 후보 785 files; 기존 668-file 기준선은 신규 구현 파일로 확장됨) |
 | 이관 준비 정합성 | `python3 scripts/validate_monorepo_migration_readiness.py` | `PASS_NONFINAL` |
-| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (150 single owners, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 2) |
+| Build·모듈 경계 | `python3 scripts/validate_onsure_build_boundary.py` | `PASS_NONFINAL` (171 module-owned main sources, 11 artifacts, artifact/package cycles 0; split package 0, shared source modules 0) |
 | 제품 metadata | `python3 scripts/validate_onsure_product_metadata.py` | `PASS_NONFINAL` |
 | Public Java API | `python3 scripts/onsure_java_api_baseline.py validate` | `PASS_NONFINAL` (240 public classes, 기존 238 descriptors delta 0 + additive SPI 2) |
 | CycloneDX SBOM/license/vulnerability | `python3 scripts/onsure_supply_chain.py validate` | `PASS_NONFINAL` (ORUDA Labs proprietary root 11, Apache-2.0 9, BSD-2-Clause 1; VS Code 229, Trivy/npm audit vulnerability 0, license blocker 0) |

@@ -8,8 +8,8 @@
   "items": [
     {"id": "VALIDATOR-FIXTURE-ENGINE", "state": "PARTIAL", "evidence": "io.onsure.platform and io.onsure.harness"},
     {"id": "CORE-ORUDA-ISOLATION", "state": "PARTIAL", "evidence": "Runtime adapter registration separated; compile-time imports and single Maven module remain"},
-    {"id": "FILE-EVIDENCE-STORE", "state": "PARTIAL", "evidence": "src/main/java/io/onsure/platform/FileValidationStore.java"},
-    {"id": "OFFICIAL-LEARNING-LEDGER", "state": "PARTIAL", "evidence": "src/main/java/io/onsure/learning/OfficialLearningLedger.java"},
+    {"id": "FILE-EVIDENCE-STORE", "state": "PARTIAL", "evidence": "modules/onsure-core/src/main/java/io/onsure/platform/FileValidationStore.java"},
+    {"id": "OFFICIAL-LEARNING-LEDGER", "state": "PARTIAL", "evidence": "modules/onsure-core/src/main/java/io/onsure/learning/OfficialLearningLedger.java"},
     {"id": "RAG-PREPARATION-CONTROL", "state": "PARTIAL", "evidence": "io.onsure.rag"},
     {"id": "UNATTENDED-RUNNER", "state": "STUB", "evidence": "scripts/onsure-autopilot.py and .vscode/tasks.json"},
     {"id": "PROGRAM-LEARNING", "state": "STUB", "evidence": "Hash and approval recording without repository understanding"},

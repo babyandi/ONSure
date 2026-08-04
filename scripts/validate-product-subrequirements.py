@@ -234,7 +234,7 @@ def self_test(body: dict[str, Any], source_text: str) -> list[str]:
         assertions = target.setdefault("semantic_assertions", [])
         if not assertions:
             assertions.append({
-                "path": "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
+                "path": "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
                 "tokens": [],
             })
         assertions[0].setdefault("tokens", []).append("TOKEN_THAT_MUST_NOT_EXIST")

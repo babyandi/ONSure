@@ -15,8 +15,8 @@ import validate_monorepo_migration_readiness as readiness  # noqa: E402
 class MonorepoMigrationManifestTest(unittest.TestCase):
     def test_future_path_preserves_repository_relative_path(self):
         self.assertEqual(
-            "products/onsure/src/main/java/io/onsure/platform/ONSureCli.java",
-            manifest.future_path("src/main/java/io/onsure/platform/ONSureCli.java"),
+            "products/onsure/modules/onsure-core/src/main/java/io/onsure/platform/ONSureCli.java",
+            manifest.future_path("modules/onsure-core/src/main/java/io/onsure/platform/ONSureCli.java"),
         )
 
     def test_secret_scan_reports_reason_without_secret_value(self):

@@ -78,6 +78,7 @@ def module_state(contract: dict[str, object]) -> tuple[dict[str, set[str]], dict
         dependency_graph[artifact] = internal
         sources = texts(body, ".//m:sources/m:source")
         descriptors[artifact] = {
+            "source_root": (ROOT / location / "src/main/java"),
             "shared_source": any("../../src/main/java" in source for source in sources),
             "includes": plugin_configuration_texts(
                 body, "maven-compiler-plugin", "m:includes/m:include"
@@ -109,20 +110,11 @@ def graph_cycles(graph: dict[str, set[str]]) -> list[list[str]]:
 def source_ownership(descriptors: dict[str, dict[str, object]]) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
     owners: dict[str, list[str]] = {}
     package_owners: dict[str, set[str]] = defaultdict(set)
-    for source in sorted((ROOT / "src/main/java").rglob("*.java")):
-        relative = source.relative_to(ROOT / "src/main/java").as_posix()
-        selected: list[str] = []
-        for module, descriptor in descriptors.items():
-            if not descriptor["shared_source"]:
-                continue
-            includes = descriptor["includes"]
-            excludes = descriptor["excludes"]
-            included = not includes or any(matches(pattern, relative) for pattern in includes)
-            excluded = any(matches(pattern, relative) for pattern in excludes)
-            if included and not excluded:
-                selected.append(module)
-        owners[relative] = sorted(selected)
-        for module in selected:
+    for module, descriptor in descriptors.items():
+        source_root = descriptor["source_root"]
+        for source in sorted(source_root.rglob("*.java")):
+            relative = source.relative_to(ROOT).as_posix()
+            owners[relative] = [module]
             package_owners[package_name(source)].add(module)
     return owners, {key: sorted(value) for key, value in package_owners.items()}
 
@@ -130,7 +122,7 @@ def source_ownership(descriptors: dict[str, dict[str, object]]) -> tuple[dict[st
 def import_edges() -> tuple[set[str], dict[str, set[str]]]:
     edges: set[str] = set()
     graph: dict[str, set[str]] = defaultdict(set)
-    for source in (ROOT / "src/main/java").rglob("*.java"):
+    for source in (ROOT / "modules").glob("*/src/main/java/**/*.java"):
         owner_package = package_name(source)
         for imported in imports(source):
             if not imported.startswith("io.onsure."):
@@ -220,7 +212,7 @@ def validate() -> dict[str, object]:
         "package_cycles": actual_cycles,
         "forbidden_import_edge_count": len(forbidden_present),
         "physical_split_removal": "COMPLETE" if not actual_split else "INCOMPLETE",
-        "shared_source_root_removal": "COMPLETE" if not shared else "STAGED_PATH_FREEZE_PRESERVED",
+        "shared_source_root_removal": "COMPLETE" if not shared else "INCOMPLETE",
         "final_claim_allowed": False,
     }
 

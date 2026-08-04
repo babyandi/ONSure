@@ -59,11 +59,16 @@
     "onsure-sdk": []
   },
   "transitional_source_ownership": {
-    "shared_source_root": "src/main/java",
-    "shared_source_modules": ["onsure-adapter-oruda", "onsure-core"],
+    "shared_source_root": null,
+    "shared_source_modules": [],
+    "module_source_roots": {
+      "onsure-core": "modules/onsure-core/src/main/java",
+      "onsure-adapter-oruda": "modules/onsure-adapter-oruda/src/main/java"
+    },
     "target_shared_source_module_count": 0,
     "allowed_split_packages": {},
-    "package_paths_changed": false,
+    "java_namespace_changed": false,
+    "source_paths_changed": true,
     "split_package_removal": "COMPLETE"
   },
   "dependency_boundaries": {

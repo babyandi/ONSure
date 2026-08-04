@@ -15,13 +15,13 @@
 - #27, #28, #29는 통합 근거와 #30 링크를 남긴 뒤 병합 없이 닫았다. 각 head commit과 브랜치는 #30 history에 보존된다.
 - 현재 overlap 판정은 `INTEGRATION_ORDER_RESOLVED`다. 이는 자동 main 병합 허용이나 #27/#28/#29의 Draft 상태 해제를 의미하지 않는다.
 
-### 2. 공유 source-set 물리 분리
+### 2. 공유 source-set 물리 분리 — 완료된 준비 항목
 
 - `io.onsure.platform` split package는 제거되어 core가 단독 소유하고 CLI·Local API는 고유 package main entrypoint만 소유한다.
 - `platform ↔ platform.oruda` cycle도 target-neutral evidence SPI로 제거됐으며 artifact/package cycle은 모두 0건이다.
-- 다만 `onsure-core`와 `onsure-adapter-oruda`가 같은 `../../src/main/java`를 배타적 include/exclude로 읽는 공유 source module 2개는 남아 있다.
-- 현재 Java 파일 경로 동결을 유지하므로 이를 adapter 전용 source directory로 실제 이동하지 않았다.
-- 선행 작업: cutover 승인 후 두 artifact의 전용 source directory 이동, canonical/API/modular/ORUDA E2E와 Manifest digest 재검증, shared source module count 2→0.
+- `onsure-core`와 `onsure-adapter-oruda`는 각각 전용 `src/main/java`를 소유하며 공유 source module은 0건이다.
+- root canonical build는 두 module-owned root를 입력으로 사용해 기존 단일 artifact와 `io.onsure` 공개 API를 유지한다.
+- canonical 281 tests, modular 37 tests와 공개 API 240/240을 경로 이동 직후 재검증했다. Manifest와 독립 clone은 최종 후보에서 다시 생성한다.
 
 ### 3. 패키지 의존 순환 제거 — 완료된 준비 항목
 
@@ -29,7 +29,7 @@
 - 기존 공개 API 호환을 위한 `rag → platform` 단방향 compile edge만 유지한다.
 - ORUDA evidence persistence는 `TargetEvidenceContributor` SPI와 ServiceLoader provider로 역전했다.
 - Maven artifact cycle, split package, `platform ↔ platform.oruda` mutual package cycle은 각각 0건이다.
-- 이 완료는 shared source root 물리 이동이나 실제 모노레포 cutover 완료를 뜻하지 않는다.
+- 이 완료는 실제 모노레포 cutover나 Java namespace 변경을 뜻하지 않는다.
 
 ### 4. 라이선스와 소유권 확정 — 소유자 선언 반영 완료, 비최종
 

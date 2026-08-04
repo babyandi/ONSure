@@ -11,8 +11,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProductCatalog.java",
-        "src/main/java/io/onsure/platform/SourceReferenceBinding.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ProductCatalog.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/SourceReferenceBinding.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java"
@@ -46,8 +46,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/SourceReferenceBinding.java",
-        "src/main/java/io/onsure/platform/ProgramLearningService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/SourceReferenceBinding.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/HashingSourceSetTest.java"
@@ -76,8 +76,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/SourceReferenceBinding.java",
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/SourceReferenceBinding.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
@@ -104,7 +104,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProgramLearningService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java"
@@ -132,7 +132,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProgramLearningService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java"
@@ -192,7 +192,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BehaviorLearningService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/BehaviorLearningService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/BehaviorLearningServiceTest.java"
@@ -219,7 +219,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BehaviorLearningService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/BehaviorLearningService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/BehaviorLearningServiceTest.java"
@@ -246,7 +246,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BehaviorLearningService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/BehaviorLearningService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/BehaviorLearningServiceTest.java"
@@ -274,7 +274,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java"
@@ -301,7 +301,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java"
@@ -332,10 +332,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
-        "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
-        "src/main/java/io/onsure/platform/ValidationEngine.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ValidationEngine.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java",
@@ -366,7 +366,7 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
+          "path": "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
           "tokens": [
             "PARTIAL_PLAN_ACTION_SET",
             "approved_actions",
@@ -389,8 +389,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BuiltInStages.java",
-        "src/main/java/io/onsure/platform/FixtureHarness.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/BuiltInStages.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/FixtureHarness.java",
         "scripts/onsure-local-gate.sh"
       ],
       "test_refs": [
@@ -422,7 +422,7 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "contracts/status-vocabulary.v1.json",
-        "src/main/java/io/onsure/assurance/Decision.java"
+        "modules/onsure-core/src/main/java/io/onsure/assurance/Decision.java"
       ],
       "test_refs": [
         "scripts/validate-status-consistency.py"
@@ -447,7 +447,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/FileValidationStore.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/FileValidationStore.java",
         "scripts/onsure-one-shot.sh"
       ],
       "test_refs": [
@@ -477,7 +477,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"
@@ -504,7 +504,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"
@@ -532,7 +532,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"
@@ -559,7 +559,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
@@ -586,7 +586,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
@@ -615,8 +615,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
         "vscode-extension/extension.js",
         "vscode-extension/extension-core.js"
       ],
@@ -650,7 +650,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementProofService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementProofService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementProofServiceTest.java"
@@ -677,7 +677,7 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementProofService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementProofService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementProofServiceTest.java"
@@ -702,7 +702,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementProofService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementProofService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementProofServiceTest.java"
@@ -815,8 +815,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
-        "src/main/java/io/onsure/platform/GitWorkflowService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/GitWorkflowService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java"
@@ -843,7 +843,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/GitWorkflowService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/GitWorkflowService.java",
         "scripts/onsure-local-gate.sh"
       ],
       "test_refs": [
@@ -874,7 +874,7 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/GitWorkflowService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/GitWorkflowService.java",
         "scripts/validate-verification-claims.py"
       ],
       "test_refs": [
@@ -903,9 +903,9 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
-        "src/main/java/io/onsure/platform/ONSureCli.java",
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ONSureCli.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
         "vscode-extension/extension.js"
       ],
       "test_refs": [
@@ -938,7 +938,7 @@
       "implementation_status": "STUB",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
       ],
       "test_refs": [
         "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
@@ -965,8 +965,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/learning/OfficialLearningLedger.java",
-        "src/main/java/io/onsure/platform/DurableStateLedger.java"
+        "modules/onsure-core/src/main/java/io/onsure/learning/OfficialLearningLedger.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/DurableStateLedger.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/learning/OfficialLearningLedgerTest.java"
@@ -993,7 +993,7 @@
       "implementation_status": "STUB",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/rag/RagPreparationService.java"
+        "modules/onsure-core/src/main/java/io/onsure/rag/RagPreparationService.java"
       ],
       "test_refs": [],
       "evidence_refs": [],
@@ -1020,7 +1020,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/learning/OfficialLearningLedger.java"
+        "modules/onsure-core/src/main/java/io/onsure/learning/OfficialLearningLedger.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/learning/OfficialLearningLedgerTest.java"
@@ -1048,7 +1048,7 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "scripts/onsure-local-gate.sh",
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
       ],
       "test_refs": [
         "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
@@ -1077,9 +1077,9 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+        "modules/onsure-core/src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
         "scripts/fixture-sandbox-launcher.sh"
       ],
       "test_refs": [
@@ -1111,7 +1111,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
@@ -1139,10 +1139,10 @@
       "verification_state": "NON_FINAL",
       "code_refs": [
         "scripts/onsure-autopilot.py",
-        "src/main/java/io/onsure/platform/ValidationStageCheckpointJournal.java",
-        "src/main/java/io/onsure/platform/ValidationEngine.java",
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
-        "src/main/java/io/onsure/platform/LocalWorkspaceSnapshotService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ValidationStageCheckpointJournal.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ValidationEngine.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/LocalWorkspaceSnapshotService.java",
         "vscode-extension/extension.js"
       ],
       "test_refs": [
@@ -1183,7 +1183,7 @@
       "verification_state": "NON_FINAL",
       "code_refs": [
         "contracts/model-provider-adapter.v1.schema.json",
-        "src/main/java/io/onsure/platform/ModelProviderAdapterRegistry.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ModelProviderAdapterRegistry.java"
       ],
       "test_refs": [
         "src/test/java/io/onsure/platform/ModelProviderAdapterRegistryTest.java"
@@ -1212,7 +1212,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NON_FINAL",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanService.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanService.java",
         "vscode-extension/extension-core.js"
       ],
       "test_refs": [
@@ -1245,7 +1245,7 @@
       "implementation_status": "STUB",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProductCatalog.java"
+        "modules/onsure-core/src/main/java/io/onsure/platform/ProductCatalog.java"
       ],
       "test_refs": [],
       "evidence_refs": [],
@@ -1272,7 +1272,7 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/FileValidationStore.java",
+        "modules/onsure-core/src/main/java/io/onsure/platform/FileValidationStore.java",
         "scripts/onsure-one-shot.sh"
       ],
       "test_refs": [

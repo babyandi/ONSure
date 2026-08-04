@@ -8,9 +8,9 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 AUTHORITY = "contracts/workflow-operation-registry.v1.json"
-DISPATCHER = "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
-CLI = "src/main/java/io/onsure/platform/ONSureCli.java"
-API = "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
+DISPATCHER = "modules/onsure-core/src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
+CLI = "modules/onsure-core/src/main/java/io/onsure/platform/ONSureCli.java"
+API = "modules/onsure-core/src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
 VSCODE = "vscode-extension/extension.js"
 CASE_PATTERN = re.compile(r'case\s+"([a-z][a-z0-9.-]+)"\s*->')
 

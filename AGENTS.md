@@ -27,7 +27,7 @@
 - 기존 RAG 공개 API 호환을 위한 `io.onsure.rag -> io.onsure.platform` 간선만 임시 허용한다.
 - Core 소스는 ORUDA package 또는 `OrudaTargetAdapter`를 직접 import하지 않는다.
 - ORUDA 전용 구현은 `onsure-adapter-oruda`가 소유하고 artifact 의존 방향은 adapter에서 core로만 향한다.
-- 공유 source root와 `io.onsure.platform` split package는 이관 부채다. 현재 경로 동결 중에는 baseline을 늘리지 않으며 `scripts/validate_onsure_build_boundary.py`로 재발을 차단한다.
+- 공유 source root와 `io.onsure.platform` split package는 제거되었다. module-owned source root와 0건 baseline을 `scripts/validate_onsure_build_boundary.py`로 유지한다.
 
 ## 제품 루트와 출력 경계
 

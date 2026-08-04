@@ -34,10 +34,10 @@ REQUIRED = [
     "scripts/validate-verification-claims.py",
     "scripts/validate_verification_claims_v2.py",
     "scripts/validate_codespace_free_remediation_v2.py",
-    "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-    "src/main/java/io/onsure/assurance/LocalKeyRegistry.java",
-    "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
-    "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
+    "modules/onsure-core/src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
+    "modules/onsure-core/src/main/java/io/onsure/assurance/LocalKeyRegistry.java",
+    "modules/onsure-core/src/main/java/io/onsure/platform/BoundedProcessRunner.java",
+    "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
     "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
     "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java",
     "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java",
@@ -52,41 +52,41 @@ ASSERTIONS = {
         COUNT_AUTHORITY,
     ],
     "scripts/onsure-one-shot.sh": ["LOCAL_GATE_AUTHORITY", "local_gate_authority", COUNT_AUTHORITY],
-    "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
+    "modules/onsure-core/src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
         "AUTHORITY_BASE_PROPERTY", "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "discoverForContainedPath",
     ],
-    "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
+    "modules/onsure-core/src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
         "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile", "ATOMIC_MOVE",
     ],
-    "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
+    "modules/onsure-core/src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
         "approvalAuthority.rejectRequestOverrides", "approvalAuthority.requireTrustedKeyRegistry",
         "ApprovedExecutionPlanBundle", "project.register-target", "plan.generate",
     ],
-    "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
+    "modules/onsure-core/src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
         "verifyApprovedPlanBundle", "EXECUTION_PLAN_CONSUMED_APPROVAL_INVALID",
     ],
-    "src/main/java/io/onsure/platform/ValidationEngine.java": [
+    "modules/onsure-core/src/main/java/io/onsure/platform/ValidationEngine.java": [
         "APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED", "ExecutionPlanActionPolicy.notApproved",
     ],
-    "src/main/java/io/onsure/platform/ProgramLearningService.java": ["BoundedProcessRunner.run"],
-    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": ["BoundedProcessRunner.run"],
-    "src/main/java/io/onsure/platform/ImprovementWorkflowService.java": ["BoundedProcessRunner.run"],
-    "src/main/java/io/onsure/platform/GitWorkflowService.java": [
+    "modules/onsure-core/src/main/java/io/onsure/platform/ProgramLearningService.java": ["BoundedProcessRunner.run"],
+    "modules/onsure-core/src/main/java/io/onsure/platform/SourceReferenceBinding.java": ["BoundedProcessRunner.run"],
+    "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java": ["BoundedProcessRunner.run"],
+    "modules/onsure-core/src/main/java/io/onsure/platform/GitWorkflowService.java": [
         "BoundedProcessRunner.run", "GIT_DELIVERY_APPROVAL_EXPIRED", "discoverForContainedPath",
     ],
 }
 FORBIDDEN = {
-    "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
+    "modules/onsure-core/src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
         'inputPath(request, "trusted_key_registry"',
         'inputPath(request, "approval_key_registry"',
         'outputPath(request, "approval_replay_ledger"',
         'outputPath(request, "verification_replay_ledger"',
     ],
-    "src/main/java/io/onsure/platform/ProgramLearningService.java": ["getInputStream().readAllBytes()"],
-    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": ["getInputStream().readAllBytes()"],
-    "src/main/java/io/onsure/platform/ImprovementWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
-    "src/main/java/io/onsure/platform/GitWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
+    "modules/onsure-core/src/main/java/io/onsure/platform/ProgramLearningService.java": ["getInputStream().readAllBytes()"],
+    "modules/onsure-core/src/main/java/io/onsure/platform/SourceReferenceBinding.java": ["getInputStream().readAllBytes()"],
+    "modules/onsure-core/src/main/java/io/onsure/platform/ImprovementWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
+    "modules/onsure-core/src/main/java/io/onsure/platform/GitWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
 }
 COMMANDS = [
     ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),

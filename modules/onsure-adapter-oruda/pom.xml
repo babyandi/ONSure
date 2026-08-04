@@ -30,30 +30,12 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${build-helper.version}</version>
-        <executions>
-          <execution>
-            <id>add-shared-oruda-source</id>
-            <phase>generate-sources</phase>
-            <goals><goal>add-source</goal></goals>
-            <configuration>
-              <sources><source>${project.basedir}/../../src/main/java</source></sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler.version}</version>
         <configuration>
           <release>${maven.compiler.release}</release>
           <implicit>none</implicit>
-          <includes>
-            <include>io/onsure/platform/oruda/**</include>
-          </includes>
         </configuration>
       </plugin>
       <plugin>

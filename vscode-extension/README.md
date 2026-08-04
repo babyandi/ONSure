@@ -80,9 +80,10 @@ completion is blocked as `RCA_REQUIRED`.
 
 Each Java validation run also writes `stage-checkpoint.json`. The digest-sealed checkpoint records
 the ordered stage plan and every started/completed/failed boundary, and the Runtime view exposes
-its latest state. `stage-context.json` now preserves a digest-bound typed aggregate that can be
-restored explicitly. Automatic engine resume remains disabled until stage side effects have a
-complete idempotency contract.
+its latest state. `stage-context.json` preserves a digest-bound typed aggregate. The
+`validation.resume` workflow verifies checkpoint and replay-ledger digests, removes only files and
+directories newly created by the interrupted stage, and then replays that stage. Completed stages
+are never rerun; pre-existing mutation, deletion, symlink creation or ledger tampering fails closed.
 
 ASK and PLAN provide deterministic workspace-local responses from the registered snapshot. ASK is
 read-only and PLAN only proposes ordered steps; neither invokes a provider, uses external network,
@@ -112,9 +113,9 @@ this is an explicit no-model plan, not a measured provider quote.
 
 Dedicated read views, digest-bound Hunk diff preview, Hunk/whole-file external signing requests,
 semantic fail-closed modes, Java context snapshots, deterministic ASK/PLAN, budget rows and
-identity-bound CLI/Local API/VS Code Autopilot controls are implemented. Automatic validation
-engine resume, real provider price quotes and installed Extension Host execution remain partial or
-`NOT_RUN` where their runtime prerequisites are absent.
+identity-bound CLI/Local API/VS Code Autopilot controls and bounded validation-engine resume are
+implemented. Real provider price quotes remain `NOT_RUN`; installed Extension Host execution is
+environment-dependent and must retain its separate receipt.
 Independent OTester/OAudit are still required before any release claim.
 
 `npm run package` invokes the repository-owned deterministic VSIX wrapper. It normalizes ZIP entry

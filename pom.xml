@@ -19,6 +19,7 @@
     <project.build.outputTimestamp>2000-01-01T00:00:00Z</project.build.outputTimestamp>
     <junit.version>5.11.4</junit.version>
     <jackson.version>2.18.9</jackson.version>
+    <build-helper.version>3.6.0</build-helper.version>
   </properties>
   <dependencies>
     <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson.version}</version></dependency>
@@ -50,6 +51,22 @@
       </resource>
     </resources>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>${build-helper.version}</version>
+        <executions>
+          <execution>
+            <id>add-module-owned-main-sources</id>
+            <phase>generate-sources</phase>
+            <goals><goal>add-source</goal></goals>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/modules/onsure-core/src/main/java</source>
+                <source>${project.basedir}/modules/onsure-adapter-oruda/src/main/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.13.0</version>
         <configuration><release>${maven.compiler.release}</release><compilerArgs><arg>--add-modules</arg><arg>jdk.httpserver</arg></compilerArgs></configuration>
