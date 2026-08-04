@@ -1,5 +1,5 @@
 {
-  "component_count": 21,
+  "component_count": 23,
   "contract": "ONSURE_DEPENDENCY_LICENSE_INVENTORY_V1",
   "copyright_holder": "ORUDA Labs",
   "cyclonedx_plugin": "org.cyclonedx:cyclonedx-maven-plugin:2.9.1",
@@ -47,6 +47,17 @@
       ],
       "name": "jackson-databind",
       "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+      "scope": "required",
+      "version": "2.18.9"
+    },
+    {
+      "group": "com.fasterxml.jackson.dataformat",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-dataformat-yaml",
+      "purl": "pkg:maven/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml@2.18.9?type=jar",
       "scope": "required",
       "version": "2.18.9"
     },
@@ -216,6 +227,17 @@
       "version": "42.7.12"
     },
     {
+      "group": "org.yaml",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "snakeyaml",
+      "purl": "pkg:maven/org.yaml/snakeyaml@2.3?type=jar",
+      "scope": "required",
+      "version": "2.3"
+    },
+    {
       "group": "tools.jackson.core",
       "license_status": "DECLARED",
       "licenses": [
@@ -239,7 +261,7 @@
     }
   ],
   "dependency_license_counts": {
-    "Apache-2.0": 9,
+    "Apache-2.0": 11,
     "BSD-2-Clause": 1,
     "LicenseRef-ORUDA-Labs-Proprietary": 11
   },
@@ -253,5 +275,5 @@
   "rights_declaration": "contracts/onsure-rights-declaration.v1.json",
   "root_source_license": "LicenseRef-ORUDA-Labs-Proprietary",
   "source_sbom": "assurance/dependencies/onsure.cdx.json",
-  "source_sbom_sha256": "d443172a0afbfa619404e6647bde3eefd78fdbcb8a8bd2cdad19cd7f51b36678"
+  "source_sbom_sha256": "568a503bb771aef5b493b4c6f8e7da1ea2a2685eb093d85f586b9595d3eda98c"
 }

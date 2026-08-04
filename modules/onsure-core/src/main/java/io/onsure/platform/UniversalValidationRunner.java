@@ -418,7 +418,8 @@ public final class UniversalValidationRunner {
 
     private StepExecution validateOpenApi(Path root) throws Exception {
         Path contract = firstFile(root, "openapi.yaml", "openapi.yml", "openapi.json",
-                "contracts/onsure-local-api.v1.openapi.yaml");
+                "contracts/openapi/onsure-local-api.v1.json",
+                "contracts/openapi/onsure-llm-gateway.v1.json");
         if (contract == null) return new StepExecution(Outcome.NOT_RUN, -1, "", false, "OPENAPI_NOT_FOUND");
         if (Files.size(contract) > MAX_OPENAPI_CONTRACT_BYTES) {
             return new StepExecution(Outcome.FAIL, 1, "contract=" + contract.getFileName(), false,

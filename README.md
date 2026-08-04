@@ -125,6 +125,22 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 
 ## 로컬 단일 검증
 
+범용 검증은 대상 저장소에 ONSure 전용 Manifest나 ORUDA/OReport 연결을 요구하지 않는다.
+환경·의존성 → 구조 → 검증기 메타 → 단계 기능 → 실제 연결 E2E → 증적·판정 → 운영·복구
+순서를 고정하며, 실행되지 않은 필수 항목은
+`NOT_RUN`, 환경 제한은 `BLOCKED`, 증거가 불충분하면 `INCONCLUSIVE`다.
+
+```bash
+mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+  -Dexec.mainClass=io.onsure.platform.ONSureCli \
+  -Dexec.args="universal /absolute/source-root profile-id /absolute/empty-run-root"
+```
+
+등록된 Target은 기존 `validation.run` 요청에 `validation_mode=UNIVERSAL`을 지정해 실행한다.
+Local API 권위 계약은 `contracts/openapi/onsure-local-api.v1.json`, 범용 결과 계약은
+`contracts/universal-validation-result.v1.schema.json`이다. 세부 7단계와 Pack SPI는
+`docs/architecture/ONSURE_UNIVERSAL_VALIDATION_PROFILE_V1.md`를 따른다.
+
 VS Code Extension 개발 검증과 패키징:
 
 ```bash
@@ -193,16 +209,18 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 263개, Python 139개, Node 9개,
-Modular package 36개, root 공개 API 240개, SBOM/npm audit와 operational boundary를 통과했고,
+현재 변경 후보의 로컬 검증은 Java 305개, Python 176개, Node 9개,
+Modular package 37개, root 공개 API 259개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `c982d0269107ef174bf380f728ce112504a67f605da5a69bb238f187bc2dfb5d`를 생성했다.
-Manifest 후보는 기존 668개 기준선에서 신규 구현을 포함한 772개로 확장됐다. 최신 commit에
+Manifest 후보는 기존 668개 기준선에서 신규 구현을 포함한 840개로 확장됐다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 전체 local gate도 실행했지만 현재 host가 bubblewrap private network namespace의 loopback 설정을
 거부해 `BLOCKED_ENVIRONMENT`이며 9개 downstream test가 실패한다. 동일 Java source는 sandbox 밖
-canonical build에서 257/257을 통과한다. VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
+canonical build에서 305/305를 통과한다. 중립 Node Fixture의 정상·실패·재시도·차단·E2E·복구
+script는 호스트에서 통과했지만 실제 Runner 격리 판정은 같은 AppArmor 제한 때문에 `BLOCKED`다.
+VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
 실행됐지만 MVP Full-Chain, 독립 OTester/OAudit와 Human Acceptance는 아직 실행되지 않았다.
 
 ```text

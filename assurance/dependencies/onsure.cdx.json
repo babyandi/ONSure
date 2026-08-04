@@ -282,6 +282,76 @@
       "version": "2.18.9"
     },
     {
+      "bom-ref": "pkg:maven/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml@2.18.9?type=jar",
+      "description": "Support for reading and writing YAML-encoded data via Jackson abstractions.",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://github.com/FasterXML/jackson-dataformats-text"
+        },
+        {
+          "type": "distribution-intake",
+          "url": "https://central.sonatype.com/api/v1/publisher"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://github.com/FasterXML/jackson-dataformats-text/issues"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/FasterXML/jackson-dataformats-text/jackson-dataformat-yaml"
+        }
+      ],
+      "group": "com.fasterxml.jackson.dataformat",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "4966d7395ee7cc69b4f091e97e84ff05"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "e21ebae4c2bd697a5142752f1dac049ec6553d3b"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "0842c09ea5d21a7a4a604aafe1c9f5f206bdfaf4b2df7008c09bf5190639df9a"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "99a6865a5aa57ab7366bf77c09316b1a438751f5d9d644909b6e5fafeba2e9d0fd5aa3d6e579917bf529d0ef00e1cf14"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "f837ce14221f5ab89c07d527ba93d8b5991d877057480a6f6762722c6cec612e059a3f76d0ee18f27bf06775c3d371245090e1f2a457c69bafb91621e2710fce"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "a56b7161cef5910b2fce05df1a5b0a3da940d8b7b5fb9d55de5cf8fe82efab23"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "2fd0b2fcc19a46bae31d9e9e74b149381354949261f17032f888c3a2fe42bddbd774bc70f35ef41d39135c05817c4b3d"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "1bc822ee669c63d8238a137118d1519598c2659b4504cc5a73ad3d5442c7e5e5570fbb4ecbe8ae5d8d5ee98a329c9a0dba1d3338d7d6daa1d3c32d972b9ddf0c"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "jackson-dataformat-yaml",
+      "publisher": "FasterXML",
+      "purl": "pkg:maven/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml@2.18.9?type=jar",
+      "scope": "required",
+      "type": "library",
+      "version": "2.18.9"
+    },
+    {
       "bom-ref": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar",
       "description": "Add-on module to support JSR-310 (Java 8 Date & Time API) data types.",
       "externalReferences": [
@@ -415,7 +485,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "3e309b0c19dc474b81cbecc49e4f768be99da68ac2852d5a43b870e784827ab7"
+          "content": "eb0b00cf302386c3d06be135c304ca43741b6108da25b977c94b311aaa71e0eb"
         }
       ],
       "licenses": [
@@ -647,7 +717,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "61e2a0e05e1878500f27688289102695bf712494fd8031400a348bf93e633f8e"
+          "content": "1282516c7d2888ed088a571cddad2f50fb7a7b25c43a6084a891e335b6dec7ff"
         }
       ],
       "licenses": [
@@ -864,6 +934,75 @@
       "version": "42.7.12"
     },
     {
+      "bom-ref": "pkg:maven/org.yaml/snakeyaml@2.3?type=jar",
+      "description": "YAML 1.1 parser and emitter for Java",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://bitbucket.org/snakeyaml/snakeyaml"
+        },
+        {
+          "type": "distribution-intake",
+          "url": "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        },
+        {
+          "type": "issue-tracker",
+          "url": "https://bitbucket.org/snakeyaml/snakeyaml/issues"
+        },
+        {
+          "type": "vcs",
+          "url": "https://bitbucket.org/snakeyaml/snakeyaml/src"
+        }
+      ],
+      "group": "org.yaml",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "2a1c2ee8923dcd6bd6d025751af5df37"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "936b36210e27320f920536f695cf1af210c44586"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "63a76fe66b652360bd4c2c107e6f0258daa7d4bb492008ba8c26fcd230ff9146"
+        },
+        {
+          "alg": "SHA-384",
+          "content": "77b1d06e83fd51b83b13372d5ef2eb43c5a66f193db857cee947ae4e900e4a4a0c66a8074435984b9a0b007a69cc2b4f"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "1c9c78f0d102ae49a7c06f9e20c6a79a4fb9a2af962230ee6e136bda0caf10dcbb9deadc1c3ab15f74a4982ec8f8266217115e357329fde5b3f4f1858882de0c"
+        },
+        {
+          "alg": "SHA3-256",
+          "content": "d1b540ee39c34ab1484be27d2dd56a14aa48f88668905f9ad176932f4b2cd5d6"
+        },
+        {
+          "alg": "SHA3-384",
+          "content": "550c4e7a119fd690f750317dc0e20ad7bfc7fa28fa0409fc572bc745d51340a60e9e2ce2af97f458daa561155130bb97"
+        },
+        {
+          "alg": "SHA3-512",
+          "content": "879ccb34343ebd4ac4888091d97f393c5f75cbb066cf8cf1b9b3eb03a3442cb17326c60bd0db1403aa66ed1f0a5a0d548c96dbce74ebc5c3d6d93950f24b417f"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "snakeyaml",
+      "purl": "pkg:maven/org.yaml/snakeyaml@2.3?type=jar",
+      "scope": "required",
+      "type": "library",
+      "version": "2.3"
+    },
+    {
       "bom-ref": "pkg:maven/tools.jackson.core/jackson-core@3.1.5?type=jar",
       "description": "Core Jackson processing abstractions (aka Streaming API), implementation for JSON",
       "externalReferences": [
@@ -1026,6 +1165,14 @@
     },
     {
       "dependsOn": [
+        "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/org.yaml/snakeyaml@2.3?type=jar"
+      ],
+      "ref": "pkg:maven/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml@2.18.9?type=jar"
+    },
+    {
+      "dependsOn": [
         "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar",
         "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar",
         "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar"
@@ -1042,6 +1189,7 @@
     {
       "dependsOn": [
         "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml@2.18.9?type=jar",
         "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar"
       ],
       "ref": "pkg:maven/io.onsure/onsure-assurance-validator@0.1.0-SNAPSHOT?type=jar"
@@ -1056,6 +1204,7 @@
     {
       "dependsOn": [
         "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+        "pkg:maven/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml@2.18.9?type=jar",
         "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar"
       ],
       "ref": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar"
@@ -1141,6 +1290,10 @@
     {
       "dependsOn": [],
       "ref": "pkg:maven/org.postgresql/postgresql@42.7.12?type=jar"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:maven/org.yaml/snakeyaml@2.3?type=jar"
     },
     {
       "dependsOn": [],

@@ -125,7 +125,8 @@ public final class StandardValidationProfileDetector {
         }
 
         if (firstFile(root, "openapi.yaml", "openapi.yml", "openapi.json",
-                "contracts/onsure-local-api.v1.openapi.yaml") != null) {
+                "contracts/openapi/onsure-local-api.v1.json",
+                "contracts/openapi/onsure-llm-gateway.v1.json") != null) {
             technologies.add("OPENAPI");
             functional.add(step("openapi.contract", Phase.COMPONENT_AND_NEGATIVE, StepKind.API_CONTRACT,
                     true, List.of(), Duration.ofMinutes(2), List.of(meta.stepId())));
