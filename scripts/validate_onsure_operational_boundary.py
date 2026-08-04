@@ -5,6 +5,10 @@ from __future__ import annotations
 
 import json
 import hashlib
+import datetime as dt
+import pathlib
+import re
+import subprocess
 import sys
 
 import yaml
@@ -158,9 +162,28 @@ def validate_ubuntu_candidate() -> list[str]:
     return violations
 
 
-def validate_postgresql_evidence() -> list[str]:
+def _canonical_sha256(value: object) -> str:
+    return hashlib.sha256(json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+    ).encode("utf-8")).hexdigest()
+
+
+def _full_sha256(value: object) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def _git_worktree_available() -> bool:
+    result = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    return result.returncode == 0 and result.stdout.strip() == "true"
+
+
+def validate_postgresql_evidence_body(
+    evidence: dict[str, object], *, verify_repository: bool = True,
+) -> list[str]:
     violations: list[str] = []
-    evidence = json.loads(POSTGRESQL_EVIDENCE.read_text(encoding="utf-8"))
     expected = {
         "contract": "ONSURE_POSTGRESQL_FLYWAY_REHEARSAL_V1",
         "decision": "PASS_NONFINAL",
@@ -174,6 +197,7 @@ def validate_postgresql_evidence() -> list[str]:
         "concurrent_migration_history_count": 1,
         "customer_data_used": False,
         "system_postgresql_service_modified": False,
+        "network_binding": "127.0.0.1_EPHEMERAL",
         "production_migration": "NOT_RUN",
         "rhel_runtime": "NOT_RUN_HOST_IS_NOT_RHEL",
         "final_claim_allowed": False,
@@ -188,10 +212,72 @@ def validate_postgresql_evidence() -> list[str]:
         violations.append("POSTGRESQL_EVIDENCE_MIGRATION_BINDING")
     if not str(evidence.get("postgresql_version", "")).startswith("16."):
         violations.append("POSTGRESQL_EVIDENCE_VERSION")
-    if not str(evidence.get("package_sha256", "")).isalnum() \
-            or len(str(evidence.get("package_sha256", ""))) != 64:
+    if not _full_sha256(evidence.get("package_sha256")):
         violations.append("POSTGRESQL_EVIDENCE_PACKAGE_DIGEST")
+    if not isinstance(evidence.get("package_size_bytes"), int) \
+            or int(evidence["package_size_bytes"]) <= 0:
+        violations.append("POSTGRESQL_EVIDENCE_PACKAGE_SIZE")
+    if not _full_sha256(evidence.get("backup_sha256")) \
+            or not isinstance(evidence.get("backup_size_bytes"), int) \
+            or int(evidence["backup_size_bytes"]) <= 0:
+        violations.append("POSTGRESQL_EVIDENCE_BACKUP_BINDING")
+
+    environment = evidence.get("environment")
+    allowed_environment = {"os", "os_release", "machine", "python_version", "uid", "gid", "tools"}
+    required_tools = {"postgres", "initdb", "pg_ctl", "createdb", "psql", "pg_dump", "pg_restore", "java"}
+    if not isinstance(environment, dict) or set(environment) != allowed_environment:
+        violations.append("POSTGRESQL_EVIDENCE_ENVIRONMENT_FIELDS")
+    else:
+        tools = environment.get("tools")
+        if not isinstance(tools, dict) or set(tools) != required_tools:
+            violations.append("POSTGRESQL_EVIDENCE_TOOL_SET")
+        else:
+            for name, tool in tools.items():
+                if not isinstance(tool, dict) or set(tool) != {"path", "sha256"} \
+                        or not isinstance(tool.get("path"), str) \
+                        or not pathlib.PurePosixPath(tool["path"]).is_absolute() \
+                        or not _full_sha256(tool.get("sha256")):
+                    violations.append("POSTGRESQL_EVIDENCE_TOOL_BINDING:" + name)
+    if isinstance(environment, dict) \
+            and evidence.get("environment_sha256") != _canonical_sha256(environment):
+        violations.append("POSTGRESQL_EVIDENCE_ENVIRONMENT_DIGEST")
+
+    normalized = dict(evidence)
+    receipt_sha = normalized.pop("receipt_sha256", None)
+    if not _full_sha256(receipt_sha) or receipt_sha != _canonical_sha256(normalized):
+        violations.append("POSTGRESQL_EVIDENCE_RECEIPT_DIGEST")
+
+    try:
+        started = dt.datetime.fromisoformat(str(evidence.get("started_at", "")).replace("Z", "+00:00"))
+        completed = dt.datetime.fromisoformat(str(evidence.get("completed_at", "")).replace("Z", "+00:00"))
+        if started.tzinfo is None or completed.tzinfo is None or completed < started:
+            raise ValueError
+    except ValueError:
+        violations.append("POSTGRESQL_EVIDENCE_TIME_WINDOW")
+
+    source = evidence.get("source_commit")
+    if not isinstance(source, str) or re.fullmatch(r"[0-9a-f]{40}", source) is None:
+        violations.append("POSTGRESQL_EVIDENCE_SOURCE_COMMIT")
+    elif verify_repository and _git_worktree_available():
+        source_object = subprocess.run(
+            ["git", "cat-file", "-e", source + "^{commit}"],
+            cwd=ROOT, capture_output=True, check=False,
+        )
+        if source_object.returncode == 0:
+            ancestor = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", source, "HEAD"],
+                cwd=ROOT, capture_output=True, check=False,
+            )
+            if ancestor.returncode != 0:
+                violations.append("POSTGRESQL_EVIDENCE_SOURCE_ANCESTRY")
+    if evidence.get("source_code_dirty_paths") != []:
+        violations.append("POSTGRESQL_EVIDENCE_SOURCE_DIRTY")
     return violations
+
+
+def validate_postgresql_evidence() -> list[str]:
+    evidence = json.loads(POSTGRESQL_EVIDENCE.read_text(encoding="utf-8"))
+    return validate_postgresql_evidence_body(evidence)
 
 
 def validate_systemd_evidence() -> list[str]:

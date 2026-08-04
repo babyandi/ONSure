@@ -70,6 +70,41 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_postgresql_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_postgresql_evidence())
 
+    def test_postgresql_rehearsal_rejects_environment_injection(self):
+        evidence = json.loads(
+            operational.POSTGRESQL_EVIDENCE.read_text(encoding="utf-8")
+        )
+        evidence["environment"]["ONSURE_DB_PASSWORD"] = "must-not-be-recorded"
+        violations = operational.validate_postgresql_evidence_body(
+            evidence, verify_repository=False,
+        )
+        self.assertIn("POSTGRESQL_EVIDENCE_ENVIRONMENT_FIELDS", violations)
+        self.assertIn("POSTGRESQL_EVIDENCE_ENVIRONMENT_DIGEST", violations)
+
+    def test_postgresql_rehearsal_rejects_tool_and_receipt_tampering(self):
+        evidence = json.loads(
+            operational.POSTGRESQL_EVIDENCE.read_text(encoding="utf-8")
+        )
+        evidence["environment"]["tools"]["psql"]["sha256"] = "0" * 64
+        evidence["receipt_sha256"] = "f" * 64
+        violations = operational.validate_postgresql_evidence_body(
+            evidence, verify_repository=False,
+        )
+        self.assertIn("POSTGRESQL_EVIDENCE_ENVIRONMENT_DIGEST", violations)
+        self.assertIn("POSTGRESQL_EVIDENCE_RECEIPT_DIGEST", violations)
+
+    def test_postgresql_rehearsal_rejects_dirty_or_reversed_run(self):
+        evidence = json.loads(
+            operational.POSTGRESQL_EVIDENCE.read_text(encoding="utf-8")
+        )
+        evidence["source_code_dirty_paths"] = ["modules/changed.java"]
+        evidence["completed_at"] = "2000-01-01T00:00:00Z"
+        violations = operational.validate_postgresql_evidence_body(
+            evidence, verify_repository=False,
+        )
+        self.assertIn("POSTGRESQL_EVIDENCE_SOURCE_DIRTY", violations)
+        self.assertIn("POSTGRESQL_EVIDENCE_TIME_WINDOW", violations)
+
     def test_systemd_security_rehearsal_is_digest_bound_and_nonproduction(self):
         self.assertEqual([], operational.validate_systemd_evidence())
 

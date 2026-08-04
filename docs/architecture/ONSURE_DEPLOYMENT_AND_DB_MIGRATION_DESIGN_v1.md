@@ -45,8 +45,13 @@ database에 실행하지 않는다.
 개발 호스트의 임시 loopback PostgreSQL 16.14에서는 V1 apply 1건, 재적용 0건, validate,
 pending 0건, 두 동시 migration process의 실행 결과 1/0과 단일 history, 합성 event
 `pg_dump`/`pg_restore`와 복원 schema 재검증이 통과했다. 증거는
-`assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json`에 migration/package digest와 함께
-결속된다. 이 결과는 Ubuntu 개발 호스트의 격리된 임시 cluster 리허설이며 Ubuntu 또는 RHEL 운영
+`assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json`에 source commit, 깨끗한 소스 상태,
+실행 시간창, OS·Python·UID/GID, Java/PostgreSQL 도구 경로와 digest, migration/package/backup
+digest·크기, 전체 receipt digest와 함께 결속된다. 환경 증적은 allowlist 필드만 기록하며 DB
+password, URL, 사용자 세션 환경변수는 기록하지 않는다. 운영 경계 검사는 원 source commit 객체가
+있는 Git tree에서는 ancestry를 강제하며, 새 모노레포 이관 tree에서는 854-file Manifest 결속으로
+대체한다. 환경·receipt digest, 시간 순서, 도구 집합과 모든 결속은 양쪽에서 다시 검사한다.
+이 결과는 Ubuntu 개발 호스트의 격리된 임시 cluster 리허설이며 Ubuntu 또는 RHEL 운영
 backup/restore 승인, 배포판 package 조합 인증을 대신하지 않는다.
 
 ## 명령과 실제 실행 경계
