@@ -4,7 +4,7 @@
   "final_claim_allowed": false,
   "oci_image_id": "sha256:021f18ccb289833fd27503c49223ffb04b82ca98dc1dc7bf4ab0e8c54f9172bb",
   "production_authority": false,
-  "receipt_sha256": "c2f14180d52363682e38e47511ddadeed56559e9b43ce8e043a54a6021e3e0c5",
+  "receipt_sha256": "073b0c8f7c5bc15715128434e14580f397b33c1cdffe9f33e09b67ef3621394b",
   "runs": [
     {
       "assurance_class": "SELF_VALIDATION_NONFINAL",
@@ -1098,7 +1098,263 @@
         "VALIDATOR_META": "PASS_NONFINAL"
       },
       "verified_pass_step_count": 21
+    },
+    {
+      "assurance_class": "SELF_VALIDATION_NONFINAL",
+      "completed_at": "2026-08-04T22:59:15.210225493Z",
+      "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+      "finalization_sha256": "6226190e6f96512faf4a3bbbafd79755102b2f79bb479239d9521a7af275629e",
+      "overall_outcome": "PASS_NONFINAL",
+      "phase_outcomes": {
+        "COMPONENT_AND_NEGATIVE": "PASS_NONFINAL",
+        "END_TO_END_LINEAGE": "PASS_NONFINAL",
+        "OPERATIONAL_RESILIENCE": "PASS_NONFINAL",
+        "STRUCTURE_STATIC": "PASS_NONFINAL"
+      },
+      "profile_id": "external-gradle-proof",
+      "result_sha256": "9de3b77bf3794166fad2b97c1f9c2a90c8acc6c7b59151efa015a4a5bdbd697f",
+      "snapshot_digest": "a2fab14a086d762e1cc2e7cbddf90102d585bd07697263905d5f6d4124c90334",
+      "source_digest": "a2fab14a086d762e1cc2e7cbddf90102d585bd07697263905d5f6d4124c90334",
+      "source_mutation_detected": false,
+      "started_at": "2026-08-04T22:56:30.422023515Z",
+      "steps": [
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "ENVIRONMENT_PREFLIGHT",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "01d59fce967989cc9683180f643354e9b986eaa3e19a10dcccc04befe8a29751",
+          "output_truncated": false,
+          "phase": "STRUCTURE_STATIC",
+          "reason": "REQUIRED_EXECUTABLES_AND_SANDBOX_AVAILABLE",
+          "step_id": "environment.preflight"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "INVENTORY",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "c66d1eb3240568f68fc46f83cad86eb77f63c2afd74a2c3e20f96333fa58bf61",
+          "output_truncated": false,
+          "phase": "STRUCTURE_STATIC",
+          "reason": "SOURCE_SNAPSHOT_AND_STRUCTURE_SIGNALS_INVENTORIED",
+          "step_id": "structure.inventory"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "VALIDATOR_META_CHECK",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "b6b6c8d131ee931fbd88880ed89d0be8cb63d922040f49a1c1db8e314e0ae8ff",
+          "output_truncated": false,
+          "phase": "STRUCTURE_STATIC",
+          "reason": "VALIDATOR_PROFILE_COVERAGE_VALID",
+          "step_id": "validator.meta-check"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "BUILD",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "4f723ef0936099f00af0d089cf311bed683df42551582df9fa0c049d9b800547",
+          "output_truncated": false,
+          "phase": "COMPONENT_AND_NEGATIVE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.clean-test"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "NEGATIVE_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "fbff7a9d29d0920759693dcff729f0c2a08458821cfe97dc2c52caf22d604c88",
+          "output_truncated": false,
+          "phase": "COMPONENT_AND_NEGATIVE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.negative-paths"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "RETRY_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "8fbcb78258753cec0533bd8438af8db00ebb7e9485adf137b3ce553c6d3d8430",
+          "output_truncated": false,
+          "phase": "COMPONENT_AND_NEGATIVE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.retry-paths"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "BLOCKING_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "77f325527572d5206575fce0de3084b4aea836023a4a524203fc850780e33407",
+          "output_truncated": false,
+          "phase": "COMPONENT_AND_NEGATIVE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.blocking-paths"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "E2E_REQUEST_FLOW",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "e29e7e968574cd0c9e8ce0dc105c4f8ea75a77c377a1706dedfeb43e313dd410",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.connected-request-flow"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "E2E_RENDER_OR_PRODUCE",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "7c3484c02e5abdb10b3d36f38d78c34036ce6f37f35779c4b4020ca668d31ab1",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.connected-render-or-produce"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "E2E_ARTIFACT_READBACK",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "f2e28145dd673999ae25f1ad48ca9c2b5c400f7dc3e508699218645cf7e5774b",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.connected-artifact-readback"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "E2E_TESTER_CHECK",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "7d72d4a42a04ddd85f28f4de1cfd79888073d84c750ccaf750f4c84a556e16a0",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.connected-tester-check"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "E2E_AUDIT_CHECK",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "651de9d331f87733b653091dc02ac488ec33052aa0d469792df474b61b2c5cd2",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.connected-audit-check"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "E2E_EXPOSURE_DECISION",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "0d4280273e0325b44872244c36e49f3787a23a77276327bd43611b9e910ba6b8",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.connected-exposure-decision"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "INTEGRATION_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "6f0440f01396cc76a47c7cdfb94fffff8ebf7c133e94a029017907808506a385",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.integration"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "WORKFLOW_LINEAGE",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "34a4b2b1947e750721efadd3bf6ffaee89e24d8ed37b164888b3fd0c2924682b",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "WORKFLOW_LINEAGE_DIGEST_SCHEMA_PERMIT_VERIFIED",
+          "step_id": "gradle.connected-workflow-lineage"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "EVIDENCE_VERIFICATION",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "ad104f521e0f2c6d12b6714fcf719b938fcd911abdf5c9024cbee8d58bcae8d9",
+          "output_truncated": false,
+          "phase": "END_TO_END_LINEAGE",
+          "reason": "PASS_EVIDENCE_INTEGRITY_VERIFIED",
+          "step_id": "evidence.verify"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "INTERRUPTION_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "ca63970120ef1c33e32670d67663839bc4bb13c755029739dc7cae49793f7107",
+          "output_truncated": false,
+          "phase": "OPERATIONAL_RESILIENCE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.operations-interruption"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "RESUME_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "77034a8bb710ce49c98379ac833e89b3385d3abf61e0bb20f27e55bba3bfbfbd",
+          "output_truncated": false,
+          "phase": "OPERATIONAL_RESILIENCE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.operations-resume"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "ROLLBACK_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "321d0da93c09d46964376fc2c703730eb0104460ca241d6406cbad724f5b64c6",
+          "output_truncated": false,
+          "phase": "OPERATIONAL_RESILIENCE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.operations-rollback"
+        },
+        {
+          "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+          "exit_code": 0,
+          "kind": "RERUN_TEST",
+          "outcome": "PASS_NONFINAL",
+          "output_sha256": "20192b1191694b4091e945051cc5800fb565a8348386bc15df7006448e561782",
+          "output_truncated": false,
+          "phase": "OPERATIONAL_RESILIENCE",
+          "reason": "EXECUTED",
+          "step_id": "gradle.operations-rerun"
+        }
+      ],
+      "target_id": "gradle",
+      "technologies": [
+        "GRADLE",
+        "JAVA"
+      ],
+      "verification_group_outcomes": {
+        "CONNECTED_E2E": "PASS_NONFINAL",
+        "ENVIRONMENT_DEPENDENCY": "PASS_NONFINAL",
+        "EVIDENCE_DECISION": "PASS_NONFINAL",
+        "OPERATIONS_RECOVERY": "PASS_NONFINAL",
+        "STAGE_FUNCTIONAL": "PASS_NONFINAL",
+        "STRUCTURE": "PASS_NONFINAL",
+        "VALIDATOR_META": "PASS_NONFINAL"
+      },
+      "verified_pass_step_count": 20
     }
   ],
-  "source_commit": "5e8e790f93b1394e83546eee964f9434a77ce084"
+  "source_commit": "86d6172e537cfaa0109d511e88069617fab849c6"
 }

@@ -406,7 +406,7 @@ def validate_universal_evidence_body(
             if ancestor.returncode != 0:
                 violations.append("UNIVERSAL_EVIDENCE_SOURCE_ANCESTRY")
     runs = evidence.get("runs")
-    expected_targets = {"self", "java", "python", "node"}
+    expected_targets = {"self", "java", "python", "node", "gradle"}
     expected_phases = {
         "STRUCTURE_STATIC", "COMPONENT_AND_NEGATIVE",
         "END_TO_END_LINEAGE", "OPERATIONAL_RESILIENCE",
@@ -419,7 +419,7 @@ def validate_universal_evidence_body(
         violations.append("UNIVERSAL_EVIDENCE_RUNS")
     else:
         targets = {run.get("target_id") for run in runs if isinstance(run, dict)}
-        if len(runs) != 4 or targets != expected_targets:
+        if len(runs) != 5 or targets != expected_targets:
             violations.append("UNIVERSAL_EVIDENCE_TARGET_SET")
         for run in runs:
             if not isinstance(run, dict):

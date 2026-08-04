@@ -131,7 +131,8 @@ embedding SDK는 `StandardValidationProfileDetector(List<ValidationPack>)`으로
 - `gradlew` + Gradle build file: Gradle offline `clean test`, 이름 기반 부정·재시도·차단 경로,
   `ConnectedWorkflowValidationTest`의 request→produce→read-back→tester→audit→exposure→lineage,
   `OperationalResilienceValidationTest`의 interruption·resume·rollback·rerun 및 선언된
-  `integrationTest` task
+  `integrationTest` task. 독립 Gradle 대상의 20개 필수 Step과 일곱 검증군은 OCI no-network
+  sandbox에서 `PASS_NONFINAL`, 원본 변경 0건으로 digest 결속되어 있다.
 - `pyproject.toml`, `pytest.ini`, `requirements.txt`, `tests/`: pytest 또는 unittest
 - `package.json`: 선언된 build/test/integration script와 built-in `NodeScriptValidationPack`
 - `openapi.yaml|yml|json`, `contracts/openapi/`의 모든 제품 계약: 계약마다 독립 Step과

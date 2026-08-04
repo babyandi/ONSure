@@ -1,7 +1,7 @@
 {
   "contract": "ONSURE_IMPLEMENTATION_STATUS_V1",
-  "version": "2.0.0",
-  "assessment_base_commit": "15ada1a9b9ff83a87147f9dba818984e4b3ab690",
+  "version": "2.1.0",
+  "assessment_base_commit": "86d6172e537cfaa0109d511e88069617fab849c6",
   "assessment_date": "2026-08-04",
   "authority": "status/design-capability-coverage.v2.json",
   "items": [
@@ -13,7 +13,7 @@
         "modules/onsure-core/src/main/java/io/onsure/platform/StandardValidationProfileDetector.java",
         "assurance/runtime/onsure-universal-validation-evidence.v1.json"
       ],
-      "remaining": ["INDEPENDENT_REAL_TARGET_ASSURANCE_NOT_RUN"]
+      "remaining": ["INDEPENDENT_THIRD_PARTY_ASSURANCE_NOT_RUN"]
     },
     {
       "id": "CORE-ORUDA-ISOLATION",
@@ -137,7 +137,7 @@
   "summary": {
     "development_state": "PARTIAL_LOCAL_SELF_VALIDATION_PASS_NONFINAL",
     "standalone_product_full_chain": "PARTIAL",
-    "formal_execution_current_source": "PASS_NONFINAL_LOCAL_SELF_VALIDATION",
+    "formal_execution_current_source": "PASS_NONFINAL_LOCAL_SELF_AND_INDEPENDENT_GRADLE_TARGET",
     "independent_assurance": "NOT_RUN",
     "final_lock_allowed": false,
     "production_go": false,

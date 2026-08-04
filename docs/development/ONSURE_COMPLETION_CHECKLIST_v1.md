@@ -4,10 +4,10 @@
 
 - [ ] ONSURE 제품 핵심부 — `PARTIAL`
 - [ ] 범용 검증 엔진 — `PARTIAL`; 4개 보증 수준·7개 순차 검증군·Pack SPI·격리 Runner와
-  검증 전용 OCI fallback 실제 실행 완료, 독립 대상·감사 미완료
+  검증 전용 OCI fallback 및 독립 Gradle 대상 실제 실행 완료, 독립 감사 미완료
 - [ ] 검증 대상 등록소와 대상 어댑터 — `PARTIAL`; 등록 source의 `validation_mode=UNIVERSAL`과 Manifest 비의존 언어 탐지 구현, binary/package intake 미완료
-- [x] 일반 프로그램 종단간 시험 대상 — 중립 Node 17개 script와 portable lineage Java read-back을
-  OCI sandbox에서 전 7개 검증군 `PASS_NONFINAL`, artifact 변조 차단 `FAIL`
+- [x] 일반 프로그램 종단간 시험 대상 — 중립 Java·Python·Node·Gradle 대상과 portable lineage
+  read-back을 OCI sandbox에서 전 7개 검증군 `PASS_NONFINAL`, artifact 변조 차단 `FAIL`
 - [ ] AI 프로그램 종단간 시험 대상 — `NOT_RUN_REAL_TARGET`
 - [ ] 실패 유형·근본원인분석·개선 계획 — `PARTIAL`; 인과 재현과 실제 Patch 전후 입증 미완료
 - [x] 시험 데이터·하네스·오라클 등록 골격
@@ -42,8 +42,8 @@
 - [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
 - [x] Public Java API 265개; 기존 259개 변경·삭제 0, 표준 Pack API 6개 추가
 - [x] Python 199개 회귀 테스트
-- [x] Gradle 표준 Pack의 offline build, 부정·재시도·차단, 연결 E2E, 운영 복구 convention 탐지
-  (실제 외부 Gradle 대상 전체 실행은 `NOT_RUN`)
+- [x] Gradle 표준 Pack의 offline build, 부정·재시도·차단, 연결 E2E, 운영 복구 convention 탐지와
+  독립 외부 Gradle 대상 20개 필수 Step 실제 실행 (`PASS_NONFINAL`, 원본 변경 0건)
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
 - [x] portable Workflow lineage 계약·실제 artifact/schema/permit digest read-back과 변조 차단
 - [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED` 유지)

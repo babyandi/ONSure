@@ -267,9 +267,9 @@ digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으�
 이 실패를 약화하지 않고, 로컬에 이미 존재하는 검증 이미지가 있을 때만 immutable image ID로
 고정한 `OCI_DOCKER` backend를 선택한다. 이 backend는 image pull·network·host 원본 mount를
 금지하고 read-only rootfs, capability 0, no-new-privileges, AppArmor/seccomp, PID·CPU·memory·timeout
-한도를 적용한다. 12개 sandbox boundary probe와 ONSure 자체 및 중립 Java·Python·Node 대상의
+한도를 적용한다. 12개 sandbox boundary probe와 ONSure 자체 및 중립 Java·Python·Node·Gradle 대상의
 정상·실패·재시도·차단·연결 E2E·portable lineage read-back·중단·재개·롤백·재실행이 이 격리
-경로에서 `PASS_NONFINAL`이다. 4개 실행의 86개 PASS 단계는
+경로에서 `PASS_NONFINAL`이다. 5개 실행의 106개 PASS 단계는
 `assurance/runtime/onsure-universal-validation-evidence.v1.json`에 로그·환경·결과 digest로
 결속되어 있으며 원본 소스 변경은 0건이다.
 Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
