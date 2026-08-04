@@ -8,4 +8,5 @@ validation-data/
 .onsure/
 __pycache__/
 vscode-extension/node_modules/
+vscode-extension/.vscode-test/
 vscode-extension/*.vsix
