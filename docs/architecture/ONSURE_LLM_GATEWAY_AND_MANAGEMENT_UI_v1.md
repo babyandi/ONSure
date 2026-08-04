@@ -37,6 +37,8 @@ Local API는 기존 ADMIN bearer token의 호환성을 유지하면서 선택적
 receipt 또는 브라우저 저장소에 기록하지 않는다. `/v1/programs`는 외부 source를 읽기 전용으로
 등록하고, `/v1/programs/validate`의 `MAVEN_STANDARD` profile은 원본이 아니라 bounded snapshot에서
 고정 Maven/Python/API 명령을 실행한다. 실행 전후 원본 digest가 다르면 결과 생성을 거부한다.
+`.git`, `.onsure`, build output, dependency cache, Python virtualenv는 source가 아닌 로컬 도구
+상태로 분류해 digest와 snapshot에서 제외한다. 그 밖의 symlink는 외부 경로 탈출 위험 때문에 거부한다.
 
 Gateway 변경은 `/v1/gateway-settings/requests`에서 secret-free 요청을 만들고, 요청자와 다른
 `APPROVER` identity가 `/v1/gateway-settings/approvals`에서 결정한다. 승인 상태는

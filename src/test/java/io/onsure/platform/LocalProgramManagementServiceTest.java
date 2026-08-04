@@ -24,6 +24,8 @@ class LocalProgramManagementServiceTest {
         Files.writeString(source.resolve("pom.xml"), "<project/>\n");
         Files.writeString(source.resolve("src/main/java/example/App.java"), "package example; public class App {}\n");
         Files.writeString(source.resolve("LICENSE"), "test only\n");
+        Files.createDirectories(source.resolve(".venv/bin"));
+        Files.createSymbolicLink(source.resolve(".venv/bin/python"), Path.of("/usr/bin/python3"));
         LocalProgramManagementService service = new LocalProgramManagementService(workspace);
         Map<String, Object> registered = service.register(mapper.valueToTree(Map.of(
                 "workspace_id", "local", "workspace_name", "Local",

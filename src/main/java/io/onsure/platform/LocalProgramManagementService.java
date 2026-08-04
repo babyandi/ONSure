@@ -32,7 +32,8 @@ final class LocalProgramManagementService {
     private static final long MAX_SOURCE_BYTES = 512L * 1024L * 1024L;
     private static final long MAX_SOURCE_FILES = 50_000L;
     private static final Set<String> EXCLUDED_SEGMENTS = Set.of(
-            ".git", ".onsure", "target", "node_modules", "__pycache__", "backups", "logs", "run");
+            ".git", ".onsure", ".venv", "venv", ".pytest_cache", "target", "node_modules",
+            "__pycache__", "backups", "logs", "run");
     private static final DateTimeFormatter RUN_TIME = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
             .withZone(ZoneOffset.UTC);
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules()
