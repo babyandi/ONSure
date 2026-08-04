@@ -119,7 +119,7 @@
 | 전체 물리 모듈 build/package | `mvn -B -ntp -f pom-modular.xml clean package` | `PASS_NONFINAL` (11 modules, 37 tests; 독립 clone 재검증 대상) |
 | Unit/통합 Java regression | `mvn -B -ntp test` | `PASS_NONFINAL` (`clean verify`에 포함, 281 tests) |
 | 대표 제품 E2E | `mvn -B -ntp -Dtest=ValidationPlatformE2ETest test` | `PASS_NONFINAL` (`clean verify`에 포함) |
-| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local 142 tests; prior independent clone 141 tests) |
+| Python regression | `python3 -m unittest discover -s tests -p 'test_*.py'` | `PASS_NONFINAL` (current local + 독립 clone 각 142 tests) |
 | 정적 비최종 gate | `bash scripts/onsure-local-gate.sh --mode static --profile core` | `PASS_NONFINAL` (local + 독립 clone) |
 | 전체 비최종 gate | `bash scripts/onsure-local-gate.sh --mode full --profile core` | `FAIL_HOST_ENVIRONMENT` (`bwrap` loopback 권한 거부, downstream 9 failures) |
 | VS Code package | `(cd vscode-extension && npm ci --ignore-scripts --no-audit --no-fund && npm test && npm run package)` | `PASS_NONFINAL` (9 Node tests, VSIX SHA-256 `aff3faec3ce3...`; proprietary LICENSE/third-party notice 포함) |
@@ -136,7 +136,7 @@
 | Runtime assurance 도구 | `python3 scripts/onsure_runtime_assurance.py health` | `PASS_NONFINAL` (benchmark 비교, bounded soak, ENOSPC, 합성 DR 통과; 운영 long-run/real DR `NOT_RUN`) |
 | Air-gap Maven/npm | repository/dependency pack과 `scripts/onsure_npm_airgap.py` | `PASS_NONFINAL` (Maven 4,823-entry offline canonical/modular, dependency 15-entry, npm 442-cache offline install; external signature `NOT_RUN`) |
 | bubblewrap 환경 진단 | `python3 scripts/onsure_bubblewrap_diagnostics.py` | `BLOCKED_ENVIRONMENT / BWRAP_LOOPBACK_PERMISSION_DENIED` |
-| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (785-file cutover + rollback 재검증 대상, 외부 제품 저장소 미사용) |
+| 중첩 제품 root full rehearsal | `python3 scripts/rehearse_onsure_nested_root.py --mode full` | `PASS_NONFINAL` (785-file cutover + rollback, 10 commands, 외부 제품 저장소 미사용) |
 | 열린 PR overlap | `python3 scripts/onsure_pr_overlap.py validate` | `PASS_NONFINAL / INTEGRATION_ORDER_RESOLVED` |
 | Deploy | RHEL/Ubuntu 단독 서버 systemd/package 후보 구현 | `두 tar 내부 checksum·ownership·secret/path 검사 PASS_NONFINAL / INSTALL NOT_RUN / NOT_AUTHORIZED` |
 | DB migration | PostgreSQL/Flyway V1 + Ubuntu 호스트의 실제 임시 PostgreSQL 16.14 + SQLite 합성 runner | `APPLY/IDEMPOTENCY/VALIDATE/DUMP/RESTORE PASS_NONFINAL / PRODUCTION NOT_RUN` |
@@ -178,8 +178,9 @@ namespace 설정을 허용하지 않아 발생한 실행환경 차단이다.
 컨테이너가 최초 `npm ci`를 비-root로 자체 준비하도록 보강했고, Xvfb online 실행과
 `--network none` cached offline 실행이 모두 exit 0을 반환했다. 전체 gate는 최신 HEAD에서도
 동일한 `BWRAP_LOOPBACK_PERMISSION_DENIED`로 환경 차단됐으며 보안 우회는 적용하지 않았다.
-별도 clone은 remote `origin/main`만 추가로 fetch한 뒤 canonical 281/281, Python 141/141,
-API 240/240, migration readiness와 static gate를 외부 제품 workspace 없이 통과했다.
+별도 clone은 remote `origin/main`만 추가로 fetch한 뒤 canonical 281/281, Python 142/142,
+API 240/240, proprietary supply-chain validation, migration readiness와 static gate를 외부
+제품 workspace 없이 통과했다.
 
 소유자 제공 선언에 따라 root copyright holder는 `ORUDA Labs`, outbound license는
 `LicenseRef-ORUDA-Labs-Proprietary`로 기록했다. 다른 개발자·회사·외주, 외부 저장소 source
