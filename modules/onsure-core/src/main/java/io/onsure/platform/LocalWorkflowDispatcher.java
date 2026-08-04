@@ -223,6 +223,19 @@ public final class LocalWorkflowDispatcher {
         String projectId = requiredId(request, "project_id");
         String targetId = requiredId(request, "target_id");
         ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
+        if ("UNIVERSAL".equals(request.path("validation_mode").asText(""))) {
+            String runId = requiredId(request, "run_id");
+            Path runRoot = outputPath(request, "run_root",
+                    ".onsure/universal-validation/" + targetId + "/" + runId);
+            var profile = new StandardValidationProfileDetector().detect(targetId, target.sourceRoot());
+            UniversalValidationRunner.RunResult run = new UniversalValidationRunner().run(profile, runRoot);
+            return Map.of(
+                    "validation_mode", "UNIVERSAL",
+                    "registered_project_id", projectId,
+                    "registered_target_id", targetId,
+                    "run", run,
+                    "final_claim_allowed", false);
+        }
         if (!GenericManifestTargetAdapter.ID.equals(target.adapterId())) {
             throw new IllegalArgumentException("LOCAL_CORE_WORKFLOW_SUPPORTS_GENERIC_ADAPTER_ONLY");
         }

@@ -45,4 +45,22 @@ class ONSureCliTest {
         assertEquals(2, exit);
         assertTrue(stdout.toString().contains("\"decision\" : \"FAIL\""));
     }
+
+    @Test
+    void universalCommandValidatesNeutralOpenApiWithoutTargetManifest() throws Exception {
+        Path target = Files.createDirectory(temp.resolve("neutral"));
+        Files.writeString(target.resolve("openapi.yaml"),
+                "openapi: 3.1.0\ninfo:\n  title: neutral\n  version: 1\npaths:\n  /health: {}\n");
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+
+        int exit = ONSureCli.run(new String[] {
+                "universal", target.toString(), "neutral-openapi", temp.resolve("universal-run").toString()
+        }, new PrintStream(stdout), new PrintStream(new ByteArrayOutputStream()));
+
+        assertEquals(4, exit);
+        assertTrue(stdout.toString().contains("ONSURE_UNIVERSAL_VALIDATION_COMPLETE_NONFINAL"));
+        assertTrue(stdout.toString().contains("\"CONNECTED_E2E\" : \"NOT_RUN\""));
+        assertTrue(Files.isRegularFile(temp.resolve("universal-run/universal-validation-result.json")));
+        assertTrue(Files.notExists(target.resolve("onsure-target.json")));
+    }
 }

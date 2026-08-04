@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/universal-validation-result.v1.schema.json",
+  "title": "ONSure Universal Validation Result V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "profile_id", "source_root", "snapshot_root", "source_digest",
+    "snapshot_digest", "source_mutation_detected", "technologies", "environment_requirements", "phase_outcomes",
+    "verification_group_outcomes", "overall_outcome", "steps", "not_run_reasons",
+    "started_at", "completed_at", "assurance_class", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_UNIVERSAL_VALIDATION_RUN_V1"},
+    "profile_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "source_root": {"type": "string", "minLength": 1},
+    "snapshot_root": {"type": "string", "minLength": 1},
+    "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "snapshot_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_mutation_detected": {"type": "boolean"},
+    "technologies": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "environment_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["requirementId", "kind", "value", "required"],
+        "properties": {
+          "requirementId": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+          "kind": {"enum": ["EXECUTABLE", "SOURCE_FILE", "SOURCE_DIRECTORY", "EXECUTABLE_SOURCE_FILE", "FONT_FAMILY"]},
+          "value": {"type": "string", "minLength": 1, "maxLength": 512},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "phase_outcomes": {"$ref": "#/$defs/phaseOutcomes"},
+    "verification_group_outcomes": {"$ref": "#/$defs/groupOutcomes"},
+    "overall_outcome": {"$ref": "#/$defs/outcome"},
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stepId", "phase", "kind", "required", "outcome", "exitCode", "outputSha256",
+          "environmentSha256", "logFile", "outputTruncated", "reason", "startedAt", "completedAt"
+        ],
+        "properties": {
+          "stepId": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+          "phase": {"enum": ["STRUCTURE_STATIC", "COMPONENT_AND_NEGATIVE", "END_TO_END_LINEAGE", "OPERATIONAL_RESILIENCE"]},
+          "kind": {"type": "string", "minLength": 1},
+          "required": {"type": "boolean"},
+          "outcome": {"$ref": "#/$defs/outcome"},
+          "exitCode": {"type": "integer"},
+          "outputSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "environmentSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "logFile": {"type": "string", "minLength": 1},
+          "outputTruncated": {"type": "boolean"},
+          "reason": {"type": "string", "minLength": 1},
+          "startedAt": {"type": "string", "format": "date-time"},
+          "completedAt": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "not_run_reasons": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "assurance_class": {"const": "SELF_VALIDATION_NONFINAL"},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "outcome": {"enum": ["PASS_NONFINAL", "FAIL", "BLOCKED", "NOT_RUN", "INCONCLUSIVE"]},
+    "phaseOutcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["STRUCTURE_STATIC", "COMPONENT_AND_NEGATIVE", "END_TO_END_LINEAGE", "OPERATIONAL_RESILIENCE"],
+      "properties": {
+        "STRUCTURE_STATIC": {"$ref": "#/$defs/outcome"},
+        "COMPONENT_AND_NEGATIVE": {"$ref": "#/$defs/outcome"},
+        "END_TO_END_LINEAGE": {"$ref": "#/$defs/outcome"},
+        "OPERATIONAL_RESILIENCE": {"$ref": "#/$defs/outcome"}
+      }
+    },
+    "groupOutcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ENVIRONMENT_DEPENDENCY", "STRUCTURE", "VALIDATOR_META", "STAGE_FUNCTIONAL",
+        "CONNECTED_E2E", "EVIDENCE_DECISION", "OPERATIONS_RECOVERY"
+      ],
+      "properties": {
+        "ENVIRONMENT_DEPENDENCY": {"$ref": "#/$defs/outcome"},
+        "STRUCTURE": {"$ref": "#/$defs/outcome"},
+        "VALIDATOR_META": {"$ref": "#/$defs/outcome"},
+        "STAGE_FUNCTIONAL": {"$ref": "#/$defs/outcome"},
+        "CONNECTED_E2E": {"$ref": "#/$defs/outcome"},
+        "EVIDENCE_DECISION": {"$ref": "#/$defs/outcome"},
+        "OPERATIONS_RECOVERY": {"$ref": "#/$defs/outcome"}
+      }
+    }
+  }
+}

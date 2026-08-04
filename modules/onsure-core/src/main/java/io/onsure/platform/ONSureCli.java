@@ -38,8 +38,24 @@ public final class ONSureCli {
         if (args.length == 10 && "validate".equals(args[0])) {
             return legacyValidate(args, out);
         }
+        if (args.length == 4 && "universal".equals(args[0])) {
+            Path sourceRoot = Path.of(args[1]).toAbsolutePath().normalize();
+            Path runRoot = Path.of(args[3]).toAbsolutePath().normalize();
+            var profile = new StandardValidationProfileDetector().detect(args[2], sourceRoot);
+            var result = new UniversalValidationRunner().run(profile, runRoot);
+            out.println(mapper().writeValueAsString(result));
+            out.println("ONSURE_UNIVERSAL_VALIDATION_COMPLETE_NONFINAL " + result.receiptFile());
+            return switch (result.overallOutcome()) {
+                case PASS_NONFINAL -> 0;
+                case FAIL -> 2;
+                case BLOCKED -> 3;
+                case NOT_RUN -> 4;
+                case INCONCLUSIVE -> 5;
+            };
+        }
         err.println("usage:");
         err.println("  ONSureCli workflow <workspace-root> <operation> <request-json-file>");
+        err.println("  ONSureCli universal <source-root> <profile-id> <run-root>");
         err.println("  ONSureCli validate <source-root> <target-id> <target-name> "
                 + "<GENERAL_SOFTWARE|AI_APPLICATION|AI_AGENTIC_PLATFORM> <adapter-id> "
                 + "<immutable-source-ref> <policy-profile> <execution-profile> <store-root>");

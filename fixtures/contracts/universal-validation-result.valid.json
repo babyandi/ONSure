@@ -1,0 +1,50 @@
+{
+  "contract": "ONSURE_UNIVERSAL_VALIDATION_RUN_V1",
+  "profile_id": "neutral-openapi",
+  "source_root": "/isolated/source",
+  "snapshot_root": "/isolated/run/execution-source",
+  "source_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "snapshot_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_mutation_detected": false,
+  "technologies": ["OPENAPI"],
+  "environment_requirements": [],
+  "phase_outcomes": {
+    "STRUCTURE_STATIC": "PASS_NONFINAL",
+    "COMPONENT_AND_NEGATIVE": "PASS_NONFINAL",
+    "END_TO_END_LINEAGE": "NOT_RUN",
+    "OPERATIONAL_RESILIENCE": "NOT_RUN"
+  },
+  "verification_group_outcomes": {
+    "ENVIRONMENT_DEPENDENCY": "PASS_NONFINAL",
+    "STRUCTURE": "PASS_NONFINAL",
+    "VALIDATOR_META": "PASS_NONFINAL",
+    "STAGE_FUNCTIONAL": "PASS_NONFINAL",
+    "CONNECTED_E2E": "NOT_RUN",
+    "EVIDENCE_DECISION": "PASS_NONFINAL",
+    "OPERATIONS_RECOVERY": "NOT_RUN"
+  },
+  "overall_outcome": "NOT_RUN",
+  "steps": [{
+    "stepId": "environment.preflight",
+    "phase": "STRUCTURE_STATIC",
+    "kind": "ENVIRONMENT_PREFLIGHT",
+    "required": true,
+    "outcome": "PASS_NONFINAL",
+    "exitCode": 0,
+    "outputSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "environmentSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "logFile": "/isolated/run/step-logs/environment.preflight.log",
+    "outputTruncated": false,
+    "reason": "REQUIRED_EXECUTABLES_AVAILABLE",
+    "startedAt": "2026-08-04T00:00:00Z",
+    "completedAt": "2026-08-04T00:00:01Z"
+  }],
+  "not_run_reasons": {
+    "END_TO_END_LINEAGE": "END_TO_END_ENTRYPOINT_NOT_DISCOVERED",
+    "OPERATIONAL_RESILIENCE": "OPERATIONAL_PROFILE_AND_ISOLATED_RUNTIME_NOT_CONFIGURED"
+  },
+  "started_at": "2026-08-04T00:00:00Z",
+  "completed_at": "2026-08-04T00:00:01Z",
+  "assurance_class": "SELF_VALIDATION_NONFINAL",
+  "final_claim_allowed": false
+}
