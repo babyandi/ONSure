@@ -48,13 +48,21 @@ def validate(evidence: dict[str, object]) -> dict[str, object]:
             ports = ufw.get(family, [])
             if not isinstance(ports, list) or 5432 not in ports:
                 violations.append("UFW_POSTGRESQL_RULE_BINDING:" + family)
+        if ufw.get("postgresql_public_rule_ids_delete_order") != [6, 3]:
+            violations.append("UFW_NUMBERED_DELETE_ORDER")
+        if ufw.get("rules_outside_onsure_scope_preserved") != ["22/tcp", "80/tcp"]:
+            violations.append("UFW_OUT_OF_SCOPE_RULE_BOUNDARY")
 
     postgresql = evidence.get("postgresql", {})
     if not isinstance(postgresql, dict) \
             or postgresql.get("listen_addresses") != "localhost" \
             or postgresql.get("port") != 5432 \
             or postgresql.get("ssl") != "on" \
-            or postgresql.get("loopback_only") is not True:
+            or postgresql.get("loopback_only") is not True \
+            or postgresql.get("hba_host_networks") != ["127.0.0.1/32", "::1/128"] \
+            or postgresql.get("hba_host_authentication") != "scram-sha-256" \
+            or postgresql.get("hba_local_authentication") != "peer" \
+            or postgresql.get("hba_non_loopback_host_rule_present") is not False:
         violations.append("POSTGRESQL_NETWORK_OBSERVATION")
 
     blockers = evidence.get("production_blockers", [])

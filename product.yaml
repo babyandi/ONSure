@@ -98,6 +98,10 @@ build:
     command: python3 scripts/validate_onsure_ubuntu_apparmor.py
     parser_mode: SKIP_KERNEL_LOAD
     production_authority: false
+  ubuntu_network_policy_validation:
+    command: python3 scripts/validate_onsure_ubuntu_network_policy.py
+    firewall_mutation_authorized: false
+    production_authority: false
   systemd_security_validation:
     command: python3 scripts/onsure_systemd_security.py
     rhel_execution_authority: false

@@ -30,6 +30,7 @@ UBUNTU_PRIVILEGED_POLICY_EVIDENCE = ROOT / (
     "assurance/runtime/onsure-ubuntu-privileged-policy-observation.v1.json"
 )
 UBUNTU_APPARMOR_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-apparmor-candidate.v1.json"
+UBUNTU_UFW_PLAN = ROOT / "deploy/ubuntu/ufw-remediation-plan.v1.json"
 SYSTEMD_UNITS = (
     ROOT / "deploy/rhel/onsure.service",
     ROOT / "deploy/rhel/onsure-llm-gateway.service",
@@ -400,6 +401,22 @@ def validate_ubuntu_apparmor_evidence() -> list[str]:
     return []
 
 
+def validate_ubuntu_network_policy() -> list[str]:
+    from validate_onsure_ubuntu_network_policy import validate
+
+    result = validate(
+        json.loads(UBUNTU_UFW_PLAN.read_text(encoding="utf-8")),
+        json.loads(UBUNTU_PRIVILEGED_POLICY_EVIDENCE.read_text(encoding="utf-8")),
+    )
+    if result.get("decision") != "PASS_NONFINAL" \
+            or result.get("remediation_ready") is not True \
+            or result.get("execution_state") != "NOT_RUN" \
+            or result.get("observed_production_ready") is not False \
+            or result.get("final_claim_allowed") is not False:
+        return ["UBUNTU_NETWORK_POLICY_CONTRACT"]
+    return []
+
+
 def validate_documents(
     boundary: dict[str, object],
     product: dict[str, object],
@@ -540,6 +557,8 @@ def validate() -> dict[str, object]:
         "deploy/ubuntu/systemd/onsure-migrate.service.d/10-apparmor.conf",
         "scripts/validate_onsure_ubuntu_apparmor.py",
         "assurance/runtime/onsure-ubuntu-apparmor-candidate.v1.json",
+        "deploy/ubuntu/ufw-remediation-plan.v1.json",
+        "scripts/validate_onsure_ubuntu_network_policy.py",
     ]
     missing = [path for path in required_files if not (ROOT / path).is_file()]
     if missing:
@@ -562,6 +581,7 @@ def validate() -> dict[str, object]:
         violations.extend(validate_ubuntu_host_preflight_evidence())
         violations.extend(validate_ubuntu_privileged_policy_evidence())
         violations.extend(validate_ubuntu_apparmor_evidence())
+        violations.extend(validate_ubuntu_network_policy())
     return {
         "contract": "ONSURE_OPERATIONAL_BOUNDARY_VALIDATION_V1",
         "decision": "PASS_NONFINAL" if not violations else "FAIL",

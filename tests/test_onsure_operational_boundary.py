@@ -97,6 +97,9 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
     def test_apparmor_candidate_is_parse_only_and_not_enforced(self):
         self.assertEqual([], operational.validate_ubuntu_apparmor_evidence())
 
+    def test_ufw_remediation_is_exact_but_not_executed(self):
+        self.assertEqual([], operational.validate_ubuntu_network_policy())
+
 
 if __name__ == "__main__":
     unittest.main()

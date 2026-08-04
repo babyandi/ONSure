@@ -26,7 +26,7 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - Canonical `clean verify`: 282/282, repeated twice. Independent clone at `1125d2b`: 282/282,
   Python 154/154 and public API 240/240.
 - Modular package: 37/37 locally and in the independent clone; public API baseline: 240/240.
-- Python: 169/169; Node: 9/9; deterministic VSIX package pass with SHA-256
+- Python: 175/175; Node: 9/9; deterministic VSIX package pass with SHA-256
   `fb2f0bf6c5051ebf6197ec8e0f21c8d77fd3316b348016f1ccbd4fdb5dfd9589`.
 - Ubuntu candidate SHA-256: `84098d26467a2465c2bef3618ef78c7dd03fe9ccd3dd297c508228c750bb69e2`
   (37 files, 36 internal checksums, 3 named AppArmor profiles).
@@ -35,7 +35,7 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
   dump/restore and restored validation pass. Production migration was not run.
 - Synthetic SQLite: apply 1, idempotent apply 0 and rollback 1 pass under the required `.onsure/`
   product-state boundary; an outside-state path was correctly rejected.
-- Nested `products/onsure/` cutover and rollback: 809/809 files, 10 commands, no external product
+- Nested `products/onsure/` cutover and rollback: 812/812 files, 10 commands, no external product
   repository.
 - VS Code 1.95.3 Extension Host on Node 22: online Xvfb run exit 0 and cached
   `--network none` rerun exit 0; Node engine mismatch warnings 0.
@@ -50,6 +50,9 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 - AppArmor package candidates for API, Gateway and migration parse successfully without kernel
   loading and are bound through Ubuntu-only systemd drop-ins. Complain workload rehearsal and
   enforce execution remain `NOT_RUN`.
+- Numbered UFW rules `[6,3]` are bound to a descending, PostgreSQL-only remediation plan. HBA allows
+  only local peer and loopback SCRAM. Firewall mutation and post-change remote denial remain
+  `NOT_RUN`; SSH and HTTP rules are explicitly outside the ONSure change scope.
 - VS Code Ubuntu runtime surface: Local API/Gateway RUNNING, content-free token/cost metrics and
   receipt chain valid; runtime tokens were not written to evidence.
 

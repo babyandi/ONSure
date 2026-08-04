@@ -36,6 +36,13 @@ class ONSureUbuntuPrivilegedPolicyTest(unittest.TestCase):
         self.assertEqual("FAIL", result["decision"])
         self.assertIn("APPARMOR_ONSURE_GAP_NOT_RECORDED", result["violations"])
 
+    def test_numbered_rule_delete_order_is_bound(self):
+        changed = copy.deepcopy(self.evidence())
+        changed["ufw"]["postgresql_public_rule_ids_delete_order"] = [3, 6]
+        result = policy.validate(changed)
+        self.assertEqual("FAIL", result["decision"])
+        self.assertIn("UFW_NUMBERED_DELETE_ORDER", result["violations"])
+
 
 if __name__ == "__main__":
     unittest.main()

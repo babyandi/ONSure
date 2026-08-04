@@ -80,10 +80,11 @@
   unit(현재 exposure 6.7)이 아닌 offline-qualified system unit 후보(2.8)의 설치 승인,
   Production PostgreSQL lock·backup/restore, OpenAI 실호출과 upgrade/rollback 승인 시험.
 - 2026-08-04 privileged read-only observation에서 PostgreSQL은 `localhost:5432`, SSL `on`으로
-  확인됐지만 UFW가 `5432/tcp`를 IPv4/IPv6 `Anywhere`에 허용한다. 변경 전
-  `sudo ufw status numbered`로 규칙을 다시 식별하고 승인된 변경 창에서 PostgreSQL public
-  allow 규칙을 제거한 뒤 loopback listen과 원격 차단을 재검증해야 한다. SSH/HTTP 규칙은
-  이 ONSure 작업 범위에서 변경하지 않는다.
+  확인됐고 `pg_hba.conf`도 local peer와 `127.0.0.1/32`·`::1/128` SCRAM만 허용한다. 그러나
+  UFW가 `5432/tcp`를 IPv4/IPv6 `Anywhere`에 허용한다. 번호 `[6]`, `[3]`의 내림차순 제거
+  계획은 `deploy/ubuntu/ufw-remediation-plan.v1.json`에 고정했지만 실행은 `NOT_RUN`이다.
+  승인된 변경 창에서 제거 후 loopback listen, HBA, UFW 및 원격 차단을 재검증해야 한다.
+  SSH 22/HTTP 80 규칙은 이 ONSure 작업 범위에서 변경하지 않는다.
 - AppArmor는 활성 상태지만 ONSure 전용 enforce profile은 없다. Ubuntu 공식 절차에 따라
   전용 profile을 먼저 complain/학습 환경에서 검증하고 audit denial을 검토한 뒤 별도 승인으로
   enforce해야 한다. 현재 Java의 `unprivileged_userns` 적용을 전용 제품 confinement로 간주하지
