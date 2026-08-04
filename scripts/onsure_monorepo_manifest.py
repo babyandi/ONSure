@@ -178,6 +178,9 @@ def build_manifest(output: pathlib.Path = DEFAULT_OUTPUT) -> dict[str, object]:
             "copyright_owner": COPYRIGHT_HOLDER,
             "rights_declaration": RIGHTS_DECLARATION,
             "attestation_class": "OWNER_ATTESTED_NONFINAL",
+            "copyright_basis": "OWNER_ATTESTATION_2026-08-04",
+            "external_contributors_or_contractors": "NONE_ATTESTED",
+            "copied_external_repository_code_or_assets": "NONE_ATTESTED",
         },
         "license_interpretation": {
             "default": ROOT_LICENSE,

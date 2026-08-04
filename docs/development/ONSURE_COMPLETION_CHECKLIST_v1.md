@@ -1,22 +1,24 @@
 # ONSURE 요청 범위 완료 점검표 v1
 
-## 구현 완료
+## 구현 상태
 
-- [x] ONSURE 제품 핵심부
-- [x] 범용 검증 엔진
-- [x] 검증 대상 등록소와 대상 어댑터
-- [x] 일반 프로그램 종단간 시험 대상
-- [x] AI 프로그램 종단간 시험 대상
-- [x] ORUDA 외부 대상 어댑터
-- [x] 실패 유형·근본원인분석·개선 계획
-- [x] 시험 데이터·하네스·오라클 등록 구조
-- [x] 회귀 잠금과 재검증 비교
-- [x] 독립 검증·감사 영수증 구조
-- [x] 범용 검증 축 30개
-- [x] 시험 데이터 유형 7개
-- [x] 실행 전 점검과 개발 관문
+- [ ] ONSURE 제품 핵심부 — `PARTIAL`
+- [ ] 범용 검증 엔진 — `PARTIAL`; 4개 보증 수준·7개 순차 검증군·Pack SPI·격리 Runner 구현, sandbox 실제 실행 차단
+- [ ] 검증 대상 등록소와 대상 어댑터 — `PARTIAL`; 등록 source의 `validation_mode=UNIVERSAL`과 Manifest 비의존 언어 탐지 구현, binary/package intake 미완료
+- [ ] 일반 프로그램 종단간 시험 대상 — 중립 Node 15개 host script `PASS_NONFINAL`, ONSure sandbox 실행 `BLOCKED_ENVIRONMENT`
+- [ ] AI 프로그램 종단간 시험 대상 — `NOT_RUN_REAL_TARGET`
+- [ ] 실패 유형·근본원인분석·개선 계획 — `PARTIAL`; 인과 재현과 실제 Patch 전후 입증 미완료
+- [x] 시험 데이터·하네스·오라클 등록 골격
+- [ ] 회귀 잠금과 재검증 비교 — `PARTIAL`
+- [ ] 독립 검증·감사 영수증 — `NOT_RUN`
+- [x] 범용 검증 축 30개 계약
+- [x] 시험 데이터 유형 7개 계약
+- [x] 실행 전 점검과 개발 관문 골격
 - [x] 학습 엔진·검증 엔진 분리 설계
-- [x] 학습 후보 실제 적용 파이프라인 설계
+- [ ] 학습 후보 실제 적용 파이프라인 — `PARTIAL`
+
+외부 제품은 ONSURE의 필수 연계 대상, 제품 구성요소 또는 완료 조건이 아니다.
+기존 선택형 Adapter가 남아 있더라도 독립 Core의 범용성 증거로 사용하지 않는다.
 
 ## 정적 통합 완료
 
@@ -32,9 +34,14 @@
 
 ## 실제 실행 필요
 
-- [ ] JDK 17 확인
-- [ ] Maven 확인
-- [ ] `mvn -B -ntp test`
+- [x] JDK 17 확인
+- [x] Maven 확인
+- [x] `mvn -B -ntp -q clean verify` 2회
+- [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
+- [x] Public Java API 257개 delta 0
+- [x] Python 121개 회귀 테스트
+- [x] OpenAPI 3.1 문서 8개 경로와 Local API 구현 parity
+- [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED`)
 - [ ] 제품 플랫폼 종단간 시험 2회
 - [ ] 범용 하네스 독립 실행 2회
 - [ ] ONSURE 자체 보증 2회
@@ -57,7 +64,7 @@
 최종 후보 조건을 충족해도 최종 잠금은 자동 허용하지 않는다. 별도 승인·독립 감사·최종 영수증 검증이 필요하다.
 
 ```text
-현재 개발 상태      IMPLEMENTED_NOT_RUN
+현재 개발 상태      PARTIAL_HOST_SANDBOX_BLOCKED
 개발 관문           HOLD
 최종 후보           BLOCKED
 최종 잠금           NOT_ALLOWED

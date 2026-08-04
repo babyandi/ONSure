@@ -27,6 +27,23 @@ namespace 생성 한도는 열려 있지만 outer runtime이 private network nam
 Java 시험이 실패했고, 동일 HEAD의 sandbox 비강제 canonical clean verify는 282/282를
 2회 연속 통과했다.
 
+Ubuntu 24.04의 `kernel.apparmor_restrict_unprivileged_userns=1`을 전역으로 끄지 않고
+`/usr/bin/bwrap`에 필요한 `userns,`만 부여하는 검토 후보는
+`deploy/apparmor/usr.bin.bwrap-onsure`다. 운영자가 내용을 검토한 뒤 다음처럼 설치한다.
+
+```bash
+sudo install -o root -g root -m 0644 \
+  deploy/apparmor/usr.bin.bwrap-onsure \
+  /etc/apparmor.d/usr.bin.bwrap-onsure
+sudo apparmor_parser -r /etc/apparmor.d/usr.bin.bwrap-onsure
+python3 scripts/onsure_bubblewrap_diagnostics.py
+```
+
+진단이 계속 실패하면 Profile은 유지하고 audit/kernel log를 조사한다. 전역 AppArmor
+disable, `kernel.apparmor_restrict_unprivileged_userns=0`, privileged container는 권장하지 않는다.
+Rollback은 `sudo apparmor_parser -R /etc/apparmor.d/usr.bin.bwrap-onsure` 후 설치 파일을
+제거하는 명시적 운영 작업이다.
+
 ## 필수 환경
 
 - Linux host에서 unprivileged user namespace 생성이 허용되어야 한다.
