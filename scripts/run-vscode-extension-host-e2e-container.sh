@@ -8,6 +8,12 @@ network_mode="bridge"
 if [[ "${1:-}" == "--inside" ]]; then
   cd "$repo_root/vscode-extension"
   test "$(id -u)" -ne 0
+  if [[ "${ONSURE_E2E_OFFLINE:-false}" == "true" ]]; then
+    test -d node_modules/@vscode/test-electron
+    test -d .vscode-test
+  else
+    npm ci --ignore-scripts --no-audit --no-fund
+  fi
   exec npm run test:e2e
 fi
 
@@ -20,6 +26,7 @@ docker build --pull=false --tag "$image" --file \
 docker run --rm \
   --user "$(id -u):$(id -g)" \
   --env HOME=/tmp/onsure-home \
+  --env "ONSURE_E2E_OFFLINE=$([[ "$network_mode" == "none" ]] && echo true || echo false)" \
   --network "$network_mode" \
   --cap-drop ALL \
   --security-opt no-new-privileges \
