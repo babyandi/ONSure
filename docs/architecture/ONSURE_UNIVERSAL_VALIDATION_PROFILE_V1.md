@@ -94,7 +94,8 @@ file, font family다. ClamAV는 `EXECUTABLE=clamscan`, 서명 Fixture는 `SOURCE
 선언한다. 외부 프로필의 의미 digest와 파일 digest를 영수증에 결속하고 실행 종료 전 파일
 불변성을 다시 확인한다. Node module은 manifest/lock 집합 대조 후 위 고정 offline 설치로 확인한다.
 
-CLI `universal`, 등록 Workflow `validation.run`, 관리 API `/v1/programs/validate`의
+CLI `universal`, 등록 Workflow `validation.run`, VS Code의 seven-group universal 명령,
+관리 API `/v1/programs/validate`의
 `UNIVERSAL` 프로필은 같은 `StandardValidationProfileDetector`와 `UniversalValidationRunner`를
 사용한다. 관리 API는 universal receipt를 복제하지 않고 receipt 경로와 SHA-256, phase/group
 outcome을 기존 관리 projection에 결속한다. 관리화면은 이 projection을 표시하며 `NOT_RUN`,

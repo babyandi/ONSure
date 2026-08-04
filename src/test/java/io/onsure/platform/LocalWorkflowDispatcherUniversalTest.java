@@ -2,6 +2,7 @@ package io.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class LocalWorkflowDispatcherUniversalTest {
     @TempDir Path temp;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
     @Test
     void registeredNeutralTargetRunsThroughSharedWorkflowSurface() throws Exception {
@@ -38,9 +39,21 @@ class LocalWorkflowDispatcherUniversalTest {
         assertEquals("UNIVERSAL", result.get("validation_mode"));
         UniversalValidationRunner.RunResult run = (UniversalValidationRunner.RunResult) result.get("run");
         assertEquals(UniversalValidationProfile.Outcome.NOT_RUN, run.overallOutcome());
+        assertEquals(temp.resolve(".onsure/universal-validation/neutral/run-001").toString(),
+                result.get("run_root"));
+        assertEquals(result.get("run_root"), mapper.valueToTree(envelope)
+                .at("/result/run_root").asText());
         assertFalse(run.finalClaimAllowed());
         assertTrue(Files.isRegularFile(run.receiptFile()));
         assertFalse(Files.exists(source.resolve("onsure-target.json")));
+
+        Files.writeString(source.resolve("changed-after-registration.txt"), "drift\n");
+        IllegalArgumentException drift = assertThrows(IllegalArgumentException.class,
+                () -> dispatcher.dispatch("validation.run", mapper.valueToTree(Map.of(
+                        "project_id", "project", "target_id", "neutral",
+                        "validation_mode", "UNIVERSAL", "run_id", "run-drift"))));
+        assertEquals("PROGRAM_SOURCE_REFERENCE_DRIFT", drift.getMessage());
+        assertFalse(Files.exists(temp.resolve(".onsure/universal-validation/neutral/run-drift")));
     }
 
     @Test

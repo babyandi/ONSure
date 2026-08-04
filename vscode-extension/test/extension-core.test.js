@@ -17,6 +17,8 @@ const {
   registrationRequests,
   learnRequest,
   validationRequest,
+  universalValidationRequest,
+  workflowRunRoot,
   snapshotRequest,
   autopilotControlRequest,
   requireSnapshotBinding,
@@ -242,12 +244,28 @@ test('registration precedes registered-identity learn and validation requests', 
   assert.deepEqual(validationRequest(identity), {
     project_id: 'project-001', target_id: 'target-001'
   });
+  const universal = universalValidationRequest(identity, 'run-001',
+    path.join(root, '.onsure/universal-validation/target-001/run-001'),
+    path.join(root, 'environment-profile.json'));
+  assert.deepEqual(universal, {
+    project_id: 'project-001', target_id: 'target-001',
+    validation_mode: 'UNIVERSAL', run_id: 'run-001',
+    run_root: path.join(root, '.onsure/universal-validation/target-001/run-001'),
+    environment_profile_file: path.join(root, 'environment-profile.json')
+  });
+  assert.throws(() => universalValidationRequest(identity, 'invalid run', root), /Run ID/);
   for (const request of [learnRequest(identity), validationRequest(identity)]) {
     for (const prohibited of [
       'source_root', 'target_name', 'target_type', 'adapter_id',
       'immutable_source_reference', 'policy_profile', 'execution_profile'
     ]) assert.equal(Object.hasOwn(request, prohibited), false);
   }
+});
+
+test('universal validation responses expose direct and nested run roots', () => {
+  assert.equal(workflowRunRoot({run_root: '/tmp/direct'}), '/tmp/direct');
+  assert.equal(workflowRunRoot({run: {runRoot: '/tmp/universal'}}), '/tmp/universal');
+  assert.equal(workflowRunRoot({run: {}}), undefined);
 });
 
 test('registered target response is strongly bound to the active workspace', () => {

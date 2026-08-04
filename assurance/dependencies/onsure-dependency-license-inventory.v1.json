@@ -275,5 +275,5 @@
   "rights_declaration": "contracts/onsure-rights-declaration.v1.json",
   "root_source_license": "LicenseRef-ORUDA-Labs-Proprietary",
   "source_sbom": "assurance/dependencies/onsure.cdx.json",
-  "source_sbom_sha256": "c01ce117b56172f7357cfffbeadcc7f63e08485c2998611d34e0e1aa3be17390"
+  "source_sbom_sha256": "a9067cc07d410b168f1c06e43d43b6f5ece9b545b09993be3036e36b76ba3980"
 }

@@ -248,6 +248,23 @@ function validationRequest(identity) {
   };
 }
 
+function universalValidationRequest(identity, runId, runRoot, environmentProfileFile) {
+  const request = {
+    ...validationRequest(identity),
+    validation_mode: 'UNIVERSAL',
+    run_id: requireId(runId, 'Run ID'),
+    run_root: String(runRoot || '')
+  };
+  if (!request.run_root) throw new Error('Run root is required.');
+  if (environmentProfileFile) request.environment_profile_file = String(environmentProfileFile);
+  return request;
+}
+
+function workflowRunRoot(result) {
+  const candidate = result?.run_root || result?.run?.runRoot;
+  return typeof candidate === 'string' && candidate.length ? candidate : undefined;
+}
+
 function snapshotRequest(identity) {
   return {
     project_id: requireId(identity.projectId, 'Project ID'),
@@ -686,6 +703,8 @@ module.exports = {
   registrationRequests,
   learnRequest,
   validationRequest,
+  universalValidationRequest,
+  workflowRunRoot,
   snapshotRequest,
   autopilotControlRequest,
   requireSnapshotBinding,

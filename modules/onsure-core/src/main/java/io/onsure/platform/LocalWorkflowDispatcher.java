@@ -224,6 +224,10 @@ public final class LocalWorkflowDispatcher {
         String targetId = requiredId(request, "target_id");
         ValidationTarget target = requireRegisteredTarget(projectId, targetId).target();
         if ("UNIVERSAL".equals(request.path("validation_mode").asText(""))) {
+            if (!SourceReferenceBinding.treeReference(target.sourceRoot())
+                    .equals(target.immutableSourceReference())) {
+                throw new IllegalArgumentException("PROGRAM_SOURCE_REFERENCE_DRIFT");
+            }
             String runId = requiredId(request, "run_id");
             Path runRoot = outputPath(request, "run_root",
                     ".onsure/universal-validation/" + targetId + "/" + runId);
@@ -241,6 +245,7 @@ public final class LocalWorkflowDispatcher {
                     "validation_mode", "UNIVERSAL",
                     "registered_project_id", projectId,
                     "registered_target_id", targetId,
+                    "run_root", runRoot.toString(),
                     "run", run,
                     "final_claim_allowed", false);
         }

@@ -16,6 +16,8 @@ const {
   registrationRequests,
   learnRequest,
   validationRequest,
+  universalValidationRequest,
+  workflowRunRoot,
   snapshotRequest,
   autopilotControlRequest,
   requireSnapshotBinding,
@@ -376,7 +378,8 @@ async function activate(context) {
     }, () => client.workflow(operation, request));
     await context.workspaceState.update(LAST_WORKFLOW_KEY, operation);
     const result = workflow.result || {};
-    if (result.run_root) await context.workspaceState.update(LAST_RUN_KEY, result.run_root);
+    const runRoot = workflowRunRoot(result);
+    if (runRoot) await context.workspaceState.update(LAST_RUN_KEY, requireInsideWorkspace(runRoot));
     output.appendLine(`[${new Date().toISOString()}] ${operation}: ${JSON.stringify(result)}`);
     refreshAll();
     await showJson(`${title} — SELF_VALIDATION_NONFINAL`, workflow);
@@ -700,6 +703,38 @@ async function activate(context) {
         vscode.window.showErrorMessage(`ONSure validation failed: ${error.message}`);
       }
     }),
+    vscode.commands.registerCommand('onsure.runUniversalValidation', async () => {
+      try {
+        const root = workspaceRoot();
+        const identity = identityForWorkspace(
+          context.workspaceState.get(REGISTERED_IDENTITY_KEY), root);
+        const requirementMode = await vscode.window.showQuickPick([
+          {label: 'Built-in environment requirements', value: 'BUILT_IN'},
+          {label: 'Select environment requirement profile', value: 'SELECT'}
+        ], {
+          title: 'ONSure Universal Validation',
+          placeHolder: 'Choose the group-1 environment/dependency preflight input.'
+        });
+        if (!requirementMode) return;
+        let environmentProfileFile;
+        if (requirementMode.value === 'SELECT') {
+          const selected = await vscode.window.showOpenDialog({
+            title: 'Select ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1 JSON',
+            canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+            filters: { JSON: ['json'] }, defaultUri: vscode.Uri.file(root)
+          });
+          if (!selected?.length) return;
+          environmentProfileFile = requireInsideWorkspace(selected[0].fsPath);
+        }
+        const runId = `universal-${Date.now()}-${randomUUID()}`;
+        const runRoot = path.join(root, '.onsure', 'universal-validation', identity.targetId, runId);
+        await executeWorkflow('validation.run', universalValidationRequest(
+          identity, runId, runRoot, environmentProfileFile),
+        'Running seven-group universal validation');
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure universal validation failed: ${error.message}`);
+      }
+    }),
     vscode.commands.registerCommand('onsure.runWorkflowRequest', async () => {
       try {
         const selected = await vscode.window.showOpenDialog({
@@ -728,7 +763,8 @@ async function activate(context) {
         const runRoot = context.workspaceState.get(LAST_RUN_KEY);
         if (!runRoot) throw new Error('No completed run is recorded in this workspace.');
         const artifact = await vscode.window.showQuickPick([
-          'validation-report.json', 'program-profile.json', 'execution-plan.json',
+          'universal-validation-result.json', 'validation-report.json',
+          'program-profile.json', 'execution-plan.json',
           'behavior-profile.json', 'review-result.json', 'evidence-based-rca.json', 'patch-plan.json'
         ], { title: 'ONSure Run Artifact' });
         if (!artifact) return;

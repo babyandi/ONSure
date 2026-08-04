@@ -32,6 +32,7 @@
     "onCommand:onsure.generatePlan",
     "onCommand:onsure.approvePlan",
     "onCommand:onsure.runValidation",
+    "onCommand:onsure.runUniversalValidation",
     "onCommand:onsure.runWorkflowRequest",
     "onCommand:onsure.openLastArtifact",
     "onCommand:onsure.openArtifact",
@@ -97,7 +98,11 @@
       },
       {
         "command": "onsure.runValidation",
-        "title": "ONSure: Run Validation"
+        "title": "ONSure: Run Approved Plan Validation"
+      },
+      {
+        "command": "onsure.runUniversalValidation",
+        "title": "ONSure: Run Seven-Group Universal Validation"
       },
       {
         "command": "onsure.runWorkflowRequest",

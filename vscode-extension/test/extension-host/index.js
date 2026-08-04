@@ -12,6 +12,7 @@ async function run() {
   const commands = new Set(await vscode.commands.getCommands(true));
   for (const command of [
     'onsure.configure', 'onsure.clearToken', 'onsure.selectMode', 'onsure.askOrPlan', 'onsure.runValidation',
+    'onsure.runUniversalValidation',
     'onsure.autopilotPause', 'onsure.autopilotResume', 'onsure.autopilotCancel'
   ]) assert.ok(commands.has(command), `${command} must be registered`);
   const configuration = vscode.workspace.getConfiguration('onsure');
