@@ -309,6 +309,43 @@ class StandardValidationProfileDetectorTest {
     }
 
     @Test
+    void pythonValidationConventionsFillConnectedAndOperationalFacetsWithFixedCommands() throws Exception {
+        Path tests = Files.createDirectories(temp.resolve("tests"));
+        Files.writeString(tests.resolve("__init__.py"), "");
+        Files.writeString(tests.resolve("test_security.py"), """
+                def test_negative_retry_approval_boundary(): pass
+                """);
+        Files.writeString(tests.resolve("test_connected_workflow_validation.py"), """
+                class ConnectedWorkflowValidationTest: pass
+                """);
+        Files.writeString(tests.resolve("test_operational_resilience_validation.py"), """
+                class OperationalResilienceValidationTest: pass
+                """);
+
+        var profile = new StandardValidationProfileDetector().detect("python-complete", temp);
+
+        assertFalse(profile.steps().stream().map(UniversalValidationProfile.Step::stepId)
+                .anyMatch(id -> id.startsWith("functional.") || id.startsWith("e2e.")
+                        || id.startsWith("operations.")));
+        var request = profile.steps().stream()
+                .filter(step -> step.kind() == UniversalValidationProfile.StepKind.E2E_REQUEST_FLOW)
+                .findFirst().orElseThrow();
+        assertEquals(List.of("python3", "-m", "unittest", "-v",
+                "tests.test_connected_workflow_validation.ConnectedWorkflowValidationTest.test_request_flow"),
+                request.command());
+        assertTrue(request.dependsOn().containsAll(List.of(
+                "python.tests", "python.negative-paths", "python.retry-paths",
+                "python.blocking-paths")));
+        var interruption = profile.steps().stream()
+                .filter(step -> step.kind() == UniversalValidationProfile.StepKind.INTERRUPTION_TEST)
+                .findFirst().orElseThrow();
+        assertEquals(List.of("python3", "-m", "unittest", "-v",
+                "tests.test_operational_resilience_validation.OperationalResilienceValidationTest.test_interruption"),
+                interruption.command());
+        assertEquals(List.of("evidence.verify"), interruption.dependsOn());
+    }
+
+    @Test
     void detectsNestedPostgresqlFlywayMigrationAndInventoriesIt() throws Exception {
         Path source = Files.createDirectory(temp.resolve("source"));
         Files.writeString(source.resolve("pom-modular.xml"), """
