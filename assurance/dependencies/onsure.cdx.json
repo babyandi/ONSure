@@ -397,7 +397,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "cba75734e0135d543c8e1551560c54f2945b6df6b308269a6cdb268eefd51f65"
+          "content": "f55f3d578320fcfce380eb55e0eb690fa477765f1dda4654448377985aa4bff7"
         }
       ],
       "name": "onsure-core",
@@ -557,7 +557,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "c03c425a5e8a1d16abcc5b56f24af09170e81a2e2692cbc168042427443f6568"
+          "content": "61e2a0e05e1878500f27688289102695bf712494fd8031400a348bf93e633f8e"
         }
       ],
       "name": "onsure-test-fixtures",

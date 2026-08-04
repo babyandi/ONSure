@@ -229,5 +229,5 @@
   ],
   "root_source_license": "UNDECLARED",
   "source_sbom": "assurance/dependencies/onsure.cdx.json",
-  "source_sbom_sha256": "aa6625860c282b873173903f6d15887a8191789c50fb30660dbee088177dcd16"
+  "source_sbom_sha256": "1bd482867aac086e8e18f71b52c6ea529244185270ebc0b84053201fa7cfad9b"
 }
