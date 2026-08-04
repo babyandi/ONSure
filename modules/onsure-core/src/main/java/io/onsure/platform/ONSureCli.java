@@ -51,6 +51,12 @@ public final class ONSureCli {
                 case INCONCLUSIVE -> 5;
             };
         }
+        if (args.length == 2 && "inventory".equals(args[0])) {
+            Path sourceRoot = Path.of(args[1]).toAbsolutePath().normalize();
+            out.println(mapper().writeValueAsString(StaticWorkflowInventory.detect(sourceRoot)));
+            out.println("ONSURE_STATIC_WORKFLOW_INVENTORY_COMPLETE_NONFINAL " + sourceRoot);
+            return 0;
+        }
         if (args.length == 4 && "universal".equals(args[0])) {
             Path sourceRoot = Path.of(args[1]).toAbsolutePath().normalize();
             Path runRoot = Path.of(args[3]).toAbsolutePath().normalize();
@@ -69,6 +75,7 @@ public final class ONSureCli {
         err.println("usage:");
         err.println("  ONSureCli workflow <workspace-root> <operation> <request-json-file>");
         err.println("  ONSureCli universal <source-root> <profile-id> <run-root>");
+        err.println("  ONSureCli inventory <source-root>");
         err.println("  ONSureCli lineage <snapshot-root>");
         err.println("  ONSureCli validate <source-root> <target-id> <target-name> "
                 + "<GENERAL_SOFTWARE|AI_APPLICATION|AI_AGENTIC_PLATFORM> <adapter-id> "

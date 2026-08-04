@@ -25,6 +25,22 @@
 
 전체 판정은 `BLOCKED`이다. 차단 상태를 우회해 하위 단계를 PASS로 올리지 않았다.
 
+## 보조 정적 Workflow 후보 탐지
+
+환경 gate 판정과 별도로 동일 불변 source snapshot에 discovery-only inventory를 실행했다.
+이는 2번 구조 검증 PASS가 아니며 다음 실행계획을 검토하기 위한 후보 목록이다.
+
+- source digest: `b879abba9df85604c7a40facdc5405ae5f992c1da9f2f1877928579d0a06a876`
+- 총 후보: 634, parse finding: 0, truncated: false
+- Python entrypoint 587, deployment definition 19, DB migration 10, Java entrypoint 6,
+  Maven project 6, Node script 4, shell entrypoint 2
+- 역할 힌트에는 produce/render 110, audit 55, gate/permit 24, exposure/release 12,
+  recovery 8, artifact read-back 3이 포함됐다.
+- 원래 command 본문은 inventory에 저장하지 않았고 모든 후보는
+  `DISCOVERY_ONLY_REVIEW_REQUIRED`, `auto_execute=false`, `runtime_verified=false`다.
+
+후보 이름이나 source symbol의 존재는 실제 실행·연결·PASS 증거로 사용하지 않는다.
+
 ## 발견된 실행 경로와 차이
 
 읽기 전용 소스 조사에서는 다음 경로가 서로 다른 권위를 가진 것으로 확인됐다.

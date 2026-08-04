@@ -130,6 +130,16 @@ PostgreSQL Pack은 최대 탐색 깊이·파일 수와 생성물 제외 규칙�
 
 탐지는 대상 저장소에 `onsure-target.json`을 생성하거나 요구하지 않는다.
 
+구조 단계와 Program Profile은 `ONSURE_STATIC_WORKFLOW_INVENTORY_V1`을 공통으로 사용한다.
+이 inventory는 source digest와 개별 evidence file digest에 결속된 Node script, Maven project/module,
+Java/Python main, OpenAPI operation, DB migration, executable shell 및 배포 정의 후보를 만든다.
+후보 이름에서 test, render/produce, read-back, audit, gate/permit, exposure/release, recovery,
+data-lifecycle 역할을 보수적으로 분류한다. 원래 command 본문은 저장하지 않으며 모든 후보는
+`DISCOVERY_ONLY_REVIEW_REQUIRED`, `runtime_verified=false`, `auto_execute=false`다. 발견은 실행 권한이나
+PASS가 아니다. 검증기 메타 단계는 발견 역할과 실제 executable StepKind를 다시 비교하고 매핑되지
+않은 역할을 `REVIEW_REQUIRED_NOT_EXECUTABLE`로 기록한다. 해당 facet의 실행 Pack이 없으면 이후
+placeholder는 계속 `NOT_RUN`이다.
+
 `NodeScriptValidationPack`은 `test:negative`, `test:retry`, `test:blocking`,
 `test:e2e-request`, `render`, `test:readback`, `test:tester`, `test:audit`,
 `test:exposure`, `test:lineage`, `test:interruption`, `test:resume`, `test:rollback`, `test:rerun`을

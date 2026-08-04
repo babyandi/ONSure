@@ -40,6 +40,10 @@ final class Hashing {
         return digestTree(normalized, sourceFiles(normalized));
     }
 
+    static String tree(Path root, List<Path> files) throws Exception {
+        return digestTree(root.toAbsolutePath().normalize(), List.copyOf(files));
+    }
+
     private static List<Path> gitTrackedFiles(Path root) throws Exception {
         GitResult top = git(root, List.of("rev-parse", "--show-toplevel"), 15);
         if (top.exitCode() != 0) return null;

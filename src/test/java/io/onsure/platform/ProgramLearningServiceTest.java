@@ -30,6 +30,10 @@ class ProgramLearningServiceTest {
         assertEquals(2, ((Number) baseline.get("source_file_count")).intValue());
         assertEquals("STATIC_REPOSITORY_UNDERSTANDING_V2", profile.get("learning_method"));
         assertEquals("NOT_RUN", profile.get("dynamic_trace"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> workflow = (Map<String, Object>) profile.get("workflow_inventory");
+        assertEquals("ONSURE_STATIC_WORKFLOW_INVENTORY_V1", workflow.get("contract"));
+        assertEquals(false, workflow.get("auto_execute"));
     }
 
     @Test

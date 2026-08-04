@@ -1,0 +1,300 @@
+package io.onsure.platform;
+
+import com.fasterxml.jackson.core.StreamReadFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/** Deterministic discovery-only workflow inventory; candidates are never executable authority. */
+final class StaticWorkflowInventory {
+    static final String CONTRACT = "ONSURE_STATIC_WORKFLOW_INVENTORY_V1";
+    private static final int MAX_CANDIDATES = 2_000;
+    private static final long MAX_INSPECTED_FILE_BYTES = 5L * 1024 * 1024;
+    private static final Pattern MAVEN_MODULE = Pattern.compile("<module>\\s*([^<]{1,512}?)\\s*</module>");
+    private static final Pattern JAVA_MAIN = Pattern.compile(
+            "\\bpublic\\s+static\\s+void\\s+main\\s*\\(\\s*String(?:\\[\\]|\\s*\\.\\.\\.)");
+    private static final Pattern PYTHON_MAIN = Pattern.compile(
+            "(?m)^\\s*if\\s+__name__\\s*==\\s*['\"]__main__['\"]\\s*:");
+    private static final Set<String> HTTP_METHODS = Set.of(
+            "get", "put", "post", "delete", "options", "head", "patch", "trace");
+    private static final ObjectMapper JSON = new ObjectMapper().enable(
+            com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+    private static final ObjectMapper YAML = new ObjectMapper(YAMLFactory.builder()
+            .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build());
+
+    private StaticWorkflowInventory() {}
+
+    static Map<String, Object> detect(Path sourceRoot) throws Exception {
+        return detect(sourceRoot, Hashing.sourceFiles(sourceRoot));
+    }
+
+    static Map<String, Object> detect(Path sourceRoot, List<Path> sourceFiles) throws Exception {
+        Path root = sourceRoot.toAbsolutePath().normalize();
+        List<Map<String, Object>> candidates = new ArrayList<>();
+        List<String> findings = new ArrayList<>();
+        Map<Path, String> evidenceDigests = new java.util.HashMap<>();
+        boolean truncated = false;
+        for (Path file : sourceFiles) {
+            if (candidates.size() >= MAX_CANDIDATES) {
+                truncated = true;
+                break;
+            }
+            if (!safeFile(root, file)) continue;
+            String relative = Hashing.relative(root, file);
+            String lower = relative.toLowerCase(Locale.ROOT);
+            try {
+                if (relative.equals("package.json")) {
+                    nodeScripts(file, relative, candidates, findings, evidenceDigests);
+                }
+                if (lower.endsWith("pom.xml")) {
+                    mavenModules(file, relative, candidates, evidenceDigests);
+                }
+                if (lower.endsWith(".java")) {
+                    javaEntrypoint(file, relative, candidates, evidenceDigests);
+                }
+                if (lower.endsWith(".py")) {
+                    pythonEntrypoint(file, relative, candidates, evidenceDigests);
+                }
+                if (isOpenApiCandidate(lower)) {
+                    openApiOperations(file, relative, candidates, findings, evidenceDigests);
+                }
+                if (isMigration(lower)) {
+                    add(candidates, "DATABASE_MIGRATION", relative, relative,
+                            "MIGRATION_FILE", List.of("MIGRATION", "ROLLBACK_REVIEW"),
+                            file, evidenceDigests, 0.95);
+                }
+                if (isDeployment(relative, lower)) {
+                    add(candidates, "DEPLOYMENT_DEFINITION", relative, relative,
+                            "DEPLOYMENT_FILE", List.of("DEPLOY", "OPERATIONS"),
+                            file, evidenceDigests, 0.9);
+                }
+                if (Files.isExecutable(file) && isScript(lower)) {
+                    shellEntrypoint(file, relative, candidates, evidenceDigests);
+                }
+            } catch (Exception error) {
+                if (findings.size() < 200) {
+                    findings.add("STATIC_WORKFLOW_PARSE_FAILED:" + relative + ":"
+                            + error.getClass().getSimpleName());
+                }
+            }
+        }
+        candidates.sort(Comparator.comparing(value -> value.get("candidate_id").toString()));
+        if (candidates.size() > MAX_CANDIDATES) {
+            candidates = new ArrayList<>(candidates.subList(0, MAX_CANDIDATES));
+            truncated = true;
+        }
+        Map<String, Long> counts = new java.util.TreeMap<>();
+        for (Map<String, Object> candidate : candidates) {
+            counts.merge(candidate.get("kind").toString(), 1L, Long::sum);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("contract", CONTRACT);
+        result.put("source_digest", Hashing.tree(root, sourceFiles));
+        result.put("source_file_count", sourceFiles.size());
+        result.put("execution_policy", "DISCOVERY_ONLY_REVIEW_REQUIRED");
+        result.put("candidate_count", candidates.size());
+        result.put("candidate_kind_counts", Map.copyOf(counts));
+        result.put("candidates", List.copyOf(candidates));
+        result.put("parse_findings", findings.stream().sorted().toList());
+        result.put("truncated", truncated);
+        result.put("runtime_verification", "NOT_RUN");
+        result.put("auto_execute", false);
+        result.put("final_claim_allowed", false);
+        return Map.copyOf(result);
+    }
+
+    private static void nodeScripts(Path file, String relative,
+            List<Map<String, Object>> candidates, List<String> findings,
+            Map<Path, String> evidenceDigests) throws Exception {
+        JsonNode scripts = JSON.readTree(readBounded(file)).path("scripts");
+        if (!scripts.isObject()) return;
+        List<String> names = new ArrayList<>();
+        scripts.fieldNames().forEachRemaining(names::add);
+        names.sort(String::compareTo);
+        for (String name : names) {
+            JsonNode command = scripts.get(name);
+            if (!name.matches("[A-Za-z0-9:_-]{1,128}") || !command.isTextual()) {
+                findings.add("NODE_SCRIPT_DESCRIPTOR_INVALID:" + name);
+                continue;
+            }
+            add(candidates, "NODE_SCRIPT", name, relative, "NPM_OFFLINE_SCRIPT",
+                    roleHints(name), file, evidenceDigests, 0.98);
+        }
+    }
+
+    private static void mavenModules(Path file, String relative,
+            List<Map<String, Object>> candidates, Map<Path, String> evidenceDigests) throws Exception {
+        add(candidates, "MAVEN_PROJECT", relative, relative, "MAVEN_OFFLINE_PROJECT",
+                List.of("BUILD", "TEST", "PACKAGE"), file, evidenceDigests, 0.98);
+        Matcher matcher = MAVEN_MODULE.matcher(new String(readBounded(file), StandardCharsets.UTF_8));
+        while (matcher.find()) {
+            String module = matcher.group(1).trim().replace('\\', '/');
+            if (!safeRelative(module)) continue;
+            add(candidates, "MAVEN_MODULE", module, relative, "MAVEN_OFFLINE_MODULE",
+                    List.of("BUILD", "TEST", "PACKAGE"), file, evidenceDigests, 0.9);
+        }
+    }
+
+    private static void javaEntrypoint(Path file, String relative,
+            List<Map<String, Object>> candidates, Map<Path, String> evidenceDigests) throws Exception {
+        if (JAVA_MAIN.matcher(new String(readBounded(file), StandardCharsets.UTF_8)).find()) {
+            add(candidates, "JAVA_ENTRYPOINT", file.getFileName().toString(), relative,
+                    "JAVA_MAIN_CLASS_REQUIRES_CLASSPATH_REVIEW", roleHints(relative),
+                    file, evidenceDigests, 0.9);
+        }
+    }
+
+    private static void pythonEntrypoint(Path file, String relative,
+            List<Map<String, Object>> candidates, Map<Path, String> evidenceDigests) throws Exception {
+        if (PYTHON_MAIN.matcher(new String(readBounded(file), StandardCharsets.UTF_8)).find()) {
+            add(candidates, "PYTHON_ENTRYPOINT", relative, relative,
+                    "PYTHON_SCRIPT_REQUIRES_REVIEW", roleHints(relative),
+                    file, evidenceDigests, 0.9);
+        }
+    }
+
+    private static void shellEntrypoint(Path file, String relative,
+            List<Map<String, Object>> candidates, Map<Path, String> evidenceDigests) throws Exception {
+        byte[] raw = readBounded(file);
+        if (raw.length >= 2 && raw[0] == '#' && raw[1] == '!') {
+            add(candidates, "SHELL_ENTRYPOINT", relative, relative,
+                    "SHELL_SCRIPT_REQUIRES_REVIEW", roleHints(relative),
+                    file, evidenceDigests, 0.85);
+        }
+    }
+
+    private static void openApiOperations(Path file, String relative,
+            List<Map<String, Object>> candidates, List<String> findings,
+            Map<Path, String> evidenceDigests) throws Exception {
+        JsonNode root = relative.toLowerCase(Locale.ROOT).endsWith(".json")
+                ? JSON.readTree(readBounded(file)) : YAML.readTree(readBounded(file));
+        if (root == null || !root.path("openapi").isTextual() || !root.path("paths").isObject()) return;
+        List<String> paths = new ArrayList<>();
+        root.path("paths").fieldNames().forEachRemaining(paths::add);
+        paths.sort(String::compareTo);
+        for (String route : paths) {
+            JsonNode pathItem = root.path("paths").path(route);
+            for (String method : HTTP_METHODS.stream().sorted().toList()) {
+                JsonNode operation = pathItem.path(method);
+                if (!operation.isObject()) continue;
+                String operationId = operation.path("operationId").asText("");
+                String name = operationId.isBlank() ? method.toUpperCase(Locale.ROOT) + " " + route : operationId;
+                if (operationId.isBlank()) findings.add("OPENAPI_OPERATION_ID_MISSING:" + relative + ":" + method + ":" + route);
+                add(candidates, "OPENAPI_OPERATION", name, relative, "HTTP_OPERATION_REQUIRES_SERVER",
+                        roleHints(name + " " + route), file, evidenceDigests,
+                        operationId.isBlank() ? 0.75 : 0.98);
+            }
+        }
+    }
+
+    private static void add(List<Map<String, Object>> target, String kind, String name,
+            String sourcePath, String invocationType, List<String> roleHints, Path evidence,
+            Map<Path, String> evidenceDigests, double confidence)
+            throws Exception {
+        if (target.size() >= MAX_CANDIDATES) return;
+        String material = kind + "\u0000" + sourcePath + "\u0000" + name;
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("candidate_id", "WF-" + Hashing.sha256(material).substring(0, 16));
+        value.put("kind", kind);
+        value.put("name", safeText(name));
+        value.put("source_path", sourcePath);
+        value.put("evidence_sha256", evidenceDigest(evidence, evidenceDigests));
+        value.put("invocation_type", invocationType);
+        value.put("role_hints", List.copyOf(new LinkedHashSet<>(roleHints)));
+        value.put("confidence", confidence);
+        value.put("runtime_verified", false);
+        value.put("review_required", true);
+        value.put("auto_execute", false);
+        target.add(Map.copyOf(value));
+    }
+
+    private static String evidenceDigest(Path file, Map<Path, String> evidenceDigests) throws Exception {
+        String value = evidenceDigests.get(file);
+        if (value != null) return value;
+        value = Hashing.file(file);
+        evidenceDigests.put(file, value);
+        return value;
+    }
+
+    private static List<String> roleHints(String value) {
+        String lower = value.toLowerCase(Locale.ROOT);
+        List<String> roles = new ArrayList<>();
+        if (contains(lower, "test", "verify", "check", "validate")) roles.add("TEST_OR_VALIDATE");
+        if (contains(lower, "render", "produce", "generate", "build")) roles.add("PRODUCE_OR_RENDER");
+        if (contains(lower, "readback", "read-back")) roles.add("ARTIFACT_READBACK");
+        if (contains(lower, "audit", "assurance")) roles.add("AUDIT");
+        if (contains(lower, "permit", "approval", "gate")) roles.add("GATE_OR_PERMIT");
+        if (contains(lower, "exposure", "publish", "release")) roles.add("EXPOSURE_OR_RELEASE");
+        if (contains(lower, "migration", "migrate", "rollback", "restore", "backup")) roles.add("DATA_LIFECYCLE");
+        if (contains(lower, "resume", "retry", "rerun", "replay", "recover")) roles.add("RECOVERY");
+        if (roles.isEmpty()) roles.add("UNCLASSIFIED_REVIEW_REQUIRED");
+        return List.copyOf(roles);
+    }
+
+    private static boolean contains(String value, String... needles) {
+        for (String needle : needles) if (value.contains(needle)) return true;
+        return false;
+    }
+
+    private static byte[] readBounded(Path file) throws Exception {
+        if (Files.size(file) > MAX_INSPECTED_FILE_BYTES) {
+            throw new IllegalArgumentException("STATIC_WORKFLOW_FILE_TOO_LARGE");
+        }
+        return Files.readAllBytes(file);
+    }
+
+    private static boolean safeFile(Path root, Path file) {
+        Path normalized = file.toAbsolutePath().normalize();
+        return normalized.startsWith(root)
+                && Files.isRegularFile(normalized, LinkOption.NOFOLLOW_LINKS)
+                && !Files.isSymbolicLink(normalized);
+    }
+
+    private static boolean safeRelative(String value) {
+        if (value.isBlank()) return false;
+        Path path = Path.of(value).normalize();
+        return !path.isAbsolute() && !path.startsWith("..") && !value.contains("\u0000");
+    }
+
+    private static String safeText(String value) {
+        String text = value.replaceAll("[\\p{Cntrl}]", " ").strip();
+        if (text.isEmpty()) return "UNNAMED";
+        return text.length() <= 512 ? text : text.substring(0, 512);
+    }
+
+    private static boolean isOpenApiCandidate(String lower) {
+        return (lower.endsWith(".json") || lower.endsWith(".yaml") || lower.endsWith(".yml"))
+                && (lower.contains("openapi") || lower.startsWith("contracts/openapi/"));
+    }
+
+    private static boolean isMigration(String lower) {
+        return lower.endsWith(".sql") && (lower.contains("/db/migration/")
+                || lower.startsWith("db/migration/") || lower.contains("/migrations/")
+                || lower.startsWith("migrations/"));
+    }
+
+    private static boolean isDeployment(String relative, String lower) {
+        String name = Path.of(relative).getFileName().toString().toLowerCase(Locale.ROOT);
+        return name.equals("dockerfile") || name.startsWith("docker-compose")
+                || lower.endsWith(".service") || lower.startsWith("deploy/")
+                || lower.contains("/deploy/");
+    }
+
+    private static boolean isScript(String lower) {
+        return lower.endsWith(".sh") || lower.endsWith(".bash");
+    }
+}

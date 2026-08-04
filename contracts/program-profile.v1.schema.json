@@ -38,6 +38,7 @@
     "dependencies": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "ai_components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "data_flows": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
+    "workflow_inventory": {"$ref": "#/$defs/workflowInventory"},
     "unknowns": {"type": "array", "items": {"type": "string"}},
     "conflicts": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 2},
@@ -54,6 +55,53 @@
     "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
+    "workflowInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract", "source_digest", "source_file_count", "execution_policy", "candidate_count", "candidate_kind_counts",
+        "candidates", "parse_findings", "truncated", "runtime_verification",
+        "auto_execute", "final_claim_allowed"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_STATIC_WORKFLOW_INVENTORY_V1"},
+        "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_file_count": {"type": "integer", "minimum": 1},
+        "execution_policy": {"const": "DISCOVERY_ONLY_REVIEW_REQUIRED"},
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "candidate_kind_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "candidate_id", "kind", "name", "source_path", "evidence_sha256",
+              "invocation_type", "role_hints", "confidence", "runtime_verified",
+              "review_required", "auto_execute"
+            ],
+            "properties": {
+              "candidate_id": {"type": "string", "pattern": "^WF-[0-9a-f]{16}$"},
+              "kind": {"type": "string", "minLength": 1},
+              "name": {"type": "string", "minLength": 1, "maxLength": 512},
+              "source_path": {"type": "string", "minLength": 1},
+              "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "invocation_type": {"type": "string", "minLength": 1},
+              "role_hints": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+              "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+              "runtime_verified": {"const": false},
+              "review_required": {"const": true},
+              "auto_execute": {"const": false}
+            }
+          }
+        },
+        "parse_findings": {"type": "array", "items": {"type": "string"}},
+        "truncated": {"type": "boolean"},
+        "runtime_verification": {"const": "NOT_RUN"},
+        "auto_execute": {"const": false},
+        "final_claim_allowed": {"const": false}
+      }
+    },
     "evidenceBoundItem": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "name", "kind", "source_locations", "confidence", "verified"],

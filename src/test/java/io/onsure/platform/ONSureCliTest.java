@@ -76,4 +76,23 @@ class ONSureCliTest {
         assertTrue(stdout.toString().contains("WORKFLOW_LINEAGE_DIGEST_SCHEMA_PERMIT_VERIFIED"));
         assertTrue(stdout.toString().contains("ONSURE_WORKFLOW_LINEAGE_VERIFICATION_NONFINAL"));
     }
+
+    @Test
+    void inventoryCommandDiscoversCandidatesWithoutExecutingTargetScripts() throws Exception {
+        Path target = Files.createDirectory(temp.resolve("inventory-target"));
+        Files.writeString(target.resolve("package.json"), """
+                {"scripts":{"render":"node must-not-run.js"}}
+                """);
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+
+        int exit = ONSureCli.run(new String[] {"inventory", target.toString()},
+                new PrintStream(stdout), new PrintStream(new ByteArrayOutputStream()));
+
+        assertEquals(0, exit);
+        assertTrue(stdout.toString().contains("ONSURE_STATIC_WORKFLOW_INVENTORY_V1"));
+        assertTrue(stdout.toString().contains("DISCOVERY_ONLY_REVIEW_REQUIRED"));
+        assertTrue(stdout.toString().contains("NODE_SCRIPT"));
+        assertTrue(stdout.toString().contains("\"auto_execute\" : false"));
+        assertTrue(Files.notExists(target.resolve("must-not-run.js")));
+    }
 }

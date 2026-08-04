@@ -219,7 +219,7 @@ public final class UniversalValidationRunner {
             return switch (step.kind()) {
                 case ENVIRONMENT_PREFLIGHT -> validateEnvironment(profile, snapshotRoot);
                 case INVENTORY -> validateStructureInventory(snapshotRoot);
-                case VALIDATOR_META_CHECK -> validateProfile(profile);
+                case VALIDATOR_META_CHECK -> validateProfile(profile, snapshotRoot);
                 case API_CONTRACT -> validateOpenApi(snapshotRoot, step);
                 case DATABASE_MIGRATION -> validateMigrations(snapshotRoot);
                 case EVIDENCE_VERIFICATION -> validateEvidence(
@@ -388,7 +388,7 @@ public final class UniversalValidationRunner {
         }
     }
 
-    private StepExecution validateProfile(Profile profile) {
+    private StepExecution validateProfile(Profile profile, Path snapshotRoot) throws Exception {
         boolean hasEnvironment = profile.steps().stream()
                 .anyMatch(step -> step.kind() == StepKind.ENVIRONMENT_PREFLIGHT);
         boolean hasInventory = profile.steps().stream().anyMatch(step -> step.kind() == StepKind.INVENTORY);
@@ -422,6 +422,27 @@ public final class UniversalValidationRunner {
         List<String> unsupported = profile.steps().stream().filter(Step::executable)
                 .filter(step -> !SandboxedValidationStepExecutor.supportsCommand(step))
                 .map(Step::stepId).toList();
+        Map<String, Object> workflowInventory = StaticWorkflowInventory.detect(snapshotRoot);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> candidates = (List<Map<String, Object>>) workflowInventory.get("candidates");
+        Set<String> discoveredRoles = candidates.stream()
+                .flatMap(candidate -> ((List<?>) candidate.get("role_hints")).stream())
+                .map(Object::toString).collect(java.util.stream.Collectors.toCollection(java.util.TreeSet::new));
+        Set<StepKind> executableKinds = profile.steps().stream().filter(Step::executable)
+                .map(Step::kind).collect(java.util.stream.Collectors.toSet());
+        Map<String, Set<StepKind>> roleCoverage = Map.of(
+                "TEST_OR_VALIDATE", Set.of(StepKind.UNIT_TEST, StepKind.BUILD),
+                "PRODUCE_OR_RENDER", Set.of(StepKind.E2E_RENDER_OR_PRODUCE),
+                "ARTIFACT_READBACK", Set.of(StepKind.E2E_ARTIFACT_READBACK),
+                "AUDIT", Set.of(StepKind.E2E_AUDIT_CHECK),
+                "GATE_OR_PERMIT", Set.of(StepKind.E2E_REQUEST_FLOW, StepKind.BLOCKING_TEST),
+                "EXPOSURE_OR_RELEASE", Set.of(StepKind.E2E_EXPOSURE_DECISION),
+                "RECOVERY", Set.of(StepKind.INTERRUPTION_TEST, StepKind.RESUME_TEST,
+                        StepKind.ROLLBACK_TEST, StepKind.RERUN_TEST));
+        List<String> unmappedDiscoveredRoles = discoveredRoles.stream()
+                .filter(roleCoverage::containsKey)
+                .filter(role -> java.util.Collections.disjoint(roleCoverage.get(role), executableKinds))
+                .toList();
         boolean valid = hasEnvironment && hasInventory && hasEvidence
                 && missingGroups.isEmpty() && missingFunctionalKinds.isEmpty()
                 && missingE2eKinds.isEmpty() && missingRecoveryKinds.isEmpty()
@@ -432,6 +453,12 @@ public final class UniversalValidationRunner {
                 + "\nmissing_e2e_kinds=" + missingE2eKinds
                 + "\nmissing_recovery_kinds=" + missingRecoveryKinds
                 + "\nprohibited_inline_shell=" + prohibited + "\nunsupported_commands=" + unsupported;
+        report += "\nworkflow_candidate_count=" + workflowInventory.get("candidate_count")
+                + "\ndiscovered_workflow_roles=" + discoveredRoles
+                + "\nexecutable_step_kinds=" + executableKinds.stream().map(Enum::name).sorted().toList()
+                + "\nunmapped_discovered_roles=" + unmappedDiscoveredRoles
+                + "\nworkflow_execution_readiness="
+                + (unmappedDiscoveredRoles.isEmpty() ? "PROFILE_MAPPED" : "REVIEW_REQUIRED_NOT_EXECUTABLE");
         return new StepExecution(valid ? Outcome.PASS_NONFINAL : Outcome.FAIL, valid ? 0 : 1,
                 report, false, valid ? "VALIDATOR_PROFILE_COVERAGE_VALID" : "VALIDATOR_PROFILE_COVERAGE_INVALID");
     }
@@ -468,8 +495,10 @@ public final class UniversalValidationRunner {
         }
         List<String> absent = signals.entrySet().stream().filter(entry -> entry.getValue().isEmpty())
                 .map(Map.Entry::getKey).toList();
+        Map<String, Object> workflowInventory = StaticWorkflowInventory.detect(snapshotRoot);
         String report = "file_count=" + fileCount + "\nstructure_signals=" + signals
-                + "\nabsent_optional_signal_categories=" + absent;
+                + "\nabsent_optional_signal_categories=" + absent
+                + "\nworkflow_inventory=" + mapper.writeValueAsString(workflowInventory);
         return new StepExecution(Outcome.PASS_NONFINAL, 0, report, false,
                 "SOURCE_SNAPSHOT_AND_STRUCTURE_SIGNALS_INVENTORIED");
     }

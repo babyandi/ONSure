@@ -26,6 +26,20 @@
   "dependencies": [],
   "ai_components": [],
   "data_flows": [],
+  "workflow_inventory": {
+    "contract": "ONSURE_STATIC_WORKFLOW_INVENTORY_V1",
+    "source_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "source_file_count": 1,
+    "execution_policy": "DISCOVERY_ONLY_REVIEW_REQUIRED",
+    "candidate_count": 0,
+    "candidate_kind_counts": {},
+    "candidates": [],
+    "parse_findings": [],
+    "truncated": false,
+    "runtime_verification": "NOT_RUN",
+    "auto_execute": false,
+    "final_claim_allowed": false
+  },
   "unknowns": [],
   "conflicts": [],
   "evidence_refs": [

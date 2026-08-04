@@ -49,6 +49,7 @@ public final class ProgramLearningService {
         List<Map<String, Object>> dependencies = dependencies(root, sourceFiles);
         List<Map<String, Object>> aiComponents = aiComponents(root, sourceFiles);
         List<Map<String, Object>> dataFlows = dataFlows(root, sourceFiles);
+        Map<String, Object> workflowInventory = StaticWorkflowInventory.detect(root, sourceFiles);
         Set<String> unknowns = new LinkedHashSet<>();
         Set<String> conflicts = new LinkedHashSet<>();
         if (components.isEmpty()) unknowns.add("NO_COMPONENT_ENTRYPOINT_DETECTED_STATICALLY");
@@ -75,6 +76,7 @@ public final class ProgramLearningService {
         profile.put("dependencies", List.copyOf(dependencies));
         profile.put("ai_components", List.copyOf(aiComponents));
         profile.put("data_flows", List.copyOf(dataFlows));
+        profile.put("workflow_inventory", workflowInventory);
         profile.put("unknowns", List.copyOf(unknowns));
         profile.put("conflicts", List.copyOf(conflicts));
         profile.put("evidence_refs", List.of(

@@ -137,6 +137,28 @@ class UniversalValidationRunnerTest {
     }
 
     @Test
+    void metaValidatorReportsDiscoveredWorkflowRolesWithoutExecutableCoverage() throws Exception {
+        Path source = Files.createDirectory(temp.resolve("unmapped-workflow"));
+        Files.writeString(source.resolve("audit_runtime.py"), """
+                if __name__ == '__main__':
+                    print('audit')
+                """);
+        var profile = new StandardValidationProfileDetector().detect("unmapped-workflow", source);
+
+        var result = new UniversalValidationRunner((step, root) ->
+                new UniversalValidationRunner.StepExecution(PASS_NONFINAL, 0, "pass", false, "test"))
+                .run(profile, temp.resolve("unmapped-workflow-run"));
+
+        var meta = result.steps().stream().filter(step -> step.stepId().equals("validator.meta-check"))
+                .findFirst().orElseThrow();
+        String report = Files.readString(Path.of(meta.logFile()));
+        assertEquals(PASS_NONFINAL, meta.outcome());
+        assertTrue(report.contains("unmapped_discovered_roles=[AUDIT]"));
+        assertTrue(report.contains("workflow_execution_readiness=REVIEW_REQUIRED_NOT_EXECUTABLE"));
+        assertEquals(NOT_RUN, result.overallOutcome());
+    }
+
+    @Test
     void recordsProductFailureWithoutRunningDependentIntegrationStep() throws Exception {
         Path source = Files.createDirectory(temp.resolve("source"));
         Files.writeString(source.resolve("pyproject.toml"), "[tool.pytest.ini_options]\n");
