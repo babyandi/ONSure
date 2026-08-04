@@ -394,12 +394,17 @@ def validate_universal_evidence_body(
     if re.fullmatch(r"[0-9a-f]{40}", source) is None:
         violations.append("UNIVERSAL_EVIDENCE_SOURCE_COMMIT")
     elif verify_repository and _git_worktree_available():
-        ancestor = subprocess.run(
-            ["git", "merge-base", "--is-ancestor", source, "HEAD"],
+        source_object = subprocess.run(
+            ["git", "cat-file", "-e", source + "^{commit}"],
             cwd=ROOT, capture_output=True, check=False,
         )
-        if ancestor.returncode != 0:
-            violations.append("UNIVERSAL_EVIDENCE_SOURCE_ANCESTRY")
+        if source_object.returncode == 0:
+            ancestor = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", source, "HEAD"],
+                cwd=ROOT, capture_output=True, check=False,
+            )
+            if ancestor.returncode != 0:
+                violations.append("UNIVERSAL_EVIDENCE_SOURCE_ANCESTRY")
     runs = evidence.get("runs")
     expected_targets = {"self", "java", "python", "node"}
     expected_phases = {

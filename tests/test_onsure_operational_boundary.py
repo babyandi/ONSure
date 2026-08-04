@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import pathlib
+from unittest import mock
 import sys
 import unittest
 
@@ -119,6 +120,16 @@ class ONSureOperationalBoundaryTest(unittest.TestCase):
         )
         self.assertIn("UNIVERSAL_EVIDENCE_STEP_BINDING:self", violations)
         self.assertIn("UNIVERSAL_EVIDENCE_RECEIPT_DIGEST", violations)
+
+    def test_universal_evidence_allows_copy_without_original_git_object(self):
+        evidence = json.loads(operational.UNIVERSAL_EVIDENCE.read_text(encoding="utf-8"))
+        missing = type("Result", (), {"returncode": 1})()
+        with mock.patch.object(operational, "_git_worktree_available", return_value=True), \
+                mock.patch.object(operational.subprocess, "run", return_value=missing) as run:
+            violations = operational.validate_universal_evidence_body(evidence)
+        self.assertEqual([], violations)
+        run.assert_called_once()
+        self.assertEqual("cat-file", run.call_args.args[0][1])
 
     def test_sandbox_rehearsal_rejects_image_and_receipt_tampering(self):
         evidence = json.loads(
