@@ -16,6 +16,7 @@ RUNNER = ROOT / "scripts/run-vscode-extension-host-e2e-container.sh"
 OUTPUT = ROOT / "assurance/runtime/vscode-extension-host-e2e.v1.json"
 IMAGE = "onsure-vscode-extension-host-e2e:1.95.3-node22"
 SOURCE_FILES = (
+    "scripts/rehearse_vscode_extension_host.py",
     "scripts/run-vscode-extension-host-e2e-container.sh",
     "vscode-extension/test/extension-host/Dockerfile",
     "vscode-extension/test/run-extension-host-e2e.js",
