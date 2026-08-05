@@ -61,7 +61,8 @@ class ProgramUnderstandingEngineTest {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> questions = (List<Map<String, Object>>) result.get("minimal_questions");
         assertTrue(questions.stream().anyMatch(question -> "RUNTIME_ENDPOINT".equals(question.get("question_id"))));
-        assertTrue(questions.stream().anyMatch(question -> "AUTHENTICATION_CONTEXT".equals(question.get("question_id"))));
+        assertTrue(questions.stream().anyMatch(question ->
+                "UNAUTHENTICATED_API_BOUNDARY".equals(question.get("question_id"))));
         assertTrue(questions.stream().anyMatch(question -> "DESTRUCTIVE_TEST_BOUNDARY".equals(question.get("question_id"))));
         assertEquals(List.of("OPENAPI_SECURITY_UNDECLARED", "DESTRUCTIVE_API_DISCOVERED"),
                 result.get("risk_flags"));

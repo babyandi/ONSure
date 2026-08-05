@@ -202,7 +202,7 @@ final class StaticWorkflowInventory {
                 semantics.put("request_schema_refs", requestSchemaRefs(operation));
                 semantics.put("request_schema_declared", requestSchemaDeclared(operation));
                 semantics.put("response_statuses", fieldNames(operation.path("responses")));
-                semantics.put("security_declared", operation.has("security") || root.has("security"));
+                semantics.put("security_declared", securityRequired(operation, root));
                 semantics.put("lifecycle_action", lifecycleAction(method, operationId));
                 semantics.put("destructive_risk", method.equals("delete"));
                 semantics.put("source_path", relative);
@@ -276,6 +276,15 @@ final class StaticWorkflowInventory {
         for (JsonNode media : content) if (media.path("schema").isObject()
                 || media.path("schema").isBoolean()) return true;
         return false;
+    }
+
+    private static boolean securityRequired(JsonNode operation, JsonNode root) {
+        JsonNode security = operation.has("security") ? operation.path("security") : root.path("security");
+        if (!security.isArray() || security.isEmpty()) return false;
+        for (JsonNode alternative : security) {
+            if (alternative.isObject() && alternative.isEmpty()) return false;
+        }
+        return true;
     }
 
     private static void collectRefs(JsonNode node, Set<String> refs, int depth) {

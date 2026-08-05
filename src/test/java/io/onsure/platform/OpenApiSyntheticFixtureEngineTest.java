@@ -68,7 +68,7 @@ class OpenApiSyntheticFixtureEngineTest {
     }
 
     @Test
-    void blocksAuthenticationAndRequiredNonPathParametersUntilMaterialized() throws Exception {
+    void blocksAuthenticationUntilReferencedAndMaterializesRequiredNonPathParameters() throws Exception {
         Path secured = write("""
                 openapi: 3.1.0
                 info: {title: Test, version: '1'}
@@ -82,6 +82,10 @@ class OpenApiSyntheticFixtureEngineTest {
         IllegalArgumentException auth = assertThrows(IllegalArgumentException.class,
                 () -> securedEngine.prepare("GET", "/orders"));
         assertEquals("OPENAPI_AUTHENTICATION_CONTEXT_NOT_MATERIALIZED", auth.getMessage());
+        IllegalArgumentException injection = assertThrows(IllegalArgumentException.class,
+                () -> securedEngine.prepare("GET", "/orders", Map.of("ONSURE_TEST_AUTH", "token\r\nInjected: yes"),
+                        Map.of("authentication", "env:ONSURE_TEST_AUTH")));
+        assertEquals("OPENAPI_HEADER_VALUE_INVALID", injection.getMessage());
 
         Path query = write("""
                 openapi: 3.1.0
@@ -89,14 +93,20 @@ class OpenApiSyntheticFixtureEngineTest {
                 paths:
                   /orders:
                     get:
-                      parameters: [{name: tenant, in: query, required: true, schema: {type: string}}]
+                      parameters:
+                        - {name: tenant, in: query, required: true, schema: {type: string}}
+                        - {name: X-Trace, in: header, required: true, schema: {type: string}}
+                        - {name: session, in: cookie, required: true, schema: {type: string}}
                       responses: {'200': {description: ok}}
                 """);
         OpenApiSyntheticFixtureEngine queryEngine = new OpenApiSyntheticFixtureEngine(
                 temp, candidate(query, "GET", "/orders"));
-        IllegalArgumentException parameter = assertThrows(IllegalArgumentException.class,
-                () -> queryEngine.prepare("GET", "/orders"));
-        assertEquals("OPENAPI_REQUIRED_PARAMETER_UNSUPPORTED:QUERY:TENANT", parameter.getMessage());
+        OpenApiSyntheticFixtureEngine.PreparedRequest prepared = queryEngine.prepare("GET", "/orders");
+        assertEquals("tenant=ONSURE_SYNTHETIC", prepared.query());
+        assertEquals("ONSURE_SYNTHETIC", prepared.headers().get("X-Trace"));
+        assertEquals("session=ONSURE_SYNTHETIC", prepared.headers().get("Cookie"));
+        assertEquals(java.util.List.of("tenant"), prepared.queryParameterNames());
+        assertEquals(java.util.List.of("session"), prepared.cookieNames());
     }
 
     private Path write(String value) throws Exception {

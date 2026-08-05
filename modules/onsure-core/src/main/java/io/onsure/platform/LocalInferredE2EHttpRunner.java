@@ -62,6 +62,8 @@ final class LocalInferredE2EHttpRunner {
                 || !authorizationId.equals(plan.get("execution_authorization_id"))
                 || !"NOT_RUN".equals(plan.get("execution_state")))
             throw new IllegalArgumentException("INFERRED_E2E_PLAN_BINDING_INVALID");
+        @SuppressWarnings("unchecked") Map<String, String> runtimeReferences = (Map<String, String>) plan
+                .getOrDefault("runtime_reference_ids", Map.of());
         String requestId = plan.get("approval_request_id").toString();
         LocalProgramUnderstandingApprovalService approvals =
                 new LocalProgramUnderstandingApprovalService(workspaceRoot);
@@ -109,12 +111,14 @@ final class LocalInferredE2EHttpRunner {
             try {
                 OpenApiSyntheticFixtureEngine fixtureEngine = fixtureEngines.get(candidate.get("plan_id").toString());
                 OpenApiSyntheticFixtureEngine.PreparedRequest prepared =
-                        fixtureEngine.prepare(method, routeTemplate);
+                        fixtureEngine.prepare(method, routeTemplate, environment, runtimeReferences);
                 String route = prepared.route();
                 if (!safeRoute(route)) throw new IllegalArgumentException("INFERRED_E2E_ROUTE_UNSAFE");
-                URI uri = new URI(base.getScheme(), null, base.getHost(), base.getPort(), route, null, null);
+                URI uri = URI.create(base.toString() + route
+                        + (prepared.query().isBlank() ? "" : "?" + prepared.query()));
                 HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(15))
                         .header("Accept", "application/json").header("User-Agent", "ONSure-Inferred-E2E/1");
+                prepared.headers().forEach(requestBuilder::header);
                 if (prepared.contentType() != null) requestBuilder.header("Content-Type", prepared.contentType());
                 HttpRequest request = requestBuilder.method(method, prepared.body().length == 0
                         ? HttpRequest.BodyPublishers.noBody()
@@ -137,10 +141,22 @@ final class LocalInferredE2EHttpRunner {
                 Map<String, Object> step = new LinkedHashMap<>();
                 step.put("plan_id", candidate.get("plan_id")); step.put("http_method", method);
                 step.put("http_path_template", routeTemplate); step.put("http_path", route);
-                step.put("request_uri", uri.toString());
+                step.put("request_uri", base.toString() + route);
+                step.put("request_uri_sha256", Hashing.sha256(uri.toString()));
                 step.put("request_body_sha256", Hashing.sha256(prepared.body()));
                 step.put("request_body_bytes", prepared.body().length);
                 step.put("request_body_stored", false);
+                step.put("request_query_parameter_names", prepared.queryParameterNames());
+                step.put("request_header_names", prepared.headers().keySet().stream().sorted().toList());
+                step.put("request_cookie_names", prepared.cookieNames());
+                step.put("request_parameter_values_stored", false);
+                step.put("request_header_values_stored", false);
+                if (prepared.authenticationReferenceId() != null) {
+                    step.put("authentication_reference_id", prepared.authenticationReferenceId());
+                    step.put("authentication_value_sha256", prepared.authenticationValueSha256());
+                    step.put("authentication_scheme_type", prepared.authenticationSchemeType());
+                    step.put("authentication_value_stored", false);
+                }
                 step.put("request_schema_sha256", prepared.requestSchemaSha256());
                 step.put("fixture_strategy", prepared.fixtureStrategy());
                 step.put("response_status", response.statusCode()); step.put("expected_statuses", expected);

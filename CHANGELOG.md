@@ -9,8 +9,11 @@
 - source/OpenAPI digest와 1회 승인에 결속된 non-destructive loopback E2E에서
   인라인·로컬 `$ref` request schema의 결정적 합성 Fixture, path parameter materialization,
   응답 status·bounded schema oracle 및 body 비저장 digest Receipt 지원
-- 자동 E2E의 source drift, external `$ref`, 인증 미구성, 필수 query/header,
-  미지원 schema assertion을 고객 결함과 분리해 `BLOCKED`로 판정하는 fail-closed 경계
+- 필수 primitive query/header/cookie 합성, 승인된 `env:` 인증 참조의 HTTP bearer/basic·
+  OAuth bearer·header API key 런타임 주입 및 credential 비저장 digest Receipt
+- 자동 E2E의 source drift, external `$ref`, 인증 참조·값 미구성, 복합·query/cookie 인증,
+  미지원 parameter serialization·schema assertion을 고객 결함과 분리해 `BLOCKED`로 판정하는
+  fail-closed 경계
 - 중단된 inferred E2E의 durable Receipt 완료 복구, read-only retry chain,
   write outcome 불명확 시 재승인 요구와 실행 claim/recovery digest 위변조 방지
 - 동일 source/profile E2E Receipt의 단계별 개선·퇴행·변경 비교, 진단·개선 가이드 및

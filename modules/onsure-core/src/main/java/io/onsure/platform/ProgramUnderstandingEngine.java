@@ -75,6 +75,9 @@ final class ProgramUnderstandingEngine {
         boolean hasOpenApiWithoutSecurity = candidates.stream().anyMatch(candidate ->
                 "OPENAPI_OPERATION".equals(candidate.get("kind"))
                         && !Boolean.TRUE.equals(candidate.get("security_declared")));
+        boolean hasSecuredApi = candidates.stream().anyMatch(candidate ->
+                "OPENAPI_OPERATION".equals(candidate.get("kind"))
+                        && Boolean.TRUE.equals(candidate.get("security_declared")));
         boolean hasDestructiveApi = candidates.stream().anyMatch(candidate ->
                 Boolean.TRUE.equals(candidate.get("destructive_risk")));
         boolean hasRequestWithoutSchema = candidates.stream().anyMatch(candidate ->
@@ -84,8 +87,10 @@ final class ProgramUnderstandingEngine {
         List<Map<String, Object>> questions = new ArrayList<>();
         if (hasApi) questions.add(question("RUNTIME_ENDPOINT", "검증용 base URL과 시작 명령을 확인하십시오.", true));
         questions.add(question("SAFE_TEST_IDENTITY", "실데이터가 아닌 검증 계정·fixture의 사용 범위를 확인하십시오.", true));
+        if (hasSecuredApi) questions.add(question(
+                "AUTHENTICATION_CONTEXT", "검증 전용 인증값을 가리키는 env: 참조 ID를 확인하십시오.", true));
         if (hasOpenApiWithoutSecurity) questions.add(question(
-                "AUTHENTICATION_CONTEXT", "OpenAPI에 인증 선언이 없는 연산의 검증 인증 경계를 확인하십시오.", true));
+                "UNAUTHENTICATED_API_BOUNDARY", "OpenAPI에 인증 선언이 없는 연산을 무인증으로 검증해도 되는지 확인하십시오.", true));
         if (hasRequestWithoutSchema) questions.add(question(
                 "REQUEST_FIXTURE", "요청 스키마가 없는 쓰기 연산의 합성 fixture와 금지 필드를 확인하십시오.", true));
         if (hasDestructiveApi) questions.add(question(

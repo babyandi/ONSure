@@ -68,4 +68,34 @@ class StaticWorkflowInventoryTest {
         assertEquals(List.of("#/components/schemas/CreateRun"), operation.get("request_schema_refs"));
         assertEquals(List.of("201"), operation.get("response_statuses"));
     }
+
+    @Test
+    void treatsAnEmptySecurityAlternativeAsAnonymousAccess() throws Exception {
+        Files.writeString(temp.resolve("openapi.yaml"), """
+                openapi: 3.1.0
+                security: [{bearerAuth: []}]
+                paths:
+                  /public-or-authenticated:
+                    get:
+                      security: [{}, {bearerAuth: []}]
+                      responses: {'200': {description: ok}}
+                  /authenticated:
+                    get:
+                      responses: {'200': {description: ok}}
+                components:
+                  securitySchemes: {bearerAuth: {type: http, scheme: bearer}}
+                """);
+
+        @SuppressWarnings("unchecked") List<Map<String, Object>> candidates =
+                (List<Map<String, Object>>) StaticWorkflowInventory.detect(temp).get("candidates");
+        Map<String, Object> anonymous = candidates.stream()
+                .filter(value -> "/public-or-authenticated".equals(value.get("http_path")))
+                .findFirst().orElseThrow();
+        Map<String, Object> authenticated = candidates.stream()
+                .filter(value -> "/authenticated".equals(value.get("http_path")))
+                .findFirst().orElseThrow();
+
+        assertEquals(false, anonymous.get("security_declared"));
+        assertEquals(true, authenticated.get("security_declared"));
+    }
 }

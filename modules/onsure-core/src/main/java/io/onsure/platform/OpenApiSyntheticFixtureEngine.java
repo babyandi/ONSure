@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /** Bounded local-$ref OpenAPI fixture generation and response validation for an approved candidate. */
 final class OpenApiSyntheticFixtureEngine {
@@ -36,13 +38,19 @@ final class OpenApiSyntheticFixtureEngine {
     private static final ObjectMapper YAML = new ObjectMapper(YAMLFactory.builder()
             .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build());
 
-    record PreparedRequest(String route, byte[] body, String contentType,
-            String requestSchemaSha256, String fixtureStrategy) { }
+    record PreparedRequest(String route, String query, byte[] body, String contentType,
+            Map<String, String> headers, List<String> queryParameterNames, List<String> headerNames,
+            List<String> cookieNames, String authenticationReferenceId, String authenticationValueSha256,
+            String authenticationSchemeType, String requestSchemaSha256, String fixtureStrategy) { }
 
     record OracleResult(boolean passed, boolean blocked, boolean schemaDeclared, String responseSchemaSha256,
             List<String> errors, String strategy) { }
 
     private record JsonMedia(String contentType, JsonNode value) { }
+    private record RequestParameters(String query, Map<String, String> headers,
+            List<String> queryNames, List<String> headerNames, List<String> cookieNames) { }
+    private record Authentication(Map<String, String> headers, String referenceId,
+            String valueSha256, String schemeType) { }
 
     private final JsonNode root;
     private final JsonNode pathItem;
@@ -76,11 +84,19 @@ final class OpenApiSyntheticFixtureEngine {
     }
 
     PreparedRequest prepare(String method, String routeTemplate) throws Exception {
-        JsonNode security = operation.has("security") ? operation.path("security") : root.path("security");
-        if (security.isArray() && !security.isEmpty())
-            throw new IllegalArgumentException("OPENAPI_AUTHENTICATION_CONTEXT_NOT_MATERIALIZED");
-        rejectUnsupportedRequiredParameters();
+        return prepare(method, routeTemplate, Map.of(), Map.of());
+    }
+
+    PreparedRequest prepare(String method, String routeTemplate, Map<String, String> environment,
+            Map<String, String> runtimeReferences) throws Exception {
         String route = materializePath(routeTemplate);
+        RequestParameters parameters = materializeRequiredParameters();
+        Authentication authentication = authentication(environment, runtimeReferences);
+        Map<String, String> headers = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        headers.putAll(parameters.headers());
+        for (Map.Entry<String, String> entry : authentication.headers().entrySet())
+            if (headers.putIfAbsent(entry.getKey(), entry.getValue()) != null)
+                throw new IllegalArgumentException("OPENAPI_AUTHENTICATION_HEADER_COLLISION");
         byte[] body = new byte[0];
         String contentType = null;
         String schemaSha = Hashing.sha256(body);
@@ -98,7 +114,10 @@ final class OpenApiSyntheticFixtureEngine {
             schemaSha = schemaDigest(schema);
             strategy = "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA";
         }
-        return new PreparedRequest(route, body, contentType, schemaSha, strategy);
+        return new PreparedRequest(route, parameters.query(), body, contentType, Map.copyOf(headers),
+                parameters.queryNames(), parameters.headerNames(), parameters.cookieNames(),
+                authentication.referenceId(), authentication.valueSha256(), authentication.schemeType(),
+                schemaSha, strategy);
     }
 
     OracleResult validateResponse(String method, int status, String responseContentType, byte[] body) throws Exception {
@@ -154,7 +173,7 @@ final class OpenApiSyntheticFixtureEngine {
             int end = route.indexOf('}', cursor + 1);
             if (end < 0) throw new IllegalArgumentException("OPENAPI_PATH_TEMPLATE_INVALID");
             String name = route.substring(cursor + 1, end);
-            JsonNode parameter = parameters.get(name);
+            JsonNode parameter = parameters.get("path\u0000" + name);
             if (parameter == null || !"path".equals(parameter.path("in").asText()))
                 throw new IllegalArgumentException("OPENAPI_PATH_PARAMETER_SCHEMA_MISSING:" + name);
             JsonNode value = synthesize(parameter.path("schema"), new HashSet<>(), 0);
@@ -175,20 +194,101 @@ final class OpenApiSyntheticFixtureEngine {
         for (JsonNode raw : values) {
             JsonNode parameter = resolve(raw, new HashSet<>(), 0);
             String name = parameter.path("name").asText("");
-            if (!name.isBlank()) target.put(name, parameter);
+            String location = parameter.path("in").asText("");
+            if (!name.isBlank() && !location.isBlank()) target.put(location + "\u0000" + name, parameter);
         }
     }
 
-    private void rejectUnsupportedRequiredParameters() throws Exception {
+    private RequestParameters materializeRequiredParameters() throws Exception {
         Map<String, JsonNode> parameters = new LinkedHashMap<>();
         collectParameters(pathItem.path("parameters"), parameters);
         collectParameters(operation.path("parameters"), parameters);
-        for (Map.Entry<String, JsonNode> entry : parameters.entrySet()) {
+        Map<String, String> query = new TreeMap<>();
+        Map<String, String> headers = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, String> cookies = new TreeMap<>();
+        for (Map.Entry<String, JsonNode> entry : new TreeMap<>(parameters).entrySet()) {
             String location = entry.getValue().path("in").asText("");
-            if (entry.getValue().path("required").asBoolean(false) && !"path".equals(location))
-                throw new IllegalArgumentException("OPENAPI_REQUIRED_PARAMETER_UNSUPPORTED:"
-                        + location.toUpperCase(Locale.ROOT) + ":" + safeCode(entry.getKey()));
+            if (!entry.getValue().path("required").asBoolean(false) || "path".equals(location)) continue;
+            String name = entry.getValue().path("name").asText();
+            String style = entry.getValue().path("style").asText(switch (location) {
+                case "header" -> "simple"; case "query", "cookie" -> "form"; default -> "";
+            });
+            if (!("query".equals(location) && "form".equals(style))
+                    && !("header".equals(location) && "simple".equals(style))
+                    && !("cookie".equals(location) && "form".equals(style)))
+                throw new IllegalArgumentException("OPENAPI_PARAMETER_STYLE_UNSUPPORTED:"
+                        + location.toUpperCase(Locale.ROOT) + ":" + safeCode(style));
+            JsonNode schema = entry.getValue().path("schema");
+            if (schema.isMissingNode()) throw new IllegalArgumentException(
+                    "OPENAPI_REQUIRED_PARAMETER_SCHEMA_MISSING:" + location.toUpperCase(Locale.ROOT)
+                            + ":" + safeCode(name));
+            JsonNode fixture = synthesize(schema, new HashSet<>(), 0);
+            if (fixture.isContainerNode() || fixture.isNull()) throw new IllegalArgumentException(
+                    "OPENAPI_REQUIRED_PARAMETER_NOT_PRIMITIVE:" + location.toUpperCase(Locale.ROOT)
+                            + ":" + safeCode(name));
+            String value = fixture.asText();
+            switch (location) {
+                case "query" -> query.put(name, value);
+                case "header" -> {
+                    requireSafeHeaderName(name, false);
+                    headers.put(name, requireSafeHeaderValue(value));
+                }
+                case "cookie" -> {
+                    requireSafeHeaderName(name, false);
+                    cookies.put(name, value);
+                }
+                default -> throw new IllegalArgumentException("OPENAPI_REQUIRED_PARAMETER_LOCATION_UNSUPPORTED:"
+                        + location.toUpperCase(Locale.ROOT));
+            }
         }
+        if (!cookies.isEmpty()) headers.put("Cookie", cookies.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + percentEncode(entry.getValue()))
+                .collect(java.util.stream.Collectors.joining("; ")));
+        String queryString = query.entrySet().stream()
+                .map(entry -> percentEncode(entry.getKey()) + "=" + percentEncode(entry.getValue()))
+                .collect(java.util.stream.Collectors.joining("&"));
+        return new RequestParameters(queryString, Map.copyOf(headers), List.copyOf(query.keySet()),
+                List.copyOf(headers.keySet()), List.copyOf(cookies.keySet()));
+    }
+
+    private Authentication authentication(Map<String, String> environment,
+            Map<String, String> runtimeReferences) {
+        JsonNode security = operation.has("security") ? operation.path("security") : root.path("security");
+        if (!security.isArray() || security.isEmpty()) return new Authentication(Map.of(), null, null, null);
+        for (JsonNode alternative : security) if (alternative.isObject() && alternative.isEmpty())
+            return new Authentication(Map.of(), null, null, null);
+        JsonNode requirement = security.get(0);
+        if (!requirement.isObject()) throw new IllegalArgumentException("OPENAPI_SECURITY_REQUIREMENT_INVALID");
+        List<String> schemes = new ArrayList<>(); requirement.fieldNames().forEachRemaining(schemes::add);
+        Collections.sort(schemes);
+        if (schemes.size() != 1) throw new IllegalArgumentException("OPENAPI_MULTI_SCHEME_AUTH_REVIEW_REQUIRED");
+        String reference = runtimeReferences.get("authentication");
+        if (reference == null || !reference.matches("env:[A-Z][A-Z0-9_]{1,127}"))
+            throw new IllegalArgumentException("OPENAPI_AUTHENTICATION_CONTEXT_NOT_MATERIALIZED");
+        String secret = environment.get(reference.substring(4));
+        if (secret == null || secret.isBlank() || secret.length() > 8192)
+            throw new IllegalArgumentException("OPENAPI_AUTHENTICATION_VALUE_NOT_CONFIGURED");
+        requireSafeHeaderValue(secret);
+        JsonNode scheme = resolve(root.path("components").path("securitySchemes").path(schemes.get(0)),
+                new HashSet<>(), 0);
+        String type = scheme.path("type").asText("");
+        String headerName;
+        String headerValue;
+        String schemeType;
+        if ("http".equals(type) && "bearer".equalsIgnoreCase(scheme.path("scheme").asText())) {
+            headerName = "Authorization"; headerValue = "Bearer " + secret; schemeType = "HTTP_BEARER";
+        } else if ("http".equals(type) && "basic".equalsIgnoreCase(scheme.path("scheme").asText())) {
+            headerName = "Authorization";
+            headerValue = "Basic " + Base64.getEncoder().encodeToString(secret.getBytes(StandardCharsets.UTF_8));
+            schemeType = "HTTP_BASIC";
+        } else if (Set.of("oauth2", "openIdConnect").contains(type)) {
+            headerName = "Authorization"; headerValue = "Bearer " + secret; schemeType = "OAUTH_BEARER";
+        } else if ("apiKey".equals(type) && "header".equals(scheme.path("in").asText())) {
+            headerName = scheme.path("name").asText(); requireSafeHeaderName(headerName, true);
+            headerValue = secret; schemeType = "API_KEY_HEADER";
+        } else throw new IllegalArgumentException("OPENAPI_AUTHENTICATION_SCHEME_UNSUPPORTED");
+        return new Authentication(Map.of(headerName, headerValue), reference,
+                Hashing.sha256(secret), schemeType);
     }
 
     private JsonNode synthesize(JsonNode raw, Set<String> refs, int depth) throws Exception {
@@ -459,6 +559,24 @@ final class OpenApiSyntheticFixtureEngine {
             } else encoded.append('%').append(String.format(Locale.ROOT, "%02X", unsigned));
         }
         return encoded.toString();
+    }
+
+    private static void requireSafeHeaderName(String name, boolean authentication) {
+        if (name == null || !name.matches("[!#$%&'*+.^_`|~A-Za-z0-9-]{1,128}"))
+            throw new IllegalArgumentException("OPENAPI_HEADER_NAME_INVALID");
+        String normalized = name.toLowerCase(Locale.ROOT);
+        Set<String> prohibited = Set.of("host", "connection", "content-length", "transfer-encoding",
+                "upgrade", "proxy-authorization", "proxy-authenticate", "te", "trailer");
+        if (prohibited.contains(normalized) || (!authentication
+                && Set.of("authorization", "cookie", "accept", "content-type").contains(normalized)))
+            throw new IllegalArgumentException("OPENAPI_HEADER_NAME_PROHIBITED:" + safeCode(name));
+    }
+
+    private static String requireSafeHeaderValue(String value) {
+        if (value == null || value.isEmpty() || value.length() > 8192
+                || value.chars().anyMatch(character -> character < 0x20 || character == 0x7f))
+            throw new IllegalArgumentException("OPENAPI_HEADER_VALUE_INVALID");
+        return value;
     }
 
     private static String safeCode(String value) {

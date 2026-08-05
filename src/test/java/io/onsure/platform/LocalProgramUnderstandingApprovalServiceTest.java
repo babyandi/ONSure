@@ -92,6 +92,32 @@ class LocalProgramUnderstandingApprovalServiceTest {
     }
 
     @Test
+    void blocksSecuredCandidateWhenReviewDoesNotBindAnEnvironmentCredential() throws Exception {
+        Prepared prepared = prepare("secured-without-runtime-reference", """
+                openapi: 3.1.0
+                info: {title: Secured Orders, version: '1'}
+                security: [{bearerAuth: []}]
+                paths:
+                  /orders:
+                    get:
+                      operationId: listOrders
+                      responses: {'200': {description: ok}}
+                components:
+                  securitySchemes: {bearerAuth: {type: http, scheme: bearer}}
+                """);
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        Path planFile = prepared.workspace().resolve(authorized.planFile());
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(planFile.toFile(), Map.class);
+
+        assertEquals("PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN", plan.get("plan_state"));
+        assertEquals(Map.of(), plan.get("runtime_reference_ids"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> candidates =
+                (List<Map<String, Object>>) plan.get("authorized_candidates");
+        assertEquals("BLOCKED_AUTHENTICATION_REFERENCE_MISSING", candidates.get(0).get("state"));
+        assertEquals(true, candidates.get(0).get("security_declared"));
+    }
+
+    @Test
     void recoversInterruptedReadOnlyRunForOneSafeRetry() throws Exception {
         Instant now = Instant.parse("2026-08-05T00:00:00Z");
         Prepared prepared = prepare("recover-read");

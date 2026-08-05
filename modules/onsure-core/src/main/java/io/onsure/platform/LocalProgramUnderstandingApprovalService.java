@@ -499,6 +499,7 @@ final class LocalProgramUnderstandingApprovalService {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> drafts = (List<Map<String, Object>>) review
                 .getOrDefault("reviewed_e2e_plan_draft", List.of());
+        Map<String, String> runtimeReferences = runtimeReferenceIds(review);
         List<Map<String, Object>> candidates = new ArrayList<>();
         for (Map<String, Object> draft : drafts) {
             Map<String, Object> operation = operation(draft);
@@ -507,7 +508,10 @@ final class LocalProgramUnderstandingApprovalService {
             @SuppressWarnings("unchecked")
             List<String> schemaRefs = (List<String>) operation.getOrDefault("request_schema_refs", List.of());
             boolean schemaDeclared = Boolean.TRUE.equals(operation.get("request_schema_declared"));
+            boolean securityDeclared = Boolean.TRUE.equals(operation.get("security_declared"));
             String state = destructive ? "BLOCKED_DESTRUCTIVE_OPERATION"
+                    : securityDeclared && !runtimeReferences.containsKey("authentication")
+                    ? "BLOCKED_AUTHENTICATION_REFERENCE_MISSING"
                     : List.of("POST", "PUT", "PATCH").contains(method) && !schemaDeclared
                     ? "BLOCKED_SYNTHETIC_FIXTURE_SCHEMA_MISSING"
                     : List.of("POST", "PUT", "PATCH").contains(method)
@@ -521,6 +525,7 @@ final class LocalProgramUnderstandingApprovalService {
             candidate.put("http_path", operation.getOrDefault("http_path", "NOT_APPLICABLE"));
             candidate.put("request_schema_refs", schemaRefs);
             candidate.put("request_schema_declared", schemaDeclared);
+            candidate.put("security_declared", securityDeclared);
             candidate.put("response_statuses", operation.getOrDefault("response_statuses", List.of()));
             candidate.put("openapi_source_path", operation.getOrDefault("source_path", "NOT_APPLICABLE"));
             candidate.put("openapi_source_sha256", operation.getOrDefault("evidence_sha256", "NOT_APPLICABLE"));
@@ -545,6 +550,7 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("approval_request_sha256", approval.get("request_sha256"));
         plan.put("approval_request_id", approval.get("request_id"));
         plan.put("approval_receipt_sha256", approval.get("receipt_sha256"));
+        plan.put("runtime_reference_ids", runtimeReferences);
         plan.put("execution_scope", scope);
         plan.put("candidate_count", candidates.size());
         plan.put("blocked_candidate_count", blocked);
@@ -557,6 +563,23 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("destructive_action_allowed", false);
         plan.put("final_claim_allowed", false);
         return Map.copyOf(plan);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> runtimeReferenceIds(Map<String, Object> review) {
+        Map<String, String> result = new TreeMap<>();
+        Object raw = review.get("answers");
+        if (!(raw instanceof List<?> answers)) return Map.of();
+        for (Object item : answers) {
+            if (!(item instanceof Map<?, ?> answer)
+                    || !"CONFIRMED".equals(answer.get("answer_state"))
+                    || !(answer.get("evidence_reference_id") instanceof String reference)
+                    || !reference.matches("env:[A-Z][A-Z0-9_]{1,127}")) continue;
+            String question = String.valueOf(answer.get("question_id"));
+            if ("AUTHENTICATION_CONTEXT".equals(question)) result.put("authentication", reference);
+            if ("SAFE_TEST_IDENTITY".equals(question)) result.put("test_identity", reference);
+        }
+        return Map.copyOf(result);
     }
 
     @SuppressWarnings("unchecked")

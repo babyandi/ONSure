@@ -8,10 +8,12 @@
   "approval_request_id": "program-understanding-approval-22222222-2222-2222-2222-222222222222",
   "approval_request_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
   "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "runtime_reference_ids": {"authentication": "env:ONSURE_TARGET_AUTH_TOKEN"},
   "execution_scope": "ISOLATED_SYNTHETIC_LOOPBACK", "candidate_count": 1, "blocked_candidate_count": 0,
   "authorized_candidates": [{
     "plan_id": "E2E-123", "flow_id": "FLOW-123", "http_method": "POST", "http_path": "/orders/{orderId}",
     "request_schema_refs": ["#/components/schemas/Order"], "request_schema_declared": true,
+    "security_declared": true,
     "response_statuses": ["201"],
     "openapi_source_path": "openapi.yaml", "openapi_source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "fixture_strategy": "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA",

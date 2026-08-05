@@ -243,10 +243,73 @@ class LocalInferredE2EHttpRunnerTest {
         } finally { server.stop(0); }
     }
 
+    @Test
+    void materializesBearerAndRequiredParametersWithoutStoringValues() throws Exception {
+        Prepared prepared = prepare(securedOpenApi());
+        AtomicReference<String> observed = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            observed.set(exchange.getRequestURI().getRawQuery() + "|"
+                    + exchange.getRequestHeaders().getFirst("Authorization") + "|"
+                    + exchange.getRequestHeaders().getFirst("X-Trace") + "|"
+                    + exchange.getRequestHeaders().getFirst("Cookie"));
+            byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server, Map.of("ONSURE_TEST_AUTH", "secret-token"));
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"));
+            assertEquals("tenant=ONSURE_SYNTHETIC|Bearer secret-token|ONSURE_SYNTHETIC|session=ONSURE_SYNTHETIC",
+                    observed.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> step = steps.get(0);
+            assertEquals("env:ONSURE_TEST_AUTH", step.get("authentication_reference_id"));
+            assertEquals(Hashing.sha256("secret-token"), step.get("authentication_value_sha256"));
+            assertEquals(false, step.get("authentication_value_stored"));
+            assertEquals(false, step.get("request_header_values_stored"));
+            String serializedReceipt = mapper.writeValueAsString(receipt);
+            assertFalse(serializedReceipt.contains("secret-token"));
+            assertFalse(serializedReceipt.contains("tenant=ONSURE_SYNTHETIC"));
+            assertTrue(step.get("request_uri_sha256").toString().matches("[0-9a-f]{64}"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void blocksSecuredRequestBeforeHttpWhenReferencedCredentialIsMissing() throws Exception {
+        Prepared prepared = prepare(securedOpenApi());
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        AtomicInteger calls = new AtomicInteger();
+        server.createContext("/orders", exchange -> { calls.incrementAndGet(); exchange.close(); });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("BLOCKED", receipt.get("outcome"));
+            assertEquals(0, ((Number) receipt.get("executed_step_count")).intValue());
+            assertEquals(0, calls.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals("OPENAPI_AUTHENTICATION_VALUE_NOT_CONFIGURED", steps.get(0).get("error_code"));
+        } finally { server.stop(0); }
+    }
+
     private Map<String, Object> run(Prepared prepared, HttpServer server) throws Exception {
+        return run(prepared, server, Map.of());
+    }
+
+    private Map<String, Object> run(Prepared prepared, HttpServer server,
+            Map<String, String> additionalEnvironment) throws Exception {
         String base = "http://127.0.0.1:" + server.getAddress().getPort();
+        Map<String, String> environment = new java.util.HashMap<>(additionalEnvironment);
+        environment.put("ONSURE_SYNTHETIC_BASE_URL", base);
         return new LocalInferredE2EHttpRunner(
-                prepared.workspace(), Map.of("ONSURE_SYNTHETIC_BASE_URL", base),
+                prepared.workspace(), environment,
                 HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build())
                 .run(mapper.valueToTree(Map.of(
                         "execution_authorization_id", prepared.authorizationId(),
@@ -302,9 +365,13 @@ class LocalInferredE2EHttpRunnerTest {
                 (Map<String, Object>) understood.get("program_understanding");
         @SuppressWarnings("unchecked") List<Map<String, Object>> questions =
                 (List<Map<String, Object>>) understanding.get("minimal_questions");
-        List<Map<String, Object>> answers = questions.stream().map(question -> Map.<String, Object>of(
-                "question_id", question.get("question_id"), "answer_state", "CONFIRMED",
-                "evidence_reference_id", "fixture:" + question.get("question_id"))).toList();
+        List<Map<String, Object>> answers = questions.stream().map(question -> {
+            String questionId = question.get("question_id").toString();
+            return Map.<String, Object>of(
+                    "question_id", questionId, "answer_state", "CONFIRMED",
+                    "evidence_reference_id", "AUTHENTICATION_CONTEXT".equals(questionId)
+                            ? "env:ONSURE_TEST_AUTH" : "fixture:" + questionId);
+        }).toList();
         Map<String, Object> review = programs.reviewUnderstanding(mapper.valueToTree(Map.of(
                 "project_id", "project", "target_id", "target",
                 "profile_file_sha256", understood.get("profile_file_sha256"), "answers", answers)));
@@ -373,6 +440,25 @@ class LocalInferredE2EHttpRunnerTest {
                         id: {type: string, format: uuid}
                         name: {type: string}
                         quantity: {type: integer}
+                """;
+    }
+
+    private static String securedOpenApi() {
+        return """
+                openapi: 3.1.0
+                info: {title: Secured Orders, version: '1'}
+                security: [{bearerAuth: []}]
+                paths:
+                  /orders:
+                    get:
+                      operationId: securedOrders
+                      parameters:
+                        - {name: tenant, in: query, required: true, schema: {type: string}}
+                        - {name: X-Trace, in: header, required: true, schema: {type: string}}
+                        - {name: session, in: cookie, required: true, schema: {type: string}}
+                      responses: {'200': {description: ok}}
+                components:
+                  securitySchemes: {bearerAuth: {type: http, scheme: bearer}}
                 """;
     }
 

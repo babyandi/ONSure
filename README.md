@@ -248,10 +248,13 @@ improvement 산출물과 Gateway의 content-free token·비용·digest-chain pro
 Program Understanding 검토와 별도 승인으로 생성한 1회 실행권한은
 `ONSURE_INFERRED_E2E_BASE_URL=http://127.0.0.1:<unprivileged-port>`인 합성 loopback 대상에만
 사용할 수 있다. GET/HEAD/OPTIONS와 OpenAPI request schema가 있는 POST/PUT/PATCH를 실행하며,
-path parameter와 요청 body는 `example`·`default` 없이 결정적으로 생성한다. 요청·응답 원문은
-저장하지 않고 schema/source/body digest와 판정만 Receipt에 남긴다. DELETE, source drift,
-외부 `$ref`, materialize되지 않은 인증·필수 query/header, 지원하지 않는 schema assertion은
-대상 결함으로 오판하지 않고 `BLOCKED`다. 모든 결과는 `PASS_NONFINAL`까지만 허용한다.
+path·필수 primitive query/header/cookie parameter와 요청 body는 `example`·`default` 없이
+결정적으로 생성한다. 승인 검토에서 `env:` 참조로 결속한 HTTP bearer/basic, OAuth bearer,
+header API key만 런타임에 주입한다. 인증값과 요청·응답 원문은 저장하지 않고 참조 ID,
+인증값·schema·source·body digest와 판정만 Receipt에 남긴다. DELETE, source drift, 외부 `$ref`,
+인증 참조·값 미구성, 복합 인증, query/cookie API key, 지원하지 않는 parameter serialization·
+schema assertion은 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든 결과는
+`PASS_NONFINAL`까지만 허용한다.
 중단된 실행에 내구 Receipt가 있으면 exact run/plan digest로 완료 상태를 복구한다. Receipt가
 없으면 읽기 연산만 복구 chain을 남기고 재시도하며, 결과가 불명확한 쓰기 연산은
 `RECOVERY_REQUIRED`로 고정해 새 승인을 요구한다. 동일 source/profile의 연속 실행은 단계별
