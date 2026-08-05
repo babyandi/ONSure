@@ -58,7 +58,7 @@ Status: `PASS_NONFINAL / PRODUCTION_NOT_AUTHORIZED`
 
 ## Supply chain and air-gap
 
-- CycloneDX components: 21; dependency license review required: 0.
+- CycloneDX components: 23; dependency license review required: 0.
 - Trivy 0.65.0: critical/high/medium/low all 0; npm audit total 0.
 - Previous Maven offline archive validation exposed missing Flyway 12.11.0 and PostgreSQL 42.7.12
   artifacts and was not reused as a pass.

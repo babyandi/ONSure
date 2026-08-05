@@ -44,6 +44,12 @@
   repository commit/scope/clean/snapshot manifest 변조 차단, fixture의 실제 대상 범용성 집계 금지
 - PostgreSQL 점수 이력의 project/target 격리, 전체 점수 node·finding·진단·개선 가이드 read-back,
   반복성 비교와 승인된 변경 lineage 기반 개선 비교 분리
+- nested Maven·Gradle·Python·Node build root의 bounded/symlink-safe 자동 탐지와 ONGuard형
+  `java/pom.xml` 독립 실행 후보 생성
+- 소비된 Patch 승인 receipt와 Before/After proof를 PostgreSQL score run에 결속하는
+  `score.improvement-bind` 공통 Workflow 및 교차 project/target DB 외래키 차단
+- PostgreSQL V1→V3 동시 migration lock·rollback·finding read-back·backup/restore 실제 리허설과
+  OCI sandbox 12개 경계 probe, VS Code Extension Host online/offline 재검증
 - 주입된 HTTP client의 redirect 정책을 `NEVER`로 강제해 loopback 경계 이탈 차단
 - 격리 Fixture별 run 전용 `TMPDIR`로 host `/tmp` 고갈과 실행 결과의 불필요한 결합 제거
 - Fixture stdout Oracle과 stderr 진단 스트림을 분리해 도구 경고가 기능 판정을 오염하지 않도록 강화

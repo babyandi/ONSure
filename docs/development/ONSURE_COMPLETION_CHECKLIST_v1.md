@@ -41,8 +41,8 @@
 - [x] `mvn -B -ntp -q clean verify` 2회
 - [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
 - [x] Public Java API 267개; 기존 265개 변경·삭제 0, nested Pack 및 개선 lineage API 2개 추가
-- [x] Java 347개 회귀 테스트(조건부 11개 skip)
-- [x] Python 202개 회귀 테스트
+- [x] Java 419개 회귀 테스트(408 PASS, 조건부 11개 `NOT_RUN` skip)
+- [x] Python 207개 회귀 테스트
 - [x] Gradle 표준 Pack의 offline build, 부정·재시도·차단, 연결 E2E, 운영 복구 convention 탐지와
   독립 외부 Gradle 대상 20개 필수 Step 실제 실행 (`PASS_NONFINAL`, 원본 변경 0건)
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약

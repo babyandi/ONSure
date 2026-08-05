@@ -304,14 +304,15 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 root Java 402개(391 PASS, 조건부 11개 skip)와
-모듈 전용 Java 8개, Python 202개, Node 10개,
-Modular package 37개, root 공개 API 267개, SBOM/npm audit와 operational boundary를 통과했고,
+현재 변경 후보의 로컬 검증은 root Java 419개(408 PASS, 조건부 11개 skip)와
+모듈 전용 Java 49개, Python 207개, Node 10개,
+RHEL 35-file·Ubuntu 39-file package, root 공개 API 267개, SBOM/npm audit와
+operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `30d27a88c4247cefabb10e316bd2bfafa0a3b9bb3afcfdc89470afb410fec089`를 생성했으며
 동일 입력 2회 패키징 결과가 byte-identical했다.
-Manifest 후보는 신규 구현을 포함한 890개 파일이며 정확한 파일 수와
+Manifest 후보는 신규 구현을 포함한 955개 파일이며 정확한 파일 수와
 digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는

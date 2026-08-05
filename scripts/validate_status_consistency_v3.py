@@ -95,7 +95,7 @@ def main() -> int:
 
     completion = (ROOT / "docs/development/ONSURE_COMPLETION_CHECKLIST_v1.md").read_text(
         encoding="utf-8")
-    for expected in ("Java 347개", "Python 202개", "Node 10"):
+    for expected in ("Java 419개", "Python 207개", "Node 10"):
         if expected not in (readme + "\n" + completion):
             errors.append("COMPLETION_COUNT_STALE:" + expected)
     gradle_source = (ROOT / "modules/onsure-core/src/main/java/io/onsure/platform/GradleValidationPack.java") \
