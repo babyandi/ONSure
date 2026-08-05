@@ -93,6 +93,7 @@ class LocalProgramManagementServiceTest {
         Path receipt = Path.of(result.get("receipt_file").toString());
         assertTrue(Files.isRegularFile(receipt));
         assertEquals(Hashing.file(receipt), result.get("receipt_sha256"));
+        assertTrue(result.get("scorecard") instanceof Map<?, ?>);
         assertTrue(Files.readString(receipt).contains("\"external_environment_profile\""));
         assertTrue(projection.contains("\"verificationGroupOutcomes\""));
         assertTrue(Files.isRegularFile(runRoot.resolve("evidence.json")));
@@ -106,6 +107,7 @@ class LocalProgramManagementServiceTest {
         var latest = (Map<String, Object>) programs.get(0).get("latest_validation");
         assertEquals("NOT_RUN", latest.get("decision"));
         assertEquals(2, ((Number) latest.get("evidence_count")).intValue());
+        assertTrue(latest.get("scorecard") instanceof Map<?, ?>);
     }
 
     @Test

@@ -120,12 +120,19 @@ public final class UniversalValidationRunner {
     }
 
     public RunResult run(Profile profile, Path runRoot) throws Exception {
-        return run(profile, runRoot, null);
+        return run(profile, runRoot, null, null);
     }
 
     RunResult run(Profile profile, Path runRoot,
             EnvironmentRequirementProfile.Loaded environmentProfile) throws Exception {
+        return run(profile, runRoot, environmentProfile, null);
+    }
+
+    RunResult run(Profile profile, Path runRoot,
+            EnvironmentRequirementProfile.Loaded environmentProfile,
+            ReviewedExecutionProfile.Loaded executionProfile) throws Exception {
         verifyEnvironmentProfileBinding(profile, environmentProfile);
+        verifyExecutionProfileBinding(profile, executionProfile);
         Instant started = Instant.now();
         Path root = requireRunRoot(profile.sourceRoot(), runRoot);
         Files.createDirectories(root);
@@ -181,6 +188,8 @@ public final class UniversalValidationRunner {
             groupOutcomes.put(VerificationGroup.EVIDENCE_DECISION, Outcome.FAIL);
         }
         Outcome overall = UniversalValidationProfile.aggregate(new ArrayList<>(groupOutcomes.values()));
+        Map<String, Object> scorecard = ValidationScorecard.calculate(
+                results, phaseOutcomes, groupOutcomes, overall);
         Instant completed = Instant.now();
         Path receipt = root.resolve(RECEIPT_FILE);
         Map<String, Object> body = new LinkedHashMap<>();
@@ -203,6 +212,15 @@ public final class UniversalValidationRunner {
                     "semantic_sha256", environmentProfile.semanticSha256(),
                     "source_file_sha256", environmentProfile.sourceFileSha256()));
         }
+        if (executionProfile != null) {
+            verifyExecutionProfileBinding(profile, executionProfile);
+            body.put("external_execution_profile", Map.of(
+                    "contract", ReviewedExecutionProfile.CONTRACT,
+                    "profile_id", executionProfile.profileId(),
+                    "review_state", ReviewedExecutionProfile.REVIEW_STATE,
+                    "source_sha256", executionProfile.sourceSha256(),
+                    "source_file_sha256", executionProfile.sourceFileSha256()));
+        }
         Map<String, Object> environmentEvidence = new LinkedHashMap<>();
         environmentEvidence.put("description", environmentDescription);
         environmentEvidence.put("sha256", environmentSha256);
@@ -210,6 +228,7 @@ public final class UniversalValidationRunner {
         body.put("phase_outcomes", phaseOutcomes);
         body.put("verification_group_outcomes", groupOutcomes);
         body.put("overall_outcome", overall);
+        body.put("scorecard", scorecard);
         body.put("steps", results);
         Map<String, Object> finalEvidenceIntegrity = new LinkedHashMap<>();
         finalEvidenceIntegrity.put("contract", "ONSURE_PASS_EVIDENCE_FINALIZATION_V1");
@@ -244,6 +263,22 @@ public final class UniversalValidationRunner {
         }
         if (!Hashing.file(environmentProfile.sourceFile()).equals(environmentProfile.sourceFileSha256())) {
             throw new IllegalStateException("ENVIRONMENT_PROFILE_SOURCE_CHANGED");
+        }
+    }
+
+    private static void verifyExecutionProfileBinding(Profile profile,
+            ReviewedExecutionProfile.Loaded executionProfile) throws Exception {
+        if (executionProfile == null) return;
+        if (!profile.sourceRoot().equals(executionProfile.sourceRoot())
+                || !profile.steps().containsAll(executionProfile.pack().detect(profile.sourceRoot()).steps())) {
+            throw new IllegalArgumentException("EXECUTION_PROFILE_BINDING_MISMATCH");
+        }
+        if (!Hashing.file(executionProfile.sourceFile()).equals(executionProfile.sourceFileSha256())) {
+            throw new IllegalStateException("EXECUTION_PROFILE_SOURCE_FILE_CHANGED");
+        }
+        if (!Hashing.tree(profile.sourceRoot(), Hashing.sourceFiles(profile.sourceRoot()))
+                .equals(executionProfile.sourceSha256())) {
+            throw new IllegalStateException("EXECUTION_PROFILE_TARGET_SOURCE_CHANGED");
         }
     }
 

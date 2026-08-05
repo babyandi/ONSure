@@ -40,9 +40,15 @@ final class LocalProgramManagementService {
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
     private final Path workspaceRoot;
+    private final Map<String, String> environment;
 
     LocalProgramManagementService(Path workspaceRoot) {
+        this(workspaceRoot, System.getenv());
+    }
+
+    LocalProgramManagementService(Path workspaceRoot, Map<String, String> environment) {
         this.workspaceRoot = workspaceRoot.toAbsolutePath().normalize();
+        this.environment = Map.copyOf(environment == null ? Map.of() : environment);
     }
 
     Map<String, Object> register(JsonNode request) throws Exception {
@@ -112,10 +118,15 @@ final class LocalProgramManagementService {
         if (!Set.of("INSPECT_ONLY", "MAVEN_STANDARD", "UNIVERSAL").contains(profile)) {
             throw new IllegalArgumentException("PROGRAM_VALIDATION_PROFILE_INVALID");
         }
-        if (!"UNIVERSAL".equals(profile)
-                && request.hasNonNull("environment_profile_file")
-                && !request.path("environment_profile_file").asText("").isBlank()) {
-            throw new IllegalArgumentException("ENVIRONMENT_PROFILE_REQUIRES_UNIVERSAL_VALIDATION");
+        if (!"UNIVERSAL".equals(profile)) {
+            if (request.hasNonNull("environment_profile_file")
+                    && !request.path("environment_profile_file").asText("").isBlank()) {
+                throw new IllegalArgumentException("ENVIRONMENT_PROFILE_REQUIRES_UNIVERSAL_VALIDATION");
+            }
+            if (request.hasNonNull("execution_profile_file")
+                    && !request.path("execution_profile_file").asText("").isBlank()) {
+                throw new IllegalArgumentException("EXECUTION_PROFILE_REQUIRES_UNIVERSAL_VALIDATION");
+            }
         }
         ProductCatalog.RegisteredTarget registered = registered(projectId, targetId);
         ValidationTarget target = registered.target();
@@ -215,12 +226,19 @@ final class LocalProgramManagementService {
         Path environmentProfileFile = optionalWorkspaceFile(request, "environment_profile_file");
         EnvironmentRequirementProfile.Loaded environmentProfile = environmentProfileFile == null
                 ? null : EnvironmentRequirementProfile.load(environmentProfileFile);
+        Path executionProfileFile = optionalWorkspaceFile(request, "execution_profile_file");
+        ReviewedExecutionProfile.Loaded executionProfile = executionProfileFile == null
+                ? null : ReviewedExecutionProfile.load(executionProfileFile, source);
         List<UniversalValidationProfile.EnvironmentRequirement> requirements = environmentProfile == null
                 ? List.of() : environmentProfile.requirements();
-        UniversalValidationProfile.Profile detected = new StandardValidationProfileDetector().detect(
+        StandardValidationProfileDetector detector = executionProfile == null
+                ? new StandardValidationProfileDetector()
+                : new StandardValidationProfileDetector(List.of(executionProfile.pack()));
+        UniversalValidationProfile.Profile detected = detector.detect(
                 targetId, source, requirements);
         UniversalValidationRunner.RunResult run = new UniversalValidationRunner().run(
-                detected, runRoot, environmentProfile);
+                detected, runRoot, environmentProfile, executionProfile);
+        JsonNode scorecard = mapper.readTree(run.receiptFile().toFile()).path("scorecard");
         TreeObservation after = inclusiveTreeDigest(source);
         if (!before.digest().equals(after.digest()) || before.fileCount() != after.fileCount()
                 || before.byteCount() != after.byteCount() || run.sourceMutationDetected()) {
@@ -255,6 +273,7 @@ final class LocalProgramManagementService {
         report.put("universalReceiptSha256", run.receiptSha256());
         report.put("phaseOutcomes", run.phaseOutcomes());
         report.put("verificationGroupOutcomes", run.groupOutcomes());
+        report.put("scorecard", scorecard);
         report.put("findings", findings);
         report.put("summary", Map.of(
                 "step_count", run.steps().size(),
@@ -270,11 +289,16 @@ final class LocalProgramManagementService {
         write(runRoot.resolve("validation-report.json"), report);
         write(runRoot.resolve("evidence.json"), evidence);
         write(runRoot.resolve("remediation-plans.json"), remediation);
+        Map<String, Object> scorePersistence = new PostgresqlValidationScoreStore(environment).persist(
+                projectId, targetId, runId, run.sourceDigest(), run.receiptSha256(),
+                run.completedAt(), scorecard);
         return Map.ofEntries(
                 Map.entry("contract", CONTRACT), Map.entry("profile", "UNIVERSAL"),
                 Map.entry("run_id", runId), Map.entry("run_root", runRoot.toString()),
                 Map.entry("receipt_file", run.receiptFile().toString()),
                 Map.entry("receipt_sha256", run.receiptSha256()), Map.entry("decision", decision),
+                Map.entry("scorecard", mapper.convertValue(scorecard, Map.class)),
+                Map.entry("score_persistence", scorePersistence),
                 Map.entry("finding_count", findings.size()), Map.entry("evidence_count", evidence.size()),
                 Map.entry("improvement_candidate_count", remediation.size()),
                 Map.entry("source_mutation_detected", false), Map.entry("final_claim_allowed", false));

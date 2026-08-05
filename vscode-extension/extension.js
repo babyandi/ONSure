@@ -726,10 +726,28 @@ async function activate(context) {
           if (!selected?.length) return;
           environmentProfileFile = requireInsideWorkspace(selected[0].fsPath);
         }
+        const executionMode = await vscode.window.showQuickPick([
+          {label: 'Automatically detected execution steps', value: 'AUTO'},
+          {label: 'Select reviewed execution profile', value: 'SELECT'}
+        ], {
+          title: 'ONSure Universal Validation',
+          placeHolder: 'Choose automatic detection or an exact-source-bound reviewed execution profile.'
+        });
+        if (!executionMode) return;
+        let executionProfileFile;
+        if (executionMode.value === 'SELECT') {
+          const selected = await vscode.window.showOpenDialog({
+            title: 'Select ONSURE_REVIEWED_EXECUTION_PROFILE_V1 JSON',
+            canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+            filters: { JSON: ['json'] }, defaultUri: vscode.Uri.file(root)
+          });
+          if (!selected?.length) return;
+          executionProfileFile = requireInsideWorkspace(selected[0].fsPath);
+        }
         const runId = `universal-${Date.now()}-${randomUUID()}`;
         const runRoot = path.join(root, '.onsure', 'universal-validation', identity.targetId, runId);
         await executeWorkflow('validation.run', universalValidationRequest(
-          identity, runId, runRoot, environmentProfileFile),
+          identity, runId, runRoot, environmentProfileFile, executionProfileFile),
         'Running seven-group universal validation');
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure universal validation failed: ${error.message}`);

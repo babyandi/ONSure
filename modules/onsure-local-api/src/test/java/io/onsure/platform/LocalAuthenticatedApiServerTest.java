@@ -68,7 +68,9 @@ class LocalAuthenticatedApiServerTest {
                             .GET().build(), HttpResponse.BodyHandlers.ofString());
             assertEquals(200, script.statusCode());
             assertTrue(script.body().contains("/v1/management-overview"));
+            assertTrue(LocalAuthenticatedApiServer.routePaths().contains("/v1/validation-scorecards"));
             assertTrue(script.body().contains("environment_profile_file"));
+            assertTrue(script.body().contains("execution_profile_file"));
             assertTrue(!script.body().contains("localStorage"));
             assertTrue(!script.body().contains("sessionStorage"));
 
@@ -96,6 +98,17 @@ class LocalAuthenticatedApiServerTest {
             assertEquals("ONSURE_MANAGEMENT_OVERVIEW_V1", overviewBody.path("contract").asText());
             assertTrue(overviewBody.path("programs").isArray());
             assertTrue(!overviewBody.path("assurance").path("production_go").asBoolean(true));
+
+            HttpResponse<String> scorecards = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                                    "http://127.0.0.1:" + port + "/v1/validation-scorecards"))
+                            .header("Authorization", "Bearer " + token)
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, scorecards.statusCode(), scorecards.body());
+            JsonNode scorecardBody = mapper.readTree(scorecards.body());
+            assertEquals("ONSURE_VALIDATION_SCORECARD_PORTFOLIO_V1",
+                    scorecardBody.path("contract").asText());
+            assertTrue(!scorecardBody.path("final_claim_allowed").asBoolean(true));
 
             HttpResponse<String> authorized = client.send(
                     HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/v1/status"))

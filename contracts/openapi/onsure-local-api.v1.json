@@ -288,6 +288,20 @@
         }
       }
     },
+    "/v1/validation-scorecards": {
+      "get": {
+        "operationId": "listValidationScorecards",
+        "tags": ["Management"],
+        "summary": "List customer-facing digest-bound scorecards and consecutive-run comparisons",
+        "description": "Scores measure self-validation evidence coverage and never grant final assurance.",
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"}
+        }
+      }
+    },
     "/v1/gateway-settings/requests": {
       "get": {
         "operationId": "listGatewaySettingRequests",
@@ -420,6 +434,11 @@
             "type": "string",
             "minLength": 1,
             "description": "Optional workspace-contained ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1 file used only by UNIVERSAL."
+          },
+          "execution_profile_file": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional workspace-contained, exact-source-bound ONSURE_REVIEWED_EXECUTION_PROFILE_V1 file used only by UNIVERSAL."
           }
         },
         "additionalProperties": false

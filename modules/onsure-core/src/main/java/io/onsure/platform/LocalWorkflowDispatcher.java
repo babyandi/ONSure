@@ -234,19 +234,27 @@ public final class LocalWorkflowDispatcher {
             Path environmentProfileFile = optionalInputPath(request, "environment_profile_file");
             EnvironmentRequirementProfile.Loaded environmentProfile = environmentProfileFile == null
                     ? null : EnvironmentRequirementProfile.load(environmentProfileFile);
+            Path executionProfileFile = optionalInputPath(request, "execution_profile_file");
+            ReviewedExecutionProfile.Loaded executionProfile = executionProfileFile == null
+                    ? null : ReviewedExecutionProfile.load(executionProfileFile, target.sourceRoot());
             var declaredRequirements = environmentProfile == null
                     ? java.util.List.<UniversalValidationProfile.EnvironmentRequirement>of()
                     : environmentProfile.requirements();
-            var profile = new StandardValidationProfileDetector().detect(
+            var detector = executionProfile == null
+                    ? new StandardValidationProfileDetector()
+                    : new StandardValidationProfileDetector(java.util.List.of(executionProfile.pack()));
+            var profile = detector.detect(
                     targetId, target.sourceRoot(), declaredRequirements);
             UniversalValidationRunner.RunResult run = new UniversalValidationRunner().run(
-                    profile, runRoot, environmentProfile);
+                    profile, runRoot, environmentProfile, executionProfile);
+            JsonNode scorecard = mapper.readTree(run.receiptFile().toFile()).path("scorecard");
             return Map.of(
                     "validation_mode", "UNIVERSAL",
                     "registered_project_id", projectId,
                     "registered_target_id", targetId,
                     "run_root", runRoot.toString(),
                     "run", run,
+                    "scorecard", mapper.convertValue(scorecard, Map.class),
                     "final_claim_allowed", false);
         }
         if (!GenericManifestTargetAdapter.ID.equals(target.adapterId())) {

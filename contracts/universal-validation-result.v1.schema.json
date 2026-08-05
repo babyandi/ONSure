@@ -45,6 +45,18 @@
         "source_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
+    "external_execution_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "profile_id", "review_state", "source_sha256", "source_file_sha256"],
+      "properties": {
+        "contract": {"const": "ONSURE_REVIEWED_EXECUTION_PROFILE_V1"},
+        "profile_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+        "review_state": {"const": "REVIEWED_LOCAL_NONFINAL"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
     "environment_evidence": {
       "type": "object",
       "additionalProperties": false,
@@ -57,6 +69,17 @@
     "phase_outcomes": {"$ref": "#/$defs/phaseOutcomes"},
     "verification_group_outcomes": {"$ref": "#/$defs/groupOutcomes"},
     "overall_outcome": {"$ref": "#/$defs/outcome"},
+    "scorecard": {
+      "type": "object",
+      "required": ["contract", "max_points", "earned_points", "validation_outcome", "final_claim_allowed"],
+      "properties": {
+        "contract": {"const": "ONSURE_VALIDATION_SCORECARD_V1"},
+        "max_points": {"const": 100},
+        "earned_points": {"type": "number", "minimum": 0, "maximum": 100},
+        "validation_outcome": {"$ref": "#/$defs/outcome"},
+        "final_claim_allowed": {"const": false}
+      }
+    },
     "steps": {
       "type": "array",
       "items": {

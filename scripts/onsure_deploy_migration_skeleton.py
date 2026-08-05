@@ -68,7 +68,9 @@ def validate_plans(deployment: dict[str, object], migration: dict[str, object]) 
             or migration.get("schema_owner") != "onsure":
         violations.append("MIGRATION_POSTGRESQL_FLYWAY_SELECTION")
     ordered = migration.get("ordered_migrations", [])
-    if ordered != ["modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V1__create_assurance_event.sql"]:
+    if ordered != [
+            "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V1__create_assurance_event.sql",
+            "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V2__create_validation_score_history.sql"]:
         violations.append("MIGRATION_ORDERED_FILES")
     elif any(not (ROOT / path).is_file() for path in ordered):
         violations.append("MIGRATION_FILE_MISSING")

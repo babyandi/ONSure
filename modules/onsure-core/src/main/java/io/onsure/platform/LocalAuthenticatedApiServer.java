@@ -38,6 +38,7 @@ public final class LocalAuthenticatedApiServer {
             "/v1/program-profile", "/v1/validate", "/v1/run-artifact",
             "/v1/workspace-snapshot", "/v1/autopilot-control", "/v1/management-overview",
             "/v1/session", "/v1/programs", "/v1/programs/validate",
+            "/v1/validation-scorecards",
             "/v1/gateway-settings/requests", "/v1/gateway-settings/approvals", "/v1/audit-events");
 
     private final ObjectMapper mapper = new ObjectMapper()
@@ -115,6 +116,8 @@ public final class LocalAuthenticatedApiServer {
                 LocalAccessControl.Permission.VIEW, this::programs));
         server.createContext("/v1/programs/validate", authenticated(
                 LocalAccessControl.Permission.OPERATE_PROGRAMS, this::programValidate));
+        server.createContext("/v1/validation-scorecards", authenticated(
+                LocalAccessControl.Permission.VIEW, this::validationScorecards));
         server.createContext("/v1/gateway-settings/requests", authenticated(
                 LocalAccessControl.Permission.VIEW, this::gatewaySettingRequests));
         server.createContext("/v1/gateway-settings/approvals", authenticated(
@@ -384,13 +387,45 @@ public final class LocalAuthenticatedApiServer {
             return;
         }
         LocalAccessControl.Identity identity = identity(exchange);
-        Map<String, Object> validation = new LocalProgramManagementService(workspaceRoot).validate(readJson(exchange));
+        Map<String, Object> validation = new LocalProgramManagementService(workspaceRoot, environment)
+                .validate(readJson(exchange));
         new LocalManagementAuditLedger(workspaceRoot).append(
                 identity, "PROGRAM_VALIDATE", "COMPLETED", Map.of(
                         "run_id", validation.get("run_id"), "decision", validation.get("decision"),
                         "finding_count", validation.get("finding_count"),
                         "source_mutation_detected", validation.get("source_mutation_detected")));
         respond(exchange, 200, validation);
+    }
+
+    private void validationScorecards(HttpExchange exchange) throws Exception {
+        if (!"GET".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET is required."));
+            return;
+        }
+        Map<String, Object> overview = new LocalManagementOverviewService(workspaceRoot, environment,
+                java.net.http.HttpClient.newBuilder().connectTimeout(java.time.Duration.ofSeconds(1)).build())
+                .overview();
+        @SuppressWarnings("unchecked")
+        var programs = (java.util.List<Map<String, Object>>) overview.get("programs");
+        var scorecards = programs.stream().map(program -> Map.of(
+                "project_id", program.get("project_id"),
+                "program_id", program.get("program_id"),
+                "program_name", program.get("program_name"),
+                "source_reference", program.get("source_reference"),
+                "latest_validation", program.get("latest_validation"),
+                "final_claim_allowed", false)).toList();
+        respond(exchange, 200, Map.of(
+                "contract", "ONSURE_VALIDATION_SCORECARD_PORTFOLIO_V1",
+                "generated_at", overview.get("generated_at"),
+                "scorecards", scorecards,
+                "scorecard_count", scorecards.stream().filter(item -> {
+                    Object validation = item.get("latest_validation");
+                    return validation instanceof Map<?, ?> map
+                            && map.get("scorecard") instanceof Map<?, ?> score
+                            && ValidationScorecard.CONTRACT.equals(score.get("contract"));
+                }).count(),
+                "interpretation", "Evidence coverage only; independent assurance and final approval remain separate.",
+                "final_claim_allowed", false));
     }
 
     private void gatewaySettingRequests(HttpExchange exchange) throws Exception {

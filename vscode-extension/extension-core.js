@@ -248,7 +248,8 @@ function validationRequest(identity) {
   };
 }
 
-function universalValidationRequest(identity, runId, runRoot, environmentProfileFile) {
+function universalValidationRequest(
+  identity, runId, runRoot, environmentProfileFile, executionProfileFile) {
   const request = {
     ...validationRequest(identity),
     validation_mode: 'UNIVERSAL',
@@ -257,6 +258,7 @@ function universalValidationRequest(identity, runId, runRoot, environmentProfile
   };
   if (!request.run_root) throw new Error('Run root is required.');
   if (environmentProfileFile) request.environment_profile_file = String(environmentProfileFile);
+  if (executionProfileFile) request.execution_profile_file = String(executionProfileFile);
   return request;
 }
 

@@ -106,25 +106,75 @@ final class LocalManagementOverviewService {
                             .thenComparing(path -> path.getFileName().toString(), Comparator.reverseOrder()))
                     .limit(MAX_RUNS_PER_PROGRAM).toList();
         }
+        JsonNode currentScorecard = null;
+        String currentRunId = null;
+        JsonNode currentReport = null;
         for (Path run : runs) {
             JsonNode report = readJson(run.resolve("validation-report.json"));
             if (report == null || !report.isObject()) continue;
+            JsonNode scorecard = report.path("scorecard");
+            if (currentRunId == null) {
+                currentScorecard = scorecard;
+                currentRunId = run.getFileName().toString();
+                currentReport = report;
+                if (!ValidationScorecard.CONTRACT.equals(scorecard.path("contract").asText())) {
+                    return Map.copyOf(latestValidationResult(
+                            targetId, run, currentRunId, report, scorecard));
+                }
+                continue;
+            }
+            if (ValidationScorecard.CONTRACT.equals(scorecard.path("contract").asText())) {
+                Map<String, Object> result = latestValidationResult(
+                        targetId, targetRoot.resolve(currentRunId), currentRunId,
+                        currentReport, currentScorecard);
+                result.put("comparison", ValidationScorecardComparison.compare(
+                        run.getFileName().toString(), scorecard, currentRunId, currentScorecard));
+                return Map.copyOf(result);
+            }
+        }
+        if (currentRunId != null) {
+            return Map.copyOf(latestValidationResult(
+                    targetId, targetRoot.resolve(currentRunId), currentRunId,
+                    currentReport, currentScorecard));
+        }
+        return notRunValidation();
+    }
+
+    private Map<String, Object> latestValidationResult(
+            String targetId, Path run, String runId, JsonNode report, JsonNode scorecard) throws Exception {
             JsonNode plans = readJson(run.resolve("remediation-plans.json"));
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("state", "AVAILABLE");
-            result.put("run_id", run.getFileName().toString());
+            result.put("run_id", runId);
             result.put("report_id", safeText(report.path("reportId").asText(), "UNVERIFIED"));
             result.put("decision", safeText(report.path("decision").asText(), "UNVERIFIED"));
             result.put("generated_at", safeText(report.path("generatedAt").asText(), "UNVERIFIED"));
+            result.put("source_sha256", digestOrNotRun(report.path("sourceDigestBefore").asText()));
+            result.put("receipt_sha256", digestOrNotRun(report.path("universalReceiptSha256").asText()));
             result.put("finding_count", arraySize(report.path("findings")));
             result.put("evidence_count", arraySize(readJson(run.resolve("evidence.json"))));
             result.put("improvement_candidate_count", arraySize(plans));
+            result.put("scorecard", scorecard != null && scorecard.isObject()
+                    ? mapper.convertValue(scorecard, Map.class) : Map.of("state", "NOT_RUN"));
+            result.put("comparison", Map.of("state", "NOT_RUN_NO_COMPARABLE_BASELINE"));
+            PostgresqlValidationScoreStore store = new PostgresqlValidationScoreStore(environment);
+            if (store.configured()) {
+                try {
+                    result.put("database_persistence", Map.of(
+                            "state", "AVAILABLE",
+                            "history", store.history(targetId, 20)));
+                } catch (Exception unavailable) {
+                    result.put("database_persistence", Map.of(
+                            "state", "UNAVAILABLE", "history", List.of(),
+                            "error", unavailable.getClass().getSimpleName()));
+                }
+            } else {
+                result.put("database_persistence", Map.of("state", "NOT_CONFIGURED", "history", List.of()));
+            }
             result.put("independent_otester", "NOT_RUN");
             result.put("independent_oaudit", "NOT_RUN");
             result.put("final_claim_allowed", false);
-            return Map.copyOf(result);
-        }
-        return notRunValidation();
+            return result;
     }
 
     private Map<String, Object> gateway() {

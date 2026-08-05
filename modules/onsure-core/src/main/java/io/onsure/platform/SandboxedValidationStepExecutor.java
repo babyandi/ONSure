@@ -66,6 +66,9 @@ final class SandboxedValidationStepExecutor implements UniversalValidationRunner
         command.addAll(step.command());
         Map<String, String> environment = new LinkedHashMap<>();
         environment.put("PATH", "/usr/sbin:/usr/bin:/sbin:/bin");
+        if (step.stepId().startsWith("reviewed.")) {
+            environment.put("ONSURE_REVIEWED_EXECUTION", "1");
+        }
         Path maven = Path.of(System.getProperty("user.home", "/nonexistent"), ".m2", "repository");
         if (Files.isDirectory(maven) && !Files.isSymbolicLink(maven)) {
             environment.put("ONSURE_MAVEN_CACHE", maven.toAbsolutePath().normalize().toString());
@@ -190,12 +193,22 @@ final class SandboxedValidationStepExecutor implements UniversalValidationRunner
         return switch (executable) {
             case "mvn" -> step.command().contains("-o");
             case "python3" -> step.command().size() >= 3 && "-m".equals(step.command().get(1))
-                    && ("pytest".equals(step.command().get(2)) || "unittest".equals(step.command().get(2)));
+                    && ("pytest".equals(step.command().get(2)) || "unittest".equals(step.command().get(2)))
+                    || reviewedScript(step, ".py");
             case "npm" -> step.command().contains("--offline");
             case "bash" -> step.command().size() >= 2 && "gradlew".equals(step.command().get(1))
-                    && step.command().contains("--offline");
+                    && step.command().contains("--offline") || reviewedScript(step, ".sh");
+            case "node" -> reviewedScript(step, ".js");
             default -> false;
         };
+    }
+
+    private static boolean reviewedScript(Step step, String suffix) {
+        if (!step.stepId().startsWith("reviewed.") || step.command().size() < 2) return false;
+        String value = step.command().get(1).replace('\\', '/');
+        Path path = Path.of(value).normalize();
+        return value.endsWith(suffix) && !value.startsWith("-")
+                && !path.isAbsolute() && !path.startsWith("..");
     }
 
     private static Path findLauncher() {

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/reviewed-execution-profile.v1.schema.json",
+  "title": "ONSure reviewed external execution profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "profile_id", "source_sha256", "review_state", "technologies", "steps"],
+  "properties": {
+    "contract": {"const": "ONSURE_REVIEWED_EXECUTION_PROFILE_V1"},
+    "profile_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_state": {"const": "REVIEWED_LOCAL_NONFINAL"},
+    "technologies": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,63}$"}
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "phase", "kind", "command", "working_directory", "timeout_seconds", "required", "depends_on"],
+        "properties": {
+          "step_id": {"type": "string", "pattern": "^reviewed\\.[a-z0-9][a-z0-9._-]{0,118}$"},
+          "phase": {
+            "type": "string",
+            "enum": ["COMPONENT_AND_NEGATIVE", "END_TO_END_LINEAGE", "OPERATIONAL_RESILIENCE"]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "BUILD", "UNIT_TEST", "NEGATIVE_TEST", "RETRY_TEST", "BLOCKING_TEST",
+              "INTEGRATION_TEST", "E2E_REQUEST_FLOW", "E2E_RENDER_OR_PRODUCE",
+              "E2E_ARTIFACT_READBACK", "E2E_TESTER_CHECK", "E2E_AUDIT_CHECK",
+              "E2E_EXPOSURE_DECISION", "API_CONTRACT", "WORKFLOW_LINEAGE",
+              "DATABASE_MIGRATION", "PACKAGE", "PERFORMANCE", "RECOVERY",
+              "INTERRUPTION_TEST", "RESUME_TEST", "ROLLBACK_TEST", "RERUN_TEST"
+            ]
+          },
+          "command": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 128,
+            "items": {"type": "string", "minLength": 1, "maxLength": 4096}
+          },
+          "working_directory": {
+            "type": "string",
+            "maxLength": 512,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).*$"
+          },
+          "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 7200},
+          "required": {"const": true},
+          "depends_on": {
+            "type": "array",
+            "maxItems": 128,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"}
+          }
+        }
+      }
+    }
+  }
+}

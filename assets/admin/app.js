@@ -61,6 +61,72 @@
     }
   }
 
+  function renderScorecards(programs) {
+    const root = byId("scorecard-list");
+    root.replaceChildren();
+    const scored = programs.filter((program) => program.latest_validation?.scorecard?.contract === "ONSURE_VALIDATION_SCORECARD_V1");
+    byId("scorecard-empty").hidden = scored.length !== 0;
+    for (const program of scored) {
+      const validation = program.latest_validation;
+      const score = validation.scorecard;
+      const article = document.createElement("article");
+      article.className = "trust-card";
+      const header = document.createElement("div");
+      header.className = "trust-card-header";
+      const title = document.createElement("div");
+      const heading = document.createElement("h3");
+      heading.textContent = program.program_name || program.program_id;
+      const provenance = document.createElement("small");
+      provenance.textContent = `source ${compactDigest(validation.source_sha256)} · receipt ${compactDigest(validation.receipt_sha256)}`;
+      title.append(heading, provenance);
+      const total = document.createElement("strong");
+      total.className = "trust-total";
+      total.textContent = `${score.earned_points ?? 0} / ${score.max_points ?? 100}`;
+      header.append(title, total);
+      article.append(header);
+      const boundary = document.createElement("p");
+      boundary.className = "trust-boundary";
+      boundary.textContent = `${score.validation_outcome} · OTester ${score.trust_gate?.independent_otester || "NOT_RUN"} · OAudit ${score.trust_gate?.independent_oaudit || "NOT_RUN"} · Final claim DENIED`;
+      article.append(boundary);
+      article.append(scoreNodes("평가 영역", score.assessment_domains || []));
+      article.append(scoreNodes("4차 검증 단계", score.phases || []));
+      article.append(scoreNodes("세부 검사항목", score.assessment_areas || []));
+      article.append(scoreNodes("최종 실행 Step", score.steps || []));
+      const comparison = validation.comparison || {};
+      const compare = document.createElement("p");
+      compare.className = "comparison-line";
+      compare.textContent = comparison.contract
+        ? `이전 실행 대비 ${comparison.state}: ${comparison.total_delta_points >= 0 ? "+" : ""}${comparison.total_delta_points}점 · 개선 ${comparison.improved_node_count} · 퇴보 ${comparison.regressed_node_count}`
+        : "비교 기준 실행 없음: 다음 재검증부터 Before/After를 표시합니다.";
+      article.append(compare);
+      root.append(article);
+    }
+  }
+
+  function scoreNodes(label, nodes) {
+    const details = document.createElement("details");
+    details.className = "score-details";
+    const summary = document.createElement("summary");
+    summary.textContent = `${label} (${nodes.length})`;
+    details.append(summary);
+    for (const node of nodes) {
+      const row = document.createElement("div");
+      row.className = "score-node";
+      const identity = document.createElement("strong");
+      identity.textContent = node.area_id || node.phase || node.group || node.step_id || "UNVERIFIED";
+      const points = document.createElement("span");
+      points.textContent = `${node.earned_points ?? 0} / ${node.possible_points ?? 0} · ${node.outcome || "NOT_RUN"}`;
+      const diagnosis = document.createElement("p");
+      diagnosis.textContent = node.diagnosis || "진단 정보 없음";
+      const guide = document.createElement("p");
+      guide.className = "improvement-guide";
+      guide.textContent = `개선: ${node.improvement_guide || "추가 증적이 필요합니다."}`;
+      row.append(identity, points, diagnosis, guide);
+      details.append(row);
+    }
+    return details;
+  }
+
   function renderGatewayRequests(data) {
     const body = byId("gateway-request-rows");
     const requests = Array.isArray(data.requests) ? data.requests : [];
@@ -146,7 +212,9 @@
     setText("chain-head", compactDigest(metrics.chain_head_sha256));
     setText("content-storage", metrics.prompt_or_completion_content_recorded ? "ON" : "OFF");
     setText("improvement-count", `개선 후보 ${formatNumber(data.improvement_candidate_count)}`);
-    renderPrograms(Array.isArray(data.programs) ? data.programs : []);
+    const programs = Array.isArray(data.programs) ? data.programs : [];
+    renderPrograms(programs);
+    renderScorecards(programs);
     setText("self-validation", assurance.self_validation);
     setText("otester", assurance.independent_otester);
     setText("oaudit", assurance.independent_oaudit);
@@ -210,6 +278,10 @@
       const environmentProfile = byId("environment-profile").value.trim();
       if (request.profile === "UNIVERSAL" && environmentProfile) {
         request.environment_profile_file = environmentProfile;
+      }
+      const executionProfile = byId("execution-profile").value.trim();
+      if (request.profile === "UNIVERSAL" && executionProfile) {
+        request.execution_profile_file = executionProfile;
       }
       const result = await api("/v1/programs/validate", {method: "POST", body: JSON.stringify({
         ...request

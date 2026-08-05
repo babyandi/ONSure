@@ -246,12 +246,14 @@ test('registration precedes registered-identity learn and validation requests', 
   });
   const universal = universalValidationRequest(identity, 'run-001',
     path.join(root, '.onsure/universal-validation/target-001/run-001'),
-    path.join(root, 'environment-profile.json'));
+    path.join(root, 'environment-profile.json'),
+    path.join(root, 'execution-profile.json'));
   assert.deepEqual(universal, {
     project_id: 'project-001', target_id: 'target-001',
     validation_mode: 'UNIVERSAL', run_id: 'run-001',
     run_root: path.join(root, '.onsure/universal-validation/target-001/run-001'),
-    environment_profile_file: path.join(root, 'environment-profile.json')
+    environment_profile_file: path.join(root, 'environment-profile.json'),
+    execution_profile_file: path.join(root, 'execution-profile.json')
   });
   assert.throws(() => universalValidationRequest(identity, 'invalid run', root), /Run ID/);
   for (const request of [learnRequest(identity), validationRequest(identity)]) {

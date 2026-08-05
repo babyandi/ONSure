@@ -134,9 +134,21 @@
               <select id="validation-profile"><option value="UNIVERSAL">UNIVERSAL</option><option value="INSPECT_ONLY">INSPECT_ONLY</option><option value="MAVEN_STANDARD">MAVEN_STANDARD</option></select>
               <label for="environment-profile">환경 요구 프로필</label>
               <input id="environment-profile" placeholder="workspace 내부 JSON 경로 (선택)" spellcheck="false">
+              <label for="execution-profile">검토된 실행 프로필</label>
+              <input id="execution-profile" placeholder="exact-source-bound JSON 경로 (선택)" spellcheck="false">
               <span id="program-action-state" class="form-note">원본은 수정하지 않습니다.</span>
             </div>
           </details>
+        </section>
+
+        <section id="scorecards" class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">Customer trust evidence</p><h2>검증 신뢰도·개선 비교</h2></div>
+            <span class="count-chip">SELF VALIDATION · NONFINAL</span>
+          </div>
+          <p class="subtitle">점수는 digest에 결속된 실행 증적 커버리지이며 최종 인증을 뜻하지 않습니다.</p>
+          <div id="scorecard-list" class="scorecard-list"></div>
+          <p id="scorecard-empty" class="empty-state">점수화된 UNIVERSAL 검증 이력이 없습니다.</p>
         </section>
 
         <section id="changes" class="panel">

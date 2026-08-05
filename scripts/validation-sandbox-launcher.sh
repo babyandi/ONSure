@@ -36,6 +36,21 @@ for required_command in prlimit timeout bash env mktemp readlink dirname; do
   }
 done
 
+onsure_reviewed_script() {
+  local expected_suffix="$1"
+  local value="${2:-}"
+  [[ "${ONSURE_REVIEWED_EXECUTION:-}" == '1' \
+    && -n "$value" \
+    && "$value" != -* \
+    && "$value" == *"$expected_suffix" \
+    && "$value" != /* \
+    && "$value" != '..' \
+    && "$value" != ../* \
+    && "$value" != */../* \
+    && -f "$ONSURE_SNAPSHOT_ROOT/$value" \
+    && ! -L "$ONSURE_SNAPSHOT_ROOT/$value" ]]
+}
+
 case "${1:-}" in
   true)
     [[ "${ONSURE_SANDBOX_PROBE:-}" == '1' && "$#" -eq 1 ]] || {
@@ -50,7 +65,8 @@ case "${1:-}" in
     }
     ;;
   python3)
-    [[ "${2:-}" == '-m' && ( "${3:-}" == 'pytest' || "${3:-}" == 'unittest' ) ]] || {
+    [[ "${2:-}" == '-m' && ( "${3:-}" == 'pytest' || "${3:-}" == 'unittest' ) ]] \
+      || onsure_reviewed_script '.py' "${2:-}" || {
       echo 'ONSURE_VALIDATION_SANDBOX_FAIL PYTHON_MODULE_DENIED' >&2
       exit 65
     }
@@ -69,13 +85,24 @@ case "${1:-}" in
         echo 'ONSURE_VALIDATION_SANDBOX_FAIL ENVIRONMENT_PROBE_DENIED' >&2
         exit 65
       }
-    else
-      [[ "${2:-}" == 'gradlew' && -f "$ONSURE_SNAPSHOT_ROOT/gradlew" \
-        && ! -L "$ONSURE_SNAPSHOT_ROOT/gradlew" && " $* " == *' --offline '* ]] || {
-        echo 'ONSURE_VALIDATION_SANDBOX_FAIL GRADLE_COMMAND_DENIED' >&2
+    elif [[ "${2:-}" == 'gradlew' && -f "$ONSURE_SNAPSHOT_ROOT/gradlew" \
+      && ! -L "$ONSURE_SNAPSHOT_ROOT/gradlew" && " $* " == *' --offline '* ]]; then
+      :
+    elif [[ "${ONSURE_REVIEWED_EXECUTION:-}" == '1' ]]; then
+      onsure_reviewed_script '.sh' "${2:-}" || {
+        echo 'ONSURE_VALIDATION_SANDBOX_FAIL REVIEWED_BASH_SCRIPT_DENIED' >&2
         exit 65
       }
+    else
+      echo 'ONSURE_VALIDATION_SANDBOX_FAIL GRADLE_COMMAND_DENIED' >&2
+      exit 65
     fi
+    ;;
+  node)
+    onsure_reviewed_script '.js' "${2:-}" || {
+      echo 'ONSURE_VALIDATION_SANDBOX_FAIL REVIEWED_NODE_SCRIPT_DENIED' >&2
+      exit 65
+    }
     ;;
   *)
     echo "ONSURE_VALIDATION_SANDBOX_FAIL EXECUTABLE_DENIED_${1:-EMPTY}" >&2

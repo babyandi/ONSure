@@ -6,7 +6,8 @@
   "migration_tool": "FLYWAY_12_11_0",
   "schema_owner": "onsure",
   "ordered_migrations": [
-    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V1__create_assurance_event.sql"
+    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V1__create_assurance_event.sql",
+    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V2__create_validation_score_history.sql"
   ],
   "migration_lock_required": true,
   "backup_restore_proof_required": true,

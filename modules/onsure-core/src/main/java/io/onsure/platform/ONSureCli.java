@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.List;
 
 /** Local CLI for validation compatibility and the complete nonfinal workflow dispatcher. */
 public final class ONSureCli {
@@ -69,7 +70,35 @@ public final class ONSureCli {
                     args[2], sourceRoot, declaredRequirements);
             var result = new UniversalValidationRunner().run(profile, runRoot, environmentProfile);
             out.println(mapper().writeValueAsString(result));
+            out.println("ONSURE_VALIDATION_SCORECARD "
+                    + mapper().writeValueAsString(mapper().readTree(result.receiptFile().toFile()).path("scorecard")));
             out.println("ONSURE_UNIVERSAL_VALIDATION_COMPLETE_NONFINAL " + result.receiptFile());
+            return switch (result.overallOutcome()) {
+                case PASS_NONFINAL -> 0;
+                case FAIL -> 2;
+                case BLOCKED -> 3;
+                case NOT_RUN -> 4;
+                case INCONCLUSIVE -> 5;
+            };
+        }
+        if ((args.length == 5 || args.length == 6) && "universal-reviewed".equals(args[0])) {
+            Path sourceRoot = Path.of(args[1]).toAbsolutePath().normalize();
+            Path runRoot = Path.of(args[3]).toAbsolutePath().normalize();
+            ReviewedExecutionProfile.Loaded executionProfile = ReviewedExecutionProfile.load(
+                    Path.of(args[4]), sourceRoot);
+            EnvironmentRequirementProfile.Loaded environmentProfile = args.length == 6
+                    ? EnvironmentRequirementProfile.load(Path.of(args[5])) : null;
+            var declaredRequirements = environmentProfile == null
+                    ? java.util.List.<UniversalValidationProfile.EnvironmentRequirement>of()
+                    : environmentProfile.requirements();
+            var profile = new StandardValidationProfileDetector(List.of(executionProfile.pack())).detect(
+                    args[2], sourceRoot, declaredRequirements);
+            var result = new UniversalValidationRunner().run(
+                    profile, runRoot, environmentProfile, executionProfile);
+            out.println(mapper().writeValueAsString(result));
+            out.println("ONSURE_VALIDATION_SCORECARD "
+                    + mapper().writeValueAsString(mapper().readTree(result.receiptFile().toFile()).path("scorecard")));
+            out.println("ONSURE_UNIVERSAL_REVIEWED_VALIDATION_COMPLETE_NONFINAL " + result.receiptFile());
             return switch (result.overallOutcome()) {
                 case PASS_NONFINAL -> 0;
                 case FAIL -> 2;
@@ -81,6 +110,8 @@ public final class ONSureCli {
         err.println("usage:");
         err.println("  ONSureCli workflow <workspace-root> <operation> <request-json-file>");
         err.println("  ONSureCli universal <source-root> <profile-id> <run-root> [environment-profile-file]");
+        err.println("  ONSureCli universal-reviewed <source-root> <profile-id> <run-root> "
+                + "<execution-profile-file> [environment-profile-file]");
         err.println("  ONSureCli inventory <source-root>");
         err.println("  ONSureCli lineage <snapshot-root>");
         err.println("  ONSureCli validate <source-root> <target-id> <target-name> "

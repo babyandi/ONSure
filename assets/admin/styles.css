@@ -115,6 +115,20 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 8px 
 .inline-control { display: flex; align-items: center; gap: 12px; margin-top: 14px; color: var(--muted); }
 .form-note { color: var(--muted); font-size: .8rem; }
 .compact-table { margin-top: 18px; }
+.scorecard-list { display: grid; gap: 16px; margin-top: 18px; }
+.trust-card { padding: 18px; border: 1px solid #31547b; border-radius: 10px; background: #0d1726; }
+.trust-card-header { display: flex; justify-content: space-between; gap: 20px; align-items: start; }
+.trust-card-header h3 { margin: 0 0 6px; }
+.trust-card-header small { color: var(--muted); font: .68rem ui-monospace, monospace; }
+.trust-total { color: var(--green); font: 700 1.8rem ui-monospace, monospace; white-space: nowrap; }
+.trust-boundary { padding: 9px 11px; border: 1px solid #5b4e29; border-radius: 7px; color: var(--amber); background: #211d11; font: .72rem ui-monospace, monospace; }
+.score-details { margin-top: 9px; border-top: 1px solid var(--line); }
+.score-details summary { padding: 11px 2px; cursor: pointer; color: #a9ccef; font-weight: 650; }
+.score-node { display: grid; grid-template-columns: minmax(170px, 1fr) auto; gap: 5px 18px; padding: 12px; border-top: 1px solid #202b3e; background: #0a1220; }
+.score-node > span { color: var(--blue); font: .72rem ui-monospace, monospace; }
+.score-node p { grid-column: 1 / -1; margin: 2px 0; color: var(--muted); font-size: .75rem; line-height: 1.45; }
+.score-node .improvement-guide { color: #b5d8b9; }
+.comparison-line { margin: 14px 0 0; color: var(--purple); font-size: .78rem; }
 [hidden] { display: none !important; }
 
 @media (max-width: 1050px) {

@@ -58,6 +58,7 @@ class LocalManagementOverviewServiceTest {
         assertEquals(1, latest.get("finding_count"));
         assertEquals(2, latest.get("evidence_count"));
         assertEquals(1, latest.get("improvement_candidate_count"));
+        assertEquals("NOT_RUN", ((Map<?, ?>) latest.get("scorecard")).get("state"));
         String serialized = mapper.writeValueAsString(overview);
         assertFalse(serialized.contains(secret));
         assertFalse(serialized.contains("OPENAI_API_KEY"));
