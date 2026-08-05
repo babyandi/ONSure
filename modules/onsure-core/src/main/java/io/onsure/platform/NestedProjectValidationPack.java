@@ -179,7 +179,7 @@ public final class NestedProjectValidationPack implements ValidationPack {
                     relative.resolve("package-lock.json").toString().replace('\\', '/'), true));
             String stepId = token + ".dependencies";
             steps.add(step(stepId, StepKind.BUILD,
-                    List.of("npm", "--offline", "ci", "--ignore-scripts"), relative,
+                    List.of("npm", "--offline", "ci", "--ignore-scripts", "--engine-strict"), relative,
                     StandardValidationPackSupport.BUILD_TIMEOUT, List.of("validator.meta-check")));
             gate = "nested." + stepId;
         }

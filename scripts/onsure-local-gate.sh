@@ -105,7 +105,7 @@ if [[ "$MODE" == "full" ]]; then
   EXT_BUILD="$OUT/vscode-extension-build"; cp -R "$ROOT/vscode-extension" "$EXT_BUILD"
   mkdir -p "$OUT/scripts"
   cp "$ROOT/scripts/package_onsure_vsix.py" "$OUT/scripts/package_onsure_vsix.py"
-  (cd "$EXT_BUILD"; npm ci --ignore-scripts --no-audit --no-fund > "$OUT/logs/vscode-npm-install.log" 2>&1; npm run check > "$OUT/logs/vscode-node-check.log" 2>&1; npm run package -- --out "$OUT/artifacts/onsure.vsix" > "$OUT/logs/vscode-package.log" 2>&1)
+  (cd "$EXT_BUILD"; npm ci --ignore-scripts --engine-strict --no-audit --no-fund > "$OUT/logs/vscode-npm-install.log" 2>&1; npm run check > "$OUT/logs/vscode-node-check.log" 2>&1; npm run package -- --out "$OUT/artifacts/onsure.vsix" > "$OUT/logs/vscode-package.log" 2>&1)
   [[ -s "$OUT/artifacts/onsure.vsix" ]] || { echo "ONSURE_LOCAL_GATE_FAIL VSIX_MISSING" >&2; exit 74; }
   sha256sum "$OUT/artifacts/onsure.vsix" > "$OUT/artifacts/onsure.vsix.sha256"
 fi

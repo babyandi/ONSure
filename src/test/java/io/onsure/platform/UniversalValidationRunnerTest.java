@@ -73,7 +73,8 @@ class UniversalValidationRunnerTest {
         var result = new UniversalValidationRunner((step, root) -> {
             executed.add(step.stepId());
             if (step.stepId().equals("node.dependencies")) {
-                assertEquals(List.of("npm", "--offline", "ci", "--ignore-scripts"), step.command());
+                assertEquals(List.of("npm", "--offline", "ci", "--ignore-scripts", "--engine-strict"),
+                        step.command());
                 return new UniversalValidationRunner.StepExecution(
                         BLOCKED, 1, "ENOTCACHED", false, "OFFLINE_DEPENDENCY_CACHE_INCOMPLETE");
             }

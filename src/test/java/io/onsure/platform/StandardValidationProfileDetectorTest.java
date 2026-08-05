@@ -189,7 +189,8 @@ class StandardValidationProfileDetectorTest {
                         && step.kind() == UniversalValidationProfile.StepKind.STATIC_ANALYSIS));
         var preparation = profile.steps().stream().filter(step -> step.stepId().equals("node.dependencies"))
                 .findFirst().orElseThrow();
-        assertEquals(List.of("npm", "--offline", "ci", "--ignore-scripts"), preparation.command());
+        assertEquals(List.of("npm", "--offline", "ci", "--ignore-scripts", "--engine-strict"),
+                preparation.command());
         assertEquals(UniversalValidationProfile.StepKind.BUILD, preparation.kind());
         assertEquals(List.of("environment.preflight", "node.manifest-lock-consistency",
                         "validator.meta-check"),

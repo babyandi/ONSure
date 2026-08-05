@@ -12,7 +12,7 @@ if [[ "${1:-}" == "--inside" ]]; then
     test -d node_modules/@vscode/test-electron
     test -d .vscode-test
   else
-    npm ci --ignore-scripts --no-audit --no-fund
+    npm ci --ignore-scripts --engine-strict --no-audit --no-fund
   fi
   exec npm run test:e2e
 fi

@@ -52,7 +52,8 @@ def build(output: pathlib.Path) -> dict[str, object]:
         project.mkdir()
         for name in ("package.json", "package-lock.json"):
             shutil.copy2(EXTENSION / name, project / name)
-        command(["npm", "ci", "--ignore-scripts", "--no-audit", "--no-fund", "--cache", str(cache)], project)
+        command(["npm", "ci", "--ignore-scripts", "--engine-strict", "--no-audit", "--no-fund",
+                 "--cache", str(cache)], project)
         shutil.rmtree(project / "node_modules", ignore_errors=True)
         files = sorted(path for path in cache.rglob("*") if path.is_file() and not path.is_symlink())
         manifest = {
@@ -109,8 +110,8 @@ def verify(archive_path: pathlib.Path) -> dict[str, object]:
             raise ValueError("NPM_AIRGAP_LOCK_DIGEST_MISMATCH")
         if manifest["package_lock_sha256"] != sha256(EXTENSION / "package-lock.json"):
             raise ValueError("NPM_AIRGAP_SOURCE_LOCK_DRIFT")
-        command(["npm", "ci", "--offline", "--ignore-scripts", "--no-audit", "--no-fund",
-                 "--cache", str(root / "cache")], root / "project")
+        command(["npm", "ci", "--offline", "--ignore-scripts", "--engine-strict", "--no-audit",
+                 "--no-fund", "--cache", str(root / "cache")], root / "project")
     return {
         "contract": "ONSURE_NPM_AIRGAP_CACHE_VERIFICATION_V1",
         "decision": "PASS_NONFINAL",

@@ -12,6 +12,30 @@ import onsure_supply_chain as supply_chain  # noqa: E402
 
 
 class ONSureSupplyChainTest(unittest.TestCase):
+    def test_vscode_toolchain_pins_node20_compatible_azure_transitives(self):
+        package = json.loads((ROOT / "vscode-extension/package.json").read_text(encoding="utf-8"))
+        lock = json.loads((ROOT / "vscode-extension/package-lock.json").read_text(encoding="utf-8"))
+        expected = {
+            "@azure/abort-controller": "2.1.2",
+            "@azure/core-auth": "1.10.1",
+            "@azure/core-client": "1.10.1",
+            "@azure/core-rest-pipeline": "1.22.2",
+            "@azure/core-tracing": "1.3.0",
+            "@azure/core-util": "1.13.0",
+            "@azure/logger": "1.3.0",
+            "@typespec/ts-http-runtime": "0.3.0",
+        }
+        self.assertEqual(expected, package["overrides"])
+        locked = lock["packages"]
+        for name, version in expected.items():
+            candidates = [
+                value for path, value in locked.items()
+                if path.endswith("node_modules/" + name)
+            ]
+            self.assertTrue(candidates, name)
+            self.assertEqual({version}, {value["version"] for value in candidates}, name)
+            self.assertNotIn(">=22", {value.get("engines", {}).get("node") for value in candidates})
+
     def test_modular_artifacts_are_cleanly_rebuilt_before_hashing(self):
         completed = mock.Mock(returncode=0, stderr="")
         with mock.patch.object(supply_chain.subprocess, "run", return_value=completed) as run:

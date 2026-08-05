@@ -78,7 +78,7 @@ ID는 `<pack-id>.` prefix를 사용하고 원칙적으로 다음 검증군에만
 
 환경·구조·검증기 메타검증·증적 판정 gate는 Core 전용이며 Pack이 교체할 수 없다. 유일한
 예외는 Core에 고정 설치된 `NodeValidationPack`의 정확한 `node.dependencies` 명령
-`npm --offline ci --ignore-scripts`다. 이 Step은 핵심 `environment.preflight` 뒤, 구조 inventory
+`npm --offline ci --ignore-scripts --engine-strict`다. 이 Step은 핵심 `environment.preflight` 뒤, 구조 inventory
 앞에서 격리 snapshot에만 설치하며 외부 Pack이 같은 검증군이나 명령을 기여하면 거부한다.
 메타검증은 일곱 검증군 전체와 실패·재시도·차단, 연결 E2E 여섯 facet,
 그 여섯 facet의 실제 artifact 계보를 재계산하는 `WORKFLOW_LINEAGE`,

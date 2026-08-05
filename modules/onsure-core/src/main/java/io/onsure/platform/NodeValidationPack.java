@@ -31,7 +31,7 @@ public final class NodeValidationPack implements ValidationPack {
         if (dependencies) {
             preparation = "node.dependencies";
             steps.add(step(preparation, Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
-                    List.of("npm", "--offline", "ci", "--ignore-scripts"), BUILD_TIMEOUT,
+                    List.of("npm", "--offline", "ci", "--ignore-scripts", "--engine-strict"), BUILD_TIMEOUT,
                     List.of("environment.preflight", "node.manifest-lock-consistency",
                             "validator.meta-check")));
         }

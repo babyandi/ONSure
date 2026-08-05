@@ -93,7 +93,7 @@ mkdir -p "$OUT/scripts"
 cp "$ROOT/scripts/package_onsure_vsix.py" "$OUT/scripts/package_onsure_vsix.py"
 (
   cd "$EXT_BUILD"
-  npm ci --ignore-scripts --no-audit --no-fund \
+  npm ci --ignore-scripts --engine-strict --no-audit --no-fund \
     | tee "$OUT/logs/vscode-npm-install.log"
   npm run check | tee "$OUT/logs/vscode-node-check.log"
   npm run package -- --out "$OUT/artifacts/onsure.vsix" \

@@ -42,6 +42,8 @@ class NestedProjectValidationPackTest {
                 List.of("python3", "-m", "compileall", "-q", ".")));
         assertTrue(hasCommandAt(profile, "tools/checker",
                 List.of("python3", "-m", "unittest", "discover", "-s", "tests")));
+        assertTrue(hasCommandAt(profile, "web",
+                List.of("npm", "--offline", "ci", "--ignore-scripts", "--engine-strict")));
         assertTrue(hasCommandAt(profile, "web", List.of("npm", "--offline", "test")));
         assertTrue(hasCommandAt(profile, "web", List.of("npm", "--offline", "run", "build")));
         assertTrue(profile.environmentRequirements().stream().anyMatch(requirement ->

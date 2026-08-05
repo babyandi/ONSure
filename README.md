@@ -155,7 +155,7 @@ mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
 
 등록 Workflow/API에서는 `validation.run` 요청의 `environment_profile_file`에 workspace 내부
 프로필 경로를 전달한다. Node dependency가 있으면 내장 Pack이 구조 검사 전에 고정된
-`npm --offline ci --ignore-scripts`를 격리 snapshot에서 실행한다. lock/manifest drift 또는
+`npm --offline ci --ignore-scripts --engine-strict`를 격리 snapshot에서 실행한다. lock/manifest drift 또는
 offline cache 누락은 1단계 `BLOCKED`이며 2~7단계는 실행하지 않는다.
 관리화면의 프로그램 검증 프로필도 `UNIVERSAL`을 선택하면 `/v1/programs/validate`가 같은
 Runner를 사용한다. 선택한 workspace 내부 환경 프로필, 원본 불변성, universal receipt digest,
