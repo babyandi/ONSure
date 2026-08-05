@@ -192,7 +192,7 @@ public final class UniversalValidationRunner {
                 execution = executeInternal(profile, step, snapshot.snapshotRoot(), results,
                         logRoot, environmentSha256);
             } else {
-                execution = executor.execute(step, snapshot.snapshotRoot().resolve(step.workingDirectory()));
+                execution = executor.execute(step, snapshot.snapshotRoot());
                 execution = verifyExecutableEvidence(step, execution, snapshot.snapshotRoot());
             }
             Instant stepCompleted = Instant.now();

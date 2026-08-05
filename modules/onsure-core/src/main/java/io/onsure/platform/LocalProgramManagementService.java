@@ -761,7 +761,7 @@ final class LocalProgramManagementService {
     private static boolean excluded(Path relative) {
         for (Path segment : relative) {
             String name = segment.toString();
-            if (EXCLUDED_SEGMENTS.contains(name) || name.startsWith("target.") || name.startsWith("target-")) {
+            if (EXCLUDED_SEGMENTS.contains(name)) {
                 return true;
             }
         }

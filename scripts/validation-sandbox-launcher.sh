@@ -10,8 +10,30 @@ fi
 
 ONSURE_SNAPSHOT_ROOT="$(cd "$1" && pwd -P)"
 ONSURE_TIMEOUT_SECONDS="$2"
-ONSURE_SANDBOX_WORKDIR="/""workspace"
+ONSURE_SANDBOX_MOUNT_ROOT='/workspace'
+ONSURE_SANDBOX_WORKDIR="$ONSURE_SANDBOX_MOUNT_ROOT"
 shift 2
+
+ONSURE_RELATIVE_WORKDIR="${ONSURE_SANDBOX_WORKING_DIRECTORY:-}"
+[[ "$ONSURE_RELATIVE_WORKDIR" != /* \
+  && "$ONSURE_RELATIVE_WORKDIR" != '..' \
+  && "$ONSURE_RELATIVE_WORKDIR" != ../* \
+  && "$ONSURE_RELATIVE_WORKDIR" != */../* \
+  && "$ONSURE_RELATIVE_WORKDIR" != *$'\n'* \
+  && "$ONSURE_RELATIVE_WORKDIR" != *$'\r'* ]] || {
+  echo 'ONSURE_VALIDATION_SANDBOX_FAIL WORKING_DIRECTORY_INVALID' >&2
+  exit 65
+}
+ONSURE_COMMAND_ROOT="$ONSURE_SNAPSHOT_ROOT"
+if [[ -n "$ONSURE_RELATIVE_WORKDIR" ]]; then
+  ONSURE_COMMAND_ROOT="$ONSURE_SNAPSHOT_ROOT/$ONSURE_RELATIVE_WORKDIR"
+  [[ -d "$ONSURE_COMMAND_ROOT" && ! -L "$ONSURE_COMMAND_ROOT" \
+    && "$(readlink -f "$ONSURE_COMMAND_ROOT")" == "$ONSURE_COMMAND_ROOT" ]] || {
+    echo 'ONSURE_VALIDATION_SANDBOX_FAIL WORKING_DIRECTORY_UNAVAILABLE' >&2
+    exit 65
+  }
+  ONSURE_SANDBOX_WORKDIR="$ONSURE_SANDBOX_MOUNT_ROOT/$ONSURE_RELATIVE_WORKDIR"
+fi
 
 ONSURE_SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 ONSURE_BACKEND_HELPER="$ONSURE_SCRIPT_ROOT/onsure-sandbox-backend.sh"
@@ -47,8 +69,8 @@ onsure_reviewed_script() {
     && "$value" != '..' \
     && "$value" != ../* \
     && "$value" != */../* \
-    && -f "$ONSURE_SNAPSHOT_ROOT/$value" \
-    && ! -L "$ONSURE_SNAPSHOT_ROOT/$value" ]]
+    && -f "$ONSURE_COMMAND_ROOT/$value" \
+    && ! -L "$ONSURE_COMMAND_ROOT/$value" ]]
 }
 
 case "${1:-}" in
@@ -81,14 +103,15 @@ case "${1:-}" in
     ;;
   bash)
     if [[ "${ONSURE_SANDBOX_PROBE:-}" == '1' ]]; then
-      [[ "${2:-}" == '.onsure/internal/environment-probe.sh' \
+      [[ -z "$ONSURE_RELATIVE_WORKDIR" \
+        && "${2:-}" == '.onsure/internal/environment-probe.sh' \
         && -f "$ONSURE_SNAPSHOT_ROOT/.onsure/internal/environment-probe.sh" \
         && ! -L "$ONSURE_SNAPSHOT_ROOT/.onsure/internal/environment-probe.sh" ]] || {
         echo 'ONSURE_VALIDATION_SANDBOX_FAIL ENVIRONMENT_PROBE_DENIED' >&2
         exit 65
       }
-    elif [[ "${2:-}" == 'gradlew' && -f "$ONSURE_SNAPSHOT_ROOT/gradlew" \
-      && ! -L "$ONSURE_SNAPSHOT_ROOT/gradlew" && " $* " == *' --offline '* ]]; then
+    elif [[ "${2:-}" == 'gradlew' && -f "$ONSURE_COMMAND_ROOT/gradlew" \
+      && ! -L "$ONSURE_COMMAND_ROOT/gradlew" && " $* " == *' --offline '* ]]; then
       :
     elif [[ "${ONSURE_REVIEWED_EXECUTION:-}" == '1' ]]; then
       onsure_reviewed_script '.sh' "${2:-}" || {
@@ -144,7 +167,7 @@ if [[ "$ONSURE_SELECTED_BACKEND" == 'OCI_DOCKER' ]]; then
   }
   mkdir -p "$ONSURE_SNAPSHOT_ROOT/.onsure-sandbox-home"
   ONSURE_CONTAINER_NAME="onsure-validation-${UID}-$$-${RANDOM}"
-  ONSURE_OCI_MOUNTS=(--mount "type=bind,src=$ONSURE_SNAPSHOT_ROOT,dst=$ONSURE_SANDBOX_WORKDIR")
+  ONSURE_OCI_MOUNTS=(--mount "type=bind,src=$ONSURE_SNAPSHOT_ROOT,dst=$ONSURE_SANDBOX_MOUNT_ROOT")
   if [[ -n "${ONSURE_MAVEN_CACHE:-}" && -d "${ONSURE_MAVEN_CACHE}" \
       && ! -L "${ONSURE_MAVEN_CACHE}" && "${ONSURE_MAVEN_CACHE}" != *','* \
       && "${ONSURE_MAVEN_CACHE}" != *':'* ]]; then
@@ -181,7 +204,7 @@ if [[ "$ONSURE_SELECTED_BACKEND" == 'OCI_DOCKER' ]]; then
       "${ONSURE_OCI_MOUNTS[@]}" \
       --workdir "$ONSURE_SANDBOX_WORKDIR" \
       --env PATH=/opt/java/openjdk/bin:/usr/local/bin:/usr/bin:/bin \
-      --env "HOME=$ONSURE_SANDBOX_WORKDIR/.onsure-sandbox-home" \
+      --env "HOME=$ONSURE_SANDBOX_MOUNT_ROOT/.onsure-sandbox-home" \
       --env TMPDIR=/tmp \
       --env LANG=C.UTF-8 \
       --env LC_ALL=C.UTF-8 \
@@ -266,7 +289,7 @@ timeout --signal=KILL --kill-after=2s "${ONSURE_TIMEOUT_SECONDS}s" \
     --cap-drop ALL \
     --clearenv \
     --setenv PATH "$ONSURE_SANDBOX_PATH" \
-    --setenv HOME "$ONSURE_SANDBOX_WORKDIR/.onsure-sandbox-home" \
+    --setenv HOME "$ONSURE_SANDBOX_MOUNT_ROOT/.onsure-sandbox-home" \
     --setenv TMPDIR /tmp \
     --setenv LANG C.UTF-8 \
     --setenv LC_ALL C.UTF-8 \
@@ -278,7 +301,7 @@ timeout --signal=KILL --kill-after=2s "${ONSURE_TIMEOUT_SECONDS}s" \
     --setenv npm_config_fund false \
     "${ONSURE_BINDINGS[@]}" \
     "${ONSURE_JDK_BINDINGS[@]}" \
-    --bind "$ONSURE_SNAPSHOT_ROOT" "$ONSURE_SANDBOX_WORKDIR" \
+    --bind "$ONSURE_SNAPSHOT_ROOT" "$ONSURE_SANDBOX_MOUNT_ROOT" \
     --tmpfs /tmp \
     --proc /proc \
     --dev /dev \

@@ -76,6 +76,10 @@ final class SandboxedValidationStepExecutor implements UniversalValidationRunner
         } catch (IllegalArgumentException error) {
             return blocked(error.getMessage());
         }
+        String workingDirectory = step.workingDirectory().toString().replace('\\', '/');
+        if (!workingDirectory.isEmpty()) {
+            environment.put("ONSURE_SANDBOX_WORKING_DIRECTORY", workingDirectory);
+        }
         if (step.stepId().startsWith("reviewed.")) {
             environment.put("ONSURE_REVIEWED_EXECUTION", "1");
         }

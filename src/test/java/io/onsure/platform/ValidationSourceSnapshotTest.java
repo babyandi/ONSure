@@ -22,11 +22,15 @@ class ValidationSourceSnapshotTest {
         Files.writeString(source.resolve("node_modules/pkg/generated.js"), "ignored");
         Files.createDirectories(source.resolve("target"));
         Files.writeString(source.resolve("target/output.jar"), "ignored");
+        Files.createDirectories(source.resolve("contracts"));
+        Files.writeString(source.resolve("contracts/target-adapter.v1.json"), "{}\n");
 
         var snapshot = ValidationSourceSnapshot.create(source, temp.resolve("execution-copy"));
 
-        assertEquals(1, snapshot.fileCount());
+        assertEquals(2, snapshot.fileCount());
         assertTrue(Files.isRegularFile(snapshot.snapshotRoot().resolve("src/main/app.py")));
+        assertTrue(Files.isRegularFile(
+                snapshot.snapshotRoot().resolve("contracts/target-adapter.v1.json")));
         assertFalse(Files.exists(snapshot.snapshotRoot().resolve("node_modules")));
         assertEquals(snapshot.sourceDigestBefore(), snapshot.snapshotDigest());
         assertTrue(ValidationSourceSnapshot.sourceUnchanged(snapshot));

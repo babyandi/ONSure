@@ -139,7 +139,7 @@ public final class ValidationSourceSnapshot {
     }
 
     private static boolean excludedName(String name) {
-        return EXCLUDED_NAMES.contains(name) || name.startsWith("target.") || name.startsWith("target-");
+        return EXCLUDED_NAMES.contains(name);
     }
 
     private static String normalized(Path value) {

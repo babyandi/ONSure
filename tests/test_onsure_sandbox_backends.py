@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -69,6 +70,38 @@ class ONSureSandboxBackendsTest(unittest.TestCase):
         self.assertIn('List.of("python3", "-m", "compileall", "-q", ".")', pack)
         self.assertIn("\"${3:-}\" == 'compileall'", launcher)
         self.assertIn("\"${4:-}\" == '-q'", launcher)
+
+    def test_validation_launcher_mounts_full_snapshot_and_changes_only_working_directory(self):
+        launcher = (ROOT / "scripts/validation-sandbox-launcher.sh").read_text(encoding="utf-8")
+        executor = (ROOT / "modules/onsure-core/src/main/java/io/onsure/platform/"
+                    "SandboxedValidationStepExecutor.java").read_text(encoding="utf-8")
+        runner = (ROOT / "modules/onsure-core/src/main/java/io/onsure/platform/"
+                  "UniversalValidationRunner.java").read_text(encoding="utf-8")
+        self.assertIn('ONSURE_SANDBOX_WORKING_DIRECTORY', launcher)
+        self.assertIn('ONSURE_SANDBOX_WORKING_DIRECTORY', executor)
+        self.assertIn('executor.execute(step, snapshot.snapshotRoot())', runner)
+        self.assertIn('dst=$ONSURE_SANDBOX_MOUNT_ROOT', launcher)
+        self.assertIn('--workdir "$ONSURE_SANDBOX_WORKDIR"', launcher)
+        self.assertIn('--chdir "$ONSURE_SANDBOX_WORKDIR"', launcher)
+
+    def test_validation_launcher_rejects_escaping_and_symlink_working_directories(self):
+        launcher = ROOT / "scripts/validation-sandbox-launcher.sh"
+        with tempfile.TemporaryDirectory(prefix="onsure-workdir-boundary-",
+                                         dir="/workspace") as temporary:
+            root = pathlib.Path(temporary)
+            (root / "real").mkdir()
+            os.symlink(root / "real", root / "linked")
+            base = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+                    "ONSURE_SANDBOX_PROBE": "1"}
+            for working_directory in ("../escape", "linked"):
+                environment = dict(base)
+                environment["ONSURE_SANDBOX_WORKING_DIRECTORY"] = working_directory
+                result = subprocess.run(
+                    ["bash", str(launcher), str(root), "15", "true"],
+                    cwd=ROOT, env=environment, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(65, result.returncode, result.stdout + result.stderr)
+                self.assertIn("WORKING_DIRECTORY_", result.stderr)
 
     def test_diagnostic_propagates_an_isolated_temp_root_to_sandbox_children(self):
         source = (ROOT / "scripts/onsure_sandbox_diagnostics.py").read_text(encoding="utf-8")
