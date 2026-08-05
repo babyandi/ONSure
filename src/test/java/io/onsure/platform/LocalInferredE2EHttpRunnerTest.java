@@ -110,7 +110,7 @@ class LocalInferredE2EHttpRunnerTest {
                 InetAddress.getByName("127.0.0.1"), 0), 4);
         server.createContext("/orders", exchange -> {
             receivedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            byte[] body = "{\"id\":\"created-order-42\",\"name\":\"ONSURE_SYNTHETIC\",\"quantity\":1}"
+            byte[] body = "{\"data\":{\"orderId\":\"created-order-42\"}}"
                     .getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
             exchange.sendResponseHeaders(201, body.length);
@@ -430,7 +430,7 @@ class LocalInferredE2EHttpRunnerTest {
                           description: created
                           content:
                             application/json:
-                              schema: {$ref: '#/components/schemas/Order'}
+                              schema: {$ref: '#/components/schemas/CreatedOrder'}
                   /orders/{orderId}:
                     parameters:
                       - name: orderId
@@ -447,6 +447,15 @@ class LocalInferredE2EHttpRunnerTest {
                               schema: {$ref: '#/components/schemas/Order'}
                 components:
                   schemas:
+                    CreatedOrder:
+                      type: object
+                      required: [data]
+                      properties:
+                        data:
+                          type: object
+                          required: [orderId]
+                          properties:
+                            orderId: {type: string}
                     Order:
                       type: object
                       required: [id, name, quantity]

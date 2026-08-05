@@ -20,6 +20,8 @@
   관리화면 history projection
 - OpenAPI business object별 lifecycle 추론, `CREATE → READ/UPDATE/DELETE` binding 검토·승인 결속,
   producer JSON Pointer에서 consumer path로 값을 전달하는 비저장 `CREATE → READ` 실제 실행
+- OpenAPI response schema의 중첩 scalar JSON Pointer 탐색과 exact property/단일 `id` 근거 기반
+  binding 신뢰도 산정
 - Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
 - loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계
 - VS Code Runtime/Admin View의 SecretStorage 기반 LLM Gateway health·token·cost·receipt-chain 표시

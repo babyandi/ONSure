@@ -241,6 +241,7 @@ final class ProgramUnderstandingEngine {
         Map<String, Object> operation = new LinkedHashMap<>();
         for (String key : List.of("http_method", "http_path", "operation_id", "tags",
                 "request_schema_refs", "response_statuses", "security_declared",
+                "response_scalar_json_pointers",
                 "request_schema_declared", "lifecycle_action", "destructive_risk", "source_path",
                 "evidence_sha256")) {
             if (candidate.containsKey(key)) operation.put(key, candidate.get(key));
@@ -298,7 +299,8 @@ final class ProgramUnderstandingEngine {
             @SuppressWarnings("unchecked") Map<String, Object> operation =
                     (Map<String, Object>) consumer.get("operation");
             for (String parameter : pathParameters(operation.getOrDefault("http_path", "").toString())) {
-                String pointer = parameter.toLowerCase(Locale.ROOT).endsWith("id") ? "/id" : "/" + parameter;
+                BindingPointer selected = bindingPointer(producer, parameter);
+                String pointer = selected.pointer();
                 String material = producer.get("flow_id") + "\u0000" + consumer.get("flow_id")
                         + "\u0000" + parameter + "\u0000" + pointer;
                 Map<String, Object> binding = new LinkedHashMap<>();
@@ -308,8 +310,8 @@ final class ProgramUnderstandingEngine {
                 binding.put("consumer_flow_id", consumer.get("flow_id"));
                 binding.put("consumer_location", "PATH");
                 binding.put("consumer_parameter_name", parameter);
-                binding.put("inference_basis", "BUSINESS_OBJECT_AND_LIFECYCLE_PATH_PARAMETER_HEURISTIC");
-                binding.put("inference_confidence", 0.70);
+                binding.put("inference_basis", selected.basis());
+                binding.put("inference_confidence", selected.confidence());
                 binding.put("semantic_state", "INFERRED_REVIEW_REQUIRED");
                 binding.put("runtime_verified", false);
                 binding.put("auto_execute", false);
@@ -319,6 +321,30 @@ final class ProgramUnderstandingEngine {
         }
         return List.copyOf(result);
     }
+
+    private static BindingPointer bindingPointer(Map<String, Object> producer, String parameter) {
+        @SuppressWarnings("unchecked") Map<String, Object> operation =
+                (Map<String, Object>) producer.get("operation");
+        List<String> pointers = stringList(operation.get("response_scalar_json_pointers"));
+        List<String> exact = pointers.stream().filter(pointer ->
+                pointerLeaf(pointer).equalsIgnoreCase(parameter)).toList();
+        if (exact.size() == 1) return new BindingPointer(exact.get(0),
+                "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", 0.93);
+        List<String> identifiers = pointers.stream().filter(pointer ->
+                "id".equalsIgnoreCase(pointerLeaf(pointer))).toList();
+        if (parameter.toLowerCase(Locale.ROOT).endsWith("id") && identifiers.size() == 1)
+            return new BindingPointer(identifiers.get(0), "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY", 0.88);
+        String fallback = parameter.toLowerCase(Locale.ROOT).endsWith("id") ? "/id" : "/" + parameter;
+        return new BindingPointer(fallback,
+                "BUSINESS_OBJECT_AND_LIFECYCLE_PATH_PARAMETER_HEURISTIC", 0.70);
+    }
+
+    private static String pointerLeaf(String pointer) {
+        int separator = pointer.lastIndexOf('/');
+        return pointer.substring(separator + 1).replace("~1", "/").replace("~0", "~");
+    }
+
+    private record BindingPointer(String pointer, String basis, double confidence) { }
 
     private static List<String> pathParameters(String route) {
         List<String> result = new ArrayList<>();

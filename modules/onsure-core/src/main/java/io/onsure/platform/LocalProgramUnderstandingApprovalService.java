@@ -601,7 +601,7 @@ final class LocalProgramUnderstandingApprovalService {
                 if (producerPlanId == null || consumerPlanId == null
                         || !operationPlanIds.contains(producerPlanId) || !operationPlanIds.contains(consumerPlanId)
                         || !bindingId.matches("BINDING-[0-9a-f]{16}")
-                        || !pointer.matches("/(?:[A-Za-z0-9._~-]|~[01]){1,128}")
+                        || !pointer.matches("(?:/(?:[A-Za-z0-9._-]|~[01]){1,128}){1,8}")
                         || !parameter.matches("[A-Za-z][A-Za-z0-9._-]{0,127}")) continue;
                 bindings.add(Map.of(
                         "binding_id", bindingId,

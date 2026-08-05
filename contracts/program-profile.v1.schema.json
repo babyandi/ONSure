@@ -111,6 +111,7 @@
               "tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
               "request_schema_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
               "response_statuses": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+              "response_scalar_json_pointers": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^/.+$"}},
               "security_declared": {"type": "boolean"},
               "lifecycle_action": {"type": "string", "enum": ["CREATE", "READ", "UPDATE", "DELETE", "INVOKE"]},
               "destructive_risk": {"type": "boolean"}

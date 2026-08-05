@@ -202,6 +202,7 @@ final class StaticWorkflowInventory {
                 semantics.put("request_schema_refs", requestSchemaRefs(operation));
                 semantics.put("request_schema_declared", requestSchemaDeclared(operation));
                 semantics.put("response_statuses", fieldNames(operation.path("responses")));
+                semantics.put("response_scalar_json_pointers", responseScalarJsonPointers(operation, root));
                 semantics.put("security_declared", securityRequired(operation, root));
                 semantics.put("lifecycle_action", lifecycleAction(method, operationId));
                 semantics.put("destructive_risk", method.equals("delete"));
@@ -276,6 +277,67 @@ final class StaticWorkflowInventory {
         for (JsonNode media : content) if (media.path("schema").isObject()
                 || media.path("schema").isBoolean()) return true;
         return false;
+    }
+
+    private static List<String> responseScalarJsonPointers(JsonNode operation, JsonNode root) {
+        Set<String> result = new java.util.TreeSet<>();
+        collectResponseSchemas(operation.path("responses"), root, result, new LinkedHashSet<>(), 0);
+        return result.stream().limit(200).toList();
+    }
+
+    private static void collectResponseSchemas(JsonNode node, JsonNode root, Set<String> result,
+            Set<String> refs, int depth) {
+        if (node == null || node.isMissingNode() || depth > 16 || result.size() >= 200) return;
+        JsonNode resolved = resolveLocal(node, root, refs, depth);
+        if (resolved == null) return;
+        if (resolved.isObject()) {
+            JsonNode schema = resolved.get("schema");
+            if (schema != null) collectScalarPointers(schema, root, "", result, new LinkedHashSet<>(), depth + 1);
+            resolved.fields().forEachRemaining(entry -> {
+                if (!"schema".equals(entry.getKey()))
+                    collectResponseSchemas(entry.getValue(), root, result, new LinkedHashSet<>(refs), depth + 1);
+            });
+        } else if (resolved.isArray()) {
+            resolved.forEach(value -> collectResponseSchemas(value, root, result,
+                    new LinkedHashSet<>(refs), depth + 1));
+        }
+    }
+
+    private static void collectScalarPointers(JsonNode node, JsonNode root, String pointer,
+            Set<String> result, Set<String> refs, int depth) {
+        if (node == null || node.isMissingNode() || depth > 16 || result.size() >= 200) return;
+        JsonNode resolved = resolveLocal(node, root, refs, depth);
+        if (resolved == null || !resolved.isObject()) return;
+        for (String composite : List.of("allOf", "oneOf", "anyOf")) {
+            JsonNode values = resolved.path(composite);
+            if (values.isArray()) values.forEach(value -> collectScalarPointers(
+                    value, root, pointer, result, new LinkedHashSet<>(refs), depth + 1));
+        }
+        JsonNode properties = resolved.path("properties");
+        if (properties.isObject()) {
+            List<String> names = new ArrayList<>();
+            properties.fieldNames().forEachRemaining(names::add);
+            names.sort(String::compareTo);
+            for (String name : names) collectScalarPointers(properties.path(name), root,
+                    pointer + "/" + escapePointerSegment(name), result,
+                    new LinkedHashSet<>(refs), depth + 1);
+            return;
+        }
+        String type = resolved.path("type").asText("");
+        if (!pointer.isEmpty() && !Set.of("object", "array").contains(type)) result.add(pointer);
+    }
+
+    private static JsonNode resolveLocal(JsonNode node, JsonNode root, Set<String> refs, int depth) {
+        JsonNode ref = node.path("$ref");
+        if (!ref.isTextual()) return node;
+        String value = ref.asText();
+        if (!value.startsWith("#/") || !refs.add(value) || depth > 16) return null;
+        JsonNode resolved = root.at(value.substring(1));
+        return resolved.isMissingNode() ? null : resolveLocal(resolved, root, refs, depth + 1);
+    }
+
+    private static String escapePointerSegment(String value) {
+        return value.replace("~", "~0").replace("/", "~1");
     }
 
     private static boolean securityRequired(JsonNode operation, JsonNode root) {

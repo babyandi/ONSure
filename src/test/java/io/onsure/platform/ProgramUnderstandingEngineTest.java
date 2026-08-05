@@ -28,7 +28,18 @@ class ProgramUnderstandingEngineTest {
                         content:
                           application/json:
                             schema: {$ref: '#/components/schemas/CreateOrder'}
-                      responses: {'200': {description: ok}}
+                      responses:
+                        '200':
+                          description: ok
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                properties:
+                                  data:
+                                    type: object
+                                    properties:
+                                      orderId: {type: string}
                     get:
                       operationId: listOrders
                       tags: [Orders]
@@ -70,7 +81,9 @@ class ProgramUnderstandingEngineTest {
                         flows.stream().filter(flow -> "getOrder".equals(flow.get("name")))
                                 .findFirst().orElseThrow().get("flow_id")))
                 .findFirst().orElseThrow();
-        assertEquals("/id", readBinding.get("producer_json_pointer"));
+        assertEquals("/data/orderId", readBinding.get("producer_json_pointer"));
+        assertEquals("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", readBinding.get("inference_basis"));
+        assertEquals(0.93, readBinding.get("inference_confidence"));
         assertEquals("orderId", readBinding.get("consumer_parameter_name"));
         assertEquals("INFERRED_REVIEW_REQUIRED", readBinding.get("semantic_state"));
         assertEquals(false, readBinding.get("auto_execute"));

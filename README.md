@@ -262,6 +262,8 @@ schema assertion은 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든
 비교 자체는 점수나 최종 assurance로 사용하지 않는다.
 동일 business object에서 발견한 OpenAPI `CREATE → READ/UPDATE/DELETE` 후보는 별도 lifecycle로
 묶고, 생성 응답 JSON Pointer와 후속 path parameter의 연결을 review·approval digest에 결속한다.
+응답 schema의 scalar property를 재귀 탐색해 exact-name 또는 단일 `id` 경로를 우선 선택하며,
+schema 근거가 없을 때만 낮은 신뢰도의 검토용 휴리스틱을 사용한다.
 승인된 `CREATE → READ` 실행에서는 producer 응답의 scalar 식별자를 메모리에서만 전달하며,
 Receipt에는 값 대신 binding ID·pointer·digest만 남긴다. producer Oracle이 실패하거나 식별자를
 찾을 수 없으면 후속 호출은 합성값으로 대체하지 않고 HTTP 실행 전에 `BLOCKED` 처리한다.
