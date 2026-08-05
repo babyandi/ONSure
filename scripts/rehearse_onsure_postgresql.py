@@ -283,7 +283,11 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 "INSERT INTO onsure.validation_run_finding "
                 "(run_id,finding_id,severity,status,diagnosis,improvement_guide,finding_json) VALUES "
                 "('synthetic-run-1','synthetic-finding','MEDIUM','OPEN','synthetic diagnosis',"
-                "'synthetic guide','{\"finding_id\":\"synthetic-finding\"}'::jsonb);"
+                "'synthetic guide','{\"finding_id\":\"synthetic-finding\"}'::jsonb);",
+                username="onsure",
+            )
+            psql(
+                binaries, sockets, port, "onsure",
                 "BEGIN;"
                 "INSERT INTO onsure.validation_run_score "
                 "(run_id,project_id,target_id,source_sha256,receipt_sha256,validation_outcome,"
