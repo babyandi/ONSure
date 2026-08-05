@@ -96,8 +96,10 @@ class StaticWorkflowInventoryTest {
         @SuppressWarnings("unchecked") List<Map<String, Object>> inputs =
                 (List<Map<String, Object>>) update.get("request_input_candidates");
         assertEquals(List.of(
-                Map.of("consumer_location", "BODY", "consumer_parameter_name", "/metadata/revision", "required", true),
-                Map.of("consumer_location", "HEADER", "consumer_parameter_name", "traceId", "required", true)), inputs);
+                Map.of("consumer_location", "BODY", "consumer_parameter_name", "/metadata/revision",
+                        "consumer_schema_type", "INTEGER", "required", true),
+                Map.of("consumer_location", "HEADER", "consumer_parameter_name", "traceId",
+                        "consumer_schema_type", "STRING", "required", true)), inputs);
     }
 
     @Test
@@ -128,6 +130,32 @@ class StaticWorkflowInventoryTest {
 
         assertEquals(false, anonymous.get("security_declared"));
         assertEquals(true, authenticated.get("security_declared"));
+    }
+
+    @Test
+    void infersProducerScalarsOnlyFromSuccessfulResponses() throws Exception {
+        Files.writeString(temp.resolve("openapi.yaml"), """
+                openapi: 3.1.0
+                info: {title: Test, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      responses:
+                        '201':
+                          description: created
+                          content: {application/json: {schema: {type: object, properties: {id: {type: string}}}}}
+                        '400':
+                          description: bad request
+                          content: {application/json: {schema: {type: object, properties: {errorToken: {type: string}}}}}
+                """);
+        @SuppressWarnings("unchecked") List<Map<String, Object>> candidates =
+                (List<Map<String, Object>>) StaticWorkflowInventory.detect(temp).get("candidates");
+        Map<String, Object> operation = candidates.stream()
+                .filter(candidate -> "OPENAPI_OPERATION".equals(candidate.get("kind")))
+                .findFirst().orElseThrow();
+        assertEquals(List.of("/id"), operation.get("response_scalar_json_pointers"));
+        assertFalse(operation.toString().contains("errorToken"));
     }
 
     @Test

@@ -265,9 +265,11 @@ schema assertion은 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든
 응답 schema의 scalar property를 재귀 탐색해 exact-name 또는 단일 `id` 경로를 우선 선택하며,
 schema 근거가 없을 때만 낮은 신뢰도의 검토용 휴리스틱을 사용한다.
 필수 query/header/request-body 입력도 producer 응답과 exact-name이 유일하게 일치할 때 후보로
-만든다. 별도 승인된 query/header 값은 후속 요청에 메모리에서만 주입하며 Receipt에는 위치와
-값 digest만 남긴다. request-body는 producer/consumer JSON schema 타입 호환성 증명 전까지
-`BLOCKED_BINDING_REVIEW_REQUIRED`/`NOT_RUN`이고, 민감 인증 header는 후보에서 제외한다.
+만든다. 별도 승인된 query/header 값과 producer/consumer scalar JSON schema 타입이 호환되는
+request-body 값은 후속 요청에 메모리에서만 주입한다. body 주입 뒤 전체 request schema를 다시
+검증하며 Receipt에는 위치·양쪽 schema 타입·값 digest만 남긴다. 타입이 다르거나 증명되지 않은
+request-body 결속은 `BLOCKED_BINDING_REVIEW_REQUIRED`/`NOT_RUN`이고, 민감 인증 header는
+후보에서 제외한다.
 일반 배열은 `~2` pointer template과 confidence 0.80의 검토 후보로만 남긴다. `minItems=1`과
 `maxItems=1`을 모두 선언한 배열만 `~3`과 confidence 0.90으로 구분하고, 실행 시 실제 cardinality가
 1인지 다시 확인해 비어 있거나 복수인 배열은 consumer HTTP 호출 전에 차단한다.

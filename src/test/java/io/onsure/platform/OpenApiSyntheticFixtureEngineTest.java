@@ -3,6 +3,7 @@ package io.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class OpenApiSyntheticFixtureEngineTest {
     @TempDir Path temp;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void blocksExternalSchemaReferences() throws Exception {
@@ -125,6 +127,46 @@ class OpenApiSyntheticFixtureEngineTest {
                         new OpenApiSyntheticFixtureEngine.BoundRequestValues(
                                 Map.of(), Map.of(), Map.of("X-Trace", "value\r\ninjected"))));
         assertEquals("OPENAPI_BOUND_HEADER_PARAMETER_INVALID:X-TRACE", boundInjection.getMessage());
+    }
+
+    @Test
+    void injectsBoundBodyScalarThenRevalidatesTheCompleteRequestSchema() throws Exception {
+        Path source = write("""
+                openapi: 3.1.0
+                info: {title: Test, version: '1'}
+                paths:
+                  /orders:
+                    patch:
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [revision]
+                              additionalProperties: false
+                              properties: {revision: {type: string, minLength: 3}}
+                      responses: {'200': {description: ok}}
+                """);
+        OpenApiSyntheticFixtureEngine engine = new OpenApiSyntheticFixtureEngine(
+                temp, candidate(source, "PATCH", "/orders"));
+        OpenApiSyntheticFixtureEngine.PreparedRequest prepared = engine.prepare(
+                "PATCH", "/orders", Map.of(), Map.of(),
+                new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                        Map.of(), Map.of(), Map.of(),
+                        Map.of("/revision", mapper.valueToTree("revision-bound-42"))));
+        assertEquals("revision-bound-42", mapper.readTree(prepared.body()).path("revision").asText());
+
+        IllegalArgumentException mismatch = assertThrows(IllegalArgumentException.class, () -> engine.prepare(
+                "PATCH", "/orders", Map.of(), Map.of(),
+                new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                        Map.of(), Map.of(), Map.of(), Map.of("/revision", mapper.valueToTree(42)))));
+        assertEquals("OPENAPI_BOUND_BODY_SCHEMA_MISMATCH", mismatch.getMessage());
+        IllegalArgumentException unknown = assertThrows(IllegalArgumentException.class, () -> engine.prepare(
+                "PATCH", "/orders", Map.of(), Map.of(),
+                new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                        Map.of(), Map.of(), Map.of(), Map.of("/unknown", mapper.valueToTree("value")))));
+        assertEquals("OPENAPI_BOUND_BODY_POINTER_UNKNOWN", unknown.getMessage());
     }
 
     private Path write(String value) throws Exception {

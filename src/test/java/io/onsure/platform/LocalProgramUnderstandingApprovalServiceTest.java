@@ -265,7 +265,7 @@ class LocalProgramUnderstandingApprovalServiceTest {
     }
 
     @Test
-    void keepsExactBodyBindingBlockedUntilSchemaTypeCompatibilityIsImplemented() throws Exception {
+    void authorizesExactBodyBindingOnlyWhenSchemaTypesAreCompatible() throws Exception {
         Prepared prepared = prepare("body-binding-review-only", """
                 openapi: 3.1.0
                 info: {title: Orders, version: '1'}
@@ -309,15 +309,69 @@ class LocalProgramUnderstandingApprovalServiceTest {
                 prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
         @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
                 (List<Map<String, Object>>) plan.get("authorized_lifecycles");
+        @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                (List<Map<String, Object>>) lifecycles.get(0).get("bindings");
+
+        assertEquals(1, lifecycles.get(0).get("binding_count"));
+        assertEquals(0, lifecycles.get(0).get("blocked_binding_count"));
+        assertEquals("BODY", bindings.get(0).get("consumer_location"));
+        assertEquals("/revision", bindings.get(0).get("consumer_parameter_name"));
+        assertEquals("INTEGER", bindings.get(0).get("producer_schema_type"));
+        assertEquals("INTEGER", bindings.get(0).get("consumer_schema_type"));
+        assertEquals("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_BODY_TYPE_COMPATIBLE",
+                bindings.get(0).get("inference_basis"));
+        assertEquals("AUTHORIZED_NOT_RUN", bindings.get(0).get("state"));
+    }
+
+    @Test
+    void blocksBodyBindingWhenProducerAndConsumerSchemaTypesDiffer() throws Exception {
+        Prepared prepared = prepare("body-binding-type-mismatch", """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content: {application/json: {schema: {type: object}}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                properties: {revision: {type: string}}
+                    patch:
+                      operationId: updateOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [revision]
+                              properties: {revision: {type: integer}}
+                      responses: {'200': {description: updated}}
+                """);
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(
+                prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
+        @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
+                (List<Map<String, Object>>) plan.get("authorized_lifecycles");
         @SuppressWarnings("unchecked") List<Map<String, Object>> blocked =
                 (List<Map<String, Object>>) lifecycles.get(0).get("blocked_bindings");
 
         assertEquals(0, lifecycles.get(0).get("binding_count"));
         assertEquals(1, lifecycles.get(0).get("blocked_binding_count"));
-        assertEquals("BODY", blocked.get(0).get("consumer_location"));
-        assertEquals("/revision", blocked.get(0).get("consumer_parameter_name"));
-        assertEquals("CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED", blocked.get(0).get("blocked_reason"));
-        assertEquals("BLOCKED_BINDING_REVIEW_REQUIRED", blocked.get(0).get("state"));
+        assertEquals("STRING", blocked.get(0).get("producer_schema_type"));
+        assertEquals("INTEGER", blocked.get(0).get("consumer_schema_type"));
+        assertEquals("OPENAPI_BODY_SCHEMA_TYPE_MISMATCH", blocked.get(0).get("inference_basis"));
+        assertEquals(0.0, blocked.get(0).get("inference_confidence"));
+        assertEquals("BODY_SCHEMA_TYPE_INCOMPATIBLE_OR_UNVERIFIED", blocked.get(0).get("blocked_reason"));
     }
 
     @Test

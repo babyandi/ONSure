@@ -206,6 +206,49 @@ class LocalInferredE2EHttpRunnerTest {
     }
 
     @Test
+    void materializesSchemaCompatibleProducerValueIntoRequiredBodyWithoutPersistingIt() throws Exception {
+        Prepared prepared = prepare(openApiWithBodyBinding());
+        AtomicReference<String> receivedPatchBody = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            byte[] body;
+            int status;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                body = "{\"revision\":\"revision-bound-42\"}".getBytes(StandardCharsets.UTF_8);
+                status = 201;
+            } else {
+                receivedPatchBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+                body = "{}".getBytes(StandardCharsets.UTF_8);
+                status = 200;
+            }
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals("revision-bound-42",
+                    mapper.readTree(receivedPatchBody.get()).path("revision").asText());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> patch = steps.stream().filter(step -> "PATCH".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                    (List<Map<String, Object>>) patch.get("input_bindings");
+            assertEquals(1, bindings.size());
+            assertEquals("BODY", bindings.get(0).get("consumer_location"));
+            assertEquals("STRING", bindings.get(0).get("producer_schema_type"));
+            assertEquals("STRING", bindings.get(0).get("consumer_schema_type"));
+            assertEquals(Hashing.sha256("\"revision-bound-42\""), bindings.get(0).get("value_sha256"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("revision-bound-42"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
     void materializesNestedSingletonArrayBindingWithoutPersistingRawValue() throws Exception {
         Prepared prepared = prepare(openApiWithNestedArrayWriteAndPath());
         AtomicReference<String> receivedReadPath = new AtomicReference<>();
@@ -281,6 +324,42 @@ class LocalInferredE2EHttpRunnerTest {
             assertTrue(steps.stream().anyMatch(step -> "BLOCKED".equals(step.get("oracle_outcome"))
                     && "OPENAPI_LIFECYCLE_PRODUCER_OUTPUT_NOT_AVAILABLE".equals(step.get("error_code"))));
             assertEquals(1, calls.get());
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void rejectsDeclaredClientErrorAsAValidNormalPathOutcome() throws Exception {
+        Prepared prepared = prepare("""
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    get:
+                      operationId: listOrders
+                      responses:
+                        '200': {description: ok}
+                        '400':
+                          description: invalid
+                          content:
+                            application/json:
+                              schema: {type: object, required: [error], properties: {error: {type: string}}}
+                """);
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            byte[] body = "{\"error\":\"declared-but-not-success\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(400, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("FAIL", receipt.get("outcome"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals("FAIL", steps.get(0).get("oracle_outcome"));
         } finally { server.stop(0); }
     }
 
@@ -684,6 +763,53 @@ class LocalInferredE2EHttpRunnerTest {
                       responses:
                         '200':
                           description: found
+                          content:
+                            application/json:
+                              schema: {type: object}
+                """;
+    }
+
+    private static String openApiWithBodyBinding() {
+        return """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties: {name: {type: string}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [revision]
+                                properties: {revision: {type: string}}
+                    patch:
+                      operationId: updateOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [revision]
+                              additionalProperties: false
+                              properties: {revision: {type: string}}
+                      responses:
+                        '200':
+                          description: updated
                           content:
                             application/json:
                               schema: {type: object}

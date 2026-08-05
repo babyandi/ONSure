@@ -22,8 +22,9 @@
   producer JSON Pointer에서 consumer path로 값을 전달하는 비저장 `CREATE → READ` 실제 실행
 - OpenAPI response schema의 중첩 scalar JSON Pointer 탐색과 exact property/단일 `id` 근거 기반
   binding 신뢰도 산정
-- 필수 query/header/request-body 입력의 exact-name 결속 후보와 민감 header 제외, 승인된 query/header
-  producer 값의 실제 후속 요청 주입·digest Receipt 및 body의 review-only `BLOCKED_NOT_RUN` 경계
+- 필수 query/header/request-body 입력의 exact-name 결속 후보와 민감 header 제외, 승인된
+  query/header 및 producer/consumer scalar schema 타입이 호환되는 body 값의 실제 후속 요청 주입,
+  전체 request schema 재검증과 원문 비저장 digest Receipt
 - 일반 배열과 schema 보장 singleton 배열을 구분하는 bounded pointer template, 런타임 cardinality
   재검증 및 ambiguity 차단
 - operation/tag/path/schema/component 근거에 결속된 Capability·Workflow 의미 가설과

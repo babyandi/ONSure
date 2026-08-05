@@ -241,7 +241,7 @@ final class ProgramUnderstandingEngine {
         Map<String, Object> operation = new LinkedHashMap<>();
         for (String key : List.of("http_method", "http_path", "operation_id", "tags",
                 "request_schema_refs", "response_statuses", "security_declared",
-                "response_scalar_json_pointers",
+                "response_scalar_json_pointers", "response_scalar_candidates",
                 "request_input_candidates",
                 "request_schema_declared", "lifecycle_action", "destructive_risk", "source_path",
                 "evidence_sha256")) {
@@ -301,7 +301,7 @@ final class ProgramUnderstandingEngine {
                     (Map<String, Object>) consumer.get("operation");
             for (String parameter : pathParameters(operation.getOrDefault("http_path", "").toString()))
                 addBinding(result, producer, consumer, "PATH", parameter,
-                        bindingPointer(producer, parameter, true));
+                        bindingPointer(producer, parameter, true), "HTTP_SERIALIZED");
             for (Map<String, Object> input : mapList(operation.get("request_input_candidates"))) {
                 if (!Boolean.TRUE.equals(input.get("required"))) continue;
                 String location = String.valueOf(input.get("consumer_location"));
@@ -310,14 +310,17 @@ final class ProgramUnderstandingEngine {
                 if ("HEADER".equals(location) && sensitiveHeader(parameter)) continue;
                 BindingPointer selected = bindingPointer(producer, pointerLeaf(parameter), false);
                 if (selected == null) continue;
-                addBinding(result, producer, consumer, location, parameter, selected);
+                String consumerType = String.valueOf(input.getOrDefault("consumer_schema_type", "UNKNOWN"));
+                if ("BODY".equals(location)) selected = bodyCompatible(selected, consumerType);
+                addBinding(result, producer, consumer, location, parameter, selected, consumerType);
             }
         }
         return List.copyOf(result);
     }
 
     private static void addBinding(List<Map<String, Object>> result, Map<String, Object> producer,
-            Map<String, Object> consumer, String location, String parameter, BindingPointer selected) {
+            Map<String, Object> consumer, String location, String parameter, BindingPointer selected,
+            String consumerSchemaType) {
         if (selected == null) return;
         String pointer = selected.pointer();
         String material = producer.get("flow_id") + "\u0000" + consumer.get("flow_id")
@@ -330,6 +333,8 @@ final class ProgramUnderstandingEngine {
         binding.put("consumer_flow_id", consumer.get("flow_id"));
         binding.put("consumer_location", location);
         binding.put("consumer_parameter_name", parameter);
+        binding.put("producer_schema_type", selected.producerSchemaType());
+        binding.put("consumer_schema_type", consumerSchemaType);
         binding.put("inference_basis", selected.basis());
         binding.put("inference_confidence", selected.confidence());
         binding.put("semantic_state", "INFERRED_REVIEW_REQUIRED");
@@ -354,7 +359,8 @@ final class ProgramUnderstandingEngine {
                     ? "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY"
                     : singletonArray ? "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SINGLETON_ARRAY"
                     : "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
-                    schemaSingletonArray ? 0.90 : singletonArray ? 0.80 : 0.93);
+                    schemaSingletonArray ? 0.90 : singletonArray ? 0.80 : 0.93,
+                    producerSchemaType(operation, exact.get(0)));
         }
         List<String> identifiers = pointers.stream().filter(pointer ->
                 "id".equalsIgnoreCase(pointerLeaf(pointer))).toList();
@@ -365,12 +371,35 @@ final class ProgramUnderstandingEngine {
                     ? "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY_SCHEMA_SINGLETON_ARRAY"
                     : singletonArray ? "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY_SINGLETON_ARRAY"
                     : "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY",
-                    schemaSingletonArray ? 0.85 : singletonArray ? 0.76 : 0.88);
+                    schemaSingletonArray ? 0.85 : singletonArray ? 0.76 : 0.88,
+                    producerSchemaType(operation, identifiers.get(0)));
         }
         if (!allowHeuristic) return null;
         String fallback = parameter.toLowerCase(Locale.ROOT).endsWith("id") ? "/id" : "/" + parameter;
         return new BindingPointer(fallback,
-                "BUSINESS_OBJECT_AND_LIFECYCLE_PATH_PARAMETER_HEURISTIC", 0.70);
+                "BUSINESS_OBJECT_AND_LIFECYCLE_PATH_PARAMETER_HEURISTIC", 0.70, "UNKNOWN");
+    }
+
+    private static BindingPointer bodyCompatible(BindingPointer selected, String consumerType) {
+        boolean exact = selected.basis().startsWith("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY");
+        boolean compatible = exact && schemaTypeCompatible(selected.producerSchemaType(), consumerType);
+        if (compatible) return new BindingPointer(selected.pointer(),
+                "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_BODY_TYPE_COMPATIBLE",
+                Math.min(selected.confidence(), 0.92), selected.producerSchemaType());
+        String basis = "UNKNOWN".equals(selected.producerSchemaType()) || "UNKNOWN".equals(consumerType)
+                ? "OPENAPI_BODY_SCHEMA_TYPE_UNVERIFIED" : "OPENAPI_BODY_SCHEMA_TYPE_MISMATCH";
+        return new BindingPointer(selected.pointer(), basis, 0.0, selected.producerSchemaType());
+    }
+
+    private static boolean schemaTypeCompatible(String producer, String consumer) {
+        return producer.equals(consumer) || ("INTEGER".equals(producer) && "NUMBER".equals(consumer));
+    }
+
+    private static String producerSchemaType(Map<String, Object> operation, String pointer) {
+        for (Map<String, Object> candidate : mapList(operation.get("response_scalar_candidates")))
+            if (pointer.equals(String.valueOf(candidate.get("json_pointer"))))
+                return String.valueOf(candidate.getOrDefault("schema_type", "UNKNOWN"));
+        return "UNKNOWN";
     }
 
     private static String pointerLeaf(String pointer) {
@@ -398,7 +427,8 @@ final class ProgramUnderstandingEngine {
                 .map(item -> (Map<String, Object>) item).toList();
     }
 
-    private record BindingPointer(String pointer, String basis, double confidence) { }
+    private record BindingPointer(String pointer, String basis, double confidence,
+            String producerSchemaType) { }
 
     private static List<String> pathParameters(String route) {
         List<String> result = new ArrayList<>();

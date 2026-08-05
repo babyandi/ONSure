@@ -571,9 +571,10 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("binding_authorization_policy", Map.of(
                 "minimum_confidence", MINIMUM_AUTOMATIC_BINDING_CONFIDENCE,
                 "allowed_inference_basis", List.of("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
-                        "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY"),
-                "executable_consumer_locations", List.of("PATH", "QUERY", "HEADER"),
-                "candidate_only_consumer_locations", List.of("BODY"),
+                        "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY",
+                        "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_BODY_TYPE_COMPATIBLE"),
+                "executable_consumer_locations", List.of("PATH", "QUERY", "HEADER", "BODY"),
+                "candidate_only_consumer_locations", List.of(),
                 "separate_review_required", true,
                 "separate_approval_required", true,
                 "unqualified_binding_outcome", "BLOCKED_NOT_RUN",
@@ -643,16 +644,23 @@ final class LocalProgramUnderstandingApprovalService {
                 authorization.put("consumer_plan_id", consumerPlanId);
                 authorization.put("consumer_location", location);
                 authorization.put("consumer_parameter_name", parameter);
+                authorization.put("producer_schema_type",
+                        String.valueOf(binding.containsKey("producer_schema_type")
+                                ? binding.get("producer_schema_type") : "UNKNOWN"));
+                authorization.put("consumer_schema_type",
+                        String.valueOf(binding.containsKey("consumer_schema_type")
+                                ? binding.get("consumer_schema_type") : "UNKNOWN"));
                 authorization.put("inference_basis", basis);
                 authorization.put("inference_confidence", confidence);
                 authorization.put("review_sha256", review.get("review_sha256"));
                 authorization.put("approval_receipt_sha256", approval.get("receipt_sha256"));
                 authorization.put("auto_execute_before_approval", false);
                 authorization.put("value_storage_allowed", false);
-                boolean executableLocation = Set.of("PATH", "QUERY", "HEADER").contains(location);
+                boolean executableLocation = Set.of("PATH", "QUERY", "HEADER", "BODY").contains(location);
                 if (reviewableInference && executableLocation
                         && Set.of("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
-                                "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY").contains(basis)
+                                "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY",
+                                "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_BODY_TYPE_COMPATIBLE").contains(basis)
                         && confidence >= MINIMUM_AUTOMATIC_BINDING_CONFIDENCE && confidence <= 1.0d) {
                     authorization.put("review_state", "REVIEWED_AND_SEPARATELY_APPROVED");
                     authorization.put("state", "AUTHORIZED_NOT_RUN");
@@ -660,7 +668,9 @@ final class LocalProgramUnderstandingApprovalService {
                 } else {
                     authorization.put("review_state", "REVIEW_REQUIRED_NOT_AUTHORIZED");
                     authorization.put("state", "BLOCKED_BINDING_REVIEW_REQUIRED");
-                    authorization.put("blocked_reason", executableLocation
+                    authorization.put("blocked_reason", basis.startsWith("OPENAPI_BODY_SCHEMA_TYPE_")
+                            ? "BODY_SCHEMA_TYPE_INCOMPATIBLE_OR_UNVERIFIED"
+                            : executableLocation
                             ? "INFERENCE_CONFIDENCE_OR_BASIS_NOT_AUTOMATICALLY_AUTHORIZABLE"
                             : "CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED");
                     blockedBindings.add(Map.copyOf(authorization));

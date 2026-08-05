@@ -44,11 +44,19 @@ final class OpenApiSyntheticFixtureEngine {
             String authenticationSchemeType, String requestSchemaSha256, String fixtureStrategy) { }
 
     record BoundRequestValues(Map<String, String> path, Map<String, String> query,
-            Map<String, String> headers) {
+            Map<String, String> headers, Map<String, JsonNode> body) {
+        BoundRequestValues(Map<String, String> path, Map<String, String> query,
+                Map<String, String> headers) {
+            this(path, query, headers, Map.of());
+        }
+
         BoundRequestValues {
             path = Map.copyOf(path == null ? Map.of() : path);
             query = Map.copyOf(query == null ? Map.of() : query);
             headers = Map.copyOf(headers == null ? Map.of() : headers);
+            body = body == null ? Map.of() : body.entrySet().stream().collect(
+                    java.util.stream.Collectors.toUnmodifiableMap(Map.Entry::getKey,
+                            entry -> entry.getValue().deepCopy()));
         }
     }
 
@@ -104,7 +112,7 @@ final class OpenApiSyntheticFixtureEngine {
     PreparedRequest prepare(String method, String routeTemplate, Map<String, String> environment,
             Map<String, String> runtimeReferences, Map<String, String> boundPathValues) throws Exception {
         return prepare(method, routeTemplate, environment, runtimeReferences,
-                new BoundRequestValues(boundPathValues, Map.of(), Map.of()));
+                new BoundRequestValues(boundPathValues, Map.of(), Map.of(), Map.of()));
     }
 
     PreparedRequest prepare(String method, String routeTemplate, Map<String, String> environment,
@@ -129,16 +137,56 @@ final class OpenApiSyntheticFixtureEngine {
             if (schema.isMissingNode() || schema.isNull())
                 throw new IllegalArgumentException("OPENAPI_REQUEST_SCHEMA_MISSING");
             JsonNode fixture = synthesize(schema, new HashSet<>(), 0);
+            fixture = applyBodyBindings(fixture, boundValues.body());
+            List<String> requestErrors = new ArrayList<>();
+            validate(schema, fixture, "$", requestErrors, new HashSet<>(), 0);
+            if (!requestErrors.isEmpty())
+                throw new IllegalArgumentException(requestErrors.stream().anyMatch(error ->
+                        error.contains("SCHEMA_KEYWORD_UNSUPPORTED")
+                                || error.contains("PATTERN_ORACLE_NOT_SUPPORTED"))
+                        ? "OPENAPI_BOUND_BODY_VALIDATION_BLOCKED"
+                        : "OPENAPI_BOUND_BODY_SCHEMA_MISMATCH");
             body = JSON.writeValueAsBytes(fixture);
             if (body.length > MAX_BODY_BYTES) throw new IllegalArgumentException("OPENAPI_FIXTURE_TOO_LARGE");
             contentType = media.contentType();
             schemaSha = schemaDigest(schema);
             strategy = "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA";
+        } else if (!boundValues.body().isEmpty()) {
+            throw new IllegalArgumentException("OPENAPI_BOUND_BODY_METHOD_UNSUPPORTED");
         }
         return new PreparedRequest(route, parameters.query(), body, contentType, Map.copyOf(headers),
                 parameters.queryNames(), parameters.headerNames(), parameters.cookieNames(),
                 authentication.referenceId(), authentication.valueSha256(), authentication.schemeType(),
                 schemaSha, strategy);
+    }
+
+    private static JsonNode applyBodyBindings(JsonNode synthesized, Map<String, JsonNode> bindings) {
+        JsonNode result = synthesized.deepCopy();
+        for (Map.Entry<String, JsonNode> binding : new TreeMap<>(bindings).entrySet()) {
+            String pointer = binding.getKey();
+            if (pointer == null || !pointer.matches("(?:/(?:[A-Za-z0-9._-]|~[01]){1,128}){1,16}"))
+                throw new IllegalArgumentException("OPENAPI_BOUND_BODY_POINTER_INVALID");
+            JsonNode current = result;
+            String[] segments = pointer.substring(1).split("/", -1);
+            for (int index = 0; index < segments.length - 1; index++) {
+                String property = decodePointerSegment(segments[index]);
+                if (!current.isObject() || !current.has(property))
+                    throw new IllegalArgumentException("OPENAPI_BOUND_BODY_POINTER_UNKNOWN");
+                current = current.get(property);
+            }
+            String property = decodePointerSegment(segments[segments.length - 1]);
+            if (!(current instanceof ObjectNode object) || !object.has(property))
+                throw new IllegalArgumentException("OPENAPI_BOUND_BODY_POINTER_UNKNOWN");
+            JsonNode value = binding.getValue();
+            if (value == null || value.isNull() || value.isContainerNode())
+                throw new IllegalArgumentException("OPENAPI_BOUND_BODY_VALUE_INVALID");
+            object.set(property, value.deepCopy());
+        }
+        return result;
+    }
+
+    private static String decodePointerSegment(String encoded) {
+        return encoded.replace("~1", "/").replace("~0", "~");
     }
 
     OracleResult validateResponse(String method, int status, String responseContentType, byte[] body) throws Exception {

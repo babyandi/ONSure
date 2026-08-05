@@ -207,7 +207,10 @@ final class StaticWorkflowInventory {
                 semantics.put("request_schema_declared", requestSchemaDeclared(operation));
                 semantics.put("request_input_candidates", requestInputCandidates(pathItem, operation, root));
                 semantics.put("response_statuses", fieldNames(operation.path("responses")));
-                semantics.put("response_scalar_json_pointers", responseScalarJsonPointers(operation, root));
+                List<Map<String, Object>> responseScalars = responseScalarCandidates(operation, root);
+                semantics.put("response_scalar_json_pointers", responseScalars.stream()
+                        .map(value -> value.get("json_pointer").toString()).toList());
+                semantics.put("response_scalar_candidates", responseScalars);
                 semantics.put("security_declared", securityRequired(operation, root));
                 semantics.put("lifecycle_action", lifecycleAction(method, operationId));
                 semantics.put("destructive_risk", method.equals("delete"));
@@ -289,7 +292,7 @@ final class StaticWorkflowInventory {
         Map<String, Map<String, Object>> inputs = new java.util.TreeMap<>();
         collectRequiredParameters(pathItem.path("parameters"), root, inputs);
         collectRequiredParameters(operation.path("parameters"), root, inputs);
-        Set<String> bodyPointers = new java.util.TreeSet<>();
+        Map<String, String> bodyPointers = new java.util.TreeMap<>();
         JsonNode requestBody = resolveLocal(operation.path("requestBody"), root, new LinkedHashSet<>(), 0);
         if (requestBody == null) requestBody = operation.path("requestBody");
         JsonNode content = requestBody.path("required").asBoolean(false)
@@ -298,10 +301,12 @@ final class StaticWorkflowInventory {
             collectRequiredRequestPointers(media.path("schema"), root, "", true,
                     bodyPointers, new LinkedHashSet<>(), 0);
         }
-        for (String pointer : bodyPointers) {
+        for (Map.Entry<String, String> bodyPointer : bodyPointers.entrySet()) {
+            String pointer = bodyPointer.getKey();
             Map<String, Object> input = new LinkedHashMap<>();
             input.put("consumer_location", "BODY");
             input.put("consumer_parameter_name", pointer);
+            input.put("consumer_schema_type", bodyPointer.getValue());
             input.put("required", true);
             inputs.put("BODY\u0000" + pointer, Map.copyOf(input));
         }
@@ -326,13 +331,15 @@ final class StaticWorkflowInventory {
             Map<String, Object> input = new LinkedHashMap<>();
             input.put("consumer_location", location);
             input.put("consumer_parameter_name", name);
+            input.put("consumer_schema_type", scalarSchemaType(resolveLocal(
+                    parameter.path("schema"), root, new LinkedHashSet<>(), 0)));
             input.put("required", true);
             inputs.put(key, Map.copyOf(input));
         }
     }
 
     private static void collectRequiredRequestPointers(JsonNode node, JsonNode root, String pointer,
-            boolean requiredChain, Set<String> result, Set<String> refs, int depth) {
+            boolean requiredChain, Map<String, String> result, Set<String> refs, int depth) {
         if (node == null || node.isMissingNode() || depth > 16 || result.size() >= 200) return;
         JsonNode resolved = resolveLocal(node, root, refs, depth);
         if (resolved == null || !resolved.isObject()) return;
@@ -351,16 +358,22 @@ final class StaticWorkflowInventory {
             return;
         }
         String type = resolved.path("type").asText("");
-        if (requiredChain && !pointer.isEmpty() && !Set.of("object", "array").contains(type)) result.add(pointer);
+        if (requiredChain && !pointer.isEmpty() && !Set.of("object", "array").contains(type))
+            mergeScalarType(result, pointer, scalarSchemaType(resolved));
     }
 
-    private static List<String> responseScalarJsonPointers(JsonNode operation, JsonNode root) {
-        Set<String> result = new java.util.TreeSet<>();
-        collectResponseSchemas(operation.path("responses"), root, result, new LinkedHashSet<>(), 0);
-        return result.stream().limit(200).toList();
+    private static List<Map<String, Object>> responseScalarCandidates(JsonNode operation, JsonNode root) {
+        Map<String, String> result = new java.util.TreeMap<>();
+        JsonNode responses = operation.path("responses");
+        if (responses.isObject()) responses.fields().forEachRemaining(entry -> {
+            if (entry.getKey().matches("2(?:[0-9]{2}|[xX]{2})"))
+                collectResponseSchemas(entry.getValue(), root, result, new LinkedHashSet<>(), 0);
+        });
+        return result.entrySet().stream().limit(200).map(entry -> Map.<String, Object>of(
+                "json_pointer", entry.getKey(), "schema_type", entry.getValue())).toList();
     }
 
-    private static void collectResponseSchemas(JsonNode node, JsonNode root, Set<String> result,
+    private static void collectResponseSchemas(JsonNode node, JsonNode root, Map<String, String> result,
             Set<String> refs, int depth) {
         if (node == null || node.isMissingNode() || depth > 16 || result.size() >= 200) return;
         JsonNode resolved = resolveLocal(node, root, refs, depth);
@@ -379,7 +392,7 @@ final class StaticWorkflowInventory {
     }
 
     private static void collectScalarPointers(JsonNode node, JsonNode root, String pointer,
-            Set<String> result, Set<String> refs, int depth) {
+            Map<String, String> result, Set<String> refs, int depth) {
         if (node == null || node.isMissingNode() || depth > 16 || result.size() >= 200) return;
         JsonNode resolved = resolveLocal(node, root, refs, depth);
         if (resolved == null || !resolved.isObject()) return;
@@ -414,7 +427,46 @@ final class StaticWorkflowInventory {
             return;
         }
         String type = resolved.path("type").asText("");
-        if (!pointer.isEmpty() && !Set.of("object", "array").contains(type)) result.add(pointer);
+        if (!pointer.isEmpty() && !Set.of("object", "array").contains(type))
+            mergeScalarType(result, pointer, scalarSchemaType(resolved));
+    }
+
+    private static void mergeScalarType(Map<String, String> result, String pointer, String type) {
+        result.merge(pointer, type, (left, right) -> left.equals(right) ? left : "UNKNOWN");
+    }
+
+    private static String scalarSchemaType(JsonNode schema) {
+        if (schema == null || !schema.isObject()) return "UNKNOWN";
+        JsonNode type = schema.path("type");
+        if (type.isTextual()) return normalizedScalarType(type.asText());
+        if (type.isArray()) {
+            Set<String> types = new LinkedHashSet<>();
+            type.forEach(value -> { if (value.isTextual() && !"null".equals(value.asText()))
+                types.add(normalizedScalarType(value.asText())); });
+            if (types.size() == 1) return types.iterator().next();
+        }
+        JsonNode constant = schema.path("const");
+        if (constant.isValueNode()) return nodeScalarType(constant);
+        JsonNode values = schema.path("enum");
+        if (values.isArray() && !values.isEmpty()) {
+            Set<String> types = new LinkedHashSet<>();
+            values.forEach(value -> types.add(nodeScalarType(value)));
+            if (types.size() == 1) return types.iterator().next();
+        }
+        return "UNKNOWN";
+    }
+
+    private static String normalizedScalarType(String value) {
+        return Set.of("string", "integer", "number", "boolean").contains(value)
+                ? value.toUpperCase(Locale.ROOT) : "UNKNOWN";
+    }
+
+    private static String nodeScalarType(JsonNode value) {
+        if (value.isTextual()) return "STRING";
+        if (value.isIntegralNumber()) return "INTEGER";
+        if (value.isNumber()) return "NUMBER";
+        if (value.isBoolean()) return "BOOLEAN";
+        return "UNKNOWN";
     }
 
     private static JsonNode resolveLocal(JsonNode node, JsonNode root, Set<String> refs, int depth) {

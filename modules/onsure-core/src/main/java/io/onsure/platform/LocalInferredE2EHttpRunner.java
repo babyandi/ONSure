@@ -123,7 +123,8 @@ final class LocalInferredE2EHttpRunner {
                 OpenApiSyntheticFixtureEngine.PreparedRequest prepared =
                         fixtureEngine.prepare(method, routeTemplate, environment, runtimeReferences,
                                 new OpenApiSyntheticFixtureEngine.BoundRequestValues(
-                                        boundValues.path(), boundValues.query(), boundValues.headers()));
+                                        boundValues.path(), boundValues.query(), boundValues.headers(),
+                                        boundValues.body()));
                 String route = prepared.route();
                 if (!safeRoute(route)) throw new IllegalArgumentException("INFERRED_E2E_ROUTE_UNSAFE");
                 URI uri = URI.create(base.toString() + route
@@ -143,8 +144,9 @@ final class LocalInferredE2EHttpRunner {
                 if (body.length > MAX_RESPONSE_BYTES) throw new IllegalStateException("INFERRED_E2E_RESPONSE_TOO_LARGE");
                 @SuppressWarnings("unchecked") List<String> expected =
                         (List<String>) candidate.getOrDefault("response_statuses", List.of());
-                boolean statusOracle = expected.isEmpty() ? response.statusCode() >= 200 && response.statusCode() < 300
-                        : statusExpected(expected, response.statusCode());
+                boolean successfulStatus = response.statusCode() >= 200 && response.statusCode() < 300;
+                boolean statusOracle = successfulStatus
+                        && (expected.isEmpty() || statusExpected(expected, response.statusCode()));
                 String responseContentType = response.headers().firstValue("Content-Type").orElse(null);
                 OpenApiSyntheticFixtureEngine.OracleResult schemaOracle = fixtureEngine.validateResponse(
                         method, response.statusCode(), responseContentType, body);
@@ -288,6 +290,7 @@ final class LocalInferredE2EHttpRunner {
         Map<String, String> path = new TreeMap<>();
         Map<String, String> query = new TreeMap<>();
         Map<String, String> headers = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Map<String, JsonNode> body = new TreeMap<>();
         for (Map<String, Object> binding : bindingsByConsumer.getOrDefault(consumerPlanId, List.of())) {
             String producerPlanId = binding.get("producer_plan_id").toString();
             JsonNode output = producerOutputs.get(producerPlanId);
@@ -297,35 +300,52 @@ final class LocalInferredE2EHttpRunner {
             JsonNode value = resolveBindingValue(output, pointer);
             if (value.isMissingNode() || value.isNull() || value.isContainerNode())
                 throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_NOT_FOUND");
-            String materialized = value.asText();
-            if (materialized.isEmpty() || materialized.length() > 4096)
-                throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_INVALID");
             String parameter = binding.get("consumer_parameter_name").toString();
             String location = binding.get("consumer_location").toString();
-            Map<String, String> target = switch (location) {
-                case "PATH" -> path;
-                case "QUERY" -> query;
-                case "HEADER" -> headers;
-                case "BODY" -> throw new IllegalArgumentException(
-                        "OPENAPI_BODY_BINDING_RUNNER_NOT_IMPLEMENTED");
-                default -> throw new IllegalArgumentException("OPENAPI_BINDING_CONSUMER_LOCATION_INVALID");
-            };
-            if (target.putIfAbsent(parameter, materialized) != null)
-                throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_COLLISION");
-            evidence.add(Map.of(
-                    "binding_id", binding.get("binding_id"),
-                    "producer_plan_id", producerPlanId,
-                    "producer_json_pointer", pointer,
-                    "consumer_location", location,
-                    "consumer_parameter_name", parameter,
-                    "value_sha256", Hashing.sha256(materialized),
-                    "value_stored", false));
+            String digestMaterial;
+            if ("BODY".equals(location)) {
+                if (body.putIfAbsent(parameter, value.deepCopy()) != null)
+                    throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_COLLISION");
+                digestMaterial = canonicalBindingValue(value);
+            } else {
+                String materialized = value.asText();
+                if (materialized.isEmpty() || materialized.length() > 4096)
+                    throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_INVALID");
+                Map<String, String> target = switch (location) {
+                    case "PATH" -> path;
+                    case "QUERY" -> query;
+                    case "HEADER" -> headers;
+                    default -> throw new IllegalArgumentException("OPENAPI_BINDING_CONSUMER_LOCATION_INVALID");
+                };
+                if (target.putIfAbsent(parameter, materialized) != null)
+                    throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_COLLISION");
+                digestMaterial = materialized;
+            }
+            Map<String, Object> bindingEvidence = new LinkedHashMap<>();
+            bindingEvidence.put("binding_id", binding.get("binding_id"));
+            bindingEvidence.put("producer_plan_id", producerPlanId);
+            bindingEvidence.put("producer_json_pointer", pointer);
+            bindingEvidence.put("producer_schema_type",
+                    binding.getOrDefault("producer_schema_type", "UNKNOWN"));
+            bindingEvidence.put("consumer_location", location);
+            bindingEvidence.put("consumer_parameter_name", parameter);
+            bindingEvidence.put("consumer_schema_type",
+                    binding.getOrDefault("consumer_schema_type", "UNKNOWN"));
+            bindingEvidence.put("value_sha256", Hashing.sha256(digestMaterial));
+            bindingEvidence.put("value_stored", false);
+            evidence.add(Map.copyOf(bindingEvidence));
         }
-        return new MaterializedBindings(Map.copyOf(path), Map.copyOf(query), Map.copyOf(headers));
+        return new MaterializedBindings(Map.copyOf(path), Map.copyOf(query), Map.copyOf(headers),
+                body.entrySet().stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
+                        Map.Entry::getKey, entry -> entry.getValue().deepCopy())));
     }
 
     private record MaterializedBindings(Map<String, String> path, Map<String, String> query,
-            Map<String, String> headers) { }
+            Map<String, String> headers, Map<String, JsonNode> body) { }
+
+    private static String canonicalBindingValue(JsonNode value) {
+        return value.toString();
+    }
 
     static JsonNode resolveBindingValue(JsonNode output, String pointer) {
         if (pointer == null || !pointer.matches("(?:/(?:[A-Za-z0-9._-]|~[0123]){1,128}){1,16}"))

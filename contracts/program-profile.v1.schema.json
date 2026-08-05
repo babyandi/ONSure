@@ -131,12 +131,21 @@
               "request_schema_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
               "response_statuses": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
               "response_scalar_json_pointers": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^/.+$"}},
+              "response_scalar_candidates": {"type": "array", "uniqueItems": true, "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["json_pointer", "schema_type"],
+                "properties": {
+                  "json_pointer": {"type": "string", "pattern": "^/.+$"},
+                  "schema_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "UNKNOWN"]}
+                }
+              }},
               "request_input_candidates": {"type": "array", "uniqueItems": true, "items": {
                 "type": "object", "additionalProperties": false,
-                "required": ["consumer_location", "consumer_parameter_name", "required"],
+                "required": ["consumer_location", "consumer_parameter_name", "consumer_schema_type", "required"],
                 "properties": {
                   "consumer_location": {"enum": ["QUERY", "HEADER", "BODY"]},
                   "consumer_parameter_name": {"type": "string", "minLength": 1, "maxLength": 1024},
+                  "consumer_schema_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "UNKNOWN"]},
                   "required": {"const": true}
                 }
               }},

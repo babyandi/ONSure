@@ -19,7 +19,8 @@
     "input_bindings": [{
       "binding_id": "BINDING-0123456789abcdef", "producer_plan_id": "E2E-122",
       "producer_json_pointer": "/queryToken", "consumer_location": "QUERY",
-      "consumer_parameter_name": "queryToken",
+      "producer_schema_type": "STRING", "consumer_parameter_name": "queryToken",
+      "consumer_schema_type": "STRING",
       "value_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
       "value_stored": false
     }],

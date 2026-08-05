@@ -29,8 +29,8 @@
       "properties": {
         "minimum_confidence": {"type": "number", "minimum": 0, "maximum": 1},
         "allowed_inference_basis": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
-        "executable_consumer_locations": {"const": ["PATH", "QUERY", "HEADER"]},
-        "candidate_only_consumer_locations": {"const": ["BODY"]},
+        "executable_consumer_locations": {"const": ["PATH", "QUERY", "HEADER", "BODY"]},
+        "candidate_only_consumer_locations": {"const": []},
         "separate_review_required": {"const": true},
         "separate_approval_required": {"const": true},
         "unqualified_binding_outcome": {"const": "BLOCKED_NOT_RUN"},
@@ -45,24 +45,26 @@
   "$defs": {
     "binding": {
       "type": "object", "additionalProperties": false,
-      "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_plan_id", "consumer_location", "consumer_parameter_name", "inference_basis", "inference_confidence", "review_sha256", "approval_receipt_sha256", "auto_execute_before_approval", "review_state", "value_storage_allowed", "state"],
+      "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_plan_id", "consumer_location", "consumer_parameter_name", "producer_schema_type", "consumer_schema_type", "inference_basis", "inference_confidence", "review_sha256", "approval_receipt_sha256", "auto_execute_before_approval", "review_state", "value_storage_allowed", "state"],
       "properties": {
         "binding_id": {"type": "string", "pattern": "^BINDING-[0-9a-f]{16}$"},
         "producer_plan_id": {"type": "string"}, "producer_json_pointer": {"type": "string", "pattern": "^/.+$"},
         "consumer_plan_id": {"type": "string"}, "consumer_location": {"enum": ["PATH", "QUERY", "HEADER", "BODY"]},
         "consumer_parameter_name": {"type": "string"}, "value_storage_allowed": {"const": false},
+        "producer_schema_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "UNKNOWN"]},
+        "consumer_schema_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "UNKNOWN", "HTTP_SERIALIZED"]},
         "inference_basis": {"type": "string", "minLength": 1},
         "inference_confidence": {"type": "number", "minimum": -1, "maximum": 1},
         "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "auto_execute_before_approval": {"const": false},
         "review_state": {"enum": ["REVIEWED_AND_SEPARATELY_APPROVED", "REVIEW_REQUIRED_NOT_AUTHORIZED"]},
-        "blocked_reason": {"enum": ["INFERENCE_CONFIDENCE_OR_BASIS_NOT_AUTOMATICALLY_AUTHORIZABLE", "CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED"]},
+        "blocked_reason": {"enum": ["INFERENCE_CONFIDENCE_OR_BASIS_NOT_AUTOMATICALLY_AUTHORIZABLE", "CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED", "BODY_SCHEMA_TYPE_INCOMPATIBLE_OR_UNVERIFIED"]},
         "state": {"enum": ["AUTHORIZED_NOT_RUN", "BLOCKED_BINDING_REVIEW_REQUIRED"]}
       },
       "allOf": [{
         "if": {"properties": {"state": {"const": "AUTHORIZED_NOT_RUN"}}},
-        "then": {"properties": {"consumer_location": {"enum": ["PATH", "QUERY", "HEADER"]}, "review_state": {"const": "REVIEWED_AND_SEPARATELY_APPROVED"}}, "not": {"required": ["blocked_reason"]}},
+        "then": {"properties": {"consumer_location": {"enum": ["PATH", "QUERY", "HEADER", "BODY"]}, "review_state": {"const": "REVIEWED_AND_SEPARATELY_APPROVED"}}, "not": {"required": ["blocked_reason"]}},
         "else": {"required": ["blocked_reason"], "properties": {"review_state": {"const": "REVIEW_REQUIRED_NOT_AUTHORIZED"}}}
       }]
     },
