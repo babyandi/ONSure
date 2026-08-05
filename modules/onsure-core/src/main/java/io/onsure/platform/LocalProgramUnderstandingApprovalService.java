@@ -119,13 +119,72 @@ final class LocalProgramUnderstandingApprovalService {
             currentReview(value.get("target_id").toString(), value.get("profile_file_sha256").toString(),
                     value.get("review_sha256").toString());
             value.put("state", "APPROVE".equals(decision) ? "APPROVED_NOT_EXECUTED" : "REJECTED");
+            value.put("decision", decision);
             value.put("decided_at", clock.instant().toString());
             value.put("decided_by", approver.actor());
             value.put("decision_reason", reason);
             value.put("execution_consumed", false);
             value.put("execution_state", "NOT_RUN");
-            value.put("receipt_sha256", digestValue(value, "receipt_sha256"));
+            value.put("receipt_sha256", decisionDigest(value));
             write(requestId, value);
+            result[0] = Map.copyOf(value);
+        });
+        return result[0];
+    }
+
+    Map<String, Object> consume(JsonNode input, LocalAccessControl.Identity operator) throws Exception {
+        if (operator == null || !Set.of(LocalAccessControl.Role.ADMIN, LocalAccessControl.Role.OPERATOR)
+                .contains(operator.role())) throw new IllegalArgumentException("PROGRAM_APPROVAL_CONSUMER_ROLE_INVALID");
+        requireExactFields(input, Set.of("request_id", "receipt_sha256", "execution_scope"));
+        String requestId = text(input, "request_id", 180);
+        if (!requestId.matches("program-understanding-approval-[0-9a-f-]{36}")) {
+            throw new IllegalArgumentException("PROGRAM_APPROVAL_REQUEST_ID_INVALID");
+        }
+        String receiptSha = digest(input, "receipt_sha256");
+        String scope = text(input, "execution_scope", 64);
+        if (!"ISOLATED_SYNTHETIC_LOOPBACK".equals(scope)) {
+            throw new IllegalArgumentException("PROGRAM_APPROVAL_EXECUTION_SCOPE_INVALID");
+        }
+        @SuppressWarnings("unchecked")
+        final Map<String, Object>[] result = new Map[1];
+        ExclusiveFileLock.run(lock, () -> {
+            Map<String, Object> value = read(requestId);
+            if (!"APPROVED_NOT_EXECUTED".equals(value.get("state"))
+                    || Boolean.TRUE.equals(value.get("execution_consumed"))) {
+                throw new IllegalArgumentException("PROGRAM_APPROVAL_ALREADY_CONSUMED_OR_NOT_APPROVED");
+            }
+            if (!receiptSha.equals(value.get("receipt_sha256"))) {
+                throw new IllegalArgumentException("PROGRAM_APPROVAL_RECEIPT_BINDING_INVALID");
+            }
+            if (!clock.instant().isBefore(Instant.parse(value.get("expires_at").toString()))) {
+                throw new IllegalArgumentException("PROGRAM_APPROVAL_REQUEST_EXPIRED");
+            }
+            Map<String, Object> review = currentReview(value.get("target_id").toString(), value.get("profile_file_sha256").toString(),
+                    value.get("review_sha256").toString());
+            String authorizationId = "inferred-e2e-auth-" + UUID.randomUUID();
+            Map<String, Object> executionPlan = executionAuthorizationPlan(value, review, authorizationId, scope);
+            byte[] planBytes = mapper.writeValueAsBytes(executionPlan);
+            String planSha256 = Hashing.sha256(planBytes);
+            Path planFile = workspaceRoot.resolve(".onsure/inferred-e2e-authorizations")
+                    .resolve(authorizationId).resolve("execution-plan.json").normalize();
+            writeAuthorizationPlan(planFile, executionPlan);
+            value.put("state", "CONSUMED_FOR_EXECUTION_AUTHORIZATION");
+            value.put("execution_consumed", true);
+            value.put("consumed_at", clock.instant().toString());
+            value.put("consumed_by", operator.actor());
+            value.put("authorized_execution_scope", scope);
+            value.put("execution_authorization_id", authorizationId);
+            value.put("execution_plan_file", workspaceRoot.relativize(planFile).toString().replace('\\', '/'));
+            value.put("execution_plan_sha256", planSha256);
+            value.put("execution_plan_state", executionPlan.get("plan_state"));
+            value.put("execution_state", "NOT_RUN");
+            value.put("consumption_sha256", digestValue(value, "consumption_sha256"));
+            try {
+                write(requestId, value);
+            } catch (Exception error) {
+                Files.deleteIfExists(planFile);
+                throw error;
+            }
             result[0] = Map.copyOf(value);
         });
         return result[0];
@@ -171,8 +230,13 @@ final class LocalProgramUnderstandingApprovalService {
             throw new IllegalStateException("PROGRAM_APPROVAL_REQUEST_DIGEST_INVALID");
         }
         if (!"AWAITING_APPROVAL".equals(value.get("state"))
-                && !String.valueOf(value.get("receipt_sha256")).equals(digestValue(value, "receipt_sha256"))) {
+                && !String.valueOf(value.get("receipt_sha256")).equals(decisionDigest(value))) {
             throw new IllegalStateException("PROGRAM_APPROVAL_RECEIPT_DIGEST_INVALID");
+        }
+        if ("CONSUMED_FOR_EXECUTION_AUTHORIZATION".equals(value.get("state"))
+                && !String.valueOf(value.get("consumption_sha256")).equals(
+                        digestValue(value, "consumption_sha256"))) {
+            throw new IllegalStateException("PROGRAM_APPROVAL_CONSUMPTION_DIGEST_INVALID");
         }
         return new LinkedHashMap<>(value);
     }
@@ -187,6 +251,85 @@ final class LocalProgramUnderstandingApprovalService {
         } finally { Files.deleteIfExists(temporary); }
     }
 
+    private void writeAuthorizationPlan(Path file, Map<String, Object> value) throws Exception {
+        Path authorizationRoot = workspaceRoot.resolve(".onsure/inferred-e2e-authorizations").normalize();
+        if (!file.startsWith(authorizationRoot)) throw new IllegalStateException("PROGRAM_EXECUTION_PLAN_PATH_INVALID");
+        Files.createDirectories(file.getParent());
+        Path temporary = file.resolveSibling(file.getFileName() + "." + UUID.randomUUID() + ".tmp");
+        mapper.writeValue(temporary.toFile(), value);
+        try { Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE); }
+        catch (java.nio.file.AtomicMoveNotSupportedException ignored) { Files.move(temporary, file); }
+        finally { Files.deleteIfExists(temporary); }
+    }
+
+    private Map<String, Object> executionAuthorizationPlan(
+            Map<String, Object> approval, Map<String, Object> review, String authorizationId, String scope) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> drafts = (List<Map<String, Object>>) review
+                .getOrDefault("reviewed_e2e_plan_draft", List.of());
+        List<Map<String, Object>> candidates = new ArrayList<>();
+        for (Map<String, Object> draft : drafts) {
+            Map<String, Object> operation = operation(draft);
+            String method = operation.getOrDefault("http_method", "NONE").toString();
+            boolean destructive = "DELETE".equals(method);
+            @SuppressWarnings("unchecked")
+            List<String> schemaRefs = (List<String>) operation.getOrDefault("request_schema_refs", List.of());
+            String state = destructive ? "BLOCKED_DESTRUCTIVE_OPERATION"
+                    : List.of("POST", "PUT", "PATCH").contains(method) && schemaRefs.isEmpty()
+                    ? "BLOCKED_SYNTHETIC_FIXTURE_SCHEMA_MISSING"
+                    : "READY_FOR_ISOLATED_LOOPBACK_RUNNER";
+            Map<String, Object> candidate = new LinkedHashMap<>();
+            candidate.put("plan_id", draft.getOrDefault("plan_id", "UNVERIFIED"));
+            candidate.put("flow_id", draft.getOrDefault("flow_id", "UNVERIFIED"));
+            candidate.put("http_method", method);
+            candidate.put("http_path", operation.getOrDefault("http_path", "NOT_APPLICABLE"));
+            candidate.put("request_schema_refs", schemaRefs);
+            candidate.put("fixture_strategy", schemaRefs.isEmpty()
+                    ? "NO_BODY_OR_REVIEWED_FIXTURE_REFERENCE_REQUIRED" : "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA");
+            candidate.put("oracle_strategy", "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT");
+            candidate.put("state", state);
+            candidate.put("customer_data_allowed", false);
+            candidate.put("destructive_action_allowed", false);
+            candidates.add(Map.copyOf(candidate));
+        }
+        long blocked = candidates.stream().filter(candidate -> candidate.get("state").toString().startsWith("BLOCKED_"))
+                .count();
+        Map<String, Object> plan = new LinkedHashMap<>();
+        plan.put("contract", "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1");
+        plan.put("execution_authorization_id", authorizationId);
+        plan.put("project_id", approval.get("project_id"));
+        plan.put("target_id", approval.get("target_id"));
+        plan.put("source_sha256", approval.get("source_sha256"));
+        plan.put("profile_file_sha256", approval.get("profile_file_sha256"));
+        plan.put("review_sha256", approval.get("review_sha256"));
+        plan.put("approval_request_sha256", approval.get("request_sha256"));
+        plan.put("approval_receipt_sha256", approval.get("receipt_sha256"));
+        plan.put("execution_scope", scope);
+        plan.put("candidate_count", candidates.size());
+        plan.put("blocked_candidate_count", blocked);
+        plan.put("authorized_candidates", List.copyOf(candidates));
+        plan.put("plan_state", blocked == 0 && !candidates.isEmpty()
+                ? "AUTHORIZED_NOT_RUN" : "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN");
+        plan.put("execution_state", "NOT_RUN");
+        plan.put("source_mutation_allowed", false);
+        plan.put("customer_data_allowed", false);
+        plan.put("destructive_action_allowed", false);
+        plan.put("final_claim_allowed", false);
+        return Map.copyOf(plan);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> operation(Map<String, Object> draft) {
+        Object steps = draft.get("proposed_steps");
+        if (!(steps instanceof List<?> list)) return Map.of();
+        for (Object step : list) {
+            if (step instanceof Map<?, ?> map && map.get("source_derived_invocation") instanceof Map<?, ?> operation) {
+                return (Map<String, Object>) operation;
+            }
+        }
+        return Map.of();
+    }
+
     private String digestValue(Map<String, Object> value, String... excluded) throws Exception {
         Map<String, Object> copy = new TreeMap<>(value);
         for (String key : excluded) copy.remove(key);
@@ -199,6 +342,16 @@ final class LocalProgramUnderstandingApprovalService {
                 "profile_file_sha256", "review_sha256", "requested_at", "expires_at", "requested_by",
                 "requested_role", "reason", "single_use_for_execution")) {
             if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_APPROVAL_REQUEST_FIELD_MISSING:" + key);
+            immutable.put(key, value.get(key));
+        }
+        return Hashing.sha256(mapper.writeValueAsBytes(immutable));
+    }
+
+    private String decisionDigest(Map<String, Object> value) throws Exception {
+        Map<String, Object> immutable = new TreeMap<>();
+        for (String key : List.of("request_sha256", "decision", "decided_at", "decided_by",
+                "decision_reason", "execution_state", "final_claim_allowed")) {
+            if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_APPROVAL_DECISION_FIELD_MISSING:" + key);
             immutable.put(key, value.get(key));
         }
         return Hashing.sha256(mapper.writeValueAsBytes(immutable));

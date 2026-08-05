@@ -38,6 +38,29 @@ class LocalProgramUnderstandingApprovalServiceTest {
         assertEquals("NOT_RUN", receipt.get("execution_state"));
         assertFalse((Boolean) receipt.get("execution_consumed"));
         assertEquals(true, receipt.get("single_use_for_execution"));
+        IllegalArgumentException wrongReceipt = assertThrows(IllegalArgumentException.class, () ->
+                service.consume(mapper.valueToTree(Map.of(
+                        "request_id", request.get("request_id"), "receipt_sha256", "0".repeat(64),
+                        "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator));
+        assertEquals("PROGRAM_APPROVAL_RECEIPT_BINDING_INVALID", wrongReceipt.getMessage());
+        Map<String, Object> authorization = service.consume(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "receipt_sha256", receipt.get("receipt_sha256"),
+                "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator);
+        assertEquals("CONSUMED_FOR_EXECUTION_AUTHORIZATION", authorization.get("state"));
+        assertEquals(true, authorization.get("execution_consumed"));
+        assertEquals("NOT_RUN", authorization.get("execution_state"));
+        assertEquals("AUTHORIZED_NOT_RUN", authorization.get("execution_plan_state"));
+        Path planFile = prepared.workspace().resolve(authorization.get("execution_plan_file").toString());
+        assertEquals(authorization.get("execution_plan_sha256"), Hashing.file(planFile));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(planFile.toFile(), Map.class);
+        assertEquals("ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1", plan.get("contract"));
+        assertEquals("NOT_RUN", plan.get("execution_state"));
+        assertEquals(false, plan.get("customer_data_allowed"));
+        IllegalArgumentException replay = assertThrows(IllegalArgumentException.class, () ->
+                service.consume(mapper.valueToTree(Map.of(
+                        "request_id", request.get("request_id"), "receipt_sha256", receipt.get("receipt_sha256"),
+                        "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator));
+        assertEquals("PROGRAM_APPROVAL_ALREADY_CONSUMED_OR_NOT_APPROVED", replay.getMessage());
         assertThrows(IllegalArgumentException.class, () -> service.decide(mapper.valueToTree(Map.of(
                 "request_id", request.get("request_id"), "decision", "APPROVE", "reason", "replay")), approver));
     }

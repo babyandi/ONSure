@@ -7,7 +7,7 @@
   "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "requested_at": "2026-08-05T00:00:00Z", "expires_at": "2026-08-05T00:10:00Z",
   "requested_by": "operator-a", "requested_role": "OPERATOR", "reason": "synthetic execution only",
-  "decided_at": "2026-08-05T00:01:00Z", "decided_by": "approver-b", "decision_reason": "bounded scope",
+  "decision": "APPROVE", "decided_at": "2026-08-05T00:01:00Z", "decided_by": "approver-b", "decision_reason": "bounded scope",
   "single_use_for_execution": true, "execution_consumed": false, "execution_state": "NOT_RUN",
   "final_claim_allowed": false,
   "request_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",

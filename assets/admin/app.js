@@ -501,6 +501,13 @@
           request.request_id, decision, button));
         actions.append(button);
       }
+      const consume = document.createElement("button");
+      consume.type = "button"; consume.className = "button secondary compact-button";
+      consume.textContent = "1회 실행권한 생성";
+      consume.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole)
+        || request.state !== "APPROVED_NOT_EXECUTED";
+      consume.addEventListener("click", () => consumeProgramUnderstandingApproval(request, consume));
+      actions.append(consume);
       row.append(actions); body.append(row);
     }
   }
@@ -516,6 +523,21 @@
       await loadOverview();
     } catch (error) {
       setText("program-action-state", error instanceof Error ? error.message : "승인 결정 실패");
+    } finally { button.disabled = false; }
+  }
+
+  async function consumeProgramUnderstandingApproval(request, button) {
+    button.disabled = true;
+    try {
+      const result = await api("/v1/programs/understand/approval-consumptions", {
+        method: "POST", body: JSON.stringify({request_id: request.request_id,
+          receipt_sha256: request.receipt_sha256,
+          execution_scope: "ISOLATED_SYNTHETIC_LOOPBACK"})
+      });
+      setText("program-action-state", `1회 실행권한 ${result.execution_authorization_id} · 실제 실행 ${result.execution_state}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "승인 소비 실패");
     } finally { button.disabled = false; }
   }
 

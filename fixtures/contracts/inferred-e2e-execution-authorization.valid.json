@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1",
+  "execution_authorization_id": "inferred-e2e-auth-11111111-1111-1111-1111-111111111111",
+  "project_id": "customer", "target_id": "orders",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile_file_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "approval_request_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "execution_scope": "ISOLATED_SYNTHETIC_LOOPBACK", "candidate_count": 0, "blocked_candidate_count": 0,
+  "authorized_candidates": [], "plan_state": "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN", "execution_state": "NOT_RUN",
+  "source_mutation_allowed": false, "customer_data_allowed": false,
+  "destructive_action_allowed": false, "final_claim_allowed": false
+}

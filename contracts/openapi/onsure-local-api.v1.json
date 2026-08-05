@@ -340,6 +340,14 @@
         "responses": {"200": {"$ref": "#/components/responses/GenericObject"}, "400": {"$ref": "#/components/responses/InvalidRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "405": {"$ref": "#/components/responses/MethodNotAllowed"}}
       }
     },
+    "/v1/programs/understand/approval-consumptions": {
+      "post": {
+        "operationId": "consumeProgramUnderstandingApproval", "tags": ["Management"],
+        "summary": "Consume an unexpired approval exactly once without starting execution",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProgramUnderstandingApprovalConsumption"}}}},
+        "responses": {"200": {"$ref": "#/components/responses/GenericObject"}, "400": {"$ref": "#/components/responses/InvalidRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "405": {"$ref": "#/components/responses/MethodNotAllowed"}}
+      }
+    },
     "/v1/validation-scorecards": {
       "get": {
         "operationId": "listValidationScorecards",
@@ -546,6 +554,14 @@
           "request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
           "decision": {"type": "string", "enum": ["APPROVE", "REJECT"]},
           "reason": {"type": "string", "minLength": 1, "maxLength": 500}
+        }, "additionalProperties": false
+      },
+      "ProgramUnderstandingApprovalConsumption": {
+        "type": "object", "required": ["request_id", "receipt_sha256", "execution_scope"],
+        "properties": {
+          "request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
+          "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "execution_scope": {"const": "ISOLATED_SYNTHETIC_LOOPBACK"}
         }, "additionalProperties": false
       },
       "GatewaySettingRequest": {

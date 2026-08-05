@@ -1,7 +1,8 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "pairs": [
+    {"schema": "contracts/inferred-e2e-execution-authorization.v1.schema.json", "instances": ["fixtures/contracts/inferred-e2e-execution-authorization.valid.json"], "invalid_instances": ["fixtures/contracts/inferred-e2e-execution-authorization.invalid.json"]},
     {"schema": "contracts/program-understanding-approval.v1.schema.json", "instances": ["fixtures/contracts/program-understanding-approval.valid.json"], "invalid_instances": ["fixtures/contracts/program-understanding-approval.invalid.json"]},
     {"schema": "contracts/program-understanding-review.v1.schema.json", "instances": ["fixtures/contracts/program-understanding-review.valid.json"], "invalid_instances": ["fixtures/contracts/program-understanding-review.invalid.json"]},
     {"schema": "contracts/environment-requirement-profile.v1.schema.json", "instances": ["fixtures/contracts/environment-requirement-profile.valid.json"], "invalid_instances": ["fixtures/contracts/environment-requirement-profile.invalid.json"]},

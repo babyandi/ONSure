@@ -40,6 +40,7 @@ public final class LocalAuthenticatedApiServer {
             "/v1/session", "/v1/programs", "/v1/programs/validate",
             "/v1/programs/understand", "/v1/programs/understand/reviews",
             "/v1/programs/understand/approval-requests", "/v1/programs/understand/approval-decisions",
+            "/v1/programs/understand/approval-consumptions",
             "/v1/validation-scorecards",
             "/v1/gateway-settings/requests", "/v1/gateway-settings/approvals", "/v1/audit-events");
 
@@ -127,6 +128,9 @@ public final class LocalAuthenticatedApiServer {
         server.createContext("/v1/programs/understand/approval-decisions", authenticated(
                 LocalAccessControl.Permission.APPROVE_PROGRAM_APPROVAL,
                 this::programUnderstandingApprovalDecisions));
+        server.createContext("/v1/programs/understand/approval-consumptions", authenticated(
+                LocalAccessControl.Permission.OPERATE_PROGRAMS,
+                this::programUnderstandingApprovalConsumptions));
         server.createContext("/v1/validation-scorecards", authenticated(
                 LocalAccessControl.Permission.VIEW, this::validationScorecards));
         server.createContext("/v1/gateway-settings/requests", authenticated(
@@ -509,6 +513,24 @@ public final class LocalAuthenticatedApiServer {
                         "request_id", receipt.get("request_id"), "request_sha256", receipt.get("request_sha256"),
                         "receipt_sha256", receipt.get("receipt_sha256"), "execution_state", receipt.get("execution_state")));
         respond(exchange, 200, receipt);
+    }
+
+    private void programUnderstandingApprovalConsumptions(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        Map<String, Object> authorization = new LocalProgramUnderstandingApprovalService(workspaceRoot)
+                .consume(readJson(exchange), identity);
+        new LocalManagementAuditLedger(workspaceRoot).append(identity,
+                "PROGRAM_UNDERSTANDING_APPROVAL_CONSUMED", "AUTHORIZED_NOT_RUN", Map.of(
+                        "request_id", authorization.get("request_id"),
+                        "receipt_sha256", authorization.get("receipt_sha256"),
+                        "consumption_sha256", authorization.get("consumption_sha256"),
+                        "execution_authorization_id", authorization.get("execution_authorization_id"),
+                        "execution_state", authorization.get("execution_state")));
+        respond(exchange, 200, authorization);
     }
 
     private void gatewaySettingRequests(HttpExchange exchange) throws Exception {
