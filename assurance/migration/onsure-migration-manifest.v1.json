@@ -160,8 +160,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "a0991aab33d51f48591521455ac0f6c25c1d005f740956a8514c4cde3c2ae3f0",
-      "size_bytes": 22398
+      "sha256": "3780584d54da3df82b774bb3bdf87102d061fec5774b33e437df6f2010e3fc4f",
+      "size_bytes": 22877
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -469,6 +469,22 @@
     },
     {
       "copyright_owner": "ORUDA Labs",
+      "current_path": "assurance/runtime/neutral-multilang-validation-observation.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/assurance/runtime/neutral-multilang-validation-observation.v1.json",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "c912beca9d1332d7fa4433a6f5460b0e8efa801b58630c595ad7e0a5115a6fcb",
+      "size_bytes": 17505
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
       "current_path": "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json",
       "filesystem_group": "babyandi",
       "filesystem_owner": "babyandi",
@@ -546,6 +562,22 @@
       },
       "sha256": "3feede525d065ca1da1759fb7436ad6641dc7427bd049268857ced0b632b1f44",
       "size_bytes": 1372
+    },
+    {
+      "copyright_owner": "ORUDA Labs",
+      "current_path": "assurance/runtime/onsure-self-validation-observation.v1.json",
+      "filesystem_group": "babyandi",
+      "filesystem_owner": "babyandi",
+      "future_path_candidate": "products/onsure/assurance/runtime/onsure-self-validation-observation.v1.json",
+      "git_mode": "100644",
+      "license": "LicenseRef-ORUDA-Labs-Proprietary",
+      "repository_owner": "babyandi/ONSure",
+      "sensitive_information": {
+        "reasons": [],
+        "status": "NO_PATTERN_MATCH"
+      },
+      "sha256": "599577d99560d73361c290e25fe222c4d7161b34a5c87b68653a4f70f32e5445",
+      "size_bytes": 27324
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -688,8 +720,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "c9becb965bff980a68f839c93b3a81d26f706b54a2df3ce722dfb4b14c049afa",
-      "size_bytes": 14970
+      "sha256": "5d22e0c78bbe17075263928ee015841dff80980e0e4d373b95e93e0f9d70e8cf",
+      "size_bytes": 20950
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -11702,8 +11734,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "27804c02921bd0ba4ee6004091739795f159171801e7f47d5e356804591f77f6",
-      "size_bytes": 7616
+      "sha256": "e39e94b1a87c6844d30bf6d892665ac39490bf3f488d9aae02c5ca348ecaa6e1",
+      "size_bytes": 11990
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -15078,8 +15110,8 @@
         "reasons": [],
         "status": "NO_PATTERN_MATCH"
       },
-      "sha256": "23f3437cba1a193c4edd5dcb7a29175273f0b8b090ed38d6e032df1072ca4503",
-      "size_bytes": 3455
+      "sha256": "55d9214ba5b3cb16026afbcf39c29e145716b1ea3bad5359df69bc59ce3caf19",
+      "size_bytes": 5789
     },
     {
       "copyright_owner": "ORUDA Labs",
@@ -15391,14 +15423,14 @@
   },
   "source_repository": "babyandi/ONSure",
   "summary": {
-    "file_count": 959,
+    "file_count": 961,
     "license_counts": {
-      "LicenseRef-ORUDA-Labs-Proprietary": 959
+      "LicenseRef-ORUDA-Labs-Proprietary": 961
     },
     "sensitivity_counts": {
-      "NO_PATTERN_MATCH": 956,
+      "NO_PATTERN_MATCH": 958,
       "REVIEW_REQUIRED": 3
     },
-    "total_size_bytes": 9530122
+    "total_size_bytes": 9588118
   }
 }
