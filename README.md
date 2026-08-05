@@ -260,6 +260,11 @@ schema assertion은 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든
 `RECOVERY_REQUIRED`로 고정해 새 승인을 요구한다. 동일 source/profile의 연속 실행은 단계별
 `IMPROVED`·`REGRESSED`·`UNCHANGED` 비교와 진단·개선 가이드를 생성해 관리화면에 표시하지만
 비교 자체는 점수나 최종 assurance로 사용하지 않는다.
+동일 business object에서 발견한 OpenAPI `CREATE → READ/UPDATE/DELETE` 후보는 별도 lifecycle로
+묶고, 생성 응답 JSON Pointer와 후속 path parameter의 연결을 review·approval digest에 결속한다.
+승인된 `CREATE → READ` 실행에서는 producer 응답의 scalar 식별자를 메모리에서만 전달하며,
+Receipt에는 값 대신 binding ID·pointer·digest만 남긴다. producer Oracle이 실패하거나 식별자를
+찾을 수 없으면 후속 호출은 합성값으로 대체하지 않고 HTTP 실행 전에 `BLOCKED` 처리한다.
 Gateway 환경변수와 단독 서버 실행 경계는
 `docs/architecture/ONSURE_LLM_GATEWAY_AND_MANAGEMENT_UI_v1.md`를 따른다.
 

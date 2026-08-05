@@ -118,6 +118,43 @@ class LocalProgramUnderstandingApprovalServiceTest {
     }
 
     @Test
+    void bindsReviewedCreateReadLifecycleIntoTheExecutionAuthorization() throws Exception {
+        Prepared prepared = prepare("create-read-lifecycle", """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        content: {application/json: {schema: {type: object}}}
+                      responses: {'201': {description: created}}
+                  /orders/{orderId}:
+                    parameters:
+                      - {name: orderId, in: path, required: true, schema: {type: string}}
+                    get:
+                      operationId: getOrder
+                      tags: [Orders]
+                      responses: {'200': {description: found}}
+                """);
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(
+                prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
+        @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
+                (List<Map<String, Object>>) plan.get("authorized_lifecycles");
+
+        assertEquals(1, lifecycles.size());
+        assertEquals(2, ((List<?>) lifecycles.get(0).get("operation_plan_ids")).size());
+        assertEquals(1, lifecycles.get(0).get("binding_count"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                (List<Map<String, Object>>) lifecycles.get(0).get("bindings");
+        assertEquals("/id", bindings.get(0).get("producer_json_pointer"));
+        assertEquals("orderId", bindings.get(0).get("consumer_parameter_name"));
+        assertEquals(false, bindings.get(0).get("value_storage_allowed"));
+    }
+
+    @Test
     void recoversInterruptedReadOnlyRunForOneSafeRetry() throws Exception {
         Instant now = Instant.parse("2026-08-05T00:00:00Z");
         Prepared prepared = prepare("recover-read");

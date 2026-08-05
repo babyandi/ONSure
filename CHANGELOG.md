@@ -18,6 +18,8 @@
   write outcome 불명확 시 재승인 요구와 실행 claim/recovery digest 위변조 방지
 - 동일 source/profile E2E Receipt의 단계별 개선·퇴행·변경 비교, 진단·개선 가이드 및
   관리화면 history projection
+- OpenAPI business object별 lifecycle 추론, `CREATE → READ/UPDATE/DELETE` binding 검토·승인 결속,
+  producer JSON Pointer에서 consumer path로 값을 전달하는 비저장 `CREATE → READ` 실제 실행
 - Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
 - loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계
 - VS Code Runtime/Admin View의 SecretStorage 기반 LLM Gateway health·token·cost·receipt-chain 표시

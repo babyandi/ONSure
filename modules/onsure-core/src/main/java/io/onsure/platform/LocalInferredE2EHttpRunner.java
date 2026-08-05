@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 
 /** Executes approved non-destructive HTTP candidates against an explicit loopback endpoint. */
@@ -84,8 +85,13 @@ final class LocalInferredE2EHttpRunner {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> candidates = (List<Map<String, Object>>) plan
                 .getOrDefault("authorized_candidates", List.of());
+        @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
+                (List<Map<String, Object>>) plan.getOrDefault("authorized_lifecycles", List.of());
+        List<Map<String, Object>> orderedCandidates = orderedCandidates(candidates, lifecycles);
+        Map<String, List<Map<String, Object>>> bindingsByConsumer = bindingsByConsumer(lifecycles);
+        Set<String> producerPlanIds = producerPlanIds(lifecycles);
         Map<String, OpenApiSyntheticFixtureEngine> fixtureEngines = new LinkedHashMap<>();
-        for (Map<String, Object> candidate : candidates) {
+        for (Map<String, Object> candidate : orderedCandidates) {
             if (!runnable(candidate)) continue;
             String planId = candidate.get("plan_id").toString();
             if (fixtureEngines.putIfAbsent(planId, new OpenApiSyntheticFixtureEngine(
@@ -96,10 +102,11 @@ final class LocalInferredE2EHttpRunner {
         String runId = claim.get("execution_run_id").toString();
         Instant started = Instant.now();
         List<Map<String, Object>> steps = new ArrayList<>();
+        Map<String, JsonNode> producerOutputs = new LinkedHashMap<>();
         boolean failed = false;
         boolean blocked = false;
         int executed = 0;
-        for (Map<String, Object> candidate : candidates) {
+        for (Map<String, Object> candidate : orderedCandidates) {
             if (!runnable(candidate)) {
                 steps.add(blocked(candidate)); blocked = true; continue;
             }
@@ -109,9 +116,12 @@ final class LocalInferredE2EHttpRunner {
                 steps.add(blocked(candidate)); blocked = true; continue;
             }
             try {
+                List<Map<String, Object>> inputBindings = new ArrayList<>();
+                Map<String, String> boundPathValues = materializeBindings(
+                        candidate.get("plan_id").toString(), bindingsByConsumer, producerOutputs, inputBindings);
                 OpenApiSyntheticFixtureEngine fixtureEngine = fixtureEngines.get(candidate.get("plan_id").toString());
                 OpenApiSyntheticFixtureEngine.PreparedRequest prepared =
-                        fixtureEngine.prepare(method, routeTemplate, environment, runtimeReferences);
+                        fixtureEngine.prepare(method, routeTemplate, environment, runtimeReferences, boundPathValues);
                 String route = prepared.route();
                 if (!safeRoute(route)) throw new IllegalArgumentException("INFERRED_E2E_ROUTE_UNSAFE");
                 URI uri = URI.create(base.toString() + route
@@ -138,10 +148,20 @@ final class LocalInferredE2EHttpRunner {
                         method, response.statusCode(), responseContentType, body);
                 boolean oracle = statusOracle && schemaOracle.passed();
                 boolean oracleBlocked = statusOracle && schemaOracle.blocked();
+                if (oracle && producerPlanIds.contains(candidate.get("plan_id").toString())) {
+                    try {
+                        JsonNode output = mapper.readTree(body);
+                        if (output != null) producerOutputs.put(candidate.get("plan_id").toString(), output);
+                    } catch (Exception ignored) {
+                        // Schema/status Oracle owns the current step; an unavailable JSON binding blocks its consumer.
+                    }
+                }
                 Map<String, Object> step = new LinkedHashMap<>();
                 step.put("plan_id", candidate.get("plan_id")); step.put("http_method", method);
-                step.put("http_path_template", routeTemplate); step.put("http_path", route);
-                step.put("request_uri", base.toString() + route);
+                step.put("http_path_template", routeTemplate);
+                step.put("http_path", boundPathValues.isEmpty() ? route : routeTemplate);
+                step.put("http_path_sha256", Hashing.sha256(route));
+                step.put("request_uri", base.toString() + (boundPathValues.isEmpty() ? route : routeTemplate));
                 step.put("request_uri_sha256", Hashing.sha256(uri.toString()));
                 step.put("request_body_sha256", Hashing.sha256(prepared.body()));
                 step.put("request_body_bytes", prepared.body().length);
@@ -151,6 +171,8 @@ final class LocalInferredE2EHttpRunner {
                 step.put("request_cookie_names", prepared.cookieNames());
                 step.put("request_parameter_values_stored", false);
                 step.put("request_header_values_stored", false);
+                step.put("input_bindings", List.copyOf(inputBindings));
+                step.put("bound_response_values_stored", false);
                 if (prepared.authenticationReferenceId() != null) {
                     step.put("authentication_reference_id", prepared.authenticationReferenceId());
                     step.put("authentication_value_sha256", prepared.authenticationValueSha256());
@@ -208,6 +230,84 @@ final class LocalInferredE2EHttpRunner {
         return Map.of("plan_id", candidate.get("plan_id"), "http_method", candidate.get("http_method"),
                 "http_path", candidate.get("http_path"), "oracle_outcome", "BLOCKED",
                 "reason", candidate.get("state"), "response_body_stored", false, "final_claim_allowed", false);
+    }
+    private static List<Map<String, Object>> orderedCandidates(
+            List<Map<String, Object>> candidates, List<Map<String, Object>> lifecycles) {
+        Map<String, Map<String, Object>> byPlan = new LinkedHashMap<>();
+        for (Map<String, Object> candidate : candidates) byPlan.put(candidate.get("plan_id").toString(), candidate);
+        List<Map<String, Object>> result = new ArrayList<>();
+        Set<String> added = new java.util.LinkedHashSet<>();
+        for (Map<String, Object> lifecycle : lifecycles) {
+            Object raw = lifecycle.get("operation_plan_ids");
+            if (!(raw instanceof List<?> operationPlanIds)) continue;
+            for (Object planIdValue : operationPlanIds) {
+                String planId = String.valueOf(planIdValue);
+                Map<String, Object> candidate = byPlan.get(planId);
+                if (candidate != null && added.add(planId)) result.add(candidate);
+            }
+        }
+        for (Map<String, Object> candidate : candidates) {
+            String planId = candidate.get("plan_id").toString();
+            if (added.add(planId)) result.add(candidate);
+        }
+        return List.copyOf(result);
+    }
+    @SuppressWarnings("unchecked")
+    private static Map<String, List<Map<String, Object>>> bindingsByConsumer(
+            List<Map<String, Object>> lifecycles) {
+        Map<String, List<Map<String, Object>>> result = new TreeMap<>();
+        for (Map<String, Object> lifecycle : lifecycles) {
+            Object raw = lifecycle.get("bindings");
+            if (!(raw instanceof List<?> bindings)) continue;
+            for (Object item : bindings) {
+                if (!(item instanceof Map<?, ?>)) continue;
+                Map<String, Object> binding = (Map<String, Object>) item;
+                result.computeIfAbsent(binding.get("consumer_plan_id").toString(), ignored -> new ArrayList<>())
+                        .add(binding);
+            }
+        }
+        result.replaceAll((ignored, bindings) -> bindings.stream()
+                .sorted(java.util.Comparator.comparing(binding -> binding.get("binding_id").toString())).toList());
+        return Map.copyOf(result);
+    }
+    private static Set<String> producerPlanIds(List<Map<String, Object>> lifecycles) {
+        Set<String> result = new java.util.LinkedHashSet<>();
+        for (Map<String, Object> lifecycle : lifecycles) {
+            Object raw = lifecycle.get("bindings");
+            if (!(raw instanceof List<?> bindings)) continue;
+            for (Object item : bindings) if (item instanceof Map<?, ?> binding)
+                result.add(String.valueOf(binding.get("producer_plan_id")));
+        }
+        return Set.copyOf(result);
+    }
+    private static Map<String, String> materializeBindings(String consumerPlanId,
+            Map<String, List<Map<String, Object>>> bindingsByConsumer,
+            Map<String, JsonNode> producerOutputs, List<Map<String, Object>> evidence) {
+        Map<String, String> result = new TreeMap<>();
+        for (Map<String, Object> binding : bindingsByConsumer.getOrDefault(consumerPlanId, List.of())) {
+            String producerPlanId = binding.get("producer_plan_id").toString();
+            JsonNode output = producerOutputs.get(producerPlanId);
+            if (output == null) throw new IllegalArgumentException(
+                    "OPENAPI_LIFECYCLE_PRODUCER_OUTPUT_NOT_AVAILABLE");
+            String pointer = binding.get("producer_json_pointer").toString();
+            JsonNode value = output.at(pointer);
+            if (value.isMissingNode() || value.isNull() || value.isContainerNode())
+                throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_NOT_FOUND");
+            String materialized = value.asText();
+            if (materialized.isEmpty() || materialized.length() > 4096)
+                throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_INVALID");
+            String parameter = binding.get("consumer_parameter_name").toString();
+            if (result.putIfAbsent(parameter, materialized) != null)
+                throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_COLLISION");
+            evidence.add(Map.of(
+                    "binding_id", binding.get("binding_id"),
+                    "producer_plan_id", producerPlanId,
+                    "producer_json_pointer", pointer,
+                    "consumer_parameter_name", parameter,
+                    "value_sha256", Hashing.sha256(materialized),
+                    "value_stored", false));
+        }
+        return Map.copyOf(result);
     }
     private Map<String, Object> recoveredReceipt(Path planFile, Map<String, Object> recovery,
             Map<String, Object> plan, LocalProgramUnderstandingApprovalService approvals) throws Exception {

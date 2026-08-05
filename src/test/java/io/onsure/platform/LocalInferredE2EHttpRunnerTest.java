@@ -105,11 +105,12 @@ class LocalInferredE2EHttpRunnerTest {
     void materializesSyntheticWriteBodyAndPathParameterAndValidatesResponseSchemas() throws Exception {
         Prepared prepared = prepare(openApiWithWriteAndPath());
         AtomicReference<String> receivedBody = new AtomicReference<>();
+        AtomicReference<String> receivedReadPath = new AtomicReference<>();
         HttpServer server = HttpServer.create(new InetSocketAddress(
                 InetAddress.getByName("127.0.0.1"), 0), 4);
         server.createContext("/orders", exchange -> {
             receivedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            byte[] body = "{\"id\":\"00000000-0000-4000-8000-000000000001\",\"name\":\"ONSURE_SYNTHETIC\",\"quantity\":1}"
+            byte[] body = "{\"id\":\"created-order-42\",\"name\":\"ONSURE_SYNTHETIC\",\"quantity\":1}"
                     .getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
             exchange.sendResponseHeaders(201, body.length);
@@ -117,7 +118,8 @@ class LocalInferredE2EHttpRunnerTest {
             exchange.close();
         });
         server.createContext("/orders/", exchange -> {
-            byte[] body = "{\"id\":\"00000000-0000-4000-8000-000000000001\",\"name\":\"ONSURE_SYNTHETIC\",\"quantity\":1}"
+            receivedReadPath.set(exchange.getRequestURI().getPath());
+            byte[] body = "{\"id\":\"created-order-42\",\"name\":\"ONSURE_SYNTHETIC\",\"quantity\":1}"
                     .getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, body.length);
@@ -140,7 +142,15 @@ class LocalInferredE2EHttpRunnerTest {
             assertEquals(false, post.get("request_body_stored"));
             assertEquals(true, post.get("response_schema_declared"));
             assertEquals(List.of(), post.get("response_schema_errors"));
-            assertEquals("/orders/00000000-0000-4000-8000-000000000001", get.get("http_path"));
+            assertEquals("/orders/created-order-42", receivedReadPath.get());
+            assertEquals("/orders/{orderId}", get.get("http_path"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> inputBindings =
+                    (List<Map<String, Object>>) get.get("input_bindings");
+            assertEquals(1, inputBindings.size());
+            assertEquals("orderId", inputBindings.get(0).get("consumer_parameter_name"));
+            assertEquals(Hashing.sha256("created-order-42"), inputBindings.get(0).get("value_sha256"));
+            assertEquals(false, inputBindings.get(0).get("value_stored"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("created-order-42"));
             assertEquals("PASS_NONFINAL", get.get("oracle_outcome"));
         } finally { server.stop(0); }
     }
@@ -148,9 +158,11 @@ class LocalInferredE2EHttpRunnerTest {
     @Test
     void failsWhenActualJsonDoesNotMatchDeclaredResponseSchema() throws Exception {
         Prepared prepared = prepare(openApiWithWriteAndPath());
+        AtomicInteger calls = new AtomicInteger();
         HttpServer server = HttpServer.create(new InetSocketAddress(
                 InetAddress.getByName("127.0.0.1"), 0), 4);
         server.createContext("/orders", exchange -> {
+            calls.incrementAndGet();
             byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders("POST".equals(exchange.getRequestMethod()) ? 201 : 200, body.length);
@@ -165,6 +177,9 @@ class LocalInferredE2EHttpRunnerTest {
                     (List<Map<String, Object>>) receipt.get("steps");
             assertTrue(steps.stream().anyMatch(step -> "FAIL".equals(step.get("oracle_outcome"))
                     && step.get("response_schema_errors").toString().contains("REQUIRED_MISSING")));
+            assertTrue(steps.stream().anyMatch(step -> "BLOCKED".equals(step.get("oracle_outcome"))
+                    && "OPENAPI_LIFECYCLE_PRODUCER_OUTPUT_NOT_AVAILABLE".equals(step.get("error_code"))));
+            assertEquals(1, calls.get());
         } finally { server.stop(0); }
     }
 

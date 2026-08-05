@@ -84,12 +84,17 @@ final class OpenApiSyntheticFixtureEngine {
     }
 
     PreparedRequest prepare(String method, String routeTemplate) throws Exception {
-        return prepare(method, routeTemplate, Map.of(), Map.of());
+        return prepare(method, routeTemplate, Map.of(), Map.of(), Map.of());
     }
 
     PreparedRequest prepare(String method, String routeTemplate, Map<String, String> environment,
             Map<String, String> runtimeReferences) throws Exception {
-        String route = materializePath(routeTemplate);
+        return prepare(method, routeTemplate, environment, runtimeReferences, Map.of());
+    }
+
+    PreparedRequest prepare(String method, String routeTemplate, Map<String, String> environment,
+            Map<String, String> runtimeReferences, Map<String, String> boundPathValues) throws Exception {
+        String route = materializePath(routeTemplate, boundPathValues);
         RequestParameters parameters = materializeRequiredParameters();
         Authentication authentication = authentication(environment, runtimeReferences);
         Map<String, String> headers = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -163,11 +168,12 @@ final class OpenApiSyntheticFixtureEngine {
                 "DECLARED_RESPONSE_STATUS_AND_SCHEMA");
     }
 
-    private String materializePath(String template) throws Exception {
+    private String materializePath(String template, Map<String, String> boundPathValues) throws Exception {
         String route = template;
         Map<String, JsonNode> parameters = new LinkedHashMap<>();
         collectParameters(pathItem.path("parameters"), parameters);
         collectParameters(operation.path("parameters"), parameters);
+        Set<String> consumedBindings = new HashSet<>();
         int cursor = 0;
         while ((cursor = route.indexOf('{', cursor)) >= 0) {
             int end = route.indexOf('}', cursor + 1);
@@ -176,13 +182,25 @@ final class OpenApiSyntheticFixtureEngine {
             JsonNode parameter = parameters.get("path\u0000" + name);
             if (parameter == null || !"path".equals(parameter.path("in").asText()))
                 throw new IllegalArgumentException("OPENAPI_PATH_PARAMETER_SCHEMA_MISSING:" + name);
-            JsonNode value = synthesize(parameter.path("schema"), new HashSet<>(), 0);
-            if (value.isContainerNode() || value.isNull())
-                throw new IllegalArgumentException("OPENAPI_PATH_PARAMETER_NOT_PRIMITIVE:" + name);
-            String encoded = percentEncode(value.asText());
+            String rawValue;
+            if (boundPathValues.containsKey(name)) {
+                rawValue = boundPathValues.get(name);
+                if (rawValue == null || rawValue.isEmpty() || rawValue.length() > 4096
+                        || rawValue.chars().anyMatch(character -> character < 0x20 || character == 0x7f))
+                    throw new IllegalArgumentException("OPENAPI_BOUND_PATH_PARAMETER_INVALID:" + safeCode(name));
+                consumedBindings.add(name);
+            } else {
+                JsonNode value = synthesize(parameter.path("schema"), new HashSet<>(), 0);
+                if (value.isContainerNode() || value.isNull())
+                    throw new IllegalArgumentException("OPENAPI_PATH_PARAMETER_NOT_PRIMITIVE:" + name);
+                rawValue = value.asText();
+            }
+            String encoded = percentEncode(rawValue);
             route = route.substring(0, cursor) + encoded + route.substring(end + 1);
             cursor += encoded.length();
         }
+        if (!consumedBindings.equals(boundPathValues.keySet()))
+            throw new IllegalArgumentException("OPENAPI_BOUND_PATH_PARAMETER_UNKNOWN");
         if (!route.startsWith("/") || route.contains("{") || route.contains("}") || route.contains("..")
                 || route.contains("?") || route.contains("#") || route.contains("\\"))
             throw new IllegalArgumentException("OPENAPI_MATERIALIZED_PATH_UNSAFE");

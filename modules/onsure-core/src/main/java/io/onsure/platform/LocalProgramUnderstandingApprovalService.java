@@ -539,6 +539,7 @@ final class LocalProgramUnderstandingApprovalService {
         }
         long blocked = candidates.stream().filter(candidate -> candidate.get("state").toString().startsWith("BLOCKED_"))
                 .count();
+        List<Map<String, Object>> lifecycles = authorizedLifecycles(review, candidates);
         Map<String, Object> plan = new LinkedHashMap<>();
         plan.put("contract", "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1");
         plan.put("execution_authorization_id", authorizationId);
@@ -555,6 +556,7 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("candidate_count", candidates.size());
         plan.put("blocked_candidate_count", blocked);
         plan.put("authorized_candidates", List.copyOf(candidates));
+        plan.put("authorized_lifecycles", lifecycles);
         plan.put("plan_state", blocked == 0 && !candidates.isEmpty()
                 ? "AUTHORIZED_NOT_RUN" : "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN");
         plan.put("execution_state", "NOT_RUN");
@@ -563,6 +565,66 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("destructive_action_allowed", false);
         plan.put("final_claim_allowed", false);
         return Map.copyOf(plan);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> authorizedLifecycles(
+            Map<String, Object> review, List<Map<String, Object>> candidates) {
+        Object raw = review.get("reviewed_api_lifecycle_candidates");
+        if (!(raw instanceof List<?> reviewed)) return List.of();
+        Map<String, String> planByFlow = new TreeMap<>();
+        for (Map<String, Object> candidate : candidates) {
+            planByFlow.put(candidate.get("flow_id").toString(), candidate.get("plan_id").toString());
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Object item : reviewed) {
+            if (!(item instanceof Map<?, ?> lifecycle)) continue;
+            String lifecycleId = String.valueOf(lifecycle.get("lifecycle_id"));
+            if (!lifecycleId.matches("LIFECYCLE-[0-9a-f]{16}")) continue;
+            List<String> operationPlanIds = new ArrayList<>();
+            Object operationsRaw = lifecycle.get("operations");
+            if (operationsRaw instanceof List<?> operations) for (Object operationItem : operations) {
+                if (!(operationItem instanceof Map<?, ?> operation)) continue;
+                String planId = planByFlow.get(String.valueOf(operation.get("flow_id")));
+                if (planId != null && !operationPlanIds.contains(planId)) operationPlanIds.add(planId);
+            }
+            if (operationPlanIds.size() < 2) continue;
+            List<Map<String, Object>> bindings = new ArrayList<>();
+            Object bindingsRaw = lifecycle.get("proposed_bindings");
+            if (bindingsRaw instanceof List<?> proposedBindings) for (Object bindingItem : proposedBindings) {
+                if (!(bindingItem instanceof Map<?, ?> binding)) continue;
+                String producerPlanId = planByFlow.get(String.valueOf(binding.get("producer_flow_id")));
+                String consumerPlanId = planByFlow.get(String.valueOf(binding.get("consumer_flow_id")));
+                String bindingId = String.valueOf(binding.get("binding_id"));
+                String pointer = String.valueOf(binding.get("producer_json_pointer"));
+                String parameter = String.valueOf(binding.get("consumer_parameter_name"));
+                if (producerPlanId == null || consumerPlanId == null
+                        || !operationPlanIds.contains(producerPlanId) || !operationPlanIds.contains(consumerPlanId)
+                        || !bindingId.matches("BINDING-[0-9a-f]{16}")
+                        || !pointer.matches("/(?:[A-Za-z0-9._~-]|~[01]){1,128}")
+                        || !parameter.matches("[A-Za-z][A-Za-z0-9._-]{0,127}")) continue;
+                bindings.add(Map.of(
+                        "binding_id", bindingId,
+                        "producer_plan_id", producerPlanId,
+                        "producer_json_pointer", pointer,
+                        "consumer_plan_id", consumerPlanId,
+                        "consumer_location", "PATH",
+                        "consumer_parameter_name", parameter,
+                        "value_storage_allowed", false,
+                        "state", "AUTHORIZED_NOT_RUN"));
+            }
+            Map<String, Object> authorized = new LinkedHashMap<>();
+            authorized.put("lifecycle_id", lifecycleId);
+            authorized.put("business_object", String.valueOf(lifecycle.get("business_object")));
+            authorized.put("operation_plan_ids", List.copyOf(operationPlanIds));
+            authorized.put("bindings", List.copyOf(bindings));
+            authorized.put("binding_count", bindings.size());
+            authorized.put("execution_state", "AUTHORIZED_NOT_RUN");
+            authorized.put("response_values_storage_allowed", false);
+            authorized.put("final_claim_allowed", false);
+            result.add(Map.copyOf(authorized));
+        }
+        return List.copyOf(result);
     }
 
     @SuppressWarnings("unchecked")

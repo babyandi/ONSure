@@ -84,6 +84,9 @@ final class ProgramUnderstandingEngine {
                 "OPENAPI_OPERATION".equals(candidate.get("kind"))
                         && List.of("POST", "PUT", "PATCH").contains(candidate.get("http_method"))
                         && !Boolean.TRUE.equals(candidate.get("request_schema_declared")));
+        List<Map<String, Object>> lifecycles = apiLifecycles(flows);
+        boolean hasLifecycleBindings = lifecycles.stream().anyMatch(lifecycle ->
+                ((Number) lifecycle.getOrDefault("binding_count", 0)).intValue() > 0);
         List<Map<String, Object>> questions = new ArrayList<>();
         if (hasApi) questions.add(question("RUNTIME_ENDPOINT", "검증용 base URL과 시작 명령을 확인하십시오.", true));
         questions.add(question("SAFE_TEST_IDENTITY", "실데이터가 아닌 검증 계정·fixture의 사용 범위를 확인하십시오.", true));
@@ -99,6 +102,9 @@ final class ProgramUnderstandingEngine {
                 "SUCCESS_ORACLE", "각 주요 Flow의 성공·실패 판정 조건을 확인하십시오.", true));
         if (hasDataLifecycle) questions.add(question(
                 "DATABASE_RECOVERY_BOUNDARY", "합성 DB, rollback 및 backup/restore 허용 범위를 확인하십시오.", true));
+        if (hasLifecycleBindings) questions.add(question(
+                "LIFECYCLE_BINDING_REVIEW",
+                "생성 응답의 식별자를 후속 API path 입력으로 연결하는 후보와 JSON Pointer를 확인하십시오.", true));
 
         List<Map<String, Object>> plans = flows.stream().limit(200).map(flow -> Map.<String, Object>of(
                 "plan_id", "E2E-" + flow.get("flow_id").toString().substring(5),
@@ -110,8 +116,6 @@ final class ProgramUnderstandingEngine {
                 "customer_data_allowed", false,
                 "destructive_action_allowed", false,
                 "score_eligible", false)).toList();
-        List<Map<String, Object>> lifecycles = apiLifecycles(flows);
-
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("contract", CONTRACT);
         result.put("source_sha256", sourceSha256);
@@ -253,23 +257,78 @@ final class ProgramUnderstandingEngine {
         }
         List<Map<String, Object>> result = new ArrayList<>();
         for (Map.Entry<String, List<Map<String, Object>>> entry : grouped.entrySet()) {
-            List<Map<String, Object>> operations = entry.getValue().stream()
-                    .sorted(Comparator.comparing(flow -> lifecycleRank(operationAction(flow))))
+            List<Map<String, Object>> orderedFlows = entry.getValue().stream()
+                    .sorted(Comparator.comparing((Map<String, Object> flow) -> lifecycleRank(operationAction(flow)))
+                            .thenComparing(flow -> flow.get("flow_id").toString()))
+                    .toList();
+            List<Map<String, Object>> operations = orderedFlows.stream()
                     .map(flow -> Map.<String, Object>of(
                             "flow_id", flow.get("flow_id"),
                             "operation", flow.get("operation"),
                             "state", "PROPOSED_NOT_RUN"))
                     .toList();
+            List<Map<String, Object>> bindings = lifecycleBindings(orderedFlows);
             Set<String> actions = new LinkedHashSet<>();
             entry.getValue().forEach(flow -> actions.add(operationAction(flow)));
-            result.add(Map.of(
-                    "lifecycle_id", "LIFECYCLE-" + Hashing.sha256(entry.getKey()).substring(0, 16),
-                    "business_object", entry.getKey(),
-                    "actions", actions.stream().sorted(Comparator.comparing(ProgramUnderstandingEngine::lifecycleRank)).toList(),
-                    "operations", operations,
-                    "coverage_state", lifecycleCoverage(actions),
-                    "execution_state", "NOT_RUN_REVIEW_REQUIRED",
-                    "score_eligible", false));
+            Map<String, Object> lifecycle = new LinkedHashMap<>();
+            lifecycle.put("lifecycle_id", "LIFECYCLE-" + Hashing.sha256(entry.getKey()).substring(0, 16));
+            lifecycle.put("business_object", entry.getKey());
+            lifecycle.put("actions", actions.stream()
+                    .sorted(Comparator.comparing(ProgramUnderstandingEngine::lifecycleRank)).toList());
+            lifecycle.put("operations", operations);
+            lifecycle.put("binding_count", bindings.size());
+            lifecycle.put("proposed_bindings", bindings);
+            lifecycle.put("coverage_state", lifecycleCoverage(actions));
+            lifecycle.put("semantic_state", "INFERRED_REVIEW_REQUIRED");
+            lifecycle.put("execution_state", "NOT_RUN_REVIEW_REQUIRED");
+            lifecycle.put("runtime_verified", false);
+            lifecycle.put("score_eligible", false);
+            result.add(Map.copyOf(lifecycle));
+        }
+        return List.copyOf(result);
+    }
+
+    private static List<Map<String, Object>> lifecycleBindings(List<Map<String, Object>> flows) {
+        Map<String, Object> producer = flows.stream()
+                .filter(flow -> "CREATE".equals(operationAction(flow))).findFirst().orElse(null);
+        if (producer == null) return List.of();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> consumer : flows) {
+            if (!Set.of("READ", "UPDATE", "DELETE").contains(operationAction(consumer))) continue;
+            @SuppressWarnings("unchecked") Map<String, Object> operation =
+                    (Map<String, Object>) consumer.get("operation");
+            for (String parameter : pathParameters(operation.getOrDefault("http_path", "").toString())) {
+                String pointer = parameter.toLowerCase(Locale.ROOT).endsWith("id") ? "/id" : "/" + parameter;
+                String material = producer.get("flow_id") + "\u0000" + consumer.get("flow_id")
+                        + "\u0000" + parameter + "\u0000" + pointer;
+                Map<String, Object> binding = new LinkedHashMap<>();
+                binding.put("binding_id", "BINDING-" + Hashing.sha256(material).substring(0, 16));
+                binding.put("producer_flow_id", producer.get("flow_id"));
+                binding.put("producer_json_pointer", pointer);
+                binding.put("consumer_flow_id", consumer.get("flow_id"));
+                binding.put("consumer_location", "PATH");
+                binding.put("consumer_parameter_name", parameter);
+                binding.put("inference_basis", "BUSINESS_OBJECT_AND_LIFECYCLE_PATH_PARAMETER_HEURISTIC");
+                binding.put("inference_confidence", 0.70);
+                binding.put("semantic_state", "INFERRED_REVIEW_REQUIRED");
+                binding.put("runtime_verified", false);
+                binding.put("auto_execute", false);
+                binding.put("score_eligible", false);
+                result.add(Map.copyOf(binding));
+            }
+        }
+        return List.copyOf(result);
+    }
+
+    private static List<String> pathParameters(String route) {
+        List<String> result = new ArrayList<>();
+        int cursor = 0;
+        while ((cursor = route.indexOf('{', cursor)) >= 0) {
+            int end = route.indexOf('}', cursor + 1);
+            if (end < 0) break;
+            String name = route.substring(cursor + 1, end);
+            if (name.matches("[A-Za-z][A-Za-z0-9._-]{0,127}")) result.add(name);
+            cursor = end + 1;
         }
         return List.copyOf(result);
     }

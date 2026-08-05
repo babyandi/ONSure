@@ -9,7 +9,7 @@
   "approval_request_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
   "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "execution_scope": "PRODUCTION", "candidate_count": 1, "blocked_candidate_count": 0,
-  "authorized_candidates": [], "plan_state": "AUTHORIZED_NOT_RUN", "execution_state": "PASS",
+  "authorized_candidates": [], "authorized_lifecycles": [], "plan_state": "AUTHORIZED_NOT_RUN", "execution_state": "PASS",
   "source_mutation_allowed": true, "customer_data_allowed": true,
   "destructive_action_allowed": true, "final_claim_allowed": true
 }

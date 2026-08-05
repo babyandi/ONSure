@@ -332,6 +332,8 @@ final class LocalProgramManagementService {
         review.put("review_state", reviewState);
         review.put("reviewed_e2e_plan_draft", mapper.convertValue(
                 understanding.path("e2e_plan_candidates"), List.class));
+        review.put("reviewed_api_lifecycle_candidates", mapper.convertValue(
+                understanding.path("api_lifecycle_candidates"), List.class));
         review.put("approval_state", "NOT_RUN");
         review.put("execution_state", "NOT_RUN");
         review.put("secret_values_accepted", false);

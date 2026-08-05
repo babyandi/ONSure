@@ -20,7 +20,7 @@
     "oracle_strategy": "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT",
     "state": "READY_FOR_SYNTHETIC_FIXTURE_GENERATION", "customer_data_allowed": false,
     "destructive_action_allowed": false
-  }], "plan_state": "AUTHORIZED_NOT_RUN", "execution_state": "NOT_RUN",
+  }], "authorized_lifecycles": [], "plan_state": "AUTHORIZED_NOT_RUN", "execution_state": "NOT_RUN",
   "source_mutation_allowed": false, "customer_data_allowed": false,
   "destructive_action_allowed": false, "final_claim_allowed": false
 }

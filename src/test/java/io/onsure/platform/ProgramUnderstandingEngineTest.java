@@ -34,6 +34,10 @@ class ProgramUnderstandingEngineTest {
                       tags: [Orders]
                       responses: {'200': {description: ok}}
                   /orders/{orderId}:
+                    get:
+                      operationId: getOrder
+                      tags: [Orders]
+                      responses: {'200': {description: found}}
                     delete:
                       operationId: deleteOrder
                       tags: [Orders]
@@ -58,12 +62,26 @@ class ProgramUnderstandingEngineTest {
         assertEquals(1, lifecycles.size());
         assertEquals(List.of("CREATE", "READ", "DELETE"), lifecycles.get(0).get("actions"));
         assertEquals("CREATE_READ_CANDIDATE", lifecycles.get(0).get("coverage_state"));
+        assertEquals(2, lifecycles.get(0).get("binding_count"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                (List<Map<String, Object>>) lifecycles.get(0).get("proposed_bindings");
+        Map<String, Object> readBinding = bindings.stream()
+                .filter(binding -> binding.get("consumer_flow_id").toString().equals(
+                        flows.stream().filter(flow -> "getOrder".equals(flow.get("name")))
+                                .findFirst().orElseThrow().get("flow_id")))
+                .findFirst().orElseThrow();
+        assertEquals("/id", readBinding.get("producer_json_pointer"));
+        assertEquals("orderId", readBinding.get("consumer_parameter_name"));
+        assertEquals("INFERRED_REVIEW_REQUIRED", readBinding.get("semantic_state"));
+        assertEquals(false, readBinding.get("auto_execute"));
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> questions = (List<Map<String, Object>>) result.get("minimal_questions");
         assertTrue(questions.stream().anyMatch(question -> "RUNTIME_ENDPOINT".equals(question.get("question_id"))));
         assertTrue(questions.stream().anyMatch(question ->
                 "UNAUTHENTICATED_API_BOUNDARY".equals(question.get("question_id"))));
         assertTrue(questions.stream().anyMatch(question -> "DESTRUCTIVE_TEST_BOUNDARY".equals(question.get("question_id"))));
+        assertTrue(questions.stream().anyMatch(question ->
+                "LIFECYCLE_BINDING_REVIEW".equals(question.get("question_id"))));
         assertEquals(List.of("OPENAPI_SECURITY_UNDECLARED", "DESTRUCTIVE_API_DISCOVERED"),
                 result.get("risk_flags"));
     }

@@ -3,7 +3,7 @@
   "$id": "https://onsure.local/contracts/inferred-e2e-execution-authorization.v1.schema.json",
   "title": "ONSure Inferred E2E Execution Authorization V1",
   "type": "object", "additionalProperties": false,
-  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_id", "approval_request_sha256", "approval_receipt_sha256", "runtime_reference_ids", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
+  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_id", "approval_request_sha256", "approval_receipt_sha256", "runtime_reference_ids", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "authorized_lifecycles", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
   "properties": {
     "contract": {"const": "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1"},
     "execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
@@ -21,12 +21,37 @@
     "execution_scope": {"const": "ISOLATED_SYNTHETIC_LOOPBACK"},
     "candidate_count": {"type": "integer", "minimum": 0}, "blocked_candidate_count": {"type": "integer", "minimum": 0},
     "authorized_candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
+    "authorized_lifecycles": {"type": "array", "items": {"$ref": "#/$defs/lifecycle"}},
     "plan_state": {"enum": ["AUTHORIZED_NOT_RUN", "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN"]},
     "execution_state": {"const": "NOT_RUN"}, "source_mutation_allowed": {"const": false},
     "customer_data_allowed": {"const": false}, "destructive_action_allowed": {"const": false},
     "final_claim_allowed": {"const": false}
   },
   "$defs": {
+    "binding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_plan_id", "consumer_location", "consumer_parameter_name", "value_storage_allowed", "state"],
+      "properties": {
+        "binding_id": {"type": "string", "pattern": "^BINDING-[0-9a-f]{16}$"},
+        "producer_plan_id": {"type": "string"}, "producer_json_pointer": {"type": "string", "pattern": "^/.+$"},
+        "consumer_plan_id": {"type": "string"}, "consumer_location": {"const": "PATH"},
+        "consumer_parameter_name": {"type": "string"}, "value_storage_allowed": {"const": false},
+        "state": {"const": "AUTHORIZED_NOT_RUN"}
+      }
+    },
+    "lifecycle": {
+      "type": "object", "additionalProperties": false,
+      "required": ["lifecycle_id", "business_object", "operation_plan_ids", "bindings", "binding_count", "execution_state", "response_values_storage_allowed", "final_claim_allowed"],
+      "properties": {
+        "lifecycle_id": {"type": "string", "pattern": "^LIFECYCLE-[0-9a-f]{16}$"},
+        "business_object": {"type": "string"},
+        "operation_plan_ids": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string"}},
+        "bindings": {"type": "array", "items": {"$ref": "#/$defs/binding"}},
+        "binding_count": {"type": "integer", "minimum": 0},
+        "execution_state": {"const": "AUTHORIZED_NOT_RUN"},
+        "response_values_storage_allowed": {"const": false}, "final_claim_allowed": {"const": false}
+      }
+    },
     "candidate": {
       "type": "object", "additionalProperties": false,
       "required": ["plan_id", "flow_id", "http_method", "http_path", "request_schema_refs", "request_schema_declared", "security_declared", "response_statuses", "openapi_source_path", "openapi_source_sha256", "fixture_strategy", "oracle_strategy", "state", "customer_data_allowed", "destructive_action_allowed"],

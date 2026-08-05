@@ -7,6 +7,7 @@
   "required": [
     "contract", "project_id", "target_id", "source_sha256", "profile_file_sha256",
     "answers", "unresolved_blocking_questions", "review_state", "reviewed_e2e_plan_draft",
+    "reviewed_api_lifecycle_candidates",
     "approval_state", "execution_state", "secret_values_accepted", "customer_data_allowed",
     "destructive_action_allowed", "score_eligible", "final_claim_allowed", "review_sha256"
   ],
@@ -32,6 +33,7 @@
     "unresolved_blocking_questions": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
     "review_state": {"enum": ["HOLD_REVIEW_INCOMPLETE", "READY_FOR_SEPARATE_APPROVAL"]},
     "reviewed_e2e_plan_draft": {"type": "array"},
+    "reviewed_api_lifecycle_candidates": {"type": "array"},
     "approval_state": {"const": "NOT_RUN"},
     "execution_state": {"const": "NOT_RUN"},
     "secret_values_accepted": {"const": false},

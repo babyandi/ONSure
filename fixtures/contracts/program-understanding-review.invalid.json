@@ -8,6 +8,7 @@
   "unresolved_blocking_questions": [],
   "review_state": "READY_FOR_SEPARATE_APPROVAL",
   "reviewed_e2e_plan_draft": [],
+  "reviewed_api_lifecycle_candidates": [],
   "approval_state": "APPROVED",
   "execution_state": "PASS",
   "secret_values_accepted": true,
