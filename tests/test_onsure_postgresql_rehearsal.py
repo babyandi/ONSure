@@ -90,6 +90,11 @@ class ONSurePostgresqlRehearsalTest(unittest.TestCase):
             self.skipTest("source commit evidence requires Git metadata")
         self.assertRegex(rehearsal.source_commit(), r"^[0-9a-f]{40}$")
 
+    def test_concurrent_migration_parser_uses_current_migration_count(self):
+        source = (ROOT / "scripts/rehearse_onsure_postgresql.py").read_text(encoding="utf-8")
+        self.assertIn("f\"executed={expected_migrations}\"", source)
+        self.assertNotIn('if "executed=2" in output', source)
+
 
 if __name__ == "__main__":
     unittest.main()

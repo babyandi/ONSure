@@ -157,7 +157,9 @@ def psql(
     ])
 
 
-def concurrent_migrate(runtime: pathlib.Path, environment: dict[str, str]) -> list[int]:
+def concurrent_migrate(
+    runtime: pathlib.Path, environment: dict[str, str], expected_migrations: int,
+) -> list[int]:
     processes = [
         subprocess.Popen(
             java_command(runtime, "migrate"),
@@ -176,8 +178,8 @@ def concurrent_migrate(runtime: pathlib.Path, environment: dict[str, str]) -> li
             if process.returncode:
                 detail = (error or output).strip().splitlines()
                 raise ValueError("CONCURRENT_MIGRATE_FAILED:" + (detail[-1] if detail else "NO_OUTPUT"))
-            if "executed=2" in output:
-                executed.append(2)
+            if f"executed={expected_migrations}" in output:
+                executed.append(expected_migrations)
             elif "executed=0" in output:
                 executed.append(0)
             else:
@@ -350,6 +352,7 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 raise ValueError(
                     "BACKUP_RESTORE_RESULT_INVALID:"
                     f"events={restored_events}:history={restored_history}:"
+                    f"scores={restored_scores}:nodes={restored_nodes}:findings={restored_findings}:"
                     f"validate={restored_validation}:migrate={restored_migrate}"
                 )
             run("CREATE_CONCURRENT_DB", [
@@ -360,7 +363,9 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
             concurrent_environment["ONSURE_DB_URL"] = (
                 f"jdbc:postgresql://127.0.0.1:{port}/onsure_concurrent?sslmode=disable"
             )
-            concurrent_executed = concurrent_migrate(runtime, concurrent_environment)
+            concurrent_executed = concurrent_migrate(
+                runtime, concurrent_environment, expected_migrations,
+            )
             concurrent_history = psql(
                 binaries, sockets, port, "onsure_concurrent",
                 "SELECT count(*) FROM onsure.flyway_schema_history WHERE success AND version IS NOT NULL;",
