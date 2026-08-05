@@ -80,7 +80,7 @@ final class ProgramUnderstandingEngine {
         boolean hasRequestWithoutSchema = candidates.stream().anyMatch(candidate ->
                 "OPENAPI_OPERATION".equals(candidate.get("kind"))
                         && List.of("POST", "PUT", "PATCH").contains(candidate.get("http_method"))
-                        && stringList(candidate.get("request_schema_refs")).isEmpty());
+                        && !Boolean.TRUE.equals(candidate.get("request_schema_declared")));
         List<Map<String, Object>> questions = new ArrayList<>();
         if (hasApi) questions.add(question("RUNTIME_ENDPOINT", "검증용 base URL과 시작 명령을 확인하십시오.", true));
         questions.add(question("SAFE_TEST_IDENTITY", "실데이터가 아닌 검증 계정·fixture의 사용 범위를 확인하십시오.", true));
@@ -232,7 +232,8 @@ final class ProgramUnderstandingEngine {
         Map<String, Object> operation = new LinkedHashMap<>();
         for (String key : List.of("http_method", "http_path", "operation_id", "tags",
                 "request_schema_refs", "response_statuses", "security_declared",
-                "lifecycle_action", "destructive_risk", "source_path")) {
+                "request_schema_declared", "lifecycle_action", "destructive_risk", "source_path",
+                "evidence_sha256")) {
             if (candidate.containsKey(key)) operation.put(key, candidate.get(key));
         }
         return Map.copyOf(operation);

@@ -16,10 +16,29 @@
     "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "execution_scope": {"const": "ISOLATED_SYNTHETIC_LOOPBACK"},
     "candidate_count": {"type": "integer", "minimum": 0}, "blocked_candidate_count": {"type": "integer", "minimum": 0},
-    "authorized_candidates": {"type": "array", "items": {"type": "object"}},
+    "authorized_candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
     "plan_state": {"enum": ["AUTHORIZED_NOT_RUN", "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN"]},
     "execution_state": {"const": "NOT_RUN"}, "source_mutation_allowed": {"const": false},
     "customer_data_allowed": {"const": false}, "destructive_action_allowed": {"const": false},
     "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["plan_id", "flow_id", "http_method", "http_path", "request_schema_refs", "request_schema_declared", "response_statuses", "openapi_source_path", "openapi_source_sha256", "fixture_strategy", "oracle_strategy", "state", "customer_data_allowed", "destructive_action_allowed"],
+      "properties": {
+        "plan_id": {"type": "string"}, "flow_id": {"type": "string"},
+        "http_method": {"enum": ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE", "NONE"]},
+        "http_path": {"type": "string", "maxLength": 4096},
+        "request_schema_refs": {"type": "array", "items": {"type": "string"}},
+        "request_schema_declared": {"type": "boolean"},
+        "response_statuses": {"type": "array", "items": {"type": "string"}},
+        "openapi_source_path": {"type": "string"},
+        "openapi_source_sha256": {"oneOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"const": "NOT_APPLICABLE"}]},
+        "fixture_strategy": {"type": "string"}, "oracle_strategy": {"type": "string"},
+        "state": {"type": "string", "pattern": "^(READY_FOR_|BLOCKED_).+$"},
+        "customer_data_allowed": {"const": false}, "destructive_action_allowed": {"const": false}
+      }
+    }
   }
 }

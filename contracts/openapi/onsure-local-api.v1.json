@@ -351,7 +351,7 @@
     "/v1/programs/understand/inferred-e2e-runs": {
       "post": {
         "operationId": "runApprovedInferredE2E", "tags": ["Management"],
-        "summary": "Run an exactly-once approved read-only E2E plan against a configured loopback endpoint",
+        "summary": "Run an exactly-once approved non-destructive synthetic E2E plan against a configured loopback endpoint",
         "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/InferredE2ERunRequest"}}}},
         "responses": {"200": {"$ref": "#/components/responses/GenericObject"}, "400": {"$ref": "#/components/responses/InvalidRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "405": {"$ref": "#/components/responses/MethodNotAllowed"}}
       }

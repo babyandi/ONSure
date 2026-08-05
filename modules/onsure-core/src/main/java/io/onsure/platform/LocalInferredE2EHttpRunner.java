@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/** Executes only approved read-only HTTP candidates against an explicit loopback endpoint. */
+/** Executes approved non-destructive HTTP candidates against an explicit loopback endpoint. */
 final class LocalInferredE2EHttpRunner {
     static final String CONTRACT = "ONSURE_INFERRED_E2E_RUNTIME_RECEIPT_V1";
     private static final int MAX_RESPONSE_BYTES = 1_048_576;
@@ -62,6 +62,25 @@ final class LocalInferredE2EHttpRunner {
                 || !authorizationId.equals(plan.get("execution_authorization_id"))
                 || !"NOT_RUN".equals(plan.get("execution_state")))
             throw new IllegalArgumentException("INFERRED_E2E_PLAN_BINDING_INVALID");
+        ValidationModel.ValidationTarget target = new ProductCatalog(
+                workspaceRoot.resolve(".onsure/product-catalog"))
+                .requireTarget(plan.get("target_id").toString());
+        if (!("sha256:" + plan.get("source_sha256")).equals(target.immutableSourceReference()))
+            throw new IllegalArgumentException("INFERRED_E2E_TARGET_SOURCE_BINDING_INVALID");
+        if (!plan.get("source_sha256").equals(
+                new LocalProgramManagementService(workspaceRoot).currentSourceDigest(target.sourceRoot())))
+            throw new IllegalArgumentException("INFERRED_E2E_TARGET_SOURCE_STALE");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> candidates = (List<Map<String, Object>>) plan
+                .getOrDefault("authorized_candidates", List.of());
+        Map<String, OpenApiSyntheticFixtureEngine> fixtureEngines = new LinkedHashMap<>();
+        for (Map<String, Object> candidate : candidates) {
+            if (!runnable(candidate)) continue;
+            String planId = candidate.get("plan_id").toString();
+            if (fixtureEngines.putIfAbsent(planId, new OpenApiSyntheticFixtureEngine(
+                    target.sourceRoot(), candidate)) != null)
+                throw new IllegalArgumentException("INFERRED_E2E_DUPLICATE_PLAN_ID");
+        }
         String requestId = plan.get("approval_request_id").toString();
         LocalProgramUnderstandingApprovalService approvals =
                 new LocalProgramUnderstandingApprovalService(workspaceRoot);
@@ -72,50 +91,73 @@ final class LocalInferredE2EHttpRunner {
         boolean failed = false;
         boolean blocked = false;
         int executed = 0;
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> candidates = (List<Map<String, Object>>) plan
-                .getOrDefault("authorized_candidates", List.of());
         for (Map<String, Object> candidate : candidates) {
-            if (!"READY_FOR_ISOLATED_LOOPBACK_RUNNER".equals(candidate.get("state"))) {
+            if (!runnable(candidate)) {
                 steps.add(blocked(candidate)); blocked = true; continue;
             }
             String method = candidate.get("http_method").toString();
-            String route = candidate.get("http_path").toString();
-            if (!List.of("GET", "HEAD", "OPTIONS").contains(method) || !safeRoute(route)) {
+            String routeTemplate = candidate.get("http_path").toString();
+            if (!List.of("GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH").contains(method)) {
                 steps.add(blocked(candidate)); blocked = true; continue;
             }
-            executed++;
             try {
+                OpenApiSyntheticFixtureEngine fixtureEngine = fixtureEngines.get(candidate.get("plan_id").toString());
+                OpenApiSyntheticFixtureEngine.PreparedRequest prepared =
+                        fixtureEngine.prepare(method, routeTemplate);
+                String route = prepared.route();
+                if (!safeRoute(route)) throw new IllegalArgumentException("INFERRED_E2E_ROUTE_UNSAFE");
                 URI uri = new URI(base.getScheme(), null, base.getHost(), base.getPort(), route, null, null);
-                HttpRequest request = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(15))
-                        .header("Accept", "application/json").header("User-Agent", "ONSure-Inferred-E2E/1")
-                        .method(method, HttpRequest.BodyPublishers.noBody()).build();
+                HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(15))
+                        .header("Accept", "application/json").header("User-Agent", "ONSure-Inferred-E2E/1");
+                if (prepared.contentType() != null) requestBuilder.header("Content-Type", prepared.contentType());
+                HttpRequest request = requestBuilder.method(method, prepared.body().length == 0
+                        ? HttpRequest.BodyPublishers.noBody()
+                        : HttpRequest.BodyPublishers.ofByteArray(prepared.body())).build();
                 long before = System.nanoTime();
+                executed++;
                 HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
                 byte[] body;
                 try (InputStream stream = response.body()) { body = stream.readNBytes(MAX_RESPONSE_BYTES + 1); }
                 if (body.length > MAX_RESPONSE_BYTES) throw new IllegalStateException("INFERRED_E2E_RESPONSE_TOO_LARGE");
                 @SuppressWarnings("unchecked") List<String> expected =
                         (List<String>) candidate.getOrDefault("response_statuses", List.of());
-                boolean oracle = expected.isEmpty() ? response.statusCode() >= 200 && response.statusCode() < 300
-                        : expected.contains(String.valueOf(response.statusCode()));
+                boolean statusOracle = expected.isEmpty() ? response.statusCode() >= 200 && response.statusCode() < 300
+                        : statusExpected(expected, response.statusCode());
+                String responseContentType = response.headers().firstValue("Content-Type").orElse(null);
+                OpenApiSyntheticFixtureEngine.OracleResult schemaOracle = fixtureEngine.validateResponse(
+                        method, response.statusCode(), responseContentType, body);
+                boolean oracle = statusOracle && schemaOracle.passed();
+                boolean oracleBlocked = statusOracle && schemaOracle.blocked();
                 Map<String, Object> step = new LinkedHashMap<>();
                 step.put("plan_id", candidate.get("plan_id")); step.put("http_method", method);
-                step.put("http_path", route); step.put("request_uri", uri.toString());
-                step.put("request_body_sha256", Hashing.sha256(new byte[0]));
+                step.put("http_path_template", routeTemplate); step.put("http_path", route);
+                step.put("request_uri", uri.toString());
+                step.put("request_body_sha256", Hashing.sha256(prepared.body()));
+                step.put("request_body_bytes", prepared.body().length);
+                step.put("request_body_stored", false);
+                step.put("request_schema_sha256", prepared.requestSchemaSha256());
+                step.put("fixture_strategy", prepared.fixtureStrategy());
                 step.put("response_status", response.statusCode()); step.put("expected_statuses", expected);
                 step.put("response_body_sha256", Hashing.sha256(body)); step.put("response_bytes", body.length);
+                step.put("response_schema_declared", schemaOracle.schemaDeclared());
+                if (schemaOracle.responseSchemaSha256() != null)
+                    step.put("response_schema_sha256", schemaOracle.responseSchemaSha256());
+                step.put("response_schema_errors", schemaOracle.errors());
+                step.put("oracle_strategy", schemaOracle.strategy());
                 step.put("duration_millis", Duration.ofNanos(System.nanoTime() - before).toMillis());
-                step.put("oracle_outcome", oracle ? "PASS_NONFINAL" : "FAIL");
+                step.put("oracle_outcome", oracle ? "PASS_NONFINAL" : oracleBlocked ? "BLOCKED" : "FAIL");
                 step.put("response_body_stored", false); step.put("final_claim_allowed", false);
                 steps.add(Map.copyOf(step));
-                if (!oracle) failed = true;
+                if (oracleBlocked) blocked = true;
+                else if (!oracle) failed = true;
             } catch (Exception error) {
+                String errorCode = errorCode(error);
+                boolean executionBlocked = errorCode.startsWith("OPENAPI_");
                 steps.add(Map.of("plan_id", candidate.get("plan_id"), "http_method", method,
-                        "http_path", route, "oracle_outcome", "FAIL",
-                        "error_code", error.getClass().getSimpleName(), "response_body_stored", false,
+                        "http_path", routeTemplate, "oracle_outcome", executionBlocked ? "BLOCKED" : "FAIL",
+                        "error_code", errorCode, "response_body_stored", false,
                         "final_claim_allowed", false));
-                failed = true;
+                if (executionBlocked) blocked = true; else failed = true;
             }
         }
         String outcome = failed ? "FAIL" : blocked || executed == 0 ? "BLOCKED" : "PASS_NONFINAL";
@@ -147,6 +189,21 @@ final class LocalInferredE2EHttpRunner {
     private static boolean safeRoute(String route) {
         return route.startsWith("/") && !route.contains("{") && !route.contains("..")
                 && !route.contains("?") && !route.contains("#") && !route.contains("\\");
+    }
+    private static boolean runnable(Map<String, Object> candidate) {
+        return Set.of("READY_FOR_ISOLATED_LOOPBACK_RUNNER", "READY_FOR_SYNTHETIC_FIXTURE_GENERATION",
+                "READY_FOR_PATH_PARAMETER_FIXTURE_GENERATION").contains(candidate.get("state"));
+    }
+    private static boolean statusExpected(List<String> expected, int actual) {
+        String exact = String.valueOf(actual);
+        String family = (actual / 100) + "XX";
+        return expected.stream().map(value -> value.toUpperCase(Locale.ROOT))
+                .anyMatch(value -> value.equals(exact) || value.equals(family) || value.equals("DEFAULT"));
+    }
+    private static String errorCode(Exception error) {
+        String message = error.getMessage();
+        return message != null && message.matches("[A-Z0-9_.:-]{1,200}")
+                ? message : error.getClass().getSimpleName();
     }
     private static URI loopbackBase(String raw) throws Exception {
         if (raw == null || raw.isBlank()) throw new IllegalArgumentException("INFERRED_E2E_BASE_URL_NOT_CONFIGURED");

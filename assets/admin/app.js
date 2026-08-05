@@ -510,7 +510,7 @@
       actions.append(consume);
       const run = document.createElement("button");
       run.type = "button"; run.className = "button secondary compact-button";
-      run.textContent = "Loopback E2E 실행";
+      run.textContent = "합성 Loopback E2E 실행";
       run.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole)
         || request.state !== "CONSUMED_FOR_EXECUTION_AUTHORIZATION"
         || request.execution_state !== "NOT_RUN";
@@ -559,7 +559,9 @@
           base_url_reference_id: "env:ONSURE_INFERRED_E2E_BASE_URL"
         })
       });
-      setText("program-action-state", `E2E ${result.outcome} · 실행 ${result.executed_step_count}/${result.step_count} · receipt ${result.runtime_receipt_sha256}`);
+      const schemaFailures = (result.steps || []).filter((step) =>
+        (step.response_schema_errors || []).length > 0).length;
+      setText("program-action-state", `E2E ${result.outcome} · 실행 ${result.executed_step_count}/${result.step_count} · Schema 오류 ${schemaFailures} · receipt ${result.runtime_receipt_sha256}`);
       await loadOverview();
     } catch (error) {
       setText("program-action-state", error instanceof Error ? error.message : "Loopback E2E 실행 실패");

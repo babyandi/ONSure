@@ -51,6 +51,10 @@ final class LocalProgramManagementService {
         this.environment = Map.copyOf(environment == null ? Map.of() : environment);
     }
 
+    String currentSourceDigest(Path source) throws Exception {
+        return inclusiveTreeDigest(sourceRoot(source.toString())).digest();
+    }
+
     Map<String, Object> register(JsonNode request) throws Exception {
         String workspaceId = id(request, "workspace_id");
         String workspaceName = text(request, "workspace_name", 200);

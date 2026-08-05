@@ -245,6 +245,13 @@ improvement 산출물과 Gateway의 content-free token·비용·digest-chain pro
 선택적 VIEWER/OPERATOR/APPROVER token으로 조회·프로그램 실행·Gateway 승인 권한을 분리한다.
 프로그램 검증은 원본 대신 bounded snapshot에서 수행하며, Gateway 설정 변경은 distinct approver가
 결정한 뒤에도 외부 적용 대기 상태로 남고 모든 상태 변경은 append-only 감사 chain에 기록된다.
+Program Understanding 검토와 별도 승인으로 생성한 1회 실행권한은
+`ONSURE_INFERRED_E2E_BASE_URL=http://127.0.0.1:<unprivileged-port>`인 합성 loopback 대상에만
+사용할 수 있다. GET/HEAD/OPTIONS와 OpenAPI request schema가 있는 POST/PUT/PATCH를 실행하며,
+path parameter와 요청 body는 `example`·`default` 없이 결정적으로 생성한다. 요청·응답 원문은
+저장하지 않고 schema/source/body digest와 판정만 Receipt에 남긴다. DELETE, source drift,
+외부 `$ref`, materialize되지 않은 인증·필수 query/header, 지원하지 않는 schema assertion은
+대상 결함으로 오판하지 않고 `BLOCKED`다. 모든 결과는 `PASS_NONFINAL`까지만 허용한다.
 Gateway 환경변수와 단독 서버 실행 경계는
 `docs/architecture/ONSURE_LLM_GATEWAY_AND_MANAGEMENT_UI_v1.md`를 따른다.
 

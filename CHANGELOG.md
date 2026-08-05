@@ -6,6 +6,11 @@
 
 ### Added
 
+- source/OpenAPI digest와 1회 승인에 결속된 non-destructive loopback E2E에서
+  인라인·로컬 `$ref` request schema의 결정적 합성 Fixture, path parameter materialization,
+  응답 status·bounded schema oracle 및 body 비저장 digest Receipt 지원
+- 자동 E2E의 source drift, external `$ref`, 인증 미구성, 필수 query/header,
+  미지원 schema assertion을 고객 결함과 분리해 `BLOCKED`로 판정하는 fail-closed 경계
 - Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
 - loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계
 - VS Code Runtime/Admin View의 SecretStorage 기반 LLM Gateway health·token·cost·receipt-chain 표시

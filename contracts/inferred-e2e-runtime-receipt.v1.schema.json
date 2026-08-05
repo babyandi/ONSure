@@ -15,11 +15,38 @@
     "base_url_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "started_at": {"type": "string", "format": "date-time"}, "completed_at": {"type": "string", "format": "date-time"},
     "step_count": {"type": "integer", "minimum": 0}, "executed_step_count": {"type": "integer", "minimum": 0},
-    "steps": {"type": "array", "items": {"type": "object"}},
+    "steps": {"type": "array", "items": {"$ref": "#/$defs/step"}},
     "outcome": {"enum": ["PASS_NONFINAL", "FAIL", "BLOCKED"]},
     "customer_data_stored": {"const": false}, "response_bodies_stored": {"const": false},
     "source_mutation_allowed": {"const": false}, "final_claim_allowed": {"const": false},
     "runtime_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "runtime_receipt_file": {"type": "string", "pattern": "^\\.onsure/inferred-e2e-authorizations/.+/runtime-receipt\\.json$"}
+  },
+  "$defs": {
+    "step": {
+      "type": "object", "additionalProperties": false,
+      "required": ["plan_id", "http_method", "http_path", "oracle_outcome", "response_body_stored", "final_claim_allowed"],
+      "properties": {
+        "plan_id": {"type": "string"}, "http_method": {"type": "string"},
+        "http_path_template": {"type": "string"}, "http_path": {"type": "string"},
+        "request_uri": {"type": "string"},
+        "request_body_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "request_body_bytes": {"type": "integer", "minimum": 0, "maximum": 1048576},
+        "request_body_stored": {"const": false},
+        "request_schema_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "fixture_strategy": {"type": "string"},
+        "response_status": {"type": "integer", "minimum": 100, "maximum": 599},
+        "expected_statuses": {"type": "array", "items": {"type": "string"}},
+        "response_body_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "response_bytes": {"type": "integer", "minimum": 0, "maximum": 1048576},
+        "response_schema_declared": {"type": "boolean"},
+        "response_schema_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "response_schema_errors": {"type": "array", "maxItems": 50, "items": {"type": "string"}},
+        "oracle_strategy": {"type": "string"}, "duration_millis": {"type": "integer", "minimum": 0},
+        "oracle_outcome": {"enum": ["PASS_NONFINAL", "FAIL", "BLOCKED"]},
+        "reason": {"type": "string"}, "error_code": {"type": "string"},
+        "response_body_stored": {"const": false}, "final_claim_allowed": {"const": false}
+      }
+    }
   }
 }

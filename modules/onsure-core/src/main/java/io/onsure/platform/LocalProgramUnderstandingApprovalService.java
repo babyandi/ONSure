@@ -330,22 +330,25 @@ final class LocalProgramUnderstandingApprovalService {
             boolean destructive = "DELETE".equals(method);
             @SuppressWarnings("unchecked")
             List<String> schemaRefs = (List<String>) operation.getOrDefault("request_schema_refs", List.of());
+            boolean schemaDeclared = Boolean.TRUE.equals(operation.get("request_schema_declared"));
             String state = destructive ? "BLOCKED_DESTRUCTIVE_OPERATION"
-                    : List.of("POST", "PUT", "PATCH").contains(method) && schemaRefs.isEmpty()
+                    : List.of("POST", "PUT", "PATCH").contains(method) && !schemaDeclared
                     ? "BLOCKED_SYNTHETIC_FIXTURE_SCHEMA_MISSING"
                     : List.of("POST", "PUT", "PATCH").contains(method)
                     ? "READY_FOR_SYNTHETIC_FIXTURE_GENERATION"
                     : operation.getOrDefault("http_path", "").toString().contains("{")
-                    ? "BLOCKED_PATH_PARAMETER_FIXTURE_MISSING" : "READY_FOR_ISOLATED_LOOPBACK_RUNNER";
+                    ? "READY_FOR_PATH_PARAMETER_FIXTURE_GENERATION" : "READY_FOR_ISOLATED_LOOPBACK_RUNNER";
             Map<String, Object> candidate = new LinkedHashMap<>();
             candidate.put("plan_id", draft.getOrDefault("plan_id", "UNVERIFIED"));
             candidate.put("flow_id", draft.getOrDefault("flow_id", "UNVERIFIED"));
             candidate.put("http_method", method);
             candidate.put("http_path", operation.getOrDefault("http_path", "NOT_APPLICABLE"));
             candidate.put("request_schema_refs", schemaRefs);
+            candidate.put("request_schema_declared", schemaDeclared);
             candidate.put("response_statuses", operation.getOrDefault("response_statuses", List.of()));
             candidate.put("openapi_source_path", operation.getOrDefault("source_path", "NOT_APPLICABLE"));
-            candidate.put("fixture_strategy", schemaRefs.isEmpty()
+            candidate.put("openapi_source_sha256", operation.getOrDefault("evidence_sha256", "NOT_APPLICABLE"));
+            candidate.put("fixture_strategy", !schemaDeclared
                     ? "NO_BODY_OR_REVIEWED_FIXTURE_REFERENCE_REQUIRED" : "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA");
             candidate.put("oracle_strategy", "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT");
             candidate.put("state", state);

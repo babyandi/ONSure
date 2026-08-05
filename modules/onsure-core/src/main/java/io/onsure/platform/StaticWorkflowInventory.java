@@ -200,6 +200,7 @@ final class StaticWorkflowInventory {
                 semantics.put("operation_id", operationId.isBlank() ? null : safeText(operationId));
                 semantics.put("tags", textArray(operation.path("tags")));
                 semantics.put("request_schema_refs", requestSchemaRefs(operation));
+                semantics.put("request_schema_declared", requestSchemaDeclared(operation));
                 semantics.put("response_statuses", fieldNames(operation.path("responses")));
                 semantics.put("security_declared", operation.has("security") || root.has("security"));
                 semantics.put("lifecycle_action", lifecycleAction(method, operationId));
@@ -264,6 +265,17 @@ final class StaticWorkflowInventory {
         Set<String> refs = new java.util.TreeSet<>();
         collectRefs(operation.path("requestBody").path("content"), refs, 0);
         return List.copyOf(refs);
+    }
+
+    private static boolean requestSchemaDeclared(JsonNode operation) {
+        JsonNode requestBody = operation.path("requestBody");
+        if (!requestBody.isObject()) return false;
+        if (requestBody.path("$ref").isTextual()) return true;
+        JsonNode content = requestBody.path("content");
+        if (!content.isObject()) return false;
+        for (JsonNode media : content) if (media.path("schema").isObject()
+                || media.path("schema").isBoolean()) return true;
+        return false;
     }
 
     private static void collectRefs(JsonNode node, Set<String> refs, int depth) {
