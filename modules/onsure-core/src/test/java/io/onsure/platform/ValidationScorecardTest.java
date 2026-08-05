@@ -3,6 +3,7 @@ package io.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,6 +60,30 @@ class ValidationScorecardTest {
         assertEquals(0, new BigDecimal("25.00").compareTo(
                 (BigDecimal) comparison.get("total_delta_points")));
         assertFalse((Boolean) comparison.get("final_claim_allowed"));
+    }
+
+    @Test
+    void withholdsAllEarnedPointsWhenFinalEvidenceIntegrityIsNotSatisfied() {
+        List<UniversalValidationRunner.StepResult> steps = List.of(
+                step("structure", StepKind.INVENTORY, Phase.STRUCTURE_STATIC, Outcome.PASS_NONFINAL),
+                step("e2e", StepKind.E2E_REQUEST_FLOW, Phase.END_TO_END_LINEAGE, Outcome.PASS_NONFINAL));
+        Map<VerificationGroup, Outcome> groups = outcomes(VerificationGroup.class, Outcome.PASS_NONFINAL);
+        groups.put(VerificationGroup.EVIDENCE_DECISION, Outcome.FAIL);
+        Map<Phase, Outcome> phases = outcomes(Phase.class, Outcome.PASS_NONFINAL);
+
+        Map<String, Object> score = ValidationScorecard.calculate(
+                steps, phases, groups, Outcome.FAIL, false);
+
+        assertEquals(new BigDecimal("0.00"), score.get("earned_points"));
+        assertEquals(new BigDecimal("100.00"), score.get("unearned_points"));
+        assertEquals(0, score.get("passed_required_step_count"));
+        assertTrue(score.get("diagnosis_summary").toString().contains("점수를 보류"));
+        for (String field : List.of("groups", "phases", "assessment_domains", "assessment_areas", "steps")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> nodes = (List<Map<String, Object>>) score.get(field);
+            assertTrue(nodes.stream().allMatch(node ->
+                    BigDecimal.ZERO.compareTo((BigDecimal) node.get("earned_points")) == 0), field);
+        }
     }
 
     @Test

@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_TARGET_PROVENANCE_V1",
+  "target_classification": "FIXTURE",
+  "classification_basis": "GIT_SCOPE_FIXTURE_SEGMENT",
+  "repository_type": "GIT",
+  "repository_identity_basis": "GIT_REMOTE_ORIGIN_HASH",
+  "repository_identity_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "repository_commit_sha": "1111111111111111111111111111111111111111",
+  "repository_scope": "fixtures/universal/java",
+  "worktree_clean": true,
+  "registration_source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "snapshot_source_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "snapshot_manifest_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "snapshot_file_count": 4,
+  "fixture_only": true,
+  "real_target_universality_eligible": true,
+  "universality_claim_state": "ELIGIBLE_CANDIDATE_REQUIRES_ACTUAL_EXECUTION",
+  "review_required": true,
+  "runtime_validation": "NOT_RUN",
+  "final_claim_allowed": false,
+  "provenance_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}

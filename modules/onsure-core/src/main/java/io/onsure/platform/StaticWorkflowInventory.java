@@ -35,6 +35,13 @@ final class StaticWorkflowInventory {
             "(?m)^\\s*if\\s+__name__\\s*==\\s*['\"]__main__['\"]\\s*:");
     private static final Set<String> HTTP_METHODS = Set.of(
             "get", "put", "post", "delete", "options", "head", "patch", "trace");
+    private static final Map<String, String> CONTINUATION_RESPONSE_HEADERS = Map.of(
+            "link", "PAGINATION_LINK",
+            "location", "ASYNC_LOCATION",
+            "next-cursor", "PAGINATION_CURSOR",
+            "retry-after", "ASYNC_RETRY_AFTER",
+            "x-continuation-token", "PAGINATION_CURSOR",
+            "x-next-cursor", "PAGINATION_CURSOR");
     private static final ObjectMapper JSON = new ObjectMapper().enable(
             com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
     private static final ObjectMapper YAML = new ObjectMapper(YAMLFactory.builder()
@@ -187,6 +194,10 @@ final class StaticWorkflowInventory {
         JsonNode root = relative.toLowerCase(Locale.ROOT).endsWith(".json")
                 ? JSON.readTree(readBounded(file)) : YAML.readTree(readBounded(file));
         if (root == null || !root.path("openapi").isTextual() || !root.path("paths").isObject()) return;
+        String documentDigest = evidenceDigest(file, evidenceDigests);
+        String documentId = "OPENAPI-DOC-" + Hashing.sha256(
+                relative + "\u0000" + documentDigest).substring(0, 16);
+        String serviceBoundaryId = "SERVICE-" + Hashing.sha256(relative).substring(0, 16);
         List<String> paths = new ArrayList<>();
         root.path("paths").fieldNames().forEachRemaining(paths::add);
         paths.sort(String::compareTo);
@@ -202,15 +213,25 @@ final class StaticWorkflowInventory {
                 semantics.put("http_method", method.toUpperCase(Locale.ROOT));
                 semantics.put("http_path", route);
                 semantics.put("operation_id", operationId.isBlank() ? null : safeText(operationId));
+                semantics.put("openapi_document_id", documentId);
+                semantics.put("service_boundary_id", serviceBoundaryId);
+                semantics.put("service_boundary_state", "DOCUMENT_SCOPED_REVIEW_REQUIRED");
                 semantics.put("tags", textArray(operation.path("tags")));
                 semantics.put("request_schema_refs", requestSchemaRefs(operation));
                 semantics.put("request_schema_declared", requestSchemaDeclared(operation));
-                semantics.put("request_input_candidates", requestInputCandidates(pathItem, operation, root));
+                List<Map<String, Object>> requestInputs = requestInputCandidates(pathItem, operation, root);
+                semantics.put("request_input_candidates", requestInputs);
                 semantics.put("response_statuses", fieldNames(operation.path("responses")));
                 List<Map<String, Object>> responseScalars = responseScalarCandidates(operation, root);
                 semantics.put("response_scalar_json_pointers", responseScalars.stream()
                         .map(value -> value.get("json_pointer").toString()).toList());
                 semantics.put("response_scalar_candidates", responseScalars);
+                List<Map<String, Object>> responseHeaders = responseHeaderCandidates(operation, root);
+                semantics.put("response_header_candidates", responseHeaders);
+                semantics.put("continuation_candidates", continuationCandidates(
+                        method, operationId.isBlank() ? method.toUpperCase(Locale.ROOT) + " " + route : operationId,
+                        serviceBoundaryId, operation, requestInputs,
+                        responseScalars, responseHeaders));
                 semantics.put("security_declared", securityRequired(operation, root));
                 semantics.put("lifecycle_action", lifecycleAction(method, operationId));
                 semantics.put("destructive_risk", method.equals("delete"));
@@ -290,8 +311,8 @@ final class StaticWorkflowInventory {
     private static List<Map<String, Object>> requestInputCandidates(
             JsonNode pathItem, JsonNode operation, JsonNode root) {
         Map<String, Map<String, Object>> inputs = new java.util.TreeMap<>();
-        collectRequiredParameters(pathItem.path("parameters"), root, inputs);
-        collectRequiredParameters(operation.path("parameters"), root, inputs);
+        collectRequestParameters(pathItem.path("parameters"), root, inputs);
+        collectRequestParameters(operation.path("parameters"), root, inputs);
         Map<String, String> bodyPointers = new java.util.TreeMap<>();
         JsonNode requestBody = resolveLocal(operation.path("requestBody"), root, new LinkedHashSet<>(), 0);
         if (requestBody == null) requestBody = operation.path("requestBody");
@@ -313,7 +334,7 @@ final class StaticWorkflowInventory {
         return List.copyOf(inputs.values());
     }
 
-    private static void collectRequiredParameters(JsonNode parameters, JsonNode root,
+    private static void collectRequestParameters(JsonNode parameters, JsonNode root,
             Map<String, Map<String, Object>> inputs) {
         if (!parameters.isArray()) return;
         for (JsonNode parameterNode : parameters) {
@@ -324,7 +345,9 @@ final class StaticWorkflowInventory {
             if (!Set.of("QUERY", "HEADER").contains(location)
                     || !name.matches("[A-Za-z][A-Za-z0-9._-]{0,127}")) continue;
             String key = location + "\u0000" + name.toLowerCase(Locale.ROOT);
-            if (!parameter.path("required").asBoolean(false)) {
+            boolean required = parameter.path("required").asBoolean(false);
+            String paginationRole = "QUERY".equals(location) ? paginationInputRole(name) : null;
+            if (!required && paginationRole == null) {
                 inputs.remove(key);
                 continue;
             }
@@ -333,9 +356,24 @@ final class StaticWorkflowInventory {
             input.put("consumer_parameter_name", name);
             input.put("consumer_schema_type", scalarSchemaType(resolveLocal(
                     parameter.path("schema"), root, new LinkedHashSet<>(), 0)));
-            input.put("required", true);
+            input.put("required", required);
+            if (paginationRole != null) {
+                input.put("continuation_role", paginationRole);
+                input.put("discovery_only", true);
+                input.put("auto_bind", false);
+            }
             inputs.put(key, Map.copyOf(input));
         }
+    }
+
+    private static String paginationInputRole(String name) {
+        String normalized = name.replaceAll("[^A-Za-z0-9]", "").toLowerCase(Locale.ROOT);
+        if (Set.of("cursor", "nextcursor").contains(normalized)) return "CURSOR";
+        if (Set.of("pagetoken", "nextpagetoken", "continuationtoken", "nexttoken").contains(normalized))
+            return "PAGE_TOKEN";
+        if (Set.of("page", "pagenumber", "pageindex").contains(normalized)) return "PAGE_NUMBER";
+        if ("offset".equals(normalized)) return "OFFSET";
+        return null;
     }
 
     private static void collectRequiredRequestPointers(JsonNode node, JsonNode root, String pointer,
@@ -371,6 +409,168 @@ final class StaticWorkflowInventory {
         });
         return result.entrySet().stream().limit(200).map(entry -> Map.<String, Object>of(
                 "json_pointer", entry.getKey(), "schema_type", entry.getValue())).toList();
+    }
+
+    private static List<Map<String, Object>> responseHeaderCandidates(JsonNode operation, JsonNode root) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        JsonNode responses = operation.path("responses");
+        if (!responses.isObject()) return List.of();
+        List<String> statuses = new ArrayList<>();
+        responses.fieldNames().forEachRemaining(statuses::add);
+        statuses.stream().filter(status -> status.matches("2(?:[0-9]{2}|[xX]{2})"))
+                .sorted().forEach(status -> {
+                    JsonNode response = resolveLocal(responses.path(status), root, new LinkedHashSet<>(), 0);
+                    if (response == null) return;
+                    JsonNode headers = response.path("headers");
+                    if (!headers.isObject()) return;
+                    List<String> names = new ArrayList<>();
+                    headers.fieldNames().forEachRemaining(names::add);
+                    names.stream().sorted(String.CASE_INSENSITIVE_ORDER).forEach(name -> {
+                        String role = CONTINUATION_RESPONSE_HEADERS.get(name.toLowerCase(Locale.ROOT));
+                        if (role == null) return;
+                        JsonNode header = resolveLocal(headers.path(name), root, new LinkedHashSet<>(), 0);
+                        Map<String, Object> candidate = new LinkedHashMap<>();
+                        candidate.put("response_status", status.toUpperCase(Locale.ROOT));
+                        candidate.put("header_name", canonicalHeaderName(name));
+                        candidate.put("candidate_role", role);
+                        candidate.put("schema_type", header == null ? "UNKNOWN"
+                                : scalarSchemaType(resolveLocal(header.path("schema"), root,
+                                        new LinkedHashSet<>(), 0)));
+                        candidate.put("review_required", true);
+                        candidate.put("runtime_state", "NOT_RUN");
+                        candidate.put("value_storage_allowed", false);
+                        result.add(Map.copyOf(candidate));
+                    });
+                });
+        return result.stream().sorted(Comparator
+                .<Map<String, Object>, String>comparing(value -> value.get("response_status").toString())
+                .thenComparing(value -> value.get("header_name").toString())).limit(50).toList();
+    }
+
+    private static String canonicalHeaderName(String name) {
+        return switch (name.toLowerCase(Locale.ROOT)) {
+            case "link" -> "Link";
+            case "location" -> "Location";
+            case "next-cursor" -> "Next-Cursor";
+            case "retry-after" -> "Retry-After";
+            case "x-continuation-token" -> "X-Continuation-Token";
+            case "x-next-cursor" -> "X-Next-Cursor";
+            default -> throw new IllegalArgumentException("CONTINUATION_RESPONSE_HEADER_NOT_ALLOWLISTED");
+        };
+    }
+
+    private static List<Map<String, Object>> continuationCandidates(String method,
+            String sourceOperationReference, String serviceBoundaryId, JsonNode operation,
+            List<Map<String, Object>> requestInputs,
+            List<Map<String, Object>> responseScalars, List<Map<String, Object>> responseHeaders) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> input : requestInputs) {
+            if (!"QUERY".equals(input.get("consumer_location"))
+                    || !input.containsKey("continuation_role")) continue;
+            String inputName = input.get("consumer_parameter_name").toString();
+            Map<String, Object> producer = paginationProducer(inputName, responseScalars, responseHeaders);
+            String producerLocation = producer == null ? "UNRESOLVED" : producer.get("location").toString();
+            String producerReference = producer == null ? "NOT_RESOLVED" : producer.get("reference").toString();
+            double confidence = producer == null ? 0.50d : ((Number) producer.get("confidence")).doubleValue();
+            result.add(continuation("PAGINATION", sourceOperationReference, serviceBoundaryId,
+                    producerLocation, producerReference,
+                    "QUERY", inputName, confidence, 100, 60, 0, 0,
+                    "STOP_ON_ABSENT_NULL_EMPTY_OR_REPEATED_TOKEN", "SAME_OPERATION_DISCOVERY_ONLY"));
+        }
+        if (hasAcceptedResponse(operation, "202") && List.of("post", "put", "patch").contains(method)) {
+            Map<String, Object> producer = asyncProducer(responseScalars, responseHeaders);
+            String producerLocation = producer == null ? "UNRESOLVED" : producer.get("location").toString();
+            String producerReference = producer == null ? "NOT_RESOLVED" : producer.get("reference").toString();
+            double confidence = producer == null ? 0.55d : ((Number) producer.get("confidence")).doubleValue();
+            result.add(continuation("ASYNC_POLL", sourceOperationReference, serviceBoundaryId,
+                    producerLocation, producerReference,
+                    "UNRESOLVED", "NOT_RESOLVED", confidence, 60, 300, 1_000, 10_000,
+                    "REVIEWED_TERMINAL_STATUS_SET_REQUIRED", "NOT_RUN_REVIEW_REQUIRED"));
+        }
+        return result.stream().sorted(Comparator.<Map<String, Object>, String>comparing(
+                        value -> value.get("continuation_id").toString()))
+                .limit(50).toList();
+    }
+
+    private static Map<String, Object> paginationProducer(String inputName,
+            List<Map<String, Object>> responseScalars, List<Map<String, Object>> responseHeaders) {
+        String input = normalizedName(inputName);
+        for (Map<String, Object> scalar : responseScalars) {
+            String pointer = scalar.get("json_pointer").toString();
+            String leaf = normalizedName(pointerLeaf(pointer));
+            if (leaf.equals(input) || leaf.equals("next" + input))
+                return Map.of("location", "BODY_POINTER", "reference", pointer,
+                        "confidence", leaf.equals(input) ? 0.86d : 0.90d);
+        }
+        for (Map<String, Object> header : responseHeaders) {
+            String role = header.get("candidate_role").toString();
+            if ("PAGINATION_CURSOR".equals(role)) return Map.of(
+                    "location", "RESPONSE_HEADER", "reference", header.get("header_name"), "confidence", 0.84d);
+            if ("PAGINATION_LINK".equals(role)) return Map.of(
+                    "location", "RESPONSE_HEADER", "reference", header.get("header_name"), "confidence", 0.65d);
+        }
+        return null;
+    }
+
+    private static Map<String, Object> asyncProducer(List<Map<String, Object>> responseScalars,
+            List<Map<String, Object>> responseHeaders) {
+        for (Map<String, Object> header : responseHeaders) if ("ASYNC_LOCATION".equals(header.get("candidate_role")))
+            return Map.of("location", "RESPONSE_HEADER", "reference", header.get("header_name"),
+                    "confidence", 0.92d);
+        Set<String> accepted = Set.of("jobid", "taskid", "runid", "statusurl", "pollurl", "operationid");
+        for (Map<String, Object> scalar : responseScalars) {
+            String pointer = scalar.get("json_pointer").toString();
+            if (accepted.contains(normalizedName(pointerLeaf(pointer)))) return Map.of(
+                    "location", "BODY_POINTER", "reference", pointer, "confidence", 0.88d);
+        }
+        return null;
+    }
+
+    private static Map<String, Object> continuation(String kind, String sourceOperationReference,
+            String serviceBoundaryId, String producerLocation, String producerReference, String consumerLocation,
+            String consumerReference, double confidence, int maxIterations, int maxDurationSeconds,
+            int initialDelayMillis, int maxDelayMillis, String terminationPolicy,
+            String targetResolutionState) {
+        String material = kind + "\u0000" + sourceOperationReference + "\u0000" + serviceBoundaryId
+                + "\u0000" + producerLocation + "\u0000"
+                + producerReference + "\u0000" + consumerLocation + "\u0000" + consumerReference;
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("continuation_id", "CONT-" + Hashing.sha256(material).substring(0, 16));
+        result.put("kind", kind);
+        result.put("source_operation_reference", safeText(sourceOperationReference));
+        result.put("service_boundary_id", serviceBoundaryId);
+        result.put("producer_location", producerLocation);
+        result.put("producer_reference", producerReference);
+        result.put("consumer_location", consumerLocation);
+        result.put("consumer_reference", consumerReference);
+        result.put("confidence", confidence);
+        result.put("max_iterations", maxIterations);
+        result.put("max_duration_seconds", maxDurationSeconds);
+        result.put("initial_delay_millis", initialDelayMillis);
+        result.put("max_delay_millis", maxDelayMillis);
+        result.put("termination_policy", terminationPolicy);
+        result.put("target_resolution_state", targetResolutionState);
+        result.put("same_service_only", true);
+        result.put("cross_service_auto_binding_allowed", false);
+        result.put("review_required", true);
+        result.put("runtime_state", "NOT_RUN");
+        result.put("auto_execute", false);
+        result.put("score_eligible", false);
+        return Map.copyOf(result);
+    }
+
+    private static boolean hasAcceptedResponse(JsonNode operation, String status) {
+        JsonNode responses = operation.path("responses");
+        return responses.isObject() && responses.has(status);
+    }
+
+    private static String pointerLeaf(String pointer) {
+        int separator = pointer.lastIndexOf('/');
+        return pointer.substring(separator + 1).replace("~1", "/").replace("~0", "~");
+    }
+
+    private static String normalizedName(String value) {
+        return value.replaceAll("[^A-Za-z0-9]", "").toLowerCase(Locale.ROOT);
     }
 
     private static void collectResponseSchemas(JsonNode node, JsonNode root, Map<String, String> result,

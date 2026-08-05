@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/target-provenance.v1.schema.json",
+  "title": "ONSure Target Provenance V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "target_classification", "classification_basis", "repository_type",
+    "repository_identity_basis", "repository_identity_sha256", "repository_commit_sha",
+    "repository_scope", "worktree_clean", "registration_source_sha256",
+    "snapshot_source_sha256", "snapshot_manifest_sha256", "snapshot_file_count",
+    "fixture_only", "real_target_universality_eligible", "universality_claim_state",
+    "review_required", "runtime_validation", "final_claim_allowed", "provenance_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_TARGET_PROVENANCE_V1"},
+    "target_classification": {"enum": ["REAL_REPOSITORY", "FIXTURE", "SYNTHETIC_SNAPSHOT", "UNKNOWN"]},
+    "classification_basis": {
+      "enum": [
+        "OPERATOR_DECLARATION_VALIDATED_REAL_REPOSITORY",
+        "OPERATOR_DECLARATION_VALIDATED_FIXTURE",
+        "OPERATOR_DECLARATION_VALIDATED_SYNTHETIC_SNAPSHOT",
+        "GIT_SCOPE_FIXTURE_SEGMENT", "GIT_REPOSITORY_DISCOVERED",
+        "NO_VERIFIABLE_REPOSITORY_IDENTITY"
+      ]
+    },
+    "repository_type": {"enum": ["GIT", "NONE"]},
+    "repository_identity_basis": {"enum": ["GIT_REMOTE_ORIGIN_HASH", "LOCAL_GIT_ROOT_HASH", "NO_GIT_REPOSITORY"]},
+    "repository_identity_sha256": {"$ref": "#/$defs/sha256"},
+    "repository_commit_sha": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40,64}$"},
+    "repository_scope": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "worktree_clean": {"type": ["boolean", "null"]},
+    "registration_source_sha256": {"$ref": "#/$defs/sha256"},
+    "snapshot_source_sha256": {"$ref": "#/$defs/sha256"},
+    "snapshot_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "snapshot_file_count": {"type": "integer", "minimum": 0},
+    "fixture_only": {"type": "boolean"},
+    "real_target_universality_eligible": {"type": "boolean"},
+    "universality_claim_state": {
+      "enum": [
+        "PROHIBITED_FIXTURE_ONLY", "ELIGIBLE_CANDIDATE_REQUIRES_ACTUAL_EXECUTION",
+        "NOT_ELIGIBLE_PROVENANCE_INCOMPLETE_OR_DIRTY"
+      ]
+    },
+    "review_required": {"const": true},
+    "runtime_validation": {"const": "NOT_RUN"},
+    "final_claim_allowed": {"const": false},
+    "provenance_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"target_classification": {"const": "FIXTURE"}}},
+      "then": {
+        "properties": {
+          "fixture_only": {"const": true},
+          "real_target_universality_eligible": {"const": false},
+          "universality_claim_state": {"const": "PROHIBITED_FIXTURE_ONLY"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"real_target_universality_eligible": {"const": true}}},
+      "then": {
+        "properties": {
+          "target_classification": {"const": "REAL_REPOSITORY"},
+          "repository_type": {"const": "GIT"},
+          "worktree_clean": {"const": true},
+          "snapshot_file_count": {"minimum": 1},
+          "fixture_only": {"const": false},
+          "universality_claim_state": {"const": "ELIGIBLE_CANDIDATE_REQUIRES_ACTUAL_EXECUTION"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"repository_type": {"const": "GIT"}}},
+      "then": {
+        "properties": {
+          "repository_commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+          "worktree_clean": {"type": "boolean"}
+        }
+      },
+      "else": {
+        "properties": {
+          "repository_commit_sha": {"type": "null"},
+          "worktree_clean": {"type": "null"},
+          "real_target_universality_eligible": {"const": false}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

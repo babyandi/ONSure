@@ -375,6 +375,32 @@ class LocalProgramUnderstandingApprovalServiceTest {
     }
 
     @Test
+    void blocksAllRuntimeCandidatesWhenReviewContainsMultipleServiceBoundaries() throws Exception {
+        Prepared prepared = prepare("multi-service", Map.of(
+                "contracts/openapi/one.yaml", """
+                        openapi: 3.1.0
+                        info: {title: One, version: '1'}
+                        paths: {/one: {get: {operationId: getOne, responses: {'200': {description: ok}}}}}
+                        """,
+                "contracts/openapi/two.yaml", """
+                        openapi: 3.1.0
+                        info: {title: Two, version: '1'}
+                        paths: {/two: {get: {operationId: getTwo, responses: {'200': {description: ok}}}}}
+                        """));
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(
+                prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
+        @SuppressWarnings("unchecked") List<Map<String, Object>> candidates =
+                (List<Map<String, Object>>) plan.get("authorized_candidates");
+
+        assertEquals(2, candidates.size());
+        assertTrue(candidates.stream().allMatch(candidate ->
+                "BLOCKED_MULTI_SERVICE_RUNTIME_NOT_IMPLEMENTED".equals(candidate.get("state"))));
+        assertEquals(2, ((Number) plan.get("blocked_candidate_count")).intValue());
+        assertEquals("PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN", plan.get("plan_state"));
+    }
+
+    @Test
     void recoversInterruptedReadOnlyRunForOneSafeRetry() throws Exception {
         Instant now = Instant.parse("2026-08-05T00:00:00Z");
         Prepared prepared = prepare("recover-read");
@@ -516,9 +542,17 @@ class LocalProgramUnderstandingApprovalServiceTest {
     }
 
     private Prepared prepare(String suffix, String openApi) throws Exception {
+        return prepare(suffix, Map.of("openapi.yaml", openApi));
+    }
+
+    private Prepared prepare(String suffix, Map<String, String> sourceFiles) throws Exception {
         Path workspace = Files.createDirectory(temp.resolve("workspace-" + suffix));
         Path source = Files.createDirectory(temp.resolve("source-" + suffix));
-        Files.writeString(source.resolve("openapi.yaml"), openApi);
+        for (Map.Entry<String, String> entry : sourceFiles.entrySet()) {
+            Path file = source.resolve(entry.getKey());
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, entry.getValue());
+        }
         LocalProgramManagementService programs = new LocalProgramManagementService(workspace);
         programs.register(mapper.valueToTree(Map.of(
                 "workspace_id", "local", "workspace_name", "Local", "project_id", "project",

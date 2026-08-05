@@ -154,9 +154,14 @@ final class LocalManagementOverviewService {
                     return Map.copyOf(latestValidationResult(
                             targetId, run, currentRunId, report, scorecard));
                 }
+                if (!scoreEvidence(run, report, scorecard).valid()) {
+                    return Map.copyOf(latestValidationResult(
+                            targetId, run, currentRunId, report, scorecard));
+                }
                 continue;
             }
-            if (ValidationScorecard.CONTRACT.equals(scorecard.path("contract").asText())) {
+            if (ValidationScorecard.CONTRACT.equals(scorecard.path("contract").asText())
+                    && scoreEvidence(run, report, scorecard).valid()) {
                 Map<String, Object> result = latestValidationResult(
                         targetId, targetRoot.resolve(currentRunId), currentRunId,
                         currentReport, currentScorecard);
@@ -187,6 +192,28 @@ final class LocalManagementOverviewService {
             result.put("finding_count", arraySize(report.path("findings")));
             result.put("evidence_count", arraySize(readJson(run.resolve("evidence.json"))));
             result.put("improvement_candidate_count", arraySize(plans));
+            ScoreEvidence integrity = scoreEvidence(run, report, scorecard);
+            result.put("evidence_integrity", Map.of(
+                    "state", integrity.valid() ? "VERIFIED" : "INVALID",
+                    "reason", integrity.reason(),
+                    "receipt_sha256", integrity.receiptSha256(),
+                    "final_claim_allowed", false));
+            if (ValidationScorecard.CONTRACT.equals(scorecard.path("contract").asText())
+                    && !integrity.valid()) {
+                result.put("state", "INVALID_EVIDENCE");
+                result.put("decision", "HOLD");
+                result.put("scorecard", Map.of(
+                        "state", "WITHHELD_EVIDENCE_INVALID",
+                        "reason", integrity.reason(),
+                        "final_claim_allowed", false));
+                result.put("comparison", Map.of("state", "NOT_RUN_EVIDENCE_INVALID"));
+                result.put("database_persistence", Map.of(
+                        "state", "NOT_READ_EVIDENCE_INVALID", "history", List.of()));
+                result.put("independent_otester", "NOT_RUN");
+                result.put("independent_oaudit", "NOT_RUN");
+                result.put("final_claim_allowed", false);
+                return result;
+            }
             result.put("scorecard", scorecard != null && scorecard.isObject()
                     ? mapper.convertValue(scorecard, Map.class) : Map.of("state", "NOT_RUN"));
             result.put("comparison", Map.of("state", "NOT_RUN_NO_COMPARABLE_BASELINE"));
@@ -208,6 +235,50 @@ final class LocalManagementOverviewService {
             result.put("independent_oaudit", "NOT_RUN");
             result.put("final_claim_allowed", false);
             return result;
+    }
+
+    private ScoreEvidence scoreEvidence(Path run, JsonNode report, JsonNode scorecard) throws Exception {
+        if (scorecard == null || !ValidationScorecard.CONTRACT.equals(
+                scorecard.path("contract").asText())) {
+            return new ScoreEvidence(true, "SCORECARD_NOT_APPLICABLE", "NOT_RUN");
+        }
+        Path receiptFile = run.resolve(UniversalValidationRunner.RECEIPT_FILE).normalize();
+        if (!safeFile(receiptFile)) {
+            return new ScoreEvidence(false, "RECEIPT_MISSING_OR_UNSAFE", "NOT_RUN");
+        }
+        String actualReceiptSha256;
+        try {
+            actualReceiptSha256 = Hashing.file(receiptFile);
+        } catch (Exception unreadable) {
+            return new ScoreEvidence(false, "RECEIPT_UNREADABLE", "NOT_RUN");
+        }
+        String expectedReceiptSha256 = report.path("universalReceiptSha256").asText("");
+        if (!expectedReceiptSha256.matches("[0-9a-f]{64}")
+                || !actualReceiptSha256.equals(expectedReceiptSha256)) {
+            return new ScoreEvidence(false, "RECEIPT_SHA256_MISMATCH", actualReceiptSha256);
+        }
+        JsonNode receipt;
+        try {
+            receipt = readJson(receiptFile);
+        } catch (Exception malformed) {
+            return new ScoreEvidence(false, "RECEIPT_JSON_INVALID", actualReceiptSha256);
+        }
+        if (receipt == null || !UniversalValidationRunner.CONTRACT.equals(
+                receipt.path("contract").asText())) {
+            return new ScoreEvidence(false, "RECEIPT_CONTRACT_INVALID", actualReceiptSha256);
+        }
+        if (!"PASS_NONFINAL".equals(receipt.path("final_evidence_integrity").path("outcome").asText())) {
+            return new ScoreEvidence(false, "FINAL_EVIDENCE_INTEGRITY_NOT_PASS", actualReceiptSha256);
+        }
+        if (!receipt.path("scorecard").equals(scorecard)) {
+            return new ScoreEvidence(false, "REPORT_RECEIPT_SCORECARD_MISMATCH", actualReceiptSha256);
+        }
+        String reportSource = report.path("sourceDigestBefore").asText("");
+        if (!reportSource.matches("[0-9a-f]{64}")
+                || !reportSource.equals(receipt.path("source_digest").asText())) {
+            return new ScoreEvidence(false, "REPORT_RECEIPT_SOURCE_MISMATCH", actualReceiptSha256);
+        }
+        return new ScoreEvidence(true, "RECEIPT_AND_SCORECARD_VERIFIED", actualReceiptSha256);
     }
 
     private Map<String, Object> gateway() {
@@ -381,4 +452,6 @@ final class LocalManagementOverviewService {
             return 47312;
         }
     }
+
+    private record ScoreEvidence(boolean valid, String reason, String receiptSha256) {}
 }

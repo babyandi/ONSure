@@ -34,6 +34,15 @@ public final class ProgramLearningService {
             String projectId,
             String programId,
             Path outputFile) throws Exception {
+        return learn(sourceRoot, projectId, programId, outputFile, null);
+    }
+
+    Map<String, Object> learn(
+            Path sourceRoot,
+            String projectId,
+            String programId,
+            Path outputFile,
+            Map<String, Object> targetProvenance) throws Exception {
         requireId(projectId, "PROJECT_ID_INVALID");
         requireId(programId, "PROGRAM_ID_INVALID");
         Path root = sourceRoot.toAbsolutePath().normalize();
@@ -71,6 +80,14 @@ public final class ProgramLearningService {
         profile.put("project_id", projectId);
         profile.put("program_id", programId);
         profile.put("source_baseline", baseline);
+        if (targetProvenance != null) {
+            TargetProvenanceService.validate(targetProvenance);
+            if (!sourceDigest.equals(targetProvenance.get("snapshot_source_sha256"))) {
+                throw new IllegalArgumentException("PROGRAM_PROFILE_TARGET_PROVENANCE_SOURCE_MISMATCH");
+            }
+            profile.put("target_provenance", java.util.Collections.unmodifiableMap(
+                    new LinkedHashMap<>(targetProvenance)));
+        }
         profile.put("purpose", purpose(root));
         profile.put("components", List.copyOf(components));
         profile.put("dependencies", List.copyOf(dependencies));

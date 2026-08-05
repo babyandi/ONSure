@@ -38,6 +38,8 @@ final class LocalInferredE2EHttpRunner {
     LocalInferredE2EHttpRunner(Path workspaceRoot, Map<String, String> environment, HttpClient client) {
         this.workspaceRoot = workspaceRoot.toAbsolutePath().normalize();
         this.environment = Map.copyOf(environment == null ? Map.of() : environment);
+        if (client == null || client.followRedirects() != HttpClient.Redirect.NEVER)
+            throw new IllegalArgumentException("INFERRED_E2E_HTTP_REDIRECT_POLICY_UNSAFE");
         this.client = client;
     }
 

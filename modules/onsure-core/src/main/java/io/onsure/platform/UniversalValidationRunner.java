@@ -189,7 +189,8 @@ public final class UniversalValidationRunner {
         }
         Outcome overall = UniversalValidationProfile.aggregate(new ArrayList<>(groupOutcomes.values()));
         Map<String, Object> scorecard = ValidationScorecard.calculate(
-                results, phaseOutcomes, groupOutcomes, overall);
+                results, phaseOutcomes, groupOutcomes, overall,
+                finalEvidence.outcome() == Outcome.PASS_NONFINAL);
         Instant completed = Instant.now();
         Path receipt = root.resolve(RECEIPT_FILE);
         Map<String, Object> body = new LinkedHashMap<>();

@@ -509,6 +509,14 @@ final class LocalProgramUnderstandingApprovalService {
         List<Map<String, Object>> drafts = (List<Map<String, Object>>) review
                 .getOrDefault("reviewed_e2e_plan_draft", List.of());
         Map<String, String> runtimeReferences = runtimeReferenceIds(review);
+        Set<String> reviewedServiceBoundaries = new java.util.TreeSet<>();
+        for (Map<String, Object> draft : drafts) {
+            Object boundary = operation(draft).get("service_boundary_id");
+            if (boundary != null && boundary.toString().matches("SERVICE-[0-9a-f]{16}")) {
+                reviewedServiceBoundaries.add(boundary.toString());
+            }
+        }
+        boolean multiServiceRuntimeUnsupported = reviewedServiceBoundaries.size() > 1;
         List<Map<String, Object>> candidates = new ArrayList<>();
         for (Map<String, Object> draft : drafts) {
             Map<String, Object> operation = operation(draft);
@@ -518,7 +526,8 @@ final class LocalProgramUnderstandingApprovalService {
             List<String> schemaRefs = (List<String>) operation.getOrDefault("request_schema_refs", List.of());
             boolean schemaDeclared = Boolean.TRUE.equals(operation.get("request_schema_declared"));
             boolean securityDeclared = Boolean.TRUE.equals(operation.get("security_declared"));
-            String state = destructive ? "BLOCKED_DESTRUCTIVE_OPERATION"
+            String state = multiServiceRuntimeUnsupported ? "BLOCKED_MULTI_SERVICE_RUNTIME_NOT_IMPLEMENTED"
+                    : destructive ? "BLOCKED_DESTRUCTIVE_OPERATION"
                     : securityDeclared && !runtimeReferences.containsKey("authentication")
                     ? "BLOCKED_AUTHENTICATION_REFERENCE_MISSING"
                     : List.of("POST", "PUT", "PATCH").contains(method) && !schemaDeclared

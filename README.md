@@ -129,6 +129,10 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 환경·의존성 → 구조 → 검증기 메타 → 단계 기능 → 실제 연결 E2E → 증적·판정 → 운영·복구
 순서를 고정하며, 실행되지 않은 필수 항목은
 `NOT_RUN`, 환경 제한은 `BLOCKED`, 증거가 불충분하면 `INCONCLUSIVE`다.
+프로그램 등록은 Git repository identity의 원문을 저장하지 않고 SHA-256, commit, repository-relative
+scope, 등록 source digest, 실제 snapshot source·manifest digest를 별도 provenance에 결속한다.
+추적된 `fixtures/` 범위는 실제 고객 대상으로 선언할 수 없으며 실제 저장소도 해당 revision을
+실행하기 전에는 범용성 증명이 아니라 `ELIGIBLE_CANDIDATE_REQUIRES_ACTUAL_EXECUTION` 후보일 뿐이다.
 
 ```bash
 mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
@@ -281,6 +285,11 @@ Program Profile은 operationId·tag·path·schema와 탐지 component를 근거�
 `auto_execute=false`, `score_eligible=false`다. 근거가 부족한 의미는 `UNKNOWN`으로 남기고 고객
 업무 규칙이나 PASS를 자동 확정하지 않는다. 관리화면은 총점에서 DOMAIN→PHASE→GROUP→AREA→STEP
 까지 진단·개선 가이드와 이전 실행 대비 변화를 보여주며, 추론 후보는 점수 제외로 표시한다.
+OpenAPI continuation은 문서별 service boundary 안에서 optional cursor/page/offset, 2xx allowlist
+header와 202 async producer를 bounded 후보로만 탐지한다. Pagination·polling runtime 및 서로 다른
+service 간 결속은 아직 실행하지 않으며 여러 service boundary가 포함된 실행계획은 `BLOCKED`다.
+또한 최종 증적 무결성이나 Receipt SHA·계약·source·scorecard 결속이 실패하면 관리화면은 원점수와
+비교/DB 이력을 숨기고 `INVALID_EVIDENCE`/`HOLD`로 표시한다.
 Gateway 환경변수와 단독 서버 실행 경계는
 `docs/architecture/ONSURE_LLM_GATEWAY_AND_MANAGEMENT_UI_v1.md`를 따른다.
 
@@ -292,7 +301,8 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 388개(조건부 11개 skip 포함), Python 202개, Node 10개,
+현재 변경 후보의 로컬 검증은 root Java 402개(391 PASS, 조건부 11개 skip)와
+모듈 전용 Java 8개, Python 202개, Node 10개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256

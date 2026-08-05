@@ -82,6 +82,14 @@ class LocalInferredE2EHttpRunnerTest {
     }
 
     @Test
+    void rejectsInjectedHttpClientThatCanFollowRedirects() throws Exception {
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () ->
+                new LocalInferredE2EHttpRunner(temp, Map.of(),
+                        HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()));
+        assertEquals("INFERRED_E2E_HTTP_REDIRECT_POLICY_UNSAFE", error.getMessage());
+    }
+
+    @Test
     void rejectsSourceDriftBeforeClaimingAuthorization() throws Exception {
         Prepared prepared = prepare();
         Files.writeString(prepared.source().resolve("drift.txt"), "changed after approval");

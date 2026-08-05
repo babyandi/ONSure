@@ -31,6 +31,13 @@
   confidence·ambiguity·UNKNOWN·점수 제외 계약
 - 관리화면의 총점 진단, DOMAIN→PHASE→GROUP→AREA→STEP drill-down, Before/After 세부 변화와
   자동 추론 confidence·근거·승인·실행 상태 표시
+- final evidence integrity가 실패하거나 canonical Receipt digest/계약/scorecard/source 결속이
+  깨지면 모든 획득 점수와 비교·DB 이력 노출을 보류하는 고객 화면 fail-closed 검증
+- 실제 Git 저장소·fixture·합성 snapshot·미확인 대상을 구분하고 repository identity hash,
+  commit, scope, source·manifest digest를 등록/Profile에 결속하는 target provenance 계약
+- OpenAPI 문서별 service boundary와 optional pagination cursor, 2xx continuation header,
+  bounded pagination/async poll 후보의 discovery-only 계약; 다중 service runtime은 `BLOCKED_NOT_RUN`
+- 주입된 HTTP client의 redirect 정책을 `NEVER`로 강제해 loopback 경계 이탈 차단
 - 격리 Fixture별 run 전용 `TMPDIR`로 host `/tmp` 고갈과 실행 결과의 불필요한 결합 제거
 - Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
 - loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계

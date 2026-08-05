@@ -240,9 +240,10 @@ final class ProgramUnderstandingEngine {
     private static Map<String, Object> operation(Map<String, Object> candidate) {
         Map<String, Object> operation = new LinkedHashMap<>();
         for (String key : List.of("http_method", "http_path", "operation_id", "tags",
+                "openapi_document_id", "service_boundary_id", "service_boundary_state",
                 "request_schema_refs", "response_statuses", "security_declared",
                 "response_scalar_json_pointers", "response_scalar_candidates",
-                "request_input_candidates",
+                "request_input_candidates", "response_header_candidates", "continuation_candidates",
                 "request_schema_declared", "lifecycle_action", "destructive_risk", "source_path",
                 "evidence_sha256")) {
             if (candidate.containsKey(key)) operation.put(key, candidate.get(key));
@@ -253,8 +254,11 @@ final class ProgramUnderstandingEngine {
     private static List<Map<String, Object>> apiLifecycles(List<Map<String, Object>> flows) {
         Map<String, List<Map<String, Object>>> grouped = new java.util.TreeMap<>();
         for (Map<String, Object> flow : flows) {
-            if (!(flow.get("operation") instanceof Map<?, ?>)) continue;
-            grouped.computeIfAbsent(flow.get("inferred_business_object").toString(), ignored -> new ArrayList<>())
+            if (!(flow.get("operation") instanceof Map<?, ?> operation)) continue;
+            String businessObject = flow.get("inferred_business_object").toString();
+            String serviceBoundaryId = serviceBoundaryId(operation);
+            grouped.computeIfAbsent(serviceBoundaryId + "\u0000" + businessObject,
+                            ignored -> new ArrayList<>())
                     .add(flow);
         }
         List<Map<String, Object>> result = new ArrayList<>();
@@ -272,9 +276,15 @@ final class ProgramUnderstandingEngine {
             List<Map<String, Object>> bindings = lifecycleBindings(orderedFlows);
             Set<String> actions = new LinkedHashSet<>();
             entry.getValue().forEach(flow -> actions.add(operationAction(flow)));
+            String serviceBoundaryId = serviceBoundaryId(
+                    (Map<?, ?>) orderedFlows.get(0).get("operation"));
+            String businessObject = orderedFlows.get(0).get("inferred_business_object").toString();
             Map<String, Object> lifecycle = new LinkedHashMap<>();
             lifecycle.put("lifecycle_id", "LIFECYCLE-" + Hashing.sha256(entry.getKey()).substring(0, 16));
-            lifecycle.put("business_object", entry.getKey());
+            lifecycle.put("business_object", businessObject);
+            lifecycle.put("service_boundary_id", serviceBoundaryId);
+            lifecycle.put("same_service_only", true);
+            lifecycle.put("cross_service_auto_binding_allowed", false);
             lifecycle.put("actions", actions.stream()
                     .sorted(Comparator.comparing(ProgramUnderstandingEngine::lifecycleRank)).toList());
             lifecycle.put("operations", operations);
@@ -288,6 +298,15 @@ final class ProgramUnderstandingEngine {
             result.add(Map.copyOf(lifecycle));
         }
         return List.copyOf(result);
+    }
+
+    private static String serviceBoundaryId(Map<?, ?> operation) {
+        Object declared = operation.get("service_boundary_id");
+        if (declared != null && declared.toString().matches("SERVICE-[0-9a-f]{16}")) {
+            return declared.toString();
+        }
+        String sourcePath = String.valueOf(operation.get("source_path"));
+        return "SERVICE-" + Hashing.sha256(sourcePath).substring(0, 16);
     }
 
     private static List<Map<String, Object>> lifecycleBindings(List<Map<String, Object>> flows) {

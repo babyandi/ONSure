@@ -505,6 +505,10 @@ class UniversalValidationRunnerTest {
                 UniversalValidationProfile.VerificationGroup.EVIDENCE_DECISION));
         var receipt = new ObjectMapper().readTree(result.receiptFile().toFile());
         assertEquals("FAIL", receipt.path("final_evidence_integrity").path("outcome").asText());
+        assertEquals(0, receipt.path("scorecard").path("earned_points").decimalValue().signum());
+        assertEquals(0, receipt.path("scorecard").path("passed_required_step_count").asInt());
+        assertTrue(receipt.path("scorecard").path("steps").findValues("earned_points").stream()
+                .allMatch(value -> value.decimalValue().signum() == 0));
         assertTrue(Files.readString(Path.of(
                 receipt.path("final_evidence_integrity").path("log_file").asText()))
                 .contains("LOG_SHA256_MISMATCH"));

@@ -65,6 +65,10 @@ final class LocalProgramManagementService {
         String targetType = text(request, "target_type", 64);
         Path sourceRoot = sourceRoot(request.path("source_root").asText());
         String sourceDigest = inclusiveTreeDigest(sourceRoot).digest();
+        String requestedClassification = request.path("target_classification").asText("AUTO");
+        TargetProvenanceService provenanceService = new TargetProvenanceService(workspaceRoot);
+        Map<String, Object> observedProvenance = provenanceService.capture(
+                sourceRoot, sourceDigest, requestedClassification);
         ProductCatalog catalog = catalog();
         boolean workspaceCreated;
         try {
@@ -105,6 +109,21 @@ final class LocalProgramManagementService {
                     .equals(current.target().immutableSourceReference());
             targetCreated = false;
         }
+        Map<String, Object> targetProvenance;
+        if (targetCreated) {
+            provenanceService.persist(targetId, observedProvenance);
+            targetProvenance = observedProvenance;
+        } else {
+            try {
+                targetProvenance = provenanceService.load(targetId);
+            } catch (IllegalArgumentException missing) {
+                if (!"TARGET_PROVENANCE_NOT_FOUND".equals(missing.getMessage())) throw missing;
+                provenanceService.persist(targetId, observedProvenance);
+                targetProvenance = observedProvenance;
+            }
+        }
+        boolean provenanceBindingDrift = !java.util.Objects.equals(
+                targetProvenance.get("provenance_sha256"), observedProvenance.get("provenance_sha256"));
         return Map.ofEntries(
                 Map.entry("contract", CONTRACT), Map.entry("workspace_id", workspaceId),
                 Map.entry("project_id", projectId), Map.entry("target_id", targetId),
@@ -112,6 +131,10 @@ final class LocalProgramManagementService {
                 Map.entry("read_only_registration", true), Map.entry("workspace_created", workspaceCreated),
                 Map.entry("project_created", projectCreated), Map.entry("target_created", targetCreated),
                 Map.entry("source_reference_drift", sourceReferenceDrift),
+                Map.entry("target_provenance", targetProvenance),
+                Map.entry("provenance_binding_drift", provenanceBindingDrift),
+                Map.entry("real_target_universality_eligible",
+                        targetProvenance.get("real_target_universality_eligible")),
                 Map.entry("final_claim_allowed", false));
     }
 
@@ -229,11 +252,13 @@ final class LocalProgramManagementService {
         if (!("sha256:" + before.digest()).equals(target.immutableSourceReference())) {
             throw new IllegalArgumentException("PROGRAM_SOURCE_REFERENCE_DRIFT");
         }
+        Map<String, Object> targetProvenance = currentTargetProvenance(
+                targetId, source, before.digest());
         Path output = workspaceRoot.resolve(".onsure/program-understanding")
                 .resolve(targetId).resolve("program-profile.json").normalize();
         if (!output.startsWith(workspaceRoot)) throw new IllegalStateException("PROGRAM_UNDERSTANDING_OUTPUT_INVALID");
         Map<String, Object> profile = new ProgramLearningService().learn(
-                source, projectId, targetId, output);
+                source, projectId, targetId, output, targetProvenance);
         TreeObservation after = inclusiveTreeDigest(source);
         if (!before.equals(after)) throw new IllegalStateException("READ_ONLY_SOURCE_CHANGED_DURING_UNDERSTANDING");
         @SuppressWarnings("unchecked")
@@ -250,6 +275,9 @@ final class LocalProgramManagementService {
                 Map.entry("source_sha256", before.digest()),
                 Map.entry("program_understanding", understanding),
                 Map.entry("business_semantic_hypotheses", semanticHypotheses),
+                Map.entry("target_provenance", targetProvenance),
+                Map.entry("real_target_universality_eligible",
+                        targetProvenance.get("real_target_universality_eligible")),
                 Map.entry("source_mutation_detected", false),
                 Map.entry("automatic_execution", "NOT_RUN_REVIEW_REQUIRED"),
                 Map.entry("final_claim_allowed", false));
@@ -470,6 +498,19 @@ final class LocalProgramManagementService {
         return catalog().targets(projectId).stream()
                 .filter(value -> targetId.equals(value.target().targetId()))
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("PROGRAM_TARGET_NOT_REGISTERED"));
+    }
+
+    private Map<String, Object> currentTargetProvenance(
+            String targetId, Path source, String registrationSourceSha256) throws Exception {
+        TargetProvenanceService service = new TargetProvenanceService(workspaceRoot);
+        try {
+            return service.requireCurrent(targetId, source, registrationSourceSha256);
+        } catch (IllegalArgumentException missing) {
+            if (!"TARGET_PROVENANCE_NOT_FOUND".equals(missing.getMessage())) throw missing;
+            Map<String, Object> captured = service.capture(source, registrationSourceSha256, "AUTO");
+            service.persist(targetId, captured);
+            return captured;
+        }
     }
 
     private Map<String, Object> runCommand(Path sandbox, String id, List<String> command, Duration timeout)

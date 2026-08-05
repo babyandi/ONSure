@@ -487,7 +487,13 @@
           "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
           "target_name": {"type": "string", "minLength": 1, "maxLength": 200},
           "target_type": {"type": "string", "enum": ["GENERAL_SOFTWARE", "AI_APPLICATION", "AI_AGENTIC_PLATFORM"]},
-          "source_root": {"type": "string", "minLength": 1}
+          "source_root": {"type": "string", "minLength": 1},
+          "target_classification": {
+            "type": "string",
+            "enum": ["AUTO", "REAL_REPOSITORY", "FIXTURE", "SYNTHETIC_SNAPSHOT"],
+            "default": "AUTO",
+            "description": "Optional provenance declaration. REAL_REPOSITORY is rejected for a tracked fixture scope or a non-Git source."
+          }
         },
         "additionalProperties": false
       },

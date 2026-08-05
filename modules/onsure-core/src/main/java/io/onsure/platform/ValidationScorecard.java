@@ -32,6 +32,15 @@ final class ValidationScorecard {
             Map<Phase, Outcome> phaseOutcomes,
             Map<VerificationGroup, Outcome> groupOutcomes,
             Outcome overallOutcome) {
+        return calculate(steps, phaseOutcomes, groupOutcomes, overallOutcome, true);
+    }
+
+    static Map<String, Object> calculate(
+            List<UniversalValidationRunner.StepResult> steps,
+            Map<Phase, Outcome> phaseOutcomes,
+            Map<VerificationGroup, Outcome> groupOutcomes,
+            Outcome overallOutcome,
+            boolean finalEvidenceIntegritySatisfied) {
         Map<String, Integer> allocations = allocations(steps);
         List<Map<String, Object>> stepScores = new ArrayList<>();
         List<Map<String, Object>> unearned = new ArrayList<>();
@@ -40,14 +49,18 @@ final class ValidationScorecard {
         int passedRequiredCount = 0;
         for (var step : steps) {
             int possible = step.required() ? allocations.getOrDefault(step.stepId(), 0) : 0;
-            int earned = step.outcome() == Outcome.PASS_NONFINAL ? possible : 0;
+            int earned = finalEvidenceIntegritySatisfied
+                    && step.outcome() == Outcome.PASS_NONFINAL ? possible : 0;
             earnedTotal += earned;
             if (step.required()) {
                 requiredCount++;
-                if (step.outcome() == Outcome.PASS_NONFINAL) passedRequiredCount++;
-                else unearned.add(Map.of(
+                if (finalEvidenceIntegritySatisfied && step.outcome() == Outcome.PASS_NONFINAL) {
+                    passedRequiredCount++;
+                } else unearned.add(Map.of(
                         "step_id", step.stepId(), "outcome", step.outcome().name(),
-                        "reason", step.reason(), "unearned_points", points(possible)));
+                        "reason", finalEvidenceIntegritySatisfied ? step.reason()
+                                : "FINAL_EVIDENCE_INTEGRITY_NOT_PASS",
+                        "unearned_points", points(possible)));
             }
             Map<String, Object> value = new LinkedHashMap<>();
             value.put("step_id", step.stepId());
@@ -59,8 +72,10 @@ final class ValidationScorecard {
             value.put("earned_points", points(earned));
             value.put("outcome", step.outcome().name());
             value.put("reason", step.reason());
-            value.put("diagnosis", diagnosis(step.outcome(), step.stepId(), true));
-            value.put("improvement_guide", improvement(step.outcome(), step.reason()));
+            value.put("diagnosis", evidenceDiagnosis(
+                    finalEvidenceIntegritySatisfied, step.outcome(), step.stepId(), true));
+            value.put("improvement_guide", evidenceImprovement(
+                    finalEvidenceIntegritySatisfied, step.outcome(), step.reason()));
             value.put("output_sha256", step.outputSha256());
             value.put("environment_sha256", step.environmentSha256());
             value.put("duration_millis", Math.max(0L,
@@ -74,12 +89,14 @@ final class ValidationScorecard {
                     .filter(step -> step.kind().group() == group).toList();
             int possible = values.stream().filter(UniversalValidationRunner.StepResult::required)
                     .mapToInt(step -> allocations.getOrDefault(step.stepId(), 0)).sum();
-            int earned = values.stream().filter(UniversalValidationRunner.StepResult::required)
+            int earned = finalEvidenceIntegritySatisfied ? values.stream()
+                    .filter(UniversalValidationRunner.StepResult::required)
                     .filter(step -> step.outcome() == Outcome.PASS_NONFINAL)
-                    .mapToInt(step -> allocations.getOrDefault(step.stepId(), 0)).sum();
+                    .mapToInt(step -> allocations.getOrDefault(step.stepId(), 0)).sum() : 0;
             long required = values.stream().filter(UniversalValidationRunner.StepResult::required).count();
-            long passed = values.stream().filter(UniversalValidationRunner.StepResult::required)
-                    .filter(step -> step.outcome() == Outcome.PASS_NONFINAL).count();
+            long passed = finalEvidenceIntegritySatisfied ? values.stream()
+                    .filter(UniversalValidationRunner.StepResult::required)
+                    .filter(step -> step.outcome() == Outcome.PASS_NONFINAL).count() : 0;
             groups.add(Map.ofEntries(
                     Map.entry("group", group.name()),
                     Map.entry("order", group.order()),
@@ -90,9 +107,9 @@ final class ValidationScorecard {
                     Map.entry("required_step_count", required),
                     Map.entry("passed_required_step_count", passed),
                     Map.entry("outcome", groupOutcomes.getOrDefault(group, Outcome.NOT_RUN).name()),
-                    Map.entry("diagnosis", diagnosis(
+                    Map.entry("diagnosis", evidenceDiagnosis(finalEvidenceIntegritySatisfied,
                             groupOutcomes.getOrDefault(group, Outcome.NOT_RUN), group.name(), !values.isEmpty())),
-                    Map.entry("improvement_guide", improvement(
+                    Map.entry("improvement_guide", evidenceImprovement(finalEvidenceIntegritySatisfied,
                             groupOutcomes.getOrDefault(group, Outcome.NOT_RUN), firstReason(values))),
                     Map.entry("step_ids", values.stream().map(
                             UniversalValidationRunner.StepResult::stepId).toList())));
@@ -104,17 +121,18 @@ final class ValidationScorecard {
                     .filter(step -> step.phase() == phase).toList();
             int possible = values.stream().filter(UniversalValidationRunner.StepResult::required)
                     .mapToInt(step -> allocations.getOrDefault(step.stepId(), 0)).sum();
-            int earned = values.stream().filter(UniversalValidationRunner.StepResult::required)
+            int earned = finalEvidenceIntegritySatisfied ? values.stream()
+                    .filter(UniversalValidationRunner.StepResult::required)
                     .filter(step -> step.outcome() == Outcome.PASS_NONFINAL)
-                    .mapToInt(step -> allocations.getOrDefault(step.stepId(), 0)).sum();
+                    .mapToInt(step -> allocations.getOrDefault(step.stepId(), 0)).sum() : 0;
             phases.add(Map.of(
                     "phase", phase.name(), "level", phase.level(),
                     "possible_points", points(possible), "earned_points", points(earned),
                     "unearned_points", points(possible - earned),
                     "outcome", phaseOutcomes.getOrDefault(phase, Outcome.NOT_RUN).name(),
-                    "diagnosis", diagnosis(
+                    "diagnosis", evidenceDiagnosis(finalEvidenceIntegritySatisfied,
                             phaseOutcomes.getOrDefault(phase, Outcome.NOT_RUN), phase.name(), !values.isEmpty()),
-                    "improvement_guide", improvement(
+                    "improvement_guide", evidenceImprovement(finalEvidenceIntegritySatisfied,
                             phaseOutcomes.getOrDefault(phase, Outcome.NOT_RUN), firstReason(values)),
                     "step_ids", values.stream().map(UniversalValidationRunner.StepResult::stepId).toList()));
         }
@@ -136,9 +154,13 @@ final class ValidationScorecard {
         scorecard.put("unearned_points", points(10_000 - earnedTotal));
         scorecard.put("evidence_coverage_percent", points(earnedTotal));
         scorecard.put("validation_outcome", overallOutcome.name());
-        scorecard.put("nonfinal_gate_satisfied", overallOutcome == Outcome.PASS_NONFINAL);
-        scorecard.put("diagnosis_summary", diagnosis(overallOutcome, "전체 검증", !steps.isEmpty()));
-        scorecard.put("improvement_summary", overallOutcome == Outcome.PASS_NONFINAL
+        scorecard.put("nonfinal_gate_satisfied",
+                finalEvidenceIntegritySatisfied && overallOutcome == Outcome.PASS_NONFINAL);
+        scorecard.put("diagnosis_summary", evidenceDiagnosis(
+                finalEvidenceIntegritySatisfied, overallOutcome, "전체 검증", !steps.isEmpty()));
+        scorecard.put("improvement_summary", !finalEvidenceIntegritySatisfied
+                ? "최종 증적 무결성이 확인되지 않아 모든 획득 점수를 보류했습니다. 변조·누락된 Step 로그와 digest를 복구한 뒤 전체 검증을 재실행하십시오."
+                : overallOutcome == Outcome.PASS_NONFINAL
                 ? "현재 source/environment digest에 결속된 비최종 증적은 충족했습니다. 변경 후 전체 재실행하고 독립 검증 상태를 별도로 확인하십시오."
                 : "미획득 점수가 큰 순서보다 FAIL, BLOCKED, NOT_RUN 순으로 원인을 해소하고 동일 source 또는 승인된 변경 source에서 전체 회귀를 재실행하십시오.");
         scorecard.put("trust_gate", Map.of(
@@ -155,8 +177,8 @@ final class ValidationScorecard {
         scorecard.put("inconclusive_required_step_count", inconclusive);
         scorecard.put("groups", List.copyOf(groups));
         scorecard.put("phases", List.copyOf(phases));
-        List<Map<String, Object>> assessmentAreas = assessmentAreas(steps);
-        scorecard.put("assessment_domains", assessmentDomains(steps));
+        List<Map<String, Object>> assessmentAreas = assessmentAreas(steps, finalEvidenceIntegritySatisfied);
+        scorecard.put("assessment_domains", assessmentDomains(steps, finalEvidenceIntegritySatisfied));
         scorecard.put("assessment_areas", assessmentAreas);
         scorecard.put("steps", List.copyOf(stepScores));
         scorecard.put("unearned_required_steps", List.copyOf(unearned));
@@ -184,7 +206,7 @@ final class ValidationScorecard {
     }
 
     private static List<Map<String, Object>> assessmentAreas(
-            List<UniversalValidationRunner.StepResult> steps) {
+            List<UniversalValidationRunner.StepResult> steps, boolean evidenceIntegritySatisfied) {
         List<AssessmentArea> areas = List.of(
                 new AssessmentArea("ENVIRONMENT_DEPENDENCY", "SECURITY_ENVIRONMENT",
                         Set.of(StepKind.ENVIRONMENT_PREFLIGHT)),
@@ -225,40 +247,43 @@ final class ValidationScorecard {
                         Set.of(StepKind.INTERRUPTION_TEST, StepKind.RESUME_TEST)),
                 new AssessmentArea("ROLLBACK_AND_RERUN", "OPERATIONS",
                         Set.of(StepKind.ROLLBACK_TEST, StepKind.RERUN_TEST)));
-        return areas.stream().map(area -> areaScore(area.areaId(), area.domain(), area.kinds(), steps)).toList();
+        return areas.stream().map(area -> areaScore(
+                area.areaId(), area.domain(), area.kinds(), steps, evidenceIntegritySatisfied)).toList();
     }
 
     private static List<Map<String, Object>> assessmentDomains(
-            List<UniversalValidationRunner.StepResult> steps) {
+            List<UniversalValidationRunner.StepResult> steps, boolean evidenceIntegritySatisfied) {
         return List.of(
                 areaScore("SECURITY_ENVIRONMENT", "SECURITY_ENVIRONMENT",
-                        Set.of(StepKind.ENVIRONMENT_PREFLIGHT), steps),
+                        Set.of(StepKind.ENVIRONMENT_PREFLIGHT), steps, evidenceIntegritySatisfied),
                 areaScore("DESIGN", "DESIGN", Set.of(
                         StepKind.INVENTORY, StepKind.VALIDATOR_META_CHECK, StepKind.STATIC_ANALYSIS,
-                        StepKind.API_CONTRACT, StepKind.DATABASE_MIGRATION), steps),
+                        StepKind.API_CONTRACT, StepKind.DATABASE_MIGRATION), steps, evidenceIntegritySatisfied),
                 areaScore("CODING", "CODING", Set.of(
-                        StepKind.BUILD, StepKind.UNIT_TEST, StepKind.PACKAGE), steps),
+                        StepKind.BUILD, StepKind.UNIT_TEST, StepKind.PACKAGE), steps, evidenceIntegritySatisfied),
                 areaScore("FUNCTIONAL_PROCESS", "FUNCTIONAL_PROCESS", Set.of(
-                        StepKind.NEGATIVE_TEST, StepKind.RETRY_TEST, StepKind.BLOCKING_TEST), steps),
+                        StepKind.NEGATIVE_TEST, StepKind.RETRY_TEST, StepKind.BLOCKING_TEST), steps, evidenceIntegritySatisfied),
                 areaScore("WORKFLOW_PROCESS", "WORKFLOW_PROCESS", Set.of(
                         StepKind.INTEGRATION_TEST, StepKind.E2E_REQUEST_FLOW,
-                        StepKind.E2E_RENDER_OR_PRODUCE, StepKind.E2E_ARTIFACT_READBACK), steps),
+                        StepKind.E2E_RENDER_OR_PRODUCE, StepKind.E2E_ARTIFACT_READBACK), steps, evidenceIntegritySatisfied),
                 areaScore("EVIDENCE_GOVERNANCE", "EVIDENCE_GOVERNANCE", Set.of(
                         StepKind.E2E_TESTER_CHECK, StepKind.E2E_AUDIT_CHECK,
                         StepKind.E2E_EXPOSURE_DECISION, StepKind.WORKFLOW_LINEAGE,
-                        StepKind.EVIDENCE_VERIFICATION), steps),
+                        StepKind.EVIDENCE_VERIFICATION), steps, evidenceIntegritySatisfied),
                 areaScore("OPERATIONS", "OPERATIONS", Set.of(
                         StepKind.PERFORMANCE, StepKind.RECOVERY, StepKind.INTERRUPTION_TEST,
-                        StepKind.RESUME_TEST, StepKind.ROLLBACK_TEST, StepKind.RERUN_TEST), steps));
+                        StepKind.RESUME_TEST, StepKind.ROLLBACK_TEST, StepKind.RERUN_TEST),
+                        steps, evidenceIntegritySatisfied));
     }
 
     private static Map<String, Object> areaScore(
             String areaId, String domain, Set<StepKind> kinds,
-            List<UniversalValidationRunner.StepResult> steps) {
+            List<UniversalValidationRunner.StepResult> steps, boolean evidenceIntegritySatisfied) {
         List<UniversalValidationRunner.StepResult> applicable = steps.stream()
                 .filter(UniversalValidationRunner.StepResult::required)
                 .filter(step -> kinds.contains(step.kind())).toList();
-        long passed = applicable.stream().filter(step -> step.outcome() == Outcome.PASS_NONFINAL).count();
+        long passed = evidenceIntegritySatisfied ? applicable.stream()
+                .filter(step -> step.outcome() == Outcome.PASS_NONFINAL).count() : 0;
         Outcome outcome = UniversalValidationProfile.aggregate(
                 applicable.stream().map(UniversalValidationRunner.StepResult::outcome).toList());
         Map<String, Object> value = new LinkedHashMap<>();
@@ -267,12 +292,14 @@ final class ValidationScorecard {
         value.put("basis_step_kinds", kinds.stream().map(Enum::name).sorted().toList());
         value.put("applicability", applicable.isEmpty() ? "NOT_DISCOVERED" : "APPLICABLE");
         value.put("outcome", outcome.name());
-        value.put("diagnosis", diagnosis(outcome, areaId, !applicable.isEmpty()));
-        value.put("improvement_guide", improvement(outcome, firstReason(applicable)));
+        value.put("diagnosis", evidenceDiagnosis(
+                evidenceIntegritySatisfied, outcome, areaId, !applicable.isEmpty()));
+        value.put("improvement_guide", evidenceImprovement(
+                evidenceIntegritySatisfied, outcome, firstReason(applicable)));
         value.put("required_step_count", applicable.size());
         value.put("passed_required_step_count", passed);
         value.put("possible_points", applicable.isEmpty() ? BigDecimal.ZERO : BigDecimal.valueOf(100));
-        value.put("earned_points", applicable.isEmpty() ? BigDecimal.ZERO
+        value.put("earned_points", applicable.isEmpty() || !evidenceIntegritySatisfied ? BigDecimal.ZERO
                 : BigDecimal.valueOf(passed * 10_000L / applicable.size(), 2));
         value.put("step_ids", applicable.stream().map(
                 UniversalValidationRunner.StepResult::stepId).toList());
@@ -299,6 +326,22 @@ final class ValidationScorecard {
             case NOT_RUN -> scope + "의 필수 단계가 실행되지 않았거나 선행 단계 미통과로 실행되지 못했습니다.";
             case INCONCLUSIVE -> scope + "의 증적이 판정에 충분하지 않아 결론을 확정할 수 없습니다.";
         };
+    }
+
+    private static String evidenceDiagnosis(
+            boolean evidenceIntegritySatisfied, Outcome outcome, String scope, boolean applicable) {
+        if (!evidenceIntegritySatisfied) {
+            return scope + "의 최종 증적 무결성이 확인되지 않아 PASS와 획득 점수를 보류했습니다.";
+        }
+        return diagnosis(outcome, scope, applicable);
+    }
+
+    private static String evidenceImprovement(
+            boolean evidenceIntegritySatisfied, Outcome outcome, String reason) {
+        if (!evidenceIntegritySatisfied) {
+            return "Step 로그와 output/environment digest 불일치를 해소하고 전체 검증을 재실행하여 새 Receipt를 생성하십시오. 원인 코드: FINAL_EVIDENCE_INTEGRITY_NOT_PASS";
+        }
+        return improvement(outcome, reason);
     }
 
     private static String improvement(Outcome outcome, String reason) {
