@@ -117,11 +117,13 @@ final class LocalInferredE2EHttpRunner {
             }
             try {
                 List<Map<String, Object>> inputBindings = new ArrayList<>();
-                Map<String, String> boundPathValues = materializeBindings(
+                MaterializedBindings boundValues = materializeBindings(
                         candidate.get("plan_id").toString(), bindingsByConsumer, producerOutputs, inputBindings);
                 OpenApiSyntheticFixtureEngine fixtureEngine = fixtureEngines.get(candidate.get("plan_id").toString());
                 OpenApiSyntheticFixtureEngine.PreparedRequest prepared =
-                        fixtureEngine.prepare(method, routeTemplate, environment, runtimeReferences, boundPathValues);
+                        fixtureEngine.prepare(method, routeTemplate, environment, runtimeReferences,
+                                new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                                        boundValues.path(), boundValues.query(), boundValues.headers()));
                 String route = prepared.route();
                 if (!safeRoute(route)) throw new IllegalArgumentException("INFERRED_E2E_ROUTE_UNSAFE");
                 URI uri = URI.create(base.toString() + route
@@ -159,9 +161,9 @@ final class LocalInferredE2EHttpRunner {
                 Map<String, Object> step = new LinkedHashMap<>();
                 step.put("plan_id", candidate.get("plan_id")); step.put("http_method", method);
                 step.put("http_path_template", routeTemplate);
-                step.put("http_path", boundPathValues.isEmpty() ? route : routeTemplate);
+                step.put("http_path", boundValues.path().isEmpty() ? route : routeTemplate);
                 step.put("http_path_sha256", Hashing.sha256(route));
-                step.put("request_uri", base.toString() + (boundPathValues.isEmpty() ? route : routeTemplate));
+                step.put("request_uri", base.toString() + (boundValues.path().isEmpty() ? route : routeTemplate));
                 step.put("request_uri_sha256", Hashing.sha256(uri.toString()));
                 step.put("request_body_sha256", Hashing.sha256(prepared.body()));
                 step.put("request_body_bytes", prepared.body().length);
@@ -280,10 +282,12 @@ final class LocalInferredE2EHttpRunner {
         }
         return Set.copyOf(result);
     }
-    private static Map<String, String> materializeBindings(String consumerPlanId,
+    private static MaterializedBindings materializeBindings(String consumerPlanId,
             Map<String, List<Map<String, Object>>> bindingsByConsumer,
             Map<String, JsonNode> producerOutputs, List<Map<String, Object>> evidence) {
-        Map<String, String> result = new TreeMap<>();
+        Map<String, String> path = new TreeMap<>();
+        Map<String, String> query = new TreeMap<>();
+        Map<String, String> headers = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Map<String, Object> binding : bindingsByConsumer.getOrDefault(consumerPlanId, List.of())) {
             String producerPlanId = binding.get("producer_plan_id").toString();
             JsonNode output = producerOutputs.get(producerPlanId);
@@ -297,18 +301,31 @@ final class LocalInferredE2EHttpRunner {
             if (materialized.isEmpty() || materialized.length() > 4096)
                 throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_INVALID");
             String parameter = binding.get("consumer_parameter_name").toString();
-            if (result.putIfAbsent(parameter, materialized) != null)
+            String location = binding.get("consumer_location").toString();
+            Map<String, String> target = switch (location) {
+                case "PATH" -> path;
+                case "QUERY" -> query;
+                case "HEADER" -> headers;
+                case "BODY" -> throw new IllegalArgumentException(
+                        "OPENAPI_BODY_BINDING_RUNNER_NOT_IMPLEMENTED");
+                default -> throw new IllegalArgumentException("OPENAPI_BINDING_CONSUMER_LOCATION_INVALID");
+            };
+            if (target.putIfAbsent(parameter, materialized) != null)
                 throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_COLLISION");
             evidence.add(Map.of(
                     "binding_id", binding.get("binding_id"),
                     "producer_plan_id", producerPlanId,
                     "producer_json_pointer", pointer,
+                    "consumer_location", location,
                     "consumer_parameter_name", parameter,
                     "value_sha256", Hashing.sha256(materialized),
                     "value_stored", false));
         }
-        return Map.copyOf(result);
+        return new MaterializedBindings(Map.copyOf(path), Map.copyOf(query), Map.copyOf(headers));
     }
+
+    private record MaterializedBindings(Map<String, String> path, Map<String, String> query,
+            Map<String, String> headers) { }
 
     static JsonNode resolveBindingValue(JsonNode output, String pointer) {
         if (pointer == null || !pointer.matches("(?:/(?:[A-Za-z0-9._-]|~[0123]){1,128}){1,16}"))

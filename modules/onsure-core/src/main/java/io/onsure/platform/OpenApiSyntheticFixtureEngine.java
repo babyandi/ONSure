@@ -43,6 +43,15 @@ final class OpenApiSyntheticFixtureEngine {
             List<String> cookieNames, String authenticationReferenceId, String authenticationValueSha256,
             String authenticationSchemeType, String requestSchemaSha256, String fixtureStrategy) { }
 
+    record BoundRequestValues(Map<String, String> path, Map<String, String> query,
+            Map<String, String> headers) {
+        BoundRequestValues {
+            path = Map.copyOf(path == null ? Map.of() : path);
+            query = Map.copyOf(query == null ? Map.of() : query);
+            headers = Map.copyOf(headers == null ? Map.of() : headers);
+        }
+    }
+
     record OracleResult(boolean passed, boolean blocked, boolean schemaDeclared, String responseSchemaSha256,
             List<String> errors, String strategy) { }
 
@@ -94,8 +103,15 @@ final class OpenApiSyntheticFixtureEngine {
 
     PreparedRequest prepare(String method, String routeTemplate, Map<String, String> environment,
             Map<String, String> runtimeReferences, Map<String, String> boundPathValues) throws Exception {
-        String route = materializePath(routeTemplate, boundPathValues);
-        RequestParameters parameters = materializeRequiredParameters();
+        return prepare(method, routeTemplate, environment, runtimeReferences,
+                new BoundRequestValues(boundPathValues, Map.of(), Map.of()));
+    }
+
+    PreparedRequest prepare(String method, String routeTemplate, Map<String, String> environment,
+            Map<String, String> runtimeReferences, BoundRequestValues boundValues) throws Exception {
+        String route = materializePath(routeTemplate, boundValues.path());
+        RequestParameters parameters = materializeRequiredParameters(
+                boundValues.query(), boundValues.headers());
         Authentication authentication = authentication(environment, runtimeReferences);
         Map<String, String> headers = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         headers.putAll(parameters.headers());
@@ -217,13 +233,16 @@ final class OpenApiSyntheticFixtureEngine {
         }
     }
 
-    private RequestParameters materializeRequiredParameters() throws Exception {
+    private RequestParameters materializeRequiredParameters(
+            Map<String, String> boundQueryValues, Map<String, String> boundHeaderValues) throws Exception {
         Map<String, JsonNode> parameters = new LinkedHashMap<>();
         collectParameters(pathItem.path("parameters"), parameters);
         collectParameters(operation.path("parameters"), parameters);
         Map<String, String> query = new TreeMap<>();
         Map<String, String> headers = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, String> cookies = new TreeMap<>();
+        Set<String> consumedQueryBindings = new HashSet<>();
+        Set<String> consumedHeaderBindings = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (Map.Entry<String, JsonNode> entry : new TreeMap<>(parameters).entrySet()) {
             String location = entry.getValue().path("in").asText("");
             if (!entry.getValue().path("required").asBoolean(false) || "path".equals(location)) continue;
@@ -240,11 +259,20 @@ final class OpenApiSyntheticFixtureEngine {
             if (schema.isMissingNode()) throw new IllegalArgumentException(
                     "OPENAPI_REQUIRED_PARAMETER_SCHEMA_MISSING:" + location.toUpperCase(Locale.ROOT)
                             + ":" + safeCode(name));
-            JsonNode fixture = synthesize(schema, new HashSet<>(), 0);
-            if (fixture.isContainerNode() || fixture.isNull()) throw new IllegalArgumentException(
-                    "OPENAPI_REQUIRED_PARAMETER_NOT_PRIMITIVE:" + location.toUpperCase(Locale.ROOT)
-                            + ":" + safeCode(name));
-            String value = fixture.asText();
+            String value;
+            Map<String, String> boundValues = "query".equals(location) ? boundQueryValues
+                    : "header".equals(location) ? boundHeaderValues : Map.of();
+            if (boundValues.containsKey(name)) {
+                value = requireSafeBoundParameterValue(boundValues.get(name), location, name);
+                if ("query".equals(location)) consumedQueryBindings.add(name);
+                else consumedHeaderBindings.add(name);
+            } else {
+                JsonNode fixture = synthesize(schema, new HashSet<>(), 0);
+                if (fixture.isContainerNode() || fixture.isNull()) throw new IllegalArgumentException(
+                        "OPENAPI_REQUIRED_PARAMETER_NOT_PRIMITIVE:" + location.toUpperCase(Locale.ROOT)
+                                + ":" + safeCode(name));
+                value = fixture.asText();
+            }
             switch (location) {
                 case "query" -> query.put(name, value);
                 case "header" -> {
@@ -259,6 +287,12 @@ final class OpenApiSyntheticFixtureEngine {
                         + location.toUpperCase(Locale.ROOT));
             }
         }
+        if (!consumedQueryBindings.equals(boundQueryValues.keySet()))
+            throw new IllegalArgumentException("OPENAPI_BOUND_QUERY_PARAMETER_UNKNOWN");
+        Set<String> expectedHeaderBindings = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        expectedHeaderBindings.addAll(boundHeaderValues.keySet());
+        if (!consumedHeaderBindings.equals(expectedHeaderBindings))
+            throw new IllegalArgumentException("OPENAPI_BOUND_HEADER_PARAMETER_UNKNOWN");
         if (!cookies.isEmpty()) headers.put("Cookie", cookies.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + percentEncode(entry.getValue()))
                 .collect(java.util.stream.Collectors.joining("; ")));
@@ -594,6 +628,14 @@ final class OpenApiSyntheticFixtureEngine {
         if (value == null || value.isEmpty() || value.length() > 8192
                 || value.chars().anyMatch(character -> character < 0x20 || character == 0x7f))
             throw new IllegalArgumentException("OPENAPI_HEADER_VALUE_INVALID");
+        return value;
+    }
+
+    private static String requireSafeBoundParameterValue(String value, String location, String name) {
+        if (value == null || value.isEmpty() || value.length() > 4096
+                || value.chars().anyMatch(character -> character < 0x20 || character == 0x7f))
+            throw new IllegalArgumentException("OPENAPI_BOUND_" + location.toUpperCase(Locale.ROOT)
+                    + "_PARAMETER_INVALID:" + safeCode(name));
         return value;
     }
 

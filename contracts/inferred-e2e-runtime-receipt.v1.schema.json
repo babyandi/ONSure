@@ -67,10 +67,11 @@
     },
     "inputBinding": {
       "type": "object", "additionalProperties": false,
-      "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_parameter_name", "value_sha256", "value_stored"],
+      "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_location", "consumer_parameter_name", "value_sha256", "value_stored"],
       "properties": {
         "binding_id": {"type": "string", "pattern": "^BINDING-[0-9a-f]{16}$"},
         "producer_plan_id": {"type": "string"}, "producer_json_pointer": {"type": "string"},
+        "consumer_location": {"enum": ["PATH", "QUERY", "HEADER"]},
         "consumer_parameter_name": {"type": "string"},
         "value_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "value_stored": {"const": false}
       }

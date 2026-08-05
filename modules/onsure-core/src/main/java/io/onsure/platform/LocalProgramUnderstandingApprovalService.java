@@ -572,8 +572,8 @@ final class LocalProgramUnderstandingApprovalService {
                 "minimum_confidence", MINIMUM_AUTOMATIC_BINDING_CONFIDENCE,
                 "allowed_inference_basis", List.of("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
                         "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY"),
-                "executable_consumer_locations", List.of("PATH"),
-                "candidate_only_consumer_locations", List.of("QUERY", "HEADER", "BODY"),
+                "executable_consumer_locations", List.of("PATH", "QUERY", "HEADER"),
+                "candidate_only_consumer_locations", List.of("BODY"),
                 "separate_review_required", true,
                 "separate_approval_required", true,
                 "unqualified_binding_outcome", "BLOCKED_NOT_RUN",
@@ -649,7 +649,7 @@ final class LocalProgramUnderstandingApprovalService {
                 authorization.put("approval_receipt_sha256", approval.get("receipt_sha256"));
                 authorization.put("auto_execute_before_approval", false);
                 authorization.put("value_storage_allowed", false);
-                boolean executableLocation = "PATH".equals(location);
+                boolean executableLocation = Set.of("PATH", "QUERY", "HEADER").contains(location);
                 if (reviewableInference && executableLocation
                         && Set.of("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
                                 "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY").contains(basis)

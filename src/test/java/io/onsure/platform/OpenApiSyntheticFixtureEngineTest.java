@@ -107,6 +107,24 @@ class OpenApiSyntheticFixtureEngineTest {
         assertEquals("session=ONSURE_SYNTHETIC", prepared.headers().get("Cookie"));
         assertEquals(java.util.List.of("tenant"), prepared.queryParameterNames());
         assertEquals(java.util.List.of("session"), prepared.cookieNames());
+
+        OpenApiSyntheticFixtureEngine.PreparedRequest bound = queryEngine.prepare(
+                "GET", "/orders", Map.of(), Map.of(),
+                new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                        Map.of(), Map.of("tenant", "tenant-bound-42"),
+                        Map.of("X-Trace", "trace-bound-42")));
+        assertEquals("tenant=tenant-bound-42", bound.query());
+        assertEquals("trace-bound-42", bound.headers().get("X-Trace"));
+        IllegalArgumentException unknown = assertThrows(IllegalArgumentException.class, () ->
+                queryEngine.prepare("GET", "/orders", Map.of(), Map.of(),
+                        new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                                Map.of(), Map.of("unknown", "value"), Map.of())));
+        assertEquals("OPENAPI_BOUND_QUERY_PARAMETER_UNKNOWN", unknown.getMessage());
+        IllegalArgumentException boundInjection = assertThrows(IllegalArgumentException.class, () ->
+                queryEngine.prepare("GET", "/orders", Map.of(), Map.of(),
+                        new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                                Map.of(), Map.of(), Map.of("X-Trace", "value\r\ninjected"))));
+        assertEquals("OPENAPI_BOUND_HEADER_PARAMETER_INVALID:X-TRACE", boundInjection.getMessage());
     }
 
     private Path write(String value) throws Exception {

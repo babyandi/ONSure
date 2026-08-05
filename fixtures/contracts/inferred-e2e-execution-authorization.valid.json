@@ -57,7 +57,7 @@
     "blocked_bindings": [{
       "binding_id": "BINDING-fedcba9876543210", "producer_plan_id": "E2E-123",
       "producer_json_pointer": "/queryToken", "consumer_plan_id": "E2E-125",
-      "consumer_location": "QUERY", "consumer_parameter_name": "queryToken",
+      "consumer_location": "BODY", "consumer_parameter_name": "/queryToken",
       "inference_basis": "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", "inference_confidence": 0.93,
       "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
@@ -71,8 +71,8 @@
   "binding_authorization_policy": {
     "minimum_confidence": 0.9,
     "allowed_inference_basis": ["OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY"],
-    "executable_consumer_locations": ["PATH"],
-    "candidate_only_consumer_locations": ["QUERY", "HEADER", "BODY"],
+    "executable_consumer_locations": ["PATH", "QUERY", "HEADER"],
+    "candidate_only_consumer_locations": ["BODY"],
     "separate_review_required": true,
     "separate_approval_required": true,
     "unqualified_binding_outcome": "BLOCKED_NOT_RUN",

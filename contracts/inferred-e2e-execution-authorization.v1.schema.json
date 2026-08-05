@@ -29,8 +29,8 @@
       "properties": {
         "minimum_confidence": {"type": "number", "minimum": 0, "maximum": 1},
         "allowed_inference_basis": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
-        "executable_consumer_locations": {"const": ["PATH"]},
-        "candidate_only_consumer_locations": {"const": ["QUERY", "HEADER", "BODY"]},
+        "executable_consumer_locations": {"const": ["PATH", "QUERY", "HEADER"]},
+        "candidate_only_consumer_locations": {"const": ["BODY"]},
         "separate_review_required": {"const": true},
         "separate_approval_required": {"const": true},
         "unqualified_binding_outcome": {"const": "BLOCKED_NOT_RUN"},
@@ -62,7 +62,7 @@
       },
       "allOf": [{
         "if": {"properties": {"state": {"const": "AUTHORIZED_NOT_RUN"}}},
-        "then": {"properties": {"consumer_location": {"const": "PATH"}, "review_state": {"const": "REVIEWED_AND_SEPARATELY_APPROVED"}}, "not": {"required": ["blocked_reason"]}},
+        "then": {"properties": {"consumer_location": {"enum": ["PATH", "QUERY", "HEADER"]}, "review_state": {"const": "REVIEWED_AND_SEPARATELY_APPROVED"}}, "not": {"required": ["blocked_reason"]}},
         "else": {"required": ["blocked_reason"], "properties": {"review_state": {"const": "REVIEW_REQUIRED_NOT_AUTHORIZED"}}}
       }]
     },

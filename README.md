@@ -265,8 +265,9 @@ schema assertion은 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든
 응답 schema의 scalar property를 재귀 탐색해 exact-name 또는 단일 `id` 경로를 우선 선택하며,
 schema 근거가 없을 때만 낮은 신뢰도의 검토용 휴리스틱을 사용한다.
 필수 query/header/request-body 입력도 producer 응답과 exact-name이 유일하게 일치할 때 후보로
-만들지만 현재 Runner가 실제 결속하는 위치는 path뿐이다. 나머지 위치는 승인 후에도
-`BLOCKED_BINDING_REVIEW_REQUIRED`/`NOT_RUN`이며 민감 인증 header는 후보에서 제외한다.
+만든다. 별도 승인된 query/header 값은 후속 요청에 메모리에서만 주입하며 Receipt에는 위치와
+값 digest만 남긴다. request-body는 producer/consumer JSON schema 타입 호환성 증명 전까지
+`BLOCKED_BINDING_REVIEW_REQUIRED`/`NOT_RUN`이고, 민감 인증 header는 후보에서 제외한다.
 일반 배열은 `~2` pointer template과 confidence 0.80의 검토 후보로만 남긴다. `minItems=1`과
 `maxItems=1`을 모두 선언한 배열만 `~3`과 confidence 0.90으로 구분하고, 실행 시 실제 cardinality가
 1인지 다시 확인해 비어 있거나 복수인 배열은 consumer HTTP 호출 전에 차단한다.
@@ -289,7 +290,7 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 386개(조건부 11개 skip 포함), Python 202개, Node 10개,
+현재 변경 후보의 로컬 검증은 Java 388개(조건부 11개 skip 포함), Python 202개, Node 10개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256

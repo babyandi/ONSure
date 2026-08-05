@@ -13,6 +13,17 @@
     "http_path": "/orders/00000000-0000-4000-8000-000000000001", "request_uri": "http://127.0.0.1:18080/orders/00000000-0000-4000-8000-000000000001",
     "request_body_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "request_body_bytes": 27, "request_body_stored": false,
+    "request_query_parameter_names": ["queryToken"], "request_header_names": ["X-Trace"],
+    "request_cookie_names": [], "request_parameter_values_stored": false,
+    "request_header_values_stored": false,
+    "input_bindings": [{
+      "binding_id": "BINDING-0123456789abcdef", "producer_plan_id": "E2E-122",
+      "producer_json_pointer": "/queryToken", "consumer_location": "QUERY",
+      "consumer_parameter_name": "queryToken",
+      "value_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "value_stored": false
+    }],
+    "bound_response_values_stored": false,
     "request_schema_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
     "fixture_strategy": "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA", "response_status": 201,
     "expected_statuses": ["201"], "response_body_sha256": "2222222222222222222222222222222222222222222222222222222222222222",

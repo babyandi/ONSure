@@ -216,7 +216,7 @@ class LocalProgramUnderstandingApprovalServiceTest {
     }
 
     @Test
-    void keepsExactQueryBindingReviewOnlyUntilTheRunnerSupportsItsLocation() throws Exception {
+    void authorizesExactQueryBindingAfterReviewAndApproval() throws Exception {
         Prepared prepared = prepare("query-binding-review-only", """
                 openapi: 3.1.0
                 info: {title: Orders, version: '1'}
@@ -254,13 +254,68 @@ class LocalProgramUnderstandingApprovalServiceTest {
                 prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
         @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
                 (List<Map<String, Object>>) plan.get("authorized_lifecycles");
+        @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                (List<Map<String, Object>>) lifecycles.get(0).get("bindings");
+
+        assertEquals(1, lifecycles.get(0).get("binding_count"));
+        assertEquals(0, lifecycles.get(0).get("blocked_binding_count"));
+        assertEquals("QUERY", bindings.get(0).get("consumer_location"));
+        assertEquals(0.93, bindings.get(0).get("inference_confidence"));
+        assertEquals("AUTHORIZED_NOT_RUN", bindings.get(0).get("state"));
+    }
+
+    @Test
+    void keepsExactBodyBindingBlockedUntilSchemaTypeCompatibilityIsImplemented() throws Exception {
+        Prepared prepared = prepare("body-binding-review-only", """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties: {name: {type: string}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [revision]
+                                properties: {revision: {type: integer}}
+                    patch:
+                      operationId: updateOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [revision]
+                              properties: {revision: {type: integer}}
+                      responses: {'200': {description: updated}}
+                """);
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(
+                prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
+        @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
+                (List<Map<String, Object>>) plan.get("authorized_lifecycles");
         @SuppressWarnings("unchecked") List<Map<String, Object>> blocked =
                 (List<Map<String, Object>>) lifecycles.get(0).get("blocked_bindings");
 
         assertEquals(0, lifecycles.get(0).get("binding_count"));
         assertEquals(1, lifecycles.get(0).get("blocked_binding_count"));
-        assertEquals("QUERY", blocked.get(0).get("consumer_location"));
-        assertEquals(0.93, blocked.get(0).get("inference_confidence"));
+        assertEquals("BODY", blocked.get(0).get("consumer_location"));
+        assertEquals("/revision", blocked.get(0).get("consumer_parameter_name"));
         assertEquals("CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED", blocked.get(0).get("blocked_reason"));
         assertEquals("BLOCKED_BINDING_REVIEW_REQUIRED", blocked.get(0).get("state"));
     }

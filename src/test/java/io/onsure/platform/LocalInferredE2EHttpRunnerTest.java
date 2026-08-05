@@ -157,6 +157,55 @@ class LocalInferredE2EHttpRunnerTest {
     }
 
     @Test
+    void materializesApprovedProducerValuesIntoRequiredQueryAndHeaderWithoutPersistingThem() throws Exception {
+        Prepared prepared = prepare(openApiWithQueryAndHeaderBindings());
+        AtomicReference<String> receivedQuery = new AtomicReference<>();
+        AtomicReference<String> receivedTrace = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/sessions", exchange -> {
+            byte[] body;
+            int status;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                body = "{\"queryToken\":\"query-bound-42\",\"traceId\":\"trace-bound-42\"}"
+                        .getBytes(StandardCharsets.UTF_8);
+                status = 201;
+            } else {
+                receivedQuery.set(exchange.getRequestURI().getRawQuery());
+                receivedTrace.set(exchange.getRequestHeaders().getFirst("traceId"));
+                body = "{}".getBytes(StandardCharsets.UTF_8);
+                status = 200;
+            }
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals("queryToken=query-bound-42", receivedQuery.get());
+            assertEquals("trace-bound-42", receivedTrace.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> get = steps.stream().filter(step -> "GET".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                    (List<Map<String, Object>>) get.get("input_bindings");
+            assertEquals(List.of("HEADER", "QUERY"), bindings.stream()
+                    .map(binding -> binding.get("consumer_location").toString()).sorted().toList());
+            assertTrue(bindings.stream().anyMatch(binding -> Hashing.sha256("query-bound-42")
+                    .equals(binding.get("value_sha256"))));
+            assertTrue(bindings.stream().anyMatch(binding -> Hashing.sha256("trace-bound-42")
+                    .equals(binding.get("value_sha256"))));
+            String serialized = mapper.writeValueAsString(receipt);
+            assertFalse(serialized.contains("query-bound-42"));
+            assertFalse(serialized.contains("trace-bound-42"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
     void materializesNestedSingletonArrayBindingWithoutPersistingRawValue() throws Exception {
         Prepared prepared = prepare(openApiWithNestedArrayWriteAndPath());
         AtomicReference<String> receivedReadPath = new AtomicReference<>();
@@ -595,6 +644,49 @@ class LocalInferredE2EHttpRunnerTest {
                                   required: [orderId]
                                   properties:
                                     orderId: {type: string}
+                """;
+    }
+
+    private static String openApiWithQueryAndHeaderBindings() {
+        return """
+                openapi: 3.1.0
+                info: {title: Sessions, version: '1'}
+                paths:
+                  /sessions:
+                    post:
+                      operationId: createSession
+                      tags: [Sessions]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties: {name: {type: string}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [queryToken, traceId]
+                                properties:
+                                  queryToken: {type: string}
+                                  traceId: {type: string}
+                    get:
+                      operationId: readSession
+                      tags: [Sessions]
+                      parameters:
+                        - {name: queryToken, in: query, required: true, schema: {type: string}}
+                        - {name: traceId, in: header, required: true, schema: {type: string}}
+                      responses:
+                        '200':
+                          description: found
+                          content:
+                            application/json:
+                              schema: {type: object}
                 """;
     }
 
