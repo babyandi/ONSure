@@ -24,10 +24,8 @@ from onsure_product_root import resolve_product_root
 ROOT = resolve_product_root()
 DEFAULT_PACKAGE = ROOT / "target/onsure-rhel-candidate.tar.gz"
 DEFAULT_OUTPUT = ROOT / "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json"
-MIGRATION = ROOT / (
-    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/"
-    "V1__create_assurance_event.sql"
-)
+MIGRATIONS = tuple(sorted((ROOT /
+    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql").glob("V*__*.sql")))
 EVIDENCE_PREFIX = "assurance/runtime/"
 
 
@@ -178,8 +176,8 @@ def concurrent_migrate(runtime: pathlib.Path, environment: dict[str, str]) -> li
             if process.returncode:
                 detail = (error or output).strip().splitlines()
                 raise ValueError("CONCURRENT_MIGRATE_FAILED:" + (detail[-1] if detail else "NO_OUTPUT"))
-            if "executed=1" in output:
-                executed.append(1)
+            if "executed=2" in output:
+                executed.append(2)
             elif "executed=0" in output:
                 executed.append(0)
             else:
@@ -254,7 +252,7 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
             second = run("MIGRATE_SECOND", java_command(runtime, "migrate"), runtime_environment)
             validation = run("MIGRATE_VALIDATE", java_command(runtime, "validate"), runtime_environment)
             info = run("MIGRATE_INFO", java_command(runtime, "info"), runtime_environment)
-            if "executed=1" not in first or "executed=0" not in second \
+            if "executed=2" not in first or "executed=0" not in second \
                     or "PASS_NONFINAL" not in validation or "pending=0" not in info:
                 raise ValueError("MIGRATION_RESULT_CONTRACT_INVALID")
             psql(
@@ -262,6 +260,19 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 "INSERT INTO onsure.assurance_event "
                 "(event_id,event_type,observed_at,evidence_sha256) VALUES "
                 "('synthetic-1','REHEARSAL',CURRENT_TIMESTAMP,repeat('a',64));",
+                username="onsure",
+            )
+            psql(
+                binaries, sockets, port, "onsure",
+                "INSERT INTO onsure.validation_run_score "
+                "(run_id,project_id,target_id,source_sha256,receipt_sha256,validation_outcome,"
+                "earned_points,max_points,scorecard_json,observed_at) VALUES "
+                "('synthetic-run-1','synthetic-project','synthetic-target',repeat('b',64),"
+                "repeat('c',64),'NOT_RUN',0,100,'{\"contract\":\"ONSURE_VALIDATION_SCORECARD_V1\"}'::jsonb,"
+                "CURRENT_TIMESTAMP);"
+                "INSERT INTO onsure.validation_score_node "
+                "(run_id,node_type,node_id,outcome,possible_points,earned_points,diagnosis,improvement_guide) VALUES "
+                "('synthetic-run-1','DOMAIN','DESIGN','NOT_RUN',100,0,'synthetic diagnosis','synthetic guide');",
                 username="onsure",
             )
             run("PG_DUMP", [
@@ -287,6 +298,14 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 binaries, sockets, port, "onsure_restore",
                 "SELECT count(*) FROM onsure.flyway_schema_history WHERE success AND version IS NOT NULL;",
             )
+            restored_scores = psql(
+                binaries, sockets, port, "onsure_restore",
+                "SELECT count(*) FROM onsure.validation_run_score;",
+            )
+            restored_nodes = psql(
+                binaries, sockets, port, "onsure_restore",
+                "SELECT count(*) FROM onsure.validation_score_node;",
+            )
             restored_environment = dict(runtime_environment)
             restored_environment["ONSURE_DB_URL"] = (
                 f"jdbc:postgresql://127.0.0.1:{port}/onsure_restore?sslmode=disable"
@@ -297,7 +316,8 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
             restored_migrate = run(
                 "RESTORED_MIGRATE", java_command(runtime, "migrate"), restored_environment
             )
-            if restored_events != "1" or restored_history != "1" \
+            if restored_events != "1" or restored_history != "2" \
+                    or restored_scores != "1" or restored_nodes != "1" \
                     or "PASS_NONFINAL" not in restored_validation \
                     or "executed=0" not in restored_migrate:
                 raise ValueError(
@@ -318,7 +338,7 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 binaries, sockets, port, "onsure_concurrent",
                 "SELECT count(*) FROM onsure.flyway_schema_history WHERE success AND version IS NOT NULL;",
             )
-            if concurrent_executed != [0, 1] or concurrent_history != "1":
+            if concurrent_executed != [0, 2] or concurrent_history != "2":
                 raise ValueError("CONCURRENT_MIGRATION_IDEMPOTENCY_INVALID")
             version = psql(binaries, sockets, port, "postgres", "SHOW server_version;")
             completed_at = dt.datetime.now(dt.timezone.utc)
@@ -334,19 +354,22 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 "postgresql_version": version,
                 "package_sha256": sha256_file(package),
                 "package_size_bytes": package.stat().st_size,
-                "migration": MIGRATION.relative_to(ROOT).as_posix(),
-                "migration_sha256": sha256_file(MIGRATION),
+                "migrations": [{"path": path.relative_to(ROOT).as_posix(), "sha256": sha256_file(path)}
+                               for path in MIGRATIONS],
+                "migration_count": len(MIGRATIONS),
                 "network_binding": "127.0.0.1_EPHEMERAL",
-                "migration_first_executed": 1,
+                "migration_first_executed": 2,
                 "migration_second_executed": 0,
                 "pending_after_migration": 0,
                 "restored_event_count": 1,
-                "restored_history_count": 1,
+                "restored_history_count": 2,
+                "restored_validation_score_count": 1,
+                "restored_validation_score_node_count": 1,
                 "restored_schema_validation": "PASS_NONFINAL",
                 "backup_sha256": backup_sha256,
                 "backup_size_bytes": backup_size,
-                "concurrent_migration_executed_counts": [0, 1],
-                "concurrent_migration_history_count": 1,
+                "concurrent_migration_executed_counts": [0, 2],
+                "concurrent_migration_history_count": 2,
                 "customer_data_used": False,
                 "system_postgresql_service_modified": False,
                 "production_migration": "NOT_RUN",

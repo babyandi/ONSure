@@ -22,10 +22,8 @@ POSTGRESQL_EVIDENCE = ROOT / "assurance/runtime/onsure-postgresql-flyway-rehears
 SANDBOX_EVIDENCE = ROOT / "assurance/runtime/onsure-sandbox-backends.v1.json"
 UNIVERSAL_EVIDENCE = ROOT / "assurance/runtime/onsure-universal-validation-evidence.v1.json"
 UNIVERSAL_REPEATABILITY_EVIDENCE = ROOT / "assurance/runtime/onsure-self-repeatability.v1.json"
-POSTGRESQL_MIGRATION = ROOT / (
-    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/"
-    "V1__create_assurance_event.sql"
-)
+POSTGRESQL_MIGRATIONS = tuple(sorted((ROOT /
+    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql").glob("V*__*.sql")))
 SYSTEMD_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-systemd-security.v1.json"
 UBUNTU_SYSTEMD_EVIDENCE = ROOT / "assurance/runtime/onsure-ubuntu-systemd-security.v1.json"
 RHEL_PACKAGE_EVIDENCE = ROOT / "assurance/runtime/onsure-rhel-package-validation.v1.json"
@@ -190,14 +188,16 @@ def validate_postgresql_evidence_body(
     expected = {
         "contract": "ONSURE_POSTGRESQL_FLYWAY_REHEARSAL_V1",
         "decision": "PASS_NONFINAL",
-        "migration_first_executed": 1,
+        "migration_first_executed": 2,
         "migration_second_executed": 0,
         "pending_after_migration": 0,
         "restored_event_count": 1,
-        "restored_history_count": 1,
+        "restored_history_count": 2,
+        "restored_validation_score_count": 1,
+        "restored_validation_score_node_count": 1,
         "restored_schema_validation": "PASS_NONFINAL",
-        "concurrent_migration_executed_counts": [0, 1],
-        "concurrent_migration_history_count": 1,
+        "concurrent_migration_executed_counts": [0, 2],
+        "concurrent_migration_history_count": 2,
         "customer_data_used": False,
         "system_postgresql_service_modified": False,
         "network_binding": "127.0.0.1_EPHEMERAL",
@@ -208,10 +208,11 @@ def validate_postgresql_evidence_body(
     for field, value in expected.items():
         if evidence.get(field) != value:
             violations.append("POSTGRESQL_EVIDENCE_" + field.upper())
-    migration_path = POSTGRESQL_MIGRATION.relative_to(ROOT).as_posix()
-    migration_sha = hashlib.sha256(POSTGRESQL_MIGRATION.read_bytes()).hexdigest()
-    if evidence.get("migration") != migration_path \
-            or evidence.get("migration_sha256") != migration_sha:
+    expected_migrations = [{"path": path.relative_to(ROOT).as_posix(),
+                            "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+                           for path in POSTGRESQL_MIGRATIONS]
+    if evidence.get("migrations") != expected_migrations \
+            or evidence.get("migration_count") != len(expected_migrations):
         violations.append("POSTGRESQL_EVIDENCE_MIGRATION_BINDING")
     if not str(evidence.get("postgresql_version", "")).startswith("16."):
         violations.append("POSTGRESQL_EVIDENCE_VERSION")
