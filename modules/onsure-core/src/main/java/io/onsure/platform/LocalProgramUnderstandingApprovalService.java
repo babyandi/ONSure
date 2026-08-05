@@ -10,6 +10,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -68,6 +69,7 @@ final class LocalProgramUnderstandingApprovalService {
         String requestId = "program-understanding-approval-" + UUID.randomUUID();
         Map<String, Object> value = new LinkedHashMap<>();
         value.put("contract", CONTRACT);
+        value.put("record_format_version", 2);
         value.put("request_id", requestId);
         value.put("state", "AWAITING_APPROVAL");
         value.put("project_id", projectId);
@@ -211,6 +213,7 @@ final class LocalProgramUnderstandingApprovalService {
             value.put("execution_run_id", runId);
             value.put("execution_started_at", clock.instant().toString());
             value.put("execution_started_by", operator.actor());
+            value.put("execution_claim_sha256", claimDigest(value));
             write(requestId, value);
             result[0] = Map.copyOf(value);
         });
@@ -234,6 +237,104 @@ final class LocalProgramUnderstandingApprovalService {
             value.put("execution_state", outcome);
             value.put("execution_completed_at", clock.instant().toString());
             value.put("runtime_receipt_sha256", runtimeReceiptSha256);
+            value.put("execution_record_sha256", runtimeDigest(value));
+            write(requestId, value);
+            result[0] = Map.copyOf(value);
+        });
+        return result[0];
+    }
+
+    Map<String, Object> recoverInterruptedExecution(String requestId, String authorizationId,
+            String planSha256, LocalAccessControl.Identity operator, Duration staleAfter) throws Exception {
+        if (operator == null || !Set.of(LocalAccessControl.Role.ADMIN, LocalAccessControl.Role.OPERATOR)
+                .contains(operator.role())) throw new IllegalArgumentException("PROGRAM_EXECUTION_OPERATOR_ROLE_INVALID");
+        if (staleAfter == null || staleAfter.compareTo(Duration.ofSeconds(30)) < 0
+                || staleAfter.compareTo(Duration.ofHours(1)) > 0)
+            throw new IllegalArgumentException("PROGRAM_EXECUTION_RECOVERY_THRESHOLD_INVALID");
+        @SuppressWarnings("unchecked") final Map<String, Object>[] result = new Map[1];
+        ExclusiveFileLock.run(lock, () -> {
+            Map<String, Object> value = read(requestId);
+            if (!authorizationId.equals(value.get("execution_authorization_id"))
+                    || !planSha256.equals(value.get("execution_plan_sha256")))
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_PLAN_BINDING_INVALID");
+            if ("CONSUMED_FOR_EXECUTION_AUTHORIZATION".equals(value.get("state"))
+                    && "NOT_RUN".equals(value.get("execution_state"))) {
+                result[0] = Map.of("recovery_state", "NO_RECOVERY_REQUIRED");
+                return;
+            }
+            if ("EXECUTION_COMPLETED".equals(value.get("state"))) {
+                result[0] = Map.of("recovery_state", "ALREADY_COMPLETED");
+                return;
+            }
+            if (!"EXECUTION_RUNNING".equals(value.get("state"))
+                    || !"RUNNING".equals(value.get("execution_state")))
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_RECOVERY_STATE_INVALID");
+            Instant started = Instant.parse(value.get("execution_started_at").toString());
+            if (clock.instant().isBefore(started.plus(staleAfter)))
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_STILL_ACTIVE");
+            Path planFile = workspaceRoot.resolve(value.get("execution_plan_file").toString()).normalize();
+            if (!planFile.startsWith(workspaceRoot) || !safeFile(planFile)
+                    || !Hashing.file(planFile).equals(planSha256))
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_PLAN_STALE_OR_TAMPERED");
+            Map<String, Object> plan = mapper.readValue(planFile.toFile(), new TypeReference<>() {});
+            Path receiptFile = planFile.resolveSibling("runtime-receipt.json");
+            if (Files.exists(receiptFile, LinkOption.NOFOLLOW_LINKS)) {
+                Map<String, Object> receipt = verifiedInterruptedReceipt(
+                        receiptFile, value.get("execution_run_id").toString(), authorizationId, planSha256);
+                String receiptSha = Hashing.file(receiptFile);
+                recordRecovery(value, operator, "COMPLETED_FROM_DURABLE_RECEIPT");
+                value.put("state", "EXECUTION_COMPLETED");
+                value.put("execution_state", receipt.get("outcome"));
+                value.put("execution_completed_at", receipt.get("completed_at"));
+                value.put("runtime_receipt_sha256", receiptSha);
+                value.put("execution_record_sha256", runtimeDigest(value));
+                write(requestId, value);
+                result[0] = Map.of("recovery_state", "RECOVERED_COMPLETED",
+                        "runtime_receipt_sha256", receiptSha,
+                        "runtime_receipt_file", workspaceRoot.relativize(receiptFile).toString().replace('\\', '/'));
+                return;
+            }
+            if (readOnlyRetrySafe(plan)) {
+                recordRecovery(value, operator, "READ_ONLY_RETRY_ALLOWED");
+                value.put("state", "CONSUMED_FOR_EXECUTION_AUTHORIZATION");
+                value.put("execution_state", "NOT_RUN");
+                write(requestId, value);
+                result[0] = Map.of("recovery_state", "RECOVERED_RETRY_ALLOWED");
+            } else {
+                recordRecovery(value, operator, "WRITE_OUTCOME_UNKNOWN_REAPPROVAL_REQUIRED");
+                value.put("state", "EXECUTION_RECOVERY_REQUIRED");
+                value.put("execution_state", "RECOVERY_REQUIRED");
+                write(requestId, value);
+                result[0] = Map.of("recovery_state", "RECOVERY_REAPPROVAL_REQUIRED");
+            }
+        });
+        return result[0];
+    }
+
+    Map<String, Object> attachExecutionComparison(String requestId, String runId,
+            String comparisonFile, String comparisonSha256) throws Exception {
+        if (comparisonFile == null || Path.of(comparisonFile).isAbsolute()
+                || comparisonSha256 == null || !comparisonSha256.matches("[0-9a-f]{64}"))
+            throw new IllegalArgumentException("PROGRAM_EXECUTION_COMPARISON_BINDING_INVALID");
+        Path file = workspaceRoot.resolve(comparisonFile).normalize();
+        Path authorizationRoot = workspaceRoot.resolve(".onsure/inferred-e2e-authorizations").normalize();
+        if (!file.startsWith(authorizationRoot) || !safeFile(file)
+                || !Hashing.file(file).equals(comparisonSha256))
+            throw new IllegalArgumentException("PROGRAM_EXECUTION_COMPARISON_BINDING_INVALID");
+        @SuppressWarnings("unchecked") final Map<String, Object>[] result = new Map[1];
+        ExclusiveFileLock.run(lock, () -> {
+            Map<String, Object> value = read(requestId);
+            if (!"EXECUTION_COMPLETED".equals(value.get("state"))
+                    || !runId.equals(value.get("execution_run_id")))
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_RUN_BINDING_INVALID");
+            if (value.containsKey("runtime_comparison_sha256")) {
+                if (!comparisonSha256.equals(value.get("runtime_comparison_sha256")))
+                    throw new IllegalArgumentException("PROGRAM_EXECUTION_COMPARISON_ALREADY_BOUND");
+                result[0] = Map.copyOf(value);
+                return;
+            }
+            value.put("runtime_comparison_file", comparisonFile);
+            value.put("runtime_comparison_sha256", comparisonSha256);
             value.put("execution_record_sha256", runtimeDigest(value));
             write(requestId, value);
             result[0] = Map.copyOf(value);
@@ -284,7 +385,8 @@ final class LocalProgramUnderstandingApprovalService {
                 && !String.valueOf(value.get("receipt_sha256")).equals(decisionDigest(value))) {
             throw new IllegalStateException("PROGRAM_APPROVAL_RECEIPT_DIGEST_INVALID");
         }
-        if (Set.of("CONSUMED_FOR_EXECUTION_AUTHORIZATION", "EXECUTION_RUNNING", "EXECUTION_COMPLETED")
+        if (Set.of("CONSUMED_FOR_EXECUTION_AUTHORIZATION", "EXECUTION_RUNNING", "EXECUTION_COMPLETED",
+                "EXECUTION_RECOVERY_REQUIRED")
                 .contains(value.get("state"))
                 && !String.valueOf(value.get("consumption_sha256")).equals(
                         consumptionDigest(value))) {
@@ -294,7 +396,81 @@ final class LocalProgramUnderstandingApprovalService {
                 && !String.valueOf(value.get("execution_record_sha256")).equals(runtimeDigest(value))) {
             throw new IllegalStateException("PROGRAM_EXECUTION_RECORD_DIGEST_INVALID");
         }
+        if (value.containsKey("recovery_count")
+                && (!validRecoveryHistory(value)
+                || !String.valueOf(value.get("recovery_record_sha256")).equals(recoveryDigest(value))))
+            throw new IllegalStateException("PROGRAM_EXECUTION_RECOVERY_DIGEST_INVALID");
+        if (value.containsKey("execution_run_id")
+                && (((Number) value.getOrDefault("record_format_version", 1)).intValue() >= 2
+                || value.containsKey("execution_claim_sha256"))) {
+            if (!String.valueOf(value.get("execution_claim_sha256")).equals(claimDigest(value)))
+                throw new IllegalStateException("PROGRAM_EXECUTION_CLAIM_DIGEST_INVALID");
+        }
         return new LinkedHashMap<>(value);
+    }
+
+    private Map<String, Object> verifiedInterruptedReceipt(Path file, String runId,
+            String authorizationId, String planSha256) throws Exception {
+        if (!safeFile(file) || Files.size(file) > 2_097_152L)
+            throw new IllegalArgumentException("PROGRAM_EXECUTION_RECOVERY_RECEIPT_INVALID");
+        Map<String, Object> receipt = mapper.readValue(file.toFile(), new TypeReference<>() {});
+        Object steps = receipt.get("steps");
+        if (!LocalInferredE2EHttpRunner.CONTRACT.equals(receipt.get("contract"))
+                || !runId.equals(receipt.get("run_id"))
+                || !authorizationId.equals(receipt.get("execution_authorization_id"))
+                || !planSha256.equals(receipt.get("execution_plan_sha256"))
+                || !Set.of("PASS_NONFINAL", "FAIL", "BLOCKED").contains(receipt.get("outcome"))
+                || Boolean.TRUE.equals(receipt.get("customer_data_stored"))
+                || Boolean.TRUE.equals(receipt.get("response_bodies_stored"))
+                || !Boolean.FALSE.equals(receipt.get("final_claim_allowed"))
+                || !(steps instanceof List<?> list)
+                || ((Number) receipt.getOrDefault("step_count", -1)).intValue() != list.size())
+            throw new IllegalArgumentException("PROGRAM_EXECUTION_RECOVERY_RECEIPT_INVALID");
+        Instant.parse(receipt.get("completed_at").toString());
+        return receipt;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean readOnlyRetrySafe(Map<String, Object> plan) {
+        Object raw = plan.get("authorized_candidates");
+        if (!(raw instanceof List<?> candidates)) return false;
+        boolean runnable = false;
+        for (Object item : candidates) {
+            if (!(item instanceof Map<?, ?> candidate)) return false;
+            String state = String.valueOf(candidate.get("state"));
+            if (state.startsWith("BLOCKED_")) continue;
+            runnable = true;
+            if (!Set.of("GET", "HEAD", "OPTIONS").contains(String.valueOf(candidate.get("http_method"))))
+                return false;
+        }
+        return runnable;
+    }
+
+    private void recordRecovery(Map<String, Object> value, LocalAccessControl.Identity operator,
+            String action) throws Exception {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> existing = (List<Map<String, Object>>) value
+                .getOrDefault("recovery_history", List.of());
+        List<Map<String, Object>> history = new ArrayList<>(existing);
+        int count = history.size() + 1;
+        String previous = history.isEmpty() ? "GENESIS"
+                : history.get(history.size() - 1).get("entry_sha256").toString();
+        Map<String, Object> entry = new LinkedHashMap<>();
+        entry.put("sequence", count);
+        entry.put("recovered_at", clock.instant().toString());
+        entry.put("recovered_by", operator.actor());
+        entry.put("from_run_id", value.get("execution_run_id"));
+        entry.put("action", action);
+        entry.put("previous_entry_sha256", previous);
+        entry.put("entry_sha256", recoveryEntryDigest(entry));
+        history.add(Map.copyOf(entry));
+        value.put("recovery_count", count);
+        value.put("recovery_history", List.copyOf(history));
+        value.put("last_recovery_at", entry.get("recovered_at"));
+        value.put("last_recovery_by", operator.actor());
+        value.put("last_recovery_from_run_id", value.get("execution_run_id"));
+        value.put("last_recovery_action", action);
+        value.put("recovery_record_sha256", recoveryDigest(value));
     }
 
     private void write(String requestId, Map<String, Object> value) throws Exception {
@@ -409,6 +585,8 @@ final class LocalProgramUnderstandingApprovalService {
             if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_APPROVAL_REQUEST_FIELD_MISSING:" + key);
             immutable.put(key, value.get(key));
         }
+        if (value.containsKey("record_format_version"))
+            immutable.put("record_format_version", value.get("record_format_version"));
         return Hashing.sha256(mapper.writeValueAsBytes(immutable));
     }
 
@@ -440,7 +618,60 @@ final class LocalProgramUnderstandingApprovalService {
             if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_EXECUTION_RECORD_FIELD_MISSING:" + key);
             immutable.put(key, value.get(key));
         }
+        if (value.containsKey("runtime_comparison_sha256")) {
+            immutable.put("runtime_comparison_file", value.get("runtime_comparison_file"));
+            immutable.put("runtime_comparison_sha256", value.get("runtime_comparison_sha256"));
+        }
         return Hashing.sha256(mapper.writeValueAsBytes(immutable));
+    }
+
+    private String claimDigest(Map<String, Object> value) throws Exception {
+        Map<String, Object> immutable = new TreeMap<>();
+        for (String key : List.of("consumption_sha256", "execution_run_id", "execution_started_at",
+                "execution_started_by")) {
+            if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_EXECUTION_CLAIM_FIELD_MISSING:" + key);
+            immutable.put(key, value.get(key));
+        }
+        return Hashing.sha256(mapper.writeValueAsBytes(immutable));
+    }
+
+    private String recoveryDigest(Map<String, Object> value) throws Exception {
+        Map<String, Object> immutable = new TreeMap<>();
+        for (String key : List.of("consumption_sha256", "recovery_count", "recovery_history", "last_recovery_at",
+                "last_recovery_by", "last_recovery_from_run_id", "last_recovery_action")) {
+            if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_EXECUTION_RECOVERY_FIELD_MISSING:" + key);
+            immutable.put(key, value.get(key));
+        }
+        return Hashing.sha256(mapper.writeValueAsBytes(immutable));
+    }
+
+    private String recoveryEntryDigest(Map<String, Object> entry) throws Exception {
+        Map<String, Object> immutable = new TreeMap<>();
+        for (String key : List.of("sequence", "recovered_at", "recovered_by", "from_run_id",
+                "action", "previous_entry_sha256")) {
+            if (!entry.containsKey(key)) return "INVALID";
+            immutable.put(key, entry.get(key));
+        }
+        return Hashing.sha256(mapper.writeValueAsBytes(immutable));
+    }
+
+    private boolean validRecoveryHistory(Map<String, Object> value) throws Exception {
+        if (!(value.get("recovery_history") instanceof List<?> history)
+                || !(value.get("recovery_count") instanceof Number count)
+                || count.intValue() != history.size() || history.isEmpty()) return false;
+        String previous = "GENESIS";
+        int sequence = 1;
+        for (Object raw : history) {
+            if (!(raw instanceof Map<?, ?> entry)
+                    || !Integer.valueOf(sequence).equals(entry.get("sequence"))
+                    || !previous.equals(entry.get("previous_entry_sha256"))) return false;
+            @SuppressWarnings("unchecked") Map<String, Object> typed = (Map<String, Object>) entry;
+            String digest = recoveryEntryDigest(typed);
+            if (!digest.equals(entry.get("entry_sha256"))) return false;
+            previous = digest;
+            sequence++;
+        }
+        return true;
     }
 
     private static boolean safeFile(Path path) {

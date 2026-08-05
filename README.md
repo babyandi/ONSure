@@ -252,6 +252,11 @@ path parameter와 요청 body는 `example`·`default` 없이 결정적으로 생
 저장하지 않고 schema/source/body digest와 판정만 Receipt에 남긴다. DELETE, source drift,
 외부 `$ref`, materialize되지 않은 인증·필수 query/header, 지원하지 않는 schema assertion은
 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든 결과는 `PASS_NONFINAL`까지만 허용한다.
+중단된 실행에 내구 Receipt가 있으면 exact run/plan digest로 완료 상태를 복구한다. Receipt가
+없으면 읽기 연산만 복구 chain을 남기고 재시도하며, 결과가 불명확한 쓰기 연산은
+`RECOVERY_REQUIRED`로 고정해 새 승인을 요구한다. 동일 source/profile의 연속 실행은 단계별
+`IMPROVED`·`REGRESSED`·`UNCHANGED` 비교와 진단·개선 가이드를 생성해 관리화면에 표시하지만
+비교 자체는 점수나 최종 assurance로 사용하지 않는다.
 Gateway 환경변수와 단독 서버 실행 경계는
 `docs/architecture/ONSURE_LLM_GATEWAY_AND_MANAGEMENT_UI_v1.md`를 따른다.
 

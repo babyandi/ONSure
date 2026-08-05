@@ -173,6 +173,31 @@
       details.append(summary, body);
       article.append(details);
     }
+    const e2eHistory = understanding.inferred_e2e_history || {};
+    for (const run of e2eHistory.runs || []) {
+      const comparison = run.comparison || {};
+      const details = document.createElement("details");
+      details.className = "score-details";
+      const summary = document.createElement("summary");
+      summary.textContent = `실제 E2E ${run.execution_state || "NOT_RUN"} · ${run.execution_run_id || "—"} · 비교 ${comparison.overall_change || comparison.state || "NOT_RUN"}`;
+      const body = document.createElement("div");
+      body.className = "inference-body";
+      const evidence = document.createElement("p");
+      evidence.textContent = `Receipt ${compactDigest(run.runtime_receipt_sha256)} · 복구 ${run.recovery_count || 0}회`;
+      const diagnosis = document.createElement("p");
+      diagnosis.textContent = comparison.diagnosis || "동일 source/profile 비교 기준선이 아직 없습니다.";
+      const guide = document.createElement("p");
+      guide.className = "improvement-guide";
+      guide.textContent = `개선: ${comparison.improvement_guide || "동일 조건으로 후속 실행해 비교 기준선을 만드십시오."}`;
+      body.append(evidence, diagnosis, guide);
+      for (const step of comparison.step_comparisons || []) {
+        const item = document.createElement("p");
+        item.textContent = `${step.plan_id}: ${step.baseline_outcome} → ${step.current_outcome} · ${step.change}`;
+        body.append(item);
+      }
+      details.append(summary, body);
+      article.append(details);
+    }
     const questions = document.createElement("div");
     questions.className = "question-list";
     const qtitle = document.createElement("strong");

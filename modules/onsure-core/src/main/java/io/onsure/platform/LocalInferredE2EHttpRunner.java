@@ -62,6 +62,15 @@ final class LocalInferredE2EHttpRunner {
                 || !authorizationId.equals(plan.get("execution_authorization_id"))
                 || !"NOT_RUN".equals(plan.get("execution_state")))
             throw new IllegalArgumentException("INFERRED_E2E_PLAN_BINDING_INVALID");
+        String requestId = plan.get("approval_request_id").toString();
+        LocalProgramUnderstandingApprovalService approvals =
+                new LocalProgramUnderstandingApprovalService(workspaceRoot);
+        Map<String, Object> recovery = approvals.recoverInterruptedExecution(
+                requestId, authorizationId, planSha, operator, Duration.ofMinutes(2));
+        if ("RECOVERED_COMPLETED".equals(recovery.get("recovery_state")))
+            return recoveredReceipt(planFile, recovery, plan, approvals);
+        if ("RECOVERY_REAPPROVAL_REQUIRED".equals(recovery.get("recovery_state")))
+            throw new IllegalArgumentException("INFERRED_E2E_WRITE_RECOVERY_REAPPROVAL_REQUIRED");
         ValidationModel.ValidationTarget target = new ProductCatalog(
                 workspaceRoot.resolve(".onsure/product-catalog"))
                 .requireTarget(plan.get("target_id").toString());
@@ -81,9 +90,6 @@ final class LocalInferredE2EHttpRunner {
                     target.sourceRoot(), candidate)) != null)
                 throw new IllegalArgumentException("INFERRED_E2E_DUPLICATE_PLAN_ID");
         }
-        String requestId = plan.get("approval_request_id").toString();
-        LocalProgramUnderstandingApprovalService approvals =
-                new LocalProgramUnderstandingApprovalService(workspaceRoot);
         Map<String, Object> claim = approvals.claimExecution(requestId, authorizationId, planSha, operator);
         String runId = claim.get("execution_run_id").toString();
         Instant started = Instant.now();
@@ -178,6 +184,7 @@ final class LocalInferredE2EHttpRunner {
         approvals.completeExecution(requestId, runId, outcome, receiptSha);
         receipt.put("runtime_receipt_sha256", receiptSha);
         receipt.put("runtime_receipt_file", workspaceRoot.relativize(receiptFile).toString().replace('\\', '/'));
+        attachComparisonEnvelope(plan, receipt, receiptSha, approvals);
         return Map.copyOf(receipt);
     }
 
@@ -185,6 +192,34 @@ final class LocalInferredE2EHttpRunner {
         return Map.of("plan_id", candidate.get("plan_id"), "http_method", candidate.get("http_method"),
                 "http_path", candidate.get("http_path"), "oracle_outcome", "BLOCKED",
                 "reason", candidate.get("state"), "response_body_stored", false, "final_claim_allowed", false);
+    }
+    private Map<String, Object> recoveredReceipt(Path planFile, Map<String, Object> recovery,
+            Map<String, Object> plan, LocalProgramUnderstandingApprovalService approvals) throws Exception {
+        Path receiptFile = planFile.resolveSibling("runtime-receipt.json");
+        String expected = recovery.get("runtime_receipt_sha256").toString();
+        if (!Files.isRegularFile(receiptFile, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(receiptFile)
+                || !Hashing.file(receiptFile).equals(expected))
+            throw new IllegalArgumentException("INFERRED_E2E_RECOVERED_RECEIPT_STALE");
+        Map<String, Object> receipt = mapper.readValue(receiptFile.toFile(), new TypeReference<>() {});
+        receipt.put("runtime_receipt_sha256", expected);
+        receipt.put("runtime_receipt_file", recovery.get("runtime_receipt_file"));
+        attachComparisonEnvelope(plan, receipt, expected, approvals);
+        return Map.copyOf(receipt);
+    }
+    private void attachComparisonEnvelope(Map<String, Object> plan, Map<String, Object> receipt,
+            String receiptSha, LocalProgramUnderstandingApprovalService approvals) {
+        try {
+            Map<String, Object> comparison = new InferredE2ERunComparisonService(workspaceRoot)
+                    .record(plan, receipt, receiptSha, approvals);
+            receipt.put("runtime_comparison_state", comparison.get("state"));
+            receipt.put("runtime_comparison_sha256", comparison.get("runtime_comparison_sha256"));
+            receipt.put("runtime_comparison_file", comparison.get("runtime_comparison_file"));
+            if (comparison.containsKey("overall_change"))
+                receipt.put("runtime_comparison_change", comparison.get("overall_change"));
+        } catch (Exception unavailable) {
+            receipt.put("runtime_comparison_state", "UNAVAILABLE");
+            receipt.put("runtime_comparison_error", errorCode(unavailable));
+        }
     }
     private static boolean safeRoute(String route) {
         return route.startsWith("/") && !route.contains("{") && !route.contains("..")

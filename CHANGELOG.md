@@ -11,6 +11,10 @@
   응답 status·bounded schema oracle 및 body 비저장 digest Receipt 지원
 - 자동 E2E의 source drift, external `$ref`, 인증 미구성, 필수 query/header,
   미지원 schema assertion을 고객 결함과 분리해 `BLOCKED`로 판정하는 fail-closed 경계
+- 중단된 inferred E2E의 durable Receipt 완료 복구, read-only retry chain,
+  write outcome 불명확 시 재승인 요구와 실행 claim/recovery digest 위변조 방지
+- 동일 source/profile E2E Receipt의 단계별 개선·퇴행·변경 비교, 진단·개선 가이드 및
+  관리화면 history projection
 - Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
 - loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계
 - VS Code Runtime/Admin View의 SecretStorage 기반 LLM Gateway health·token·cost·receipt-chain 표시

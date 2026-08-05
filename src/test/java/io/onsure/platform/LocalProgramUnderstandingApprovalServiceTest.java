@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -90,14 +91,130 @@ class LocalProgramUnderstandingApprovalServiceTest {
         assertEquals("PROGRAM_APPROVAL_REVIEW_STALE_OR_TAMPERED", staleError.getMessage());
     }
 
+    @Test
+    void recoversInterruptedReadOnlyRunForOneSafeRetry() throws Exception {
+        Instant now = Instant.parse("2026-08-05T00:00:00Z");
+        Prepared prepared = prepare("recover-read");
+        Authorized authorized = authorize(prepared, now);
+        Map<String, Object> firstClaim = authorized.service().claimExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator);
+
+        LocalProgramUnderstandingApprovalService recovery = new LocalProgramUnderstandingApprovalService(
+                prepared.workspace(), Clock.fixed(now.plusSeconds(121), ZoneOffset.UTC));
+        Map<String, Object> recovered = recovery.recoverInterruptedExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator,
+                Duration.ofMinutes(2));
+        assertEquals("RECOVERED_RETRY_ALLOWED", recovered.get("recovery_state"));
+        Map<String, Object> secondClaim = recovery.claimExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator);
+        assertFalse(firstClaim.get("execution_run_id").equals(secondClaim.get("execution_run_id")));
+        assertEquals(1, secondClaim.get("recovery_count"));
+        assertEquals("READ_ONLY_RETRY_ALLOWED", secondClaim.get("last_recovery_action"));
+        LocalProgramUnderstandingApprovalService secondRecovery = new LocalProgramUnderstandingApprovalService(
+                prepared.workspace(), Clock.fixed(now.plusSeconds(242), ZoneOffset.UTC));
+        assertEquals("RECOVERED_RETRY_ALLOWED", secondRecovery.recoverInterruptedExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator,
+                Duration.ofMinutes(2)).get("recovery_state"));
+        Map<String, Object> thirdClaim = secondRecovery.claimExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator);
+        assertEquals(2, thirdClaim.get("recovery_count"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> history =
+                (List<Map<String, Object>>) thirdClaim.get("recovery_history");
+        assertEquals(history.get(0).get("entry_sha256"), history.get(1).get("previous_entry_sha256"));
+    }
+
+    @Test
+    void requiresNewApprovalWhenInterruptedWriteOutcomeIsUnknown() throws Exception {
+        Instant now = Instant.parse("2026-08-05T00:00:00Z");
+        Prepared prepared = prepare("recover-write", """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      requestBody:
+                        content: {application/json: {schema: {type: object}}}
+                      responses: {'201': {description: created}}
+                """);
+        Authorized authorized = authorize(prepared, now);
+        authorized.service().claimExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator);
+        LocalProgramUnderstandingApprovalService recovery = new LocalProgramUnderstandingApprovalService(
+                prepared.workspace(), Clock.fixed(now.plusSeconds(121), ZoneOffset.UTC));
+        Map<String, Object> recovered = recovery.recoverInterruptedExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator,
+                Duration.ofMinutes(2));
+        assertEquals("RECOVERY_REAPPROVAL_REQUIRED", recovered.get("recovery_state"));
+        IllegalArgumentException replay = assertThrows(IllegalArgumentException.class, () ->
+                recovery.claimExecution(authorized.requestId(), authorized.authorizationId(),
+                        authorized.planSha(), operator));
+        assertEquals("PROGRAM_EXECUTION_AUTHORIZATION_ALREADY_CLAIMED", replay.getMessage());
+    }
+
+    @Test
+    void completesInterruptedRunFromExactDurableReceipt() throws Exception {
+        Instant now = Instant.parse("2026-08-05T00:00:00Z");
+        Prepared prepared = prepare("recover-receipt");
+        Authorized authorized = authorize(prepared, now);
+        Map<String, Object> claim = authorized.service().claimExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator);
+        Path plan = prepared.workspace().resolve(authorized.planFile());
+        Path receipt = plan.resolveSibling("runtime-receipt.json");
+        mapper.writerWithDefaultPrettyPrinter().writeValue(receipt.toFile(), Map.ofEntries(
+                Map.entry("contract", LocalInferredE2EHttpRunner.CONTRACT),
+                Map.entry("run_id", claim.get("execution_run_id")),
+                Map.entry("execution_authorization_id", authorized.authorizationId()),
+                Map.entry("execution_plan_sha256", authorized.planSha()),
+                Map.entry("completed_at", now.plusSeconds(30).toString()),
+                Map.entry("step_count", 0), Map.entry("steps", List.of()),
+                Map.entry("outcome", "BLOCKED"), Map.entry("customer_data_stored", false),
+                Map.entry("response_bodies_stored", false), Map.entry("final_claim_allowed", false)));
+        LocalProgramUnderstandingApprovalService recovery = new LocalProgramUnderstandingApprovalService(
+                prepared.workspace(), Clock.fixed(now.plusSeconds(121), ZoneOffset.UTC));
+        Map<String, Object> recovered = recovery.recoverInterruptedExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator,
+                Duration.ofMinutes(2));
+        assertEquals("RECOVERED_COMPLETED", recovered.get("recovery_state"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> requests =
+                (List<Map<String, Object>>) recovery.list(10).get("requests");
+        Map<String, Object> stored = requests.stream()
+                .filter(value -> authorized.requestId().equals(value.get("request_id"))).findFirst().orElseThrow();
+        assertEquals("EXECUTION_COMPLETED", stored.get("state"));
+        assertEquals("BLOCKED", stored.get("execution_state"));
+        assertEquals(Hashing.file(receipt), stored.get("runtime_receipt_sha256"));
+        assertEquals("COMPLETED_FROM_DURABLE_RECEIPT", stored.get("last_recovery_action"));
+    }
+
+    @Test
+    void rejectsTamperedExecutionStartBeforeRecovery() throws Exception {
+        Instant now = Instant.parse("2026-08-05T00:00:00Z");
+        Prepared prepared = prepare("recover-tamper");
+        Authorized authorized = authorize(prepared, now);
+        authorized.service().claimExecution(
+                authorized.requestId(), authorized.authorizationId(), authorized.planSha(), operator);
+        Path requestFile = prepared.workspace().resolve(
+                ".onsure/management/program-understanding-approvals/" + authorized.requestId() + ".json");
+        @SuppressWarnings("unchecked") Map<String, Object> stored = mapper.readValue(requestFile.toFile(), Map.class);
+        stored.put("execution_started_at", "2000-01-01T00:00:00Z");
+        mapper.writerWithDefaultPrettyPrinter().writeValue(requestFile.toFile(), stored);
+        IllegalStateException tampered = assertThrows(IllegalStateException.class,
+                () -> authorized.service().list(10));
+        assertEquals("PROGRAM_EXECUTION_CLAIM_DIGEST_INVALID", tampered.getMessage());
+    }
+
     private Prepared prepare(String suffix) throws Exception {
-        Path workspace = Files.createDirectory(temp.resolve("workspace-" + suffix));
-        Path source = Files.createDirectory(temp.resolve("source-" + suffix));
-        Files.writeString(source.resolve("openapi.yaml"), """
+        return prepare(suffix, """
                 openapi: 3.1.0
                 info: {title: Orders, version: '1'}
                 paths: {/orders: {get: {operationId: listOrders, responses: {'200': {description: ok}}}}}
                 """);
+    }
+
+    private Prepared prepare(String suffix, String openApi) throws Exception {
+        Path workspace = Files.createDirectory(temp.resolve("workspace-" + suffix));
+        Path source = Files.createDirectory(temp.resolve("source-" + suffix));
+        Files.writeString(source.resolve("openapi.yaml"), openApi);
         LocalProgramManagementService programs = new LocalProgramManagementService(workspace);
         programs.register(mapper.valueToTree(Map.of(
                 "workspace_id", "local", "workspace_name", "Local", "project_id", "project",
@@ -126,5 +243,22 @@ class LocalProgramUnderstandingApprovalServiceTest {
                 "reason", "prepare isolated synthetic execution", "ttl_seconds", ttl));
     }
 
+    private Authorized authorize(Prepared prepared, Instant now) throws Exception {
+        LocalProgramUnderstandingApprovalService service = new LocalProgramUnderstandingApprovalService(
+                prepared.workspace(), Clock.fixed(now, ZoneOffset.UTC));
+        Map<String, Object> request = service.request(request(prepared, 600), operator);
+        Map<String, Object> decision = service.decide(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "decision", "APPROVE", "reason", "recovery test")), approver);
+        Map<String, Object> consumed = service.consume(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "receipt_sha256", decision.get("receipt_sha256"),
+                "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator);
+        return new Authorized(service, request.get("request_id").toString(),
+                consumed.get("execution_authorization_id").toString(),
+                consumed.get("execution_plan_sha256").toString(),
+                consumed.get("execution_plan_file").toString());
+    }
+
     private record Prepared(Path workspace, String profileSha, String reviewSha) { }
+    private record Authorized(LocalProgramUnderstandingApprovalService service, String requestId,
+            String authorizationId, String planSha, String planFile) { }
 }

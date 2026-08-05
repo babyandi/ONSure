@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/inferred-e2e-run-comparison.v1.schema.json",
+  "title": "ONSure Inferred E2E Run Comparison V1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract", "target_id", "source_sha256", "profile_file_sha256", "current_run_id", "current_execution_authorization_id", "current_runtime_receipt_sha256", "current_outcome", "compared_at", "state", "baseline_run_id", "step_comparisons", "improved_step_count", "regressed_step_count", "unchanged_step_count", "changed_inconclusive_step_count", "added_step_count", "removed_step_count", "diagnosis", "improvement_guide", "score_eligible", "comparison_is_final_assurance", "final_claim_allowed"],
+  "properties": {
+    "contract": {"const": "ONSURE_INFERRED_E2E_RUN_COMPARISON_V1"},
+    "target_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "profile_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "current_run_id": {"type": "string", "pattern": "^inferred-e2e-run-[0-9a-f-]{36}$"},
+    "current_execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
+    "current_runtime_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "current_outcome": {"enum": ["PASS_NONFINAL", "FAIL", "BLOCKED"]},
+    "compared_at": {"type": "string", "format": "date-time"},
+    "state": {"enum": ["NOT_RUN_NO_COMPARABLE_BASELINE", "COMPARISON_AVAILABLE_NONFINAL"]},
+    "baseline_run_id": {"oneOf": [{"const": "NOT_RUN"}, {"type": "string", "pattern": "^inferred-e2e-run-[0-9a-f-]{36}$"}]},
+    "baseline_execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
+    "baseline_runtime_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "baseline_outcome": {"enum": ["PASS_NONFINAL", "FAIL", "BLOCKED"]},
+    "step_comparisons": {"type": "array", "items": {"$ref": "#/$defs/step"}},
+    "improved_step_count": {"type": "integer", "minimum": 0},
+    "regressed_step_count": {"type": "integer", "minimum": 0},
+    "unchanged_step_count": {"type": "integer", "minimum": 0},
+    "changed_inconclusive_step_count": {"type": "integer", "minimum": 0},
+    "added_step_count": {"type": "integer", "minimum": 0},
+    "removed_step_count": {"type": "integer", "minimum": 0},
+    "overall_change": {"enum": ["REGRESSED", "IMPROVED", "NO_PROVEN_CHANGE"]},
+    "diagnosis": {"type": "string"}, "improvement_guide": {"type": "string"},
+    "score_eligible": {"const": false}, "comparison_is_final_assurance": {"const": false},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "step": {
+      "type": "object", "additionalProperties": false,
+      "required": ["plan_id", "baseline_outcome", "current_outcome", "change", "diagnosis", "improvement_guide", "final_claim_allowed"],
+      "properties": {
+        "plan_id": {"type": "string"},
+        "baseline_outcome": {"enum": ["NOT_RUN", "PASS_NONFINAL", "FAIL", "BLOCKED"]},
+        "current_outcome": {"enum": ["NOT_RUN", "PASS_NONFINAL", "FAIL", "BLOCKED"]},
+        "change": {"enum": ["IMPROVED", "REGRESSED", "UNCHANGED", "CHANGED_INCONCLUSIVE", "ADDED", "REMOVED"]},
+        "baseline_response_status": {"type": "integer", "minimum": 100, "maximum": 599},
+        "current_response_status": {"type": "integer", "minimum": 100, "maximum": 599},
+        "response_digest_changed": {"type": "boolean"},
+        "diagnosis": {"type": "string"}, "improvement_guide": {"type": "string"},
+        "final_claim_allowed": {"const": false}
+      }
+    }
+  }
+}

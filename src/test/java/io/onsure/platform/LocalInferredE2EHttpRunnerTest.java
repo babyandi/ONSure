@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -167,6 +168,81 @@ class LocalInferredE2EHttpRunnerTest {
         } finally { server.stop(0); }
     }
 
+    @Test
+    void returnsExactDurableReceiptAfterRecoveringInterruptedRun() throws Exception {
+        Prepared prepared = prepare();
+        LocalProgramUnderstandingApprovalService approvals = new LocalProgramUnderstandingApprovalService(
+                prepared.workspace(), java.time.Clock.fixed(
+                        java.time.Instant.parse("2000-01-01T00:00:00Z"), java.time.ZoneOffset.UTC));
+        Map<String, Object> claim = approvals.claimExecution(prepared.requestId(),
+                prepared.authorizationId(), prepared.planSha(), operator);
+        Path receiptFile = prepared.workspace().resolve(".onsure/inferred-e2e-authorizations")
+                .resolve(prepared.authorizationId()).resolve("runtime-receipt.json");
+        mapper.writerWithDefaultPrettyPrinter().writeValue(receiptFile.toFile(), Map.ofEntries(
+                Map.entry("contract", LocalInferredE2EHttpRunner.CONTRACT),
+                Map.entry("run_id", claim.get("execution_run_id")),
+                Map.entry("execution_authorization_id", prepared.authorizationId()),
+                Map.entry("execution_plan_sha256", prepared.planSha()),
+                Map.entry("completed_at", "2000-01-01T00:00:01Z"),
+                Map.entry("step_count", 0), Map.entry("steps", List.of()),
+                Map.entry("outcome", "BLOCKED"), Map.entry("customer_data_stored", false),
+                Map.entry("response_bodies_stored", false), Map.entry("final_claim_allowed", false)));
+        LocalInferredE2EHttpRunner runner = new LocalInferredE2EHttpRunner(
+                prepared.workspace(), Map.of("ONSURE_SYNTHETIC_BASE_URL", "http://127.0.0.1:18080"),
+                HttpClient.newHttpClient());
+        Map<String, Object> recovered = runner.run(mapper.valueToTree(Map.of(
+                "execution_authorization_id", prepared.authorizationId(),
+                "execution_plan_sha256", prepared.planSha(),
+                "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator);
+        assertEquals("BLOCKED", recovered.get("outcome"));
+        assertEquals(Hashing.file(receiptFile), recovered.get("runtime_receipt_sha256"));
+    }
+
+    @Test
+    void comparesConsecutiveExactSourceRunsAndReportsRegression() throws Exception {
+        Prepared baseline = prepare();
+        AtomicInteger calls = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            int status = calls.getAndIncrement() == 0 ? 200 : 500;
+            byte[] body = "{\"orders\":[]}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> first = run(baseline, server);
+            assertEquals("NOT_RUN_NO_COMPARABLE_BASELINE", first.get("runtime_comparison_state"));
+            Prepared current = authorizeAgain(baseline);
+            Map<String, Object> second = run(current, server);
+            assertEquals("FAIL", second.get("outcome"));
+            assertEquals("COMPARISON_AVAILABLE_NONFINAL", second.get("runtime_comparison_state"));
+            assertEquals("REGRESSED", second.get("runtime_comparison_change"));
+            Path comparisonFile = current.workspace().resolve(second.get("runtime_comparison_file").toString());
+            @SuppressWarnings("unchecked") Map<String, Object> comparison =
+                    mapper.readValue(comparisonFile.toFile(), Map.class);
+            assertEquals(1, ((Number) comparison.get("regressed_step_count")).intValue());
+            assertEquals(first.get("run_id"), comparison.get("baseline_run_id"));
+            assertEquals(second.get("run_id"), comparison.get("current_run_id"));
+            assertFalse((Boolean) comparison.get("score_eligible"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> history = (List<Map<String, Object>>)
+                    new InferredE2ERunComparisonService(current.workspace()).history("target", 10).get("runs");
+            assertEquals(2, history.size());
+            @SuppressWarnings("unchecked") Map<String, Object> projected =
+                    (Map<String, Object>) history.get(0).get("comparison");
+            assertEquals("REGRESSED", projected.get("overall_change"));
+            Files.writeString(comparisonFile, "{}\n");
+            @SuppressWarnings("unchecked") List<Map<String, Object>> tamperedHistory = (List<Map<String, Object>>)
+                    new InferredE2ERunComparisonService(current.workspace()).history("target", 10).get("runs");
+            @SuppressWarnings("unchecked") Map<String, Object> tampered =
+                    (Map<String, Object>) tamperedHistory.get(0).get("comparison");
+            assertEquals("STALE_OR_TAMPERED", tampered.get("state"));
+        } finally { server.stop(0); }
+    }
+
     private Map<String, Object> run(Prepared prepared, HttpServer server) throws Exception {
         String base = "http://127.0.0.1:" + server.getAddress().getPort();
         return new LocalInferredE2EHttpRunner(
@@ -176,6 +252,26 @@ class LocalInferredE2EHttpRunnerTest {
                         "execution_authorization_id", prepared.authorizationId(),
                         "execution_plan_sha256", prepared.planSha(),
                         "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator);
+    }
+
+    private Prepared authorizeAgain(Prepared existing) throws Exception {
+        Path profile = existing.workspace().resolve(".onsure/program-understanding/target/program-profile.json");
+        @SuppressWarnings("unchecked") Map<String, Object> review = mapper.readValue(
+                profile.resolveSibling("review.json").toFile(), Map.class);
+        LocalProgramUnderstandingApprovalService approvals =
+                new LocalProgramUnderstandingApprovalService(existing.workspace());
+        Map<String, Object> request = approvals.request(mapper.valueToTree(Map.of(
+                "project_id", "project", "target_id", "target",
+                "profile_file_sha256", Hashing.file(profile), "review_sha256", review.get("review_sha256"),
+                "reason", "comparison rerun", "ttl_seconds", 600)), operator);
+        Map<String, Object> decision = approvals.decide(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "decision", "APPROVE", "reason", "same source rerun")), approver);
+        Map<String, Object> consumed = approvals.consume(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "receipt_sha256", decision.get("receipt_sha256"),
+                "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator);
+        return new Prepared(existing.workspace(), existing.source(), request.get("request_id").toString(),
+                consumed.get("execution_authorization_id").toString(),
+                consumed.get("execution_plan_sha256").toString());
     }
 
     private Prepared prepare() throws Exception {
@@ -223,7 +319,8 @@ class LocalInferredE2EHttpRunnerTest {
         Map<String, Object> consumed = approvals.consume(mapper.valueToTree(Map.of(
                 "request_id", request.get("request_id"), "receipt_sha256", decision.get("receipt_sha256"),
                 "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator);
-        return new Prepared(workspace, source, consumed.get("execution_authorization_id").toString(),
+        return new Prepared(workspace, source, request.get("request_id").toString(),
+                consumed.get("execution_authorization_id").toString(),
                 consumed.get("execution_plan_sha256").toString());
     }
 
@@ -279,5 +376,6 @@ class LocalInferredE2EHttpRunnerTest {
                 """;
     }
 
-    private record Prepared(Path workspace, Path source, String authorizationId, String planSha) { }
+    private record Prepared(Path workspace, Path source, String requestId,
+            String authorizationId, String planSha) { }
 }

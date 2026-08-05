@@ -115,6 +115,17 @@ final class LocalManagementOverviewService {
             result.put("review", mapper.convertValue(review, Map.class));
             result.put("state", review.path("review_state").asText("CANDIDATE_REVIEW_REQUIRED"));
         }
+        try {
+            result.put("inferred_e2e_history",
+                    new InferredE2ERunComparisonService(workspaceRoot).history(targetId, 20));
+        } catch (Exception unavailable) {
+            result.put("inferred_e2e_history", Map.of(
+                    "state", "INVALID_OR_UNAVAILABLE", "runs", List.of(),
+                    "error", unavailable.getMessage() != null
+                            && unavailable.getMessage().matches("[A-Z0-9_.:-]{1,200}")
+                            ? unavailable.getMessage() : unavailable.getClass().getSimpleName(),
+                    "final_claim_allowed", false));
+        }
         return Map.copyOf(result);
     }
 
