@@ -161,6 +161,10 @@ class LocalProgramManagementServiceTest {
         Map<String, Object> understanding = (Map<String, Object>) result.get("program_understanding");
         assertTrue(((Number) understanding.get("flow_candidate_count")).intValue() > 0);
         assertFalse((Boolean) understanding.get("inferences_are_pass_evidence"));
+        @SuppressWarnings("unchecked") Map<String, Object> semantics =
+                (Map<String, Object>) result.get("business_semantic_hypotheses");
+        assertEquals(BusinessSemanticHypothesisEngine.CONTRACT, semantics.get("contract"));
+        assertFalse((Boolean) semantics.get("score_eligible"));
 
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> questions = (List<Map<String, Object>>) understanding.get("minimal_questions");
@@ -179,6 +183,9 @@ class LocalProgramManagementServiceTest {
         assertEquals("NOT_RUN", review.get("execution_state"));
         assertFalse((Boolean) review.get("secret_values_accepted"));
         assertFalse((Boolean) review.get("score_eligible"));
+        @SuppressWarnings("unchecked") Map<String, Object> reviewedSemantics =
+                (Map<String, Object>) review.get("reviewed_business_semantic_hypotheses");
+        assertEquals(BusinessSemanticHypothesisEngine.CONTRACT, reviewedSemantics.get("contract"));
         assertEquals(before, Files.readString(source.resolve("openapi.yaml")));
         assertTrue(Files.isRegularFile(workspace.resolve(".onsure/program-understanding/orders/review.json")));
     }

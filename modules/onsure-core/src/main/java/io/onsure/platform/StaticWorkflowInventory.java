@@ -22,6 +22,10 @@ import java.util.regex.Pattern;
 /** Deterministic discovery-only workflow inventory; candidates are never executable authority. */
 final class StaticWorkflowInventory {
     static final String CONTRACT = "ONSURE_STATIC_WORKFLOW_INVENTORY_V1";
+    /** Reserved pointer-template segment: runtime singleton selection without a schema cardinality guarantee. */
+    static final String SINGLETON_ARRAY_POINTER_SEGMENT = "~2";
+    /** Reserved pointer-template segment backed by minItems/maxItems equal to one. */
+    static final String SCHEMA_SINGLETON_ARRAY_POINTER_SEGMENT = "~3";
     private static final int MAX_CANDIDATES = 2_000;
     private static final long MAX_INSPECTED_FILE_BYTES = 5L * 1024 * 1024;
     private static final Pattern MAVEN_MODULE = Pattern.compile("<module>\\s*([^<]{1,512}?)\\s*</module>");
@@ -201,6 +205,7 @@ final class StaticWorkflowInventory {
                 semantics.put("tags", textArray(operation.path("tags")));
                 semantics.put("request_schema_refs", requestSchemaRefs(operation));
                 semantics.put("request_schema_declared", requestSchemaDeclared(operation));
+                semantics.put("request_input_candidates", requestInputCandidates(pathItem, operation, root));
                 semantics.put("response_statuses", fieldNames(operation.path("responses")));
                 semantics.put("response_scalar_json_pointers", responseScalarJsonPointers(operation, root));
                 semantics.put("security_declared", securityRequired(operation, root));
@@ -279,6 +284,76 @@ final class StaticWorkflowInventory {
         return false;
     }
 
+    private static List<Map<String, Object>> requestInputCandidates(
+            JsonNode pathItem, JsonNode operation, JsonNode root) {
+        Map<String, Map<String, Object>> inputs = new java.util.TreeMap<>();
+        collectRequiredParameters(pathItem.path("parameters"), root, inputs);
+        collectRequiredParameters(operation.path("parameters"), root, inputs);
+        Set<String> bodyPointers = new java.util.TreeSet<>();
+        JsonNode requestBody = resolveLocal(operation.path("requestBody"), root, new LinkedHashSet<>(), 0);
+        if (requestBody == null) requestBody = operation.path("requestBody");
+        JsonNode content = requestBody.path("required").asBoolean(false)
+                ? requestBody.path("content") : com.fasterxml.jackson.databind.node.MissingNode.getInstance();
+        if (content.isObject()) for (JsonNode media : content) {
+            collectRequiredRequestPointers(media.path("schema"), root, "", true,
+                    bodyPointers, new LinkedHashSet<>(), 0);
+        }
+        for (String pointer : bodyPointers) {
+            Map<String, Object> input = new LinkedHashMap<>();
+            input.put("consumer_location", "BODY");
+            input.put("consumer_parameter_name", pointer);
+            input.put("required", true);
+            inputs.put("BODY\u0000" + pointer, Map.copyOf(input));
+        }
+        return List.copyOf(inputs.values());
+    }
+
+    private static void collectRequiredParameters(JsonNode parameters, JsonNode root,
+            Map<String, Map<String, Object>> inputs) {
+        if (!parameters.isArray()) return;
+        for (JsonNode parameterNode : parameters) {
+            JsonNode parameter = resolveLocal(parameterNode, root, new LinkedHashSet<>(), 0);
+            if (parameter == null || !parameter.isObject()) continue;
+            String location = parameter.path("in").asText("").toUpperCase(Locale.ROOT);
+            String name = parameter.path("name").asText("");
+            if (!Set.of("QUERY", "HEADER").contains(location)
+                    || !name.matches("[A-Za-z][A-Za-z0-9._-]{0,127}")) continue;
+            String key = location + "\u0000" + name.toLowerCase(Locale.ROOT);
+            if (!parameter.path("required").asBoolean(false)) {
+                inputs.remove(key);
+                continue;
+            }
+            Map<String, Object> input = new LinkedHashMap<>();
+            input.put("consumer_location", location);
+            input.put("consumer_parameter_name", name);
+            input.put("required", true);
+            inputs.put(key, Map.copyOf(input));
+        }
+    }
+
+    private static void collectRequiredRequestPointers(JsonNode node, JsonNode root, String pointer,
+            boolean requiredChain, Set<String> result, Set<String> refs, int depth) {
+        if (node == null || node.isMissingNode() || depth > 16 || result.size() >= 200) return;
+        JsonNode resolved = resolveLocal(node, root, refs, depth);
+        if (resolved == null || !resolved.isObject()) return;
+        JsonNode allOf = resolved.path("allOf");
+        if (allOf.isArray()) allOf.forEach(value -> collectRequiredRequestPointers(
+                    value, root, pointer, requiredChain, result, new LinkedHashSet<>(refs), depth + 1));
+        JsonNode properties = resolved.path("properties");
+        if (properties.isObject()) {
+            Set<String> required = new LinkedHashSet<>(textArray(resolved.path("required")));
+            List<String> names = new ArrayList<>();
+            properties.fieldNames().forEachRemaining(names::add);
+            names.sort(String::compareTo);
+            for (String name : names) collectRequiredRequestPointers(properties.path(name), root,
+                    pointer + "/" + escapePointerSegment(name), requiredChain && required.contains(name),
+                    result, new LinkedHashSet<>(refs), depth + 1);
+            return;
+        }
+        String type = resolved.path("type").asText("");
+        if (requiredChain && !pointer.isEmpty() && !Set.of("object", "array").contains(type)) result.add(pointer);
+    }
+
     private static List<String> responseScalarJsonPointers(JsonNode operation, JsonNode root) {
         Set<String> result = new java.util.TreeSet<>();
         collectResponseSchemas(operation.path("responses"), root, result, new LinkedHashSet<>(), 0);
@@ -312,6 +387,21 @@ final class StaticWorkflowInventory {
             JsonNode values = resolved.path(composite);
             if (values.isArray()) values.forEach(value -> collectScalarPointers(
                     value, root, pointer, result, new LinkedHashSet<>(refs), depth + 1));
+        }
+        JsonNode items = resolved.get("items");
+        if ("array".equals(resolved.path("type").asText("")) || items != null) {
+            if (items != null && (items.isObject() || items.isBoolean())) {
+                String arraySegment = resolved.path("minItems").canConvertToInt()
+                        && resolved.path("minItems").asInt() == 1
+                        && resolved.path("maxItems").canConvertToInt()
+                        && resolved.path("maxItems").asInt() == 1
+                        ? SCHEMA_SINGLETON_ARRAY_POINTER_SEGMENT
+                        : SINGLETON_ARRAY_POINTER_SEGMENT;
+                collectScalarPointers(items, root,
+                        pointer + "/" + arraySegment,
+                        result, new LinkedHashSet<>(refs), depth + 1);
+            }
+            return;
         }
         JsonNode properties = resolved.path("properties");
         if (properties.isObject()) {

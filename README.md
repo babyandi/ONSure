@@ -264,9 +264,20 @@ schema assertion은 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든
 묶고, 생성 응답 JSON Pointer와 후속 path parameter의 연결을 review·approval digest에 결속한다.
 응답 schema의 scalar property를 재귀 탐색해 exact-name 또는 단일 `id` 경로를 우선 선택하며,
 schema 근거가 없을 때만 낮은 신뢰도의 검토용 휴리스틱을 사용한다.
+필수 query/header/request-body 입력도 producer 응답과 exact-name이 유일하게 일치할 때 후보로
+만들지만 현재 Runner가 실제 결속하는 위치는 path뿐이다. 나머지 위치는 승인 후에도
+`BLOCKED_BINDING_REVIEW_REQUIRED`/`NOT_RUN`이며 민감 인증 header는 후보에서 제외한다.
+일반 배열은 `~2` pointer template과 confidence 0.80의 검토 후보로만 남긴다. `minItems=1`과
+`maxItems=1`을 모두 선언한 배열만 `~3`과 confidence 0.90으로 구분하고, 실행 시 실제 cardinality가
+1인지 다시 확인해 비어 있거나 복수인 배열은 consumer HTTP 호출 전에 차단한다.
 승인된 `CREATE → READ` 실행에서는 producer 응답의 scalar 식별자를 메모리에서만 전달하며,
 Receipt에는 값 대신 binding ID·pointer·digest만 남긴다. producer Oracle이 실패하거나 식별자를
 찾을 수 없으면 후속 호출은 합성값으로 대체하지 않고 HTTP 실행 전에 `BLOCKED` 처리한다.
+Program Profile은 operationId·tag·path·schema와 탐지 component를 근거로 Capability·Workflow
+의미 가설을 자동 생성한다. 모든 가설은 confidence·ambiguity·evidence digest를 가지며 검토 전에는
+`auto_execute=false`, `score_eligible=false`다. 근거가 부족한 의미는 `UNKNOWN`으로 남기고 고객
+업무 규칙이나 PASS를 자동 확정하지 않는다. 관리화면은 총점에서 DOMAIN→PHASE→GROUP→AREA→STEP
+까지 진단·개선 가이드와 이전 실행 대비 변화를 보여주며, 추론 후보는 점수 제외로 표시한다.
 Gateway 환경변수와 단독 서버 실행 경계는
 `docs/architecture/ONSURE_LLM_GATEWAY_AND_MANAGEMENT_UI_v1.md`를 따른다.
 
@@ -278,7 +289,7 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 Java 347개(조건부 11개 skip 포함), Python 202개, Node 10개,
+현재 변경 후보의 로컬 검증은 Java 386개(조건부 11개 skip 포함), Python 202개, Node 10개,
 Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256

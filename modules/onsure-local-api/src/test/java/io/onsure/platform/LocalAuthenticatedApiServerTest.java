@@ -72,6 +72,12 @@ class LocalAuthenticatedApiServerTest {
             assertTrue(script.body().contains("environment_profile_file"));
             assertTrue(script.body().contains("execution_profile_file"));
             assertTrue(script.body().contains("/v1/programs/understand"));
+            assertTrue(script.body().contains("총점 진단"));
+            assertTrue(script.body().contains("Before/After 세부 변화"));
+            assertTrue(script.body().contains("추론 자체는 PASS 증적이 아님"));
+            assertTrue(script.body().contains("점수 EXCLUDED (실행 Receipt 필요)"));
+            assertTrue(script.body().contains("evidence_sha256"));
+            assertTrue(script.body().contains("inference_confidence"));
             assertTrue(!script.body().contains("localStorage"));
             assertTrue(!script.body().contains("sessionStorage"));
 

@@ -77,7 +77,11 @@ public final class ProgramLearningService {
         profile.put("ai_components", List.copyOf(aiComponents));
         profile.put("data_flows", List.copyOf(dataFlows));
         profile.put("workflow_inventory", workflowInventory);
-        profile.put("program_understanding", ProgramUnderstandingEngine.infer(workflowInventory, sourceDigest));
+        Map<String, Object> programUnderstanding = ProgramUnderstandingEngine.infer(
+                workflowInventory, sourceDigest);
+        profile.put("program_understanding", programUnderstanding);
+        profile.put("business_semantic_hypotheses", BusinessSemanticHypothesisEngine.infer(
+                programUnderstanding, components));
         profile.put("unknowns", List.copyOf(unknowns));
         profile.put("conflicts", List.copyOf(conflicts));
         profile.put("evidence_refs", List.of(

@@ -238,6 +238,9 @@ final class LocalProgramManagementService {
         if (!before.equals(after)) throw new IllegalStateException("READ_ONLY_SOURCE_CHANGED_DURING_UNDERSTANDING");
         @SuppressWarnings("unchecked")
         Map<String, Object> understanding = (Map<String, Object>) profile.get("program_understanding");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> semanticHypotheses =
+                (Map<String, Object>) profile.get("business_semantic_hypotheses");
         return Map.ofEntries(
                 Map.entry("contract", ProgramUnderstandingEngine.CONTRACT),
                 Map.entry("project_id", projectId), Map.entry("target_id", targetId),
@@ -246,6 +249,7 @@ final class LocalProgramManagementService {
                 Map.entry("profile_file_sha256", Hashing.file(output)),
                 Map.entry("source_sha256", before.digest()),
                 Map.entry("program_understanding", understanding),
+                Map.entry("business_semantic_hypotheses", semanticHypotheses),
                 Map.entry("source_mutation_detected", false),
                 Map.entry("automatic_execution", "NOT_RUN_REVIEW_REQUIRED"),
                 Map.entry("final_claim_allowed", false));
@@ -334,6 +338,8 @@ final class LocalProgramManagementService {
                 understanding.path("e2e_plan_candidates"), List.class));
         review.put("reviewed_api_lifecycle_candidates", mapper.convertValue(
                 understanding.path("api_lifecycle_candidates"), List.class));
+        review.put("reviewed_business_semantic_hypotheses", mapper.convertValue(
+                profile.path("business_semantic_hypotheses"), Map.class));
         review.put("approval_state", "NOT_RUN");
         review.put("execution_state", "NOT_RUN");
         review.put("secret_values_accepted", false);

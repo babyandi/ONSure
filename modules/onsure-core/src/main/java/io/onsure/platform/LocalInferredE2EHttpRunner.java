@@ -290,7 +290,7 @@ final class LocalInferredE2EHttpRunner {
             if (output == null) throw new IllegalArgumentException(
                     "OPENAPI_LIFECYCLE_PRODUCER_OUTPUT_NOT_AVAILABLE");
             String pointer = binding.get("producer_json_pointer").toString();
-            JsonNode value = output.at(pointer);
+            JsonNode value = resolveBindingValue(output, pointer);
             if (value.isMissingNode() || value.isNull() || value.isContainerNode())
                 throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_NOT_FOUND");
             String materialized = value.asText();
@@ -308,6 +308,33 @@ final class LocalInferredE2EHttpRunner {
                     "value_stored", false));
         }
         return Map.copyOf(result);
+    }
+
+    static JsonNode resolveBindingValue(JsonNode output, String pointer) {
+        if (pointer == null || !pointer.matches("(?:/(?:[A-Za-z0-9._-]|~[0123]){1,128}){1,16}"))
+            throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_POINTER_INVALID");
+        JsonNode current = output;
+        String[] segments = pointer.substring(1).split("/", -1);
+        for (String encoded : segments) {
+            if (Set.of(StaticWorkflowInventory.SINGLETON_ARRAY_POINTER_SEGMENT,
+                    StaticWorkflowInventory.SCHEMA_SINGLETON_ARRAY_POINTER_SEGMENT).contains(encoded)) {
+                if (!current.isArray())
+                    throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_ARRAY_EXPECTED");
+                if (current.isEmpty())
+                    throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_ARRAY_EMPTY");
+                if (current.size() != 1)
+                    throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_ARRAY_AMBIGUOUS");
+                current = current.get(0);
+                continue;
+            }
+            String property = encoded.replace("~1", "/").replace("~0", "~");
+            if (!current.isObject())
+                throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_OBJECT_EXPECTED");
+            current = current.get(property);
+            if (current == null)
+                throw new IllegalArgumentException("OPENAPI_LIFECYCLE_BINDING_VALUE_NOT_FOUND");
+        }
+        return current;
     }
     private Map<String, Object> recoveredReceipt(Path planFile, Map<String, Object> recovery,
             Map<String, Object> plan, LocalProgramUnderstandingApprovalService approvals) throws Exception {

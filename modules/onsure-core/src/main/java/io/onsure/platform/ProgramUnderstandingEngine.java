@@ -242,6 +242,7 @@ final class ProgramUnderstandingEngine {
         for (String key : List.of("http_method", "http_path", "operation_id", "tags",
                 "request_schema_refs", "response_statuses", "security_declared",
                 "response_scalar_json_pointers",
+                "request_input_candidates",
                 "request_schema_declared", "lifecycle_action", "destructive_risk", "source_path",
                 "evidence_sha256")) {
             if (candidate.containsKey(key)) operation.put(key, candidate.get(key));
@@ -298,42 +299,75 @@ final class ProgramUnderstandingEngine {
             if (!Set.of("READ", "UPDATE", "DELETE").contains(operationAction(consumer))) continue;
             @SuppressWarnings("unchecked") Map<String, Object> operation =
                     (Map<String, Object>) consumer.get("operation");
-            for (String parameter : pathParameters(operation.getOrDefault("http_path", "").toString())) {
-                BindingPointer selected = bindingPointer(producer, parameter);
-                String pointer = selected.pointer();
-                String material = producer.get("flow_id") + "\u0000" + consumer.get("flow_id")
-                        + "\u0000" + parameter + "\u0000" + pointer;
-                Map<String, Object> binding = new LinkedHashMap<>();
-                binding.put("binding_id", "BINDING-" + Hashing.sha256(material).substring(0, 16));
-                binding.put("producer_flow_id", producer.get("flow_id"));
-                binding.put("producer_json_pointer", pointer);
-                binding.put("consumer_flow_id", consumer.get("flow_id"));
-                binding.put("consumer_location", "PATH");
-                binding.put("consumer_parameter_name", parameter);
-                binding.put("inference_basis", selected.basis());
-                binding.put("inference_confidence", selected.confidence());
-                binding.put("semantic_state", "INFERRED_REVIEW_REQUIRED");
-                binding.put("runtime_verified", false);
-                binding.put("auto_execute", false);
-                binding.put("score_eligible", false);
-                result.add(Map.copyOf(binding));
+            for (String parameter : pathParameters(operation.getOrDefault("http_path", "").toString()))
+                addBinding(result, producer, consumer, "PATH", parameter,
+                        bindingPointer(producer, parameter, true));
+            for (Map<String, Object> input : mapList(operation.get("request_input_candidates"))) {
+                if (!Boolean.TRUE.equals(input.get("required"))) continue;
+                String location = String.valueOf(input.get("consumer_location"));
+                String parameter = String.valueOf(input.get("consumer_parameter_name"));
+                if (!Set.of("QUERY", "HEADER", "BODY").contains(location)) continue;
+                if ("HEADER".equals(location) && sensitiveHeader(parameter)) continue;
+                BindingPointer selected = bindingPointer(producer, pointerLeaf(parameter), false);
+                if (selected == null) continue;
+                addBinding(result, producer, consumer, location, parameter, selected);
             }
         }
         return List.copyOf(result);
     }
 
-    private static BindingPointer bindingPointer(Map<String, Object> producer, String parameter) {
+    private static void addBinding(List<Map<String, Object>> result, Map<String, Object> producer,
+            Map<String, Object> consumer, String location, String parameter, BindingPointer selected) {
+        if (selected == null) return;
+        String pointer = selected.pointer();
+        String material = producer.get("flow_id") + "\u0000" + consumer.get("flow_id")
+                + "\u0000" + ("PATH".equals(location) ? "" : location + "\u0000")
+                + parameter + "\u0000" + pointer;
+        Map<String, Object> binding = new LinkedHashMap<>();
+        binding.put("binding_id", "BINDING-" + Hashing.sha256(material).substring(0, 16));
+        binding.put("producer_flow_id", producer.get("flow_id"));
+        binding.put("producer_json_pointer", pointer);
+        binding.put("consumer_flow_id", consumer.get("flow_id"));
+        binding.put("consumer_location", location);
+        binding.put("consumer_parameter_name", parameter);
+        binding.put("inference_basis", selected.basis());
+        binding.put("inference_confidence", selected.confidence());
+        binding.put("semantic_state", "INFERRED_REVIEW_REQUIRED");
+        binding.put("runtime_verified", false);
+        binding.put("auto_execute", false);
+        binding.put("value_storage_allowed", false);
+        binding.put("score_eligible", false);
+        result.add(Map.copyOf(binding));
+    }
+
+    private static BindingPointer bindingPointer(
+            Map<String, Object> producer, String parameter, boolean allowHeuristic) {
         @SuppressWarnings("unchecked") Map<String, Object> operation =
                 (Map<String, Object>) producer.get("operation");
         List<String> pointers = stringList(operation.get("response_scalar_json_pointers"));
         List<String> exact = pointers.stream().filter(pointer ->
                 pointerLeaf(pointer).equalsIgnoreCase(parameter)).toList();
-        if (exact.size() == 1) return new BindingPointer(exact.get(0),
-                "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", 0.93);
+        if (exact.size() == 1) {
+            boolean schemaSingletonArray = containsSchemaSingletonArraySegment(exact.get(0));
+            boolean singletonArray = containsSingletonArraySegment(exact.get(0));
+            return new BindingPointer(exact.get(0), schemaSingletonArray
+                    ? "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY"
+                    : singletonArray ? "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SINGLETON_ARRAY"
+                    : "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
+                    schemaSingletonArray ? 0.90 : singletonArray ? 0.80 : 0.93);
+        }
         List<String> identifiers = pointers.stream().filter(pointer ->
                 "id".equalsIgnoreCase(pointerLeaf(pointer))).toList();
-        if (parameter.toLowerCase(Locale.ROOT).endsWith("id") && identifiers.size() == 1)
-            return new BindingPointer(identifiers.get(0), "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY", 0.88);
+        if (parameter.toLowerCase(Locale.ROOT).endsWith("id") && identifiers.size() == 1) {
+            boolean schemaSingletonArray = containsSchemaSingletonArraySegment(identifiers.get(0));
+            boolean singletonArray = containsSingletonArraySegment(identifiers.get(0));
+            return new BindingPointer(identifiers.get(0), schemaSingletonArray
+                    ? "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY_SCHEMA_SINGLETON_ARRAY"
+                    : singletonArray ? "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY_SINGLETON_ARRAY"
+                    : "OPENAPI_RESPONSE_SCHEMA_ID_PROPERTY",
+                    schemaSingletonArray ? 0.85 : singletonArray ? 0.76 : 0.88);
+        }
+        if (!allowHeuristic) return null;
         String fallback = parameter.toLowerCase(Locale.ROOT).endsWith("id") ? "/id" : "/" + parameter;
         return new BindingPointer(fallback,
                 "BUSINESS_OBJECT_AND_LIFECYCLE_PATH_PARAMETER_HEURISTIC", 0.70);
@@ -342,6 +376,26 @@ final class ProgramUnderstandingEngine {
     private static String pointerLeaf(String pointer) {
         int separator = pointer.lastIndexOf('/');
         return pointer.substring(separator + 1).replace("~1", "/").replace("~0", "~");
+    }
+
+    private static boolean containsSingletonArraySegment(String pointer) {
+        return pointer.matches(".*(?:/~[23])(?:/.*)?");
+    }
+
+    private static boolean containsSchemaSingletonArraySegment(String pointer) {
+        return pointer.equals("/~3") || pointer.contains("/~3/");
+    }
+
+    private static boolean sensitiveHeader(String name) {
+        return Set.of("authorization", "cookie", "proxy-authorization", "set-cookie", "x-api-key")
+                .contains(name.toLowerCase(Locale.ROOT));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> mapList(Object value) {
+        if (!(value instanceof List<?> values)) return List.of();
+        return values.stream().filter(Map.class::isInstance)
+                .map(item -> (Map<String, Object>) item).toList();
     }
 
     private record BindingPointer(String pointer, String basis, double confidence) { }

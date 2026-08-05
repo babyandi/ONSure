@@ -36,11 +36,34 @@ class StaticWorkflowInventoryTest {
                       operationId: createRun
                       tags: [Runs]
                       requestBody:
+                        required: true
                         content:
                           application/json:
                             schema: {$ref: '#/components/schemas/CreateRun'}
                       responses:
                         '201': {description: created}
+                  /runs/{runId}:
+                    parameters:
+                      - {in: query, name: tenantId, required: true, schema: {type: string}}
+                    patch:
+                      parameters:
+                        - {in: header, name: traceId, required: true, schema: {type: string}}
+                        - {in: query, name: tenantId, required: false, schema: {type: string}}
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [metadata]
+                              properties:
+                                metadata:
+                                  type: object
+                                  required: [revision]
+                                  properties:
+                                    revision: {type: integer}
+                                    note: {type: string}
+                      responses: {'200': {description: updated}}
                 """);
         Files.createDirectories(temp.resolve("db/migration"));
         Files.writeString(temp.resolve("db/migration/V1__init.sql"), "select 1;");
@@ -60,13 +83,21 @@ class StaticWorkflowInventoryTest {
         assertTrue(candidates.stream().allMatch(value -> Boolean.FALSE.equals(value.get("auto_execute"))));
         assertFalse(candidates.toString().contains("node render.js"));
         Map<String, Object> operation = candidates.stream()
-                .filter(value -> "OPENAPI_OPERATION".equals(value.get("kind")))
+                .filter(value -> "POST".equals(value.get("http_method")))
                 .findFirst().orElseThrow();
         assertEquals("POST", operation.get("http_method"));
         assertEquals("/runs", operation.get("http_path"));
         assertEquals("CREATE", operation.get("lifecycle_action"));
         assertEquals(List.of("#/components/schemas/CreateRun"), operation.get("request_schema_refs"));
         assertEquals(List.of("201"), operation.get("response_statuses"));
+        Map<String, Object> update = candidates.stream()
+                .filter(value -> "PATCH".equals(value.get("http_method")))
+                .findFirst().orElseThrow();
+        @SuppressWarnings("unchecked") List<Map<String, Object>> inputs =
+                (List<Map<String, Object>>) update.get("request_input_candidates");
+        assertEquals(List.of(
+                Map.of("consumer_location", "BODY", "consumer_parameter_name", "/metadata/revision", "required", true),
+                Map.of("consumer_location", "HEADER", "consumer_parameter_name", "traceId", "required", true)), inputs);
     }
 
     @Test
@@ -97,5 +128,45 @@ class StaticWorkflowInventoryTest {
 
         assertEquals(false, anonymous.get("security_declared"));
         assertEquals(true, authenticated.get("security_declared"));
+    }
+
+    @Test
+    void discoversDeterministicNestedSingletonArrayPointerTemplates() throws Exception {
+        Files.writeString(temp.resolve("openapi.yaml"), """
+                openapi: 3.1.0
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                properties:
+                                  groups:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        orders:
+                                          type: array
+                                          items:
+                                            type: object
+                                            properties:
+                                              orderId: {type: string}
+                                              sequence: {type: integer}
+                """);
+
+        @SuppressWarnings("unchecked") List<Map<String, Object>> candidates =
+                (List<Map<String, Object>>) StaticWorkflowInventory.detect(temp).get("candidates");
+        Map<String, Object> operation = candidates.stream()
+                .filter(value -> "OPENAPI_OPERATION".equals(value.get("kind")))
+                .findFirst().orElseThrow();
+
+        assertEquals(List.of("/groups/~2/orders/~2/orderId", "/groups/~2/orders/~2/sequence"),
+                operation.get("response_scalar_json_pointers"));
     }
 }

@@ -24,6 +24,7 @@ import java.util.UUID;
 /** Two-person approval exchange for an exact, non-executable Program Understanding review. */
 final class LocalProgramUnderstandingApprovalService {
     static final String CONTRACT = "ONSURE_PROGRAM_UNDERSTANDING_APPROVAL_V1";
+    private static final double MINIMUM_AUTOMATIC_BINDING_CONFIDENCE = 0.90d;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
@@ -206,6 +207,14 @@ final class LocalProgramUnderstandingApprovalService {
             if (!authorizationId.equals(value.get("execution_authorization_id"))
                     || !planSha256.equals(value.get("execution_plan_sha256"))) {
                 throw new IllegalArgumentException("PROGRAM_EXECUTION_PLAN_BINDING_INVALID");
+            }
+            if (!clock.instant().isBefore(Instant.parse(value.get("expires_at").toString()))) {
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_AUTHORIZATION_EXPIRED");
+            }
+            Path planFile = workspaceRoot.resolve(value.get("execution_plan_file").toString()).normalize();
+            if (!planFile.startsWith(workspaceRoot) || !safeFile(planFile)
+                    || !Hashing.file(planFile).equals(planSha256)) {
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_PLAN_STALE_OR_TAMPERED");
             }
             String runId = "inferred-e2e-run-" + UUID.randomUUID();
             value.put("state", "EXECUTION_RUNNING");
@@ -537,9 +546,10 @@ final class LocalProgramUnderstandingApprovalService {
             candidate.put("destructive_action_allowed", false);
             candidates.add(Map.copyOf(candidate));
         }
+        List<Map<String, Object>> lifecycles = authorizedLifecycles(approval, review, candidates);
+        candidates = applyBindingBlocks(candidates, lifecycles);
         long blocked = candidates.stream().filter(candidate -> candidate.get("state").toString().startsWith("BLOCKED_"))
                 .count();
-        List<Map<String, Object>> lifecycles = authorizedLifecycles(review, candidates);
         Map<String, Object> plan = new LinkedHashMap<>();
         plan.put("contract", "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1");
         plan.put("execution_authorization_id", authorizationId);
@@ -551,12 +561,23 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("approval_request_sha256", approval.get("request_sha256"));
         plan.put("approval_request_id", approval.get("request_id"));
         plan.put("approval_receipt_sha256", approval.get("receipt_sha256"));
+        plan.put("authorization_expires_at", approval.get("expires_at"));
         plan.put("runtime_reference_ids", runtimeReferences);
         plan.put("execution_scope", scope);
         plan.put("candidate_count", candidates.size());
         plan.put("blocked_candidate_count", blocked);
         plan.put("authorized_candidates", List.copyOf(candidates));
         plan.put("authorized_lifecycles", lifecycles);
+        plan.put("binding_authorization_policy", Map.of(
+                "minimum_confidence", MINIMUM_AUTOMATIC_BINDING_CONFIDENCE,
+                "allowed_inference_basis", List.of("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
+                        "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY"),
+                "executable_consumer_locations", List.of("PATH"),
+                "candidate_only_consumer_locations", List.of("QUERY", "HEADER", "BODY"),
+                "separate_review_required", true,
+                "separate_approval_required", true,
+                "unqualified_binding_outcome", "BLOCKED_NOT_RUN",
+                "raw_value_storage_allowed", false));
         plan.put("plan_state", blocked == 0 && !candidates.isEmpty()
                 ? "AUTHORIZED_NOT_RUN" : "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN");
         plan.put("execution_state", "NOT_RUN");
@@ -569,7 +590,8 @@ final class LocalProgramUnderstandingApprovalService {
 
     @SuppressWarnings("unchecked")
     private static List<Map<String, Object>> authorizedLifecycles(
-            Map<String, Object> review, List<Map<String, Object>> candidates) {
+            Map<String, Object> approval, Map<String, Object> review,
+            List<Map<String, Object>> candidates) {
         Object raw = review.get("reviewed_api_lifecycle_candidates");
         if (!(raw instanceof List<?> reviewed)) return List.of();
         Map<String, String> planByFlow = new TreeMap<>();
@@ -590,6 +612,7 @@ final class LocalProgramUnderstandingApprovalService {
             }
             if (operationPlanIds.size() < 2) continue;
             List<Map<String, Object>> bindings = new ArrayList<>();
+            List<Map<String, Object>> blockedBindings = new ArrayList<>();
             Object bindingsRaw = lifecycle.get("proposed_bindings");
             if (bindingsRaw instanceof List<?> proposedBindings) for (Object bindingItem : proposedBindings) {
                 if (!(bindingItem instanceof Map<?, ?> binding)) continue;
@@ -597,21 +620,51 @@ final class LocalProgramUnderstandingApprovalService {
                 String consumerPlanId = planByFlow.get(String.valueOf(binding.get("consumer_flow_id")));
                 String bindingId = String.valueOf(binding.get("binding_id"));
                 String pointer = String.valueOf(binding.get("producer_json_pointer"));
+                String location = String.valueOf(binding.get("consumer_location"));
                 String parameter = String.valueOf(binding.get("consumer_parameter_name"));
                 if (producerPlanId == null || consumerPlanId == null
                         || !operationPlanIds.contains(producerPlanId) || !operationPlanIds.contains(consumerPlanId)
                         || !bindingId.matches("BINDING-[0-9a-f]{16}")
-                        || !pointer.matches("(?:/(?:[A-Za-z0-9._-]|~[01]){1,128}){1,8}")
-                        || !parameter.matches("[A-Za-z][A-Za-z0-9._-]{0,127}")) continue;
-                bindings.add(Map.of(
-                        "binding_id", bindingId,
-                        "producer_plan_id", producerPlanId,
-                        "producer_json_pointer", pointer,
-                        "consumer_plan_id", consumerPlanId,
-                        "consumer_location", "PATH",
-                        "consumer_parameter_name", parameter,
-                        "value_storage_allowed", false,
-                        "state", "AUTHORIZED_NOT_RUN"));
+                        || !pointer.matches("(?:/(?:[A-Za-z0-9._-]|~[0123]){1,128}){1,16}")
+                        || !Set.of("PATH", "QUERY", "HEADER", "BODY").contains(location)
+                        || !validConsumerParameter(location, parameter)) continue;
+                String basis = String.valueOf(binding.get("inference_basis"));
+                double confidence = binding.get("inference_confidence") instanceof Number number
+                        ? number.doubleValue() : -1.0d;
+                boolean reviewableInference = "INFERRED_REVIEW_REQUIRED".equals(binding.get("semantic_state"))
+                        && Boolean.FALSE.equals(binding.get("auto_execute"))
+                        && Boolean.FALSE.equals(binding.get("runtime_verified"))
+                        && Boolean.FALSE.equals(binding.get("value_storage_allowed"))
+                        && Boolean.FALSE.equals(binding.get("score_eligible"));
+                Map<String, Object> authorization = new LinkedHashMap<>();
+                authorization.put("binding_id", bindingId);
+                authorization.put("producer_plan_id", producerPlanId);
+                authorization.put("producer_json_pointer", pointer);
+                authorization.put("consumer_plan_id", consumerPlanId);
+                authorization.put("consumer_location", location);
+                authorization.put("consumer_parameter_name", parameter);
+                authorization.put("inference_basis", basis);
+                authorization.put("inference_confidence", confidence);
+                authorization.put("review_sha256", review.get("review_sha256"));
+                authorization.put("approval_receipt_sha256", approval.get("receipt_sha256"));
+                authorization.put("auto_execute_before_approval", false);
+                authorization.put("value_storage_allowed", false);
+                boolean executableLocation = "PATH".equals(location);
+                if (reviewableInference && executableLocation
+                        && Set.of("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
+                                "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY").contains(basis)
+                        && confidence >= MINIMUM_AUTOMATIC_BINDING_CONFIDENCE && confidence <= 1.0d) {
+                    authorization.put("review_state", "REVIEWED_AND_SEPARATELY_APPROVED");
+                    authorization.put("state", "AUTHORIZED_NOT_RUN");
+                    bindings.add(Map.copyOf(authorization));
+                } else {
+                    authorization.put("review_state", "REVIEW_REQUIRED_NOT_AUTHORIZED");
+                    authorization.put("state", "BLOCKED_BINDING_REVIEW_REQUIRED");
+                    authorization.put("blocked_reason", executableLocation
+                            ? "INFERENCE_CONFIDENCE_OR_BASIS_NOT_AUTOMATICALLY_AUTHORIZABLE"
+                            : "CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED");
+                    blockedBindings.add(Map.copyOf(authorization));
+                }
             }
             Map<String, Object> authorized = new LinkedHashMap<>();
             authorized.put("lifecycle_id", lifecycleId);
@@ -619,10 +672,43 @@ final class LocalProgramUnderstandingApprovalService {
             authorized.put("operation_plan_ids", List.copyOf(operationPlanIds));
             authorized.put("bindings", List.copyOf(bindings));
             authorized.put("binding_count", bindings.size());
-            authorized.put("execution_state", "AUTHORIZED_NOT_RUN");
+            authorized.put("blocked_bindings", List.copyOf(blockedBindings));
+            authorized.put("blocked_binding_count", blockedBindings.size());
+            authorized.put("execution_state", blockedBindings.isEmpty()
+                    ? "AUTHORIZED_NOT_RUN" : "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN");
             authorized.put("response_values_storage_allowed", false);
             authorized.put("final_claim_allowed", false);
             result.add(Map.copyOf(authorized));
+        }
+        return List.copyOf(result);
+    }
+
+    private static boolean validConsumerParameter(String location, String parameter) {
+        if ("BODY".equals(location))
+            return parameter.matches("(?:/(?:[A-Za-z0-9._-]|~[01]){1,128}){1,16}");
+        return parameter.matches("[A-Za-z][A-Za-z0-9._-]{0,127}");
+    }
+
+    private static List<Map<String, Object>> applyBindingBlocks(
+            List<Map<String, Object>> candidates, List<Map<String, Object>> lifecycles) {
+        Set<String> blockedConsumers = new java.util.HashSet<>();
+        for (Map<String, Object> lifecycle : lifecycles) {
+            Object raw = lifecycle.get("blocked_bindings");
+            if (!(raw instanceof List<?> blocked)) continue;
+            for (Object item : blocked) if (item instanceof Map<?, ?> binding)
+                blockedConsumers.add(String.valueOf(binding.get("consumer_plan_id")));
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> candidate : candidates) {
+            if (!blockedConsumers.contains(String.valueOf(candidate.get("plan_id")))
+                    || String.valueOf(candidate.get("state")).startsWith("BLOCKED_")) {
+                result.add(candidate);
+                continue;
+            }
+            Map<String, Object> blocked = new LinkedHashMap<>(candidate);
+            blocked.put("state", "BLOCKED_BINDING_REVIEW_REQUIRED");
+            blocked.put("binding_execution_state", "NOT_RUN");
+            result.add(Map.copyOf(blocked));
         }
         return List.copyOf(result);
     }

@@ -38,8 +38,16 @@ class ProgramUnderstandingEngineTest {
                                 properties:
                                   data:
                                     type: object
+                                    required: [orderId, queryToken, traceId, metadata]
                                     properties:
                                       orderId: {type: string}
+                                      queryToken: {type: string}
+                                      traceId: {type: string}
+                                      metadata:
+                                        type: object
+                                        required: [revision]
+                                        properties:
+                                          revision: {type: integer}
                     get:
                       operationId: listOrders
                       tags: [Orders]
@@ -48,7 +56,30 @@ class ProgramUnderstandingEngineTest {
                     get:
                       operationId: getOrder
                       tags: [Orders]
+                      parameters:
+                        - {in: query, name: queryToken, required: true, schema: {type: string}}
+                        - {in: query, name: optionalToken, required: false, schema: {type: string}}
+                        - {in: header, name: traceId, required: true, schema: {type: string}}
+                        - {in: header, name: Authorization, required: true, schema: {type: string}}
                       responses: {'200': {description: found}}
+                    patch:
+                      operationId: updateOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [metadata]
+                              properties:
+                                metadata:
+                                  type: object
+                                  required: [revision]
+                                  properties:
+                                    revision: {type: integer}
+                                    note: {type: string}
+                      responses: {'200': {description: updated}}
                     delete:
                       operationId: deleteOrder
                       tags: [Orders]
@@ -71,9 +102,9 @@ class ProgramUnderstandingEngineTest {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> lifecycles = (List<Map<String, Object>>) result.get("api_lifecycle_candidates");
         assertEquals(1, lifecycles.size());
-        assertEquals(List.of("CREATE", "READ", "DELETE"), lifecycles.get(0).get("actions"));
-        assertEquals("CREATE_READ_CANDIDATE", lifecycles.get(0).get("coverage_state"));
-        assertEquals(2, lifecycles.get(0).get("binding_count"));
+        assertEquals(List.of("CREATE", "READ", "UPDATE", "DELETE"), lifecycles.get(0).get("actions"));
+        assertEquals("CRUD_CANDIDATE_COMPLETE", lifecycles.get(0).get("coverage_state"));
+        assertEquals(6, lifecycles.get(0).get("binding_count"));
         @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
                 (List<Map<String, Object>>) lifecycles.get(0).get("proposed_bindings");
         Map<String, Object> readBinding = bindings.stream()
@@ -87,6 +118,24 @@ class ProgramUnderstandingEngineTest {
         assertEquals("orderId", readBinding.get("consumer_parameter_name"));
         assertEquals("INFERRED_REVIEW_REQUIRED", readBinding.get("semantic_state"));
         assertEquals(false, readBinding.get("auto_execute"));
+        assertEquals(false, readBinding.get("value_storage_allowed"));
+        assertTrue(bindings.stream().allMatch(binding -> "INFERRED_REVIEW_REQUIRED".equals(
+                binding.get("semantic_state"))));
+        assertTrue(bindings.stream().allMatch(binding -> Boolean.FALSE.equals(binding.get("runtime_verified"))
+                && Boolean.FALSE.equals(binding.get("auto_execute"))
+                && Boolean.FALSE.equals(binding.get("value_storage_allowed"))
+                && Boolean.FALSE.equals(binding.get("score_eligible"))));
+        assertTrue(bindings.stream().anyMatch(binding -> "QUERY".equals(binding.get("consumer_location"))
+                && "queryToken".equals(binding.get("consumer_parameter_name"))
+                && "/data/queryToken".equals(binding.get("producer_json_pointer"))));
+        assertTrue(bindings.stream().anyMatch(binding -> "HEADER".equals(binding.get("consumer_location"))
+                && "traceId".equals(binding.get("consumer_parameter_name"))
+                && "/data/traceId".equals(binding.get("producer_json_pointer"))));
+        assertTrue(bindings.stream().anyMatch(binding -> "BODY".equals(binding.get("consumer_location"))
+                && "/metadata/revision".equals(binding.get("consumer_parameter_name"))
+                && "/data/metadata/revision".equals(binding.get("producer_json_pointer"))));
+        assertFalse(bindings.stream().anyMatch(binding -> "optionalToken".equals(binding.get("consumer_parameter_name"))));
+        assertFalse(bindings.stream().anyMatch(binding -> "Authorization".equals(binding.get("consumer_parameter_name"))));
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> questions = (List<Map<String, Object>>) result.get("minimal_questions");
         assertTrue(questions.stream().anyMatch(question -> "RUNTIME_ENDPOINT".equals(question.get("question_id"))));

@@ -1,0 +1,40 @@
+{
+  "contract": "ONSURE_BUSINESS_SEMANTIC_HYPOTHESES_V1",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "inference_method": "DETERMINISTIC_EVIDENCE_BOUND_SEMANTIC_HYPOTHESES_V1",
+  "hypothesis_count": 1,
+  "hypotheses": [
+    {
+      "hypothesis_id": "SEM-0123456789abcdef",
+      "hypothesis_kind": "CAPABILITY",
+      "semantic_label": "CREATE_ORDER",
+      "business_object": "ORDER",
+      "action": "CREATE",
+      "evidence_references": [
+        {
+          "evidence_type": "OPENAPI_OPERATION_ID",
+          "reference": "FLOW-1111111111111111/operation/operation_id",
+          "observed_value": "createOrder",
+          "evidence_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ],
+      "confidence": 0.85,
+      "ambiguity": "LOW",
+      "semantic_state": "INFERRED_REVIEW_REQUIRED",
+      "review_required": true,
+      "auto_execute": false,
+      "customer_rule_confirmed": false,
+      "runtime_verified": false,
+      "score_eligible": false
+    }
+  ],
+  "unknown_count": 0,
+  "ambiguous_count": 0,
+  "review_required": true,
+  "automatic_execution": "NOT_RUN_REVIEW_REQUIRED",
+  "live_provider_invocation": "NOT_RUN",
+  "customer_rules_confirmed": false,
+  "runtime_verification": "NOT_RUN",
+  "score_eligible": false,
+  "final_claim_allowed": false
+}

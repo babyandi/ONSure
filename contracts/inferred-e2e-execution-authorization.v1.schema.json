@@ -3,7 +3,7 @@
   "$id": "https://onsure.local/contracts/inferred-e2e-execution-authorization.v1.schema.json",
   "title": "ONSure Inferred E2E Execution Authorization V1",
   "type": "object", "additionalProperties": false,
-  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_id", "approval_request_sha256", "approval_receipt_sha256", "runtime_reference_ids", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "authorized_lifecycles", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
+  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_id", "approval_request_sha256", "approval_receipt_sha256", "authorization_expires_at", "runtime_reference_ids", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "authorized_lifecycles", "binding_authorization_policy", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
   "properties": {
     "contract": {"const": "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1"},
     "execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
@@ -14,6 +14,7 @@
     "approval_request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
     "approval_request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authorization_expires_at": {"type": "string", "format": "date-time"},
     "runtime_reference_ids": {"type": "object", "additionalProperties": false, "properties": {
       "authentication": {"type": "string", "pattern": "^env:[A-Z][A-Z0-9_]{1,127}$"},
       "test_identity": {"type": "string", "pattern": "^env:[A-Z][A-Z0-9_]{1,127}$"}
@@ -22,6 +23,20 @@
     "candidate_count": {"type": "integer", "minimum": 0}, "blocked_candidate_count": {"type": "integer", "minimum": 0},
     "authorized_candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
     "authorized_lifecycles": {"type": "array", "items": {"$ref": "#/$defs/lifecycle"}},
+    "binding_authorization_policy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["minimum_confidence", "allowed_inference_basis", "executable_consumer_locations", "candidate_only_consumer_locations", "separate_review_required", "separate_approval_required", "unqualified_binding_outcome", "raw_value_storage_allowed"],
+      "properties": {
+        "minimum_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "allowed_inference_basis": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "executable_consumer_locations": {"const": ["PATH"]},
+        "candidate_only_consumer_locations": {"const": ["QUERY", "HEADER", "BODY"]},
+        "separate_review_required": {"const": true},
+        "separate_approval_required": {"const": true},
+        "unqualified_binding_outcome": {"const": "BLOCKED_NOT_RUN"},
+        "raw_value_storage_allowed": {"const": false}
+      }
+    },
     "plan_state": {"enum": ["AUTHORIZED_NOT_RUN", "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN"]},
     "execution_state": {"const": "NOT_RUN"}, "source_mutation_allowed": {"const": false},
     "customer_data_allowed": {"const": false}, "destructive_action_allowed": {"const": false},
@@ -30,25 +45,39 @@
   "$defs": {
     "binding": {
       "type": "object", "additionalProperties": false,
-      "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_plan_id", "consumer_location", "consumer_parameter_name", "value_storage_allowed", "state"],
+      "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_plan_id", "consumer_location", "consumer_parameter_name", "inference_basis", "inference_confidence", "review_sha256", "approval_receipt_sha256", "auto_execute_before_approval", "review_state", "value_storage_allowed", "state"],
       "properties": {
         "binding_id": {"type": "string", "pattern": "^BINDING-[0-9a-f]{16}$"},
         "producer_plan_id": {"type": "string"}, "producer_json_pointer": {"type": "string", "pattern": "^/.+$"},
-        "consumer_plan_id": {"type": "string"}, "consumer_location": {"const": "PATH"},
+        "consumer_plan_id": {"type": "string"}, "consumer_location": {"enum": ["PATH", "QUERY", "HEADER", "BODY"]},
         "consumer_parameter_name": {"type": "string"}, "value_storage_allowed": {"const": false},
-        "state": {"const": "AUTHORIZED_NOT_RUN"}
-      }
+        "inference_basis": {"type": "string", "minLength": 1},
+        "inference_confidence": {"type": "number", "minimum": -1, "maximum": 1},
+        "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "auto_execute_before_approval": {"const": false},
+        "review_state": {"enum": ["REVIEWED_AND_SEPARATELY_APPROVED", "REVIEW_REQUIRED_NOT_AUTHORIZED"]},
+        "blocked_reason": {"enum": ["INFERENCE_CONFIDENCE_OR_BASIS_NOT_AUTOMATICALLY_AUTHORIZABLE", "CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED"]},
+        "state": {"enum": ["AUTHORIZED_NOT_RUN", "BLOCKED_BINDING_REVIEW_REQUIRED"]}
+      },
+      "allOf": [{
+        "if": {"properties": {"state": {"const": "AUTHORIZED_NOT_RUN"}}},
+        "then": {"properties": {"consumer_location": {"const": "PATH"}, "review_state": {"const": "REVIEWED_AND_SEPARATELY_APPROVED"}}, "not": {"required": ["blocked_reason"]}},
+        "else": {"required": ["blocked_reason"], "properties": {"review_state": {"const": "REVIEW_REQUIRED_NOT_AUTHORIZED"}}}
+      }]
     },
     "lifecycle": {
       "type": "object", "additionalProperties": false,
-      "required": ["lifecycle_id", "business_object", "operation_plan_ids", "bindings", "binding_count", "execution_state", "response_values_storage_allowed", "final_claim_allowed"],
+      "required": ["lifecycle_id", "business_object", "operation_plan_ids", "bindings", "binding_count", "blocked_bindings", "blocked_binding_count", "execution_state", "response_values_storage_allowed", "final_claim_allowed"],
       "properties": {
         "lifecycle_id": {"type": "string", "pattern": "^LIFECYCLE-[0-9a-f]{16}$"},
         "business_object": {"type": "string"},
         "operation_plan_ids": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string"}},
         "bindings": {"type": "array", "items": {"$ref": "#/$defs/binding"}},
         "binding_count": {"type": "integer", "minimum": 0},
-        "execution_state": {"const": "AUTHORIZED_NOT_RUN"},
+        "blocked_bindings": {"type": "array", "items": {"$ref": "#/$defs/binding"}},
+        "blocked_binding_count": {"type": "integer", "minimum": 0},
+        "execution_state": {"enum": ["AUTHORIZED_NOT_RUN", "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN"]},
         "response_values_storage_allowed": {"const": false}, "final_claim_allowed": {"const": false}
       }
     },
@@ -67,6 +96,7 @@
         "openapi_source_sha256": {"oneOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"const": "NOT_APPLICABLE"}]},
         "fixture_strategy": {"type": "string"}, "oracle_strategy": {"type": "string"},
         "state": {"type": "string", "pattern": "^(READY_FOR_|BLOCKED_).+$"},
+        "binding_execution_state": {"const": "NOT_RUN"},
         "customer_data_allowed": {"const": false}, "destructive_action_allowed": {"const": false}
       }
     }

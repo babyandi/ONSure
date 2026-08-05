@@ -39,6 +39,11 @@ class ProgramLearningServiceTest {
         assertEquals("ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1", understanding.get("contract"));
         assertEquals(false, understanding.get("inferences_are_pass_evidence"));
         assertEquals("NOT_RUN_REVIEW_REQUIRED", understanding.get("automatic_execution"));
+        @SuppressWarnings("unchecked") Map<String, Object> semantics =
+                (Map<String, Object>) profile.get("business_semantic_hypotheses");
+        assertEquals(BusinessSemanticHypothesisEngine.CONTRACT, semantics.get("contract"));
+        assertEquals(false, semantics.get("score_eligible"));
+        assertEquals("NOT_RUN_REVIEW_REQUIRED", semantics.get("automatic_execution"));
     }
 
     @Test

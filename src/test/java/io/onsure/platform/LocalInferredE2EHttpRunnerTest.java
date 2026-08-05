@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import java.net.InetAddress;
@@ -153,6 +154,57 @@ class LocalInferredE2EHttpRunnerTest {
             assertFalse(mapper.writeValueAsString(receipt).contains("created-order-42"));
             assertEquals("PASS_NONFINAL", get.get("oracle_outcome"));
         } finally { server.stop(0); }
+    }
+
+    @Test
+    void materializesNestedSingletonArrayBindingWithoutPersistingRawValue() throws Exception {
+        Prepared prepared = prepare(openApiWithNestedArrayWriteAndPath());
+        AtomicReference<String> receivedReadPath = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            byte[] body = "{\"groups\":[{\"orders\":[{\"orderId\":\"array-order-42\"}]}]}"
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(201, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.createContext("/orders/", exchange -> {
+            receivedReadPath.set(exchange.getRequestURI().getPath());
+            byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals("/orders/array-order-42", receivedReadPath.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> get = steps.stream().filter(step -> "GET".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                    (List<Map<String, Object>>) get.get("input_bindings");
+            assertEquals("/groups/~3/orders/~3/orderId", bindings.get(0).get("producer_json_pointer"));
+            assertEquals(Hashing.sha256("array-order-42"), bindings.get(0).get("value_sha256"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("array-order-42"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void rejectsAmbiguousOrEmptyArraysDuringValueMaterialization() throws Exception {
+        JsonNode ambiguous = mapper.readTree("{\"groups\":[{\"id\":\"one\"},{\"id\":\"two\"}]}");
+        IllegalArgumentException ambiguousError = assertThrows(IllegalArgumentException.class, () ->
+                LocalInferredE2EHttpRunner.resolveBindingValue(ambiguous, "/groups/~2/id"));
+        assertEquals("OPENAPI_LIFECYCLE_BINDING_ARRAY_AMBIGUOUS", ambiguousError.getMessage());
+        JsonNode empty = mapper.readTree("{\"groups\":[]}");
+        IllegalArgumentException emptyError = assertThrows(IllegalArgumentException.class, () ->
+                LocalInferredE2EHttpRunner.resolveBindingValue(empty, "/groups/~2/id"));
+        assertEquals("OPENAPI_LIFECYCLE_BINDING_ARRAY_EMPTY", emptyError.getMessage());
     }
 
     @Test
@@ -483,6 +535,66 @@ class LocalInferredE2EHttpRunnerTest {
                       responses: {'200': {description: ok}}
                 components:
                   securitySchemes: {bearerAuth: {type: http, scheme: bearer}}
+                """;
+    }
+
+    private static String openApiWithNestedArrayWriteAndPath() {
+        return """
+                openapi: 3.1.0
+                info: {title: Array Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties:
+                                name: {type: string}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema: {$ref: '#/components/schemas/CreatedOrders'}
+                  /orders/{orderId}:
+                    parameters:
+                      - {name: orderId, in: path, required: true, schema: {type: string}}
+                    get:
+                      operationId: getOrder
+                      responses:
+                        '200':
+                          description: ok
+                          content:
+                            application/json:
+                              schema: {type: object}
+                components:
+                  schemas:
+                    CreatedOrders:
+                      type: object
+                      required: [groups]
+                      properties:
+                        groups:
+                          type: array
+                          minItems: 1
+                          maxItems: 1
+                          items:
+                            type: object
+                            required: [orders]
+                            properties:
+                              orders:
+                                type: array
+                                minItems: 1
+                                maxItems: 1
+                                items:
+                                  type: object
+                                  required: [orderId]
+                                  properties:
+                                    orderId: {type: string}
                 """;
     }
 

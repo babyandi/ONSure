@@ -40,6 +40,22 @@
     "auto_execute": false,
     "final_claim_allowed": false
   },
+  "business_semantic_hypotheses": {
+    "contract": "ONSURE_BUSINESS_SEMANTIC_HYPOTHESES_V1",
+    "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "inference_method": "DETERMINISTIC_EVIDENCE_BOUND_SEMANTIC_HYPOTHESES_V1",
+    "hypothesis_count": 0,
+    "hypotheses": [],
+    "unknown_count": 0,
+    "ambiguous_count": 0,
+    "review_required": true,
+    "automatic_execution": "NOT_RUN_REVIEW_REQUIRED",
+    "live_provider_invocation": "NOT_RUN",
+    "customer_rules_confirmed": false,
+    "runtime_verification": "NOT_RUN",
+    "score_eligible": false,
+    "final_claim_allowed": false
+  },
   "unknowns": [],
   "conflicts": [],
   "evidence_refs": [

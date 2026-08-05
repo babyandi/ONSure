@@ -10,6 +10,8 @@
   const formatNumber = (value) => number.format(Number(value || 0));
   const compactDigest = (value) => value && value !== "NOT_RUN"
     ? `${value.slice(0, 10)}…${value.slice(-8)}` : "NOT_RUN";
+  const formatConfidence = (value) => Number.isFinite(Number(value))
+    ? `${Math.round(Number(value) * 100)}%` : "UNVERIFIED";
 
   function setStatus(element, value) {
     const normalized = String(value || "UNVERIFIED").toUpperCase();
@@ -95,8 +97,10 @@
       boundary.className = "trust-boundary";
       boundary.textContent = `${score.validation_outcome} · OTester ${score.trust_gate?.independent_otester || "NOT_RUN"} · OAudit ${score.trust_gate?.independent_oaudit || "NOT_RUN"} · Final claim DENIED`;
       article.append(boundary);
+      article.append(scoreSummary(score));
       article.append(scoreNodes("평가 영역", score.assessment_domains || []));
       article.append(scoreNodes("4차 검증 단계", score.phases || []));
+      article.append(scoreNodes("검증 그룹", score.groups || []));
       article.append(scoreNodes("세부 검사항목", score.assessment_areas || []));
       article.append(scoreNodes("최종 실행 Step", score.steps || []));
       const comparison = validation.comparison || {};
@@ -106,8 +110,68 @@
         ? `이전 실행 대비 ${comparison.state}: ${comparison.total_delta_points >= 0 ? "+" : ""}${comparison.total_delta_points}점 · 개선 ${comparison.improved_node_count} · 퇴보 ${comparison.regressed_node_count}`
         : "비교 기준 실행 없음: 다음 재검증부터 Before/After를 표시합니다.";
       article.append(compare);
+      if (comparison.contract) article.append(comparisonDetails(comparison));
       root.append(article);
     }
+  }
+
+  function scoreSummary(score) {
+    const summary = document.createElement("section");
+    summary.className = "score-summary";
+    summary.setAttribute("aria-label", "총점 진단과 개선 가이드");
+    const coverage = scoreMetric("증적 커버리지", `${score.evidence_coverage_percent ?? 0}%`);
+    const required = scoreMetric("필수 Step",
+      `${score.passed_required_step_count ?? 0} / ${score.required_step_count ?? 0}`);
+    const unresolvedCount = Number(score.failed_required_step_count || 0)
+      + Number(score.blocked_required_step_count || 0)
+      + Number(score.not_run_required_step_count || 0)
+      + Number(score.inconclusive_required_step_count || 0);
+    const unresolved = scoreMetric("미확정 필수 Step", unresolvedCount);
+    const diagnosis = document.createElement("p");
+    diagnosis.className = "score-diagnosis";
+    diagnosis.textContent = `총점 진단: ${score.diagnosis_summary || "실행 증적에 결속된 진단 정보가 없습니다."}`;
+    const guide = document.createElement("p");
+    guide.className = "improvement-guide";
+    guide.textContent = `총점 개선 가이드: ${score.improvement_summary || "NOT_RUN 항목부터 증적을 생성해 다시 검증하십시오."}`;
+    summary.append(coverage, required, unresolved, diagnosis, guide);
+    return summary;
+  }
+
+  function scoreMetric(label, value) {
+    const metric = document.createElement("div");
+    const name = document.createElement("span");
+    name.textContent = label;
+    const amount = document.createElement("strong");
+    amount.textContent = String(value);
+    metric.append(name, amount);
+    return metric;
+  }
+
+  function comparisonDetails(comparison) {
+    const details = document.createElement("details");
+    details.className = "score-details comparison-details";
+    const summary = document.createElement("summary");
+    summary.textContent = `Before/After 세부 변화 (${(comparison.changes || []).length})`;
+    details.append(summary);
+    for (const change of comparison.changes || []) {
+      const row = document.createElement("div");
+      row.className = `score-node comparison-node ${String(change.state || "UNCHANGED").toLowerCase()}`;
+      const identity = document.createElement("strong");
+      identity.textContent = `${change.level || "NODE"} · ${change.node_id || "UNVERIFIED"}`;
+      const points = document.createElement("span");
+      const delta = Number(change.delta_points || 0);
+      points.textContent = `${change.baseline_earned_points ?? 0} → ${change.current_earned_points ?? 0} (${delta >= 0 ? "+" : ""}${delta}) · ${change.state || "UNCHANGED"}`;
+      const outcome = document.createElement("p");
+      outcome.textContent = `판정: ${change.baseline_outcome || "NOT_DISCOVERED"} → ${change.current_outcome || "NOT_DISCOVERED"}`;
+      const diagnosis = document.createElement("p");
+      diagnosis.textContent = `진단: ${change.diagnosis || "동일 source·환경·증적 조건인지 확인하십시오."}`;
+      const guide = document.createElement("p");
+      guide.className = "improvement-guide";
+      guide.textContent = `개선: ${change.improvement_guide || "동일 조건으로 전체 검증을 재실행하십시오."}`;
+      row.append(identity, points, outcome, diagnosis, guide);
+      details.append(row);
+    }
+    return details;
   }
 
   function renderUnderstandingPortfolio(programs) {
@@ -134,8 +198,14 @@
     article.append(heading);
     const boundary = document.createElement("p");
     boundary.className = "trust-boundary";
-    boundary.textContent = `추론=${understanding.inference_method} · 실행=${understanding.automatic_execution} · PASS 증적=${understanding.inferences_are_pass_evidence}`;
+    const reviewState = understanding.review?.review_state || understanding.human_review || "NOT_RUN";
+    const approvalState = understanding.review?.approval_state || "NOT_RUN";
+    boundary.textContent = `추론=${understanding.inference_method} · 검토=${reviewState} · 승인=${approvalState} · 실행=${understanding.automatic_execution} · 점수 반영=DENIED`;
     article.append(boundary);
+    const provenance = document.createElement("p");
+    provenance.className = "inference-provenance";
+    provenance.textContent = `source ${compactDigest(understanding.source_sha256)} · profile ${compactDigest(understanding.profile_file_sha256)} · 추론 자체는 PASS 증적이 아님`;
+    article.append(provenance);
     const risks = understanding.risk_flags || [];
     if (risks.length) {
       const risk = document.createElement("p");
@@ -149,22 +219,30 @@
       const lifecycleTitle = document.createElement("strong");
       lifecycleTitle.textContent = `${lifecycle.business_object} 생명주기 · ${lifecycle.coverage_state}`;
       const actions = document.createElement("p");
-      actions.textContent = `API 연결 후보: ${(lifecycle.actions || []).join(" → ") || "미분류"} · ${lifecycle.execution_state}`;
+      actions.textContent = `API 연결 후보: ${(lifecycle.actions || []).join(" → ") || "미분류"} · 검토=${lifecycle.semantic_state || "INFERRED_REVIEW_REQUIRED"} · 실행=${lifecycle.execution_state} · 점수=EXCLUDED (추론 후보)`;
       lifecycleBox.append(lifecycleTitle, actions);
+      for (const binding of lifecycle.proposed_bindings || []) {
+        const bindingLine = document.createElement("p");
+        bindingLine.className = "binding-candidate";
+        bindingLine.textContent = `결속 ${binding.consumer_location || "PATH"}:${binding.consumer_parameter_name || "?"} ← ${binding.producer_json_pointer || "?"} · 신뢰도 ${formatConfidence(binding.inference_confidence)} · 근거 ${binding.inference_basis || "UNVERIFIED"} · 검토 ${binding.semantic_state || "INFERRED_REVIEW_REQUIRED"} · 점수 제외`;
+        lifecycleBox.append(bindingLine);
+      }
       article.append(lifecycleBox);
     }
     for (const flow of understanding.flow_candidates || []) {
       const details = document.createElement("details");
       details.className = "score-details";
       const summary = document.createElement("summary");
-      summary.textContent = `${flow.name} · 신뢰도 ${flow.inference_confidence} · ${flow.semantic_state}`;
+      summary.textContent = `${flow.name} · 신뢰도 ${formatConfidence(flow.inference_confidence)} · 검토 ${flow.semantic_state || "INFERRED_REVIEW_REQUIRED"}`;
       const body = document.createElement("div");
       body.className = "inference-body";
       const actor = document.createElement("p");
       actor.textContent = `Actor: ${flow.inferred_actor} · 업무 객체: ${flow.inferred_business_object}`;
       const stages = document.createElement("p");
       stages.textContent = `제안 Flow: ${(flow.stages || []).join(" → ") || "미분류"}`;
-      body.append(actor, stages);
+      const evidence = document.createElement("p");
+      evidence.textContent = `근거 observation ${flow.trigger_observation_id || "UNVERIFIED"} · evidence ${compactDigest(flow.evidence_sha256)} · runtime ${flow.runtime_verified === true ? "VERIFIED" : "NOT_RUN"} · 점수 EXCLUDED (실행 Receipt 필요)`;
+      body.append(actor, stages, evidence);
       if (flow.operation) {
         const operation = document.createElement("p");
         operation.textContent = `API: ${flow.operation.http_method || "?"} ${flow.operation.http_path || "?"} · ${flow.operation.lifecycle_action || "INVOKE"}`;

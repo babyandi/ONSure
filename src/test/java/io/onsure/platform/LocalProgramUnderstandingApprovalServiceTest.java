@@ -3,6 +3,7 @@ package io.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
@@ -129,7 +130,15 @@ class LocalProgramUnderstandingApprovalServiceTest {
                       tags: [Orders]
                       requestBody:
                         content: {application/json: {schema: {type: object}}}
-                      responses: {'201': {description: created}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                properties: {orderId: {type: string}}
+                                required: [orderId]
                   /orders/{orderId}:
                     parameters:
                       - {name: orderId, in: path, required: true, schema: {type: string}}
@@ -149,9 +158,111 @@ class LocalProgramUnderstandingApprovalServiceTest {
         assertEquals(1, lifecycles.get(0).get("binding_count"));
         @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
                 (List<Map<String, Object>>) lifecycles.get(0).get("bindings");
-        assertEquals("/id", bindings.get(0).get("producer_json_pointer"));
+        assertEquals("/orderId", bindings.get(0).get("producer_json_pointer"));
         assertEquals("orderId", bindings.get(0).get("consumer_parameter_name"));
+        assertEquals("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", bindings.get(0).get("inference_basis"));
+        assertEquals(0.93, bindings.get(0).get("inference_confidence"));
+        assertEquals("REVIEWED_AND_SEPARATELY_APPROVED", bindings.get(0).get("review_state"));
+        assertEquals("AUTHORIZED_NOT_RUN", bindings.get(0).get("state"));
+        assertTrue(bindings.get(0).get("review_sha256").toString().matches("[0-9a-f]{64}"));
+        assertTrue(bindings.get(0).get("approval_receipt_sha256").toString().matches("[0-9a-f]{64}"));
+        assertEquals(false, bindings.get(0).get("auto_execute_before_approval"));
         assertEquals(false, bindings.get(0).get("value_storage_allowed"));
+    }
+
+    @Test
+    void blocksHeuristicLifecycleBindingAndItsConsumerBeforeExecution() throws Exception {
+        Prepared prepared = prepare("heuristic-lifecycle", """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        content: {application/json: {schema: {type: object}}}
+                      responses: {'201': {description: created}}
+                  /orders/{orderId}:
+                    parameters:
+                      - {name: orderId, in: path, required: true, schema: {type: string}}
+                    get:
+                      operationId: getOrder
+                      tags: [Orders]
+                      responses: {'200': {description: found}}
+                """);
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(
+                prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
+
+        assertEquals("PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN", plan.get("plan_state"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
+                (List<Map<String, Object>>) plan.get("authorized_lifecycles");
+        assertEquals(0, lifecycles.get(0).get("binding_count"));
+        assertEquals(1, lifecycles.get(0).get("blocked_binding_count"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> blockedBindings =
+                (List<Map<String, Object>>) lifecycles.get(0).get("blocked_bindings");
+        assertEquals("BUSINESS_OBJECT_AND_LIFECYCLE_PATH_PARAMETER_HEURISTIC",
+                blockedBindings.get(0).get("inference_basis"));
+        assertEquals(0.70, blockedBindings.get(0).get("inference_confidence"));
+        assertEquals("BLOCKED_BINDING_REVIEW_REQUIRED", blockedBindings.get(0).get("state"));
+        assertEquals(false, blockedBindings.get(0).get("value_storage_allowed"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> candidates =
+                (List<Map<String, Object>>) plan.get("authorized_candidates");
+        Map<String, Object> consumer = candidates.stream()
+                .filter(candidate -> "GET".equals(candidate.get("http_method"))).findFirst().orElseThrow();
+        assertEquals("BLOCKED_BINDING_REVIEW_REQUIRED", consumer.get("state"));
+        assertEquals("NOT_RUN", consumer.get("binding_execution_state"));
+    }
+
+    @Test
+    void keepsExactQueryBindingReviewOnlyUntilTheRunnerSupportsItsLocation() throws Exception {
+        Prepared prepared = prepare("query-binding-review-only", """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties: {name: {type: string}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [queryToken]
+                                properties: {queryToken: {type: string}}
+                    get:
+                      operationId: readOrder
+                      tags: [Orders]
+                      parameters:
+                        - {name: queryToken, in: query, required: true, schema: {type: string}}
+                      responses: {'200': {description: found}}
+                """);
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(
+                prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
+        @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
+                (List<Map<String, Object>>) plan.get("authorized_lifecycles");
+        @SuppressWarnings("unchecked") List<Map<String, Object>> blocked =
+                (List<Map<String, Object>>) lifecycles.get(0).get("blocked_bindings");
+
+        assertEquals(0, lifecycles.get(0).get("binding_count"));
+        assertEquals(1, lifecycles.get(0).get("blocked_binding_count"));
+        assertEquals("QUERY", blocked.get(0).get("consumer_location"));
+        assertEquals(0.93, blocked.get(0).get("inference_confidence"));
+        assertEquals("CONSUMER_LOCATION_RUNNER_NOT_IMPLEMENTED", blocked.get(0).get("blocked_reason"));
+        assertEquals("BLOCKED_BINDING_REVIEW_REQUIRED", blocked.get(0).get("state"));
     }
 
     @Test
@@ -264,6 +375,27 @@ class LocalProgramUnderstandingApprovalServiceTest {
         IllegalStateException tampered = assertThrows(IllegalStateException.class,
                 () -> authorized.service().list(10));
         assertEquals("PROGRAM_EXECUTION_CLAIM_DIGEST_INVALID", tampered.getMessage());
+    }
+
+    @Test
+    void rejectsExpiredOrTamperedExecutionPlanBeforeClaim() throws Exception {
+        Instant now = Instant.parse("2026-08-05T00:00:00Z");
+        Prepared expiredPrepared = prepare("claim-expired");
+        Authorized expiredAuthorization = authorize(expiredPrepared, now);
+        LocalProgramUnderstandingApprovalService expired = new LocalProgramUnderstandingApprovalService(
+                expiredPrepared.workspace(), Clock.fixed(now.plusSeconds(601), ZoneOffset.UTC));
+        IllegalArgumentException expiredError = assertThrows(IllegalArgumentException.class, () ->
+                expired.claimExecution(expiredAuthorization.requestId(), expiredAuthorization.authorizationId(),
+                        expiredAuthorization.planSha(), operator));
+        assertEquals("PROGRAM_EXECUTION_AUTHORIZATION_EXPIRED", expiredError.getMessage());
+
+        Prepared tamperedPrepared = prepare("claim-plan-tampered");
+        Authorized tamperedAuthorization = authorize(tamperedPrepared, now);
+        Files.writeString(tamperedPrepared.workspace().resolve(tamperedAuthorization.planFile()), "{}\n");
+        IllegalArgumentException tamperedError = assertThrows(IllegalArgumentException.class, () ->
+                tamperedAuthorization.service().claimExecution(tamperedAuthorization.requestId(),
+                        tamperedAuthorization.authorizationId(), tamperedAuthorization.planSha(), operator));
+        assertEquals("PROGRAM_EXECUTION_PLAN_STALE_OR_TAMPERED", tamperedError.getMessage());
     }
 
     private Prepared prepare(String suffix) throws Exception {

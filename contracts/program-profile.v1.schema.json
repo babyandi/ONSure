@@ -7,6 +7,7 @@
   "required": [
     "contract", "profile_id", "project_id", "program_id", "source_baseline",
     "purpose", "components", "dependencies", "ai_components", "data_flows",
+    "business_semantic_hypotheses",
     "unknowns", "conflicts", "evidence_refs", "revision", "state", "generated_at",
     "learning_method", "language_inventory", "dynamic_trace", "runtime_verification",
     "human_review", "independent_validation", "final_claim_allowed", "profile_sha256"
@@ -49,6 +50,24 @@
         "e2e_plan_candidates": {"type": "array"},
         "minimal_questions": {"type": "array"},
         "inferences_are_pass_evidence": {"const": false},
+        "final_claim_allowed": {"const": false}
+      }
+    },
+    "business_semantic_hypotheses": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "contract", "source_sha256", "hypothesis_count", "hypotheses", "review_required",
+        "automatic_execution", "score_eligible", "final_claim_allowed"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_BUSINESS_SEMANTIC_HYPOTHESES_V1"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "hypothesis_count": {"type": "integer", "minimum": 0},
+        "hypotheses": {"type": "array"},
+        "review_required": {"const": true},
+        "automatic_execution": {"const": "NOT_RUN_REVIEW_REQUIRED"},
+        "score_eligible": {"const": false},
         "final_claim_allowed": {"const": false}
       }
     },
@@ -112,6 +131,15 @@
               "request_schema_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
               "response_statuses": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
               "response_scalar_json_pointers": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^/.+$"}},
+              "request_input_candidates": {"type": "array", "uniqueItems": true, "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["consumer_location", "consumer_parameter_name", "required"],
+                "properties": {
+                  "consumer_location": {"enum": ["QUERY", "HEADER", "BODY"]},
+                  "consumer_parameter_name": {"type": "string", "minLength": 1, "maxLength": 1024},
+                  "required": {"const": true}
+                }
+              }},
               "security_declared": {"type": "boolean"},
               "lifecycle_action": {"type": "string", "enum": ["CREATE", "READ", "UPDATE", "DELETE", "INVOKE"]},
               "destructive_risk": {"type": "boolean"}

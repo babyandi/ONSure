@@ -29,9 +29,12 @@ public final class FixtureExecutor {
         Path logDirectory = runRoot.resolve("logs");
         Path evidenceDirectory = runRoot.resolve("evidence");
         Path receiptDirectory = runRoot.resolve("receipts");
+        Path temporaryDirectory = runRoot.resolve("tmp")
+                .resolve(Hashing.sha256(fixture.fixtureId()).substring(0, 16));
         Files.createDirectories(logDirectory);
         Files.createDirectories(evidenceDirectory);
         Files.createDirectories(receiptDirectory);
+        Files.createDirectories(temporaryDirectory);
 
         Path stdoutFile = logDirectory.resolve(fixture.fixtureId() + ".stdout.log");
         Path stderrFile = logDirectory.resolve(fixture.fixtureId() + ".stderr.log");
@@ -47,7 +50,7 @@ public final class FixtureExecutor {
                     .directory(workingDirectory.toFile())
                     .redirectOutput(stdoutFile.toFile())
                     .redirectError(stderrFile.toFile());
-            restrictEnvironment(builder.environment());
+            restrictEnvironment(builder.environment(), temporaryDirectory);
             Process process = builder.start();
             processStarted = true;
             boolean completed = process.waitFor(fixture.timeoutSec(), TimeUnit.SECONDS);
@@ -155,13 +158,14 @@ public final class FixtureExecutor {
         }
     }
 
-    private static void restrictEnvironment(Map<String, String> environment) {
+    private static void restrictEnvironment(Map<String, String> environment, Path temporaryDirectory) {
         Map<String, String> host = System.getenv();
         environment.clear();
         for (String key : List.of("PATH", "JAVA_HOME", "HOME", "LANG", "LC_ALL", "TZ")) {
             String value = host.get(key);
             if (value != null) environment.put(key, value);
         }
+        environment.put("TMPDIR", temporaryDirectory.toAbsolutePath().normalize().toString());
     }
 
     private static boolean requiredEvidenceComplete(List<String> required, boolean started,

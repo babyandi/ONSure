@@ -22,6 +22,15 @@
   producer JSON Pointer에서 consumer path로 값을 전달하는 비저장 `CREATE → READ` 실제 실행
 - OpenAPI response schema의 중첩 scalar JSON Pointer 탐색과 exact property/단일 `id` 근거 기반
   binding 신뢰도 산정
+- 필수 query/header/request-body 입력의 exact-name 결속 후보와 민감 header 제외, Runner 미지원
+  위치의 review-only `BLOCKED_NOT_RUN` 권한 경계
+- 일반 배열과 schema 보장 singleton 배열을 구분하는 bounded pointer template, 런타임 cardinality
+  재검증 및 ambiguity 차단
+- operation/tag/path/schema/component 근거에 결속된 Capability·Workflow 의미 가설과
+  confidence·ambiguity·UNKNOWN·점수 제외 계약
+- 관리화면의 총점 진단, DOMAIN→PHASE→GROUP→AREA→STEP drill-down, Before/After 세부 변화와
+  자동 추론 confidence·근거·승인·실행 상태 표시
+- 격리 Fixture별 run 전용 `TMPDIR`로 host `/tmp` 고갈과 실행 결과의 불필요한 결합 제거
 - Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
 - loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계
 - VS Code Runtime/Admin View의 SecretStorage 기반 LLM Gateway health·token·cost·receipt-chain 표시
