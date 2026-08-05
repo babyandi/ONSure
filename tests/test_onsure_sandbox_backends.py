@@ -62,6 +62,12 @@ class ONSureSandboxBackendsTest(unittest.TestCase):
         self.assertIn("ONSURE_ENVIRONMENT_PROBE_MISSING", executor)
         self.assertIn("--font", executor)
 
+    def test_diagnostic_propagates_an_isolated_temp_root_to_sandbox_children(self):
+        source = (ROOT / "scripts/onsure_sandbox_diagnostics.py").read_text(encoding="utf-8")
+        self.assertIn('TemporaryDirectory(prefix="onsure-sandbox-runtime-")', source)
+        self.assertIn('"TMPDIR": sandbox_temp', source)
+        self.assertIn('"ONSURE_TEMP_ROOT": sandbox_temp', source)
+
     def test_invalid_oci_image_reference_fails_closed_before_execution(self):
         command = """
 set -euo pipefail

@@ -127,25 +127,29 @@ def oci_diagnostic() -> dict[str, object]:
             "boundary_attack_execution": "NOT_RUN",
             "validation_probe_execution": "NOT_RUN",
         }
-    environment = {
-        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
-        "ONSURE_FIXTURE_SANDBOX_BACKEND": "OCI_DOCKER",
-        "ONSURE_VALIDATION_OCI_IMAGE": image,
-    }
-    attacks = run(
-        ["bash", "scripts/test-fixture-sandbox-boundary.sh"],
-        environment=environment, timeout=60,
-    )
-    with tempfile.TemporaryDirectory(prefix="onsure-validation-oci-probe-") as temporary:
-        probe_environment = dict(environment)
-        probe_environment.update({
-            "ONSURE_SANDBOX_PROBE": "1",
-            "ONSURE_VALIDATION_SANDBOX_BACKEND": "OCI_DOCKER",
-        })
-        probe = run(
-            ["bash", "scripts/validation-sandbox-launcher.sh", temporary, "15", "true"],
-            environment=probe_environment, timeout=30,
+    with tempfile.TemporaryDirectory(prefix="onsure-sandbox-runtime-") as sandbox_temp:
+        environment = {
+            "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+            "TMPDIR": sandbox_temp,
+            "ONSURE_TEMP_ROOT": sandbox_temp,
+            "ONSURE_FIXTURE_SANDBOX_BACKEND": "OCI_DOCKER",
+            "ONSURE_VALIDATION_OCI_IMAGE": image,
+        }
+        attacks = run(
+            ["bash", "scripts/test-fixture-sandbox-boundary.sh"],
+            environment=environment, timeout=60,
         )
+        with tempfile.TemporaryDirectory(
+                prefix="onsure-validation-oci-probe-", dir=sandbox_temp) as temporary:
+            probe_environment = dict(environment)
+            probe_environment.update({
+                "ONSURE_SANDBOX_PROBE": "1",
+                "ONSURE_VALIDATION_SANDBOX_BACKEND": "OCI_DOCKER",
+            })
+            probe = run(
+                ["bash", "scripts/validation-sandbox-launcher.sh", temporary, "15", "true"],
+                environment=probe_environment, timeout=30,
+            )
     attack_pass = attacks.returncode == 0 \
         and "ONSURE_FIXTURE_SANDBOX_BOUNDARY_PASS 12" in attacks.stdout
     probe_pass = probe.returncode == 0 \
