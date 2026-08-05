@@ -13,16 +13,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Set;
 
 /** Creates a bounded writable execution copy while preserving a read-only source boundary. */
 public final class ValidationSourceSnapshot {
     public static final int DEFAULT_MAX_FILES = 50_000;
     public static final long DEFAULT_MAX_BYTES = 512L * 1024L * 1024L;
-    private static final Set<String> EXCLUDED_NAMES = Set.of(
-            ".git", ".onsure", "target", "node_modules", ".venv", "venv",
-            ".pytest_cache", "__pycache__", "coverage", "dist", "build", "run", "logs", "backups");
-
     public record Snapshot(
             Path sourceRoot,
             Path snapshotRoot,
@@ -139,7 +134,7 @@ public final class ValidationSourceSnapshot {
     }
 
     private static boolean excludedName(String name) {
-        return EXCLUDED_NAMES.contains(name);
+        return GeneratedPathPolicy.excludes(name);
     }
 
     private static String normalized(Path value) {

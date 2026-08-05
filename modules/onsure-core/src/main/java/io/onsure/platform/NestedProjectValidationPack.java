@@ -28,8 +28,6 @@ public final class NestedProjectValidationPack implements ValidationPack {
     private static final int MAX_DEPTH = 8;
     private static final int MAX_ENTRIES = 50_000;
     private static final int MAX_PROJECT_ROOTS = 128;
-    private static final Set<String> SKIPPED = Set.of(
-            ".git", ".onsure", "target", "build", "node_modules", "__pycache__", ".venv", "venv");
     private final ObjectMapper mapper = new ObjectMapper();
 
     private enum Ecosystem { MAVEN, GRADLE, PYTHON, NODE }
@@ -91,7 +89,7 @@ public final class NestedProjectValidationPack implements ValidationPack {
                 if (++entries[0] > MAX_ENTRIES)
                     throw new IllegalArgumentException("NESTED_PROJECT_DETECTION_ENTRY_LIMIT_EXCEEDED");
                 if (!directory.equals(root) && (Files.isSymbolicLink(directory)
-                        || SKIPPED.contains(directory.getFileName().toString())))
+                        || GeneratedPathPolicy.excludes(directory.getFileName().toString())))
                     return FileVisitResult.SKIP_SUBTREE;
                 return FileVisitResult.CONTINUE;
             }

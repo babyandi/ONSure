@@ -53,6 +53,24 @@ class NestedProjectValidationPackTest {
     }
 
     @Test
+    void ignoresGeneratedAndVendoredProjectMetadata() throws Exception {
+        Path runtime = Files.createDirectories(temp.resolve(
+                "vscode-extension/.vscode-test/runtime/extensions/renderer"));
+        Files.writeString(runtime.resolve("package.json"), "{\"scripts\":{\"test\":\"node --test\"}}");
+        Files.writeString(runtime.resolve("package-lock.json"), "{}");
+        Path cache = Files.createDirectories(temp.resolve("service/.gradle/vendor"));
+        Files.writeString(cache.resolve("build.gradle"), "plugins { java }");
+
+        var profile = new StandardValidationProfileDetector(List.of()).detect("generated", temp);
+
+        assertFalse(profile.environmentRequirements().stream().anyMatch(requirement ->
+                requirement.value().contains(".vscode-test")));
+        assertFalse(profile.steps().stream().anyMatch(step ->
+                step.workingDirectory().toString().contains(".vscode-test")
+                        || step.workingDirectory().toString().contains(".gradle")));
+    }
+
+    @Test
     void selectsPytestOnlyWhenNestedProjectDeclaresIt() throws Exception {
         Path python = Files.createDirectories(temp.resolve("tools/checker/tests"));
         Files.writeString(python.getParent().resolve("pyproject.toml"),

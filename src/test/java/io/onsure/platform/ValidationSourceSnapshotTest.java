@@ -22,6 +22,8 @@ class ValidationSourceSnapshotTest {
         Files.writeString(source.resolve("node_modules/pkg/generated.js"), "ignored");
         Files.createDirectories(source.resolve("target"));
         Files.writeString(source.resolve("target/output.jar"), "ignored");
+        Files.createDirectories(source.resolve("vscode-extension/.vscode-test/runtime"));
+        Files.writeString(source.resolve("vscode-extension/.vscode-test/runtime/package.json"), "{}");
         Files.createDirectories(source.resolve("contracts"));
         Files.writeString(source.resolve("contracts/target-adapter.v1.json"), "{}\n");
 
@@ -32,6 +34,7 @@ class ValidationSourceSnapshotTest {
         assertTrue(Files.isRegularFile(
                 snapshot.snapshotRoot().resolve("contracts/target-adapter.v1.json")));
         assertFalse(Files.exists(snapshot.snapshotRoot().resolve("node_modules")));
+        assertFalse(Files.exists(snapshot.snapshotRoot().resolve("vscode-extension/.vscode-test")));
         assertEquals(snapshot.sourceDigestBefore(), snapshot.snapshotDigest());
         assertTrue(ValidationSourceSnapshot.sourceUnchanged(snapshot));
     }
