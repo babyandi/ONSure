@@ -71,6 +71,7 @@ class LocalAuthenticatedApiServerTest {
             assertTrue(LocalAuthenticatedApiServer.routePaths().contains("/v1/validation-scorecards"));
             assertTrue(script.body().contains("environment_profile_file"));
             assertTrue(script.body().contains("execution_profile_file"));
+            assertTrue(script.body().contains("/v1/programs/understand"));
             assertTrue(!script.body().contains("localStorage"));
             assertTrue(!script.body().contains("sessionStorage"));
 

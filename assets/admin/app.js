@@ -55,7 +55,14 @@
       run.textContent = "검증";
       run.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole);
       run.addEventListener("click", () => validateProgram(program.project_id, program.program_id, run));
-      actions.append(run);
+      const understand = document.createElement("button");
+      understand.type = "button";
+      understand.className = "button secondary compact-button";
+      understand.textContent = "자동 이해";
+      understand.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole);
+      understand.addEventListener("click", () => understandProgram(
+        program.project_id, program.program_id, understand));
+      actions.append(understand, run);
       row.append(actions);
       body.append(row);
     }
@@ -101,6 +108,60 @@
       article.append(compare);
       root.append(article);
     }
+  }
+
+  function renderUnderstandingPortfolio(programs) {
+    const root = byId("understanding-list");
+    root.replaceChildren();
+    const inferred = programs.filter((program) => program.program_understanding?.contract === "ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1");
+    byId("understanding-empty").hidden = inferred.length !== 0;
+    for (const program of inferred) root.append(understandingCard(
+      program.program_name || program.program_id, program.program_understanding));
+  }
+
+  function understandingCard(name, understanding) {
+    const article = document.createElement("article");
+    article.className = "understanding-card";
+    const heading = document.createElement("div");
+    heading.className = "trust-card-header";
+    const title = document.createElement("h3");
+    title.textContent = name;
+    const count = document.createElement("strong");
+    count.className = "understanding-count";
+    count.textContent = `${understanding.flow_candidate_count || 0} Flow`;
+    heading.append(title, count);
+    article.append(heading);
+    const boundary = document.createElement("p");
+    boundary.className = "trust-boundary";
+    boundary.textContent = `추론=${understanding.inference_method} · 실행=${understanding.automatic_execution} · PASS 증적=${understanding.inferences_are_pass_evidence}`;
+    article.append(boundary);
+    for (const flow of understanding.flow_candidates || []) {
+      const details = document.createElement("details");
+      details.className = "score-details";
+      const summary = document.createElement("summary");
+      summary.textContent = `${flow.name} · 신뢰도 ${flow.inference_confidence} · ${flow.semantic_state}`;
+      const body = document.createElement("div");
+      body.className = "inference-body";
+      const actor = document.createElement("p");
+      actor.textContent = `Actor: ${flow.inferred_actor} · 업무 객체: ${flow.inferred_business_object}`;
+      const stages = document.createElement("p");
+      stages.textContent = `제안 Flow: ${(flow.stages || []).join(" → ") || "미분류"}`;
+      body.append(actor, stages);
+      details.append(summary, body);
+      article.append(details);
+    }
+    const questions = document.createElement("div");
+    questions.className = "question-list";
+    const qtitle = document.createElement("strong");
+    qtitle.textContent = "실행 전 최소 확인";
+    questions.append(qtitle);
+    for (const question of understanding.minimal_questions || []) {
+      const item = document.createElement("p");
+      item.textContent = `${question.question_id}: ${question.prompt} [${question.answer_state}]`;
+      questions.append(item);
+    }
+    article.append(questions);
+    return article;
   }
 
   function scoreNodes(label, nodes) {
@@ -215,6 +276,7 @@
     const programs = Array.isArray(data.programs) ? data.programs : [];
     renderPrograms(programs);
     renderScorecards(programs);
+    renderUnderstandingPortfolio(programs);
     setText("self-validation", assurance.self_validation);
     setText("otester", assurance.independent_otester);
     setText("oaudit", assurance.independent_oaudit);
@@ -290,6 +352,21 @@
       await loadOverview();
     } catch (error) {
       setText("program-action-state", error instanceof Error ? error.message : "검증 실패");
+    } finally { button.disabled = false; }
+  }
+
+  async function understandProgram(projectId, targetId, button) {
+    button.disabled = true;
+    setText("program-action-state", "업무 Flow와 E2E 계획 후보 추론 중…");
+    try {
+      const result = await api("/v1/programs/understand", {method: "POST", body: JSON.stringify({
+        project_id: projectId, target_id: targetId
+      })});
+      const understanding = result.program_understanding || {};
+      setText("program-action-state", `Flow 후보 ${understanding.flow_candidate_count || 0} · 질문 ${(understanding.minimal_questions || []).length} · 실행 ${result.automatic_execution}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "자동 이해 실패");
     } finally { button.disabled = false; }
   }
 

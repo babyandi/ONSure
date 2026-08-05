@@ -288,6 +288,22 @@
         }
       }
     },
+    "/v1/programs/understand": {
+      "post": {
+        "operationId": "inferProgramUnderstanding",
+        "tags": ["Management"],
+        "summary": "Infer review-only business flows and E2E plan candidates from a registered immutable source",
+        "description": "Inference does not execute target code, earn validation points, or grant PASS.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProgramUnderstandingRequest"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"}
+        }
+      }
+    },
     "/v1/validation-scorecards": {
       "get": {
         "operationId": "listValidationScorecards",
@@ -440,6 +456,15 @@
             "minLength": 1,
             "description": "Optional workspace-contained, exact-source-bound ONSURE_REVIEWED_EXECUTION_PROFILE_V1 file used only by UNIVERSAL."
           }
+        },
+        "additionalProperties": false
+      },
+      "ProgramUnderstandingRequest": {
+        "type": "object",
+        "required": ["project_id", "target_id"],
+        "properties": {
+          "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"}
         },
         "additionalProperties": false
       },

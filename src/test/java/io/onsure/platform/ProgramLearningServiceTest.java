@@ -34,6 +34,11 @@ class ProgramLearningServiceTest {
         Map<String, Object> workflow = (Map<String, Object>) profile.get("workflow_inventory");
         assertEquals("ONSURE_STATIC_WORKFLOW_INVENTORY_V1", workflow.get("contract"));
         assertEquals(false, workflow.get("auto_execute"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> understanding = (Map<String, Object>) profile.get("program_understanding");
+        assertEquals("ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1", understanding.get("contract"));
+        assertEquals(false, understanding.get("inferences_are_pass_evidence"));
+        assertEquals("NOT_RUN_REVIEW_REQUIRED", understanding.get("automatic_execution"));
     }
 
     @Test

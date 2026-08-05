@@ -131,4 +131,34 @@ class LocalProgramManagementServiceTest {
         Path validationData = workspace.resolve(".onsure/validation-data/drift");
         assertFalse(Files.exists(validationData));
     }
+
+    @Test
+    void registeredProgramUnderstandingIsReadOnlyReviewOnlyAndSourceBound() throws Exception {
+        Path workspace = Files.createDirectory(temp.resolve("understanding-workspace"));
+        Path source = Files.createDirectory(temp.resolve("understanding-source"));
+        Files.writeString(source.resolve("openapi.yaml"), """
+                openapi: 3.1.0
+                info: {title: Customer orders, version: '1'}
+                paths: {/orders: {post: {operationId: createOrder, responses: {'200': {description: ok}}}}}
+                """);
+        LocalProgramManagementService service = new LocalProgramManagementService(workspace);
+        service.register(mapper.valueToTree(Map.of(
+                "workspace_id", "local", "workspace_name", "Local",
+                "project_id", "customer", "project_name", "Customer",
+                "target_id", "orders", "target_name", "Orders",
+                "target_type", "GENERAL_SOFTWARE", "source_root", source.toString())));
+        String before = Files.readString(source.resolve("openapi.yaml"));
+
+        Map<String, Object> result = service.understand(mapper.valueToTree(Map.of(
+                "project_id", "customer", "target_id", "orders")));
+
+        assertEquals("ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1", result.get("contract"));
+        assertEquals("NOT_RUN_REVIEW_REQUIRED", result.get("automatic_execution"));
+        assertFalse((Boolean) result.get("source_mutation_detected"));
+        assertEquals(before, Files.readString(source.resolve("openapi.yaml")));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> understanding = (Map<String, Object>) result.get("program_understanding");
+        assertTrue(((Number) understanding.get("flow_candidate_count")).intValue() > 0);
+        assertFalse((Boolean) understanding.get("inferences_are_pass_evidence"));
+    }
 }

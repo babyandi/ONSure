@@ -129,6 +129,14 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 8px 
 .score-node p { grid-column: 1 / -1; margin: 2px 0; color: var(--muted); font-size: .75rem; line-height: 1.45; }
 .score-node .improvement-guide { color: #b5d8b9; }
 .comparison-line { margin: 14px 0 0; color: var(--purple); font-size: .78rem; }
+.understanding-list { display: grid; gap: 16px; margin-top: 18px; }
+.understanding-card { padding: 18px; border: 1px solid #4e4770; border-radius: 10px; background: #151226; }
+.understanding-card h3 { margin: 0; }
+.understanding-count { color: var(--purple); font: 700 1rem ui-monospace, monospace; }
+.inference-body { padding: 10px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
+.inference-body p { margin: 4px 0; }
+.question-list { margin-top: 14px; padding: 12px; border: 1px solid #5b4e29; border-radius: 8px; background: #211d11; }
+.question-list p { margin: 7px 0 0; color: #d2c38e; font-size: .75rem; }
 [hidden] { display: none !important; }
 
 @media (max-width: 1050px) {

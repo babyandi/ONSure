@@ -88,12 +88,26 @@ final class LocalManagementOverviewService {
                     target.path("immutableSourceReference").asText(), "UNVERIFIED"));
             program.put("validation_state", validation.get("state"));
             program.put("latest_validation", validation);
+            program.put("program_understanding", programUnderstanding(targetId));
             program.put("improvement_candidate_count", validation.get("improvement_candidate_count"));
             program.put("final_claim_allowed", false);
             result.add(Map.copyOf(program));
         }
         result.sort(Comparator.comparing(value -> value.get("program_id").toString()));
         return List.copyOf(result);
+    }
+
+    private Map<String, Object> programUnderstanding(String targetId) throws Exception {
+        JsonNode profile = readJson(workspaceRoot.resolve(".onsure/program-understanding")
+                .resolve(targetId).resolve("program-profile.json").normalize());
+        JsonNode understanding = profile == null ? null : profile.path("program_understanding");
+        if (understanding == null || !understanding.isObject()
+                || !ProgramUnderstandingEngine.CONTRACT.equals(understanding.path("contract").asText())) {
+            return Map.of("state", "NOT_RUN", "final_claim_allowed", false);
+        }
+        Map<String, Object> result = mapper.convertValue(understanding, Map.class);
+        result.put("state", "CANDIDATE_REVIEW_REQUIRED");
+        return Map.copyOf(result);
     }
 
     private Map<String, Object> latestValidation(String targetId) throws Exception {

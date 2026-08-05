@@ -215,6 +215,37 @@ final class LocalProgramManagementService {
         }
     }
 
+    Map<String, Object> understand(JsonNode request) throws Exception {
+        String projectId = id(request, "project_id");
+        String targetId = id(request, "target_id");
+        ProductCatalog.RegisteredTarget registered = registered(projectId, targetId);
+        ValidationTarget target = registered.target();
+        Path source = sourceRoot(target.sourceRoot().toString());
+        TreeObservation before = inclusiveTreeDigest(source);
+        if (!("sha256:" + before.digest()).equals(target.immutableSourceReference())) {
+            throw new IllegalArgumentException("PROGRAM_SOURCE_REFERENCE_DRIFT");
+        }
+        Path output = workspaceRoot.resolve(".onsure/program-understanding")
+                .resolve(targetId).resolve("program-profile.json").normalize();
+        if (!output.startsWith(workspaceRoot)) throw new IllegalStateException("PROGRAM_UNDERSTANDING_OUTPUT_INVALID");
+        Map<String, Object> profile = new ProgramLearningService().learn(
+                source, projectId, targetId, output);
+        TreeObservation after = inclusiveTreeDigest(source);
+        if (!before.equals(after)) throw new IllegalStateException("READ_ONLY_SOURCE_CHANGED_DURING_UNDERSTANDING");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> understanding = (Map<String, Object>) profile.get("program_understanding");
+        return Map.ofEntries(
+                Map.entry("contract", ProgramUnderstandingEngine.CONTRACT),
+                Map.entry("project_id", projectId), Map.entry("target_id", targetId),
+                Map.entry("profile_id", profile.get("profile_id")),
+                Map.entry("profile_file", output.toString()),
+                Map.entry("source_sha256", before.digest()),
+                Map.entry("program_understanding", understanding),
+                Map.entry("source_mutation_detected", false),
+                Map.entry("automatic_execution", "NOT_RUN_REVIEW_REQUIRED"),
+                Map.entry("final_claim_allowed", false));
+    }
+
     private Map<String, Object> validateUniversal(
             JsonNode request, String projectId, String targetId, ValidationTarget target,
             Path source, TreeObservation before, String runId, Path runRoot) throws Exception {

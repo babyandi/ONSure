@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/program-understanding-candidate.v1.schema.json",
+  "title": "ONSure Program Understanding Candidate V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "source_sha256", "inference_method", "observation_count", "observations", "inferred_actors", "inferred_business_objects", "flow_candidate_count", "flow_candidates", "e2e_plan_candidates", "minimal_questions", "automatic_execution", "inferences_are_pass_evidence", "human_review", "runtime_verification", "final_claim_allowed"],
+  "properties": {
+    "contract": {"const": "ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "inference_method": {"const": "DETERMINISTIC_STATIC_SEMANTIC_HEURISTICS_V1"},
+    "observation_count": {"type": "integer", "minimum": 0},
+    "observations": {"type": "array", "items": {"type": "object"}},
+    "inferred_actors": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "inferred_business_objects": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "flow_candidate_count": {"type": "integer", "minimum": 0},
+    "flow_candidates": {"type": "array", "items": {"$ref": "#/$defs/flow"}},
+    "e2e_plan_candidates": {"type": "array", "items": {"$ref": "#/$defs/plan"}},
+    "minimal_questions": {"type": "array", "items": {"type": "object"}},
+    "automatic_execution": {"const": "NOT_RUN_REVIEW_REQUIRED"},
+    "inferences_are_pass_evidence": {"const": false},
+    "human_review": {"const": "NOT_RUN"},
+    "runtime_verification": {"const": "NOT_RUN"},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "flow": {
+      "type": "object",
+      "required": ["flow_id", "name", "trigger_observation_id", "inferred_actor", "inferred_business_object", "stages", "evidence_sha256", "inference_confidence", "semantic_state", "runtime_verified", "auto_execute", "score_eligible"],
+      "properties": {
+        "flow_id": {"type": "string", "pattern": "^FLOW-[0-9a-f]{16}$"},
+        "name": {"type": "string", "minLength": 1},
+        "trigger_observation_id": {"type": "string", "pattern": "^WF-[0-9a-f]{16}$"},
+        "inferred_actor": {"type": "string", "minLength": 1},
+        "inferred_business_object": {"type": "string", "minLength": 1},
+        "stages": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "inference_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "semantic_state": {"const": "INFERRED_REVIEW_REQUIRED"},
+        "runtime_verified": {"const": false},
+        "auto_execute": {"const": false},
+        "score_eligible": {"const": false}
+      }
+    },
+    "plan": {
+      "type": "object",
+      "required": ["plan_id", "flow_id", "proposed_steps", "oracle_state", "execution_state", "sandbox_required", "customer_data_allowed", "destructive_action_allowed", "score_eligible"],
+      "properties": {
+        "plan_id": {"type": "string"}, "flow_id": {"type": "string"},
+        "proposed_steps": {"type": "array"}, "oracle_state": {"type": "string"},
+        "execution_state": {"const": "NOT_RUN_REVIEW_REQUIRED"},
+        "sandbox_required": {"const": true}, "customer_data_allowed": {"const": false},
+        "destructive_action_allowed": {"const": false}, "score_eligible": {"const": false}
+      }
+    }
+  }
+}

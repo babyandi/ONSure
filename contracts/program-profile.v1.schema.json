@@ -39,6 +39,19 @@
     "ai_components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "data_flows": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "workflow_inventory": {"$ref": "#/$defs/workflowInventory"},
+    "program_understanding": {
+      "type": "object",
+      "required": ["contract", "source_sha256", "flow_candidates", "e2e_plan_candidates", "minimal_questions", "inferences_are_pass_evidence", "final_claim_allowed"],
+      "properties": {
+        "contract": {"const": "ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "flow_candidates": {"type": "array"},
+        "e2e_plan_candidates": {"type": "array"},
+        "minimal_questions": {"type": "array"},
+        "inferences_are_pass_evidence": {"const": false},
+        "final_claim_allowed": {"const": false}
+      }
+    },
     "unknowns": {"type": "array", "items": {"type": "string"}},
     "conflicts": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 2},
