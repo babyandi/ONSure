@@ -13,6 +13,14 @@ class HashingSourceSetTest {
     @TempDir Path temp;
 
     @Test
+    void platformFacadeUsesCanonicalSha256Primitive() {
+        byte[] value = "ONSure hashing compatibility".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        assertEquals(io.onsure.common.Sha256.digest(value), Hashing.sha256(value));
+        assertEquals(io.onsure.common.Sha256.digest(value),
+                io.onsure.harness.Hashing.sha256(value));
+    }
+
+    @Test
     void gitSubdirectoryUsesOnlyTrackedFilesInsideThatSubdirectory() throws Exception {
         Path repository = temp.resolve("repository");
         Path app = repository.resolve("apps/demo");

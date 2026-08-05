@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/validation-scorecard.v1.schema.json",
+  "title": "ONSure Validation Scorecard V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "score_type", "scoring_model_id", "max_points", "earned_points",
+    "unearned_points", "evidence_coverage_percent", "validation_outcome",
+    "nonfinal_gate_satisfied", "diagnosis_summary", "improvement_summary", "trust_gate",
+    "required_step_count", "passed_required_step_count", "failed_required_step_count",
+    "blocked_required_step_count", "not_run_required_step_count", "inconclusive_required_step_count",
+    "groups", "phases", "assessment_domains", "assessment_areas", "steps",
+    "unearned_required_steps", "interpretation", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_VALIDATION_SCORECARD_V1"},
+    "score_type": {"const": "SELF_VALIDATION_EVIDENCE_COVERAGE_NONFINAL"},
+    "scoring_model_id": {"const": "SEVEN_GROUP_WEIGHTED_REQUIRED_STEP_V1"},
+    "max_points": {"const": 100},
+    "earned_points": {"type": "number", "minimum": 0, "maximum": 100},
+    "unearned_points": {"type": "number", "minimum": 0, "maximum": 100},
+    "evidence_coverage_percent": {"type": "number", "minimum": 0, "maximum": 100},
+    "validation_outcome": {"$ref": "#/$defs/outcome"},
+    "nonfinal_gate_satisfied": {"type": "boolean"},
+    "diagnosis_summary": {"type": "string", "minLength": 1},
+    "improvement_summary": {"type": "string", "minLength": 1},
+    "trust_gate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["self_validation", "independent_otester", "independent_oaudit", "source_mutation_allowed", "final_claim_allowed"],
+      "properties": {
+        "self_validation": {"$ref": "#/$defs/outcome"},
+        "independent_otester": {"const": "NOT_RUN"},
+        "independent_oaudit": {"const": "NOT_RUN"},
+        "source_mutation_allowed": {"const": false},
+        "final_claim_allowed": {"const": false}
+      }
+    },
+    "required_step_count": {"type": "integer", "minimum": 0},
+    "passed_required_step_count": {"type": "integer", "minimum": 0},
+    "failed_required_step_count": {"type": "integer", "minimum": 0},
+    "blocked_required_step_count": {"type": "integer", "minimum": 0},
+    "not_run_required_step_count": {"type": "integer", "minimum": 0},
+    "inconclusive_required_step_count": {"type": "integer", "minimum": 0},
+    "groups": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "phases": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "assessment_domains": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "assessment_areas": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "steps": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "unearned_required_steps": {"type": "array", "items": {"type": "object"}},
+    "interpretation": {"type": "string", "minLength": 1},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "outcome": {"enum": ["PASS_NONFINAL", "FAIL", "BLOCKED", "NOT_RUN", "INCONCLUSIVE"]},
+    "node": {
+      "type": "object",
+      "required": ["outcome", "diagnosis", "improvement_guide", "possible_points", "earned_points"],
+      "properties": {
+        "outcome": {"$ref": "#/$defs/outcome"},
+        "diagnosis": {"type": "string", "minLength": 1},
+        "improvement_guide": {"type": "string", "minLength": 1},
+        "possible_points": {"type": "number", "minimum": 0, "maximum": 100},
+        "earned_points": {"type": "number", "minimum": 0, "maximum": 100}
+      }
+    }
+  }
+}

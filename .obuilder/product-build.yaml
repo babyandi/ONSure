@@ -1,0 +1,30 @@
+schema_version: onsure-obuilder-candidate/v1
+status: PREPARATION_ONLY_NONFINAL
+product_id: onsure
+product_root:
+  environment_variable: ONSURE_PRODUCT_ROOT
+canonical_build:
+  command: mvn -B -ntp -q clean verify
+  authority: STANDALONE_ROOT_MAVEN
+compatibility_build:
+  command: mvn -B -ntp -q -f pom-modular.xml clean package
+  authority: FUTURE_MODULE_DECOMPOSITION_GATE
+  release_authority: false
+required_nonfinal_gates:
+  - python3 -m unittest discover -s tests
+  - python3 scripts/validate_onsure_build_boundary.py
+  - python3 scripts/validate_monorepo_migration_readiness.py
+  - python3 scripts/onsure_java_api_baseline.py validate
+  - python3 scripts/onsure_supply_chain.py validate
+  - python3 scripts/validate_onsure_operational_boundary.py
+  - python3 scripts/rehearse_onsure_nested_root.py --mode full
+  - python3 scripts/onsure_pr_overlap.py validate
+prohibited_actions:
+  - MAIN_DIRECT_WRITE
+  - AUTOMATIC_MERGE
+  - DEPLOYMENT
+  - PRODUCTION_GO
+  - COMMERCIAL_GO
+  - FINAL_PASS
+  - ACTUAL_MONOREPO_CUTOVER
+final_claim_allowed: false

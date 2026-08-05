@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_MAIN_BRANCH_PROTECTION_V1",
+  "repository": "babyandi/ONSure",
+  "branch": "main",
+  "required_controls": {
+    "pull_request_required": true,
+    "minimum_approvals": 1,
+    "dismiss_stale_approvals": true,
+    "conversation_resolution_required": true,
+    "direct_push_blocked": true,
+    "force_push_blocked": true,
+    "branch_deletion_blocked": true,
+    "administrators_enforced": true
+  },
+  "github_actions_required": false,
+  "independent_status_checks_required_before_merge": true,
+  "final_claim_allowed": false
+}

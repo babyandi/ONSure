@@ -37,11 +37,16 @@
     "fixture_count": {"type": "integer", "minimum": 0},
     "resource_budget": {
       "type": "object", "additionalProperties": false,
-      "required": ["estimated_seconds", "memory_limit_mb", "process_limit", "network_egress", "paid_service_allowed"],
+      "required": ["estimated_seconds", "memory_limit_mb", "process_limit", "estimated_input_tokens", "estimated_output_tokens", "token_estimate_basis", "data_transfer_scope", "estimated_external_transfer_bytes", "network_egress", "paid_service_allowed"],
       "properties": {
         "estimated_seconds": {"type": "integer", "minimum": 1},
         "memory_limit_mb": {"type": "integer", "minimum": 128},
         "process_limit": {"type": "integer", "minimum": 1},
+        "estimated_input_tokens": {"type": "integer", "minimum": 0},
+        "estimated_output_tokens": {"type": "integer", "minimum": 0},
+        "token_estimate_basis": {"enum": ["NO_MODEL_INVOCATION_PLANNED", "PROVIDER_DECLARED", "CONSERVATIVE_UPPER_BOUND"]},
+        "data_transfer_scope": {"enum": ["WORKSPACE_LOCAL_ONLY", "APPROVED_PROVIDER_ALLOWLIST"]},
+        "estimated_external_transfer_bytes": {"type": "integer", "minimum": 0},
         "network_egress": {"enum": ["DENY_BY_DEFAULT", "ALLOWLIST_ONLY"]},
         "paid_service_allowed": {"type": "boolean"}
       }
@@ -69,10 +74,18 @@
         "approval_id": {"type": "string", "minLength": 1},
         "approval_actor": {"type": "string", "minLength": 1},
         "approval_key_id": {"type": "string", "minLength": 1},
+        "original_plan_file_sha256": {"$ref": "#/$defs/sha256"},
         "approval_receipt_sha256": {"$ref": "#/$defs/sha256"},
         "approved_at": {"type": "string", "format": "date-time"},
         "expires_at": {"type": "string", "format": "date-time"}
-      }
+      },
+      "allOf": [{
+        "if": {"properties": {"state": {"const": "USER_APPROVED"}}, "required": ["state"]},
+        "then": {"required": [
+          "approval_id", "approval_actor", "approval_key_id",
+          "original_plan_file_sha256", "approval_receipt_sha256", "approved_at", "expires_at"
+        ]}
+      }]
     },
     "created_at": {"type": "string", "format": "date-time"},
     "product_full_chain": {"enum": ["NOT_RUN", "PARTIAL", "PASS", "FAIL", "HOLD"]},

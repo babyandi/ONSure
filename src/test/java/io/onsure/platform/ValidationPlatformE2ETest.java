@@ -167,9 +167,11 @@ class ValidationPlatformE2ETest {
             ValidationEngine.RunResult result, boolean ai, Decision expectedReview) {
         for (String stageId : Set.of(
                 "PROGRAM_LEARNING", "RISK_BASED_EXECUTION_PLANNING",
-                "EVIDENCE_BASED_RCA", "PATCH_PLANNING")) {
+                "EVIDENCE_BASED_RCA")) {
             assertEquals(Decision.PASS, stage(result, stageId).decision(), stageId);
         }
+        assertEquals(gitMetadataAvailable() ? Decision.PASS : Decision.HOLD,
+                stage(result, "PATCH_PLANNING").decision(), "PATCH_PLANNING");
         assertEquals(expectedReview, stage(result, "OREVIEW").decision());
         if (ai) assertEquals(Decision.PASS, stage(result, "BEHAVIOR_LEARNING").decision());
         assertEquals("PROFILE_CANDIDATE", result.report().summary().get("program_profile_state"));
@@ -179,6 +181,18 @@ class ValidationPlatformE2ETest {
                 .matches("[0-9a-f]{64}"));
         assertFalse(result.report().summary().get("review_id").equals("NOT_RUN"));
         assertFalse(result.report().summary().get("patch_plan_id").equals("NOT_RUN"));
+    }
+
+    private static boolean gitMetadataAvailable() {
+        try {
+            Process process = new ProcessBuilder(
+                    "git", "rev-parse", "--is-inside-work-tree")
+                    .redirectErrorStream(true).start();
+            return process.waitFor() == 0
+                    && new String(process.getInputStream().readAllBytes()).trim().equals("true");
+        } catch (Exception unavailable) {
+            return false;
+        }
     }
 
     private static StageResult stage(ValidationEngine.RunResult result, String id) {
@@ -211,6 +225,9 @@ class ValidationPlatformE2ETest {
                 "validation-report.json", "validation-report.md", "validation-report.html",
                 "program-profile.json", "execution-plan.json", "execution-plan-approval.json",
                 "review-result.json", "evidence-based-rca.json", "patch-plan.json", "manifest.sha256"));
+        files.add(ValidationStageCheckpointJournal.FILE_NAME);
+        files.add(ValidationContextSnapshotStore.FILE_NAME);
+        files.add(ValidationStageReplayLedger.FILE_NAME);
         if (behaviorExpected) files.add("behavior-profile.json");
         for (String file : files) assertTrue(Files.isRegularFile(runRoot.resolve(file)), file);
         assertTrue(Files.isRegularFile(runRoot.getParent().getParent().resolve("failure-mode-registry.json")));

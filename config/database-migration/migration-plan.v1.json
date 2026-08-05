@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_DATABASE_MIGRATION_EXECUTION_SKELETON_V1",
+  "state": "CANDIDATE_IMPLEMENTED_EXECUTION_NOT_AUTHORIZED",
+  "database_component_present": true,
+  "database_engine": "POSTGRESQL",
+  "migration_tool": "FLYWAY_12_11_0",
+  "schema_owner": "onsure",
+  "ordered_migrations": [
+    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V1__create_assurance_event.sql",
+    "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V2__create_validation_score_history.sql"
+  ],
+  "migration_lock_required": true,
+  "backup_restore_proof_required": true,
+  "development_rehearsal_evidence": "assurance/runtime/onsure-postgresql-flyway-rehearsal.v1.json",
+  "development_rehearsal_status": "PASS_POSTGRESQL_16_14_NONFINAL",
+  "rhel_production_rehearsal_status": "NOT_RUN",
+  "ubuntu_production_rehearsal_status": "NOT_RUN",
+  "signed_receipt_required": true,
+  "destructive_ddl_allowed": false,
+  "customer_data_fixture_allowed": false,
+  "preflight_command": "java -jar modules/onsure-migration-postgresql/target/onsure-migration-postgresql-0.1.0-SNAPSHOT.jar preflight",
+  "apply_command": "AUTHORIZATION_GATED_BY_ONSURE_MIGRATION_AUTHORIZED",
+  "migration_authorized": false,
+  "rollback_required": true,
+  "final_claim_allowed": false
+}

@@ -12,7 +12,7 @@ BEHAVIOR_LEARNING               STUB
 OPLANNING                       DESIGN_ONLY
 OREVIEW                         STUB
 OIMPROVEMENT_PATCH              DESIGN_ONLY
-VSCODE_EXTENSION                DESIGN_ONLY
+VSCODE_EXTENSION                PARTIAL
 GIT_FULL_CHAIN                  DESIGN_ONLY
 WEB_COMMERCE_OLICENSE           DESIGN_ONLY
 CURRENT_SOURCE_FORMAL_RUN       NOT_RUN
@@ -44,6 +44,13 @@ FINAL_LOCK_ALLOWED              false
 - Learning Candidate부터 Applied Lock까지의 Ledger 골격
 - RAG 준비 Candidate와 Target Learning 요청·사후 기록
 - 중단·재개 가능한 Repository Autopilot 보조 Runner
+- stage-bound validation context snapshot과 명시적 typed replay
+- process birth identity에 결속된 orphan pause/resume/cancel 복구
+- 결정론적 local ASK/PLAN, Provider SPI와 loopback Public SDK 후보 모듈
+- 승인 exchange 결속, 프로젝트 지식 익명화·공통 후보 분리
+- runtime assurance, deploy/migration preflight, Maven air-gap 및 강화된 공급망 gate
+- OpenAPI 3.1 Local API·LLM Gateway와 content-free token/cost receipt chain
+- 등록 프로그램 검증 결과·개선 후보·Gateway 상태를 표시하는 loopback 관리화면
 
 ## 축소·모의 구현으로 분류하는 이유
 
@@ -51,8 +58,15 @@ FINAL_LOCK_ALLOWED              false
 - RCA는 Trace와 인과 실험 대신 Category Template을 사용한다.
 - Remediation은 Patch를 만들지 않고 계획 문구만 기록한다.
 - Before/After는 Finding Fingerprint 집합의 차이를 비교한다.
-- `.vscode/tasks.json`과 Python Runner는 실제 VS Code Extension이 아니다.
+- 실제 VS Code Extension과 Loopback Local API가 존재하고 등록·학습·Plan·서명 승인·Validation
+  경로를 연결한다. 다만 개별 Chat·Profile·Finding·Diff/Hunk·Evidence·Git UX와 Extension Host
+  Full-Chain은 아직 완료되지 않았다.
 - ProductPlatformE2E는 제품 Full-Chain이 아니라 Validator Fixture E2E다.
+- VS Code 1.95.3 Extension Host E2E는 Node 22/Xvfb 컨테이너에서 온라인 준비 실행과
+  `--network none` 오프라인 재실행 모두 종료 코드 0으로 검증했다. 이는 비최종 개발 증적이며
+  설치 사용자 전체 여정 또는 독립 OTester 승인을 대체하지 않는다.
+- Maven/npm vulnerability totals는 0이고 `ORUDA Labs` proprietary root license와
+  third-party notice가 반영됐다. 독립 법률 검토와 고객 배포계약은 `NOT_RUN`이다.
 
 ## 이번 기준선에서 추가된 Codespace-free 보완
 
@@ -76,8 +90,8 @@ FINAL_LOCK_ALLOWED              false
 5. 재현·최초 실패·Trace 기반 RCA
 6. Patch·Hunk 승인·Worktree·Rollback
 7. 동일 검증 맥락의 Before/After Proof
-8. Local Authenticated API
-9. 실제 VS Code Extension
+8. Local Authenticated API의 운영·복구·Extension Host E2E 완성
+9. VS Code의 개별 Chat·Profile·Finding·Evidence·Git UX 완성
 10. Git Commit·Push·Draft PR Full-Chain
 
 ## 최종 실행

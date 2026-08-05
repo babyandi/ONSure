@@ -5,9 +5,8 @@ receipts/validator-fixture-e2e/
 receipts/development-gate/
 validation-data/
 *.log
-.onsure/autopilot/
-.onsure/one-shot/
-.onsure/core-modular/
-.onsure/final-stage/
-.onsure/local-gate/
+.onsure/
 __pycache__/
+vscode-extension/node_modules/
+vscode-extension/.vscode-test/
+vscode-extension/*.vsix

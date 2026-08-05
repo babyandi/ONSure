@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SANDBOX_BOUNDARY_V1",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "execution": {
     "network_default": "DENY",
     "filesystem_default": "READ_ONLY_SOURCE_WRITE_TMP_ONLY",
@@ -18,14 +18,31 @@
     "capability_drop_required": true
   },
   "backends": {
-    "default": "ROOTLESS_BWRAP",
-    "allowed": ["ROOTLESS_BWRAP"],
+    "default": "AUTO",
+    "allowed": ["AUTO", "ROOTLESS_BWRAP", "OCI_DOCKER"],
+    "selection": "ROOTLESS_BWRAP_FIRST_THEN_LOCAL_OCI_FAIL_CLOSED",
     "rootless": {
       "network_namespace": "BWRAP_UNSHARE_NET",
       "user_namespace": "BWRAP_UNSHARE_USER",
       "source_mount": "READ_ONLY",
       "temporary_write_scope": "/tmp",
       "capabilities": "DROP_ALL",
+      "failure_policy": "FAIL_CLOSED"
+    },
+    "oci": {
+      "image_resolution": "LOCAL_ONLY_RESOLVED_TO_IMMUTABLE_SHA256",
+      "image_pull": "NEVER",
+      "network": "NONE",
+      "root_filesystem": "READ_ONLY",
+      "source_mount": "READ_ONLY_FOR_FIXTURES_WRITABLE_SNAPSHOT_FOR_VALIDATION",
+      "original_source_mount": "FORBIDDEN",
+      "temporary_write_scope": "/tmp",
+      "capabilities": "DROP_ALL",
+      "no_new_privileges": true,
+      "apparmor": "DOCKER_DEFAULT",
+      "seccomp": "DOCKER_BUILTIN_DEFAULT",
+      "docker_socket_mount": "FORBIDDEN",
+      "resource_limits": "CGROUP_AND_RLIMIT",
       "failure_policy": "FAIL_CLOSED"
     },
     "remote_ci_backend": "FORBIDDEN"

@@ -1,0 +1,20 @@
+{
+  "audit_result_sha256": "72a1a98b3491237e9f4d0e8f1a4c445b47852c77ec86918eea8e9f9f40f0ce30",
+  "command": "npm audit --json --ignore-scripts",
+  "contract": "ONSURE_NPM_AUDIT_EVIDENCE_V1",
+  "final_claim_allowed": false,
+  "npm_version": "11.16.0",
+  "package_lock": "vscode-extension/package-lock.json",
+  "package_lock_sha256": "3c4d7fed566fa1cbc46303be645b87c0d43db62f543c80200b06bcad85128f6c",
+  "release_authority": false,
+  "scanned_at": "2026-08-05T18:51:30.087849Z",
+  "state": "COMPLETED",
+  "vulnerabilities": {
+    "critical": 0,
+    "high": 0,
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "total": 0
+  }
+}

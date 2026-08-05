@@ -1,118 +1,346 @@
 # ONSURE
 
-ONSURE는 등록된 AI 프로그램과 일반 소프트웨어의 목적·구조·행동을 학습하고, 실제 수행 결과를 검증하며, 확인된 Finding에서 제한적 개선과 재검증을 수행하도록 설계된 독립형 제품입니다.
+ONSURE는 등록된 AI 프로그램과 일반 소프트웨어를 학습·검증하고, 검증된 Finding에 한정해 승인형 개선과 Git 전달을 수행하도록 설계된 독립형 제품입니다.
 
 ## 제품 원칙
 
-- **Learn before judging** — 대상 프로그램을 이해한 뒤 검증한다.
-- **Evidence over assertion** — 실행 증거 없는 PASS를 금지한다.
-- **Improve from verified findings** — 임의 기능 개발이 아니라 확인된 Finding에서 개선을 시작한다.
-- **Preserve intent** — 승인된 제품 목적과 정상 동작을 훼손하지 않는다.
-- **Standalone first** — ORUDA 또는 특정 대상 제품 없이 Core가 빌드·시험·실행돼야 한다.
-- **Fail closed** — 누락, 충돌, NOT_RUN, PENDING과 독립성 부족을 완료로 바꾸지 않는다.
+- **Evidence over assertion** — 실행 증거 없는 PASS를 금지합니다.
+- **Fail closed** — 누락·충돌·NOT_RUN·HOLD·독립성 부족을 완료로 바꾸지 않습니다.
+- **Standalone first** — ORUDA 없이 Core가 빌드·시험·실행돼야 합니다.
+- **Fixed trust root** — 승인 검증의 Key Registry와 Replay Ledger를 요청자가 선택할 수 없습니다.
+- **Transition revalidation** — Commit 때 유효했던 승인도 Push·Draft PR 직전에 다시 검증합니다.
+- **Bounded execution** — 자식 프로세스는 출력 Drain·크기 제한·Wall-clock Timeout·Process-tree 종료를 함께 적용합니다.
+- **Source-derived requirements** — 사람이 작성한 예상 ID가 아니라 규범 문서의 실제 Bullet을 요구사항 권위로 사용합니다.
+- **Acceptance is not implementation** — 클래스와 기능이 존재해도 실제 사용자 여정이 성공하지 않으면 MVP 완료가 아닙니다.
 
 ## 검증 실행 정책
 
 ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 
-- `.github/workflows/*.yml`과 `.yaml`은 금지됩니다.
-- 검증은 저장소 내부의 로컬 실행기로만 수행합니다.
+- `.github/workflows/*.yml`과 `.yaml`은 금지합니다.
+- 검증은 저장소 내부 로컬 실행기로만 수행합니다.
 - 실행 결과는 `.onsure/` 아래 Receipt·로그·Hash로 보관합니다.
 - 과거 원격 자동화 결과는 감사 이력일 뿐 현재 소스의 PASS 증적이 아닙니다.
 - 로컬 자체검증은 `SELF_VALIDATION_NONFINAL` 상한을 넘을 수 없습니다.
 
-## 제품 목표 흐름
+## 현재 구현된 주요 경계
+
+- Core·CLI·Loopback Local API·Optional ORUDA Adapter 모듈 경계
+- Workspace·Project·Target 등록 Workflow
+- Program/Behavior Profile 후보와 Observation Receipt
+- 위험 기반 Plan, 전체·부분 서명 승인, 승인되지 않은 Stage 실행 차단
+- 원본 Plan·승인 Plan·서명 Receipt·고정 Trust Root·소비 Ledger의 Approval Bundle 검증
+- OReview와 Evidence-based RCA
+- 승인형 Patch·Worktree·Rollback·Improvement Proof
+- Commit 승인과 Push·Draft PR 전 승인 만료·Identity·서명·소비 상태 재검증
+- Source Identity·Receipt·Ledger·Replay·Cross-process File Lock
+- Rootless Bubblewrap Sandbox와 적대 Fixture
+- Bounded child-process runner
+- VS Code Extension·VSIX 및 OLicense·Service Case 상태 코어
+- VS Code의 등록 → 정적 학습 → 실행계획 생성 → 외부 서명 승인 검증 → 승인 Bundle 기반 Validation 연결
+- 등록 identity snapshot 기반 14개 VS Code 전용 View와 재시작 상태 복구
+- 서명 Patch 승인 → 격리 Worktree → Improvement Proof → 승인 Commit·Draft PR 연결
+- digest 검증 Hunk diff·외부 서명 요청과 checkpoint 기반 Autopilot pause/resume/cancel
+- Ask/Plan/Act/Verify/Improve/Autopilot/Audit/Offline별 fail-closed 실행 권한
+- ValidationEngine 단계별 digest-chain checkpoint, 자동 resume, stage idempotency/replay ledger와 Runtime 상태 표시
+- Provider/Model 교체 adapter 계약, 독립 local/mock 구현과 timeout·rate-limit·비용·fallback 금지 검증
+- stage-bound validation context snapshot과 digest 결속 replay
+- process birth identity에 결속된 Autopilot orphan control 복구
+- snapshot 기반 결정론적 ASK/PLAN과 독립 Provider SPI·Public SDK 후보 모듈
+- 승인 request/receipt/plan scope verifier와 HMAC 기반 프로젝트 지식 익명화 후보
+- 성능 baseline·bounded soak·장애주입·합성 DR 도구와 배포/DB 실행 후보
+- 실제 offline 재설치를 검증한 Maven/npm air-gap pack
+- root·8개 Maven 모듈·VS Code dependency inventory를 결합한 SBOM과 Trivy/license gate
+
+## 이번 메타감사에서 확인된 검출기 사각지대
+
+이전 검증은 28개 대분류 기능군, 파일·클래스·테스트 존재, 사람이 작성한 예상 Requirement ID를 주로 확인했습니다. 그 결과 다음 결함을 놓쳤습니다.
+
+- 대분류 `PARTIAL` 안에 숨은 증분 학습·필수 View·Pause/Resume·Public SDK 누락
+- 규범 문서에 존재하지만 예상 ID 목록에서 빠진 5개 하위 요구
+- 요구사항 구현과 MVP 사용자 여정 완료를 같은 것으로 취급한 오류
+- 설계가 요구한 부분 승인을 전체 승인으로만 제한한 구현
+- 승인 Plan JSON만으로 Engine에 진입할 수 있던 서명 Bundle 우회
+- 요청자가 Trusted Key Registry·Replay Ledger 경로를 바꿀 수 있던 Trust-root substitution
+- `waitFor(timeout)`가 있어도 출력 읽기 순서 때문에 Timeout에 도달하지 못하는 Process hang
+- Commit 때 검증한 승인을 Push 시점에 재검증하지 않는 상태전이 누락
+- Core 기능이 존재하지만 CLI·Local API·VS Code 제품 표면에 연결되지 않은 경로
+- MVP 수용 시나리오 10단계와 실제 저장소 2회 연속 성공 조건의 미추적
+- Workflow Operation 수를 여러 상태 파일에서 손으로 중복 관리해 40개를 39개로 잘못 기록한 오류
+
+이를 방지하기 위해 다음 권위 검사를 사용합니다.
 
 ```text
-Project registration
-→ Program and Behavior Learning
-→ Program Profile
-→ Risk-based Plan and Approval
-→ Review and Verification
-→ Finding and evidence-based RCA
-→ Approved Patch in isolated Worktree
-→ Regression and Before/After Proof
-→ Commit, Push and Draft PR
-→ Evidence and Memory
-→ Restart-safe restoration
+28개 설계·프로세스·데이터 실패주입
+10개 원자 Requirement 실패주입
+6개 Actions 금지·로컬 자동화 실패주입
+15개 Verification Claim 실패주입
+5개 Legacy 제품 하위 Requirement 실패주입
+6개 Workflow Surface 실패주입
+24개 Critical Callpath 실패주입
+8개 Legacy MVP Acceptance 실패주입
+8개 Final 제품 Requirement 실패주입
+8개 Final Acceptance 실패주입
+합계 118개
 ```
 
-## 현재 구현 경계
+권위 파일:
 
-현재 기준선에는 다음이 포함됩니다.
+- `status/product-subrequirement-coverage.v1.json` — 규범 문서에서 자동 추출한 43개 제품 하위 요구
+- `scripts/validate-product-subrequirements.py` — 원문 Bullet과 대장의 1:1 매핑
+- `status/mvp-acceptance-coverage.v1.json` — 10단계 사용자 여정과 2회 연속 성공 조건
+- `scripts/validate-mvp-acceptance-coverage.py`
+- `scripts/validate-mvp-status-consistency.py`
+- `contracts/workflow-operation-registry.v1.json` — 44개 Workflow Operation 단일 권위
+- `scripts/validate-workflow-surface-parity.py` — 44개 Workflow·3개 제품 표면
+- `scripts/validate-critical-callpaths.py`
+- `contracts/validation-case-registry.v1.json` — 성공·실패·공격 사례 단일 권위 목록
+- `scripts/validate-validation-case-registry.py`
+- `contracts/omission-failure-injection-counts.v1.json` — 실패주입 단일 분모
+- `status/omission-detection-status.v1.json`
+- `status/verification-status.v1.json`
+- `status/remaining-work-register.v1.json`
 
-- Core·CLI·Local API·Optional ORUDA Adapter 모듈 경계
-- Program/Behavior Profile 후보와 Observation Receipt
-- 위험 기반 Plan과 서명 승인
-- OReview와 Evidence-based RCA
-- 승인형 Patch·Worktree·Rollback·Improvement Proof·Git 경계
-- Source Identity·Receipt·Ledger·Replay·File Lock
-- Rootless Bubblewrap Sandbox와 적대 Fixture
-- Loopback Local API와 VS Code Extension·VSIX
-- OLicense와 Service Case 상태 코어
-- 설계·프로세스·데이터·검증 Claim 누락 감지
+## 명시적으로 미완료인 주요 기능
 
-다음은 계속 미완료 또는 비최종입니다.
-
-- 원자 Requirement 권위 화해 100%
-- 실제 VS Code Extension Host 사용자 Full-Chain
-- 실제 원격 Push·Draft PR 제품 Delivery
-- 실제 Payment·Refund Provider 연동
-- Production Model·Prompt·Tool·RAG 직접 Telemetry
-- Tenant Identity·RBAC·Cross-tenant 제품 적대시험
-- SBOM·취약점·라이선스 Pack
-- 성능·부하·장애·복구·운영·배포
+- 변경분 기반 증분 Program Learning
+- Tool Contract 내용 분석과 실행 로그 인벤토리
+- Behavior Profile의 취약 조건 분류와 Production 정책 Telemetry
+- RCA의 명시적 영향 범위와 미확인 사항
+- Patch 적용 전 위험도·영향 범위·Rollback 방법 Preview
+- 프로젝트 지식 익명화의 실제 data-owner 승인과 공통 지식 승격 UX
+- MVP 수용 시나리오 11개 전 항목 및 실제 저장소 2회 연속 성공
+- 외부 signer 실제 연동과 승인 request/receipt 교환 Full-Chain
+- 실제 외부 Provider 기반 Ask/Plan 응답과 설치 Extension Host 전체 사용자 여정
+- VS Code 부분 Plan 승인 UX
+- 비가역 stage side effect의 제품별 보상 작업
+- 실제 Remote Provider 구현 및 가격 견적 연동
+- Public SDK publish·외부 소비자 호환성 검증
+- Identity·RBAC·Cross-tenant 격리
+- Approval Replay Ledger의 외부 Anchor
+- proprietary 고객 배포계약과 독립 라이선스/NOTICE 검토
+- 장시간 성능·운영 DR 및 실제 배포/DB 실행 Pack
+- 실제 Payment Provider와 Production Model Telemetry
 - 독립 OTester·OAudit와 Human Acceptance
 
-정확한 상태는 다음 파일을 권위로 합니다.
+## 로컬 단일 검증
 
-- [설계 권위와 적용 범위](docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md)
-- [전체 상세설계 Gap 검증](docs/verification/ONSURE_FULL_DESIGN_GAP_ASSESSMENT_v1.md)
-- [병합 후 자기검증](docs/verification/ONSURE_POST_MERGE_SELF_AUDIT_v1.md)
-- [요구사항 추적성 계약](contracts/requirements-traceability.v1.json)
-- [구현 상태 Matrix](status/implementation-matrix.v1.json)
-- [검증 상태](status/verification-status.v1.json)
-- [남은 작업 대장](status/remaining-work-register.v1.json)
+범용 검증은 대상 저장소에 ONSure 전용 Manifest나 ORUDA/OReport 연결을 요구하지 않는다.
+환경·의존성 → 구조 → 검증기 메타 → 단계 기능 → 실제 연결 E2E → 증적·판정 → 운영·복구
+순서를 고정하며, 실행되지 않은 필수 항목은
+`NOT_RUN`, 환경 제한은 `BLOCKED`, 증거가 불충분하면 `INCONCLUSIVE`다.
+프로그램 등록은 Git repository identity의 원문을 저장하지 않고 SHA-256, commit, repository-relative
+scope, 등록 source digest, 실제 snapshot source·manifest digest를 별도 provenance에 결속한다.
+추적된 `fixtures/` 범위는 실제 고객 대상으로 선언할 수 없으며 실제 저장소도 해당 revision을
+실행하기 전에는 범용성 증명이 아니라 `ELIGIBLE_CANDIDATE_REQUIRES_ACTUAL_EXECUTION` 후보일 뿐이다.
 
-## 독립 제품 정책
-
-```text
-Default: ONSure Core + Generic Target Adapter
-Optional: ONSure Core + ORUDA Adapter Module
+```bash
+mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+  -Dexec.mainClass=io.onsure.platform.ONSureCli \
+  -Dexec.args="universal /absolute/source-root profile-id /absolute/empty-run-root"
 ```
 
-ONSURE Core 요구사항과 기본 실행은 ORUDA의 경로, 정책, 실행기, 저장소, 데이터 또는 프로그램 구성에 의존해서는 안 됩니다.
+대상 원본을 수정하지 않고 renderer, font, ClamAV, 서명 Fixture와 실행 권한을 필수조건으로
+추가하려면 ONSure workspace에 `ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1` 파일을 만들고
+다섯 번째 인자로 전달한다. 예시는 `config/validation/environment-requirements.example.json`이다.
+프로필은 엄격히 파싱되며 의미 digest와 원본 파일 SHA-256이 실행 영수증에 기록된다.
+실행파일과 폰트는 host 탐지만으로 통과시키지 않고 실제 선택된 no-network sandbox 내부에서
+다시 확인한다. 검증 이미지 후보에는 고정된 ClamAV와 Noto CJK font package가 포함된다.
 
-## 로컬 단일 실행 명령
+```bash
+mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+  -Dexec.mainClass=io.onsure.platform.ONSureCli \
+  -Dexec.args="universal /absolute/source-root profile-id /absolute/empty-run-root /absolute/environment-profile.json"
+```
 
-일상 정적 검증:
+등록 Workflow/API에서는 `validation.run` 요청의 `environment_profile_file`에 workspace 내부
+프로필 경로를 전달한다. Node dependency가 있으면 내장 Pack이 구조 검사 전에 고정된
+`npm --offline ci --ignore-scripts --engine-strict`를 격리 snapshot에서 실행한다. lock/manifest drift 또는
+offline cache 누락은 1단계 `BLOCKED`이며 2~7단계는 실행하지 않는다.
+관리화면의 프로그램 검증 프로필도 `UNIVERSAL`을 선택하면 `/v1/programs/validate`가 같은
+Runner를 사용한다. 선택한 workspace 내부 환경 프로필, 원본 불변성, universal receipt digest,
+검증군 판정이 `validation-report.json` projection과 관리 감사 이력에 함께 기록된다.
+VS Code에서는 `ONSure: Run Seven-Group Universal Validation` 명령이 동일한 등록
+`validation.run` Runner를 호출한다. 내장 환경 요구사항 또는 workspace 내부 환경 프로필을
+선택할 수 있고, 중첩 universal run root를 마지막 실행 증적으로 저장한다.
+
+등록된 Target은 기존 `validation.run` 요청에 `validation_mode=UNIVERSAL`을 지정해 실행한다.
+실행 전 후보만 검토하려면 다음 명령을 사용한다. Node script, Maven module, Java/Python main,
+OpenAPI operation, DB migration과 배포 정의를 source digest에 결속해 표시하지만 대상 명령은
+실행하지 않으며 모든 후보는 `DISCOVERY_ONLY_REVIEW_REQUIRED`, `auto_execute=false`다.
+
+```bash
+mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+  -Dexec.mainClass=io.onsure.platform.ONSureCli \
+  -Dexec.args="inventory /absolute/source-root"
+```
+
+Local API 권위 계약은 `contracts/openapi/onsure-local-api.v1.json`, 범용 결과 계약은
+`contracts/universal-validation-result.v1.schema.json`이다. 세부 7단계와 Pack SPI는
+`docs/architecture/ONSURE_UNIVERSAL_VALIDATION_PROFILE_V1.md`를 따른다.
+발견된 OpenAPI 계약은 첫 파일만 대표 검사하지 않고 계약별 독립 Step으로 실행한다.
+각 PASS는 실행 로그 read-back SHA-256과 동일 실행환경 digest를 영수증에서 재검증한다.
+연결 E2E Pack은 `contracts/portable-workflow-lineage.v1.schema.json` 영수증으로 producer output,
+consumer input, 실제 artifact read-back, schema, permit, tester·audit·노출판정을 같은 digest에
+결속한다. Pack 개발자는 생성된 snapshot을 다음 읽기 전용 CLI로 독립 재검증할 수 있다.
+
+```bash
+mvn -B -ntp -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+  -Dexec.mainClass=io.onsure.platform.ONSureCli \
+  -Dexec.args="lineage /absolute/execution-snapshot-root"
+```
+
+VS Code Extension 개발 검증과 패키징:
+
+```bash
+cd vscode-extension
+npm test
+npm run package
+```
+
+사용 순서와 승인 경계는 `vscode-extension/README.md`를 따른다. Extension Host E2E는
+`python3 scripts/rehearse_vscode_extension_host.py`로 고정 VS Code/Xvfb 컨테이너의 online과
+network-disabled 재실행을 묶고 source/image/log digest 증적을 생성한다. 통과하더라도 제품
+Full-Chain 완료를 주장하지 않는다.
+
+정적 비최종 Gate:
 
 ```bash
 bash scripts/onsure-local-gate.sh --mode static --profile core
 ```
 
-Java 17·모듈·Sandbox·VSIX를 포함한 전체 로컬 비최종 검증:
+Java 17·Maven·Sandbox·VSIX 포함 전체 로컬 비최종 Gate:
 
 ```bash
 bash scripts/onsure-local-gate.sh --mode full --profile core
 ```
 
-Optional ORUDA Adapter까지 포함:
+배포·DB migration 설계 경계와 bubblewrap host 진단:
 
 ```bash
-bash scripts/onsure-local-gate.sh --mode full --profile oruda
+python3 scripts/validate_onsure_operational_boundary.py
+python3 scripts/onsure_deploy_migration_skeleton.py preflight
+python3 scripts/validate_onsure_container_candidate.py
+python3 scripts/onsure_runtime_assurance.py health
+python3 scripts/onsure_bubblewrap_diagnostics.py
+python3 scripts/onsure_sandbox_diagnostics.py
 ```
 
-최종 단계 One-Shot과 증적 고정:
+공급망과 air-gap plan:
+
+```bash
+python3 scripts/onsure_supply_chain.py validate
+python3 scripts/onsure_airgap_pack.py plan --maven-repository /explicit/path/to/maven-repository
+python3 scripts/onsure_airgap_pack.py repository-rehearse --archive /explicit/maven-repository.tar
+python3 scripts/onsure_npm_airgap.py verify --archive /explicit/npm-cache.tar
+python3 scripts/onsure_trivy_scan.py
+```
+
+Local API·LLM Gateway OpenAPI와 관리화면:
+
+```text
+http://127.0.0.1:47311/v1/openapi.json
+http://127.0.0.1:47312/v1/openapi.json
+http://127.0.0.1:47311/admin
+```
+
+관리화면은 Local API token을 브라우저 메모리에만 유지하며, 실제 `.onsure` catalog/validation/
+improvement 산출물과 Gateway의 content-free token·비용·digest-chain projection을 표시한다.
+선택적 VIEWER/OPERATOR/APPROVER token으로 조회·프로그램 실행·Gateway 승인 권한을 분리한다.
+프로그램 검증은 원본 대신 bounded snapshot에서 수행하며, Gateway 설정 변경은 distinct approver가
+결정한 뒤에도 외부 적용 대기 상태로 남고 모든 상태 변경은 append-only 감사 chain에 기록된다.
+Program Understanding 검토와 별도 승인으로 생성한 1회 실행권한은
+`ONSURE_INFERRED_E2E_BASE_URL=http://127.0.0.1:<unprivileged-port>`인 합성 loopback 대상에만
+사용할 수 있다. GET/HEAD/OPTIONS와 OpenAPI request schema가 있는 POST/PUT/PATCH를 실행하며,
+path·필수 primitive query/header/cookie parameter와 요청 body는 `example`·`default` 없이
+결정적으로 생성한다. 승인 검토에서 `env:` 참조로 결속한 HTTP bearer/basic, OAuth bearer,
+header API key만 런타임에 주입한다. 인증값과 요청·응답 원문은 저장하지 않고 참조 ID,
+인증값·schema·source·body digest와 판정만 Receipt에 남긴다. DELETE, source drift, 외부 `$ref`,
+인증 참조·값 미구성, 복합 인증, query/cookie API key, 지원하지 않는 parameter serialization·
+schema assertion은 대상 결함으로 오판하지 않고 `BLOCKED`다. 모든 결과는
+`PASS_NONFINAL`까지만 허용한다.
+중단된 실행에 내구 Receipt가 있으면 exact run/plan digest로 완료 상태를 복구한다. Receipt가
+없으면 읽기 연산만 복구 chain을 남기고 재시도하며, 결과가 불명확한 쓰기 연산은
+`RECOVERY_REQUIRED`로 고정해 새 승인을 요구한다. 동일 source/profile의 연속 실행은 단계별
+`IMPROVED`·`REGRESSED`·`UNCHANGED` 비교와 진단·개선 가이드를 생성해 관리화면에 표시하지만
+비교 자체는 점수나 최종 assurance로 사용하지 않는다.
+동일 business object에서 발견한 OpenAPI `CREATE → READ/UPDATE/DELETE` 후보는 별도 lifecycle로
+묶고, 생성 응답 JSON Pointer와 후속 path parameter의 연결을 review·approval digest에 결속한다.
+응답 schema의 scalar property를 재귀 탐색해 exact-name 또는 단일 `id` 경로를 우선 선택하며,
+schema 근거가 없을 때만 낮은 신뢰도의 검토용 휴리스틱을 사용한다.
+필수 query/header/request-body 입력도 producer 응답과 exact-name이 유일하게 일치할 때 후보로
+만든다. 별도 승인된 query/header 값과 producer/consumer scalar JSON schema 타입이 호환되는
+request-body 값은 후속 요청에 메모리에서만 주입한다. body 주입 뒤 전체 request schema를 다시
+검증하며 Receipt에는 위치·양쪽 schema 타입·값 digest만 남긴다. 타입이 다르거나 증명되지 않은
+request-body 결속은 `BLOCKED_BINDING_REVIEW_REQUIRED`/`NOT_RUN`이고, 민감 인증 header는
+후보에서 제외한다.
+일반 배열은 `~2` pointer template과 confidence 0.80의 검토 후보로만 남긴다. `minItems=1`과
+`maxItems=1`을 모두 선언한 배열만 `~3`과 confidence 0.90으로 구분하고, 실행 시 실제 cardinality가
+1인지 다시 확인해 비어 있거나 복수인 배열은 consumer HTTP 호출 전에 차단한다.
+승인된 `CREATE → READ` 실행에서는 producer 응답의 scalar 식별자를 메모리에서만 전달하며,
+Receipt에는 값 대신 binding ID·pointer·digest만 남긴다. producer Oracle이 실패하거나 식별자를
+찾을 수 없으면 후속 호출은 합성값으로 대체하지 않고 HTTP 실행 전에 `BLOCKED` 처리한다.
+Program Profile은 operationId·tag·path·schema와 탐지 component를 근거로 Capability·Workflow
+의미 가설을 자동 생성한다. 모든 가설은 confidence·ambiguity·evidence digest를 가지며 검토 전에는
+`auto_execute=false`, `score_eligible=false`다. 근거가 부족한 의미는 `UNKNOWN`으로 남기고 고객
+업무 규칙이나 PASS를 자동 확정하지 않는다. 관리화면은 총점에서 DOMAIN→PHASE→GROUP→AREA→STEP
+까지 진단·개선 가이드와 이전 실행 대비 변화를 보여주며, 추론 후보는 점수 제외로 표시한다.
+OpenAPI continuation은 문서별 service boundary 안에서 optional cursor/page/offset, 2xx allowlist
+header와 202 async producer를 bounded 후보로 탐지한다. 별도 승인 manifest에 결속된 동일 operation·
+service의 GET/HEAD pagination은 loopback에서만 실행하며 페이지별 URI·status·schema·body/token digest와
+종료 이유를 기록한다. raw token은 저장하지 않고 반복 token, 제한 시간·횟수·누적 응답 크기 도달 시
+추가 호출 없이 차단한다. Async polling 및 서로 다른 service 간 결속은 아직 실행하지 않으며 여러
+service boundary가 포함된 실행계획은 `BLOCKED`다.
+또한 최종 증적 무결성이나 Receipt SHA·계약·source·scorecard 결속이 실패하면 관리화면은 원점수와
+비교/DB 이력을 숨기고 `INVALID_EVIDENCE`/`HOLD`로 표시한다.
+Gateway 환경변수와 단독 서버 실행 경계는
+`docs/architecture/ONSURE_LLM_GATEWAY_AND_MANAGEMENT_UI_v1.md`를 따른다.
+
+최종 단계 Source-bound One-Shot:
 
 ```bash
 bash scripts/onsure-final-stage.sh --profile core
 ```
 
-로컬 Gate는 `.onsure/local-gate/<UTC timestamp>-<pid>/`에 결과를 저장합니다. 최종 단계는 `.onsure/final-stage/`에 별도 증적을 생성합니다.
+## 현재 판정 상한
 
-## 판정 상한
+현재 변경 후보의 로컬 검증은 root Java 420개(409 PASS, 조건부 11개 skip)와
+모듈 전용 Java 49개, Python 212개, Node 10개,
+RHEL 35-file·Ubuntu 39-file package, root 공개 API 267개, SBOM/npm audit와
+operational boundary를 통과했고,
+로컬 clean Java build는 2회 연속 통과했다.
+최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
+`30d27a88c4247cefabb10e316bd2bfafa0a3b9bb3afcfdc89470afb410fec089`를 생성했으며
+동일 입력 2회 패키징 결과가 byte-identical했다.
+Manifest 후보는 신규 구현과 실제 검증 observation을 포함한 파일 전체이며 정확한 파일 수와
+digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
+결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
+현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는
+이 실패를 약화하지 않고, 로컬에 이미 존재하는 검증 이미지가 있을 때만 immutable image ID로
+고정한 `OCI_DOCKER` backend를 선택한다. 이 backend는 image pull·network·host 원본 mount를
+금지하고 read-only rootfs, capability 0, no-new-privileges, AppArmor/seccomp, PID·CPU·memory·timeout
+한도를 적용한다. 격리 실행에서 12개 sandbox boundary probe와 저장소 내부
+Java·Python·Node fixture의 정상·실패·재시도·차단·연결 E2E·portable lineage read-back·중단·재개·
+롤백·재실행이 `PASS_NONFINAL`로 기록됐다. 과거 5개 실행의 106개 PASS 단계는
+`assurance/runtime/onsure-universal-validation-evidence.v1.json`에 로그·환경·결과 digest로
+결속되어 있으나 target provenance와 실행 전후 binding이 없어 현재 HEAD의 세 실제 대상 범용성
+증거로는 무효다. 최신 실제 재검증에서는 ONSure self가 43/43단계와 7개 검증군 모두
+`PASS_NONFINAL`(100/100), OReport가 대상 source 결함 2건으로 `FAIL`(38.86/100), 독립
+Java·Python·Node 대상이 미승인 negative/E2E/운영 pack 15건 `NOT_RUN`(42.50/100)으로 판정됐다.
+각 결과는 target commit·snapshot manifest·환경·step log·scorecard digest와 함께
+`assurance/runtime/*-validation-observation.v1.json`에 보존한다. 최신 ONSure source의 과거 반복성 기록도
+`assurance/runtime/onsure-self-repeatability.v1.json`에 남아 있지만 현재 HEAD의
+`REAL_REPOSITORY` 네 단계 receipt가 아니므로 현재 권위 상태는 `NOT_RUN`이다.
+Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
+VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
+실행됐고 source/image/online·offline log digest receipt를 남겼지만 MVP Full-Chain,
+독립 OTester/OAudit와 Human Acceptance는 아직 실행되지 않았다.
 
-현재 허용 상태는 `SELF_VALIDATION_NONFINAL / BLOCKED`입니다.
-
-원자 Traceability, 실제 제품 Full-Chain, 현재 Source 기준 Final One-Shot, 독립 OTester·OAudit와 사용자 승인 전에는 Final PASS, FinalLock, Production GO 또는 Commercial GO를 선언하지 않습니다.
+```text
+Assurance      SELF_VALIDATION_PASS_NONFINAL / INDEPENDENT_OTESTER_OAUDIT_NOT_RUN
+Universality   HOLD / OREPORT_FAIL / NEUTRAL_REVIEWED_PACK_NOT_RUN
+MVP Full-Chain NOT_RUN
+FinalLock      false
+Production GO  false
+Commercial GO  false
+```

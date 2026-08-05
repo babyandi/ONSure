@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_INFERRED_E2E_RUN_COMPARISON_V1", "target_id": "orders",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile_file_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "current_run_id": "inferred-e2e-run-11111111-1111-1111-1111-111111111111",
+  "current_execution_authorization_id": "inferred-e2e-auth-22222222-2222-2222-2222-222222222222",
+  "current_runtime_receipt_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "current_outcome": "FAIL", "compared_at": "2026-08-05T00:02:00Z",
+  "state": "COMPARISON_AVAILABLE_NONFINAL",
+  "baseline_run_id": "inferred-e2e-run-33333333-3333-3333-3333-333333333333",
+  "baseline_execution_authorization_id": "inferred-e2e-auth-44444444-4444-4444-4444-444444444444",
+  "baseline_runtime_receipt_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "baseline_outcome": "PASS_NONFINAL",
+  "step_comparisons": [{
+    "plan_id": "E2E-orders", "baseline_outcome": "PASS_NONFINAL", "current_outcome": "FAIL",
+    "change": "REGRESSED", "baseline_response_status": 200, "current_response_status": 500,
+    "response_digest_changed": false, "diagnosis": "이전 PASS가 현재 비통과입니다.",
+    "improvement_guide": "status와 schema 오류를 확인하십시오.", "final_claim_allowed": false
+  }],
+  "improved_step_count": 0, "regressed_step_count": 1, "unchanged_step_count": 0,
+  "changed_inconclusive_step_count": 0, "added_step_count": 0, "removed_step_count": 0,
+  "overall_change": "REGRESSED", "diagnosis": "퇴행이 발견됐습니다.",
+  "improvement_guide": "동일 조건으로 수정 후 재검증하십시오.", "score_eligible": false,
+  "comparison_is_final_assurance": false, "final_claim_allowed": false
+}

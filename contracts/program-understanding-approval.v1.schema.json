@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/program-understanding-approval.v1.schema.json",
+  "title": "ONSure Program Understanding Approval V1",
+  "type": "object",
+  "required": ["contract", "request_id", "state", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "requested_at", "expires_at", "requested_by", "requested_role", "reason", "single_use_for_execution", "execution_consumed", "execution_state", "final_claim_allowed", "request_sha256"],
+  "properties": {
+    "contract": {"const": "ONSURE_PROGRAM_UNDERSTANDING_APPROVAL_V1"},
+    "record_format_version": {"const": 2},
+    "request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
+    "state": {"enum": ["AWAITING_APPROVAL", "APPROVED_NOT_EXECUTED", "REJECTED", "CONSUMED_FOR_EXECUTION_AUTHORIZATION", "EXECUTION_RUNNING", "EXECUTION_RECOVERY_REQUIRED", "EXECUTION_COMPLETED"]},
+    "project_id": {"type": "string"}, "target_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "profile_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "requested_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "requested_by": {"type": "string"}, "requested_role": {"enum": ["ADMIN", "OPERATOR"]},
+    "reason": {"type": "string"}, "decision": {"enum": ["APPROVE", "REJECT"]}, "decided_at": {"type": "string", "format": "date-time"},
+    "decided_by": {"type": "string"}, "decision_reason": {"type": "string"},
+    "single_use_for_execution": {"const": true}, "execution_consumed": {"type": "boolean"},
+    "execution_state": {"enum": ["NOT_RUN", "RUNNING", "RECOVERY_REQUIRED", "PASS_NONFINAL", "FAIL", "BLOCKED"]}, "final_claim_allowed": {"const": false},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "consumed_at": {"type": "string", "format": "date-time"}, "consumed_by": {"type": "string"},
+    "authorized_execution_scope": {"const": "ISOLATED_SYNTHETIC_LOOPBACK"},
+    "execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
+    "execution_plan_file": {"type": "string", "pattern": "^\\.onsure/inferred-e2e-authorizations/.+/execution-plan\\.json$"},
+    "execution_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution_plan_state": {"enum": ["AUTHORIZED_NOT_RUN", "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN"]},
+    "consumption_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution_run_id": {"type": "string", "pattern": "^inferred-e2e-run-[0-9a-f-]{36}$"},
+    "execution_started_at": {"type": "string", "format": "date-time"}, "execution_started_by": {"type": "string"},
+    "execution_claim_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution_completed_at": {"type": "string", "format": "date-time"},
+    "runtime_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "runtime_comparison_file": {"type": "string", "pattern": "^\\.onsure/inferred-e2e-authorizations/.+/runtime-comparison\\.json$"},
+    "runtime_comparison_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution_record_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "recovery_count": {"type": "integer", "minimum": 1},
+    "recovery_history": {"type": "array", "minItems": 1, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sequence", "recovered_at", "recovered_by", "from_run_id", "action", "previous_entry_sha256", "entry_sha256"],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1},
+        "recovered_at": {"type": "string", "format": "date-time"}, "recovered_by": {"type": "string"},
+        "from_run_id": {"type": "string", "pattern": "^inferred-e2e-run-[0-9a-f-]{36}$"},
+        "action": {"enum": ["READ_ONLY_RETRY_ALLOWED", "WRITE_OUTCOME_UNKNOWN_REAPPROVAL_REQUIRED", "COMPLETED_FROM_DURABLE_RECEIPT"]},
+        "previous_entry_sha256": {"oneOf": [{"const": "GENESIS"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}]},
+        "entry_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }},
+    "last_recovery_at": {"type": "string", "format": "date-time"},
+    "last_recovery_by": {"type": "string"},
+    "last_recovery_from_run_id": {"type": "string", "pattern": "^inferred-e2e-run-[0-9a-f-]{36}$"},
+    "last_recovery_action": {"enum": ["READ_ONLY_RETRY_ALLOWED", "WRITE_OUTCOME_UNKNOWN_REAPPROVAL_REQUIRED", "COMPLETED_FROM_DURABLE_RECEIPT"]},
+    "recovery_record_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "dependentRequired": {
+    "recovery_count": ["recovery_history", "last_recovery_at", "last_recovery_by", "last_recovery_from_run_id", "last_recovery_action", "recovery_record_sha256"],
+    "runtime_comparison_sha256": ["runtime_comparison_file"]
+  },
+  "allOf": [
+    {
+      "if": {"required": ["record_format_version", "execution_run_id"]},
+      "then": {"required": ["execution_claim_sha256"]}
+    },
+    {
+      "if": {"properties": {"state": {"const": "EXECUTION_RECOVERY_REQUIRED"}}, "required": ["state"]},
+      "then": {"required": ["execution_run_id", "execution_claim_sha256", "recovery_count", "recovery_history", "recovery_record_sha256"]}
+    }
+  ],
+  "additionalProperties": false
+}

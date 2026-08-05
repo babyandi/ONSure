@@ -1,0 +1,63 @@
+# ONSure named profiles. They are activated only by the Ubuntu systemd drop-ins.
+abi <abi/4.0>,
+#include <tunables/global>
+
+profile onsure-api flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  network inet stream,
+  network inet6 stream,
+  network inet dgram,
+  network inet6 dgram,
+
+  /usr/bin/java rix,
+  /usr/lib/jvm/** mr,
+  /opt/onsure/app/** r,
+  /opt/onsure/lib/** r,
+  /etc/onsure/onsure.env r,
+  /var/lib/onsure/ r,
+  /var/lib/onsure/** rwk,
+  /var/log/onsure/ rw,
+  /var/log/onsure/** rw,
+}
+
+profile onsure-llm-gateway flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  network inet stream,
+  network inet6 stream,
+  network inet dgram,
+  network inet6 dgram,
+
+  /usr/bin/java rix,
+  /usr/lib/jvm/** mr,
+  /opt/onsure/app/** r,
+  /opt/onsure/lib/** r,
+  /etc/onsure/onsure.env r,
+  /var/lib/onsure/ r,
+  /var/lib/onsure/** rwk,
+  /var/log/onsure/ rw,
+  /var/log/onsure/** rw,
+}
+
+profile onsure-migrate flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  network inet stream,
+  network inet6 stream,
+  network inet dgram,
+  network inet6 dgram,
+
+  /usr/bin/java rix,
+  /usr/lib/jvm/** mr,
+  /opt/onsure/migration/** r,
+  /opt/onsure/lib/** r,
+  /etc/onsure/onsure.env r,
+  /var/lib/onsure/ r,
+  /var/lib/onsure/** rwk,
+  /var/log/onsure/ rw,
+  /var/log/onsure/** rw,
+}

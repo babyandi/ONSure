@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/hunk-approval-request.v1.schema.json",
+  "title": "ONSure Hunk Approval Signing Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "request_id", "request_state", "receipt_contract", "approval_purpose",
+    "patch_plan_id", "patch_plan_file", "patch_plan_file_sha256", "selection_scope",
+    "selected_hunk_ids", "selected_files", "branch_name", "risk_preview", "impact_scope",
+    "rollback_preview", "allow_direct_main_write", "allow_force_push", "allow_merge",
+    "created_at", "signer_must_supply", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_HUNK_APPROVAL_REQUEST_V1"},
+    "request_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{3,200}$"},
+    "request_state": {"const": "AWAITING_EXTERNAL_SIGNATURE"},
+    "receipt_contract": {"const": "ONSURE_HUNK_APPROVAL_RECEIPT_V1"},
+    "approval_purpose": {"const": "PATCH_HUNK_APPROVAL"},
+    "patch_plan_id": {"type": "string", "minLength": 1, "maxLength": 180},
+    "patch_plan_file": {"type": "string", "minLength": 1},
+    "patch_plan_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "selection_scope": {"enum": ["HUNK", "FILE"]},
+    "selected_hunk_ids": {
+      "type": "array", "minItems": 1, "maxItems": 200, "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"}
+    },
+    "selected_files": {
+      "type": "array", "minItems": 1, "maxItems": 200, "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "branch_name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{2,120}$"},
+    "risk_preview": {
+      "type": "object", "additionalProperties": false,
+      "required": ["classification", "level", "factors", "independent_risk_review"],
+      "properties": {
+        "classification": {"const": "BOUNDED_CHANGE_SURFACE_CANDIDATE"},
+        "level": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+        "factors": {"type": "array", "minItems": 2, "items": {"type": "string"}},
+        "independent_risk_review": {"const": "NOT_RUN"}
+      }
+    },
+    "impact_scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file_count", "hunk_count", "finding_ids"],
+      "properties": {
+        "file_count": {"type": "integer", "minimum": 1},
+        "hunk_count": {"type": "integer", "minimum": 1},
+        "finding_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+      }
+    },
+    "rollback_preview": {
+      "type": "object", "additionalProperties": false,
+      "required": ["method", "source_workspace_write_allowed", "automatic_rollback_executed"],
+      "properties": {
+        "method": {"const": "PATCH_APPLY_RECEIPT_BACKUP_AND_ISOLATED_GIT_WORKTREE_REMOVAL"},
+        "source_workspace_write_allowed": {"const": false},
+        "automatic_rollback_executed": {"const": false}
+      }
+    },
+    "allow_direct_main_write": {"const": false},
+    "allow_force_push": {"const": false},
+    "allow_merge": {"const": false},
+    "created_at": {"type": "string", "format": "date-time"},
+    "signer_must_supply": {
+      "type": "array", "minItems": 8, "uniqueItems": true,
+      "items": {"enum": [
+        "approval_id", "nonce", "actor", "key_id", "signature_algorithm",
+        "signature", "approved_at", "expires_at"
+      ]}
+    },
+    "final_claim_allowed": {"const": false}
+  }
+}

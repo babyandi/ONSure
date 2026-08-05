@@ -1,0 +1,21 @@
+SPDX-License-Identifier: LicenseRef-ORUDA-Labs-Proprietary
+
+ONSure Proprietary Software License Notice
+
+Copyright (c) 2026 ORUDA Labs. All rights reserved.
+
+ONSure and its source code, documentation, interfaces, assets, build files,
+and distributions are proprietary works of ORUDA Labs.
+
+No permission or license is granted to use, copy, modify, merge, publish,
+distribute, sublicense, sell, reverse engineer, or create derivative works
+from this software except under a separate written agreement expressly
+authorized by ORUDA Labs or as required by applicable law.
+
+Possession of, access to, or availability of this repository does not grant
+an open-source license or any other implied license. The software is provided
+without warranties except as expressly stated in an applicable written
+agreement.
+
+Third-party components remain governed by their respective licenses. See
+THIRD_PARTY_NOTICES.md and the generated dependency inventory for details.

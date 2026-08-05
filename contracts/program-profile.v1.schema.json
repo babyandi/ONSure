@@ -7,6 +7,7 @@
   "required": [
     "contract", "profile_id", "project_id", "program_id", "source_baseline",
     "purpose", "components", "dependencies", "ai_components", "data_flows",
+    "business_semantic_hypotheses",
     "unknowns", "conflicts", "evidence_refs", "revision", "state", "generated_at",
     "learning_method", "language_inventory", "dynamic_trace", "runtime_verification",
     "human_review", "independent_validation", "final_claim_allowed", "profile_sha256"
@@ -33,11 +34,67 @@
         "source_file_count": {"type": "integer", "minimum": 1}
       }
     },
+    "target_provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "contract", "target_classification", "repository_identity_sha256",
+        "repository_commit_sha", "registration_source_sha256", "snapshot_source_sha256",
+        "snapshot_manifest_sha256", "fixture_only", "real_target_universality_eligible",
+        "runtime_validation", "final_claim_allowed", "provenance_sha256"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_TARGET_PROVENANCE_V1"},
+        "target_classification": {"enum": ["REAL_REPOSITORY", "FIXTURE", "SYNTHETIC_SNAPSHOT", "UNKNOWN"]},
+        "repository_identity_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "repository_commit_sha": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40,64}$"},
+        "registration_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "snapshot_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "snapshot_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "fixture_only": {"type": "boolean"},
+        "real_target_universality_eligible": {"type": "boolean"},
+        "runtime_validation": {"const": "NOT_RUN"},
+        "final_claim_allowed": {"const": false},
+        "provenance_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
     "purpose": {"type": "string", "minLength": 1},
     "components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "dependencies": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "ai_components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "data_flows": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
+    "workflow_inventory": {"$ref": "#/$defs/workflowInventory"},
+    "program_understanding": {
+      "type": "object",
+      "required": ["contract", "source_sha256", "flow_candidates", "e2e_plan_candidates", "minimal_questions", "inferences_are_pass_evidence", "final_claim_allowed"],
+      "properties": {
+        "contract": {"const": "ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "flow_candidates": {"type": "array"},
+        "e2e_plan_candidates": {"type": "array"},
+        "minimal_questions": {"type": "array"},
+        "inferences_are_pass_evidence": {"const": false},
+        "final_claim_allowed": {"const": false}
+      }
+    },
+    "business_semantic_hypotheses": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "contract", "source_sha256", "hypothesis_count", "hypotheses", "review_required",
+        "automatic_execution", "score_eligible", "final_claim_allowed"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_BUSINESS_SEMANTIC_HYPOTHESES_V1"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "hypothesis_count": {"type": "integer", "minimum": 0},
+        "hypotheses": {"type": "array"},
+        "review_required": {"const": true},
+        "automatic_execution": {"const": "NOT_RUN_REVIEW_REQUIRED"},
+        "score_eligible": {"const": false},
+        "final_claim_allowed": {"const": false}
+      }
+    },
     "unknowns": {"type": "array", "items": {"type": "string"}},
     "conflicts": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}, "minItems": 2},
@@ -54,6 +111,137 @@
     "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
+    "workflowInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract", "source_digest", "source_file_count", "execution_policy", "candidate_count", "candidate_kind_counts",
+        "candidates", "parse_findings", "truncated", "runtime_verification",
+        "auto_execute", "final_claim_allowed"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_STATIC_WORKFLOW_INVENTORY_V1"},
+        "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_file_count": {"type": "integer", "minimum": 1},
+        "execution_policy": {"const": "DISCOVERY_ONLY_REVIEW_REQUIRED"},
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "candidate_kind_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "candidate_id", "kind", "name", "source_path", "evidence_sha256",
+              "invocation_type", "role_hints", "confidence", "runtime_verified",
+              "review_required", "auto_execute"
+            ],
+            "properties": {
+              "candidate_id": {"type": "string", "pattern": "^WF-[0-9a-f]{16}$"},
+              "kind": {"type": "string", "minLength": 1},
+              "name": {"type": "string", "minLength": 1, "maxLength": 512},
+              "source_path": {"type": "string", "minLength": 1},
+              "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "invocation_type": {"type": "string", "minLength": 1},
+              "role_hints": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+              "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+              "runtime_verified": {"const": false},
+              "review_required": {"const": true},
+              "auto_execute": {"const": false},
+              "http_method": {"type": "string", "enum": ["GET", "PUT", "POST", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"]},
+              "http_path": {"type": "string", "minLength": 1},
+              "operation_id": {"type": "string", "minLength": 1, "maxLength": 512},
+              "openapi_document_id": {"type": "string", "pattern": "^OPENAPI-DOC-[0-9a-f]{16}$"},
+              "service_boundary_id": {"type": "string", "pattern": "^SERVICE-[0-9a-f]{16}$"},
+              "service_boundary_state": {"const": "DOCUMENT_SCOPED_REVIEW_REQUIRED"},
+              "tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+              "request_schema_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+              "response_statuses": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+              "response_scalar_json_pointers": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^/.+$"}},
+              "response_scalar_candidates": {"type": "array", "uniqueItems": true, "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["json_pointer", "schema_type"],
+                "properties": {
+                  "json_pointer": {"type": "string", "pattern": "^/.+$"},
+                  "schema_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "UNKNOWN"]}
+                }
+              }},
+              "request_input_candidates": {"type": "array", "uniqueItems": true, "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["consumer_location", "consumer_parameter_name", "consumer_schema_type", "required"],
+                "properties": {
+                  "consumer_location": {"enum": ["QUERY", "HEADER", "BODY"]},
+                  "consumer_parameter_name": {"type": "string", "minLength": 1, "maxLength": 1024},
+                  "consumer_schema_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "UNKNOWN"]},
+                  "required": {"type": "boolean"},
+                  "continuation_role": {"enum": ["CURSOR", "PAGE_TOKEN", "PAGE_NUMBER", "OFFSET"]},
+                  "discovery_only": {"const": true},
+                  "auto_bind": {"const": false}
+                },
+                "allOf": [{
+                  "if": {"properties": {"required": {"const": false}}, "required": ["required"]},
+                  "then": {"required": ["continuation_role", "discovery_only", "auto_bind"]}
+                }]
+              }},
+              "response_header_candidates": {"type": "array", "maxItems": 50, "uniqueItems": true, "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["response_status", "header_name", "candidate_role", "schema_type", "review_required", "runtime_state", "value_storage_allowed"],
+                "properties": {
+                  "response_status": {"type": "string", "pattern": "^2(?:[0-9]{2}|XX)$"},
+                  "header_name": {"enum": ["Link", "Location", "Next-Cursor", "Retry-After", "X-Continuation-Token", "X-Next-Cursor"]},
+                  "candidate_role": {"enum": ["PAGINATION_LINK", "PAGINATION_CURSOR", "ASYNC_LOCATION", "ASYNC_RETRY_AFTER"]},
+                  "schema_type": {"enum": ["STRING", "INTEGER", "NUMBER", "BOOLEAN", "UNKNOWN"]},
+                  "review_required": {"const": true},
+                  "runtime_state": {"const": "NOT_RUN"},
+                  "value_storage_allowed": {"const": false}
+                }
+              }},
+              "continuation_candidates": {"type": "array", "maxItems": 50, "uniqueItems": true, "items": {
+                "type": "object", "additionalProperties": false,
+                "required": [
+                  "continuation_id", "kind", "source_operation_reference", "service_boundary_id", "producer_location", "producer_reference",
+                  "consumer_location", "consumer_reference", "confidence", "max_iterations", "max_duration_seconds",
+                  "initial_delay_millis", "max_delay_millis", "termination_policy", "target_resolution_state",
+                  "same_service_only", "cross_service_auto_binding_allowed", "review_required", "runtime_state",
+                  "auto_execute", "score_eligible"
+                ],
+                "properties": {
+                  "continuation_id": {"type": "string", "pattern": "^CONT-[0-9a-f]{16}$"},
+                  "kind": {"enum": ["PAGINATION", "ASYNC_POLL"]},
+                  "source_operation_reference": {"type": "string", "minLength": 1, "maxLength": 512},
+                  "service_boundary_id": {"type": "string", "pattern": "^SERVICE-[0-9a-f]{16}$"},
+                  "producer_location": {"enum": ["BODY_POINTER", "RESPONSE_HEADER", "UNRESOLVED"]},
+                  "producer_reference": {"type": "string", "minLength": 1, "maxLength": 1024},
+                  "consumer_location": {"enum": ["QUERY", "UNRESOLVED"]},
+                  "consumer_reference": {"type": "string", "minLength": 1, "maxLength": 1024},
+                  "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+                  "max_iterations": {"type": "integer", "minimum": 1, "maximum": 100},
+                  "max_duration_seconds": {"type": "integer", "minimum": 1, "maximum": 300},
+                  "initial_delay_millis": {"type": "integer", "minimum": 0, "maximum": 10000},
+                  "max_delay_millis": {"type": "integer", "minimum": 0, "maximum": 10000},
+                  "termination_policy": {"enum": ["STOP_ON_ABSENT_NULL_EMPTY_OR_REPEATED_TOKEN", "REVIEWED_TERMINAL_STATUS_SET_REQUIRED"]},
+                  "target_resolution_state": {"enum": ["SAME_OPERATION_DISCOVERY_ONLY", "NOT_RUN_REVIEW_REQUIRED"]},
+                  "same_service_only": {"const": true},
+                  "cross_service_auto_binding_allowed": {"const": false},
+                  "review_required": {"const": true},
+                  "runtime_state": {"const": "NOT_RUN"},
+                  "auto_execute": {"const": false},
+                  "score_eligible": {"const": false}
+                }
+              }},
+              "security_declared": {"type": "boolean"},
+              "lifecycle_action": {"type": "string", "enum": ["CREATE", "READ", "UPDATE", "DELETE", "INVOKE"]},
+              "destructive_risk": {"type": "boolean"}
+            }
+          }
+        },
+        "parse_findings": {"type": "array", "items": {"type": "string"}},
+        "truncated": {"type": "boolean"},
+        "runtime_verification": {"const": "NOT_RUN"},
+        "auto_execute": {"const": false},
+        "final_claim_allowed": {"const": false}
+      }
+    },
     "evidenceBoundItem": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "name", "kind", "source_locations", "confidence", "verified"],

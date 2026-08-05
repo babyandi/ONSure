@@ -1,0 +1,11 @@
+# Ubuntu 24.04 application-specific user namespace allowance for ONSure bwrap.
+# This does not disable kernel.apparmor_restrict_unprivileged_userns globally.
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile onsure-bwrap /usr/bin/bwrap flags=(unconfined) {
+  userns,
+
+  include if exists <local/usr.bin.bwrap-onsure>
+}

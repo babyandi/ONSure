@@ -30,6 +30,20 @@ class ProgramLearningServiceTest {
         assertEquals(2, ((Number) baseline.get("source_file_count")).intValue());
         assertEquals("STATIC_REPOSITORY_UNDERSTANDING_V2", profile.get("learning_method"));
         assertEquals("NOT_RUN", profile.get("dynamic_trace"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> workflow = (Map<String, Object>) profile.get("workflow_inventory");
+        assertEquals("ONSURE_STATIC_WORKFLOW_INVENTORY_V1", workflow.get("contract"));
+        assertEquals(false, workflow.get("auto_execute"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> understanding = (Map<String, Object>) profile.get("program_understanding");
+        assertEquals("ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1", understanding.get("contract"));
+        assertEquals(false, understanding.get("inferences_are_pass_evidence"));
+        assertEquals("NOT_RUN_REVIEW_REQUIRED", understanding.get("automatic_execution"));
+        @SuppressWarnings("unchecked") Map<String, Object> semantics =
+                (Map<String, Object>) profile.get("business_semantic_hypotheses");
+        assertEquals(BusinessSemanticHypothesisEngine.CONTRACT, semantics.get("contract"));
+        assertEquals(false, semantics.get("score_eligible"));
+        assertEquals("NOT_RUN_REVIEW_REQUIRED", semantics.get("automatic_execution"));
     }
 
     @Test

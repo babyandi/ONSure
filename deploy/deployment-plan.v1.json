@@ -1,0 +1,30 @@
+{
+  "contract": "ONSURE_DEPLOYMENT_EXECUTION_SKELETON_V1",
+  "state": "PREFLIGHT_ONLY_NOT_AUTHORIZED",
+  "artifact": "target/onsure-ubuntu-candidate.tar.gz",
+  "artifact_immutable_digest_required": true,
+  "runtime": {
+    "identity": "NON_ROOT_SYSTEM_USER_ONSURE",
+    "application_filesystem": "READ_ONLY",
+    "api_bind": "127.0.0.1",
+    "api_port": 47311,
+    "evidence_volume": "SEPARATE_WRITABLE_VOLUME_REQUIRED",
+    "secret_source": "EXTERNAL_PROVIDER_REQUIRED",
+    "secret_values_in_plan": false
+  },
+  "target_os": "UBUNTU_24_04_LTS",
+  "topology": "SINGLE_STANDALONE_SERVER",
+  "container_image": "NOT_USED",
+  "orchestrator": "SYSTEMD",
+  "package_command": "bash scripts/package_onsure_ubuntu.sh",
+  "package_validation": "python3 scripts/validate_onsure_ubuntu_package.py",
+  "package_validation_evidence": "assurance/runtime/onsure-ubuntu-package-validation.v1.json",
+  "systemd_security_validation": "python3 scripts/onsure_ubuntu_systemd_security.py",
+  "systemd_security_evidence": "assurance/runtime/onsure-ubuntu-systemd-security.v1.json",
+  "install_command": "NOT_AUTHORIZED",
+  "rollback_command": "NOT_AUTHORIZED",
+  "public_network_exposure": false,
+  "deployment_authorized": false,
+  "production_go": false,
+  "final_claim_allowed": false
+}

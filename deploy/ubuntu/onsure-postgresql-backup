@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+umask 077
+
+: "${ONSURE_DB_PASSWORD:?ONSURE_DB_PASSWORD_REQUIRED}"
+backup_root="${ONSURE_BACKUP_ROOT:-/var/lib/onsure/backups}"
+retention_days="${ONSURE_BACKUP_RETENTION_DAYS:-14}"
+db_host="${ONSURE_DB_HOST:-127.0.0.1}"
+db_port="${ONSURE_DB_PORT:-5432}"
+db_name="${ONSURE_DB_NAME:-onsure}"
+db_user="${ONSURE_DB_USER:-onsure}"
+
+[[ "${db_host}" == "127.0.0.1" || "${db_host}" == "::1" || "${db_host}" == "localhost" ]] \
+  || { echo "ONSURE_BACKUP_NON_LOOPBACK_DATABASE_DENIED" >&2; exit 77; }
+[[ "${backup_root}" == "/var/lib/onsure/backups" ]] \
+  || { echo "ONSURE_BACKUP_ROOT_DENIED" >&2; exit 77; }
+[[ "${retention_days}" =~ ^[1-9][0-9]?$ ]] \
+  || { echo "ONSURE_BACKUP_RETENTION_INVALID" >&2; exit 64; }
+
+mkdir -p -- "${backup_root}"
+chmod 0700 "${backup_root}"
+exec 9>"${backup_root}/.backup.lock"
+flock -n 9 || { echo "ONSURE_BACKUP_ALREADY_RUNNING" >&2; exit 75; }
+
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+final="${backup_root}/onsure-${stamp}.dump"
+temporary="$(mktemp "${backup_root}/.onsure-${stamp}.XXXXXX")"
+checksum="${temporary}.sha256"
+cleanup() { rm -f -- "${temporary}" "${checksum}"; }
+trap cleanup EXIT
+
+PGPASSWORD="${ONSURE_DB_PASSWORD}" pg_dump \
+  --host="${db_host}" --port="${db_port}" --username="${db_user}" \
+  --dbname="${db_name}" --format=custom --no-owner --no-acl --file="${temporary}"
+pg_restore --list "${temporary}" >/dev/null
+chmod 0600 "${temporary}"
+(cd "${backup_root}" && sha256sum "$(basename "${temporary}")") >"${checksum}"
+mv -- "${temporary}" "${final}"
+sed "s/$(basename "${temporary}")/$(basename "${final}")/" "${checksum}" >"${final}.sha256"
+chmod 0600 "${final}" "${final}.sha256"
+rm -f -- "${checksum}"
+find "${backup_root}" -maxdepth 1 -type f \
+  \( -name 'onsure-*.dump' -o -name 'onsure-*.dump.sha256' \) \
+  -mtime "+${retention_days}" -delete
+trap - EXIT
+printf 'ONSURE_POSTGRESQL_BACKUP_PASS_NONFINAL file=%s\n' "$(basename "${final}")"

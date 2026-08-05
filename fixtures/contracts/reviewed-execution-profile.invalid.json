@@ -1,0 +1,8 @@
+{
+  "contract": "ONSURE_REVIEWED_EXECUTION_PROFILE_V1",
+  "profile_id": "unsafe-shell",
+  "source_sha256": "not-a-digest",
+  "review_state": "UNREVIEWED",
+  "technologies": [],
+  "steps": []
+}

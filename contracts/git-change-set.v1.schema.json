@@ -7,8 +7,9 @@
   "required": [
     "contract", "change_set_id", "patch_apply_receipt_sha256", "improvement_proof_sha256",
     "delivery_approval_sha256", "approval_id", "approval_actor", "approval_key_id",
-    "branch", "commit_sha", "tree_sha", "changed_files", "commit_message", "push_state",
-    "draft_pr_state", "merge_state", "created_at", "final_claim_allowed", "change_set_sha256"
+    "approval_expires_at", "branch", "commit_sha", "tree_sha", "changed_files", "commit_message",
+    "push_state", "draft_pr_state", "merge_state", "created_at", "final_claim_allowed",
+    "change_set_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_GIT_CHANGE_SET_V1"},
@@ -19,6 +20,7 @@
     "approval_id": {"type": "string", "minLength": 1},
     "approval_actor": {"type": "string", "minLength": 1},
     "approval_key_id": {"type": "string", "minLength": 1},
+    "approval_expires_at": {"type": "string", "format": "date-time"},
     "branch": {"type": "string", "minLength": 1},
     "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
     "tree_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},

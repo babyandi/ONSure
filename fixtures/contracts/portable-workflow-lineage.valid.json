@@ -1,0 +1,43 @@
+{
+  "contract": "ONSURE_PORTABLE_WORKFLOW_LINEAGE_V1",
+  "run_id": "neutral-run-001",
+  "request": {
+    "path": ".onsure/e2e/request.json",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "artifact": {
+    "path": ".onsure/e2e/artifact.json",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "schema_path": ".onsure/e2e/artifact.schema.json",
+    "schema_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "media_type": "application/json"
+  },
+  "handoffs": [{
+    "producer": "renderer",
+    "consumer": "read-back",
+    "producer_output_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "consumer_input_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "producer_schema_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "consumer_schema_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  }],
+  "permit": {
+    "permit_id": "permit-001",
+    "run_id": "neutral-run-001",
+    "request_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "decision": "ALLOW",
+    "issued_at": "2026-08-04T00:00:00Z",
+    "expires_at": "2026-08-04T00:10:00Z"
+  },
+  "read_back": {"artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "tester": {"decision": "PASS", "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "audit": {"decision": "PASS", "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "exposure": {
+    "expected_decision": "DENY",
+    "actual_decision": "DENY",
+    "artifact_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "permit_id": "permit-001"
+  },
+  "generated_at": "2026-08-04T00:05:00Z"
+}

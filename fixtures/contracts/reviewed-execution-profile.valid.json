@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REVIEWED_EXECUTION_PROFILE_V1",
+  "profile_id": "external-python-workflow",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "review_state": "REVIEWED_LOCAL_NONFINAL",
+  "technologies": ["PYTHON", "REVIEWED_EXTERNAL_WORKFLOW"],
+  "steps": [
+    {
+      "step_id": "reviewed.negative",
+      "phase": "COMPONENT_AND_NEGATIVE",
+      "kind": "NEGATIVE_TEST",
+      "command": ["python3", "tests/negative.py"],
+      "working_directory": "",
+      "timeout_seconds": 120,
+      "required": true,
+      "depends_on": ["validator.meta-check"]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "-c",
+    "import errno; raise OSError(errno.ENOSPC, 'synthetic')"
+  ],
+  "contract": "ONSURE_RUNTIME_ASSURANCE_EVIDENCE_V1",
+  "decision": "PASS_NONFINAL",
+  "evidence_type": "FAULT_CONTAINMENT_PROBE",
+  "fault_contained": true,
+  "fault_mode": "synthetic_enospc",
+  "final_claim_allowed": false,
+  "iterations": 1,
+  "metrics": {
+    "maximum_ms": 99.347,
+    "median_ms": 99.347,
+    "minimum_ms": 99.347,
+    "p95_ms": 99.347,
+    "successful_iterations": 0
+  },
+  "observations": [
+    {
+      "elapsed_ms": 99.347,
+      "exit_code": 1,
+      "iteration": 1,
+      "stderr_bytes": 104,
+      "stderr_sha256": "a1eff42d12b9d483f29db276d94ef3a21f22a567585783ef33cdecac4ef865ce",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    }
+  ],
+  "performance_slo_asserted": false,
+  "timeout_seconds": 5.0
+}

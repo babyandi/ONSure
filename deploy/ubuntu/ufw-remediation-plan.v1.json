@@ -1,0 +1,37 @@
+{
+  "authorized_rule_scope": [
+    "5432/tcp IPv6 Anywhere rule 6",
+    "5432/tcp IPv4 Anywhere rule 3"
+  ],
+  "commands_proposed_not_executed": [
+    "sudo ufw --force delete 6",
+    "sudo ufw --force delete 3"
+  ],
+  "contract": "ONSURE_UBUNTU_UFW_REMEDIATION_PLAN_V1",
+  "execution_authorized": false,
+  "execution_state": "NOT_RUN",
+  "final_claim_allowed": false,
+  "observation": "assurance/runtime/onsure-ubuntu-privileged-policy-observation.v1.json",
+  "out_of_scope_rules_must_remain_unchanged": [
+    "22/tcp",
+    "80/tcp"
+  ],
+  "postconditions": {
+    "forbidden_public_tcp_ports": [
+      47311,
+      47312,
+      5432
+    ],
+    "postgresql_hba_non_loopback_rule_present": false,
+    "postgresql_listen_addresses": "localhost",
+    "ufw_active": true
+  },
+  "preconditions": [
+    "NUMBERED_RULES_STILL_MATCH_OBSERVATION",
+    "POSTGRESQL_LISTEN_LOOPBACK_ONLY",
+    "POSTGRESQL_HBA_LOOPBACK_ONLY",
+    "MAINTENANCE_CHANGE_AUTHORIZED"
+  ],
+  "production_go": false,
+  "rollback_authority": "SEPARATE_OPERATOR_DECISION_REQUIRED"
+}

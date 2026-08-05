@@ -1,0 +1,59 @@
+{
+  "apparmor": {
+    "complain_profile_count": 6,
+    "dedicated_onsure_profile_enforced": false,
+    "enforce_profile_count": 27,
+    "loaded_profile_count": 122,
+    "onsure_java_effective_profile": "unprivileged_userns"
+  },
+  "contract": "ONSURE_UBUNTU_PRIVILEGED_POLICY_OBSERVATION_V1",
+  "decision": "REVIEW_REQUIRED",
+  "final_claim_allowed": false,
+  "observation_source": "OWNER_PROVIDED_READ_ONLY_COMMAND_OUTPUT",
+  "postgresql": {
+    "hba_active_rule_count": 7,
+    "hba_file": "/etc/postgresql/16/main/pg_hba.conf",
+    "hba_host_authentication": "scram-sha-256",
+    "hba_host_networks": [
+      "127.0.0.1/32",
+      "::1/128"
+    ],
+    "hba_local_authentication": "peer",
+    "hba_non_loopback_host_rule_present": false,
+    "listen_addresses": "localhost",
+    "loopback_only": true,
+    "port": 5432,
+    "ssl": "on"
+  },
+  "production_blockers": [
+    "APPARMOR_DEDICATED_ONSURE_PROFILE_NOT_ENFORCED",
+    "UFW_POSTGRESQL_PUBLIC_ALLOW_RULE"
+  ],
+  "secret_values_recorded": false,
+  "ufw": {
+    "active": true,
+    "default_incoming": "deny",
+    "default_outgoing": "allow",
+    "default_routed": "deny",
+    "logging": "low",
+    "postgresql_public_allow": true,
+    "postgresql_public_rule_ids_delete_order": [
+      6,
+      3
+    ],
+    "public_allow_tcp_ports_ipv4": [
+      22,
+      80,
+      5432
+    ],
+    "public_allow_tcp_ports_ipv6": [
+      22,
+      80,
+      5432
+    ],
+    "rules_outside_onsure_scope_preserved": [
+      "22/tcp",
+      "80/tcp"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "apparmor": {
+    "module_enabled": true,
+    "profile_status": "NOT_RUN_INSUFFICIENT_PRIVILEGE"
+  },
+  "contract": "ONSURE_UBUNTU_HOST_PREFLIGHT_V1",
+  "decision": "PASS_NONFINAL",
+  "errors": [],
+  "final_claim_allowed": false,
+  "host_modified": false,
+  "host_os": "UBUNTU_24_04",
+  "listeners": {
+    "47311": {
+      "listener_count": 1,
+      "loopback_only": true
+    },
+    "47312": {
+      "listener_count": 1,
+      "loopback_only": true
+    },
+    "5432": {
+      "listener_count": 1,
+      "loopback_only": true
+    }
+  },
+  "production_acceptance": "NOT_RUN",
+  "production_blockers": [
+    "PRODUCTION_ACCEPTANCE_NOT_AUTHORIZED",
+    "SYSTEMD_EXPOSURE_ABOVE_PRODUCTION_MAXIMUM:onsure-runtime.service",
+    "SYSTEMD_EXPOSURE_ABOVE_PRODUCTION_MAXIMUM:onsure-llm-gateway.service",
+    "APPARMOR_PROFILE_ENFORCEMENT_NOT_VERIFIED",
+    "UFW_POLICY_NOT_VERIFIED"
+  ],
+  "runtime_config": {
+    "exists": true,
+    "mode": "0600",
+    "path_disclosed": false,
+    "secret_values_read": false
+  },
+  "services": {
+    "onsure-llm-gateway.service": {
+      "active": true,
+      "enabled": true
+    },
+    "onsure-runtime.service": {
+      "active": true,
+      "enabled": true
+    }
+  },
+  "systemd_security": {
+    "onsure-llm-gateway.service": {
+      "exposure_score": 6.7,
+      "maximum_production_score": 4.0,
+      "within_production_maximum": false
+    },
+    "onsure-runtime.service": {
+      "exposure_score": 6.7,
+      "maximum_production_score": 4.0,
+      "within_production_maximum": false
+    }
+  },
+  "ufw": {
+    "status": "NOT_RUN_INSUFFICIENT_PRIVILEGE"
+  }
+}

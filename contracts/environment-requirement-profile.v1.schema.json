@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/environment-requirement-profile.v1.schema.json",
+  "title": "ONSure External Environment Requirement Profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "profile_id", "requirements"],
+  "properties": {
+    "contract": {"const": "ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1"},
+    "profile_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["requirement_id", "kind", "value", "required"],
+        "properties": {
+          "requirement_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"},
+          "kind": {
+            "type": "string",
+            "enum": ["EXECUTABLE", "SOURCE_FILE", "SOURCE_DIRECTORY", "EXECUTABLE_SOURCE_FILE", "FONT_FAMILY"]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          },
+          "required": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

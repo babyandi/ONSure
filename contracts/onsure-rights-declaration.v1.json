@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_RIGHTS_DECLARATION_V1",
+  "product": "ONSure",
+  "repository": "babyandi/ONSure",
+  "copyright_holder": "ORUDA Labs",
+  "copyright_year_start": 2026,
+  "outbound_license": "LicenseRef-ORUDA-Labs-Proprietary",
+  "distribution_policy": "PROPRIETARY_WRITTEN_AGREEMENT_REQUIRED",
+  "other_developers_companies_or_contractors": "NONE_ATTESTED",
+  "copied_external_repository_source": "NONE_ATTESTED",
+  "copied_external_assets": "NONE_ATTESTED",
+  "attestation_source": "USER_PROVIDED_2026-08-04",
+  "legal_name_reconfirmation_required_if_registration_differs": true,
+  "third_party_dependencies_keep_separate_licenses": true,
+  "production_release_authority": false,
+  "final_claim_allowed": false
+}

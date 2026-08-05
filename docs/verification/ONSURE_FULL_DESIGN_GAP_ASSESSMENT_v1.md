@@ -65,7 +65,11 @@ Finding Fingerprint 전후 비교는 있으나 동일 Fixture·환경·정책·�
 
 ### 4.9 VS Code와 API
 
-`.vscode/tasks.json`은 Extension이 아니다. Activity Bar, Chat, Program Profile, Review, Verification, Improvement, Evidence, Git View와 Local Authenticated API가 없다.
+Activity Bar Extension과 Loopback Local Authenticated API가 존재하며, 등록된 Workspace·Project·Target에
+대해 Program Learning, Plan 생성, 외부 서명 승인 검증, 승인 Bundle 기반 Validation을 연결한다.
+금지된 source·product-state override와 승인 없는 실행은 fail-closed 처리한다. 다만 Chat, Program
+Profile, Review, Findings, Diff/Hunk 승인, Evidence, Git View의 전용 상호작용과 실제 Extension Host
+Full-Chain은 아직 미완료다.
 
 ### 4.10 Git Full-Chain
 
@@ -102,7 +106,8 @@ Worktree, Branch, Hunk Patch, Commit, Push, Draft PR, CI 결과, Review Comment,
 - Core and Optional Adapter Boundary
 - Requirements Traceability
 
-여전히 상세 DB, Local API, VS Code Contribution, GitHub/GitLab Adapter, 성능 목표, Blind Review 운영, 설치·SLA·보존·업그레이드 문서는 후속 구현과 함께 작성해야 한다.
+여전히 상세 DB, Local API 운영·복구, VS Code 전용 UX, GitHub/GitLab Adapter, 성능 목표,
+Blind Review 운영, 설치·SLA·보존·업그레이드 문서는 후속 구현과 함께 작성해야 한다.
 
 ## 7. Codespace 이전 처리 범위
 

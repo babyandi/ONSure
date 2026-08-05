@@ -1,0 +1,279 @@
+{
+  "component_count": 23,
+  "contract": "ONSURE_DEPENDENCY_LICENSE_INVENTORY_V1",
+  "copyright_holder": "ORUDA Labs",
+  "cyclonedx_plugin": "org.cyclonedx:cyclonedx-maven-plugin:2.9.1",
+  "cyclonedx_schema": "1.6",
+  "decision": "PASS_NONFINAL",
+  "dependencies": [
+    {
+      "group": "com.fasterxml.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-annotations",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.18.9?type=jar",
+      "scope": "required",
+      "version": "2.18.9"
+    },
+    {
+      "group": "com.fasterxml.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-annotations",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-annotations@2.21?type=jar",
+      "scope": "required",
+      "version": "2.21"
+    },
+    {
+      "group": "com.fasterxml.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-core",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.18.9?type=jar",
+      "scope": "required",
+      "version": "2.18.9"
+    },
+    {
+      "group": "com.fasterxml.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-databind",
+      "purl": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.9?type=jar",
+      "scope": "required",
+      "version": "2.18.9"
+    },
+    {
+      "group": "com.fasterxml.jackson.dataformat",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-dataformat-yaml",
+      "purl": "pkg:maven/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml@2.18.9?type=jar",
+      "scope": "required",
+      "version": "2.18.9"
+    },
+    {
+      "group": "com.fasterxml.jackson.datatype",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-datatype-jsr310",
+      "purl": "pkg:maven/com.fasterxml.jackson.datatype/jackson-datatype-jsr310@2.18.9?type=jar",
+      "scope": "required",
+      "version": "2.18.9"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-adapter-oruda",
+      "purl": "pkg:maven/io.onsure/onsure-adapter-oruda@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-cli",
+      "purl": "pkg:maven/io.onsure/onsure-cli@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-core",
+      "purl": "pkg:maven/io.onsure/onsure-core@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-llm-gateway",
+      "purl": "pkg:maven/io.onsure/onsure-llm-gateway@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-local-api",
+      "purl": "pkg:maven/io.onsure/onsure-local-api@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-migration-postgresql",
+      "purl": "pkg:maven/io.onsure/onsure-migration-postgresql@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-provider-local-mock",
+      "purl": "pkg:maven/io.onsure/onsure-provider-local-mock@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-provider-openai",
+      "purl": "pkg:maven/io.onsure/onsure-provider-openai@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-provider-spi",
+      "purl": "pkg:maven/io.onsure/onsure-provider-spi@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-sdk",
+      "purl": "pkg:maven/io.onsure/onsure-sdk@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "io.onsure",
+      "license_status": "PROJECT_SOURCE_LICENSE_INHERITS_ROOT",
+      "licenses": [
+        "LicenseRef-ORUDA-Labs-Proprietary"
+      ],
+      "name": "onsure-test-fixtures",
+      "purl": "pkg:maven/io.onsure/onsure-test-fixtures@0.1.0-SNAPSHOT?type=jar",
+      "scope": "",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "group": "org.flywaydb",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "flyway-core",
+      "purl": "pkg:maven/org.flywaydb/flyway-core@12.11.0?type=jar",
+      "scope": "required",
+      "version": "12.11.0"
+    },
+    {
+      "group": "org.flywaydb",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "flyway-database-postgresql",
+      "purl": "pkg:maven/org.flywaydb/flyway-database-postgresql@12.11.0?type=jar",
+      "scope": "required",
+      "version": "12.11.0"
+    },
+    {
+      "group": "org.postgresql",
+      "license_status": "DECLARED",
+      "licenses": [
+        "BSD-2-Clause"
+      ],
+      "name": "postgresql",
+      "purl": "pkg:maven/org.postgresql/postgresql@42.7.12?type=jar",
+      "scope": "required",
+      "version": "42.7.12"
+    },
+    {
+      "group": "org.yaml",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "snakeyaml",
+      "purl": "pkg:maven/org.yaml/snakeyaml@2.3?type=jar",
+      "scope": "required",
+      "version": "2.3"
+    },
+    {
+      "group": "tools.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-core",
+      "purl": "pkg:maven/tools.jackson.core/jackson-core@3.1.5?type=jar",
+      "scope": "required",
+      "version": "3.1.5"
+    },
+    {
+      "group": "tools.jackson.core",
+      "license_status": "DECLARED",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "name": "jackson-databind",
+      "purl": "pkg:maven/tools.jackson.core/jackson-databind@3.1.5?type=jar",
+      "scope": "required",
+      "version": "3.1.5"
+    }
+  ],
+  "dependency_license_counts": {
+    "Apache-2.0": 11,
+    "BSD-2-Clause": 1,
+    "LicenseRef-ORUDA-Labs-Proprietary": 11
+  },
+  "dependency_license_review_required_count": 0,
+  "final_claim_allowed": false,
+  "limitations": [
+    "DECLARED_DEPENDENCY_LICENSE_IS_NOT_LEGAL_APPROVAL",
+    "TRANSITIVE_NOTICE_AND_ATTRIBUTION_REQUIREMENTS_REQUIRE_HUMAN_REVIEW",
+    "INBOUND_RIGHTS_ARE_OWNER_ATTESTED_NOT_INDEPENDENTLY_VERIFIED"
+  ],
+  "rights_declaration": "contracts/onsure-rights-declaration.v1.json",
+  "root_source_license": "LicenseRef-ORUDA-Labs-Proprietary",
+  "source_sbom": "assurance/dependencies/onsure.cdx.json",
+  "source_sbom_sha256": "2fc0c2e9b58c7ae511d9b0a233f0dafbc233aaa99872717f53313879a26969b4"
+}

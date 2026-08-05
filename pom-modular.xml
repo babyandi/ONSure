@@ -6,39 +6,93 @@
   <artifactId>onsure-modular-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <name>ONSure Modular Compatibility Parent</name>
+  <organization><name>ORUDA Labs</name></organization>
+  <licenses>
+    <license>
+      <name>LicenseRef-ORUDA-Labs-Proprietary</name>
+      <url>https://github.com/babyandi/ONSure/blob/main/LICENSE</url>
+      <distribution>manual</distribution>
+      <comments>Copyright (c) 2026 ORUDA Labs. All rights reserved.</comments>
+    </license>
+  </licenses>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.outputTimestamp>2000-01-01T00:00:00Z</project.build.outputTimestamp>
     <junit.version>5.11.4</junit.version>
-    <jackson.version>2.18.2</jackson.version>
+    <jackson.version>2.18.9</jackson.version>
+    <flyway.version>12.11.0</flyway.version>
+    <postgresql.version>42.7.12</postgresql.version>
+    <jackson3.version>3.1.5</jackson3.version>
     <build-helper.version>3.6.0</build-helper.version>
     <compiler.version>3.13.0</compiler.version>
     <surefire.version>3.5.2</surefire.version>
   </properties>
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.fasterxml.jackson.datatype</groupId>
-        <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter</artifactId>
-        <version>${junit.version}</version>
-      </dependency>
+      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson.version}</version></dependency>
+      <dependency><groupId>com.fasterxml.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId><version>${jackson.version}</version></dependency>
+      <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jsr310</artifactId><version>${jackson.version}</version></dependency>
+      <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version></dependency>
+      <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId><version>${flyway.version}</version></dependency>
+      <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId><version>${flyway.version}</version></dependency>
+      <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>${postgresql.version}</version></dependency>
+      <dependency><groupId>tools.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson3.version}</version></dependency>
     </dependencies>
   </dependencyManagement>
+  <build>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${maven.multiModuleProjectDirectory}</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+          <include>THIRD_PARTY_NOTICES.md</include>
+        </includes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${compiler.version}</version>
+        <configuration><release>${maven.compiler.release}</release></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+          <systemPropertyVariables>
+            <onsure.allowTrustedFixtureAutoApproval>true</onsure.allowTrustedFixtureAutoApproval>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration><outputTimestamp>${project.build.outputTimestamp}</outputTimestamp></configuration>
+      </plugin>
+    </plugins>
+  </build>
   <modules>
     <module>modules/onsure-core</module>
     <module>modules/onsure-cli</module>
     <module>modules/onsure-local-api</module>
     <module>modules/onsure-test-fixtures</module>
     <module>modules/onsure-adapter-oruda</module>
+    <module>modules/onsure-provider-spi</module>
+    <module>modules/onsure-provider-local-mock</module>
+    <module>modules/onsure-provider-openai</module>
+    <module>modules/onsure-llm-gateway</module>
+    <module>modules/onsure-migration-postgresql</module>
+    <module>modules/onsure-sdk</module>
   </modules>
 </project>

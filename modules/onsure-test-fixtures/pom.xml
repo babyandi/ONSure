@@ -16,6 +16,13 @@
         <directory>${project.basedir}/../../fixtures</directory>
         <targetPath>onsure-fixtures</targetPath>
         <filtering>false</filtering>
+        <excludes>
+          <exclude>**/__pycache__/**</exclude>
+          <exclude>**/*.pyc</exclude>
+          <exclude>**/*.pyo</exclude>
+          <exclude>**/node_modules/**</exclude>
+          <exclude>**/.onsure/**</exclude>
+        </excludes>
       </resource>
     </resources>
   </build>

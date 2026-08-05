@@ -26,6 +26,113 @@
   "dependencies": [],
   "ai_components": [],
   "data_flows": [],
+  "workflow_inventory": {
+    "contract": "ONSURE_STATIC_WORKFLOW_INVENTORY_V1",
+    "source_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "source_file_count": 1,
+    "execution_policy": "DISCOVERY_ONLY_REVIEW_REQUIRED",
+    "candidate_count": 1,
+    "candidate_kind_counts": {"OPENAPI_OPERATION": 1},
+    "candidates": [
+      {
+        "candidate_id": "WF-0123456789abcdef",
+        "kind": "OPENAPI_OPERATION",
+        "name": "listItems",
+        "source_path": "contracts/openapi/items.yaml",
+        "evidence_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "invocation_type": "HTTP_OPERATION_REQUIRES_SERVER",
+        "role_hints": ["UNCLASSIFIED_REVIEW_REQUIRED"],
+        "confidence": 0.98,
+        "runtime_verified": false,
+        "review_required": true,
+        "auto_execute": false,
+        "http_method": "GET",
+        "http_path": "/items",
+        "operation_id": "listItems",
+        "openapi_document_id": "OPENAPI-DOC-0123456789abcdef",
+        "service_boundary_id": "SERVICE-fedcba9876543210",
+        "service_boundary_state": "DOCUMENT_SCOPED_REVIEW_REQUIRED",
+        "tags": ["Items"],
+        "request_schema_refs": [],
+        "response_statuses": ["200"],
+        "response_scalar_json_pointers": ["/nextCursor"],
+        "response_scalar_candidates": [
+          {"json_pointer": "/nextCursor", "schema_type": "STRING"}
+        ],
+        "request_input_candidates": [
+          {
+            "consumer_location": "QUERY",
+            "consumer_parameter_name": "cursor",
+            "consumer_schema_type": "STRING",
+            "required": false,
+            "continuation_role": "CURSOR",
+            "discovery_only": true,
+            "auto_bind": false
+          }
+        ],
+        "response_header_candidates": [
+          {
+            "response_status": "200",
+            "header_name": "Link",
+            "candidate_role": "PAGINATION_LINK",
+            "schema_type": "STRING",
+            "review_required": true,
+            "runtime_state": "NOT_RUN",
+            "value_storage_allowed": false
+          }
+        ],
+        "continuation_candidates": [
+          {
+            "continuation_id": "CONT-0123456789abcdef",
+            "kind": "PAGINATION",
+            "source_operation_reference": "listItems",
+            "service_boundary_id": "SERVICE-fedcba9876543210",
+            "producer_location": "BODY_POINTER",
+            "producer_reference": "/nextCursor",
+            "consumer_location": "QUERY",
+            "consumer_reference": "cursor",
+            "confidence": 0.9,
+            "max_iterations": 100,
+            "max_duration_seconds": 60,
+            "initial_delay_millis": 0,
+            "max_delay_millis": 0,
+            "termination_policy": "STOP_ON_ABSENT_NULL_EMPTY_OR_REPEATED_TOKEN",
+            "target_resolution_state": "SAME_OPERATION_DISCOVERY_ONLY",
+            "same_service_only": true,
+            "cross_service_auto_binding_allowed": false,
+            "review_required": true,
+            "runtime_state": "NOT_RUN",
+            "auto_execute": false,
+            "score_eligible": false
+          }
+        ],
+        "security_declared": false,
+        "lifecycle_action": "READ",
+        "destructive_risk": false
+      }
+    ],
+    "parse_findings": [],
+    "truncated": false,
+    "runtime_verification": "NOT_RUN",
+    "auto_execute": false,
+    "final_claim_allowed": false
+  },
+  "business_semantic_hypotheses": {
+    "contract": "ONSURE_BUSINESS_SEMANTIC_HYPOTHESES_V1",
+    "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "inference_method": "DETERMINISTIC_EVIDENCE_BOUND_SEMANTIC_HYPOTHESES_V1",
+    "hypothesis_count": 0,
+    "hypotheses": [],
+    "unknown_count": 0,
+    "ambiguous_count": 0,
+    "review_required": true,
+    "automatic_execution": "NOT_RUN_REVIEW_REQUIRED",
+    "live_provider_invocation": "NOT_RUN",
+    "customer_rules_confirmed": false,
+    "runtime_verification": "NOT_RUN",
+    "score_eligible": false,
+    "final_claim_allowed": false
+  },
   "unknowns": [],
   "conflicts": [],
   "evidence_refs": [

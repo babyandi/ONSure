@@ -1,0 +1,136 @@
+schema_version: onsure-product-candidate/v1
+product:
+  id: onsure
+  name: ONSure
+  repository: babyandi/ONSure
+  status: PREPARATION_ONLY_NONFINAL
+  current_root: .
+  future_root_candidate: products/onsure
+ownership:
+  copyright_holder: ORUDA Labs
+  copyright_year_start: 2026
+  inbound_rights_declaration: contracts/onsure-rights-declaration.v1.json
+license:
+  identifier: LicenseRef-ORUDA-Labs-Proprietary
+  distribution_policy: PROPRIETARY_WRITTEN_AGREEMENT_REQUIRED
+  third_party_notices: THIRD_PARTY_NOTICES.md
+namespace:
+  current_java: io.onsure
+  future_java_candidate: kr.co.oruda.products.onsure
+  rename_authorized: false
+components:
+  api:
+    status: IMPLEMENTED_LOCAL_ONLY
+    module: modules/onsure-local-api
+  worker:
+    status: NOT_PRESENT
+  web:
+    status: IMPLEMENTED_LOCAL_ONLY
+    path: assets/admin
+    served_by: modules/onsure-local-api
+  llm_gateway:
+    status: IMPLEMENTED_LOCAL_ONLY_NONFINAL
+    module: modules/onsure-llm-gateway
+    provider_spi: modules/onsure-provider-spi
+    monitoring: CONTENT_FREE_DIGEST_CHAIN
+  cli:
+    status: IMPLEMENTED
+    module: modules/onsure-cli
+  migration:
+    status: IMPLEMENTED_CANDIDATE_NONFINAL
+    module: modules/onsure-migration-postgresql
+    engine: POSTGRESQL
+    tool: FLYWAY
+    execution_authorized: false
+  vscode_extension:
+    status: IMPLEMENTED_PARTIAL
+    path: vscode-extension
+  oruda_adapter:
+    status: IMPLEMENTED_OPTIONAL
+    module: modules/onsure-adapter-oruda
+build:
+  canonical:
+    command: mvn -B -ntp -q clean verify
+    pom: pom.xml
+  modular_compatibility:
+    command: mvn -B -ntp -q -f pom-modular.xml clean package
+    pom: pom-modular.xml
+    release_authority: false
+  python_test:
+    command: python3 -m unittest discover -s tests
+  boundary_validation:
+    command: python3 scripts/validate_onsure_build_boundary.py
+  migration_validation:
+    command: python3 scripts/validate_monorepo_migration_readiness.py
+  public_api_validation:
+    command: python3 scripts/onsure_java_api_baseline.py validate
+    requires_compiled_classes: true
+  supply_chain_validation:
+    command: python3 scripts/onsure_supply_chain.py validate
+    cyclonedx_schema: "1.6"
+  operational_boundary_validation:
+    command: python3 scripts/validate_onsure_operational_boundary.py
+  postgresql_rehearsal:
+    command: python3 scripts/rehearse_onsure_postgresql.py
+    production_authority: false
+  rhel_package_validation:
+    command: python3 scripts/validate_onsure_rhel_package.py
+    install_authority: false
+  ubuntu_package_validation:
+    command: python3 scripts/validate_onsure_ubuntu_package.py
+    install_authority: false
+  ubuntu_lifecycle_rehearsal:
+    command: python3 scripts/onsure_ubuntu_lifecycle.py rehearse
+    production_authority: false
+  vscode_ubuntu_runtime_rehearsal:
+    command: python3 scripts/rehearse_onsure_vscode_runtime.py
+    requires_runtime_secrets: true
+    production_authority: false
+  ubuntu_host_preflight:
+    command: python3 scripts/onsure_ubuntu_host_preflight.py --runtime-root <external-runtime-root>
+    read_only: true
+    production_authority: false
+  ubuntu_privileged_policy_validation:
+    command: python3 scripts/validate_onsure_ubuntu_privileged_policy.py
+    observation_source: OWNER_PROVIDED_READ_ONLY_COMMAND_OUTPUT
+    production_authority: false
+  ubuntu_apparmor_candidate_validation:
+    command: python3 scripts/validate_onsure_ubuntu_apparmor.py
+    parser_mode: SKIP_KERNEL_LOAD
+    production_authority: false
+  ubuntu_network_policy_validation:
+    command: python3 scripts/validate_onsure_ubuntu_network_policy.py
+    firewall_mutation_authorized: false
+    production_authority: false
+  systemd_security_validation:
+    command: python3 scripts/onsure_systemd_security.py
+    rhel_execution_authority: false
+  ubuntu_systemd_security_validation:
+    command: python3 scripts/onsure_ubuntu_systemd_security.py
+    service_execution_authority: false
+  bubblewrap_environment_diagnostic:
+    command: python3 scripts/onsure_bubblewrap_diagnostics.py
+    github_actions_required: false
+  sandbox_backend_diagnostic:
+    command: python3 scripts/onsure_sandbox_diagnostics.py
+    local_oci_only: true
+    changes_deployment_topology: false
+    github_actions_required: false
+  nested_root_rehearsal:
+    command: python3 scripts/rehearse_onsure_nested_root.py --mode full
+product_root:
+  environment_variable: ONSURE_PRODUCT_ROOT
+  default_resolution: script_location_parent
+  external_workspace_reference_allowed: false
+migration:
+  actual_cutover_authorized: false
+  immutable_cutover_commit_required: true
+  package_path_change_in_current_repository: false
+  manifest: assurance/migration/onsure-migration-manifest.v1.json
+  open_pr_overlap: assurance/migration/onsure-open-pr-overlap.v1.json
+  merge_order_must_be_clear: true
+release:
+  deployment: UBUNTU_SYSTEMD_PRIMARY_RHEL_COMPATIBILITY_CANDIDATE_NONFINAL
+  production_go: false
+  commercial_go: false
+  final_pass: false

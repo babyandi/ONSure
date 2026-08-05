@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_UNIVERSAL_VALIDATION_REPEATABILITY_V1",
+  "decision": "PASS_NONFINAL",
+  "environment_sha256": "b1b0f3a751e610bc6cf537b2a34abfdc5f3cb17892d56d7ddac42ac777ca4958",
+  "final_claim_allowed": false,
+  "production_authority": false,
+  "receipt_sha256": "ea4da468818b922b28892061a9e90ef29df95b58792565f39f00116c58400bdc",
+  "run_count": 2,
+  "runs": [
+    {
+      "finalization_sha256": "4c30b38aa5e447b390b9e32f69a50e0b0139e7923d3602bf238cbdac035093d9",
+      "observation_sha256": "531941a1e12b25ec725e601d4c7bc5cd63ecd82c5d720514c26bc9b2e729c1d1",
+      "profile_id": "self-current-1",
+      "result_sha256": "77b8298ae52c4dd279cd477c038eb4a77f07cdd3276e2f4839102046bdfa739f"
+    },
+    {
+      "finalization_sha256": "4c30b38aa5e447b390b9e32f69a50e0b0139e7923d3602bf238cbdac035093d9",
+      "observation_sha256": "1d40ee890f54eab5b4165e3511694597d0c8526a15b40647c27d5b7f2ee872be",
+      "profile_id": "self-current-2",
+      "result_sha256": "ca11713a442eafdc95dc2d996ecb2dbb4d7818d6be7807b06e5d5a3f30dd6aed"
+    }
+  ],
+  "semantic_projection_sha256": "3428512831d3fd4342f3ae15530519eed7e56eaf5af83e0622e3c026e3dc3301",
+  "source_commit": "5ef44b380ad6dff5bb1c612169602f914849a3a0",
+  "source_digest": "a88f78f70cef2031ae89389e5ba6d467e9340048311ae7353c1a03fb045d88fd",
+  "source_mutation_detected": false,
+  "verified_pass_step_count_per_run": 26
+}

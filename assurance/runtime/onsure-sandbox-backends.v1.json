@@ -1,0 +1,89 @@
+{
+  "available_backends": [
+    "OCI_DOCKER"
+  ],
+  "bubblewrap": {
+    "bwrap_version": "bubblewrap 0.9.0",
+    "contract": "ONSURE_BUBBLEWRAP_ENVIRONMENT_DIAGNOSTIC_V1",
+    "decision": "BLOCKED_ENVIRONMENT",
+    "final_claim_allowed": false,
+    "github_actions_required": false,
+    "namespace_limits": {
+      "kernel.unprivileged_userns_clone": "1",
+      "user.max_net_namespaces": "30865",
+      "user.max_user_namespaces": "30865"
+    },
+    "next_command": "READ docs/operations/ONSURE_BUBBLEWRAP_EXECUTION_ENVIRONMENT_v1.md",
+    "platform": {
+      "machine": "x86_64",
+      "release": "6.8.0-136-generic",
+      "system": "Linux"
+    },
+    "probe_exit_code": 1,
+    "probe_output": "bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted",
+    "reason_code": "BWRAP_LOOPBACK_PERMISSION_DENIED",
+    "required_security_properties": [
+      "ROOTLESS_USER_NAMESPACE",
+      "PRIVATE_NETWORK_NAMESPACE",
+      "LOOPBACK_CONFIGURATION_INSIDE_PRIVATE_NAMESPACE",
+      "CAPABILITY_DROP_ALL",
+      "READ_ONLY_SOURCE_BIND"
+    ],
+    "security_fallback_allowed": false
+  },
+  "contract": "ONSURE_SANDBOX_BACKEND_DIAGNOSTIC_V1",
+  "decision": "PASS_NONFINAL",
+  "deployment_topology_changed": false,
+  "final_claim_allowed": false,
+  "github_actions_used": false,
+  "oci": {
+    "boundary_attack_execution": "PASS_NONFINAL",
+    "boundary_attack_output_sha256": "8beb8fc5de2011e0423d366f2ffae350e7d49b6b1f9ce411fda08e9605429fa0",
+    "boundary_attack_probe_count": 12,
+    "capabilities": "DROP_ALL",
+    "decision": "PASS_NONFINAL",
+    "docker_security_options": [
+      "name=apparmor",
+      "name=seccomp,profile=builtin",
+      "name=cgroupns"
+    ],
+    "docker_server_version": "29.6.2",
+    "docker_socket_mounted": false,
+    "environment_capabilities": [
+      "JAVA",
+      "MAVEN",
+      "NODE",
+      "NPM",
+      "CLAMAV",
+      "NOTO_SANS_CJK_KR"
+    ],
+    "environment_capability_count": 6,
+    "environment_capability_execution": "PASS_NONFINAL",
+    "environment_capability_output_sha256": "2d42e72f2532340053686ec415078fefc58a5e9685ad3a4c079c2e5d88f20556",
+    "image_id": "sha256:f4541be3366b24e2b65324b2a6535c9a72e13905a7dea0b5538666563594ad41",
+    "image_pull": "NOT_RUN_LOCAL_IMAGE_ONLY",
+    "image_reference": "onsure-validation-runtime:java17-node20-v1",
+    "network": "NONE",
+    "no_new_privileges": true,
+    "original_source_mounted": false,
+    "reason_code": "OCI_SANDBOX_BOUNDARIES_AND_CAPABILITIES_VERIFIED",
+    "root_filesystem": "READ_ONLY",
+    "validation_probe_execution": "PASS_NONFINAL",
+    "validation_probe_output_sha256": "237e8caa40f7aa85fe3b1244f3b7155deaa4cdb36f280f1f1f9a13ee3670d7bf"
+  },
+  "production_authority": false,
+  "receipt_sha256": "ba4e68c3002920c71f06801f1482fc080928b3a78a2b04bdef4158cbb4d4bbbd",
+  "selected_backend": "OCI_DOCKER",
+  "source_bindings": {
+    "contracts/sandbox-boundary.v1.json": "fe3093aaf09904c0d14c0c61b1c0efdb53cfcb387312377594b88a3b22ada322",
+    "deploy/validation/Dockerfile": "0f43e71bbf2fed313a275ba804a046e74801fafb0523af6b3838fc0b389899a3",
+    "fixtures/sandbox-boundary/sandbox-boundary-runner.sh": "312b4367d4ed11b21b106951d1e262032697412bcd65b19d4851e3202891e964",
+    "scripts/build-onsure-validation-image.sh": "1887ef23f2c1d63bfcaffcac8b15588cdb27bb9b17e4b4bcb5d6d57b0233a148",
+    "scripts/fixture-sandbox-launcher.sh": "99cedef77d0832c08fbee566a608aaa3e7de6f44a062fb0ddbca4ce6ff7f7f96",
+    "scripts/onsure-sandbox-backend.sh": "f6216be66b211366e8b74b5ef01692b2742abd8d4b833e11e7d949aa68654a32",
+    "scripts/test-fixture-sandbox-boundary.sh": "431bec0d6afe1c4929313c529a100d76b96f2cd29410a861baa3ad0c576560c6",
+    "scripts/validation-sandbox-launcher.sh": "001893fba78b5ec33f77e11116c8f3a4769fc666728808e660a0afa09831784b"
+  },
+  "source_code_dirty_paths": [],
+  "source_commit": "a6098d1cf053d00c35cebc82d309c084ff84f6a7"
+}

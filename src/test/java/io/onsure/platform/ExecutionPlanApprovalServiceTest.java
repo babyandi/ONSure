@@ -3,7 +3,6 @@ package io.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.onsure.assurance.ApprovalReceiptVerifier;
@@ -46,7 +45,7 @@ class ExecutionPlanApprovalServiceTest {
     }
 
     @Test
-    void trustedExactApprovalProducesNestedUserApprovalAndRejectsReplayAndTamper() throws Exception {
+    void trustedExactApprovalRequiresOriginalPlanReceiptKeyAndConsumedReplayLedger() throws Exception {
         Path planFile = writePlan("plan.json");
         Map<String, Object> plan = mapper.readValue(planFile.toFile(), Map.class);
         Path approvalFile = writeApproval(planFile, plan,
@@ -58,40 +57,63 @@ class ExecutionPlanApprovalServiceTest {
         Map<?, ?> approval = (Map<?, ?>) approved.get("approval");
         assertEquals("USER_APPROVED", approval.get("state"));
         assertEquals("EXACT_PLAN_ACTION_SET", approval.get("scope"));
-        assertEquals(plan.get("allowed_actions"), approval.get("approved_actions"));
+        assertEquals(Hashing.file(planFile), approval.get("original_plan_file_sha256"));
         assertFalse(Boolean.TRUE.equals(approved.get("final_claim_allowed")));
 
-        ValidationTarget target = new ValidationTarget(
-                "target-001", "Target", TargetType.GENERAL_SOFTWARE, temp,
-                "sha256:" + "a".repeat(64), GenericManifestTargetAdapter.ID,
-                "ONSURE_DEFAULT_POLICY_V1", "REMOTE_REVIEWED");
-        assertEquals("target-001", service.verifyApprovedPlan(
-                output, target, "a".repeat(64)).get("target_id"));
-
-        assertThrows(IllegalStateException.class, () -> service.approve(
-                planFile, approvalFile, registry, replay, temp.resolve("approved-plan-replay.json")));
-        assertFalse(Files.exists(temp.resolve("approved-plan-replay.json")));
+        ValidationTarget target = target();
+        assertEquals("target-001", service.verifyApprovedPlanBundle(
+                output, planFile, approvalFile, registry, replay, target, "a".repeat(64))
+                .get("target_id"));
+        assertThrows(IllegalStateException.class,
+                () -> service.verifyApprovedPlan(output, target, "a".repeat(64)));
 
         Map<String, Object> tampered = mapper.readValue(output.toFile(), Map.class);
-        tampered.put("target_id", "target-002");
+        tampered.put("risk", Map.of("score", 1, "level", "LOW"));
+        tampered.remove("plan_sha256");
+        tampered.put("plan_sha256", new ExecutionPlanService().planHash(tampered));
         mapper.writeValue(output.toFile(), tampered);
-        assertThrows(IllegalStateException.class, () -> service.verifyApprovedPlan(
-                output, target, "a".repeat(64)));
+        assertThrows(IllegalStateException.class, () -> service.verifyApprovedPlanBundle(
+                output, planFile, approvalFile, registry, replay, target, "a".repeat(64)));
     }
 
     @Test
-    void partialActionApprovalIsRejectedWithoutPublishingArtifactOrConsumingValidPlan() throws Exception {
+    void signedPartialActionApprovalPublishesAndVerifiesBoundedPlan() throws Exception {
         Path planFile = writePlan("partial-plan.json");
         Map<String, Object> plan = mapper.readValue(planFile.toFile(), Map.class);
         Path approvalFile = writeApproval(planFile, plan,
-                List.of("STATIC_ANALYSIS"), "nonce-plan-partial-0001");
+                List.of("STATIC_ANALYSIS", "REVIEW"), "nonce-plan-partial-0001");
         Path output = temp.resolve("partial-approved-plan.json");
 
+        ExecutionPlanApprovalService service = new ExecutionPlanApprovalService();
+        Map<String, Object> approved = service.approve(
+                planFile, approvalFile, registry, replay, output);
+        Map<?, ?> approval = (Map<?, ?>) approved.get("approval");
+        assertEquals("PARTIAL_PLAN_ACTION_SET", approval.get("scope"));
+        assertEquals(List.of("REVIEW", "STATIC_ANALYSIS"), approval.get("approved_actions"));
+        assertEquals("target-001", service.verifyApprovedPlanBundle(
+                output, planFile, approvalFile, registry, replay, target(), "a".repeat(64))
+                .get("target_id"));
+    }
+
+    @Test
+    void approvalCannotAddActionOutsideImmutablePlan() throws Exception {
+        Path planFile = writePlan("unsafe-plan.json");
+        Map<String, Object> plan = mapper.readValue(planFile.toFile(), Map.class);
+        Path approvalFile = writeApproval(planFile, plan,
+                List.of("STATIC_ANALYSIS", "AI_BEHAVIOR_VALIDATION"), "nonce-plan-unsafe-0001");
+        Path output = temp.resolve("unsafe-approved-plan.json");
         IllegalStateException failure = assertThrows(IllegalStateException.class,
                 () -> new ExecutionPlanApprovalService().approve(
                         planFile, approvalFile, registry, replay, output));
-        assertEquals("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INCOMPLETE", failure.getMessage());
+        assertEquals("EXECUTION_PLAN_APPROVAL_ACTION_SCOPE_INVALID", failure.getMessage());
         assertFalse(Files.exists(output));
+    }
+
+    private ValidationTarget target() {
+        return new ValidationTarget(
+                "target-001", "Target", TargetType.GENERAL_SOFTWARE, temp,
+                "sha256:" + "a".repeat(64), GenericManifestTargetAdapter.ID,
+                "ONSURE_DEFAULT_POLICY_V1", "REMOTE_REVIEWED");
     }
 
     private Path writePlan(String name) throws Exception {
@@ -147,6 +169,10 @@ class ExecutionPlanApprovalServiceTest {
         value.put("fixture_count", 2);
         value.put("resource_budget", Map.of(
                 "estimated_seconds", 60, "memory_limit_mb", 1024, "process_limit", 64,
+                "estimated_input_tokens", 0, "estimated_output_tokens", 0,
+                "token_estimate_basis", "NO_MODEL_INVOCATION_PLANNED",
+                "data_transfer_scope", "WORKSPACE_LOCAL_ONLY",
+                "estimated_external_transfer_bytes", 0,
                 "network_egress", "DENY_BY_DEFAULT", "paid_service_allowed", false));
         value.put("permissions", Map.of(
                 "read_source", true, "execute_reviewed_fixtures", true,

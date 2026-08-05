@@ -1,0 +1,92 @@
+{
+  "contract": "ONSURE_BUILD_BOUNDARY_V1",
+  "decision": "PREPARATION_ONLY_NONFINAL",
+  "canonical_build": {
+    "authority": "STANDALONE_ROOT_MAVEN",
+    "pom": "pom.xml",
+    "clean_verify": "mvn -B -ntp -q clean verify",
+    "package": "mvn -B -ntp -q clean package"
+  },
+  "compatibility_build": {
+    "authority": "FUTURE_MODULE_DECOMPOSITION_GATE",
+    "pom": "pom-modular.xml",
+    "package": "mvn -B -ntp -q -f pom-modular.xml clean package",
+    "release_authority": false
+  },
+  "public_api": {
+    "baseline": "contracts/java-public-api-baseline.v1.json",
+    "command": "python3 scripts/onsure_java_api_baseline.py validate",
+    "scope": "ALL_COMPILED_PUBLIC_CLASSES_AND_PUBLIC_BINARY_DESCRIPTORS"
+  },
+  "supply_chain": {
+    "sbom": "assurance/dependencies/onsure.cdx.json",
+    "license_inventory": "assurance/dependencies/onsure-dependency-license-inventory.v1.json",
+    "vulnerability_evidence": "assurance/dependencies/onsure-vulnerability-scan.v1.json",
+    "npm_audit_evidence": "assurance/dependencies/onsure-npm-audit.v1.json",
+    "policy": "contracts/onsure-supply-chain-policy.v1.json",
+    "cyclonedx_plugin_version": "2.9.1",
+    "cyclonedx_schema": "1.6"
+  },
+  "cutover_rehearsal": {
+    "command": "python3 scripts/rehearse_onsure_nested_root.py --mode full",
+    "actual_external_repository_mutation": false,
+    "rollback_digest_verification_required": true
+  },
+  "module_artifacts": {
+    "onsure-core": "modules/onsure-core",
+    "onsure-cli": "modules/onsure-cli",
+    "onsure-local-api": "modules/onsure-local-api",
+    "onsure-test-fixtures": "modules/onsure-test-fixtures",
+    "onsure-adapter-oruda": "modules/onsure-adapter-oruda",
+    "onsure-provider-spi": "modules/onsure-provider-spi",
+    "onsure-provider-local-mock": "modules/onsure-provider-local-mock",
+    "onsure-provider-openai": "modules/onsure-provider-openai",
+    "onsure-llm-gateway": "modules/onsure-llm-gateway",
+    "onsure-migration-postgresql": "modules/onsure-migration-postgresql",
+    "onsure-sdk": "modules/onsure-sdk"
+  },
+  "expected_internal_dependencies": {
+    "onsure-core": [],
+    "onsure-cli": ["onsure-core"],
+    "onsure-local-api": ["onsure-core"],
+    "onsure-test-fixtures": [],
+    "onsure-adapter-oruda": ["onsure-core"],
+    "onsure-provider-spi": [],
+    "onsure-provider-local-mock": ["onsure-provider-spi"],
+    "onsure-provider-openai": ["onsure-provider-spi"],
+    "onsure-llm-gateway": ["onsure-provider-local-mock", "onsure-provider-openai", "onsure-provider-spi"],
+    "onsure-migration-postgresql": [],
+    "onsure-sdk": []
+  },
+  "transitional_source_ownership": {
+    "shared_source_root": null,
+    "shared_source_modules": [],
+    "module_source_roots": {
+      "onsure-core": "modules/onsure-core/src/main/java",
+      "onsure-adapter-oruda": "modules/onsure-adapter-oruda/src/main/java"
+    },
+    "target_shared_source_module_count": 0,
+    "allowed_split_packages": {},
+    "java_namespace_changed": false,
+    "source_paths_changed": true,
+    "split_package_removal": "COMPLETE"
+  },
+  "dependency_boundaries": {
+    "forbidden_main_import_edges": [
+      "io.onsure.platform->io.onsure.rag",
+      "io.onsure.common->io.onsure.platform",
+      "io.onsure.common->io.onsure.rag"
+    ],
+    "allowed_legacy_main_import_edges": [
+      "io.onsure.rag->io.onsure.platform"
+    ],
+    "allowed_package_cycles": [],
+    "artifact_dependency_cycles_allowed": false
+  },
+  "namespace": {
+    "current": "io.onsure",
+    "future_candidate_only": "kr.co.oruda.products.onsure",
+    "rename_in_this_change": false
+  },
+  "final_claim_allowed": false
+}

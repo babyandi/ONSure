@@ -1,0 +1,15 @@
+{
+  "archive": ".onsure/runtime-dr-rehearsal-20260804.tar",
+  "archive_sha256": "f20f4ac38984707063e8d8caca4f8432c71fcc237658271a462134c8ffeeca47",
+  "contract": "ONSURE_RUNTIME_ASSURANCE_EVIDENCE_V1",
+  "corrupted_archive_rejected": true,
+  "decision": "PASS_NONFINAL",
+  "evidence_type": "SYNTHETIC_DR_REHEARSAL",
+  "file_count": 1,
+  "final_claim_allowed": false,
+  "isolated_restore_verified": true,
+  "path_traversal_archive_rejected": true,
+  "production_dr_claimed": false,
+  "source_mutated": false,
+  "symlink_source_rejected": true
+}

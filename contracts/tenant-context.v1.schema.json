@@ -10,9 +10,14 @@
     "organization_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
     "tenant_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
     "workspace_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
-    "actor_id": {"type": "string", "minLength": 1},
-    "roles": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
-    "data_region": {"type": "string", "minLength": 2},
+    "actor_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "roles": {
+      "type": "array",
+      "items": {"enum": ["VIEWER", "OPERATOR", "APPROVER", "AUDITOR", "ADMIN"]},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "data_region": {"type": "string", "minLength": 1, "maxLength": 80, "pattern": ".*\\S.*"},
     "created_at": {"type": "string", "format": "date-time"}
   }
 }

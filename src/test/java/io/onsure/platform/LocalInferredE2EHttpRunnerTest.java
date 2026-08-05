@@ -1,0 +1,941 @@
+package io.onsure.platform;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpServer;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+class LocalInferredE2EHttpRunnerTest {
+    @TempDir Path temp;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final LocalAccessControl.Identity operator = new LocalAccessControl.Identity(
+            "operator-a", LocalAccessControl.Role.OPERATOR, "a".repeat(64));
+    private final LocalAccessControl.Identity approver = new LocalAccessControl.Identity(
+            "approver-b", LocalAccessControl.Role.APPROVER, "b".repeat(64));
+
+    @Test
+    void executesApprovedReadOnlyLoopbackCandidateAndStoresOnlyBodyDigest() throws Exception {
+        Prepared prepared = prepare();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            byte[] body = "{\"orders\":[]}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            String base = "http://127.0.0.1:" + server.getAddress().getPort();
+            LocalInferredE2EHttpRunner runner = new LocalInferredE2EHttpRunner(
+                    prepared.workspace(), Map.of("ONSURE_SYNTHETIC_BASE_URL", base),
+                    HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build());
+            Map<String, Object> receipt = runner.run(mapper.valueToTree(Map.of(
+                    "execution_authorization_id", prepared.authorizationId(),
+                    "execution_plan_sha256", prepared.planSha(),
+                    "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator);
+
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"));
+            assertEquals(1, ((Number) receipt.get("executed_step_count")).intValue());
+            assertFalse((Boolean) receipt.get("response_bodies_stored"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals("PASS_NONFINAL", steps.get(0).get("oracle_outcome"));
+            assertEquals(200, steps.get(0).get("response_status"));
+            assertEquals(false, steps.get(0).get("response_body_stored"));
+            assertThrows(IllegalArgumentException.class, () -> runner.run(mapper.valueToTree(Map.of(
+                    "execution_authorization_id", prepared.authorizationId(),
+                    "execution_plan_sha256", prepared.planSha(),
+                    "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void rejectsNonLoopbackEndpointBeforeClaimingAuthorization() throws Exception {
+        Prepared prepared = prepare();
+        LocalInferredE2EHttpRunner runner = new LocalInferredE2EHttpRunner(
+                prepared.workspace(), Map.of("ONSURE_SYNTHETIC_BASE_URL", "http://example.com:8080"),
+                HttpClient.newHttpClient());
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () ->
+                runner.run(mapper.valueToTree(Map.of(
+                        "execution_authorization_id", prepared.authorizationId(),
+                        "execution_plan_sha256", prepared.planSha(),
+                        "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator));
+        assertEquals("INFERRED_E2E_BASE_URL_NOT_LOOPBACK", error.getMessage());
+    }
+
+    @Test
+    void rejectsInjectedHttpClientThatCanFollowRedirects() throws Exception {
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () ->
+                new LocalInferredE2EHttpRunner(temp, Map.of(),
+                        HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build()));
+        assertEquals("INFERRED_E2E_HTTP_REDIRECT_POLICY_UNSAFE", error.getMessage());
+    }
+
+    @Test
+    void rejectsSourceDriftBeforeClaimingAuthorization() throws Exception {
+        Prepared prepared = prepare();
+        Files.writeString(prepared.source().resolve("drift.txt"), "changed after approval");
+        LocalInferredE2EHttpRunner runner = new LocalInferredE2EHttpRunner(
+                prepared.workspace(), Map.of("ONSURE_SYNTHETIC_BASE_URL", "http://127.0.0.1:18080"),
+                HttpClient.newHttpClient());
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () ->
+                runner.run(mapper.valueToTree(Map.of(
+                        "execution_authorization_id", prepared.authorizationId(),
+                        "execution_plan_sha256", prepared.planSha(),
+                        "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator));
+        assertEquals("INFERRED_E2E_TARGET_SOURCE_STALE", error.getMessage());
+        Files.delete(prepared.source().resolve("drift.txt"));
+        Map<String, Object> retry = runner.run(mapper.valueToTree(Map.of(
+                "execution_authorization_id", prepared.authorizationId(),
+                "execution_plan_sha256", prepared.planSha(),
+                "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator);
+        assertEquals("FAIL", retry.get("outcome"));
+    }
+
+    @Test
+    void materializesSyntheticWriteBodyAndPathParameterAndValidatesResponseSchemas() throws Exception {
+        Prepared prepared = prepare(openApiWithWriteAndPath());
+        AtomicReference<String> receivedBody = new AtomicReference<>();
+        AtomicReference<String> receivedReadPath = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            receivedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            byte[] body = "{\"data\":{\"orderId\":\"created-order-42\"}}"
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+            exchange.sendResponseHeaders(201, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.createContext("/orders/", exchange -> {
+            receivedReadPath.set(exchange.getRequestURI().getPath());
+            byte[] body = "{\"id\":\"created-order-42\",\"name\":\"ONSURE_SYNTHETIC\",\"quantity\":1}"
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"));
+            assertEquals(2, ((Number) receipt.get("executed_step_count")).intValue());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> post = steps.stream().filter(step -> "POST".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            Map<String, Object> get = steps.stream().filter(step -> "GET".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            assertEquals("{\"name\":\"ONSURE_SYNTHETIC\",\"quantity\":1}", receivedBody.get());
+            assertTrue(((Number) post.get("request_body_bytes")).intValue() > 0);
+            assertEquals(false, post.get("request_body_stored"));
+            assertEquals(true, post.get("response_schema_declared"));
+            assertEquals(List.of(), post.get("response_schema_errors"));
+            assertEquals("/orders/created-order-42", receivedReadPath.get());
+            assertEquals("/orders/{orderId}", get.get("http_path"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> inputBindings =
+                    (List<Map<String, Object>>) get.get("input_bindings");
+            assertEquals(1, inputBindings.size());
+            assertEquals("orderId", inputBindings.get(0).get("consumer_parameter_name"));
+            assertEquals(Hashing.sha256("created-order-42"), inputBindings.get(0).get("value_sha256"));
+            assertEquals(false, inputBindings.get(0).get("value_stored"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("created-order-42"));
+            assertEquals("PASS_NONFINAL", get.get("oracle_outcome"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void materializesApprovedProducerValuesIntoRequiredQueryAndHeaderWithoutPersistingThem() throws Exception {
+        Prepared prepared = prepare(openApiWithQueryAndHeaderBindings());
+        AtomicReference<String> receivedQuery = new AtomicReference<>();
+        AtomicReference<String> receivedTrace = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/sessions", exchange -> {
+            byte[] body;
+            int status;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                body = "{\"queryToken\":\"query-bound-42\",\"traceId\":\"trace-bound-42\"}"
+                        .getBytes(StandardCharsets.UTF_8);
+                status = 201;
+            } else {
+                receivedQuery.set(exchange.getRequestURI().getRawQuery());
+                receivedTrace.set(exchange.getRequestHeaders().getFirst("traceId"));
+                body = "{}".getBytes(StandardCharsets.UTF_8);
+                status = 200;
+            }
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals("queryToken=query-bound-42", receivedQuery.get());
+            assertEquals("trace-bound-42", receivedTrace.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> get = steps.stream().filter(step -> "GET".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                    (List<Map<String, Object>>) get.get("input_bindings");
+            assertEquals(List.of("HEADER", "QUERY"), bindings.stream()
+                    .map(binding -> binding.get("consumer_location").toString()).sorted().toList());
+            assertTrue(bindings.stream().anyMatch(binding -> Hashing.sha256("query-bound-42")
+                    .equals(binding.get("value_sha256"))));
+            assertTrue(bindings.stream().anyMatch(binding -> Hashing.sha256("trace-bound-42")
+                    .equals(binding.get("value_sha256"))));
+            String serialized = mapper.writeValueAsString(receipt);
+            assertFalse(serialized.contains("query-bound-42"));
+            assertFalse(serialized.contains("trace-bound-42"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void materializesSchemaCompatibleProducerValueIntoRequiredBodyWithoutPersistingIt() throws Exception {
+        Prepared prepared = prepare(openApiWithBodyBinding());
+        AtomicReference<String> receivedPatchBody = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            byte[] body;
+            int status;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                body = "{\"revision\":\"revision-bound-42\"}".getBytes(StandardCharsets.UTF_8);
+                status = 201;
+            } else {
+                receivedPatchBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+                body = "{}".getBytes(StandardCharsets.UTF_8);
+                status = 200;
+            }
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals("revision-bound-42",
+                    mapper.readTree(receivedPatchBody.get()).path("revision").asText());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> patch = steps.stream().filter(step -> "PATCH".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                    (List<Map<String, Object>>) patch.get("input_bindings");
+            assertEquals(1, bindings.size());
+            assertEquals("BODY", bindings.get(0).get("consumer_location"));
+            assertEquals("STRING", bindings.get(0).get("producer_schema_type"));
+            assertEquals("STRING", bindings.get(0).get("consumer_schema_type"));
+            assertEquals(Hashing.sha256("\"revision-bound-42\""), bindings.get(0).get("value_sha256"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("revision-bound-42"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void materializesNestedSingletonArrayBindingWithoutPersistingRawValue() throws Exception {
+        Prepared prepared = prepare(openApiWithNestedArrayWriteAndPath());
+        AtomicReference<String> receivedReadPath = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            byte[] body = "{\"groups\":[{\"orders\":[{\"orderId\":\"array-order-42\"}]}]}"
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(201, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.createContext("/orders/", exchange -> {
+            receivedReadPath.set(exchange.getRequestURI().getPath());
+            byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals("/orders/array-order-42", receivedReadPath.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> get = steps.stream().filter(step -> "GET".equals(step.get("http_method")))
+                    .findFirst().orElseThrow();
+            @SuppressWarnings("unchecked") List<Map<String, Object>> bindings =
+                    (List<Map<String, Object>>) get.get("input_bindings");
+            assertEquals("/groups/~3/orders/~3/orderId", bindings.get(0).get("producer_json_pointer"));
+            assertEquals(Hashing.sha256("array-order-42"), bindings.get(0).get("value_sha256"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("array-order-42"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void rejectsAmbiguousOrEmptyArraysDuringValueMaterialization() throws Exception {
+        JsonNode ambiguous = mapper.readTree("{\"groups\":[{\"id\":\"one\"},{\"id\":\"two\"}]}");
+        IllegalArgumentException ambiguousError = assertThrows(IllegalArgumentException.class, () ->
+                LocalInferredE2EHttpRunner.resolveBindingValue(ambiguous, "/groups/~2/id"));
+        assertEquals("OPENAPI_LIFECYCLE_BINDING_ARRAY_AMBIGUOUS", ambiguousError.getMessage());
+        JsonNode empty = mapper.readTree("{\"groups\":[]}");
+        IllegalArgumentException emptyError = assertThrows(IllegalArgumentException.class, () ->
+                LocalInferredE2EHttpRunner.resolveBindingValue(empty, "/groups/~2/id"));
+        assertEquals("OPENAPI_LIFECYCLE_BINDING_ARRAY_EMPTY", emptyError.getMessage());
+    }
+
+    @Test
+    void failsWhenActualJsonDoesNotMatchDeclaredResponseSchema() throws Exception {
+        Prepared prepared = prepare(openApiWithWriteAndPath());
+        AtomicInteger calls = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            calls.incrementAndGet();
+            byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders("POST".equals(exchange.getRequestMethod()) ? 201 : 200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("FAIL", receipt.get("outcome"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertTrue(steps.stream().anyMatch(step -> "FAIL".equals(step.get("oracle_outcome"))
+                    && step.get("response_schema_errors").toString().contains("REQUIRED_MISSING")));
+            assertTrue(steps.stream().anyMatch(step -> "BLOCKED".equals(step.get("oracle_outcome"))
+                    && "OPENAPI_LIFECYCLE_PRODUCER_OUTPUT_NOT_AVAILABLE".equals(step.get("error_code"))));
+            assertEquals(1, calls.get());
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void rejectsDeclaredClientErrorAsAValidNormalPathOutcome() throws Exception {
+        Prepared prepared = prepare("""
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    get:
+                      operationId: listOrders
+                      responses:
+                        '200': {description: ok}
+                        '400':
+                          description: invalid
+                          content:
+                            application/json:
+                              schema: {type: object, required: [error], properties: {error: {type: string}}}
+                """);
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            byte[] body = "{\"error\":\"declared-but-not-success\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(400, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("FAIL", receipt.get("outcome"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals("FAIL", steps.get(0).get("oracle_outcome"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void returnsExactDurableReceiptAfterRecoveringInterruptedRun() throws Exception {
+        Prepared prepared = prepare();
+        LocalProgramUnderstandingApprovalService approvals = new LocalProgramUnderstandingApprovalService(
+                prepared.workspace(), java.time.Clock.fixed(
+                        java.time.Instant.parse("2000-01-01T00:00:00Z"), java.time.ZoneOffset.UTC));
+        Map<String, Object> claim = approvals.claimExecution(prepared.requestId(),
+                prepared.authorizationId(), prepared.planSha(), operator);
+        Path receiptFile = prepared.workspace().resolve(".onsure/inferred-e2e-authorizations")
+                .resolve(prepared.authorizationId()).resolve("runtime-receipt.json");
+        mapper.writerWithDefaultPrettyPrinter().writeValue(receiptFile.toFile(), Map.ofEntries(
+                Map.entry("contract", LocalInferredE2EHttpRunner.CONTRACT),
+                Map.entry("run_id", claim.get("execution_run_id")),
+                Map.entry("execution_authorization_id", prepared.authorizationId()),
+                Map.entry("execution_plan_sha256", prepared.planSha()),
+                Map.entry("completed_at", "2000-01-01T00:00:01Z"),
+                Map.entry("step_count", 0), Map.entry("steps", List.of()),
+                Map.entry("outcome", "BLOCKED"), Map.entry("customer_data_stored", false),
+                Map.entry("response_bodies_stored", false), Map.entry("final_claim_allowed", false)));
+        LocalInferredE2EHttpRunner runner = new LocalInferredE2EHttpRunner(
+                prepared.workspace(), Map.of("ONSURE_SYNTHETIC_BASE_URL", "http://127.0.0.1:18080"),
+                HttpClient.newHttpClient());
+        Map<String, Object> recovered = runner.run(mapper.valueToTree(Map.of(
+                "execution_authorization_id", prepared.authorizationId(),
+                "execution_plan_sha256", prepared.planSha(),
+                "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator);
+        assertEquals("BLOCKED", recovered.get("outcome"));
+        assertEquals(Hashing.file(receiptFile), recovered.get("runtime_receipt_sha256"));
+    }
+
+    @Test
+    void comparesConsecutiveExactSourceRunsAndReportsRegression() throws Exception {
+        Prepared baseline = prepare();
+        AtomicInteger calls = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            int status = calls.getAndIncrement() == 0 ? 200 : 500;
+            byte[] body = "{\"orders\":[]}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(status, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> first = run(baseline, server);
+            assertEquals("NOT_RUN_NO_COMPARABLE_BASELINE", first.get("runtime_comparison_state"));
+            Prepared current = authorizeAgain(baseline);
+            Map<String, Object> second = run(current, server);
+            assertEquals("FAIL", second.get("outcome"));
+            assertEquals("COMPARISON_AVAILABLE_NONFINAL", second.get("runtime_comparison_state"));
+            assertEquals("REGRESSED", second.get("runtime_comparison_change"));
+            Path comparisonFile = current.workspace().resolve(second.get("runtime_comparison_file").toString());
+            @SuppressWarnings("unchecked") Map<String, Object> comparison =
+                    mapper.readValue(comparisonFile.toFile(), Map.class);
+            assertEquals(1, ((Number) comparison.get("regressed_step_count")).intValue());
+            assertEquals(first.get("run_id"), comparison.get("baseline_run_id"));
+            assertEquals(second.get("run_id"), comparison.get("current_run_id"));
+            assertFalse((Boolean) comparison.get("score_eligible"));
+            @SuppressWarnings("unchecked") List<Map<String, Object>> history = (List<Map<String, Object>>)
+                    new InferredE2ERunComparisonService(current.workspace()).history("target", 10).get("runs");
+            assertEquals(2, history.size());
+            @SuppressWarnings("unchecked") Map<String, Object> projected =
+                    (Map<String, Object>) history.get(0).get("comparison");
+            assertEquals("REGRESSED", projected.get("overall_change"));
+            Files.writeString(comparisonFile, "{}\n");
+            @SuppressWarnings("unchecked") List<Map<String, Object>> tamperedHistory = (List<Map<String, Object>>)
+                    new InferredE2ERunComparisonService(current.workspace()).history("target", 10).get("runs");
+            @SuppressWarnings("unchecked") Map<String, Object> tampered =
+                    (Map<String, Object>) tamperedHistory.get(0).get("comparison");
+            assertEquals("STALE_OR_TAMPERED", tampered.get("state"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void materializesBearerAndRequiredParametersWithoutStoringValues() throws Exception {
+        Prepared prepared = prepare(securedOpenApi());
+        AtomicReference<String> observed = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            observed.set(exchange.getRequestURI().getRawQuery() + "|"
+                    + exchange.getRequestHeaders().getFirst("Authorization") + "|"
+                    + exchange.getRequestHeaders().getFirst("X-Trace") + "|"
+                    + exchange.getRequestHeaders().getFirst("Cookie"));
+            byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server, Map.of("ONSURE_TEST_AUTH", "secret-token"));
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"));
+            assertEquals("tenant=ONSURE_SYNTHETIC|Bearer secret-token|ONSURE_SYNTHETIC|session=ONSURE_SYNTHETIC",
+                    observed.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            Map<String, Object> step = steps.get(0);
+            assertEquals("env:ONSURE_TEST_AUTH", step.get("authentication_reference_id"));
+            assertEquals(Hashing.sha256("secret-token"), step.get("authentication_value_sha256"));
+            assertEquals(false, step.get("authentication_value_stored"));
+            assertEquals(false, step.get("request_header_values_stored"));
+            String serializedReceipt = mapper.writeValueAsString(receipt);
+            assertFalse(serializedReceipt.contains("secret-token"));
+            assertFalse(serializedReceipt.contains("tenant=ONSURE_SYNTHETIC"));
+            assertTrue(step.get("request_uri_sha256").toString().matches("[0-9a-f]{64}"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void blocksSecuredRequestBeforeHttpWhenReferencedCredentialIsMissing() throws Exception {
+        Prepared prepared = prepare(securedOpenApi());
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        AtomicInteger calls = new AtomicInteger();
+        server.createContext("/orders", exchange -> { calls.incrementAndGet(); exchange.close(); });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("BLOCKED", receipt.get("outcome"));
+            assertEquals(0, ((Number) receipt.get("executed_step_count")).intValue());
+            assertEquals(0, calls.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals("OPENAPI_AUTHENTICATION_VALUE_NOT_CONFIGURED", steps.get(0).get("error_code"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void executesApprovedSameServicePaginationAndStoresOnlyTokenDigests() throws Exception {
+        Prepared prepared = prepare(paginationOpenApi());
+        List<String> observedQueries = new java.util.concurrent.CopyOnWriteArrayList<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            String query = exchange.getRequestURI().getRawQuery();
+            observedQueries.add(query);
+            String next = query == null ? "page-2" : query.equals("cursor=page-2") ? "page-3" : "";
+            byte[] body = ("{\"orders\":[],\"nextCursor\":\"" + next + "\"}")
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals(java.util.Arrays.asList(null, "cursor=page-2", "cursor=page-3"), observedQueries);
+            assertEquals(3, ((Number) receipt.get("executed_step_count")).intValue());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals(List.of(1, 2, 3), steps.stream()
+                    .map(step -> ((Number) step.get("pagination_page_index")).intValue()).toList());
+            assertEquals("EMPTY_TOKEN", steps.get(2).get("continuation_termination_reason"));
+            assertEquals(Hashing.sha256("page-2"), steps.get(0).get("continuation_output_token_sha256"));
+            assertEquals(Hashing.sha256("page-2"), steps.get(1).get("continuation_input_token_sha256"));
+            assertTrue(steps.stream().allMatch(step -> Boolean.FALSE.equals(step.get("continuation_token_stored"))));
+            String serialized = mapper.writeValueAsString(receipt);
+            assertFalse(serialized.contains("page-2"));
+            assertFalse(serialized.contains("page-3"));
+            assertEquals(prepared.planSha(), receipt.get("execution_plan_sha256"));
+            assertTrue(receipt.get("source_sha256").toString().matches("[0-9a-f]{64}"));
+            assertTrue(receipt.get("review_sha256").toString().matches("[0-9a-f]{64}"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void blocksPaginationWhenContinuationTokenRepeats() throws Exception {
+        Prepared prepared = prepare(paginationOpenApi());
+        AtomicInteger calls = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            calls.incrementAndGet();
+            byte[] body = "{\"orders\":[],\"nextCursor\":\"same-token\"}"
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("BLOCKED", receipt.get("outcome"));
+            assertEquals(2, calls.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals("REPEATED_TOKEN_BLOCKED", steps.get(1).get("continuation_termination_reason"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("same-token"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void refusesAnotherPaginationRequestWhenAnyBoundIsAlreadyExhausted() {
+        LocalInferredE2EHttpRunner.ContinuationAuthorization continuation =
+                new LocalInferredE2EHttpRunner.ContinuationAuthorization(
+                        "CONT-0123456789abcdef", "plan", "OPENAPI-DOC-0123456789abcdef",
+                        "SERVICE-0123456789abcdef", "BODY_POINTER", "/nextCursor",
+                        "cursor", 2, 60, 1_048_576);
+        long started = System.nanoTime();
+
+        assertEquals("MAX_ITERATIONS_BLOCKED", LocalInferredE2EHttpRunner.terminationReason(
+                new LocalInferredE2EHttpRunner.TokenResult("PRESENT", "next"),
+                new java.util.LinkedHashSet<>(), 2, continuation, 10, started, true, false));
+        assertEquals("CUMULATIVE_RESPONSE_BYTES_BLOCKED", LocalInferredE2EHttpRunner.terminationReason(
+                new LocalInferredE2EHttpRunner.TokenResult("PRESENT", "next"),
+                new java.util.LinkedHashSet<>(), 1, continuation, 1_048_576, started, true, false));
+        assertFalse(LocalInferredE2EHttpRunner.paginationBudgetAvailable(
+                1, 1_048_576, started, continuation));
+        assertFalse(LocalInferredE2EHttpRunner.paginationBudgetAvailable(
+                2, 10, started, continuation));
+    }
+
+    private Map<String, Object> run(Prepared prepared, HttpServer server) throws Exception {
+        return run(prepared, server, Map.of());
+    }
+
+    private Map<String, Object> run(Prepared prepared, HttpServer server,
+            Map<String, String> additionalEnvironment) throws Exception {
+        String base = "http://127.0.0.1:" + server.getAddress().getPort();
+        Map<String, String> environment = new java.util.HashMap<>(additionalEnvironment);
+        environment.put("ONSURE_SYNTHETIC_BASE_URL", base);
+        return new LocalInferredE2EHttpRunner(
+                prepared.workspace(), environment,
+                HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build())
+                .run(mapper.valueToTree(Map.of(
+                        "execution_authorization_id", prepared.authorizationId(),
+                        "execution_plan_sha256", prepared.planSha(),
+                        "base_url_reference_id", "env:ONSURE_SYNTHETIC_BASE_URL")), operator);
+    }
+
+    private Prepared authorizeAgain(Prepared existing) throws Exception {
+        Path profile = existing.workspace().resolve(".onsure/program-understanding/target/program-profile.json");
+        @SuppressWarnings("unchecked") Map<String, Object> review = mapper.readValue(
+                profile.resolveSibling("review.json").toFile(), Map.class);
+        LocalProgramUnderstandingApprovalService approvals =
+                new LocalProgramUnderstandingApprovalService(existing.workspace());
+        Map<String, Object> request = approvals.request(mapper.valueToTree(Map.of(
+                "project_id", "project", "target_id", "target",
+                "profile_file_sha256", Hashing.file(profile), "review_sha256", review.get("review_sha256"),
+                "reason", "comparison rerun", "ttl_seconds", 600)), operator);
+        Map<String, Object> decision = approvals.decide(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "decision", "APPROVE", "reason", "same source rerun")), approver);
+        Map<String, Object> consumed = approvals.consume(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "receipt_sha256", decision.get("receipt_sha256"),
+                "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator);
+        return new Prepared(existing.workspace(), existing.source(), request.get("request_id").toString(),
+                consumed.get("execution_authorization_id").toString(),
+                consumed.get("execution_plan_sha256").toString());
+    }
+
+    private Prepared prepare() throws Exception {
+        return prepare("""
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    get:
+                      operationId: listOrders
+                      tags: [Orders]
+                      responses: {'200': {description: ok}}
+                """);
+    }
+
+    private Prepared prepare(String openApi) throws Exception {
+        Path workspace = Files.createDirectory(temp.resolve("workspace-" + java.util.UUID.randomUUID()));
+        Path source = Files.createDirectory(temp.resolve("source-" + java.util.UUID.randomUUID()));
+        Files.writeString(source.resolve("openapi.yaml"), openApi);
+        LocalProgramManagementService programs = new LocalProgramManagementService(workspace);
+        programs.register(mapper.valueToTree(Map.of(
+                "workspace_id", "local", "workspace_name", "Local", "project_id", "project",
+                "project_name", "Project", "target_id", "target", "target_name", "Target",
+                "target_type", "GENERAL_SOFTWARE", "source_root", source.toString())));
+        Map<String, Object> understood = programs.understand(mapper.valueToTree(Map.of(
+                "project_id", "project", "target_id", "target")));
+        @SuppressWarnings("unchecked") Map<String, Object> understanding =
+                (Map<String, Object>) understood.get("program_understanding");
+        @SuppressWarnings("unchecked") List<Map<String, Object>> questions =
+                (List<Map<String, Object>>) understanding.get("minimal_questions");
+        List<Map<String, Object>> answers = questions.stream().map(question -> {
+            String questionId = question.get("question_id").toString();
+            return Map.<String, Object>of(
+                    "question_id", questionId, "answer_state", "CONFIRMED",
+                    "evidence_reference_id", "AUTHENTICATION_CONTEXT".equals(questionId)
+                            ? "env:ONSURE_TEST_AUTH" : "fixture:" + questionId);
+        }).toList();
+        Map<String, Object> review = programs.reviewUnderstanding(mapper.valueToTree(Map.of(
+                "project_id", "project", "target_id", "target",
+                "profile_file_sha256", understood.get("profile_file_sha256"), "answers", answers)));
+        LocalProgramUnderstandingApprovalService approvals =
+                new LocalProgramUnderstandingApprovalService(workspace);
+        Map<String, Object> request = approvals.request(mapper.valueToTree(Map.of(
+                "project_id", "project", "target_id", "target",
+                "profile_file_sha256", understood.get("profile_file_sha256"),
+                "review_sha256", review.get("review_sha256"), "reason", "loopback test", "ttl_seconds", 600)), operator);
+        Map<String, Object> decision = approvals.decide(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "decision", "APPROVE", "reason", "safe read")), approver);
+        Map<String, Object> consumed = approvals.consume(mapper.valueToTree(Map.of(
+                "request_id", request.get("request_id"), "receipt_sha256", decision.get("receipt_sha256"),
+                "execution_scope", "ISOLATED_SYNTHETIC_LOOPBACK")), operator);
+        return new Prepared(workspace, source, request.get("request_id").toString(),
+                consumed.get("execution_authorization_id").toString(),
+                consumed.get("execution_plan_sha256").toString());
+    }
+
+    private static String openApiWithWriteAndPath() {
+        return """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name, quantity]
+                              properties:
+                                name: {type: string}
+                                quantity: {type: integer, minimum: 1}
+                                customerNote: {type: string, example: 'must-not-be-used'}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema: {$ref: '#/components/schemas/CreatedOrder'}
+                  /orders/{orderId}:
+                    parameters:
+                      - name: orderId
+                        in: path
+                        required: true
+                        schema: {type: string, format: uuid}
+                    get:
+                      operationId: getOrder
+                      responses:
+                        '200':
+                          description: ok
+                          content:
+                            application/json:
+                              schema: {$ref: '#/components/schemas/Order'}
+                components:
+                  schemas:
+                    CreatedOrder:
+                      type: object
+                      required: [data]
+                      properties:
+                        data:
+                          type: object
+                          required: [orderId]
+                          properties:
+                            orderId: {type: string}
+                    Order:
+                      type: object
+                      required: [id, name, quantity]
+                      additionalProperties: false
+                      properties:
+                        id: {type: string, format: uuid}
+                        name: {type: string}
+                        quantity: {type: integer}
+                """;
+    }
+
+    private static String securedOpenApi() {
+        return """
+                openapi: 3.1.0
+                info: {title: Secured Orders, version: '1'}
+                security: [{bearerAuth: []}]
+                paths:
+                  /orders:
+                    get:
+                      operationId: securedOrders
+                      parameters:
+                        - {name: tenant, in: query, required: true, schema: {type: string}}
+                        - {name: X-Trace, in: header, required: true, schema: {type: string}}
+                        - {name: session, in: cookie, required: true, schema: {type: string}}
+                      responses: {'200': {description: ok}}
+                components:
+                  securitySchemes: {bearerAuth: {type: http, scheme: bearer}}
+                """;
+    }
+
+    private static String paginationOpenApi() {
+        return """
+                openapi: 3.1.0
+                info: {title: Paginated Orders, version: '1'}
+                paths:
+                  /orders:
+                    get:
+                      operationId: listOrders
+                      parameters:
+                        - {name: cursor, in: query, required: false, schema: {type: string}}
+                      responses:
+                        '200':
+                          description: ok
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [orders]
+                                properties:
+                                  orders: {type: array, items: {type: object}}
+                                  nextCursor: {type: string}
+                """;
+    }
+
+    private static String openApiWithNestedArrayWriteAndPath() {
+        return """
+                openapi: 3.1.0
+                info: {title: Array Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties:
+                                name: {type: string}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema: {$ref: '#/components/schemas/CreatedOrders'}
+                  /orders/{orderId}:
+                    parameters:
+                      - {name: orderId, in: path, required: true, schema: {type: string}}
+                    get:
+                      operationId: getOrder
+                      responses:
+                        '200':
+                          description: ok
+                          content:
+                            application/json:
+                              schema: {type: object}
+                components:
+                  schemas:
+                    CreatedOrders:
+                      type: object
+                      required: [groups]
+                      properties:
+                        groups:
+                          type: array
+                          minItems: 1
+                          maxItems: 1
+                          items:
+                            type: object
+                            required: [orders]
+                            properties:
+                              orders:
+                                type: array
+                                minItems: 1
+                                maxItems: 1
+                                items:
+                                  type: object
+                                  required: [orderId]
+                                  properties:
+                                    orderId: {type: string}
+                """;
+    }
+
+    private static String openApiWithQueryAndHeaderBindings() {
+        return """
+                openapi: 3.1.0
+                info: {title: Sessions, version: '1'}
+                paths:
+                  /sessions:
+                    post:
+                      operationId: createSession
+                      tags: [Sessions]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties: {name: {type: string}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [queryToken, traceId]
+                                properties:
+                                  queryToken: {type: string}
+                                  traceId: {type: string}
+                    get:
+                      operationId: readSession
+                      tags: [Sessions]
+                      parameters:
+                        - {name: queryToken, in: query, required: true, schema: {type: string}}
+                        - {name: traceId, in: header, required: true, schema: {type: string}}
+                      responses:
+                        '200':
+                          description: found
+                          content:
+                            application/json:
+                              schema: {type: object}
+                """;
+    }
+
+    private static String openApiWithBodyBinding() {
+        return """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    post:
+                      operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [name]
+                              properties: {name: {type: string}}
+                      responses:
+                        '201':
+                          description: created
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [revision]
+                                properties: {revision: {type: string}}
+                    patch:
+                      operationId: updateOrder
+                      tags: [Orders]
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              type: object
+                              required: [revision]
+                              additionalProperties: false
+                              properties: {revision: {type: string}}
+                      responses:
+                        '200':
+                          description: updated
+                          content:
+                            application/json:
+                              schema: {type: object}
+                """;
+    }
+
+    private record Prepared(Path workspace, Path source, String requestId,
+            String authorizationId, String planSha) { }
+}

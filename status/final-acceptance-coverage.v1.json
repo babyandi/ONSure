@@ -1,0 +1,16 @@
+{
+  "contract":"ONSURE_FINAL_ACCEPTANCE_COVERAGE_V1",
+  "version":"1.0.0",
+  "source_registry":"contracts/final-acceptance-source-registry.v1.json",
+  "assessment_source_ref":"main",
+  "groups":[
+    {"id":"FIN-ACC-05","registered_items":10,"implemented_items":0,"verified_items":0,"state":"NOT_RUN","missing_controls":["FINAL_MINIMUM_CONDITIONS_ATOMIC_MAPPING_PENDING"]},
+    {"id":"FIN-ACC-40","registered_items":8,"implemented_items":0,"verified_items":0,"state":"NOT_RUN","missing_controls":["RESEARCH_P0_DIFFERENTIATORS_ATOMIC_MAPPING_PENDING"]},
+    {"id":"FIN-ACC-41","registered_items":10,"implemented_items":0,"verified_items":0,"state":"NOT_RUN","missing_controls":["FINAL_ARCHITECTURE_ACCEPTANCE_FULL_CHAIN_NOT_RUN"]},
+    {"id":"FIN-ACC-42","registered_items":8,"implemented_items":0,"verified_items":0,"state":"NOT_RUN","missing_controls":["VSCODE_GIT_ACCEPTANCE_FULL_CHAIN_NOT_RUN"]},
+    {"id":"FIN-ACC-43","registered_items":12,"implemented_items":0,"verified_items":0,"state":"NOT_RUN","missing_controls":["FINANCIAL_FINAL_GATE_NOT_RUN"]},
+    {"id":"FIN-ACC-44","registered_items":14,"implemented_items":0,"verified_items":0,"state":"NOT_RUN","missing_controls":["UNIFIED_WORK_DEVELOPER_ACCEPTANCE_NOT_RUN"]}
+  ],
+  "summary":{"source_groups":6,"registered_items":62,"implemented_items":0,"verified_items":0,"not_run_items":62},
+  "assurance":{"financial_scenarios_3_sets":"NOT_RUN","external_ai_product_types_5":"NOT_RUN","white_gray_black_box":"NOT_RUN","same_identity_repeat_2":"NOT_RUN","independent_otester_two_clean":"NOT_RUN","independent_oaudit_two_clean":"NOT_RUN","human_approval":"NOT_RUN","final_claim_allowed":false}
+}

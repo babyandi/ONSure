@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.onsure</groupId>
+    <artifactId>onsure-modular-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <relativePath>../../pom-modular.xml</relativePath>
+  </parent>
+  <artifactId>onsure-llm-gateway</artifactId>
+  <name>ONSure LLM Gateway</name>
+  <dependencies>
+    <dependency><groupId>io.onsure</groupId><artifactId>onsure-provider-spi</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>io.onsure</groupId><artifactId>onsure-provider-local-mock</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>io.onsure</groupId><artifactId>onsure-provider-openai</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/../../contracts/openapi</directory>
+        <targetPath>openapi</targetPath>
+        <includes><include>onsure-llm-gateway.v1.json</include></includes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration><compilerArgs><arg>--add-modules</arg><arg>jdk.httpserver</arg></compilerArgs></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration><argLine>--add-modules jdk.httpserver</argLine></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration><archive><manifest><mainClass>io.onsure.gateway.llm.LlmGatewayMain</mainClass></manifest></archive></configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

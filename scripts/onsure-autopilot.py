@@ -10,9 +10,11 @@ import hashlib
 import json
 import os
 import pathlib
+import signal
 import subprocess
 import sys
 import tempfile
+import time
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -22,6 +24,7 @@ FORBIDDEN_TOKENS = {
     "merge", "push", "approve", "reset", "stash", "deploy", "finallock",
     "production", "commercial", "secret", "credential",
 }
+CONTROL_STATES = {"RUNNING", "PAUSED", "CANCELLED"}
 
 
 def canonical(value: Any) -> bytes:
@@ -76,13 +79,33 @@ def source_snapshot(require_clean: bool) -> dict[str, Any]:
 def validate_contract(contract: dict[str, Any]) -> None:
     if contract.get("contract") != "ONSURE_UNATTENDED_AUTOPILOT_V1":
         raise RuntimeError("CONTRACT_ID_INVALID")
+    if contract.get("control_journal") != ".onsure/autopilot/control.json" \
+            or set(contract.get("supported_controls", [])) != {"PAUSE", "RESUME", "CANCEL"} \
+            or contract.get("process_group_control") is not True:
+        raise RuntimeError("CONTROL_CONTRACT_INVALID")
+    recovery = contract.get("restart_recovery", {})
+    if recovery.get("interrupted_process_absent") \
+            != "RETRY_SAME_STAGE_WITH_ATTEMPT_ROLLBACK" \
+            or recovery.get("orphan_process_present") \
+            != "IDENTITY_BOUND_CONTROL_REATTACH_THEN_RCA" \
+            or recovery.get("completed_stage_reexecution") is not False:
+        raise RuntimeError("RESTART_RECOVERY_CONTRACT_INVALID")
+    if recovery.get("process_identity_binding") \
+            != "LINUX_PROC_PID_PGID_START_TIME_COMMAND_SHA256":
+        raise RuntimeError("RESTART_RECOVERY_CONTRACT_INVALID")
     terminal_state = contract.get("terminal_gate", {}).get("state")
     if terminal_state not in ALLOWED_TERMINAL_STATES:
         raise RuntimeError("TERMINAL_GATE_INVALID")
+    authorization = contract.get("merge_authorization")
+    if not isinstance(authorization, dict):
+        raise RuntimeError("MERGE_AUTHORIZATION_MISSING")
+    authorized = authorization.get("authorized")
+    authority = authorization.get("authority")
     if terminal_state == "MERGE_AUTHORIZED_READY":
-        authorization = contract.get("merge_authorization", {})
-        if not authorization.get("authorized") or not authorization.get("authority"):
+        if authorized is not True or not authority:
             raise RuntimeError("MERGE_AUTHORIZATION_MISSING")
+    elif authorized is not False or authority:
+        raise RuntimeError("MERGE_AUTHORIZATION_MISSING")
     ids: set[str] = set()
     for stage in contract.get("stages", []):
         stage_id = stage.get("id")
@@ -104,12 +127,227 @@ def initial_state(contract: dict[str, Any], snapshot: dict[str, Any]) -> dict[st
         "contract_sha256": digest_bytes(canonical(contract)),
         "source": snapshot,
         "state": "RUNNING",
+        "control_state": "RUNNING",
         "stages": {
             stage["id"]: {"state": "PENDING", "attempts": 0}
             for stage in contract["stages"]
         },
         "updated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
     }
+
+
+def control_path(state_path: pathlib.Path) -> pathlib.Path:
+    return state_path.with_name("control.json")
+
+
+def request_control(contract: dict[str, Any], state_path: pathlib.Path, desired: str) -> dict[str, Any]:
+    if desired not in CONTROL_STATES:
+        raise RuntimeError("CONTROL_STATE_INVALID")
+    if not state_path.exists():
+        raise RuntimeError("CHECKPOINT_NOT_STARTED")
+    state = read_json(state_path)
+    contract_sha = digest_bytes(canonical(contract))
+    if state.get("contract_sha256") != contract_sha:
+        raise RuntimeError("CHECKPOINT_CONTRACT_CHANGED")
+    current = state.get("state")
+    if desired == "PAUSED" and current not in {"RUNNING", "RECOVERING", "PAUSED"}:
+        raise RuntimeError(f"PAUSE_STATE_INVALID:{current}")
+    if desired == "CANCELLED" and current not in {"RUNNING", "RECOVERING", "PAUSED"}:
+        raise RuntimeError(f"CANCEL_STATE_INVALID:{current}")
+    if desired == "RUNNING" and current not in {"RUNNING", "RECOVERING", "PAUSED"}:
+        raise RuntimeError(f"RESUME_STATE_INVALID:{current}")
+    request = {
+        "contract": "ONSURE_AUTOPILOT_CONTROL_V1",
+        "contract_sha256": contract_sha,
+        "desired_state": desired,
+        "requested_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "final_claim_allowed": False,
+    }
+    atomic_json(control_path(state_path), request)
+    return request
+
+
+def desired_control(contract: dict[str, Any], state_path: pathlib.Path) -> str:
+    path = control_path(state_path)
+    if not path.exists():
+        return "RUNNING"
+    request = read_json(path)
+    if request.get("contract") != "ONSURE_AUTOPILOT_CONTROL_V1" \
+            or request.get("contract_sha256") != digest_bytes(canonical(contract)) \
+            or request.get("desired_state") not in CONTROL_STATES:
+        raise RuntimeError("AUTOPILOT_CONTROL_INVALID")
+    return str(request["desired_state"])
+
+
+def recover_interrupted_state(state: dict[str, Any]) -> bool:
+    recovered = False
+    for entry in state.get("stages", {}).values():
+        if entry.get("state") not in {"RUNNING", "PAUSED", "CANCEL_REQUESTED"}:
+            continue
+        pid = entry.get("process_pid")
+        if isinstance(pid, int) and process_exists(pid):
+            expected = entry.get("process_identity")
+            observed = process_identity(pid)
+            if not isinstance(expected, dict) or expected != observed:
+                raise RuntimeError(f"ORPHAN_PROCESS_IDENTITY_MISMATCH:{pid}")
+            if entry.get("process_group_id") != observed["process_group_id"]:
+                raise RuntimeError(f"ORPHAN_PROCESS_GROUP_MISMATCH:{pid}")
+            entry["state"] = "ORPHAN_RUNNING"
+            entry["recoveries"] = int(entry.get("recoveries", 0)) + 1
+            entry["last_interruption"] = "CONTROLLER_RESTART_IDENTITY_BOUND_ORPHAN"
+            state["state"] = "RECOVERING_ORPHAN"
+            state["control_state"] = "RUNNING"
+            state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+            recovered = True
+            continue
+        entry["state"] = "PENDING"
+        entry["attempts"] = max(0, int(entry.get("attempts", 0)) - 1)
+        entry["recoveries"] = int(entry.get("recoveries", 0)) + 1
+        entry["last_interruption"] = "CONTROLLER_RESTART_PROCESS_NOT_PRESENT"
+        entry.pop("process_pid", None)
+        entry.pop("process_group_id", None)
+        entry.pop("process_identity", None)
+        recovered = True
+    if recovered:
+        state["state"] = "RECOVERING_ORPHAN" if any(
+            entry.get("state") == "ORPHAN_RUNNING"
+            for entry in state.get("stages", {}).values()
+        ) else "RECOVERING"
+        state["control_state"] = "RUNNING"
+        state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+    return recovered
+
+
+def process_exists(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def process_identity(pid: int) -> dict[str, Any]:
+    """Bind an orphan to Linux process birth identity, not a reusable PID alone."""
+    if not isinstance(pid, int) or pid <= 1:
+        raise RuntimeError("PROCESS_IDENTITY_PID_INVALID")
+    proc = pathlib.Path("/proc") / str(pid)
+    try:
+        stat = (proc / "stat").read_text(encoding="utf-8")
+        _, separator, tail = stat.rpartition(")")
+        fields = tail.strip().split()
+        if separator != ")" or len(fields) < 20:
+            raise RuntimeError("PROCESS_IDENTITY_STAT_INVALID")
+        process_group_id = int(fields[2])
+        start_time_ticks = int(fields[19])
+        command = (proc / "cmdline").read_bytes()
+    except (FileNotFoundError, ProcessLookupError):
+        raise RuntimeError(f"PROCESS_IDENTITY_NOT_PRESENT:{pid}") from None
+    except (OSError, ValueError) as error:
+        raise RuntimeError(f"PROCESS_IDENTITY_UNAVAILABLE:{pid}:{error}") from error
+    if not command:
+        raise RuntimeError(f"PROCESS_IDENTITY_COMMAND_UNAVAILABLE:{pid}")
+    return {
+        "pid": pid,
+        "process_group_id": process_group_id,
+        "start_time_ticks": start_time_ticks,
+        "command_sha256": digest_bytes(command),
+    }
+
+
+def capture_spawned_process_identity(
+        process: subprocess.Popen[str], attempts: int = 20) -> dict[str, Any] | None:
+    """Capture post-exec identity, while allowing an already completed short command."""
+    last_error: RuntimeError | None = None
+    for _ in range(attempts):
+        if process.poll() is not None:
+            return None
+        try:
+            return process_identity(process.pid)
+        except RuntimeError as error:
+            last_error = error
+            time.sleep(0.005)
+    if process.poll() is not None:
+        return None
+    terminate_group(process)
+    raise RuntimeError(f"SPAWNED_PROCESS_IDENTITY_UNAVAILABLE:{last_error}")
+
+
+def recover_identity_bound_orphans(
+        contract: dict[str, Any], state_path: pathlib.Path,
+        state: dict[str, Any]) -> bool:
+    """Control an exact orphan group until exit; never infer PASS without captured evidence."""
+    recovered = False
+    for stage_id, entry in state.get("stages", {}).items():
+        if entry.get("state") != "ORPHAN_RUNNING":
+            continue
+        pid = int(entry["process_pid"])
+        process_group = int(entry["process_group_id"])
+        paused = False
+        while process_exists(pid):
+            if process_identity(pid) != entry.get("process_identity"):
+                raise RuntimeError(f"ORPHAN_PROCESS_IDENTITY_CHANGED:{pid}")
+            desired = desired_control(contract, state_path)
+            if desired == "PAUSED" and not paused:
+                signal_group(process_group, signal.SIGSTOP)
+                paused = True
+                entry["state"] = "PAUSED"
+                state["state"] = "PAUSED"
+                state["control_state"] = "PAUSED"
+                atomic_json(state_path, state)
+                entry["state"] = "ORPHAN_RUNNING"
+            elif desired == "RUNNING" and paused:
+                signal_group(process_group, signal.SIGCONT)
+                paused = False
+                state["state"] = "RECOVERING_ORPHAN"
+                state["control_state"] = "RUNNING"
+                atomic_json(state_path, state)
+            elif desired == "CANCELLED":
+                if paused:
+                    signal_group(process_group, signal.SIGCONT)
+                terminate_orphan_group(pid, process_group)
+                entry["orphan_cancel_requested"] = True
+                break
+            time.sleep(0.1)
+        entry["state"] = "RCA_REQUIRED"
+        entry["failure"] = {
+            "exit_code": "NOT_AVAILABLE_AFTER_CONTROLLER_RESTART",
+            "marker_present": False,
+            "classification": "ORPHAN_COMPLETION_EVIDENCE_UNAVAILABLE",
+            "stage_id": stage_id,
+            "identity_bound_recovery": True,
+        }
+        entry.pop("process_pid", None)
+        entry.pop("process_group_id", None)
+        entry.pop("process_identity", None)
+        state["state"] = "BLOCKED_RCA_REQUIRED"
+        state["control_state"] = "RUNNING"
+        state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+        atomic_json(state_path, state)
+        recovered = True
+    return recovered
+
+
+def terminate_orphan_group(pid: int, process_group: int) -> None:
+    signal_group(process_group, signal.SIGTERM)
+    deadline = time.monotonic() + 5.0
+    while process_exists(pid) and time.monotonic() < deadline:
+        time.sleep(0.1)
+    if process_exists(pid):
+        signal_group(process_group, signal.SIGKILL)
+
+
+def controller_active(state_path: pathlib.Path) -> bool:
+    lock_path = state_path.parent / "run.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a", encoding="utf-8") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(lock, fcntl.LOCK_UN)
+            return False
+        except BlockingIOError:
+            return True
 
 
 def write_receipt(directory: pathlib.Path, stage: dict[str, Any], attempt: int,
@@ -135,6 +373,84 @@ def write_receipt(directory: pathlib.Path, stage: dict[str, Any], attempt: int,
     return str(path.relative_to(ROOT))
 
 
+def run_controlled_stage(
+        contract: dict[str, Any], stage: dict[str, Any], state: dict[str, Any],
+        entry: dict[str, Any], state_path: pathlib.Path,
+        environment: dict[str, str]) -> tuple[subprocess.CompletedProcess[str], str]:
+    process = subprocess.Popen(
+        stage["command"], cwd=ROOT, env=environment,
+        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    entry["process_pid"] = process.pid
+    entry["process_group_id"] = process.pid
+    identity = capture_spawned_process_identity(process)
+    if identity is None:
+        stdout, stderr = process.communicate()
+        entry.pop("process_pid", None)
+        entry.pop("process_group_id", None)
+        return subprocess.CompletedProcess(
+            stage["command"], process.returncode, stdout, stderr), "COMPLETED"
+    entry["process_identity"] = identity
+    atomic_json(state_path, state)
+    paused = False
+    while True:
+        try:
+            stdout, stderr = process.communicate(timeout=0.25)
+            outcome = "COMPLETED"
+            break
+        except subprocess.TimeoutExpired:
+            desired = desired_control(contract, state_path)
+            if desired == "PAUSED" and not paused:
+                signal_group(process.pid, signal.SIGSTOP)
+                paused = True
+                entry["state"] = "PAUSED"
+                state["state"] = "PAUSED"
+                state["control_state"] = "PAUSED"
+                state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+                atomic_json(state_path, state)
+            elif desired == "RUNNING" and paused:
+                signal_group(process.pid, signal.SIGCONT)
+                paused = False
+                entry["state"] = "RUNNING"
+                state["state"] = "RUNNING"
+                state["control_state"] = "RUNNING"
+                state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+                atomic_json(state_path, state)
+            elif desired == "CANCELLED":
+                entry["state"] = "CANCEL_REQUESTED"
+                state["control_state"] = "CANCELLED"
+                atomic_json(state_path, state)
+                if paused:
+                    signal_group(process.pid, signal.SIGCONT)
+                    paused = False
+                terminate_group(process)
+                stdout, stderr = process.communicate()
+                outcome = "CANCELLED"
+                break
+    entry.pop("process_pid", None)
+    entry.pop("process_group_id", None)
+    entry.pop("process_identity", None)
+    return subprocess.CompletedProcess(
+        stage["command"], process.returncode, stdout, stderr), outcome
+
+
+def signal_group(process_group: int, requested_signal: signal.Signals) -> None:
+    try:
+        os.killpg(process_group, requested_signal)
+    except ProcessLookupError:
+        pass
+
+
+def terminate_group(process: subprocess.Popen[str]) -> None:
+    signal_group(process.pid, signal.SIGTERM)
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        signal_group(process.pid, signal.SIGKILL)
+        process.wait(timeout=5)
+
+
 def execute(contract: dict[str, Any], state_path: pathlib.Path) -> int:
     checkpoint_dir = state_path.parent
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -153,9 +469,21 @@ def execute(contract: dict[str, Any], state_path: pathlib.Path) -> int:
                 raise RuntimeError("CHECKPOINT_CONTRACT_CHANGED")
             if state.get("source") != snapshot:
                 raise RuntimeError("CHECKPOINT_SOURCE_CHANGED")
+            if recover_interrupted_state(state):
+                atomic_json(state_path, state)
+                if recover_identity_bound_orphans(contract, state_path, state):
+                    print("ONSURE_AUTOPILOT_BLOCKED ORPHAN RCA_REQUIRED", file=sys.stderr)
+                    return 74
         else:
             state = initial_state(contract, snapshot)
             atomic_json(state_path, state)
+            request_control(contract, state_path, "RUNNING")
+
+        desired = desired_control(contract, state_path)
+        if desired == "PAUSED":
+            raise RuntimeError("CHECKPOINT_PAUSED_USE_RESUME")
+        if desired == "CANCELLED":
+            raise RuntimeError("CHECKPOINT_CANCELLED")
 
         maximum = int(contract.get("maximum_stage_attempts", 1))
         for stage in contract["stages"]:
@@ -172,12 +500,21 @@ def execute(contract: dict[str, Any], state_path: pathlib.Path) -> int:
                 atomic_json(state_path, state)
                 environment = os.environ.copy()
                 environment["PATH"] = str(ROOT / "scripts/toolchain") + os.pathsep + environment["PATH"]
-                result = subprocess.run(
-                    stage["command"], cwd=ROOT, env=environment,
-                    text=True, capture_output=True, check=False
-                )
+                result, outcome = run_controlled_stage(
+                    contract, stage, state, entry, state_path, environment)
                 receipt = write_receipt(checkpoint_dir, stage, entry["attempts"], snapshot, result)
                 entry["last_receipt"] = receipt
+                if outcome == "CANCELLED":
+                    entry["state"] = "CANCELLED"
+                    entry["cancellation"] = {
+                        "exit_code": result.returncode,
+                        "classification": "EXPLICIT_USER_CANCELLATION",
+                    }
+                    state["state"] = "CANCELLED"
+                    state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+                    atomic_json(state_path, state)
+                    print(f"ONSURE_AUTOPILOT_CANCELLED {stage['id']}", file=sys.stderr)
+                    return 75
                 if result.returncode == 0 and stage["required_marker"] in result.stdout:
                     entry["state"] = "PASS"
                     break
@@ -197,6 +534,7 @@ def execute(contract: dict[str, Any], state_path: pathlib.Path) -> int:
 
         terminal_state = contract["terminal_gate"]["state"]
         state["state"] = terminal_state
+        state["control_state"] = "RUNNING"
         state["terminal_gate"] = contract["terminal_gate"]
         state["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
         state["checkpoint_sha256"] = digest_bytes(canonical({
@@ -209,7 +547,8 @@ def execute(contract: dict[str, Any], state_path: pathlib.Path) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=("run", "resume", "status", "reset-failed"))
+    parser.add_argument(
+        "action", choices=("run", "resume", "pause", "cancel", "status", "reset-failed"))
     parser.add_argument("--contract", type=pathlib.Path, default=DEFAULT_CONTRACT)
     args = parser.parse_args()
     contract = read_json(args.contract.resolve())
@@ -218,6 +557,11 @@ def main() -> int:
     if args.action == "status":
         print(json.dumps(read_json(state_path), indent=2) if state_path.exists()
               else "ONSURE_AUTOPILOT_NOT_STARTED")
+        return 0
+    if args.action in {"pause", "cancel"}:
+        desired = "PAUSED" if args.action == "pause" else "CANCELLED"
+        request = request_control(contract, state_path, desired)
+        print(f"ONSURE_AUTOPILOT_CONTROL_REQUESTED {request['desired_state']}")
         return 0
     if args.action == "reset-failed":
         if not state_path.exists():
@@ -232,6 +576,11 @@ def main() -> int:
         atomic_json(state_path, state)
         print("ONSURE_AUTOPILOT_FAILED_STAGES_RESET")
         return 0
+    if args.action == "resume":
+        request_control(contract, state_path, "RUNNING")
+        if controller_active(state_path):
+            print("ONSURE_AUTOPILOT_CONTROL_REQUESTED RUNNING")
+            return 0
     return execute(contract, state_path)
 
 

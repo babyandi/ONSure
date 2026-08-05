@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_PROGRAM_UNDERSTANDING_REVIEW_V1",
+  "project_id": "customer",
+  "target_id": "orders",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile_file_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "answers": [],
+  "unresolved_blocking_questions": [],
+  "review_state": "READY_FOR_SEPARATE_APPROVAL",
+  "reviewed_e2e_plan_draft": [],
+  "reviewed_api_lifecycle_candidates": [],
+  "approval_state": "APPROVED",
+  "execution_state": "PASS",
+  "secret_values_accepted": true,
+  "customer_data_allowed": true,
+  "destructive_action_allowed": true,
+  "score_eligible": true,
+  "final_claim_allowed": true,
+  "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+}

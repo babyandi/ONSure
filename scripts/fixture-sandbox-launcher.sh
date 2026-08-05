@@ -10,7 +10,16 @@ ROOT="$(cd "$1" && pwd -P)"
 TIMEOUT_SECONDS="$2"
 shift 2
 
-for command in bwrap prlimit timeout bash env mktemp; do
+SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+BACKEND_HELPER="$SCRIPT_ROOT/onsure-sandbox-backend.sh"
+[[ -f "$BACKEND_HELPER" && ! -L "$BACKEND_HELPER" ]] || {
+  echo 'ONSURE_FIXTURE_SANDBOX_FAIL BACKEND_HELPER_MISSING' >&2
+  exit 69
+}
+# shellcheck source=onsure-sandbox-backend.sh
+source "$BACKEND_HELPER"
+
+for command in prlimit timeout bash env mktemp readlink dirname; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_$command" >&2
     exit 69
@@ -32,10 +41,87 @@ SCRIPT="${2:-}"
   exit 65
 }
 
-BACKEND="${ONSURE_FIXTURE_SANDBOX_BACKEND:-ROOTLESS_BWRAP}"
-[[ "$BACKEND" == "ROOTLESS_BWRAP" ]] || {
-  echo "ONSURE_FIXTURE_SANDBOX_FAIL NON_LOCAL_BACKEND_FORBIDDEN_$BACKEND" >&2
+REQUESTED_BACKEND="${ONSURE_FIXTURE_SANDBOX_BACKEND:-AUTO}"
+onsure_select_sandbox_backend "$REQUESTED_BACKEND" || {
+  onsure_sandbox_backend_cleanup
+  echo "ONSURE_FIXTURE_SANDBOX_FAIL BACKEND_UNAVAILABLE_$REQUESTED_BACKEND" >&2
   exit 64
+}
+BACKEND="$ONSURE_SELECTED_SANDBOX_BACKEND"
+
+if [[ "$BACKEND" == 'OCI_DOCKER' ]]; then
+  trap onsure_sandbox_backend_cleanup EXIT
+  for command in docker id sha256sum awk; do
+    command -v "$command" >/dev/null 2>&1 || {
+      onsure_sandbox_backend_cleanup
+      echo "ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_$command" >&2
+      exit 69
+    }
+  done
+  [[ "$ROOT" != *','* && "$ROOT" != *':'* && "$ROOT" != *$'\n'* ]] || {
+    echo 'ONSURE_FIXTURE_SANDBOX_FAIL OCI_MOUNT_PATH_UNSUPPORTED' >&2
+    exit 65
+  }
+  ONSURE_CONTAINER_NAME="onsure-fixture-${UID}-$$-${RANDOM}"
+  OCI_ENV=(
+    --env PATH=/opt/java/openjdk/bin:/usr/local/bin:/usr/bin:/bin
+    --env TMPDIR=/tmp
+    --env HOME=
+    --env LANG=C.UTF-8
+    --env LC_ALL=C.UTF-8
+    --env USER=onsure-sandbox
+    --env LOGNAME=onsure-sandbox
+    --env ONSURE_SANDBOX_BACKEND_ACTUAL=OCI_DOCKER
+    --env "ONSURE_HOST_PASSWD_SHA256=$(sha256sum /etc/passwd | awk '{print $1}')"
+  )
+  while IFS='=' read -r key value; do
+    if [[ "$key" =~ ^ONSURE_FIXTURE_[A-Z0-9_]{1,64}$ \
+        && "$key" != 'ONSURE_FIXTURE_SANDBOX_MODE' \
+        && "$key" != 'ONSURE_FIXTURE_SANDBOX_BACKEND' ]]; then
+      OCI_ENV+=(--env "$key=$value")
+    fi
+  done < <(env)
+  cleanup_oci() {
+    docker rm -f "$ONSURE_CONTAINER_NAME" >/dev/null 2>&1 || true
+    onsure_sandbox_backend_cleanup
+  }
+  trap cleanup_oci EXIT
+  set +e
+  timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
+    docker run --rm --pull never \
+      --name "$ONSURE_CONTAINER_NAME" \
+      --label io.onsure.sandbox=fixture \
+      --network none \
+      --read-only \
+      --cap-drop ALL \
+      --security-opt no-new-privileges:true \
+      --security-opt apparmor=docker-default \
+      --user "$(id -u):$(id -g)" \
+      --pids-limit 64 \
+      --memory 2147483648 --memory-swap 2147483648 \
+      --cpus 1 \
+      --ulimit nofile=256:256 \
+      --ulimit fsize=2097152:2097152 \
+      --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=67108864,mode=1777,uid=$(id -u),gid=$(id -g)" \
+      --mount "type=bind,src=$ROOT,dst=/workspace,readonly" \
+      --workdir /workspace \
+      "${OCI_ENV[@]}" \
+      --entrypoint /usr/bin/prlimit \
+      "$ONSURE_SANDBOX_OCI_IMAGE_ID" \
+        --cpu="$TIMEOUT_SECONDS" \
+        --nofile=256 \
+        --fsize=2097152 \
+        -- \
+        env -u HOME \
+        "$@"
+  status=$?
+  set -e
+  exit "$status"
+fi
+
+command -v bwrap >/dev/null 2>&1 || {
+  echo 'ONSURE_FIXTURE_SANDBOX_FAIL MISSING_COMMAND_bwrap' >&2
+  exit 69
 }
 BWRAP_COMMAND=(bwrap)
 IDENTITY_ARGS=(--unshare-user --uid 0 --gid 0)
@@ -48,7 +134,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-for directory in bin usr lib lib64 etc etc/alternatives workspace tmp proc dev; do
+for directory in bin usr lib lib64 etc etc/alternatives opt opt/onsure-jdk workspace tmp proc dev; do
   mkdir -p "$EMPTY_ROOT/$directory"
 done
 if [[ -e /etc/ld.so.cache ]]; then
@@ -63,14 +149,28 @@ for path in /bin /usr /lib /lib64 /etc/ld.so.cache /etc/alternatives; do
   fi
 done
 
+SANDBOX_PATH="/usr/bin:/bin"
+JDK_BINDINGS=()
+if command -v java >/dev/null 2>&1 && command -v javac >/dev/null 2>&1; then
+  JAVA_BIN="$(readlink -f "$(command -v java)")"
+  JAVAC_BIN="$(readlink -f "$(command -v javac)")"
+  JDK_ROOT="$(dirname "$(dirname "$JAVA_BIN")")"
+  [[ "$JAVAC_BIN" == "$JDK_ROOT/bin/javac" ]] || {
+    echo "ONSURE_FIXTURE_SANDBOX_FAIL JAVA_JAVAC_ROOT_MISMATCH" >&2
+    exit 69
+  }
+  JDK_BINDINGS=(--ro-bind "$JDK_ROOT" /opt/onsure-jdk)
+  SANDBOX_PATH="/opt/onsure-jdk/bin:$SANDBOX_PATH"
+fi
+
 SANDBOX_ENV=(
-  --setenv PATH /usr/bin:/bin
-  --setenv HOME /nonexistent
+  --setenv PATH "$SANDBOX_PATH"
   --setenv TMPDIR /tmp
   --setenv LANG C.UTF-8
   --setenv LC_ALL C.UTF-8
   --setenv USER onsure-sandbox
   --setenv LOGNAME onsure-sandbox
+  --setenv ONSURE_SANDBOX_BACKEND_ACTUAL ROOTLESS_BWRAP
 )
 while IFS='=' read -r key value; do
   if [[ "$key" =~ ^ONSURE_FIXTURE_[A-Z0-9_]{1,64}$ \
@@ -94,6 +194,7 @@ timeout --signal=KILL --kill-after=2s "${TIMEOUT_SECONDS}s" \
     --clearenv \
     "${SANDBOX_ENV[@]}" \
     "${BINDINGS[@]}" \
+    "${JDK_BINDINGS[@]}" \
     --ro-bind "$ROOT" /workspace \
     --tmpfs /tmp \
     --proc /proc \

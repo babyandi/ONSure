@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/portable-workflow-lineage.v1.schema.json",
+  "title": "ONSure Portable Workflow Lineage Receipt V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "run_id", "request", "artifact", "handoffs", "permit",
+    "read_back", "tester", "audit", "exposure", "generated_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PORTABLE_WORKFLOW_LINEAGE_V1"},
+    "run_id": {"$ref": "#/$defs/id"},
+    "request": {"$ref": "#/$defs/fileDigest"},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "schema_path", "schema_sha256", "media_type"],
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "sha256": {"$ref": "#/$defs/digest"},
+        "schema_path": {"$ref": "#/$defs/path"},
+        "schema_sha256": {"$ref": "#/$defs/digest"},
+        "media_type": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "handoffs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "producer", "consumer", "producer_output_sha256", "consumer_input_sha256",
+          "artifact_sha256", "producer_schema_sha256", "consumer_schema_sha256"
+        ],
+        "properties": {
+          "producer": {"$ref": "#/$defs/id"},
+          "consumer": {"$ref": "#/$defs/id"},
+          "producer_output_sha256": {"$ref": "#/$defs/digest"},
+          "consumer_input_sha256": {"$ref": "#/$defs/digest"},
+          "artifact_sha256": {"$ref": "#/$defs/digest"},
+          "producer_schema_sha256": {"$ref": "#/$defs/digest"},
+          "consumer_schema_sha256": {"$ref": "#/$defs/digest"}
+        }
+      }
+    },
+    "permit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "permit_id", "run_id", "request_sha256", "artifact_sha256",
+        "decision", "issued_at", "expires_at"
+      ],
+      "properties": {
+        "permit_id": {"$ref": "#/$defs/id"},
+        "run_id": {"$ref": "#/$defs/id"},
+        "request_sha256": {"$ref": "#/$defs/digest"},
+        "artifact_sha256": {"$ref": "#/$defs/digest"},
+        "decision": {"const": "ALLOW"},
+        "issued_at": {"type": "string", "format": "date-time"},
+        "expires_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "read_back": {"$ref": "#/$defs/artifactDecision"},
+    "tester": {"$ref": "#/$defs/passDecision"},
+    "audit": {"$ref": "#/$defs/passDecision"},
+    "exposure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_decision", "actual_decision", "artifact_sha256", "permit_id"],
+      "properties": {
+        "expected_decision": {"enum": ["ALLOW", "DENY"]},
+        "actual_decision": {"enum": ["ALLOW", "DENY"]},
+        "artifact_sha256": {"$ref": "#/$defs/digest"},
+        "permit_id": {"$ref": "#/$defs/id"}
+      }
+    },
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+    "path": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fileDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "artifactDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_sha256"],
+      "properties": {"artifact_sha256": {"$ref": "#/$defs/digest"}}
+    },
+    "passDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "artifact_sha256"],
+      "properties": {
+        "decision": {"const": "PASS"},
+        "artifact_sha256": {"$ref": "#/$defs/digest"}
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/business-semantic-hypotheses.v1.schema.json",
+  "title": "ONSure Business Semantic Hypotheses V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "source_sha256", "inference_method", "hypothesis_count", "hypotheses",
+    "unknown_count", "ambiguous_count", "review_required", "automatic_execution",
+    "live_provider_invocation", "customer_rules_confirmed", "runtime_verification",
+    "score_eligible", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_BUSINESS_SEMANTIC_HYPOTHESES_V1"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "inference_method": {"const": "DETERMINISTIC_EVIDENCE_BOUND_SEMANTIC_HYPOTHESES_V1"},
+    "hypothesis_count": {"type": "integer", "minimum": 0},
+    "hypotheses": {"type": "array", "items": {"$ref": "#/$defs/hypothesis"}},
+    "unknown_count": {"type": "integer", "minimum": 0},
+    "ambiguous_count": {"type": "integer", "minimum": 0},
+    "review_required": {"const": true},
+    "automatic_execution": {"const": "NOT_RUN_REVIEW_REQUIRED"},
+    "live_provider_invocation": {"const": "NOT_RUN"},
+    "customer_rules_confirmed": {"const": false},
+    "runtime_verification": {"const": "NOT_RUN"},
+    "score_eligible": {"const": false},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hypothesis_id", "hypothesis_kind", "semantic_label", "business_object", "action",
+        "evidence_references", "confidence", "ambiguity", "semantic_state", "review_required",
+        "auto_execute", "customer_rule_confirmed", "runtime_verified", "score_eligible"
+      ],
+      "properties": {
+        "hypothesis_id": {"type": "string", "pattern": "^SEM-[0-9a-f]{16}$"},
+        "hypothesis_kind": {"enum": ["CAPABILITY", "WORKFLOW"]},
+        "semantic_label": {"type": "string", "minLength": 1, "maxLength": 200},
+        "business_object": {"type": "string", "minLength": 1, "maxLength": 160},
+        "action": {"type": "string", "minLength": 1, "maxLength": 80},
+        "evidence_references": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/evidenceReference"}
+        },
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "ambiguity": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+        "semantic_state": {"enum": ["INFERRED_REVIEW_REQUIRED", "UNKNOWN"]},
+        "review_required": {"const": true},
+        "auto_execute": {"const": false},
+        "customer_rule_confirmed": {"const": false},
+        "runtime_verified": {"const": false},
+        "score_eligible": {"const": false}
+      }
+    },
+    "evidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_type", "reference", "observed_value", "evidence_sha256"],
+      "properties": {
+        "evidence_type": {
+          "enum": [
+            "SOURCE_OBSERVATION", "OPENAPI_OPERATION_ID", "OPENAPI_TAG", "OPENAPI_PATH",
+            "OPENAPI_SCHEMA_REFERENCE", "DETECTED_COMPONENT"
+          ]
+        },
+        "reference": {"type": "string", "minLength": 1, "maxLength": 500},
+        "observed_value": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

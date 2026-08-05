@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_AIRGAP_DEPENDENCY_PACK_POLICY_V1",
+  "archive_format": "DETERMINISTIC_POSIX_TAR",
+  "source_sbom": "assurance/dependencies/onsure.cdx.json",
+  "maven_layout": "MAVEN_REPOSITORY_2",
+  "required_artifacts": ["JAR", "POM"],
+  "required_digest": "SHA-256",
+  "network_access_during_build": false,
+  "symlinks_allowed": false,
+  "absolute_paths_in_manifest": false,
+  "path_traversal_allowed": false,
+  "npm_dependency_payload": "SEPARATE_EXPLICIT_CACHE_EXPORT_REQUIRED",
+  "signature": "NOT_IMPLEMENTED_REQUIRES_EXTERNAL_SIGNER",
+  "customer_data_allowed": false,
+  "secrets_allowed": false,
+  "release_authority": false,
+  "final_claim_allowed": false
+}

@@ -160,6 +160,92 @@ def validate(matrix: dict[str, Any], root: pathlib.Path | None, check_paths: boo
     for document in matrix.get("authoritative_documents", []):
         if document not in mapped_docs:
             errors.append(f"AUTHORITATIVE_DOCUMENT_UNMAPPED:{document}")
+    universal = matrix.get("universal_validation_authority")
+    if not isinstance(universal, dict):
+        errors.append("UNIVERSAL_VALIDATION_AUTHORITY_MISSING")
+    else:
+        expected_phases = [
+            "STRUCTURE_STATIC", "COMPONENT_AND_NEGATIVE",
+            "END_TO_END_LINEAGE", "OPERATIONAL_RESILIENCE",
+        ]
+        phases = universal.get("four_phase_model")
+        if not isinstance(phases, list) or [item.get("phase_id") for item in phases
+                if isinstance(item, dict)] != expected_phases:
+            errors.append("UNIVERSAL_FOUR_PHASE_AUTHORITY_INVALID")
+        for phase in phases if isinstance(phases, list) else []:
+            if not isinstance(phase, dict) or phase.get("implementation_status") not in ALLOWED_IMPLEMENTATION \
+                    or phase.get("verification_state") not in ALLOWED_VERIFICATION \
+                    or not isinstance(phase.get("evidence_refs"), list):
+                errors.append("UNIVERSAL_PHASE_STATE_INVALID")
+            elif phase.get("verification_state") == "PASS" and not phase.get("evidence_refs"):
+                errors.append(f"UNIVERSAL_PHASE_PASS_WITHOUT_EVIDENCE:{phase.get('phase_id')}")
+        targets = universal.get("required_real_targets")
+        target_ids = {item.get("target_id") for item in targets if isinstance(item, dict)} \
+            if isinstance(targets, list) else set()
+        if target_ids != {"self", "python", "node"}:
+            errors.append("UNIVERSAL_REQUIRED_REAL_TARGET_SET_INVALID")
+        verified = 0
+        for target in targets if isinstance(targets, list) else []:
+            if not isinstance(target, dict):
+                errors.append("UNIVERSAL_REAL_TARGET_ENTRY_INVALID")
+                continue
+            target_id = target.get("target_id", "UNKNOWN")
+            if target.get("required_classification") != "REAL_REPOSITORY":
+                errors.append(f"UNIVERSAL_REAL_TARGET_CLASSIFICATION_INVALID:{target_id}")
+            state = target.get("verification_state")
+            evidence = target.get("evidence_refs")
+            if state not in ALLOWED_VERIFICATION or not isinstance(evidence, list):
+                errors.append(f"UNIVERSAL_REAL_TARGET_STATE_INVALID:{target_id}")
+            if state == "PASS":
+                verified += 1
+                if not evidence or target.get("provenance_binding_state") != "VERIFIED_BEFORE_AND_AFTER" \
+                        or target.get("real_target_universality_evidence_eligible") is not True:
+                    errors.append(f"UNIVERSAL_REAL_TARGET_PASS_WITHOUT_BOUND_EVIDENCE:{target_id}")
+            elif target.get("real_target_universality_evidence_eligible") is True:
+                errors.append(f"UNIVERSAL_REAL_TARGET_UNVERIFIED_ELIGIBILITY:{target_id}")
+        if universal.get("required_real_target_count") != 3 \
+                or universal.get("verified_real_target_count") != verified:
+            errors.append("UNIVERSAL_REAL_TARGET_COUNT_MISMATCH")
+        inference = universal.get("automatic_inference")
+        if not isinstance(inference, dict) or inference.get("candidate_only") is not True \
+                or inference.get("inference_is_pass_evidence") is not False \
+                or inference.get("verification_state") == "PASS" \
+                or not isinstance(inference.get("evidence_refs"), list):
+            errors.append("AUTOMATIC_INFERENCE_AUTHORITY_UNSAFE")
+        binding = universal.get("evidence_binding")
+        if not isinstance(binding, dict) or binding.get("verification_state") not in ALLOWED_VERIFICATION \
+                or binding.get("provenance_alone_is_pass_evidence") is not False \
+                or not isinstance(binding.get("evidence_refs"), list) \
+                or binding.get("verification_state") == "PASS" and not binding.get("evidence_refs"):
+            errors.append("TARGET_PROVENANCE_BINDING_AUTHORITY_INVALID")
+        if check_paths and root:
+            for section_name, section in (("automatic_inference", inference), ("evidence_binding", binding)):
+                if not isinstance(section, dict):
+                    continue
+                for field in ("code_refs", "test_refs", "evidence_refs"):
+                    for reference in section.get(field, []) if isinstance(section.get(field), list) else []:
+                        if not (root / str(reference)).exists():
+                            errors.append(f"UNIVERSAL_AUTHORITY_REFERENCE_MISSING:{section_name}:{field}:{reference}")
+        legacy = universal.get("legacy_evidence_assessment")
+        if not isinstance(legacy, dict) or legacy.get("authority_state") \
+                != "INVALID_FOR_REAL_TARGET_UNIVERSALITY":
+            errors.append("UNIVERSAL_LEGACY_EVIDENCE_ASSESSMENT_INVALID")
+        elif check_paths and root:
+            evidence_path = root / str(legacy.get("evidence_ref", ""))
+            try:
+                evidence_set = load_json(evidence_path)
+                runs = evidence_set.get("runs", [])
+                eligible = [run for run in runs if isinstance(run, dict)
+                            and run.get("target_classification") == "REAL_REPOSITORY"
+                            and run.get("target_provenance_binding_state") == "VERIFIED_BEFORE_AND_AFTER"
+                            and run.get("real_target_universality_evidence_eligible") is True]
+                if legacy.get("observed_run_count") != len(runs) \
+                        or legacy.get("eligible_real_target_run_count") != len(eligible):
+                    errors.append("UNIVERSAL_LEGACY_EVIDENCE_COUNT_MISMATCH")
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                errors.append("UNIVERSAL_LEGACY_EVIDENCE_UNREADABLE")
+        if universal.get("decision") != "HOLD" or universal.get("final_claim_allowed") is not False:
+            errors.append("UNIVERSAL_VALIDATION_AUTHORITY_UNSAFE")
     assurance = matrix.get("assurance", {})
     if assurance.get("final_lock_allowed") is not False:
         errors.append("FINAL_LOCK_UNSAFE")
@@ -192,6 +278,11 @@ def self_test(matrix: dict[str, Any]) -> list[str]:
     expect("pass no evidence", lambda model: model["capabilities"][0].update(verification_state="PASS", evidence_refs=[]), "PASS_WITHOUT_EVIDENCE:")
     expect("implemented not run", lambda model: model["capabilities"][0].update(implementation_status="IMPLEMENTED", verification_state="NOT_RUN"), "IMPLEMENTED_WITHOUT_EXECUTED_VERIFICATION:")
     expect("unmapped design", lambda model: model["authoritative_documents"].append("docs/missing-authority.md"), "AUTHORITATIVE_DOCUMENT_UNMAPPED:")
+    expect("missing universal authority", lambda model: model.pop("universal_validation_authority"), "UNIVERSAL_VALIDATION_AUTHORITY_MISSING")
+    expect("missing real target", lambda model: model["universal_validation_authority"]["required_real_targets"].pop(), "UNIVERSAL_REQUIRED_REAL_TARGET_SET_INVALID")
+    expect("unbound real target pass", lambda model: model["universal_validation_authority"]["required_real_targets"][0].update(verification_state="PASS"), "UNIVERSAL_REAL_TARGET_PASS_WITHOUT_BOUND_EVIDENCE:")
+    expect("inference becomes pass evidence", lambda model: model["universal_validation_authority"]["automatic_inference"].update(inference_is_pass_evidence=True), "AUTOMATIC_INFERENCE_AUTHORITY_UNSAFE")
+    expect("phase pass without evidence", lambda model: model["universal_validation_authority"]["four_phase_model"][0].update(verification_state="PASS"), "UNIVERSAL_PHASE_PASS_WITHOUT_EVIDENCE:")
     return failures
 
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily ONSure PostgreSQL backup schedule (nonfinal candidate)
+
+[Timer]
+OnCalendar=*-*-* 02:15:00 UTC
+RandomizedDelaySec=15m
+Persistent=true
+Unit=onsure-backup.service
+
+[Install]
+WantedBy=timers.target

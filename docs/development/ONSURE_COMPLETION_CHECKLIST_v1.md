@@ -1,22 +1,26 @@
 # ONSURE 요청 범위 완료 점검표 v1
 
-## 구현 완료
+## 구현 상태
 
-- [x] ONSURE 제품 핵심부
-- [x] 범용 검증 엔진
-- [x] 검증 대상 등록소와 대상 어댑터
-- [x] 일반 프로그램 종단간 시험 대상
-- [x] AI 프로그램 종단간 시험 대상
-- [x] ORUDA 외부 대상 어댑터
-- [x] 실패 유형·근본원인분석·개선 계획
-- [x] 시험 데이터·하네스·오라클 등록 구조
-- [x] 회귀 잠금과 재검증 비교
-- [x] 독립 검증·감사 영수증 구조
-- [x] 범용 검증 축 30개
-- [x] 시험 데이터 유형 7개
-- [x] 실행 전 점검과 개발 관문
+- [ ] ONSURE 제품 핵심부 — `PARTIAL`
+- [ ] 범용 검증 엔진 — `PARTIAL`; 4개 보증 수준·7개 순차 검증군·Pack SPI·격리 Runner와
+  검증 전용 OCI fallback 및 독립 Gradle 대상 실제 실행 완료, 독립 감사 미완료
+- [ ] 검증 대상 등록소와 대상 어댑터 — `PARTIAL`; 등록 source의 `validation_mode=UNIVERSAL`과 Manifest 비의존 언어 탐지 구현, binary/package intake 미완료
+- [ ] 일반 프로그램 종단간 시험 대상 — 과거 Java·Python·Node fixture 및 Gradle 후보 실행은
+  provenance 없는 legacy `PASS_NONFINAL`; 세 독립 `REAL_REPOSITORY` 현재 HEAD 실행은 `NOT_RUN`
+- [ ] AI 프로그램 종단간 시험 대상 — `NOT_RUN_REAL_TARGET`
+- [ ] 실패 유형·근본원인분석·개선 계획 — `PARTIAL`; 인과 재현과 실제 Patch 전후 입증 미완료
+- [x] 시험 데이터·하네스·오라클 등록 골격
+- [ ] 회귀 잠금과 재검증 비교 — `PARTIAL`
+- [ ] 독립 검증·감사 영수증 — `NOT_RUN`
+- [x] 범용 검증 축 30개 계약
+- [x] 시험 데이터 유형 7개 계약
+- [x] 실행 전 점검과 개발 관문 골격
 - [x] 학습 엔진·검증 엔진 분리 설계
-- [x] 학습 후보 실제 적용 파이프라인 설계
+- [ ] 학습 후보 실제 적용 파이프라인 — `PARTIAL`
+
+외부 제품은 ONSURE의 필수 연계 대상, 제품 구성요소 또는 완료 조건이 아니다.
+기존 선택형 Adapter가 남아 있더라도 독립 Core의 범용성 증거로 사용하지 않는다.
 
 ## 정적 통합 완료
 
@@ -32,15 +36,29 @@
 
 ## 실제 실행 필요
 
-- [ ] JDK 17 확인
-- [ ] Maven 확인
-- [ ] `mvn -B -ntp test`
+- [x] JDK 17 확인
+- [x] Maven 확인
+- [x] `mvn -B -ntp -q clean verify` 2회
+- [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
+- [x] Public Java API 267개; 기존 265개 변경·삭제 0, nested Pack 및 개선 lineage API 2개 추가
+- [x] Java 419개 회귀 테스트(408 PASS, 조건부 11개 `NOT_RUN` skip)
+- [x] Python 207개 회귀 테스트
+- [x] Gradle 표준 Pack의 offline build, 부정·재시도·차단, 연결 E2E, 운영 복구 convention 탐지와
+  독립 외부 Gradle 대상 20개 필수 Step 실제 실행 (`PASS_NONFINAL`, 원본 변경 0건)
+- [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
+- [x] portable Workflow lineage 계약·실제 artifact/schema/permit digest read-back과 변조 차단
+- [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED` 유지)
+- [ ] 검증 전용 OCI sandbox 실제 대상 완료 — image pull 금지·immutable ID·network none·read-only
+  rootfs·capability 0의 12개 경계 probe는 과거 실행됐으나 중립 Node `REAL_REPOSITORY` provenance
+  결속 4차 검증은 현재 HEAD에서 `NOT_RUN`
 - [ ] 제품 플랫폼 종단간 시험 2회
 - [ ] 범용 하네스 독립 실행 2회
-- [ ] ONSURE 자체 보증 2회
+- [ ] ONSURE 자체 보증 2회 — 과거 repeatability 기록은 존재하지만 현재 HEAD의 repository
+  commit·snapshot manifest 결속 receipt가 아니므로 `NOT_RUN`
 - [ ] 실패 발생 시 근본원인분석·수정·전체 회귀검증
 - [ ] 개발 관문 `PASS`
-- [ ] 증적 SHA-256 읽기 전용 재검증
+- [ ] 증적 SHA-256 읽기 전용 재검증 — 범용 Runner의 PASS log·환경 digest 검증 구현,
+  외부 signer·불변 저장소·독립 감사 영수증 검증은 `NOT_RUN`
 
 ## 최종 후보 조건
 
@@ -57,7 +75,7 @@
 최종 후보 조건을 충족해도 최종 잠금은 자동 허용하지 않는다. 별도 승인·독립 감사·최종 영수증 검증이 필요하다.
 
 ```text
-현재 개발 상태      IMPLEMENTED_NOT_RUN
+현재 개발 상태      PARTIAL_LOCAL_OCI_SANDBOX_PASS
 개발 관문           HOLD
 최종 후보           BLOCKED
 최종 잠금           NOT_ALLOWED

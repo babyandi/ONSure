@@ -70,18 +70,18 @@ class ImplementationAuthorityContractTest {
     @Test
     void authoritativeImplementationFilesExistAndCompetingProductPackageDoesNot() {
         for (String path : Set.of(
-                "src/main/java/io/onsure/platform/ValidationModel.java",
-                "src/main/java/io/onsure/platform/ValidationEngine.java",
-                "src/main/java/io/onsure/platform/FileValidationStore.java",
-                "src/main/java/io/onsure/platform/FixtureRegistryStage.java",
-                "src/main/java/io/onsure/platform/RemediationPlanningStage.java",
-                "src/main/java/io/onsure/platform/OrudaTargetAdapter.java",
-                "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
-                "src/main/java/io/onsure/harness/HarnessModels.java",
-                "src/main/java/io/onsure/harness/UniversalHarnessRunner.java",
-                "src/main/java/io/onsure/harness/RunVerifier.java",
-                "src/main/java/io/onsure/harness/FinalCandidateGate.java",
-                "src/main/java/io/onsure/harness/RegressionGate.java",
+                "modules/onsure-core/src/main/java/io/onsure/platform/ValidationModel.java",
+                "modules/onsure-core/src/main/java/io/onsure/platform/ValidationEngine.java",
+                "modules/onsure-core/src/main/java/io/onsure/platform/FileValidationStore.java",
+                "modules/onsure-core/src/main/java/io/onsure/platform/FixtureRegistryStage.java",
+                "modules/onsure-core/src/main/java/io/onsure/platform/RemediationPlanningStage.java",
+                "modules/onsure-core/src/main/java/io/onsure/platform/OrudaTargetAdapter.java",
+                "modules/onsure-core/src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
+                "modules/onsure-core/src/main/java/io/onsure/harness/HarnessModels.java",
+                "modules/onsure-core/src/main/java/io/onsure/harness/UniversalHarnessRunner.java",
+                "modules/onsure-core/src/main/java/io/onsure/harness/RunVerifier.java",
+                "modules/onsure-core/src/main/java/io/onsure/harness/FinalCandidateGate.java",
+                "modules/onsure-core/src/main/java/io/onsure/harness/RegressionGate.java",
                 "harness/universal-v1/axes/verification-axes.v1.json",
                 "fixtures/universal-v1/sample-target/fixtures.v1.json",
                 "scripts/run-product-platform-e2e.sh",
@@ -95,7 +95,7 @@ class ImplementationAuthorityContractTest {
                 "onsure_chat_instruction_universal_harness_v1.md")) {
             assertTrue(Files.exists(Path.of(path)), "missing authoritative implementation: " + path);
         }
-        assertFalse(Files.exists(Path.of("src/main/java/io/onsure/product")),
+        assertFalse(Files.exists(Path.of("modules/onsure-core/src/main/java/io/onsure/product")),
                 "competing Product Core package must not exist");
         assertFalse(Files.exists(Path.of("src/test/java/io/onsure/product")),
                 "competing Product Core tests must not exist");

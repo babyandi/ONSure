@@ -24,26 +24,10 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${build-helper.version}</version>
-        <executions>
-          <execution>
-            <id>add-local-api-source</id>
-            <phase>generate-sources</phase>
-            <goals><goal>add-source</goal></goals>
-            <configuration><sources><source>${project.basedir}/../../src/main/java</source></sources></configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${compiler.version}</version>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <release>${maven.compiler.release}</release>
-          <includes><include>io/onsure/platform/LocalAuthenticatedApiServer.java</include></includes>
-          <compilerArgs><arg>--add-modules</arg><arg>jdk.httpserver</arg></compilerArgs>
+          <archive><manifest><mainClass>io.onsure.localapi.LocalApiMain</mainClass></manifest></archive>
         </configuration>
       </plugin>
       <plugin>

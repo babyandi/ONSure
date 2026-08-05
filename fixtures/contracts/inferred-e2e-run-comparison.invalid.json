@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_INFERRED_E2E_RUN_COMPARISON_V1", "target_id": "orders",
+  "source_sha256": "not-a-digest", "profile_file_sha256": "not-a-digest",
+  "current_run_id": "run", "current_execution_authorization_id": "auth",
+  "current_runtime_receipt_sha256": "bad", "current_outcome": "FINAL_PASS",
+  "compared_at": "never", "state": "FINAL", "baseline_run_id": "none",
+  "step_comparisons": [], "improved_step_count": -1, "regressed_step_count": -1,
+  "unchanged_step_count": -1, "changed_inconclusive_step_count": -1,
+  "added_step_count": -1, "removed_step_count": -1, "diagnosis": "invalid",
+  "improvement_guide": "invalid", "score_eligible": true,
+  "comparison_is_final_assurance": true, "final_claim_allowed": true
+}

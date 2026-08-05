@@ -1,0 +1,93 @@
+{
+  "backup_sha256": "2f8adca47b9fe36aeb079ff1feec3c6a44e515f11b788aed6d2d355ee2313e53",
+  "backup_size_bytes": 25651,
+  "completed_at": "2026-08-05T17:56:38.946101Z",
+  "concurrent_migration_executed_counts": [
+    0,
+    3
+  ],
+  "concurrent_migration_history_count": 3,
+  "contract": "ONSURE_POSTGRESQL_FLYWAY_REHEARSAL_V1",
+  "customer_data_used": false,
+  "decision": "PASS_NONFINAL",
+  "environment": {
+    "gid": 1000,
+    "machine": "x86_64",
+    "os": "Linux",
+    "os_release": "6.8.0-136-generic",
+    "python_version": "3.12.3",
+    "tools": {
+      "createdb": {
+        "path": "/usr/lib/postgresql/16/bin/createdb",
+        "sha256": "0563639ced4d81919ca1f9ecfb751a8476e409e6a755f9803d1a7ad6036aed6c"
+      },
+      "initdb": {
+        "path": "/usr/lib/postgresql/16/bin/initdb",
+        "sha256": "780d5aae3c0c400c22021661194c2c5c803d1d8c48368c13677841bdabfb2a8a"
+      },
+      "java": {
+        "path": "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+        "sha256": "c0a86c03d2acbe2f389d5198142309f8e61db0c498920893977a494c4e9fd69b"
+      },
+      "pg_ctl": {
+        "path": "/usr/lib/postgresql/16/bin/pg_ctl",
+        "sha256": "02e3e0d1c4343e006e5b448b950c253257bf2ab55cb4b0ad386c0bab7d3e521c"
+      },
+      "pg_dump": {
+        "path": "/usr/lib/postgresql/16/bin/pg_dump",
+        "sha256": "864ecb96b747c5e47c2b232376fee9b2768810e5d552db9b6f50c0ad75a5977a"
+      },
+      "pg_restore": {
+        "path": "/usr/lib/postgresql/16/bin/pg_restore",
+        "sha256": "13fc1bc1743ac1e45bd6b5d0178e73c65e99958cddf61e38ba265d481bf45595"
+      },
+      "postgres": {
+        "path": "/usr/lib/postgresql/16/bin/postgres",
+        "sha256": "98aac5eb9e264e7fb5df9548f9dd8005a45bcf2aa274932a105e9d79b1082168"
+      },
+      "psql": {
+        "path": "/usr/lib/postgresql/16/bin/psql",
+        "sha256": "6d593ef8e95e5275691fcc28927cc540282db141ca1ec5e3806e7db5523613cb"
+      }
+    },
+    "uid": 1000
+  },
+  "environment_sha256": "ea6f4c729545a9e27ebed6acb84b7efc7fe85dbd839ad3e3bbf42d662036eeab",
+  "final_claim_allowed": false,
+  "migration_count": 3,
+  "migration_first_executed": 3,
+  "migration_second_executed": 0,
+  "migrations": [
+    {
+      "path": "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V1__create_assurance_event.sql",
+      "sha256": "043bb2acc6e2451093a4c5a3cbcd1227e87293c075a55d984899d4e791e2f4d8"
+    },
+    {
+      "path": "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V2__create_validation_score_history.sql",
+      "sha256": "103de6b4854dcc083a3983bc823d68a78c87d04f2b874064f02bd6f6574186eb"
+    },
+    {
+      "path": "modules/onsure-migration-postgresql/src/main/resources/db/migration/postgresql/V3__strengthen_validation_score_authority.sql",
+      "sha256": "998d59b42671107ac69da7d43160b3a6cf866bf2204097699e52ba65382b4a29"
+    }
+  ],
+  "network_binding": "127.0.0.1_EPHEMERAL",
+  "package_sha256": "5f9debb2e36103100d3560110598120093752249516328aedecc9e53aefc5722",
+  "package_size_bytes": 8035837,
+  "pending_after_migration": 0,
+  "postgresql_version": "16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)",
+  "production_migration": "NOT_RUN",
+  "receipt_sha256": "38f548cc16fe3dab2c40108ca49228e3264c539e953e518ac80b5332f3565427",
+  "restored_event_count": 1,
+  "restored_history_count": 3,
+  "restored_schema_validation": "PASS_NONFINAL",
+  "restored_validation_finding_count": 1,
+  "restored_validation_score_count": 1,
+  "restored_validation_score_node_count": 1,
+  "rhel_runtime": "NOT_RUN_HOST_IS_NOT_RHEL",
+  "source_code_dirty_paths": [],
+  "source_commit": "cc44a5293ee932ec652ee934db088d67a3a17be0",
+  "started_at": "2026-08-05T17:56:30.352165Z",
+  "system_postgresql_service_modified": false,
+  "transaction_rollback_rehearsal": "PASS_NONFINAL"
+}

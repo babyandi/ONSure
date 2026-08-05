@@ -11,6 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -36,10 +37,85 @@ class LocalAuthenticatedApiServerTest {
             assertEquals("SELF_VALIDATION_NONFINAL", healthBody.path("assurance_class").asText());
             assertTrue(!healthBody.path("final_claim_allowed").asBoolean(true));
 
+            HttpResponse<String> openApi = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                                    "http://127.0.0.1:" + port + "/v1/openapi.json"))
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, openApi.statusCode());
+            assertTrue(openApi.headers().firstValue("Content-Type").orElse("")
+                    .startsWith("application/vnd.oai.openapi+json"));
+            JsonNode openApiBody = mapper.readTree(openApi.body());
+            assertEquals("3.1.0", openApiBody.path("openapi").asText());
+            Set<String> documentedPaths = new java.util.TreeSet<>();
+            openApiBody.path("paths").fieldNames().forEachRemaining(documentedPaths::add);
+            assertEquals(new java.util.TreeSet<>(LocalAuthenticatedApiServer.routePaths()),
+                    documentedPaths);
+            assertEquals("http", openApiBody.path("components").path("securitySchemes")
+                    .path("bearerAuth").path("type").asText());
+
+            HttpResponse<String> admin = client.send(
+                    HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/admin"))
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, admin.statusCode());
+            assertTrue(admin.body().contains("ONSure Control Room"));
+            assertTrue(admin.body().contains("value=\"UNIVERSAL\""));
+            assertTrue(admin.body().contains("environment-profile"));
+            assertTrue(admin.headers().firstValue("Content-Security-Policy").orElse("")
+                    .contains("script-src 'self'"));
+
+            HttpResponse<String> script = client.send(
+                    HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/admin/app.js"))
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, script.statusCode());
+            assertTrue(script.body().contains("/v1/management-overview"));
+            assertTrue(LocalAuthenticatedApiServer.routePaths().contains("/v1/validation-scorecards"));
+            assertTrue(script.body().contains("environment_profile_file"));
+            assertTrue(script.body().contains("execution_profile_file"));
+            assertTrue(script.body().contains("/v1/programs/understand"));
+            assertTrue(script.body().contains("총점 진단"));
+            assertTrue(script.body().contains("Before/After 세부 변화"));
+            assertTrue(script.body().contains("추론 자체는 PASS 증적이 아님"));
+            assertTrue(script.body().contains("점수 EXCLUDED (실행 Receipt 필요)"));
+            assertTrue(script.body().contains("evidence_sha256"));
+            assertTrue(script.body().contains("inference_confidence"));
+            assertTrue(!script.body().contains("localStorage"));
+            assertTrue(!script.body().contains("sessionStorage"));
+
             HttpResponse<String> unauthorized = client.send(
                     HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/v1/status")).GET().build(),
                     HttpResponse.BodyHandlers.ofString());
             assertEquals(401, unauthorized.statusCode());
+
+            HttpResponse<String> forbiddenOrigin = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                                    "http://127.0.0.1:" + port + "/v1/management-overview"))
+                            .header("Authorization", "Bearer " + token)
+                            .header("Origin", "http://attacker.invalid")
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(403, forbiddenOrigin.statusCode());
+
+            HttpResponse<String> overview = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                                    "http://127.0.0.1:" + port + "/v1/management-overview"))
+                            .header("Authorization", "Bearer " + token)
+                            .header("Origin", "http://127.0.0.1:" + port)
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, overview.statusCode(), overview.body());
+            JsonNode overviewBody = mapper.readTree(overview.body());
+            assertEquals("ONSURE_MANAGEMENT_OVERVIEW_V1", overviewBody.path("contract").asText());
+            assertTrue(overviewBody.path("programs").isArray());
+            assertTrue(!overviewBody.path("assurance").path("production_go").asBoolean(true));
+
+            HttpResponse<String> scorecards = client.send(
+                    HttpRequest.newBuilder(URI.create(
+                                    "http://127.0.0.1:" + port + "/v1/validation-scorecards"))
+                            .header("Authorization", "Bearer " + token)
+                            .GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, scorecards.statusCode(), scorecards.body());
+            JsonNode scorecardBody = mapper.readTree(scorecards.body());
+            assertEquals("ONSURE_VALIDATION_SCORECARD_PORTFOLIO_V1",
+                    scorecardBody.path("contract").asText());
+            assertTrue(!scorecardBody.path("final_claim_allowed").asBoolean(true));
 
             HttpResponse<String> authorized = client.send(
                     HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/v1/status"))

@@ -3,49 +3,88 @@
   <groupId>io.onsure</groupId>
   <artifactId>onsure-assurance-validator</artifactId>
   <version>0.1.0-SNAPSHOT</version>
+  <name>ONSure Assurance Validator</name>
+  <organization><name>ORUDA Labs</name></organization>
+  <licenses>
+    <license>
+      <name>LicenseRef-ORUDA-Labs-Proprietary</name>
+      <url>https://github.com/babyandi/ONSure/blob/main/LICENSE</url>
+      <distribution>manual</distribution>
+      <comments>Copyright (c) 2026 ORUDA Labs. All rights reserved.</comments>
+    </license>
+  </licenses>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.outputTimestamp>2000-01-01T00:00:00Z</project.build.outputTimestamp>
     <junit.version>5.11.4</junit.version>
-    <jackson.version>2.18.2</jackson.version>
+    <jackson.version>2.18.9</jackson.version>
+    <build-helper.version>3.6.0</build-helper.version>
   </properties>
   <dependencies>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson.version}</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId><version>${jackson.version}</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jsr310</artifactId><version>${jackson.version}</version></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version><scope>test</scope></dependency>
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>contracts/openapi</directory>
+        <targetPath>openapi</targetPath>
+        <includes><include>onsure-local-api.v1.json</include></includes>
+      </resource>
+      <resource>
+        <directory>assets/admin</directory>
+        <targetPath>admin</targetPath>
+      </resource>
+      <resource>
+        <directory>${project.basedir}</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+          <include>THIRD_PARTY_NOTICES.md</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
-        <configuration>
-          <release>${maven.compiler.release}</release>
-          <compilerArgs><arg>--add-modules</arg><arg>jdk.httpserver</arg></compilerArgs>
-        </configuration>
+        <groupId>org.codehaus.mojo</groupId><artifactId>build-helper-maven-plugin</artifactId><version>${build-helper.version}</version>
+        <executions>
+          <execution>
+            <id>add-module-owned-main-sources</id>
+            <phase>generate-sources</phase>
+            <goals><goal>add-source</goal></goals>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/modules/onsure-core/src/main/java</source>
+                <source>${project.basedir}/modules/onsure-adapter-oruda/src/main/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.2</version>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.13.0</version>
+        <configuration><release>${maven.compiler.release}</release><compilerArgs><arg>--add-modules</arg><arg>jdk.httpserver</arg></compilerArgs></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.2</version>
         <configuration>
           <useModulePath>false</useModulePath>
           <argLine>--add-modules jdk.httpserver</argLine>
+          <systemPropertyVariables>
+            <onsure.allowTrustedFixtureAutoApproval>true</onsure.allowTrustedFixtureAutoApproval>
+          </systemPropertyVariables>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.2</version>
+        <configuration><outputTimestamp>${project.build.outputTimestamp}</outputTimestamp></configuration>
       </plugin>
     </plugins>
   </build>

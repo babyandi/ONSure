@@ -1,0 +1,41 @@
+{
+  "contract": "ONSURE_PROGRAM_UNDERSTANDING_REVIEW_V1",
+  "project_id": "customer",
+  "target_id": "orders",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile_file_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "answers": [{
+    "question_id": "RUNTIME_ENDPOINT",
+    "answer_state": "CONFIRMED",
+    "evidence_reference_id": "env:ONSURE_TARGET_BASE_URL",
+    "secret_value_accepted": false
+  }],
+  "unresolved_blocking_questions": [],
+  "review_state": "READY_FOR_SEPARATE_APPROVAL",
+  "reviewed_e2e_plan_draft": [],
+  "reviewed_api_lifecycle_candidates": [],
+  "reviewed_business_semantic_hypotheses": {
+    "contract": "ONSURE_BUSINESS_SEMANTIC_HYPOTHESES_V1",
+    "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "inference_method": "DETERMINISTIC_EVIDENCE_BOUND_SEMANTIC_HYPOTHESES_V1",
+    "hypothesis_count": 0,
+    "hypotheses": [],
+    "unknown_count": 0,
+    "ambiguous_count": 0,
+    "review_required": true,
+    "automatic_execution": "NOT_RUN_REVIEW_REQUIRED",
+    "live_provider_invocation": "NOT_RUN",
+    "customer_rules_confirmed": false,
+    "runtime_verification": "NOT_RUN",
+    "score_eligible": false,
+    "final_claim_allowed": false
+  },
+  "approval_state": "NOT_RUN",
+  "execution_state": "NOT_RUN",
+  "secret_values_accepted": false,
+  "customer_data_allowed": false,
+  "destructive_action_allowed": false,
+  "score_eligible": false,
+  "final_claim_allowed": false,
+  "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+}

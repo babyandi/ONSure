@@ -1,0 +1,100 @@
+{
+  "contract": "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1",
+  "execution_authorization_id": "inferred-e2e-auth-11111111-1111-1111-1111-111111111111",
+  "project_id": "customer", "target_id": "orders",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile_file_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "approval_request_id": "program-understanding-approval-22222222-2222-2222-2222-222222222222",
+  "approval_request_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "continuation_approval_manifest_sha256": "abababababababababababababababababababababababababababababababab",
+  "authorization_expires_at": "2026-08-05T01:00:00Z",
+  "runtime_reference_ids": {"authentication": "env:ONSURE_TARGET_AUTH_TOKEN"},
+  "execution_scope": "ISOLATED_SYNTHETIC_LOOPBACK", "candidate_count": 3, "blocked_candidate_count": 1,
+  "authorized_candidates": [{
+    "plan_id": "E2E-123", "flow_id": "FLOW-123", "http_method": "POST", "http_path": "/orders",
+    "request_schema_refs": ["#/components/schemas/Order"], "request_schema_declared": true,
+    "security_declared": true,
+    "response_statuses": ["201"], "openapi_document_id": "OPENAPI-DOC-0123456789abcdef",
+    "service_boundary_id": "SERVICE-0123456789abcdef",
+    "openapi_source_path": "openapi.yaml", "openapi_source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "fixture_strategy": "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA",
+    "oracle_strategy": "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT",
+    "state": "READY_FOR_SYNTHETIC_FIXTURE_GENERATION", "customer_data_allowed": false,
+    "destructive_action_allowed": false
+  }, {
+    "plan_id": "E2E-124", "flow_id": "FLOW-124", "http_method": "GET", "http_path": "/orders/{orderId}",
+    "request_schema_refs": [], "request_schema_declared": false, "security_declared": false,
+    "response_statuses": ["200"], "openapi_document_id": "OPENAPI-DOC-0123456789abcdef",
+    "service_boundary_id": "SERVICE-0123456789abcdef", "openapi_source_path": "openapi.yaml",
+    "openapi_source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "fixture_strategy": "NO_BODY_OR_REVIEWED_FIXTURE_REFERENCE_REQUIRED",
+    "oracle_strategy": "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT",
+    "state": "READY_FOR_PATH_PARAMETER_FIXTURE_GENERATION", "customer_data_allowed": false,
+    "destructive_action_allowed": false
+  }, {
+    "plan_id": "E2E-125", "flow_id": "FLOW-125", "http_method": "PATCH", "http_path": "/orders/{orderId}",
+    "request_schema_refs": ["#/components/schemas/OrderPatch"], "request_schema_declared": true,
+    "security_declared": false, "response_statuses": ["200"],
+    "openapi_document_id": "OPENAPI-DOC-0123456789abcdef",
+    "service_boundary_id": "SERVICE-0123456789abcdef", "openapi_source_path": "openapi.yaml",
+    "openapi_source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "fixture_strategy": "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA",
+    "oracle_strategy": "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT",
+    "state": "BLOCKED_BINDING_REVIEW_REQUIRED", "binding_execution_state": "NOT_RUN",
+    "customer_data_allowed": false, "destructive_action_allowed": false
+  }],
+  "authorized_lifecycles": [{
+    "lifecycle_id": "LIFECYCLE-0123456789abcdef", "business_object": "ORDER",
+    "operation_plan_ids": ["E2E-123", "E2E-124", "E2E-125"],
+    "bindings": [{
+      "binding_id": "BINDING-0123456789abcdef", "producer_plan_id": "E2E-123",
+      "producer_json_pointer": "/orderId", "consumer_plan_id": "E2E-124",
+      "consumer_location": "PATH", "consumer_parameter_name": "orderId",
+      "producer_schema_type": "STRING", "consumer_schema_type": "HTTP_SERIALIZED",
+      "inference_basis": "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", "inference_confidence": 0.93,
+      "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "auto_execute_before_approval": false, "review_state": "REVIEWED_AND_SEPARATELY_APPROVED",
+      "value_storage_allowed": false, "state": "AUTHORIZED_NOT_RUN"
+    }],
+    "binding_count": 1,
+    "blocked_bindings": [{
+      "binding_id": "BINDING-fedcba9876543210", "producer_plan_id": "E2E-123",
+      "producer_json_pointer": "/queryToken", "consumer_plan_id": "E2E-125",
+      "consumer_location": "BODY", "consumer_parameter_name": "/queryToken",
+      "producer_schema_type": "STRING", "consumer_schema_type": "INTEGER",
+      "inference_basis": "OPENAPI_BODY_SCHEMA_TYPE_MISMATCH", "inference_confidence": 0.0,
+      "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "auto_execute_before_approval": false, "review_state": "REVIEW_REQUIRED_NOT_AUTHORIZED",
+      "blocked_reason": "BODY_SCHEMA_TYPE_INCOMPATIBLE_OR_UNVERIFIED",
+      "value_storage_allowed": false, "state": "BLOCKED_BINDING_REVIEW_REQUIRED"
+    }],
+    "blocked_binding_count": 1, "execution_state": "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN",
+    "response_values_storage_allowed": false, "final_claim_allowed": false
+  }],
+  "authorized_continuations": [], "blocked_continuations": [],
+  "continuation_authorization_policy": {
+    "allowed_kind": "PAGINATION", "allowed_methods": ["GET", "HEAD"],
+    "same_operation_only": true, "same_service_only": true,
+    "cross_service_auto_binding_allowed": false, "redirect_policy": "NEVER",
+    "maximum_cumulative_response_bytes": 8388608,
+    "raw_continuation_token_storage_allowed": false,
+    "async_poll_state": "BLOCKED_NOT_RUN", "multi_service_state": "BLOCKED_NOT_RUN"
+  },
+  "binding_authorization_policy": {
+    "minimum_confidence": 0.9,
+    "allowed_inference_basis": ["OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY", "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_BODY_TYPE_COMPATIBLE"],
+    "executable_consumer_locations": ["PATH", "QUERY", "HEADER", "BODY"],
+    "candidate_only_consumer_locations": [],
+    "separate_review_required": true,
+    "separate_approval_required": true,
+    "unqualified_binding_outcome": "BLOCKED_NOT_RUN",
+    "raw_value_storage_allowed": false
+  },
+  "plan_state": "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN", "execution_state": "NOT_RUN",
+  "source_mutation_allowed": false, "customer_data_allowed": false,
+  "destructive_action_allowed": false, "final_claim_allowed": false
+}

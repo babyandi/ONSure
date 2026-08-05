@@ -1,7 +1,12 @@
 import importlib.util
 import json
+import os
 import pathlib
+import sys
 import tempfile
+import threading
+import time
+import subprocess
 import unittest
 
 
@@ -29,6 +34,16 @@ class AutopilotContractTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "FORBIDDEN_STAGE_COMMAND"):
             MODULE.validate_contract(invalid)
 
+    def test_control_and_restart_contract_cannot_be_weakened(self):
+        invalid = json.loads(json.dumps(self.contract))
+        invalid["supported_controls"] = ["PAUSE", "RESUME"]
+        with self.assertRaisesRegex(RuntimeError, "CONTROL_CONTRACT_INVALID"):
+            MODULE.validate_contract(invalid)
+        invalid = json.loads(json.dumps(self.contract))
+        invalid["restart_recovery"]["orphan_process_present"] = "RETRY"
+        with self.assertRaisesRegex(RuntimeError, "RESTART_RECOVERY_CONTRACT_INVALID"):
+            MODULE.validate_contract(invalid)
+
     def test_terminal_gate_cannot_be_removed(self):
         invalid = json.loads(json.dumps(self.contract))
         invalid["terminal_gate"]["state"] = "MERGED"
@@ -37,7 +52,16 @@ class AutopilotContractTest(unittest.TestCase):
 
     def test_merge_ready_requires_explicit_authority(self):
         invalid = json.loads(json.dumps(self.contract))
+        invalid["terminal_gate"]["state"] = "MERGE_AUTHORIZED_READY"
+        invalid["merge_authorization"]["authorized"] = True
         invalid["merge_authorization"]["authority"] = ""
+        with self.assertRaisesRegex(RuntimeError, "MERGE_AUTHORIZATION_MISSING"):
+            MODULE.validate_contract(invalid)
+
+    def test_waiting_gate_rejects_premature_merge_authority(self):
+        invalid = json.loads(json.dumps(self.contract))
+        invalid["merge_authorization"]["authorized"] = True
+        invalid["merge_authorization"]["authority"] = "unapproved-actor"
         with self.assertRaisesRegex(RuntimeError, "MERGE_AUTHORIZATION_MISSING"):
             MODULE.validate_contract(invalid)
 
@@ -59,6 +83,152 @@ class AutopilotContractTest(unittest.TestCase):
             "FINAL_PASS", "FINAL_LOCK", "PRODUCTION_GO",
             "COMMERCIAL_GO", "FORCE_PUSH", "HARD_RESET", "IMPLICIT_STASH",
         }.issubset(forbidden))
+
+    def test_control_requests_are_contract_bound_and_restart_recovery_is_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_path = pathlib.Path(directory) / "checkpoint.json"
+            state = MODULE.initial_state(self.contract, {"head": "a" * 40, "clean": True})
+            MODULE.atomic_json(state_path, state)
+            MODULE.request_control(self.contract, state_path, "PAUSED")
+            self.assertEqual("PAUSED", MODULE.desired_control(self.contract, state_path))
+            MODULE.request_control(self.contract, state_path, "RUNNING")
+            self.assertEqual("RUNNING", MODULE.desired_control(self.contract, state_path))
+            self.assertFalse(MODULE.controller_active(state_path))
+
+            entry = next(iter(state["stages"].values()))
+            entry.update({"state": "RUNNING", "attempts": 1})
+            self.assertTrue(MODULE.recover_interrupted_state(state))
+            self.assertEqual("RECOVERING", state["state"])
+            self.assertEqual("PENDING", entry["state"])
+            self.assertEqual(0, entry["attempts"])
+            self.assertEqual(1, entry["recoveries"])
+
+    def test_controlled_stage_can_pause_resume_and_cancel_process_group(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original_root = MODULE.ROOT
+            MODULE.ROOT = pathlib.Path(directory)
+            try:
+                state_path = MODULE.ROOT / "checkpoint.json"
+                contract = json.loads(json.dumps(self.contract))
+                stage = contract["stages"][0]
+                stage["command"] = [
+                    sys.executable, "-c",
+                    "import time; time.sleep(0.8); print('CONTROLLED_PASS')",
+                ]
+                stage["required_marker"] = "CONTROLLED_PASS"
+                state = MODULE.initial_state(contract, {"head": "b" * 40, "clean": True})
+                entry = state["stages"][stage["id"]]
+                entry.update({"state": "RUNNING", "attempts": 1})
+                MODULE.atomic_json(state_path, state)
+                MODULE.request_control(contract, state_path, "PAUSED")
+
+                def resume():
+                    time.sleep(0.45)
+                    MODULE.request_control(contract, state_path, "RUNNING")
+
+                thread = threading.Thread(target=resume)
+                thread.start()
+                result, outcome = MODULE.run_controlled_stage(
+                    contract, stage, state, entry, state_path, os.environ.copy())
+                thread.join()
+                self.assertEqual("COMPLETED", outcome)
+                self.assertEqual(0, result.returncode)
+                self.assertIn("CONTROLLED_PASS", result.stdout)
+
+                cancel_state = MODULE.initial_state(contract, {"head": "c" * 40, "clean": True})
+                cancel_entry = cancel_state["stages"][stage["id"]]
+                cancel_entry.update({"state": "RUNNING", "attempts": 1})
+                MODULE.atomic_json(state_path, cancel_state)
+                MODULE.request_control(contract, state_path, "CANCELLED")
+                result, outcome = MODULE.run_controlled_stage(
+                    contract, stage, cancel_state, cancel_entry, state_path, os.environ.copy())
+                self.assertEqual("CANCELLED", outcome)
+                self.assertNotEqual(0, result.returncode)
+
+                stage["command"] = [sys.executable, "-c", "print('CONTROLLED_PASS')"]
+                quick_state = MODULE.initial_state(contract, {"head": "f" * 40, "clean": True})
+                quick_entry = quick_state["stages"][stage["id"]]
+                quick_entry.update({"state": "RUNNING", "attempts": 1})
+                MODULE.atomic_json(state_path, quick_state)
+                MODULE.request_control(contract, state_path, "RUNNING")
+                result, outcome = MODULE.run_controlled_stage(
+                    contract, stage, quick_state, quick_entry, state_path, os.environ.copy())
+                self.assertEqual("COMPLETED", outcome)
+                self.assertEqual(0, result.returncode)
+                self.assertNotIn("process_identity", quick_entry)
+            finally:
+                MODULE.ROOT = original_root
+
+    def test_orphan_recovery_is_bound_to_process_birth_identity(self):
+        process = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(5)"],
+            start_new_session=True,
+        )
+        try:
+            state = MODULE.initial_state(self.contract, {"head": "d" * 40, "clean": True})
+            entry = next(iter(state["stages"].values()))
+            entry.update({
+                "state": "RUNNING",
+                "attempts": 1,
+                "process_pid": process.pid,
+                "process_group_id": process.pid,
+                "process_identity": MODULE.process_identity(process.pid),
+            })
+            self.assertTrue(MODULE.recover_interrupted_state(state))
+            self.assertEqual("ORPHAN_RUNNING", entry["state"])
+            self.assertEqual("RECOVERING_ORPHAN", state["state"])
+
+            forged = json.loads(json.dumps(state))
+            forged_entry = next(iter(forged["stages"].values()))
+            forged_entry["state"] = "RUNNING"
+            forged_entry["process_identity"]["start_time_ticks"] += 1
+            with self.assertRaisesRegex(RuntimeError, "ORPHAN_PROCESS_IDENTITY_MISMATCH"):
+                MODULE.recover_interrupted_state(forged)
+        finally:
+            os.killpg(process.pid, 15)
+            process.wait(timeout=5)
+
+    def test_identity_bound_orphan_exit_never_infers_pass(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_path = pathlib.Path(directory) / "checkpoint.json"
+            exit_signal = pathlib.Path(directory) / "exit.signal"
+            process = subprocess.Popen(
+                [sys.executable, "-c",
+                 "import pathlib,sys,time; p=pathlib.Path(sys.argv[1]); "
+                 "\nwhile not p.exists(): time.sleep(0.01)", str(exit_signal)],
+                start_new_session=True,
+            )
+            waiter = threading.Thread(target=process.wait)
+            try:
+                state = MODULE.initial_state(self.contract, {"head": "e" * 40, "clean": True})
+                entry = next(iter(state["stages"].values()))
+                entry.update({
+                    "state": "RUNNING",
+                    "attempts": 1,
+                    "process_pid": process.pid,
+                    "process_group_id": process.pid,
+                    "process_identity": MODULE.capture_spawned_process_identity(process),
+                })
+                self.assertIsNotNone(entry["process_identity"])
+                MODULE.atomic_json(state_path, state)
+                MODULE.request_control(self.contract, state_path, "RUNNING")
+                MODULE.recover_interrupted_state(state)
+                waiter.start()
+                exit_signal.write_text("exit\n", encoding="utf-8")
+                self.assertTrue(MODULE.recover_identity_bound_orphans(
+                    self.contract, state_path, state))
+                self.assertEqual("RCA_REQUIRED", entry["state"])
+                self.assertEqual(
+                    "ORPHAN_COMPLETION_EVIDENCE_UNAVAILABLE",
+                    entry["failure"]["classification"],
+                )
+                self.assertNotIn("process_pid", entry)
+            finally:
+                if process.poll() is None:
+                    os.killpg(process.pid, 15)
+                process.wait(timeout=5)
+                if waiter.is_alive():
+                    waiter.join(timeout=5)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,21 @@
+FROM maven:3.9.11-eclipse-temurin-17 AS build
+WORKDIR /build
+COPY pom.xml ./
+COPY src ./src
+RUN mvn -B -ntp -q -DskipTests clean package dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=target/runtime-libs
+
+FROM eclipse-temurin:17-jre
+ARG ONSURE_UID=65532
+ARG ONSURE_GID=65532
+RUN groupadd --system --gid ${ONSURE_GID} onsure \
+    && useradd --system --uid ${ONSURE_UID} --gid ${ONSURE_GID} --home /nonexistent --shell /usr/sbin/nologin onsure \
+    && mkdir -p /opt/onsure/classes /opt/onsure/lib /onsure-product \
+    && chown -R ${ONSURE_UID}:${ONSURE_GID} /onsure-product
+COPY --from=build --chown=${ONSURE_UID}:${ONSURE_GID} /build/target/classes /opt/onsure/classes
+COPY --from=build --chown=${ONSURE_UID}:${ONSURE_GID} /build/target/runtime-libs /opt/onsure/lib
+USER ${ONSURE_UID}:${ONSURE_GID}
+WORKDIR /onsure-product
+ENV ONSURE_WORKSPACE_ROOT=/onsure-product \
+    ONSURE_LOCAL_API_PORT=47311
+EXPOSE 47311
+ENTRYPOINT ["java", "--add-modules", "jdk.httpserver", "-cp", "/opt/onsure/classes:/opt/onsure/lib/*", "io.onsure.platform.LocalAuthenticatedApiServer"]

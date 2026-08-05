@@ -1,0 +1,42 @@
+[Unit]
+Description=ONSure PostgreSQL migration gate (nonfinal candidate)
+After=postgresql.service
+Requires=postgresql.service
+Before=onsure.service
+
+[Service]
+Type=oneshot
+User=onsure
+Group=onsure
+EnvironmentFile=/etc/onsure/onsure.env
+WorkingDirectory=/var/lib/onsure
+ExecStart=/usr/bin/java -cp /opt/onsure/migration/*:/opt/onsure/lib/* io.onsure.migration.postgresql.PostgresqlMigrationMain migrate
+RemainAfterExit=yes
+UMask=0077
+NoNewPrivileges=yes
+RemoveIPC=yes
+PrivateTmp=yes
+PrivateDevices=yes
+KeyringMode=private
+ProtectSystem=strict
+ProtectHome=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+SystemCallArchitectures=native
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadWritePaths=/var/lib/onsure /var/log/onsure

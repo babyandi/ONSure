@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "inference_method": "DETERMINISTIC_STATIC_SEMANTIC_HEURISTICS_V1",
+  "observation_count": 0,
+  "observations": [],
+  "inferred_actors": [],
+  "inferred_business_objects": [],
+  "flow_candidate_count": 0,
+  "flow_candidates": [],
+  "api_lifecycle_candidates": [],
+  "risk_flags": [],
+  "e2e_plan_candidates": [],
+  "minimal_questions": [],
+  "automatic_execution": "NOT_RUN_REVIEW_REQUIRED",
+  "inferences_are_pass_evidence": false,
+  "human_review": "NOT_RUN",
+  "runtime_verification": "NOT_RUN",
+  "final_claim_allowed": false
+}

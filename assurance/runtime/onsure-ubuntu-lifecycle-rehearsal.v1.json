@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_UBUNTU_LIFECYCLE_REHEARSAL_V1",
+  "decision": "PASS_NONFINAL",
+  "final_claim_allowed": false,
+  "host_filesystem_modified": false,
+  "idempotent_reinstall": true,
+  "install_release": "fa28890e2e4fa62adb0f3137625cb6a49a0fc7087b29c726a9ce1fffde7069de",
+  "package_file_count": 39,
+  "package_sha256": "7285c74c80d9544e0cf8fc498d897220d36d2884f8a2985b0eb97b7c675141d3",
+  "production_execution": "NOT_RUN",
+  "rollback_previous_release": "cb38a9015aa7c5d971890d877ec5f2857afbb408b3eb3de94c5ca39e6a803a77",
+  "rollback_restored_release": "fa28890e2e4fa62adb0f3137625cb6a49a0fc7087b29c726a9ce1fffde7069de",
+  "upgrade_release": "cb38a9015aa7c5d971890d877ec5f2857afbb408b3eb3de94c5ca39e6a803a77"
+}

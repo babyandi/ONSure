@@ -1,0 +1,35 @@
+{
+  "contract": "ONSURE_HUNK_APPROVAL_REQUEST_V1",
+  "request_id": "REQUEST-PATCH-job-sample-001",
+  "request_state": "AWAITING_EXTERNAL_SIGNATURE",
+  "receipt_contract": "ONSURE_HUNK_APPROVAL_RECEIPT_V1",
+  "approval_purpose": "PATCH_HUNK_APPROVAL",
+  "patch_plan_id": "PATCH-job-sample-001",
+  "patch_plan_file": "WORKSPACE_ROOT/.onsure/validation-data/target/JOB/patch-plan.json",
+  "patch_plan_file_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "selection_scope": "HUNK",
+  "selected_hunk_ids": ["HUNK-aaaaaaaaaaaaaaaa"],
+  "selected_files": ["src/policy.txt"],
+  "branch_name": "fix/sample-approved-patch",
+  "risk_preview": {
+    "classification": "BOUNDED_CHANGE_SURFACE_CANDIDATE",
+    "level": "LOW",
+    "factors": ["HUNKS_1", "FILES_1"],
+    "independent_risk_review": "NOT_RUN"
+  },
+  "impact_scope": {"file_count": 1, "hunk_count": 1, "finding_ids": ["FINDING-001"]},
+  "rollback_preview": {
+    "method": "PATCH_APPLY_RECEIPT_BACKUP_AND_ISOLATED_GIT_WORKTREE_REMOVAL",
+    "source_workspace_write_allowed": false,
+    "automatic_rollback_executed": false
+  },
+  "allow_direct_main_write": false,
+  "allow_force_push": false,
+  "allow_merge": false,
+  "created_at": "2026-08-02T00:00:00Z",
+  "signer_must_supply": [
+    "approval_id", "nonce", "actor", "key_id", "signature_algorithm",
+    "signature", "approved_at", "expires_at"
+  ],
+  "final_claim_allowed": false
+}

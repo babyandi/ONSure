@@ -1,0 +1,18 @@
+{
+  "complain_rehearsal": "NOT_RUN",
+  "contract": "ONSURE_UBUNTU_APPARMOR_CANDIDATE_VALIDATION_V1",
+  "decision": "PASS_NONFINAL",
+  "enforce_execution": "NOT_RUN",
+  "final_claim_allowed": false,
+  "kernel_policy_loaded": false,
+  "parser_mode": "SKIP_KERNEL_LOAD",
+  "production_acceptance": "NOT_RUN",
+  "profile": "deploy/ubuntu/apparmor.d/onsure",
+  "profile_sha256": "69d308610b36258bc8da4d149aa97e72adc43a97fb83b52ee1317700a702b5c7",
+  "profiles": [
+    "onsure-api",
+    "onsure-llm-gateway",
+    "onsure-migrate"
+  ],
+  "violations": []
+}

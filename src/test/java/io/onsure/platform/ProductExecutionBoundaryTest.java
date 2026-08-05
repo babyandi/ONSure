@@ -1,6 +1,7 @@
 package io.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,6 +41,33 @@ class ProductExecutionBoundaryTest {
                 List.of("bash", "environment.sh"), 10, Map.of());
         var execution = new FixtureHarness("test-harness").execute(fixture, temp);
         assertEquals("ABSENT", execution.result().observed());
+        assertEquals(Decision.PASS, execution.result().decision());
+    }
+
+    @Test
+    void fixtureReceivesAnIsolatedTemporaryDirectoryThatIsRemovedAfterExecution() throws Exception {
+        Files.writeString(temp.resolve("temporary.sh"),
+                "#!/usr/bin/env bash\nprintf '%s\\n' \"$TMPDIR\"\n");
+        FixtureDefinition fixture = new FixtureDefinition(
+                "temporary", "", "DYNAMIC", "", "EQUALS",
+                List.of("bash", "temporary.sh"), 10, Map.of());
+        var execution = new FixtureHarness("test-harness").execute(fixture, temp);
+        Path isolated = Path.of(execution.result().observed());
+        assertTrue(isolated.isAbsolute());
+        assertTrue(isolated.getFileName().toString().startsWith("onsure-fixture-execution-"));
+        assertFalse(Files.exists(isolated));
+    }
+
+    @Test
+    void successfulFixtureOracleUsesStandardOutputAndKeepsDiagnosticsSeparate() throws Exception {
+        Files.writeString(temp.resolve("diagnostic.sh"),
+                "#!/usr/bin/env bash\nprintf 'diagnostic\\n' >&2\nprintf 'SAFE\\n'\n");
+        FixtureDefinition fixture = new FixtureDefinition(
+                "diagnostic", "", "SAFE", "", "EQUALS",
+                List.of("bash", "diagnostic.sh"), 10, Map.of());
+        var execution = new FixtureHarness("test-harness").execute(fixture, temp);
+        assertEquals(0, execution.exitCode());
+        assertEquals("SAFE", execution.result().observed());
         assertEquals(Decision.PASS, execution.result().decision());
     }
 

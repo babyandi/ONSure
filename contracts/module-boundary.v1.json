@@ -1,6 +1,19 @@
 {
   "contract": "ONSURE_MODULE_BOUNDARY_V1",
   "version": "1.0.0",
+  "modular_aggregator_modules": [
+    "modules/onsure-core",
+    "modules/onsure-cli",
+    "modules/onsure-local-api",
+    "modules/onsure-test-fixtures",
+    "modules/onsure-adapter-oruda",
+    "modules/onsure-provider-spi",
+    "modules/onsure-provider-local-mock",
+    "modules/onsure-provider-openai",
+    "modules/onsure-llm-gateway",
+    "modules/onsure-migration-postgresql",
+    "modules/onsure-sdk"
+  ],
   "modules": {
     "onsure-core": {
       "allowed_package_prefixes": [
@@ -11,11 +24,10 @@
         "io.onsure.platform"
       ],
       "forbidden_import_prefixes": [
-        "io.onsure.platform.oruda",
-        "io.onsure.platform.OrudaTargetAdapter"
+        "io.onsure.platform.oruda"
       ],
       "forbidden_source_paths": [
-        "src/main/java/io/onsure/platform/oruda/",
+        "modules/onsure-adapter-oruda/src/main/java/io/onsure/platform/oruda/",
         "src/test/java/io/onsure/platform/oruda/"
       ],
       "required_scenarios": [
@@ -27,8 +39,7 @@
     "onsure-adapter-oruda": {
       "depends_on": ["onsure-core"],
       "package_prefixes": [
-        "io.onsure.platform.oruda",
-        "io.onsure.platform.OrudaTargetAdapter"
+        "io.onsure.platform.oruda"
       ],
       "required_scenarios": ["ORUDA_TARGET_FAIL", "ORUDA_MVF_001_PASS"],
       "required_for_core": false
@@ -40,14 +51,57 @@
     "onsure-test-fixtures": {
       "depends_on": ["onsure-core"],
       "separate_test_suites": ["core", "oruda", "full-chain"]
+    },
+    "onsure-local-api": {
+      "depends_on": ["onsure-core"],
+      "network_bind_default": "LOOPBACK_ONLY"
+    },
+    "onsure-provider-spi": {
+      "depends_on": [],
+      "shared_source_root": false,
+      "real_provider_implementation_included": true
+    },
+    "onsure-provider-local-mock": {
+      "depends_on": ["onsure-provider-spi"],
+      "shared_source_root": false,
+      "network_egress": false,
+      "fallback_allowed": false
+    },
+    "onsure-provider-openai": {
+      "depends_on": ["onsure-provider-spi"],
+      "shared_source_root": false,
+      "network_egress": "EXPLICIT_APPROVAL_REQUIRED",
+      "customer_data_transfer": "EXPLICIT_APPROVAL_REQUIRED",
+      "fallback_allowed": false,
+      "automatic_retry_allowed": false
+    },
+    "onsure-llm-gateway": {
+      "depends_on": ["onsure-provider-spi", "onsure-provider-local-mock", "onsure-provider-openai"],
+      "shared_source_root": false,
+      "network_bind_default": "LOOPBACK_ONLY",
+      "prompt_or_completion_storage": false,
+      "fallback_allowed": false,
+      "automatic_retry_allowed": false
+    },
+    "onsure-migration-postgresql": {
+      "depends_on": [],
+      "shared_source_root": false,
+      "database_engine": "POSTGRESQL",
+      "migration_tool": "FLYWAY",
+      "execution_authorized": false
+    },
+    "onsure-sdk": {
+      "depends_on": [],
+      "shared_source_root": false,
+      "transport": "LOOPBACK_HTTP_ONLY"
     }
   },
   "rules": [
     "CORE_MUST_COMPILE_WITHOUT_ORUDA_MODULE",
-    "CORE_TESTS_MUST_NOT_LOAD_ORUDA_CLASSES_OR_FIXTURES",
+    "CORE_MUST_NOT_LOAD_ORUDA_EVIDENCE_PROVIDER",
     "ORUDA_ADAPTER_MUST_BE_EXPLICITLY_REGISTERED",
     "OPTIONAL_ADAPTER_FAILURE_MUST_NOT_CHANGE_CORE_AUTHORITY",
     "NO_TARGET_ADAPTER_MAY_ISSUE_ONSURE_FINAL_DECISION"
   ],
-  "physical_module_split": "IMPLEMENTATION_PREPARED_EXECUTION_NOT_RUN"
+  "physical_module_split": "COMPLETE_SHARED_ROOT_REMOVED"
 }
