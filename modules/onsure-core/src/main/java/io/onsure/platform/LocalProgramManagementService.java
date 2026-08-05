@@ -239,11 +239,109 @@ final class LocalProgramManagementService {
                 Map.entry("project_id", projectId), Map.entry("target_id", targetId),
                 Map.entry("profile_id", profile.get("profile_id")),
                 Map.entry("profile_file", output.toString()),
+                Map.entry("profile_file_sha256", Hashing.file(output)),
                 Map.entry("source_sha256", before.digest()),
                 Map.entry("program_understanding", understanding),
                 Map.entry("source_mutation_detected", false),
                 Map.entry("automatic_execution", "NOT_RUN_REVIEW_REQUIRED"),
                 Map.entry("final_claim_allowed", false));
+    }
+
+    Map<String, Object> reviewUnderstanding(JsonNode request) throws Exception {
+        String projectId = id(request, "project_id");
+        String targetId = id(request, "target_id");
+        String expectedProfileSha256 = request.path("profile_file_sha256").asText("");
+        if (!expectedProfileSha256.matches("[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_PROFILE_DIGEST_INVALID");
+        }
+        ProductCatalog.RegisteredTarget registered = registered(projectId, targetId);
+        Path source = sourceRoot(registered.target().sourceRoot().toString());
+        TreeObservation sourceObservation = inclusiveTreeDigest(source);
+        if (!("sha256:" + sourceObservation.digest()).equals(registered.target().immutableSourceReference())) {
+            throw new IllegalArgumentException("PROGRAM_SOURCE_REFERENCE_DRIFT");
+        }
+        Path reviewRoot = workspaceRoot.resolve(".onsure/program-understanding").resolve(targetId).normalize();
+        Path profileFile = reviewRoot.resolve("program-profile.json").normalize();
+        if (!profileFile.startsWith(workspaceRoot) || !Files.isRegularFile(profileFile, LinkOption.NOFOLLOW_LINKS)
+                || Files.isSymbolicLink(profileFile)) {
+            throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_PROFILE_NOT_FOUND");
+        }
+        String actualProfileSha256 = Hashing.file(profileFile);
+        if (!actualProfileSha256.equals(expectedProfileSha256)) {
+            throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_PROFILE_DIGEST_MISMATCH");
+        }
+        JsonNode profile = mapper.readTree(profileFile.toFile());
+        if (!ProgramLearningService.CONTRACT.equals(profile.path("contract").asText())
+                || !projectId.equals(profile.path("project_id").asText())
+                || !targetId.equals(profile.path("program_id").asText())
+                || !sourceObservation.digest().equals(profile.path("source_baseline").path("source_tree_sha256").asText())) {
+            throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_PROFILE_BINDING_INVALID");
+        }
+        JsonNode understanding = profile.path("program_understanding");
+        if (!ProgramUnderstandingEngine.CONTRACT.equals(understanding.path("contract").asText())) {
+            throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_CANDIDATE_INVALID");
+        }
+        Map<String, Boolean> blocking = new java.util.TreeMap<>();
+        understanding.path("minimal_questions").forEach(question -> blocking.put(
+                question.path("question_id").asText(), question.path("blocking_before_execution").asBoolean(true)));
+        JsonNode answersNode = request.path("answers");
+        if (!answersNode.isArray()) throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_ANSWERS_REQUIRED");
+        Map<String, Map<String, Object>> answers = new java.util.TreeMap<>();
+        for (JsonNode answer : answersNode) {
+            String questionId = answer.path("question_id").asText("");
+            if (!blocking.containsKey(questionId)) throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_ANSWER_UNKNOWN");
+            String answerState = answer.path("answer_state").asText("");
+            if (!Set.of("CONFIRMED", "UNAVAILABLE", "REJECTED").contains(answerState)) {
+                throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_ANSWER_STATE_INVALID");
+            }
+            String referenceId = answer.path("evidence_reference_id").asText("");
+            if ("CONFIRMED".equals(answerState)
+                    && !referenceId.matches("[A-Za-z0-9._:/-]{1,256}")) {
+                throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_ANSWER_REFERENCE_REQUIRED");
+            }
+            if (!referenceId.isEmpty() && !referenceId.matches("[A-Za-z0-9._:/-]{1,256}")) {
+                throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_ANSWER_REFERENCE_INVALID");
+            }
+            Map<String, Object> value = new LinkedHashMap<>();
+            value.put("question_id", questionId);
+            value.put("answer_state", answerState);
+            if (!referenceId.isEmpty()) value.put("evidence_reference_id", referenceId);
+            value.put("secret_value_accepted", false);
+            if (answers.put(questionId, Map.copyOf(value)) != null) {
+                throw new IllegalArgumentException("PROGRAM_UNDERSTANDING_ANSWER_DUPLICATED");
+            }
+        }
+        List<String> unresolved = blocking.entrySet().stream()
+                .filter(entry -> entry.getValue() && !"CONFIRMED".equals(
+                        answers.getOrDefault(entry.getKey(), Map.of()).get("answer_state")))
+                .map(Map.Entry::getKey).toList();
+        String reviewState = unresolved.isEmpty()
+                ? "READY_FOR_SEPARATE_APPROVAL" : "HOLD_REVIEW_INCOMPLETE";
+        Map<String, Object> review = new LinkedHashMap<>();
+        review.put("contract", "ONSURE_PROGRAM_UNDERSTANDING_REVIEW_V1");
+        review.put("project_id", projectId);
+        review.put("target_id", targetId);
+        review.put("source_sha256", sourceObservation.digest());
+        review.put("profile_file_sha256", actualProfileSha256);
+        review.put("answers", List.copyOf(answers.values()));
+        review.put("unresolved_blocking_questions", unresolved);
+        review.put("review_state", reviewState);
+        review.put("reviewed_e2e_plan_draft", mapper.convertValue(
+                understanding.path("e2e_plan_candidates"), List.class));
+        review.put("approval_state", "NOT_RUN");
+        review.put("execution_state", "NOT_RUN");
+        review.put("secret_values_accepted", false);
+        review.put("customer_data_allowed", false);
+        review.put("destructive_action_allowed", false);
+        review.put("score_eligible", false);
+        review.put("final_claim_allowed", false);
+        review.put("review_sha256", Hashing.sha256(mapper.writeValueAsBytes(review)));
+        Path output = reviewRoot.resolve("review.json").normalize();
+        if (!sourceObservation.equals(inclusiveTreeDigest(source))) {
+            throw new IllegalStateException("READ_ONLY_SOURCE_CHANGED_DURING_UNDERSTANDING_REVIEW");
+        }
+        write(output, review);
+        return Map.copyOf(review);
     }
 
     private Map<String, Object> validateUniversal(

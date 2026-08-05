@@ -304,6 +304,22 @@
         }
       }
     },
+    "/v1/programs/understand/reviews": {
+      "post": {
+        "operationId": "reviewProgramUnderstanding",
+        "tags": ["Management"],
+        "summary": "Bind non-secret customer answers to an exact Program Understanding profile",
+        "description": "Produces a review-bound E2E draft only. Approval and execution remain NOT_RUN.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ProgramUnderstandingReviewRequest"}}}},
+        "responses": {
+          "200": {"$ref": "#/components/responses/GenericObject"},
+          "400": {"$ref": "#/components/responses/InvalidRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "405": {"$ref": "#/components/responses/MethodNotAllowed"}
+        }
+      }
+    },
     "/v1/validation-scorecards": {
       "get": {
         "operationId": "listValidationScorecards",
@@ -465,6 +481,30 @@
         "properties": {
           "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
           "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"}
+        },
+        "additionalProperties": false
+      },
+      "ProgramUnderstandingReviewRequest": {
+        "type": "object",
+        "required": ["project_id", "target_id", "profile_file_sha256", "answers"],
+        "properties": {
+          "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+          "profile_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "answers": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "required": ["question_id", "answer_state"],
+              "properties": {
+                "question_id": {"type": "string", "pattern": "^[A-Z0-9_]{1,128}$"},
+                "answer_state": {"type": "string", "enum": ["CONFIRMED", "UNAVAILABLE", "REJECTED"]},
+                "evidence_reference_id": {"type": "string", "pattern": "^[A-Za-z0-9._:/-]{1,256}$"}
+              },
+              "additionalProperties": false
+            }
+          }
         },
         "additionalProperties": false
       },

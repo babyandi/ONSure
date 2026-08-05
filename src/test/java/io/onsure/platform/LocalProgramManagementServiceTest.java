@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -160,5 +161,58 @@ class LocalProgramManagementServiceTest {
         Map<String, Object> understanding = (Map<String, Object>) result.get("program_understanding");
         assertTrue(((Number) understanding.get("flow_candidate_count")).intValue() > 0);
         assertFalse((Boolean) understanding.get("inferences_are_pass_evidence"));
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) understanding.get("minimal_questions");
+        List<Map<String, Object>> answers = questions.stream().map(question -> Map.<String, Object>of(
+                "question_id", question.get("question_id"),
+                "answer_state", "CONFIRMED",
+                "evidence_reference_id", "fixture:" + question.get("question_id"))).toList();
+        Map<String, Object> review = service.reviewUnderstanding(mapper.valueToTree(Map.of(
+                "project_id", "customer", "target_id", "orders",
+                "profile_file_sha256", result.get("profile_file_sha256"),
+                "answers", answers)));
+
+        assertEquals("ONSURE_PROGRAM_UNDERSTANDING_REVIEW_V1", review.get("contract"));
+        assertEquals("READY_FOR_SEPARATE_APPROVAL", review.get("review_state"));
+        assertEquals("NOT_RUN", review.get("approval_state"));
+        assertEquals("NOT_RUN", review.get("execution_state"));
+        assertFalse((Boolean) review.get("secret_values_accepted"));
+        assertFalse((Boolean) review.get("score_eligible"));
+        assertEquals(before, Files.readString(source.resolve("openapi.yaml")));
+        assertTrue(Files.isRegularFile(workspace.resolve(".onsure/program-understanding/orders/review.json")));
+    }
+
+    @Test
+    void understandingReviewRejectsStaleProfileDigestAndUnknownQuestions() throws Exception {
+        Path workspace = Files.createDirectory(temp.resolve("review-guard-workspace"));
+        Path source = Files.createDirectory(temp.resolve("review-guard-source"));
+        Files.writeString(source.resolve("openapi.json"), """
+                {"openapi":"3.1.0","info":{"title":"Runs","version":"1"},
+                 "paths":{"/runs":{"get":{"operationId":"listRuns","responses":{"200":{"description":"ok"}}}}}}
+                """);
+        LocalProgramManagementService service = new LocalProgramManagementService(workspace);
+        service.register(mapper.valueToTree(Map.of(
+                "workspace_id", "local", "workspace_name", "Local",
+                "project_id", "customer", "project_name", "Customer",
+                "target_id", "runs", "target_name", "Runs",
+                "target_type", "GENERAL_SOFTWARE", "source_root", source.toString())));
+        Map<String, Object> understood = service.understand(mapper.valueToTree(Map.of(
+                "project_id", "customer", "target_id", "runs")));
+
+        IllegalArgumentException stale = assertThrows(IllegalArgumentException.class, () ->
+                service.reviewUnderstanding(mapper.valueToTree(Map.of(
+                        "project_id", "customer", "target_id", "runs",
+                        "profile_file_sha256", "0".repeat(64), "answers", List.of()))));
+        assertEquals("PROGRAM_UNDERSTANDING_PROFILE_DIGEST_MISMATCH", stale.getMessage());
+
+        IllegalArgumentException unknown = assertThrows(IllegalArgumentException.class, () ->
+                service.reviewUnderstanding(mapper.valueToTree(Map.of(
+                        "project_id", "customer", "target_id", "runs",
+                        "profile_file_sha256", understood.get("profile_file_sha256"),
+                        "answers", List.of(Map.of("question_id", "INVENTED_SECRET",
+                                "answer_state", "CONFIRMED", "evidence_reference_id", "env:SECRET"))))));
+        assertEquals("PROGRAM_UNDERSTANDING_ANSWER_UNKNOWN", unknown.getMessage());
+        assertFalse(Files.exists(workspace.resolve(".onsure/program-understanding/runs/review.json")));
     }
 }

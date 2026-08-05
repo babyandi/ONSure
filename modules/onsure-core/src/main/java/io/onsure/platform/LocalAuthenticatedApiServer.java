@@ -38,7 +38,7 @@ public final class LocalAuthenticatedApiServer {
             "/v1/program-profile", "/v1/validate", "/v1/run-artifact",
             "/v1/workspace-snapshot", "/v1/autopilot-control", "/v1/management-overview",
             "/v1/session", "/v1/programs", "/v1/programs/validate",
-            "/v1/programs/understand",
+            "/v1/programs/understand", "/v1/programs/understand/reviews",
             "/v1/validation-scorecards",
             "/v1/gateway-settings/requests", "/v1/gateway-settings/approvals", "/v1/audit-events");
 
@@ -119,6 +119,8 @@ public final class LocalAuthenticatedApiServer {
                 LocalAccessControl.Permission.OPERATE_PROGRAMS, this::programValidate));
         server.createContext("/v1/programs/understand", authenticated(
                 LocalAccessControl.Permission.OPERATE_PROGRAMS, this::programUnderstand));
+        server.createContext("/v1/programs/understand/reviews", authenticated(
+                LocalAccessControl.Permission.OPERATE_PROGRAMS, this::programUnderstandingReview));
         server.createContext("/v1/validation-scorecards", authenticated(
                 LocalAccessControl.Permission.VIEW, this::validationScorecards));
         server.createContext("/v1/gateway-settings/requests", authenticated(
@@ -445,6 +447,23 @@ public final class LocalAuthenticatedApiServer {
                         "target_id", understanding.get("target_id"),
                         "source_sha256", understanding.get("source_sha256")));
         respond(exchange, 200, understanding);
+    }
+
+    private void programUnderstandingReview(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        Map<String, Object> review = new LocalProgramManagementService(workspaceRoot, environment)
+                .reviewUnderstanding(readJson(exchange));
+        new LocalManagementAuditLedger(workspaceRoot).append(
+                identity, "PROGRAM_UNDERSTANDING_REVIEW", review.get("review_state").toString(), Map.of(
+                        "project_id", review.get("project_id"),
+                        "target_id", review.get("target_id"),
+                        "profile_file_sha256", review.get("profile_file_sha256"),
+                        "review_sha256", review.get("review_sha256")));
+        respond(exchange, 200, review);
     }
 
     private void gatewaySettingRequests(HttpExchange exchange) throws Exception {

@@ -115,11 +115,12 @@
     root.replaceChildren();
     const inferred = programs.filter((program) => program.program_understanding?.contract === "ONSURE_PROGRAM_UNDERSTANDING_CANDIDATE_V1");
     byId("understanding-empty").hidden = inferred.length !== 0;
-    for (const program of inferred) root.append(understandingCard(
-      program.program_name || program.program_id, program.program_understanding));
+    for (const program of inferred) root.append(understandingCard(program));
   }
 
-  function understandingCard(name, understanding) {
+  function understandingCard(program) {
+    const name = program.program_name || program.program_id;
+    const understanding = program.program_understanding;
     const article = document.createElement("article");
     article.className = "understanding-card";
     const heading = document.createElement("div");
@@ -177,10 +178,43 @@
     const qtitle = document.createElement("strong");
     qtitle.textContent = "실행 전 최소 확인";
     questions.append(qtitle);
+    const answerControls = [];
     for (const question of understanding.minimal_questions || []) {
-      const item = document.createElement("p");
-      item.textContent = `${question.question_id}: ${question.prompt} [${question.answer_state}]`;
+      const item = document.createElement("div");
+      item.className = "question-answer";
+      const prompt = document.createElement("p");
+      prompt.textContent = `${question.question_id}: ${question.prompt}`;
+      const state = document.createElement("select");
+      for (const value of ["UNAVAILABLE", "CONFIRMED", "REJECTED"]) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        state.append(option);
+      }
+      const reference = document.createElement("input");
+      reference.placeholder = "증적 참조 ID (예: env:ONSURE_TARGET_BASE_URL)";
+      reference.pattern = "[A-Za-z0-9._:/-]{1,256}";
+      reference.maxLength = 256;
+      reference.autocomplete = "off";
+      item.append(prompt, state, reference);
       questions.append(item);
+      answerControls.push({questionId: question.question_id, state, reference});
+    }
+    if (answerControls.length) {
+      const submit = document.createElement("button");
+      submit.type = "button";
+      submit.className = "button secondary compact-button";
+      submit.textContent = "답변을 검토 초안에 결속";
+      submit.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole);
+      submit.addEventListener("click", () => reviewProgramUnderstanding(
+        program, understanding, answerControls, submit));
+      questions.append(submit);
+    }
+    if (understanding.review) {
+      const review = document.createElement("p");
+      review.className = "review-state";
+      review.textContent = `검토=${understanding.review.review_state} · 승인=${understanding.review.approval_state} · 실행=${understanding.review.execution_state} · 미해결 ${(understanding.review.unresolved_blocking_questions || []).length}`;
+      questions.append(review);
     }
     article.append(questions);
     return article;
@@ -389,6 +423,32 @@
       await loadOverview();
     } catch (error) {
       setText("program-action-state", error instanceof Error ? error.message : "자동 이해 실패");
+    } finally { button.disabled = false; }
+  }
+
+  async function reviewProgramUnderstanding(program, understanding, controls, button) {
+    button.disabled = true;
+    setText("program-action-state", "답변을 소스·추론 digest에 결속 중…");
+    try {
+      const answers = controls.map((control) => {
+        const answer = {question_id: control.questionId, answer_state: control.state.value};
+        const reference = control.reference.value.trim();
+        if (reference) answer.evidence_reference_id = reference;
+        return answer;
+      });
+      const result = await api("/v1/programs/understand/reviews", {
+        method: "POST",
+        body: JSON.stringify({
+          project_id: program.project_id,
+          target_id: program.program_id,
+          profile_file_sha256: understanding.profile_file_sha256,
+          answers
+        })
+      });
+      setText("program-action-state", `검토 ${result.review_state} · 미해결 ${(result.unresolved_blocking_questions || []).length} · 승인 ${result.approval_state} · 실행 ${result.execution_state}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "추론 검토 저장 실패");
     } finally { button.disabled = false; }
   }
 

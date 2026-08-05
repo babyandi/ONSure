@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/program-understanding-review.v1.schema.json",
+  "title": "ONSure Program Understanding Review V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "project_id", "target_id", "source_sha256", "profile_file_sha256",
+    "answers", "unresolved_blocking_questions", "review_state", "reviewed_e2e_plan_draft",
+    "approval_state", "execution_state", "secret_values_accepted", "customer_data_allowed",
+    "destructive_action_allowed", "score_eligible", "final_claim_allowed", "review_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PROGRAM_UNDERSTANDING_REVIEW_V1"},
+    "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "profile_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "answers": {
+      "type": "array", "maxItems": 200,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["question_id", "answer_state", "secret_value_accepted"],
+        "properties": {
+          "question_id": {"type": "string", "pattern": "^[A-Z0-9_]{1,128}$"},
+          "answer_state": {"enum": ["CONFIRMED", "UNAVAILABLE", "REJECTED"]},
+          "evidence_reference_id": {"type": "string", "pattern": "^[A-Za-z0-9._:/-]{1,256}$"},
+          "secret_value_accepted": {"const": false}
+        }
+      }
+    },
+    "unresolved_blocking_questions": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "review_state": {"enum": ["HOLD_REVIEW_INCOMPLETE", "READY_FOR_SEPARATE_APPROVAL"]},
+    "reviewed_e2e_plan_draft": {"type": "array"},
+    "approval_state": {"const": "NOT_RUN"},
+    "execution_state": {"const": "NOT_RUN"},
+    "secret_values_accepted": {"const": false},
+    "customer_data_allowed": {"const": false},
+    "destructive_action_allowed": {"const": false},
+    "score_eligible": {"const": false},
+    "final_claim_allowed": {"const": false},
+    "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

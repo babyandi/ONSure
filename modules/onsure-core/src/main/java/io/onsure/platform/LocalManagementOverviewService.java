@@ -98,8 +98,9 @@ final class LocalManagementOverviewService {
     }
 
     private Map<String, Object> programUnderstanding(String targetId) throws Exception {
-        JsonNode profile = readJson(workspaceRoot.resolve(".onsure/program-understanding")
-                .resolve(targetId).resolve("program-profile.json").normalize());
+        Path profileFile = workspaceRoot.resolve(".onsure/program-understanding")
+                .resolve(targetId).resolve("program-profile.json").normalize();
+        JsonNode profile = readJson(profileFile);
         JsonNode understanding = profile == null ? null : profile.path("program_understanding");
         if (understanding == null || !understanding.isObject()
                 || !ProgramUnderstandingEngine.CONTRACT.equals(understanding.path("contract").asText())) {
@@ -107,6 +108,13 @@ final class LocalManagementOverviewService {
         }
         Map<String, Object> result = mapper.convertValue(understanding, Map.class);
         result.put("state", "CANDIDATE_REVIEW_REQUIRED");
+        result.put("profile_file_sha256", Hashing.file(profileFile));
+        JsonNode review = readJson(profileFile.resolveSibling("review.json"));
+        if (review != null && "ONSURE_PROGRAM_UNDERSTANDING_REVIEW_V1".equals(review.path("contract").asText())
+                && result.get("profile_file_sha256").equals(review.path("profile_file_sha256").asText())) {
+            result.put("review", mapper.convertValue(review, Map.class));
+            result.put("state", review.path("review_state").asText("CANDIDATE_REVIEW_REQUIRED"));
+        }
         return Map.copyOf(result);
     }
 
