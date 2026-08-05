@@ -485,7 +485,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "1d1756fb5af30daf22a8a28cfa077c4a80d90852a346fcd93e3f22ed85bec96f"
+          "content": "665b45f0edb8c8b9e9a26f86f198366d18c3c4579c26802d27719a328a329394"
         }
       ],
       "licenses": [
@@ -1341,7 +1341,7 @@
       },
       {
         "name": "onsure:vscode_dependency_inventory_sha256",
-        "value": "7f7c8b4f8ac058f7b00704fca30532c75815400f80493bf9e7d475b01e226341"
+        "value": "5ef110e6bb23df34719881f078806359add2737c1106a99e4f0e6bc4b9579c28"
       }
     ],
     "tools": {

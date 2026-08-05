@@ -9,6 +9,7 @@
 - `onsure-vscode-dependency-inventory.v1.json`: package-lock의 229개 dependency/integrity inventory
 - `contracts/onsure-supply-chain-policy.v1.json`: unique purl, component SHA-256, license review, critical/high zero release gate
 - 생성: `python3 scripts/onsure_supply_chain.py generate`
+- npm audit 생성: `python3 scripts/onsure_npm_audit.py`
 - 검증: `python3 scripts/onsure_supply_chain.py validate`
 
 Dependency의 license 선언은 ONSure source의 저작권·재배포 권리나 NOTICE 의무에 대한 법적 승인이 아니다.

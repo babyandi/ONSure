@@ -5,66 +5,6 @@
     {
       "development_only": true,
       "integrity_algorithm": "SHA512",
-      "integrity_hex": "7cd0235a703f9d9da3cf7d64c51fc0a916944fc7b01c1c3f5ae048a2c2b49a8332d42f5ee556a56c37c5748c49cd538e61a62457f6f61754b81ff6878aa7d542",
-      "license": "MIT",
-      "name": "@azure/abort-controller",
-      "optional": false,
-      "purl": "pkg:npm/%40azure/abort-controller@2.2.0",
-      "version": "2.2.0"
-    },
-    {
-      "development_only": true,
-      "integrity_algorithm": "SHA512",
-      "integrity_hex": "2146727724d49039d876cb4e5bda4538e5109418c07a92b9b5e8a10c4df1eb2c6c3c9b3f86c01a698a5e1b1771ae0b4e8896c12928ca5bb30393b00485be0b46",
-      "license": "MIT",
-      "name": "@azure/core-auth",
-      "optional": false,
-      "purl": "pkg:npm/%40azure/core-auth@1.11.0",
-      "version": "1.11.0"
-    },
-    {
-      "development_only": true,
-      "integrity_algorithm": "SHA512",
-      "integrity_hex": "2634163ba6a439c938e4f1ff5c1af1cec4060222ab7c59789b98a0809d08b4c233e68991b9f3975a9a823e976328ddef283ce5494bc58da31bed9c1fd20bc074",
-      "license": "MIT",
-      "name": "@azure/core-client",
-      "optional": false,
-      "purl": "pkg:npm/%40azure/core-client@1.11.0",
-      "version": "1.11.0"
-    },
-    {
-      "development_only": true,
-      "integrity_algorithm": "SHA512",
-      "integrity_hex": "6ccb3c7a424b8d7f303d5fbd20f0607acd522cfcae0ed13d83980b0d63a9c7329ca0e1509e92c691b713d6d770dc56809834b58273e632627acbf4f907dea420",
-      "license": "MIT",
-      "name": "@azure/core-rest-pipeline",
-      "optional": false,
-      "purl": "pkg:npm/%40azure/core-rest-pipeline@1.25.0",
-      "version": "1.25.0"
-    },
-    {
-      "development_only": true,
-      "integrity_algorithm": "SHA512",
-      "integrity_hex": "786c310f402d9dcaf1781338b46f11e793dcdeb757d61356d9689b240818a42540e84f779afbd51fe2dcb2ca158ce06b48a592e79c84207b24d17f1cb4799f39",
-      "license": "MIT",
-      "name": "@azure/core-tracing",
-      "optional": false,
-      "purl": "pkg:npm/%40azure/core-tracing@1.4.0",
-      "version": "1.4.0"
-    },
-    {
-      "development_only": true,
-      "integrity_algorithm": "SHA512",
-      "integrity_hex": "f67da958aeb5bde02e374576d2df653aea15e0214c772019d72819cef04693fa410494626ff3e32fd3cb5dafda23609c3e9c877ea56cc71a8b09897ab9995f0f",
-      "license": "MIT",
-      "name": "@azure/core-util",
-      "optional": false,
-      "purl": "pkg:npm/%40azure/core-util@1.14.0",
-      "version": "1.14.0"
-    },
-    {
-      "development_only": true,
-      "integrity_algorithm": "SHA512",
       "integrity_hex": "e42ff6583e556f59479d94b5e9d35044f32337aa15fd4a5b6be0bd9c122cd793e63a2e80dd91ace0baf6bbad33c384b4e208bebb77045e2a9354fecce0fcf793",
       "license": "MIT",
       "name": "@azure/identity",
@@ -75,12 +15,82 @@
     {
       "development_only": true,
       "integrity_algorithm": "SHA512",
-      "integrity_hex": "adb004db92947e353fb375c751d26071ea023f97443a9331f39274e2417e40c76d6bbdd792e1bd2461c78a7721f972282a905daa58e29fe2aa511a49ae24b32c",
+      "integrity_hex": "9c1acbb045a6e09daee4ba403e3c400d396adedac38156595c734a69b79766da6addddc06cdfca18ef3647ceeb743cf9fe5601d36e2bb447f5d3fab4bab360b0",
       "license": "MIT",
-      "name": "@azure/logger",
+      "name": "@azure/identity/node_modules/@azure/abort-controller",
       "optional": false,
-      "purl": "pkg:npm/%40azure/logger@1.4.0",
-      "version": "1.4.0"
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40azure/abort-controller@2.1.2",
+      "version": "2.1.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "ca444c5bc3e35409fe452eb0c397262bd5360b21fda7843cf18270bd4b257ee32637df30ff6add1912cfa8960e6daa4109dcc155e0e06167499c53c56fbab3a6",
+      "license": "MIT",
+      "name": "@azure/identity/node_modules/@azure/core-auth",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40azure/core-auth@1.10.1",
+      "version": "1.10.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "361e4f84439e63a3eb9f134fb041d1afd7a29b12f080b9699a0b906872818a715803f454f7e90e615390a8ead3b022fe292c6b2cb975803f039390455bfee5ff",
+      "license": "MIT",
+      "name": "@azure/identity/node_modules/@azure/core-client",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40azure/core-client@1.10.1",
+      "version": "1.10.1"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "3331f29bec0e8bc08b52528242ed7675ed27c1cabd93d2aebf8de3e166bef82b02a49c29b3679e050c03d81bbcb279314ed0ca0f1e06c23b91f44f320bc2cdae",
+      "license": "MIT",
+      "name": "@azure/identity/node_modules/@azure/core-rest-pipeline",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40azure/core-rest-pipeline@1.22.2",
+      "version": "1.22.2"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "f97be664b2d63deebb597359a3d39cf42acf8ff4e6f109c747dd9f14015d9dbcf035d087d61fbb51da5a42045206c318fa85b59075cd51940b759d601d7dd13b",
+      "license": "MIT",
+      "name": "@azure/identity/node_modules/@azure/core-tracing",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40azure/core-tracing@1.3.0",
+      "version": "1.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "a34a6c5bc416439f1fab78b6e10d4ad977d2fe3613c6beced4745cc9413d6d5f4db6d2d4fa460e1fcd88c63f031a53133968319b54acb364007ca2b952448fc7",
+      "license": "MIT",
+      "name": "@azure/identity/node_modules/@azure/core-util",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40azure/core-util@1.13.0",
+      "version": "1.13.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "7c2a8f21f39c2c4f821aa18f77ae9cf1b669c008e2f7cb59e0923d8bf9a54cd4e5b085ac9427e9838f2cff2a722f1653ba6a79b32a63aca9f6fe463babca006c",
+      "license": "MIT",
+      "name": "@azure/identity/node_modules/@azure/logger",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40azure/logger@1.3.0",
+      "version": "1.3.0"
+    },
+    {
+      "development_only": true,
+      "integrity_algorithm": "SHA512",
+      "integrity_hex": "b0ec753ca4ae1709c897bcf844dd0bb3b37d0106b0991f6beba788e6b142ccb0c8b3c1d3218ac8a47f508d85a85f4964806ae42f15e18b84272bb322ccf46b22",
+      "license": "MIT",
+      "name": "@azure/identity/node_modules/@typespec/ts-http-runtime",
+      "optional": false,
+      "purl": "pkg:npm/%40azure/identity/node_modules/%40typespec/ts-http-runtime@0.3.0",
+      "version": "0.3.0"
     },
     {
       "development_only": true,
@@ -121,16 +131,6 @@
       "optional": false,
       "purl": "pkg:npm/%40isaacs/cliui@9.0.0",
       "version": "9.0.0"
-    },
-    {
-      "development_only": true,
-      "integrity_algorithm": "SHA512",
-      "integrity_hex": "255503f17dad7c33168dc8cbb38c95c7156b4bcc91e6f9e1dfce860174fd423efd9c1c715d2687150660e45c1e2e64fc1e53d0de48a2ea7a1407e67d44dec3bd",
-      "license": "MIT",
-      "name": "@typespec/ts-http-runtime",
-      "optional": false,
-      "purl": "pkg:npm/%40typespec/ts-http-runtime@0.3.7",
-      "version": "0.3.7"
     },
     {
       "development_only": true,
@@ -2297,5 +2297,5 @@
   "final_claim_allowed": false,
   "lock_integrity_recorded": true,
   "package_lock": "vscode-extension/package-lock.json",
-  "package_lock_sha256": "53b4f10a8179d9552b8084aa83ead01610bf5973a906fe16efc6d4909366ace9"
+  "package_lock_sha256": "3c4d7fed566fa1cbc46303be645b87c0d43db62f543c80200b06bcad85128f6c"
 }
