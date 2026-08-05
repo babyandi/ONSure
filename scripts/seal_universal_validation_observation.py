@@ -19,6 +19,7 @@ GROUPS = {
 OUTCOMES = {"PASS_NONFINAL", "FAIL", "BLOCKED", "NOT_RUN", "INCONCLUSIVE"}
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
+REPOSITORY_COMMIT = re.compile(r"^[0-9a-f]{40,64}$")
 
 
 def require(condition: bool, reason: str) -> None:
@@ -71,6 +72,37 @@ def verify_observation(target_id: str, result_file: pathlib.Path, source_commit:
     require(result.get("source_digest") == result.get("snapshot_digest"), "RUN_SNAPSHOT_DIGEST_DRIFT")
     require(SHA256.fullmatch(str(result.get("source_digest", ""))) is not None, "RUN_SOURCE_DIGEST_INVALID")
     require(result.get("final_claim_allowed") is False, "RUN_FINAL_AUTHORITY_UNSAFE")
+    provenance = result.get("target_provenance")
+    require(isinstance(provenance, dict), "RUN_TARGET_PROVENANCE_MISSING")
+    require(provenance.get("contract") == "ONSURE_TARGET_PROVENANCE_V1",
+            "RUN_TARGET_PROVENANCE_CONTRACT_INVALID")
+    require(provenance.get("target_classification") == "REAL_REPOSITORY",
+            "RUN_TARGET_NOT_REAL_REPOSITORY")
+    require(REPOSITORY_COMMIT.fullmatch(str(provenance.get("repository_commit_sha", ""))) is not None,
+            "RUN_TARGET_COMMIT_INVALID")
+    for field in ("repository_identity_sha256", "registration_source_sha256",
+                  "snapshot_source_sha256", "snapshot_manifest_sha256", "provenance_sha256"):
+        require(SHA256.fullmatch(str(provenance.get(field, ""))) is not None,
+                "RUN_TARGET_PROVENANCE_DIGEST_INVALID:" + field)
+    unsigned_provenance = dict(provenance)
+    provenance_sha = unsigned_provenance.pop("provenance_sha256")
+    require(canonical_digest(unsigned_provenance) == provenance_sha,
+            "RUN_TARGET_PROVENANCE_DIGEST_MISMATCH")
+    require(provenance.get("snapshot_source_sha256") == result.get("source_digest"),
+            "RUN_TARGET_SOURCE_BINDING_MISMATCH")
+    binding = result.get("target_provenance_binding")
+    require(isinstance(binding, dict)
+            and binding.get("contract") == "ONSURE_TARGET_PROVENANCE_RUN_BINDING_V1",
+            "RUN_TARGET_PROVENANCE_BINDING_INVALID")
+    require(binding.get("state") == "VERIFIED_BEFORE_AND_AFTER",
+            "RUN_TARGET_PROVENANCE_BINDING_NOT_VERIFIED")
+    require(binding.get("provenance_sha256") == provenance_sha
+            and binding.get("source_sha256") == result.get("source_digest")
+            and binding.get("snapshot_sha256") == result.get("snapshot_digest")
+            and binding.get("snapshot_manifest_sha256") == provenance.get("snapshot_manifest_sha256"),
+            "RUN_TARGET_PROVENANCE_BINDING_DIGEST_MISMATCH")
+    require(binding.get("final_claim_allowed") is False,
+            "RUN_TARGET_PROVENANCE_BINDING_AUTHORITY_UNSAFE")
     environment = result.get("environment_evidence")
     require(isinstance(environment, dict) and SHA256.fullmatch(str(environment.get("sha256", ""))) is not None,
             "RUN_ENVIRONMENT_INVALID")
@@ -106,6 +138,19 @@ def verify_observation(target_id: str, result_file: pathlib.Path, source_commit:
     require(finalization.get("verified_pass_step_count") == pass_count, "RUN_FINALIZATION_COUNT_INVALID")
     require(finalization.get("environment_sha256") == environment["sha256"],
             "RUN_FINALIZATION_ENVIRONMENT_DRIFT")
+    scorecard = result.get("scorecard")
+    require(isinstance(scorecard, dict) and scorecard.get("contract") == "ONSURE_VALIDATION_SCORECARD_V1",
+            "RUN_SCORECARD_INVALID")
+    require(scorecard.get("final_claim_allowed") is False, "RUN_SCORECARD_AUTHORITY_UNSAFE")
+    required_steps = [step for step in sealed_steps if step["required"]]
+    counts = {outcome: sum(step["outcome"] == outcome for step in required_steps) for outcome in OUTCOMES}
+    require(scorecard.get("required_step_count") == len(required_steps)
+            and scorecard.get("passed_required_step_count") == counts["PASS_NONFINAL"]
+            and scorecard.get("failed_required_step_count") == counts["FAIL"]
+            and scorecard.get("blocked_required_step_count") == counts["BLOCKED"]
+            and scorecard.get("not_run_required_step_count") == counts["NOT_RUN"]
+            and scorecard.get("inconclusive_required_step_count") == counts["INCONCLUSIVE"],
+            "RUN_SCORECARD_COUNTS_INVALID")
     return {
         "contract": "ONSURE_UNIVERSAL_VALIDATION_OBSERVATION_V1",
         "target_id": target_id,
@@ -119,10 +164,29 @@ def verify_observation(target_id: str, result_file: pathlib.Path, source_commit:
         "source_digest": result.get("source_digest"),
         "snapshot_digest": result.get("snapshot_digest"),
         "source_mutation_detected": False,
+        "target_classification": provenance.get("target_classification"),
+        "repository_identity_sha256": provenance.get("repository_identity_sha256"),
+        "repository_commit_sha": provenance.get("repository_commit_sha"),
+        "target_provenance_sha256": provenance_sha,
+        "snapshot_manifest_sha256": provenance.get("snapshot_manifest_sha256"),
+        "target_provenance_binding_state": binding.get("state"),
         "environment_sha256": environment["sha256"],
         "result_sha256": digest_bytes(result_file.read_bytes()),
         "finalization_sha256": final_sha,
         "verified_pass_step_count": pass_count,
+        "scorecard_sha256": canonical_digest(scorecard),
+        "score_summary": {
+            "earned_points": scorecard.get("earned_points"),
+            "max_points": scorecard.get("max_points"),
+            "score_type": scorecard.get("score_type"),
+            "required_step_count": scorecard.get("required_step_count"),
+            "passed_required_step_count": scorecard.get("passed_required_step_count"),
+            "failed_required_step_count": scorecard.get("failed_required_step_count"),
+            "blocked_required_step_count": scorecard.get("blocked_required_step_count"),
+            "not_run_required_step_count": scorecard.get("not_run_required_step_count"),
+            "inconclusive_required_step_count": scorecard.get("inconclusive_required_step_count"),
+            "trust_gate": scorecard.get("trust_gate"),
+        },
         "steps": sealed_steps,
         "production_authority": False,
         "final_claim_allowed": False,

@@ -304,28 +304,31 @@ bash scripts/onsure-final-stage.sh --profile core
 
 ## 현재 판정 상한
 
-현재 변경 후보의 로컬 검증은 root Java 419개(408 PASS, 조건부 11개 skip)와
-모듈 전용 Java 49개, Python 207개, Node 10개,
+현재 변경 후보의 로컬 검증은 root Java 420개(409 PASS, 조건부 11개 skip)와
+모듈 전용 Java 49개, Python 212개, Node 10개,
 RHEL 35-file·Ubuntu 39-file package, root 공개 API 267개, SBOM/npm audit와
 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `30d27a88c4247cefabb10e316bd2bfafa0a3b9bb3afcfdc89470afb410fec089`를 생성했으며
 동일 입력 2회 패키징 결과가 byte-identical했다.
-Manifest 후보는 신규 구현을 포함한 955개 파일이며 정확한 파일 수와
+Manifest 후보는 신규 구현과 실제 검증 observation을 포함한 파일 전체이며 정확한 파일 수와
 digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으로 삼는다. 최신 commit에
 결속된 격리 중첩 full rehearsal과 독립 clone 결과는 발행 전 다시 생성한다.
 현재 host의 rootless bubblewrap은 private network namespace의 loopback 설정을 거부한다. Runner는
 이 실패를 약화하지 않고, 로컬에 이미 존재하는 검증 이미지가 있을 때만 immutable image ID로
 고정한 `OCI_DOCKER` backend를 선택한다. 이 backend는 image pull·network·host 원본 mount를
 금지하고 read-only rootfs, capability 0, no-new-privileges, AppArmor/seccomp, PID·CPU·memory·timeout
-한도를 적용한다. 과거 격리 실행에서 12개 sandbox boundary probe와 저장소 내부
-Java·Python·Node fixture, ONSure self 후보 및 외부 Gradle 후보의 정상·실패·재시도·차단·연결
-E2E·portable lineage read-back·중단·재개·롤백·재실행이 `PASS_NONFINAL`로 기록됐다. 5개
-실행의 106개 PASS 단계는
+한도를 적용한다. 격리 실행에서 12개 sandbox boundary probe와 저장소 내부
+Java·Python·Node fixture의 정상·실패·재시도·차단·연결 E2E·portable lineage read-back·중단·재개·
+롤백·재실행이 `PASS_NONFINAL`로 기록됐다. 과거 5개 실행의 106개 PASS 단계는
 `assurance/runtime/onsure-universal-validation-evidence.v1.json`에 로그·환경·결과 digest로
 결속되어 있으나 target provenance와 실행 전후 binding이 없어 현재 HEAD의 세 실제 대상 범용성
-증거로는 무효다. 최신 ONSure source의 과거 반복성 기록도
+증거로는 무효다. 최신 실제 재검증에서는 ONSure self가 43/43단계와 7개 검증군 모두
+`PASS_NONFINAL`(100/100), OReport가 대상 source 결함 2건으로 `FAIL`(38.86/100), 독립
+Java·Python·Node 대상이 미승인 negative/E2E/운영 pack 15건 `NOT_RUN`(42.50/100)으로 판정됐다.
+각 결과는 target commit·snapshot manifest·환경·step log·scorecard digest와 함께
+`assurance/runtime/*-validation-observation.v1.json`에 보존한다. 최신 ONSure source의 과거 반복성 기록도
 `assurance/runtime/onsure-self-repeatability.v1.json`에 남아 있지만 현재 HEAD의
 `REAL_REPOSITORY` 네 단계 receipt가 아니므로 현재 권위 상태는 `NOT_RUN`이다.
 Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
@@ -334,8 +337,8 @@ VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
 독립 OTester/OAudit와 Human Acceptance는 아직 실행되지 않았다.
 
 ```text
-Assurance      SELF_VALIDATION_NONFINAL / LOCAL_OCI_SANDBOX
-Universality   HOLD / THREE_REAL_TARGETS_NOT_RUN
+Assurance      SELF_VALIDATION_PASS_NONFINAL / INDEPENDENT_OTESTER_OAUDIT_NOT_RUN
+Universality   HOLD / OREPORT_FAIL / NEUTRAL_REVIEWED_PACK_NOT_RUN
 MVP Full-Chain NOT_RUN
 FinalLock      false
 Production GO  false
