@@ -59,7 +59,7 @@
     ],
     "environment_capability_count": 6,
     "environment_capability_execution": "PASS_NONFINAL",
-    "environment_capability_output_sha256": "79a6414849e69bb69431eef64130a73cf65107784f0aac186627b6fa358146b6",
+    "environment_capability_output_sha256": "600ca66da920cd3ee2881488b724d475c0770533c0018a571bab10f16690a8d4",
     "image_id": "sha256:f4541be3366b24e2b65324b2a6535c9a72e13905a7dea0b5538666563594ad41",
     "image_pull": "NOT_RUN_LOCAL_IMAGE_ONLY",
     "image_reference": "onsure-validation-runtime:java17-node20-v1",
@@ -72,7 +72,7 @@
     "validation_probe_output_sha256": "237e8caa40f7aa85fe3b1244f3b7155deaa4cdb36f280f1f1f9a13ee3670d7bf"
   },
   "production_authority": false,
-  "receipt_sha256": "4504956ea8039e268eabaf3f0b55ba3c4d6bb982fc41422458654649824684eb",
+  "receipt_sha256": "d533764af5b3e1b7be8af9196650732f5c9112db541e53e5dfb16b598d4c5cc4",
   "selected_backend": "OCI_DOCKER",
   "source_bindings": {
     "contracts/sandbox-boundary.v1.json": "fe3093aaf09904c0d14c0c61b1c0efdb53cfcb387312377594b88a3b22ada322",
@@ -82,8 +82,8 @@
     "scripts/fixture-sandbox-launcher.sh": "99cedef77d0832c08fbee566a608aaa3e7de6f44a062fb0ddbca4ce6ff7f7f96",
     "scripts/onsure-sandbox-backend.sh": "052dd2dafc03e7c6cb2fb03bd367bfab746d03cd0a81b0f3cf55f7b08d3fb1f0",
     "scripts/test-fixture-sandbox-boundary.sh": "431bec0d6afe1c4929313c529a100d76b96f2cd29410a861baa3ad0c576560c6",
-    "scripts/validation-sandbox-launcher.sh": "f1f16bd59e4e0b4f99a00af78a86bc1e44ac2c15e90e3d1ccb1531f55c735804"
+    "scripts/validation-sandbox-launcher.sh": "39b1e3438c0e2f7b3c134c17a3075fa0f4a9077a2a8af662ea5f27233d43862d"
   },
   "source_code_dirty_paths": [],
-  "source_commit": "7d50a05ba479f56e48d33ac0ee4c92f0f28b8829"
+  "source_commit": "c966fef184179ce6702f37d398bc9de861c2a5f5"
 }
