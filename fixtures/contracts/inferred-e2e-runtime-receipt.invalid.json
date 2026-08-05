@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_INFERRED_E2E_RUNTIME_RECEIPT_V1",
+  "run_id": "inferred-e2e-run-11111111-1111-1111-1111-111111111111",
+  "execution_authorization_id": "inferred-e2e-auth-22222222-2222-2222-2222-222222222222",
+  "execution_plan_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "approval_request_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "approval_receipt_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "base_url_reference_id": "https://production.example", "base_url_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "started_at": "2026-08-05T00:00:00Z", "completed_at": "2026-08-05T00:00:01Z",
+  "step_count": 1, "executed_step_count": 1, "steps": [], "outcome": "FINAL_PASS",
+  "customer_data_stored": true, "response_bodies_stored": true,
+  "source_mutation_allowed": true, "final_claim_allowed": true,
+  "runtime_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "runtime_receipt_file": "/tmp/receipt.json"
+}

@@ -204,6 +204,7 @@ final class StaticWorkflowInventory {
                 semantics.put("security_declared", operation.has("security") || root.has("security"));
                 semantics.put("lifecycle_action", lifecycleAction(method, operationId));
                 semantics.put("destructive_risk", method.equals("delete"));
+                semantics.put("source_path", relative);
                 add(candidates, "OPENAPI_OPERATION", name, relative, "HTTP_OPERATION_REQUIRES_SERVER",
                         roleHints(name + " " + route), file, evidenceDigests,
                         operationId.isBlank() ? 0.75 : 0.98, semantics);

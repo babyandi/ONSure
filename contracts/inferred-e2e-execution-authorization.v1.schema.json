@@ -3,7 +3,7 @@
   "$id": "https://onsure.local/contracts/inferred-e2e-execution-authorization.v1.schema.json",
   "title": "ONSure Inferred E2E Execution Authorization V1",
   "type": "object", "additionalProperties": false,
-  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_sha256", "approval_receipt_sha256", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
+  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_id", "approval_request_sha256", "approval_receipt_sha256", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
   "properties": {
     "contract": {"const": "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1"},
     "execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
@@ -11,6 +11,7 @@
     "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "profile_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approval_request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
     "approval_request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "execution_scope": {"const": "ISOLATED_SYNTHETIC_LOOPBACK"},

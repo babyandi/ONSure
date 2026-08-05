@@ -232,7 +232,7 @@ final class ProgramUnderstandingEngine {
         Map<String, Object> operation = new LinkedHashMap<>();
         for (String key : List.of("http_method", "http_path", "operation_id", "tags",
                 "request_schema_refs", "response_statuses", "security_declared",
-                "lifecycle_action", "destructive_risk")) {
+                "lifecycle_action", "destructive_risk", "source_path")) {
             if (candidate.containsKey(key)) operation.put(key, candidate.get(key));
         }
         return Map.copyOf(operation);

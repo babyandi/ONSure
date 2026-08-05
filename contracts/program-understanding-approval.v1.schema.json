@@ -7,7 +7,7 @@
   "properties": {
     "contract": {"const": "ONSURE_PROGRAM_UNDERSTANDING_APPROVAL_V1"},
     "request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
-    "state": {"enum": ["AWAITING_APPROVAL", "APPROVED_NOT_EXECUTED", "REJECTED", "CONSUMED_FOR_EXECUTION_AUTHORIZATION"]},
+    "state": {"enum": ["AWAITING_APPROVAL", "APPROVED_NOT_EXECUTED", "REJECTED", "CONSUMED_FOR_EXECUTION_AUTHORIZATION", "EXECUTION_RUNNING", "EXECUTION_COMPLETED"]},
     "project_id": {"type": "string"}, "target_id": {"type": "string"},
     "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "profile_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
@@ -18,7 +18,7 @@
     "reason": {"type": "string"}, "decision": {"enum": ["APPROVE", "REJECT"]}, "decided_at": {"type": "string", "format": "date-time"},
     "decided_by": {"type": "string"}, "decision_reason": {"type": "string"},
     "single_use_for_execution": {"const": true}, "execution_consumed": {"type": "boolean"},
-    "execution_state": {"const": "NOT_RUN"}, "final_claim_allowed": {"const": false},
+    "execution_state": {"enum": ["NOT_RUN", "RUNNING", "PASS_NONFINAL", "FAIL", "BLOCKED"]}, "final_claim_allowed": {"const": false},
     "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "consumed_at": {"type": "string", "format": "date-time"}, "consumed_by": {"type": "string"},
@@ -27,7 +27,12 @@
     "execution_plan_file": {"type": "string", "pattern": "^\\.onsure/inferred-e2e-authorizations/.+/execution-plan\\.json$"},
     "execution_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "execution_plan_state": {"enum": ["AUTHORIZED_NOT_RUN", "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN"]},
-    "consumption_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    "consumption_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution_run_id": {"type": "string", "pattern": "^inferred-e2e-run-[0-9a-f-]{36}$"},
+    "execution_started_at": {"type": "string", "format": "date-time"}, "execution_started_by": {"type": "string"},
+    "execution_completed_at": {"type": "string", "format": "date-time"},
+    "runtime_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution_record_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "additionalProperties": false
 }

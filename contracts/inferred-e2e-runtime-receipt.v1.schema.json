@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/inferred-e2e-runtime-receipt.v1.schema.json",
+  "title": "ONSure Inferred E2E Runtime Receipt V1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract", "run_id", "execution_authorization_id", "execution_plan_sha256", "approval_request_sha256", "approval_receipt_sha256", "base_url_reference_id", "base_url_sha256", "started_at", "completed_at", "step_count", "executed_step_count", "steps", "outcome", "customer_data_stored", "response_bodies_stored", "source_mutation_allowed", "final_claim_allowed", "runtime_receipt_sha256", "runtime_receipt_file"],
+  "properties": {
+    "contract": {"const": "ONSURE_INFERRED_E2E_RUNTIME_RECEIPT_V1"},
+    "run_id": {"type": "string", "pattern": "^inferred-e2e-run-[0-9a-f-]{36}$"},
+    "execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
+    "execution_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approval_request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "base_url_reference_id": {"type": "string", "pattern": "^env:[A-Z][A-Z0-9_]{1,127}$"},
+    "base_url_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "started_at": {"type": "string", "format": "date-time"}, "completed_at": {"type": "string", "format": "date-time"},
+    "step_count": {"type": "integer", "minimum": 0}, "executed_step_count": {"type": "integer", "minimum": 0},
+    "steps": {"type": "array", "items": {"type": "object"}},
+    "outcome": {"enum": ["PASS_NONFINAL", "FAIL", "BLOCKED"]},
+    "customer_data_stored": {"const": false}, "response_bodies_stored": {"const": false},
+    "source_mutation_allowed": {"const": false}, "final_claim_allowed": {"const": false},
+    "runtime_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "runtime_receipt_file": {"type": "string", "pattern": "^\\.onsure/inferred-e2e-authorizations/.+/runtime-receipt\\.json$"}
+  }
+}

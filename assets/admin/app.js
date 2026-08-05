@@ -508,6 +508,14 @@
         || request.state !== "APPROVED_NOT_EXECUTED";
       consume.addEventListener("click", () => consumeProgramUnderstandingApproval(request, consume));
       actions.append(consume);
+      const run = document.createElement("button");
+      run.type = "button"; run.className = "button secondary compact-button";
+      run.textContent = "Loopback E2E 실행";
+      run.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole)
+        || request.state !== "CONSUMED_FOR_EXECUTION_AUTHORIZATION"
+        || request.execution_state !== "NOT_RUN";
+      run.addEventListener("click", () => runInferredE2E(request, run));
+      actions.append(run);
       row.append(actions); body.append(row);
     }
   }
@@ -538,6 +546,23 @@
       await loadOverview();
     } catch (error) {
       setText("program-action-state", error instanceof Error ? error.message : "승인 소비 실패");
+    } finally { button.disabled = false; }
+  }
+
+  async function runInferredE2E(request, button) {
+    button.disabled = true;
+    try {
+      const result = await api("/v1/programs/understand/inferred-e2e-runs", {
+        method: "POST", body: JSON.stringify({
+          execution_authorization_id: request.execution_authorization_id,
+          execution_plan_sha256: request.execution_plan_sha256,
+          base_url_reference_id: "env:ONSURE_INFERRED_E2E_BASE_URL"
+        })
+      });
+      setText("program-action-state", `E2E ${result.outcome} · 실행 ${result.executed_step_count}/${result.step_count} · receipt ${result.runtime_receipt_sha256}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "Loopback E2E 실행 실패");
     } finally { button.disabled = false; }
   }
 

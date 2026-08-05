@@ -348,6 +348,14 @@
         "responses": {"200": {"$ref": "#/components/responses/GenericObject"}, "400": {"$ref": "#/components/responses/InvalidRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "405": {"$ref": "#/components/responses/MethodNotAllowed"}}
       }
     },
+    "/v1/programs/understand/inferred-e2e-runs": {
+      "post": {
+        "operationId": "runApprovedInferredE2E", "tags": ["Management"],
+        "summary": "Run an exactly-once approved read-only E2E plan against a configured loopback endpoint",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/InferredE2ERunRequest"}}}},
+        "responses": {"200": {"$ref": "#/components/responses/GenericObject"}, "400": {"$ref": "#/components/responses/InvalidRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "405": {"$ref": "#/components/responses/MethodNotAllowed"}}
+      }
+    },
     "/v1/validation-scorecards": {
       "get": {
         "operationId": "listValidationScorecards",
@@ -562,6 +570,14 @@
           "request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
           "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "execution_scope": {"const": "ISOLATED_SYNTHETIC_LOOPBACK"}
+        }, "additionalProperties": false
+      },
+      "InferredE2ERunRequest": {
+        "type": "object", "required": ["execution_authorization_id", "execution_plan_sha256", "base_url_reference_id"],
+        "properties": {
+          "execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
+          "execution_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "base_url_reference_id": {"const": "env:ONSURE_INFERRED_E2E_BASE_URL"}
         }, "additionalProperties": false
       },
       "GatewaySettingRequest": {

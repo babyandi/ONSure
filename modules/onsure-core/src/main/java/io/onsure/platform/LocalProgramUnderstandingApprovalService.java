@@ -178,13 +178,64 @@ final class LocalProgramUnderstandingApprovalService {
             value.put("execution_plan_sha256", planSha256);
             value.put("execution_plan_state", executionPlan.get("plan_state"));
             value.put("execution_state", "NOT_RUN");
-            value.put("consumption_sha256", digestValue(value, "consumption_sha256"));
+            value.put("consumption_sha256", consumptionDigest(value));
             try {
                 write(requestId, value);
             } catch (Exception error) {
                 Files.deleteIfExists(planFile);
                 throw error;
             }
+            result[0] = Map.copyOf(value);
+        });
+        return result[0];
+    }
+
+    Map<String, Object> claimExecution(String requestId, String authorizationId, String planSha256,
+            LocalAccessControl.Identity operator) throws Exception {
+        if (operator == null || !Set.of(LocalAccessControl.Role.ADMIN, LocalAccessControl.Role.OPERATOR)
+                .contains(operator.role())) throw new IllegalArgumentException("PROGRAM_EXECUTION_OPERATOR_ROLE_INVALID");
+        @SuppressWarnings("unchecked") final Map<String, Object>[] result = new Map[1];
+        ExclusiveFileLock.run(lock, () -> {
+            Map<String, Object> value = read(requestId);
+            if (!"CONSUMED_FOR_EXECUTION_AUTHORIZATION".equals(value.get("state"))
+                    || !"NOT_RUN".equals(value.get("execution_state"))) {
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_AUTHORIZATION_ALREADY_CLAIMED");
+            }
+            if (!authorizationId.equals(value.get("execution_authorization_id"))
+                    || !planSha256.equals(value.get("execution_plan_sha256"))) {
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_PLAN_BINDING_INVALID");
+            }
+            String runId = "inferred-e2e-run-" + UUID.randomUUID();
+            value.put("state", "EXECUTION_RUNNING");
+            value.put("execution_state", "RUNNING");
+            value.put("execution_run_id", runId);
+            value.put("execution_started_at", clock.instant().toString());
+            value.put("execution_started_by", operator.actor());
+            write(requestId, value);
+            result[0] = Map.copyOf(value);
+        });
+        return result[0];
+    }
+
+    Map<String, Object> completeExecution(String requestId, String runId, String outcome,
+            String runtimeReceiptSha256) throws Exception {
+        if (!Set.of("PASS_NONFINAL", "FAIL", "BLOCKED").contains(outcome)
+                || !runtimeReceiptSha256.matches("[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("PROGRAM_EXECUTION_COMPLETION_INVALID");
+        }
+        @SuppressWarnings("unchecked") final Map<String, Object>[] result = new Map[1];
+        ExclusiveFileLock.run(lock, () -> {
+            Map<String, Object> value = read(requestId);
+            if (!"EXECUTION_RUNNING".equals(value.get("state"))
+                    || !runId.equals(value.get("execution_run_id"))) {
+                throw new IllegalArgumentException("PROGRAM_EXECUTION_RUN_BINDING_INVALID");
+            }
+            value.put("state", "EXECUTION_COMPLETED");
+            value.put("execution_state", outcome);
+            value.put("execution_completed_at", clock.instant().toString());
+            value.put("runtime_receipt_sha256", runtimeReceiptSha256);
+            value.put("execution_record_sha256", runtimeDigest(value));
+            write(requestId, value);
             result[0] = Map.copyOf(value);
         });
         return result[0];
@@ -233,10 +284,15 @@ final class LocalProgramUnderstandingApprovalService {
                 && !String.valueOf(value.get("receipt_sha256")).equals(decisionDigest(value))) {
             throw new IllegalStateException("PROGRAM_APPROVAL_RECEIPT_DIGEST_INVALID");
         }
-        if ("CONSUMED_FOR_EXECUTION_AUTHORIZATION".equals(value.get("state"))
+        if (Set.of("CONSUMED_FOR_EXECUTION_AUTHORIZATION", "EXECUTION_RUNNING", "EXECUTION_COMPLETED")
+                .contains(value.get("state"))
                 && !String.valueOf(value.get("consumption_sha256")).equals(
-                        digestValue(value, "consumption_sha256"))) {
+                        consumptionDigest(value))) {
             throw new IllegalStateException("PROGRAM_APPROVAL_CONSUMPTION_DIGEST_INVALID");
+        }
+        if ("EXECUTION_COMPLETED".equals(value.get("state"))
+                && !String.valueOf(value.get("execution_record_sha256")).equals(runtimeDigest(value))) {
+            throw new IllegalStateException("PROGRAM_EXECUTION_RECORD_DIGEST_INVALID");
         }
         return new LinkedHashMap<>(value);
     }
@@ -277,13 +333,18 @@ final class LocalProgramUnderstandingApprovalService {
             String state = destructive ? "BLOCKED_DESTRUCTIVE_OPERATION"
                     : List.of("POST", "PUT", "PATCH").contains(method) && schemaRefs.isEmpty()
                     ? "BLOCKED_SYNTHETIC_FIXTURE_SCHEMA_MISSING"
-                    : "READY_FOR_ISOLATED_LOOPBACK_RUNNER";
+                    : List.of("POST", "PUT", "PATCH").contains(method)
+                    ? "READY_FOR_SYNTHETIC_FIXTURE_GENERATION"
+                    : operation.getOrDefault("http_path", "").toString().contains("{")
+                    ? "BLOCKED_PATH_PARAMETER_FIXTURE_MISSING" : "READY_FOR_ISOLATED_LOOPBACK_RUNNER";
             Map<String, Object> candidate = new LinkedHashMap<>();
             candidate.put("plan_id", draft.getOrDefault("plan_id", "UNVERIFIED"));
             candidate.put("flow_id", draft.getOrDefault("flow_id", "UNVERIFIED"));
             candidate.put("http_method", method);
             candidate.put("http_path", operation.getOrDefault("http_path", "NOT_APPLICABLE"));
             candidate.put("request_schema_refs", schemaRefs);
+            candidate.put("response_statuses", operation.getOrDefault("response_statuses", List.of()));
+            candidate.put("openapi_source_path", operation.getOrDefault("source_path", "NOT_APPLICABLE"));
             candidate.put("fixture_strategy", schemaRefs.isEmpty()
                     ? "NO_BODY_OR_REVIEWED_FIXTURE_REFERENCE_REQUIRED" : "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA");
             candidate.put("oracle_strategy", "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT");
@@ -303,6 +364,7 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("profile_file_sha256", approval.get("profile_file_sha256"));
         plan.put("review_sha256", approval.get("review_sha256"));
         plan.put("approval_request_sha256", approval.get("request_sha256"));
+        plan.put("approval_request_id", approval.get("request_id"));
         plan.put("approval_receipt_sha256", approval.get("receipt_sha256"));
         plan.put("execution_scope", scope);
         plan.put("candidate_count", candidates.size());
@@ -350,8 +412,29 @@ final class LocalProgramUnderstandingApprovalService {
     private String decisionDigest(Map<String, Object> value) throws Exception {
         Map<String, Object> immutable = new TreeMap<>();
         for (String key : List.of("request_sha256", "decision", "decided_at", "decided_by",
-                "decision_reason", "execution_state", "final_claim_allowed")) {
+                "decision_reason", "final_claim_allowed")) {
             if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_APPROVAL_DECISION_FIELD_MISSING:" + key);
+            immutable.put(key, value.get(key));
+        }
+        return Hashing.sha256(mapper.writeValueAsBytes(immutable));
+    }
+
+    private String consumptionDigest(Map<String, Object> value) throws Exception {
+        Map<String, Object> immutable = new TreeMap<>();
+        for (String key : List.of("request_sha256", "receipt_sha256", "consumed_at", "consumed_by",
+                "authorized_execution_scope", "execution_authorization_id", "execution_plan_file",
+                "execution_plan_sha256", "execution_plan_state")) {
+            if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_APPROVAL_CONSUMPTION_FIELD_MISSING:" + key);
+            immutable.put(key, value.get(key));
+        }
+        return Hashing.sha256(mapper.writeValueAsBytes(immutable));
+    }
+
+    private String runtimeDigest(Map<String, Object> value) throws Exception {
+        Map<String, Object> immutable = new TreeMap<>();
+        for (String key : List.of("consumption_sha256", "execution_run_id", "execution_started_at",
+                "execution_started_by", "execution_completed_at", "execution_state", "runtime_receipt_sha256")) {
+            if (!value.containsKey(key)) throw new IllegalStateException("PROGRAM_EXECUTION_RECORD_FIELD_MISSING:" + key);
             immutable.put(key, value.get(key));
         }
         return Hashing.sha256(mapper.writeValueAsBytes(immutable));

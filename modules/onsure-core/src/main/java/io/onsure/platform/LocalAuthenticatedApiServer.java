@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +42,7 @@ public final class LocalAuthenticatedApiServer {
             "/v1/programs/understand", "/v1/programs/understand/reviews",
             "/v1/programs/understand/approval-requests", "/v1/programs/understand/approval-decisions",
             "/v1/programs/understand/approval-consumptions",
+            "/v1/programs/understand/inferred-e2e-runs",
             "/v1/validation-scorecards",
             "/v1/gateway-settings/requests", "/v1/gateway-settings/approvals", "/v1/audit-events");
 
@@ -131,6 +133,9 @@ public final class LocalAuthenticatedApiServer {
         server.createContext("/v1/programs/understand/approval-consumptions", authenticated(
                 LocalAccessControl.Permission.OPERATE_PROGRAMS,
                 this::programUnderstandingApprovalConsumptions));
+        server.createContext("/v1/programs/understand/inferred-e2e-runs", authenticated(
+                LocalAccessControl.Permission.OPERATE_PROGRAMS,
+                this::programUnderstandingInferredE2ERuns));
         server.createContext("/v1/validation-scorecards", authenticated(
                 LocalAccessControl.Permission.VIEW, this::validationScorecards));
         server.createContext("/v1/gateway-settings/requests", authenticated(
@@ -531,6 +536,25 @@ public final class LocalAuthenticatedApiServer {
                         "execution_authorization_id", authorization.get("execution_authorization_id"),
                         "execution_state", authorization.get("execution_state")));
         respond(exchange, 200, authorization);
+    }
+
+    private void programUnderstandingInferredE2ERuns(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        Map<String, Object> receipt = new LocalInferredE2EHttpRunner(workspaceRoot, environment,
+                java.net.http.HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
+                        .followRedirects(java.net.http.HttpClient.Redirect.NEVER).build())
+                .run(readJson(exchange), identity);
+        new LocalManagementAuditLedger(workspaceRoot).append(identity,
+                "PROGRAM_UNDERSTANDING_INFERRED_E2E_RUN", receipt.get("outcome").toString(), Map.of(
+                        "run_id", receipt.get("run_id"),
+                        "execution_authorization_id", receipt.get("execution_authorization_id"),
+                        "execution_plan_sha256", receipt.get("execution_plan_sha256"),
+                        "runtime_receipt_sha256", receipt.get("runtime_receipt_sha256")));
+        respond(exchange, 200, receipt);
     }
 
     private void gatewaySettingRequests(HttpExchange exchange) throws Exception {
