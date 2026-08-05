@@ -3,7 +3,7 @@
   "$id": "https://onsure.local/contracts/inferred-e2e-execution-authorization.v1.schema.json",
   "title": "ONSure Inferred E2E Execution Authorization V1",
   "type": "object", "additionalProperties": false,
-  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_id", "approval_request_sha256", "approval_receipt_sha256", "authorization_expires_at", "runtime_reference_ids", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "authorized_lifecycles", "binding_authorization_policy", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
+  "required": ["contract", "execution_authorization_id", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "approval_request_id", "approval_request_sha256", "approval_receipt_sha256", "continuation_approval_manifest_sha256", "authorization_expires_at", "runtime_reference_ids", "execution_scope", "candidate_count", "blocked_candidate_count", "authorized_candidates", "authorized_lifecycles", "authorized_continuations", "blocked_continuations", "continuation_authorization_policy", "binding_authorization_policy", "plan_state", "execution_state", "source_mutation_allowed", "customer_data_allowed", "destructive_action_allowed", "final_claim_allowed"],
   "properties": {
     "contract": {"const": "ONSURE_INFERRED_E2E_EXECUTION_AUTHORIZATION_V1"},
     "execution_authorization_id": {"type": "string", "pattern": "^inferred-e2e-auth-[0-9a-f-]{36}$"},
@@ -14,6 +14,7 @@
     "approval_request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
     "approval_request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "continuation_approval_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "authorization_expires_at": {"type": "string", "format": "date-time"},
     "runtime_reference_ids": {"type": "object", "additionalProperties": false, "properties": {
       "authentication": {"type": "string", "pattern": "^env:[A-Z][A-Z0-9_]{1,127}$"},
@@ -23,6 +24,20 @@
     "candidate_count": {"type": "integer", "minimum": 0}, "blocked_candidate_count": {"type": "integer", "minimum": 0},
     "authorized_candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
     "authorized_lifecycles": {"type": "array", "items": {"$ref": "#/$defs/lifecycle"}},
+    "authorized_continuations": {"type": "array", "items": {"$ref": "#/$defs/continuation"}},
+    "blocked_continuations": {"type": "array", "items": {"$ref": "#/$defs/continuation"}},
+    "continuation_authorization_policy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["allowed_kind", "allowed_methods", "same_operation_only", "same_service_only", "cross_service_auto_binding_allowed", "redirect_policy", "maximum_cumulative_response_bytes", "raw_continuation_token_storage_allowed", "async_poll_state", "multi_service_state"],
+      "properties": {
+        "allowed_kind": {"const": "PAGINATION"}, "allowed_methods": {"const": ["GET", "HEAD"]},
+        "same_operation_only": {"const": true}, "same_service_only": {"const": true},
+        "cross_service_auto_binding_allowed": {"const": false}, "redirect_policy": {"const": "NEVER"},
+        "maximum_cumulative_response_bytes": {"const": 8388608},
+        "raw_continuation_token_storage_allowed": {"const": false},
+        "async_poll_state": {"const": "BLOCKED_NOT_RUN"}, "multi_service_state": {"const": "BLOCKED_NOT_RUN"}
+      }
+    },
     "binding_authorization_policy": {
       "type": "object", "additionalProperties": false,
       "required": ["minimum_confidence", "allowed_inference_basis", "executable_consumer_locations", "candidate_only_consumer_locations", "separate_review_required", "separate_approval_required", "unqualified_binding_outcome", "raw_value_storage_allowed"],
@@ -43,6 +58,27 @@
     "final_claim_allowed": {"const": false}
   },
   "$defs": {
+    "continuation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["continuation_id", "kind", "plan_id", "openapi_document_id", "service_boundary_id", "producer_location", "producer_reference", "consumer_location", "consumer_reference", "max_iterations", "max_duration_seconds", "max_cumulative_response_bytes", "termination_policy", "review_sha256", "approval_receipt_sha256", "approval_manifest_sha256", "raw_continuation_token_storage_allowed", "review_state", "state"],
+      "properties": {
+        "continuation_id": {"type": "string", "pattern": "^CONT-[0-9a-f]{16}$"},
+        "kind": {"enum": ["PAGINATION", "ASYNC_POLL"]}, "plan_id": {"type": "string"},
+        "openapi_document_id": {"type": "string"}, "service_boundary_id": {"type": "string"},
+        "producer_location": {"enum": ["BODY_POINTER", "RESPONSE_HEADER", "UNRESOLVED"]},
+        "producer_reference": {"type": "string"}, "consumer_location": {"enum": ["QUERY", "UNRESOLVED"]},
+        "consumer_reference": {"type": "string"}, "max_iterations": {"type": "integer", "minimum": -1, "maximum": 100},
+        "max_duration_seconds": {"type": "integer", "minimum": -1, "maximum": 300},
+        "max_cumulative_response_bytes": {"const": 8388608},
+        "termination_policy": {"type": "string"}, "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "approval_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "approval_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "raw_continuation_token_storage_allowed": {"const": false},
+        "review_state": {"enum": ["REVIEWED_AND_SEPARATELY_APPROVED", "REVIEW_REQUIRED_NOT_AUTHORIZED"]},
+        "state": {"enum": ["AUTHORIZED_NOT_RUN", "BLOCKED_NOT_RUN"]},
+        "blocked_reason": {"const": "ASYNC_OR_UNSAFE_OR_CROSS_SERVICE_CONTINUATION_NOT_EXECUTABLE"}
+      }
+    },
     "binding": {
       "type": "object", "additionalProperties": false,
       "required": ["binding_id", "producer_plan_id", "producer_json_pointer", "consumer_plan_id", "consumer_location", "consumer_parameter_name", "producer_schema_type", "consumer_schema_type", "inference_basis", "inference_confidence", "review_sha256", "approval_receipt_sha256", "auto_execute_before_approval", "review_state", "value_storage_allowed", "state"],
@@ -85,7 +121,7 @@
     },
     "candidate": {
       "type": "object", "additionalProperties": false,
-      "required": ["plan_id", "flow_id", "http_method", "http_path", "request_schema_refs", "request_schema_declared", "security_declared", "response_statuses", "openapi_source_path", "openapi_source_sha256", "fixture_strategy", "oracle_strategy", "state", "customer_data_allowed", "destructive_action_allowed"],
+      "required": ["plan_id", "flow_id", "http_method", "http_path", "request_schema_refs", "request_schema_declared", "security_declared", "response_statuses", "openapi_document_id", "service_boundary_id", "openapi_source_path", "openapi_source_sha256", "fixture_strategy", "oracle_strategy", "state", "customer_data_allowed", "destructive_action_allowed"],
       "properties": {
         "plan_id": {"type": "string"}, "flow_id": {"type": "string"},
         "http_method": {"enum": ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE", "NONE"]},
@@ -94,6 +130,7 @@
         "request_schema_declared": {"type": "boolean"},
         "security_declared": {"type": "boolean"},
         "response_statuses": {"type": "array", "items": {"type": "string"}},
+        "openapi_document_id": {"type": "string"}, "service_boundary_id": {"type": "string"},
         "openapi_source_path": {"type": "string"},
         "openapi_source_sha256": {"oneOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"const": "NOT_APPLICABLE"}]},
         "fixture_strategy": {"type": "string"}, "oracle_strategy": {"type": "string"},

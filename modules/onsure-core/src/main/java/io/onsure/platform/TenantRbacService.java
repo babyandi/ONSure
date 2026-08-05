@@ -17,7 +17,8 @@ final class TenantRbacService {
     static final String EVENT_CONTRACT = "ONSURE_TENANT_ACCESS_EVENT_V1";
     private static final String REGISTRY_ID = "WORKSPACE_TENANT_RESOURCE_REGISTRY";
     private static final Set<String> APPROVAL_OPERATIONS = Set.of(
-            "plan.approve", "patch.apply", "patch.rollback", "git.commit", "git.draft-pr",
+            "plan.approve", "patch.apply", "patch.rollback", "score.improvement-bind",
+            "git.commit", "git.draft-pr",
             "license.issue", "license.suspend", "license.revoke",
             "case.record-payment", "case.verify-payment", "case.record-refund",
             "case.verify-refund", "case.legal-hold", "case.delete");

@@ -78,9 +78,10 @@ final class LocalManagementOverviewService {
             JsonNode target = registered.path("target");
             String targetId = safeId(target.path("targetId").asText());
             if (targetId == null) continue;
-            Map<String, Object> validation = latestValidation(targetId);
+            String projectId = safeText(registered.path("projectId").asText(), "UNVERIFIED");
+            Map<String, Object> validation = latestValidation(projectId, targetId);
             Map<String, Object> program = new LinkedHashMap<>();
-            program.put("project_id", safeText(registered.path("projectId").asText(), "UNVERIFIED"));
+            program.put("project_id", projectId);
             program.put("program_id", targetId);
             program.put("program_name", safeText(target.path("targetName").asText(), targetId));
             program.put("program_type", safeText(target.path("targetType").asText(), "UNVERIFIED"));
@@ -129,7 +130,7 @@ final class LocalManagementOverviewService {
         return Map.copyOf(result);
     }
 
-    private Map<String, Object> latestValidation(String targetId) throws Exception {
+    private Map<String, Object> latestValidation(String projectId, String targetId) throws Exception {
         Path targetRoot = workspaceRoot.resolve(".onsure/validation-data").resolve(targetId).normalize();
         if (!safeDirectory(targetRoot)) return notRunValidation();
         List<Path> runs;
@@ -152,34 +153,39 @@ final class LocalManagementOverviewService {
                 currentReport = report;
                 if (!ValidationScorecard.CONTRACT.equals(scorecard.path("contract").asText())) {
                     return Map.copyOf(latestValidationResult(
-                            targetId, run, currentRunId, report, scorecard));
+                            projectId, targetId, run, currentRunId, report, scorecard));
                 }
                 if (!scoreEvidence(run, report, scorecard).valid()) {
                     return Map.copyOf(latestValidationResult(
-                            targetId, run, currentRunId, report, scorecard));
+                            projectId, targetId, run, currentRunId, report, scorecard));
                 }
                 continue;
             }
             if (ValidationScorecard.CONTRACT.equals(scorecard.path("contract").asText())
                     && scoreEvidence(run, report, scorecard).valid()) {
                 Map<String, Object> result = latestValidationResult(
-                        targetId, targetRoot.resolve(currentRunId), currentRunId,
+                        projectId, targetId, targetRoot.resolve(currentRunId), currentRunId,
                         currentReport, currentScorecard);
-                result.put("comparison", ValidationScorecardComparison.compare(
-                        run.getFileName().toString(), scorecard, currentRunId, currentScorecard));
+                Map<?, ?> persistence = result.get("database_persistence") instanceof Map<?, ?> value
+                        ? value : Map.of();
+                if (!"AUTHORITATIVE_VERIFIED".equals(persistence.get("state"))) {
+                    result.put("comparison", ValidationScorecardComparison.compare(
+                            run.getFileName().toString(), scorecard, currentRunId, currentScorecard));
+                }
                 return Map.copyOf(result);
             }
         }
         if (currentRunId != null) {
             return Map.copyOf(latestValidationResult(
-                    targetId, targetRoot.resolve(currentRunId), currentRunId,
+                    projectId, targetId, targetRoot.resolve(currentRunId), currentRunId,
                     currentReport, currentScorecard));
         }
         return notRunValidation();
     }
 
     private Map<String, Object> latestValidationResult(
-            String targetId, Path run, String runId, JsonNode report, JsonNode scorecard) throws Exception {
+            String projectId, String targetId, Path run, String runId,
+            JsonNode report, JsonNode scorecard) throws Exception {
             JsonNode plans = readJson(run.resolve("remediation-plans.json"));
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("state", "AVAILABLE");
@@ -188,7 +194,17 @@ final class LocalManagementOverviewService {
             result.put("decision", safeText(report.path("decision").asText(), "UNVERIFIED"));
             result.put("generated_at", safeText(report.path("generatedAt").asText(), "UNVERIFIED"));
             result.put("source_sha256", digestOrNotRun(report.path("sourceDigestBefore").asText()));
+            result.put("registration_source_sha256", digestOrNotRun(
+                    report.path("sourceDigestBefore").asText()));
+            result.put("snapshot_source_sha256", digestOrNotRun(
+                    report.path("snapshotSourceDigest").asText()));
             result.put("receipt_sha256", digestOrNotRun(report.path("universalReceiptSha256").asText()));
+            result.put("target_provenance_sha256", digestOrNotRun(
+                    report.path("targetProvenanceSha256").asText()));
+            result.put("target_classification", safeText(
+                    report.path("targetClassification").asText(), "UNKNOWN"));
+            result.put("real_target_universality_evidence_eligible",
+                    report.path("realTargetUniversalityEvidenceEligible").asBoolean(false));
             result.put("finding_count", arraySize(report.path("findings")));
             result.put("evidence_count", arraySize(readJson(run.resolve("evidence.json"))));
             result.put("improvement_candidate_count", arraySize(plans));
@@ -220,10 +236,41 @@ final class LocalManagementOverviewService {
             PostgresqlValidationScoreStore store = new PostgresqlValidationScoreStore(environment);
             if (store.configured()) {
                 try {
+                    List<Map<String, Object>> history = store.history(projectId, targetId, 20);
+                    Map<String, Object> stored = history.stream()
+                            .filter(item -> runId.equals(item.get("run_id"))).findFirst().orElse(Map.of());
+                    String readBackFailure = databaseReadBackFailure(run, report, scorecard, stored);
+                    if (readBackFailure != null) {
+                        result.put("state", "INVALID_DATABASE_READ_BACK");
+                        result.put("decision", "HOLD");
+                        result.put("scorecard", Map.of(
+                                "state", "WITHHELD_DATABASE_READ_BACK_INVALID",
+                                "reason", readBackFailure, "final_claim_allowed", false));
+                        result.put("comparison", Map.of(
+                                "state", "NOT_RUN_DATABASE_READ_BACK_INVALID"));
+                        result.put("database_persistence", Map.of(
+                                "state", "INVALID", "reason", readBackFailure,
+                                "history", List.of()));
+                        result.put("independent_otester", "NOT_RUN");
+                        result.put("independent_oaudit", "NOT_RUN");
+                        result.put("final_claim_allowed", false);
+                        return result;
+                    }
+                    result.put("scorecard", stored.get("scorecard"));
+                    result.put("comparison", stored.get("comparison"));
                     result.put("database_persistence", Map.of(
-                            "state", "AVAILABLE",
-                            "history", store.history(targetId, 20)));
+                            "state", "AUTHORITATIVE_VERIFIED", "history", history,
+                            "read_back_state", stored.get("read_back_state"),
+                            "run_record", stored.get("run_record")));
                 } catch (Exception unavailable) {
+                    result.put("state", "DATABASE_READ_BACK_UNAVAILABLE");
+                    result.put("decision", "HOLD");
+                    result.put("scorecard", Map.of(
+                            "state", "WITHHELD_DATABASE_UNAVAILABLE",
+                            "reason", unavailable.getClass().getSimpleName(),
+                            "final_claim_allowed", false));
+                    result.put("comparison", Map.of(
+                            "state", "NOT_RUN_DATABASE_UNAVAILABLE"));
                     result.put("database_persistence", Map.of(
                             "state", "UNAVAILABLE", "history", List.of(),
                             "error", unavailable.getClass().getSimpleName()));
@@ -235,6 +282,29 @@ final class LocalManagementOverviewService {
             result.put("independent_oaudit", "NOT_RUN");
             result.put("final_claim_allowed", false);
             return result;
+    }
+
+    private String databaseReadBackFailure(
+            Path run, JsonNode report, JsonNode scorecard,
+            Map<String, Object> stored) throws Exception {
+        if (stored.isEmpty()) return "POSTGRESQL_RUN_NOT_FOUND";
+        if (!report.path("snapshotSourceDigest").asText().equals(stored.get("source_sha256"))) {
+            return "POSTGRESQL_SOURCE_DIGEST_MISMATCH";
+        }
+        if (!report.path("universalReceiptSha256").asText().equals(stored.get("receipt_sha256"))) {
+            return "POSTGRESQL_RECEIPT_DIGEST_MISMATCH";
+        }
+        if (!mapper.valueToTree(stored.get("scorecard")).equals(scorecard)) {
+            return "POSTGRESQL_SCORECARD_MISMATCH";
+        }
+        if (!Hashing.file(run.resolve("validation-report.json")).equals(stored.get("report_sha256"))) {
+            return "POSTGRESQL_REPORT_DIGEST_MISMATCH";
+        }
+        if (!Hashing.file(run.resolve("evidence.json")).equals(
+                stored.get("evidence_manifest_sha256"))) {
+            return "POSTGRESQL_EVIDENCE_MANIFEST_DIGEST_MISMATCH";
+        }
+        return null;
     }
 
     private ScoreEvidence scoreEvidence(Path run, JsonNode report, JsonNode scorecard) throws Exception {
@@ -270,10 +340,16 @@ final class LocalManagementOverviewService {
         if (!"PASS_NONFINAL".equals(receipt.path("final_evidence_integrity").path("outcome").asText())) {
             return new ScoreEvidence(false, "FINAL_EVIDENCE_INTEGRITY_NOT_PASS", actualReceiptSha256);
         }
+        TargetProvenanceRunVerifier.Verification provenance =
+                new TargetProvenanceRunVerifier().verify(run);
+        if (!provenance.valid()) {
+            return new ScoreEvidence(false, "TARGET_PROVENANCE_EVIDENCE_INVALID:"
+                    + String.join(",", provenance.reasons()), actualReceiptSha256);
+        }
         if (!receipt.path("scorecard").equals(scorecard)) {
             return new ScoreEvidence(false, "REPORT_RECEIPT_SCORECARD_MISMATCH", actualReceiptSha256);
         }
-        String reportSource = report.path("sourceDigestBefore").asText("");
+        String reportSource = report.path("snapshotSourceDigest").asText("");
         if (!reportSource.matches("[0-9a-f]{64}")
                 || !reportSource.equals(receipt.path("source_digest").asText())) {
             return new ScoreEvidence(false, "REPORT_RECEIPT_SOURCE_MISMATCH", actualReceiptSha256);

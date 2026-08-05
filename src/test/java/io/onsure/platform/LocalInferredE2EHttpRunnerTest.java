@@ -502,6 +502,94 @@ class LocalInferredE2EHttpRunnerTest {
         } finally { server.stop(0); }
     }
 
+    @Test
+    void executesApprovedSameServicePaginationAndStoresOnlyTokenDigests() throws Exception {
+        Prepared prepared = prepare(paginationOpenApi());
+        List<String> observedQueries = new java.util.concurrent.CopyOnWriteArrayList<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            String query = exchange.getRequestURI().getRawQuery();
+            observedQueries.add(query);
+            String next = query == null ? "page-2" : query.equals("cursor=page-2") ? "page-3" : "";
+            byte[] body = ("{\"orders\":[],\"nextCursor\":\"" + next + "\"}")
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("PASS_NONFINAL", receipt.get("outcome"), mapper.writeValueAsString(receipt));
+            assertEquals(java.util.Arrays.asList(null, "cursor=page-2", "cursor=page-3"), observedQueries);
+            assertEquals(3, ((Number) receipt.get("executed_step_count")).intValue());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals(List.of(1, 2, 3), steps.stream()
+                    .map(step -> ((Number) step.get("pagination_page_index")).intValue()).toList());
+            assertEquals("EMPTY_TOKEN", steps.get(2).get("continuation_termination_reason"));
+            assertEquals(Hashing.sha256("page-2"), steps.get(0).get("continuation_output_token_sha256"));
+            assertEquals(Hashing.sha256("page-2"), steps.get(1).get("continuation_input_token_sha256"));
+            assertTrue(steps.stream().allMatch(step -> Boolean.FALSE.equals(step.get("continuation_token_stored"))));
+            String serialized = mapper.writeValueAsString(receipt);
+            assertFalse(serialized.contains("page-2"));
+            assertFalse(serialized.contains("page-3"));
+            assertEquals(prepared.planSha(), receipt.get("execution_plan_sha256"));
+            assertTrue(receipt.get("source_sha256").toString().matches("[0-9a-f]{64}"));
+            assertTrue(receipt.get("review_sha256").toString().matches("[0-9a-f]{64}"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void blocksPaginationWhenContinuationTokenRepeats() throws Exception {
+        Prepared prepared = prepare(paginationOpenApi());
+        AtomicInteger calls = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress(
+                InetAddress.getByName("127.0.0.1"), 0), 4);
+        server.createContext("/orders", exchange -> {
+            calls.incrementAndGet();
+            byte[] body = "{\"orders\":[],\"nextCursor\":\"same-token\"}"
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            Map<String, Object> receipt = run(prepared, server);
+            assertEquals("BLOCKED", receipt.get("outcome"));
+            assertEquals(2, calls.get());
+            @SuppressWarnings("unchecked") List<Map<String, Object>> steps =
+                    (List<Map<String, Object>>) receipt.get("steps");
+            assertEquals("REPEATED_TOKEN_BLOCKED", steps.get(1).get("continuation_termination_reason"));
+            assertFalse(mapper.writeValueAsString(receipt).contains("same-token"));
+        } finally { server.stop(0); }
+    }
+
+    @Test
+    void refusesAnotherPaginationRequestWhenAnyBoundIsAlreadyExhausted() {
+        LocalInferredE2EHttpRunner.ContinuationAuthorization continuation =
+                new LocalInferredE2EHttpRunner.ContinuationAuthorization(
+                        "CONT-0123456789abcdef", "plan", "OPENAPI-DOC-0123456789abcdef",
+                        "SERVICE-0123456789abcdef", "BODY_POINTER", "/nextCursor",
+                        "cursor", 2, 60, 1_048_576);
+        long started = System.nanoTime();
+
+        assertEquals("MAX_ITERATIONS_BLOCKED", LocalInferredE2EHttpRunner.terminationReason(
+                new LocalInferredE2EHttpRunner.TokenResult("PRESENT", "next"),
+                new java.util.LinkedHashSet<>(), 2, continuation, 10, started, true, false));
+        assertEquals("CUMULATIVE_RESPONSE_BYTES_BLOCKED", LocalInferredE2EHttpRunner.terminationReason(
+                new LocalInferredE2EHttpRunner.TokenResult("PRESENT", "next"),
+                new java.util.LinkedHashSet<>(), 1, continuation, 1_048_576, started, true, false));
+        assertFalse(LocalInferredE2EHttpRunner.paginationBudgetAvailable(
+                1, 1_048_576, started, continuation));
+        assertFalse(LocalInferredE2EHttpRunner.paginationBudgetAvailable(
+                2, 10, started, continuation));
+    }
+
     private Map<String, Object> run(Prepared prepared, HttpServer server) throws Exception {
         return run(prepared, server, Map.of());
     }
@@ -671,6 +759,30 @@ class LocalInferredE2EHttpRunnerTest {
                       responses: {'200': {description: ok}}
                 components:
                   securitySchemes: {bearerAuth: {type: http, scheme: bearer}}
+                """;
+    }
+
+    private static String paginationOpenApi() {
+        return """
+                openapi: 3.1.0
+                info: {title: Paginated Orders, version: '1'}
+                paths:
+                  /orders:
+                    get:
+                      operationId: listOrders
+                      parameters:
+                        - {name: cursor, in: query, required: false, schema: {type: string}}
+                      responses:
+                        '200':
+                          description: ok
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                required: [orders]
+                                properties:
+                                  orders: {type: array, items: {type: object}}
+                                  nextCursor: {type: string}
                 """;
     }
 

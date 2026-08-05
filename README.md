@@ -91,8 +91,8 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - `status/mvp-acceptance-coverage.v1.json` — 10단계 사용자 여정과 2회 연속 성공 조건
 - `scripts/validate-mvp-acceptance-coverage.py`
 - `scripts/validate-mvp-status-consistency.py`
-- `contracts/workflow-operation-registry.v1.json` — 43개 Workflow Operation 단일 권위
-- `scripts/validate-workflow-surface-parity.py` — 43개 Workflow·3개 제품 표면
+- `contracts/workflow-operation-registry.v1.json` — 44개 Workflow Operation 단일 권위
+- `scripts/validate-workflow-surface-parity.py` — 44개 Workflow·3개 제품 표면
 - `scripts/validate-critical-callpaths.py`
 - `contracts/validation-case-registry.v1.json` — 성공·실패·공격 사례 단일 권위 목록
 - `scripts/validate-validation-case-registry.py`
@@ -286,8 +286,11 @@ Program Profile은 operationId·tag·path·schema와 탐지 component를 근거�
 업무 규칙이나 PASS를 자동 확정하지 않는다. 관리화면은 총점에서 DOMAIN→PHASE→GROUP→AREA→STEP
 까지 진단·개선 가이드와 이전 실행 대비 변화를 보여주며, 추론 후보는 점수 제외로 표시한다.
 OpenAPI continuation은 문서별 service boundary 안에서 optional cursor/page/offset, 2xx allowlist
-header와 202 async producer를 bounded 후보로만 탐지한다. Pagination·polling runtime 및 서로 다른
-service 간 결속은 아직 실행하지 않으며 여러 service boundary가 포함된 실행계획은 `BLOCKED`다.
+header와 202 async producer를 bounded 후보로 탐지한다. 별도 승인 manifest에 결속된 동일 operation·
+service의 GET/HEAD pagination은 loopback에서만 실행하며 페이지별 URI·status·schema·body/token digest와
+종료 이유를 기록한다. raw token은 저장하지 않고 반복 token, 제한 시간·횟수·누적 응답 크기 도달 시
+추가 호출 없이 차단한다. Async polling 및 서로 다른 service 간 결속은 아직 실행하지 않으며 여러
+service boundary가 포함된 실행계획은 `BLOCKED`다.
 또한 최종 증적 무결성이나 Receipt SHA·계약·source·scorecard 결속이 실패하면 관리화면은 원점수와
 비교/DB 이력을 숨기고 `INVALID_EVIDENCE`/`HOLD`로 표시한다.
 Gateway 환경변수와 단독 서버 실행 경계는
@@ -303,7 +306,7 @@ bash scripts/onsure-final-stage.sh --profile core
 
 현재 변경 후보의 로컬 검증은 root Java 402개(391 PASS, 조건부 11개 skip)와
 모듈 전용 Java 8개, Python 202개, Node 10개,
-Modular package 37개, root 공개 API 265개, SBOM/npm audit와 operational boundary를 통과했고,
+Modular package 37개, root 공개 API 267개, SBOM/npm audit와 operational boundary를 통과했고,
 로컬 clean Java build는 2회 연속 통과했다.
 최신 VSIX는 ZIP metadata와 `[Content_Types].xml` 순서를 정규화해 SHA-256
 `30d27a88c4247cefabb10e316bd2bfafa0a3b9bb3afcfdc89470afb410fec089`를 생성했으며
@@ -315,13 +318,15 @@ digest는 `assurance/migration/onsure-migration-manifest.v1.json`을 정본으�
 이 실패를 약화하지 않고, 로컬에 이미 존재하는 검증 이미지가 있을 때만 immutable image ID로
 고정한 `OCI_DOCKER` backend를 선택한다. 이 backend는 image pull·network·host 원본 mount를
 금지하고 read-only rootfs, capability 0, no-new-privileges, AppArmor/seccomp, PID·CPU·memory·timeout
-한도를 적용한다. 12개 sandbox boundary probe와 ONSure 자체 및 중립 Java·Python·Node·Gradle 대상의
-정상·실패·재시도·차단·연결 E2E·portable lineage read-back·중단·재개·롤백·재실행이 이 격리
-경로에서 `PASS_NONFINAL`이다. 5개 실행의 106개 PASS 단계는
+한도를 적용한다. 과거 격리 실행에서 12개 sandbox boundary probe와 저장소 내부
+Java·Python·Node fixture, ONSure self 후보 및 외부 Gradle 후보의 정상·실패·재시도·차단·연결
+E2E·portable lineage read-back·중단·재개·롤백·재실행이 `PASS_NONFINAL`로 기록됐다. 5개
+실행의 106개 PASS 단계는
 `assurance/runtime/onsure-universal-validation-evidence.v1.json`에 로그·환경·결과 digest로
-결속되어 있으며 원본 소스 변경은 0건이다.
-최신 ONSure source는 같은 digest로 26개 필수 Step을 2회 반복해 모든 안정 의미 판정이
-일치했으며 `assurance/runtime/onsure-self-repeatability.v1.json`에 별도 결속되어 있다.
+결속되어 있으나 target provenance와 실행 전후 binding이 없어 현재 HEAD의 세 실제 대상 범용성
+증거로는 무효다. 최신 ONSure source의 과거 반복성 기록도
+`assurance/runtime/onsure-self-repeatability.v1.json`에 남아 있지만 현재 HEAD의
+`REAL_REPOSITORY` 네 단계 receipt가 아니므로 현재 권위 상태는 `NOT_RUN`이다.
 Docker는 검증 실행 backend일 뿐 Ubuntu/RHEL systemd 단독 서버 배포 topology를 변경하지 않는다.
 VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
 실행됐고 source/image/online·offline log digest receipt를 남겼지만 MVP Full-Chain,
@@ -329,6 +334,7 @@ VS Code Extension Host E2E는 고정 컨테이너와 offline network에서
 
 ```text
 Assurance      SELF_VALIDATION_NONFINAL / LOCAL_OCI_SANDBOX
+Universality   HOLD / THREE_REAL_TARGETS_NOT_RUN
 MVP Full-Chain NOT_RUN
 FinalLock      false
 Production GO  false

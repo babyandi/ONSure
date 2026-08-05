@@ -22,8 +22,11 @@ onsure_oci_image_id() {
   local image_ref="${ONSURE_VALIDATION_OCI_IMAGE:-$ONSURE_SANDBOX_DEFAULT_OCI_IMAGE}"
   [[ "$image_ref" =~ ^[A-Za-z0-9][A-Za-z0-9._/:@-]{0,254}$ ]] || return 1
   if [[ -z "${ONSURE_SANDBOX_DOCKER_CONFIG:-}" ]]; then
-    ONSURE_SANDBOX_DOCKER_CONFIG="$(mktemp -d "${TMPDIR:-/tmp}/onsure-docker-config.XXXXXX")" \
+    local temp_root="${ONSURE_TEMP_ROOT:-${TMPDIR:-/tmp}}"
+    [[ "$temp_root" == /* && -d "$temp_root" && ! -L "$temp_root" && -w "$temp_root" ]] || return 1
+    ONSURE_SANDBOX_DOCKER_CONFIG="$(mktemp -d "$temp_root/onsure-docker-config.XXXXXX")" \
       || return 1
+    ONSURE_SANDBOX_DOCKER_CONFIG_OWNED='true'
   fi
   export DOCKER_CONFIG="$ONSURE_SANDBOX_DOCKER_CONFIG"
   export DOCKER_HOST='unix:///var/run/docker.sock'
@@ -36,14 +39,15 @@ onsure_oci_image_id() {
 }
 
 onsure_sandbox_backend_cleanup() {
-  if [[ -n "${ONSURE_SANDBOX_DOCKER_CONFIG:-}" ]]; then
+  if [[ "${ONSURE_SANDBOX_DOCKER_CONFIG_OWNED:-false}" == 'true' \
+      && -n "${ONSURE_SANDBOX_DOCKER_CONFIG:-}" ]]; then
     case "$ONSURE_SANDBOX_DOCKER_CONFIG" in
-      /tmp/onsure-docker-config.*)
-        chmod -R u+rwX "$ONSURE_SANDBOX_DOCKER_CONFIG" 2>/dev/null || true
+      /*/onsure-docker-config.??????)
         rm -rf -- "$ONSURE_SANDBOX_DOCKER_CONFIG"
         ;;
     esac
   fi
+  unset ONSURE_SANDBOX_DOCKER_CONFIG ONSURE_SANDBOX_DOCKER_CONFIG_OWNED DOCKER_CONFIG
 }
 
 onsure_select_sandbox_backend() {

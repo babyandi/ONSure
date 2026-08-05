@@ -401,6 +401,54 @@ class LocalProgramUnderstandingApprovalServiceTest {
     }
 
     @Test
+    void bindsPaginationIdentityAndLimitsIntoApprovalReceiptChain() throws Exception {
+        Prepared prepared = prepare("pagination-approval", """
+                openapi: 3.1.0
+                info: {title: Orders, version: '1'}
+                paths:
+                  /orders:
+                    get:
+                      operationId: listOrders
+                      parameters:
+                        - {name: cursor, in: query, required: false, schema: {type: string}}
+                      responses:
+                        '200':
+                          description: ok
+                          content:
+                            application/json:
+                              schema:
+                                type: object
+                                properties: {nextCursor: {type: string}}
+                """);
+        Authorized authorized = authorize(prepared, Instant.parse("2026-08-05T00:00:00Z"));
+        @SuppressWarnings("unchecked") Map<String, Object> plan = mapper.readValue(
+                prepared.workspace().resolve(authorized.planFile()).toFile(), Map.class);
+        @SuppressWarnings("unchecked") List<Map<String, Object>> continuations =
+                (List<Map<String, Object>>) plan.get("authorized_continuations");
+        assertEquals(1, continuations.size());
+        Map<String, Object> continuation = continuations.get(0);
+        assertEquals("PAGINATION", continuation.get("kind"));
+        assertEquals("GET", ((List<?>) ((Map<?, ?>) plan.get("continuation_authorization_policy"))
+                .get("allowed_methods")).get(0));
+        assertEquals(100, continuation.get("max_iterations"));
+        assertEquals(60, continuation.get("max_duration_seconds"));
+        assertEquals(8_388_608, continuation.get("max_cumulative_response_bytes"));
+        assertEquals(plan.get("continuation_approval_manifest_sha256"),
+                continuation.get("approval_manifest_sha256"));
+        assertEquals(plan.get("approval_receipt_sha256"), continuation.get("approval_receipt_sha256"));
+        assertEquals("REVIEWED_AND_SEPARATELY_APPROVED", continuation.get("review_state"));
+        @SuppressWarnings("unchecked") List<Map<String, Object>> requests =
+                (List<Map<String, Object>>) authorized.service().list(10).get("requests");
+        Map<String, Object> request = requests.stream()
+                .filter(value -> authorized.requestId().equals(value.get("request_id"))).findFirst().orElseThrow();
+        assertEquals(3, request.get("record_format_version"));
+        assertEquals(plan.get("continuation_approval_manifest_sha256"),
+                request.get("continuation_approval_manifest_sha256"));
+        assertTrue(request.get("request_sha256").toString().matches("[0-9a-f]{64}"));
+        assertTrue(request.get("receipt_sha256").toString().matches("[0-9a-f]{64}"));
+    }
+
+    @Test
     void recoversInterruptedReadOnlyRunForOneSafeRetry() throws Exception {
         Instant now = Instant.parse("2026-08-05T00:00:00Z");
         Prepared prepared = prepare("recover-read");

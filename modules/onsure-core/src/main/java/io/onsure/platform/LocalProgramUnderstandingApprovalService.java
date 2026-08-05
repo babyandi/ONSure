@@ -70,7 +70,7 @@ final class LocalProgramUnderstandingApprovalService {
         String requestId = "program-understanding-approval-" + UUID.randomUUID();
         Map<String, Object> value = new LinkedHashMap<>();
         value.put("contract", CONTRACT);
-        value.put("record_format_version", 2);
+        value.put("record_format_version", 3);
         value.put("request_id", requestId);
         value.put("state", "AWAITING_APPROVAL");
         value.put("project_id", projectId);
@@ -78,6 +78,10 @@ final class LocalProgramUnderstandingApprovalService {
         value.put("source_sha256", review.get("source_sha256"));
         value.put("profile_file_sha256", profileSha);
         value.put("review_sha256", reviewSha);
+        List<Map<String, Object>> continuationManifest = continuationApprovalManifest(review);
+        value.put("continuation_approval_manifest", continuationManifest);
+        value.put("continuation_approval_manifest_sha256",
+                Hashing.sha256(mapper.writeValueAsBytes(continuationManifest)));
         value.put("requested_at", now.toString());
         value.put("expires_at", now.plusSeconds(ttl).toString());
         value.put("requested_by", requester.actor());
@@ -119,8 +123,9 @@ final class LocalProgramUnderstandingApprovalService {
             if (approver.actor().equals(value.get("requested_by"))) {
                 throw new IllegalArgumentException("PROGRAM_APPROVAL_DISTINCT_APPROVER_REQUIRED");
             }
-            currentReview(value.get("target_id").toString(), value.get("profile_file_sha256").toString(),
-                    value.get("review_sha256").toString());
+            Map<String, Object> review = currentReview(value.get("target_id").toString(),
+                    value.get("profile_file_sha256").toString(), value.get("review_sha256").toString());
+            verifyContinuationApprovalManifest(value, review);
             value.put("state", "APPROVE".equals(decision) ? "APPROVED_NOT_EXECUTED" : "REJECTED");
             value.put("decision", decision);
             value.put("decided_at", clock.instant().toString());
@@ -164,6 +169,7 @@ final class LocalProgramUnderstandingApprovalService {
             }
             Map<String, Object> review = currentReview(value.get("target_id").toString(), value.get("profile_file_sha256").toString(),
                     value.get("review_sha256").toString());
+            verifyContinuationApprovalManifest(value, review);
             String authorizationId = "inferred-e2e-auth-" + UUID.randomUUID();
             Map<String, Object> executionPlan = executionAuthorizationPlan(value, review, authorizationId, scope);
             byte[] planBytes = mapper.writeValueAsBytes(executionPlan);
@@ -380,6 +386,15 @@ final class LocalProgramUnderstandingApprovalService {
         return value;
     }
 
+    private void verifyContinuationApprovalManifest(Map<String, Object> approval,
+            Map<String, Object> review) throws Exception {
+        List<Map<String, Object>> expected = continuationApprovalManifest(review);
+        String expectedSha = Hashing.sha256(mapper.writeValueAsBytes(expected));
+        if (!expected.equals(approval.get("continuation_approval_manifest"))
+                || !expectedSha.equals(approval.get("continuation_approval_manifest_sha256")))
+            throw new IllegalArgumentException("PROGRAM_APPROVAL_CONTINUATION_MANIFEST_STALE_OR_TAMPERED");
+    }
+
     private Map<String, Object> read(String requestId) throws Exception {
         Path file = root.resolve(requestId + ".json").normalize();
         if (!file.startsWith(root) || !safeFile(file) || Files.size(file) > 1_048_576L) {
@@ -545,6 +560,8 @@ final class LocalProgramUnderstandingApprovalService {
             candidate.put("request_schema_declared", schemaDeclared);
             candidate.put("security_declared", securityDeclared);
             candidate.put("response_statuses", operation.getOrDefault("response_statuses", List.of()));
+            candidate.put("openapi_document_id", operation.getOrDefault("openapi_document_id", "NOT_APPLICABLE"));
+            candidate.put("service_boundary_id", operation.getOrDefault("service_boundary_id", "NOT_APPLICABLE"));
             candidate.put("openapi_source_path", operation.getOrDefault("source_path", "NOT_APPLICABLE"));
             candidate.put("openapi_source_sha256", operation.getOrDefault("evidence_sha256", "NOT_APPLICABLE"));
             candidate.put("fixture_strategy", !schemaDeclared
@@ -557,6 +574,8 @@ final class LocalProgramUnderstandingApprovalService {
         }
         List<Map<String, Object>> lifecycles = authorizedLifecycles(approval, review, candidates);
         candidates = applyBindingBlocks(candidates, lifecycles);
+        Map<String, List<Map<String, Object>>> continuations = continuationAuthorizations(
+                approval, review, drafts, candidates, multiServiceRuntimeUnsupported);
         long blocked = candidates.stream().filter(candidate -> candidate.get("state").toString().startsWith("BLOCKED_"))
                 .count();
         Map<String, Object> plan = new LinkedHashMap<>();
@@ -570,6 +589,8 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("approval_request_sha256", approval.get("request_sha256"));
         plan.put("approval_request_id", approval.get("request_id"));
         plan.put("approval_receipt_sha256", approval.get("receipt_sha256"));
+        plan.put("continuation_approval_manifest_sha256",
+                approval.get("continuation_approval_manifest_sha256"));
         plan.put("authorization_expires_at", approval.get("expires_at"));
         plan.put("runtime_reference_ids", runtimeReferences);
         plan.put("execution_scope", scope);
@@ -577,6 +598,19 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("blocked_candidate_count", blocked);
         plan.put("authorized_candidates", List.copyOf(candidates));
         plan.put("authorized_lifecycles", lifecycles);
+        plan.put("authorized_continuations", continuations.get("authorized"));
+        plan.put("blocked_continuations", continuations.get("blocked"));
+        plan.put("continuation_authorization_policy", Map.ofEntries(
+                Map.entry("allowed_kind", "PAGINATION"),
+                Map.entry("allowed_methods", List.of("GET", "HEAD")),
+                Map.entry("same_operation_only", true),
+                Map.entry("same_service_only", true),
+                Map.entry("cross_service_auto_binding_allowed", false),
+                Map.entry("redirect_policy", "NEVER"),
+                Map.entry("maximum_cumulative_response_bytes", 8_388_608),
+                Map.entry("raw_continuation_token_storage_allowed", false),
+                Map.entry("async_poll_state", "BLOCKED_NOT_RUN"),
+                Map.entry("multi_service_state", "BLOCKED_NOT_RUN")));
         plan.put("binding_authorization_policy", Map.of(
                 "minimum_confidence", MINIMUM_AUTOMATIC_BINDING_CONFIDENCE,
                 "allowed_inference_basis", List.of("OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY",
@@ -596,6 +630,150 @@ final class LocalProgramUnderstandingApprovalService {
         plan.put("destructive_action_allowed", false);
         plan.put("final_claim_allowed", false);
         return Map.copyOf(plan);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, List<Map<String, Object>>> continuationAuthorizations(
+            Map<String, Object> approval, Map<String, Object> review, List<Map<String, Object>> drafts,
+            List<Map<String, Object>> candidates, boolean multiServiceRuntimeUnsupported) {
+        Map<String, Map<String, Object>> candidateByPlan = new TreeMap<>();
+        for (Map<String, Object> candidate : candidates)
+            candidateByPlan.put(String.valueOf(candidate.get("plan_id")), candidate);
+        List<Map<String, Object>> authorized = new ArrayList<>();
+        List<Map<String, Object>> blocked = new ArrayList<>();
+        for (Map<String, Object> draft : drafts) {
+            String planId = String.valueOf(draft.get("plan_id"));
+            Map<String, Object> candidate = candidateByPlan.get(planId);
+            Map<String, Object> operation = operation(draft);
+            Object raw = operation.get("continuation_candidates");
+            if (candidate == null || !(raw instanceof List<?> discovered)) continue;
+            for (Object item : discovered) {
+                if (!(item instanceof Map<?, ?> continuation)) continue;
+                Map<String, Object> entry = new LinkedHashMap<>();
+                String kind = String.valueOf(continuation.get("kind"));
+                String producerLocation = String.valueOf(continuation.get("producer_location"));
+                String producerReference = String.valueOf(continuation.get("producer_reference"));
+                String consumerLocation = String.valueOf(continuation.get("consumer_location"));
+                String consumerReference = String.valueOf(continuation.get("consumer_reference"));
+                String method = String.valueOf(candidate.get("http_method"));
+                String boundary = String.valueOf(candidate.get("service_boundary_id"));
+                int maxIterations = continuation.get("max_iterations") instanceof Number number
+                        ? number.intValue() : -1;
+                int maxDuration = continuation.get("max_duration_seconds") instanceof Number number
+                        ? number.intValue() : -1;
+                entry.put("continuation_id", String.valueOf(continuation.get("continuation_id")));
+                entry.put("kind", kind);
+                entry.put("plan_id", planId);
+                entry.put("openapi_document_id", candidate.get("openapi_document_id"));
+                entry.put("service_boundary_id", boundary);
+                entry.put("producer_location", producerLocation);
+                entry.put("producer_reference", producerReference);
+                entry.put("consumer_location", consumerLocation);
+                entry.put("consumer_reference", consumerReference);
+                entry.put("max_iterations", maxIterations);
+                entry.put("max_duration_seconds", maxDuration);
+                entry.put("max_cumulative_response_bytes", 8_388_608);
+                entry.put("termination_policy", String.valueOf(continuation.get("termination_policy")));
+                entry.put("review_sha256", review.get("review_sha256"));
+                entry.put("approval_receipt_sha256", approval.get("receipt_sha256"));
+                entry.put("approval_manifest_sha256", approval.get("continuation_approval_manifest_sha256"));
+                entry.put("raw_continuation_token_storage_allowed", false);
+                boolean safeProducer = "BODY_POINTER".equals(producerLocation)
+                        && producerReference.matches("(?:/(?:[A-Za-z0-9._-]|~[01]){1,128}){1,16}")
+                        || "RESPONSE_HEADER".equals(producerLocation)
+                        && Set.of("Next-Cursor", "X-Continuation-Token", "X-Next-Cursor")
+                                .contains(producerReference);
+                boolean eligible = !multiServiceRuntimeUnsupported
+                        && "PAGINATION".equals(kind) && Set.of("GET", "HEAD").contains(method)
+                        && boundary.matches("SERVICE-[0-9a-f]{16}")
+                        && boundary.equals(String.valueOf(continuation.get("service_boundary_id")))
+                        && String.valueOf(candidate.get("openapi_document_id")).matches("OPENAPI-DOC-[0-9a-f]{16}")
+                        && safeProducer && "QUERY".equals(consumerLocation)
+                        && consumerReference.matches("(?i)(cursor|page[_-]?token|continuation[_-]?token|page|offset)")
+                        && maxIterations >= 1 && maxIterations <= 100
+                        && maxDuration >= 1 && maxDuration <= 300
+                        && "STOP_ON_ABSENT_NULL_EMPTY_OR_REPEATED_TOKEN".equals(
+                                continuation.get("termination_policy"))
+                        && Boolean.TRUE.equals(continuation.get("same_service_only"))
+                        && Boolean.FALSE.equals(continuation.get("cross_service_auto_binding_allowed"))
+                        && Boolean.TRUE.equals(continuation.get("review_required"))
+                        && Boolean.FALSE.equals(continuation.get("auto_execute"))
+                        && Boolean.FALSE.equals(continuation.get("score_eligible"))
+                        && "NOT_RUN".equals(continuation.get("runtime_state"))
+                        && approvedContinuationEntry(approval, entry, method);
+                if (eligible) {
+                    entry.put("review_state", "REVIEWED_AND_SEPARATELY_APPROVED");
+                    entry.put("state", "AUTHORIZED_NOT_RUN");
+                    authorized.add(Map.copyOf(entry));
+                } else {
+                    entry.put("review_state", "REVIEW_REQUIRED_NOT_AUTHORIZED");
+                    entry.put("state", "BLOCKED_NOT_RUN");
+                    entry.put("blocked_reason", "ASYNC_OR_UNSAFE_OR_CROSS_SERVICE_CONTINUATION_NOT_EXECUTABLE");
+                    blocked.add(Map.copyOf(entry));
+                }
+            }
+        }
+        return Map.of("authorized", List.copyOf(authorized), "blocked", List.copyOf(blocked));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean approvedContinuationEntry(Map<String, Object> approval,
+            Map<String, Object> entry, String method) {
+        Object raw = approval.get("continuation_approval_manifest");
+        if (!(raw instanceof List<?> manifest)) return false;
+        Map<String, Object> expected = continuationManifestEntry(entry, method);
+        return manifest.stream().anyMatch(item -> item instanceof Map<?, ?> value && value.equals(expected));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> continuationApprovalManifest(Map<String, Object> review) {
+        Object raw = review.get("reviewed_e2e_plan_draft");
+        if (!(raw instanceof List<?> drafts)) return List.of();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Object item : drafts) {
+            if (!(item instanceof Map<?, ?> untypedDraft)) continue;
+            Map<String, Object> draft = (Map<String, Object>) untypedDraft;
+            Map<String, Object> operation = operation(draft);
+            Object continuations = operation.get("continuation_candidates");
+            if (!(continuations instanceof List<?> values)) continue;
+            for (Object value : values) {
+                if (!(value instanceof Map<?, ?> continuation)) continue;
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("continuation_id", String.valueOf(continuation.get("continuation_id")));
+                entry.put("kind", String.valueOf(continuation.get("kind")));
+                entry.put("plan_id", String.valueOf(draft.get("plan_id")));
+                entry.put("openapi_document_id", String.valueOf(operation.get("openapi_document_id")));
+                entry.put("service_boundary_id", String.valueOf(operation.get("service_boundary_id")));
+                entry.put("producer_location", String.valueOf(continuation.get("producer_location")));
+                entry.put("producer_reference", String.valueOf(continuation.get("producer_reference")));
+                entry.put("consumer_location", String.valueOf(continuation.get("consumer_location")));
+                entry.put("consumer_reference", String.valueOf(continuation.get("consumer_reference")));
+                entry.put("max_iterations", continuation.get("max_iterations"));
+                entry.put("max_duration_seconds", continuation.get("max_duration_seconds"));
+                entry.put("max_cumulative_response_bytes", 8_388_608);
+                entry.put("termination_policy", String.valueOf(continuation.get("termination_policy")));
+                result.add(continuationManifestEntry(entry,
+                        String.valueOf(operation.getOrDefault("http_method", "NONE"))));
+            }
+        }
+        return result.stream().sorted(Comparator.comparing(value -> value.get("continuation_id").toString()))
+                .toList();
+    }
+
+    private static Map<String, Object> continuationManifestEntry(Map<String, Object> entry, String method) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (String field : List.of("continuation_id", "kind", "plan_id", "openapi_document_id",
+                "service_boundary_id", "producer_location", "producer_reference", "consumer_location",
+                "consumer_reference", "max_iterations", "max_duration_seconds",
+                "max_cumulative_response_bytes", "termination_policy"))
+            result.put(field, entry.get(field));
+        result.put("http_method", method);
+        result.put("same_operation_only", true);
+        result.put("same_service_only", true);
+        result.put("cross_service_auto_binding_allowed", false);
+        result.put("redirect_policy", "NEVER");
+        result.put("raw_continuation_token_storage_allowed", false);
+        return Map.copyOf(result);
     }
 
     @SuppressWarnings("unchecked")
@@ -777,6 +955,14 @@ final class LocalProgramUnderstandingApprovalService {
         }
         if (value.containsKey("record_format_version"))
             immutable.put("record_format_version", value.get("record_format_version"));
+        if (((Number) value.getOrDefault("record_format_version", 1)).intValue() >= 3) {
+            for (String key : List.of("continuation_approval_manifest",
+                    "continuation_approval_manifest_sha256")) {
+                if (!value.containsKey(key))
+                    throw new IllegalStateException("PROGRAM_APPROVAL_REQUEST_FIELD_MISSING:" + key);
+                immutable.put(key, value.get(key));
+            }
+        }
         return Hashing.sha256(mapper.writeValueAsBytes(immutable));
     }
 

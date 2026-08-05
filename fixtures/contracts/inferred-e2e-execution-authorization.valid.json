@@ -8,6 +8,7 @@
   "approval_request_id": "program-understanding-approval-22222222-2222-2222-2222-222222222222",
   "approval_request_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
   "approval_receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "continuation_approval_manifest_sha256": "abababababababababababababababababababababababababababababababab",
   "authorization_expires_at": "2026-08-05T01:00:00Z",
   "runtime_reference_ids": {"authentication": "env:ONSURE_TARGET_AUTH_TOKEN"},
   "execution_scope": "ISOLATED_SYNTHETIC_LOOPBACK", "candidate_count": 3, "blocked_candidate_count": 1,
@@ -15,7 +16,8 @@
     "plan_id": "E2E-123", "flow_id": "FLOW-123", "http_method": "POST", "http_path": "/orders",
     "request_schema_refs": ["#/components/schemas/Order"], "request_schema_declared": true,
     "security_declared": true,
-    "response_statuses": ["201"],
+    "response_statuses": ["201"], "openapi_document_id": "OPENAPI-DOC-0123456789abcdef",
+    "service_boundary_id": "SERVICE-0123456789abcdef",
     "openapi_source_path": "openapi.yaml", "openapi_source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "fixture_strategy": "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA",
     "oracle_strategy": "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT",
@@ -24,7 +26,8 @@
   }, {
     "plan_id": "E2E-124", "flow_id": "FLOW-124", "http_method": "GET", "http_path": "/orders/{orderId}",
     "request_schema_refs": [], "request_schema_declared": false, "security_declared": false,
-    "response_statuses": ["200"], "openapi_source_path": "openapi.yaml",
+    "response_statuses": ["200"], "openapi_document_id": "OPENAPI-DOC-0123456789abcdef",
+    "service_boundary_id": "SERVICE-0123456789abcdef", "openapi_source_path": "openapi.yaml",
     "openapi_source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "fixture_strategy": "NO_BODY_OR_REVIEWED_FIXTURE_REFERENCE_REQUIRED",
     "oracle_strategy": "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT",
@@ -33,7 +36,9 @@
   }, {
     "plan_id": "E2E-125", "flow_id": "FLOW-125", "http_method": "PATCH", "http_path": "/orders/{orderId}",
     "request_schema_refs": ["#/components/schemas/OrderPatch"], "request_schema_declared": true,
-    "security_declared": false, "response_statuses": ["200"], "openapi_source_path": "openapi.yaml",
+    "security_declared": false, "response_statuses": ["200"],
+    "openapi_document_id": "OPENAPI-DOC-0123456789abcdef",
+    "service_boundary_id": "SERVICE-0123456789abcdef", "openapi_source_path": "openapi.yaml",
     "openapi_source_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "fixture_strategy": "DETERMINISTIC_SYNTHETIC_FROM_OPENAPI_SCHEMA",
     "oracle_strategy": "DECLARED_RESPONSE_STATUS_AND_SCHEMA_PLUS_DIGEST_RECEIPT",
@@ -70,6 +75,15 @@
     "blocked_binding_count": 1, "execution_state": "PARTIAL_AUTHORIZATION_BLOCKED_NOT_RUN",
     "response_values_storage_allowed": false, "final_claim_allowed": false
   }],
+  "authorized_continuations": [], "blocked_continuations": [],
+  "continuation_authorization_policy": {
+    "allowed_kind": "PAGINATION", "allowed_methods": ["GET", "HEAD"],
+    "same_operation_only": true, "same_service_only": true,
+    "cross_service_auto_binding_allowed": false, "redirect_policy": "NEVER",
+    "maximum_cumulative_response_bytes": 8388608,
+    "raw_continuation_token_storage_allowed": false,
+    "async_poll_state": "BLOCKED_NOT_RUN", "multi_service_state": "BLOCKED_NOT_RUN"
+  },
   "binding_authorization_policy": {
     "minimum_confidence": 0.9,
     "allowed_inference_basis": ["OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY", "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_SCHEMA_SINGLETON_ARRAY", "OPENAPI_RESPONSE_SCHEMA_EXACT_PROPERTY_BODY_TYPE_COMPATIBLE"],

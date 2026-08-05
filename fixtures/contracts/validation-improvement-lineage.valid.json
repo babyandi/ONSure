@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_IMPROVEMENT_LINEAGE_V1",
+  "approval_state": "APPROVED",
+  "project_id": "project-1",
+  "target_id": "target-1",
+  "baseline_run_id": "run-before",
+  "current_run_id": "run-after",
+  "baseline_source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "current_source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "patch_apply_receipt_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "improvement_proof_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "baseline_report_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "current_report_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "patch_approval_receipt_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "patch_approval_actor": "reviewer",
+  "patch_approval_key_id": "key-1",
+  "score_store_state": "AUTHORITATIVE_VERIFIED",
+  "final_claim_allowed": false,
+  "lineage_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+}

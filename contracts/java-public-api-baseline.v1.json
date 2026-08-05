@@ -1,5 +1,5 @@
 {
-  "class_count": 265,
+  "class_count": 267,
   "classes": {
     "io.onsure.assurance.AdversarialFixtureReportMain": [
       "public final class io.onsure.assurance.AdversarialFixtureReportMain {",
@@ -2423,6 +2423,16 @@
       "    descriptor: (Ljava/nio/file/Path;)Lio/onsure/platform/ValidationPack$Contribution;",
       "}"
     ],
+    "io.onsure.platform.NestedProjectValidationPack": [
+      "public final class io.onsure.platform.NestedProjectValidationPack implements io.onsure.platform.ValidationPack {",
+      "  public io.onsure.platform.NestedProjectValidationPack();",
+      "    descriptor: ()V",
+      "  public java.lang.String id();",
+      "    descriptor: ()Ljava/lang/String;",
+      "  public io.onsure.platform.ValidationPack$Contribution detect(java.nio.file.Path) throws java.lang.Exception;",
+      "    descriptor: (Ljava/nio/file/Path;)Lio/onsure/platform/ValidationPack$Contribution;",
+      "}"
+    ],
     "io.onsure.platform.NodeScriptValidationPack": [
       "public final class io.onsure.platform.NodeScriptValidationPack implements io.onsure.platform.ValidationPack {",
       "  public io.onsure.platform.NodeScriptValidationPack();",
@@ -3495,6 +3505,16 @@
       "    descriptor: ()Ljava/nio/file/Path;",
       "  public io.onsure.platform.ValidationModel$ValidationReport report();",
       "    descriptor: ()Lio/onsure/platform/ValidationModel$ValidationReport;",
+      "}"
+    ],
+    "io.onsure.platform.ValidationImprovementLineageService": [
+      "public final class io.onsure.platform.ValidationImprovementLineageService {",
+      "  public static final java.lang.String CONTRACT;",
+      "    descriptor: Ljava/lang/String;",
+      "  public io.onsure.platform.ValidationImprovementLineageService();",
+      "    descriptor: ()V",
+      "  public java.util.Map<java.lang.String, java.lang.Object> bind(java.nio.file.Path, java.nio.file.Path, java.nio.file.Path, java.nio.file.Path, java.nio.file.Path, java.nio.file.Path, java.nio.file.Path, java.nio.file.Path, java.util.Map<java.lang.String, java.lang.String>) throws java.lang.Exception;",
+      "    descriptor: (Ljava/nio/file/Path;Ljava/nio/file/Path;Ljava/nio/file/Path;Ljava/nio/file/Path;Ljava/nio/file/Path;Ljava/nio/file/Path;Ljava/nio/file/Path;Ljava/nio/file/Path;Ljava/util/Map;)Ljava/util/Map;",
       "}"
     ],
     "io.onsure.platform.ValidationModel": [

@@ -61,6 +61,7 @@ test('semantic work modes enforce an exact fail-closed capability matrix', () =>
   assert.throws(() => requireModeCapability('OFFLINE', 'DELIVER'), /MODE_CAPABILITY_DENIED:OFFLINE:DELIVER/);
   assert.doesNotThrow(() => requireModeWorkflow('VERIFY', 'validation.run'));
   assert.doesNotThrow(() => requireModeWorkflow('IMPROVE', 'git.draft-pr'));
+  assert.doesNotThrow(() => requireModeWorkflow('IMPROVE', 'score.improvement-bind'));
   assert.equal(workflowCapability('license.read'), 'READ');
   assert.throws(() => workflowCapability('future.unclassified'), /NOT_MODE_CLASSIFIED/);
   assert.throws(() => requireModeWorkflow('AUTOPILOT', 'patch.apply'), /MODE_CAPABILITY_DENIED/);

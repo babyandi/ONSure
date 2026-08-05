@@ -107,7 +107,9 @@ class LocalProgramManagementServiceTest {
         @SuppressWarnings("unchecked")
         var latest = (Map<String, Object>) programs.get(0).get("latest_validation");
         assertEquals("NOT_RUN", latest.get("decision"));
-        assertEquals(2, ((Number) latest.get("evidence_count")).intValue());
+        assertEquals(3, ((Number) latest.get("evidence_count")).intValue());
+        assertEquals("UNKNOWN", latest.get("target_classification"));
+        assertFalse(Boolean.TRUE.equals(latest.get("real_target_universality_evidence_eligible")));
         assertTrue(latest.get("scorecard") instanceof Map<?, ?>);
     }
 

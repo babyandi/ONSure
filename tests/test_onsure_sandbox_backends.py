@@ -89,7 +89,8 @@ onsure_sandbox_backend_cleanup
             self.skipTest("The offline validation image is not installed")
         with tempfile.TemporaryDirectory(prefix="onsure-oci-probe-") as temporary:
             environment = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "ONSURE_SANDBOX_PROBE": "1",
-                           "ONSURE_VALIDATION_SANDBOX_BACKEND": "OCI_DOCKER"}
+                           "ONSURE_VALIDATION_SANDBOX_BACKEND": "OCI_DOCKER",
+                           "TMPDIR": temporary}
             result = subprocess.run(
                 ["bash", "scripts/validation-sandbox-launcher.sh", temporary, "15", "true"],
                 cwd=ROOT, env=environment, text=True, capture_output=True, check=False, timeout=30,

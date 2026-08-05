@@ -79,6 +79,33 @@ class TargetProvenanceServiceTest {
                 () -> service.capture(source, Hashing.tree(source), "REAL_REPOSITORY"));
     }
 
+    @Test
+    void usesExactExecutionSnapshotSetWithTrackedBuildAndIgnoredFiles() throws Exception {
+        Path repository = repository();
+        Path app = repository.resolve("apps/customer-app");
+        Files.createDirectories(app.resolve("build"));
+        Files.createDirectories(app.resolve("dist"));
+        Files.writeString(app.resolve("build/tracked.bin"), "tracked but excluded\n");
+        Files.writeString(app.resolve("dist/tracked.js"), "tracked but excluded\n");
+        Files.writeString(app.resolve(".gitignore"), "ignored-runtime.txt\n");
+        git(repository, "add", ".");
+        git(repository, "commit", "-q", "-m", "tracked generated files");
+        Files.writeString(app.resolve("ignored-runtime.txt"), "ignored but snapshotted\n");
+        TargetProvenanceService service = new TargetProvenanceService(
+                Files.createDirectory(temp.resolve("snapshot-workspace")));
+
+        Map<String, Object> provenance = service.capture(app, Hashing.sha256("registration"), "AUTO");
+        var snapshot = ValidationSourceSnapshot.create(app, temp.resolve("execution-snapshot"));
+
+        assertEquals(snapshot.sourceDigestBefore(), provenance.get("snapshot_source_sha256"));
+        assertEquals(snapshot.fileCount(), ((Number) provenance.get("snapshot_file_count")).intValue());
+        assertTrue(Files.exists(snapshot.snapshotRoot().resolve("ignored-runtime.txt")));
+        assertFalse(Files.exists(snapshot.snapshotRoot().resolve("build/tracked.bin")));
+        assertFalse(Files.exists(snapshot.snapshotRoot().resolve("dist/tracked.js")));
+        TargetProvenanceService.verifyRunBinding(provenance, app,
+                snapshot.sourceDigestBefore(), snapshot.snapshotDigest());
+    }
+
     private Path repository() throws Exception {
         Path repository = Files.createDirectory(temp.resolve("repository"));
         Files.createDirectories(repository.resolve("apps/customer-app"));

@@ -35,6 +35,7 @@ const OPERATION_CAPABILITIES = Object.freeze({
   'patch.apply': 'IMPROVE',
   'patch.rollback': 'IMPROVE',
   'improvement.prove': 'IMPROVE',
+  'score.improvement-bind': 'IMPROVE',
   'git.commit': 'DELIVER',
   'git.draft-pr': 'DELIVER',
   'license.issue': 'BUSINESS',

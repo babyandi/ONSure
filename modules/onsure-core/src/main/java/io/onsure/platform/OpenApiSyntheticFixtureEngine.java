@@ -293,8 +293,11 @@ final class OpenApiSyntheticFixtureEngine {
         Set<String> consumedHeaderBindings = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (Map.Entry<String, JsonNode> entry : new TreeMap<>(parameters).entrySet()) {
             String location = entry.getValue().path("in").asText("");
-            if (!entry.getValue().path("required").asBoolean(false) || "path".equals(location)) continue;
             String name = entry.getValue().path("name").asText();
+            boolean explicitlyBound = "query".equals(location) && boundQueryValues.containsKey(name)
+                    || "header".equals(location) && boundHeaderValues.containsKey(name);
+            if ((!entry.getValue().path("required").asBoolean(false) && !explicitlyBound)
+                    || "path".equals(location)) continue;
             String style = entry.getValue().path("style").asText(switch (location) {
                 case "header" -> "simple"; case "query", "cookie" -> "form"; default -> "";
             });

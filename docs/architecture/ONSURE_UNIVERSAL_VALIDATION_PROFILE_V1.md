@@ -111,6 +111,16 @@ outcome을 기존 관리 projection에 결속한다. 관리화면은 이 project
 `ONSURE_PASS_EVIDENCE_FINALIZATION_V1` 검사를 수행한다. 운영·복구 로그를 포함한 최종 대조가
 실패하면 기존 증적 Step이 통과했더라도 `EVIDENCE_DECISION`과 전체 판정을 `FAIL`로 내린다.
 
+대상 provenance는 등록 시점 source digest와 실행 snapshot source set을 서로 다른 필드로
+보존한다. 실행 source set은 `ValidationSourceSnapshot`과 정확히 같은 제외 규칙·파일 상한을
+사용하므로 tracked `build`/`dist` 생성물은 포함하지 않고, 실행에 포함되는 ignored 파일은
+manifest에 포함한다. 실행 전후 repository identity, commit, scope, clean 상태, snapshot digest와
+manifest를 다시 확인한다. dirty real repository, commit·manifest·snapshot 불일치는 실행 전
+`BLOCKED` 또는 실행 후 `INVALID_EVIDENCE`로 닫힌다. receipt, 관리 report, evidence의 provenance
+digest·classification·commit·source·manifest와 실제 receipt hash는 별도 verifier가 교차 대조한다.
+`FIXTURE`, `SYNTHETIC_SNAPSHOT`, `UNKNOWN`은 실제 대상 범용성 증거 집계에 사용할 수 없고,
+provenance 자체만으로는 어떤 PASS도 만들 수 없다.
+
 기본 Detector는 Java `ServiceLoader`에서 설치된 Pack을 ID 순으로 불러온다. 배포자가
 검토한 별도 JAR의 `META-INF/services/io.onsure.platform.ValidationPack`만 로딩 대상이며,
 검증 대상 source 안의 provider class나 descriptor는 classpath에 추가하지 않는다. 테스트와

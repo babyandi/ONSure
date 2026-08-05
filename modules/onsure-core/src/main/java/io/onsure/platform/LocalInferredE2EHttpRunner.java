@@ -89,6 +89,7 @@ final class LocalInferredE2EHttpRunner {
                 .getOrDefault("authorized_candidates", List.of());
         @SuppressWarnings("unchecked") List<Map<String, Object>> lifecycles =
                 (List<Map<String, Object>>) plan.getOrDefault("authorized_lifecycles", List.of());
+        Map<String, ContinuationAuthorization> continuations = authorizedContinuationsByPlan(plan, candidates);
         List<Map<String, Object>> orderedCandidates = orderedCandidates(candidates, lifecycles);
         Map<String, List<Map<String, Object>>> bindingsByConsumer = bindingsByConsumer(lifecycles);
         Set<String> producerPlanIds = producerPlanIds(lifecycles);
@@ -122,84 +123,123 @@ final class LocalInferredE2EHttpRunner {
                 MaterializedBindings boundValues = materializeBindings(
                         candidate.get("plan_id").toString(), bindingsByConsumer, producerOutputs, inputBindings);
                 OpenApiSyntheticFixtureEngine fixtureEngine = fixtureEngines.get(candidate.get("plan_id").toString());
-                OpenApiSyntheticFixtureEngine.PreparedRequest prepared =
-                        fixtureEngine.prepare(method, routeTemplate, environment, runtimeReferences,
-                                new OpenApiSyntheticFixtureEngine.BoundRequestValues(
-                                        boundValues.path(), boundValues.query(), boundValues.headers(),
-                                        boundValues.body()));
-                String route = prepared.route();
-                if (!safeRoute(route)) throw new IllegalArgumentException("INFERRED_E2E_ROUTE_UNSAFE");
-                URI uri = URI.create(base.toString() + route
-                        + (prepared.query().isBlank() ? "" : "?" + prepared.query()));
-                HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(15))
-                        .header("Accept", "application/json").header("User-Agent", "ONSure-Inferred-E2E/1");
-                prepared.headers().forEach(requestBuilder::header);
-                if (prepared.contentType() != null) requestBuilder.header("Content-Type", prepared.contentType());
-                HttpRequest request = requestBuilder.method(method, prepared.body().length == 0
-                        ? HttpRequest.BodyPublishers.noBody()
-                        : HttpRequest.BodyPublishers.ofByteArray(prepared.body())).build();
-                long before = System.nanoTime();
-                executed++;
-                HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-                byte[] body;
-                try (InputStream stream = response.body()) { body = stream.readNBytes(MAX_RESPONSE_BYTES + 1); }
-                if (body.length > MAX_RESPONSE_BYTES) throw new IllegalStateException("INFERRED_E2E_RESPONSE_TOO_LARGE");
-                @SuppressWarnings("unchecked") List<String> expected =
-                        (List<String>) candidate.getOrDefault("response_statuses", List.of());
-                boolean successfulStatus = response.statusCode() >= 200 && response.statusCode() < 300;
-                boolean statusOracle = successfulStatus
-                        && (expected.isEmpty() || statusExpected(expected, response.statusCode()));
-                String responseContentType = response.headers().firstValue("Content-Type").orElse(null);
-                OpenApiSyntheticFixtureEngine.OracleResult schemaOracle = fixtureEngine.validateResponse(
-                        method, response.statusCode(), responseContentType, body);
-                boolean oracle = statusOracle && schemaOracle.passed();
-                boolean oracleBlocked = statusOracle && schemaOracle.blocked();
-                if (oracle && producerPlanIds.contains(candidate.get("plan_id").toString())) {
-                    try {
-                        JsonNode output = mapper.readTree(body);
-                        if (output != null) producerOutputs.put(candidate.get("plan_id").toString(), output);
-                    } catch (Exception ignored) {
-                        // Schema/status Oracle owns the current step; an unavailable JSON binding blocks its consumer.
+                ContinuationAuthorization continuation = continuations.get(candidate.get("plan_id").toString());
+                String continuationToken = null;
+                Set<String> observedTokenDigests = new java.util.LinkedHashSet<>();
+                int pageIndex = 0;
+                long cumulativeResponseBytes = 0;
+                long continuationStarted = System.nanoTime();
+                boolean continuePaging;
+                do {
+                    if (continuationToken != null && !paginationBudgetAvailable(
+                            pageIndex, cumulativeResponseBytes, continuationStarted, continuation))
+                        throw new IllegalArgumentException("OPENAPI_PAGINATION_BUDGET_EXHAUSTED_BEFORE_REQUEST");
+                    pageIndex++;
+                    Map<String, String> query = new TreeMap<>(boundValues.query());
+                    if (continuationToken != null
+                            && query.putIfAbsent(continuation.consumerReference(), continuationToken) != null)
+                        throw new IllegalArgumentException("OPENAPI_PAGINATION_QUERY_BINDING_COLLISION");
+                    OpenApiSyntheticFixtureEngine.PreparedRequest prepared = fixtureEngine.prepare(
+                            method, routeTemplate, environment, runtimeReferences,
+                            new OpenApiSyntheticFixtureEngine.BoundRequestValues(
+                                    boundValues.path(), query, boundValues.headers(), boundValues.body()));
+                    String route = prepared.route();
+                    if (!safeRoute(route)) throw new IllegalArgumentException("INFERRED_E2E_ROUTE_UNSAFE");
+                    URI uri = URI.create(base.toString() + route
+                            + (prepared.query().isBlank() ? "" : "?" + prepared.query()));
+                    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(15))
+                            .header("Accept", "application/json").header("User-Agent", "ONSure-Inferred-E2E/1");
+                    prepared.headers().forEach(requestBuilder::header);
+                    if (prepared.contentType() != null) requestBuilder.header("Content-Type", prepared.contentType());
+                    HttpRequest request = requestBuilder.method(method, prepared.body().length == 0
+                            ? HttpRequest.BodyPublishers.noBody()
+                            : HttpRequest.BodyPublishers.ofByteArray(prepared.body())).build();
+                    long before = System.nanoTime();
+                    executed++;
+                    HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                    byte[] body;
+                    long cumulativeRemaining = continuation == null ? MAX_RESPONSE_BYTES
+                            : continuation.maxCumulativeResponseBytes() - cumulativeResponseBytes;
+                    int readLimit = (int) Math.min(MAX_RESPONSE_BYTES + 1L,
+                            Math.max(1L, cumulativeRemaining + 1L));
+                    try (InputStream stream = response.body()) { body = stream.readNBytes(readLimit); }
+                    if (body.length > MAX_RESPONSE_BYTES)
+                        throw new IllegalStateException("INFERRED_E2E_RESPONSE_TOO_LARGE");
+                    cumulativeResponseBytes += body.length;
+                    @SuppressWarnings("unchecked") List<String> expected =
+                            (List<String>) candidate.getOrDefault("response_statuses", List.of());
+                    boolean successfulStatus = response.statusCode() >= 200 && response.statusCode() < 300;
+                    boolean statusOracle = successfulStatus
+                            && (expected.isEmpty() || statusExpected(expected, response.statusCode()));
+                    String responseContentType = response.headers().firstValue("Content-Type").orElse(null);
+                    OpenApiSyntheticFixtureEngine.OracleResult schemaOracle = fixtureEngine.validateResponse(
+                            method, response.statusCode(), responseContentType, body);
+                    boolean oracle = statusOracle && schemaOracle.passed();
+                    boolean oracleBlocked = statusOracle && schemaOracle.blocked();
+                    JsonNode output = null;
+                    try { output = mapper.readTree(body); } catch (Exception ignored) { }
+                    if (oracle && producerPlanIds.contains(candidate.get("plan_id").toString()) && output != null)
+                        producerOutputs.put(candidate.get("plan_id").toString(), output);
+
+                    TokenResult next = continuation == null ? TokenResult.notApplicable()
+                            : continuationToken(continuation, output, response);
+                    String terminationReason = continuation == null ? "NOT_APPLICABLE"
+                            : terminationReason(next, observedTokenDigests, pageIndex, continuation,
+                                    cumulativeResponseBytes, continuationStarted, oracle, oracleBlocked);
+                    boolean continuationBlocked = terminationReason.endsWith("_BLOCKED");
+                    Map<String, Object> step = new LinkedHashMap<>();
+                    step.put("plan_id", candidate.get("plan_id")); step.put("http_method", method);
+                    step.put("http_path_template", routeTemplate);
+                    step.put("http_path", boundValues.path().isEmpty() ? route : routeTemplate);
+                    step.put("http_path_sha256", Hashing.sha256(route));
+                    step.put("request_uri", base.toString() + (boundValues.path().isEmpty() ? route : routeTemplate));
+                    step.put("request_uri_sha256", Hashing.sha256(uri.toString()));
+                    step.put("request_body_sha256", Hashing.sha256(prepared.body()));
+                    step.put("request_body_bytes", prepared.body().length);
+                    step.put("request_body_stored", false);
+                    step.put("request_query_parameter_names", prepared.queryParameterNames());
+                    step.put("request_header_names", prepared.headers().keySet().stream().sorted().toList());
+                    step.put("request_cookie_names", prepared.cookieNames());
+                    step.put("request_parameter_values_stored", false);
+                    step.put("request_header_values_stored", false);
+                    step.put("input_bindings", List.copyOf(inputBindings));
+                    step.put("bound_response_values_stored", false);
+                    if (prepared.authenticationReferenceId() != null) {
+                        step.put("authentication_reference_id", prepared.authenticationReferenceId());
+                        step.put("authentication_value_sha256", prepared.authenticationValueSha256());
+                        step.put("authentication_scheme_type", prepared.authenticationSchemeType());
+                        step.put("authentication_value_stored", false);
                     }
-                }
-                Map<String, Object> step = new LinkedHashMap<>();
-                step.put("plan_id", candidate.get("plan_id")); step.put("http_method", method);
-                step.put("http_path_template", routeTemplate);
-                step.put("http_path", boundValues.path().isEmpty() ? route : routeTemplate);
-                step.put("http_path_sha256", Hashing.sha256(route));
-                step.put("request_uri", base.toString() + (boundValues.path().isEmpty() ? route : routeTemplate));
-                step.put("request_uri_sha256", Hashing.sha256(uri.toString()));
-                step.put("request_body_sha256", Hashing.sha256(prepared.body()));
-                step.put("request_body_bytes", prepared.body().length);
-                step.put("request_body_stored", false);
-                step.put("request_query_parameter_names", prepared.queryParameterNames());
-                step.put("request_header_names", prepared.headers().keySet().stream().sorted().toList());
-                step.put("request_cookie_names", prepared.cookieNames());
-                step.put("request_parameter_values_stored", false);
-                step.put("request_header_values_stored", false);
-                step.put("input_bindings", List.copyOf(inputBindings));
-                step.put("bound_response_values_stored", false);
-                if (prepared.authenticationReferenceId() != null) {
-                    step.put("authentication_reference_id", prepared.authenticationReferenceId());
-                    step.put("authentication_value_sha256", prepared.authenticationValueSha256());
-                    step.put("authentication_scheme_type", prepared.authenticationSchemeType());
-                    step.put("authentication_value_stored", false);
-                }
-                step.put("request_schema_sha256", prepared.requestSchemaSha256());
-                step.put("fixture_strategy", prepared.fixtureStrategy());
-                step.put("response_status", response.statusCode()); step.put("expected_statuses", expected);
-                step.put("response_body_sha256", Hashing.sha256(body)); step.put("response_bytes", body.length);
-                step.put("response_schema_declared", schemaOracle.schemaDeclared());
-                if (schemaOracle.responseSchemaSha256() != null)
-                    step.put("response_schema_sha256", schemaOracle.responseSchemaSha256());
-                step.put("response_schema_errors", schemaOracle.errors());
-                step.put("oracle_strategy", schemaOracle.strategy());
-                step.put("duration_millis", Duration.ofNanos(System.nanoTime() - before).toMillis());
-                step.put("oracle_outcome", oracle ? "PASS_NONFINAL" : oracleBlocked ? "BLOCKED" : "FAIL");
-                step.put("response_body_stored", false); step.put("final_claim_allowed", false);
-                steps.add(Map.copyOf(step));
-                if (oracleBlocked) blocked = true;
-                else if (!oracle) failed = true;
+                    step.put("request_schema_sha256", prepared.requestSchemaSha256());
+                    step.put("fixture_strategy", prepared.fixtureStrategy());
+                    step.put("response_status", response.statusCode()); step.put("expected_statuses", expected);
+                    step.put("response_body_sha256", Hashing.sha256(body)); step.put("response_bytes", body.length);
+                    step.put("response_schema_declared", schemaOracle.schemaDeclared());
+                    if (schemaOracle.responseSchemaSha256() != null)
+                        step.put("response_schema_sha256", schemaOracle.responseSchemaSha256());
+                    step.put("response_schema_errors", schemaOracle.errors());
+                    step.put("oracle_strategy", schemaOracle.strategy());
+                    step.put("duration_millis", Duration.ofNanos(System.nanoTime() - before).toMillis());
+                    step.put("oracle_outcome", oracleBlocked || continuationBlocked ? "BLOCKED"
+                            : oracle ? "PASS_NONFINAL" : "FAIL");
+                    if (continuation != null) {
+                        step.put("continuation_id", continuation.continuationId());
+                        step.put("pagination_page_index", pageIndex);
+                        if (continuationToken != null)
+                            step.put("continuation_input_token_sha256", Hashing.sha256(continuationToken));
+                        if (next.token() != null)
+                            step.put("continuation_output_token_sha256", Hashing.sha256(next.token()));
+                        step.put("continuation_token_stored", false);
+                        step.put("cumulative_response_bytes", cumulativeResponseBytes);
+                        step.put("continuation_termination_reason", terminationReason);
+                    }
+                    step.put("response_body_stored", false); step.put("final_claim_allowed", false);
+                    steps.add(Map.copyOf(step));
+                    if (oracleBlocked || continuationBlocked) blocked = true;
+                    else if (!oracle) failed = true;
+                    continuePaging = "CONTINUE".equals(terminationReason);
+                    if (continuePaging) continuationToken = next.token();
+                } while (continuePaging);
             } catch (Exception error) {
                 String errorCode = errorCode(error);
                 boolean executionBlocked = errorCode.startsWith("OPENAPI_");
@@ -216,6 +256,9 @@ final class LocalInferredE2EHttpRunner {
         receipt.put("execution_authorization_id", authorizationId); receipt.put("execution_plan_sha256", planSha);
         receipt.put("approval_request_sha256", plan.get("approval_request_sha256"));
         receipt.put("approval_receipt_sha256", plan.get("approval_receipt_sha256"));
+        receipt.put("source_sha256", plan.get("source_sha256"));
+        receipt.put("profile_file_sha256", plan.get("profile_file_sha256"));
+        receipt.put("review_sha256", plan.get("review_sha256"));
         receipt.put("base_url_reference_id", reference); receipt.put("base_url_sha256", Hashing.sha256(base.toString()));
         receipt.put("started_at", started.toString()); receipt.put("completed_at", Instant.now().toString());
         receipt.put("step_count", steps.size()); receipt.put("executed_step_count", executed);
@@ -344,6 +387,120 @@ final class LocalInferredE2EHttpRunner {
 
     private record MaterializedBindings(Map<String, String> path, Map<String, String> query,
             Map<String, String> headers, Map<String, JsonNode> body) { }
+
+    record ContinuationAuthorization(String continuationId, String planId, String openApiDocumentId,
+            String serviceBoundaryId, String producerLocation, String producerReference,
+            String consumerReference, int maxIterations, int maxDurationSeconds,
+            long maxCumulativeResponseBytes) { }
+
+    record TokenResult(String state, String token) {
+        private static TokenResult notApplicable() { return new TokenResult("NOT_APPLICABLE", null); }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, ContinuationAuthorization> authorizedContinuationsByPlan(
+            Map<String, Object> plan, List<Map<String, Object>> candidates) {
+        Map<String, Map<String, Object>> candidateByPlan = new TreeMap<>();
+        for (Map<String, Object> candidate : candidates)
+            candidateByPlan.put(String.valueOf(candidate.get("plan_id")), candidate);
+        Object raw = plan.get("authorized_continuations");
+        if (!(raw instanceof List<?> entries)) return Map.of();
+        Map<String, ContinuationAuthorization> result = new TreeMap<>();
+        for (Object item : entries) {
+            if (!(item instanceof Map<?, ?> untyped))
+                throw new IllegalArgumentException("INFERRED_E2E_CONTINUATION_AUTHORIZATION_INVALID");
+            Map<String, Object> entry = (Map<String, Object>) untyped;
+            String planId = String.valueOf(entry.get("plan_id"));
+            Map<String, Object> candidate = candidateByPlan.get(planId);
+            String producerLocation = String.valueOf(entry.get("producer_location"));
+            String producerReference = String.valueOf(entry.get("producer_reference"));
+            String consumerReference = String.valueOf(entry.get("consumer_reference"));
+            int maxIterations = entry.get("max_iterations") instanceof Number number ? number.intValue() : -1;
+            int maxDuration = entry.get("max_duration_seconds") instanceof Number number ? number.intValue() : -1;
+            long cumulativeCap = entry.get("max_cumulative_response_bytes") instanceof Number number
+                    ? number.longValue() : -1;
+            boolean valid = candidate != null && "PAGINATION".equals(entry.get("kind"))
+                    && "AUTHORIZED_NOT_RUN".equals(entry.get("state"))
+                    && "REVIEWED_AND_SEPARATELY_APPROVED".equals(entry.get("review_state"))
+                    && Set.of("GET", "HEAD").contains(candidate.get("http_method"))
+                    && entry.get("openapi_document_id").equals(candidate.get("openapi_document_id"))
+                    && entry.get("service_boundary_id").equals(candidate.get("service_boundary_id"))
+                    && String.valueOf(entry.get("review_sha256")).equals(plan.get("review_sha256"))
+                    && String.valueOf(entry.get("approval_receipt_sha256")).equals(
+                            plan.get("approval_receipt_sha256"))
+                    && String.valueOf(entry.get("approval_manifest_sha256")).equals(
+                            plan.get("continuation_approval_manifest_sha256"))
+                    && Boolean.FALSE.equals(entry.get("raw_continuation_token_storage_allowed"))
+                    && ("BODY_POINTER".equals(producerLocation)
+                            && producerReference.matches("(?:/(?:[A-Za-z0-9._-]|~[01]){1,128}){1,16}")
+                            || "RESPONSE_HEADER".equals(producerLocation)
+                            && Set.of("Next-Cursor", "X-Continuation-Token", "X-Next-Cursor")
+                                    .contains(producerReference))
+                    && "QUERY".equals(entry.get("consumer_location"))
+                    && consumerReference.matches("(?i)(cursor|page[_-]?token|continuation[_-]?token|page|offset)")
+                    && maxIterations >= 1 && maxIterations <= 100
+                    && maxDuration >= 1 && maxDuration <= 300
+                    && cumulativeCap >= MAX_RESPONSE_BYTES && cumulativeCap <= 8_388_608
+                    && "STOP_ON_ABSENT_NULL_EMPTY_OR_REPEATED_TOKEN".equals(entry.get("termination_policy"));
+            if (!valid || result.putIfAbsent(planId, new ContinuationAuthorization(
+                    String.valueOf(entry.get("continuation_id")), planId,
+                    String.valueOf(entry.get("openapi_document_id")),
+                    String.valueOf(entry.get("service_boundary_id")), producerLocation,
+                    producerReference, consumerReference, maxIterations, maxDuration, cumulativeCap)) != null)
+                throw new IllegalArgumentException("INFERRED_E2E_CONTINUATION_AUTHORIZATION_INVALID");
+        }
+        return Map.copyOf(result);
+    }
+
+    private static TokenResult continuationToken(ContinuationAuthorization continuation, JsonNode output,
+            HttpResponse<?> response) {
+        if ("RESPONSE_HEADER".equals(continuation.producerLocation())) {
+            java.util.Optional<String> header = response.headers().firstValue(continuation.producerReference());
+            if (header.isEmpty()) return new TokenResult("ABSENT", null);
+            return normalizedToken(header.get());
+        }
+        if (output == null) return new TokenResult("ABSENT", null);
+        JsonNode value = output.at(continuation.producerReference());
+        if (value.isMissingNode()) return new TokenResult("ABSENT", null);
+        if (value.isNull()) return new TokenResult("NULL", null);
+        if (!value.isValueNode()) return new TokenResult("INVALID", null);
+        return normalizedToken(value.asText());
+    }
+
+    private static TokenResult normalizedToken(String raw) {
+        if (raw == null) return new TokenResult("NULL", null);
+        if (raw.isEmpty()) return new TokenResult("EMPTY", null);
+        if (raw.isBlank() || raw.length() > 4096 || raw.chars().anyMatch(character -> character < 0x20))
+            return new TokenResult("INVALID", null);
+        return new TokenResult("PRESENT", raw);
+    }
+
+    static String terminationReason(TokenResult next, Set<String> observedTokenDigests, int pageIndex,
+            ContinuationAuthorization continuation, long cumulativeResponseBytes, long startedNanos,
+            boolean oracle, boolean oracleBlocked) {
+        if (oracleBlocked) return "ORACLE_BLOCKED";
+        if (!oracle) return "ORACLE_FAILED";
+        if ("ABSENT".equals(next.state())) return "ABSENT_TOKEN";
+        if ("NULL".equals(next.state())) return "NULL_TOKEN";
+        if ("EMPTY".equals(next.state())) return "EMPTY_TOKEN";
+        if (!"PRESENT".equals(next.state())) return "INVALID_TOKEN_BLOCKED";
+        if (cumulativeResponseBytes >= continuation.maxCumulativeResponseBytes())
+            return "CUMULATIVE_RESPONSE_BYTES_BLOCKED";
+        String digest = Hashing.sha256(next.token());
+        if (!observedTokenDigests.add(digest)) return "REPEATED_TOKEN_BLOCKED";
+        if (pageIndex >= continuation.maxIterations()) return "MAX_ITERATIONS_BLOCKED";
+        if (System.nanoTime() - startedNanos >= Duration.ofSeconds(
+                continuation.maxDurationSeconds()).toNanos()) return "MAX_DURATION_BLOCKED";
+        return "CONTINUE";
+    }
+
+    static boolean paginationBudgetAvailable(int completedPages, long cumulativeResponseBytes,
+            long startedNanos, ContinuationAuthorization continuation) {
+        return completedPages < continuation.maxIterations()
+                && cumulativeResponseBytes < continuation.maxCumulativeResponseBytes()
+                && System.nanoTime() - startedNanos < Duration.ofSeconds(
+                        continuation.maxDurationSeconds()).toNanos();
+    }
 
     private static String canonicalBindingValue(JsonNode value) {
         return value.toString();

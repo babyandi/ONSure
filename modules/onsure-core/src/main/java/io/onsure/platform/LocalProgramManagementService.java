@@ -392,6 +392,8 @@ final class LocalProgramManagementService {
         if (!sourceReferenceMatches) {
             throw new IllegalArgumentException("PROGRAM_SOURCE_REFERENCE_DRIFT");
         }
+        Map<String, Object> targetProvenance = targetProvenanceForRun(
+                targetId, source, before.digest());
         Path environmentProfileFile = optionalWorkspaceFile(request, "environment_profile_file");
         EnvironmentRequirementProfile.Loaded environmentProfile = environmentProfileFile == null
                 ? null : EnvironmentRequirementProfile.load(environmentProfileFile);
@@ -406,8 +408,12 @@ final class LocalProgramManagementService {
         UniversalValidationProfile.Profile detected = detector.detect(
                 targetId, source, requirements);
         UniversalValidationRunner.RunResult run = new UniversalValidationRunner().run(
-                detected, runRoot, environmentProfile, executionProfile);
-        JsonNode scorecard = mapper.readTree(run.receiptFile().toFile()).path("scorecard");
+                detected, runRoot, environmentProfile, executionProfile, targetProvenance);
+        JsonNode receiptBody = mapper.readTree(run.receiptFile().toFile());
+        JsonNode scorecard = receiptBody.path("scorecard");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> runtimeTargetProvenance = mapper.convertValue(
+                receiptBody.path("target_provenance"), Map.class);
         TreeObservation after = inclusiveTreeDigest(source);
         if (!before.digest().equals(after.digest()) || before.fileCount() != after.fileCount()
                 || before.byteCount() != after.byteCount() || run.sourceMutationDetected()) {
@@ -415,13 +421,27 @@ final class LocalProgramManagementService {
         }
         List<Map<String, Object>> findings = universalFindings(run);
         List<Map<String, Object>> remediation = remediation(findings);
+        boolean realTargetEvidenceEligible = receiptBody.path(
+                "real_target_universality_evidence_eligible").asBoolean(false);
         List<Map<String, Object>> evidence = List.of(
                 Map.of("evidence_id", "source-tree", "type", "SOURCE_DIGEST",
                         "sha256", before.digest(), "file_count", before.fileCount(),
                         "byte_count", before.byteCount(), "read_only", true),
                 Map.of("evidence_id", "universal-receipt", "type", "UNIVERSAL_VALIDATION_RECEIPT",
                         "sha256", run.receiptSha256(), "path", run.receiptFile().toString(),
-                        "overall_outcome", run.overallOutcome().name(), "final_claim_allowed", false));
+                        "overall_outcome", run.overallOutcome().name(), "final_claim_allowed", false),
+                Map.ofEntries(
+                        Map.entry("evidence_id", "target-provenance"),
+                        Map.entry("type", "TARGET_PROVENANCE"),
+                        Map.entry("sha256", runtimeTargetProvenance.get("provenance_sha256")),
+                        Map.entry("target_classification", runtimeTargetProvenance.get("target_classification")),
+                        Map.entry("snapshot_manifest_sha256",
+                                runtimeTargetProvenance.get("snapshot_manifest_sha256")),
+                        Map.entry("runtime_outcome", run.overallOutcome().name()),
+                        Map.entry("real_target_universality_evidence_eligible",
+                                realTargetEvidenceEligible),
+                        Map.entry("provenance_alone_is_pass_evidence", false),
+                        Map.entry("final_claim_allowed", false)));
         String decision = run.overallOutcome().name();
         Map<String, Object> report = new LinkedHashMap<>();
         report.put("contract", CONTRACT);
@@ -438,6 +458,15 @@ final class LocalProgramManagementService {
         report.put("sourceDigestAfter", after.digest());
         report.put("sourceMutationDetected", false);
         report.put("sourceReferenceMatches", sourceReferenceMatches);
+        report.put("snapshotSourceDigest", run.sourceDigest());
+        report.put("snapshotDigest", run.snapshotDigest());
+        report.put("targetProvenance", runtimeTargetProvenance);
+        report.put("targetProvenanceSha256", runtimeTargetProvenance.get("provenance_sha256"));
+        report.put("targetClassification", runtimeTargetProvenance.get("target_classification"));
+        report.put("targetRepositoryCommit", runtimeTargetProvenance.get("repository_commit_sha"));
+        report.put("targetSnapshotManifestSha256", runtimeTargetProvenance.get("snapshot_manifest_sha256"));
+        report.put("realTargetUniversalityEvidenceEligible", realTargetEvidenceEligible);
+        report.put("provenanceAloneIsPassEvidence", false);
         report.put("universalReceipt", run.receiptFile().toString());
         report.put("universalReceiptSha256", run.receiptSha256());
         report.put("phaseOutcomes", run.phaseOutcomes());
@@ -455,17 +484,33 @@ final class LocalProgramManagementService {
         report.put("independent_otester", "NOT_RUN");
         report.put("independent_oaudit", "NOT_RUN");
         report.put("final_claim_allowed", false);
-        write(runRoot.resolve("validation-report.json"), report);
-        write(runRoot.resolve("evidence.json"), evidence);
+        Path reportFile = runRoot.resolve("validation-report.json");
+        Path evidenceFile = runRoot.resolve("evidence.json");
+        write(reportFile, report);
+        write(evidenceFile, evidence);
         write(runRoot.resolve("remediation-plans.json"), remediation);
+        TargetProvenanceRunVerifier.Verification provenanceVerification =
+                new TargetProvenanceRunVerifier().verify(runRoot);
+        if (!provenanceVerification.valid()) {
+            throw new IllegalStateException("TARGET_PROVENANCE_RUN_EVIDENCE_INVALID:"
+                    + String.join(",", provenanceVerification.reasons()));
+        }
         Map<String, Object> scorePersistence = new PostgresqlValidationScoreStore(environment).persist(
                 projectId, targetId, runId, run.sourceDigest(), run.receiptSha256(),
-                run.completedAt(), scorecard);
+                run.completedAt(), scorecard, new PostgresqlValidationScoreStore.Evidence(
+                        receiptBody, mapper.valueToTree(report), mapper.valueToTree(findings),
+                        runtimeTargetProvenance.get("repository_commit_sha") == null ? null
+                                : runtimeTargetProvenance.get("repository_commit_sha").toString(),
+                        Hashing.file(evidenceFile), Hashing.file(reportFile)));
         return Map.ofEntries(
                 Map.entry("contract", CONTRACT), Map.entry("profile", "UNIVERSAL"),
                 Map.entry("run_id", runId), Map.entry("run_root", runRoot.toString()),
                 Map.entry("receipt_file", run.receiptFile().toString()),
                 Map.entry("receipt_sha256", run.receiptSha256()), Map.entry("decision", decision),
+                Map.entry("target_provenance_sha256", runtimeTargetProvenance.get("provenance_sha256")),
+                Map.entry("target_classification", runtimeTargetProvenance.get("target_classification")),
+                Map.entry("real_target_universality_evidence_eligible", realTargetEvidenceEligible),
+                Map.entry("provenance_evidence_integrity", "VERIFIED"),
                 Map.entry("scorecard", mapper.convertValue(scorecard, Map.class)),
                 Map.entry("score_persistence", scorePersistence),
                 Map.entry("finding_count", findings.size()), Map.entry("evidence_count", evidence.size()),
@@ -505,6 +550,19 @@ final class LocalProgramManagementService {
         TargetProvenanceService service = new TargetProvenanceService(workspaceRoot);
         try {
             return service.requireCurrent(targetId, source, registrationSourceSha256);
+        } catch (IllegalArgumentException missing) {
+            if (!"TARGET_PROVENANCE_NOT_FOUND".equals(missing.getMessage())) throw missing;
+            Map<String, Object> captured = service.capture(source, registrationSourceSha256, "AUTO");
+            service.persist(targetId, captured);
+            return captured;
+        }
+    }
+
+    private Map<String, Object> targetProvenanceForRun(
+            String targetId, Path source, String registrationSourceSha256) throws Exception {
+        TargetProvenanceService service = new TargetProvenanceService(workspaceRoot);
+        try {
+            return service.load(targetId);
         } catch (IllegalArgumentException missing) {
             if (!"TARGET_PROVENANCE_NOT_FOUND".equals(missing.getMessage())) throw missing;
             Map<String, Object> captured = service.capture(source, registrationSourceSha256, "AUTO");

@@ -95,6 +95,47 @@ class ValidationScorecardTest {
                 "jdbc:mysql://127.0.0.1/onsure"));
     }
 
+    @Test
+    void scoreHistorySeparatesRepeatabilityFromCausallyProvenImprovement() {
+        String sourceBefore = "a".repeat(64);
+        String sourceAfter = "b".repeat(64);
+        String environment = "c".repeat(64);
+        String profile = "d".repeat(64);
+        String toolchain = "e".repeat(64);
+
+        PostgresqlValidationScoreStore.ComparisonEligibility repeatability =
+                PostgresqlValidationScoreStore.comparisonEligibility(
+                        sourceBefore, sourceBefore, environment, environment, profile, profile,
+                        toolchain, toolchain, "run-before", "run-repeat", null);
+        assertTrue(repeatability.comparable());
+        assertEquals("REPEATABILITY", repeatability.type());
+
+        PostgresqlValidationScoreStore.ComparisonEligibility missingCausality =
+                PostgresqlValidationScoreStore.comparisonEligibility(
+                        sourceBefore, sourceAfter, environment, environment, profile, profile,
+                        toolchain, toolchain, "run-before", "run-after", null);
+        assertFalse(missingCausality.comparable());
+        assertEquals("NOT_COMPARABLE_MISSING_CHANGE_CAUSALITY", missingCausality.reason());
+
+        PostgresqlValidationScoreStore.ChangeLineage lineage =
+                new PostgresqlValidationScoreStore.ChangeLineage(
+                        true, "run-before", "run-after", sourceBefore, sourceAfter,
+                        "f".repeat(64), "1".repeat(64));
+        PostgresqlValidationScoreStore.ComparisonEligibility improvement =
+                PostgresqlValidationScoreStore.comparisonEligibility(
+                        sourceBefore, sourceAfter, environment, environment, profile, profile,
+                        toolchain, toolchain, "run-before", "run-after", lineage);
+        assertTrue(improvement.comparable());
+        assertEquals("IMPROVEMENT", improvement.type());
+
+        PostgresqlValidationScoreStore.ComparisonEligibility changedEnvironment =
+                PostgresqlValidationScoreStore.comparisonEligibility(
+                        sourceBefore, sourceAfter, environment, "2".repeat(64), profile, profile,
+                        toolchain, toolchain, "run-before", "run-after", lineage);
+        assertFalse(changedEnvironment.comparable());
+        assertEquals("ENVIRONMENT_DIGEST_CHANGED", changedEnvironment.reason());
+    }
+
     private Map<String, Object> score(Outcome e2e) {
         List<UniversalValidationRunner.StepResult> steps = List.of(
                 step("environment", StepKind.ENVIRONMENT_PREFLIGHT, Phase.STRUCTURE_STATIC, Outcome.PASS_NONFINAL),

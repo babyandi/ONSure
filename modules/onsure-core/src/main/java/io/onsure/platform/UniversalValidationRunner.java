@@ -120,17 +120,24 @@ public final class UniversalValidationRunner {
     }
 
     public RunResult run(Profile profile, Path runRoot) throws Exception {
-        return run(profile, runRoot, null, null);
+        return run(profile, runRoot, null, null, null);
     }
 
     RunResult run(Profile profile, Path runRoot,
             EnvironmentRequirementProfile.Loaded environmentProfile) throws Exception {
-        return run(profile, runRoot, environmentProfile, null);
+        return run(profile, runRoot, environmentProfile, null, null);
     }
 
     RunResult run(Profile profile, Path runRoot,
             EnvironmentRequirementProfile.Loaded environmentProfile,
             ReviewedExecutionProfile.Loaded executionProfile) throws Exception {
+        return run(profile, runRoot, environmentProfile, executionProfile, null);
+    }
+
+    RunResult run(Profile profile, Path runRoot,
+            EnvironmentRequirementProfile.Loaded environmentProfile,
+            ReviewedExecutionProfile.Loaded executionProfile,
+            Map<String, Object> suppliedTargetProvenance) throws Exception {
         verifyEnvironmentProfileBinding(profile, environmentProfile);
         verifyExecutionProfileBinding(profile, executionProfile);
         Instant started = Instant.now();
@@ -139,6 +146,29 @@ public final class UniversalValidationRunner {
         Path snapshotPath = root.resolve("execution-source");
         ValidationSourceSnapshot.Snapshot snapshot = ValidationSourceSnapshot.create(
                 profile.sourceRoot(), snapshotPath);
+
+        boolean provenanceSuppliedByRegistration = suppliedTargetProvenance != null;
+        Map<String, Object> targetProvenance;
+        String provenanceBindingState;
+        String provenanceBindingReason;
+        boolean provenanceBeforeValid;
+        try {
+            targetProvenance = suppliedTargetProvenance == null
+                    ? new TargetProvenanceService(root).capture(
+                            profile.sourceRoot(), snapshot.sourceDigestBefore(), "AUTO")
+                    : java.util.Collections.unmodifiableMap(new LinkedHashMap<>(suppliedTargetProvenance));
+            TargetProvenanceService.verifyRunBinding(targetProvenance, profile.sourceRoot(),
+                    snapshot.sourceDigestBefore(), snapshot.snapshotDigest());
+            provenanceBindingState = "VERIFIED_BEFORE_EXECUTION";
+            provenanceBindingReason = "REPOSITORY_COMMIT_AND_SNAPSHOT_MANIFEST_BOUND";
+            provenanceBeforeValid = true;
+        } catch (Exception invalid) {
+            targetProvenance = new TargetProvenanceService(root).capture(
+                    profile.sourceRoot(), snapshot.sourceDigestBefore(), "AUTO");
+            provenanceBindingState = "BLOCKED_BEFORE_EXECUTION";
+            provenanceBindingReason = safeProvenanceReason(invalid);
+            provenanceBeforeValid = false;
+        }
 
         Map<String, Outcome> outcomes = new LinkedHashMap<>();
         List<StepResult> results = new ArrayList<>();
@@ -152,7 +182,10 @@ public final class UniversalValidationRunner {
                     .filter(id -> outcomes.get(id) != Outcome.PASS_NONFINAL).toList();
             StepExecution execution;
             Instant stepStarted = Instant.now();
-            if (!unsatisfied.isEmpty()) {
+            if (!provenanceBeforeValid) {
+                execution = new StepExecution(Outcome.NOT_RUN, -1, "", false,
+                        "TARGET_PROVENANCE_NOT_PASS:" + provenanceBindingReason);
+            } else if (!unsatisfied.isEmpty()) {
                 execution = new StepExecution(Outcome.NOT_RUN, -1, "", false,
                         "DEPENDENCY_NOT_PASS:" + String.join(",", unsatisfied));
             } else if (!step.executable()) {
@@ -178,11 +211,29 @@ public final class UniversalValidationRunner {
         }
 
         StepExecution finalEvidence = validateEvidence(results, logRoot, environmentSha256);
+        if (!provenanceBeforeValid) {
+            finalEvidence = new StepExecution(Outcome.BLOCKED, -1, "", false,
+                    "TARGET_PROVENANCE_BLOCKED_BEFORE_EXECUTION:" + provenanceBindingReason);
+        } else {
+            try {
+                TargetProvenanceService.verifyRunBinding(targetProvenance, profile.sourceRoot(),
+                        snapshot.sourceDigestBefore(), snapshot.snapshotDigest());
+                provenanceBindingState = "VERIFIED_BEFORE_AND_AFTER";
+                provenanceBindingReason = "REPOSITORY_COMMIT_AND_SNAPSHOT_MANIFEST_STABLE";
+            } catch (Exception invalidAfter) {
+                provenanceBindingState = "INVALID_EVIDENCE_AFTER_EXECUTION";
+                provenanceBindingReason = safeProvenanceReason(invalidAfter);
+                finalEvidence = new StepExecution(Outcome.FAIL, -1, "", false,
+                        "TARGET_PROVENANCE_CHANGED_AFTER_EXECUTION:" + provenanceBindingReason);
+            }
+        }
         Path finalEvidenceLog = logRoot.resolve("evidence.finalize.log");
         atomicWrite(finalEvidenceLog, finalEvidence.output().getBytes(StandardCharsets.UTF_8));
         Map<Phase, Outcome> phaseOutcomes = new EnumMap<>(profile.phaseOutcomes(outcomes));
+        if (!provenanceBeforeValid) phaseOutcomes.put(Phase.STRUCTURE_STATIC, Outcome.BLOCKED);
         if (sourceMutation) phaseOutcomes.put(Phase.STRUCTURE_STATIC, Outcome.FAIL);
         Map<VerificationGroup, Outcome> groupOutcomes = new EnumMap<>(profile.groupOutcomes(outcomes));
+        if (!provenanceBeforeValid) groupOutcomes.put(VerificationGroup.STRUCTURE, Outcome.BLOCKED);
         if (sourceMutation) groupOutcomes.put(VerificationGroup.STRUCTURE, Outcome.FAIL);
         if (finalEvidence.outcome() == Outcome.FAIL) {
             groupOutcomes.put(VerificationGroup.EVIDENCE_DECISION, Outcome.FAIL);
@@ -201,6 +252,17 @@ public final class UniversalValidationRunner {
         body.put("source_digest", snapshot.sourceDigestBefore());
         body.put("snapshot_digest", snapshot.snapshotDigest());
         body.put("source_mutation_detected", sourceMutation);
+        body.put("target_provenance", targetProvenance);
+        body.put("target_provenance_binding", Map.of(
+                "contract", "ONSURE_TARGET_PROVENANCE_RUN_BINDING_V1",
+                "state", provenanceBindingState,
+                "reason", provenanceBindingReason,
+                "provenance_sha256", targetProvenance.get("provenance_sha256"),
+                "supplied_by_registration", provenanceSuppliedByRegistration,
+                "source_sha256", snapshot.sourceDigestBefore(),
+                "snapshot_sha256", snapshot.snapshotDigest(),
+                "snapshot_manifest_sha256", targetProvenance.get("snapshot_manifest_sha256"),
+                "final_claim_allowed", false));
         body.put("technologies", profile.technologies().stream().sorted().toList());
         body.put("environment_requirements", profile.environmentRequirements());
         body.put("environment_requirements_sha256",
@@ -229,6 +291,14 @@ public final class UniversalValidationRunner {
         body.put("phase_outcomes", phaseOutcomes);
         body.put("verification_group_outcomes", groupOutcomes);
         body.put("overall_outcome", overall);
+        boolean realTargetEvidenceEligible = Boolean.TRUE.equals(
+                targetProvenance.get("real_target_universality_eligible"))
+                && "REAL_REPOSITORY".equals(targetProvenance.get("target_classification"))
+                && "VERIFIED_BEFORE_AND_AFTER".equals(provenanceBindingState)
+                && overall == Outcome.PASS_NONFINAL
+                && finalEvidence.outcome() == Outcome.PASS_NONFINAL
+                && !sourceMutation;
+        body.put("real_target_universality_evidence_eligible", realTargetEvidenceEligible);
         body.put("scorecard", scorecard);
         body.put("steps", results);
         Map<String, Object> finalEvidenceIntegrity = new LinkedHashMap<>();
@@ -254,6 +324,12 @@ public final class UniversalValidationRunner {
                 Map.copyOf(phaseOutcomes), Map.copyOf(groupOutcomes), overall, List.copyOf(results),
                 profile.notRunReasons(), started, completed, false,
                 "SELF_VALIDATION_NONFINAL", receipt, receiptSha);
+    }
+
+    private static String safeProvenanceReason(Exception error) {
+        String value = error.getMessage();
+        if (value != null && value.matches("[A-Z0-9_.:-]{1,240}")) return value;
+        return "TARGET_PROVENANCE_VALIDATION_ERROR:" + error.getClass().getSimpleName();
     }
 
     private static void verifyEnvironmentProfileBinding(Profile profile,

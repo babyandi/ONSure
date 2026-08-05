@@ -6,7 +6,8 @@
   "additionalProperties": false,
   "required": [
     "contract", "profile_id", "source_root", "snapshot_root", "source_digest",
-    "snapshot_digest", "source_mutation_detected", "technologies", "environment_requirements", "phase_outcomes",
+    "snapshot_digest", "source_mutation_detected", "target_provenance", "target_provenance_binding",
+    "real_target_universality_evidence_eligible", "technologies", "environment_requirements", "phase_outcomes",
     "verification_group_outcomes", "overall_outcome", "steps", "not_run_reasons",
     "started_at", "completed_at", "assurance_class", "final_claim_allowed"
   ],
@@ -18,6 +19,45 @@
     "source_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "snapshot_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "source_mutation_detected": {"type": "boolean"},
+    "target_provenance": {
+      "type": "object",
+      "required": [
+        "contract", "target_classification", "repository_commit_sha",
+        "registration_source_sha256", "snapshot_source_sha256", "snapshot_manifest_sha256",
+        "real_target_universality_eligible", "provenance_sha256", "final_claim_allowed"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_TARGET_PROVENANCE_V1"},
+        "target_classification": {"enum": ["REAL_REPOSITORY", "FIXTURE", "SYNTHETIC_SNAPSHOT", "UNKNOWN"]},
+        "repository_commit_sha": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40,64}$"},
+        "registration_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "snapshot_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "snapshot_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "real_target_universality_eligible": {"type": "boolean"},
+        "provenance_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "final_claim_allowed": {"const": false}
+      }
+    },
+    "target_provenance_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract", "state", "reason", "provenance_sha256", "supplied_by_registration",
+        "source_sha256", "snapshot_sha256", "snapshot_manifest_sha256", "final_claim_allowed"
+      ],
+      "properties": {
+        "contract": {"const": "ONSURE_TARGET_PROVENANCE_RUN_BINDING_V1"},
+        "state": {"enum": ["VERIFIED_BEFORE_AND_AFTER", "BLOCKED_BEFORE_EXECUTION", "INVALID_EVIDENCE_AFTER_EXECUTION"]},
+        "reason": {"type": "string", "minLength": 1, "maxLength": 512},
+        "provenance_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "supplied_by_registration": {"type": "boolean"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "snapshot_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "final_claim_allowed": {"const": false}
+      }
+    },
+    "real_target_universality_evidence_eligible": {"type": "boolean"},
     "technologies": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
     "environment_requirements": {
       "type": "array",

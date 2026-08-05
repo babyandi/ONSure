@@ -103,13 +103,15 @@ public final class FixtureHarness {
         if (executed) {
             validateCommand(fixture.command(), normalizedRoot);
             executedCommand = sandboxedCommand(fixture, normalizedRoot);
-            Path outputFile = Files.createTempFile("onsure-fixture-", ".log");
+            Path executionTemp = Files.createTempDirectory("onsure-fixture-execution-");
+            Path outputFile = executionTemp.resolve("output.log");
+            Path errorFile = executionTemp.resolve("error.log");
             try {
                 ProcessBuilder builder = new ProcessBuilder(executedCommand)
                         .directory(normalizedRoot.toFile())
-                        .redirectErrorStream(true)
-                        .redirectOutput(outputFile.toFile());
-                restrictEnvironment(builder.environment(), fixture.environment());
+                        .redirectOutput(outputFile.toFile())
+                        .redirectError(errorFile.toFile());
+                restrictEnvironment(builder.environment(), fixture.environment(), executionTemp);
                 Process process = builder.start();
                 boolean completed = process.waitFor(fixture.timeoutSeconds() + 5L, TimeUnit.SECONDS);
                 if (!completed) {
@@ -120,9 +122,11 @@ public final class FixtureHarness {
                     exitCode = process.exitValue();
                     terminateDescendants(process.toHandle());
                 }
-                observed = readLimited(outputFile).strip();
+                String standardOutput = readLimited(outputFile).strip();
+                String standardError = readLimited(errorFile).strip();
+                observed = exitCode == 0 || !standardOutput.isBlank() ? standardOutput : standardError;
             } finally {
-                Files.deleteIfExists(outputFile);
+                deleteTemporaryTree(executionTemp);
             }
         }
 
@@ -204,7 +208,7 @@ public final class FixtureHarness {
     }
 
     private static void restrictEnvironment(Map<String, String> processEnvironment,
-            Map<String, String> fixtureEnvironment) {
+            Map<String, String> fixtureEnvironment, Path executionTemp) {
         Map<String, String> host = System.getenv();
         processEnvironment.clear();
         for (String key : List.of(
@@ -213,12 +217,22 @@ public final class FixtureHarness {
             String value = host.get(key);
             if (value != null) processEnvironment.put(key, value);
         }
+        processEnvironment.put("TMPDIR", executionTemp.toString());
         fixtureEnvironment.forEach((key, value) -> {
             if (!key.matches("ONSURE_FIXTURE_[A-Z0-9_]{1,64}")) {
                 throw new IllegalArgumentException("fixture environment key not allowed: " + key);
             }
             processEnvironment.put(key, value);
         });
+    }
+
+    private static void deleteTemporaryTree(Path root) throws Exception {
+        if (root == null || !Files.exists(root, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return;
+        try (var paths = Files.walk(root)) {
+            for (Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) {
+                Files.deleteIfExists(path);
+            }
+        }
     }
 
     private static void terminateProcessTree(Process process) throws InterruptedException {

@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.21.0",
+  "version": "1.23.0",
   "pairs": [
     {"schema": "contracts/target-provenance.v1.schema.json", "instances": ["fixtures/contracts/target-provenance.valid.json"], "invalid_instances": ["fixtures/contracts/target-provenance.invalid.json"]},
     {"schema": "contracts/business-semantic-hypotheses.v1.schema.json", "instances": ["fixtures/contracts/business-semantic-hypotheses.valid.json"], "invalid_instances": ["fixtures/contracts/business-semantic-hypotheses.invalid.json"]},
@@ -29,6 +29,7 @@
     {"schema": "contracts/hunk-approval-request.v1.schema.json", "instances": ["fixtures/contracts/hunk-approval-request.valid.json"]},
     {"schema": "contracts/patch-apply-receipt.v1.schema.json", "instances": ["fixtures/contracts/patch-apply-receipt.valid.json"]},
     {"schema": "contracts/improvement-proof.v1.schema.json", "instances": ["fixtures/contracts/improvement-proof.valid.json"]},
+    {"schema": "contracts/validation-improvement-lineage.v1.schema.json", "instances": ["fixtures/contracts/validation-improvement-lineage.valid.json"], "invalid_instances": ["fixtures/contracts/validation-improvement-lineage.invalid.json"]},
     {"schema": "contracts/patch-rollback-receipt.v1.schema.json", "instances": ["fixtures/contracts/patch-rollback-receipt.valid.json"]},
     {"schema": "contracts/git-delivery-approval.v1.schema.json", "instances": ["fixtures/contracts/git-delivery-approval.valid.json"]},
     {"schema": "contracts/git-change-set.v1.schema.json", "instances": ["fixtures/contracts/git-change-set.valid.json"]},

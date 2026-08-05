@@ -16,6 +16,22 @@ import rehearse_onsure_postgresql as rehearsal  # noqa: E402
 
 
 class ONSurePostgresqlRehearsalTest(unittest.TestCase):
+    def test_score_authority_migration_records_context_and_causality(self):
+        self.assertEqual(["V1", "V2", "V3"], [path.name.split("__", 1)[0]
+                                                for path in rehearsal.MIGRATIONS])
+        migration = rehearsal.MIGRATIONS[-1].read_text(encoding="utf-8")
+        for required in (
+                "UNIQUE (project_id, target_id, receipt_sha256)",
+                "CREATE TABLE validation_run_finding",
+                "comparison_type",
+                "improvement_baseline_run_id",
+                "validation_run_score_improvement_baseline_scope_fk",
+                "validation_run_comparison_baseline_scope_fk",
+                "validation_run_comparison_current_scope_fk",
+                "patch_apply_receipt_sha256",
+                "improvement_proof_sha256"):
+            self.assertIn(required, migration)
+
     def test_package_extraction_rejects_path_escape(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = pathlib.Path(temporary)

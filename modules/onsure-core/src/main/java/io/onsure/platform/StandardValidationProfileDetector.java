@@ -143,7 +143,8 @@ public final class StandardValidationProfileDetector {
     private static List<ValidationPack> standardPacks() {
         return List.of(
                 new GradleValidationPack(), new MavenValidationPack(), new NodeValidationPack(),
-                new OpenApiValidationPack(), new PostgresqlValidationPack(), new PythonValidationPack());
+                new NestedProjectValidationPack(), new OpenApiValidationPack(),
+                new PostgresqlValidationPack(), new PythonValidationPack());
     }
 
     private static void validateContribution(ValidationPack pack, Step step) {

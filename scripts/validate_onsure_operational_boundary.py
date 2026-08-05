@@ -185,19 +185,22 @@ def validate_postgresql_evidence_body(
     evidence: dict[str, object], *, verify_repository: bool = True,
 ) -> list[str]:
     violations: list[str] = []
+    expected_migration_count = len(POSTGRESQL_MIGRATIONS)
     expected = {
         "contract": "ONSURE_POSTGRESQL_FLYWAY_REHEARSAL_V1",
         "decision": "PASS_NONFINAL",
-        "migration_first_executed": 2,
+        "migration_first_executed": expected_migration_count,
         "migration_second_executed": 0,
         "pending_after_migration": 0,
         "restored_event_count": 1,
-        "restored_history_count": 2,
+        "restored_history_count": expected_migration_count,
         "restored_validation_score_count": 1,
         "restored_validation_score_node_count": 1,
+        "restored_validation_finding_count": 1,
+        "transaction_rollback_rehearsal": "PASS_NONFINAL",
         "restored_schema_validation": "PASS_NONFINAL",
-        "concurrent_migration_executed_counts": [0, 2],
-        "concurrent_migration_history_count": 2,
+        "concurrent_migration_executed_counts": [0, expected_migration_count],
+        "concurrent_migration_history_count": expected_migration_count,
         "customer_data_used": False,
         "system_postgresql_service_modified": False,
         "network_binding": "127.0.0.1_EPHEMERAL",

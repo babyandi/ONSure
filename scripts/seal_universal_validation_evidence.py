@@ -17,6 +17,8 @@ GROUPS = {
 }
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
+REPOSITORY_COMMIT = re.compile(r"^[0-9a-f]{40,64}$")
+REQUIRED_REAL_TARGETS = {"self", "python", "node"}
 
 
 def digest_bytes(value: bytes) -> str:
@@ -58,6 +60,46 @@ def verify_run(target_id: str, result_file: pathlib.Path) -> dict:
     require(result.get("source_mutation_detected") is False, "RUN_SOURCE_MUTATED")
     require(result.get("source_digest") == result.get("snapshot_digest"), "RUN_SNAPSHOT_DIGEST_DRIFT")
     require(result.get("final_claim_allowed") is False, "RUN_FINAL_AUTHORITY_UNSAFE")
+    provenance = result.get("target_provenance")
+    require(isinstance(provenance, dict), "RUN_TARGET_PROVENANCE_MISSING")
+    require(provenance.get("contract") == "ONSURE_TARGET_PROVENANCE_V1",
+            "RUN_TARGET_PROVENANCE_CONTRACT_INVALID")
+    require(provenance.get("target_classification") == "REAL_REPOSITORY",
+            "RUN_TARGET_NOT_REAL_REPOSITORY")
+    require(provenance.get("repository_type") == "GIT", "RUN_TARGET_GIT_IDENTITY_MISSING")
+    require(REPOSITORY_COMMIT.fullmatch(str(provenance.get("repository_commit_sha", ""))) is not None,
+            "RUN_TARGET_COMMIT_INVALID")
+    require(provenance.get("real_target_universality_eligible") is True,
+            "RUN_TARGET_PROVENANCE_NOT_ELIGIBLE")
+    require(provenance.get("final_claim_allowed") is False,
+            "RUN_TARGET_PROVENANCE_AUTHORITY_UNSAFE")
+    for field in ("registration_source_sha256", "snapshot_source_sha256",
+                  "snapshot_manifest_sha256", "provenance_sha256"):
+        require(SHA256.fullmatch(str(provenance.get(field, ""))) is not None,
+                "RUN_TARGET_PROVENANCE_DIGEST_INVALID:" + field)
+    unsigned_provenance = dict(provenance)
+    claimed_provenance_sha = unsigned_provenance.pop("provenance_sha256")
+    require(canonical_digest(unsigned_provenance) == claimed_provenance_sha,
+            "RUN_TARGET_PROVENANCE_DIGEST_MISMATCH")
+    require(result.get("source_digest") == provenance.get("snapshot_source_sha256"),
+            "RUN_TARGET_SOURCE_BINDING_MISMATCH")
+    binding = result.get("target_provenance_binding")
+    require(isinstance(binding, dict), "RUN_TARGET_PROVENANCE_BINDING_MISSING")
+    require(binding.get("contract") == "ONSURE_TARGET_PROVENANCE_RUN_BINDING_V1",
+            "RUN_TARGET_PROVENANCE_BINDING_CONTRACT_INVALID")
+    require(binding.get("state") == "VERIFIED_BEFORE_AND_AFTER",
+            "RUN_TARGET_PROVENANCE_BINDING_NOT_VERIFIED")
+    require(binding.get("provenance_sha256") == claimed_provenance_sha,
+            "RUN_TARGET_PROVENANCE_BINDING_DIGEST_MISMATCH")
+    require(binding.get("source_sha256") == result.get("source_digest")
+            and binding.get("snapshot_sha256") == result.get("snapshot_digest"),
+            "RUN_TARGET_PROVENANCE_BINDING_SOURCE_MISMATCH")
+    require(binding.get("snapshot_manifest_sha256") == provenance.get("snapshot_manifest_sha256"),
+            "RUN_TARGET_PROVENANCE_BINDING_MANIFEST_MISMATCH")
+    require(binding.get("final_claim_allowed") is False,
+            "RUN_TARGET_PROVENANCE_BINDING_AUTHORITY_UNSAFE")
+    require(result.get("real_target_universality_evidence_eligible") is True,
+            "RUN_REAL_TARGET_EVIDENCE_NOT_ELIGIBLE")
     environment = result.get("environment_evidence")
     require(isinstance(environment, dict) and SHA256.fullmatch(str(environment.get("sha256", ""))) is not None,
             "RUN_ENVIRONMENT_INVALID")
@@ -94,6 +136,12 @@ def verify_run(target_id: str, result_file: pathlib.Path) -> dict:
         "verification_group_outcomes": result.get("verification_group_outcomes"),
         "source_digest": result.get("source_digest"),
         "snapshot_digest": result.get("snapshot_digest"),
+        "target_classification": provenance.get("target_classification"),
+        "repository_commit_sha": provenance.get("repository_commit_sha"),
+        "target_provenance_sha256": claimed_provenance_sha,
+        "snapshot_manifest_sha256": provenance.get("snapshot_manifest_sha256"),
+        "target_provenance_binding_state": binding.get("state"),
+        "real_target_universality_evidence_eligible": True,
         "source_mutation_detected": False,
         "environment_sha256": environment["sha256"],
         "started_at": result.get("started_at"),
@@ -123,6 +171,7 @@ def main() -> int:
     require(re.fullmatch(r"sha256:[0-9a-f]{64}", args.oci_image_id) is not None, "OCI_IMAGE_ID_INVALID")
     target_ids = [target for target, _ in args.run]
     require(len(target_ids) == len(set(target_ids)), "TARGET_ID_DUPLICATED")
+    require(REQUIRED_REAL_TARGETS.issubset(set(target_ids)), "REQUIRED_REAL_TARGET_SET_INCOMPLETE")
     body = {
         "contract": "ONSURE_UNIVERSAL_VALIDATION_EVIDENCE_SET_V1",
         "decision": "PASS_NONFINAL",

@@ -59,7 +59,7 @@ final class TargetProvenanceService {
         GitIdentity git = gitIdentity(root);
         boolean fixtureLocation = git != null && fixtureScope(git.scope());
         String classification = classification(requested, git, fixtureLocation);
-        List<Path> snapshotFiles = Hashing.sourceFiles(root);
+        List<Path> snapshotFiles = ValidationSourceSnapshot.sourceFiles(root);
         String snapshotSourceSha256 = Hashing.tree(root, snapshotFiles);
         String manifestSha256 = manifestDigest(root, snapshotFiles);
         boolean eligible = "REAL_REPOSITORY".equals(classification)
@@ -197,6 +197,40 @@ final class TargetProvenanceService {
         String claimed = unsigned.remove("provenance_sha256").toString();
         if (!claimed.equals(canonicalDigest(unsigned))) {
             throw new IllegalArgumentException("TARGET_PROVENANCE_DIGEST_MISMATCH");
+        }
+    }
+
+    static void verifyRunBinding(Map<String, Object> value, Path sourceRoot,
+            String sourceDigest, String snapshotDigest) throws Exception {
+        validate(value);
+        Path root = requireSourceRoot(sourceRoot);
+        requireDigest(sourceDigest, "TARGET_PROVENANCE_RUN_SOURCE_DIGEST_INVALID");
+        requireDigest(snapshotDigest, "TARGET_PROVENANCE_RUN_SNAPSHOT_DIGEST_INVALID");
+        if (!sourceDigest.equals(value.get("snapshot_source_sha256"))) {
+            throw new IllegalArgumentException("TARGET_PROVENANCE_RUN_SOURCE_MISMATCH");
+        }
+        if (!snapshotDigest.equals(value.get("snapshot_source_sha256"))) {
+            throw new IllegalArgumentException("TARGET_PROVENANCE_RUN_SNAPSHOT_MISMATCH");
+        }
+        List<Path> files = ValidationSourceSnapshot.sourceFiles(root);
+        if (((Number) value.get("snapshot_file_count")).longValue() != files.size()
+                || !manifestDigest(root, files).equals(value.get("snapshot_manifest_sha256"))) {
+            throw new IllegalArgumentException("TARGET_PROVENANCE_RUN_MANIFEST_MISMATCH");
+        }
+        GitIdentity git = gitIdentity(root);
+        if ("GIT".equals(value.get("repository_type"))) {
+            if (git == null
+                    || !git.repositoryIdentitySha256().equals(value.get("repository_identity_sha256"))
+                    || !git.commit().equals(value.get("repository_commit_sha"))
+                    || !git.scope().equals(value.get("repository_scope"))
+                    || !java.util.Objects.equals(git.clean(), value.get("worktree_clean"))) {
+                throw new IllegalArgumentException("TARGET_PROVENANCE_RUN_REPOSITORY_MISMATCH");
+            }
+            if ("REAL_REPOSITORY".equals(value.get("target_classification")) && !git.clean()) {
+                throw new IllegalArgumentException("TARGET_PROVENANCE_REAL_REPOSITORY_DIRTY");
+            }
+        } else if (git != null) {
+            throw new IllegalArgumentException("TARGET_PROVENANCE_RUN_REPOSITORY_APPEARED");
         }
     }
 

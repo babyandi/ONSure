@@ -72,6 +72,7 @@ public final class LocalWorkflowDispatcher {
             case "patch.apply" -> patchApply(request);
             case "patch.rollback" -> patchRollback(request);
             case "improvement.prove" -> improvementProve(request);
+            case "score.improvement-bind" -> scoreImprovementBind(request);
             case "git.commit" -> gitCommit(request);
             case "git.draft-pr" -> gitDraftPr(request);
             case "license.issue" -> licenseIssue(request);
@@ -397,6 +398,19 @@ public final class LocalWorkflowDispatcher {
                 inputPath(request, "current_report_file", true),
                 inputPath(request, "patch_apply_receipt_file", true),
                 outputPath(request, "output_file", ".onsure/improvement-evidence/improvement-proof.json"));
+    }
+
+    private Map<String, Object> scoreImprovementBind(JsonNode request) throws Exception {
+        return new ValidationImprovementLineageService().bind(
+                inputPath(request, "baseline_report_file", true),
+                inputPath(request, "current_report_file", true),
+                inputPath(request, "patch_apply_receipt_file", true),
+                inputPath(request, "improvement_proof_file", true),
+                inputPath(request, "approval_receipt_file", true),
+                approvalAuthority.requireTrustedKeyRegistry(),
+                approvalAuthority.requireReplayLedger(),
+                outputPath(request, "output_file", ".onsure/improvement-evidence/score-lineage.json"),
+                System.getenv());
     }
 
     private Map<String, Object> gitCommit(JsonNode request) throws Exception {

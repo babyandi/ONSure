@@ -75,6 +75,12 @@ public final class ValidationSourceSnapshot {
         return snapshot.sourceDigestBefore().equals(current.digest());
     }
 
+    /** Returns the exact source set used by execution snapshots and provenance bindings. */
+    static List<Path> sourceFiles(Path sourceRoot) throws Exception {
+        return inventory(requireDirectory(sourceRoot, "SNAPSHOT_SOURCE_INVALID"),
+                DEFAULT_MAX_FILES, DEFAULT_MAX_BYTES).files();
+    }
+
     private static Inventory inventory(Path root, int maxFiles, long maxBytes) throws Exception {
         List<Path> files = new ArrayList<>();
         long[] bytes = {0L};
@@ -84,7 +90,7 @@ public final class ValidationSourceSnapshot {
                 if (Files.isSymbolicLink(directory)) {
                     throw new IllegalArgumentException("SNAPSHOT_SYMLINK_FORBIDDEN:" + root.relativize(directory));
                 }
-                if (!directory.equals(root) && EXCLUDED_NAMES.contains(directory.getFileName().toString())) {
+                if (!directory.equals(root) && excludedName(directory.getFileName().toString())) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
                 return FileVisitResult.CONTINUE;
@@ -92,7 +98,7 @@ public final class ValidationSourceSnapshot {
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if (EXCLUDED_NAMES.contains(file.getFileName().toString())) {
+                if (excludedName(file.getFileName().toString())) {
                     return FileVisitResult.CONTINUE;
                 }
                 if (Files.isSymbolicLink(file) || !attrs.isRegularFile()) {
@@ -130,6 +136,10 @@ public final class ValidationSourceSnapshot {
             throw new IllegalArgumentException(code);
         }
         return path;
+    }
+
+    private static boolean excludedName(String name) {
+        return EXCLUDED_NAMES.contains(name) || name.startsWith("target.") || name.startsWith("target-");
     }
 
     private static String normalized(Path value) {

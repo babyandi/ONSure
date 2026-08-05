@@ -6,8 +6,8 @@
 - [ ] 범용 검증 엔진 — `PARTIAL`; 4개 보증 수준·7개 순차 검증군·Pack SPI·격리 Runner와
   검증 전용 OCI fallback 및 독립 Gradle 대상 실제 실행 완료, 독립 감사 미완료
 - [ ] 검증 대상 등록소와 대상 어댑터 — `PARTIAL`; 등록 source의 `validation_mode=UNIVERSAL`과 Manifest 비의존 언어 탐지 구현, binary/package intake 미완료
-- [x] 일반 프로그램 종단간 시험 대상 — 중립 Java·Python·Node·Gradle 대상과 portable lineage
-  read-back을 OCI sandbox에서 전 7개 검증군 `PASS_NONFINAL`, artifact 변조 차단 `FAIL`
+- [ ] 일반 프로그램 종단간 시험 대상 — 과거 Java·Python·Node fixture 및 Gradle 후보 실행은
+  provenance 없는 legacy `PASS_NONFINAL`; 세 독립 `REAL_REPOSITORY` 현재 HEAD 실행은 `NOT_RUN`
 - [ ] AI 프로그램 종단간 시험 대상 — `NOT_RUN_REAL_TARGET`
 - [ ] 실패 유형·근본원인분석·개선 계획 — `PARTIAL`; 인과 재현과 실제 Patch 전후 입증 미완료
 - [x] 시험 데이터·하네스·오라클 등록 골격
@@ -40,7 +40,7 @@
 - [x] Maven 확인
 - [x] `mvn -B -ntp -q clean verify` 2회
 - [x] `mvn -B -ntp -q -f pom-modular.xml clean package`
-- [x] Public Java API 265개; 기존 259개 변경·삭제 0, 표준 Pack API 6개 추가
+- [x] Public Java API 267개; 기존 265개 변경·삭제 0, nested Pack 및 개선 lineage API 2개 추가
 - [x] Java 347개 회귀 테스트(조건부 11개 skip)
 - [x] Python 202개 회귀 테스트
 - [x] Gradle 표준 Pack의 offline build, 부정·재시도·차단, 연결 E2E, 운영 복구 convention 탐지와
@@ -48,12 +48,13 @@
 - [x] OpenAPI 3.1 Local API 16개·LLM Gateway 4개 경로 계약
 - [x] portable Workflow lineage 계약·실제 artifact/schema/permit digest read-back과 변조 차단
 - [ ] rootless bubblewrap private network namespace (`BWRAP_LOOPBACK_PERMISSION_DENIED` 유지)
-- [x] 검증 전용 OCI sandbox: image pull 금지·immutable ID·network none·read-only rootfs·capability 0,
-  12개 경계 probe, Java·Maven·Node·npm·ClamAV·Noto CJK capability 및 중립 Node 4차 검증
-  `PASS_NONFINAL`
+- [ ] 검증 전용 OCI sandbox 실제 대상 완료 — image pull 금지·immutable ID·network none·read-only
+  rootfs·capability 0의 12개 경계 probe는 과거 실행됐으나 중립 Node `REAL_REPOSITORY` provenance
+  결속 4차 검증은 현재 HEAD에서 `NOT_RUN`
 - [ ] 제품 플랫폼 종단간 시험 2회
 - [ ] 범용 하네스 독립 실행 2회
-- [x] ONSURE 자체 보증 2회 — 동일 source digest, 각 26개 필수 Step과 안정 의미 판정 일치
+- [ ] ONSURE 자체 보증 2회 — 과거 repeatability 기록은 존재하지만 현재 HEAD의 repository
+  commit·snapshot manifest 결속 receipt가 아니므로 `NOT_RUN`
 - [ ] 실패 발생 시 근본원인분석·수정·전체 회귀검증
 - [ ] 개발 관문 `PASS`
 - [ ] 증적 SHA-256 읽기 전용 재검증 — 범용 Runner의 PASS log·환경 digest 검증 구현,

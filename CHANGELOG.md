@@ -37,8 +37,16 @@
   commit, scope, source·manifest digest를 등록/Profile에 결속하는 target provenance 계약
 - OpenAPI 문서별 service boundary와 optional pagination cursor, 2xx continuation header,
   bounded pagination/async poll 후보의 discovery-only 계약; 다중 service runtime은 `BLOCKED_NOT_RUN`
+- 별도 승인 manifest에 결속된 동일 service GET/HEAD pagination 실행, 페이지별 token 비저장 digest
+  Receipt와 반복 token·시간·횟수·누적 응답 크기 fail-closed 종료; async poll과 다중 service는
+  계속 `BLOCKED_NOT_RUN`
+- Universal validation Receipt·report·evidence의 target provenance 교차검증과 실행 전후
+  repository commit/scope/clean/snapshot manifest 변조 차단, fixture의 실제 대상 범용성 집계 금지
+- PostgreSQL 점수 이력의 project/target 격리, 전체 점수 node·finding·진단·개선 가이드 read-back,
+  반복성 비교와 승인된 변경 lineage 기반 개선 비교 분리
 - 주입된 HTTP client의 redirect 정책을 `NEVER`로 강제해 loopback 경계 이탈 차단
 - 격리 Fixture별 run 전용 `TMPDIR`로 host `/tmp` 고갈과 실행 결과의 불필요한 결합 제거
+- Fixture stdout Oracle과 stderr 진단 스트림을 분리해 도구 경고가 기능 판정을 오염하지 않도록 강화
 - Ubuntu immutable install/idempotent-upgrade/rollback rehearsal과 archive traversal 방어
 - loopback-only PostgreSQL custom backup runner, systemd service/timer, checksum·restore 검증·retention 경계
 - VS Code Runtime/Admin View의 SecretStorage 기반 LLM Gateway health·token·cost·receipt-chain 표시

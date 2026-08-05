@@ -141,3 +141,13 @@ Final 후보 최소조건:
 설계만 존재, 코드만 존재, 테스트 파일만 존재, 명령 종료코드 0, 도구 장애로 미실행, 벤더 자체 보고서, 과거 다른 Commit의 PASS는 Final 증거가 아니다.
 
 현재 전체 금융권 E2E와 독립 검증이 완료되지 않았으므로 `SELF_VALIDATION_NONFINAL / HOLD`, `FinalLock=false`, `Production GO=false`, `Commercial GO=false`를 유지한다.
+
+## 8. 범용 검증 현재 권위
+
+범용 검증의 세부 완료 기준은
+`docs/verification/ONSURE_UNIVERSAL_AUTHORITY_AND_COMPLETION_v1.md`를 따른다. 네 단계 Runner,
+자동 업무 의미 후보 생성, target provenance binding 코드와 단위 테스트가 존재하더라도 실제
+실행 receipt를 대신하지 않는다. 현재 HEAD에 결속된 ONSure 자체, 독립 Python, 독립 Node의
+`REAL_REPOSITORY` 네 단계 receipt가 없으므로 세 대상의 검증 상태는 모두 `NOT_RUN`이고 범용성
+판정은 `HOLD`다. 저장소 내부 fixture와 과거 provenance 없는 universal evidence set은 이 세
+대상의 실행 증거로 집계하지 않는다.

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/validation-improvement-lineage.v1.schema.json",
+  "title": "ONSure Validation Improvement Lineage v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "approval_state", "project_id", "target_id", "baseline_run_id",
+    "current_run_id", "baseline_source_sha256", "current_source_sha256",
+    "patch_apply_receipt_sha256", "improvement_proof_sha256",
+    "baseline_report_sha256", "current_report_sha256", "patch_approval_receipt_sha256",
+    "patch_approval_actor", "patch_approval_key_id", "score_store_state",
+    "final_claim_allowed", "lineage_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_IMPROVEMENT_LINEAGE_V1"},
+    "approval_state": {"const": "APPROVED"},
+    "project_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "target_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$"},
+    "baseline_run_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "current_run_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,160}$"},
+    "baseline_source_sha256": {"$ref": "#/$defs/sha256"},
+    "current_source_sha256": {"$ref": "#/$defs/sha256"},
+    "patch_apply_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "improvement_proof_sha256": {"$ref": "#/$defs/sha256"},
+    "baseline_report_sha256": {"$ref": "#/$defs/sha256"},
+    "current_report_sha256": {"$ref": "#/$defs/sha256"},
+    "patch_approval_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "patch_approval_actor": {"type": "string", "minLength": 1},
+    "patch_approval_key_id": {"type": "string", "minLength": 1},
+    "score_store_state": {"enum": ["AUTHORITATIVE_VERIFIED", "NOT_CONFIGURED"]},
+    "final_claim_allowed": {"const": false},
+    "lineage_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

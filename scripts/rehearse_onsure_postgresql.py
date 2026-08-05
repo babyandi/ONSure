@@ -252,7 +252,8 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
             second = run("MIGRATE_SECOND", java_command(runtime, "migrate"), runtime_environment)
             validation = run("MIGRATE_VALIDATE", java_command(runtime, "validate"), runtime_environment)
             info = run("MIGRATE_INFO", java_command(runtime, "info"), runtime_environment)
-            if "executed=2" not in first or "executed=0" not in second \
+            expected_migrations = len(MIGRATIONS)
+            if f"executed={expected_migrations}" not in first or "executed=0" not in second \
                     or "PASS_NONFINAL" not in validation or "pending=0" not in info:
                 raise ValueError("MIGRATION_RESULT_CONTRACT_INVALID")
             psql(
@@ -275,6 +276,28 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 "('synthetic-run-1','DOMAIN','DESIGN','NOT_RUN',100,0,'synthetic diagnosis','synthetic guide');",
                 username="onsure",
             )
+            psql(
+                binaries, sockets, port, "onsure",
+                "INSERT INTO onsure.validation_run_finding "
+                "(run_id,finding_id,severity,status,diagnosis,improvement_guide,finding_json) VALUES "
+                "('synthetic-run-1','synthetic-finding','MEDIUM','OPEN','synthetic diagnosis',"
+                "'synthetic guide','{\"finding_id\":\"synthetic-finding\"}'::jsonb);"
+                "BEGIN;"
+                "INSERT INTO onsure.validation_run_score "
+                "(run_id,project_id,target_id,source_sha256,receipt_sha256,validation_outcome,"
+                "earned_points,max_points,scorecard_json,observed_at) VALUES "
+                "('rollback-only','synthetic-project','synthetic-target',repeat('d',64),"
+                "repeat('e',64),'NOT_RUN',0,100,'{}'::jsonb,CURRENT_TIMESTAMP);"
+                "ROLLBACK;",
+                username="onsure",
+            )
+            rollback_count = psql(
+                binaries, sockets, port, "onsure",
+                "SELECT count(*) FROM onsure.validation_run_score WHERE run_id='rollback-only';",
+                username="onsure",
+            )
+            if rollback_count != "0":
+                raise ValueError("TRANSACTION_ROLLBACK_REHEARSAL_INVALID")
             run("PG_DUMP", [
                 str(binaries / "pg_dump"), "-Fc", "-h", str(sockets), "-p", str(port),
                 "-U", "postgres", "-d", "onsure", "-f", str(backup),
@@ -306,6 +329,10 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 binaries, sockets, port, "onsure_restore",
                 "SELECT count(*) FROM onsure.validation_score_node;",
             )
+            restored_findings = psql(
+                binaries, sockets, port, "onsure_restore",
+                "SELECT count(*) FROM onsure.validation_run_finding;",
+            )
             restored_environment = dict(runtime_environment)
             restored_environment["ONSURE_DB_URL"] = (
                 f"jdbc:postgresql://127.0.0.1:{port}/onsure_restore?sslmode=disable"
@@ -316,8 +343,8 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
             restored_migrate = run(
                 "RESTORED_MIGRATE", java_command(runtime, "migrate"), restored_environment
             )
-            if restored_events != "1" or restored_history != "2" \
-                    or restored_scores != "1" or restored_nodes != "1" \
+            if restored_events != "1" or restored_history != str(expected_migrations) \
+                    or restored_scores != "1" or restored_nodes != "1" or restored_findings != "1" \
                     or "PASS_NONFINAL" not in restored_validation \
                     or "executed=0" not in restored_migrate:
                 raise ValueError(
@@ -338,7 +365,8 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                 binaries, sockets, port, "onsure_concurrent",
                 "SELECT count(*) FROM onsure.flyway_schema_history WHERE success AND version IS NOT NULL;",
             )
-            if concurrent_executed != [0, 2] or concurrent_history != "2":
+            if sorted(concurrent_executed) != [0, expected_migrations] \
+                    or concurrent_history != str(expected_migrations):
                 raise ValueError("CONCURRENT_MIGRATION_IDEMPOTENCY_INVALID")
             version = psql(binaries, sockets, port, "postgres", "SHOW server_version;")
             completed_at = dt.datetime.now(dt.timezone.utc)
@@ -358,18 +386,20 @@ def rehearse(package: pathlib.Path) -> dict[str, object]:
                                for path in MIGRATIONS],
                 "migration_count": len(MIGRATIONS),
                 "network_binding": "127.0.0.1_EPHEMERAL",
-                "migration_first_executed": 2,
+                "migration_first_executed": expected_migrations,
                 "migration_second_executed": 0,
                 "pending_after_migration": 0,
                 "restored_event_count": 1,
-                "restored_history_count": 2,
+                "restored_history_count": expected_migrations,
                 "restored_validation_score_count": 1,
                 "restored_validation_score_node_count": 1,
+                "restored_validation_finding_count": 1,
+                "transaction_rollback_rehearsal": "PASS_NONFINAL",
                 "restored_schema_validation": "PASS_NONFINAL",
                 "backup_sha256": backup_sha256,
                 "backup_size_bytes": backup_size,
-                "concurrent_migration_executed_counts": [0, 2],
-                "concurrent_migration_history_count": 2,
+                "concurrent_migration_executed_counts": sorted(concurrent_executed),
+                "concurrent_migration_history_count": expected_migrations,
                 "customer_data_used": False,
                 "system_postgresql_service_modified": False,
                 "production_migration": "NOT_RUN",
