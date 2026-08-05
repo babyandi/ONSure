@@ -194,9 +194,19 @@ final class StaticWorkflowInventory {
                 String operationId = operation.path("operationId").asText("");
                 String name = operationId.isBlank() ? method.toUpperCase(Locale.ROOT) + " " + route : operationId;
                 if (operationId.isBlank()) findings.add("OPENAPI_OPERATION_ID_MISSING:" + relative + ":" + method + ":" + route);
+                Map<String, Object> semantics = new LinkedHashMap<>();
+                semantics.put("http_method", method.toUpperCase(Locale.ROOT));
+                semantics.put("http_path", route);
+                semantics.put("operation_id", operationId.isBlank() ? null : safeText(operationId));
+                semantics.put("tags", textArray(operation.path("tags")));
+                semantics.put("request_schema_refs", requestSchemaRefs(operation));
+                semantics.put("response_statuses", fieldNames(operation.path("responses")));
+                semantics.put("security_declared", operation.has("security") || root.has("security"));
+                semantics.put("lifecycle_action", lifecycleAction(method, operationId));
+                semantics.put("destructive_risk", method.equals("delete"));
                 add(candidates, "OPENAPI_OPERATION", name, relative, "HTTP_OPERATION_REQUIRES_SERVER",
                         roleHints(name + " " + route), file, evidenceDigests,
-                        operationId.isBlank() ? 0.75 : 0.98);
+                        operationId.isBlank() ? 0.75 : 0.98, semantics);
             }
         }
     }
@@ -204,6 +214,14 @@ final class StaticWorkflowInventory {
     private static void add(List<Map<String, Object>> target, String kind, String name,
             String sourcePath, String invocationType, List<String> roleHints, Path evidence,
             Map<Path, String> evidenceDigests, double confidence)
+            throws Exception {
+        add(target, kind, name, sourcePath, invocationType, roleHints, evidence,
+                evidenceDigests, confidence, Map.of());
+    }
+
+    private static void add(List<Map<String, Object>> target, String kind, String name,
+            String sourcePath, String invocationType, List<String> roleHints, Path evidence,
+            Map<Path, String> evidenceDigests, double confidence, Map<String, Object> metadata)
             throws Exception {
         if (target.size() >= MAX_CANDIDATES) return;
         String material = kind + "\u0000" + sourcePath + "\u0000" + name;
@@ -219,7 +237,54 @@ final class StaticWorkflowInventory {
         value.put("runtime_verified", false);
         value.put("review_required", true);
         value.put("auto_execute", false);
+        metadata.forEach((key, metadataValue) -> {
+            if (metadataValue != null) value.put(key, metadataValue);
+        });
         target.add(Map.copyOf(value));
+    }
+
+    private static List<String> textArray(JsonNode node) {
+        if (!node.isArray()) return List.of();
+        List<String> values = new ArrayList<>();
+        node.forEach(value -> {
+            if (value.isTextual() && !value.asText().isBlank()) values.add(safeText(value.asText()));
+        });
+        return values.stream().distinct().sorted().toList();
+    }
+
+    private static List<String> fieldNames(JsonNode node) {
+        if (!node.isObject()) return List.of();
+        List<String> values = new ArrayList<>();
+        node.fieldNames().forEachRemaining(values::add);
+        return values.stream().sorted().toList();
+    }
+
+    private static List<String> requestSchemaRefs(JsonNode operation) {
+        Set<String> refs = new java.util.TreeSet<>();
+        collectRefs(operation.path("requestBody").path("content"), refs, 0);
+        return List.copyOf(refs);
+    }
+
+    private static void collectRefs(JsonNode node, Set<String> refs, int depth) {
+        if (node == null || node.isMissingNode() || depth > 12) return;
+        if (node.isObject()) {
+            JsonNode ref = node.get("$ref");
+            if (ref != null && ref.isTextual() && ref.asText().startsWith("#/")) refs.add(ref.asText());
+            node.elements().forEachRemaining(child -> collectRefs(child, refs, depth + 1));
+        } else if (node.isArray()) {
+            node.elements().forEachRemaining(child -> collectRefs(child, refs, depth + 1));
+        }
+    }
+
+    private static String lifecycleAction(String method, String operationId) {
+        String material = operationId.toLowerCase(Locale.ROOT);
+        if (method.equals("delete") || contains(material, "delete", "remove", "revoke")) return "DELETE";
+        if (contains(material, "update", "change", "approve", "reject")
+                || method.equals("put") || method.equals("patch")) return "UPDATE";
+        if (contains(material, "get", "read", "list", "find")
+                || method.equals("get") || method.equals("head")) return "READ";
+        if (contains(material, "create", "register", "submit", "start") || method.equals("post")) return "CREATE";
+        return "INVOKE";
     }
 
     private static String evidenceDigest(Path file, Map<Path, String> evidenceDigests) throws Exception {

@@ -23,7 +23,21 @@ class ProgramUnderstandingEngineTest {
                   /orders:
                     post:
                       operationId: createOrder
+                      tags: [Orders]
+                      requestBody:
+                        content:
+                          application/json:
+                            schema: {$ref: '#/components/schemas/CreateOrder'}
                       responses: {'200': {description: ok}}
+                    get:
+                      operationId: listOrders
+                      tags: [Orders]
+                      responses: {'200': {description: ok}}
+                  /orders/{orderId}:
+                    delete:
+                      operationId: deleteOrder
+                      tags: [Orders]
+                      responses: {'204': {description: deleted}}
                 """);
         Files.createDirectories(temp.resolve("tests"));
         Files.writeString(temp.resolve("tests/test_order.py"), "def test_order():\n    assert True\n");
@@ -38,8 +52,18 @@ class ProgramUnderstandingEngineTest {
         List<Map<String, Object>> flows = (List<Map<String, Object>>) result.get("flow_candidates");
         assertTrue(flows.stream().allMatch(flow -> "INFERRED_REVIEW_REQUIRED".equals(flow.get("semantic_state"))));
         assertTrue(flows.stream().allMatch(flow -> Boolean.FALSE.equals(flow.get("score_eligible"))));
+        assertTrue(flows.stream().anyMatch(flow -> "ORDER".equals(flow.get("inferred_business_object"))));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> lifecycles = (List<Map<String, Object>>) result.get("api_lifecycle_candidates");
+        assertEquals(1, lifecycles.size());
+        assertEquals(List.of("CREATE", "READ", "DELETE"), lifecycles.get(0).get("actions"));
+        assertEquals("CREATE_READ_CANDIDATE", lifecycles.get(0).get("coverage_state"));
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> questions = (List<Map<String, Object>>) result.get("minimal_questions");
         assertTrue(questions.stream().anyMatch(question -> "RUNTIME_ENDPOINT".equals(question.get("question_id"))));
+        assertTrue(questions.stream().anyMatch(question -> "AUTHENTICATION_CONTEXT".equals(question.get("question_id"))));
+        assertTrue(questions.stream().anyMatch(question -> "DESTRUCTIVE_TEST_BOUNDARY".equals(question.get("question_id"))));
+        assertEquals(List.of("OPENAPI_SECURITY_UNDECLARED", "DESTRUCTIVE_API_DISCOVERED"),
+                result.get("risk_flags"));
     }
 }

@@ -133,6 +133,9 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 8px 
 .understanding-card { padding: 18px; border: 1px solid #4e4770; border-radius: 10px; background: #151226; }
 .understanding-card h3 { margin: 0; }
 .understanding-count { color: var(--purple); font: 700 1rem ui-monospace, monospace; }
+.inference-risk { color: #ffb4a8; border-left: 3px solid #ee6c5b; padding-left: 10px; }
+.lifecycle-candidate { margin: 10px 0; padding: 10px 12px; border: 1px solid #4e4770; border-radius: 8px; background: #1d1930; }
+.lifecycle-candidate p { margin: 6px 0 0; color: var(--muted); }
 .inference-body { padding: 10px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
 .inference-body p { margin: 4px 0; }
 .question-list { margin-top: 14px; padding: 12px; border: 1px solid #5b4e29; border-radius: 8px; background: #211d11; }

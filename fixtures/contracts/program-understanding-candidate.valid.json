@@ -8,6 +8,8 @@
   "inferred_business_objects": [],
   "flow_candidate_count": 0,
   "flow_candidates": [],
+  "api_lifecycle_candidates": [],
+  "risk_flags": [],
   "e2e_plan_candidates": [],
   "minimal_questions": [],
   "automatic_execution": "NOT_RUN_REVIEW_REQUIRED",

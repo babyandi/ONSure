@@ -135,6 +135,23 @@
     boundary.className = "trust-boundary";
     boundary.textContent = `추론=${understanding.inference_method} · 실행=${understanding.automatic_execution} · PASS 증적=${understanding.inferences_are_pass_evidence}`;
     article.append(boundary);
+    const risks = understanding.risk_flags || [];
+    if (risks.length) {
+      const risk = document.createElement("p");
+      risk.className = "inference-risk";
+      risk.textContent = `자동실행 차단 위험: ${risks.join(" · ")}`;
+      article.append(risk);
+    }
+    for (const lifecycle of understanding.api_lifecycle_candidates || []) {
+      const lifecycleBox = document.createElement("div");
+      lifecycleBox.className = "lifecycle-candidate";
+      const lifecycleTitle = document.createElement("strong");
+      lifecycleTitle.textContent = `${lifecycle.business_object} 생명주기 · ${lifecycle.coverage_state}`;
+      const actions = document.createElement("p");
+      actions.textContent = `API 연결 후보: ${(lifecycle.actions || []).join(" → ") || "미분류"} · ${lifecycle.execution_state}`;
+      lifecycleBox.append(lifecycleTitle, actions);
+      article.append(lifecycleBox);
+    }
     for (const flow of understanding.flow_candidates || []) {
       const details = document.createElement("details");
       details.className = "score-details";
@@ -147,6 +164,11 @@
       const stages = document.createElement("p");
       stages.textContent = `제안 Flow: ${(flow.stages || []).join(" → ") || "미분류"}`;
       body.append(actor, stages);
+      if (flow.operation) {
+        const operation = document.createElement("p");
+        operation.textContent = `API: ${flow.operation.http_method || "?"} ${flow.operation.http_path || "?"} · ${flow.operation.lifecycle_action || "INVOKE"}`;
+        body.append(operation);
+      }
       details.append(summary, body);
       article.append(details);
     }

@@ -104,7 +104,16 @@
               "confidence": {"type": "number", "minimum": 0, "maximum": 1},
               "runtime_verified": {"const": false},
               "review_required": {"const": true},
-              "auto_execute": {"const": false}
+              "auto_execute": {"const": false},
+              "http_method": {"type": "string", "enum": ["GET", "PUT", "POST", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"]},
+              "http_path": {"type": "string", "minLength": 1},
+              "operation_id": {"type": "string", "minLength": 1, "maxLength": 512},
+              "tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+              "request_schema_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+              "response_statuses": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+              "security_declared": {"type": "boolean"},
+              "lifecycle_action": {"type": "string", "enum": ["CREATE", "READ", "UPDATE", "DELETE", "INVOKE"]},
+              "destructive_risk": {"type": "boolean"}
             }
           }
         },

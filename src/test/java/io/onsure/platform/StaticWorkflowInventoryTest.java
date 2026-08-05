@@ -34,6 +34,13 @@ class StaticWorkflowInventoryTest {
                   /runs:
                     post:
                       operationId: createRun
+                      tags: [Runs]
+                      requestBody:
+                        content:
+                          application/json:
+                            schema: {$ref: '#/components/schemas/CreateRun'}
+                      responses:
+                        '201': {description: created}
                 """);
         Files.createDirectories(temp.resolve("db/migration"));
         Files.writeString(temp.resolve("db/migration/V1__init.sql"), "select 1;");
@@ -52,5 +59,13 @@ class StaticWorkflowInventoryTest {
         assertTrue(candidates.stream().allMatch(value -> Boolean.TRUE.equals(value.get("review_required"))));
         assertTrue(candidates.stream().allMatch(value -> Boolean.FALSE.equals(value.get("auto_execute"))));
         assertFalse(candidates.toString().contains("node render.js"));
+        Map<String, Object> operation = candidates.stream()
+                .filter(value -> "OPENAPI_OPERATION".equals(value.get("kind")))
+                .findFirst().orElseThrow();
+        assertEquals("POST", operation.get("http_method"));
+        assertEquals("/runs", operation.get("http_path"));
+        assertEquals("CREATE", operation.get("lifecycle_action"));
+        assertEquals(List.of("#/components/schemas/CreateRun"), operation.get("request_schema_refs"));
+        assertEquals(List.of("201"), operation.get("response_statuses"));
     }
 }

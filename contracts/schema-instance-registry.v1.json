@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "pairs": [
     {"schema": "contracts/environment-requirement-profile.v1.schema.json", "instances": ["fixtures/contracts/environment-requirement-profile.valid.json"], "invalid_instances": ["fixtures/contracts/environment-requirement-profile.invalid.json"]},
     {"schema": "contracts/reviewed-execution-profile.v1.schema.json", "instances": ["fixtures/contracts/reviewed-execution-profile.valid.json"], "invalid_instances": ["fixtures/contracts/reviewed-execution-profile.invalid.json"]},

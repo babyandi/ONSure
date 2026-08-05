@@ -36,11 +36,11 @@ final class ProgramUnderstandingEngine {
         List<Map<String, Object>> flows = new ArrayList<>();
         for (Map<String, Object> candidate : candidates) {
             String material = candidate.get("name") + " " + candidate.get("source_path");
-            inferActors(material, actors);
-            inferObjects(material, businessObjects);
-            @SuppressWarnings("unchecked")
-            List<String> hints = (List<String>) candidate.getOrDefault("role_hints", List.of());
-            List<String> stages = stages(candidate.get("kind").toString(), hints);
+            String inferredActor = actor(candidate, material);
+            String inferredObject = object(candidate, material);
+            actors.add(inferredActor);
+            businessObjects.add(inferredObject);
+            List<String> stages = stages(candidate);
             if (stages.isEmpty()) continue;
             double observedConfidence = ((Number) candidate.getOrDefault("confidence", 0)).doubleValue();
             double confidence = Math.floor(Math.min(0.95, observedConfidence * 0.85) * 100) / 100;
@@ -48,8 +48,8 @@ final class ProgramUnderstandingEngine {
             flow.put("flow_id", "FLOW-" + Hashing.sha256(candidate.get("candidate_id").toString()).substring(0, 16));
             flow.put("name", candidate.get("name"));
             flow.put("trigger_observation_id", candidate.get("candidate_id"));
-            flow.put("inferred_actor", actor(material));
-            flow.put("inferred_business_object", object(material));
+            flow.put("inferred_actor", inferredActor);
+            flow.put("inferred_business_object", inferredObject);
             flow.put("stages", stages);
             flow.put("evidence_sha256", candidate.get("evidence_sha256"));
             flow.put("inference_confidence", confidence);
@@ -57,6 +57,9 @@ final class ProgramUnderstandingEngine {
             flow.put("runtime_verified", false);
             flow.put("auto_execute", false);
             flow.put("score_eligible", false);
+            if ("OPENAPI_OPERATION".equals(candidate.get("kind"))) {
+                flow.put("operation", operation(candidate));
+            }
             flows.add(Map.copyOf(flow));
         }
         flows.sort(Comparator.comparing(value -> value.get("flow_id").toString()));
@@ -69,9 +72,24 @@ final class ProgramUnderstandingEngine {
                         || candidate.get("kind").toString().contains("ENTRYPOINT"));
         boolean hasDataLifecycle = candidates.stream().anyMatch(candidate ->
                 roles(candidate).contains("DATA_LIFECYCLE"));
+        boolean hasOpenApiWithoutSecurity = candidates.stream().anyMatch(candidate ->
+                "OPENAPI_OPERATION".equals(candidate.get("kind"))
+                        && !Boolean.TRUE.equals(candidate.get("security_declared")));
+        boolean hasDestructiveApi = candidates.stream().anyMatch(candidate ->
+                Boolean.TRUE.equals(candidate.get("destructive_risk")));
+        boolean hasRequestWithoutSchema = candidates.stream().anyMatch(candidate ->
+                "OPENAPI_OPERATION".equals(candidate.get("kind"))
+                        && List.of("POST", "PUT", "PATCH").contains(candidate.get("http_method"))
+                        && stringList(candidate.get("request_schema_refs")).isEmpty());
         List<Map<String, Object>> questions = new ArrayList<>();
         if (hasApi) questions.add(question("RUNTIME_ENDPOINT", "검증용 base URL과 시작 명령을 확인하십시오.", true));
         questions.add(question("SAFE_TEST_IDENTITY", "실데이터가 아닌 검증 계정·fixture의 사용 범위를 확인하십시오.", true));
+        if (hasOpenApiWithoutSecurity) questions.add(question(
+                "AUTHENTICATION_CONTEXT", "OpenAPI에 인증 선언이 없는 연산의 검증 인증 경계를 확인하십시오.", true));
+        if (hasRequestWithoutSchema) questions.add(question(
+                "REQUEST_FIXTURE", "요청 스키마가 없는 쓰기 연산의 합성 fixture와 금지 필드를 확인하십시오.", true));
+        if (hasDestructiveApi) questions.add(question(
+                "DESTRUCTIVE_TEST_BOUNDARY", "DELETE 연산은 격리된 합성 데이터에서만 실행할 수 있는지 확인하십시오.", true));
         if (!hasTestOracle) questions.add(question(
                 "SUCCESS_ORACLE", "각 주요 Flow의 성공·실패 판정 조건을 확인하십시오.", true));
         if (hasDataLifecycle) questions.add(question(
@@ -80,13 +98,14 @@ final class ProgramUnderstandingEngine {
         List<Map<String, Object>> plans = flows.stream().limit(200).map(flow -> Map.<String, Object>of(
                 "plan_id", "E2E-" + flow.get("flow_id").toString().substring(5),
                 "flow_id", flow.get("flow_id"),
-                "proposed_steps", proposedSteps(cast(flow.get("stages"))),
+                "proposed_steps", proposedSteps(flow),
                 "oracle_state", hasTestOracle ? "STATIC_ORACLE_CANDIDATE_DISCOVERED" : "ORACLE_INPUT_REQUIRED",
                 "execution_state", "NOT_RUN_REVIEW_REQUIRED",
                 "sandbox_required", true,
                 "customer_data_allowed", false,
                 "destructive_action_allowed", false,
                 "score_eligible", false)).toList();
+        List<Map<String, Object>> lifecycles = apiLifecycles(flows);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("contract", CONTRACT);
@@ -98,6 +117,8 @@ final class ProgramUnderstandingEngine {
         result.put("inferred_business_objects", businessObjects.stream().sorted().toList());
         result.put("flow_candidate_count", flows.size());
         result.put("flow_candidates", List.copyOf(flows));
+        result.put("api_lifecycle_candidates", lifecycles);
+        result.put("risk_flags", riskFlags(hasOpenApiWithoutSecurity, hasRequestWithoutSchema, hasDestructiveApi));
         result.put("e2e_plan_candidates", plans);
         result.put("minimal_questions", List.copyOf(questions));
         result.put("automatic_execution", "NOT_RUN_REVIEW_REQUIRED");
@@ -108,9 +129,16 @@ final class ProgramUnderstandingEngine {
         return Map.copyOf(result);
     }
 
-    private static List<String> stages(String kind, List<String> hints) {
+    private static List<String> stages(Map<String, Object> candidate) {
+        String kind = candidate.get("kind").toString();
+        List<String> hints = roles(candidate);
+        String lifecycleAction = candidate.getOrDefault("lifecycle_action", "INVOKE").toString();
         Set<String> result = new LinkedHashSet<>();
         if (kind.contains("OPENAPI") || kind.contains("ENTRYPOINT")) result.add("REQUEST");
+        if (List.of("CREATE", "UPDATE", "DELETE").contains(lifecycleAction)) {
+            result.add("PERSIST_OR_HANDOFF");
+        }
+        if ("DELETE".equals(lifecycleAction)) result.add("RECOVERY");
         if (kind.contains("MIGRATION")) result.add("PERSIST_OR_HANDOFF");
         if (kind.contains("TEST")) result.add("TEST_OR_VALIDATE");
         for (String hint : hints) switch (hint) {
@@ -127,12 +155,19 @@ final class ProgramUnderstandingEngine {
         return STAGE_ORDER.stream().filter(result::contains).toList();
     }
 
-    private static List<Map<String, Object>> proposedSteps(List<String> stages) {
-        return stages.stream().map(stage -> Map.<String, Object>of(
-                "stage", stage,
-                "state", "PROPOSED_NOT_RUN",
-                "required_evidence", evidence(stage),
-                "source_mutation_allowed", false)).toList();
+    private static List<Map<String, Object>> proposedSteps(Map<String, Object> flow) {
+        List<String> stages = cast(flow.get("stages"));
+        return stages.stream().map(stage -> {
+            Map<String, Object> step = new LinkedHashMap<>();
+            step.put("stage", stage);
+            step.put("state", "PROPOSED_NOT_RUN");
+            step.put("required_evidence", evidence(stage));
+            step.put("source_mutation_allowed", false);
+            if ("REQUEST".equals(stage) && flow.get("operation") instanceof Map<?, ?> operation) {
+                step.put("source_derived_invocation", operation);
+            }
+            return Map.copyOf(step);
+        }).toList();
     }
 
     private static String evidence(String stage) {
@@ -149,11 +184,13 @@ final class ProgramUnderstandingEngine {
         };
     }
 
-    private static void inferActors(String material, Set<String> actors) {
-        actors.add(actor(material));
-    }
-
-    private static String actor(String material) {
+    private static String actor(Map<String, Object> candidate, String material) {
+        if ("OPENAPI_OPERATION".equals(candidate.get("kind"))) {
+            List<String> tags = stringList(candidate.get("tags"));
+            String tagMaterial = String.join(" ", tags).toLowerCase(Locale.ROOT);
+            if (contains(tagMaterial, "admin", "management", "operator")) return "OPERATOR";
+            return "API_CLIENT";
+        }
         String lower = material.toLowerCase(Locale.ROOT);
         if (contains(lower, "admin", "operator", "manage")) return "OPERATOR";
         if (contains(lower, "worker", "job", "queue", "event")) return "BACKGROUND_WORKER";
@@ -161,16 +198,98 @@ final class ProgramUnderstandingEngine {
         return "UNKNOWN_ACTOR_REVIEW_REQUIRED";
     }
 
-    private static void inferObjects(String material, Set<String> objects) {
-        objects.add(object(material));
-    }
-
-    private static String object(String material) {
+    private static String object(Map<String, Object> candidate, String material) {
+        List<String> tags = stringList(candidate.get("tags"));
+        if (!tags.isEmpty() && !List.of("API", "DEFAULT", "MANAGEMENT").contains(
+                normalizeObject(tags.get(0)))) return normalizeObject(tags.get(0));
+        Object routeValue = candidate.get("http_path");
+        if (routeValue != null) {
+            for (String segment : routeValue.toString().split("/")) {
+                if (!segment.isBlank() && !segment.startsWith("{") && !segment.matches("v[0-9]+")) {
+                    return normalizeObject(segment);
+                }
+            }
+        }
         String normalized = material.replace('\\', '/');
         String name = normalized.substring(normalized.lastIndexOf('/') + 1)
                 .replaceAll("(?i)(controller|service|repository|test|spec|migration|route|api)", "")
                 .replaceAll("[^A-Za-z0-9]+", "_").replaceAll("^_+|_+$", "").toUpperCase(Locale.ROOT);
         return name.isBlank() ? "UNKNOWN_OBJECT_REVIEW_REQUIRED" : name.substring(0, Math.min(80, name.length()));
+    }
+
+    private static String normalizeObject(String value) {
+        String normalized = value.replaceAll("[^A-Za-z0-9]+", "_")
+                .replaceAll("^_+|_+$", "").toUpperCase(Locale.ROOT);
+        if (normalized.endsWith("IES") && normalized.length() > 3) {
+            normalized = normalized.substring(0, normalized.length() - 3) + "Y";
+        } else if (normalized.endsWith("S") && normalized.length() > 1) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized.isBlank() ? "UNKNOWN_OBJECT_REVIEW_REQUIRED" : normalized;
+    }
+
+    private static Map<String, Object> operation(Map<String, Object> candidate) {
+        Map<String, Object> operation = new LinkedHashMap<>();
+        for (String key : List.of("http_method", "http_path", "operation_id", "tags",
+                "request_schema_refs", "response_statuses", "security_declared",
+                "lifecycle_action", "destructive_risk")) {
+            if (candidate.containsKey(key)) operation.put(key, candidate.get(key));
+        }
+        return Map.copyOf(operation);
+    }
+
+    private static List<Map<String, Object>> apiLifecycles(List<Map<String, Object>> flows) {
+        Map<String, List<Map<String, Object>>> grouped = new java.util.TreeMap<>();
+        for (Map<String, Object> flow : flows) {
+            if (!(flow.get("operation") instanceof Map<?, ?>)) continue;
+            grouped.computeIfAbsent(flow.get("inferred_business_object").toString(), ignored -> new ArrayList<>())
+                    .add(flow);
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, List<Map<String, Object>>> entry : grouped.entrySet()) {
+            List<Map<String, Object>> operations = entry.getValue().stream()
+                    .sorted(Comparator.comparing(flow -> lifecycleRank(operationAction(flow))))
+                    .map(flow -> Map.<String, Object>of(
+                            "flow_id", flow.get("flow_id"),
+                            "operation", flow.get("operation"),
+                            "state", "PROPOSED_NOT_RUN"))
+                    .toList();
+            Set<String> actions = new LinkedHashSet<>();
+            entry.getValue().forEach(flow -> actions.add(operationAction(flow)));
+            result.add(Map.of(
+                    "lifecycle_id", "LIFECYCLE-" + Hashing.sha256(entry.getKey()).substring(0, 16),
+                    "business_object", entry.getKey(),
+                    "actions", actions.stream().sorted(Comparator.comparing(ProgramUnderstandingEngine::lifecycleRank)).toList(),
+                    "operations", operations,
+                    "coverage_state", lifecycleCoverage(actions),
+                    "execution_state", "NOT_RUN_REVIEW_REQUIRED",
+                    "score_eligible", false));
+        }
+        return List.copyOf(result);
+    }
+
+    private static String operationAction(Map<String, Object> flow) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> operation = (Map<String, Object>) flow.get("operation");
+        return operation.getOrDefault("lifecycle_action", "INVOKE").toString();
+    }
+
+    private static int lifecycleRank(String action) {
+        return switch (action) { case "CREATE" -> 0; case "READ" -> 1; case "UPDATE" -> 2; case "DELETE" -> 3; default -> 4; };
+    }
+
+    private static String lifecycleCoverage(Set<String> actions) {
+        if (actions.containsAll(List.of("CREATE", "READ", "UPDATE", "DELETE"))) return "CRUD_CANDIDATE_COMPLETE";
+        if (actions.contains("CREATE") && actions.contains("READ")) return "CREATE_READ_CANDIDATE";
+        return "PARTIAL_LIFECYCLE_REVIEW_REQUIRED";
+    }
+
+    private static List<String> riskFlags(boolean noSecurity, boolean noFixture, boolean destructive) {
+        List<String> flags = new ArrayList<>();
+        if (noSecurity) flags.add("OPENAPI_SECURITY_UNDECLARED");
+        if (noFixture) flags.add("WRITE_REQUEST_SCHEMA_UNDECLARED");
+        if (destructive) flags.add("DESTRUCTIVE_API_DISCOVERED");
+        return List.copyOf(flags);
     }
 
     private static boolean contains(String value, String... terms) {
@@ -182,6 +301,11 @@ final class ProgramUnderstandingEngine {
         @SuppressWarnings("unchecked")
         List<String> value = (List<String>) candidate.getOrDefault("role_hints", List.of());
         return value;
+    }
+
+    private static List<String> stringList(Object value) {
+        if (!(value instanceof List<?> list)) return List.of();
+        return list.stream().filter(String.class::isInstance).map(String.class::cast).toList();
     }
 
     @SuppressWarnings("unchecked")
