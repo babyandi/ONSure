@@ -37,7 +37,10 @@ class RepositoryContractsTest(unittest.TestCase):
             self.assertFalse(body["final_claim_allowed"])
             self.assertEqual(body["product_subrequirements"], 43)
             self.assertEqual(body["mvp_acceptance_items"], 11)
-            self.assertEqual(body["workflow_operations"], 43)
+            registry = json.loads(
+                (ROOT / "contracts/workflow-operation-registry.v1.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(body["workflow_operations"], registry["operation_count"])
             self.assertEqual(body["registered_failure_injections"], 118)
             self.assertEqual(body["runtime_execution"], "NOT_RUN_BY_STATIC_VALIDATOR")
 
