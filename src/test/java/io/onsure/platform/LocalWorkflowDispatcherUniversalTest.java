@@ -59,7 +59,16 @@ class LocalWorkflowDispatcherUniversalTest {
     @Test
     void sharedWorkflowAppliesWorkspaceBoundExternalEnvironmentProfile() throws Exception {
         Path source = Files.createDirectories(temp.resolve("profile-source"));
-        Files.writeString(source.resolve("openapi.yaml"), "openapi: 3.1.0\npaths: {}\n");
+        Files.writeString(source.resolve("openapi.yaml"), """
+                openapi: 3.1.0
+                info: {title: profile, version: '1'}
+                paths:
+                  /health:
+                    get:
+                      operationId: getHealth
+                      responses:
+                        '200': {description: healthy}
+                """);
         Path profile = temp.resolve("environment-profile.json");
         Files.writeString(profile, """
                 {"contract":"ONSURE_ENVIRONMENT_REQUIREMENT_PROFILE_V1","profile_id":"api-preflight",

@@ -54,22 +54,26 @@ public final class StandardValidationProfileDetector {
             environmentRequirements.addAll(contribution.environmentRequirements());
             for (Step contributed : contribution.steps()) {
                 validateContribution(pack, contributed);
-                switch (contributed.kind().group()) {
-                    case ENVIRONMENT_DEPENDENCY -> environment.add(contributed);
-                    case STAGE_FUNCTIONAL -> functional.add(contributed);
-                    case CONNECTED_E2E -> endToEnd.add(contributed);
-                    case OPERATIONS_RECOVERY -> operations.add(contributed);
+                Step scheduled = withCoreGates(
+                        contributed, preflight.stepId(), technologies.contains("NODE"));
+                switch (scheduled.kind().group()) {
+                    case ENVIRONMENT_DEPENDENCY -> environment.add(scheduled);
+                    case STAGE_FUNCTIONAL -> functional.add(scheduled);
+                    case CONNECTED_E2E -> endToEnd.add(scheduled);
+                    case OPERATIONS_RECOVERY -> operations.add(scheduled);
                     default -> throw new IllegalArgumentException(
-                            "VALIDATION_PACK_RESERVED_GROUP:" + pack.id() + ":" + contributed.stepId());
+                            "VALIDATION_PACK_RESERVED_GROUP:" + pack.id() + ":" + scheduled.stepId());
                 }
             }
         }
 
-        List<String> environmentGate = new ArrayList<>();
-        environmentGate.add(preflight.stepId());
-        environment.stream().filter(Step::required).map(Step::stepId).forEach(environmentGate::add);
         Step inventory = step("structure.inventory", Phase.STRUCTURE_STATIC, StepKind.INVENTORY,
-                true, List.of(), Duration.ofMinutes(2), environmentGate);
+                true, List.of(), Duration.ofMinutes(2), List.of());
+        Step nodeManifestLock = technologies.contains("NODE")
+                ? step("node.manifest-lock-consistency", Phase.STRUCTURE_STATIC,
+                        StepKind.STATIC_ANALYSIS, true, List.of(), Duration.ofMinutes(2),
+                        List.of(inventory.stepId()))
+                : null;
         Step meta = step("validator.meta-check", Phase.STRUCTURE_STATIC, StepKind.VALIDATOR_META_CHECK,
                 true, List.of(), Duration.ofMinutes(2), List.of(inventory.stepId()));
 
@@ -96,9 +100,10 @@ public final class StandardValidationProfileDetector {
                 StepKind.EVIDENCE_VERIFICATION, true, List.of(), Duration.ofMinutes(2), evidenceDependencies);
         List<Step> steps = new ArrayList<>();
         steps.add(preflight);
-        steps.addAll(environment);
         steps.add(inventory);
+        if (nodeManifestLock != null) steps.add(nodeManifestLock);
         steps.add(meta);
+        steps.addAll(environment);
         steps.addAll(functional);
         steps.addAll(endToEnd);
         steps.add(evidence);
@@ -152,16 +157,33 @@ public final class StandardValidationProfileDetector {
             throw new IllegalArgumentException("VALIDATION_PACK_STEP_PREFIX_INVALID:" + pack.id());
         }
         if (step.kind().group() == UniversalValidationProfile.VerificationGroup.ENVIRONMENT_DEPENDENCY) {
-            boolean trustedNodePreparation = pack instanceof NodeValidationPack
-                    && step.kind() == StepKind.ENVIRONMENT_PREFLIGHT
-                    && "node.dependencies".equals(step.stepId())
-                    && step.command().equals(List.of("npm", "--offline", "ci", "--ignore-scripts"))
-                    && step.dependsOn().equals(List.of("environment.preflight"));
-            if (!trustedNodePreparation) {
-                throw new IllegalArgumentException("VALIDATION_PACK_RESERVED_GROUP:"
-                        + pack.id() + ":" + step.stepId());
-            }
+            throw new IllegalArgumentException("VALIDATION_PACK_RESERVED_GROUP:"
+                    + pack.id() + ":" + step.stepId());
         }
+    }
+
+    static Step withEnvironmentGate(Step step, String preflightId) {
+        if (!step.executable() || step.dependsOn().contains(preflightId)) return step;
+        List<String> dependencies = new ArrayList<>(step.dependsOn());
+        dependencies.add(preflightId);
+        return new Step(step.stepId(), step.phase(), step.kind(), step.required(),
+                step.command(), step.workingDirectory(), step.timeout(), List.copyOf(dependencies));
+    }
+
+    static Step withCoreGates(Step step, String preflightId, boolean nodeIntegrityRequired) {
+        Step environmentBound = withEnvironmentGate(step, preflightId);
+        boolean rootNpm = environmentBound.executable()
+                && "npm".equals(environmentBound.command().get(0))
+                && environmentBound.workingDirectory().toString().isEmpty();
+        if (!nodeIntegrityRequired || !rootNpm
+                || environmentBound.dependsOn().contains("node.manifest-lock-consistency")) {
+            return environmentBound;
+        }
+        List<String> dependencies = new ArrayList<>(environmentBound.dependsOn());
+        dependencies.add("node.manifest-lock-consistency");
+        return new Step(environmentBound.stepId(), environmentBound.phase(), environmentBound.kind(),
+                environmentBound.required(), environmentBound.command(), environmentBound.workingDirectory(),
+                environmentBound.timeout(), List.copyOf(dependencies));
     }
 
     private static void addMissingFunctionalPathChecks(List<Step> functional, String metaStepId) {

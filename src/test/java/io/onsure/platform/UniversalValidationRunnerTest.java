@@ -30,7 +30,7 @@ class UniversalValidationRunnerTest {
     @TempDir Path temp;
 
     @Test
-    void blocksNodeExecutionWhenPackageManifestAndLockDependencySetsDrift() throws Exception {
+    void failsNodeSourceIntegrityButContinuesIndependentStructureChecksWhenLockDrifts() throws Exception {
         Path source = Files.createDirectory(temp.resolve("node-lock-drift"));
         Files.writeString(source.resolve("package.json"), """
                 {"scripts":{"test":"node --test"}}
@@ -44,17 +44,22 @@ class UniversalValidationRunnerTest {
                 new UniversalValidationRunner.StepExecution(PASS_NONFINAL, 0, "pass", false, "test"))
                 .run(profile, temp.resolve("node-lock-drift-run"));
 
-        var preflight = result.steps().stream()
-                .filter(step -> step.stepId().equals("environment.preflight"))
+        var integrity = result.steps().stream()
+                .filter(step -> step.stepId().equals("node.manifest-lock-consistency"))
                 .findFirst().orElseThrow();
-        assertEquals(BLOCKED, preflight.outcome());
-        assertTrue(Files.readString(Path.of(preflight.logFile()))
-                .contains("node.manifest-lock-dependency-mismatch:dependencies"));
-        assertEquals(BLOCKED, result.overallOutcome());
+        assertEquals(FAIL, integrity.outcome());
+        assertEquals("NODE_MANIFEST_LOCK_INVALID:DEPENDENCY_MISMATCH", integrity.reason());
+        assertTrue(Files.readString(Path.of(integrity.logFile()))
+                .contains("mismatched_sections=dependencies"));
+        assertEquals(PASS_NONFINAL, result.steps().stream()
+                .filter(step -> step.stepId().equals("structure.inventory")).findFirst().orElseThrow().outcome());
+        assertEquals(PASS_NONFINAL, result.steps().stream()
+                .filter(step -> step.stepId().equals("validator.meta-check")).findFirst().orElseThrow().outcome());
+        assertEquals(FAIL, result.overallOutcome());
     }
 
     @Test
-    void performsFixedOfflineNodeInstallInEnvironmentGroupBeforeStructure() throws Exception {
+    void isolatesOfflineNodeInstallFailureFromStructureInspection() throws Exception {
         Path source = Files.createDirectory(temp.resolve("node-offline-preflight"));
         Files.writeString(source.resolve("package.json"), """
                 {"dependencies":{"renderer":"1.0.0"},"scripts":{"test":"node --test"}}
@@ -72,15 +77,17 @@ class UniversalValidationRunnerTest {
                 return new UniversalValidationRunner.StepExecution(
                         BLOCKED, 1, "ENOTCACHED", false, "OFFLINE_DEPENDENCY_CACHE_INCOMPLETE");
             }
-            throw new AssertionError("later command must not execute: " + step.stepId());
+            throw new AssertionError("unexpected command: " + step.stepId());
         }).run(profile, temp.resolve("node-offline-preflight-run"));
 
         assertEquals(List.of("node.dependencies"), executed);
-        assertEquals(BLOCKED, result.groupOutcomes().get(
+        assertEquals(PASS_NONFINAL, result.groupOutcomes().get(
                 UniversalValidationProfile.VerificationGroup.ENVIRONMENT_DEPENDENCY));
-        assertEquals(NOT_RUN, result.groupOutcomes().get(
+        assertEquals(BLOCKED, result.groupOutcomes().get(
+                UniversalValidationProfile.VerificationGroup.STAGE_FUNCTIONAL));
+        assertEquals(PASS_NONFINAL, result.groupOutcomes().get(
                 UniversalValidationProfile.VerificationGroup.STRUCTURE));
-        assertEquals(NOT_RUN, result.steps().stream()
+        assertEquals(PASS_NONFINAL, result.steps().stream()
                 .filter(step -> step.stepId().equals("structure.inventory")).findFirst().orElseThrow().outcome());
     }
 
@@ -233,7 +240,12 @@ class UniversalValidationRunnerTest {
         assertEquals(UniversalValidationProfile.Outcome.BLOCKED, result.overallOutcome());
         assertEquals(UniversalValidationProfile.Outcome.BLOCKED,
                 result.groupOutcomes().get(UniversalValidationProfile.VerificationGroup.ENVIRONMENT_DEPENDENCY));
-        assertTrue(result.steps().stream().filter(step -> !step.stepId().equals("environment.preflight"))
+        assertEquals(PASS_NONFINAL, result.steps().stream()
+                .filter(step -> step.stepId().equals("structure.inventory")).findFirst().orElseThrow().outcome());
+        assertEquals(PASS_NONFINAL, result.steps().stream()
+                .filter(step -> step.stepId().equals("validator.meta-check")).findFirst().orElseThrow().outcome());
+        assertTrue(result.steps().stream().filter(UniversalValidationRunner.StepResult::required)
+                .filter(step -> step.kind() == UniversalValidationProfile.StepKind.UNIT_TEST)
                 .allMatch(step -> step.outcome() == NOT_RUN));
     }
 
@@ -274,7 +286,8 @@ class UniversalValidationRunnerTest {
 
         assertTrue(probedExecutables.isEmpty());
         assertEquals(requirements, probedRequirements);
-        assertEquals(BLOCKED, result.overallOutcome());
+        assertEquals(BLOCKED, result.groupOutcomes().get(
+                UniversalValidationProfile.VerificationGroup.ENVIRONMENT_DEPENDENCY));
         assertEquals("SANDBOX_ENVIRONMENT_REQUIREMENT_MISSING", result.steps().get(0).reason());
     }
 
@@ -293,7 +306,8 @@ class UniversalValidationRunnerTest {
             throw new AssertionError("command execution not expected");
         }).run(profile, temp.resolve("run"));
 
-        assertEquals(UniversalValidationProfile.Outcome.BLOCKED, result.overallOutcome());
+        assertEquals(UniversalValidationProfile.Outcome.BLOCKED, result.groupOutcomes().get(
+                UniversalValidationProfile.VerificationGroup.ENVIRONMENT_DEPENDENCY));
         assertEquals("REQUIRED_ENVIRONMENT_MISSING:signer.fixture", result.steps().get(0).reason());
     }
 

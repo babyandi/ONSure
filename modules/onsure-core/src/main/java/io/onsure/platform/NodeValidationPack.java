@@ -6,9 +6,7 @@ import static io.onsure.platform.StandardValidationPackSupport.step;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.onsure.platform.UniversalValidationProfile.EnvironmentRequirement;
 import io.onsure.platform.UniversalValidationProfile.Phase;
-import io.onsure.platform.UniversalValidationProfile.RequirementKind;
 import io.onsure.platform.UniversalValidationProfile.Step;
 import io.onsure.platform.UniversalValidationProfile.StepKind;
 import java.nio.file.Path;
@@ -28,16 +26,14 @@ public final class NodeValidationPack implements ValidationPack {
         JsonNode scripts = body.path("scripts");
         boolean dependencies = body.path("dependencies").size() > 0
                 || body.path("devDependencies").size() > 0 || body.path("optionalDependencies").size() > 0;
-        List<EnvironmentRequirement> requirements = new ArrayList<>();
         List<Step> steps = new ArrayList<>();
         String preparation = null;
         if (dependencies) {
-            requirements.add(new EnvironmentRequirement(
-                    "node.lockfile", RequirementKind.SOURCE_FILE, "package-lock.json", true));
             preparation = "node.dependencies";
-            steps.add(step(preparation, Phase.STRUCTURE_STATIC, StepKind.ENVIRONMENT_PREFLIGHT,
+            steps.add(step(preparation, Phase.COMPONENT_AND_NEGATIVE, StepKind.BUILD,
                     List.of("npm", "--offline", "ci", "--ignore-scripts"), BUILD_TIMEOUT,
-                    List.of("environment.preflight")));
+                    List.of("environment.preflight", "node.manifest-lock-consistency",
+                            "validator.meta-check")));
         }
         if (scripts.hasNonNull("test")) {
             steps.add(step("node.tests", Phase.COMPONENT_AND_NEGATIVE, StepKind.UNIT_TEST,
@@ -52,14 +48,15 @@ public final class NodeValidationPack implements ValidationPack {
         if (scripts.hasNonNull("test:integration")) {
             steps.add(step("node.integration", Phase.END_TO_END_LINEAGE, StepKind.INTEGRATION_TEST,
                     List.of("npm", "--offline", "run", "test:integration"), TEST_TIMEOUT,
-                    List.of(scripts.hasNonNull("test") ? "node.tests" : "validator.meta-check")));
+                    scripts.hasNonNull("test") ? List.of("node.tests")
+                            : List.of("node.manifest-lock-consistency", "validator.meta-check")));
         }
-        return new Contribution(Set.of("NODE"), requirements, steps);
+        return new Contribution(Set.of("NODE"), List.of(), steps);
     }
 
     private static List<String> functionalDependencies(String preparation) {
         return preparation == null
-                ? List.of("validator.meta-check")
+                ? List.of("node.manifest-lock-consistency", "validator.meta-check")
                 : List.of(preparation, "validator.meta-check");
     }
 }

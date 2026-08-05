@@ -204,7 +204,9 @@ public final class UniversalValidationProfile {
                     }
                 }
                 int group = step.kind().group().order();
-                if (step.required() && group > 1
+                // Repository structure and static source integrity are intentionally runnable even
+                // when external tools are unavailable. Later groups remain strictly gated.
+                if (step.required() && group > VerificationGroup.STRUCTURE.order()
                         && !hasDependencyInGroup(step, group - 1, byId, new LinkedHashSet<>())) {
                     throw new IllegalArgumentException(
                             "VALIDATION_STEP_PREVIOUS_GROUP_GATE_MISSING:" + step.stepId());

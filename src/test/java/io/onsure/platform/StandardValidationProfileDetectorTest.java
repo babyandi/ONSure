@@ -145,8 +145,9 @@ class StandardValidationProfileDetectorTest {
 
         assertTrue(profile.technologies().contains("RENDERER"));
         assertEquals(2, profile.environmentRequirements().size());
-        assertEquals(List.of("environment.preflight", "structure.inventory", "validator.meta-check"),
-                profile.steps().subList(0, 3).stream().map(UniversalValidationProfile.Step::stepId).toList());
+        assertEquals(List.of("environment.preflight", "structure.inventory",
+                        "node.manifest-lock-consistency", "validator.meta-check"),
+                profile.steps().subList(0, 4).stream().map(UniversalValidationProfile.Step::stepId).toList());
         assertTrue(profile.steps().stream().anyMatch(step -> step.stepId().equals("renderer.connected-audit")));
         var lineage = profile.steps().stream()
                 .filter(step -> step.stepId().equals("renderer.connected-audit")).findFirst().orElseThrow();
@@ -183,16 +184,20 @@ class StandardValidationProfileDetectorTest {
                 """);
         var profile = new StandardValidationProfileDetector().detect("node-dependencies", temp);
 
-        assertTrue(profile.environmentRequirements().stream()
-                .anyMatch(value -> value.requirementId().equals("node.lockfile") && value.required()));
+        assertTrue(profile.steps().stream().anyMatch(step ->
+                step.stepId().equals("node.manifest-lock-consistency")
+                        && step.kind() == UniversalValidationProfile.StepKind.STATIC_ANALYSIS));
         var preparation = profile.steps().stream().filter(step -> step.stepId().equals("node.dependencies"))
                 .findFirst().orElseThrow();
         assertEquals(List.of("npm", "--offline", "ci", "--ignore-scripts"), preparation.command());
-        assertEquals(UniversalValidationProfile.StepKind.ENVIRONMENT_PREFLIGHT, preparation.kind());
-        assertEquals(List.of("environment.preflight"), preparation.dependsOn());
+        assertEquals(UniversalValidationProfile.StepKind.BUILD, preparation.kind());
+        assertEquals(List.of("environment.preflight", "node.manifest-lock-consistency",
+                        "validator.meta-check"),
+                preparation.dependsOn());
         assertTrue(profile.steps().stream().filter(step -> step.stepId().equals("structure.inventory"))
-                .findFirst().orElseThrow().dependsOn().contains("node.dependencies"));
-        assertEquals(List.of("node.dependencies", "validator.meta-check"), profile.steps().stream()
+                .findFirst().orElseThrow().dependsOn().isEmpty());
+        assertEquals(List.of("node.dependencies", "validator.meta-check", "environment.preflight",
+                        "node.manifest-lock-consistency"), profile.steps().stream()
                 .filter(step -> step.stepId().equals("node.tests")).findFirst().orElseThrow().dependsOn());
     }
 
@@ -253,7 +258,7 @@ class StandardValidationProfileDetectorTest {
                     .findFirst().orElseThrow();
             assertEquals("mvn", step.command().get(0));
             assertTrue(step.command().contains("-o"));
-            assertEquals(List.of("maven.clean-verify"), step.dependsOn());
+            assertEquals(List.of("maven.clean-verify", "environment.preflight"), step.dependsOn());
         }
         assertFalse(mavenProfile.steps().stream().map(UniversalValidationProfile.Step::stepId)
                 .anyMatch(id -> id.startsWith("functional.")));
@@ -270,7 +275,7 @@ class StandardValidationProfileDetectorTest {
                     .findFirst().orElseThrow();
             assertEquals(List.of("python3", "-m", "unittest", "discover", "-v", "-s", "tests"),
                     step.command());
-            assertEquals(List.of("python.tests"), step.dependsOn());
+            assertEquals(List.of("python.tests", "environment.preflight"), step.dependsOn());
         }
     }
 
@@ -352,7 +357,7 @@ class StandardValidationProfileDetectorTest {
         assertEquals(List.of("bash", "gradlew", "--offline", "test", "--tests", "*Negative*",
                 "--tests", "*Failure*", "--tests", "*Adversarial*", "--tests", "*Tamper*",
                 "--tests", "*Invalid*"), negative.command());
-        assertEquals(List.of("gradle.clean-test"), negative.dependsOn());
+        assertEquals(List.of("gradle.clean-test", "environment.preflight"), negative.dependsOn());
         var request = profile.steps().stream()
                 .filter(step -> step.kind() == UniversalValidationProfile.StepKind.E2E_REQUEST_FLOW)
                 .findFirst().orElseThrow();
@@ -364,7 +369,7 @@ class StandardValidationProfileDetectorTest {
         var resume = profile.steps().stream()
                 .filter(step -> step.kind() == UniversalValidationProfile.StepKind.RESUME_TEST)
                 .findFirst().orElseThrow();
-        assertEquals(List.of("evidence.verify"), resume.dependsOn());
+        assertEquals(List.of("evidence.verify", "environment.preflight"), resume.dependsOn());
         assertEquals(List.of("bash", "gradlew", "--offline", "integrationTest"),
                 profile.steps().stream().filter(step -> step.stepId().equals("gradle.integration"))
                         .findFirst().orElseThrow().command());
@@ -404,7 +409,7 @@ class StandardValidationProfileDetectorTest {
         assertEquals(List.of("python3", "-m", "unittest", "-v",
                 "tests.test_operational_resilience_validation.OperationalResilienceValidationTest.test_interruption"),
                 interruption.command());
-        assertEquals(List.of("evidence.verify"), interruption.dependsOn());
+        assertEquals(List.of("evidence.verify", "environment.preflight"), interruption.dependsOn());
     }
 
     @Test

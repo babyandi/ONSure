@@ -346,8 +346,14 @@ public final class UniversalValidationRunner {
     private static void verifyExecutionProfileBinding(Profile profile,
             ReviewedExecutionProfile.Loaded executionProfile) throws Exception {
         if (executionProfile == null) return;
+        boolean nodeIntegrityRequired = profile.steps().stream()
+                .anyMatch(step -> "node.manifest-lock-consistency".equals(step.stepId()));
+        List<Step> boundSteps = executionProfile.pack().detect(profile.sourceRoot()).steps().stream()
+                .map(step -> StandardValidationProfileDetector.withCoreGates(
+                        step, "environment.preflight", nodeIntegrityRequired))
+                .toList();
         if (!profile.sourceRoot().equals(executionProfile.sourceRoot())
-                || !profile.steps().containsAll(executionProfile.pack().detect(profile.sourceRoot()).steps())) {
+                || !profile.steps().containsAll(boundSteps)) {
             throw new IllegalArgumentException("EXECUTION_PROFILE_BINDING_MISMATCH");
         }
         if (!Hashing.file(executionProfile.sourceFile()).equals(executionProfile.sourceFileSha256())) {
@@ -365,6 +371,9 @@ public final class UniversalValidationRunner {
             return switch (step.kind()) {
                 case ENVIRONMENT_PREFLIGHT -> validateEnvironment(profile, snapshotRoot);
                 case INVENTORY -> validateStructureInventory(snapshotRoot);
+                case STATIC_ANALYSIS -> "node.manifest-lock-consistency".equals(step.stepId())
+                        ? validateNodeManifestLock(snapshotRoot)
+                        : missingPack("STATIC_ANALYSIS_PACK_NOT_INSTALLED");
                 case VALIDATOR_META_CHECK -> validateProfile(profile, snapshotRoot);
                 case API_CONTRACT -> validateOpenApi(snapshotRoot, step);
                 case DATABASE_MIGRATION -> validateMigrations(snapshotRoot);
@@ -432,7 +441,6 @@ public final class UniversalValidationRunner {
                 (requirement.required() ? missing : optionalMissing).add(requirement.requirementId());
             }
         }
-        missing.addAll(validateNodeManifestLock(snapshotRoot));
         String report = "os=" + System.getProperty("os.name", "unknown") + "\njava="
                 + System.getProperty("java.version", "unknown") + "\nrequired_executables=" + requiredExecutables
                 + "\ndeclared_requirements=" + profile.environmentRequirements().stream()
@@ -465,32 +473,51 @@ public final class UniversalValidationRunner {
                 "REQUIRED_EXECUTABLES_AND_SANDBOX_AVAILABLE");
     }
 
-    private List<String> validateNodeManifestLock(Path snapshotRoot) {
+    private StepExecution validateNodeManifestLock(Path snapshotRoot) {
         Path manifest = snapshotRoot.resolve("package.json").normalize();
         Path lock = snapshotRoot.resolve("package-lock.json").normalize();
-        if (!Files.exists(manifest, java.nio.file.LinkOption.NOFOLLOW_LINKS)
-                || !Files.exists(lock, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return List.of();
-        if (!safeNodeManifest(manifest) || !safeNodeManifest(lock)) {
-            return List.of("node.manifest-lock-file-invalid");
+        if (!Files.exists(manifest, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+            return new StepExecution(Outcome.PASS_NONFINAL, 0, "manifest=NOT_APPLICABLE", false,
+                    "NODE_MANIFEST_NOT_APPLICABLE");
         }
+        if (!safeNodeManifest(manifest)) return nodeIntegrityFailure("MANIFEST_FILE_INVALID", "");
         try {
             JsonNode packageBody = mapper.readTree(Files.readAllBytes(manifest));
+            if (!packageBody.isObject()) return nodeIntegrityFailure("MANIFEST_ROOT_INVALID", "");
+            boolean dependenciesDeclared = NODE_DEPENDENCY_SECTIONS.stream()
+                    .anyMatch(section -> !dependencyMap(packageBody.path(section)).isEmpty());
+            if (!Files.exists(lock, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+                return dependenciesDeclared
+                        ? nodeIntegrityFailure("LOCK_FILE_REQUIRED_MISSING", "dependencies_declared=true")
+                        : new StepExecution(Outcome.PASS_NONFINAL, 0,
+                                "lock=NOT_APPLICABLE\ndependencies_declared=false", false,
+                                "NODE_LOCK_NOT_REQUIRED");
+            }
+            if (!safeNodeManifest(lock)) return nodeIntegrityFailure("LOCK_FILE_INVALID", "");
             JsonNode lockBody = mapper.readTree(Files.readAllBytes(lock));
             JsonNode lockRoot = lockBody.path("packages").path("");
-            if (!packageBody.isObject() || !lockRoot.isObject()) {
-                return List.of("node.manifest-lock-root-invalid");
-            }
+            if (!lockRoot.isObject()) return nodeIntegrityFailure("LOCK_ROOT_INVALID", "");
             List<String> drift = new ArrayList<>();
             for (String section : NODE_DEPENDENCY_SECTIONS) {
                 Map<String, String> declared = dependencyMap(packageBody.path(section));
                 Map<String, String> locked = dependencyMap(lockRoot.path(section));
                 if (!declared.equals(locked)) drift.add(section);
             }
-            return drift.isEmpty() ? List.of()
-                    : List.of("node.manifest-lock-dependency-mismatch:" + String.join(",", drift));
+            if (!drift.isEmpty()) {
+                return nodeIntegrityFailure("DEPENDENCY_MISMATCH",
+                        "mismatched_sections=" + String.join(",", drift));
+            }
+            return new StepExecution(Outcome.PASS_NONFINAL, 0,
+                    "manifest_lock_consistent=true\ndependencies_declared=" + dependenciesDeclared,
+                    false, "NODE_MANIFEST_LOCK_CONSISTENT");
         } catch (Exception error) {
-            return List.of("node.manifest-lock-read-failed:" + error.getClass().getSimpleName());
+            return nodeIntegrityFailure("READ_FAILED", "error=" + error.getClass().getSimpleName());
         }
+    }
+
+    private static StepExecution nodeIntegrityFailure(String reason, String output) {
+        return new StepExecution(Outcome.FAIL, -1, output, false,
+                "NODE_MANIFEST_LOCK_INVALID:" + reason);
     }
 
     private static boolean safeNodeManifest(Path path) {

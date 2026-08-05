@@ -77,7 +77,7 @@ class NestedProjectValidationPackTest {
         assertEquals(UniversalValidationProfile.Outcome.NOT_RUN,
                 profile.phaseOutcomes(java.util.Map.of()).get(
                         UniversalValidationProfile.Phase.COMPONENT_AND_NEGATIVE));
-        assertEquals(List.of("validator.meta-check"), step.dependsOn());
+        assertEquals(List.of("validator.meta-check", "environment.preflight"), step.dependsOn());
         assertFalse(Files.exists(temp.resolve(".onsure")));
         assertTrue(Files.isDirectory(javaSource));
     }
