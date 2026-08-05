@@ -62,6 +62,14 @@ class ONSureSandboxBackendsTest(unittest.TestCase):
         self.assertIn("ONSURE_ENVIRONMENT_PROBE_MISSING", executor)
         self.assertIn("--font", executor)
 
+    def test_generated_python_compile_command_matches_launcher_allow_list(self):
+        launcher = (ROOT / "scripts/validation-sandbox-launcher.sh").read_text(encoding="utf-8")
+        pack = (ROOT / "modules/onsure-core/src/main/java/io/onsure/platform/"
+                "NestedProjectValidationPack.java").read_text(encoding="utf-8")
+        self.assertIn('List.of("python3", "-m", "compileall", "-q", ".")', pack)
+        self.assertIn("\"${3:-}\" == 'compileall'", launcher)
+        self.assertIn("\"${4:-}\" == '-q'", launcher)
+
     def test_diagnostic_propagates_an_isolated_temp_root_to_sandbox_children(self):
         source = (ROOT / "scripts/onsure_sandbox_diagnostics.py").read_text(encoding="utf-8")
         self.assertIn('TemporaryDirectory(prefix="onsure-sandbox-runtime-")', source)

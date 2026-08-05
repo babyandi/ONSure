@@ -66,6 +66,8 @@ case "${1:-}" in
     ;;
   python3)
     [[ "${2:-}" == '-m' && ( "${3:-}" == 'pytest' || "${3:-}" == 'unittest' ) ]] \
+      || [[ "$#" -eq 5 && "${2:-}" == '-m' && "${3:-}" == 'compileall' \
+        && "${4:-}" == '-q' && "${5:-}" == '.' ]] \
       || onsure_reviewed_script '.py' "${2:-}" || {
       echo 'ONSURE_VALIDATION_SANDBOX_FAIL PYTHON_MODULE_DENIED' >&2
       exit 65
