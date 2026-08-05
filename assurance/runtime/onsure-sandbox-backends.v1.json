@@ -38,7 +38,7 @@
   "github_actions_used": false,
   "oci": {
     "boundary_attack_execution": "PASS_NONFINAL",
-    "boundary_attack_output_sha256": "840bc97295279347db3959fe5777d9bf99b99818c9efbc2eb1e61a1dcf180a08",
+    "boundary_attack_output_sha256": "8beb8fc5de2011e0423d366f2ffae350e7d49b6b1f9ce411fda08e9605429fa0",
     "boundary_attack_probe_count": 12,
     "capabilities": "DROP_ALL",
     "decision": "PASS_NONFINAL",
@@ -59,7 +59,7 @@
     ],
     "environment_capability_count": 6,
     "environment_capability_execution": "PASS_NONFINAL",
-    "environment_capability_output_sha256": "5bfc6e423e2740c663c73e23b6e0ca72d3059d2cff16fc869ce1858a450ca0ed",
+    "environment_capability_output_sha256": "2d42e72f2532340053686ec415078fefc58a5e9685ad3a4c079c2e5d88f20556",
     "image_id": "sha256:f4541be3366b24e2b65324b2a6535c9a72e13905a7dea0b5538666563594ad41",
     "image_pull": "NOT_RUN_LOCAL_IMAGE_ONLY",
     "image_reference": "onsure-validation-runtime:java17-node20-v1",
@@ -72,7 +72,7 @@
     "validation_probe_output_sha256": "237e8caa40f7aa85fe3b1244f3b7155deaa4cdb36f280f1f1f9a13ee3670d7bf"
   },
   "production_authority": false,
-  "receipt_sha256": "98fcc493b4946da06b229275cbd4da7c9fc52c5225e23ad43f9e01d9216c5e44",
+  "receipt_sha256": "ba4e68c3002920c71f06801f1482fc080928b3a78a2b04bdef4158cbb4d4bbbd",
   "selected_backend": "OCI_DOCKER",
   "source_bindings": {
     "contracts/sandbox-boundary.v1.json": "fe3093aaf09904c0d14c0c61b1c0efdb53cfcb387312377594b88a3b22ada322",
@@ -82,8 +82,8 @@
     "scripts/fixture-sandbox-launcher.sh": "99cedef77d0832c08fbee566a608aaa3e7de6f44a062fb0ddbca4ce6ff7f7f96",
     "scripts/onsure-sandbox-backend.sh": "f6216be66b211366e8b74b5ef01692b2742abd8d4b833e11e7d949aa68654a32",
     "scripts/test-fixture-sandbox-boundary.sh": "431bec0d6afe1c4929313c529a100d76b96f2cd29410a861baa3ad0c576560c6",
-    "scripts/validation-sandbox-launcher.sh": "39b1e3438c0e2f7b3c134c17a3075fa0f4a9077a2a8af662ea5f27233d43862d"
+    "scripts/validation-sandbox-launcher.sh": "001893fba78b5ec33f77e11116c8f3a4769fc666728808e660a0afa09831784b"
   },
   "source_code_dirty_paths": [],
-  "source_commit": "2adf2defa452d4d89ac612d724ef196b0049d4cd"
+  "source_commit": "a6098d1cf053d00c35cebc82d309c084ff84f6a7"
 }
