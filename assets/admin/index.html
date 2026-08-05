@@ -161,6 +161,16 @@
           <p id="understanding-empty" class="empty-state">자동 이해 후보가 없습니다. 프로그램 행의 자동 이해를 실행하세요.</p>
         </section>
 
+        <section id="program-approvals" class="panel">
+          <div class="section-heading">
+            <div><p class="eyebrow">Digest-bound two-person control</p><h2>자동 추론 E2E 승인</h2></div>
+            <span class="count-chip">APPROVAL ≠ EXECUTION</span>
+          </div>
+          <p class="subtitle">승인은 source·profile·review digest와 만료시간에 결속되며 한 번만 결정할 수 있습니다. 승인돼도 실행은 NOT_RUN입니다.</p>
+          <div class="table-wrap compact-table"><table><thead><tr><th>Request</th><th>대상</th><th>상태</th><th>만료</th><th>실행</th><th>결정</th></tr></thead><tbody id="program-approval-rows"></tbody></table></div>
+          <p id="program-approval-empty" class="empty-state">자동 추론 승인 요청이 없습니다.</p>
+        </section>
+
         <section id="changes" class="panel">
           <div class="section-heading">
             <div><p class="eyebrow">Two-person control</p><h2>Gateway 설정 변경 요청</h2></div>

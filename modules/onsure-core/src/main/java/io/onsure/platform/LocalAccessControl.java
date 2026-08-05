@@ -11,7 +11,8 @@ import java.util.Set;
 /** Package-local token registry and least-privilege role model for the loopback API. */
 final class LocalAccessControl {
     enum Role { VIEWER, OPERATOR, ADMIN, APPROVER }
-    enum Permission { VIEW, OPERATE_PROGRAMS, DISPATCH_WORKFLOW, CONTROL, REQUEST_SETTINGS, APPROVE_SETTINGS }
+    enum Permission { VIEW, OPERATE_PROGRAMS, DISPATCH_WORKFLOW, CONTROL, REQUEST_SETTINGS,
+        APPROVE_SETTINGS, REQUEST_PROGRAM_APPROVAL, APPROVE_PROGRAM_APPROVAL }
     record Identity(String actor, Role role, String tokenSha256) {}
 
     private final List<Entry> entries;
@@ -44,10 +45,13 @@ final class LocalAccessControl {
         if (identity == null) return false;
         Set<Permission> permissions = switch (identity.role()) {
             case VIEWER -> Set.of(Permission.VIEW);
-            case OPERATOR -> Set.of(Permission.VIEW, Permission.OPERATE_PROGRAMS);
+            case OPERATOR -> Set.of(Permission.VIEW, Permission.OPERATE_PROGRAMS,
+                    Permission.REQUEST_PROGRAM_APPROVAL);
             case ADMIN -> Set.of(Permission.VIEW, Permission.OPERATE_PROGRAMS,
-                    Permission.DISPATCH_WORKFLOW, Permission.CONTROL, Permission.REQUEST_SETTINGS);
-            case APPROVER -> Set.of(Permission.VIEW, Permission.APPROVE_SETTINGS);
+                    Permission.DISPATCH_WORKFLOW, Permission.CONTROL, Permission.REQUEST_SETTINGS,
+                    Permission.REQUEST_PROGRAM_APPROVAL);
+            case APPROVER -> Set.of(Permission.VIEW, Permission.APPROVE_SETTINGS,
+                    Permission.APPROVE_PROGRAM_APPROVAL);
         };
         return permissions.contains(permission);
     }

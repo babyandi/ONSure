@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/program-understanding-approval.v1.schema.json",
+  "title": "ONSure Program Understanding Approval V1",
+  "type": "object",
+  "required": ["contract", "request_id", "state", "project_id", "target_id", "source_sha256", "profile_file_sha256", "review_sha256", "requested_at", "expires_at", "requested_by", "requested_role", "reason", "single_use_for_execution", "execution_consumed", "execution_state", "final_claim_allowed", "request_sha256"],
+  "properties": {
+    "contract": {"const": "ONSURE_PROGRAM_UNDERSTANDING_APPROVAL_V1"},
+    "request_id": {"type": "string", "pattern": "^program-understanding-approval-[0-9a-f-]{36}$"},
+    "state": {"enum": ["AWAITING_APPROVAL", "APPROVED_NOT_EXECUTED", "REJECTED"]},
+    "project_id": {"type": "string"}, "target_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "profile_file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "requested_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "requested_by": {"type": "string"}, "requested_role": {"enum": ["ADMIN", "OPERATOR"]},
+    "reason": {"type": "string"}, "decided_at": {"type": "string", "format": "date-time"},
+    "decided_by": {"type": "string"}, "decision_reason": {"type": "string"},
+    "single_use_for_execution": {"const": true}, "execution_consumed": {"const": false},
+    "execution_state": {"const": "NOT_RUN"}, "final_claim_allowed": {"const": false},
+    "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "additionalProperties": false
+}

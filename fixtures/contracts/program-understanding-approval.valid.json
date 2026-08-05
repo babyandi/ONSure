@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_PROGRAM_UNDERSTANDING_APPROVAL_V1",
+  "request_id": "program-understanding-approval-11111111-1111-1111-1111-111111111111",
+  "state": "APPROVED_NOT_EXECUTED", "project_id": "customer", "target_id": "orders",
+  "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile_file_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "review_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "requested_at": "2026-08-05T00:00:00Z", "expires_at": "2026-08-05T00:10:00Z",
+  "requested_by": "operator-a", "requested_role": "OPERATOR", "reason": "synthetic execution only",
+  "decided_at": "2026-08-05T00:01:00Z", "decided_by": "approver-b", "decision_reason": "bounded scope",
+  "single_use_for_execution": true, "execution_consumed": false, "execution_state": "NOT_RUN",
+  "final_claim_allowed": false,
+  "request_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "receipt_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}

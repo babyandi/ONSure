@@ -39,6 +39,7 @@ public final class LocalAuthenticatedApiServer {
             "/v1/workspace-snapshot", "/v1/autopilot-control", "/v1/management-overview",
             "/v1/session", "/v1/programs", "/v1/programs/validate",
             "/v1/programs/understand", "/v1/programs/understand/reviews",
+            "/v1/programs/understand/approval-requests", "/v1/programs/understand/approval-decisions",
             "/v1/validation-scorecards",
             "/v1/gateway-settings/requests", "/v1/gateway-settings/approvals", "/v1/audit-events");
 
@@ -121,6 +122,11 @@ public final class LocalAuthenticatedApiServer {
                 LocalAccessControl.Permission.OPERATE_PROGRAMS, this::programUnderstand));
         server.createContext("/v1/programs/understand/reviews", authenticated(
                 LocalAccessControl.Permission.OPERATE_PROGRAMS, this::programUnderstandingReview));
+        server.createContext("/v1/programs/understand/approval-requests", authenticated(
+                LocalAccessControl.Permission.VIEW, this::programUnderstandingApprovalRequests));
+        server.createContext("/v1/programs/understand/approval-decisions", authenticated(
+                LocalAccessControl.Permission.APPROVE_PROGRAM_APPROVAL,
+                this::programUnderstandingApprovalDecisions));
         server.createContext("/v1/validation-scorecards", authenticated(
                 LocalAccessControl.Permission.VIEW, this::validationScorecards));
         server.createContext("/v1/gateway-settings/requests", authenticated(
@@ -464,6 +470,45 @@ public final class LocalAuthenticatedApiServer {
                         "profile_file_sha256", review.get("profile_file_sha256"),
                         "review_sha256", review.get("review_sha256")));
         respond(exchange, 200, review);
+    }
+
+    private void programUnderstandingApprovalRequests(HttpExchange exchange) throws Exception {
+        LocalProgramUnderstandingApprovalService approvals =
+                new LocalProgramUnderstandingApprovalService(workspaceRoot);
+        if ("GET".equals(exchange.getRequestMethod())) {
+            respond(exchange, 200, approvals.list(50));
+            return;
+        }
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "GET or POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        if (!LocalAccessControl.allowed(identity, LocalAccessControl.Permission.REQUEST_PROGRAM_APPROVAL)) {
+            respond(exchange, 403, error("ROLE_PERMISSION_DENIED", "Administrator or operator role is required."));
+            return;
+        }
+        Map<String, Object> request = approvals.request(readJson(exchange), identity);
+        new LocalManagementAuditLedger(workspaceRoot).append(identity,
+                "PROGRAM_UNDERSTANDING_APPROVAL_REQUEST", "AWAITING_APPROVAL", Map.of(
+                        "request_id", request.get("request_id"), "request_sha256", request.get("request_sha256"),
+                        "review_sha256", request.get("review_sha256"), "expires_at", request.get("expires_at")));
+        respond(exchange, 200, request);
+    }
+
+    private void programUnderstandingApprovalDecisions(HttpExchange exchange) throws Exception {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
+            return;
+        }
+        LocalAccessControl.Identity identity = identity(exchange);
+        Map<String, Object> receipt = new LocalProgramUnderstandingApprovalService(workspaceRoot)
+                .decide(readJson(exchange), identity);
+        new LocalManagementAuditLedger(workspaceRoot).append(identity,
+                "PROGRAM_UNDERSTANDING_APPROVAL_DECISION", receipt.get("state").toString(), Map.of(
+                        "request_id", receipt.get("request_id"), "request_sha256", receipt.get("request_sha256"),
+                        "receipt_sha256", receipt.get("receipt_sha256"), "execution_state", receipt.get("execution_state")));
+        respond(exchange, 200, receipt);
     }
 
     private void gatewaySettingRequests(HttpExchange exchange) throws Exception {

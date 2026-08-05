@@ -215,6 +215,16 @@
       review.className = "review-state";
       review.textContent = `검토=${understanding.review.review_state} · 승인=${understanding.review.approval_state} · 실행=${understanding.review.execution_state} · 미해결 ${(understanding.review.unresolved_blocking_questions || []).length}`;
       questions.append(review);
+      if (understanding.review.review_state === "READY_FOR_SEPARATE_APPROVAL") {
+        const requestApproval = document.createElement("button");
+        requestApproval.type = "button";
+        requestApproval.className = "button secondary compact-button";
+        requestApproval.textContent = "10분 유효 별도 승인 요청";
+        requestApproval.disabled = !["ADMIN", "OPERATOR"].includes(sessionRole);
+        requestApproval.addEventListener("click", () => requestProgramUnderstandingApproval(
+          program, understanding, requestApproval));
+        questions.append(requestApproval);
+      }
     }
     article.append(questions);
     return article;
@@ -369,11 +379,13 @@
       const session = await api("/v1/session");
       sessionRole = session.role || "";
       byId("session-identity").textContent = `${session.actor || "—"} / ${sessionRole || "—"}`;
-      const [overview, settings, audit] = await Promise.all([
-        api("/v1/management-overview"), api("/v1/gateway-settings/requests"), api("/v1/audit-events")
+      const [overview, settings, approvals, audit] = await Promise.all([
+        api("/v1/management-overview"), api("/v1/gateway-settings/requests"),
+        api("/v1/programs/understand/approval-requests"), api("/v1/audit-events")
       ]);
       render(overview);
       renderGatewayRequests(settings);
+      renderProgramApprovalRequests(approvals);
       renderAudit(audit);
       byId("program-form").querySelector("button").disabled = !["ADMIN", "OPERATOR"].includes(sessionRole);
       byId("gateway-form").querySelector("button").disabled = sessionRole !== "ADMIN";
@@ -449,6 +461,61 @@
       await loadOverview();
     } catch (error) {
       setText("program-action-state", error instanceof Error ? error.message : "추론 검토 저장 실패");
+    } finally { button.disabled = false; }
+  }
+
+  async function requestProgramUnderstandingApproval(program, understanding, button) {
+    button.disabled = true;
+    try {
+      const result = await api("/v1/programs/understand/approval-requests", {
+        method: "POST", body: JSON.stringify({
+          project_id: program.project_id, target_id: program.program_id,
+          profile_file_sha256: understanding.profile_file_sha256,
+          review_sha256: understanding.review.review_sha256,
+          reason: "관리화면에서 격리 합성 실행 초안 승인 요청", ttl_seconds: 600
+        })
+      });
+      setText("program-action-state", `승인 요청 ${result.request_id} · 만료 ${result.expires_at} · 실행 ${result.execution_state}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "승인 요청 실패");
+    } finally { button.disabled = false; }
+  }
+
+  function renderProgramApprovalRequests(payload) {
+    const body = byId("program-approval-rows");
+    body.replaceChildren();
+    const requests = payload.requests || [];
+    byId("program-approval-empty").hidden = requests.length !== 0;
+    for (const request of requests) {
+      const row = document.createElement("tr");
+      row.append(cell(request.request_id), cell(`${request.project_id}/${request.target_id}`),
+        cell(request.state), cell(request.expires_at), cell(request.execution_state));
+      const actions = document.createElement("td");
+      for (const decision of ["APPROVE", "REJECT"]) {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "button secondary compact-button";
+        button.textContent = decision;
+        button.disabled = sessionRole !== "APPROVER" || request.state !== "AWAITING_APPROVAL";
+        button.addEventListener("click", () => decideProgramUnderstandingApproval(
+          request.request_id, decision, button));
+        actions.append(button);
+      }
+      row.append(actions); body.append(row);
+    }
+  }
+
+  async function decideProgramUnderstandingApproval(requestId, decision, button) {
+    button.disabled = true;
+    try {
+      const result = await api("/v1/programs/understand/approval-decisions", {
+        method: "POST", body: JSON.stringify({request_id: requestId, decision,
+          reason: "별도 승인자가 source/review digest와 격리 경계를 검토함"})
+      });
+      setText("program-action-state", `${result.state} · 실행 ${result.execution_state} · receipt ${result.receipt_sha256}`);
+      await loadOverview();
+    } catch (error) {
+      setText("program-action-state", error instanceof Error ? error.message : "승인 결정 실패");
     } finally { button.disabled = false; }
   }
 
