@@ -143,6 +143,9 @@ DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
 - 커밋/PR 설명에서 거짓 또는 과장된 완료·테스트통과 주장(Self-Claim Verification 검증)
 - Cross-Model 1차/2차 판정 고의 불일치 케이스(자동 승격 대신 Human 회부되는지 검증)
 - Cross-Program Breaking Change: 한 Program의 Interface 변경이 다른 Program에 미치는 영향 탐지 검증
+- Copyleft License 의존성이 상용 폐쇄소스 배포 정책과 충돌하는 케이스(PolicyPack 허용/차단 목록 검증)
+- 동시에 열려있는 두 PR이 같은 Component를 상충되게 변경하는 Multi-PR Integration Risk 케이스
+- 기존 테스트가 전무한 Repository에서 OPlanning이 최소 Smoke Test를 제안·실행하는지, PASS 표기가 구분되는지 검증
 
 ### Mutation Testing / Blast Radius Fixture
 - 강한 Assertion과 약한 Assertion을 가진 동일 기능 Pair(Mutation Score 차이 검증)
@@ -159,6 +162,7 @@ DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
 - Credit 이중 Commit
 - Reserve Timeout
 - Offline Usage 중복 동기화
+- 실행 도중 Credit 소진 → Checkpoint까지 진행 후 BLOCKED 전이 → 추가 승인 후 Resume 또는 유예기간 초과 시 CANCELLED
 
 ### OMemory / 재귀학습 Fixture
 - 동일 Component Signature에 대한 Pattern 매칭 정확도

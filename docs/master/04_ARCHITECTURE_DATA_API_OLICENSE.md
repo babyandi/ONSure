@@ -150,6 +150,8 @@ PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](0
 ### CreditReservation
 RESERVED → COMMITTED 또는 RELEASED; Timeout 시 자동 RELEASED
 
+실행 도중 CreditReservation이 소진되면 진행 중인 Review/Verification은 안전한 Checkpoint(현재 Scenario/Finding 처리 완료 시점)까지만 진행한 뒤 ServiceCase를 BLOCKED로 전이한다. 이미 산출된 부분 결과는 NON_FINAL Evidence로 보존하며 폐기하지 않는다. 고객이 추가 Credit을 승인하면 Checkpoint부터 Resume하고, 미승인 상태가 계약된 유예기간을 넘기면 CANCELLED로 전이한다.
+
 ### CaseRevision
 Improve & Re-verify는 원칙적으로 COMPLETED된 ServiceCase에 새 CaseRevision을 추가하는 방식으로 처리하며 신규 ServiceCase를 생성하지 않는다. CaseRevision은 참조하는 BaselineManifest, 소비하는 Credit/Learning Unit, Evidence Pack을 원본 Case와 분리 기록하되 같은 System/Program Binding과 OLicense Case 계약을 상속한다. CaseRevision 생성 시 ServiceCase는 COMPLETED에서 IMPROVEMENT_OPTIONAL로 재진입한다.
 
@@ -258,7 +260,7 @@ GET /v1/license/jwks
 ## 8. Event 계약
 - PaymentSucceeded, PaymentFailed, RefundCompleted
 - LicenseIssued, LicenseSuspended, LicenseRevoked, EntitlementChanged
-- CreditReserved, CreditCommitted, CreditReleased
+- CreditReserved, CreditCommitted, CreditReleased, CreditExhaustedMidRun
 - CaseReady, CaseStarted, CaseBlocked, CaseCompleted
 - BaselineChanged
 - ReviewCompleted, VerificationCompleted, PatchCompleted

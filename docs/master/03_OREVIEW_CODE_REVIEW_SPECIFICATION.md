@@ -75,7 +75,7 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 
 ### Security Review
 - OWASP 계열 취약 패턴
-- Dependency 취약점과 License
+- Dependency 취약점과 License — Copyleft(GPL 계열) License가 상용 폐쇄소스 배포 조건과 충돌하는지 조직 PolicyPack의 허용/차단 목록 기준으로 판정
 - Secret, Key, Token 관리
 - JWT 검증, Audience, Issuer, Expiry
 - SSRF, XSS, CSRF, SQL/Command Injection
@@ -144,6 +144,8 @@ APPROVE는 Merge 실행과 동일하지 않다. 실제 Merge 권한은 별도 �
 - CI 결과 반영 후 Merge Review
 
 동일 Finding은 안정적인 Fingerprint로 추적하며 코드 이동만으로 새 Finding으로 중복 생성하지 않는다.
+
+PR 생성 후 Independent Review 단계에서는 동시에 열려있는 다른 Draft PR과의 Multi-PR Integration Risk Scan도 함께 수행한다([02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OGit).
 
 ## 8. 자동 수정 연계
 OReview는 직접 Main을 수정하지 않는다.

@@ -59,6 +59,7 @@ ProgramProfile, ComponentGraph, AIProfile, DependencyInventory, DataFlow, Baseli
 - 위험 기반 우선순위
 - Review Pack과 Verification Pack 선택
 - 시나리오·Fixture·환경 요구사항 생성
+- Verification Scenario용 테스트 데이터는 프로덕션 데이터 직접 사용을 금지하고 Masking 또는 Synthetic 생성을 원칙으로 하며, 고객이 명시 승인한 범위에서만 마스킹된 샘플을 제한적으로 허용
 - 예상 Learning Unit, Credit, 시간 계산
 - 실행 의존성 및 Stop Condition 정의
 - 사용자 승인용 Plan Diff 제공
@@ -111,7 +112,7 @@ APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
 PASS, FAIL, BLOCKED, NOT_RUN, INCONCLUSIVE, NON_FINAL
 
 ### 수용기준
-PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과 분리한다.
+PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과 분리한다. 기존 테스트가 전무한 대상은 OPlanning이 최소 Smoke/Golden Path Test를 자동 제안해 실행하며, 이 경우 PASS는 "기존 테스트로 확인됨"과 "신규 최소 테스트로만 확인됨"을 구분해 표기한다(테스트가 없어서 통과한 것을 테스트가 충분해서 통과한 것처럼 보이지 않게 한다).
 
 ## 7. OImprovement
 ### 기능
@@ -198,6 +199,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - Rollback 정보 제공
 - Rollback 검증: Rollback 실행 후 대상 Baseline이 실제로 직전 정상 상태(마지막 PASS Verification 시점)와 동일한지 자동 비교하고, 불일치 시 단순 실패가 아닌 Critical Incident로 승격
 - Post-merge Incident 대응: Merge 이후 발견된 결함은 Draft PR 흐름과 분리된 Hotfix Worktree로 처리하며, 원인이 된 Merge Commit과 새 MissedFinding/ImprovementRequest를 상호 링크한다
+- Multi-PR Integration Risk Scan: 동시에 열려있는 여러 Draft PR이 각각은 통과해도 함께 병합될 때 같은 Component를 상충되게 변경하는지 예측하고, 위험이 있으면 관련 PR 담당자에게 상호 링크된 경고를 표시
 
 ## 10. ODelivery
 - Web Report
