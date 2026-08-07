@@ -108,78 +108,60 @@ ProgramRiskScore = 100 − clamp(10·OpenCritical + 4·OpenHigh + 1·OpenMedium 
 - ComponentContract, ComponentInterface, ComponentVersion, ReuseLink
 
 ## 5. 상태 모델
-### ServiceCase
-DRAFT → PREFLIGHT → QUOTED → PAYMENT_PENDING → LICENSE_PENDING → READY → [LEARNING] → [REVIEW_REQUIRED] → [VERIFYING] → IMPROVEMENT_OPTIONAL → DELIVERING → COMPLETED
 
-예외: BLOCKED, SUSPENDED, CANCELLED, EXPIRED, REFUNDED
+이 절의 상태값은 실제 커밋된 `contracts/*.schema.json`과 `contracts/state-model-mapping.v1.json`을 1차 근거로 삼는다. 그 계약에 없는 이름은 이 설계서가 새로 제안하는 확장이며 [ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md §4](../architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md)의 `DESIGN_ONLY`로 표시한다. 필드 단위 상세는 이 문서가 아니라 해당 계약 파일을 원본으로 본다.
 
-BLOCKED은 사유(License 미해결, Credit 소진, Legal Hold, Operator 개입 필요 등)를 blocked_reason으로 구분해 기록하며, 사유가 해소되면 BLOCKED 진입 직전 단계로 복귀한다. SUSPENDED는 License가 LicenseSuspended(결제 분쟁·정책 위반 등)로 전이될 때만 진입하며, License가 재활성화(LicenseIssued 재발급 또는 분쟁 해소)되면 SUSPENDED 진입 직전 단계로 복귀한다. CANCELLED, EXPIRED, REFUNDED는 종결 상태이며 재진입 없이 CaseRevision으로만 후속 조치한다.
+### ServiceCase (상거래 계층) — `contracts/service-case-state.v1.schema.json`
+PREFLIGHT_REQUIRED → PREFLIGHT_BLOCKED → QUOTE_READY → QUOTED → QUOTE_EXPIRED → PAYMENT_PENDING → PAYMENT_RECEIPT_RECORDED → PAYMENT_CONFIRMED → PAYMENT_REJECTED → IN_PROGRESS → DELIVERED_AWAITING_ACCEPTANCE → DELIVERY_ACCEPTED
 
-LEARNING, REVIEW_REQUIRED, VERIFYING는 각각 독립 상태이며 순서는 [00_ONSURE_MASTER_DESIGN_SET.md](00_ONSURE_MASTER_DESIGN_SET.md)의 Understand → Plan → Review → Verify 순서를 따른다. CaseScope에 포함된 상품에 따라 다음과 같이 조건부로 진입한다.
+예외: REFUND_PENDING, REFUND_RECEIPT_RECORDED, REFUNDED, REFUND_REJECTED, CANCELLED, CLOSED
 
-- Learn: READY → LEARNING → DELIVERING (REVIEW_REQUIRED, VERIFYING 생략)
-- Verify: READY → VERIFYING → DELIVERING (LEARNING 생략, CaseScope에 결속된 기존 Baseline과 고객 제공 ScopeManifest를 구조 정보로 사용)
-- Learn & Verify: READY → LEARNING → REVIEW_REQUIRED → VERIFYING → IMPROVEMENT_OPTIONAL → DELIVERING
-- Improve & Re-verify: 아래 CaseRevision 참조
+ServiceCase는 계약상 `final_claim_allowed: false`가 고정값이며, `legal_hold`/`legal_hold_reason`/`retention_state`(ACTIVE 또는 DELETED_SIGNED_EXTERNAL_VERIFICATION)를 필수 필드로 가진다. IN_PROGRESS는 커머스 계층에서 하나의 상태로만 존재하며, Learning/Review/Verification/Improvement의 세부 진행은 ServiceCase가 아니라 아래 실행 계층 상태기계가 `target_reference`로 연결되어 독립적으로 추적한다 — 즉 상거래 상태와 기술실행 상태는 의도적으로 분리되어 있다(단일 거대 상태기계가 아님).
 
-REVIEW_REQUIRED는 Learn 산출물(Program Profile) 또는 고객 제공 ScopeManifest 중 하나가 있어야 진입할 수 있다. Review Decision과 Verification Decision은 [00:57](00_ONSURE_MASTER_DESIGN_SET.md)에 따라 서로 독립적으로 저장되며, VERIFYING 단계의 FAIL이 REVIEW_REQUIRED 단계의 APPROVE를 무효화하지 않는다.
+QUOTED는 발급 후 14일간 유효하며(값은 [08_REVIEW_CHECKLIST_OPEN_DECISIONS.md](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md) A3 확인 전까지 DRAFT), 만료 전 결제되지 않으면 QUOTE_EXPIRED로 전이한다. Preflight 이후 대상 Repository 규모가 초기 예상 대비 20%를 초과해 변하면 재견적을 요구한다(같은 이유로 DRAFT).
 
-QUOTED 상태의 Quote는 발급 후 14일간 유효하며, 만료 전 결제되지 않으면 자동으로 EXPIRED로 전이하고 재견적이 필요하다. Preflight 이후 대상 Repository 규모가 초기 예상 대비 20%를 초과해 변하면 Quote를 무효화하고 재계산을 요구한다.
+Learn/Verify/Learn&Verify/Improve&Reverify 4상품(01 §6)이 어떻게 IN_PROGRESS 하나의 상태 안에서 서로 다른 실행 계층 조합(아래 5개 상태기계 중 어느 것을 발동하는지)으로 구분되는지는 아직 계약으로 확정되지 않았다 — `DESIGN_ONLY`.
 
-### ReviewFinding
-OPEN → ACKNOWLEDGED → FIX_PLANNED → FIXED → RE_REVIEWED → CLOSED
-예외: ACCEPTED_RISK, FALSE_POSITIVE, DUPLICATE, WONT_FIX
+### 실행 계층 5개 상태기계 — `contracts/state-model-mapping.v1.json`
+ServiceCase의 `target_reference`가 가리키는 대상에 대해 독립적으로 동작하며, Case 존재 여부와 무관하게(예: VS Code 구독의 지속적 실행) 재사용된다.
 
-### VerificationFinding
-OPEN → CONFIRMED → RCA_CANDIDATE_LINKED → IMPROVEMENT_REQUESTED → RE_VERIFIED → CLOSED
-예외: ACCEPTED_RISK, FALSE_POSITIVE, DUPLICATE, WONT_FIX, FLAKY_ISOLATED
+| 상태기계 | 상태 흐름 | 종료 성공 | 대응 Design 개념 |
+|---|---|---|---|
+| `program_profile` | UNREGISTERED→REGISTERED→INTAKE_READY→LEARNING→PROFILE_CANDIDATE→PROFILE_REVIEWED→PROFILE_ACTIVE (+STALE, HOLD) | PROFILE_ACTIVE | OLearning / ProgramProfile |
+| `validation_run` | PLANNED→AWAITING_APPROVAL→READY→RUNNING→OBSERVED→DECIDED→EVIDENCE_LOCKED (+FAILED/RETRYABLE/CANCELLED/HOLD/NOT_RUN/INCONCLUSIVE) | EVIDENCE_LOCKED | OReview + OVerification 실행 |
+| `improvement` | FINDING_CONFIRMED→IMPROVEMENT_PLANNED→AWAITING_PATCH_APPROVAL→PATCH_APPROVED→APPLYING→APPLIED_NON_FINAL→REGRESSION_RUNNING→(IMPROVEMENT_PROVEN\|NO_EFFECT\|REGRESSION_DETECTED)→DELIVERY_READY (+ROLLED_BACK, HOLD) | DELIVERY_READY | OImprovement / ImprovementRequest·PatchPlan·PatchRun |
+| `git_delivery` | NO_CHANGE→WORKTREE_READY→CHANGES_APPLIED→LOCAL_VERIFIED→COMMITTED→PUSHED→DRAFT_PR_OPEN→REMOTE_CI_RUNNING→MERGE_READY_CANDIDATE→MERGED (+ROLLED_BACK, HOLD) | MERGED | OGit |
+| `assurance_publication` | DESIGN_BASELINE→IMPLEMENTATION_CANDIDATE→SELF_VALIDATION_NONFINAL→INDEPENDENT_OTESTER_PASS→INDEPENDENT_OAUDIT_PASS→HUMAN_ACCEPTANCE_PASS→FINAL_CANDIDATE→FINAL_LOCKED→PRODUCTION_GO→COMMERCIAL_GO (+HOLD, BLOCKED, 순서 고정) | COMMERCIAL_GO | 00 §8 출시 Gate |
 
-CONFIRMED는 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md:102](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L102)의 수용기준("PASS는 실행 증거 없이 생성할 수 없다")과 동일하게 실행 Evidence 없이는 도달할 수 없다. ReviewFinding과 VerificationFinding은 finding_id 체계를 공유하지 않으며 별도 ID Prefix(RVW-, VFY-)로 구분한다.
+계약의 `mapping_rules`는 하위 상태기계의 성공이 상위를 자동 함의하지 않는다고 명시한다(`PROGRAM_PROFILE_ACTIVE_DOES_NOT_IMPLY_VALIDATION_PASS`, `VALIDATION_EVIDENCE_LOCKED_DOES_NOT_IMPLY_FINAL_PASS`, `IMPROVEMENT_PROVEN_DOES_NOT_IMPLY_MERGE_READY`, `MERGED_DOES_NOT_IMPLY_PRODUCTION_GO`, `SELF_VALIDATION_CANNOT_ISSUE_INDEPENDENT_PASS`) — 이는 [00 §6](00_ONSURE_MASTER_DESIGN_SET.md)의 "Review PASS가 Verification PASS를 의미하지 않는다" 원칙과 같은 근거를 공유한다.
 
-### ImprovementRequest
-DRAFT → SCOPED → APPROVED → PATCH_IN_PROGRESS → PATCH_SUBMITTED → REGRESSION_RUNNING → REGRESSION_PASSED → DELIVERED
-예외: REJECTED, ABANDONED, ROLLED_BACK
+Review/Verification 개별 Finding의 상세 판정은 `contracts/oreview-result.v1.schema.json`을 따른다: 영역(domain)마다 `PASS|FAIL|HOLD|NOT_RUN|NOT_APPLICABLE`을 매기고 최소 10개 영역을 요구하며, `quality_decision`(PASS/FAIL/HOLD)과 `merge_authorized`(계약상 항상 false, 별도 권한자가 Merge)를 분리한다. 이 설계서가 앞서 제안한 Finding 단위 장기 생애주기(OPEN→ACKNOWLEDGED→FIX_PLANNED→FIXED→RE_REVIEWED→CLOSED, ACCEPTED_RISK/FALSE_POSITIVE/DUPLICATE/WONT_FIX)는 계약에 없는 `DESIGN_ONLY` 확장이다 — 실제로는 매 `validation_run`이 스냅샷 판정을 남기고, Finding을 가로지르는 생애주기 추적 계약은 아직 없다.
 
-REGRESSION_RUNNING에서 실패하면 PATCH_IN_PROGRESS로 되돌아가며 재시도 횟수는 ExecutionPlan의 Stop Condition을 따른다.
+### Improvement 실행 상세 — `contracts/patch-plan.v1.schema.json`
+PatchPlan은 hunk 단위(`hunk_id`, `finding_id`, `preimage_sha256`, `approval_state`, `expected_effect`, `required_tests`)로 구성되며 `preapply_assessment`에 `risk_score`(0~100), `risk_level`(NONE~CRITICAL), `impact_scope`(changed_files, finding_ids)를 포함한다 — 이는 이 설계서가 제안한 Blast Radius 드라이런과 개념적으로 일치하지만, 실제 계약은 `PatchRun`이라는 별도 실행 엔티티나 `DRY_RUN`/`DRY_RUN_REVIEWED` 상태를 두지 않고 `preapply_assessment`를 PatchPlan 자체의 속성으로 포함한다. `patch-apply-receipt.v1.schema.json`, `patch-rollback-receipt.v1.schema.json`이 적용·Rollback 증거를 각각 담당한다. 이 설계서의 PatchRun 세부 상태(PENDING/DRY_RUN/RUNNING/REGRESSION_PENDING 등)와 BehaviorDiffReport/RollbackVerificationReceipt는 아직 계약에 없는 `DESIGN_ONLY` 확장이다.
 
-### PatchPlan
-PROPOSED → APPROVED → SUPERSEDED
-예외: REJECTED
+### Knowledge/Memory — `contracts/failure-memory.v1.schema.json`, `improvement-memory.v1.schema.json`, `reusable-pattern-memory.v1.schema.json`
+- FailureMemory: 필수 필드에 `first_failure_point`, `root_cause`, `confidence`(0~1)를 포함 — 이 설계서가 흡수한 RCA "최초 실패 지점·신뢰도" 프레이밍과 일치한다. `state`: CANDIDATE→VERIFIED→ACTIVE→QUARANTINED/STALE/ROLLED_BACK/HOLD
+- ImprovementMemory: `decision`(IMPROVEMENT_PROVEN/NO_MEANINGFUL_IMPROVEMENT/REGRESSION_DETECTED/HOLD), `state`(CANDIDATE→VERIFIED→ACTIVE→STALE/ROLLED_BACK/HOLD)
+- ReusablePatternMemory: `pattern_class`(AUTHORIZATION_POLICY_GAP/UNTRUSTED_INPUT_CONTROL_GAP/AVAILABILITY_BOUNDARY_FAILURE/REGRESSION_CONTROL_GAP/BEHAVIORAL_CONTRACT_DEVIATION 고정 5종), `independent_reproduction_count`(최소 2회), `deidentification`(raw_text_copied/project_identifiers_copied/evidence_identifiers_copied 모두 false 강제)
 
-### PatchRun
-PENDING → DRY_RUN → DRY_RUN_REVIEWED → RUNNING → SUCCEEDED → REGRESSION_PENDING → REGRESSION_PASSED 또는 REGRESSION_FAILED
-예외: FAILED, ABORTED, ROLLED_BACK
+이 설계서의 KnowledgePattern(CANDIDATE→VALIDATED→TENANT_SCOPED/PROMOTED)과 `scope`(PROJECT_ONLY/REUSABLE_CANDIDATE는 계약에 이미 존재)는 위 세 계약으로 대체·정정한다. 재현 임계치는 이 설계서가 "3회 이상"으로 썼으나 계약은 최소 2회이므로 [08 체크리스트](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md) C6을 계약값(2회) 기준으로 재검토해야 한다. `pattern_class` 5종 분류와 이 설계서의 AI/바이브 코딩 진단표([03 §4-1](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md))가 어떻게 매핑되는지는 아직 미정 — `DESIGN_ONLY`.
 
-PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L110)의 Worktree/Branch 원칙에 따라 Main과 분리된 상태로만 존재한다. REGRESSION_FAILED는 기존 PatchRun을 재사용해 재시도하지 않고 새 PatchRun 인스턴스를 생성해 ImprovementRequest의 PATCH_IN_PROGRESS로 되돌아가며, 실패한 PatchRun 자체는 이력으로 보존한다(재시도 상한은 ExecutionPlan의 Stop Condition). DRY_RUN 단계는 실제 코드 변경 없이 영향받는 파일·Component·의존 Program을 BlastRadiusReport로 산출하며, 사용자가 DRY_RUN_REVIEWED로 승인해야 RUNNING으로 진행한다. SUCCEEDED 이후 REGRESSION_PENDING에서는 기능 회귀뿐 아니라 BehaviorDiffReport(무관 기능 동작 Diff, 성능 지표 변화)를 함께 산출하며, 이 리포트에 임계치를 초과하는 변화가 있으면 자동으로 REGRESSION_FAILED로 판정한다. ROLLED_BACK으로 전이할 때는 RollbackVerificationReceipt로 대상 Baseline이 직전 정상 상태와 실제로 동일한지 확인하며, 불일치 시 ROLLED_BACK을 확정하지 않고 Critical Incident로 승격한다.
+### 아직 계약이 없는 이 설계서의 확장 (DESIGN_ONLY)
+다음은 이번 세션에서 제안했으나 대응하는 `contracts/*.schema.json`을 찾지 못했다. 아이디어 자체를 폐기하라는 뜻이 아니라, 구현 전 계약부터 만들어야 한다는 뜻이다.
 
-### CreditReservation
+CreditReservation, CaseRevision, Baseline 동시성 다중 Branch 처리, MissedFinding(재귀학습 루프), ComponentContract/Cross-Program Impact Scan, BlastRadiusReport(PatchPlan.preapply_assessment로 부분 흡수됨), RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ProgramRiskScore, ReproducibilityAuditSample, SBOM
+
+### CreditReservation (DESIGN_ONLY)
 RESERVED → COMMITTED 또는 RELEASED; Timeout 시 자동 RELEASED
 
-실행 도중 CreditReservation이 소진되면 진행 중인 Review/Verification은 안전한 Checkpoint(현재 Scenario/Finding 처리 완료 시점)까지만 진행한 뒤 ServiceCase를 BLOCKED로 전이한다. 이미 산출된 부분 결과는 NON_FINAL Evidence로 보존하며 폐기하지 않는다. 고객이 추가 Credit을 승인하면 Checkpoint부터 Resume하고, 미승인 상태가 계약된 유예기간을 넘기면 CANCELLED로 전이한다.
+실행 도중 CreditReservation이 소진되면 진행 중인 `validation_run`은 안전한 Checkpoint까지만 진행한 뒤 ServiceCase를 REFUND_PENDING이 아닌 별도 대기 상태로 전이해야 하나, 계약에 이런 대기 상태가 없어 실제로는 위 5개 상태기계의 HOLD를 재사용하는 방안을 검토해야 한다(설계 미확정).
 
-### CaseRevision
-Improve & Re-verify는 원칙적으로 COMPLETED된 ServiceCase에 새 CaseRevision을 추가하는 방식으로 처리하며 신규 ServiceCase를 생성하지 않는다. CaseRevision은 참조하는 BaselineManifest, 소비하는 Credit/Learning Unit, Evidence Pack을 원본 Case와 분리 기록하되 같은 System/Program Binding과 OLicense Case 계약을 상속한다. CaseRevision 생성 시 ServiceCase는 COMPLETED에서 IMPROVEMENT_OPTIONAL로 재진입한다.
+### CaseRevision (DESIGN_ONLY)
+Improve & Re-verify를 DELIVERY_ACCEPTED 이후의 새 CaseRevision으로 처리한다는 설계는 유지하되, `service-case-state.v1.schema.json`에 CaseRevision을 위한 필드나 상태가 없으므로 계약 확장이 선행되어야 한다.
 
-### Baseline 동시성
-System은 Branch별로 복수의 활성 Baseline을 동시에 가질 수 있다(예: main과 여러 Feature Branch를 동시에 작업하는 VS Code Team 사용). BaselineManifest는 Branch Ref와 결속되며 Finding, KnowledgePattern, VerificationRun은 모두 Baseline ID로 구분해 추적한다. Branch Merge 시 두 Baseline은 BaselineChanged 이벤트와 Lineage 정보로 연결되며, 병합 대상 Baseline에서 이미 CLOSED된 Finding은 재복사하지 않고 참조만 연결한다. 동일 Component에 대해 서로 다른 Baseline에서 동시에 진행 중인 Continuous Review는 Worker Pool에서 독립 격리 실행하며 서로의 Sandbox를 공유하지 않는다.
-
-### KnowledgePattern
-CANDIDATE → VALIDATED → TENANT_SCOPED 또는 PROMOTED(공유 Corpus)
-예외: DEPRECATED(3회 이상 False Positive), RETRACTED(권한자 판단으로 회수)
-
-CANDIDATE는 OMemory가 자동 추출한 상태이며, 사람 또는 Reconciliation 절차가 근거를 확인해야 VALIDATED로 전이한다. PROMOTED 전이는 Anonymization 검증을 통과해야 한다.
-
-### MissedFinding
-DETECTED → RCA_DONE → CAPABILITY_UPDATED → REGRESSION_VALIDATED → PROMOTED
-예외: REJECTED(재현 불가), INSUFFICIENT_EVIDENCE
-
-PROMOTED는 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OMemory 절의 재귀학습 루프에서 전체 Golden Fixture Regression을 통과한 뒤에만 도달한다. CAPABILITY_UPDATED에서 REGRESSION_VALIDATED로 가지 못하고 반복 실패하면 INSUFFICIENT_EVIDENCE로 격리하고 Human Review로 넘긴다. Human Review가 새 RCA 근거나 대안 Rule 개정안을 제시하면 RCA_DONE으로 재진입하고, 근본적으로 탐지 불가능하다고 판단되면 REJECTED로 종결한다.
-
-### ComponentContract
-DRAFT → ACTIVE → SUPERSEDED
-예외: BREAKING_CHANGE_FLAGGED
-
-BREAKING_CHANGE_FLAGGED는 Architecture Review에서 최상위 우선순위 Finding으로 승격된다. Finding이 CLOSED되면(변경 철회 또는 영향받는 모든 Program의 대응 완료) ACTIVE로 복귀하고, 변경이 의도된 것으로 승인되면 새 ComponentVersion과 함께 ACTIVE로 확정되며 이전 버전은 SUPERSEDED로 전이한다. Provided Interface가 변경되면 같은 System 내 이 Interface를 Required Interface로 선언한 모든 다른 Program을 ReuseLink로 역조회해 Cross-Program Impact Scan을 수행하고, 영향받는 각 Program에 별도 Finding을 생성한다(원 변경 Program의 Review 통과와 무관하게 독립 판정). Program 간 저장소가 분리되어 있어 개별 CI에서는 이 영향을 알 수 없다는 점이 이 스캔의 존재 이유다.
+### ComponentContract (DESIGN_ONLY)
+DRAFT → ACTIVE → SUPERSEDED, 예외 BREAKING_CHANGE_FLAGGED. Cross-Program Impact Scan 아이디어(Provided Interface 변경 시 다른 Program에 Finding 전파)는 유효하나 이를 뒷받침할 `component-contract.v1.schema.json` 계약이 아직 없다.
 
 ## 6. API 원칙
 - REST와 Event를 병행한다.

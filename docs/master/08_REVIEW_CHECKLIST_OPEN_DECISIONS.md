@@ -32,7 +32,7 @@
 | C3 | Verification 처리량 | Pack당 평균 15분, Case당 동시 20개 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
 | C4 | SaaS 가용성 / Token 수명 | 월 99.9% / Access Token 1시간 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §6](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | C5 | ProgramRiskScore 등급 컷오프 | A≥90, B≥75, C≥60, D≥40 | [04](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
-| C6 | KnowledgePattern 강등 임계치 | False Positive 3회 이상 | [02](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
+| C6 | KnowledgePattern 강등 임계치 | 설계서는 3회 이상, 실제 계약 `contracts/reusable-pattern-memory.v1.schema.json`은 `independent_reproduction_count` 최소 2회 — 계약값으로 정정 필요 | [02](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §5](04_ARCHITECTURE_DATA_API_OLICENSE.md) | CONTRACT_MISMATCH |
 | C7 | 사고 공지 대응시간 | Critical 사고 15분 이내 Status Page+개별통지 동시 시작 | [06](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | DRAFT |
 
 ## D. 영업/상품 확인 필요
@@ -49,6 +49,22 @@
 |---|---|---|---|---|
 | E1 | NIST/ISO/OWASP/MITRE/금융 MRM 프레임워크 매핑 방식 | PolicyPack에 버전 단위로 매핑한다는 원칙만 기술 | [04 §12-1](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | E2 | SoD(직무분리) 강제 범위가 실제 감사 기준을 충족하는지 | 동일인 Patch/재검증승인/인수승인 겸직 금지 | [02 FR-COM-013](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+
+## G. 계약 정합성 (엔지니어링, 신규 — 2026-08-07 발견)
+
+`docs/master/04` §5 상태모델을 실제 `contracts/*.schema.json`과 대조한 결과, 다수의 설계 개념이 아직 대응하는 계약이 없다(`DESIGN_ONLY`). 우선순위 순서로 나열한다.
+
+| # | 항목 | 필요 조치 | 상태 |
+|---|---|---|---|
+| G1 | CreditReservation 소진 시 대기 상태 | 5개 실행 상태기계의 HOLD를 재사용할지, 별도 상태 신설할지 결정 | OPEN |
+| G2 | CaseRevision | `service-case-state.v1.schema.json`에 필드/상태 확장 필요 | OPEN |
+| G3 | ComponentContract / Cross-Program Impact Scan | 신규 `component-contract.v1.schema.json` 계약 제정 필요 | OPEN |
+| G4 | MissedFinding 재귀학습 루프 | 신규 계약 제정 필요, `contracts/state-model-mapping.v1.json`과의 관계 정의 | OPEN |
+| G5 | ReviewFinding/VerificationFinding 장기 생애주기 | 실제는 `validation_run`마다 스냅샷(`oreview-result.v1.schema.json`)만 존재 — Finding을 가로지르는 생애주기 계약이 필요한지, 아니면 설계를 스냅샷 모델에 맞출지 결정 | OPEN |
+| G6 | PatchRun DRY_RUN 확장 | `patch-plan.v1.schema.json`의 `preapply_assessment`로 이미 부분 커버됨 — 설계서를 계약에 맞춰 단순화할지 검토 | OPEN |
+| G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, ProgramRiskScore, PolicyPack, NotificationRule, SBOM 등) | 전부 `DESIGN_ONLY` — 계약 제정 우선순위를 06 §11 우선구현순서와 맞춰 재정렬 필요 | OPEN |
+
+이 표는 04 §5의 "아직 계약이 없는 확장" 절과 같은 내용을 재무/영업용 체크리스트와 같은 형식으로 옮긴 것이다. `docs/master/02·03·05·06`도 04와 같은 방식으로 계약 대조가 아직 안 됐다 — 04에서 발견된 것과 유사한 불일치가 더 있을 가능성이 높다.
 
 ## F. 문서 거버넌스 (참고, 결정 아님)
 
