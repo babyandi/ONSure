@@ -108,11 +108,13 @@ Claude 등 AI Agent와 대화형 코딩("바이브 코딩")으로 생성된 코�
 이 표의 항목은 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 OMemory와 연동되어, 동일 항목이 반복 발견되면 KnowledgePattern으로 승격되고 이후 Case에서는 Preflight 단계부터 우선순위가 상향된다. 자동 판정이 이 항목을 놓쳤다가 나중에 확인된 경우 OMemory의 재귀학습 루프(MissedFinding)로 흡수한다.
 
 ## 5. Finding Schema
+`contracts/security-findings.v1.schema.json`은 `severity`(CRITICAL/HIGH/MEDIUM/LOW/INFO — 아래와 일치)와 `status`를 **OPEN, CLOSED, ACCEPTED_RISK 3개로만** 정의한다. 이 설계서가 이전에 제안한 6단계 생애주기(OPEN→ACKNOWLEDGED→FIX_PLANNED→FIXED→RE_REVIEWED→CLOSED)와 FALSE_POSITIVE/DUPLICATE/WONT_FIX 상태는 계약에 없는 `DESIGN_ONLY` 확장이다 — 세분화가 필요하면 이 3개 상태 위에 얹는 방식으로 계약을 먼저 확장해야 하며, 이 문서의 상세 상태를 이미 구현된 것처럼 다루면 안 된다.
+
 - finding_id
 - review_domain
 - severity: CRITICAL/HIGH/MEDIUM/LOW/INFO
 - confidence
-- status
+- status (계약 기준 OPEN/CLOSED/ACCEPTED_RISK, 이 설계서의 세분화는 DESIGN_ONLY)
 - title
 - description
 - evidence_refs
@@ -127,13 +129,23 @@ Claude 등 AI Agent와 대화형 코딩("바이브 코딩")으로 생성된 코�
 - reviewer_identity/model/tool_version
 
 ## 6. Decision 규칙
-- REJECT: Critical 미해결, 정책 우회, 증거 위조, 위험한 Main 직접변경
-- REQUEST_CHANGE: High 미해결 또는 수용기준 미충족
-- COMMENT: Medium/Low만 존재하며 위험수용 가능
-- APPROVE: 필수 Gate 통과, Critical/High 0건, 필수 Test PASS
-- INCONCLUSIVE: 입력·환경·정책 불충분
 
-APPROVE는 Merge 실행과 동일하지 않다. 실제 Merge 권한은 별도 역할과 정책이 가진다.
+`contracts/oreview-result.v1.schema.json`이 실제 Decision 어휘다. 이 절은 원래 APPROVE/COMMENT/REQUEST_CHANGE/REJECT를 자체 어휘로 정의했으나, 계약은 [status-vocabulary.v1.json](../../contracts/status-vocabulary.v1.json)의 공통 `run_decisions`(PASS/FAIL/BLOCKED/HOLD/NOT_RUN/INCONCLUSIVE/NON_FINAL)를 그대로 재사용한다. 아래는 계약 기준으로 정정한 것이다.
+
+### 영역별 Decision (도메인 최소 10개)
+각 리뷰 영역(§4의 Requirement/Architecture/Policy/Code/AI/Security/Test 등)마다 `PASS`, `FAIL`, `HOLD`, `NOT_RUN`, `NOT_APPLICABLE` 중 하나와 `evidence_refs`, `observations`(최소 1개), `recommendation`을 기록한다.
+
+- FAIL: 해당 영역에 Critical 또는 High 미해결 Finding, 정책 우회, 증거 위조
+- HOLD: 입력·환경·정책 불충분, 또는 판정에 필요한 선행 조건 미충족(이 설계서가 이전에 쓴 INCONCLUSIVE에 해당)
+- NOT_RUN: 해당 영역을 이번 범위에서 실행하지 않음(CoverageReport와 연동)
+- PASS: Medium/Low만 존재하며 위험수용 가능하거나 결함 없음
+- NOT_APPLICABLE: 대상 변경에 해당 영역이 적용되지 않음
+
+### 종합 Decision
+- `quality_decision`: PASS | FAIL | HOLD — 영역별 Decision을 종합한 최종 판정. 하나라도 FAIL이면 전체는 FAIL이다
+- `independent_reviewer`: NOT_RUN | PASS | FAIL | HOLD — §3 파이프라인의 Independent Pass 결과를 별도로 기록하며 `quality_decision`을 덮어쓰지 않는다
+- `merge_authorized`: 계약상 항상 `false`로 고정된다. 즉 OReview는 어떤 조합의 PASS로도 Merge를 승인하는 권한을 갖지 않는다 — "APPROVE가 Merge와 다르다"는 수준이 아니라 이 계약 버전에서는 Merge 승인 자체가 발급되지 않는다. Merge는 계약 밖의 별도 절차(Human 승인)로만 이뤄진다
+- `final_claim_allowed`: 계약상 항상 `false` — OReview 결과 단독으로 Final 판정을 주장할 수 없다
 
 ## 7. Continuous Review
 - 파일 저장 또는 Diff 변화 감지

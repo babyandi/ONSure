@@ -150,12 +150,12 @@ PatchPlan은 hunk 단위(`hunk_id`, `finding_id`, `preimage_sha256`, `approval_s
 ### 아직 계약이 없는 이 설계서의 확장 (DESIGN_ONLY)
 다음은 이번 세션에서 제안했으나 대응하는 `contracts/*.schema.json`을 찾지 못했다. 아이디어 자체를 폐기하라는 뜻이 아니라, 구현 전 계약부터 만들어야 한다는 뜻이다.
 
-CreditReservation, CaseRevision, Baseline 동시성 다중 Branch 처리, MissedFinding(재귀학습 루프), ComponentContract/Cross-Program Impact Scan, BlastRadiusReport(PatchPlan.preapply_assessment로 부분 흡수됨), RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ProgramRiskScore, ReproducibilityAuditSample, SBOM
+CaseRevision, Baseline 동시성 다중 Branch 처리, MissedFinding(재귀학습 루프), ComponentContract/Cross-Program Impact Scan, BlastRadiusReport(PatchPlan.preapply_assessment로 부분 흡수됨), RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ProgramRiskScore, ReproducibilityAuditSample, SBOM
 
-### CreditReservation (DESIGN_ONLY)
-RESERVED → COMMITTED 또는 RELEASED; Timeout 시 자동 RELEASED
+### CreditReservation — `contracts/license-state.v1.schema.json`의 `reservations` 필드
+RESERVED → COMMITTED 또는 RELEASED 또는 EXPIRED(계약상 4개 상태이며, 이 설계서가 이전에 "Timeout 시 자동 RELEASED"라 쓴 것과 달리 EXPIRED는 RELEASED와 별개 상태로 구분된다 — 정정)
 
-실행 도중 CreditReservation이 소진되면 진행 중인 `validation_run`은 안전한 Checkpoint까지만 진행한 뒤 ServiceCase를 REFUND_PENDING이 아닌 별도 대기 상태로 전이해야 하나, 계약에 이런 대기 상태가 없어 실제로는 위 5개 상태기계의 HOLD를 재사용하는 방안을 검토해야 한다(설계 미확정).
+License 자체는 `contracts/license-state.v1.schema.json`에 이미 실재한다: `status`(ISSUED/ACTIVE/SUSPENDED/REVOKED/EXPIRED), `offline_grace_hours`, `clock_tolerance_seconds`, `credits{total,available,reserved,committed}`가 필드로 존재해 이 설계서의 Offline 정책(§11)·Credit 개념과 상당히 부합한다. 실행 도중 Credit이 소진되면 진행 중인 `validation_run`은 안전한 Checkpoint까지만 진행한 뒤 위 5개 실행 상태기계의 HOLD로 전이하는 것이 계약과 일치하며, ServiceCase 자체를 별도 대기 상태로 두는 것은 계약에 없다(이 설계서의 이전 서술을 정정).
 
 ### CaseRevision (DESIGN_ONLY)
 Improve & Re-verify를 DELIVERY_ACCEPTED 이후의 새 CaseRevision으로 처리한다는 설계는 유지하되, `service-case-state.v1.schema.json`에 CaseRevision을 위한 필드나 상태가 없으므로 계약 확장이 선행되어야 한다.

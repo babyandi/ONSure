@@ -1,17 +1,21 @@
 # ONSure 기능 요구사항 및 프로그램 명세
 
 ## 1. Actor
-- Customer Owner: 계약, 결제, 범위 승인, 최종 인수
-- Customer Admin: 조직, 사용자, 시스템, 정책 관리
-- Developer: VS Code에서 학습·리뷰·검증·개선 수행
-- Reviewer: Finding과 Patch 승인 또는 반려
-- Professional Reviewer: 유료 전문가 검토
-- ONSure Operator: Case와 실행환경 운영
-- Security Auditor: Evidence와 감사로그 열람
-- External Acceptor: 고객 소프트웨어를 인수·검수하는 발주기관 등 제3자. Customer Owner가 초대한 범위에서 Delivery와 Acceptance Certificate만 읽기 전용으로 열람하며 ONSure 유료 계정이 없어도 됨
-- Compliance Officer: 규제산업 Enterprise에서 정책·규제 프레임워크 버전 관리와 최종 승인을 담당(Reviewer와 겸직 불가)
-- OLicense: 라이선스·Entitlement·Credit 권위
-- Payment Provider: 결제 승인·취소·환불 이벤트 제공
+실제 `contracts/tenant-context.v1.schema.json`은 5개 RBAC 역할(VIEWER, OPERATOR, APPROVER, AUDITOR, ADMIN)만 정의한다. 아래 업무 Actor는 그보다 세분화된 설계 개념이며, 계약의 5개 역할 중 하나로 매핑되어야 접근제어가 실제로 동작한다. 매핑은 아직 계약화되지 않은 `DESIGN_ONLY` 제안이다.
+
+| 업무 Actor | 책임 | RBAC 매핑(제안) |
+|---|---|---|
+| Customer Owner | 계약, 결제, 범위 승인, 최종 인수 | ADMIN |
+| Customer Admin | 조직, 사용자, 시스템, 정책 관리 | ADMIN |
+| Developer | VS Code에서 학습·리뷰·검증·개선 수행 | OPERATOR |
+| Reviewer | Finding과 Patch 승인 또는 반려 | APPROVER |
+| Professional Reviewer | 유료 전문가 검토 | APPROVER |
+| ONSure Operator | Case와 실행환경 운영 | OPERATOR |
+| Security Auditor | Evidence와 감사로그 열람 | AUDITOR |
+| External Acceptor | 고객 소프트웨어를 인수·검수하는 발주기관 등 제3자. Customer Owner가 초대한 범위에서 Delivery와 Acceptance Certificate만 읽기 전용으로 열람하며 ONSure 유료 계정이 없어도 됨 | VIEWER |
+| Compliance Officer | 규제산업 Enterprise에서 정책·규제 프레임워크 버전 관리와 최종 승인을 담당(Reviewer와 겸직 불가) | APPROVER |
+| OLicense | 라이선스·Entitlement·Credit 권위 | 시스템 주체(RBAC 대상 아님) |
+| Payment Provider | 결제 승인·취소·환불 이벤트 제공 | 시스템 주체(RBAC 대상 아님) |
 
 ## 2. 공통 기능 요구사항
 - FR-COM-001 모든 실행은 Organization, Product, Channel, License, System, Program, Baseline에 결속한다.
@@ -92,7 +96,7 @@ Requirement, Architecture, Design, Policy, Code, AI, Security, Performance, Test
 - 독립 Review Pass 지원(가능한 경우 원 구현에 사용된 모델과 다른 계열의 모델로 수행)
 
 ### Decision
-APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
+영역별: PASS, FAIL, HOLD, NOT_RUN, NOT_APPLICABLE. 종합(quality_decision): PASS, FAIL, HOLD. `merge_authorized`는 계약상 항상 false다([03 §6](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) 참조, `contracts/oreview-result.v1.schema.json`).
 
 ### 수용기준
 - Finding마다 파일·라인 또는 구성요소·근거·정책·영향·제안 포함
@@ -147,7 +151,7 @@ OReview, OVerification, OImprovement의 실행 결과와 Before/After Evidence�
 
 ### 기능 — 지식 축적
 - Fix Pattern 추출: 승인된 ImprovementRequest의 RCA와 Patch에서 재발 방지 가능한 패턴 후보 생성
-- Failure Pattern 추출: REJECT/REQUEST_CHANGE로 종료된 Review와 FAIL로 종료된 Verification에서 실패 유형 추출
+- Failure Pattern 추출: FAIL로 종료된 Review와 Verification에서 실패 유형 추출
 - AI/바이브 코딩 특유 패턴 별도 태깅: Hallucinated Dependency, Prompt Injection 방어 누락, 과잉 생성, Silent Error Swallowing, Test 없는 대량 커밋 등 ([03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md)의 AI/Vibe-coding 진단 절과 연동)
 - Component Signature(코드 Hash + Interface Hash) 단위로 Pattern을 매칭해 신규 Case의 대상과 대조
 - Pattern Confidence를 재현 횟수, 적용 성공률, False Positive 이력으로 산정
@@ -204,7 +208,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - 지원 CI Provider: GitHub Actions, GitLab CI, Jenkins — Webhook 우선, 미지원 환경은 Polling으로 대체
 - CI 상태 회수
 - Review Comment 수집
-- Merge 권고
+- Merge 권고: `contracts/git-change-set.v1.schema.json`은 `merge_state`를 항상 `"PROHIBITED"`로 고정한다 — OGit은 권고만 하며 어떤 경로로도 Merge를 실행하지 않는다(계약 수준 강제, 정책 예외 없음)
 - Rollback 정보 제공
 - Rollback 검증: Rollback 실행 후 대상 Baseline이 실제로 직전 정상 상태(마지막 PASS Verification 시점)와 동일한지 자동 비교하고, 불일치 시 단순 실패가 아닌 Critical Incident로 승격
 - Post-merge Incident 대응: Merge 이후 발견된 결함은 Draft PR 흐름과 분리된 Hotfix Worktree로 처리하며, 원인이 된 Merge Commit과 새 MissedFinding/ImprovementRequest를 상호 링크한다

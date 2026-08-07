@@ -8,6 +8,11 @@
 - 완료된 시험은 Baseline이 바뀌지 않은 한 불필요하게 반복하지 않는다.
 - BLOCKED는 격리하고 다른 Lane을 진행한다.
 
+## 1-1. 실제 Workflow Operation Registry와의 관계
+`contracts/workflow-operation-registry.v1.json`이 현재 등록된 45개 실행 가능 Operation의 단일 권위다(`project.*`, `program.learn`, `plan.*`, `validation.run`, `patch.*`, `improvement.prove`, `knowledge.separate`, `job.*`, `git.commit`/`git.draft-pr`, `license.*`, `case.*`). 모든 Operation은 CLI·Local Authenticated API·VS Code 3개 공통 표면(generic_surfaces)에 동일하게 도달해야 한다.
+
+이 설계서(특히 [04_ARCHITECTURE_DATA_API_OLICENSE.md](04_ARCHITECTURE_DATA_API_OLICENSE.md) §7)가 제안한 API 중 Notification, Portfolio, PolicyPack, Acceptance Certificate, SBOM, Mutation Testing, Cross-Model Verification, Blast Radius, Coverage Report, RiskScore 관련 엔드포인트는 이 45개 목록에 없다 — 전부 `DESIGN_ONLY`이며, 구현 순서에 넣기 전에 `workflow-operation-registry.v1.json`에 Operation을 먼저 등록해야 한다(§6 변경 규칙: Requirement→Design→Contract/Schema→Code→Test→Evidence→Status 연결 필수).
+
 ## 2. 구현 Lane
 ### L0 Contract and Foundation
 - ID 체계

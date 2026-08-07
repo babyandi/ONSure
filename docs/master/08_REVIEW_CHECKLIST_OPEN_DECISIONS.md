@@ -64,7 +64,21 @@
 | G6 | PatchRun DRY_RUN 확장 | `patch-plan.v1.schema.json`의 `preapply_assessment`로 이미 부분 커버됨 — 설계서를 계약에 맞춰 단순화할지 검토 | OPEN |
 | G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, ProgramRiskScore, PolicyPack, NotificationRule, SBOM 등) | 전부 `DESIGN_ONLY` — 계약 제정 우선순위를 06 §11 우선구현순서와 맞춰 재정렬 필요 | OPEN |
 
-이 표는 04 §5의 "아직 계약이 없는 확장" 절과 같은 내용을 재무/영업용 체크리스트와 같은 형식으로 옮긴 것이다. `docs/master/02·03·05·06`도 04와 같은 방식으로 계약 대조가 아직 안 됐다 — 04에서 발견된 것과 유사한 불일치가 더 있을 가능성이 높다.
+이 표는 04 §5의 "아직 계약이 없는 확장" 절과 같은 내용을 재무/영업용 체크리스트와 같은 형식으로 옮긴 것이다.
+
+### 2026-08-07 2차 대조 (02·03·06) 결과
+
+| # | 항목 | 발견 | 조치 |
+|---|---|---|---|
+| G8 | CreditReservation | 처음엔 DESIGN_ONLY로 잘못 분류했으나 실제로 `license-state.v1.schema.json`의 `reservations` 필드로 이미 존재(RESERVED/COMMITTED/RELEASED/EXPIRED). 04 §5 정정 완료 | FIXED |
+| G9 | 03 OReview Decision 체계 | 설계서가 자체 정의한 APPROVE/COMMENT/REQUEST_CHANGE/REJECT/NOT_APPLICABLE/INCONCLUSIVE가 실제 계약(`oreview-result.v1.schema.json`, `status-vocabulary.v1.json`)의 PASS/FAIL/HOLD/NOT_RUN/NOT_APPLICABLE과 전혀 다른 어휘였음. 02·03 정정 완료 | FIXED |
+| G10 | Finding 상태 생애주기 | 실제 계약(`security-findings.v1.schema.json`)은 OPEN/CLOSED/ACCEPTED_RISK 3단계뿐. 설계서의 6단계 생애주기는 DESIGN_ONLY로 명시 | FIXED (명시만, 계약 확장은 미정) |
+| G11 | OGit Merge 권한 | `git-change-set.v1.schema.json`의 `merge_state`가 계약상 항상 `PROHIBITED` — "APPROVE≠Merge" 수준이 아니라 이 버전에서 Merge 승인 자체가 발급 안 됨. 02 정정 완료 | FIXED |
+| G12 | Actor/RBAC | 설계서의 10개 업무 Actor가 실제 `tenant-context.v1.schema.json`의 5개 RBAC 역할(VIEWER/OPERATOR/APPROVER/AUDITOR/ADMIN)과 매핑되지 않은 채 존재. 02에 매핑 제안 표 추가(매핑 자체는 아직 계약화 안 됨) | PARTIAL |
+| G13 | Workflow Operation Registry | 실제 등록된 Operation은 45개(`workflow-operation-registry.v1.json`)뿐. 이 설계서(특히 04 §7)가 제안한 Notification/Portfolio/PolicyPack/AcceptanceCertificate/SBOM/MutationTesting/CrossModel/BlastRadius/CoverageReport/RiskScore 관련 API는 전부 미등록 — 06에 교차참조 추가 | FLAGGED |
+| G14 | `05_UI_UX_WORKFLOW_SPECIFICATION.md`, `05`의 화면 구성 | 아직 실제 계약과 대조 안 함(주로 화면 설계라 직접 대응 계약이 적을 것으로 예상되나 확인 필요) | OPEN |
+
+G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영했을 뿐, 02·03·06 전체를 계약과 완전히 재대조한 것은 아니다. `docs/master/01·07` 및 05의 나머지 부분은 아직 이 수준의 대조를 거치지 않았다.
 
 ## F. 문서 거버넌스 (참고, 결정 아님)
 
