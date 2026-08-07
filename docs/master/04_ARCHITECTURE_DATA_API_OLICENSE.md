@@ -113,6 +113,8 @@ DRAFT → PREFLIGHT → QUOTED → PAYMENT_PENDING → LICENSE_PENDING → READY
 
 예외: BLOCKED, SUSPENDED, CANCELLED, EXPIRED, REFUNDED
 
+BLOCKED은 사유(License 미해결, Credit 소진, Legal Hold, Operator 개입 필요 등)를 blocked_reason으로 구분해 기록하며, 사유가 해소되면 BLOCKED 진입 직전 단계로 복귀한다. SUSPENDED는 License가 LicenseSuspended(결제 분쟁·정책 위반 등)로 전이될 때만 진입하며, License가 재활성화(LicenseIssued 재발급 또는 분쟁 해소)되면 SUSPENDED 진입 직전 단계로 복귀한다. CANCELLED, EXPIRED, REFUNDED는 종결 상태이며 재진입 없이 CaseRevision으로만 후속 조치한다.
+
 LEARNING, REVIEW_REQUIRED, VERIFYING는 각각 독립 상태이며 순서는 [00_ONSURE_MASTER_DESIGN_SET.md](00_ONSURE_MASTER_DESIGN_SET.md)의 Understand → Plan → Review → Verify 순서를 따른다. CaseScope에 포함된 상품에 따라 다음과 같이 조건부로 진입한다.
 
 - Learn: READY → LEARNING → DELIVERING (REVIEW_REQUIRED, VERIFYING 생략)
@@ -148,7 +150,7 @@ PROPOSED → APPROVED → SUPERSEDED
 PENDING → DRY_RUN → DRY_RUN_REVIEWED → RUNNING → SUCCEEDED → REGRESSION_PENDING → REGRESSION_PASSED 또는 REGRESSION_FAILED
 예외: FAILED, ABORTED, ROLLED_BACK
 
-PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L110)의 Worktree/Branch 원칙에 따라 Main과 분리된 상태로만 존재한다. DRY_RUN 단계는 실제 코드 변경 없이 영향받는 파일·Component·의존 Program을 BlastRadiusReport로 산출하며, 사용자가 DRY_RUN_REVIEWED로 승인해야 RUNNING으로 진행한다. SUCCEEDED 이후 REGRESSION_PENDING에서는 기능 회귀뿐 아니라 BehaviorDiffReport(무관 기능 동작 Diff, 성능 지표 변화)를 함께 산출하며, 이 리포트에 임계치를 초과하는 변화가 있으면 자동으로 REGRESSION_FAILED로 판정한다. ROLLED_BACK으로 전이할 때는 RollbackVerificationReceipt로 대상 Baseline이 직전 정상 상태와 실제로 동일한지 확인하며, 불일치 시 ROLLED_BACK을 확정하지 않고 Critical Incident로 승격한다.
+PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L110)의 Worktree/Branch 원칙에 따라 Main과 분리된 상태로만 존재한다. REGRESSION_FAILED는 기존 PatchRun을 재사용해 재시도하지 않고 새 PatchRun 인스턴스를 생성해 ImprovementRequest의 PATCH_IN_PROGRESS로 되돌아가며, 실패한 PatchRun 자체는 이력으로 보존한다(재시도 상한은 ExecutionPlan의 Stop Condition). DRY_RUN 단계는 실제 코드 변경 없이 영향받는 파일·Component·의존 Program을 BlastRadiusReport로 산출하며, 사용자가 DRY_RUN_REVIEWED로 승인해야 RUNNING으로 진행한다. SUCCEEDED 이후 REGRESSION_PENDING에서는 기능 회귀뿐 아니라 BehaviorDiffReport(무관 기능 동작 Diff, 성능 지표 변화)를 함께 산출하며, 이 리포트에 임계치를 초과하는 변화가 있으면 자동으로 REGRESSION_FAILED로 판정한다. ROLLED_BACK으로 전이할 때는 RollbackVerificationReceipt로 대상 Baseline이 직전 정상 상태와 실제로 동일한지 확인하며, 불일치 시 ROLLED_BACK을 확정하지 않고 Critical Incident로 승격한다.
 
 ### CreditReservation
 RESERVED → COMMITTED 또는 RELEASED; Timeout 시 자동 RELEASED
@@ -171,13 +173,13 @@ CANDIDATE는 OMemory가 자동 추출한 상태이며, 사람 또는 Reconciliat
 DETECTED → RCA_DONE → CAPABILITY_UPDATED → REGRESSION_VALIDATED → PROMOTED
 예외: REJECTED(재현 불가), INSUFFICIENT_EVIDENCE
 
-PROMOTED는 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OMemory 절의 재귀학습 루프에서 전체 Golden Fixture Regression을 통과한 뒤에만 도달한다. CAPABILITY_UPDATED에서 REGRESSION_VALIDATED로 가지 못하고 반복 실패하면 INSUFFICIENT_EVIDENCE로 격리하고 Human Review로 넘긴다.
+PROMOTED는 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OMemory 절의 재귀학습 루프에서 전체 Golden Fixture Regression을 통과한 뒤에만 도달한다. CAPABILITY_UPDATED에서 REGRESSION_VALIDATED로 가지 못하고 반복 실패하면 INSUFFICIENT_EVIDENCE로 격리하고 Human Review로 넘긴다. Human Review가 새 RCA 근거나 대안 Rule 개정안을 제시하면 RCA_DONE으로 재진입하고, 근본적으로 탐지 불가능하다고 판단되면 REJECTED로 종결한다.
 
 ### ComponentContract
 DRAFT → ACTIVE → SUPERSEDED
 예외: BREAKING_CHANGE_FLAGGED
 
-BREAKING_CHANGE_FLAGGED는 Architecture Review에서 최상위 우선순위 Finding으로 승격된다. Provided Interface가 변경되면 같은 System 내 이 Interface를 Required Interface로 선언한 모든 다른 Program을 ReuseLink로 역조회해 Cross-Program Impact Scan을 수행하고, 영향받는 각 Program에 별도 Finding을 생성한다(원 변경 Program의 Review 통과와 무관하게 독립 판정). Program 간 저장소가 분리되어 있어 개별 CI에서는 이 영향을 알 수 없다는 점이 이 스캔의 존재 이유다.
+BREAKING_CHANGE_FLAGGED는 Architecture Review에서 최상위 우선순위 Finding으로 승격된다. Finding이 CLOSED되면(변경 철회 또는 영향받는 모든 Program의 대응 완료) ACTIVE로 복귀하고, 변경이 의도된 것으로 승인되면 새 ComponentVersion과 함께 ACTIVE로 확정되며 이전 버전은 SUPERSEDED로 전이한다. Provided Interface가 변경되면 같은 System 내 이 Interface를 Required Interface로 선언한 모든 다른 Program을 ReuseLink로 역조회해 Cross-Program Impact Scan을 수행하고, 영향받는 각 Program에 별도 Finding을 생성한다(원 변경 Program의 Review 통과와 무관하게 독립 판정). Program 간 저장소가 분리되어 있어 개별 CI에서는 이 영향을 알 수 없다는 점이 이 스캔의 존재 이유다.
 
 ## 6. API 원칙
 - REST와 Event를 병행한다.
