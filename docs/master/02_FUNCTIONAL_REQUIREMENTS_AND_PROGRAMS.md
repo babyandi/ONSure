@@ -188,6 +188,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - Delivery Receipt
 - Retention/Deletion Receipt
 - Evidence Schema Version 결속: 모든 Evidence Metadata는 schema_version을 가지며, 계약된 보존기간 동안에는 과거 schema_version의 Evidence도 검증할 수 있는 도구를 유지한다(하위호환 검증도구 없는 Schema 폐기 금지)
+- 정기 Evidence 재현성 감사: 표본 추출한 과거 Evidence의 입력·정책·도구 버전으로 재실행해 동일 판정이 재현되는지 주기적으로 확인하고, [01_BUSINESS_PRODUCT_SERVICE_PLAN.md](01_BUSINESS_PRODUCT_SERVICE_PLAN.md) KPI "Evidence 재현 성공률"의 실측 근거로 삼는다(FR-COM-005가 실제로 지켜지고 있는지 스스로 검증)
 
 ## 9. OGit
 - Workspace Cleanliness 검사

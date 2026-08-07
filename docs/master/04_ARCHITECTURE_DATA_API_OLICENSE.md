@@ -94,6 +94,7 @@ ProgramRiskScore = 100 − clamp(10·OpenCritical + 4·OpenHigh + 1·OpenMedium 
 - RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark
 - CoverageReport(schema_version 결속)
 - AcceptanceCertificate, ExternalAcceptorGrant
+- ReproducibilityAuditSample
 - ServiceCase, CaseScope, CaseRevision
 - ProgramProfile, Component, Dependency, AIComponent
 - Requirement, Policy, TraceLink

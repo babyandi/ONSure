@@ -257,6 +257,7 @@ Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진�
 - Reviewer(모델/Human/Professional)별 정확도와 기준 미달 배정 제한 발생 건수
 - Rollback 검증 실패율
 - AI 구성 Drift(권한 확대) 탐지 건수
+- 정기 Evidence 재현성 감사 결과(재현 성공률, ReproducibilityAuditSample 기준)
 
 ## 11. 우선 구현 순서
 1. Schema, Receipt, OLicense 계약

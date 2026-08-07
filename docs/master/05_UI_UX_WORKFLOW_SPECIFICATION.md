@@ -63,6 +63,7 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 - AI 자기주장과 실제 Evidence 불일치 시 별도 배지 표시
 - 개선 제안
 - Accept Risk, False Positive, Improve 선택
+- 대량 Finding 발생 시 일괄 처리: 필터로 좁힌 결과에 대해 일괄 Accept Risk/False Positive 지정, 저장된 필터 뷰, CSV 내보내기 후 일괄 재반영. 단 Critical/High의 일괄 Accept Risk는 개별 확인 없이 처리하지 않으며 §7 위험행위 확인을 거친다
 
 ### Finding Explorer 내 전문가 검토 요청
 Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택하면 대상 Finding/범위, 예상 소요시간, 추가 비용을 표시하고 승인 시 결제 후 관리자 화면의 "전문가 리뷰 배정" 큐로 전달한다. 배정된 전문가의 소견은 별도 Decision(EXPERT_CONCUR, EXPERT_OVERRIDE, EXPERT_ESCALATE)으로 Finding에 결합되며 자동 Decision을 덮어쓰지 않고 병기한다.
