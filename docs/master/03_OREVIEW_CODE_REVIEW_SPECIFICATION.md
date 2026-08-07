@@ -1,7 +1,7 @@
-# OReview 코드리뷰 상세설계서
+# OReview 전영역 리뷰 상세설계서
 
 ## 1. 목적
-OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계, 정책, 코드, AI 구성, 보안, 성능, 테스트, 품질, Merge 적정성을 하나의 변경 단위에서 연결해 검토한다.
+OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계, 정책, 코드, AI 구성, 보안, 성능, 테스트, 품질, Merge 적정성을 하나의 변경 단위에서 연결해 검토한다. 문서명의 "코드리뷰"는 편의상 축약이며 실제 범위는 이 절에 나열한 전 영역을 포함한다.
 
 ## 2. 리뷰 입력
 - 고정 Baseline과 Target Revision
@@ -88,6 +88,21 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 - 실패 Test 삭제 또는 Skip 남용
 - License·결제·Webhook 멱등성 시험 누락
 
+## 4-1. AI/바이브 코딩 생성 코드 특화 진단
+Claude 등 AI Agent와 대화형 코딩("바이브 코딩")으로 생성된 코드는 일반 코드리뷰 규칙만으로는 잡히지 않는 특유의 결함 유형을 반복한다. 다음을 별도 점검 항목으로 둔다.
+
+| 점검 항목 | 탐지 신호 | 근거 |
+|---|---|---|
+| 구조 일관성 붕괴 | 동일 기능이 세션/커밋마다 다른 패턴으로 재구현됨 | Component Signature 중복(Duplicate Capability Fingerprint) |
+| Hallucinated Dependency | 존재하지 않는 패키지·API·메서드 호출 | Import Resolution 실패, 정적 타입/링크 오류 |
+| 과잉 생성 | 요청 범위를 넘는 파일·기능·추상화 생성 | Diff 범위와 Requirement Traceability 불일치 |
+| 무의미한 예외 처리 | try/except pass류로 실패를 감춤 | Empty Catch, 로그 없는 예외 흡수 패턴 |
+| 테스트 없는 대량 변경 | LOC 변화 대비 Test 변화 비율 급락 | Test/LOC 비율 임계치 미만 |
+| 설명과 실제 변경 불일치 | Commit/PR 설명과 Diff 의미가 다름 | 자연어 요약과 AST 변경 대조 |
+| AI 구성 자체의 취약점 | 시스템 프롬프트 하드코딩, 과도한 Tool 권한 부여, RAG 출처 미검증 | 03의 AI Review 규칙과 동일 기준 적용 |
+
+이 표의 항목은 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 OMemory와 연동되어, 동일 항목이 반복 발견되면 KnowledgePattern으로 승격되고 이후 Case에서는 Preflight 단계부터 우선순위가 상향된다. 자동 판정이 이 항목을 놓쳤다가 나중에 확인된 경우 OMemory의 재귀학습 루프(MissedFinding)로 흡수한다.
+
 ## 5. Finding Schema
 - finding_id
 - review_domain
@@ -141,6 +156,14 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 - Finding 재현율
 - Inline 위치 정확도
 - 독립 Blind Review
+
+## 9-1. OReview 자체 판정 재현성
+[02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 FR-COM-005("동일 입력·정책·도구 버전은 재현 가능한 판정 구조를 가져야 한다")는 고객 코드뿐 아니라 OReview·OVerification 자신의 AI 기반 판정에도 동일하게 적용된다.
+
+- Reviewer Version에는 모델 명, 모델 버전, Decoding 설정(Temperature 등)을 포함하여 Receipt에 고정한다
+- 프로덕션 판정에는 고정된 모델 버전만 사용하며 임의 시점 자동 업그레이드를 금지한다
+- 모델 버전 교체는 별도 Rule Pack Digest 변경으로 취급하고 교체 전후 Golden Review Fixture 결과를 비교해 Drift를 확인한다
+- 동일 Diff에 대한 반복 실행 결과가 Severity/Decision 수준에서 달라지면 Flaky Reviewer로 분리하고 해당 판정은 INCONCLUSIVE로 표시한다
 
 ## 10. 감사와 증거
 각 Review 실행은 Baseline SHA, Target SHA, Diff Hash, Rule Pack Digest, Reviewer Version, Input Digest, Output Digest, Decision을 Receipt에 결속한다.

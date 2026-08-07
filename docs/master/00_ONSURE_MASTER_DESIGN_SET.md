@@ -48,6 +48,7 @@ VS Code는 지속 학습, 지속 리뷰, 지속 검증, 지속 개선을 제공�
 - OVerification: 정적·동적·시나리오·적대·회귀 검증을 수행한다.
 - OImprovement: Finding 기반 RCA와 Patch를 생성하고 회귀검증한다.
 - OEvidence: 입력·정책·결과·실행환경·해시·Receipt를 관리한다.
+- OMemory: 유효했던 개선 패턴과 실패 패턴을 재사용 가능한 지식으로 축적하고, 자동 판정이 놓친 결함을 재귀학습으로 흡수해 탐지 능력을 지속 보강한다.
 - OGit: Worktree, Branch, Commit, Push, Draft PR, CI 상태를 관리한다.
 - ODelivery: 보고서, Patch, PR, Evidence Pack, Program Profile을 납품한다.
 - OLicense Adapter: ORUDA/OLicense의 Entitlement와 Credit을 검증·소비·보고한다.
@@ -78,6 +79,8 @@ Review는 구현 또는 변경이 적절한지 판단한다. Verification은 요
 - Test Strategy and Fixtures
 - Operation and Deployment Runbook
 - Epic/Capability/Story Backlog
+- Component Model and AI Agent Methodology ([07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))
+- Knowledge Pattern Library and Recursive Detection Learning Design
 
 ## 8. 출시 Gate
 다음이 모두 충족되어야 상용 출시 후보가 된다.

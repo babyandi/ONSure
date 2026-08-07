@@ -20,6 +20,10 @@
 - FR-COM-006 ONSure 내부 오류에 의한 실패는 고객 사용량으로 확정하지 않는다.
 - FR-COM-007 모든 자동 Patch는 별도 Worktree와 Branch에서 수행한다.
 - FR-COM-008 고객 승인 전 Main Branch 직접 변경을 금지한다.
+- FR-COM-009 Organization은 자신의 Pattern/Fixture가 익명화된 공유 Corpus에 기여할지 여부를 명시적으로 선택(Opt-in/Opt-out)하며 기본값은 Opt-out이다. 규제산업 Enterprise Edition은 공유 Corpus 기여를 계약으로 원천 차단할 수 있다.
+- FR-COM-010 Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한 Portfolio 조회 기능을 제공받는다.
+- FR-COM-011 Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다.
+- FR-COM-012 Seat는 담당자 변경 시 Customer Admin이 즉시 회수·재배정할 수 있으며, 회수된 Seat의 이전 담당자 Access Token은 즉시 무효화한다.
 
 ## 3. OLearning
 ### 책임
@@ -88,6 +92,7 @@ APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
 ## 6. OVerification
 ### 기능
 - Static, Build, Unit, Integration, Scenario, Adversarial, Performance, Recovery, License 검증
+- ProgramProfile 또는 (Verify 단독 상품의 경우) 고객 제공 ScopeManifest를 구조 정보 입력으로 사용
 - 요구사항별 Test Claim 생성
 - 실제 실행결과와 Expected 결과 비교
 - Negative Test와 Fail-closed 확인
@@ -120,6 +125,41 @@ PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과
 - 실패 Test 삭제로 PASS 조작
 - 정책 Gate 우회
 
+## 7-1. OMemory
+### 책임
+OReview, OVerification, OImprovement의 실행 결과와 Before/After Evidence에서 재사용 가능한 지식을 추출·검증하여 이후 Learning, Planning, Review, Verification, Improvement에 근거 있는 신호로 제공한다. 자동 판정이 놓친 결함을 재귀학습으로 흡수해 탐지 능력을 지속적으로 보강한다.
+
+### 기능 — 지식 축적
+- Fix Pattern 추출: 승인된 ImprovementRequest의 RCA와 Patch에서 재발 방지 가능한 패턴 후보 생성
+- Failure Pattern 추출: REJECT/REQUEST_CHANGE로 종료된 Review와 FAIL로 종료된 Verification에서 실패 유형 추출
+- AI/바이브 코딩 특유 패턴 별도 태깅: Hallucinated Dependency, Prompt Injection 방어 누락, 과잉 생성, Silent Error Swallowing, Test 없는 대량 커밋 등 ([03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md)의 AI/Vibe-coding 진단 절과 연동)
+- Component Signature(코드 Hash + Interface Hash) 단위로 Pattern을 매칭해 신규 Case의 대상과 대조
+- Pattern Confidence를 재현 횟수, 적용 성공률, False Positive 이력으로 산정
+- 신규/기존 고객 소스에서 나온 Pattern은 기본적으로 Tenant 전용이며, 고객 식별 정보를 제거한 뒤에만 공유 Corpus로 승격 가능
+- 재현 3회 이상 실패(False Positive)한 Pattern은 자동 강등
+
+### 기능 — 재귀학습(Recursive Detection Learning)
+자동 Review/Verification이 놓친 결함이 Independent Review 불일치, Human Review Override, Production Incident, 고객 신고, 뒤늦은 Regression으로 확인되면 다음 루프를 수행한다.
+
+1. MissedFinding 등록: 놓친 결함을 원 Case, 원 Rule Pack/모델 버전과 함께 기록
+2. RCA: Rule 미존재, Confidence Threshold 오류, 모델 한계, Fixture 미포함 중 원인 분류
+3. 보강안 생성: 신규/개정 KnowledgePattern 또는 Rule Pack 개정안, 필요 시 Golden Review Fixture·OLicense Fixture에 해당 사례 추가
+4. 회귀 검증: 개정안이 동일 MissedFinding을 재현 탐지하는지 확인하는 동시에, 기존 Golden Fixture 전체에 대해 False Positive가 급증하지 않는지 확인(모델/Rule 개정도 하나의 Patch로 취급해 회귀검증)
+5. 승격: 회귀 검증을 통과한 개정안만 프로덕션 Rule Pack/Pattern Library에 반영하고 Rule Pack Digest를 갱신
+
+이 루프는 사람이 승인한 개정만 프로덕션에 반영하며, 탐지 결과를 스스로 무비판 재학습해 자기 자신을 검증하지 않는다(자기 참조 승인 금지). Cycle마다 Recall(놓친 결함 비율 감소)과 False Positive율 변화를 함께 추적해 개선/퇴보를 판정한다.
+
+### 산출물
+KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevision, DetectionCapabilityChangeReport
+
+### 수용기준
+- 모든 Pattern은 최초 근거가 된 ReviewFinding, VerificationFinding 또는 ImprovementRequest로 역추적 가능
+- Pattern 매치는 그 자체로 Critical/High 자동 확정 근거가 될 수 없으며 Confidence를 높이는 보조 신호로만 사용한다
+- 공유 Corpus로 승격되는 Pattern과 Fixture는 고객 식별정보를 포함하지 않는다(Anonymization 필수)
+- FR-COM-009의 Opt-out을 선택한 Organization의 데이터는 어떤 형태로도 공유 Corpus 후보 추출 대상에서 제외한다(Tenant 전용 Pattern 생성은 계속 가능)
+- 재귀학습으로 인한 Rule/모델 개정은 반드시 전체 Golden Fixture Regression을 통과한 뒤에만 프로덕션에 반영한다
+- MissedFinding은 발견 경로(Independent Review/Human Override/Incident/고객신고/지연 Regression)를 구분해 기록한다
+
 ## 8. OEvidence
 - Immutable Evidence Metadata
 - Artifact Hash
@@ -142,15 +182,18 @@ PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과
 - Commit Message 생성
 - Push 승인
 - Draft PR 생성
+- 지원 Git Provider: GitHub, GitLab(SaaS/Self-managed), Bitbucket, 온프레미스 Git(SSH) — Provider별 OAuth App 또는 PAT 인증, Enterprise는 GitHub/GitLab App 설치형 인증 우선
+- 지원 CI Provider: GitHub Actions, GitLab CI, Jenkins — Webhook 우선, 미지원 환경은 Polling으로 대체
 - CI 상태 회수
 - Review Comment 수집
 - Merge 권고
 - Rollback 정보 제공
+- Post-merge Incident 대응: Merge 이후 발견된 결함은 Draft PR 흐름과 분리된 Hotfix Worktree로 처리하며, 원인이 된 Merge Commit과 새 MissedFinding/ImprovementRequest를 상호 링크한다
 
 ## 10. ODelivery
 - Web Report
 - Program Profile
-- Findings CSV/JSON
+- Findings CSV/JSON/SARIF(GitHub/GitLab Code Scanning 연동용 표준 포맷)
 - Evidence Pack
 - Patch/Diff
 - Draft PR
@@ -158,10 +201,34 @@ PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과
 - Technical Report
 - Deletion Receipt
 
+## 10-1. ONotify
+### 책임
+Case, Finding, License의 중요 상태 변화를 구독 채널로 능동 통지한다(FR-COM-011).
+
+### 기능
+- 통지 대상 이벤트: CaseBlocked, CriticalFindingOpened, VerificationFailed, LicenseExpiringSoon, LicenseSuspended, CreditLow, PatchRegressionFailed, DeletionCompleted
+- 채널: Email, Webhook(고객 시스템 연동), VS Code Notification, 관리자 알림함
+- Organization/User 단위 채널·심각도 구독 설정(Critical만 즉시, Medium 이하는 일간 요약 등)
+- Webhook은 재시도와 서명 검증을 지원하며 실패 시 Dead Letter로 격리
+- Notification 발송 자체도 Evidence로 기록해 "통지했다는 사실"을 감사 가능하게 함
+
+### 산출물
+NotificationRule, NotificationEvent, NotificationDeliveryReceipt
+
+### 수용기준
+- Critical Finding과 CaseBlocked는 발생 후 5분 이내 발송 시도
+- Webhook 미수신이 반복되면 관리자 알림함으로 Fallback
+- 고객이 구독하지 않은 채널로는 발송하지 않는다(Opt-in 채널만 사용)
+
 ## 11. 비기능 요구사항
 - NFR-SEC: 저장·전송 암호화, Secret 비노출, 최소권한
 - NFR-REL: 멱등성, 재시도, 중복 이벤트 방어
-- NFR-PERF: 대규모 Repository의 단계적 분석과 중단·재개
+- NFR-PERF: 대규모 Repository의 단계적 분석과 중단·재개. 목표치는 다음을 기본값으로 하며 고객 SLA로 협의 변경 가능하다.
+  - Learning: 100만 LOC 기준 8시간 이내 최초 완료, 이후 증분 학습은 변경분 10만 LOC 기준 30분 이내
+  - Continuous Review(VS Code Fast Review): Diff 저장 후 5초 이내 1차 결과
+  - Verification Scenario 실행: Verification Pack 1개당 평균 15분 이내, 병렬 실행 시 Case당 동시 Scenario 20개 이상 지원
+  - Preflight 예상량 응답: 대상 Repository 접근 후 10분 이내
+- NFR-AVAIL: SaaS Control Plane 월간 가용성 99.9%, API 요청 기준 Rate Limit과 Tenant별 동시 실행 상한을 적용해 특정 고객의 폭주가 다른 Tenant에 영향을 주지 않는다
 - NFR-AUDIT: 모든 권한·실행·변경 감사
 - NFR-PORT: SaaS, Local Runtime, 폐쇄망 배포 가능
 - NFR-PRIV: 고객별 보존기간과 완전 삭제 증명

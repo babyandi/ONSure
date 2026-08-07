@@ -81,6 +81,9 @@ Preflight부터 결제, License 발급, Case 완료까지.
 ### EPIC-07 OLicense
 발급, 활성화, 소비, 정지, 만료, 폐기, Offline까지.
 
+### EPIC-08 OMemory
+Fix/Failure Pattern 추출부터 Component Signature 매칭, MissedFinding 재귀학습 루프와 Golden Fixture 회귀 검증까지.
+
 ## 4. Story 완료조건
 - 요구사항 ID 연결
 - 설계 또는 ADR 연결
@@ -146,8 +149,27 @@ DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
 - Reserve Timeout
 - Offline Usage 중복 동기화
 
+### OMemory / 재귀학습 Fixture
+- 동일 Component Signature에 대한 Pattern 매칭 정확도
+- 3회 이상 False Positive Pattern의 자동 강등
+- 고객 식별정보가 포함된 Pattern의 공유 Corpus 승격 차단(Anonymization 실패 케이스)
+- MissedFinding 등록 → RCA → Rule 개정 → Golden Fixture 전체 회귀 → Promote 전 구간 통과
+- Rule 개정 후 기존 Golden Fixture에서 신규 False Positive가 급증하는 회귀 실패 케이스
+- 자기 참조 승인 시도(개정을 제안한 Agent가 스스로 회귀 통과를 승인하려는 경로) 차단
+
+### AI/바이브 코딩 생성 코드 Fixture
+[03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) §4-1의 점검표를 기준으로 다음 유형의 실제 및 합성 사례를 포함한다.
+- Hallucinated Dependency
+- 세션 간 구조 불일치(동일 기능의 반복 재구현)
+- 과잉 생성과 요구사항 초과 구현
+- 무의미한 예외 처리(Silent Error Swallowing)
+- 테스트 없는 대량 커밋
+- Commit/PR 설명과 실제 Diff 불일치
+- 하드코딩된 System Prompt, 과도한 Tool 권한
+
 ## 6. 비기능 시험
-- 대규모 Repository 학습 성능
+- 대규모 Repository 학습 성능: [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) NFR-PERF 목표치 기준 PASS/FAIL 판정
+- Tenant별 Rate Limit과 동시 실행 상한 초과 시 Fail-closed 동작
 - 동시 Case와 동시 VS Code 실행
 - Worker Crash 복구
 - Queue 중복전달
@@ -155,6 +177,7 @@ DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
 - Object Storage 장애
 - 모델 Provider Timeout과 비용 폭주 방어
 - Tenant 침범 시도
+- Sandbox 격리 우회·탈출 시도(Network Allowlist 우회, 잔존 Volume 접근)
 - 데이터 삭제 완전성
 
 ## 7. 코드리뷰 절차
@@ -189,12 +212,16 @@ SLA, Support, Billing, Security 문서, Incident Runbook, Rollback 준비 완료
 - Worker 장애
 - 모델 Provider 장애
 - Git 권한 만료
+- Merge 이후 결함 발견(Post-merge Incident, Hotfix Worktree로 분리 처리)
 - Source 유출 의심
 - Tenant Isolation 사고
 - Evidence 손상
 - 삭제 실패
+- 재귀학습 개정 회귀 실패(Rule/Pattern 개정이 False Positive를 급증시킨 경우 즉시 이전 Rule Pack Digest로 Rollback)
 
 사고는 Severity, Owner, Timeline, Customer Communication, Containment, RCA, Corrective Action, Regression Test를 남긴다.
+
+Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진행 중 사고 게시)와 영향받은 Organization 대상 개별 통지([02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) §10-1 ONotify)로 이원화한다. Critical 사고는 Status Page 게시와 개별 통지를 15분 이내 동시에 시작한다.
 
 ## 10. 모니터링
 - Case 상태 체류시간
@@ -208,6 +235,8 @@ SLA, Support, Billing, Security 문서, Incident Runbook, Rollback 준비 완료
 - Patch 회귀 실패율
 - Evidence Seal 실패
 - 삭제 SLA 초과
+- MissedFinding 발생률과 Detection Recall 추세
+- KnowledgePattern 강등률과 공유 Corpus 승격률
 
 ## 11. 우선 구현 순서
 1. Schema, Receipt, OLicense 계약
@@ -216,9 +245,11 @@ SLA, Support, Billing, Security 문서, Incident Runbook, Rollback 준비 완료
 4. OVerification 실행 Harness
 5. Web Learn & Verify Case
 6. OImprovement Worktree Patch
-7. VS Code Developer
-8. Payment/Refund와 운영화
-9. Team/Enterprise 기능
+7. OMemory 최소기능(Pattern 추출·매칭, MissedFinding 등록)
+8. VS Code Developer
+9. Payment/Refund와 운영화
+10. Team/Enterprise 기능
+11. OMemory 재귀학습 루프 자동화(RCA→Rule 개정→Golden Fixture 회귀→Promote)
 
 ## 12. 최종 수용기준
 - 문서와 코드 Traceability 확보
@@ -228,4 +259,5 @@ SLA, Support, Billing, Security 문서, Incident Runbook, Rollback 준비 완료
 - Critical/High 연속 2회 0건
 - Rollback과 Recovery PASS
 - 고객 데이터 삭제 증명 PASS
+- OMemory 재귀학습 루프가 의도적으로 주입한 MissedFinding 사례를 RCA→개정→회귀 통과까지 완결 처리
 - Final Evidence Pack 봉인

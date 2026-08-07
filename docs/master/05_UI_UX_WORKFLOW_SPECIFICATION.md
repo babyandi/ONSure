@@ -7,6 +7,9 @@
 - Finding은 문제, 근거, 영향, 수정방법, 확인방법 순으로 표현한다.
 - 개발자는 VS Code를 떠나지 않고 주요 흐름을 수행할 수 있어야 한다.
 
+## 1-1. Organization Switcher
+여러 Organization Membership을 가진 사용자(SI·컨설팅·품질관리 회사 등)를 위해 모든 화면 상단에 Organization Switcher를 고정 노출한다. 전환 시 이전 Organization의 데이터·세션 컨텍스트는 즉시 폐기하고 새 Organization Context로 재조회한다.
+
 ## 2. Web 정보구조
 - Home
 - Products
@@ -41,6 +44,7 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 
 ### Case Dashboard
 - Case 상태와 단계
+- ProgramRiskScore와 등급(A~E), 등급 산정 근거 요약
 - 고정 Baseline
 - 포함 System/Program
 - 사용량과 잔여량
@@ -56,6 +60,22 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 - 영향과 재현방법
 - 개선 제안
 - Accept Risk, False Positive, Improve 선택
+
+### Finding Explorer 내 전문가 검토 요청
+Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택하면 대상 Finding/범위, 예상 소요시간, 추가 비용을 표시하고 승인 시 결제 후 관리자 화면의 "전문가 리뷰 배정" 큐로 전달한다. 배정된 전문가의 소견은 별도 Decision(EXPERT_CONCUR, EXPERT_OVERRIDE, EXPERT_ESCALATE)으로 Finding에 결합되며 자동 Decision을 덮어쓰지 않고 병기한다.
+
+### Organization Portfolio
+- 조직에 속한 모든 System/Program을 한 화면에서 통합 조회(PortfolioSnapshot 기반)
+- Program별 최근 Case 상태, 미해결 Critical/High Finding 수, License/Credit 잔량을 한 눈에 비교
+- 위험도 상위 Program 정렬과 Drill-down으로 개별 Case Dashboard 이동
+- 알림 채널 구독 설정(Email/Webhook/VS Code/관리자 알림함, 심각도별 즉시/일간요약)
+- 공유 Pattern Corpus 기여 Opt-in/Opt-out 설정(FR-COM-009, 기본값 Opt-out)이며 Enterprise 규제산업 계약은 이 설정을 비활성화(강제 Opt-out) 상태로 고정할 수 있다
+
+### Support Center
+- 등급별 SLA 표시: Web 고객(영업일 기준 1차 응답), VS Code Developer(2 영업일), Team(1 영업일), Enterprise(계약 SLA, 예: 4시간)
+- 티켓 생성 시 관련 Case/Finding/License를 자동 첨부
+- 상태: OPEN → IN_PROGRESS → WAITING_ON_CUSTOMER → RESOLVED → CLOSED
+- Professional Reviewer 요청("Finding Explorer 내 전문가 검토 요청" 화면 참조)과 일반 기술지원 티켓을 구분해 큐잉
 
 ### Delivery Center
 - Executive Report
@@ -75,6 +95,7 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 
 ## 5. 관리자 화면
 - Product Catalog와 Feature Entitlement 조회
+- Organization PolicyPack 업로드·버전관리·회귀결과 조회(고객 Admin도 자체 Organization 범위에서 동일 화면 접근 가능)
 - Case 운영 큐
 - 결제·환불·정산 상태
 - License 발급 실패 및 재처리
@@ -96,6 +117,7 @@ ONSure 아이콘 아래 다음 View를 제공한다.
 - Verification
 - Findings
 - Improvement
+- Knowledge
 - Evidence
 - Git & PR
 - License & Usage
@@ -103,8 +125,21 @@ ONSure 아이콘 아래 다음 View를 제공한다.
 ### Chat
 Ask, Plan, Act, Autopilot 모드를 제공한다. 현재 Workspace, Baseline, Entitlement, 예상 Credit을 항상 표시한다.
 
+- Ask: 읽기 전용 질의응답. Program Profile/Finding/Evidence를 근거로 답하며 코드·설정을 변경하지 않는다
+- Plan: ExecutionPlan 또는 PatchPlan 초안만 생성하고 실행하지 않는다. 사용자 승인 전까지 Act로 자동 전이하지 않는다
+- Act: 승인된 Plan을 단계별로 실행하며, §7 위험행위 목록에 해당하는 단계마다 확인을 요구한다
+- Autopilot: Stop Condition에 도달하거나 위험행위 목록에 해당하는 단계 전까지 연속 실행한다. Autopilot 상태에서도 Main 직접 변경과 Push는 FR-COM-008과 §7에 따라 사용자 승인 없이 수행할 수 없다
+- 모드는 실행 중 언제든 전환 가능하며, 전환 시점의 Plan/Diff 상태를 그대로 유지한다
+
 ### Program Profile
 Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revision을 표시한다.
+
+### Plan
+- ExecutionPlan을 DAG로 시각화(OLearning→OReview→OVerification→OImprovement 단계별 노드와 의존관계)
+- ScopeManifest와 계약 CaseScope 비교, 범위 초과 항목 강조
+- ResourceEstimate(예상 Learning Unit/Credit/소요시간)와 신뢰구간
+- Stop Condition과 사용자 승인이 필요한 지점 표시
+- 이전 실행 대비 Plan Diff 확인 후 승인(Approval Receipt 생성)
 
 ### Review
 - Current Diff와 Review Domain
@@ -127,6 +162,13 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - 변경파일·Diff
 - Test 결과
 - Accept, Edit, Abandon, Draft PR
+
+### Knowledge
+- 현재 Diff/Component와 매칭된 KnowledgePattern 목록과 Confidence
+- Pattern의 원 근거(원 Finding, 원 Case) 링크
+- Tenant 전용 Pattern과 공유(Promoted) Pattern 구분 표시
+- Accept/Reject Feedback 버튼 — 선택 결과는 OMemory 재귀학습 루프에 반영
+- 자동 판정이 놓쳤다가 나중에 확인된 MissedFinding 이력과 이에 따른 탐지 능력 개선 이력(Detection Capability Change) 조회
 
 ### Git & PR
 - Dirty Workspace 상태

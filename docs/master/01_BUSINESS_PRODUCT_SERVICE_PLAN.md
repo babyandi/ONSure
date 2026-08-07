@@ -56,16 +56,25 @@ AI가 만든 코드의 위험을 찾고, Finding에서 출발한 제한적 자�
 제외: 결함 판정과 자동 수정
 
 ### Verify
-입력: 고정 Baseline, 요구사항, 정책, 검증팩
+입력: 고정 Baseline, 요구사항, 정책, 검증팩, 고객 제공 ScopeManifest(대상 Component/Module/AI 구성 목록)
 처리: 정적·동적·시나리오·적대·회귀 검증
 산출물: Finding, Severity, RCA 후보, Evidence, Verification Report
 제외: Program Profile 납품과 자동 Patch
+
+Verify 단독 상품은 OLearning의 전체 Program Profile을 생성하지 않지만, 시나리오 생성과 요구사항 추적에 필요한 최소 구조 정보(대상 Component, Dependency, AI 구성)는 고객이 ScopeManifest로 직접 제공해야 한다. ScopeManifest가 불충분하면 Preflight 단계에서 Unknown/Conflict로 표시하고 해당 범위는 INCONCLUSIVE로 처리하며 Learn 추가 구매를 안내한다.
 
 ### Learn & Verify
 Program Profile을 만든 뒤 해당 구조와 위험에 맞게 검증 시나리오를 생성한다. 일반 고객의 대표 상품으로 둔다.
 
 ### Improve & Re-verify
 검증된 Finding 중 고객이 승인한 항목만 대상으로 RCA, Patch, Regression, Before/After Evidence를 제공한다.
+
+## 6-1. 환불 정책
+- LEARNING/VERIFYING 실행 시작 전 취소: 전액 환불
+- 실행 시작 후 취소: 실제 소비된 Learning Unit/Credit에 해당하는 금액을 제외하고 잔액 환불
+- ONSure 내부 오류로 인한 재실행·실패는 애초에 과금하지 않으므로 환불 대상에서 제외한다(FR-COM-006과 동일 원칙)
+- VS Code 구독은 해지 시 당월 잔여 기간 비례 환불 없음이 기본이며, Annual Plan 중도 해지는 계약서에 별도 명시된 경우에만 예외 적용
+- 환불 승인은 Payment Provider의 RefundCompleted 이벤트로 확정하고 License는 즉시 SUSPENDED로 전이한다
 
 ## 7. 학습량 정책
 상품 단계는 늘리지 않고 Learn 하나를 유지한다. 내부적으로 Learning Unit을 산정한다.
@@ -79,6 +88,13 @@ Learning Unit 산정요소:
 - 테스트·로그·설정 규모
 - 외부 연계 수
 - 동적 구조와 복잡도
+
+### 산정 공식(초안)
+LearningUnit = w1·log(TotalFiles+1) + w2·(AnalyzedLOC/1000) + w3·LanguageFrameworkCount + w4·DeploymentUnitCount + w5·(PromptCount+AgentCount+ToolCount) + w6·(RAGDocCount/1000+RAGIndexCount) + w7·((TestCount+ConfigCount)/500) + w8·ExternalIntegrationCount + w9·DynamicComplexityScore
+
+기본 가중치(예시, 가격정책위원회 승인 필요): w1=5, w2=10, w3=8, w4=15, w5=12, w6=6, w7=3, w8=10, w9=20
+
+Preflight는 이 공식으로 예상 LearningUnit과 신뢰구간(±15%)을 제시하며, 실제 정산은 실행 후 실측값을 기준으로 한다. DynamicComplexityScore는 순환복잡도, 모듈 간 의존 Fan-in/Fan-out, AI Component의 Tool 권한 범위를 정규화해 합산한다. 가중치는 분기별로 실측 원가와 대조해 재보정하며 재보정 이력은 Evidence로 남긴다.
 
 원칙:
 - LOC만으로 과금하지 않는다.
@@ -126,6 +142,11 @@ Team, 공유 정책, CI/CD, 관리자 대시보드, 전문가 리뷰
 
 ### Phase 4
 Enterprise, 폐쇄망, 전용 모델, 정책 Marketplace, 파트너 채널
+
+## 11-1. 산출물 소유권
+- AI가 생성한 Patch, Program Profile, Report, Evidence Pack 등 Case 산출물의 소유권과 사용권은 고객에게 귀속된다.
+- ONSure는 익명화된 Pattern/Fixture를 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) FR-COM-009 Opt-in 조건 하에서만 공유 Corpus 학습에 사용할 권리를 가지며, 고객 소스 코드 자체나 식별 가능한 파생물은 어떤 경우에도 재사용하지 않는다.
+- AI Model Provider의 이용약관상 생성물 저작권이 불확실한 관할권에서는 계약서에 "고객 귀속" 조항을 명시해 분쟁 소지를 제거한다.
 
 ## 12. 사업 위험과 대응
 - AI 원가 급증: Credit, Hard Stop, 모델별 원가 Meter
