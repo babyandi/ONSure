@@ -56,8 +56,10 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 - Severity, Domain, Program, Status 필터
 - 문제 요약
 - Source 위치와 Evidence
-- Requirement/Policy 연결
+- Requirement/Policy 연결(고아 코드 Finding은 연결된 요구사항이 없음을 명시)
 - 영향과 재현방법
+- Critical Finding의 Cross-Model Verification 결과(1차/2차 모델 일치 여부)
+- AI 자기주장과 실제 Evidence 불일치 시 별도 배지 표시
 - 개선 제안
 - Accept Risk, False Positive, Improve 선택
 
@@ -152,15 +154,17 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - Verification Pack
 - Scenario와 Test 상태
 - PASS/FAIL/BLOCKED/NOT_RUN
+- Mutation Score(Test Suite 실효성 지표)와 취약 구간 표시
 - Log와 Evidence
 - 재실행 비용
 
 ### Improvement
 - 승인 Finding
 - Patch Plan
+- Blast Radius 미리보기(영향받는 파일·Component·타 Program 목록) — DRY_RUN 결과를 실제 Patch 적용 전 승인 단계에 노출
 - Worktree와 Branch
 - 변경파일·Diff
-- Test 결과
+- Test 결과와 Before/After 동작·성능 Diff 요약
 - Accept, Edit, Abandon, Draft PR
 
 ### Knowledge

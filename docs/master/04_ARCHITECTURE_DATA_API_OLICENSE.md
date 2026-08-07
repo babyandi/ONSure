@@ -89,6 +89,8 @@ ProgramRiskScore = 100 − clamp(10·OpenCritical + 4·OpenHigh + 1·OpenMedium 
 - NotificationRule, NotificationEvent, NotificationDeliveryReceipt
 - PortfolioSnapshot, ProgramRiskScore
 - PolicyPack, PolicyPackVersion
+- MutationTestResult, BehaviorDiffReport, BlastRadiusReport, SBOM
+- CrossModelVerificationReceipt, SelfClaim
 - ServiceCase, CaseScope, CaseRevision
 - ProgramProfile, Component, Dependency, AIComponent
 - Requirement, Policy, TraceLink
@@ -139,10 +141,10 @@ PROPOSED → APPROVED → SUPERSEDED
 예외: REJECTED
 
 ### PatchRun
-PENDING → RUNNING → SUCCEEDED → REGRESSION_PENDING → REGRESSION_PASSED 또는 REGRESSION_FAILED
+PENDING → DRY_RUN → DRY_RUN_REVIEWED → RUNNING → SUCCEEDED → REGRESSION_PENDING → REGRESSION_PASSED 또는 REGRESSION_FAILED
 예외: FAILED, ABORTED, ROLLED_BACK
 
-PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L110)의 Worktree/Branch 원칙에 따라 Main과 분리된 상태로만 존재한다.
+PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L110)의 Worktree/Branch 원칙에 따라 Main과 분리된 상태로만 존재한다. DRY_RUN 단계는 실제 코드 변경 없이 영향받는 파일·Component·의존 Program을 BlastRadiusReport로 산출하며, 사용자가 DRY_RUN_REVIEWED로 승인해야 RUNNING으로 진행한다. SUCCEEDED 이후 REGRESSION_PENDING에서는 기능 회귀뿐 아니라 BehaviorDiffReport(무관 기능 동작 Diff, 성능 지표 변화)를 함께 산출하며, 이 리포트에 임계치를 초과하는 변화가 있으면 자동으로 REGRESSION_FAILED로 판정한다.
 
 ### CreditReservation
 RESERVED → COMMITTED 또는 RELEASED; Timeout 시 자동 RELEASED
@@ -169,7 +171,7 @@ PROMOTED는 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREME
 DRAFT → ACTIVE → SUPERSEDED
 예외: BREAKING_CHANGE_FLAGGED
 
-BREAKING_CHANGE_FLAGGED는 Architecture Review에서 최상위 우선순위 Finding으로 승격된다.
+BREAKING_CHANGE_FLAGGED는 Architecture Review에서 최상위 우선순위 Finding으로 승격된다. Provided Interface가 변경되면 같은 System 내 이 Interface를 Required Interface로 선언한 모든 다른 Program을 ReuseLink로 역조회해 Cross-Program Impact Scan을 수행하고, 영향받는 각 Program에 별도 Finding을 생성한다(원 변경 Program의 Review 통과와 무관하게 독립 판정). Program 간 저장소가 분리되어 있어 개별 CI에서는 이 영향을 알 수 없다는 점이 이 스캔의 존재 이유다.
 
 ## 6. API 원칙
 - REST와 Event를 병행한다.
@@ -197,17 +199,22 @@ GET /v1/cases/{caseId}/deliveries
 ### Learning and Review
 POST /v1/learning-runs
 GET /v1/program-profiles/{id}
+GET /v1/program-profiles/{id}/sbom
 POST /v1/review-runs
 GET /v1/review-runs/{id}/findings
 GET /v1/review-runs/{id}/findings.sarif
 POST /v1/findings/{id}/decisions
+POST /v1/findings/{id}/cross-model-verify
 
 ### Verification and Improvement
 POST /v1/verification-runs
+GET /v1/verification-runs/{id}/mutation-score
 POST /v1/improvement-requests
 POST /v1/patch-runs
+GET /v1/patch-runs/{id}/blast-radius
 POST /v1/patch-runs/{id}/approve
 POST /v1/patch-runs/{id}/reverify
+GET /v1/patch-runs/{id}/behavior-diff
 
 ### Notification and Portfolio
 POST /v1/organizations/{orgId}/notification-rules
@@ -250,6 +257,9 @@ GET /v1/license/jwks
 - PatternLearned, PatternPromoted, PatternDeprecated
 - MissDetected, DetectionCapabilityUpdated, DetectionRegressionValidated
 - NotificationSent, NotificationFailed, NotificationSuppressed(Opt-in 없음)
+- MutationTestCompleted, BlastRadiusComputed, BehaviorDiffCompleted, SBOMGenerated
+- CrossModelVerificationRequested, CrossModelVerificationDisagreed, SelfClaimMismatchDetected
+- ComponentContractBreakingChange, CrossProgramImpactDetected
 
 이벤트는 event_id, occurred_at, producer, schema_version, organization_id, correlation_id, causation_id를 포함한다.
 

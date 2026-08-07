@@ -100,7 +100,7 @@ Fix/Failure Pattern 추출부터 Component Signature 매칭, MissedFinding 재�
 Parser, Rule, Meter, State Transition, Hash, Token Validation.
 
 ### Contract
-OpenAPI, Event Schema, OLicense Token, Payment Webhook, Git Provider.
+OpenAPI, Event Schema, OLicense Token, Payment Webhook, Git Provider, SARIF/SBOM(CycloneDX·SPDX) 출력 스키마 유효성.
 
 ### Integration
 DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
@@ -138,6 +138,17 @@ DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
 - RAG Tenant 혼합
 - 취약 Test
 - 실패 Test 삭제 시도
+- 요구사항 미연결 고아 코드(역방향 Traceability 탐지 검증)
+- Docstring/주석과 실제 동작이 다른 코드(Doc-Code Consistency 검증)
+- 커밋/PR 설명에서 거짓 또는 과장된 완료·테스트통과 주장(Self-Claim Verification 검증)
+- Cross-Model 1차/2차 판정 고의 불일치 케이스(자동 승격 대신 Human 회부되는지 검증)
+- Cross-Program Breaking Change: 한 Program의 Interface 변경이 다른 Program에 미치는 영향 탐지 검증
+
+### Mutation Testing / Blast Radius Fixture
+- 강한 Assertion과 약한 Assertion을 가진 동일 기능 Pair(Mutation Score 차이 검증)
+- Mutation 주입 후에도 Test가 모두 통과하는 케이스(테스트 실효성 부재 탐지)
+- 다중 Program에 영향을 주는 Patch의 Blast Radius 예측 정확도(DRY_RUN 예측 vs 실제 적용 결과 비교)
+- 기능은 고쳤지만 성능이 저하되는 Patch(BehaviorDiffReport의 REGRESSION_FAILED 자동판정 검증)
 
 ### OLicense Fixture
 - 만료

@@ -24,13 +24,14 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 7. AI Review: Prompt, RAG, Agent, Tool, Memory
 8. Security Review: 인증·인가·입력·Secret·Dependency
 9. Test Review: Coverage가 아닌 행위·경계·부정 시나리오 검토
-10. Independent Pass: 다른 모델 또는 규칙 기반 독립 검토
+10. Independent Pass: 원 구현과 다른 모델 계열 또는 규칙 기반 독립 검토(Critical 후보는 §10-1 Cross-Model Verification 필수)
 11. Reconciliation: 중복·충돌·불확실성 정리
 12. Merge Decision: 증거와 미해결 Finding 기반 판정
 
 ## 4. 리뷰 영역별 규칙
 ### Requirement Review
 - 요구사항 누락, 잘못된 해석, 과잉 구현
+- 어떤 요구사항에도 연결되지 않은 신규 코드(고아 코드) — 역방향 Traceability로 탐지
 - Acceptance Criteria 미충족
 - 변경된 동작에 대한 문서·테스트 미갱신
 - 비기능 요구사항 영향 누락
@@ -69,6 +70,7 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 - Memory 저장·삭제·범위
 - 모델 변경 시 결과 Drift
 - 비용·Token·Context 폭주
+- AI 자기주장과 실제 Evidence 불일치(Self-Claim Verification) — "구현 완료", "테스트 통과" 등 AI가 스스로 밝힌 주장을 별도 추출해 대조
 
 ### Security Review
 - OWASP 계열 취약 패턴
@@ -99,6 +101,7 @@ Claude 등 AI Agent와 대화형 코딩("바이브 코딩")으로 생성된 코�
 | 무의미한 예외 처리 | try/except pass류로 실패를 감춤 | Empty Catch, 로그 없는 예외 흡수 패턴 |
 | 테스트 없는 대량 변경 | LOC 변화 대비 Test 변화 비율 급락 | Test/LOC 비율 임계치 미만 |
 | 설명과 실제 변경 불일치 | Commit/PR 설명과 Diff 의미가 다름 | 자연어 요약과 AST 변경 대조 |
+| 문서/주석과 실제 동작 불일치 | Docstring·주석이 설명하는 동작과 실제 구현이 다름 | Doc-Code Consistency Check(주석 파싱 결과와 실행/정적분석 결과 대조) |
 | AI 구성 자체의 취약점 | 시스템 프롬프트 하드코딩, 과도한 Tool 권한 부여, RAG 출처 미검증 | 03의 AI Review 규칙과 동일 기준 적용 |
 
 이 표의 항목은 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 OMemory와 연동되어, 동일 항목이 반복 발견되면 KnowledgePattern으로 승격되고 이후 Case에서는 Preflight 단계부터 우선순위가 상향된다. 자동 판정이 이 항목을 놓쳤다가 나중에 확인된 경우 OMemory의 재귀학습 루프(MissedFinding)로 흡수한다.
@@ -167,6 +170,15 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 
 ## 10. 감사와 증거
 각 Review 실행은 Baseline SHA, Target SHA, Diff Hash, Rule Pack Digest, Reviewer Version, Input Digest, Output Digest, Decision을 Receipt에 결속한다.
+
+## 10-1. Cross-Model Verification
+동일 모델(계열)이 코드를 생성하고 그 코드를 리뷰까지 하면, 그 모델이 원래 놓치는 유형의 결함을 리뷰에서도 동일하게 놓치는 상관된 blind spot 위험이 있다. 이를 줄이기 위해 다음을 규칙화한다.
+
+- Critical로 잠정 판정된 Finding은 원 구현에 사용된 모델·Provider와 다른 계열의 모델로 2차 확인을 거친 뒤에만 최종 확정한다(예: 원 구현이 Claude 계열이면 2차 확인은 다른 Provider/다른 세대 모델)
+- 두 모델의 판정이 불일치하면 자동 승격하지 않고 Human 또는 Professional Reviewer에게 회부한다(INCONCLUSIVE로 표시)
+- 2차 확인에 사용된 모델·버전은 §9-1(OReview 자체 판정 재현성) 원칙에 따라 Receipt에 함께 고정한다
+- Cross-Model 불일치 이력은 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OMemory의 MissedFinding/KnowledgePattern 후보로 연결해 반복되는 blind spot 유형을 축적한다
+- 비용 관리를 위해 Cross-Model 2차 확인은 Critical 후보에 한정하며 Medium/Low까지 전수 적용하지 않는다
 
 ## 11. 금지사항
 - 실행하지 않은 Test를 PASS로 표기

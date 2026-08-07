@@ -71,14 +71,16 @@ Requirement, Architecture, Design, Policy, Code, AI, Security, Performance, Test
 
 ### 기능
 - 요구사항과 변경파일 Traceability
+- 역방향 Traceability: 어떤 요구사항에도 연결되지 않은 신규 코드(고아 코드·과잉 생성)를 별도 탐지
 - 설계규칙·Dependency Boundary 검토
 - 정책 위반 탐지
 - 버그·동시성·예외·자원누수·복잡도 검토
 - Prompt Injection, Tool 권한, RAG 출처·오염 검토
 - Secret, 취약 Dependency, 인증·인가 검토
 - 테스트 누락과 취약 Assertion 검토
+- AI 자기주장 검증(Self-Claim Verification): Commit/PR/Chat 응답에서 AI가 스스로 밝힌 구현·수정·테스트통과 주장을 추출해 실제 Evidence와 대조하고 불일치 시 Finding 생성
 - PR 단위 Inline Comment, Summary, Decision 생성
-- 독립 Review Pass 지원
+- 독립 Review Pass 지원(가능한 경우 원 구현에 사용된 모델과 다른 계열의 모델로 수행)
 
 ### Decision
 APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
@@ -88,6 +90,8 @@ APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
 - 중복 Finding 통합
 - 추측성 Finding은 Confidence와 확인방법 포함
 - Critical/High Finding은 근거 없는 자동 승인 금지
+- Critical Finding은 원 구현/1차 판정과 다른 모델 계열의 Cross-Model Verification을 거친 뒤에만 최종 확정한다([03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) §10-1)
+- AI 생성 비중이 높은 Component에서 Critical/High 판정의 Confidence가 조직 임계치 미만이면 자동 승인·자동 반려 없이 Human 또는 Professional Reviewer에게 강제 회부한다(OVerification의 동급 판정에도 동일 원칙 적용)
 
 ## 6. OVerification
 ### 기능
@@ -95,6 +99,7 @@ APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
 - ProgramProfile 또는 (Verify 단독 상품의 경우) 고객 제공 ScopeManifest를 구조 정보 입력으로 사용
 - 요구사항별 Test Claim 생성
 - 실제 실행결과와 Expected 결과 비교
+- Mutation Testing: 대상 코드에 결함을 의도적으로 주입해 기존 Test Suite가 실제로 탐지하는지 측정(Mutation Score)하여 "테스트 존재"와 "테스트 실효성"을 구분
 - Negative Test와 Fail-closed 확인
 - Regression Set 구성
 - 결과 재실행과 Flaky 분리
@@ -111,11 +116,12 @@ PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과
 - 승인된 Finding만 입력
 - Root Cause 후보와 영향범위 생성
 - Patch Plan과 예상 변경파일 제시
+- Blast Radius 드라이런: Patch를 실제 적용하기 전 영향받는 파일·Component·의존 Program을 시뮬레이션으로 제시하고 사용자 승인 대상에 포함
 - Worktree·Branch 생성
 - 최소 변경 원칙 Patch
-- 관련 Test 추가 또는 수정
+- 관련 Test 추가 또는 수정(수정된 결함마다 재발 방지용 회귀 Test 필수)
 - 전체 회귀검증
-- Before/After Evidence
+- Before/After Evidence: 대상 결함의 해소 여부뿐 아니라 관련 없는 기능의 동작 Diff와 성능 지표(응답시간·자원사용) 변화를 함께 비교해 의도치 않은 부작용을 확인
 - Rollback 또는 Abandon
 
 ### 금지
@@ -194,6 +200,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - Web Report
 - Program Profile
 - Findings CSV/JSON/SARIF(GitHub/GitLab Code Scanning 연동용 표준 포맷)
+- SBOM(CycloneDX/SPDX 포맷, 의존성 공급망 투명성 증빙)
 - Evidence Pack
 - Patch/Diff
 - Draft PR

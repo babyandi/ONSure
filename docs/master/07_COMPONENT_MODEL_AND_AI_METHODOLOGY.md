@@ -22,6 +22,7 @@ ONSure는 대상 시스템과 ONSure 자신을 모두 CBD(Component-Based Develo
 - Finding과 TestClaim은 File/Line뿐 아니라 Component ID에도 결속한다
 - Contract 위반(순환참조, Interface Breaking Change)은 Architecture Review 최상위 우선순위로 처리하며 ComponentContract 상태는 BREAKING_CHANGE_FLAGGED로 전이한다
 - Component 재사용률과 Duplicate Component(동일 기능의 반복 구현, 특히 AI 생성 코드에서 빈발)를 OReview 지표로 관리하고 ReuseLink 엔티티로 추적한다
+- Provided Interface 변경 시 ReuseLink로 역조회해 같은 System 내 다른 Program까지 영향을 스캔하는 Cross-Program Impact Scan을 수행한다([04_ARCHITECTURE_DATA_API_OLICENSE.md](04_ARCHITECTURE_DATA_API_OLICENSE.md) ComponentContract). 단일 Repository 관점의 CI만으로는 이 영향을 알 수 없다는 것이 CBD를 시스템 경계 전체에 적용하는 이유다
 
 ### 2.4 Component와 Knowledge Pattern 연결
 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 OMemory가 관리하는 KnowledgePattern은 ComponentSignature 단위로 매칭되어, 동일 Contract를 가진 다른 Case의 실패 이력(익명화된 공유 Pattern)을 참고 신호로 제공한다. Pattern 매치는 판정의 유일 근거가 될 수 없으며 Confidence 보조 신호로만 사용한다([02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) §7-1 수용기준).
