@@ -314,6 +314,7 @@ ONSure는 Validate, Activate, Reserve, Commit, Release, Report를 수행하며 �
 - 관리자 Break-glass 승인과 감사
 - 결제 카드정보 비보관, PCI-DSS 범위는 Payment Provider Tokenization으로 최소화
 - Tenant Key 또는 Enterprise 전용 Key 옵션
+- 신뢰 경계 원칙(`docs/v2/07` §10에서 흡수): 고객 Repository의 자체 결과를 최종 판정으로 신뢰하지 않는다. 개선을 생성한 Model과 최종 Reviewer/Oracle을 분리한다(§10-1 Cross-Model Verification과 동일 근거). 클라이언트(VS Code/Web)의 Feature 표시를 권한 증거로 사용하지 않으며 실행마다 서버가 Entitlement를 재확인한다. 결제 성공 Event만으로 실행을 허용하지 않고 OLicense의 License ACTIVE 상태를 별도로 확인한다
 
 ## 12-1. 규제산업 컴플라이언스 설계
 목표 고객에 금융·공공·의료 규제 산업이 포함되므로([01_BUSINESS_PRODUCT_SERVICE_PLAN.md:17](01_BUSINESS_PRODUCT_SERVICE_PLAN.md)) 다음을 Organization Plan 속성으로 관리한다.

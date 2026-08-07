@@ -106,7 +106,16 @@ G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영
 | G27 | `contracts/requirements-traceability.v1.json`의 오래된 design_refs | 이 실제 추적 레지스트리가 WEB-SERVICE-CASE·OLICENSE·RCA·IMPROVEMENT-PATCH·IMPROVEMENT-PROOF·WORKSPACE-INTAKE·GIT-DELIVERY 항목에서 여전히 `docs/05`(이번 세션에 DEPRECATED 처리)와 `docs/v2/*`, `docs/03_GIT_AND_CHANGE_GOVERNANCE.md`를 design_refs로 인용 중. 이 파일은 현재 다른 무관한 작업으로 staged+unstaged 상태(MM)라 제가 수정하지 않음 — 그 작업 소유자가 docs/master 기준으로 재결속해야 함 | NOT_TOUCHED(소유자 확인 필요) |
 | G28 | `contracts/state-machine.v1.json` | `state-model-mapping.v1.json`(고객 대상 실행)과는 별개로, ONSure 자신의 내부 개발/퍼블리시 파이프라인(UNINITIALIZED→...→PUBLICATION_ELIGIBLE) 상태기계가 따로 존재 — 고객向 설계서와 직접 관련 없어 반영 안 함, 혼동 방지용으로만 기록 | NOTED |
 
-docs/v2/04(VS Code 구독정책), 06(운영프로세스·고객여정), 07(아키텍처·데이터모델), 08(구현로드맵), 09(AI 자동학습 전략)는 아직 안 읽었다 — 04·06·07은 이 설계서의 VS Code 상품, 06_TEST_OPERATION_IMPLEMENTATION_PLAN, 04_ARCHITECTURE_DATA_API_OLICENSE와 직접 겹치므로 다음 대조 대상 1순위다.
+docs/v2/04(VS Code 구독정책), 06(운영프로세스·고객여정), 07(아키텍처·데이터모델), 08(구현로드맵), 09(AI 자동학습 전략)도 모두 읽었다. 04의 Credit 초과정책(HARD_STOP/AUTO_TOP_UP/PAY_AS_YOU_GO/ADMIN_APPROVAL_REQUIRED)과 Web↔VS Code Program Profile 전환, 07의 신뢰경계 원칙(Feature 표시≠권한 증거, 결제성공만으로 실행 불가)을 01·04에 흡수했다.
+
+### G29 — 미흡수 대형 항목: Target AI Auto-Learning (결정 필요, 최우선)
+`docs/v2/09_TARGET_AI_AUTO_LEARNING_BUSINESS_AND_DEVELOPMENT_STRATEGY.md`(1216줄, 커밋 SHA `5a761ccf...`에 고정된 NON_FINAL 설계 보완안)가 `docs/master`에 전혀 없는 새 사업 축을 정의한다.
+
+- **Program Understanding Learning**(=이 설계서의 OLearning)과 **Target AI Auto-Learning**(대상 프로그램 내부의 RAG/Prompt/Agent/Tool선택정책/예측·분류·추천·비전 Model을 실제 데이터로 재학습·개선)을 명확히 별개 기능으로 구분한다. 목적·입력·산출물·비용·위험·라이선스 단위가 전부 다르다.
+- 확장된 파이프라인을 제안한다: `Understand → Verify → Diagnose → Decide → Improve or Train → Independently Re-verify → Prove → Deploy → Observe → Re-learn` — 이 설계서 00의 `Understand → Plan → Review → Verify → Improve → Prove → Remember`와 다르다. 특히 **Diagnose**(별도 단계로 분리, docs/07 Diagnosis Engine과 같은 방향), **Deploy/Observe/Re-learn**(운영 배포 후 피드백 루프)이 이 설계서에는 아예 없다.
+- 사업성 평가를 솔직하게 NON_FINAL로 명시하고("사업기회는 유효하지만 아직 사업성이 입증된 것은 아니다"), 초기엔 RAG·Prompt 개선과 AI 생성 코드 안정화부터 유료 Case로 검증하라고 제안한다.
+
+**결정 필요**: 이 사업 축을 `docs/master`에 정식 흡수할지, 별도 트랙(`docs/v2`)으로 유지할지, 아니면 아직 시기상조로 보류할지 — 흡수하면 00의 파이프라인·02의 프로그램 구성·04의 데이터모델·01의 상품구조 전반에 영향을 주는 큰 변경이라 이번 세션에서 임의로 병합하지 않았다.
 
 ## F. 문서 거버넌스 (참고, 결정 아님)
 

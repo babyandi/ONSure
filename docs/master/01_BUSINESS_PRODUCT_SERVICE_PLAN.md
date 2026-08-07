@@ -130,6 +130,17 @@ Preflight는 이 공식으로 예상 LearningUnit과 신뢰구간(±15%)을 제�
 - CI 결과 회수
 - Evidence 자동 고정
 
+### 8-1. Credit 초과정책 (`docs/v2/04` §6에서 흡수)
+고객에게는 ONSure Credit 하나만 표시하고 내부적으로 Learning/Verification/AI Model/Sandbox/Improvement/Storage 원가를 측정한다. 월간 한도 초과 시 조직이 아래 중 선택한다.
+
+- HARD_STOP(기본값): 초과 시 즉시 실행 중단
+- AUTO_TOP_UP: 자동 추가 구매
+- PAY_AS_YOU_GO: 초과분 후청구
+- ADMIN_APPROVAL_REQUIRED: Customer Admin 승인 후 재개
+
+### 8-2. Web↔VS Code 전환
+Web에서 구매한 Learn/Learn&Verify 결과(Program Profile)는 동일 고객의 VS Code 최초 Program Profile로 이전할 수 있다. 동일 Baseline·유효기간 내 이전이면 전체 재학습을 강제하지 않고 증분 학습부터 Credit을 사용한다. 반대로 VS Code에서 나온 Finding에 전문가 최종 검증이 필요하면 별도 Web Professional Case로 전환한다(기존 Professional Reviewer 요청 흐름 재사용).
+
 ## 9. 판매전략
 - 초기: AI 개발 결과 검수와 1회 Learn & Verify 중심
 - 확장: 검증 결과에서 Improve & Re-verify 전환

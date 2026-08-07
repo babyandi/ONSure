@@ -41,6 +41,8 @@ Service Case = System + Programs + Baseline + Scope + Capacity + Validity + Deli
 
 VS Code는 지속 학습, 지속 리뷰, 지속 검증, 지속 개선을 제공한다.
 
+Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하는 옵션이며, AI·학습·GPU·컴퓨팅·Storage·전문가 지원까지 무제한을 의미하지 않는다(`docs/v2/00_MASTER_INDEX.md` §4). Seat, Credit, 동시 실행, Compute, Storage는 별도 계약 한도를 적용한다.
+
 ## 5. 프로그램 구성
 - OLearning: Repository와 실행 구조를 학습하고 Program Profile을 생성한다.
 - OPlanning: 검토·검증·개선 계획과 실행 순서를 생성한다.
