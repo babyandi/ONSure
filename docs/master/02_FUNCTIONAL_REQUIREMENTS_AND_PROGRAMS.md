@@ -8,6 +8,7 @@
 - Professional Reviewer: 유료 전문가 검토
 - ONSure Operator: Case와 실행환경 운영
 - Security Auditor: Evidence와 감사로그 열람
+- External Acceptor: 고객 소프트웨어를 인수·검수하는 발주기관 등 제3자. Customer Owner가 초대한 범위에서 Delivery와 Acceptance Certificate만 읽기 전용으로 열람하며 ONSure 유료 계정이 없어도 됨
 - OLicense: 라이선스·Entitlement·Credit 권위
 - Payment Provider: 결제 승인·취소·환불 이벤트 제공
 
@@ -20,7 +21,7 @@
 - FR-COM-006 ONSure 내부 오류에 의한 실패는 고객 사용량으로 확정하지 않는다.
 - FR-COM-007 모든 자동 Patch는 별도 Worktree와 Branch에서 수행한다.
 - FR-COM-008 고객 승인 전 Main Branch 직접 변경을 금지한다.
-- FR-COM-009 Organization은 자신의 Pattern/Fixture가 익명화된 공유 Corpus에 기여할지 여부를 명시적으로 선택(Opt-in/Opt-out)하며 기본값은 Opt-out이다. 규제산업 Enterprise Edition은 공유 Corpus 기여를 계약으로 원천 차단할 수 있다.
+- FR-COM-009 Organization은 자신의 Pattern/Fixture가 익명화된 공유 Corpus에 기여할지 여부를 명시적으로 선택(Opt-in/Opt-out)하며 기본값은 Opt-out이다. 규제산업 Enterprise Edition은 공유 Corpus 기여를 계약으로 원천 차단할 수 있다. 단, 공개 CVE/취약점 DB 등 이미 공개된 정보에서 유래한 Pattern(고객 코드의 행위·구조를 관찰해 만든 Pattern이 아닌 것)은 고객 코드 관찰과 무관하므로 이 Opt-out 대상에서 제외하고 항상 최신으로 유지한다.
 - FR-COM-010 Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한 Portfolio 조회 기능을 제공받는다.
 - FR-COM-011 Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다.
 - FR-COM-012 Seat는 담당자 변경 시 Customer Admin이 즉시 회수·재배정할 수 있으며, 회수된 Seat의 이전 담당자 Access Token은 즉시 무효화한다.
@@ -212,6 +213,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - Findings CSV/JSON/SARIF(GitHub/GitLab Code Scanning 연동용 표준 포맷)
 - SBOM(CycloneDX/SPDX 포맷, 의존성 공급망 투명성 증빙)
 - CoverageReport(검토·검증 범위 포함/제외 내역)
+- Acceptance Certificate: 발주기관 등 제3자(External Acceptor)가 소스나 Finding 상세 없이도 서명 검증만으로 "이 Baseline이 이 시점에 이런 정책·기준으로 이런 결과를 받았다"를 확인할 수 있는 요약 증명서. 공개 검증 엔드포인트로 인증 없이 서명 유효성만 확인 가능하며, Evidence Pack 전체 열람은 권한자만 가능
 - Evidence Pack
 - Patch/Diff
 - Draft PR

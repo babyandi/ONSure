@@ -146,6 +146,7 @@ DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
 - Copyleft License 의존성이 상용 폐쇄소스 배포 정책과 충돌하는 케이스(PolicyPack 허용/차단 목록 검증)
 - 동시에 열려있는 두 PR이 같은 Component를 상충되게 변경하는 Multi-PR Integration Risk 케이스
 - 기존 테스트가 전무한 Repository에서 OPlanning이 최소 Smoke Test를 제안·실행하는지, PASS 표기가 구분되는지 검증
+- Acceptance Certificate 위변조 시도(서명 불일치, 발급 후 Case 내용 변경)가 공개 검증 엔드포인트에서 거부되는지 확인
 
 ### Mutation Testing / Blast Radius Fixture
 - 강한 Assertion과 약한 Assertion을 가진 동일 기능 Pair(Mutation Score 차이 검증)

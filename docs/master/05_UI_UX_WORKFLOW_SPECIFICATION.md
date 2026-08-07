@@ -89,6 +89,7 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 - Findings Export
 - Evidence Pack
 - Patch 또는 Draft PR
+- Acceptance Certificate 발급과 External Acceptor(발주기관) 초대 — 초대받은 제3자는 별도 계정 없이 서명 검증 링크로 발급 사실만 확인하거나, 초대 범위 내에서 Delivery를 읽기 전용으로 열람
 - Deletion Receipt
 
 ### License & Usage

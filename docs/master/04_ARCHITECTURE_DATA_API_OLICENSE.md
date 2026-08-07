@@ -93,6 +93,7 @@ ProgramRiskScore = 100 − clamp(10·OpenCritical + 4·OpenHigh + 1·OpenMedium 
 - CrossModelVerificationReceipt, SelfClaim
 - RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark
 - CoverageReport(schema_version 결속)
+- AcceptanceCertificate, ExternalAcceptorGrant
 - ServiceCase, CaseScope, CaseRevision
 - ProgramProfile, Component, Dependency, AIComponent
 - Requirement, Policy, TraceLink
@@ -200,6 +201,9 @@ POST /v1/cases/{caseId}/execute
 POST /v1/cases/{caseId}/cancel
 GET /v1/cases/{caseId}/deliveries
 GET /v1/cases/{caseId}/coverage-report
+POST /v1/cases/{caseId}/acceptance-certificates
+POST /v1/cases/{caseId}/external-acceptors
+GET /v1/certificates/{certId}/verify(인증 불필요 — §6 API 인증 원칙의 유일한 예외. 서명 유효성과 발급 사실만 반환하며 Finding 상세·소스는 노출하지 않는다)
 
 ### Learning and Review
 POST /v1/learning-runs
@@ -275,6 +279,7 @@ GET /v1/license/jwks
 - ComponentContractBreakingChange, CrossProgramImpactDetected
 - RollbackVerified, RollbackVerificationFailed
 - ConfidenceCalibrationDrifted, ReviewerAccuracyBelowThreshold, AIConfigDriftDetected
+- AcceptanceCertificateIssued, AcceptanceCertificateRevoked, ExternalAcceptorGranted
 
 이벤트는 event_id, occurred_at, producer, schema_version, organization_id, correlation_id, causation_id를 포함한다.
 
