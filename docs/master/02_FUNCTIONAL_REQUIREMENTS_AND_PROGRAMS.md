@@ -25,7 +25,7 @@
 - FR-COM-005 동일 입력·정책·도구 버전은 재현 가능한 판정 구조를 가져야 한다.
 - FR-COM-006 ONSure 내부 오류에 의한 실패는 고객 사용량으로 확정하지 않는다.
 - FR-COM-007 모든 자동 Patch는 별도 Worktree와 Branch에서 수행한다.
-- FR-COM-008 고객 승인 전 Main Branch 직접 변경을 금지한다.
+- FR-COM-008 고객 승인 전 Main Branch 직접 변경을 금지한다. 실제 `contracts/main-branch-protection.v1.json`이 이를 강제하는 구체 설정이다: PR 필수, 최소 승인 1명, 오래된 승인 자동 무효화, 대화 스레드 전부 해결 필수, 직접 Push·Force Push·Branch 삭제 차단, 관리자도 예외 없이 적용, Merge 전 독립 Status Check 필수.
 - FR-COM-009 Organization은 자신의 Pattern/Fixture가 익명화된 공유 Corpus에 기여할지 여부를 명시적으로 선택(Opt-in/Opt-out)하며 기본값은 Opt-out이다. 규제산업 Enterprise Edition은 공유 Corpus 기여를 계약으로 원천 차단할 수 있다. 단, 공개 CVE/취약점 DB 등 이미 공개된 정보에서 유래한 Pattern(고객 코드의 행위·구조를 관찰해 만든 Pattern이 아닌 것)은 고객 코드 관찰과 무관하므로 이 Opt-out 대상에서 제외하고 항상 최신으로 유지한다.
 - FR-COM-010 Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한 Portfolio 조회 기능을 제공받는다.
 - FR-COM-011 Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다.

@@ -94,6 +94,20 @@ G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영
 
 `docs/master`의 8개 문서(00~07) 모두 최소 한 번씩 실제 계약과 대조를 거쳤다. 다만 이번 세 라운드(G8~G21)는 발견 즉시 수정한 것이라, 시간을 두고 전체를 처음부터 끝까지 계약과 한 줄씩 대조하는 완전한 재검토는 아니다.
 
+### 2026-08-07 4차 대조 (심화) 결과
+
+| # | 항목 | 발견 | 조치 |
+|---|---|---|---|
+| G22 | 05 Autopilot 정의 | 실제 `unattended-autopilot.v1.json`은 FINAL_PASS/PRODUCTION_GO/FORCE_PUSH/HARD_RESET 등 11개 명시적 금지행위, `merge_authorization.authorized` 항상 false, 단계별 최대 재시도 1회로 이 설계서보다 훨씬 엄격 — 05에 흡수 | FIXED |
+| G23 | 04 Sandbox 격리기술 | 이 설계서가 "MicroVM 또는 동급"이라 쓴 건 부정확 — 실제는 Rootless Bubblewrap(`bwrap`)으로 고정(`remote_ci_backend: FORBIDDEN`). README의 "Rootless Bubblewrap Sandbox"와도 일치. 04 정정 완료 | FIXED |
+| G24 | 01 Preflight 판정 분류 | `docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md`에 READY/NEEDS_BASELINE/RECOMMEND_LEARN_VERIFY/CUSTOM_QUOTE/REJECT/HOLD 판정 분류와 2단계 결제(사전진단비+차액)가 이미 상세 설계돼 있었음 — 01에 흡수 | FIXED |
+| G25 | 02 FR-COM-008 실제 근거 | `main-branch-protection.v1.json`(babyandi/ONSure main)의 구체 설정(PR 필수, 최소승인 1, Force Push 차단, 관리자 예외없음 등)을 02에 추가해 정책 문장에 실제 근거 결속 | FIXED |
+| G26 | `docs/v2/` 문서군 발견 | 00~09 완전한 문서 세트(01_BUSINESS_PLAN, 02_PRODUCT_AND_SERVICE_MODEL, 03_WEB_ONE_TIME_SERVICE_POLICY, 04_VSCODE_SUBSCRIPTION_POLICY, 05_LICENSE_PAYMENT_OLICENSE_INTEGRATION, 06~09)가 별도로 존재. `docs/master`와 같은 주제(Web/VS Code 상품, OLicense)를 훨씬 상세히 다루며 내용이 상당히 정합적이었음(적대적이지 않음, docs/05·07과 다른 케이스). DESIGN_AUTHORITY 순위표에서 여전히 최하위(§2 순위 12번, "참고 자료")로만 취급되는 게 맞는지는 미확정 — 04·06~09는 아직 안 읽음 | PARTIAL(03·05만 흡수) |
+| G27 | `contracts/requirements-traceability.v1.json`의 오래된 design_refs | 이 실제 추적 레지스트리가 WEB-SERVICE-CASE·OLICENSE·RCA·IMPROVEMENT-PATCH·IMPROVEMENT-PROOF·WORKSPACE-INTAKE·GIT-DELIVERY 항목에서 여전히 `docs/05`(이번 세션에 DEPRECATED 처리)와 `docs/v2/*`, `docs/03_GIT_AND_CHANGE_GOVERNANCE.md`를 design_refs로 인용 중. 이 파일은 현재 다른 무관한 작업으로 staged+unstaged 상태(MM)라 제가 수정하지 않음 — 그 작업 소유자가 docs/master 기준으로 재결속해야 함 | NOT_TOUCHED(소유자 확인 필요) |
+| G28 | `contracts/state-machine.v1.json` | `state-model-mapping.v1.json`(고객 대상 실행)과는 별개로, ONSure 자신의 내부 개발/퍼블리시 파이프라인(UNINITIALIZED→...→PUBLICATION_ELIGIBLE) 상태기계가 따로 존재 — 고객向 설계서와 직접 관련 없어 반영 안 함, 혼동 방지용으로만 기록 | NOTED |
+
+docs/v2/04(VS Code 구독정책), 06(운영프로세스·고객여정), 07(아키텍처·데이터모델), 08(구현로드맵), 09(AI 자동학습 전략)는 아직 안 읽었다 — 04·06·07은 이 설계서의 VS Code 상품, 06_TEST_OPERATION_IMPLEMENTATION_PLAN, 04_ARCHITECTURE_DATA_API_OLICENSE와 직접 겹치므로 다음 대조 대상 1순위다.
+
 ## F. 문서 거버넌스 (참고, 결정 아님)
 
 | # | 항목 | 현재 상태 | 위치 |

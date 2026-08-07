@@ -52,6 +52,20 @@ AI가 만든 코드의 위험을 찾고, Finding에서 출발한 제한적 자�
 - 초과 Credit
 - Enterprise 보안·온프레미스·전용 지원
 
+## 5-1. Preflight 판정 (docs/v2/03에서 흡수)
+`docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md`(§4)가 정의한 Preflight 판정 결과를 채택한다.
+
+계정·조직 확인 → 대상 연결 또는 업로드 → 악성코드·비밀정보·권한 사전검사 → System·Program 경계 판정 → 학습량·실행가능성 산정 → 서비스 적합성 판정 → 견적·기간·제외범위 제시
+
+판정 결과:
+- READY: 정액 또는 확정견적으로 진행
+- NEEDS_BASELINE: Verify 전 기준 작성(Learn) 필요
+- RECOMMEND_LEARN_VERIFY: 자료 부족으로 통합서비스 권장
+- CUSTOM_QUOTE: 대규모·고위험·폐쇄환경
+- REJECT/HOLD: 불법·권한불명·악성코드·실행불가
+
+소규모 확정견적은 전액 선결제, 불확실한 대규모는 사전진단비와 본 서비스 차액의 2단계 결제를 지원한다. 고비용 실행은 예상 사용량을 OLicense에서 미리 예약(CreditReservation)한다.
+
 ## 6. Web 상품 정의
 ### Learn
 입력: Source, Configuration, Prompt, RAG, Tool, Test, Document, 선택 로그

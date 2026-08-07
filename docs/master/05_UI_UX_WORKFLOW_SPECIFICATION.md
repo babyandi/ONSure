@@ -137,7 +137,7 @@ Ask, Plan, Act, Autopilot 모드를 제공한다. 현재 Workspace, Baseline, En
 - Ask: 읽기 전용 질의응답. Program Profile/Finding/Evidence를 근거로 답하며 코드·설정을 변경하지 않는다
 - Plan: ExecutionPlan 또는 PatchPlan 초안만 생성하고 실행하지 않는다. 사용자 승인 전까지 Act로 자동 전이하지 않는다
 - Act: 승인된 Plan을 단계별로 실행하며, §7 위험행위 목록에 해당하는 단계마다 확인을 요구한다
-- Autopilot: Stop Condition에 도달하거나 위험행위 목록에 해당하는 단계 전까지 연속 실행한다. Autopilot 상태에서도 Main 직접 변경과 Push는 FR-COM-008과 §7에 따라 사용자 승인 없이 수행할 수 없다
+- Autopilot: Stop Condition에 도달하거나 위험행위 목록에 해당하는 단계 전까지 연속 실행한다. Autopilot 상태에서도 Main 직접 변경과 Push는 FR-COM-008과 §7에 따라 사용자 승인 없이 수행할 수 없다. 실제 `contracts/unattended-autopilot.v1.json`은 Autopilot을 더 엄격하게 제한한다 — `forbidden_actions`로 FINAL_PASS, FINAL_AUDIT_PASS, FINAL_LOCK, PRODUCTION_GO, COMMERCIAL_GO, REAL_DATA_LEARNING, PAID_EXTERNAL_SERVICE, SECRET_EXPORT, FORCE_PUSH, HARD_RESET, IMPLICIT_STASH를 명시적으로 금지하고, `merge_authorization.authorized`는 계약상 항상 `false`이며, 단계별 최대 재시도(`maximum_stage_attempts`)는 1회로 제한한다(재시도 루프 자체를 허용하지 않음). 이 설계서의 Autopilot 정의는 이 계약의 상위 요약이며, 실제 구현은 계약의 금지 목록을 그대로 따라야 한다
 - 모드는 실행 중 언제든 전환 가능하며, 전환 시점의 Plan/Diff 상태를 그대로 유지한다
 
 ### Program Profile

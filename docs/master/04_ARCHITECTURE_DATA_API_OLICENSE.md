@@ -40,7 +40,7 @@ Queue 우선순위는 Plan 등급(Enterprise > Team > Developer > Web One-time)�
 ### Sandbox
 고객별 격리 실행, CPU/Memory/Time/Network Policy, Secret Injection, Artifact Export를 관리한다.
 
-- 격리 기술: 실행 단위마다 커널 공유를 최소화하는 MicroVM 또는 동급 격리 Container를 신규 프로비저닝하며, 이전 실행의 파일시스템·메모리·프로세스를 재사용하지 않는다
+- 격리 기술: 실제 `contracts/sandbox-boundary.v1.json`(README의 "Rootless Bubblewrap Sandbox"와 일치)은 Rootless Bubblewrap(`bwrap`)을 기본이자 유일한 허용 Backend로 고정한다(`remote_ci_backend: FORBIDDEN`) — Network/User Namespace 분리, Source는 Read-only 마운트, 쓰기는 `/tmp`로만 한정, 모든 Capability Drop, 실패 시 Fail-closed가 계약으로 강제된다. 이 설계서가 이전에 쓴 "MicroVM 또는 동급 격리 Container"는 부정확한 일반화이며 실제 백엔드는 Bubblewrap으로 고정이다. 실행 단위마다 신규 프로비저닝하며 이전 실행의 파일시스템·메모리·프로세스를 재사용하지 않는다. Tenant 격리는 organization_id/project_id/program_id/run_id를 모두 필수로 요구하고 Cross-tenant 읽기·쓰기를 기본 거부한다
 - Lifecycle: Provision(Baseline과 정책 결속) → Execute → Artifact Export(Secret Scrub 후) → Destroy. Destroy는 실행 종료 후 수 분 내 완료하며 잔존 Volume은 자동 회수된다
 - Network Policy: 기본 Egress Deny. Organization Policy와 Case Scope 승인이 있는 도메인만 Allowlist에 등록하며 DNS/HTTP(S) 단위로 필터링한다. 외부 Network 허용은 [05_UI_UX_WORKFLOW_SPECIFICATION.md](05_UI_UX_WORKFLOW_SPECIFICATION.md)의 2단계 확인 대상이다
 - Resource Quota: Plan/Case별 CPU·Memory·Disk·실행시간 상한을 적용하며 초과 시 Graceful Timeout 후 Evidence에 Truncated로 표시하고 NOT_RUN 또는 BLOCKED로 판정한다
