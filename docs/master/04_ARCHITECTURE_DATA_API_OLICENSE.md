@@ -340,6 +340,7 @@ ONSure는 Validate, Activate, Reserve, Commit, Release, Report를 수행하며 �
 - 국내 개인정보보호법 대응: 개인정보 포함 가능 로그·소스에 대한 자동 탐지·마스킹과 처리방침 고지
 - 금융권: 망분리 환경 대응은 On-premises/Air-gapped 배포 모델([04:19-21](04_ARCHITECTURE_DATA_API_OLICENSE.md))로 충족하며 SaaS Control Plane에는 원본 Source가 전송되지 않는 모드를 필수 옵션으로 제공
 - 공공·의료: 고객별 별도 감사 로그 보존기간과 제3자 접근이력 조회 기능
+- 규제 프레임워크 버전관리: NIST, ISO, OWASP, MITRE, 금융권 MRM(Model Risk Management) 등 외부 규제·표준 프레임워크를 버전 단위로 등록하고 PolicyPack에 매핑하며, 프레임워크 개정 시 영향받는 정책과 재검증 대상을 추적한다(Compliance Officer 승인 필요)
 - 이 절의 요건은 Enterprise Edition Feature Gate로 관리하며 일반 Plan에는 기본 보안 설계(위 12절)만 적용한다
 
 ## 13. 보존과 삭제

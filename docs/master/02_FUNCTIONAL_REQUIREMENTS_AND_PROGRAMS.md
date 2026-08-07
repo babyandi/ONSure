@@ -9,6 +9,7 @@
 - ONSure Operator: Case와 실행환경 운영
 - Security Auditor: Evidence와 감사로그 열람
 - External Acceptor: 고객 소프트웨어를 인수·검수하는 발주기관 등 제3자. Customer Owner가 초대한 범위에서 Delivery와 Acceptance Certificate만 읽기 전용으로 열람하며 ONSure 유료 계정이 없어도 됨
+- Compliance Officer: 규제산업 Enterprise에서 정책·규제 프레임워크 버전 관리와 최종 승인을 담당(Reviewer와 겸직 불가)
 - OLicense: 라이선스·Entitlement·Credit 권위
 - Payment Provider: 결제 승인·취소·환불 이벤트 제공
 
@@ -25,6 +26,7 @@
 - FR-COM-010 Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한 Portfolio 조회 기능을 제공받는다.
 - FR-COM-011 Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다.
 - FR-COM-012 Seat는 담당자 변경 시 Customer Admin이 즉시 회수·재배정할 수 있으며, 회수된 Seat의 이전 담당자 Access Token은 즉시 무효화한다.
+- FR-COM-013 규제산업 Enterprise Edition은 직무분리(SoD)를 강제한다: 동일 사용자가 같은 ImprovementRequest의 개발(Patch 작성)과 검증(Re-verify 승인)과 최종 인수(Delivery 승인)를 모두 수행할 수 없다. 일반 Plan은 권고만 하고 강제하지 않는다.
 
 ## 3. OLearning
 ### 책임
@@ -117,12 +119,12 @@ APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
 PASS, FAIL, BLOCKED, NOT_RUN, INCONCLUSIVE, NON_FINAL
 
 ### 수용기준
-PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과 분리한다. 기존 테스트가 전무한 대상은 OPlanning이 최소 Smoke/Golden Path Test를 자동 제안해 실행하며, 이 경우 PASS는 "기존 테스트로 확인됨"과 "신규 최소 테스트로만 확인됨"을 구분해 표기한다(테스트가 없어서 통과한 것을 테스트가 충분해서 통과한 것처럼 보이지 않게 한다).
+PASS는 실행 증거 없이 생성할 수 없다. BLOCKED와 NOT_RUN은 FAIL과 분리한다. 실행된 Test/Scenario가 0건이거나 전부 Skip되었거나 도구·환경 오류로 결과를 얻지 못한 경우는 PASS로 표기할 수 없으며 NOT_RUN 또는 BLOCKED로만 판정한다. 기존 테스트가 전무한 대상은 OPlanning이 최소 Smoke/Golden Path Test를 자동 제안해 실행하며, 이 경우 PASS는 "기존 테스트로 확인됨"과 "신규 최소 테스트로만 확인됨"을 구분해 표기한다(테스트가 없어서 통과한 것을 테스트가 충분해서 통과한 것처럼 보이지 않게 한다).
 
 ## 7. OImprovement
 ### 기능
 - 승인된 Finding만 입력
-- Root Cause 후보와 영향범위 생성
+- Root Cause 후보와 영향범위 생성: 재현 가능한 실패를 기준으로 최초 실패 지점(First Failure Point), 원인 후보, 신뢰도, 미확인 사항을 분리해 생성한다. 재현되지 않는 실패는 RCA_CANDIDATE 상태를 벗어나 확정 RCA로 표기하지 않는다
 - Patch Plan과 예상 변경파일 제시
 - Blast Radius 드라이런: Patch를 실제 적용하기 전 영향받는 파일·Component·의존 Program을 시뮬레이션으로 제시하고 사용자 승인 대상에 포함
 - Worktree·Branch 생성

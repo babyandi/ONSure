@@ -191,16 +191,34 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - Merge Readiness
 - Rollback 실행 시 검증 결과(대상 Baseline이 직전 정상 상태와 일치하는지) 표시, 불일치 시 Critical Incident 배지
 
-## 7. 위험행위 Confirm
-다음은 2단계 확인 또는 관리자 승인을 요구한다.
+## 7. 실행 권한 3단계
+
+### 자동 허용
+승인 없이 즉시 실행한다.
+- 읽기 전용 분석
+- Program Profile 후보 생성
+- 검증 계획(ExecutionPlan) 생성
+- 저비용 안전 테스트 실행
+- Patch Dry-run 미리보기(Blast Radius)
+
+### 사용자 또는 정책 승인 필요 (2단계 확인)
 - 외부 Network 허용
 - 고비용 검증
 - Program/Scope 확대
 - Patch 적용
-- Push와 PR
+- Push와 Draft PR
 - Risk Accept
-- Evidence 삭제
 - Offline Grace 연장
+
+### 고위험 별도 승인 (관리자 또는 Compliance Officer)
+- Merge
+- Baseline·정책 변경
+- 인증·권한·암호화 변경
+- Evidence 삭제, 데이터 삭제·Migration
+- Secret 접근
+- 외부 배포와 운영환경 변경
+
+동일 위험행위라도 상위 등급 승인이 하위 등급 확인을 대체하지 않는다 — 예를 들어 Merge 승인이 그 전 단계의 Push 승인을 소급 생략시키지 않는다.
 
 ## 8. 접근성·국제화
 - 키보드 탐색
