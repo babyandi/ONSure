@@ -1,6 +1,8 @@
 # ONSure UI·UX 및 업무흐름 상세설계
 
 ## 1. UX 원칙
+실제 `contracts/workflow-operation-registry.v1.json`의 `generic_surfaces`는 CLI, LOCAL_AUTHENTICATED_API, VSCODE 3개뿐이며 "WEB"을 별도 Operation Dispatch 표면으로 등록하지 않는다. 이 설계서의 Web은 그 자체로 새로운 Operation 표면이 아니라 LOCAL_AUTHENTICATED_API를 호출하는 하나의 클라이언트로 구현되어야 한다는 뜻이다(다른 클라이언트와 동일한 Operation·권한 경계를 공유).
+
 - 고객은 복잡한 내부 Meter보다 상품, 범위, 예상가격, 진행상태, 결과를 이해해야 한다.
 - 위험한 작업은 실행 전 영향과 비용을 보여주고 명시적으로 승인받는다.
 - PASS보다 미실행·차단·불확실성을 숨기지 않는다.
@@ -35,7 +37,7 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 
 ## 4. 주요 Web 화면
 ### Preflight
-- 입력 방식: Git, Archive, Container Manifest
+- 입력 방식: Git, Archive, Container Manifest — 실제 `contracts/target-adapter.v1.json`의 `supported_source_kinds`는 GIT_REPOSITORY, SOURCE_ARCHIVE, PACKAGE, BINARY, CONTAINER_IMAGE, DEPLOYED_SERVICE, DOCUMENT_AND_POLICY_SET까지 포함하므로 Package·Binary·배포된 서비스·문서/정책 세트 입력도 화면에 반영해야 한다
 - 감지된 언어·Framework·Repository·Program
 - 예상 Learning Unit과 신뢰구간
 - 누락 자료 및 접근 실패

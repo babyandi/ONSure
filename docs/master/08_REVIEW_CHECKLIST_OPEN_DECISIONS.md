@@ -78,7 +78,21 @@
 | G13 | Workflow Operation Registry | 실제 등록된 Operation은 45개(`workflow-operation-registry.v1.json`)뿐. 이 설계서(특히 04 §7)가 제안한 Notification/Portfolio/PolicyPack/AcceptanceCertificate/SBOM/MutationTesting/CrossModel/BlastRadius/CoverageReport/RiskScore 관련 API는 전부 미등록 — 06에 교차참조 추가 | FLAGGED |
 | G14 | `05_UI_UX_WORKFLOW_SPECIFICATION.md`, `05`의 화면 구성 | 아직 실제 계약과 대조 안 함(주로 화면 설계라 직접 대응 계약이 적을 것으로 예상되나 확인 필요) | OPEN |
 
-G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영했을 뿐, 02·03·06 전체를 계약과 완전히 재대조한 것은 아니다. `docs/master/01·07` 및 05의 나머지 부분은 아직 이 수준의 대조를 거치지 않았다.
+G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영했을 뿐, 02·03·06 전체를 계약과 완전히 재대조한 것은 아니다.
+
+### 2026-08-07 3차 대조 (01·05·07) 결과
+
+| # | 항목 | 발견 | 조치 |
+|---|---|---|---|
+| G15 | 01 목표고객 분류 | 실제 `product-scope.v1.json`은 `primary_users` 4종(NON_DEVELOPER_AI_BUILDERS/SOFTWARE_DEVELOPERS/PRODUCT_TEAMS/ENTERPRISE_ASSURANCE_TEAMS)만 정의 — 설계서의 6개 세그먼트는 더 세분화된 DESIGN_ONLY 분류, 계약 매핑 없음 | FLAGGED |
+| G16 | 검증 대상 범위 | 계약의 `supported_target_types`에 Desktop/Mobile/Automation Workflow가 있는데 01은 언급 안 함 | FLAGGED |
+| G17 | 상품 채널 vs 엔진 배포 형태 혼동 위험 | `delivery_modes`(로컬/독립실행 중심)와 01의 Web/VS Code 상품구조는 서로 다른 계층 — 01에 구분 설명 추가 | FIXED |
+| G18 | 05 Web이 별도 Operation Surface인지 | 실제 `generic_surfaces`는 CLI/LOCAL_AUTHENTICATED_API/VSCODE뿐, WEB 없음. Web은 LOCAL_AUTHENTICATED_API 클라이언트로 구현돼야 함을 05에 명시 | FIXED |
+| G19 | Preflight 입력 종류 | 실제 `target-adapter.v1.json`은 Package/Binary/Deployed Service/Document 세트도 지원하는데 05는 Git/Archive/Container만 언급 | FIXED |
+| G20 | 07 Component 모델의 실제 선례 | `module-boundary.v1.json`/`core-extension-boundary.v1.json`이 이미 ONSure 자신에 CBD 원칙(Core vs ORUDA Adapter)을 적용한 실제 계약 — 07에 교차참조 추가, 대상 프로그램용 `component-contract.v1.schema.json`은 여전히 없음 | FIXED(교차참조), OPEN(신규계약) |
+| G21 | 07 Agent 최소권한의 실제 선례 | `public-sdk-boundary.v1.json`이 외부 SDK에 이미 FINAL_CLAIM/MERGE/PRODUCTION_GO Authority 공개 금지를 강제 — 07에 교차참조 추가 | FIXED |
+
+`docs/master`의 8개 문서(00~07) 모두 최소 한 번씩 실제 계약과 대조를 거쳤다. 다만 이번 세 라운드(G8~G21)는 발견 즉시 수정한 것이라, 시간을 두고 전체를 처음부터 끝까지 계약과 한 줄씩 대조하는 완전한 재검토는 아니다.
 
 ## F. 문서 거버넌스 (참고, 결정 아님)
 

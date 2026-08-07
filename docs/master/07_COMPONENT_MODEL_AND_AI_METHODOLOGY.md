@@ -4,6 +4,8 @@
 ONSure는 대상 시스템과 ONSure 자신을 모두 CBD(Component-Based Development) 원칙에 따라 "독립적으로 식별·계약·검증 가능한 Component" 단위로 다룬다. 또한 ONSure 자신의 Review/Verification/Improvement 실행 주체가 AI Agent이므로, 그 Agent들의 역할·권한·재현성을 별도 방법론으로 고정한다. 이 문서는 [00_ONSURE_MASTER_DESIGN_SET.md](00_ONSURE_MASTER_DESIGN_SET.md)의 프로그램 구성을 실행하는 공통 기반이며, 특히 Claude 등 AI Agent 또는 대화형 코딩("바이브 코딩")으로 생성된 프로그램을 진단·검증·수정·개선하는 ONSure의 1차 사용 시나리오를 전제로 작성한다.
 
 ## 2. Component 모델(CBD)
+ONSure 자신도 이미 이 원칙을 적용받는다: `contracts/module-boundary.v1.json`과 `contracts/core-extension-boundary.v1.json`이 `onsure-core`와 `onsure-adapter-oruda`를 Provided/Forbidden Import Prefix, Required Capability(GENERIC_TARGET_REGISTRATION, SOURCE_LOCK, FIXTURE_EXECUTION, EVIDENCE_PERSISTENCE, NONFINAL_DECISION, LEARNING_CANDIDATE_GOVERNANCE)로 구분한 실제 Component Contract다. `onsure-adapter-oruda`는 `required_for_core: false`, `may_write_onsure_final_decision: false`로 명시되어 Core가 ORUDA 없이도 동작해야 한다는 [README.md](../../README.md)의 "Standalone first" 원칙을 계약으로 강제한다. 이 절 이하는 **고객의 대상 프로그램**에 같은 원칙을 적용하는 설계이며, 아직 이를 위한 `component-contract.v1.schema.json` 계약은 없다(§2.3 참조).
+
 ### 2.1 Component 식별 규칙
 - 최소 단위: 독립적으로 빌드·배포·테스트 가능한 Module, Service, Package, 또는 AI Agent/Tool/Prompt 정의 단위
 - 식별 신호: Build 산출물 경계, API/Interface 경계, Repository/Directory 경계, Deployment Manifest, AI Agent/Tool 정의 파일
@@ -37,6 +39,8 @@ ONSure는 대상 시스템과 ONSure 자신을 모두 CBD(Component-Based Develo
 | Improver Agent | OImprovement Patch 생성 | Worktree 내 쓰기만 가능, Main/Push 권한 없음([02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) FR-COM-007/008) |
 
 각 Agent는 서로 다른 Credential을 가지며 한 Agent가 자신 또는 동일 계열 Agent의 산출물을 무비판 승인하지 않는다. 이는 [03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md)의 Independent Pass 원칙, 그리고 OMemory 재귀학습의 "자기 참조 승인 금지" 원칙과 동일한 근거를 공유한다.
+
+실제 `contracts/public-sdk-boundary.v1.json`이 이미 이 원칙을 외부 SDK 경계에 적용한 사례다: 공개 SDK는 7개 Operation(project.register-workspace/register/register-target, program.learn, plan.generate/approve, validation.run)만 노출하고, `FINAL_CLAIM_AUTHORITY`, `MERGE_AUTHORITY`, `PRODUCTION_GO_AUTHORITY`, Trusted Key Registry 경로, Approval Replay Ledger 경로를 공개 입력으로 받는 것 자체를 계약으로 금지한다(Raw JSON/Map Request도 금지, Typed Immutable Record만 허용). 위 표의 Agent 최소권한 설계는 이 경계를 Agent 역할 단위로 더 세분화한 것이며, Improver Agent가 Main/Push 권한이 없다는 것도 이 공개 SDK 경계와 같은 방향이다.
 
 ### 3.2 Plan-Act-Observe 루프
 모든 Agent 실행은 다음 루프를 따른다.

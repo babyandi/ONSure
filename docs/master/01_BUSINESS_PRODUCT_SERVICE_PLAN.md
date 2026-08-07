@@ -19,6 +19,10 @@ AI를 활용한 소프트웨어 개발은 생산성을 높이지만 요구사항
 - AI로 제품을 만든 비전문 개발자와 스타트업
 - 고객 소프트웨어를 인수·검수해야 하는 발주기관
 
+실제 `contracts/product-scope.v1.json`은 `primary_users`를 NON_DEVELOPER_AI_BUILDERS, SOFTWARE_DEVELOPERS, PRODUCT_TEAMS, ENTERPRISE_ASSURANCE_TEAMS 4종으로만 정의한다. 위 6개 세그먼트는 이 4종보다 세분화된 마케팅용 분류이며, 계약과의 정확한 매핑은 아직 없다(`DESIGN_ONLY`). 같은 계약의 `supported_target_types`(AI_APPLICATION, AGENTIC_SYSTEM, GENERAL_SOFTWARE, WEB_APPLICATION, API_SERVICE, DESKTOP_APPLICATION, MOBILE_APPLICATION, AUTOMATION_WORKFLOW)는 이 문서가 명시적으로 언급하지 않은 Desktop·Mobile·Automation Workflow 대상도 포함하므로, 검증 대상 범위를 이 문서보다 넓게 잡아야 한다.
+
+`delivery_modes`(STANDALONE_DESKTOP_OR_SERVER, LOCAL_CLI, PRIVATE_NETWORK_SERVICE, EMBEDDED_VALIDATION_MODULE, TARGET_SIDE_VALIDATION_AGENT)는 검증 엔진 자체의 배포 형태를 말하며, 이 문서의 "Web One-time / VS Code 구독" 같은 판매채널·상품 구조와는 다른 계층이다. 엔진 배포 형태와 상품/과금 구조를 같은 표로 섞어 쓰지 않도록 주의해야 한다 — 엔진은 로컬/독립 실행이 기본이고, Web은 그 위에 얹히는 상거래 채널(ServiceCase)이다.
+
 ## 4. 가치 제안
 ### 경영진
 AI 개발의 속도를 유지하면서 품질·보안·감사 위험을 수치와 증거로 관리한다.
