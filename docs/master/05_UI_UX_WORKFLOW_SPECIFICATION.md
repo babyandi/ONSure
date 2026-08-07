@@ -70,6 +70,8 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 - 조직에 속한 모든 System/Program을 한 화면에서 통합 조회(PortfolioSnapshot 기반)
 - Program별 최근 Case 상태, 미해결 Critical/High Finding 수, License/Credit 잔량을 한 눈에 비교
 - 위험도 상위 Program 정렬과 Drill-down으로 개별 Case Dashboard 이동
+- ProgramRiskScore 추세 스파크라인(개선/악화 방향 표시)
+- 익명화된 동종 규모·언어 Program 대비 상대적 위치(예: "유사 규모 Program 상위 30%") — 공유 Corpus Opt-in Organization의 데이터만 비교 모수로 사용
 - 알림 채널 구독 설정(Email/Webhook/VS Code/관리자 알림함, 심각도별 즉시/일간요약)
 - 공유 Pattern Corpus 기여 Opt-in/Opt-out 설정(FR-COM-009, 기본값 Opt-out)이며 Enterprise 규제산업 계약은 이 설정을 비활성화(강제 Opt-out) 상태로 고정할 수 있다
 
@@ -184,6 +186,7 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - CI
 - Review Comment
 - Merge Readiness
+- Rollback 실행 시 검증 결과(대상 Baseline이 직전 정상 상태와 일치하는지) 표시, 불일치 시 Critical Incident 배지
 
 ## 7. 위험행위 Confirm
 다음은 2단계 확인 또는 관리자 승인을 요구한다.

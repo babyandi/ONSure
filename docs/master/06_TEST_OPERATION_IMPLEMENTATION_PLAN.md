@@ -248,6 +248,10 @@ Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진�
 - 삭제 SLA 초과
 - MissedFinding 발생률과 Detection Recall 추세
 - KnowledgePattern 강등률과 공유 Corpus 승격률
+- Confidence Calibration 이탈도(구간별 실측 정확도와 표시 Confidence의 괴리)
+- Reviewer(모델/Human/Professional)별 정확도와 기준 미달 배정 제한 발생 건수
+- Rollback 검증 실패율
+- AI 구성 Drift(권한 확대) 탐지 건수
 
 ## 11. 우선 구현 순서
 1. Schema, Receipt, OLicense 계약

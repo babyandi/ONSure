@@ -39,6 +39,7 @@ Repository와 관련 자료를 수집·정규화하고 Program Profile을 생성
 - Dynamic Trace 선택 수집
 - Unknown, Conflict, Missing Evidence 표시
 - 증분 학습과 Profile Revision 관리
+- AI 구성 Drift 탐지: 이전 Baseline의 AIProfile 대비 Prompt/Agent/Tool 권한·RAG 구성 변화를 비교하고, 특히 권한 확대·신규 외부 연동처럼 위험이 커지는 변화는 별도 표시
 
 ### 산출물
 ProgramProfile, ComponentGraph, AIProfile, DependencyInventory, DataFlow, BaselineManifest, LearningReceipt
@@ -92,6 +93,7 @@ APPROVE, COMMENT, REQUEST_CHANGE, REJECT, NOT_APPLICABLE, INCONCLUSIVE
 - Critical/High Finding은 근거 없는 자동 승인 금지
 - Critical Finding은 원 구현/1차 판정과 다른 모델 계열의 Cross-Model Verification을 거친 뒤에만 최종 확정한다([03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) §10-1)
 - AI 생성 비중이 높은 Component에서 Critical/High 판정의 Confidence가 조직 임계치 미만이면 자동 승인·자동 반려 없이 Human 또는 Professional Reviewer에게 강제 회부한다(OVerification의 동급 판정에도 동일 원칙 적용)
+- Human/Professional Reviewer의 판정도 자동판정과 동등하게 품질관리 대상이다. Golden Review Fixture에 대한 Reviewer 판정 정확도를 주기적으로 측정하고, 특정 Reviewer의 정확도가 지속적으로 기준 미달이면 배정을 제한한다
 
 ## 6. OVerification
 ### 기능
@@ -194,6 +196,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - Review Comment 수집
 - Merge 권고
 - Rollback 정보 제공
+- Rollback 검증: Rollback 실행 후 대상 Baseline이 실제로 직전 정상 상태(마지막 PASS Verification 시점)와 동일한지 자동 비교하고, 불일치 시 단순 실패가 아닌 Critical Incident로 승격
 - Post-merge Incident 대응: Merge 이후 발견된 결함은 Draft PR 흐름과 분리된 Hotfix Worktree로 처리하며, 원인이 된 Merge Commit과 새 MissedFinding/ImprovementRequest를 상호 링크한다
 
 ## 10. ODelivery

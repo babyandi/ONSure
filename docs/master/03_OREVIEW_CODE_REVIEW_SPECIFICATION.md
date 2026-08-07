@@ -71,6 +71,7 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 - 모델 변경 시 결과 Drift
 - 비용·Token·Context 폭주
 - AI 자기주장과 실제 Evidence 불일치(Self-Claim Verification) — "구현 완료", "테스트 통과" 등 AI가 스스로 밝힌 주장을 별도 추출해 대조
+- 이전 Baseline 대비 AI 구성 Drift(Tool 권한 확대, 신규 외부 연동 등)가 검토 없이 반영되었는지 확인([02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OLearning AI 구성 Drift 탐지와 연동)
 
 ### Security Review
 - OWASP 계열 취약 패턴
@@ -155,10 +156,11 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 - 언어별 Bug Corpus
 - 정책 위반 Corpus
 - AI Prompt/RAG/Tool 적대 Fixture
-- Reviewer 간 일치도
+- Reviewer 간 일치도(모델 Reviewer와 Human/Professional Reviewer 모두 포함)
 - Finding 재현율
 - Inline 위치 정확도
 - 독립 Blind Review
+- Confidence Calibration: Confidence 90%로 표시된 Finding 집합이 실제로 약 90% 비율로 맞는지 등 신뢰도 구간별 실측 정확도를 주기적으로 측정(Calibration Curve). 특정 구간이 체계적으로 과신/과소평가되면 Confidence 산정 로직을 재보정 대상으로 지정한다
 
 ## 9-1. OReview 자체 판정 재현성
 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 FR-COM-005("동일 입력·정책·도구 버전은 재현 가능한 판정 구조를 가져야 한다")는 고객 코드뿐 아니라 OReview·OVerification 자신의 AI 기반 판정에도 동일하게 적용된다.

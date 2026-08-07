@@ -91,6 +91,7 @@ ProgramRiskScore = 100 − clamp(10·OpenCritical + 4·OpenHigh + 1·OpenMedium 
 - PolicyPack, PolicyPackVersion
 - MutationTestResult, BehaviorDiffReport, BlastRadiusReport, SBOM
 - CrossModelVerificationReceipt, SelfClaim
+- RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark
 - ServiceCase, CaseScope, CaseRevision
 - ProgramProfile, Component, Dependency, AIComponent
 - Requirement, Policy, TraceLink
@@ -144,7 +145,7 @@ PROPOSED → APPROVED → SUPERSEDED
 PENDING → DRY_RUN → DRY_RUN_REVIEWED → RUNNING → SUCCEEDED → REGRESSION_PENDING → REGRESSION_PASSED 또는 REGRESSION_FAILED
 예외: FAILED, ABORTED, ROLLED_BACK
 
-PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L110)의 Worktree/Branch 원칙에 따라 Main과 분리된 상태로만 존재한다. DRY_RUN 단계는 실제 코드 변경 없이 영향받는 파일·Component·의존 Program을 BlastRadiusReport로 산출하며, 사용자가 DRY_RUN_REVIEWED로 승인해야 RUNNING으로 진행한다. SUCCEEDED 이후 REGRESSION_PENDING에서는 기능 회귀뿐 아니라 BehaviorDiffReport(무관 기능 동작 Diff, 성능 지표 변화)를 함께 산출하며, 이 리포트에 임계치를 초과하는 변화가 있으면 자동으로 REGRESSION_FAILED로 판정한다.
+PatchRun은 ImprovementRequest 1건과 PatchPlan 1건에 결속되며 [02:110](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#L110)의 Worktree/Branch 원칙에 따라 Main과 분리된 상태로만 존재한다. DRY_RUN 단계는 실제 코드 변경 없이 영향받는 파일·Component·의존 Program을 BlastRadiusReport로 산출하며, 사용자가 DRY_RUN_REVIEWED로 승인해야 RUNNING으로 진행한다. SUCCEEDED 이후 REGRESSION_PENDING에서는 기능 회귀뿐 아니라 BehaviorDiffReport(무관 기능 동작 Diff, 성능 지표 변화)를 함께 산출하며, 이 리포트에 임계치를 초과하는 변화가 있으면 자동으로 REGRESSION_FAILED로 판정한다. ROLLED_BACK으로 전이할 때는 RollbackVerificationReceipt로 대상 Baseline이 직전 정상 상태와 실제로 동일한지 확인하며, 불일치 시 ROLLED_BACK을 확정하지 않고 Critical Incident로 승격한다.
 
 ### CreditReservation
 RESERVED → COMMITTED 또는 RELEASED; Timeout 시 자동 RELEASED
@@ -221,6 +222,14 @@ POST /v1/organizations/{orgId}/notification-rules
 GET /v1/organizations/{orgId}/notification-rules
 GET /v1/organizations/{orgId}/portfolio
 GET /v1/programs/{programId}/risk-score
+GET /v1/programs/{programId}/risk-score/trend
+GET /v1/programs/{programId}/benchmark
+
+### Quality Assurance
+POST /v1/patch-runs/{id}/rollback-verify
+GET /v1/review-runs/confidence-calibration
+GET /v1/reviewers/{reviewerId}/accuracy
+GET /v1/program-profiles/{id}/ai-config-drift
 
 ### Policy Pack
 POST /v1/organizations/{orgId}/policy-packs
@@ -260,6 +269,8 @@ GET /v1/license/jwks
 - MutationTestCompleted, BlastRadiusComputed, BehaviorDiffCompleted, SBOMGenerated
 - CrossModelVerificationRequested, CrossModelVerificationDisagreed, SelfClaimMismatchDetected
 - ComponentContractBreakingChange, CrossProgramImpactDetected
+- RollbackVerified, RollbackVerificationFailed
+- ConfidenceCalibrationDrifted, ReviewerAccuracyBelowThreshold, AIConfigDriftDetected
 
 이벤트는 event_id, occurred_at, producer, schema_version, organization_id, correlation_id, causation_id를 포함한다.
 
