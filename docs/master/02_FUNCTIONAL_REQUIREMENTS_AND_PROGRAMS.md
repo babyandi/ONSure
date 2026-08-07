@@ -63,9 +63,13 @@ ProgramProfile, ComponentGraph, AIProfile, DependencyInventory, DataFlow, Baseli
 - 예상 Learning Unit, Credit, 시간 계산
 - 실행 의존성 및 Stop Condition 정의
 - 사용자 승인용 Plan Diff 제공
+- 위험 기반으로 범위를 좁힐 때 무엇을 이번 Review/Verification 대상에서 제외했는지와 제외 사유를 명시적으로 기록(Coverage Report)
 
 ### 산출물
-ExecutionPlan, ScopeManifest, ScenarioPlan, ResourceEstimate, ApprovalReceipt
+ExecutionPlan, ScopeManifest, ScenarioPlan, ResourceEstimate, ApprovalReceipt, CoverageReport
+
+### 수용기준
+- CoverageReport 없이 "전체 검토 완료"로 표현하지 않는다. 제외된 Component가 있으면 Case Dashboard와 Delivery에 항상 노출한다
 
 ## 5. OReview
 ### Review 영역
@@ -182,6 +186,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - Improvement Receipt
 - Delivery Receipt
 - Retention/Deletion Receipt
+- Evidence Schema Version 결속: 모든 Evidence Metadata는 schema_version을 가지며, 계약된 보존기간 동안에는 과거 schema_version의 Evidence도 검증할 수 있는 도구를 유지한다(하위호환 검증도구 없는 Schema 폐기 금지)
 
 ## 9. OGit
 - Workspace Cleanliness 검사
@@ -206,6 +211,7 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - Program Profile
 - Findings CSV/JSON/SARIF(GitHub/GitLab Code Scanning 연동용 표준 포맷)
 - SBOM(CycloneDX/SPDX 포맷, 의존성 공급망 투명성 증빙)
+- CoverageReport(검토·검증 범위 포함/제외 내역)
 - Evidence Pack
 - Patch/Diff
 - Draft PR

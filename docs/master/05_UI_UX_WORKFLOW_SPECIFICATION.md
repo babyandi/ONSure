@@ -45,6 +45,7 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 ### Case Dashboard
 - Case 상태와 단계
 - ProgramRiskScore와 등급(A~E), 등급 산정 근거 요약
+- 검토·검증 범위에서 제외된 Component 목록과 제외 사유(CoverageReport) — "전체 검토 완료"로 오인되지 않도록 항상 노출
 - 고정 Baseline
 - 포함 System/Program
 - 사용량과 잔여량

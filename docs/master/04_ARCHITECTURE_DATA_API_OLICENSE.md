@@ -92,6 +92,7 @@ ProgramRiskScore = 100 − clamp(10·OpenCritical + 4·OpenHigh + 1·OpenMedium 
 - MutationTestResult, BehaviorDiffReport, BlastRadiusReport, SBOM
 - CrossModelVerificationReceipt, SelfClaim
 - RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark
+- CoverageReport(schema_version 결속)
 - ServiceCase, CaseScope, CaseRevision
 - ProgramProfile, Component, Dependency, AIComponent
 - Requirement, Policy, TraceLink
@@ -198,6 +199,7 @@ POST /v1/cases/{caseId}/approve-scope
 POST /v1/cases/{caseId}/execute
 POST /v1/cases/{caseId}/cancel
 GET /v1/cases/{caseId}/deliveries
+GET /v1/cases/{caseId}/coverage-report
 
 ### Learning and Review
 POST /v1/learning-runs
