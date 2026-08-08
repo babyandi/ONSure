@@ -646,21 +646,23 @@
         "src/main/java/kr/co/oruda/onsure/platform/TraceExporter.java",
         "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
         "src/main/java/kr/co/oruda/onsure/platform/DurableJobBackupService.java",
-        "src/main/java/kr/co/oruda/onsure/platform/OtlpTraceExporter.java"
+        "src/main/java/kr/co/oruda/onsure/platform/OtlpTraceExporter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ScheduledBackupService.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorderTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/TraceExporterTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/DurableJobBacklogAndBackupTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/OtlpTraceExporterTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/OtlpTraceExporterTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ScheduledBackupServiceTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
         "OTLP_SPANS_ARE_ZERO_WIDTH_NO_DURATION_TRACKING_IN_OBSERVABILITYEVENT_YET",
-        "BACKUP_RESTORE_IS_FILE_LEVEL_ONLY_NO_SCHEDULED_AUTOMATIC_BACKUP_OR_OFFSITE_REPLICATION",
-        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "SCHEDULED_BACKUP_IS_LOCAL_ONLY_NO_OFFSITE_REPLICATION"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
     },
