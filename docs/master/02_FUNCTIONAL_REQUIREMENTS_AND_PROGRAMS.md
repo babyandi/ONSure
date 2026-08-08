@@ -199,7 +199,8 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 ### 기능
 - Decide: OImprovement와 공유하는 RCA(원인이 코드·정책·데이터·RAG·Prompt·Agent·Model 중 어디인지 판정, §7 OImprovement 참조) 결과를 바탕으로 코드 Patch(Improve)로 충분한지 AI 재학습(Train)이 필요한지 판정 근거를 기록한다. 판정은 사람 또는 승인된 규칙이 하며 ONSure가 임의로 결정하지 않는다
 - Training Plan 생성: 대상 구성요소(RAG Index/Prompt/Agent 선택정책/Model), 학습 데이터 출처, 평가 데이터셋, 예상 비용·GPU·소요시간을 제시하고 승인받는다
-- 학습 데이터 품질 검사: 편향·중복·유출·오염(Poisoning) 여부 확인
+- RAG 학습자료 소유권 분리(`docs/architecture/ONSURE_PROGRAM_RAG_ENVIRONMENT_v1.md`에서 흡수): ONSure 자신의 검증·학습에서 나온 RAG 후보는 ONSure 저장소에서 관리하고, 대상 프로그램의 실제 RAG 학습자료는 대상 프로그램의 `.onsure/rag-preparation/`에서 대상이 소유한다 — ONSure가 고객의 학습자료를 중앙으로 가져와 소유하지 않는다. 환경 생성(Bootstrap)은 검증과 분리된 명시적 승인 후에만 하며, Bootstrap 자체를 실제 적재·Index 생성·Embedding·파인튜닝·적용으로 표시하지 않는다
+- 학습 데이터 품질 검사: 편향·중복·유출·오염(Poisoning) 여부 확인. 오염 검증 자료 자체도 COMPLETE/PARTIAL/MISSING/DUPLICATE/STALE로 준비상태를 판정하며 PARTIAL/MISSING/DUPLICATE/STALE는 투입 자격을 HOLD로 둔다(`docs/architecture/ONSURE_RAG_ADVERSARIAL_MATERIAL_PREPARATION_v1.md`)
 - Training Run 실행: RAG 재인덱싱, Prompt 개정, Agent 정책 재학습, Model Fine-tuning 중 해당 유형만 수행
 - Before/After 비교: 기존 버전과 신규 버전을 동일 평가 데이터셋·시나리오로 비교
 - 독립 재검증: Training을 수행한 모델과 다른 모델 또는 규칙 기반으로 결과를 재확인한다([03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) §10-1 Cross-Model Verification과 동일 원칙 재사용)
