@@ -299,17 +299,19 @@
       ],
       "contract_refs": [],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutor.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutor.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LoadBenchmarkHarness.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutorTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LoadBenchmarkHarnessTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "RECOVERY_ONLY_NO_LOAD_OR_PERFORMANCE_BENCHMARK_HARNESS",
-        "NO_QUEUE_DB_OBJECT_STORAGE_FAILOVER_SIMULATION",
+        "BENCHMARK_ABSOLUTE_NUMBERS_ARE_HOST_DEPENDENT_ONLY_RELATIVE_REGRESSION_CHECK_AGAINST_A_CALLER_SUPPLIED_BASELINE_IS_MEANINGFUL",
+        "NO_QUEUE_DB_OBJECT_STORAGE_FAILOVER_SIMULATION_ONSURE_HAS_NO_SUCH_BACKEND_TO_FAIL_OVER_LOCALLY",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"

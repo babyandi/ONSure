@@ -230,9 +230,9 @@
     },
     {
       "id": "P1-PERFORMANCE-RECOVERY",
-      "state": "PARTIAL_BOUNDED_RECOVERY_WITH_FAILURE_INJECTION_IMPLEMENTED_LOAD_PERFORMANCE_BENCHMARK_MISSING",
+      "state": "PARTIAL_BOUNDED_RECOVERY_AND_CONCURRENT_LOAD_BENCHMARK_WITH_REGRESSION_CHECK_IMPLEMENTED_FAILOVER_SIMULATION_NOT_APPLICABLE_NO_LOCAL_QUEUE_DB_OBJECT_STORAGE_BACKEND",
       "requires_human": false,
-      "next_action": "Implement load, latency, outage and recovery harnesses."
+      "next_action": "If/when a queue, database or object-storage backend is added to the architecture, add a failover simulation for it; until then this is not a local gap to close."
     },
     {
       "id": "P1-OBSERVABILITY-OPERATIONS",
