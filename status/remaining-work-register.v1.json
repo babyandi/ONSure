@@ -236,9 +236,9 @@
     },
     {
       "id": "P1-OBSERVABILITY-OPERATIONS",
-      "state": "PARTIAL_STRUCTURED_LOG_METRIC_TRACE_TREE_EXPORT_AND_QUEUE_BACKLOG_BACKUP_RESTORE_IMPLEMENTED_OTLP_EXPORT_AND_SCHEDULED_BACKUP_MISSING",
+      "state": "PARTIAL_STRUCTURED_LOG_METRIC_TRACE_TREE_OTLP_EXPORT_AND_QUEUE_BACKLOG_BACKUP_RESTORE_IMPLEMENTED_SPAN_DURATION_AND_SCHEDULED_BACKUP_MISSING",
       "requires_human": false,
-      "next_action": "Add an OTLP-compatible trace exporter and scheduled/automatic backup with offsite replication."
+      "next_action": "Add span duration tracking to ObservabilityEvent (currently zero-width in OTLP export) and scheduled/automatic backup with offsite replication."
     },
     {
       "id": "P1-DEPLOYMENT",
