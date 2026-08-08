@@ -611,13 +611,19 @@
         "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
       ],
       "contract_refs": [],
-      "code_refs": [],
-      "test_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ObservabilityEvent.java",
+        "src/main/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorder.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorderTest.java"
+      ],
       "evidence_refs": [],
-      "implementation_status": "DESIGN_ONLY",
+      "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "IMPLEMENTATION_INCOMPLETE",
+        "STRUCTURED_LOG_AND_METRIC_ONLY_NO_DISTRIBUTED_TRACE_EXPORTER",
+        "NO_QUEUE_LAG_OR_BACKUP_RESTORE_OPERATIONAL_CONTROLS",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
