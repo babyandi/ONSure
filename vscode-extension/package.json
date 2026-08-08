@@ -10,21 +10,44 @@
   "main": "./extension.js",
   "activationEvents": [
     "onView:onsure.workspace",
+    "onView:onsure.profile",
+    "onView:onsure.inventory",
+    "onView:onsure.requirements",
+    "onView:onsure.threats",
+    "onView:onsure.plan",
+    "onView:onsure.runs",
+    "onView:onsure.findings",
+    "onView:onsure.improvement",
+    "onView:onsure.evidence",
+    "onView:onsure.git",
+    "onView:onsure.approvals",
+    "onView:onsure.runtime",
+    "onView:onsure.admin",
     "onCommand:onsure.configure",
+    "onCommand:onsure.selectMode",
     "onCommand:onsure.refresh",
     "onCommand:onsure.learnProgram",
     "onCommand:onsure.runValidation",
     "onCommand:onsure.runWorkflowRequest",
+    "onCommand:onsure.approvePlan",
+    "onCommand:onsure.applyApprovedPatch",
+    "onCommand:onsure.installDeploymentPackage",
+    "onCommand:onsure.rollbackDeployment",
     "onCommand:onsure.openLastArtifact",
     "onCommand:onsure.clearToken"
   ],
   "contributes": {
     "commands": [
       {"command": "onsure.configure", "title": "ONSure: Configure Local API"},
+      {"command": "onsure.selectMode", "title": "ONSure: Select Work Mode"},
       {"command": "onsure.refresh", "title": "ONSure: Refresh Status"},
       {"command": "onsure.learnProgram", "title": "ONSure: Learn Program"},
       {"command": "onsure.runValidation", "title": "ONSure: Run Validation"},
       {"command": "onsure.runWorkflowRequest", "title": "ONSure: Run Signed Workflow Request"},
+      {"command": "onsure.approvePlan", "title": "ONSure: Review and Consume Plan Approval"},
+      {"command": "onsure.applyApprovedPatch", "title": "ONSure: Review and Apply Approved Hunks"},
+      {"command": "onsure.installDeploymentPackage", "title": "ONSure: Install Deployment Package"},
+      {"command": "onsure.rollbackDeployment", "title": "ONSure: Roll Back Deployment"},
       {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"},
       {"command": "onsure.clearToken", "title": "ONSure: Clear Local API Token"}
     ],
@@ -35,7 +58,20 @@
     },
     "views": {
       "onsure": [
-        {"id": "onsure.workspace", "name": "Program Assurance"}
+        {"id": "onsure.workspace", "name": "Chat / Session"},
+        {"id": "onsure.profile", "name": "Project & Program Profile"},
+        {"id": "onsure.inventory", "name": "Asset / Data / AI Inventory"},
+        {"id": "onsure.requirements", "name": "Requirements & Trace"},
+        {"id": "onsure.threats", "name": "Threat Model & Financial Controls"},
+        {"id": "onsure.plan", "name": "Verification Plan"},
+        {"id": "onsure.runs", "name": "Runs & Live Terminal"},
+        {"id": "onsure.findings", "name": "Findings & RCA"},
+        {"id": "onsure.improvement", "name": "Improvement / Diff / Hunk Approval"},
+        {"id": "onsure.evidence", "name": "Evidence & Receipts"},
+        {"id": "onsure.git", "name": "Git / Branch / Commit / PR"},
+        {"id": "onsure.approvals", "name": "Approvals & Exceptions"},
+        {"id": "onsure.runtime", "name": "Runtime / Cost / Data Egress"},
+        {"id": "onsure.admin", "name": "Admin / Policy / Identity"}
       ]
     },
     "menus": {
@@ -44,9 +80,14 @@
         {"command": "onsure.learnProgram", "when": "view == onsure.workspace", "group": "navigation@2"},
         {"command": "onsure.runValidation", "when": "view == onsure.workspace", "group": "navigation@3"},
         {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@4"}
+        ,{"command": "onsure.approvePlan", "when": "view == onsure.plan", "group": "navigation@1"}
+        ,{"command": "onsure.applyApprovedPatch", "when": "view == onsure.improvement", "group": "navigation@1"}
+        ,{"command": "onsure.installDeploymentPackage", "when": "view == onsure.admin", "group": "navigation@1"}
+        ,{"command": "onsure.rollbackDeployment", "when": "view == onsure.admin", "group": "navigation@2"}
       ],
       "commandPalette": [
         {"command": "onsure.clearToken"}
+        ,{"command": "onsure.selectMode"}
       ]
     },
     "configuration": {
@@ -65,12 +106,19 @@
         "onsure.defaultExecutionProfile": {
           "type": "string",
           "default": "LOCAL_DEVELOPMENT"
+        },
+        "onsure.defaultWorkMode": {
+          "type": "string",
+          "enum": ["ASK", "PLAN", "ACT", "VERIFY", "IMPROVE", "AUTOPILOT", "AUDIT", "OFFLINE"],
+          "default": "ASK",
+          "description": "Fail-closed ONSure work mode. Merge, GO and FinalLock remain prohibited."
         }
       }
     }
   },
   "scripts": {
-    "check": "node --check extension.js",
+    "check": "node --check extension.js && node --check view-model.js && node --check approval-review.js && node --check work-mode-policy.js",
+    "test": "node --test view-model.test.js",
     "package": "npx @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {

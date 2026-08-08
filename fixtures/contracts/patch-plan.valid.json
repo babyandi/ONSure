@@ -22,6 +22,24 @@
       "required_tests": ["FOCUSED_FINDING_FIXTURE", "FULL_REGRESSION", "BEFORE_AFTER_PROOF"]
     }
   ],
+  "preapply_assessment": {
+    "risk_score": 75,
+    "risk_level": "HIGH",
+    "impact_scope": {
+      "changed_files": ["src/main/java/example/Sample.java"],
+      "finding_ids": ["finding-sample-001"],
+      "hunk_count": 1,
+      "assessment_basis": "APPROVAL_BOUNDED_HUNKS_AND_LINKED_FINDING_SEVERITY"
+    },
+    "rollback_preview": {
+      "method": "BYTE_EXACT_PREIMAGE_BACKUP",
+      "backup_scope": "APPROVED_HUNKS_ONLY",
+      "verification": "SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH",
+      "worktree_required": true,
+      "target_source_mutated_before_approval": false
+    },
+    "approval_required": true
+  },
   "default_approval": "DENY",
   "worktree_required": true,
   "direct_main_write_allowed": false,

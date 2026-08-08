@@ -4,11 +4,11 @@
   "core": {
     "must_run_without_target_specific_adapter": true,
     "required_packages": [
-      "io.onsure.platform",
-      "io.onsure.assurance",
-      "io.onsure.harness",
-      "io.onsure.learning",
-      "io.onsure.rag"
+      "kr.co.oruda.onsure.platform",
+      "kr.co.oruda.onsure.assurance",
+      "kr.co.oruda.onsure.harness",
+      "kr.co.oruda.onsure.learning",
+      "kr.co.oruda.onsure.rag"
     ],
     "required_capabilities": [
       "GENERIC_TARGET_REGISTRATION",
@@ -28,7 +28,7 @@
   "optional_adapters": [
     {
       "adapter_id": "ORUDA_V1",
-      "package_prefix": "io.onsure.platform.oruda",
+      "package_prefix": "kr.co.oruda.onsure.platform.oruda",
       "preflight_profile": "oruda",
       "required_for_core": false,
       "may_write_onsure_final_decision": false

@@ -10,6 +10,8 @@ AI를 활용한 소프트웨어 개발은 생산성을 높이지만 요구사항
 - 정적 분석 도구는 실제 업무 시나리오 충족 여부를 증명하지 못한다.
 - 수정이 새로운 결함을 만들지만 회귀검증이 불충분하다.
 - 감사와 납품에 필요한 재현 가능한 Evidence가 남지 않는다.
+- 기존 AI 서비스(RAG·챗봇·문서자동화·추천·이미지 인식 등)가 느리거나 부정확한데, 원인이 코드 결함인지 RAG 문서 품질인지 Prompt 설계인지 Model 자체 한계인지 구분할 방법이 없다(`docs/v2/09` §1.3에서 흡수).
+- 원인을 구분해도 RAG·Prompt·Agent·Model을 실제로 재학습·개선할 수단이 코드 수정과 분리되어 있지 않다.
 
 ## 3. 목표 고객
 - AI Coding을 도입한 일반 기업 개발조직
@@ -18,6 +20,10 @@ AI를 활용한 소프트웨어 개발은 생산성을 높이지만 요구사항
 - SI·컨설팅·품질관리 회사
 - AI로 제품을 만든 비전문 개발자와 스타트업
 - 고객 소프트웨어를 인수·검수해야 하는 발주기관
+
+실제 `contracts/product-scope.v1.json`은 `primary_users`를 NON_DEVELOPER_AI_BUILDERS, SOFTWARE_DEVELOPERS, PRODUCT_TEAMS, ENTERPRISE_ASSURANCE_TEAMS 4종으로만 정의한다. 위 6개 세그먼트는 이 4종보다 세분화된 마케팅용 분류이며, 계약과의 정확한 매핑은 아직 없다(`DESIGN_ONLY`). 같은 계약의 `supported_target_types`(AI_APPLICATION, AGENTIC_SYSTEM, GENERAL_SOFTWARE, WEB_APPLICATION, API_SERVICE, DESKTOP_APPLICATION, MOBILE_APPLICATION, AUTOMATION_WORKFLOW)는 이 문서가 명시적으로 언급하지 않은 Desktop·Mobile·Automation Workflow 대상도 포함하므로, 검증 대상 범위를 이 문서보다 넓게 잡아야 한다.
+
+`delivery_modes`(STANDALONE_DESKTOP_OR_SERVER, LOCAL_CLI, PRIVATE_NETWORK_SERVICE, EMBEDDED_VALIDATION_MODULE, TARGET_SIDE_VALIDATION_AGENT)는 검증 엔진 자체의 배포 형태를 말하며, 이 문서의 "Web One-time / VS Code 구독" 같은 판매채널·상품 구조와는 다른 계층이다. 엔진 배포 형태와 상품/과금 구조를 같은 표로 섞어 쓰지 않도록 주의해야 한다 — 엔진은 로컬/독립 실행이 기본이고, Web은 그 위에 얹히는 상거래 채널(ServiceCase)이다.
 
 ## 4. 가치 제안
 ### 경영진
@@ -48,6 +54,20 @@ AI가 만든 코드의 위험을 찾고, Finding에서 출발한 제한적 자�
 - 초과 Credit
 - Enterprise 보안·온프레미스·전용 지원
 
+## 5-1. Preflight 판정 (docs/v2/03에서 흡수)
+`docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md`(§4)가 정의한 Preflight 판정 결과를 채택한다.
+
+계정·조직 확인 → 대상 연결 또는 업로드 → 악성코드·비밀정보·권한 사전검사 → System·Program 경계 판정 → 학습량·실행가능성 산정 → 서비스 적합성 판정 → 견적·기간·제외범위 제시
+
+판정 결과:
+- READY: 정액 또는 확정견적으로 진행
+- NEEDS_BASELINE: Verify 전 기준 작성(Learn) 필요
+- RECOMMEND_LEARN_VERIFY: 자료 부족으로 통합서비스 권장
+- CUSTOM_QUOTE: 대규모·고위험·폐쇄환경
+- REJECT/HOLD: 불법·권한불명·악성코드·실행불가
+
+소규모 확정견적은 전액 선결제, 불확실한 대규모는 사전진단비와 본 서비스 차액의 2단계 결제를 지원한다. 고비용 실행은 예상 사용량을 OLicense에서 미리 예약(CreditReservation)한다.
+
 ## 6. Web 상품 정의
 ### Learn
 입력: Source, Configuration, Prompt, RAG, Tool, Test, Document, 선택 로그
@@ -56,16 +76,31 @@ AI가 만든 코드의 위험을 찾고, Finding에서 출발한 제한적 자�
 제외: 결함 판정과 자동 수정
 
 ### Verify
-입력: 고정 Baseline, 요구사항, 정책, 검증팩
+입력: 고정 Baseline, 요구사항, 정책, 검증팩, 고객 제공 ScopeManifest(대상 Component/Module/AI 구성 목록)
 처리: 정적·동적·시나리오·적대·회귀 검증
 산출물: Finding, Severity, RCA 후보, Evidence, Verification Report
 제외: Program Profile 납품과 자동 Patch
+
+Verify 단독 상품은 OLearning의 전체 Program Profile을 생성하지 않지만, 시나리오 생성과 요구사항 추적에 필요한 최소 구조 정보(대상 Component, Dependency, AI 구성)는 고객이 ScopeManifest로 직접 제공해야 한다. ScopeManifest가 불충분하면 Preflight 단계에서 Unknown/Conflict로 표시하고 해당 범위는 INCONCLUSIVE로 처리하며 Learn 추가 구매를 안내한다.
 
 ### Learn & Verify
 Program Profile을 만든 뒤 해당 구조와 위험에 맞게 검증 시나리오를 생성한다. 일반 고객의 대표 상품으로 둔다.
 
 ### Improve & Re-verify
 검증된 Finding 중 고객이 승인한 항목만 대상으로 RCA, Patch, Regression, Before/After Evidence를 제공한다.
+
+### Train & Re-verify (OTraining, `docs/v2/09`에서 흡수)
+입력: 검증된 Finding 또는 승인된 개선 목표(정확도·안정성·속도·비용), 학습 데이터, 평가 데이터셋
+처리: RCA로 원인이 RAG·Prompt·Agent 정책·Model 중 어디인지 확인된 항목에 한해 재학습(Training Plan→Training Run→독립 재검증)
+산출물: EvaluationReport(Before/After), 승인된 ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval
+제외: Improve와 동일한 프로그램 코드 Patch(별도 상품), GPU 대규모 Model Fine-tuning은 1단계 출시 범위 밖(§11-2 참조)
+
+## 6-1. 환불 정책
+- LEARNING/VERIFYING 실행 시작 전 취소: 전액 환불
+- 실행 시작 후 취소: 실제 소비된 Learning Unit/Credit에 해당하는 금액을 제외하고 잔액 환불
+- ONSure 내부 오류로 인한 재실행·실패는 애초에 과금하지 않으므로 환불 대상에서 제외한다(FR-COM-006과 동일 원칙)
+- VS Code 구독은 해지 시 당월 잔여 기간 비례 환불 없음이 기본이며, Annual Plan 중도 해지는 계약서에 별도 명시된 경우에만 예외 적용
+- 환불 승인은 Payment Provider의 RefundCompleted 이벤트로 확정하고 License는 즉시 SUSPENDED로 전이한다
 
 ## 7. 학습량 정책
 상품 단계는 늘리지 않고 Learn 하나를 유지한다. 내부적으로 Learning Unit을 산정한다.
@@ -79,6 +114,13 @@ Learning Unit 산정요소:
 - 테스트·로그·설정 규모
 - 외부 연계 수
 - 동적 구조와 복잡도
+
+### 산정 공식(초안)
+LearningUnit = w1·log(TotalFiles+1) + w2·(AnalyzedLOC/1000) + w3·LanguageFrameworkCount + w4·DeploymentUnitCount + w5·(PromptCount+AgentCount+ToolCount) + w6·(RAGDocCount/1000+RAGIndexCount) + w7·((TestCount+ConfigCount)/500) + w8·ExternalIntegrationCount + w9·DynamicComplexityScore
+
+기본 가중치(예시, 가격정책위원회 승인 필요): w1=5, w2=10, w3=8, w4=15, w5=12, w6=6, w7=3, w8=10, w9=20
+
+Preflight는 이 공식으로 예상 LearningUnit과 신뢰구간(±15%)을 제시하며, 실제 정산은 실행 후 실측값을 기준으로 한다. DynamicComplexityScore는 순환복잡도, 모듈 간 의존 Fan-in/Fan-out, AI Component의 Tool 권한 범위를 정규화해 합산한다. 가중치는 분기별로 실측 원가와 대조해 재보정하며 재보정 이력은 Evidence로 남긴다.
 
 원칙:
 - LOC만으로 과금하지 않는다.
@@ -95,6 +137,17 @@ Learning Unit 산정요소:
 - Commit/Push/Draft PR 자동화
 - CI 결과 회수
 - Evidence 자동 고정
+
+### 8-1. Credit 초과정책 (`docs/v2/04` §6에서 흡수)
+고객에게는 ONSure Credit 하나만 표시하고 내부적으로 Learning/Verification/AI Model/Sandbox/Improvement/Storage 원가를 측정한다. 월간 한도 초과 시 조직이 아래 중 선택한다.
+
+- HARD_STOP(기본값): 초과 시 즉시 실행 중단
+- AUTO_TOP_UP: 자동 추가 구매
+- PAY_AS_YOU_GO: 초과분 후청구
+- ADMIN_APPROVAL_REQUIRED: Customer Admin 승인 후 재개
+
+### 8-2. Web↔VS Code 전환
+Web에서 구매한 Learn/Learn&Verify 결과(Program Profile)는 동일 고객의 VS Code 최초 Program Profile로 이전할 수 있다. 동일 Baseline·유효기간 내 이전이면 전체 재학습을 강제하지 않고 증분 학습부터 Credit을 사용한다. 반대로 VS Code에서 나온 Finding에 전문가 최종 검증이 필요하면 별도 Web Professional Case로 전환한다(기존 Professional Reviewer 요청 흐름 재사용).
 
 ## 9. 판매전략
 - 초기: AI 개발 결과 검수와 1회 Learn & Verify 중심
@@ -126,6 +179,21 @@ Team, 공유 정책, CI/CD, 관리자 대시보드, 전문가 리뷰
 
 ### Phase 4
 Enterprise, 폐쇄망, 전용 모델, 정책 Marketplace, 파트너 채널
+
+## 11-1. 산출물 소유권
+- AI가 생성한 Patch, Program Profile, Report, Evidence Pack 등 Case 산출물의 소유권과 사용권은 고객에게 귀속된다.
+- ONSure는 익명화된 Pattern/Fixture를 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) FR-COM-009 Opt-in 조건 하에서만 공유 Corpus 학습에 사용할 권리를 가지며, 고객 소스 코드 자체나 식별 가능한 파생물은 어떤 경우에도 재사용하지 않는다.
+- AI Model Provider의 이용약관상 생성물 저작권이 불확실한 관할권에서는 계약서에 "고객 귀속" 조항을 명시해 분쟁 소지를 제거한다.
+
+## 11-2. Target AI Auto-Learning 단계적 검증
+`docs/v2/09`(특정 커밋에 고정된 NON_FINAL 사업 보완안)의 사업성 평가를 그대로 채택한다: "사업기회는 유효하지만 아직 사업성이 입증된 것은 아니다." 다음 순서로 유료 Case를 통해 검증하며, 앞 단계 검증 전에는 뒷 단계를 상용 판매하지 않는다.
+
+1. RAG 재인덱싱·Prompt 개선 (재현성 높고 GPU 불필요, 최소 원가)
+2. AI로 생성된 코드의 안정화(Improve 상품과 결합, Train 없이도 가능한 범위)
+3. Agent 선택정책 재학습
+4. Model Fine-tuning (GPU·Dataset 원가가 크므로 유료 Case로 원가·전환율·재구매율을 실측한 뒤 확대)
+
+지불 가능성은 "중상" 수준으로 평가한다 — 공개 의뢰 예산이 소규모(100만 원대)부터 1,000만 원 이상까지 분포하며, 유료 Case·원가·전환율·재구매율을 실제로 측정하기 전까지 가격을 확정하지 않는다.
 
 ## 12. 사업 위험과 대응
 - AI 원가 급증: Credit, Hard Stop, 모델별 원가 Meter

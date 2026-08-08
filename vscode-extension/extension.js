@@ -3,11 +3,16 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const { WORK_MODES, classifyOperation, authorize } = require('./work-mode-policy');
+const { VIEW_IDS, rowsForView, budgetRowsFromExecutionPlan } = require('./view-model');
+const { reviewPlanApproval, reviewHunkApproval } = require('./approval-review');
 
 const TOKEN_KEY = 'onsure.localApiToken';
 const LAST_RUN_KEY = 'onsure.lastRunRoot';
 const LAST_PROFILE_KEY = 'onsure.lastProgramProfile';
 const LAST_WORKFLOW_KEY = 'onsure.lastWorkflowOperation';
+const LAST_RESTORE_KEY = 'onsure.lastRestartRestore';
+const WORK_MODE_KEY = 'onsure.workMode';
 
 class ApiClient {
   constructor(context) { this.context = context; }
@@ -75,9 +80,10 @@ class ApiClient {
 }
 
 class AssuranceTreeProvider {
-  constructor(context, client) {
+  constructor(context, client, viewId) {
     this.context = context;
     this.client = client;
+    this.viewId = viewId;
     this._onDidChangeTreeData = new vscode.EventEmitter();
     this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     this.status = null;
@@ -99,26 +105,35 @@ class AssuranceTreeProvider {
     if (this.error) {
       items.push(item('Local API', 'Unavailable', 'error', 'onsure.configure'));
       items.push(item('Reason', this.error, 'warning'));
-    } else if (this.status) {
-      items.push(item('Runtime', this.status.state || 'UNKNOWN', 'server-process'));
-      items.push(item('Program Learning', this.status.program_learning || 'UNKNOWN', 'symbol-class'));
-      items.push(item('Behavior Learning', this.status.behavior_learning || 'UNKNOWN', 'pulse'));
-      items.push(item('Planning / Review / RCA', this.status.planning_review_rca || 'UNKNOWN', 'checklist'));
-      items.push(item('Validation', this.status.validation || 'UNKNOWN', 'beaker'));
-      items.push(item('Improvement', this.status.patch_application || 'UNKNOWN', 'diff'));
-      items.push(item('Improvement Proof', this.status.improvement_proof || 'UNKNOWN', 'verified-filled'));
-      items.push(item('Git Delivery', this.status.git_delivery || 'UNKNOWN', 'git-pull-request'));
-      items.push(item('OLicense', this.status.license || 'UNKNOWN', 'key'));
-      items.push(item('Service Case', this.status.service_case || 'UNKNOWN', 'briefcase'));
-      items.push(item('Independent OTester', this.status.independent_otester || 'NOT_RUN', 'shield'));
-      items.push(item('Independent OAudit', this.status.independent_oaudit || 'NOT_RUN', 'verified'));
     }
     const lastProfile = this.context.workspaceState.get(LAST_PROFILE_KEY);
     const lastRun = this.context.workspaceState.get(LAST_RUN_KEY);
     const lastWorkflow = this.context.workspaceState.get(LAST_WORKFLOW_KEY);
-    if (lastProfile) items.push(item('Last Program Profile', lastProfile, 'json'));
-    if (lastRun) items.push(item('Last Run', lastRun, 'folder-opened', 'onsure.openLastArtifact'));
-    if (lastWorkflow) items.push(item('Last Workflow', lastWorkflow, 'run-all'));
+    const lastRestore = this.context.workspaceState.get(LAST_RESTORE_KEY);
+    const workMode = this.context.workspaceState.get(WORK_MODE_KEY)
+      || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
+    const state = {
+      status: this.status || {}, mode: workMode, profile: lastProfile, run: lastRun,
+      workflow: lastWorkflow,
+      restore: lastRestore ? `${lastRestore.recovered_count || 0} job(s) paused` : undefined
+    };
+    for (const row of rowsForView(this.viewId, state)) {
+      const command = row.label === 'Mode' ? 'onsure.selectMode'
+        : row.label === 'Last Run' && lastRun ? 'onsure.openLastArtifact' : undefined;
+      items.push(item(row.label, row.description, row.icon, command));
+    }
+    if (this.viewId === 'onsure.plan' && lastRun) {
+      try {
+        const result = await this.client.request('/v1/run-artifact', 'POST', {
+          run_root: lastRun, artifact: 'execution-plan.json'
+        });
+        for (const row of budgetRowsFromExecutionPlan(result.body)) {
+          items.push(item(row.label, row.description, row.icon));
+        }
+      } catch (error) {
+        items.push(item('Execution Budget', `NOT_AVAILABLE: ${error.message}`, 'warning'));
+      }
+    }
     return items;
   }
 }
@@ -157,18 +172,84 @@ async function showJson(title, value) {
   vscode.window.setStatusBarMessage(`ONSure: ${title}`, 5000);
 }
 
+async function selectJsonFile(title) {
+  const selected = await vscode.window.showOpenDialog({
+    title, canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+    filters: { JSON: ['json'] }, defaultUri: vscode.Uri.file(workspaceRoot())
+  });
+  if (!selected?.length) return undefined;
+  return requireInsideWorkspace(selected[0].fsPath);
+}
+
+async function selectJsonFileOrKey(title) {
+  const selected = await vscode.window.showOpenDialog({
+    title, canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+    defaultUri: vscode.Uri.file(workspaceRoot())
+  });
+  if (!selected?.length) return undefined;
+  return requireInsideWorkspace(selected[0].fsPath);
+}
+
+async function selectWorkspaceFolder(title) {
+  const selected = await vscode.window.showOpenDialog({
+    title, canSelectMany: false, canSelectFiles: false, canSelectFolders: true,
+    defaultUri: vscode.Uri.file(workspaceRoot())
+  });
+  if (!selected?.length) return undefined;
+  return requireInsideWorkspace(selected[0].fsPath);
+}
+
+function readBoundedJson(file) {
+  const raw = fs.readFileSync(file, 'utf8');
+  if (raw.length > 1024 * 1024) throw new Error('Approval input exceeds 1 MiB.');
+  const value = JSON.parse(raw);
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Approval input must be a JSON object.');
+  }
+  return value;
+}
+
+async function confirmApprovalReview(review) {
+  await showJson(`${review.review_type} — SIGNATURE NOT YET CONSUMED`, review);
+  const count = review.approved_actions?.length || review.approved_hunk_ids?.length || 0;
+  const answer = await vscode.window.showWarningMessage(
+    `Consume ${review.scope.toLowerCase()} approval for ${count} item(s)? ` +
+      'The Core will verify the signature, fixed trust root, expiry and replay state.',
+    { modal: true, detail: 'This action consumes the signed receipt. It cannot authorize Merge, Final or GO.' },
+    'Consume Signed Approval');
+  return answer === 'Consume Signed Approval';
+}
+
 async function activate(context) {
   const client = new ApiClient(context);
-  const provider = new AssuranceTreeProvider(context, client);
-  const view = vscode.window.createTreeView('onsure.workspace', { treeDataProvider: provider });
+  const providers = VIEW_IDS.map(viewId => new AssuranceTreeProvider(context, client, viewId));
+  const views = providers.map((provider, index) =>
+    vscode.window.createTreeView(VIEW_IDS[index], { treeDataProvider: provider }));
+  const refreshViews = () => providers.forEach(provider => provider.refresh());
   const output = vscode.window.createOutputChannel('ONSure');
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   statusBar.text = '$(shield) ONSure: NON_FINAL';
   statusBar.tooltip = 'ONSure self-validation is nonfinal until independent gates pass.';
   statusBar.command = 'onsure.refresh';
+  const existingToken = await context.secrets.get(TOKEN_KEY);
+  if (existingToken) {
+    try {
+      const restored = await client.workflow('job.recover', {
+        actor: 'vscode-extension-restart-controller'
+      });
+      await context.workspaceState.update(LAST_RESTORE_KEY, restored.result);
+      output.appendLine(`Restart recovery: ${JSON.stringify(restored.result)}`);
+    } catch (error) {
+      output.appendLine(`Restart recovery deferred (nonfinal): ${error.message}`);
+    }
+  }
   statusBar.show();
 
   async function executeWorkflow(operation, request, title) {
+    const mode = context.workspaceState.get(WORK_MODE_KEY)
+      || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
+    const decision = authorize(mode, classifyOperation(operation), operation);
+    if (!decision.allowed) throw new Error(`Work mode policy denied ${operation}: ${decision.reason}`);
     const workflow = await vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: `ONSure: ${title}`,
@@ -179,12 +260,12 @@ async function activate(context) {
     if (result.run_root) await context.workspaceState.update(LAST_RUN_KEY, result.run_root);
     if (result.output_file) await context.workspaceState.update(LAST_PROFILE_KEY, result.output_file);
     output.appendLine(`[${new Date().toISOString()}] ${operation}: ${JSON.stringify(result)}`);
-    provider.refresh();
+    refreshViews();
     await showJson(`${title} — SELF_VALIDATION_NONFINAL`, workflow);
     return workflow;
   }
 
-  context.subscriptions.push(view, output, statusBar,
+  context.subscriptions.push(...views, output, statusBar,
     vscode.commands.registerCommand('onsure.configure', async () => {
       const current = vscode.workspace.getConfiguration('onsure').get('localApiUrl') || 'http://127.0.0.1:47311';
       const url = await vscode.window.showInputBox({
@@ -200,13 +281,29 @@ async function activate(context) {
         validateInput: value => value.length >= 32 ? undefined : 'Token must contain at least 32 characters.'
       });
       if (token) await context.secrets.store(TOKEN_KEY, token);
-      provider.refresh();
+      refreshViews();
     }),
     vscode.commands.registerCommand('onsure.clearToken', async () => {
       await context.secrets.delete(TOKEN_KEY);
       vscode.window.showInformationMessage('ONSure Local API token cleared.');
     }),
-    vscode.commands.registerCommand('onsure.refresh', async () => provider.refresh()),
+    vscode.commands.registerCommand('onsure.selectMode', async () => {
+      const current = context.workspaceState.get(WORK_MODE_KEY)
+        || vscode.workspace.getConfiguration('onsure').get('defaultWorkMode') || 'ASK';
+      const selected = await vscode.window.showQuickPick(
+        WORK_MODES.map(mode => ({
+          label: mode,
+          description: mode === current ? 'Current mode' : mode === 'OFFLINE'
+            ? 'Network and external providers prohibited' : 'Policy and approval gated'
+        })),
+        { title: 'ONSure Work Mode', placeHolder: 'Select a fail-closed work mode.' });
+      if (!selected) return;
+      await context.workspaceState.update(WORK_MODE_KEY, selected.label);
+      statusBar.text = `$(shield) ONSure: ${selected.label} / NON_FINAL`;
+      output.appendLine(`[${new Date().toISOString()}] MODE_CHANGE:${current}->${selected.label}:SELF_VALIDATION_NONFINAL`);
+      refreshViews();
+    }),
+    vscode.commands.registerCommand('onsure.refresh', async () => refreshViews()),
     vscode.commands.registerCommand('onsure.learnProgram', async () => {
       try {
         const root = workspaceRoot();
@@ -215,14 +312,14 @@ async function activate(context) {
           validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid project ID.'
         });
         if (!projectId) return;
-        const programId = await vscode.window.showInputBox({
-          title: 'Program ID', value: path.basename(root),
-          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid program ID.'
+        const targetId = await vscode.window.showInputBox({
+          title: 'Registered Target ID', value: path.basename(root),
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid target ID.'
         });
-        if (!programId) return;
-        const outputFile = path.join(root, '.onsure', 'profiles', 'program-profile.json');
+        if (!targetId) return;
+        const outputFile = path.join(root, '.onsure', 'profiles', targetId, 'program-profile.json');
         await executeWorkflow('program.learn', {
-          source_root: root, project_id: projectId, program_id: programId, output_file: outputFile
+          project_id: projectId, target_id: targetId, program_id: targetId
         }, 'Learning program');
         await context.workspaceState.update(LAST_PROFILE_KEY, outputFile);
       } catch (error) {
@@ -232,24 +329,19 @@ async function activate(context) {
     vscode.commands.registerCommand('onsure.runValidation', async () => {
       try {
         const root = workspaceRoot();
-        const targetType = await vscode.window.showQuickPick(
-          ['GENERAL_SOFTWARE', 'AI_APPLICATION'],
-          { title: 'ONSure Target Type', placeHolder: 'Select the registered target type.' });
-        if (!targetType) return;
+        const projectId = await vscode.window.showInputBox({
+          title: 'Project ID', value: path.basename(root),
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid project ID.'
+        });
+        if (!projectId) return;
         const targetId = await vscode.window.showInputBox({
-          title: 'Target ID', value: path.basename(root),
+          title: 'Registered Target ID', value: path.basename(root),
           validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid target ID.'
         });
         if (!targetId) return;
         await executeWorkflow('validation.run', {
-          source_root: root,
-          store_root: path.join(root, '.onsure', 'validation-data'),
-          target_id: targetId,
-          target_name: targetId,
-          target_type: targetType,
-          adapter_id: 'ONSURE_GENERIC_MANIFEST_V1',
-          policy_profile: 'ONSURE_DEFAULT_POLICY_V1',
-          execution_profile: vscode.workspace.getConfiguration('onsure').get('defaultExecutionProfile')
+          project_id: projectId,
+          target_id: targetId
         }, 'Running validation');
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure validation failed: ${error.message}`);
@@ -278,6 +370,94 @@ async function activate(context) {
         vscode.window.showErrorMessage(`ONSure workflow failed: ${error.message}`);
       }
     }),
+    vscode.commands.registerCommand('onsure.approvePlan', async () => {
+      try {
+        const planFile = await selectJsonFile('Select original Execution Plan JSON');
+        if (!planFile) return;
+        const receiptFile = await selectJsonFile('Select signed Execution Plan Approval Receipt JSON');
+        if (!receiptFile) return;
+        const review = reviewPlanApproval(readBoundedJson(planFile), readBoundedJson(receiptFile));
+        if (!await confirmApprovalReview(review)) return;
+        await executeWorkflow('plan.approve', {
+          plan_file: planFile, signed_approval_receipt: receiptFile
+        }, `${review.scope} plan approval`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure plan approval failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.applyApprovedPatch', async () => {
+      try {
+        const planFile = await selectJsonFile('Select Patch Plan JSON');
+        if (!planFile) return;
+        const receiptFile = await selectJsonFile('Select signed Hunk Approval Receipt JSON');
+        if (!receiptFile) return;
+        const review = reviewHunkApproval(readBoundedJson(planFile), readBoundedJson(receiptFile));
+        if (!await confirmApprovalReview(review)) return;
+        await executeWorkflow('patch.apply', {
+          repository_root: workspaceRoot(), patch_plan_file: planFile,
+          approval_receipt_file: receiptFile
+        }, `${review.scope} hunk approval`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure approved patch failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.installDeploymentPackage', async () => {
+      try {
+        const packageDir = await selectWorkspaceFolder('Select Signed Deployment Package Directory');
+        if (!packageDir) return;
+        const version = await vscode.window.showInputBox({
+          title: 'Deployment Version', prompt: 'A version id for this install (e.g. 1.0.0).',
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid version id.'
+        });
+        if (!version) return;
+        const verificationKeyFile = await vscode.window.showQuickPick(['Skip (unsigned package)', 'Select public key file...'],
+          { title: 'Signature Verification' });
+        if (!verificationKeyFile) return;
+        const request = { package_dir: packageDir, version };
+        if (verificationKeyFile === 'Select public key file...') {
+          const keyFile = await selectJsonFileOrKey('Select Ed25519 Public Key File');
+          if (!keyFile) return;
+          request.verification_key_file = keyFile;
+        }
+        const healthCheckCommand = await vscode.window.showInputBox({
+          title: 'Health Check Command (optional)',
+          prompt: 'Command to run against the installed version, relative to the package directory (e.g. "bash health-check.sh"). Leave empty to skip -- a failed check automatically rolls back.',
+          ignoreFocusOut: true
+        });
+        if (healthCheckCommand === undefined) return;
+        if (healthCheckCommand.trim()) {
+          request.health_check_command = healthCheckCommand.trim().split(/\s+/);
+        }
+        await executeWorkflow('deployment.install', request, `Installing deployment version ${version}`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure deployment install failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.rollbackDeployment', async () => {
+      try {
+        const targetVersion = await vscode.window.showInputBox({
+          title: 'Rollback Target Version', prompt: 'The previously installed version id to restore.',
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid version id.'
+        });
+        if (!targetVersion) return;
+        const verificationKeyFile = await vscode.window.showQuickPick(['Skip (unsigned package)', 'Select public key file...'],
+          { title: 'Signature Verification' });
+        if (!verificationKeyFile) return;
+        const request = { target_version: targetVersion };
+        if (verificationKeyFile === 'Select public key file...') {
+          const keyFile = await selectJsonFileOrKey('Select Ed25519 Public Key File');
+          if (!keyFile) return;
+          request.verification_key_file = keyFile;
+        }
+        const answer = await vscode.window.showWarningMessage(
+          `Roll back the active deployment to version ${targetVersion}?`,
+          { modal: true }, 'Roll Back');
+        if (answer !== 'Roll Back') return;
+        await executeWorkflow('deployment.rollback', request, `Rolling back to deployment version ${targetVersion}`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure deployment rollback failed: ${error.message}`);
+      }
+    }),
     vscode.commands.registerCommand('onsure.openLastArtifact', async () => {
       try {
         const runRoot = context.workspaceState.get(LAST_RUN_KEY);
@@ -294,7 +474,7 @@ async function activate(context) {
       }
     })
   );
-  provider.refresh();
+  refreshViews();
 }
 
 function deactivate() {}

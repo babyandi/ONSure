@@ -37,7 +37,16 @@ class AutopilotContractTest(unittest.TestCase):
 
     def test_merge_ready_requires_explicit_authority(self):
         invalid = json.loads(json.dumps(self.contract))
+        invalid["terminal_gate"]["state"] = "MERGE_AUTHORIZED_READY"
+        invalid["merge_authorization"]["authorized"] = True
         invalid["merge_authorization"]["authority"] = ""
+        with self.assertRaisesRegex(RuntimeError, "MERGE_AUTHORIZATION_MISSING"):
+            MODULE.validate_contract(invalid)
+
+    def test_waiting_gate_rejects_premature_merge_authority(self):
+        invalid = json.loads(json.dumps(self.contract))
+        invalid["merge_authorization"]["authorized"] = True
+        invalid["merge_authorization"]["authority"] = "unapproved-actor"
         with self.assertRaisesRegex(RuntimeError, "MERGE_AUTHORIZATION_MISSING"):
             MODULE.validate_contract(invalid)
 

@@ -10,10 +10,10 @@
       "authority": "contracts/core-extension-boundary.v1.json",
       "conflicting_paths": [
         "pom.xml",
-        "src/main/java/io/onsure/platform/ValidationEngine.java",
-        "src/main/java/io/onsure/platform/FileValidationStore.java",
-        "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
-        "src/main/java/io/onsure/platform/oruda"
+        "src/main/java/kr/co/oruda/onsure/platform/ValidationEngine.java",
+        "src/main/java/kr/co/oruda/onsure/platform/FileValidationStore.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ProductPlatformE2EMain.java",
+        "src/main/java/kr/co/oruda/onsure/platform/oruda"
       ],
       "resolution": "Runtime registration is separated, but Maven modules, Core imports, tests and E2E must be physically separated.",
       "state": "OPEN_MODULE_SPLIT"
@@ -23,7 +23,7 @@
       "severity": "P0",
       "subject": "Incompatible state models",
       "authority": "contracts/state-model-mapping.v1.json",
-      "conflicting_paths": ["docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md", "src/main/java/io/onsure/platform/ValidationModel.java", "contracts/state-machine.v1.json"],
+      "conflicting_paths": ["docs/07_CORE_ARCHITECTURE_AND_STATE_MODEL.md", "src/main/java/kr/co/oruda/onsure/platform/ValidationModel.java", "contracts/state-machine.v1.json"],
       "resolution": "Machines are contract-mapped; Java persistence and transition migration remain.",
       "state": "CONTRACT_MAPPED_RUNTIME_PARTIAL"
     },
@@ -41,7 +41,7 @@
       "severity": "P1",
       "subject": "Product E2E naming versus executed fixture scope",
       "authority": "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
-      "conflicting_paths": ["src/main/java/io/onsure/platform/ProductPlatformE2EMain.java", "scripts/run-product-platform-e2e.sh", "scripts/run-onsure-development-gate.sh"],
+      "conflicting_paths": ["src/main/java/kr/co/oruda/onsure/platform/ProductPlatformE2EMain.java", "scripts/run-product-platform-e2e.sh", "scripts/run-onsure-development-gate.sh"],
       "resolution": "Names were corrected to Validator Fixture E2E, but Core and ORUDA runners remain combined.",
       "state": "PARTIAL_RUNNER_SPLIT_REQUIRED"
     },
@@ -50,7 +50,7 @@
       "severity": "P1",
       "subject": "AI behavior validation name versus marker scan implementation",
       "authority": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
-      "conflicting_paths": ["src/main/java/io/onsure/platform/BuiltInStages.java"],
+      "conflicting_paths": ["src/main/java/kr/co/oruda/onsure/platform/BuiltInStages.java"],
       "resolution": "Rename the existing stage to policy marker scan or implement repeated agent/model/tool execution.",
       "state": "OPEN_RUNTIME_REFACTOR"
     },
@@ -59,7 +59,7 @@
       "severity": "P1",
       "subject": "RCA completion versus template-only inference",
       "authority": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
-      "conflicting_paths": ["src/main/java/io/onsure/platform/BuiltInStages.java"],
+      "conflicting_paths": ["src/main/java/kr/co/oruda/onsure/platform/BuiltInStages.java"],
       "resolution": "Template output must remain RCA_CANDIDATE until reproduction, first-failure and causal evidence are bound.",
       "state": "OPEN_RUNTIME_REFACTOR"
     },
@@ -68,7 +68,7 @@
       "severity": "P1",
       "subject": "Git source identity versus generic filesystem tree hashing",
       "authority": "contracts/evidence-receipt.v1.schema.json",
-      "conflicting_paths": ["src/main/java/io/onsure/platform/Hashing.java", "src/main/java/io/onsure/platform/SourceReferenceBinding.java", "src/main/java/io/onsure/learning/OfficialLearningLedger.java"],
+      "conflicting_paths": ["src/main/java/kr/co/oruda/onsure/platform/Hashing.java", "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java", "src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java"],
       "resolution": "Use tracked Git objects for source identity, include untracked influence in the fail-closed check, and distinguish Git object IDs from SHA-256 artifact digests.",
       "state": "OPEN_SOURCE_BINDING_REFACTOR"
     },

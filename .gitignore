@@ -11,3 +11,7 @@ validation-data/
 .onsure/final-stage/
 .onsure/local-gate/
 __pycache__/
+.env
+.venv/
+node_modules/
+*.vsix

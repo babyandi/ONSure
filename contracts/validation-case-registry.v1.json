@@ -1,0 +1,156 @@
+{
+  "contract": "ONSURE_VALIDATION_CASE_REGISTRY_V1",
+  "version": "1.0.0",
+  "authority": true,
+  "case_classes": {
+    "positive": {
+      "minimum_registered": 5,
+      "cases": [
+        {
+          "id": "POS-001",
+          "test_class": "kr.co.oruda.onsure.platform.ValidationPlatformE2ETest",
+          "minimum_tests": 1,
+          "oracle": "NORMAL_FLOW_COMPLETES_WITH_DECLARED_DECISION_AND_EVIDENCE",
+          "oracle_assertion_id": "OA-POS-001",
+          "expected_reason": "DECLARED_DECISION_AND_EVIDENCE_PRESENT",
+          "test_method": "generalProgramRunsFromLearningThroughReviewRcaPatchPlanAndRevalidation"
+        },
+        {
+          "id": "POS-002",
+          "test_class": "kr.co.oruda.onsure.platform.ProductRegistrationWorkflowTest",
+          "minimum_tests": 1,
+          "oracle": "REGISTRATION_BINDS_TARGET_PROJECT_AND_PLAN",
+          "oracle_assertion_id": "OA-POS-002",
+          "expected_reason": "REGISTERED_IDENTITY_BOUND",
+          "test_method": "workspaceProjectTargetLearningAndPlanUseOneRegisteredIdentity"
+        },
+        {
+          "id": "POS-003",
+          "test_class": "kr.co.oruda.onsure.platform.ExecutionPlanApprovalServiceTest",
+          "minimum_tests": 1,
+          "oracle": "VALID_SIGNED_APPROVAL_BUNDLE_IS_CONSUMED_ONCE"
+          ,"oracle_assertion_id": "OA-POS-003"
+          ,"expected_reason": "TRUSTED_APPROVAL_CONSUMED_ONCE"
+          ,"test_method": "trustedExactApprovalRequiresOriginalPlanReceiptKeyAndConsumedReplayLedger"
+        },
+        {
+          "id": "POS-004",
+          "test_class": "kr.co.oruda.onsure.platform.GitWorkflowServiceTest",
+          "minimum_tests": 1,
+          "oracle": "APPROVED_GIT_TRANSITION_PRESERVES_PROVENANCE"
+          ,"oracle_assertion_id": "OA-POS-004"
+          ,"expected_reason": "APPROVAL_AND_IMPROVEMENT_PROOF_BOUND"
+          ,"test_method": "commitRequiresTrustedApprovalAndImprovementProof"
+        },
+        {
+          "id": "POS-005",
+          "test_class": "kr.co.oruda.onsure.platform.ApprovalAuthorityPathsTest",
+          "minimum_tests": 1,
+          "oracle": "CANONICAL_WORKSPACE_RESOLVES_SINGLE_EXTERNAL_AUTHORITY",
+          "oracle_assertion_id": "OA-POS-005",
+          "expected_reason": "CANONICAL_EXTERNAL_AUTHORITY_RESOLVED",
+          "test_method": "authorityPathsAreCanonicalAndPhysicallyOutsideWorkspace"
+        }
+      ]
+    },
+    "negative": {
+      "minimum_registered": 3,
+      "cases": [
+        {
+          "id": "NEG-001",
+          "test_class": "kr.co.oruda.onsure.platform.ExecutionPlanBundleEntryTest",
+          "minimum_tests": 1,
+          "oracle": "UNSIGNED_OR_INCOMPLETE_BUNDLE_FAILS_CLOSED"
+          ,"oracle_assertion_id": "OA-NEG-001"
+          ,"expected_reason": "INCOMPLETE_APPROVAL_BUNDLE_REJECTED"
+          ,"test_method": "engineRejectsApprovedPlanFileWithoutOriginalReceiptKeyAndReplayLedger"
+        },
+        {
+          "id": "NEG-002",
+          "test_class": "kr.co.oruda.onsure.assurance.ConsumedApprovalReceiptVerifierTest",
+          "minimum_tests": 1,
+          "oracle": "UNCONSUMED_OR_MISMATCHED_RECEIPT_FAILS_CLOSED"
+          ,"oracle_assertion_id": "OA-NEG-002"
+          ,"expected_reason": "UNCONSUMED_OR_MISMATCHED_RECEIPT_REJECTED"
+          ,"test_method": "onlyTrustedPreviouslyConsumedReceiptCanAuthorizeLaterTransition"
+        },
+        {
+          "id": "NEG-003",
+          "test_class": "kr.co.oruda.onsure.platform.ExecutionPlanAutoApprovalBoundaryTest",
+          "minimum_tests": 1,
+          "oracle": "UNTRUSTED_AUTO_APPROVAL_IS_REJECTED"
+          ,"oracle_assertion_id": "OA-NEG-003"
+          ,"expected_reason": "UNTRUSTED_AUTO_APPROVAL_REJECTED"
+          ,"test_method": "autoApprovalRequiresProcessGateAndTrustedFixtureProfile"
+        }
+      ]
+    },
+    "adversarial": {
+      "minimum_registered": 4,
+      "cases": [
+        {
+          "id": "ADV-001",
+          "test_class": "kr.co.oruda.onsure.assurance.ApprovalReceiptIdCollisionTest",
+          "minimum_tests": 1,
+          "oracle": "SAME_ID_DIFFERENT_DIGEST_IS_REJECTED"
+          ,"oracle_assertion_id": "OA-ADV-001"
+          ,"expected_reason": "APPROVAL_ID_DIGEST_COLLISION_REJECTED"
+          ,"test_method": "sameApprovalIdWithDifferentValidReceiptIsCollisionNotReplay"
+        },
+        {
+          "id": "ADV-002",
+          "test_class": "kr.co.oruda.onsure.assurance.LocalKeyRegistryBoundaryTest",
+          "minimum_tests": 1,
+          "oracle": "TRUST_ROOT_SUBSTITUTION_IS_REJECTED"
+          ,"oracle_assertion_id": "OA-ADV-002"
+          ,"expected_reason": "EXTERNAL_TRUST_ROOT_REQUIRED"
+          ,"test_method": "publicKeyOutsideAuthorityRootIsRejected"
+        },
+        {
+          "id": "ADV-003",
+          "test_class": "kr.co.oruda.onsure.platform.BoundedProcessRunnerTest",
+          "minimum_tests": 1,
+          "oracle": "OUTPUT_FLOOD_AND_TIMEOUT_REMAIN_BOUNDED"
+          ,"oracle_assertion_id": "OA-ADV-003"
+          ,"expected_reason": "OUTPUT_FLOOD_BOUNDED_AND_REPORTED"
+          ,"test_method": "drainsLargeOutputWithoutPipeDeadlockAndMarksTruncation"
+        },
+        {
+          "id": "ADV-004",
+          "test_class": "kr.co.oruda.onsure.platform.ApprovalAuthorityPathsTest",
+          "minimum_tests": 1,
+          "oracle": "SYMLINK_ALIAS_AND_COLOCATED_AUTHORITY_ARE_REJECTED",
+          "oracle_assertion_id": "OA-ADV-004",
+          "expected_reason": "SYMLINK_AUTHORITY_ALIAS_REJECTED",
+          "test_method": "symlinkedWorkspaceAliasCannotForkApprovalAuthority"
+        },
+        {
+          "id": "ADV-005",
+          "test_class": "kr.co.oruda.onsure.platform.TenantRbacServiceTest",
+          "minimum_tests": 1,
+          "oracle": "CROSS_TENANT_RESOURCE_READ_IS_DENIED",
+          "oracle_assertion_id": "OA-ADV-005",
+          "expected_reason": "CROSS_TENANT_RESOURCE_ACCESS_DENIED",
+          "test_method": "rolesAndDurableOwnershipDenyCrossTenantReadsAndWrites"
+        },
+        {
+          "id": "ADV-006",
+          "test_class": "kr.co.oruda.onsure.platform.TenantRbacServiceTest",
+          "minimum_tests": 1,
+          "oracle": "CROSS_TENANT_RESOURCE_WRITE_IS_DENIED",
+          "oracle_assertion_id": "OA-ADV-006",
+          "expected_reason": "CROSS_TENANT_RESOURCE_WRITE_DENIED",
+          "test_method": "rolesAndDurableOwnershipDenyCrossTenantReadsAndWrites"
+        }
+      ]
+    }
+  },
+  "decision_rule": {
+    "zero_executed": "FAIL",
+    "missing_registered_case": "FAIL",
+    "failure_or_error": "FAIL",
+    "skipped_or_disabled": "FAIL",
+    "positive_negative_adversarial_required": true,
+    "self_validation_ceiling": "PASS_NONFINAL"
+  }
+}

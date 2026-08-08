@@ -23,9 +23,9 @@ RUN_2="$(awk '/^ONSURE_UNIVERSAL_HARNESS_PASS / {print $2}' "$OUT/run-2.log" | t
 
 mvn -B -ntp -DskipTests compile dependency:build-classpath -Dmdep.outputFile=target/harness-classpath.txt >/dev/null
 CP="$ROOT/target/classes:$(cat target/harness-classpath.txt)"
-java -cp "$CP" io.onsure.harness.HarnessCli verify "$RUN_1"
-java -cp "$CP" io.onsure.harness.HarnessCli verify "$RUN_2"
-java -cp "$CP" io.onsure.harness.HarnessCli candidate "$RUN_1" "$RUN_2" "$OUT/final-candidate.json"
+java -cp "$CP" kr.co.oruda.onsure.harness.HarnessCli verify "$RUN_1"
+java -cp "$CP" kr.co.oruda.onsure.harness.HarnessCli verify "$RUN_2"
+java -cp "$CP" kr.co.oruda.onsure.harness.HarnessCli candidate "$RUN_1" "$RUN_2" "$OUT/final-candidate.json"
 
 cat > "$OUT/two-run-result.txt" <<EOF
 contract=ONSURE_UNIVERSAL_TWO_RUN_RESULT_V1

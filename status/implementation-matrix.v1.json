@@ -16,11 +16,11 @@
     "risk_planning": "PARTIAL",
     "oreview": "PARTIAL",
     "verification_static": "PARTIAL",
-    "verification_build": "DESIGN_ONLY",
+    "verification_build": "PARTIAL",
     "verification_runtime": "PARTIAL",
     "verification_api_ui": "STUB",
     "verification_security": "PARTIAL",
-    "verification_performance_recovery": "DESIGN_ONLY",
+    "verification_performance_recovery": "PARTIAL",
     "rca": "PARTIAL",
     "improvement_patch": "PARTIAL",
     "improvement_proof": "PARTIAL",
@@ -31,18 +31,18 @@
     "local_authenticated_api": "PARTIAL",
     "web_service_case": "PARTIAL",
     "olicense": "PARTIAL",
-    "tenant_identity": "STUB",
+    "tenant_identity": "PARTIAL",
     "sandbox": "PARTIAL",
     "retention_deletion": "PARTIAL",
-    "observability_operations": "DESIGN_ONLY",
+    "observability_operations": "PARTIAL",
     "delivery": "PARTIAL",
-    "deployment": "DESIGN_ONLY"
+    "deployment": "PARTIAL"
   },
   "counts": {
     "IMPLEMENTED": 0,
-    "PARTIAL": 22,
-    "STUB": 2,
-    "DESIGN_ONLY": 4,
+    "PARTIAL": 27,
+    "STUB": 1,
+    "DESIGN_ONLY": 0,
     "CONFLICT": 0,
     "DEPRECATED": 0
   },
@@ -56,7 +56,10 @@
   },
   "self_audit": {
     "state": "P0_RUNTIME_AND_ATOMIC_OPEN",
-    "issues": [20, 23],
+    "issues": [
+      20,
+      23
+    ],
     "atomic_requirement_coverage": "CANDIDATES_GENERATED_NOT_AUTHORITY_RECONCILED",
     "core_compile_isolation": "NOT_PROVEN",
     "source_and_receipt_hardening": "IMPLEMENTED_IN_BRANCH_RUNTIME_NOT_RUN"

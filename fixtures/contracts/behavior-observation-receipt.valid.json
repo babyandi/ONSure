@@ -16,6 +16,7 @@
   "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "coverage_class": "EXECUTABLE_FIXTURE_PROCESS_PROXY",
   "observation_class": "PROCESS_COMMAND_PROXY",
+  "vulnerable_signals": [],
   "created_at": "2026-07-26T00:00:00Z",
   "final_claim_allowed": false,
   "receipt_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"

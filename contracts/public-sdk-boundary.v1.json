@@ -1,0 +1,40 @@
+{
+  "contract": "ONSURE_PUBLIC_SDK_BOUNDARY_V1",
+  "version": "1.0.0",
+  "artifact": "kr.co.oruda.onsure:onsure-sdk",
+  "public_package": "kr.co.oruda.onsure.sdk.v1",
+  "entrypoint": "kr.co.oruda.onsure.sdk.v1.ONSureSdkV1",
+  "request_model": "TYPED_IMMUTABLE_RECORDS",
+  "shared_gateway": "kr.co.oruda.onsure.platform.LocalWorkflowDispatcher",
+  "supported_operations": [
+    "project.register-workspace",
+    "project.register",
+    "project.register-target",
+    "program.learn",
+    "plan.generate",
+    "plan.approve",
+    "validation.run"
+  ],
+  "prohibited_public_inputs": [
+    "RAW_JSON_REQUEST",
+    "RAW_MAP_REQUEST",
+    "TRUSTED_KEY_REGISTRY_PATH",
+    "APPROVAL_REPLAY_LEDGER_PATH",
+    "APPROVAL_AUTHORITY_ROOT_PATH",
+    "PRODUCT_OWNED_OUTPUT_PATH",
+    "FINAL_CLAIM_AUTHORITY",
+    "MERGE_AUTHORITY",
+    "PRODUCTION_GO_AUTHORITY"
+  ],
+  "product_owned_paths": [
+    "APPROVAL_AUTHORITY",
+    "REPLAY_LEDGER",
+    "PROGRAM_PROFILE_OUTPUT",
+    "EXECUTION_PLAN_OUTPUT",
+    "VALIDATION_STORE"
+  ],
+  "assurance_class": "SELF_VALIDATION_NONFINAL",
+  "independent_otester": "NOT_RUN",
+  "independent_oaudit": "NOT_RUN",
+  "final_claim_allowed": false
+}

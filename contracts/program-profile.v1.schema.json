@@ -33,6 +33,19 @@
         "source_file_count": {"type": "integer", "minimum": 1}
       }
     },
+    "source_inventory": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/sourceInventoryItem"}
+    },
+    "parent_profile": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/parentProfile"}
+      ]
+    },
+    "change_set": {"$ref": "#/$defs/changeSet"},
     "purpose": {"type": "string", "minLength": 1},
     "components": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
     "dependencies": {"type": "array", "items": {"$ref": "#/$defs/evidenceBoundItem"}},
@@ -54,6 +67,44 @@
     "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
+    "sourcePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+    },
+    "sourceInventoryItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/sourcePath"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "parentProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_id", "profile_sha256", "source_tree_sha256", "revision"],
+      "properties": {
+        "profile_id": {"type": "string", "minLength": 1},
+        "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "revision": {"type": "integer", "minimum": 1}
+      }
+    },
+    "changeSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "added", "modified", "deleted", "unchanged", "compared_file_count"],
+      "properties": {
+        "mode": {"enum": ["FULL", "INCREMENTAL"]},
+        "added": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/sourcePath"}},
+        "modified": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/sourcePath"}},
+        "deleted": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/sourcePath"}},
+        "unchanged": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/sourcePath"}},
+        "compared_file_count": {"type": "integer", "minimum": 0}
+      }
+    },
     "evidenceBoundItem": {
       "type": "object", "additionalProperties": false,
       "required": ["id", "name", "kind", "source_locations", "confidence", "verified"],

@@ -1,0 +1,27 @@
+{
+  "contract": "ONSURE_DURABLE_JOB_STATE_V1",
+  "job_id": "job-sample-001",
+  "operation": "validation.run",
+  "request_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "status": "PAUSED",
+  "checkpoint": {
+    "stage_id": "STATIC_ANALYSIS",
+    "cursor": "finding:12",
+    "artifact_refs": ["artifact-a"],
+    "approval_history_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "created_at": "2026-08-02T00:00:00Z",
+    "checkpoint_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "approval_history": [],
+  "approval_history_restored": true,
+  "restart_count": 1,
+  "created_at": "2026-08-02T00:00:00Z",
+  "completed_at": null,
+  "cancellation_reason": null,
+  "final_claim_allowed": false,
+  "revision": 4,
+  "ledger_sequence": 4,
+  "ledger_head": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "updated_at": "2026-08-02T00:05:00Z",
+  "state_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}

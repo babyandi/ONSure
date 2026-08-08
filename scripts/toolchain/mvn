@@ -11,5 +11,16 @@ for candidate in /tmp/apache-maven-3.9.11/bin/mvn /tmp/apache-maven-3.9.9/bin/mv
   fi
 done
 
+wrapper_path="$(readlink -f "$0")"
+while IFS= read -r candidate; do
+  if [[ ! -x "$candidate" ]]; then
+    continue
+  fi
+  candidate_path="$(readlink -f "$candidate")"
+  if [[ "$candidate_path" != "$wrapper_path" ]]; then
+    exec "$candidate" "$@"
+  fi
+done < <(type -aP mvn 2>/dev/null || true)
+
 echo "ONSURE_MAVEN_NOT_FOUND: install Maven or set ONSURE_MAVEN_BIN" >&2
 exit 69

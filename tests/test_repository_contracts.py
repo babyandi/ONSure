@@ -30,11 +30,11 @@ class RepositoryContractsTest(unittest.TestCase):
             body = json.loads(report.read_text(encoding="utf-8"))
             self.assertEqual(body["decision"], "PASS")
             self.assertFalse(body["final_claim_allowed"])
-            self.assertEqual(body["implementation_counts"]["PARTIAL"], 8)
-            self.assertEqual(body["implementation_counts"]["STUB"], 5)
-            self.assertEqual(body["implementation_counts"]["DESIGN_ONLY"], 7)
-            self.assertEqual(body["verification_counts"]["NOT_RUN"], 20)
-            self.assertEqual(body["limitations"]["runtime_execution"], "NOT_RUN")
+            self.assertEqual(body["product_subrequirements"], 43)
+            self.assertEqual(body["mvp_acceptance_items"], 11)
+            self.assertEqual(body["workflow_operations"], 45)
+            self.assertEqual(body["registered_failure_injections"], 118)
+            self.assertEqual(body["runtime_execution"], "NOT_RUN_BY_STATIC_VALIDATOR")
 
 
 if __name__ == "__main__":

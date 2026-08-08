@@ -12,6 +12,21 @@
     "snapshot_complete": true,
     "source_file_count": 1
   },
+  "source_inventory": [
+    {
+      "path": "src/main/java/example/Api.java",
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "parent_profile": null,
+  "change_set": {
+    "mode": "FULL",
+    "added": ["src/main/java/example/Api.java"],
+    "modified": [],
+    "deleted": [],
+    "unchanged": [],
+    "compared_file_count": 0
+  },
   "purpose": "Validate a bounded sample program.",
   "components": [
     {

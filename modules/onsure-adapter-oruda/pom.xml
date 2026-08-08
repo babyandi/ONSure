@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.onsure</groupId>
+    <groupId>kr.co.oruda.onsure</groupId>
     <artifactId>onsure-modular-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <relativePath>../../pom-modular.xml</relativePath>
@@ -12,7 +12,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.onsure</groupId>
+      <groupId>kr.co.oruda.onsure</groupId>
       <artifactId>onsure-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -51,9 +51,9 @@
         <configuration>
           <release>${maven.compiler.release}</release>
           <includes>
-            <include>io/onsure/platform/OrudaTargetAdapter.java</include>
-            <include>io/onsure/platform/ProductPlatformE2EMain.java</include>
-            <include>io/onsure/platform/oruda/**</include>
+            <include>kr/co/oruda/onsure/platform/OrudaTargetAdapter.java</include>
+            <include>kr/co/oruda/onsure/platform/ProductPlatformE2EMain.java</include>
+            <include>kr/co/oruda/onsure/platform/oruda/**</include>
           </includes>
         </configuration>
       </plugin>

@@ -21,10 +21,10 @@ require_file harness/universal-v1/schemas/evidence.v1.schema.json EVIDENCE_SCHEM
 require_file harness/universal-v1/schemas/receipt.v1.schema.json RECEIPT_SCHEMA_MISSING
 require_file harness/universal-v1/oracles/default-oracles.v1.json ORACLE_SET_MISSING
 require_file fixtures/universal-v1/sample-target/fixtures.v1.json SAMPLE_FIXTURE_SET_MISSING
-require_file src/main/java/io/onsure/harness/UniversalHarnessRunner.java UNIVERSAL_RUNNER_MISSING
-require_file src/main/java/io/onsure/harness/RunVerifier.java RUN_VERIFIER_MISSING
-require_file src/main/java/io/onsure/harness/FinalCandidateGate.java FINAL_CANDIDATE_GATE_MISSING
-require_file src/main/java/io/onsure/harness/RegressionGate.java REGRESSION_GATE_MISSING
+require_file src/main/java/kr/co/oruda/onsure/harness/UniversalHarnessRunner.java UNIVERSAL_RUNNER_MISSING
+require_file src/main/java/kr/co/oruda/onsure/harness/RunVerifier.java RUN_VERIFIER_MISSING
+require_file src/main/java/kr/co/oruda/onsure/harness/FinalCandidateGate.java FINAL_CANDIDATE_GATE_MISSING
+require_file src/main/java/kr/co/oruda/onsure/harness/RegressionGate.java REGRESSION_GATE_MISSING
 
 if grep -R --line-number --fixed-strings 'ORUDA-Master-Queue' \
   src/main src/test harness/universal-v1 scripts/run-universal-harness.sh scripts/run-universal-harness-twice.sh \

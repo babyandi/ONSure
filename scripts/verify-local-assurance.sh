@@ -21,4 +21,4 @@ RUN_ROOT="$(cd "$RUN_ROOT" && pwd)"
 cd "$ROOT"
 mvn -B -ntp -DskipTests compile dependency:build-classpath -Dmdep.outputFile="$ROOT/target/reverify-classpath.txt" >/dev/null
 CP="$ROOT/target/classes:$(cat "$ROOT/target/reverify-classpath.txt")"
-java -cp "$CP" io.onsure.assurance.LocalVerifyMain "$RUN_ROOT" "$ROOT"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalVerifyMain "$RUN_ROOT" "$ROOT"

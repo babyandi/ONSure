@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/reusable-pattern-memory.v1.schema.json",
+  "title": "ONSure Reusable Pattern Memory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "pattern_id", "pattern_class", "trigger_class", "remediation_class", "independent_reproduction_count", "lineage_commitment_sha256", "deidentification", "state", "activation_allowed", "created_at", "final_claim_allowed"],
+  "properties": {
+    "contract": {"const": "ONSURE_REUSABLE_PATTERN_MEMORY_V1"},
+    "pattern_id": {"type": "string", "pattern": "^PATTERN-[0-9a-f]{24}$"},
+    "pattern_class": {"enum": ["AUTHORIZATION_POLICY_GAP", "UNTRUSTED_INPUT_CONTROL_GAP", "AVAILABILITY_BOUNDARY_FAILURE", "REGRESSION_CONTROL_GAP", "BEHAVIORAL_CONTRACT_DEVIATION"]},
+    "trigger_class": {"enum": ["CONTROLLED_SCENARIO_EXECUTION", "BUILD_OR_COMPILE_EXECUTION", "VALIDATION_EXECUTION"]},
+    "remediation_class": {"enum": ["POLICY_ENFORCEMENT_AND_NEGATIVE_REGRESSION", "REGRESSION_COVERAGE_STRENGTHENING", "CONTROL_AND_REGRESSION_STRENGTHENING"]},
+    "independent_reproduction_count": {"type": "integer", "minimum": 2},
+    "lineage_commitment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "deidentification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "raw_text_copied", "project_identifiers_copied", "evidence_identifiers_copied", "privacy_review", "rights_review"],
+      "properties": {
+        "strategy": {"const": "ALLOWLISTED_TAXONOMY_ONLY"},
+        "raw_text_copied": {"const": false},
+        "project_identifiers_copied": {"const": false},
+        "evidence_identifiers_copied": {"const": false},
+        "privacy_review": {"const": "PASS"},
+        "rights_review": {"const": "PASS"}
+      }
+    },
+    "state": {"const": "REUSABLE_CANDIDATE"},
+    "activation_allowed": {"const": false},
+    "created_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  }
+}

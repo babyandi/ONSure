@@ -1,1 +1,843 @@
-{"contract":"ONSURE_DESIGN_CAPABILITY_COVERAGE_V2","version":"2.0.0","source_branch":"feature/onsure-codespace-free-remediation-20260726","authoritative_documents":["README.md","docs/00_PRODUCT_BASELINE.md","docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md","docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md","docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md","docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md","docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md","docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md","docs/09_PROGRAM_LEARNING_METHODOLOGY.md","docs/03_GIT_AND_CHANGE_GOVERNANCE.md","docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md","docs/v2/05_LICENSE_PAYMENT_OLICENSE_INTEGRATION.md"],"capabilities":[{"capability_id":"CORE-ISOLATION","name":"Standalone Core and optional adapter isolation","design_refs":["README.md","docs/00_PRODUCT_BASELINE.md"],"contract_refs":["contracts/module-boundary.v1.json"],"code_refs":["src/main/java/io/onsure/platform/ValidationEngine.java","pom-modular.xml"],"test_refs":["modules/onsure-core/src/test/java/io/onsure/platform/CoreModuleSmokeTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"WORKSPACE-INTAKE","name":"Workspace, repository, archive and target intake","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":[],"code_refs":["src/main/java/io/onsure/platform/ProductCatalog.java","src/main/java/io/onsure/platform/SourceReferenceBinding.java"],"test_refs":["src/test/java/io/onsure/platform/HashingSourceSetTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"PROGRAM-LEARNING","name":"Program Learning and Program Profile","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md","docs/09_PROGRAM_LEARNING_METHODOLOGY.md"],"contract_refs":["contracts/program-profile.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/ProgramLearningService.java"],"test_refs":["src/test/java/io/onsure/platform/ProgramLearningServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"BEHAVIOR-LEARNING","name":"Repeated behavior observation and Behavior Profile","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"],"contract_refs":["contracts/behavior-profile.v1.schema.json","contracts/behavior-observation-receipt.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/BehaviorLearningService.java"],"test_refs":["src/test/java/io/onsure/platform/BehaviorLearningServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"RISK-PLANNING","name":"Risk based plan, approval and stop conditions","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"],"contract_refs":["contracts/execution-plan.v1.schema.json","contracts/execution-plan-approval.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/ExecutionPlanService.java"],"test_refs":["src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"OREVIEW","name":"Requirement architecture policy code AI security test review","design_refs":["docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md"],"contract_refs":["contracts/oreview-result.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/OReviewService.java"],"test_refs":["src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"VERIFICATION-STATIC","name":"Static code and policy verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":["src/main/java/io/onsure/platform/BuiltInStages.java"],"test_refs":["src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"VERIFICATION-BUILD","name":"Build unit integration and dependency verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"implementation_status":"DESIGN_ONLY","verification_state":"NOT_RUN","limitations":["IMPLEMENTATION_INCOMPLETE","CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"VERIFICATION-RUNTIME","name":"Executable fixture and behavior verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":["contracts/sandbox-boundary.v1.json"],"code_refs":["src/main/java/io/onsure/platform/FixtureHarness.java"],"test_refs":["src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"VERIFICATION-API-UI","name":"API UI accessibility and user-flow verification","design_refs":["docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md","docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":["src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java","vscode-extension/extension.js"],"test_refs":["modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"],"evidence_refs":[],"implementation_status":"STUB","verification_state":"NOT_RUN","limitations":["IMPLEMENTATION_INCOMPLETE","CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"VERIFICATION-SECURITY","name":"Security privacy authorization and supply-chain verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":["contracts/sandbox-boundary.v1.json"],"code_refs":["src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java"],"test_refs":["src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"VERIFICATION-PERFORMANCE-RECOVERY","name":"Performance load resilience recovery and failure injection","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"implementation_status":"DESIGN_ONLY","verification_state":"NOT_RUN","limitations":["IMPLEMENTATION_INCOMPLETE","CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"RCA","name":"Evidence based reproduction and causal RCA","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":["contracts/evidence-based-rca.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"],"test_refs":["src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"IMPROVEMENT-PATCH","name":"Bounded patch plan hunk approval worktree and rollback","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":["contracts/patch-plan.v1.schema.json","contracts/patch-apply-receipt.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/ImprovementWorkflowService.java"],"test_refs":["src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"IMPROVEMENT-PROOF","name":"Before after regression and measurable improvement proof","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":["contracts/improvement-proof.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/ImprovementProofService.java"],"test_refs":["src/test/java/io/onsure/platform/ImprovementProofServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"GIT-DELIVERY","name":"Branch commit push and Draft PR delivery","design_refs":["docs/03_GIT_AND_CHANGE_GOVERNANCE.md"],"contract_refs":["contracts/git-change-set.v1.schema.json","contracts/draft-pr-receipt.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/GitWorkflowService.java"],"test_refs":["src/test/java/io/onsure/platform/GitWorkflowServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"EVIDENCE-RECEIPTS","name":"Immutable evidence receipts manifests lineage and anchors","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":["contracts/evidence-receipt.v1.schema.json","contracts/ledger-hardening.v1.json"],"code_refs":["src/main/java/io/onsure/platform/FileValidationStore.java","src/main/java/io/onsure/platform/DurableStateLedger.java"],"test_refs":["src/test/java/io/onsure/platform/DurableStateLedgerTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"LEARNING-MEMORY","name":"Versioned failure improvement and learning memory","design_refs":["docs/09_PROGRAM_LEARNING_METHODOLOGY.md"],"contract_refs":["contracts/failure-memory.v1.schema.json","contracts/improvement-memory.v1.schema.json"],"code_refs":["src/main/java/io/onsure/learning/OfficialLearningLedger.java"],"test_refs":["src/test/java/io/onsure/learning/OfficialLearningLedgerTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"VSCODE-EXTENSION","name":"VS Code views commands approval and restore UX","design_refs":["docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"],"contract_refs":[],"code_refs":["vscode-extension/package.json","vscode-extension/extension.js"],"test_refs":["scripts/validate-vscode-extension.py"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"LOCAL-AUTHENTICATED-API","name":"Loopback authenticated workflow API","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":["src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java","src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"],"test_refs":["modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"WEB-SERVICE-CASE","name":"One time service case quote payment delivery refund deletion","design_refs":["docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md","docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"],"contract_refs":["contracts/service-case-state.v1.schema.json","contracts/service-verification-receipt.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/ServiceCaseLifecycleService.java"],"test_refs":["src/test/java/io/onsure/platform/ServiceCaseLifecycleServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"OLICENSE","name":"License entitlement credit offline grace and revocation","design_refs":["docs/v2/05_LICENSE_PAYMENT_OLICENSE_INTEGRATION.md","docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":["contracts/license-state.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/LicenseLifecycleService.java"],"test_refs":["src/test/java/io/onsure/platform/LicenseLifecycleServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"TENANT-IDENTITY","name":"Identity tenant role and cross-tenant isolation","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":["contracts/tenant-context.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/ProductCatalog.java"],"test_refs":[],"evidence_refs":[],"implementation_status":"STUB","verification_state":"NOT_RUN","limitations":["IMPLEMENTATION_INCOMPLETE","CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"SANDBOX","name":"Filesystem network process and resource sandbox","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md","docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":["contracts/sandbox-boundary.v1.json"],"code_refs":["scripts/fixture-sandbox-launcher.sh","src/main/java/io/onsure/platform/FixtureHarness.java"],"test_refs":["src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"RETENTION-DELETION","name":"Retention legal hold deletion and deletion receipt","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":["contracts/service-case-state.v1.schema.json"],"code_refs":["src/main/java/io/onsure/platform/ServiceCaseLifecycleService.java"],"test_refs":["src/test/java/io/onsure/platform/ServiceCaseLifecycleServiceTest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"OBSERVABILITY-OPERATIONS","name":"Metrics logs traces queue recovery backup and operations","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md","docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"implementation_status":"DESIGN_ONLY","verification_state":"NOT_RUN","limitations":["IMPLEMENTATION_INCOMPLETE","CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"DELIVERY","name":"Report evidence patch executive package and customer delivery","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"],"contract_refs":[],"code_refs":["src/main/java/io/onsure/platform/ValidationReportExporter.java","src/main/java/io/onsure/platform/GitWorkflowService.java"],"test_refs":["src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"],"evidence_refs":[],"implementation_status":"PARTIAL","verification_state":"NOT_RUN","limitations":["CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"},{"capability_id":"DEPLOYMENT","name":"Developer team enterprise on premises air-gapped deployment","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"implementation_status":"DESIGN_ONLY","verification_state":"NOT_RUN","limitations":["IMPLEMENTATION_INCOMPLETE","CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"],"coverage_profile":"STANDARD_FAIL_CLOSED"}],"assurance":{"self_validation":"NOT_RUN_LATEST_HEAD","independent_otester":"NOT_RUN","independent_oaudit":"NOT_RUN","final_lock_allowed":false,"production_go":false,"commercial_go":false},"coverage_profiles":{"STANDARD_FAIL_CLOSED":{"process_steps":[{"step_id":"INTAKE","requires":[],"consumes":[],"outputs":["${CAP}-INPUT"]},{"step_id":"PROCESS","requires":["INTAKE"],"consumes":["${CAP}-INPUT"],"outputs":["${CAP}-OUTPUT"]},{"step_id":"VERIFY","requires":["PROCESS"],"consumes":["${CAP}-OUTPUT"],"outputs":["${CAP}-DECISION"]}],"required_data":[{"data_id":"${CAP}-INPUT","producer":"INTAKE","consumer":"PROCESS","lineage_required":true,"parent_binding":"SOURCE_OR_PARENT_RECEIPT"},{"data_id":"${CAP}-OUTPUT","producer":"PROCESS","consumer":"VERIFY","lineage_required":true,"parent_binding":"${CAP}-INPUT"},{"data_id":"${CAP}-DECISION","producer":"VERIFY","consumer":"DOWNSTREAM_GATE","lineage_required":true,"parent_binding":"${CAP}-OUTPUT"}],"detection_controls":[{"control_id":"${CAP}-MISSING-DATA-GATE","type":"COMPLETENESS","action":"FAIL_CLOSED"},{"control_id":"${CAP}-LINEAGE-GATE","type":"LINEAGE","action":"FAIL_CLOSED"},{"control_id":"${CAP}-VERIFICATION-GATE","type":"VERIFICATION","action":"HOLD_OR_FAIL"}],"failure_cases":[{"failure_id":"${CAP}-F01","scenario":"Required process output is missing","detected_by":["${CAP}-MISSING-DATA-GATE"]},{"failure_id":"${CAP}-F02","scenario":"Parent binding is stale or replaced","detected_by":["${CAP}-LINEAGE-GATE"]},{"failure_id":"${CAP}-F03","scenario":"Implementation exists but execution evidence is absent","detected_by":["${CAP}-VERIFICATION-GATE"]}]}}}
+{
+  "contract": "ONSURE_DESIGN_CAPABILITY_COVERAGE_V2",
+  "version": "2.0.0",
+  "source_branch": "feature/onsure-codespace-free-remediation-20260726",
+  "authoritative_documents": [
+    "README.md",
+    "docs/00_PRODUCT_BASELINE.md",
+    "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
+    "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+    "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md",
+    "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md",
+    "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
+    "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
+    "docs/09_PROGRAM_LEARNING_METHODOLOGY.md",
+    "docs/03_GIT_AND_CHANGE_GOVERNANCE.md",
+    "docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md",
+    "docs/v2/05_LICENSE_PAYMENT_OLICENSE_INTEGRATION.md"
+  ],
+  "capabilities": [
+    {
+      "capability_id": "CORE-ISOLATION",
+      "name": "Standalone Core and optional adapter isolation",
+      "design_refs": [
+        "README.md",
+        "docs/00_PRODUCT_BASELINE.md"
+      ],
+      "contract_refs": [
+        "contracts/module-boundary.v1.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ValidationEngine.java",
+        "pom-modular.xml"
+      ],
+      "test_refs": [
+        "modules/onsure-core/src/test/java/kr/co/oruda/onsure/platform/CoreModuleSmokeTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "WORKSPACE-INTAKE",
+      "name": "Workspace, repository, archive and target intake",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ProductCatalog.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/HashingSourceSetTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "PROGRAM-LEARNING",
+      "name": "Program Learning and Program Profile",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+        "docs/09_PROGRAM_LEARNING_METHODOLOGY.md"
+      ],
+      "contract_refs": [
+        "contracts/program-profile.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "BEHAVIOR-LEARNING",
+      "name": "Repeated behavior observation and Behavior Profile",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+      ],
+      "contract_refs": [
+        "contracts/behavior-profile.v1.schema.json",
+        "contracts/behavior-observation-receipt.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetector.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetectorTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "VULNERABLE_BEHAVIOR_DETECTION_IS_PATTERN_BASED_ON_CAPTURED_OUTPUT_TEXT_ONLY_NOT_DYNAMIC_TAINT_TRACKING",
+        "VULNERABLE_SIGNAL_IS_ROUTING_EVIDENCE_FOR_REVIEW_NOT_A_FINAL_VULNERABILITY_DETERMINATION",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "RISK-PLANNING",
+      "name": "Risk based plan, approval and stop conditions",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+      ],
+      "contract_refs": [
+        "contracts/execution-plan.v1.schema.json",
+        "contracts/execution-plan-approval.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
+        "vscode-extension/view-model.js",
+        "vscode-extension/extension.js"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
+        "vscode-extension/view-model.test.js"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "OREVIEW",
+      "name": "Requirement architecture policy code AI security test review",
+      "design_refs": [
+        "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md"
+      ],
+      "contract_refs": [
+        "contracts/oreview-result.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/OReviewService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "VERIFICATION-STATIC",
+      "name": "Static code and policy verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/BuiltInStages.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "VERIFICATION-BUILD",
+      "name": "Build unit integration and dependency verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [
+        "contracts/approved-dependency-manifest.v1.json",
+        "contracts/dependency-license-policy.v1.json",
+        "contracts/dependency-vulnerability-denylist.v1.json",
+        "contracts/assurance-lanes.v1.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/DependencyManifestVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LicensePolicyVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SbomGenerator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/BuildLaneReceiptService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LicensePolicyVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SbomGeneratorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/BuildLaneReceiptServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "BUILD_LANE_RECEIPT_SERVICE_NOT_YET_INVOKED_BY_SCRIPTS_ONSURE_LOCAL_GATE_SH_JAVA_API_ONLY",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "VULNERABILITY_DENYLIST_MANUALLY_CURATED_NOT_LIVE_CVE_FEED"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "VERIFICATION-RUNTIME",
+      "name": "Executable fixture and behavior verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [
+        "contracts/sandbox-boundary.v1.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/FixtureHarness.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "VERIFICATION-API-UI",
+      "name": "API UI accessibility and user-flow verification",
+      "design_refs": [
+        "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "vscode-extension/extension.js"
+      ],
+      "test_refs": [
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "STUB",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "IMPLEMENTATION_INCOMPLETE",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "VERIFICATION-SECURITY",
+      "name": "Security privacy authorization and supply-chain verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [
+        "contracts/sandbox-boundary.v1.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifier.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifierTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "VERIFICATION-PERFORMANCE-RECOVERY",
+      "name": "Performance load resilience recovery and failure injection",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutor.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LoadBenchmarkHarness.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LoadBenchmarkHarnessTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "BENCHMARK_ABSOLUTE_NUMBERS_ARE_HOST_DEPENDENT_ONLY_RELATIVE_REGRESSION_CHECK_AGAINST_A_CALLER_SUPPLIED_BASELINE_IS_MEANINGFUL",
+        "NO_QUEUE_DB_OBJECT_STORAGE_FAILOVER_SIMULATION_ONSURE_HAS_NO_SUCH_BACKEND_TO_FAIL_OVER_LOCALLY",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "RCA",
+      "name": "Evidence based reproduction and causal RCA",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [
+        "contracts/evidence-based-rca.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "IMPROVEMENT-PATCH",
+      "name": "Bounded patch plan hunk approval worktree and rollback",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [
+        "contracts/patch-plan.v1.schema.json",
+        "contracts/patch-apply-receipt.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "IMPROVEMENT-PROOF",
+      "name": "Before after regression and measurable improvement proof",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [
+        "contracts/improvement-proof.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementProofService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementProofServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "GIT-DELIVERY",
+      "name": "Branch commit push and Draft PR delivery",
+      "design_refs": [
+        "docs/03_GIT_AND_CHANGE_GOVERNANCE.md"
+      ],
+      "contract_refs": [
+        "contracts/git-change-set.v1.schema.json",
+        "contracts/draft-pr-receipt.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/GitWorkflowServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "EVIDENCE-RECEIPTS",
+      "name": "Immutable evidence receipts manifests lineage and anchors",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [
+        "contracts/evidence-receipt.v1.schema.json",
+        "contracts/ledger-hardening.v1.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/FileValidationStore.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableStateLedger.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/DurableStateLedgerTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "LEARNING-MEMORY",
+      "name": "Versioned failure improvement and learning memory",
+      "design_refs": [
+        "docs/09_PROGRAM_LEARNING_METHODOLOGY.md"
+      ],
+      "contract_refs": [
+        "contracts/failure-memory.v1.schema.json",
+        "contracts/improvement-memory.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "VSCODE-EXTENSION",
+      "name": "VS Code views commands approval and restore UX",
+      "design_refs": [
+        "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "vscode-extension/package.json",
+        "vscode-extension/extension.js"
+      ],
+      "test_refs": [
+        "scripts/validate-vscode-extension.py"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "LOCAL-AUTHENTICATED-API",
+      "name": "Loopback authenticated workflow API",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java"
+      ],
+      "test_refs": [
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "WEB-SERVICE-CASE",
+      "name": "One time service case quote payment delivery refund deletion",
+      "design_refs": [
+        "docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md",
+        "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"
+      ],
+      "contract_refs": [
+        "contracts/service-case-state.v1.schema.json",
+        "contracts/service-verification-receipt.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ServiceCaseLifecycleService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ServiceCaseLifecycleServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "OLICENSE",
+      "name": "License entitlement credit offline grace and revocation",
+      "design_refs": [
+        "docs/v2/05_LICENSE_PAYMENT_OLICENSE_INTEGRATION.md",
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [
+        "contracts/license-state.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/LicenseLifecycleService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/LicenseLifecycleServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "TENANT-IDENTITY",
+      "name": "Identity tenant role and cross-tenant isolation",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [
+        "contracts/tenant-context.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifier.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifierTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "ENTERPRISE_IDENTITY_ASSERTION_IS_ONSURES_OWN_ED25519_SIGNED_JSON_FORMAT_NOT_A_REAL_SAML2_OR_OIDC_TOKEN_FROM_A_LIVE_IDP",
+        "CURRENT_BRANCH_FULL_MAVEN_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "SANDBOX",
+      "name": "Filesystem network process and resource sandbox",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md",
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [
+        "contracts/sandbox-boundary.v1.json"
+      ],
+      "code_refs": [
+        "scripts/fixture-sandbox-launcher.sh",
+        "src/main/java/kr/co/oruda/onsure/platform/FixtureHarness.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "RETENTION-DELETION",
+      "name": "Retention legal hold deletion and deletion receipt",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [
+        "contracts/service-case-state.v1.schema.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ServiceCaseLifecycleService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ServiceCaseLifecycleServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "OBSERVABILITY-OPERATIONS",
+      "name": "Metrics logs traces queue recovery backup and operations",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md",
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ObservabilityEvent.java",
+        "src/main/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorder.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TraceExporter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableJobBackupService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/OtlpTraceExporter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ScheduledBackupService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorderTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/TraceExporterTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DurableJobBacklogAndBackupTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/OtlpTraceExporterTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ScheduledBackupServiceTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "OTLP_SPANS_ARE_ZERO_WIDTH_NO_DURATION_TRACKING_IN_OBSERVABILITYEVENT_YET",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "SCHEDULED_BACKUP_IS_LOCAL_ONLY_NO_OFFSITE_REPLICATION"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "DELIVERY",
+      "name": "Report evidence patch executive package and customer delivery",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ValidationReportExporter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    },
+    {
+      "capability_id": "DEPLOYMENT",
+      "name": "Developer team enterprise on premises air-gapped deployment",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfile.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilder.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentInstallationService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SignedArtifactService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "vscode-extension/extension.js",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentHealthMonitor.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilderTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentInstallationServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactRealVsixTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcherDeploymentTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentHealthMonitorTest.java"
+      ],
+      "evidence_refs": [],
+      "implementation_status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "limitations": [
+        "HEALTH_CHECK_IS_A_SINGLE_COMMAND_PROBE_NOT_A_CONTINUOUS_POST_DEPLOY_MONITOR",
+        "INSTALL_ROLLBACK_HAVE_AN_INTERACTIVE_VSCODE_FLOW_PACKAGE_BUILDING_ITSELF_IS_STILL_A_SEPARATE_JAVA_API_CLI_STEP",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "REAL_VSIX_SIGNING_VERIFIED_ONCE_MANUALLY_NOT_WIRED_INTO_AN_AUTOMATED_RELEASE_PIPELINE_STEP"
+      ],
+      "coverage_profile": "STANDARD_FAIL_CLOSED"
+    }
+  ],
+  "assurance": {
+    "self_validation": "NOT_RUN_LATEST_HEAD",
+    "independent_otester": "NOT_RUN",
+    "independent_oaudit": "NOT_RUN",
+    "final_lock_allowed": false,
+    "production_go": false,
+    "commercial_go": false
+  },
+  "coverage_profiles": {
+    "STANDARD_FAIL_CLOSED": {
+      "process_steps": [
+        {
+          "step_id": "INTAKE",
+          "requires": [],
+          "consumes": [],
+          "outputs": [
+            "${CAP}-INPUT"
+          ]
+        },
+        {
+          "step_id": "PROCESS",
+          "requires": [
+            "INTAKE"
+          ],
+          "consumes": [
+            "${CAP}-INPUT"
+          ],
+          "outputs": [
+            "${CAP}-OUTPUT"
+          ]
+        },
+        {
+          "step_id": "VERIFY",
+          "requires": [
+            "PROCESS"
+          ],
+          "consumes": [
+            "${CAP}-OUTPUT"
+          ],
+          "outputs": [
+            "${CAP}-DECISION"
+          ]
+        }
+      ],
+      "required_data": [
+        {
+          "data_id": "${CAP}-INPUT",
+          "producer": "INTAKE",
+          "consumer": "PROCESS",
+          "lineage_required": true,
+          "parent_binding": "SOURCE_OR_PARENT_RECEIPT"
+        },
+        {
+          "data_id": "${CAP}-OUTPUT",
+          "producer": "PROCESS",
+          "consumer": "VERIFY",
+          "lineage_required": true,
+          "parent_binding": "${CAP}-INPUT"
+        },
+        {
+          "data_id": "${CAP}-DECISION",
+          "producer": "VERIFY",
+          "consumer": "DOWNSTREAM_GATE",
+          "lineage_required": true,
+          "parent_binding": "${CAP}-OUTPUT"
+        }
+      ],
+      "detection_controls": [
+        {
+          "control_id": "${CAP}-MISSING-DATA-GATE",
+          "type": "COMPLETENESS",
+          "action": "FAIL_CLOSED"
+        },
+        {
+          "control_id": "${CAP}-LINEAGE-GATE",
+          "type": "LINEAGE",
+          "action": "FAIL_CLOSED"
+        },
+        {
+          "control_id": "${CAP}-VERIFICATION-GATE",
+          "type": "VERIFICATION",
+          "action": "HOLD_OR_FAIL"
+        }
+      ],
+      "failure_cases": [
+        {
+          "failure_id": "${CAP}-F01",
+          "scenario": "Required process output is missing",
+          "detected_by": [
+            "${CAP}-MISSING-DATA-GATE"
+          ]
+        },
+        {
+          "failure_id": "${CAP}-F02",
+          "scenario": "Parent binding is stale or replaced",
+          "detected_by": [
+            "${CAP}-LINEAGE-GATE"
+          ]
+        },
+        {
+          "failure_id": "${CAP}-F03",
+          "scenario": "Implementation exists but execution evidence is absent",
+          "detected_by": [
+            "${CAP}-VERIFICATION-GATE"
+          ]
+        }
+      ]
+    }
+  }
+}

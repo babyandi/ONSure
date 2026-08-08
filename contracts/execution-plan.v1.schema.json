@@ -7,7 +7,7 @@
   "required": [
     "contract", "plan_id", "target_id", "program_profile_id", "source_tree_sha256",
     "risk", "review_packs", "scenario_classes", "allowed_actions", "fixture_count",
-    "resource_budget", "permissions", "stop_conditions", "approval", "created_at",
+    "resource_budget", "execution_budget", "scenario_expectations", "permissions", "stop_conditions", "approval", "created_at",
     "product_full_chain", "independent_assurance", "final_claim_allowed", "plan_sha256"
   ],
   "properties": {
@@ -46,6 +46,27 @@
         "paid_service_allowed": {"type": "boolean"}
       }
     },
+    "execution_budget": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expected_result", "token_estimate", "cost_ceiling_micros", "data_transfer_scope"],
+      "properties": {
+        "expected_result": {"type": "string", "minLength": 1},
+        "token_estimate": {"type": "integer", "minimum": 0},
+        "cost_ceiling_micros": {"type": "integer", "minimum": 0},
+        "data_transfer_scope": {"enum": ["LOCAL_ONLY", "EXTERNAL_ALLOWLISTED", "EXTERNAL_UNRESTRICTED"]}
+      }
+    },
+    "scenario_expectations": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["scenario_class", "expected_result"],
+        "properties": {
+          "scenario_class": {"type": "string", "minLength": 1},
+          "expected_result": {"type": "string", "minLength": 1}
+        }
+      }
+    },
     "permissions": {
       "type": "object", "additionalProperties": false,
       "required": ["read_source", "execute_reviewed_fixtures", "write_run_evidence", "modify_target", "git_commit", "git_push", "merge"],
@@ -69,10 +90,18 @@
         "approval_id": {"type": "string", "minLength": 1},
         "approval_actor": {"type": "string", "minLength": 1},
         "approval_key_id": {"type": "string", "minLength": 1},
+        "original_plan_file_sha256": {"$ref": "#/$defs/sha256"},
         "approval_receipt_sha256": {"$ref": "#/$defs/sha256"},
         "approved_at": {"type": "string", "format": "date-time"},
         "expires_at": {"type": "string", "format": "date-time"}
-      }
+      },
+      "allOf": [{
+        "if": {"properties": {"state": {"const": "USER_APPROVED"}}, "required": ["state"]},
+        "then": {"required": [
+          "approval_id", "approval_actor", "approval_key_id",
+          "original_plan_file_sha256", "approval_receipt_sha256", "approved_at", "expires_at"
+        ]}
+      }]
     },
     "created_at": {"type": "string", "format": "date-time"},
     "product_full_chain": {"enum": ["NOT_RUN", "PARTIAL", "PASS", "FAIL", "HOLD"]},

@@ -28,10 +28,10 @@ ORUDA는 ONSURE 핵심 의존성이 아니라 첫 공식 외부 검증 대상이
 
 ## 3. 구현 권위
 
-- 제품 핵심·대상 어댑터·보고·재검증 권위: `io.onsure.platform`
-- 범용 검증 하네스 권위: `io.onsure.harness`
-- 로컬 보증·서명 영수증·최종 관문 권위: `io.onsure.assurance`
-- ORUDA 전용 검증 권위: `io.onsure.platform.oruda`
+- 제품 핵심·대상 어댑터·보고·재검증 권위: `kr.co.oruda.onsure.platform`
+- 범용 검증 하네스 권위: `kr.co.oruda.onsure.harness`
+- 로컬 보증·서명 영수증·최종 관문 권위: `kr.co.oruda.onsure.assurance`
+- ORUDA 전용 검증 권위: `kr.co.oruda.onsure.platform.oruda`
 
 중복 구현이 발견되면 새 구현을 추가하지 말고 권위 구현으로 수렴한다.
 
