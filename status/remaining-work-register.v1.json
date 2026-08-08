@@ -242,9 +242,9 @@
     },
     {
       "id": "P1-DEPLOYMENT",
-      "state": "PARTIAL_PROFILE_CONSTRAINT_VALIDATOR_AND_SIGNED_PACKAGE_BUILDER_IMPLEMENTED_INTERACTIVE_INSTALLER_AND_UPDATE_ROLLBACK_MISSING",
+      "state": "PARTIAL_PROFILE_CONSTRAINT_VALIDATOR_SIGNED_PACKAGE_BUILDER_AND_INSTALL_UPDATE_ROLLBACK_LEDGER_IMPLEMENTED_INTERACTIVE_UI_MISSING",
       "requires_human": false,
-      "next_action": "Add an interactive install/update flow and version-to-version rollback orchestration on top of the signed package format."
+      "next_action": "Add an interactive installer UI on top of DeploymentInstallationService, and health-check-triggered automatic rollback."
     },
     {
       "id": "FINAL-EXECUTION-STAGE",

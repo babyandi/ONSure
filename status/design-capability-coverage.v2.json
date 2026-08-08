@@ -696,18 +696,20 @@
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfile.java",
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java",
-        "src/main/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilder.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilder.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentInstallationService.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilderTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilderTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentInstallationServiceTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
+        "INSTALL_UPDATE_ROLLBACK_IS_A_CLI_LEVEL_SERVICE_NO_INTERACTIVE_UI_OR_HEALTH_CHECK_TRIGGERED_AUTO_ROLLBACK",
         "SIGNED_FILE_PACKAGE_ONLY_NO_INTERACTIVE_INSTALLER_UI",
-        "NO_UPDATE_OR_ROLLBACK_ORCHESTRATION_ACROSS_PACKAGE_VERSIONS",
         "VSIX_PACKAGING_HANDLED_SEPARATELY_BY_VSCODE_EXTENSION_NPX_VSCE_NOT_SIGNED_HERE",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
