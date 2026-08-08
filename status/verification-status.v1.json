@@ -185,9 +185,9 @@
     "state": "STATIC_MODE_PASS_NONFINAL_FULL_MODE_BLOCKED_SANDBOX_CAPABILITY",
     "runner": "bash scripts/onsure-local-gate.sh --mode full --profile core",
     "receipt_root": ".onsure/local-gate/",
-    "static_mode_receipt": ".onsure/local-gate/20260808T064335Z-927286/",
+    "static_mode_receipt": ".onsure/local-gate/20260808T064802Z-931456/",
     "static_mode_decision": "PASS_NONFINAL",
-    "static_mode_source_commit": "97c438d843dd29a7feb08fedfc7214e00dbeafd6",
+    "static_mode_source_commit": "a83f9f50b46f8edd554beea18fe4bfd3765be098",
     "full_mode_block_reason": "Execution sandbox has zero effective capabilities (CapEff=0); bwrap cannot create network namespace (RTM_NEWADDR: Operation not permitted), independent of source changes. 9 of 254 java-root tests fail, all sandbox-dependent (ProductExecutionBoundaryTest, ValidationPlatformE2ETest, OrudaFinalLockGateTest and cascading assertions). Requires re-run in an environment with nested-sandbox privileges.",
     "note": "Static-mode PASS confirms contract/structural consistency and cross-file status consistency (validate_status_consistency_v2.py) only; runtime_verification for final-acceptance and final-product-requirement coverage remains NOT_RUN. Not a claim of IMPLEMENTED or independently-verified status."
   },
