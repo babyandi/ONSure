@@ -1381,11 +1381,13 @@
         "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
         "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
         "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
-        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifier.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
-        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java"
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifierTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1395,7 +1397,6 @@
         "CORE"
       ],
       "missing_controls": [
-        "SIGNED_ENTERPRISE_IDENTITY_VERIFIER_NOT_IMPLEMENTED",
         "CURRENT_MAIN_FULL_MAVEN_RECEIPT_NOT_RUN"
       ],
       "detector_controls": [
