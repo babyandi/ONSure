@@ -26,6 +26,87 @@
       "scope": "test",
       "license": "EPL-2.0",
       "reviewed_at": "2026-08-08"
+    },
+    {
+      "groupId": "com.fasterxml.jackson.core",
+      "artifactId": "jackson-annotations",
+      "version": "2.18.2",
+      "scope": "compile",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of jackson-databind"
+    },
+    {
+      "groupId": "com.fasterxml.jackson.core",
+      "artifactId": "jackson-core",
+      "version": "2.18.2",
+      "scope": "compile",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of jackson-databind"
+    },
+    {
+      "groupId": "org.junit.jupiter",
+      "artifactId": "junit-jupiter-api",
+      "version": "5.11.4",
+      "scope": "test",
+      "license": "EPL-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of junit-jupiter"
+    },
+    {
+      "groupId": "org.junit.jupiter",
+      "artifactId": "junit-jupiter-engine",
+      "version": "5.11.4",
+      "scope": "test",
+      "license": "EPL-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of junit-jupiter"
+    },
+    {
+      "groupId": "org.junit.jupiter",
+      "artifactId": "junit-jupiter-params",
+      "version": "5.11.4",
+      "scope": "test",
+      "license": "EPL-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of junit-jupiter"
+    },
+    {
+      "groupId": "org.junit.platform",
+      "artifactId": "junit-platform-commons",
+      "version": "1.11.4",
+      "scope": "test",
+      "license": "EPL-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of junit-jupiter-api"
+    },
+    {
+      "groupId": "org.junit.platform",
+      "artifactId": "junit-platform-engine",
+      "version": "1.11.4",
+      "scope": "test",
+      "license": "EPL-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of junit-jupiter-engine"
+    },
+    {
+      "groupId": "org.opentest4j",
+      "artifactId": "opentest4j",
+      "version": "1.3.0",
+      "scope": "test",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of junit-jupiter-api"
+    },
+    {
+      "groupId": "org.apiguardian",
+      "artifactId": "apiguardian-api",
+      "version": "1.1.2",
+      "scope": "test",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-08",
+      "note": "transitive dependency of junit-jupiter-api"
     }
   ]
 }

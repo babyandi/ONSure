@@ -200,20 +200,22 @@
         "src/main/java/kr/co/oruda/onsure/platform/DependencyManifestVerifier.java",
         "src/main/java/kr/co/oruda/onsure/platform/LicensePolicyVerifier.java",
         "src/main/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifier.java",
-        "src/main/java/kr/co/oruda/onsure/platform/SbomGenerator.java"
+        "src/main/java/kr/co/oruda/onsure/platform/SbomGenerator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifier.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/LicensePolicyVerifierTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifierTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/SbomGeneratorTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/SbomGeneratorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifierTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
+        "TRANSITIVE_SCAN_COVERS_DEPENDENCY_PRESENCE_AND_VERSION_ONLY_NOT_LICENSE_OR_VULNERABILITY_DENYLIST_FOR_TRANSITIVES",
         "VULNERABILITY_DENYLIST_MANUALLY_CURATED_NOT_LIVE_CVE_FEED",
-        "LICENSE_AND_VULNERABILITY_CHECKS_COVER_DIRECT_DEPENDENCIES_ONLY_NO_TRANSITIVE_SCAN",
         "SBOM_GENERATOR_NOT_WIRED_INTO_BUILD_LANE_RECEIPT_OUTPUT",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],

@@ -32,7 +32,7 @@
     },
     {
       "id": "P0-GRANULAR-PRODUCT-SUBREQUIREMENTS",
-      "state": "43_REGISTERED_13_IMPLEMENTED_28_PARTIAL_1_STUB_1_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED",
+      "state": "43_REGISTERED_13_IMPLEMENTED_30_PARTIAL_0_STUB_0_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
       "next_action": "Keep the source-derived 43-item register synchronized with every normative FR and NFR bullet."
     },
@@ -224,9 +224,9 @@
     },
     {
       "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
-      "state": "PARTIAL_LICENSE_POLICY_AND_VULNERABILITY_DENYLIST_AND_SBOM_GENERATOR_ADDED_TRANSITIVE_SCAN_AND_LIVE_CVE_FEED_STILL_MISSING",
+      "state": "PARTIAL_LICENSE_POLICY_VULNERABILITY_DENYLIST_SBOM_AND_TRANSITIVE_PRESENCE_VERSION_SCAN_ADDED_TRANSITIVE_LICENSE_AND_LIVE_CVE_FEED_STILL_MISSING",
       "requires_human": false,
-      "next_action": "Resolve transitive (not just direct) dependency graph and wire a live CVE feed or an out-of-band-reviewed update process for the denylist; wire SbomGenerator output into the build lane receipt."
+      "next_action": "Extend license-policy and vulnerability-denylist checks to the full resolved (transitive) graph, not just direct dependencies; wire a live CVE feed or an out-of-band-reviewed update process for the denylist; wire SbomGenerator output into the build lane receipt."
     },
     {
       "id": "P1-PERFORMANCE-RECOVERY",
