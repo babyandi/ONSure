@@ -224,9 +224,9 @@
     },
     {
       "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
-      "state": "PARTIAL_LICENSE_VULNERABILITY_AND_SBOM_NOW_COVER_FULL_RESOLVED_DEPENDENCY_GRAPH_LIVE_CVE_FEED_AND_SBOM_RECEIPT_WIRING_STILL_MISSING",
+      "state": "PARTIAL_BUILD_LANE_RECEIPT_SERVICE_EMBEDS_SBOM_AND_ALL_VERIFIER_RESULTS_JAVA_API_ONLY_NOT_INVOKED_BY_LOCAL_GATE_SCRIPT_LIVE_CVE_FEED_STILL_MISSING",
       "requires_human": false,
-      "next_action": "Wire a live CVE feed or an out-of-band-reviewed update process for the denylist; wire SbomGenerator output into the build lane receipt."
+      "next_action": "Wire BuildLaneReceiptService as an invocable step inside scripts/onsure-local-gate.sh (or a new dedicated build-lane script), and add a live CVE feed or an out-of-band-reviewed update process for the denylist."
     },
     {
       "id": "P1-PERFORMANCE-RECOVERY",

@@ -204,22 +204,24 @@
         "src/main/java/kr/co/oruda/onsure/platform/LicensePolicyVerifier.java",
         "src/main/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifier.java",
         "src/main/java/kr/co/oruda/onsure/platform/SbomGenerator.java",
-        "src/main/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifier.java"
+        "src/main/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/BuildLaneReceiptService.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/LicensePolicyVerifierTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifierTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/SbomGeneratorTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifierTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/BuildLaneReceiptServiceTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "VULNERABILITY_DENYLIST_MANUALLY_CURATED_NOT_LIVE_CVE_FEED",
-        "SBOM_GENERATOR_NOT_WIRED_INTO_BUILD_LANE_RECEIPT_OUTPUT",
-        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+        "BUILD_LANE_RECEIPT_SERVICE_NOT_YET_INVOKED_BY_SCRIPTS_ONSURE_LOCAL_GATE_SH_JAVA_API_ONLY",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "VULNERABILITY_DENYLIST_MANUALLY_CURATED_NOT_LIVE_CVE_FEED"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
     },
