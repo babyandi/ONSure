@@ -28,25 +28,42 @@ public final class LicensePolicyVerifier {
 
     private LicensePolicyVerifier() {}
 
+    /** Direct dependencies only (as declared in pom.xml). See {@link #verifyResolved} for the full graph. */
     public static VerificationResult verify(Path pomXmlPath, Path approvedManifestPath, Path licensePolicyPath)
             throws Exception {
         List<DeclaredDependency> declared = DependencyManifestVerifier.parsePom(pomXmlPath);
+        return verifyCoordinates(
+                declared.stream().map(DeclaredDependency::coordinate).toList(),
+                approvedManifestPath, licensePolicyPath);
+    }
+
+    /** Full resolved dependency graph, direct and transitive (see {@link TransitiveDependencyVerifier}). */
+    public static VerificationResult verifyResolved(
+            List<TransitiveDependencyVerifier.ResolvedDependency> resolved,
+            Path approvedManifestPath, Path licensePolicyPath) throws Exception {
+        return verifyCoordinates(
+                resolved.stream().map(TransitiveDependencyVerifier.ResolvedDependency::coordinate).toList(),
+                approvedManifestPath, licensePolicyPath);
+    }
+
+    private static VerificationResult verifyCoordinates(
+            List<String> coordinates, Path approvedManifestPath, Path licensePolicyPath) throws IOException {
         Map<String, String> licenseByCoordinate = readApprovedManifestLicenses(approvedManifestPath);
         Map<String, String> decisionBySpdxId = readLicensePolicy(licensePolicyPath);
         String defaultDecision = readDefaultDecision(licensePolicyPath);
 
         List<LicenseViolation> violations = new ArrayList<>();
-        for (DeclaredDependency dependency : declared) {
-            String license = licenseByCoordinate.get(dependency.coordinate());
+        for (String coordinate : coordinates) {
+            String license = licenseByCoordinate.get(coordinate);
             if (license == null) {
                 continue; // not in approved manifest at all: DependencyManifestVerifier's concern, not license policy's.
             }
             String decision = decisionBySpdxId.getOrDefault(license, defaultDecision);
             if ("FORBIDDEN".equals(decision)) {
-                violations.add(new LicenseViolation("LICENSE_FORBIDDEN", dependency.coordinate(),
+                violations.add(new LicenseViolation("LICENSE_FORBIDDEN", coordinate,
                         license + " is forbidden by dependency license policy"));
             } else if (!"ALLOWED".equals(decision)) {
-                violations.add(new LicenseViolation("LICENSE_POLICY_DECISION_INVALID", dependency.coordinate(),
+                violations.add(new LicenseViolation("LICENSE_POLICY_DECISION_INVALID", coordinate,
                         "unrecognized policy decision '" + decision + "' for license " + license));
             }
         }

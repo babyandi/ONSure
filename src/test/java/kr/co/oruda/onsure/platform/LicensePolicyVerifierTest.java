@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import kr.co.oruda.onsure.platform.LicensePolicyVerifier.VerificationResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -20,6 +21,38 @@ class LicensePolicyVerifierTest {
                 Path.of("contracts/approved-dependency-manifest.v1.json"),
                 Path.of("contracts/dependency-license-policy.v1.json"));
         assertTrue(result.passed(), "violations: " + result.violations());
+    }
+
+    @Test
+    void currentRepositoryFullResolvedGraphSatisfiesTheLicensePolicy() throws Exception {
+        var resolved = TransitiveDependencyVerifier.resolveViaMaven(
+                Path.of(".").toAbsolutePath().normalize(), Duration.ofSeconds(60));
+        VerificationResult result = LicensePolicyVerifier.verifyResolved(
+                resolved,
+                Path.of("contracts/approved-dependency-manifest.v1.json"),
+                Path.of("contracts/dependency-license-policy.v1.json"));
+        assertTrue(result.passed(), "violations: " + result.violations());
+    }
+
+    @Test
+    void verifyResolvedRejectsAForbiddenLicenseInATransitiveDependency() throws Exception {
+        var resolved = java.util.List.of(
+                new TransitiveDependencyVerifier.ResolvedDependency(
+                        "org.example", "transitive-copyleft", "1.0.0", "compile"));
+        Path manifest = writeManifest("""
+                {"contract":"ONSURE_APPROVED_DEPENDENCY_MANIFEST_V1","approved_dependencies":[
+                  {"groupId":"org.example","artifactId":"transitive-copyleft","version":"1.0.0","license":"GPL-3.0"}
+                ]}
+                """);
+        Path policy = writePolicy("""
+                {"contract":"ONSURE_DEPENDENCY_LICENSE_POLICY_V1",
+                 "decisions":[{"spdx_id":"GPL-3.0","decision":"FORBIDDEN","reason":"copyleft"}],
+                 "default_decision_for_unlisted_license":"FORBIDDEN"}
+                """);
+
+        VerificationResult result = LicensePolicyVerifier.verifyResolved(resolved, manifest, policy);
+        assertFalse(result.passed());
+        assertEquals("org.example:transitive-copyleft", result.violations().get(0).coordinate());
     }
 
     @Test
