@@ -95,6 +95,9 @@ ProgramRiskScore = 100 − clamp(10·OpenCritical + 4·OpenHigh + 1·OpenMedium 
 - CoverageReport(schema_version 결속)
 - AcceptanceCertificate, ExternalAcceptorGrant
 - ReproducibilityAuditSample
+- TrainingRequest, TrainingPlan, TrainingRun, EvaluationReport (DESIGN_ONLY)
+- ModelVersion, RAGIndexVersion, PromptVersion, AgentPolicyVersion (DESIGN_ONLY)
+- DeploymentApproval, ProductionObservation, RelearnTrigger (DESIGN_ONLY)
 - ServiceCase, CaseScope, CaseRevision
 - ProgramProfile, Component, Dependency, AIComponent
 - Requirement, Policy, TraceLink
@@ -150,7 +153,16 @@ PatchPlan은 hunk 단위(`hunk_id`, `finding_id`, `preimage_sha256`, `approval_s
 ### 아직 계약이 없는 이 설계서의 확장 (DESIGN_ONLY)
 다음은 이번 세션에서 제안했으나 대응하는 `contracts/*.schema.json`을 찾지 못했다. 아이디어 자체를 폐기하라는 뜻이 아니라, 구현 전 계약부터 만들어야 한다는 뜻이다.
 
-CaseRevision, Baseline 동시성 다중 Branch 처리, MissedFinding(재귀학습 루프), ComponentContract/Cross-Program Impact Scan, BlastRadiusReport(PatchPlan.preapply_assessment로 부분 흡수됨), RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ProgramRiskScore, ReproducibilityAuditSample, SBOM
+CaseRevision, Baseline 동시성 다중 Branch 처리, MissedFinding(재귀학습 루프), ComponentContract/Cross-Program Impact Scan, BlastRadiusReport(PatchPlan.preapply_assessment로 부분 흡수됨), RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ProgramRiskScore, ReproducibilityAuditSample, SBOM, TrainingRequest/Plan/Run, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval/ProductionObservation/RelearnTrigger
+
+### TrainingRequest / TrainingRun (DESIGN_ONLY)
+TrainingRequest: DRAFT → SCOPED → APPROVED → TRAINING_IN_PROGRESS → EVALUATION_PENDING → (INDEPENDENTLY_VERIFIED → DEPLOYMENT_APPROVED → DEPLOYED) 또는 (EVALUATION_FAILED → SCOPED로 재진입)
+예외: REJECTED, ABANDONED
+
+TrainingRun: PENDING → DATA_QUALITY_CHECK → RUNNING → EVALUATION_RUNNING → (EVALUATION_PASSED 또는 EVALUATION_FAILED)
+예외: FAILED, ABORTED
+
+DEPLOYMENT_APPROVED는 Training을 수행한 모델·Provider와 다른 계열의 독립 재검증([03 §10-1](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) Cross-Model Verification 재사용)을 통과해야만 도달한다(자기 참조 승인 금지). DEPLOYED 이후 ProductionObservation에서 임계치를 넘는 성능저하가 확인되면 RelearnTrigger가 새 TrainingRequest 초안을 제안하며, 이는 [OMemory](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) MissedFinding과 동일하게 "제안일 뿐 자동 실행 아님" 원칙을 따른다.
 
 ### CreditReservation — `contracts/license-state.v1.schema.json`의 `reservations` 필드
 RESERVED → COMMITTED 또는 RELEASED 또는 EXPIRED(계약상 4개 상태이며, 이 설계서가 이전에 "Timeout 시 자동 RELEASED"라 쓴 것과 달리 EXPIRED는 RELEASED와 별개 상태로 구분된다 — 정정)
@@ -210,6 +222,15 @@ POST /v1/patch-runs/{id}/approve
 POST /v1/patch-runs/{id}/reverify
 GET /v1/patch-runs/{id}/behavior-diff
 
+### Training (OTraining, DESIGN_ONLY — workflow-operation-registry.v1.json 미등록)
+POST /v1/training-requests
+POST /v1/training-requests/{id}/plan
+POST /v1/training-runs
+GET /v1/training-runs/{id}/evaluation-report
+POST /v1/training-runs/{id}/deployment-approval
+GET /v1/model-versions/{id}
+GET /v1/deployments/{id}/observation
+
 ### Notification and Portfolio
 POST /v1/organizations/{orgId}/notification-rules
 GET /v1/organizations/{orgId}/notification-rules
@@ -265,6 +286,7 @@ GET /v1/license/jwks
 - RollbackVerified, RollbackVerificationFailed
 - ConfidenceCalibrationDrifted, ReviewerAccuracyBelowThreshold, AIConfigDriftDetected
 - AcceptanceCertificateIssued, AcceptanceCertificateRevoked, ExternalAcceptorGranted
+- TrainingRequested, TrainingRunCompleted, EvaluationFailed, DeploymentApproved, RelearnTriggered
 
 이벤트는 event_id, occurred_at, producer, schema_version, organization_id, correlation_id, causation_id를 포함한다.
 
@@ -285,12 +307,13 @@ ONSure는 Validate, Activate, Reserve, Commit, Release, Report를 수행하며 �
 - issuer, audience, subject
 - organization_id
 - product_code=ONSURE
-- channel=WEB_CASE|VSCODE|API
-- service_type
-- plan
+- channel=WEB_CASE|VSCODE|API (`docs/v2/05` §3과 일치)
+- service_type=LEARN|VERIFY|LEARN_VERIFY|IMPROVE_REVERIFY|TRAIN_REVERIFY (`docs/v2/05` §3 값에 TRAIN_REVERIFY 추가)
+- plan=DEVELOPER|TEAM|ENTERPRISE (`docs/v2/05` §3과 일치)
 - feature_entitlements
 - system_limit, program_limit, program_unit_limit
 - learning_unit_limit, credit_balance 또는 credit_policy
+- dataset_limit, training_run_limit, model_version_limit (`docs/v2/00` §3 "Dataset·Training·Model Version 한도"에서 흡수, OTraining 전용, DESIGN_ONLY)
 - case_id 또는 subscription_id
 - baseline_binding
 - valid_from, valid_until

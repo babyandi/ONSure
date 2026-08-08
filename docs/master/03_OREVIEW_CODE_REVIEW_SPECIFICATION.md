@@ -73,6 +73,15 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 - AI 자기주장과 실제 Evidence 불일치(Self-Claim Verification) — "구현 완료", "테스트 통과" 등 AI가 스스로 밝힌 주장을 별도 추출해 대조
 - 이전 Baseline 대비 AI 구성 Drift(Tool 권한 확대, 신규 외부 연동 등)가 검토 없이 반영되었는지 확인([02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OLearning AI 구성 Drift 탐지와 연동)
 
+### Training Review (OTraining 대상, [02 §7-2](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OTraining과 연동)
+- 학습 데이터 편향·중복·유출·오염(Poisoning) 여부
+- 평가 데이터셋이 학습 데이터셋과 물리적으로 분리되어 있는지(재사용 시 결과 부풀리기로 간주)
+- 학습 데이터에 대한 고객 동의·라이선스 확인 여부
+- Before/After 성능 비교가 동일 시나리오·동일 기준으로 수행되었는지
+- Deployment 승인이 Training을 수행한 모델과 동일 계열의 자기 자신 승인이 아닌지(Cross-Model Verification 재사용)
+- Production Observation 없이 "개선되었다"고 주장하는 산출물이 있는지
+- Model/RAG/Prompt/Agent Version 변경이 코드 Patch 최소변경 원칙을 우회하는 수단으로 쓰이지 않는지
+
 ### Security Review
 - OWASP 계열 취약 패턴
 - Dependency 취약점과 License — Copyleft(GPL 계열) License가 상용 폐쇄소스 배포 조건과 충돌하는지 조직 PolicyPack의 허용/차단 목록 기준으로 판정

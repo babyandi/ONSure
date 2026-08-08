@@ -12,6 +12,7 @@
 | A3 | Quote 유효기간 / 재견적 트리거 | 14일 / 규모 20% 초과 변동 | [04](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | A4 | 환불정책 | 실행 전 전액, 실행 후 소비분 제외, 구독 비례환불 없음 | [01 §6-1](01_BUSINESS_PRODUCT_SERVICE_PLAN.md) | DRAFT |
 | A5 | 지원 SLA | Web 1차응답 영업일 기준, Developer 2영업일, Team 1영업일, Enterprise 4시간(예시) | [05](05_UI_UX_WORKFLOW_SPECIFICATION.md) | DRAFT |
+| A6 | Train & Re-verify 가격·GPU 원가 | 미정 — 유료 Case로 원가 실측 후 확정(1단계는 RAG/Prompt만 판매) | [01 §11-2](01_BUSINESS_PRODUCT_SERVICE_PLAN.md) | OPEN |
 
 ## B. 법무 확인 필요
 
@@ -22,6 +23,7 @@
 | B3 | PCI-DSS 범위 | Payment Provider Tokenization으로 최소화한다는 전제 | [04 §12](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | B4 | 국내 개인정보보호법 대응 | 자동 탐지·마스킹 원칙만 기술, 실제 법적 요건 미검증 | [04 §12-1](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | B5 | Copyleft(GPL) 라이선스 차단 정책 | PolicyPack 허용/차단 목록으로 조직이 설정 | [03](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) | DRAFT |
+| B6 | 학습 데이터 사용 동의·라이선스 | "고객 동의 확인 없는 학습 금지"만 원칙으로 기술, 실제 동의서 양식·데이터 소유권 조항 미작성 | [02 §7-2 OTraining](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
 
 ## C. 엔지니어링 확인 필요 (실현 가능성)
 
@@ -108,14 +110,24 @@ G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영
 
 docs/v2/04(VS Code 구독정책), 06(운영프로세스·고객여정), 07(아키텍처·데이터모델), 08(구현로드맵), 09(AI 자동학습 전략)도 모두 읽었다. 04의 Credit 초과정책(HARD_STOP/AUTO_TOP_UP/PAY_AS_YOU_GO/ADMIN_APPROVAL_REQUIRED)과 Web↔VS Code Program Profile 전환, 07의 신뢰경계 원칙(Feature 표시≠권한 증거, 결제성공만으로 실행 불가)을 01·04에 흡수했다.
 
-### G29 — 미흡수 대형 항목: Target AI Auto-Learning (결정 필요, 최우선)
+### G29 — Target AI Auto-Learning (2026-08-08 흡수 완료)
 `docs/v2/09_TARGET_AI_AUTO_LEARNING_BUSINESS_AND_DEVELOPMENT_STRATEGY.md`(1216줄, 커밋 SHA `5a761ccf...`에 고정된 NON_FINAL 설계 보완안)가 `docs/master`에 전혀 없는 새 사업 축을 정의한다.
 
 - **Program Understanding Learning**(=이 설계서의 OLearning)과 **Target AI Auto-Learning**(대상 프로그램 내부의 RAG/Prompt/Agent/Tool선택정책/예측·분류·추천·비전 Model을 실제 데이터로 재학습·개선)을 명확히 별개 기능으로 구분한다. 목적·입력·산출물·비용·위험·라이선스 단위가 전부 다르다.
 - 확장된 파이프라인을 제안한다: `Understand → Verify → Diagnose → Decide → Improve or Train → Independently Re-verify → Prove → Deploy → Observe → Re-learn` — 이 설계서 00의 `Understand → Plan → Review → Verify → Improve → Prove → Remember`와 다르다. 특히 **Diagnose**(별도 단계로 분리, docs/07 Diagnosis Engine과 같은 방향), **Deploy/Observe/Re-learn**(운영 배포 후 피드백 루프)이 이 설계서에는 아예 없다.
 - 사업성 평가를 솔직하게 NON_FINAL로 명시하고("사업기회는 유효하지만 아직 사업성이 입증된 것은 아니다"), 초기엔 RAG·Prompt 개선과 AI 생성 코드 안정화부터 유료 Case로 검증하라고 제안한다.
 
-**결정 필요**: 이 사업 축을 `docs/master`에 정식 흡수할지, 별도 트랙(`docs/v2`)으로 유지할지, 아니면 아직 시기상조로 보류할지 — 흡수하면 00의 파이프라인·02의 프로그램 구성·04의 데이터모델·01의 상품구조 전반에 영향을 주는 큰 변경이라 이번 세션에서 임의로 병합하지 않았다.
+**결정 완료(2026-08-08)**: 사용자가 Target AI Auto-Learning을 정식 채택으로 확정. `docs/master` 00·01·02·03·04·05·06 전체에 OTraining 프로그램으로 흡수했다.
+
+- 00: Program Understanding Learning과 Target AI Auto-Learning 구분, 확장 파이프라인(Diagnose/Decide/Deploy/Observe/Re-learn), OMemory 재귀학습과 OTraining이 "검증된 근거→독립 재검증→승격"이라는 같은 원칙의 두 적용 사례임을 명시(사용자가 "자기 자신의 검증과 학습을 위한 재귀학습이 가능해야 한다"고 별도로 요구한 사항 반영)
+- 02: §7-2 OTraining 신설(책임/기능/산출물/수용기준/금지)
+- 01: 고객문제·Train & Re-verify 상품·§11-2 단계적 검증(1. RAG/Prompt → 2. AI 코드 안정화 → 3. Agent → 4. Model Fine-tuning 순, GPU 비용이 큰 4단계는 유료 Case로 원가 실측 후 확대)
+- 04: TrainingRequest/Run·ModelVersion류 엔티티·상태모델·API·Event 전부 DESIGN_ONLY로 추가(대응 계약 없음, G7·G13과 같은 처리)
+- 03: Training Review 규칙(데이터 오염, 평가셋 재사용 금지, 자기참조 승인 금지)
+- 05: VS Code Training 화면, Improve/Train 선택(Decide), Model Deployment를 고위험 별도승인에 추가
+- 06: EPIC-09, OTraining Fixture
+
+이 흡수로 새로 생긴 항목도 전부 계약 없는 DESIGN_ONLY다 — G7/G13과 마찬가지로 구현 전 `contracts/*.schema.json` 제정이 선행되어야 한다.
 
 ## F. 문서 거버넌스 (참고, 결정 아님)
 

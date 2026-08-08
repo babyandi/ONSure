@@ -89,6 +89,9 @@ Preflight부터 결제, License 발급, Case 완료까지.
 ### EPIC-08 OMemory
 Fix/Failure Pattern 추출부터 Component Signature 매칭, MissedFinding 재귀학습 루프와 Golden Fixture 회귀 검증까지.
 
+### EPIC-09 OTraining (Target AI Auto-Learning)
+Decide(Improve vs Train)부터 Training Plan, 데이터 품질검사, Training Run, 독립 재검증, Deployment 승인, Production Observation, Re-learn Trigger까지. 1단계 출시는 RAG 재인덱싱·Prompt 개선으로 한정하고 GPU Model Fine-tuning은 이후 단계([01_BUSINESS_PRODUCT_SERVICE_PLAN.md](01_BUSINESS_PRODUCT_SERVICE_PLAN.md) §11-2).
+
 ## 4. Story 완료조건
 - 요구사항 ID 연결
 - 설계 또는 ADR 연결
@@ -158,6 +161,14 @@ DB, Queue, Storage, Sandbox, OLicense, Payment, Git, Model Provider.
 - Mutation 주입 후에도 Test가 모두 통과하는 케이스(테스트 실효성 부재 탐지)
 - 다중 Program에 영향을 주는 Patch의 Blast Radius 예측 정확도(DRY_RUN 예측 vs 실제 적용 결과 비교)
 - 기능은 고쳤지만 성능이 저하되는 Patch(BehaviorDiffReport의 REGRESSION_FAILED 자동판정 검증)
+
+### OTraining Fixture
+- 편향·중복·유출·오염(Poisoning)된 학습 데이터가 Training 시작 전에 차단되는지
+- 평가 데이터셋을 학습 데이터셋으로 잘못 재사용하는 시도(결과 부풀리기) 탐지
+- Training을 수행한 모델이 자기 결과를 스스로 배포 승인하려는 경로 차단(자기 참조 승인 금지)
+- Before/After 성능 비교 없이 Deployment 승인을 요청하는 케이스 거부
+- Production Observation에서 성능 저하를 감지해 RelearnTrigger가 발생하지만 자동 재학습·자동 배포로 이어지지 않는지
+- 승인 없는 GPU Model Fine-tuning 요청이 1단계 출시 범위(RAG·Prompt만 허용) 밖임을 이유로 거부되는지
 
 ### OLicense Fixture
 - 만료

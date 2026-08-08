@@ -180,6 +180,40 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - 재귀학습으로 인한 Rule/모델 개정은 반드시 전체 Golden Fixture Regression을 통과한 뒤에만 프로덕션에 반영한다
 - MissedFinding은 발견 경로(Independent Review/Human Override/Incident/고객신고/지연 Regression)를 구분해 기록한다
 
+## 7-2. OTraining (Target AI Auto-Learning)
+`docs/v2/09_TARGET_AI_AUTO_LEARNING_BUSINESS_AND_DEVELOPMENT_STRATEGY.md`에서 흡수. OLearning(Program Understanding Learning)과 다른 축이다 — OLearning은 ONSure가 대상 프로그램을 이해하는 학습이고, OTraining은 대상 프로그램 **안의** RAG·Prompt·Agent·Model 자체를 실제 데이터로 재학습·개선하는 기능이다.
+
+### 책임
+검증된 Finding 또는 승인된 개선 목표(정확도·안정성·속도·비용)에 근거해 대상 프로그램의 AI 구성요소를 재학습하고, 독립 재검증을 통과한 경우에만 배포를 승인한다.
+
+### 기능
+- Decide: OImprovement와 공유하는 RCA(원인이 코드·정책·데이터·RAG·Prompt·Agent·Model 중 어디인지 판정, §7 OImprovement 참조) 결과를 바탕으로 코드 Patch(Improve)로 충분한지 AI 재학습(Train)이 필요한지 판정 근거를 기록한다. 판정은 사람 또는 승인된 규칙이 하며 ONSure가 임의로 결정하지 않는다
+- Training Plan 생성: 대상 구성요소(RAG Index/Prompt/Agent 선택정책/Model), 학습 데이터 출처, 평가 데이터셋, 예상 비용·GPU·소요시간을 제시하고 승인받는다
+- 학습 데이터 품질 검사: 편향·중복·유출·오염(Poisoning) 여부 확인
+- Training Run 실행: RAG 재인덱싱, Prompt 개정, Agent 정책 재학습, Model Fine-tuning 중 해당 유형만 수행
+- Before/After 비교: 기존 버전과 신규 버전을 동일 평가 데이터셋·시나리오로 비교
+- 독립 재검증: Training을 수행한 모델과 다른 모델 또는 규칙 기반으로 결과를 재확인한다([03_OREVIEW_CODE_REVIEW_SPECIFICATION.md](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) §10-1 Cross-Model Verification과 동일 원칙 재사용)
+- 승인된 경우에만 ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion을 승격하고 Deployment Approval을 기록
+- Production Observation: 배포 후 실 운영 데이터에서 성능·오류율을 관찰
+- Re-learn Trigger: Observation에서 임계치를 넘는 성능저하나 신규 실패 패턴이 확인되면 새 TrainingRequest를 제안한다(자동 실행 아님) — 이 제안은 §7-1 OMemory의 MissedFinding 등록과 같은 성격이며, ONSure 자신의 탐지 능력을 보강하는 재귀학습 루프와 동일한 "검증된 근거 → 독립 재검증 → 승격" 구조를 대상 프로그램의 AI에도 적용한 것이다
+
+### 산출물
+TrainingRequest, TrainingPlan, TrainingRun, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, EvaluationReport, DeploymentApproval, ProductionObservation, RelearnTrigger
+
+### 수용기준
+- 검증된 Finding 또는 승인된 목표 없이 Training을 시작할 수 없다(OImprovement의 임의 요청 금지 원칙과 동일)
+- 평가 데이터셋은 학습 데이터셋과 물리적으로 분리되며 학습에 재사용되지 않는다
+- Before/After 비교 없이 배포 승인을 발급하지 않는다
+- 독립 재검증을 통과하지 못한 Training 결과는 배포하지 않는다(자기 참조 승인 금지 — Training을 수행한 모델이 스스로 결과를 승인할 수 없음)
+- Production Observation으로 실측 확인하기 전까지 "개선되었다"고 최종 주장하지 않는다(NON_FINAL)
+- Re-learn Trigger는 제안일 뿐이며 자동 재학습·자동 배포로 이어지지 않는다
+
+### 금지
+- 학습 데이터에 대한 고객 동의·라이선스 확인 없는 학습
+- 평가 데이터셋을 학습에 사용해 결과를 부풀리는 행위
+- Model/RAG/Prompt/Agent 변경을 코드 Patch처럼 취급해 OImprovement의 최소 변경 원칙을 우회
+- Production 배포 후 Observation 생략
+
 ## 8. OEvidence
 - Immutable Evidence Metadata
 - Artifact Hash

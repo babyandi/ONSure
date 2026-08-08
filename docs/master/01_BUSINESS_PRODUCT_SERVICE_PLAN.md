@@ -10,6 +10,8 @@ AI를 활용한 소프트웨어 개발은 생산성을 높이지만 요구사항
 - 정적 분석 도구는 실제 업무 시나리오 충족 여부를 증명하지 못한다.
 - 수정이 새로운 결함을 만들지만 회귀검증이 불충분하다.
 - 감사와 납품에 필요한 재현 가능한 Evidence가 남지 않는다.
+- 기존 AI 서비스(RAG·챗봇·문서자동화·추천·이미지 인식 등)가 느리거나 부정확한데, 원인이 코드 결함인지 RAG 문서 품질인지 Prompt 설계인지 Model 자체 한계인지 구분할 방법이 없다(`docs/v2/09` §1.3에서 흡수).
+- 원인을 구분해도 RAG·Prompt·Agent·Model을 실제로 재학습·개선할 수단이 코드 수정과 분리되어 있지 않다.
 
 ## 3. 목표 고객
 - AI Coding을 도입한 일반 기업 개발조직
@@ -86,6 +88,12 @@ Program Profile을 만든 뒤 해당 구조와 위험에 맞게 검증 시나리
 
 ### Improve & Re-verify
 검증된 Finding 중 고객이 승인한 항목만 대상으로 RCA, Patch, Regression, Before/After Evidence를 제공한다.
+
+### Train & Re-verify (OTraining, `docs/v2/09`에서 흡수)
+입력: 검증된 Finding 또는 승인된 개선 목표(정확도·안정성·속도·비용), 학습 데이터, 평가 데이터셋
+처리: RCA로 원인이 RAG·Prompt·Agent 정책·Model 중 어디인지 확인된 항목에 한해 재학습(Training Plan→Training Run→독립 재검증)
+산출물: EvaluationReport(Before/After), 승인된 ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval
+제외: Improve와 동일한 프로그램 코드 Patch(별도 상품), GPU 대규모 Model Fine-tuning은 1단계 출시 범위 밖(§11-2 참조)
 
 ## 6-1. 환불 정책
 - LEARNING/VERIFYING 실행 시작 전 취소: 전액 환불
@@ -176,6 +184,16 @@ Enterprise, 폐쇄망, 전용 모델, 정책 Marketplace, 파트너 채널
 - AI가 생성한 Patch, Program Profile, Report, Evidence Pack 등 Case 산출물의 소유권과 사용권은 고객에게 귀속된다.
 - ONSure는 익명화된 Pattern/Fixture를 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) FR-COM-009 Opt-in 조건 하에서만 공유 Corpus 학습에 사용할 권리를 가지며, 고객 소스 코드 자체나 식별 가능한 파생물은 어떤 경우에도 재사용하지 않는다.
 - AI Model Provider의 이용약관상 생성물 저작권이 불확실한 관할권에서는 계약서에 "고객 귀속" 조항을 명시해 분쟁 소지를 제거한다.
+
+## 11-2. Target AI Auto-Learning 단계적 검증
+`docs/v2/09`(특정 커밋에 고정된 NON_FINAL 사업 보완안)의 사업성 평가를 그대로 채택한다: "사업기회는 유효하지만 아직 사업성이 입증된 것은 아니다." 다음 순서로 유료 Case를 통해 검증하며, 앞 단계 검증 전에는 뒷 단계를 상용 판매하지 않는다.
+
+1. RAG 재인덱싱·Prompt 개선 (재현성 높고 GPU 불필요, 최소 원가)
+2. AI로 생성된 코드의 안정화(Improve 상품과 결합, Train 없이도 가능한 범위)
+3. Agent 선택정책 재학습
+4. Model Fine-tuning (GPU·Dataset 원가가 크므로 유료 Case로 원가·전환율·재구매율을 실측한 뒤 확대)
+
+지불 가능성은 "중상" 수준으로 평가한다 — 공개 의뢰 예산이 소규모(100만 원대)부터 1,000만 원 이상까지 분포하며, 유료 Case·원가·전환율·재구매율을 실제로 측정하기 전까지 가격을 확정하지 않는다.
 
 ## 12. 사업 위험과 대응
 - AI 원가 급증: Credit, Hard Stop, 모델별 원가 Meter

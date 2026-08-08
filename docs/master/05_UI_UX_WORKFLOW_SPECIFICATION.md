@@ -126,6 +126,7 @@ ONSure 아이콘 아래 다음 View를 제공한다.
 - Verification
 - Findings
 - Improvement
+- Training
 - Knowledge
 - Evidence
 - Git & PR
@@ -167,12 +168,21 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 
 ### Improvement
 - 승인 Finding
+- Decide: RCA 결과를 근거로 Improve(코드 Patch)와 Train(OTraining으로 이동) 중 선택 — Train 선택 시 아래 Training 화면으로 전환
 - Patch Plan
 - Blast Radius 미리보기(영향받는 파일·Component·타 Program 목록) — DRY_RUN 결과를 실제 Patch 적용 전 승인 단계에 노출
 - Worktree와 Branch
 - 변경파일·Diff
 - Test 결과와 Before/After 동작·성능 Diff 요약
 - Accept, Edit, Abandon, Draft PR
+
+### Training (OTraining)
+- Training Plan: 대상 구성요소(RAG Index/Prompt/Agent 정책/Model), 학습 데이터 출처, 평가 데이터셋, 예상 비용·GPU·소요시간
+- 학습 데이터 품질 검사 결과(편향·중복·유출·오염)
+- Training Run 진행상태와 EvaluationReport(Before/After, 평가 데이터셋 기준)
+- 독립 재검증 결과(Training 모델과 다른 계열)
+- Deployment 승인 — 고위험 별도 승인([05 §7](05_UI_UX_WORKFLOW_SPECIFICATION.md))이며 자기 참조 승인 불가
+- Production Observation 대시보드: 배포 후 실 운영 성능·오류율 추이, Re-learn Trigger 발생 이력
 
 ### Knowledge
 - 현재 Diff/Component와 매칭된 KnowledgePattern 목록과 Confidence
@@ -219,6 +229,7 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - Evidence 삭제, 데이터 삭제·Migration
 - Secret 접근
 - 외부 배포와 운영환경 변경
+- ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion Production 배포(OTraining)
 
 동일 위험행위라도 상위 등급 승인이 하위 등급 확인을 대체하지 않는다 — 예를 들어 Merge 승인이 그 전 단계의 Push 승인을 소급 생략시키지 않는다.
 
