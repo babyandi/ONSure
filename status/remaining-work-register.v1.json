@@ -200,9 +200,9 @@
     },
     {
       "id": "P0-TENANT-IDENTITY",
-      "state": "PARTIAL_AUTHENTICATED_IDENTITY_RBAC_DURABLE_OWNERSHIP_AND_CROSS_TENANT_TESTS_IMPLEMENTED_FULL_MAVEN_NOT_RUN",
+      "state": "PARTIAL_AUTHENTICATED_IDENTITY_RBAC_DURABLE_OWNERSHIP_CROSS_TENANT_TESTS_AND_SIGNED_ENTERPRISE_IDENTITY_VERIFIER_IMPLEMENTED_FULL_MAVEN_NOT_RUN",
       "requires_human": false,
-      "next_action": "Run the full Maven gate and add production verification for signed enterprise identities before external deployment."
+      "next_action": "Run the full Maven gate; integrate EnterpriseIdentityVerifier with a real SAML 2.0/OIDC identity provider bridge before external deployment."
     },
     {
       "id": "P0-SANDBOX-ADVERSARIAL-COVERAGE",

@@ -569,17 +569,19 @@
         "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
         "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
         "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
-        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifier.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
-        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java"
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifierTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "SIGNED_ENTERPRISE_IDENTITY_VERIFIER_NOT_IMPLEMENTED",
+        "ENTERPRISE_IDENTITY_ASSERTION_IS_ONSURES_OWN_ED25519_SIGNED_JSON_FORMAT_NOT_A_REAL_SAML2_OR_OIDC_TOKEN_FROM_A_LIVE_IDP",
         "CURRENT_BRANCH_FULL_MAVEN_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
