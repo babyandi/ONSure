@@ -1,0 +1,16 @@
+{
+  "contract": "ONSURE_DEPENDENCY_LICENSE_POLICY_V1",
+  "version": "1.0.0",
+  "authority": "Manual legal/license review; every SPDX id a dependency may declare in contracts/approved-dependency-manifest.v1.json must appear here with a decision before that dependency can pass build verification.",
+  "decisions": [
+    { "spdx_id": "Apache-2.0", "decision": "ALLOWED", "reason": "Permissive, no copyleft obligation." },
+    { "spdx_id": "MIT", "decision": "ALLOWED", "reason": "Permissive, no copyleft obligation." },
+    { "spdx_id": "BSD-2-Clause", "decision": "ALLOWED", "reason": "Permissive, no copyleft obligation." },
+    { "spdx_id": "BSD-3-Clause", "decision": "ALLOWED", "reason": "Permissive, no copyleft obligation." },
+    { "spdx_id": "EPL-2.0", "decision": "ALLOWED", "reason": "Weak copyleft scoped to modified EPL files only; test-scope-only usage in this project carries no distribution obligation." },
+    { "spdx_id": "GPL-2.0", "decision": "FORBIDDEN", "reason": "Strong copyleft incompatible with proprietary distribution." },
+    { "spdx_id": "GPL-3.0", "decision": "FORBIDDEN", "reason": "Strong copyleft incompatible with proprietary distribution." },
+    { "spdx_id": "AGPL-3.0", "decision": "FORBIDDEN", "reason": "Network copyleft incompatible with proprietary SaaS distribution." }
+  ],
+  "default_decision_for_unlisted_license": "FORBIDDEN"
+}

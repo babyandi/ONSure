@@ -4,7 +4,7 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const { WORK_MODES, classifyOperation, authorize } = require('./work-mode-policy');
-const { VIEW_IDS, rowsForView } = require('./view-model');
+const { VIEW_IDS, rowsForView, budgetRowsFromExecutionPlan } = require('./view-model');
 const { reviewPlanApproval, reviewHunkApproval } = require('./approval-review');
 
 const TOKEN_KEY = 'onsure.localApiToken';
@@ -122,6 +122,18 @@ class AssuranceTreeProvider {
         : row.label === 'Last Run' && lastRun ? 'onsure.openLastArtifact' : undefined;
       items.push(item(row.label, row.description, row.icon, command));
     }
+    if (this.viewId === 'onsure.plan' && lastRun) {
+      try {
+        const result = await this.client.request('/v1/run-artifact', 'POST', {
+          run_root: lastRun, artifact: 'execution-plan.json'
+        });
+        for (const row of budgetRowsFromExecutionPlan(result.body)) {
+          items.push(item(row.label, row.description, row.icon));
+        }
+      } catch (error) {
+        items.push(item('Execution Budget', `NOT_AVAILABLE: ${error.message}`, 'warning'));
+      }
+    }
     return items;
   }
 }
@@ -164,6 +176,24 @@ async function selectJsonFile(title) {
   const selected = await vscode.window.showOpenDialog({
     title, canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
     filters: { JSON: ['json'] }, defaultUri: vscode.Uri.file(workspaceRoot())
+  });
+  if (!selected?.length) return undefined;
+  return requireInsideWorkspace(selected[0].fsPath);
+}
+
+async function selectJsonFileOrKey(title) {
+  const selected = await vscode.window.showOpenDialog({
+    title, canSelectMany: false, canSelectFiles: true, canSelectFolders: false,
+    defaultUri: vscode.Uri.file(workspaceRoot())
+  });
+  if (!selected?.length) return undefined;
+  return requireInsideWorkspace(selected[0].fsPath);
+}
+
+async function selectWorkspaceFolder(title) {
+  const selected = await vscode.window.showOpenDialog({
+    title, canSelectMany: false, canSelectFiles: false, canSelectFolders: true,
+    defaultUri: vscode.Uri.file(workspaceRoot())
   });
   if (!selected?.length) return undefined;
   return requireInsideWorkspace(selected[0].fsPath);
@@ -369,6 +399,63 @@ async function activate(context) {
         }, `${review.scope} hunk approval`);
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure approved patch failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.installDeploymentPackage', async () => {
+      try {
+        const packageDir = await selectWorkspaceFolder('Select Signed Deployment Package Directory');
+        if (!packageDir) return;
+        const version = await vscode.window.showInputBox({
+          title: 'Deployment Version', prompt: 'A version id for this install (e.g. 1.0.0).',
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid version id.'
+        });
+        if (!version) return;
+        const verificationKeyFile = await vscode.window.showQuickPick(['Skip (unsigned package)', 'Select public key file...'],
+          { title: 'Signature Verification' });
+        if (!verificationKeyFile) return;
+        const request = { package_dir: packageDir, version };
+        if (verificationKeyFile === 'Select public key file...') {
+          const keyFile = await selectJsonFileOrKey('Select Ed25519 Public Key File');
+          if (!keyFile) return;
+          request.verification_key_file = keyFile;
+        }
+        const healthCheckCommand = await vscode.window.showInputBox({
+          title: 'Health Check Command (optional)',
+          prompt: 'Command to run against the installed version, relative to the package directory (e.g. "bash health-check.sh"). Leave empty to skip -- a failed check automatically rolls back.',
+          ignoreFocusOut: true
+        });
+        if (healthCheckCommand === undefined) return;
+        if (healthCheckCommand.trim()) {
+          request.health_check_command = healthCheckCommand.trim().split(/\s+/);
+        }
+        await executeWorkflow('deployment.install', request, `Installing deployment version ${version}`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure deployment install failed: ${error.message}`);
+      }
+    }),
+    vscode.commands.registerCommand('onsure.rollbackDeployment', async () => {
+      try {
+        const targetVersion = await vscode.window.showInputBox({
+          title: 'Rollback Target Version', prompt: 'The previously installed version id to restore.',
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid version id.'
+        });
+        if (!targetVersion) return;
+        const verificationKeyFile = await vscode.window.showQuickPick(['Skip (unsigned package)', 'Select public key file...'],
+          { title: 'Signature Verification' });
+        if (!verificationKeyFile) return;
+        const request = { target_version: targetVersion };
+        if (verificationKeyFile === 'Select public key file...') {
+          const keyFile = await selectJsonFileOrKey('Select Ed25519 Public Key File');
+          if (!keyFile) return;
+          request.verification_key_file = keyFile;
+        }
+        const answer = await vscode.window.showWarningMessage(
+          `Roll back the active deployment to version ${targetVersion}?`,
+          { modal: true }, 'Roll Back');
+        if (answer !== 'Roll Back') return;
+        await executeWorkflow('deployment.rollback', request, `Rolling back to deployment version ${targetVersion}`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`ONSure deployment rollback failed: ${error.message}`);
       }
     }),
     vscode.commands.registerCommand('onsure.openLastArtifact', async () => {

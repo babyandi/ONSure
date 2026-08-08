@@ -154,6 +154,45 @@ public final class DurableJobService {
         return ledger(jobId).read();
     }
 
+    public record BacklogSummary(
+            int queuedCount, int runningCount, long oldestQueuedAgeSeconds, List<String> staleJobIds) {
+        public BacklogSummary { staleJobIds = List.copyOf(staleJobIds); }
+    }
+
+    /** Queue lag/backlog operational metric: how many jobs are waiting or running, and for how long. */
+    public BacklogSummary backlogSummary(Instant now, java.time.Duration staleThreshold) throws Exception {
+        Objects.requireNonNull(now, "now");
+        if (staleThreshold == null || staleThreshold.isNegative()) {
+            throw new IllegalArgumentException("JOB_STALE_THRESHOLD_INVALID");
+        }
+        int queued = 0;
+        int running = 0;
+        long oldestQueuedAgeSeconds = 0;
+        List<String> stale = new ArrayList<>();
+        if (Files.isDirectory(jobsRoot, LinkOption.NOFOLLOW_LINKS)) {
+            try (var entries = Files.list(jobsRoot)) {
+                for (Path jobRoot : entries.sorted().toList()) {
+                    if (!Files.isDirectory(jobRoot, LinkOption.NOFOLLOW_LINKS)
+                            || Files.isSymbolicLink(jobRoot)) continue;
+                    String jobId = jobRoot.getFileName().toString();
+                    Map<String, Object> state = ledger(jobId).read();
+                    State current = currentState(state);
+                    if (current != State.QUEUED && current != State.RUNNING) continue;
+                    Instant createdAt = Instant.parse(String.valueOf(state.get("created_at")));
+                    long ageSeconds = java.time.Duration.between(createdAt, now).getSeconds();
+                    if (current == State.QUEUED) {
+                        queued++;
+                        oldestQueuedAgeSeconds = Math.max(oldestQueuedAgeSeconds, ageSeconds);
+                    } else {
+                        running++;
+                    }
+                    if (ageSeconds >= staleThreshold.getSeconds()) stale.add(jobId);
+                }
+            }
+        }
+        return new BacklogSummary(queued, running, oldestQueuedAgeSeconds, List.copyOf(stale));
+    }
+
     /** Scans durable state after process restart and emits a source-local nonfinal restore receipt. */
     public Map<String, Object> recoverAllAfterRestart(String actor) throws Exception {
         requireText(actor, "JOB_RECOVERY_ACTOR_INVALID");

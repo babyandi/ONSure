@@ -77,6 +77,7 @@ public final class BehaviorLearningService {
         Map<String, Set<String>> outputByScenario = new TreeMap<>();
         Set<String> failureConditions = new LinkedHashSet<>();
         Set<String> policyViolations = new LinkedHashSet<>();
+        Set<String> vulnerableConditions = new LinkedHashSet<>();
         Set<String> evidenceRefs = new LinkedHashSet<>();
         Set<String> allOutputs = new HashSet<>();
 
@@ -90,6 +91,7 @@ public final class BehaviorLearningService {
                         "command", fixture.command(),
                         "environment", new TreeMap<>(fixture.environment()))));
                 String outputDigest = execution.outputSha256();
+                Set<String> vulnerableSignals = VulnerableBehaviorDetector.scan(execution.result().observed());
                 String receiptId = "BEH-" + sanitize(fixture.fixtureId()) + "-" + iteration + "-"
                         + outputDigest.substring(0, 12);
                 Map<String, Object> receipt = new LinkedHashMap<>();
@@ -110,6 +112,7 @@ public final class BehaviorLearningService {
                 receipt.put("environment_digest", environmentDigest);
                 receipt.put("coverage_class", coverageClass);
                 receipt.put("observation_class", observationClass);
+                receipt.put("vulnerable_signals", List.copyOf(vulnerableSignals));
                 receipt.put("created_at", Instant.now().toString());
                 receipt.put("final_claim_allowed", false);
                 receipt.put("receipt_sha256", sha256(mapper.writeValueAsBytes(receipt)));
@@ -141,6 +144,9 @@ public final class BehaviorLearningService {
                 if (execution.timedOut()) policyViolations.add("SCENARIO_TIMEOUT:" + fixture.fixtureId());
                 if (execution.exitCode() != 0) {
                     policyViolations.add("NON_ZERO_EXIT:" + fixture.fixtureId() + ":" + execution.exitCode());
+                }
+                for (String signal : vulnerableSignals) {
+                    vulnerableConditions.add(fixture.fixtureId() + ":" + signal);
                 }
             }
         }
@@ -176,6 +182,7 @@ public final class BehaviorLearningService {
                 "stable", unstable.isEmpty()));
         profile.put("failure_conditions", List.copyOf(failureConditions));
         profile.put("policy_violations", List.copyOf(policyViolations));
+        profile.put("vulnerable_conditions", List.copyOf(vulnerableConditions));
         profile.put("evidence_refs", List.copyOf(evidenceRefs));
         profile.put("receipt_directory", receiptDirectory.toString());
         profile.put("state", "BEHAVIOR_CANDIDATE");

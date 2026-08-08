@@ -35,4 +35,27 @@ function rowsForView(viewId, state) {
   });
 }
 
-module.exports = { VIEW_IDS, VIEW_MODELS, rowsForView };
+const EXECUTION_PLAN_CONTRACT = 'ONSURE_EXECUTION_PLAN_V1';
+
+/**
+ * Budget/plan-preview rows for the Verification Plan view (NFR-06, FR-04-B), derived from a real
+ * execution-plan.json body (ExecutionPlanService.plan()'s execution_budget/scenario_expectations
+ * fields). Pure and VS Code-independent so it can be unit tested directly.
+ */
+function budgetRowsFromExecutionPlan(plan) {
+  if (!plan || plan.contract !== EXECUTION_PLAN_CONTRACT) return [];
+  const budget = plan.execution_budget || {};
+  const scenarios = Array.isArray(plan.scenario_expectations) ? plan.scenario_expectations : [];
+  return [
+    { label: 'Token Estimate', description: describe(budget.token_estimate), icon: 'symbol-number' },
+    { label: 'Cost Ceiling (micros)', description: describe(budget.cost_ceiling_micros), icon: 'credit-card' },
+    { label: 'Data Transfer Scope', description: describe(budget.data_transfer_scope), icon: 'cloud' },
+    { label: 'Scenario Expectations', description: `${scenarios.length} registered`, icon: 'checklist' }
+  ];
+}
+
+function describe(value) {
+  return (value === undefined || value === null) ? 'NOT_AVAILABLE' : String(value);
+}
+
+module.exports = { VIEW_IDS, VIEW_MODELS, rowsForView, budgetRowsFromExecutionPlan };

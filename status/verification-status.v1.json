@@ -38,9 +38,9 @@
   "legacy_product_decomposition": {
     "authority": "contracts/legacy-product-subrequirement-authority.v1.json",
     "requirement_count": 43,
-    "implemented": 13,
+    "implemented": 14,
     "partial": 29,
-    "stub": 1,
+    "stub": 0,
     "design_only": 0,
     "state": "LEGACY_NONAUTHORITATIVE_FOR_FINAL_PRODUCT",
     "runner": "python3 scripts/validate-legacy-product-subrequirements.py --self-test",
@@ -80,7 +80,7 @@
   },
   "workflow_surface_parity": {
     "authority": "contracts/workflow-operation-registry.v1.json",
-    "dispatcher_operation_count": 45,
+    "dispatcher_operation_count": 47,
     "surfaces": [
       "CLI",
       "LOCAL_AUTHENTICATED_API",

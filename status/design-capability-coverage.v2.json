@@ -99,15 +99,19 @@
         "contracts/behavior-observation-receipt.v1.schema.json"
       ],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetector.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetectorTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
+        "VULNERABLE_BEHAVIOR_DETECTION_IS_PATTERN_BASED_ON_CAPTURED_OUTPUT_TEXT_ONLY_NOT_DYNAMIC_TAINT_TRACKING",
+        "VULNERABLE_SIGNAL_IS_ROUTING_EVIDENCE_FOR_REVIEW_NOT_A_FINAL_VULNERABILITY_DETERMINATION",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
@@ -123,10 +127,16 @@
         "contracts/execution-plan-approval.v1.schema.json"
       ],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
+        "vscode-extension/view-model.js",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
+        "vscode-extension/view-model.test.js"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
@@ -187,21 +197,34 @@
         "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
       ],
       "contract_refs": [
-        "contracts/approved-dependency-manifest.v1.json"
+        "contracts/approved-dependency-manifest.v1.json",
+        "contracts/dependency-license-policy.v1.json",
+        "contracts/dependency-vulnerability-denylist.v1.json",
+        "contracts/assurance-lanes.v1.json"
       ],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/DependencyManifestVerifier.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DependencyManifestVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LicensePolicyVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SbomGenerator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/BuildLaneReceiptService.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LicensePolicyVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SbomGeneratorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/TransitiveDependencyVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/BuildLaneReceiptServiceTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "DEPENDENCY_MANIFEST_VERIFICATION_ONLY_NO_CVE_DATABASE_LOOKUP",
-        "NO_TRANSITIVE_DEPENDENCY_OR_LICENSE_SCAN",
-        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+        "BUILD_LANE_RECEIPT_SERVICE_NOT_YET_INVOKED_BY_SCRIPTS_ONSURE_LOCAL_GATE_SH_JAVA_API_ONLY",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "VULNERABILITY_DENYLIST_MANUALLY_CURATED_NOT_LIVE_CVE_FEED"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
     },
@@ -283,17 +306,19 @@
       ],
       "contract_refs": [],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutor.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutor.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LoadBenchmarkHarness.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutorTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LoadBenchmarkHarnessTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "RECOVERY_ONLY_NO_LOAD_OR_PERFORMANCE_BENCHMARK_HARNESS",
-        "NO_QUEUE_DB_OBJECT_STORAGE_FAILOVER_SIMULATION",
+        "BENCHMARK_ABSOLUTE_NUMBERS_ARE_HOST_DEPENDENT_ONLY_RELATIVE_REGRESSION_CHECK_AGAINST_A_CALLER_SUPPLIED_BASELINE_IS_MEANINGFUL",
+        "NO_QUEUE_DB_OBJECT_STORAGE_FAILOVER_SIMULATION_ONSURE_HAS_NO_SUCH_BACKEND_TO_FAIL_OVER_LOCALLY",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
@@ -547,17 +572,19 @@
         "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
         "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
         "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
-        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifier.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
-        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java"
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifierTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "SIGNED_ENTERPRISE_IDENTITY_VERIFIER_NOT_IMPLEMENTED",
+        "ENTERPRISE_IDENTITY_ASSERTION_IS_ONSURES_OWN_ED25519_SIGNED_JSON_FORMAT_NOT_A_REAL_SAML2_OR_OIDC_TOKEN_FROM_A_LIVE_IDP",
         "CURRENT_BRANCH_FULL_MAVEN_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
@@ -620,18 +647,27 @@
       "contract_refs": [],
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ObservabilityEvent.java",
-        "src/main/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorder.java"
+        "src/main/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorder.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TraceExporter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableJobBackupService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/OtlpTraceExporter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ScheduledBackupService.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorderTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/StructuredObservabilityRecorderTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/TraceExporterTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DurableJobBacklogAndBackupTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/OtlpTraceExporterTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ScheduledBackupServiceTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "STRUCTURED_LOG_AND_METRIC_ONLY_NO_DISTRIBUTED_TRACE_EXPORTER",
-        "NO_QUEUE_LAG_OR_BACKUP_RESTORE_OPERATIONAL_CONTROLS",
-        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+        "OTLP_SPANS_ARE_ZERO_WIDTH_NO_DURATION_TRACKING_IN_OBSERVABILITYEVENT_YET",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "SCHEDULED_BACKUP_IS_LOCAL_ONLY_NO_OFFSITE_REPLICATION"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
     },
@@ -666,18 +702,31 @@
       "contract_refs": [],
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfile.java",
-        "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilder.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentInstallationService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SignedArtifactService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "vscode-extension/extension.js",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentHealthMonitor.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilderTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentInstallationServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactRealVsixTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcherDeploymentTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentHealthMonitorTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "PROFILE_CONSTRAINT_VALIDATION_ONLY_NO_INSTALLER_OR_PACKAGING",
-        "NO_SIGNED_VSIX_OR_ON_PREM_INSTALL_UPDATE_ROLLBACK_TOOLING",
-        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+        "HEALTH_CHECK_IS_A_SINGLE_COMMAND_PROBE_NOT_A_CONTINUOUS_POST_DEPLOY_MONITOR",
+        "INSTALL_ROLLBACK_HAVE_AN_INTERACTIVE_VSCODE_FLOW_PACKAGE_BUILDING_ITSELF_IS_STILL_A_SEPARATE_JAVA_API_CLI_STEP",
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "REAL_VSIX_SIGNING_VERIFIED_ONCE_MANUALLY_NOT_WIRED_INTO_AN_AUTOMATED_RELEASE_PIPELINE_STEP"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
     }

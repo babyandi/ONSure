@@ -32,7 +32,7 @@
     },
     {
       "id": "P0-GRANULAR-PRODUCT-SUBREQUIREMENTS",
-      "state": "43_REGISTERED_13_IMPLEMENTED_28_PARTIAL_1_STUB_1_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED",
+      "state": "43_REGISTERED_13_IMPLEMENTED_30_PARTIAL_0_STUB_0_DESIGN_ONLY_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
       "next_action": "Keep the source-derived 43-item register synchronized with every normative FR and NFR bullet."
     },
@@ -44,7 +44,7 @@
     },
     {
       "id": "P0-WORKFLOW-SURFACE-PARITY",
-      "state": "45_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+      "state": "47_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
       "next_action": "Run workflow surface and critical-callpath gates whenever Dispatcher, CLI, Local API, VS Code commands or overloads change."
     },
@@ -128,9 +128,9 @@
     },
     {
       "id": "P0-BEHAVIOR-VULNERABILITY-TAXONOMY",
-      "state": "PARTIAL",
+      "state": "PARTIAL_SUCCESS_FAILURE_POLICY_VIOLATION_AND_PATTERN_BASED_VULNERABLE_SIGNAL_DISTINGUISHED_NO_PRODUCTION_TELEMETRY_YET",
       "requires_human": false,
-      "next_action": "Model successful, failed, policy-violating and vulnerable behavior conditions with direct production telemetry."
+      "next_action": "Wire direct production telemetry (not just fixture-proxy output) into the same taxonomy, and expand vulnerable-signal patterns beyond the current curated set."
     },
     {
       "id": "P0-RCA-IMPACT-UNKNOWN-SEPARATION",
@@ -200,9 +200,9 @@
     },
     {
       "id": "P0-TENANT-IDENTITY",
-      "state": "PARTIAL_AUTHENTICATED_IDENTITY_RBAC_DURABLE_OWNERSHIP_AND_CROSS_TENANT_TESTS_IMPLEMENTED_FULL_MAVEN_NOT_RUN",
+      "state": "PARTIAL_AUTHENTICATED_IDENTITY_RBAC_DURABLE_OWNERSHIP_CROSS_TENANT_TESTS_AND_SIGNED_ENTERPRISE_IDENTITY_VERIFIER_IMPLEMENTED_FULL_MAVEN_NOT_RUN",
       "requires_human": false,
-      "next_action": "Run the full Maven gate and add production verification for signed enterprise identities before external deployment."
+      "next_action": "Run the full Maven gate; integrate EnterpriseIdentityVerifier with a real SAML 2.0/OIDC identity provider bridge before external deployment."
     },
     {
       "id": "P0-SANDBOX-ADVERSARIAL-COVERAGE",
@@ -212,9 +212,9 @@
     },
     {
       "id": "P1-EXECUTION-BUDGET-VISIBILITY",
-      "state": "STUB",
+      "state": "IMPLEMENTED_BUDGET_MODEL_GUARD_EXECUTION_PLAN_WIRING_PER_SCENARIO_EXPECTED_RESULTS_AND_VSCODE_PLAN_VIEW_BUDGET_ROWS_DONE_RICH_PER_SCENARIO_PANEL_STILL_MISSING",
       "requires_human": false,
-      "next_action": "Add expected result, token estimate, cost ceiling and data-transfer scope."
+      "next_action": "Optional: replace the flat VS Code budget summary rows with a richer per-scenario detail panel."
     },
     {
       "id": "P1-PROVIDER-MODEL-REPLACEABILITY",
@@ -224,27 +224,27 @@
     },
     {
       "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
-      "state": "PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE",
+      "state": "PARTIAL_BUILD_LANE_RECEIPT_SERVICE_EMBEDS_SBOM_AND_ALL_VERIFIER_RESULTS_JAVA_API_ONLY_NOT_INVOKED_BY_LOCAL_GATE_SCRIPT_LIVE_CVE_FEED_STILL_MISSING",
       "requires_human": false,
-      "next_action": "Add dependency lock, SBOM, vulnerability and license packs."
+      "next_action": "Wire BuildLaneReceiptService as an invocable step inside scripts/onsure-local-gate.sh (or a new dedicated build-lane script), and add a live CVE feed or an out-of-band-reviewed update process for the denylist."
     },
     {
       "id": "P1-PERFORMANCE-RECOVERY",
-      "state": "PARTIAL_BOUNDED_RECOVERY_WITH_FAILURE_INJECTION_IMPLEMENTED_LOAD_PERFORMANCE_BENCHMARK_MISSING",
+      "state": "PARTIAL_BOUNDED_RECOVERY_AND_CONCURRENT_LOAD_BENCHMARK_WITH_REGRESSION_CHECK_IMPLEMENTED_FAILOVER_SIMULATION_NOT_APPLICABLE_NO_LOCAL_QUEUE_DB_OBJECT_STORAGE_BACKEND",
       "requires_human": false,
-      "next_action": "Implement load, latency, outage and recovery harnesses."
+      "next_action": "If/when a queue, database or object-storage backend is added to the architecture, add a failover simulation for it; until then this is not a local gap to close."
     },
     {
       "id": "P1-OBSERVABILITY-OPERATIONS",
-      "state": "PARTIAL_STRUCTURED_LOG_AND_METRIC_IMPLEMENTED_TRACE_EXPORT_AND_QUEUE_BACKUP_CONTROLS_MISSING",
+      "state": "PARTIAL_LOG_METRIC_OTLP_TRACE_QUEUE_BACKLOG_AND_SCHEDULED_LOCAL_BACKUP_IMPLEMENTED_SPAN_DURATION_AND_OFFSITE_REPLICATION_MISSING",
       "requires_human": false,
-      "next_action": "Implement metrics, logs, traces, backup, restore and retention controls."
+      "next_action": "Add span duration tracking to ObservabilityEvent and offsite backup replication."
     },
     {
       "id": "P1-DEPLOYMENT",
-      "state": "PARTIAL_PROFILE_CONSTRAINT_VALIDATOR_IMPLEMENTED_INSTALLER_AND_PACKAGING_MISSING",
+      "state": "PARTIAL_PROFILE_VALIDATOR_SIGNED_PACKAGE_BUILDER_INSTALL_UPDATE_ROLLBACK_VSCODE_FLOW_AND_HEALTH_CHECK_AUTO_ROLLBACK_IMPLEMENTED_PACKAGE_BUILD_STEP_STILL_SEPARATE",
       "requires_human": false,
-      "next_action": "Implement signed installer, released VSIX, update, rollback, on-premises and air-gapped packages."
+      "next_action": "Optional: unify package building into the same interactive VS Code flow; wire SignedArtifactService into an automated release pipeline step."
     },
     {
       "id": "FINAL-EXECUTION-STAGE",
@@ -269,6 +269,12 @@
       "state": "HOLD",
       "requires_human": true,
       "next_action": "Keep all release flags false until every gate passes."
+    },
+    {
+      "id": "DESIGN-AUTHORITY-ORPHANED-REGISTRY-CLEANUP",
+      "state": "FOUND_STATUS_FINAL_PRODUCT_REQUIREMENT_COVERAGE_V1_JSON_STILL_BOUND_TO_DEPRECATED_DOCS_40_44_NEVER_REBOUND_TO_DOCS_MASTER",
+      "requires_human": false,
+      "next_action": "Either rebind status/final-product-requirement-coverage.v1.json (companion_authorities) to the corresponding docs/master concepts per ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md Sec.3-1, or retire the file if docs/master fully superseded it. Do not treat its FR-FIN-* items as authoritative until this is resolved."
     }
   ],
   "final_lock_allowed": false,

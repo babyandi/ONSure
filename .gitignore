@@ -13,3 +13,5 @@ validation-data/
 __pycache__/
 .env
 .venv/
+node_modules/
+*.vsix

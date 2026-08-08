@@ -325,10 +325,16 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
+        "vscode-extension/view-model.js",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
+        "vscode-extension/view-model.test.js"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -336,13 +342,11 @@
         "VSCODE"
       ],
       "implemented_surfaces": [
-        "CORE"
+        "CORE",
+        "VSCODE"
       ],
       "missing_controls": [
-        "EXPECTED_RESULT_PER_SCENARIO_MISSING",
-        "TOKEN_BUDGET_MISSING",
-        "DATA_TRANSFER_BUDGET_MISSING",
-        "VSCODE_PLAN_PREVIEW_MISSING"
+        "VSCODE_PLAN_PREVIEW_IS_SUMMARY_ROWS_NOT_A_PER_SCENARIO_DETAIL_PANEL"
       ],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
@@ -1337,25 +1341,30 @@
       "id": "NFR-06",
       "name": "Execution budget visibility",
       "normative_phrase": "실행 비용·Token·데이터 전송 범위 가시화",
-      "implementation_status": "STUB",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
+        "vscode-extension/view-model.js",
+        "vscode-extension/extension.js"
       ],
-      "test_refs": [],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuardTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
+        "vscode-extension/view-model.test.js"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE",
         "VSCODE"
       ],
       "implemented_surfaces": [
-        "CORE"
+        "CORE",
+        "VSCODE"
       ],
-      "missing_controls": [
-        "TOKEN_ESTIMATE_MISSING",
-        "DATA_TRANSFER_SCOPE_MISSING",
-        "VSCODE_BUDGET_VIEW_MISSING"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
         "SUBREQ_SURFACE_GATE"
@@ -1372,11 +1381,13 @@
         "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
         "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
         "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
-        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifier.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
-        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java"
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/EnterpriseIdentityVerifierTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1386,7 +1397,6 @@
         "CORE"
       ],
       "missing_controls": [
-        "SIGNED_ENTERPRISE_IDENTITY_VERIFIER_NOT_IMPLEMENTED",
         "CURRENT_MAIN_FULL_MAVEN_RECEIPT_NOT_RUN"
       ],
       "detector_controls": [
@@ -1428,9 +1438,9 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 13,
+    "implemented": 14,
     "partial": 29,
-    "stub": 1,
+    "stub": 0,
     "design_only": 0,
     "verification_not_run": 43
   },
