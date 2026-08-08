@@ -699,12 +699,14 @@
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfile.java",
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java",
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilder.java",
-        "src/main/java/kr/co/oruda/onsure/platform/DeploymentInstallationService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentInstallationService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SignedArtifactService.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilderTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/DeploymentInstallationServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentInstallationServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactServiceTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
@@ -712,8 +714,8 @@
       "limitations": [
         "INSTALL_UPDATE_ROLLBACK_IS_A_CLI_LEVEL_SERVICE_NO_INTERACTIVE_UI_OR_HEALTH_CHECK_TRIGGERED_AUTO_ROLLBACK",
         "SIGNED_FILE_PACKAGE_ONLY_NO_INTERACTIVE_INSTALLER_UI",
-        "VSIX_PACKAGING_HANDLED_SEPARATELY_BY_VSCODE_EXTENSION_NPX_VSCE_NOT_SIGNED_HERE",
-        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
+        "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
+        "SIGNED_ARTIFACT_SERVICE_NOT_YET_INVOKED_ON_A_REAL_VSCE_BUILT_VSIX_NODE_MODULES_NOT_AVAILABLE_OFFLINE_HERE"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
     }
