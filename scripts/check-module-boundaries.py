@@ -31,11 +31,11 @@ def physical_core_source(relative: str) -> bool:
     if not relative.startswith("src/main/java/"):
         return False
     return relative not in {
-        "src/main/java/io/onsure/platform/ONSureCli.java",
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
-        "src/main/java/io/onsure/platform/OrudaTargetAdapter.java",
-        "src/main/java/io/onsure/platform/ProductPlatformE2EMain.java",
-    } and not relative.startswith("src/main/java/io/onsure/platform/oruda/")
+        "src/main/java/kr/co/oruda/onsure/platform/ONSureCli.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/OrudaTargetAdapter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ProductPlatformE2EMain.java",
+    } and not relative.startswith("src/main/java/kr/co/oruda/onsure/platform/oruda/")
 
 
 def text_values(root: ET.Element, xpath: str) -> set[str]:
@@ -61,7 +61,7 @@ def main() -> int:
                 violations.append(f"CORE_FORBIDDEN_IMPORT:{relative}:{imported}")
         if "OrudaTargetAdapter" in text:
             violations.append(f"CORE_ORUDA_SYMBOL_REFERENCE:{relative}")
-        if "io.onsure.platform.oruda" in text:
+        if "kr.co.oruda.onsure.platform.oruda" in text:
             violations.append(f"CORE_ORUDA_PACKAGE_REFERENCE:{relative}")
         if "fixtures/oruda" in text or "fixtures/e2e/oruda-target" in text:
             violations.append(f"CORE_ORUDA_FIXTURE_REFERENCE:{relative}")
@@ -84,11 +84,11 @@ def main() -> int:
     core_pom = ET.parse(ROOT / "modules/onsure-core/pom.xml").getroot()
     core_excludes = text_values(core_pom, ".//m:excludes/m:exclude")
     required_core_excludes = {
-        "io/onsure/platform/ONSureCli.java",
-        "io/onsure/platform/LocalAuthenticatedApiServer.java",
-        "io/onsure/platform/OrudaTargetAdapter.java",
-        "io/onsure/platform/ProductPlatformE2EMain.java",
-        "io/onsure/platform/oruda/**",
+        "kr/co/oruda/onsure/platform/ONSureCli.java",
+        "kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "kr/co/oruda/onsure/platform/OrudaTargetAdapter.java",
+        "kr/co/oruda/onsure/platform/ProductPlatformE2EMain.java",
+        "kr/co/oruda/onsure/platform/oruda/**",
     }
     if not required_core_excludes.issubset(core_excludes):
         violations.append(f"CORE_POM_EXCLUDES_MISSING:{sorted(required_core_excludes - core_excludes)}")
@@ -96,21 +96,21 @@ def main() -> int:
     adapter_pom = ET.parse(ROOT / "modules/onsure-adapter-oruda/pom.xml").getroot()
     adapter_includes = text_values(adapter_pom, ".//m:includes/m:include")
     required_adapter_includes = {
-        "io/onsure/platform/OrudaTargetAdapter.java",
-        "io/onsure/platform/ProductPlatformE2EMain.java",
-        "io/onsure/platform/oruda/**",
+        "kr/co/oruda/onsure/platform/OrudaTargetAdapter.java",
+        "kr/co/oruda/onsure/platform/ProductPlatformE2EMain.java",
+        "kr/co/oruda/onsure/platform/oruda/**",
     }
     if not required_adapter_includes.issubset(adapter_includes):
         violations.append(f"ORUDA_POM_INCLUDES_MISSING:{sorted(required_adapter_includes - adapter_includes)}")
 
     cli_pom = ET.parse(ROOT / "modules/onsure-cli/pom.xml").getroot()
     cli_includes = text_values(cli_pom, ".//m:includes/m:include")
-    if cli_includes != {"io/onsure/platform/ONSureCli.java"}:
+    if cli_includes != {"kr/co/oruda/onsure/platform/ONSureCli.java"}:
         violations.append(f"CLI_POM_INCLUDE_SET:{sorted(cli_includes)}")
 
     api_pom = ET.parse(ROOT / "modules/onsure-local-api/pom.xml").getroot()
     api_includes = text_values(api_pom, ".//m:includes/m:include")
-    if api_includes != {"io/onsure/platform/LocalAuthenticatedApiServer.java"}:
+    if api_includes != {"kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"}:
         violations.append(f"LOCAL_API_POM_INCLUDE_SET:{sorted(api_includes)}")
 
     sdk_pom = ET.parse(ROOT / "modules/onsure-sdk/pom.xml").getroot()
@@ -121,7 +121,7 @@ def main() -> int:
         violations.append("SDK_CORE_DEPENDENCY_INVALID")
     elif core_dependencies[0].findtext("m:optional", default="false", namespaces=NS) != "true":
         violations.append("SDK_CORE_DEPENDENCY_MUST_BE_NON_TRANSITIVE")
-    sdk_source = ROOT / "modules/onsure-sdk/src/main/java/io/onsure/sdk/v1/ONSureSdkV1.java"
+    sdk_source = ROOT / "modules/onsure-sdk/src/main/java/kr/co/oruda/onsure/sdk/v1/ONSureSdkV1.java"
     if not sdk_source.is_file():
         violations.append("SDK_ENTRYPOINT_MISSING")
     else:
@@ -147,7 +147,7 @@ def main() -> int:
         for operation in expected_sdk_operations:
             if f'"{operation}"' not in sdk_text:
                 violations.append(f"SDK_OPERATION_NOT_BOUND:{operation}")
-        if sdk_contract.get("entrypoint") != "io.onsure.sdk.v1.ONSureSdkV1":
+        if sdk_contract.get("entrypoint") != "kr.co.oruda.onsure.sdk.v1.ONSureSdkV1":
             violations.append("SDK_ENTRYPOINT_CONTRACT_INVALID")
         if sdk_contract.get("final_claim_allowed") is not False:
             violations.append("SDK_CONTRACT_FINAL_CLAIM_INVALID")

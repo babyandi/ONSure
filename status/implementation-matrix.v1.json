@@ -31,7 +31,7 @@
     "local_authenticated_api": "PARTIAL",
     "web_service_case": "PARTIAL",
     "olicense": "PARTIAL",
-    "tenant_identity": "STUB",
+    "tenant_identity": "PARTIAL",
     "sandbox": "PARTIAL",
     "retention_deletion": "PARTIAL",
     "observability_operations": "DESIGN_ONLY",
@@ -40,8 +40,8 @@
   },
   "counts": {
     "IMPLEMENTED": 0,
-    "PARTIAL": 22,
-    "STUB": 2,
+    "PARTIAL": 23,
+    "STUB": 1,
     "DESIGN_ONLY": 4,
     "CONFLICT": 0,
     "DEPRECATED": 0

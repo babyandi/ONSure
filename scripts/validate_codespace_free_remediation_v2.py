@@ -14,6 +14,7 @@ COUNT_AUTHORITY = "contracts/omission-failure-injection-counts.v1.json"
 REQUIRED = [
     "contracts/codespace-free-remediation-plan.v1.json",
     "contracts/product-process-lineage.v1.json",
+    "contracts/sandbox-boundary.v1.json",
     COUNT_AUTHORITY,
     "status/design-capability-coverage.v2.json",
     "status/product-subrequirement-coverage.v1.json",
@@ -35,13 +36,16 @@ REQUIRED = [
     "scripts/validate-verification-claims.py",
     "scripts/validate_verification_claims_v2.py",
     "scripts/validate_codespace_free_remediation_v2.py",
-    "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-    "src/main/java/io/onsure/assurance/LocalKeyRegistry.java",
-    "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
-    "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
-    "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-    "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java",
-    "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java",
+    "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+    "src/main/java/kr/co/oruda/onsure/assurance/LocalKeyRegistry.java",
+    "src/main/java/kr/co/oruda/onsure/platform/BoundedProcessRunner.java",
+    "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanActionPolicy.java",
+    "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
+    "src/test/java/kr/co/oruda/onsure/platform/BoundedProcessRunnerTest.java",
+    "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanBundleEntryTest.java",
+    "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
 ]
 ASSERTIONS = {
     "scripts/onsure-local-gate.sh": [
@@ -53,41 +57,54 @@ ASSERTIONS = {
         COUNT_AUTHORITY,
     ],
     "scripts/onsure-one-shot.sh": ["LOCAL_GATE_AUTHORITY", "local_gate_authority", COUNT_AUTHORITY],
-    "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java": [
+    "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java": [
         "AUTHORITY_BASE_PROPERTY", "APPROVAL_AUTHORITY_MUST_BE_OUTSIDE_TARGET_WORKSPACE",
         "APPROVAL_AUTHORITY_PATH_OVERRIDE_PROHIBITED", "discoverForContainedPath",
     ],
-    "src/main/java/io/onsure/assurance/LocalKeyRegistry.java": [
+    "src/main/java/kr/co/oruda/onsure/assurance/LocalKeyRegistry.java": [
         "PUBLIC_KEY_OUTSIDE_AUTHORITY_ROOT", "ExclusiveFileLock.call(lockFile", "ATOMIC_MOVE",
     ],
-    "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
+    "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java": [
         "approvalAuthority.rejectRequestOverrides", "approvalAuthority.requireTrustedKeyRegistry",
         "ApprovedExecutionPlanBundle", "project.register-target", "plan.generate",
+        "new TenantRbacService(workspaceRoot).execute", "AuthenticatedWorkflowIdentity authenticatedIdentity",
     ],
-    "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java": [
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java": [
+        "CROSS_TENANT_RESOURCE_ACCESS_DENIED", "CROSS_TENANT_RESOURCE_WRITE_DENIED",
+        "AUTHENTICATED_TENANT_CONTEXT_SUBSTITUTION", "resultClaims",
+        "TENANT_RBAC_STATE_SYMLINK",
+    ],
+    "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java": [
+        "rolesAndDurableOwnershipDenyCrossTenantReadsAndWrites",
+        "callerCannotSubstituteAuthenticatedActorTenantRegionOrRoles",
+        "validationResultBindsItsRunArtifactsToTheExecutingTenant",
+        "dispatcherPersistsOnlyTheServerAuthenticatedTenantAndActor",
+        "tenantRegistryCannotBeRedirectedThroughAWorkspaceSymlink",
+    ],
+    "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalService.java": [
         "verifyApprovedPlanBundle", "EXECUTION_PLAN_CONSUMED_APPROVAL_INVALID",
     ],
-    "src/main/java/io/onsure/platform/ValidationEngine.java": [
+    "src/main/java/kr/co/oruda/onsure/platform/ValidationEngine.java": [
         "APPROVED_EXECUTION_PLAN_BUNDLE_REQUIRED", "ExecutionPlanActionPolicy.notApproved",
     ],
-    "src/main/java/io/onsure/platform/ProgramLearningService.java": ["BoundedProcessRunner.run"],
-    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": ["BoundedProcessRunner.run"],
-    "src/main/java/io/onsure/platform/ImprovementWorkflowService.java": ["BoundedProcessRunner.run"],
-    "src/main/java/io/onsure/platform/GitWorkflowService.java": [
+    "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java": ["BoundedProcessRunner.run"],
+    "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java": ["BoundedProcessRunner.run"],
+    "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java": ["BoundedProcessRunner.run"],
+    "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java": [
         "BoundedProcessRunner.run", "GIT_DELIVERY_APPROVAL_EXPIRED", "discoverForContainedPath",
     ],
 }
 FORBIDDEN = {
-    "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java": [
+    "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java": [
         'inputPath(request, "trusted_key_registry"',
         'inputPath(request, "approval_key_registry"',
         'outputPath(request, "approval_replay_ledger"',
         'outputPath(request, "verification_replay_ledger"',
     ],
-    "src/main/java/io/onsure/platform/ProgramLearningService.java": ["getInputStream().readAllBytes()"],
-    "src/main/java/io/onsure/platform/SourceReferenceBinding.java": ["getInputStream().readAllBytes()"],
-    "src/main/java/io/onsure/platform/ImprovementWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
-    "src/main/java/io/onsure/platform/GitWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
+    "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java": ["getInputStream().readAllBytes()"],
+    "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java": ["getInputStream().readAllBytes()"],
+    "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
+    "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java": ["ProcessBuilder builder", "process.waitFor("],
 }
 COMMANDS = [
     ([sys.executable, "scripts/check-module-boundaries.py"], "ONSURE_MODULE_BOUNDARY_STATIC_PASS"),
@@ -163,6 +180,7 @@ def main() -> int:
     verification = json.loads((ROOT / "status/verification-status.v1.json").read_text(encoding="utf-8"))
     workflow = verification.get("workflow_surface_parity", {})
     process = json.loads((ROOT / "contracts/product-process-lineage.v1.json").read_text(encoding="utf-8"))
+    sandbox = json.loads((ROOT / "contracts/sandbox-boundary.v1.json").read_text(encoding="utf-8"))
 
     plan = json.loads((ROOT / "contracts/codespace-free-remediation-plan.v1.json").read_text(encoding="utf-8"))
     if plan.get("final_single_command") != "bash scripts/onsure-final-stage.sh --profile core":
@@ -191,9 +209,9 @@ def main() -> int:
         "failure_injection_authority": COUNT_AUTHORITY,
         "failure_injection_count": total,
         **count_values,
-        "sandbox_required_attacks": 12,
-        "sandbox_verified_attacks": 10,
-        "sandbox_unverified_attacks": ["CROSS_TENANT_READ", "CROSS_TENANT_WRITE"],
+        "sandbox_required_attacks": len(sandbox.get("required_attack_fixtures", [])),
+        "sandbox_verified_attacks": len(sandbox.get("verified_attack_fixtures", [])),
+        "sandbox_unverified_attacks": sandbox.get("unverified_attack_fixtures", []),
         "runtime_execution": "NOT_RUN_BY_STATIC_GATE",
         "modular_compile": "NOT_RUN_BY_STATIC_GATE",
         "independent_otester": "NOT_RUN",

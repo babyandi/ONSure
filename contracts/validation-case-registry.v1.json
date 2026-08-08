@@ -8,7 +8,7 @@
       "cases": [
         {
           "id": "POS-001",
-          "test_class": "io.onsure.platform.ValidationPlatformE2ETest",
+          "test_class": "kr.co.oruda.onsure.platform.ValidationPlatformE2ETest",
           "minimum_tests": 1,
           "oracle": "NORMAL_FLOW_COMPLETES_WITH_DECLARED_DECISION_AND_EVIDENCE",
           "oracle_assertion_id": "OA-POS-001",
@@ -17,7 +17,7 @@
         },
         {
           "id": "POS-002",
-          "test_class": "io.onsure.platform.ProductRegistrationWorkflowTest",
+          "test_class": "kr.co.oruda.onsure.platform.ProductRegistrationWorkflowTest",
           "minimum_tests": 1,
           "oracle": "REGISTRATION_BINDS_TARGET_PROJECT_AND_PLAN",
           "oracle_assertion_id": "OA-POS-002",
@@ -26,7 +26,7 @@
         },
         {
           "id": "POS-003",
-          "test_class": "io.onsure.platform.ExecutionPlanApprovalServiceTest",
+          "test_class": "kr.co.oruda.onsure.platform.ExecutionPlanApprovalServiceTest",
           "minimum_tests": 1,
           "oracle": "VALID_SIGNED_APPROVAL_BUNDLE_IS_CONSUMED_ONCE"
           ,"oracle_assertion_id": "OA-POS-003"
@@ -35,7 +35,7 @@
         },
         {
           "id": "POS-004",
-          "test_class": "io.onsure.platform.GitWorkflowServiceTest",
+          "test_class": "kr.co.oruda.onsure.platform.GitWorkflowServiceTest",
           "minimum_tests": 1,
           "oracle": "APPROVED_GIT_TRANSITION_PRESERVES_PROVENANCE"
           ,"oracle_assertion_id": "OA-POS-004"
@@ -44,7 +44,7 @@
         },
         {
           "id": "POS-005",
-          "test_class": "io.onsure.platform.ApprovalAuthorityPathsTest",
+          "test_class": "kr.co.oruda.onsure.platform.ApprovalAuthorityPathsTest",
           "minimum_tests": 1,
           "oracle": "CANONICAL_WORKSPACE_RESOLVES_SINGLE_EXTERNAL_AUTHORITY",
           "oracle_assertion_id": "OA-POS-005",
@@ -58,7 +58,7 @@
       "cases": [
         {
           "id": "NEG-001",
-          "test_class": "io.onsure.platform.ExecutionPlanBundleEntryTest",
+          "test_class": "kr.co.oruda.onsure.platform.ExecutionPlanBundleEntryTest",
           "minimum_tests": 1,
           "oracle": "UNSIGNED_OR_INCOMPLETE_BUNDLE_FAILS_CLOSED"
           ,"oracle_assertion_id": "OA-NEG-001"
@@ -67,7 +67,7 @@
         },
         {
           "id": "NEG-002",
-          "test_class": "io.onsure.assurance.ConsumedApprovalReceiptVerifierTest",
+          "test_class": "kr.co.oruda.onsure.assurance.ConsumedApprovalReceiptVerifierTest",
           "minimum_tests": 1,
           "oracle": "UNCONSUMED_OR_MISMATCHED_RECEIPT_FAILS_CLOSED"
           ,"oracle_assertion_id": "OA-NEG-002"
@@ -76,7 +76,7 @@
         },
         {
           "id": "NEG-003",
-          "test_class": "io.onsure.platform.ExecutionPlanAutoApprovalBoundaryTest",
+          "test_class": "kr.co.oruda.onsure.platform.ExecutionPlanAutoApprovalBoundaryTest",
           "minimum_tests": 1,
           "oracle": "UNTRUSTED_AUTO_APPROVAL_IS_REJECTED"
           ,"oracle_assertion_id": "OA-NEG-003"
@@ -90,7 +90,7 @@
       "cases": [
         {
           "id": "ADV-001",
-          "test_class": "io.onsure.assurance.ApprovalReceiptIdCollisionTest",
+          "test_class": "kr.co.oruda.onsure.assurance.ApprovalReceiptIdCollisionTest",
           "minimum_tests": 1,
           "oracle": "SAME_ID_DIFFERENT_DIGEST_IS_REJECTED"
           ,"oracle_assertion_id": "OA-ADV-001"
@@ -99,7 +99,7 @@
         },
         {
           "id": "ADV-002",
-          "test_class": "io.onsure.assurance.LocalKeyRegistryBoundaryTest",
+          "test_class": "kr.co.oruda.onsure.assurance.LocalKeyRegistryBoundaryTest",
           "minimum_tests": 1,
           "oracle": "TRUST_ROOT_SUBSTITUTION_IS_REJECTED"
           ,"oracle_assertion_id": "OA-ADV-002"
@@ -108,7 +108,7 @@
         },
         {
           "id": "ADV-003",
-          "test_class": "io.onsure.platform.BoundedProcessRunnerTest",
+          "test_class": "kr.co.oruda.onsure.platform.BoundedProcessRunnerTest",
           "minimum_tests": 1,
           "oracle": "OUTPUT_FLOOD_AND_TIMEOUT_REMAIN_BOUNDED"
           ,"oracle_assertion_id": "OA-ADV-003"
@@ -117,12 +117,30 @@
         },
         {
           "id": "ADV-004",
-          "test_class": "io.onsure.platform.ApprovalAuthorityPathsTest",
+          "test_class": "kr.co.oruda.onsure.platform.ApprovalAuthorityPathsTest",
           "minimum_tests": 1,
           "oracle": "SYMLINK_ALIAS_AND_COLOCATED_AUTHORITY_ARE_REJECTED",
           "oracle_assertion_id": "OA-ADV-004",
           "expected_reason": "SYMLINK_AUTHORITY_ALIAS_REJECTED",
           "test_method": "symlinkedWorkspaceAliasCannotForkApprovalAuthority"
+        },
+        {
+          "id": "ADV-005",
+          "test_class": "kr.co.oruda.onsure.platform.TenantRbacServiceTest",
+          "minimum_tests": 1,
+          "oracle": "CROSS_TENANT_RESOURCE_READ_IS_DENIED",
+          "oracle_assertion_id": "OA-ADV-005",
+          "expected_reason": "CROSS_TENANT_RESOURCE_ACCESS_DENIED",
+          "test_method": "rolesAndDurableOwnershipDenyCrossTenantReadsAndWrites"
+        },
+        {
+          "id": "ADV-006",
+          "test_class": "kr.co.oruda.onsure.platform.TenantRbacServiceTest",
+          "minimum_tests": 1,
+          "oracle": "CROSS_TENANT_RESOURCE_WRITE_IS_DENIED",
+          "oracle_assertion_id": "OA-ADV-006",
+          "expected_reason": "CROSS_TENANT_RESOURCE_WRITE_DENIED",
+          "test_method": "rolesAndDurableOwnershipDenyCrossTenantReadsAndWrites"
         }
       ]
     }

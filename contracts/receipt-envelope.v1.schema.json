@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://onsure.local/contracts/receipt-envelope.v1.schema.json",
   "title": "ONSURE ReceiptEnvelope Java Contract v1",
-  "description": "Exact JSON shape of io.onsure.assurance.ReceiptEnvelope.",
+  "description": "Exact JSON shape of kr.co.oruda.onsure.assurance.ReceiptEnvelope.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -4,7 +4,7 @@
 
 - 제품 핵심 기준선: `main`
 - 범용 하네스: `harness/universal-v1/**`
-- 실행 코드: `io.onsure.harness`
+- 실행 코드: `kr.co.oruda.onsure.harness`
 - 상태 파일: `harness/universal-v1/status/current-status.v1.json`
 - 공식 실행 환경: JDK 17, Maven, Git, Bash
 

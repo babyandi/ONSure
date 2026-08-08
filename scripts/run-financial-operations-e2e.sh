@@ -16,9 +16,9 @@ for iteration in $(seq 1 "${repeat}"); do
   run="${out}/run-${iteration}"
   mkdir -p "${run}"
   mvn -B -ntp -Dtest=EnterpriseCapabilityRuntimeTest test | tee "${run}/maven.log"
-  test -s target/surefire-reports/io.onsure.platform.EnterpriseCapabilityRuntimeTest.txt
+  test -s target/surefire-reports/kr.co.oruda.onsure.platform.EnterpriseCapabilityRuntimeTest.txt
   python3 "${ROOT}/scripts/normalize-surefire-summary.py" \
-    < target/surefire-reports/io.onsure.platform.EnterpriseCapabilityRuntimeTest.txt \
+    < target/surefire-reports/kr.co.oruda.onsure.platform.EnterpriseCapabilityRuntimeTest.txt \
     > "${run}/summary.txt"
   grep -Fq 'Failures: 0' "${run}/summary.txt"
   grep -Fq 'Errors: 0' "${run}/summary.txt"

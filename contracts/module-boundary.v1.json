@@ -4,19 +4,19 @@
   "modules": {
     "onsure-core": {
       "allowed_package_prefixes": [
-        "io.onsure.assurance",
-        "io.onsure.harness",
-        "io.onsure.learning",
-        "io.onsure.rag",
-        "io.onsure.platform"
+        "kr.co.oruda.onsure.assurance",
+        "kr.co.oruda.onsure.harness",
+        "kr.co.oruda.onsure.learning",
+        "kr.co.oruda.onsure.rag",
+        "kr.co.oruda.onsure.platform"
       ],
       "forbidden_import_prefixes": [
-        "io.onsure.platform.oruda",
-        "io.onsure.platform.OrudaTargetAdapter"
+        "kr.co.oruda.onsure.platform.oruda",
+        "kr.co.oruda.onsure.platform.OrudaTargetAdapter"
       ],
       "forbidden_source_paths": [
-        "src/main/java/io/onsure/platform/oruda/",
-        "src/test/java/io/onsure/platform/oruda/"
+        "src/main/java/kr/co/oruda/onsure/platform/oruda/",
+        "src/test/java/kr/co/oruda/onsure/platform/oruda/"
       ],
       "required_scenarios": [
         "GENERAL_PROGRAM_BASELINE_FAIL",
@@ -27,8 +27,8 @@
     "onsure-adapter-oruda": {
       "depends_on": ["onsure-core"],
       "package_prefixes": [
-        "io.onsure.platform.oruda",
-        "io.onsure.platform.OrudaTargetAdapter"
+        "kr.co.oruda.onsure.platform.oruda",
+        "kr.co.oruda.onsure.platform.OrudaTargetAdapter"
       ],
       "required_scenarios": ["ORUDA_TARGET_FAIL", "ORUDA_MVF_001_PASS"],
       "required_for_core": false
@@ -39,7 +39,7 @@
     },
     "onsure-sdk": {
       "depends_on": ["onsure-core"],
-      "public_package_prefixes": ["io.onsure.sdk.v1"],
+      "public_package_prefixes": ["kr.co.oruda.onsure.sdk.v1"],
       "internal_dependency_transitive": false,
       "authority_paths_caller_selectable": false,
       "raw_dispatch_public": false

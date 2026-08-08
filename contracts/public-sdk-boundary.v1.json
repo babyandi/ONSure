@@ -1,11 +1,11 @@
 {
   "contract": "ONSURE_PUBLIC_SDK_BOUNDARY_V1",
   "version": "1.0.0",
-  "artifact": "io.onsure:onsure-sdk",
-  "public_package": "io.onsure.sdk.v1",
-  "entrypoint": "io.onsure.sdk.v1.ONSureSdkV1",
+  "artifact": "kr.co.oruda.onsure:onsure-sdk",
+  "public_package": "kr.co.oruda.onsure.sdk.v1",
+  "entrypoint": "kr.co.oruda.onsure.sdk.v1.ONSureSdkV1",
   "request_model": "TYPED_IMMUTABLE_RECORDS",
-  "shared_gateway": "io.onsure.platform.LocalWorkflowDispatcher",
+  "shared_gateway": "kr.co.oruda.onsure.platform.LocalWorkflowDispatcher",
   "supported_operations": [
     "project.register-workspace",
     "project.register",

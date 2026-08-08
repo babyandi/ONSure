@@ -33,8 +33,8 @@ REQUIRED = [
     "scripts/validate-mvp-status-consistency.py",
     "scripts/validate-workflow-surface-parity.py",
     "scripts/validate-critical-callpaths.py",
-    "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-    "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
+    "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+    "src/main/java/kr/co/oruda/onsure/platform/BoundedProcessRunner.java",
 ]
 COMMANDS = [
     ([sys.executable, "scripts/validate-status-consistency.py"], "ONSURE_STATUS_CONSISTENCY_PASS"),

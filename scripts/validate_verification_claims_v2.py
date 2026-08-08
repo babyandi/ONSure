@@ -97,8 +97,8 @@ def validate() -> list[str]:
     if authority.get("external_replay_anchor") \
             != "IMPLEMENTED_APPEND_ONLY_OUTSIDE_MUTABLE_AUTHORITY_ROOT_LOCAL_FULL_GATE_REQUIRED":
         errors.append("APPROVAL_REPLAY_EXTERNAL_ANCHOR_STATE_INVALID")
-    anchor_source = ROOT / "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java"
-    anchor_test = ROOT / "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java"
+    anchor_source = ROOT / "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReplayExternalAnchor.java"
+    anchor_test = ROOT / "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifierTest.java"
     if not anchor_source.is_file() or not anchor_test.is_file():
         errors.append("APPROVAL_REPLAY_EXTERNAL_ANCHOR_IMPLEMENTATION_MISSING")
     else:
@@ -160,10 +160,10 @@ def validate() -> list[str]:
             ROOT / "scripts/test-fixture-sandbox-boundary.sh").read_text(encoding="utf-8"):
         errors.append("SANDBOX_EXPANDED_BOUNDARY_MARKER_MISSING")
     for required_test in (
-        "src/test/java/io/onsure/platform/AdversarialConcurrencyAndOutputTest.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-        "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java",
-        "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/AdversarialConcurrencyAndOutputTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/BoundedProcessRunnerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/GitWorkflowServiceTest.java",
     ):
         if not (ROOT / required_test).is_file():
             errors.append(f"ADVERSARIAL_TEST_MISSING:{required_test}")

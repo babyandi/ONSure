@@ -6,4 +6,4 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   exit 64
 }
 exec bash "$ROOT/scripts/run-oruda-cli.sh" \
-  io.onsure.platform.oruda.OrudaDocumentMaterializerMain "$@"
+  kr.co.oruda.onsure.platform.oruda.OrudaDocumentMaterializerMain "$@"

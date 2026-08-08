@@ -99,7 +99,7 @@ if [[ "$MODE" == "full" ]]; then
     --receipt "$OUT/artifacts/validation-case-execution-receipt.json"
   if [[ "$PROFILE" == "oruda" ]]; then
     run_step oruda-module mvn -B -ntp -q -f pom-modular.xml -pl modules/onsure-adapter-oruda -am test
-    run_step oruda-e2e mvn -B -ntp -q -Dtest=io.onsure.platform.oruda.OrudaMvf001E2ETest test
+    run_step oruda-e2e mvn -B -ntp -q -Dtest=kr.co.oruda.onsure.platform.oruda.OrudaMvf001E2ETest test
   fi
   EXT_BUILD="$OUT/vscode-extension-build"; cp -R "$ROOT/vscode-extension" "$EXT_BUILD"
   (cd "$EXT_BUILD"; npm ci --ignore-scripts --no-audit --no-fund > "$OUT/logs/vscode-npm-install.log" 2>&1; npm run check > "$OUT/logs/vscode-node-check.log" 2>&1; npm run package -- --out "$OUT/artifacts/onsure.vsix" > "$OUT/logs/vscode-package.log" 2>&1)

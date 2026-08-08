@@ -52,12 +52,12 @@ require_file scripts/verify-local-assurance.sh REVERIFY_SCRIPT_MISSING
 require_file scripts/summarize-local-assurance.sh SUMMARY_SCRIPT_MISSING
 
 # Current core implementation slice.
-require_file src/main/java/io/onsure/platform/ValidationEngine.java PRODUCT_VALIDATION_ENGINE_MISSING
-require_file src/main/java/io/onsure/platform/TargetAdapter.java PRODUCT_TARGET_ADAPTER_MISSING
-require_file src/main/java/io/onsure/platform/GenericManifestTargetAdapter.java GENERIC_TARGET_ADAPTER_MISSING
-require_file src/main/java/io/onsure/platform/FixtureHarness.java PRODUCT_FIXTURE_HARNESS_MISSING
-require_file src/main/java/io/onsure/learning/OfficialLearningLedger.java LEARNING_LEDGER_MISSING
-require_file src/main/java/io/onsure/rag/ProgramLearningOrchestrator.java LEARNING_ORCHESTRATOR_MISSING
+require_file src/main/java/kr/co/oruda/onsure/platform/ValidationEngine.java PRODUCT_VALIDATION_ENGINE_MISSING
+require_file src/main/java/kr/co/oruda/onsure/platform/TargetAdapter.java PRODUCT_TARGET_ADAPTER_MISSING
+require_file src/main/java/kr/co/oruda/onsure/platform/GenericManifestTargetAdapter.java GENERIC_TARGET_ADAPTER_MISSING
+require_file src/main/java/kr/co/oruda/onsure/platform/FixtureHarness.java PRODUCT_FIXTURE_HARNESS_MISSING
+require_file src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java LEARNING_LEDGER_MISSING
+require_file src/main/java/kr/co/oruda/onsure/rag/ProgramLearningOrchestrator.java LEARNING_ORCHESTRATOR_MISSING
 
 # Core fixtures and contracts.
 require_file fixtures/e2e/general-program/onsure-target.json GENERAL_TARGET_E2E_MISSING
@@ -82,16 +82,16 @@ require_file contracts/security-findings.v1.schema.json SECURITY_FINDINGS_CONTRA
 
 # Optional ORUDA target pack and combined validator fixture runner.
 if [[ "$PROFILE" == "oruda" ]]; then
-  require_file src/main/java/io/onsure/platform/ProductPlatformE2EMain.java OPTIONAL_VALIDATOR_FIXTURE_E2E_MAIN_MISSING
-  require_file src/main/java/io/onsure/platform/OrudaTargetAdapter.java ORUDA_TARGET_ADAPTER_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/OrudaExecutionPackageCatalog.java ORUDA_EXECUTION_PACKAGE_CATALOG_LOADER_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/OrudaDocumentMaterializer.java ORUDA_DOCUMENT_MATERIALIZER_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/OrudaPackageOutputReceiptVerifier.java ORUDA_PACKAGE_OUTPUT_RECEIPT_VERIFIER_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/OrudaPackageExecutionRegistry.java ORUDA_PACKAGE_EXECUTION_REGISTRY_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/OrudaEvidenceRegistry.java ORUDA_EVIDENCE_REGISTRY_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/ReceiptLineageVerifier.java ORUDA_RECEIPT_LINEAGE_VERIFIER_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/FinalCandidateGate.java ORUDA_FINAL_CANDIDATE_GATE_MISSING
-  require_file src/main/java/io/onsure/platform/oruda/OrudaFinalLockGate.java ORUDA_FINAL_LOCK_GATE_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/ProductPlatformE2EMain.java OPTIONAL_VALIDATOR_FIXTURE_E2E_MAIN_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/OrudaTargetAdapter.java ORUDA_TARGET_ADAPTER_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/OrudaExecutionPackageCatalog.java ORUDA_EXECUTION_PACKAGE_CATALOG_LOADER_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/OrudaDocumentMaterializer.java ORUDA_DOCUMENT_MATERIALIZER_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/OrudaPackageOutputReceiptVerifier.java ORUDA_PACKAGE_OUTPUT_RECEIPT_VERIFIER_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/OrudaPackageExecutionRegistry.java ORUDA_PACKAGE_EXECUTION_REGISTRY_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/OrudaEvidenceRegistry.java ORUDA_EVIDENCE_REGISTRY_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/ReceiptLineageVerifier.java ORUDA_RECEIPT_LINEAGE_VERIFIER_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/FinalCandidateGate.java ORUDA_FINAL_CANDIDATE_GATE_MISSING
+  require_file src/main/java/kr/co/oruda/onsure/platform/oruda/OrudaFinalLockGate.java ORUDA_FINAL_LOCK_GATE_MISSING
   require_file fixtures/e2e/oruda-target/oruda-target.json ORUDA_TARGET_E2E_MISSING
   require_file fixtures/oruda/mvf-001/oruda-target.json ORUDA_MVF_TARGET_MISSING
   require_file contracts/oruda-execution-packages.v1.json ORUDA_EXECUTION_PACKAGE_MAP_MISSING

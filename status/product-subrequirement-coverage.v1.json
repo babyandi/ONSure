@@ -11,11 +11,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProductCatalog.java",
-        "src/main/java/io/onsure/platform/SourceReferenceBinding.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ProductCatalog.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ProductRegistrationWorkflowTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -46,11 +46,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/SourceReferenceBinding.java",
-        "src/main/java/io/onsure/platform/ProgramLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/HashingSourceSetTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/HashingSourceSetTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -76,11 +76,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/SourceReferenceBinding.java",
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -104,10 +104,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProgramLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -132,10 +132,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProgramLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -164,12 +164,12 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProgramLearningService.java",
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java",
-        "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ProductRegistrationWorkflowTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -192,11 +192,11 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/ProgramLearningService.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java",
           "tokens": ["parent_profile", "source_inventory", "change_set", "PARENT_PROGRAM_PROFILE_HASH_INVALID"]
         },
         {
-          "path": "src/test/java/io/onsure/platform/ProgramLearningServiceTest.java",
+          "path": "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java",
           "tokens": ["repeatedLearningBindsParentAndReportsAddedModifiedDeletedAndUnchanged", "tamperedParentProfileFailsClosed"]
         }
       ]
@@ -208,10 +208,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BehaviorLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/BehaviorLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -235,10 +235,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BehaviorLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/BehaviorLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -262,10 +262,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BehaviorLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/BehaviorLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -290,10 +290,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -317,10 +317,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -348,20 +348,20 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
-        "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
-        "src/main/java/io/onsure/platform/ValidationEngine.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanActionPolicy.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ValidationEngine.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReplayExternalAnchor.java",
         "vscode-extension/approval-review.js",
         "vscode-extension/extension.js"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java",
-        "src/test/java/io/onsure/platform/ExecutionPlanActionPolicyTest.java",
-        "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanActionPolicyTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanBundleEntryTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifierTest.java",
         "scripts/validate-vscode-extension.py"
       ],
       "evidence_refs": [],
@@ -387,7 +387,7 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalService.java",
           "tokens": [
             "PARTIAL_PLAN_ACTION_SET",
             "approved_actions",
@@ -395,7 +395,7 @@
           ]
         },
         {
-          "path": "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+          "path": "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
           "tokens": [
             "signedPartialActionApprovalPublishesAndVerifiesBoundedPlan",
             "PARTIAL_PLAN_ACTION_SET"
@@ -410,12 +410,12 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/BuiltInStages.java",
-        "src/main/java/io/onsure/platform/FixtureHarness.java",
+        "src/main/java/kr/co/oruda/onsure/platform/BuiltInStages.java",
+        "src/main/java/kr/co/oruda/onsure/platform/FixtureHarness.java",
         "scripts/onsure-local-gate.sh"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -443,7 +443,7 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "contracts/status-vocabulary.v1.json",
-        "src/main/java/io/onsure/assurance/Decision.java"
+        "src/main/java/kr/co/oruda/onsure/assurance/Decision.java"
       ],
       "test_refs": [
         "scripts/validate-status-consistency.py"
@@ -468,11 +468,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/FileValidationStore.java",
+        "src/main/java/kr/co/oruda/onsure/platform/FileValidationStore.java",
         "scripts/onsure-one-shot.sh"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/DurableStateLedgerTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DurableStateLedgerTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -498,10 +498,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -525,11 +525,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java",
-        "src/test/java/io/onsure/platform/EvidenceBasedRcaServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -546,11 +546,11 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaService.java",
           "tokens": ["impact_scope", "unknown_items", "IMPACT_BOUNDARY_NOT_CAUSALLY_VERIFIED"]
         },
         {
-          "path": "src/test/java/io/onsure/platform/EvidenceBasedRcaServiceTest.java",
+          "path": "src/test/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaServiceTest.java",
           "tokens": ["sourceCandidateSeparatesObservedImpactFromExplicitUnknowns", "boundExperimentCanVerifyImpactButNeverInventIndependentConfirmation"]
         }
       ]
@@ -562,10 +562,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/EvidenceBasedRcaService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ValidationPlatformE2ETest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -589,10 +589,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -616,11 +616,11 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java",
-        "src/test/java/io/onsure/platform/ProductWorkflowServicesTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ProductWorkflowServicesTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -635,11 +635,11 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java",
           "tokens": ["preapply_assessment", "risk_score", "impact_scope", "BYTE_EXACT_PREIMAGE_BACKUP", "SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH"]
         },
         {
-          "path": "src/test/java/io/onsure/platform/ProductWorkflowServicesTest.java",
+          "path": "src/test/java/kr/co/oruda/onsure/platform/ProductWorkflowServicesTest.java",
           "tokens": ["patchPlanRequiresApprovalAndDoesNotModifySource", "preapply_assessment", "target_source_mutated_before_approval"]
         }
       ]
@@ -651,16 +651,16 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReplayExternalAnchor.java",
         "vscode-extension/approval-review.js",
         "vscode-extension/extension.js"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifierTest.java",
         "scripts/validate-vscode-extension.py"
       ],
       "evidence_refs": [],
@@ -687,10 +687,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementProofService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementProofService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementProofServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementProofServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -714,10 +714,10 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementProofService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementProofService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementProofServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementProofServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -739,10 +739,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementProofService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementProofService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementProofServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementProofServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -824,12 +824,12 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "vscode-extension/extension.js",
-        "src/main/java/io/onsure/platform/DurableJobService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
         "contracts/restart-restore-receipt.v1.schema.json"
       ],
       "test_refs": [
         "scripts/validate-vscode-extension.py",
-        "src/test/java/io/onsure/platform/DurableJobServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DurableJobServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -846,7 +846,7 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/DurableJobService.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
           "tokens": ["recoverAllAfterRestart", "approval_history_restored", "RECOVERY_HOLD", "JOB_APPROVAL_HISTORY_CHECKPOINT_MISMATCH"]
         },
         {
@@ -854,7 +854,7 @@
           "tokens": ["job.recover", "LAST_RESTORE_KEY", "vscode-extension-restart-controller"]
         },
         {
-          "path": "src/test/java/io/onsure/platform/DurableJobServiceTest.java",
+          "path": "src/test/java/kr/co/oruda/onsure/platform/DurableJobServiceTest.java",
           "tokens": ["restartRestoresCheckpointAndConsumedApprovalHistoryAsPaused", "runningJobWithoutCheckpointRecoversToHold"]
         }
       ]
@@ -866,11 +866,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java",
-        "src/main/java/io/onsure/platform/GitWorkflowService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/GitWorkflowServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -894,11 +894,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/GitWorkflowService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java",
         "scripts/onsure-local-gate.sh"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/GitWorkflowServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -925,11 +925,11 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/GitWorkflowService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java",
         "scripts/validate-verification-claims.py"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/GitWorkflowServiceTest.java",
         "tests/test_verification_claims.py"
       ],
       "evidence_refs": [],
@@ -954,13 +954,13 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
-        "src/main/java/io/onsure/platform/ONSureCli.java",
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ONSureCli.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
         "vscode-extension/extension.js"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ProductWorkflowServicesTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ProductWorkflowServicesTest.java",
         "scripts/validate-workflow-surface-parity.py"
       ],
       "evidence_refs": [],
@@ -989,12 +989,12 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "modules/onsure-sdk/src/main/java/io/onsure/sdk/v1/ONSureSdkV1.java",
+        "modules/onsure-sdk/src/main/java/kr/co/oruda/onsure/sdk/v1/ONSureSdkV1.java",
         "contracts/public-sdk-boundary.v1.json",
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java"
       ],
       "test_refs": [
-        "modules/onsure-sdk/src/test/java/io/onsure/sdk/v1/ONSureSdkV1Test.java",
+        "modules/onsure-sdk/src/test/java/kr/co/oruda/onsure/sdk/v1/ONSureSdkV1Test.java",
         "scripts/check-module-boundaries.py"
       ],
       "evidence_refs": [],
@@ -1020,11 +1020,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/learning/OfficialLearningLedger.java",
-        "src/main/java/io/onsure/platform/DurableStateLedger.java"
+        "src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableStateLedger.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/learning/OfficialLearningLedgerTest.java"
+        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1048,12 +1048,12 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/rag/RagPreparationService.java",
-        "src/main/java/io/onsure/platform/KnowledgeSeparationService.java",
+        "src/main/java/kr/co/oruda/onsure/rag/RagPreparationService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/KnowledgeSeparationService.java",
         "contracts/reusable-pattern-memory.v1.schema.json"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/KnowledgeSeparationServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/KnowledgeSeparationServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1068,11 +1068,11 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/KnowledgeSeparationService.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/KnowledgeSeparationService.java",
           "tokens": ["ALLOWLISTED_TAXONOMY_ONLY", "lineage_commitment_sha256", "cross_project_retrieval_allowed", "REUSABLE_PATTERN_PRIVACY_REVIEW_REQUIRED"]
         },
         {
-          "path": "src/test/java/io/onsure/platform/KnowledgeSeparationServiceTest.java",
+          "path": "src/test/java/kr/co/oruda/onsure/platform/KnowledgeSeparationServiceTest.java",
           "tokens": ["rawProjectMemoryNeverEntersAllowlistedReusablePattern", "insufficientOrUnreviewedEvidenceStaysProjectOnlyOnHold"]
         }
       ]
@@ -1084,10 +1084,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/learning/OfficialLearningLedger.java"
+        "src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/learning/OfficialLearningLedgerTest.java"
+        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1112,10 +1112,10 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "scripts/onsure-local-gate.sh",
-        "src/main/java/io/onsure/platform/LocalAuthenticatedApiServer.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
       ],
       "test_refs": [
-        "modules/onsure-local-api/src/test/java/io/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1141,16 +1141,16 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
-        "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java",
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReplayExternalAnchor.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
         "scripts/fixture-sandbox-launcher.sh"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-        "src/test/java/io/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1175,10 +1175,10 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ImprovementWorkflowService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/ImprovementWorkflowServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1202,12 +1202,12 @@
       "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/DurableJobService.java",
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
         "contracts/durable-job-state.v1.schema.json"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/DurableJobServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DurableJobServiceTest.java",
         "scripts/validate-workflow-surface-parity.py"
       ],
       "evidence_refs": [],
@@ -1230,15 +1230,15 @@
       ],
       "semantic_assertions": [
         {
-          "path": "src/main/java/io/onsure/platform/DurableJobService.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
           "tokens": ["checkpoint", "pause", "resume", "cancel", "JOB_REVISION_CONFLICT", "recoverAllAfterRestart"]
         },
         {
-          "path": "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
+          "path": "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
           "tokens": ["job.create", "job.control", "job.read", "job.recover"]
         },
         {
-          "path": "src/test/java/io/onsure/platform/DurableJobServiceTest.java",
+          "path": "src/test/java/kr/co/oruda/onsure/platform/DurableJobServiceTest.java",
           "tokens": ["checkpointPauseResumeCancelAndRevisionCasAreEnforced"]
         }
       ]
@@ -1273,7 +1273,7 @@
       "implementation_status": "STUB",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
       ],
       "test_refs": [],
       "evidence_refs": [],
@@ -1299,12 +1299,18 @@
       "id": "NFR-07",
       "name": "Multi-project data isolation",
       "normative_phrase": "다중 프로젝트 데이터 격리",
-      "implementation_status": "STUB",
+      "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/ProductCatalog.java"
+        "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
       ],
-      "test_refs": [],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE"
@@ -1313,9 +1319,8 @@
         "CORE"
       ],
       "missing_controls": [
-        "AUTHENTICATED_IDENTITY_MISSING",
-        "RBAC_MISSING",
-        "CROSS_TENANT_READ_WRITE_TESTS_NOT_RUN"
+        "SIGNED_ENTERPRISE_IDENTITY_VERIFIER_NOT_IMPLEMENTED",
+        "CURRENT_MAIN_FULL_MAVEN_RECEIPT_NOT_RUN"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE"
@@ -1329,11 +1334,11 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/io/onsure/platform/FileValidationStore.java",
+        "src/main/java/kr/co/oruda/onsure/platform/FileValidationStore.java",
         "scripts/onsure-one-shot.sh"
       ],
       "test_refs": [
-        "src/test/java/io/onsure/platform/DurableStateLedgerTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DurableStateLedgerTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1357,8 +1362,8 @@
   "summary": {
     "total": 43,
     "implemented": 13,
-    "partial": 27,
-    "stub": 2,
+    "partial": 28,
+    "stub": 1,
     "design_only": 1,
     "verification_not_run": 43
   },

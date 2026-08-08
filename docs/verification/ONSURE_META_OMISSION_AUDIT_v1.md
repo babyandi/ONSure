@@ -216,7 +216,6 @@ GitHub Actions는 사용자 정책에 따라 계속 금지된다.
 - Provider·Model Adapter와 호환성 시험
 - Token·비용·데이터 전송 범위 가시화
 - 외부 제품용 Public SDK
-- Identity·RBAC·Cross-tenant 격리
 - 제품 SBOM·취약점·라이선스 Pack
 - 성능·장애·복구·운영·배포 Pack
 

@@ -282,14 +282,14 @@ async function activate(context) {
           validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid project ID.'
         });
         if (!projectId) return;
-        const programId = await vscode.window.showInputBox({
-          title: 'Program ID', value: path.basename(root),
-          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid program ID.'
+        const targetId = await vscode.window.showInputBox({
+          title: 'Registered Target ID', value: path.basename(root),
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid target ID.'
         });
-        if (!programId) return;
-        const outputFile = path.join(root, '.onsure', 'profiles', 'program-profile.json');
+        if (!targetId) return;
+        const outputFile = path.join(root, '.onsure', 'profiles', targetId, 'program-profile.json');
         await executeWorkflow('program.learn', {
-          source_root: root, project_id: projectId, program_id: programId, output_file: outputFile
+          project_id: projectId, target_id: targetId, program_id: targetId
         }, 'Learning program');
         await context.workspaceState.update(LAST_PROFILE_KEY, outputFile);
       } catch (error) {
@@ -299,24 +299,19 @@ async function activate(context) {
     vscode.commands.registerCommand('onsure.runValidation', async () => {
       try {
         const root = workspaceRoot();
-        const targetType = await vscode.window.showQuickPick(
-          ['GENERAL_SOFTWARE', 'AI_APPLICATION'],
-          { title: 'ONSure Target Type', placeHolder: 'Select the registered target type.' });
-        if (!targetType) return;
+        const projectId = await vscode.window.showInputBox({
+          title: 'Project ID', value: path.basename(root),
+          validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid project ID.'
+        });
+        if (!projectId) return;
         const targetId = await vscode.window.showInputBox({
-          title: 'Target ID', value: path.basename(root),
+          title: 'Registered Target ID', value: path.basename(root),
           validateInput: value => /^[A-Za-z0-9._:-]{1,160}$/.test(value) ? undefined : 'Invalid target ID.'
         });
         if (!targetId) return;
         await executeWorkflow('validation.run', {
-          source_root: root,
-          store_root: path.join(root, '.onsure', 'validation-data'),
-          target_id: targetId,
-          target_name: targetId,
-          target_type: targetType,
-          adapter_id: 'ONSURE_GENERIC_MANIFEST_V1',
-          policy_profile: 'ONSURE_DEFAULT_POLICY_V1',
-          execution_profile: vscode.workspace.getConfiguration('onsure').get('defaultExecutionProfile')
+          project_id: projectId,
+          target_id: targetId
         }, 'Running validation');
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure validation failed: ${error.message}`);

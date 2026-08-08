@@ -54,10 +54,10 @@ mvn -B -ntp -DskipTests compile dependency:build-classpath \
   -Dmdep.outputFile="$OUT/classpath.txt" >/dev/null
 CP="$ROOT/target/classes:$(cat "$OUT/classpath.txt")"
 java -Donsure.allowTrustedFixtureAutoApproval=true -cp "$CP" \
-  io.onsure.platform.ProductPlatformE2EMain "$OUT/execution-1" \
+  kr.co.oruda.onsure.platform.ProductPlatformE2EMain "$OUT/execution-1" \
   | tee "$OUT/execution-1/execution.log"
 java -Donsure.allowTrustedFixtureAutoApproval=true -cp "$CP" \
-  io.onsure.platform.ProductPlatformE2EMain "$OUT/execution-2" \
+  kr.co.oruda.onsure.platform.ProductPlatformE2EMain "$OUT/execution-2" \
   | tee "$OUT/execution-2/execution.log"
 
 cmp "$OUT/execution-1/normalized-result.json" "$OUT/execution-2/normalized-result.json"

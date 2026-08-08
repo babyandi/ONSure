@@ -25,8 +25,8 @@
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
         "scripts/validate-workflow-surface-parity.py",
-        "src/main/java/io/onsure/platform/LocalWorkflowDispatcher.java",
-        "src/test/java/io/onsure/platform/ProductRegistrationWorkflowTest.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ProductRegistrationWorkflowTest.java"
       ]
     },
     {
@@ -37,9 +37,9 @@
       "prior_miss_reason": "APPROVAL_SERVICE_TEST_DID_NOT_ASSERT_STAGE_EXECUTION_SCOPE",
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanActionPolicy.java",
-        "src/main/java/io/onsure/platform/ValidationEngine.java",
-        "src/main/java/io/onsure/platform/ValidationCompletionGate.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanActionPolicy.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ValidationEngine.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ValidationCompletionGate.java"
       ]
     },
     {
@@ -50,9 +50,9 @@
       "prior_miss_reason": "APPROVAL_SERVICE_WAS_TESTED_BUT_ENGINE_DIRECT_ENTRY_WAS_NOT_ATTACKED",
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
-        "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java",
-        "src/main/java/io/onsure/platform/ValidationEngine.java",
-        "src/test/java/io/onsure/platform/ExecutionPlanBundleEntryTest.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ValidationEngine.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanBundleEntryTest.java"
       ]
     },
     {
@@ -63,10 +63,10 @@
       "prior_miss_reason": "TRUST_ROOT_PATH_WAS_TREATED_AS_ORDINARY_REQUEST_DATA",
       "fix_state": "IMPLEMENTED_NONFINAL_WITH_EXTERNAL_ANCHOR_AND_TYPED_SDK_HOLD",
       "fix_refs": [
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
-        "modules/onsure-sdk/src/main/java/io/onsure/sdk/v1/ONSureSdkV1.java",
-        "modules/onsure-sdk/src/test/java/io/onsure/sdk/v1/ONSureSdkV1Test.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "modules/onsure-sdk/src/main/java/kr/co/oruda/onsure/sdk/v1/ONSureSdkV1.java",
+        "modules/onsure-sdk/src/test/java/kr/co/oruda/onsure/sdk/v1/ONSureSdkV1Test.java"
       ],
       "remaining_gaps": [
         "INDEPENDENT_PUBLIC_SDK_CONSUMER_ARTIFACT_TEST_NOT_RUN"
@@ -80,8 +80,8 @@
       "prior_miss_reason": "WAITFOR_TIMEOUT_TOKEN_WAS_ACCEPTED_WITHOUT_OUTPUT_FLOOD_AND_HUNG_PROCESS_INJECTION",
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
-        "src/main/java/io/onsure/platform/BoundedProcessRunner.java",
-        "src/test/java/io/onsure/platform/BoundedProcessRunnerTest.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BoundedProcessRunner.java",
+        "src/test/java/kr/co/oruda/onsure/platform/BoundedProcessRunnerTest.java"
       ]
     },
     {
@@ -92,9 +92,9 @@
       "prior_miss_reason": "APPROVAL_WAS_CHECKED_AT_COMMIT_ONLY",
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
-        "src/main/java/io/onsure/platform/GitWorkflowService.java",
-        "src/main/java/io/onsure/assurance/ConsumedApprovalReceiptVerifier.java",
-        "src/test/java/io/onsure/platform/GitWorkflowServiceTest.java"
+        "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java",
+        "src/main/java/kr/co/oruda/onsure/assurance/ConsumedApprovalReceiptVerifier.java",
+        "src/test/java/kr/co/oruda/onsure/platform/GitWorkflowServiceTest.java"
       ]
     },
     {
@@ -105,8 +105,8 @@
       "prior_miss_reason": "REPLAY_TESTS_USED_IDENTICAL_RECEIPTS_ONLY",
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
-        "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
-        "src/test/java/io/onsure/assurance/ApprovalReceiptIdCollisionTest.java"
+        "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifier.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptIdCollisionTest.java"
       ]
     },
     {
@@ -117,8 +117,8 @@
       "prior_miss_reason": "REQUEST_OVERRIDE_PROHIBITION_WAS_MISTAKEN_FOR_PHYSICAL_AUTHORITY_SEPARATION",
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
         "scripts/validate-critical-callpaths.py"
       ],
       "remaining_gaps": [
@@ -134,8 +134,8 @@
       "prior_miss_reason": "WORKSPACE_IDENTITY_USED_NORMALIZED_PATH_TEXT_WITHOUT_ALIAS_ADVERSARIAL_TEST",
       "fix_state": "IMPLEMENTED_NONFINAL",
       "fix_refs": [
-        "src/main/java/io/onsure/platform/ApprovalAuthorityPaths.java",
-        "src/test/java/io/onsure/platform/ApprovalAuthorityPathsTest.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPaths.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ApprovalAuthorityPathsTest.java",
         "scripts/validate-critical-callpaths.py"
       ],
       "remaining_gaps": [
@@ -165,10 +165,10 @@
       "prior_miss_reason": "VERIFIER_SNAPSHOT_TOKENS_WERE_ACCEPTED_WITHOUT_PROVING_THE_CALLER_USED_THE_EXACT_CONSUMED_SNAPSHOT_AND_DIGEST",
       "fix_state": "REMEDIATED_AGAIN_NONFINAL_LOCAL_EXECUTION_REQUIRED",
       "fix_refs": [
-        "src/main/java/io/onsure/assurance/ApprovalReceiptVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifier.java",
         "scripts/validate-critical-callpaths.py",
         "scripts/validate-status-consistency.py",
-        "src/main/java/io/onsure/platform/ExecutionPlanApprovalService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalService.java"
       ],
       "remaining_gaps": [
         "CURRENT_BRANCH_FULL_JAVA17_MAVEN_JUNIT_NOT_RUN",

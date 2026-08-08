@@ -39,13 +39,13 @@ trap cleanup_private_keys EXIT
 # Bootstrap only: compile the lock and pre-execution gate entrypoints.
 mvn -B -ntp -DskipTests compile dependency:build-classpath -Dmdep.outputFile="$OUT/classpath.txt" >/dev/null
 CP="target/classes:$(cat "$OUT/classpath.txt")"
-java -cp "$CP" io.onsure.assurance.LocalSourceLockMain "$ROOT" "$OUT/source-lock.json"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalSourceLockMain "$ROOT" "$OUT/source-lock.json"
 
 cp "$ROOT/fixtures/design/adversarial-transition-fixtures.v1.json" "$FIXTURE_SNAPSHOT.tmp"
 mv "$FIXTURE_SNAPSHOT.tmp" "$FIXTURE_SNAPSHOT"
 cp "$ROOT/findings/security-findings.v1.json" "$SECURITY_SNAPSHOT.tmp"
 mv "$SECURITY_SNAPSHOT.tmp" "$SECURITY_SNAPSHOT"
-java -cp "$CP" io.onsure.assurance.LocalSecurityGateMain "$SECURITY_SNAPSHOT"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalSecurityGateMain "$SECURITY_SNAPSHOT"
 
 run_once() {
   local run_id="$1"
@@ -57,7 +57,7 @@ run_once() {
     | python "$ROOT/scripts/normalize-surefire-summary.py" \
     | LC_ALL=C sort > "$run_dir/test-summary.txt"
   (cd target/classes && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) > "$run_dir/classes.sha256"
-  java -cp "$CP" io.onsure.assurance.AdversarialFixtureReportMain \
+  java -cp "$CP" kr.co.oruda.onsure.assurance.AdversarialFixtureReportMain \
     "$FIXTURE_SNAPSHOT" \
     "$run_dir/adversarial-fixtures.tsv"
   sha256sum \
@@ -75,23 +75,23 @@ cmp "$OUT/regression-1/adversarial-fixtures.tsv" "$OUT/regression-2/adversarial-
 [[ -s "$OUT/classpath.txt" ]] || mvn -B -ntp dependency:build-classpath -Dmdep.outputFile="$OUT/classpath.txt" >/dev/null
 CP="target/classes:$(cat "$OUT/classpath.txt")"
 mkdir -p "$OUT/keys"
-java -cp "$CP" io.onsure.assurance.LocalKeyToolMain "$OUT/keys/otester-private.key" "$OUT/keys/otester-public.key"
-java -cp "$CP" io.onsure.assurance.LocalKeyToolMain "$OUT/keys/oaudit-private.key" "$OUT/keys/oaudit-public.key"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalKeyToolMain "$OUT/keys/otester-private.key" "$OUT/keys/otester-public.key"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalKeyToolMain "$OUT/keys/oaudit-private.key" "$OUT/keys/oaudit-public.key"
 chmod 600 "$OUT/keys/otester-private.key" "$OUT/keys/oaudit-private.key"
 chmod 644 "$OUT/keys/otester-public.key" "$OUT/keys/oaudit-public.key"
 
 OTESTER_KEY_ID="otester-$RUN_STAMP"
 OAUDIT_KEY_ID="oaudit-$RUN_STAMP"
-java -cp "$CP" io.onsure.assurance.LocalKeyRegistryMain "$REGISTRY" "$OTESTER_KEY_ID" OTESTER "$OUT/keys/otester-public.key" 30
-java -cp "$CP" io.onsure.assurance.LocalKeyRegistryMain "$REGISTRY" "$OAUDIT_KEY_ID" OAUDIT "$OUT/keys/oaudit-public.key" 30
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalKeyRegistryMain "$REGISTRY" "$OTESTER_KEY_ID" OTESTER "$OUT/keys/otester-public.key" 30
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalKeyRegistryMain "$REGISTRY" "$OAUDIT_KEY_ID" OAUDIT "$OUT/keys/oaudit-public.key" 30
 
 cp "$REGISTRY" "$REGISTRY_SNAPSHOT.tmp"
 mv "$REGISTRY_SNAPSHOT.tmp" "$REGISTRY_SNAPSHOT"
 
 INPUT_DIGEST="$(sha256sum "$OUT/regression-2/evidence.sha256" | awk '{print $1}')"
-java -cp "$CP" io.onsure.assurance.LocalAgentMain OTESTER "otester-$RUN_STAMP" "$INPUT_DIGEST" "$OTESTER_KEY_ID" "$OUT/keys/otester-private.key" "$OUT/otester/receipt.json" ONSURE_OTESTER_POLICY_V1 REGRESSION_RESULTS_AND_COMPILED_ARTIFACTS "$RUN_CONTEXT"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalAgentMain OTESTER "otester-$RUN_STAMP" "$INPUT_DIGEST" "$OTESTER_KEY_ID" "$OUT/keys/otester-private.key" "$OUT/otester/receipt.json" ONSURE_OTESTER_POLICY_V1 REGRESSION_RESULTS_AND_COMPILED_ARTIFACTS "$RUN_CONTEXT"
 OTESTER_DIGEST="$(sha256sum "$OUT/otester/receipt.json" | awk '{print $1}')"
-java -cp "$CP" io.onsure.assurance.LocalAgentMain OAUDIT "oaudit-$RUN_STAMP" "$OTESTER_DIGEST" "$OAUDIT_KEY_ID" "$OUT/keys/oaudit-private.key" "$OUT/oaudit/receipt.json" ONSURE_OAUDIT_POLICY_V1 SIGNED_OTESTER_RECEIPT_AND_PUBLICATION_EVIDENCE "$RUN_CONTEXT"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalAgentMain OAUDIT "oaudit-$RUN_STAMP" "$OTESTER_DIGEST" "$OAUDIT_KEY_ID" "$OUT/keys/oaudit-private.key" "$OUT/oaudit/receipt.json" ONSURE_OAUDIT_POLICY_V1 SIGNED_OTESTER_RECEIPT_AND_PUBLICATION_EVIDENCE "$RUN_CONTEXT"
 
 sha256sum \
   "$RUN_CONTEXT" \
@@ -106,4 +106,4 @@ sha256sum \
   "$OUT"/oaudit/receipt.json \
   "$OUT"/keys/*-public.key \
   "$REGISTRY_SNAPSHOT" > "$OUT/final-lock.sha256"
-java -cp "$CP" io.onsure.assurance.LocalFinalizerMain "$OUT"
+java -cp "$CP" kr.co.oruda.onsure.assurance.LocalFinalizerMain "$OUT"

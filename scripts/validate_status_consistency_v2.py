@@ -39,6 +39,7 @@ def main() -> int:
     remaining = load("status/remaining-work-register.v1.json")
     process = load("contracts/product-process-lineage.v1.json")
     cases = load("contracts/validation-case-registry.v1.json")
+    sandbox_contract = load("contracts/sandbox-boundary.v1.json")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
     case_groups = cases.get("case_classes", {})
@@ -203,9 +204,13 @@ def main() -> int:
         errors.append("VERIFICATION_LOCAL_EXECUTION_MODES_INVALID")
 
     sandbox = verification.get("sandbox_attack_tests", {})
-    if sandbox.get("verified_count") != 10 or sandbox.get("required_count") != 12:
+    required_attacks = set(sandbox_contract.get("required_attack_fixtures", []))
+    verified_attacks = set(sandbox_contract.get("verified_attack_fixtures", []))
+    unverified_attacks = set(sandbox_contract.get("unverified_attack_fixtures", []))
+    if sandbox.get("verified_count") != len(verified_attacks) \
+            or sandbox.get("required_count") != len(required_attacks):
         errors.append("VERIFICATION_SANDBOX_SCOPE_COUNT_MISMATCH")
-    if set(sandbox.get("unverified", [])) != {"CROSS_TENANT_READ", "CROSS_TENANT_WRITE"}:
+    if set(sandbox.get("unverified", [])) != unverified_attacks:
         errors.append("VERIFICATION_SANDBOX_UNVERIFIED_SET_MISMATCH")
 
     if remaining.get("authority") != "status/design-capability-coverage.v2.json":

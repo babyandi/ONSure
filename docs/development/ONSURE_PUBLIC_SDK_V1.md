@@ -2,8 +2,8 @@
 
 ## 지원 경계
 
-외부 Java 소비자는 `io.onsure:onsure-sdk`의
-`io.onsure.sdk.v1.ONSureSdkV1`만 지원 API로 사용한다. `io.onsure.platform`은
+외부 Java 소비자는 `kr.co.oruda.onsure:onsure-sdk`의
+`kr.co.oruda.onsure.sdk.v1.ONSureSdkV1`만 지원 API로 사용한다. `kr.co.oruda.onsure.platform`은
 제품 내부 구현이며 호환성 또는 외부 사용을 보장하지 않는다.
 
 SDK v1은 다음 강타입 요청을 제공한다.

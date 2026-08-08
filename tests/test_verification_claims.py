@@ -121,9 +121,9 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
             (root / "contracts").mkdir(parents=True)
             (root / ".github/workflows").mkdir(parents=True)
             (root / "scripts").mkdir(parents=True)
-            (root / "src/test/java/io/onsure/platform").mkdir(parents=True)
-            (root / "src/test/java/io/onsure/assurance").mkdir(parents=True)
-            (root / "src/main/java/io/onsure/assurance").mkdir(parents=True)
+            (root / "src/test/java/kr/co/oruda/onsure/platform").mkdir(parents=True)
+            (root / "src/test/java/kr/co/oruda/onsure/assurance").mkdir(parents=True)
+            (root / "src/main/java/kr/co/oruda/onsure/assurance").mkdir(parents=True)
             (root / "status/verification-status.v1.json").write_text(
                 json.dumps(status or safe_status()), encoding="utf-8")
             (root / "status/mvp-acceptance-coverage.v1.json").write_text(
@@ -140,12 +140,12 @@ class VerificationClaimFailureInjectionTest(unittest.TestCase):
             for name in (
                 "AdversarialConcurrencyAndOutputTest.java", "ApprovalAuthorityPathsTest.java",
                 "BoundedProcessRunnerTest.java", "GitWorkflowServiceTest.java"):
-                (root / "src/test/java/io/onsure/platform" / name).write_text(
+                (root / "src/test/java/kr/co/oruda/onsure/platform" / name).write_text(
                     f"class {name.removesuffix('.java')} {{}}\n", encoding="utf-8")
-            (root / "src/main/java/io/onsure/assurance/ApprovalReplayExternalAnchor.java").write_text(
+            (root / "src/main/java/kr/co/oruda/onsure/assurance/ApprovalReplayExternalAnchor.java").write_text(
                 "previous_anchor_hash ledger_sha256 APPROVAL_REPLAY_EXTERNAL_ANCHOR_HEAD_MISMATCH\n",
                 encoding="utf-8")
-            (root / "src/test/java/io/onsure/assurance/ApprovalReceiptVerifierTest.java").write_text(
+            (root / "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifierTest.java").write_text(
                 "externalAnchorRejectsRollbackToStaleLedgerSnapshot "
                 "externalAnchorRejectsWholeLedgerRewriteEvenWithValidInternalHashes\n",
                 encoding="utf-8")

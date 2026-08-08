@@ -100,7 +100,7 @@
         "define CAS and process-lock requirements"
       ],
       "final_execution": ["run rootless local sandbox and cross-tenant attack fixtures"],
-      "state": "PARTIAL_CROSS_TENANT_GATES_OPEN"
+      "state": "IMPLEMENTED_CROSS_TENANT_GATES_FULL_LOCAL_EXECUTION_REQUIRED"
     }
   ],
   "local_gate_command": "bash scripts/onsure-local-gate.sh --mode full --profile core",

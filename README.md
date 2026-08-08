@@ -34,6 +34,7 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - 승인형 Patch·Worktree·Rollback·Improvement Proof
 - Commit 승인과 Push·Draft PR 전 승인 만료·Identity·서명·소비 상태 재검증
 - Source Identity·Receipt·Ledger·Replay·Cross-process File Lock
+- 서버 인증 Identity·RBAC·Tenant 리소스 소유권·Cross-tenant 읽기/쓰기 차단
 - Rootless Bubblewrap Sandbox와 적대 Fixture
 - Bounded child-process runner
 - VS Code Extension·VSIX 및 OLicense·Service Case 상태 코어
@@ -103,8 +104,8 @@ ONSURE 저장소는 **GitHub Actions를 사용하지 않습니다.**
 - Provider·Model 교체성
 - Token·비용·데이터 전송 범위 가시화
 - 외부 제품용 Public SDK
-- `io.onsure:onsure-sdk` v1 강타입 경계(고정 승인 권위·제품 소유 출력 경로, raw dispatch 비공개)
-- Identity·RBAC·Cross-tenant 격리
+- `kr.co.oruda.onsure:onsure-sdk` v1 강타입 경계(고정 승인 권위·제품 소유 출력 경로, raw dispatch 비공개)
+- Signed Enterprise Identity의 Production 서명 검증·SSO 연동
 - Approval Replay Ledger의 외부 Anchor
 - 제품 SBOM·취약점·라이선스 Pack
 - 성능·장애·복구·운영·배포 Pack
