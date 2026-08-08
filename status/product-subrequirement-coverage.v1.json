@@ -325,7 +325,8 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
@@ -340,9 +341,8 @@
       ],
       "missing_controls": [
         "EXPECTED_RESULT_PER_SCENARIO_MISSING",
-        "TOKEN_BUDGET_MISSING",
-        "DATA_TRANSFER_BUDGET_MISSING",
-        "VSCODE_PLAN_PREVIEW_MISSING"
+        "VSCODE_PLAN_PREVIEW_MISSING",
+        "NOT_YET_WIRED_INTO_EXECUTION_PLAN_SERVICE_OUTPUT"
       ],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
@@ -1337,12 +1337,15 @@
       "id": "NFR-06",
       "name": "Execution budget visibility",
       "normative_phrase": "실행 비용·Token·데이터 전송 범위 가시화",
-      "implementation_status": "STUB",
+      "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java"
       ],
-      "test_refs": [],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuardTest.java"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE",
@@ -1352,9 +1355,8 @@
         "CORE"
       ],
       "missing_controls": [
-        "TOKEN_ESTIMATE_MISSING",
-        "DATA_TRANSFER_SCOPE_MISSING",
-        "VSCODE_BUDGET_VIEW_MISSING"
+        "VSCODE_BUDGET_VIEW_MISSING",
+        "NOT_YET_WIRED_INTO_EXECUTION_PLAN_SERVICE_OUTPUT"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
@@ -1429,8 +1431,8 @@
   "summary": {
     "total": 43,
     "implemented": 13,
-    "partial": 29,
-    "stub": 1,
+    "partial": 30,
+    "stub": 0,
     "design_only": 0,
     "verification_not_run": 43
   },

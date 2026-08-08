@@ -212,7 +212,7 @@
     },
     {
       "id": "P1-EXECUTION-BUDGET-VISIBILITY",
-      "state": "STUB",
+      "state": "PARTIAL_BUDGET_MODEL_AND_GUARD_IMPLEMENTED_VSCODE_VIEW_AND_PLAN_WIRING_MISSING",
       "requires_human": false,
       "next_action": "Add expected result, token estimate, cost ceiling and data-transfer scope."
     },
