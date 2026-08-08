@@ -1,1 +1,451 @@
-{"contract":"ONSURE_REQUIREMENTS_TRACEABILITY_V1","version":"2.0.0","authority":"status/design-capability-coverage.v2.json","canonical_process_lineage":"contracts/product-process-lineage.v1.json","coverage_level":"CAPABILITY_GROUP_ONLY_ATOMIC_REQUIREMENTS_PENDING","allowed_implementation_statuses":["IMPLEMENTED","PARTIAL","STUB","DESIGN_ONLY","CONFLICT","DEPRECATED"],"allowed_verification_states":["PASS","FAIL","BLOCKED","HOLD","NOT_RUN","INCONCLUSIVE","NON_FINAL"],"items":[{"id":"CORE-ISOLATION","capability":"Standalone Core and optional adapter isolation","design_refs":["README.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"WORKSPACE-INTAKE","capability":"Workspace, repository, archive and target intake","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"PROGRAM-LEARNING","capability":"Program Learning and Program Profile","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"BEHAVIOR-LEARNING","capability":"Repeated behavior observation and Behavior Profile","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"RISK-PLANNING","capability":"Risk based plan, approval and stop conditions","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"OREVIEW","capability":"Requirement architecture policy code AI security and test review","design_refs":["docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"VERIFICATION-STATIC","capability":"Static code and policy verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"VERIFICATION-BUILD","capability":"Build unit integration and dependency verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"DESIGN_ONLY","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"VERIFICATION-RUNTIME","capability":"Executable fixture and behavior verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"VERIFICATION-API-UI","capability":"API UI accessibility and user-flow verification","design_refs":["docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"STUB","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"VERIFICATION-SECURITY","capability":"Security privacy authorization and supply-chain verification","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"VERIFICATION-PERFORMANCE-RECOVERY","capability":"Performance load resilience recovery and failure injection","design_refs":["docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"DESIGN_ONLY","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"RCA","capability":"Evidence based reproduction and causal RCA","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"IMPROVEMENT-PATCH","capability":"Bounded patch plan hunk approval worktree and rollback","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"IMPROVEMENT-PROOF","capability":"Before after regression and measurable improvement proof","design_refs":["docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"GIT-DELIVERY","capability":"Branch commit push and Draft PR delivery","design_refs":["docs/03_GIT_AND_CHANGE_GOVERNANCE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"EVIDENCE-RECEIPTS","capability":"Immutable evidence receipts manifests lineage and anchors","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"LEARNING-MEMORY","capability":"Versioned failure improvement and learning memory","design_refs":["docs/09_PROGRAM_LEARNING_METHODOLOGY.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"VSCODE-EXTENSION","capability":"VS Code views commands approval and restore UX","design_refs":["docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"LOCAL-AUTHENTICATED-API","capability":"Loopback authenticated workflow API","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"WEB-SERVICE-CASE","capability":"One-time service case quote payment delivery refund and deletion","design_refs":["docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"OLICENSE","capability":"License entitlement credit offline grace and revocation","design_refs":["docs/v2/05_LICENSE_PAYMENT_OLICENSE_INTEGRATION.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"TENANT-IDENTITY","capability":"Identity tenant role and cross-tenant isolation","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":["contracts/tenant-context.v1.schema.json","contracts/sandbox-boundary.v1.json"],"code_refs":["src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java","src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java","src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java","src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"],"test_refs":["src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java","modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java"],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"SANDBOX","capability":"Filesystem network process and resource sandbox","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"RETENTION-DELETION","capability":"Retention legal hold deletion and deletion receipt","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"OBSERVABILITY-OPERATIONS","capability":"Metrics logs traces queue recovery backup and operations","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"DESIGN_ONLY","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"DELIVERY","capability":"Report evidence patch executive package and customer delivery","design_refs":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"PARTIAL","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."},{"id":"DEPLOYMENT","capability":"Developer team enterprise on-premises and air-gapped deployment","design_refs":["docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"],"contract_refs":[],"code_refs":[],"test_refs":[],"evidence_refs":[],"status":"DESIGN_ONLY","verification_state":"NOT_RUN","gap":"See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."}],"summary":{"implemented":0,"partial":23,"stub":1,"design_only":4,"conflict":0,"deprecated":0,"verification":{"not_run":28,"pass":0,"fail":0,"blocked":0,"hold":0,"inconclusive":0,"non_final":0},"design_capability_count":28,"product_process_stage_count":20,"product_lineage_artifact_count":20,"failure_injection_count":28,"final_claim_allowed":false}}
+{
+  "contract": "ONSURE_REQUIREMENTS_TRACEABILITY_V1",
+  "version": "2.0.0",
+  "authority": "status/design-capability-coverage.v2.json",
+  "canonical_process_lineage": "contracts/product-process-lineage.v1.json",
+  "coverage_level": "CAPABILITY_GROUP_ONLY_ATOMIC_REQUIREMENTS_PENDING",
+  "allowed_implementation_statuses": [
+    "IMPLEMENTED",
+    "PARTIAL",
+    "STUB",
+    "DESIGN_ONLY",
+    "CONFLICT",
+    "DEPRECATED"
+  ],
+  "allowed_verification_states": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "HOLD",
+    "NOT_RUN",
+    "INCONCLUSIVE",
+    "NON_FINAL"
+  ],
+  "items": [
+    {
+      "id": "CORE-ISOLATION",
+      "capability": "Standalone Core and optional adapter isolation",
+      "design_refs": [
+        "README.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "WORKSPACE-INTAKE",
+      "capability": "Workspace, repository, archive and target intake",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "PROGRAM-LEARNING",
+      "capability": "Program Learning and Program Profile",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "BEHAVIOR-LEARNING",
+      "capability": "Repeated behavior observation and Behavior Profile",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "RISK-PLANNING",
+      "capability": "Risk based plan, approval and stop conditions",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "OREVIEW",
+      "capability": "Requirement architecture policy code AI security and test review",
+      "design_refs": [
+        "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "VERIFICATION-STATIC",
+      "capability": "Static code and policy verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "VERIFICATION-BUILD",
+      "capability": "Build unit integration and dependency verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "DESIGN_ONLY",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "VERIFICATION-RUNTIME",
+      "capability": "Executable fixture and behavior verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "VERIFICATION-API-UI",
+      "capability": "API UI accessibility and user-flow verification",
+      "design_refs": [
+        "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "STUB",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "VERIFICATION-SECURITY",
+      "capability": "Security privacy authorization and supply-chain verification",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "VERIFICATION-PERFORMANCE-RECOVERY",
+      "capability": "Performance load resilience recovery and failure injection",
+      "design_refs": [
+        "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "RCA",
+      "capability": "Evidence based reproduction and causal RCA",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "IMPROVEMENT-PATCH",
+      "capability": "Bounded patch plan hunk approval worktree and rollback",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "IMPROVEMENT-PROOF",
+      "capability": "Before after regression and measurable improvement proof",
+      "design_refs": [
+        "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "GIT-DELIVERY",
+      "capability": "Branch commit push and Draft PR delivery",
+      "design_refs": [
+        "docs/03_GIT_AND_CHANGE_GOVERNANCE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "EVIDENCE-RECEIPTS",
+      "capability": "Immutable evidence receipts manifests lineage and anchors",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "LEARNING-MEMORY",
+      "capability": "Versioned failure improvement and learning memory",
+      "design_refs": [
+        "docs/09_PROGRAM_LEARNING_METHODOLOGY.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "VSCODE-EXTENSION",
+      "capability": "VS Code views commands approval and restore UX",
+      "design_refs": [
+        "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "LOCAL-AUTHENTICATED-API",
+      "capability": "Loopback authenticated workflow API",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "WEB-SERVICE-CASE",
+      "capability": "One-time service case quote payment delivery refund and deletion",
+      "design_refs": [
+        "docs/v2/03_WEB_ONE_TIME_SERVICE_POLICY.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "OLICENSE",
+      "capability": "License entitlement credit offline grace and revocation",
+      "design_refs": [
+        "docs/v2/05_LICENSE_PAYMENT_OLICENSE_INTEGRATION.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "TENANT-IDENTITY",
+      "capability": "Identity tenant role and cross-tenant isolation",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [
+        "contracts/tenant-context.v1.schema.json",
+        "contracts/sandbox-boundary.v1.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/AuthenticatedWorkflowIdentity.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/TenantRbacServiceTest.java",
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java"
+      ],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "SANDBOX",
+      "capability": "Filesystem network process and resource sandbox",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "RETENTION-DELETION",
+      "capability": "Retention legal hold deletion and deletion receipt",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "OBSERVABILITY-OPERATIONS",
+      "capability": "Metrics logs traces queue recovery backup and operations",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "DELIVERY",
+      "capability": "Report evidence patch executive package and customer delivery",
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    },
+    {
+      "id": "DEPLOYMENT",
+      "capability": "Developer team enterprise on-premises and air-gapped deployment",
+      "design_refs": [
+        "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+      ],
+      "contract_refs": [],
+      "code_refs": [],
+      "test_refs": [],
+      "evidence_refs": [],
+      "status": "PARTIAL",
+      "verification_state": "NOT_RUN",
+      "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
+    }
+  ],
+  "summary": {
+    "implemented": 0,
+    "partial": 26,
+    "stub": 1,
+    "design_only": 1,
+    "conflict": 0,
+    "deprecated": 0,
+    "verification": {
+      "not_run": 28,
+      "pass": 0,
+      "fail": 0,
+      "blocked": 0,
+      "hold": 0,
+      "inconclusive": 0,
+      "non_final": 0
+    },
+    "design_capability_count": 28,
+    "product_process_stage_count": 20,
+    "product_lineage_artifact_count": 20,
+    "failure_injection_count": 28,
+    "final_claim_allowed": false
+  }
+}

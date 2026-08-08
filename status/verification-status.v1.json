@@ -2,7 +2,7 @@
   "contract": "ONSURE_VERIFICATION_STATUS_V1",
   "version": "4.0.0",
   "assessment_source_ref": "main",
-  "runtime_source_commit": "d4afe54418810ac4cdbee55679932e014978a5e6",
+  "runtime_source_commit": null,
   "runtime_source_binding_state": "PENDING_ONE_SHOT_RECEIPT",
   "deferred_final_stage_detail": "CODESPACE_OR_EQUIVALENT_FINAL_STAGE_DEFERRED_BY_USER",
   "active_remediation_issues": [
@@ -39,9 +39,9 @@
     "authority": "contracts/legacy-product-subrequirement-authority.v1.json",
     "requirement_count": 43,
     "implemented": 13,
-    "partial": 28,
+    "partial": 29,
     "stub": 1,
-    "design_only": 1,
+    "design_only": 0,
     "state": "LEGACY_NONAUTHORITATIVE_FOR_FINAL_PRODUCT",
     "runner": "python3 scripts/validate-legacy-product-subrequirements.py --self-test",
     "source_bound_receipt": "LOCAL_RECEIPT_REQUIRED"
