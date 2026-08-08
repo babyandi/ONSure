@@ -242,9 +242,9 @@
     },
     {
       "id": "P1-DEPLOYMENT",
-      "state": "PARTIAL_PROFILE_VALIDATOR_SIGNED_PACKAGE_BUILDER_INSTALL_UPDATE_ROLLBACK_AND_DETACHED_ARTIFACT_SIGNING_IMPLEMENTED_REAL_VSIX_AND_INTERACTIVE_UI_MISSING",
+      "state": "PARTIAL_PROFILE_VALIDATOR_SIGNED_PACKAGE_BUILDER_INSTALL_UPDATE_ROLLBACK_AND_REAL_VSIX_SIGNING_VERIFIED_ONCE_MANUALLY_INTERACTIVE_UI_AND_PIPELINE_WIRING_MISSING",
       "requires_human": false,
-      "next_action": "Run SignedArtifactService against a real vsce-built .vsix once node_modules/network access is available; add an interactive installer UI."
+      "next_action": "Wire SignedArtifactService as an automated step after npm run package in a release pipeline; add an interactive installer UI."
     },
     {
       "id": "FINAL-EXECUTION-STAGE",
