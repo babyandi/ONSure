@@ -687,17 +687,20 @@
       "contract_refs": [],
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfile.java",
-        "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilder.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilderTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "PROFILE_CONSTRAINT_VALIDATION_ONLY_NO_INSTALLER_OR_PACKAGING",
-        "NO_SIGNED_VSIX_OR_ON_PREM_INSTALL_UPDATE_ROLLBACK_TOOLING",
+        "SIGNED_FILE_PACKAGE_ONLY_NO_INTERACTIVE_INSTALLER_UI",
+        "NO_UPDATE_OR_ROLLBACK_ORCHESTRATION_ACROSS_PACKAGE_VERSIONS",
+        "VSIX_PACKAGING_HANDLED_SEPARATELY_BY_VSCODE_EXTENSION_NPX_VSCE_NOT_SIGNED_HERE",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"

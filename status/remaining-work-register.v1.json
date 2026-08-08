@@ -242,9 +242,9 @@
     },
     {
       "id": "P1-DEPLOYMENT",
-      "state": "PARTIAL_PROFILE_CONSTRAINT_VALIDATOR_IMPLEMENTED_INSTALLER_AND_PACKAGING_MISSING",
+      "state": "PARTIAL_PROFILE_CONSTRAINT_VALIDATOR_AND_SIGNED_PACKAGE_BUILDER_IMPLEMENTED_INTERACTIVE_INSTALLER_AND_UPDATE_ROLLBACK_MISSING",
       "requires_human": false,
-      "next_action": "Implement signed installer, released VSIX, update, rollback, on-premises and air-gapped packages."
+      "next_action": "Add an interactive install/update flow and version-to-version rollback orchestration on top of the signed package format."
     },
     {
       "id": "FINAL-EXECUTION-STAGE",
