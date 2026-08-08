@@ -236,9 +236,9 @@
     },
     {
       "id": "P1-OBSERVABILITY-OPERATIONS",
-      "state": "PARTIAL_STRUCTURED_LOG_AND_METRIC_IMPLEMENTED_TRACE_EXPORT_AND_QUEUE_BACKUP_CONTROLS_MISSING",
+      "state": "PARTIAL_STRUCTURED_LOG_METRIC_TRACE_TREE_EXPORT_AND_QUEUE_BACKLOG_BACKUP_RESTORE_IMPLEMENTED_OTLP_EXPORT_AND_SCHEDULED_BACKUP_MISSING",
       "requires_human": false,
-      "next_action": "Implement metrics, logs, traces, backup, restore and retention controls."
+      "next_action": "Add an OTLP-compatible trace exporter and scheduled/automatic backup with offsite replication."
     },
     {
       "id": "P1-DEPLOYMENT",
