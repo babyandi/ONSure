@@ -4,7 +4,7 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const { WORK_MODES, classifyOperation, authorize } = require('./work-mode-policy');
-const { VIEW_IDS, rowsForView } = require('./view-model');
+const { VIEW_IDS, rowsForView, budgetRowsFromExecutionPlan } = require('./view-model');
 const { reviewPlanApproval, reviewHunkApproval } = require('./approval-review');
 
 const TOKEN_KEY = 'onsure.localApiToken';
@@ -121,6 +121,18 @@ class AssuranceTreeProvider {
       const command = row.label === 'Mode' ? 'onsure.selectMode'
         : row.label === 'Last Run' && lastRun ? 'onsure.openLastArtifact' : undefined;
       items.push(item(row.label, row.description, row.icon, command));
+    }
+    if (this.viewId === 'onsure.plan' && lastRun) {
+      try {
+        const result = await this.client.request('/v1/run-artifact', 'POST', {
+          run_root: lastRun, artifact: 'execution-plan.json'
+        });
+        for (const row of budgetRowsFromExecutionPlan(result.body)) {
+          items.push(item(row.label, row.description, row.icon));
+        }
+      } catch (error) {
+        items.push(item('Execution Budget', `NOT_AVAILABLE: ${error.message}`, 'warning'));
+      }
     }
     return items;
   }

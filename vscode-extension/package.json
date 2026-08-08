@@ -111,7 +111,8 @@
     }
   },
   "scripts": {
-    "check": "node --check extension.js",
+    "check": "node --check extension.js && node --check view-model.js && node --check approval-review.js && node --check work-mode-policy.js",
+    "test": "node --test view-model.test.js",
     "package": "npx @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {

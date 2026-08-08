@@ -129,11 +129,14 @@
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
+        "vscode-extension/view-model.js",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
+        "vscode-extension/view-model.test.js"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",

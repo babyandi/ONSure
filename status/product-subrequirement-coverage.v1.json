@@ -327,12 +327,14 @@
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
+        "vscode-extension/view-model.js",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
+        "vscode-extension/view-model.test.js"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -340,10 +342,11 @@
         "VSCODE"
       ],
       "implemented_surfaces": [
-        "CORE"
+        "CORE",
+        "VSCODE"
       ],
       "missing_controls": [
-        "VSCODE_PLAN_PREVIEW_MISSING"
+        "VSCODE_PLAN_PREVIEW_IS_SUMMARY_ROWS_NOT_A_PER_SCENARIO_DETAIL_PANEL"
       ],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
@@ -1338,16 +1341,19 @@
       "id": "NFR-06",
       "name": "Execution budget visibility",
       "normative_phrase": "실행 비용·Token·데이터 전송 범위 가시화",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
+        "vscode-extension/view-model.js",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuardTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
+        "vscode-extension/view-model.test.js"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1355,11 +1361,10 @@
         "VSCODE"
       ],
       "implemented_surfaces": [
-        "CORE"
+        "CORE",
+        "VSCODE"
       ],
-      "missing_controls": [
-        "VSCODE_BUDGET_VIEW_MISSING"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
         "SUBREQ_SURFACE_GATE"
@@ -1432,8 +1437,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 13,
-    "partial": 30,
+    "implemented": 14,
+    "partial": 29,
     "stub": 0,
     "design_only": 0,
     "verification_not_run": 43

@@ -212,9 +212,9 @@
     },
     {
       "id": "P1-EXECUTION-BUDGET-VISIBILITY",
-      "state": "PARTIAL_BUDGET_MODEL_GUARD_EXECUTION_PLAN_WIRING_AND_PER_SCENARIO_EXPECTED_RESULTS_IMPLEMENTED_VSCODE_VIEW_MISSING",
+      "state": "IMPLEMENTED_BUDGET_MODEL_GUARD_EXECUTION_PLAN_WIRING_PER_SCENARIO_EXPECTED_RESULTS_AND_VSCODE_PLAN_VIEW_BUDGET_ROWS_DONE_RICH_PER_SCENARIO_PANEL_STILL_MISSING",
       "requires_human": false,
-      "next_action": "Add a VS Code budget/plan preview view."
+      "next_action": "Optional: replace the flat VS Code budget summary rows with a richer per-scenario detail panel."
     },
     {
       "id": "P1-PROVIDER-MODEL-REPLACEABILITY",
