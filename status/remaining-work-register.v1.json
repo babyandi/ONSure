@@ -242,9 +242,9 @@
     },
     {
       "id": "P1-DEPLOYMENT",
-      "state": "PARTIAL_PROFILE_VALIDATOR_SIGNED_PACKAGE_BUILDER_INSTALL_UPDATE_ROLLBACK_DISPATCHER_OPERATIONS_VSCODE_INTERACTIVE_FLOW_AND_REAL_VSIX_SIGNING_IMPLEMENTED_HEALTH_CHECK_AUTO_ROLLBACK_MISSING",
+      "state": "PARTIAL_PROFILE_VALIDATOR_SIGNED_PACKAGE_BUILDER_INSTALL_UPDATE_ROLLBACK_VSCODE_FLOW_AND_HEALTH_CHECK_AUTO_ROLLBACK_IMPLEMENTED_PACKAGE_BUILD_STEP_STILL_SEPARATE",
       "requires_human": false,
-      "next_action": "Add health-check-triggered automatic rollback; wire SignedArtifactService into an automated release pipeline step after npm run package."
+      "next_action": "Optional: unify package building into the same interactive VS Code flow; wire SignedArtifactService into an automated release pipeline step."
     },
     {
       "id": "FINAL-EXECUTION-STAGE",

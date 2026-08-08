@@ -419,6 +419,15 @@ async function activate(context) {
           if (!keyFile) return;
           request.verification_key_file = keyFile;
         }
+        const healthCheckCommand = await vscode.window.showInputBox({
+          title: 'Health Check Command (optional)',
+          prompt: 'Command to run against the installed version, relative to the package directory (e.g. "bash health-check.sh"). Leave empty to skip -- a failed check automatically rolls back.',
+          ignoreFocusOut: true
+        });
+        if (healthCheckCommand === undefined) return;
+        if (healthCheckCommand.trim()) {
+          request.health_check_command = healthCheckCommand.trim().split(/\s+/);
+        }
         await executeWorkflow('deployment.install', request, `Installing deployment version ${version}`);
       } catch (error) {
         vscode.window.showErrorMessage(`ONSure deployment install failed: ${error.message}`);

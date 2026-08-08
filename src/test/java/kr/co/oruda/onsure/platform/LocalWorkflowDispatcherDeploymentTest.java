@@ -67,6 +67,27 @@ class LocalWorkflowDispatcherDeploymentTest {
     }
 
     @Test
+    void healthCheckCommandGatesInstallAndRollsBackAutomaticallyOnFailureThroughTheDispatcher() throws Exception {
+        LocalWorkflowDispatcher dispatcher = new LocalWorkflowDispatcher(temp);
+        Path v1 = buildUnsignedPackage("health-v1", "content-v1");
+        Path v2 = buildUnsignedPackage("health-v2", "content-v2");
+        Files.writeString(v2.resolve("health-check.sh"), "#!/bin/bash\nexit 1\n");
+        Path installRoot = temp.resolve(".onsure/deployment-health");
+
+        dispatcher.dispatch("deployment.install", request(Map.of(
+                "package_dir", v1.toString(), "version", "1.0.0", "install_root", installRoot.toString())));
+
+        assertThrows(DeploymentHealthMonitor.DeploymentHealthCheckFailedException.class, () -> dispatcher.dispatch(
+                "deployment.install", request(Map.of(
+                        "package_dir", v2.toString(), "version", "2.0.0", "install_root", installRoot.toString(),
+                        "health_check_command", java.util.List.of("bash", "health-check.sh"),
+                        "health_check_max_attempts", 2, "health_check_retry_interval_seconds", 0))));
+
+        assertEquals("1.0.0", new DeploymentInstallationService(installRoot).activeVersion(),
+                "a failed health check must automatically roll the active version back");
+    }
+
+    @Test
     void packageDirOutsideWorkspaceIsRejected() throws Exception {
         LocalWorkflowDispatcher dispatcher = new LocalWorkflowDispatcher(temp);
         assertThrows(IllegalArgumentException.class, () -> dispatcher.dispatch("deployment.install", request(Map.of(

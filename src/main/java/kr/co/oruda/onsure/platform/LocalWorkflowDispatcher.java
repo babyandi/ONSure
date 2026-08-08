@@ -272,9 +272,27 @@ public final class LocalWorkflowDispatcher {
     }
 
     private Map<String, Object> deploymentInstall(JsonNode request) throws Exception {
-        DeploymentInstallationService.InstalledVersion installed = deploymentInstallation(request).install(
-                inputPath(request, "package_dir", true), requiredId(request, "version"),
-                deploymentVerificationKey(request));
+        DeploymentInstallationService service = deploymentInstallation(request);
+        Path packageDir = inputPath(request, "package_dir", true);
+        String version = requiredId(request, "version");
+        PublicKey verificationKey = deploymentVerificationKey(request);
+
+        if (request.path("health_check_command").isArray() && !request.path("health_check_command").isEmpty()) {
+            List<String> healthCheckCommand = stringList(request.get("health_check_command"));
+            int maxAttempts = request.path("health_check_max_attempts").asInt(3);
+            int retrySeconds = request.path("health_check_retry_interval_seconds").asInt(2);
+            DeploymentHealthMonitor.GatedInstallResult gated = DeploymentHealthMonitor.installWithHealthGate(
+                    service, packageDir, version, verificationKey,
+                    DeploymentHealthMonitor.commandHealthCheck(healthCheckCommand, java.time.Duration.ofSeconds(30)),
+                    maxAttempts, java.time.Duration.ofSeconds(retrySeconds));
+            return Map.of(
+                    "installed_version", gated.installed(),
+                    "health_check_attempts", gated.healthCheckAttempts(),
+                    "health_check_detail", gated.finalHealthDetail(),
+                    "final_claim_allowed", false);
+        }
+
+        DeploymentInstallationService.InstalledVersion installed = service.install(packageDir, version, verificationKey);
         return Map.of("installed_version", installed, "final_claim_allowed", false);
     }
 
