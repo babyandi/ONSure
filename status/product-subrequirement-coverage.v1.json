@@ -331,6 +331,7 @@
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
       ],
       "evidence_refs": [],
@@ -342,7 +343,6 @@
         "CORE"
       ],
       "missing_controls": [
-        "EXPECTED_RESULT_PER_SCENARIO_MISSING",
         "VSCODE_PLAN_PREVIEW_MISSING"
       ],
       "detector_controls": [

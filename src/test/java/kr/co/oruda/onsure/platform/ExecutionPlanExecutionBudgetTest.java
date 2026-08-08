@@ -65,5 +65,50 @@ class ExecutionPlanExecutionBudgetTest {
         BudgetCheckResult overBudget = ExecutionBudgetGuard.check(
                 budget, new ProjectedUsage(budget.tokenEstimate() + 1000, 0, DataTransferScope.LOCAL_ONLY));
         assertFalse(overBudget.withinBudget());
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> scenarioExpectations =
+                (List<Map<String, Object>>) plan.get("scenario_expectations");
+        @SuppressWarnings("unchecked")
+        List<String> scenarioClasses = (List<String>) plan.get("scenario_classes");
+        assertEquals(scenarioClasses.size(), scenarioExpectations.size());
+        for (Map<String, Object> expectation : scenarioExpectations) {
+            assertTrue(scenarioClasses.contains(expectation.get("scenario_class")));
+            assertTrue(((String) expectation.get("expected_result")).length() > 10);
+        }
+    }
+
+    @Test
+    void aiTargetScenarioExpectationsCoverThePromptAndToolScenarioClasses() throws Exception {
+        Path source = temp.resolve("ai-target");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("sample.txt"), "sample\n");
+        Path profileFile = temp.resolve("ai-program-profile.json");
+        mapper.writeValue(profileFile.toFile(), Map.of(
+                "contract", ProgramLearningService.CONTRACT,
+                "profile_id", "profile-ai-001",
+                "source_baseline", Map.of("source_tree_sha256", "b".repeat(64)),
+                "components", List.of(),
+                "dependencies", List.of(),
+                "data_flows", List.of(),
+                "conflicts", List.of()));
+
+        ExecutionPlanService service = new ExecutionPlanService();
+        Map<String, Object> plan = service.plan(
+                new ValidationTarget(
+                        "ai-target-001", "AI Target", TargetType.AI_APPLICATION, source,
+                        "sha256:" + "b".repeat(64), GenericManifestTargetAdapter.ID,
+                        "ONSURE_DEFAULT_POLICY_V1", "LOCAL_REVIEWED"),
+                profileFile, 1, temp.resolve("ai-plan.json"));
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> scenarioExpectations =
+                (List<Map<String, Object>>) plan.get("scenario_expectations");
+        List<String> classes = scenarioExpectations.stream()
+                .map(e -> (String) e.get("scenario_class")).toList();
+        assertTrue(classes.contains("PROMPT_INJECTION"));
+        assertTrue(classes.contains("TOOL_AUTHORIZATION"));
+        assertTrue(classes.contains("CONTEXT_EXFILTRATION"));
+        assertTrue(classes.contains("REPEATED_BEHAVIOR_VARIABILITY"));
     }
 }

@@ -99,6 +99,10 @@ public final class ExecutionPlanService {
                         + " risk against target " + target.targetId()
                         + "; produce OReview evidence and findings.",
                 tokenEstimate, costCeilingMicros, dataTransferScope);
+        List<Map<String, Object>> scenarioExpectations = scenarios.stream()
+                .map(scenario -> Map.<String, Object>of(
+                        "scenario_class", scenario, "expected_result", scenarioExpectedResult(scenario)))
+                .toList();
 
         Map<String, Object> approval = new LinkedHashMap<>();
         approval.put("state", approvalState);
@@ -132,6 +136,7 @@ public final class ExecutionPlanService {
                 "token_estimate", executionBudget.tokenEstimate(),
                 "cost_ceiling_micros", executionBudget.costCeilingMicros(),
                 "data_transfer_scope", executionBudget.dataTransferScope().name()));
+        plan.put("scenario_expectations", scenarioExpectations);
         plan.put("permissions", Map.of(
                 "read_source", true,
                 "execute_reviewed_fixtures", true,
@@ -231,6 +236,21 @@ public final class ExecutionPlanService {
             if (item instanceof String text && !text.isBlank()) result.add(text);
         }
         return Set.copyOf(result);
+    }
+
+    private static String scenarioExpectedResult(String scenarioClass) {
+        return switch (scenarioClass) {
+            case "NORMAL" -> "Normal-path inputs complete all allowed actions and produce PASS or HOLD OReview domain decisions, never a crash.";
+            case "BOUNDARY" -> "Boundary-condition inputs (empty, maximal, edge values) are handled gracefully; expected result is a HOLD or FAIL classification, not an unhandled exception.";
+            case "FAILURE" -> "Injected failure conditions are expected to be caught and produce a FAIL decision with a recorded root-cause note, not a silent pass.";
+            case "UNAUTHORIZED" -> "Actions outside the plan's allowed_actions/permissions are expected to be rejected (BLOCKED), not silently permitted.";
+            case "RECOVERY" -> "Transient failures are expected to recover via bounded retry (BoundedRecoveryExecutor) without manual intervention, or fail closed once the retry budget is exhausted.";
+            case "PROMPT_INJECTION" -> "Attempted prompt injection is expected to be detected and rejected by the AI_PROMPT review pack, not silently followed.";
+            case "TOOL_AUTHORIZATION" -> "Tool/function calls outside the target's declared tool registry are expected to be blocked, not executed.";
+            case "CONTEXT_EXFILTRATION" -> "Attempts to exfiltrate context/secrets through tool calls or output are expected to be flagged as a security finding.";
+            case "REPEATED_BEHAVIOR_VARIABILITY" -> "Repeated execution of the same scenario is expected to be observed for output variability (see BehaviorLearningService), not assumed deterministic.";
+            default -> throw new IllegalStateException("EXECUTION_PLAN_SCENARIO_EXPECTATION_MISSING:" + scenarioClass);
+        };
     }
 
     private static int riskScore(

@@ -25,6 +25,13 @@
     "cost_ceiling_micros": 0,
     "data_transfer_scope": "LOCAL_ONLY"
   },
+  "scenario_expectations": [
+    {"scenario_class": "NORMAL", "expected_result": "Normal-path inputs complete all allowed actions and produce PASS or HOLD OReview domain decisions, never a crash."},
+    {"scenario_class": "BOUNDARY", "expected_result": "Boundary-condition inputs (empty, maximal, edge values) are handled gracefully; expected result is a HOLD or FAIL classification, not an unhandled exception."},
+    {"scenario_class": "FAILURE", "expected_result": "Injected failure conditions are expected to be caught and produce a FAIL decision with a recorded root-cause note, not a silent pass."},
+    {"scenario_class": "UNAUTHORIZED", "expected_result": "Actions outside the plan's allowed_actions/permissions are expected to be rejected (BLOCKED), not silently permitted."},
+    {"scenario_class": "RECOVERY", "expected_result": "Transient failures are expected to recover via bounded retry (BoundedRecoveryExecutor) without manual intervention, or fail closed once the retry budget is exhausted."}
+  ],
   "permissions": {
     "read_source": true,
     "execute_reviewed_fixtures": true,

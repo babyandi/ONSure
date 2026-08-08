@@ -212,9 +212,9 @@
     },
     {
       "id": "P1-EXECUTION-BUDGET-VISIBILITY",
-      "state": "PARTIAL_BUDGET_MODEL_GUARD_AND_EXECUTION_PLAN_SERVICE_WIRING_IMPLEMENTED_VSCODE_VIEW_AND_PER_SCENARIO_EXPECTED_RESULT_MISSING",
+      "state": "PARTIAL_BUDGET_MODEL_GUARD_EXECUTION_PLAN_WIRING_AND_PER_SCENARIO_EXPECTED_RESULTS_IMPLEMENTED_VSCODE_VIEW_MISSING",
       "requires_human": false,
-      "next_action": "Add a VS Code budget/plan preview view, and break expected_result down per scenario class instead of one aggregate string for the whole plan."
+      "next_action": "Add a VS Code budget/plan preview view."
     },
     {
       "id": "P1-PROVIDER-MODEL-REPLACEABILITY",
