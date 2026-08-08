@@ -326,10 +326,12 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -341,8 +343,7 @@
       ],
       "missing_controls": [
         "EXPECTED_RESULT_PER_SCENARIO_MISSING",
-        "VSCODE_PLAN_PREVIEW_MISSING",
-        "NOT_YET_WIRED_INTO_EXECUTION_PLAN_SERVICE_OUTPUT"
+        "VSCODE_PLAN_PREVIEW_MISSING"
       ],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
@@ -1341,10 +1342,12 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuardTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuardTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1355,8 +1358,7 @@
         "CORE"
       ],
       "missing_controls": [
-        "VSCODE_BUDGET_VIEW_MISSING",
-        "NOT_YET_WIRED_INTO_EXECUTION_PLAN_SERVICE_OUTPUT"
+        "VSCODE_BUDGET_VIEW_MISSING"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",

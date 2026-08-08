@@ -127,10 +127,13 @@
         "contracts/execution-plan-approval.v1.schema.json"
       ],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudget.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ExecutionBudgetGuard.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",

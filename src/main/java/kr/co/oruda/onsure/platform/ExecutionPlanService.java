@@ -83,6 +83,22 @@ public final class ExecutionPlanService {
                 + profile.path("components").size() * 2L
                 + profile.path("dependencies").size());
         long estimatedMemoryMb = riskScore >= 60 ? 2048 : 1024;
+        boolean paidServiceAllowed = false;
+        String networkEgress = "DENY_BY_DEFAULT";
+
+        int tokenEstimate = Math.max(500, registeredFixtureCount * 200
+                + profile.path("components").size() * 50
+                + allowedActions.size() * 100);
+        long costCeilingMicros = paidServiceAllowed ? tokenEstimate * 10L : 0L;
+        ExecutionBudget.DataTransferScope dataTransferScope = "ALLOWLIST_ONLY".equals(networkEgress)
+                ? ExecutionBudget.DataTransferScope.EXTERNAL_ALLOWLISTED
+                : ExecutionBudget.DataTransferScope.LOCAL_ONLY;
+        ExecutionBudget executionBudget = new ExecutionBudget(
+                "Execute " + allowedActions.size() + " allowed action(s) across "
+                        + reviewPacks.size() + " review pack(s) at " + riskLevel
+                        + " risk against target " + target.targetId()
+                        + "; produce OReview evidence and findings.",
+                tokenEstimate, costCeilingMicros, dataTransferScope);
 
         Map<String, Object> approval = new LinkedHashMap<>();
         approval.put("state", approvalState);
@@ -109,8 +125,13 @@ public final class ExecutionPlanService {
                 "estimated_seconds", estimatedSeconds,
                 "memory_limit_mb", estimatedMemoryMb,
                 "process_limit", 64,
-                "network_egress", "DENY_BY_DEFAULT",
-                "paid_service_allowed", false));
+                "network_egress", networkEgress,
+                "paid_service_allowed", paidServiceAllowed));
+        plan.put("execution_budget", Map.of(
+                "expected_result", executionBudget.expectedResult(),
+                "token_estimate", executionBudget.tokenEstimate(),
+                "cost_ceiling_micros", executionBudget.costCeilingMicros(),
+                "data_transfer_scope", executionBudget.dataTransferScope().name()));
         plan.put("permissions", Map.of(
                 "read_source", true,
                 "execute_reviewed_fixtures", true,
