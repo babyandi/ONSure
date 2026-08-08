@@ -129,6 +129,16 @@ docs/v2/04(VS Code 구독정책), 06(운영프로세스·고객여정), 07(아�
 
 이 흡수로 새로 생긴 항목도 전부 계약 없는 DESIGN_ONLY다 — G7/G13과 마찬가지로 구현 전 `contracts/*.schema.json` 제정이 선행되어야 한다.
 
+### G30 — OMemory 재귀학습의 실제 계약 발견, OTraining 출시 하드 게이트 확정 (2026-08-08)
+`contracts/learning-to-application-pipeline.v1.json`과 `contracts/learning-validation-engine.v1.json`을 확인했다. 이 설계서가 구상한 OMemory 재귀학습(MissedFinding 루프)의 **실제, 훨씬 정교한 버전이 이미 계약으로 존재**했다.
+
+- 실제 파이프라인은 `LEARNING_CANDIDATE→VALIDATION_REQUESTED→VALIDATION_RUNNING→VALIDATION_PASSED/FAILED→PROMOTION_REVIEW→PROMOTION_APPROVED→SHADOW_APPLIED→CANARY_APPLIED→STABLE_APPLIED→APPLIED_LOCKED`로, 이 설계서의 5단계보다 세분화되어 있고 SHADOW/CANARY 점진배포가 있다. 02·04를 계약 기준으로 교체했다(G30 조치).
+- **가장 중요한 발견**: 학습결과 적용은 3등급(VALIDATION_PACK_APPLY 허용 / ONSURE_RUNTIME_CODE_APPLY 제한허용 / **TARGET_PRODUCT_APPLY 불허**)으로 나뉘고, TARGET_PRODUCT_APPLY(=OTraining이 하는 일 그 자체)는 "ONSure Core가 자신의 승격 경로를 먼저 증명해야 함"을 이유로 **현재 계약상 금지**되어 있다.
+- 이는 사용자가 "자기 자신의 검증과 학습을 위한 재귀학습이 가능해야 한다"고 요구한 것과 정확히 같은 방향이며, 이미 실제 계약이 순서를 강제하고 있었다: **OMemory가 자기 자신의 학습결과를 최소 1건 APPLIED_LOCKED까지 승격시키기 전까지 OTraining은 출시 대상이 아니다.** 00·02에 이 하드 게이트를 명시했다.
+- 4개 엔진(Learning/Validator/Executor/Governance) 역할 분리와 `hard_invariants`(LEARNING_ENGINE_CANNOT_PASS_VALIDATE_OR_PROMOTE 등)를 02에 반영했다.
+
+06 §11 우선 구현 순서에 이 의존성을 반영했다(11번 OMemory가 APPLIED_LOCKED 1건을 실제로 달성하기 전까지 12번 OTraining 착수 금지).
+
 ## F. 문서 거버넌스 (참고, 결정 아님)
 
 | # | 항목 | 현재 상태 | 위치 |

@@ -286,7 +286,8 @@ Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진�
 8. VS Code Developer
 9. Payment/Refund와 운영화
 10. Team/Enterprise 기능
-11. OMemory 재귀학습 루프 자동화(RCA→Rule 개정→Golden Fixture 회귀→Promote)
+11. OMemory 재귀학습 루프 자동화(RCA→Rule 개정→Golden Fixture 회귀→Promote), `contracts/learning-to-application-pipeline.v1.json`의 `VALIDATION_PACK_APPLY` 경로로 `APPLIED_LOCKED` 최소 1건 달성
+12. OTraining(Target AI Auto-Learning) — 11번이 `APPLIED_LOCKED` 1건 이상을 실제로 달성하기 전까지 착수하지 않는다(`TARGET_PRODUCT_APPLY: mvp_allowed=false` 하드 게이트, [00_ONSURE_MASTER_DESIGN_SET.md §2-2](00_ONSURE_MASTER_DESIGN_SET.md))
 
 ## 12. 최종 수용기준
 - 문서와 코드 Traceability 확보

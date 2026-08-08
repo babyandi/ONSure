@@ -33,6 +33,8 @@ Understand → Verify → Diagnose → Decide(Improve 또는 Train) → Improve 
 ### 2-2. 재귀학습 원칙은 ONSure 자신에게도 적용된다
 OMemory(§5)의 재귀학습(자동 판정이 놓친 결함을 RCA→개정→회귀→승격으로 흡수해 ONSure 자신의 탐지 능력을 보강하는 루프, [02 §7-1](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md))과 Target AI Auto-Learning(대상 프로그램의 AI를 재학습하는 루프)은 **같은 원칙을 공유하는 두 적용 사례**다. 검증된 근거에서만 시작하고, 자기 자신이 낸 개정을 스스로 승인하지 않으며, 독립 재검증을 통과해야 승격·배포된다. ONSure는 대상 프로그램만 재귀학습시키는 도구가 아니라, 그 재귀학습 원칙을 자기 자신의 판정 능력에도 동일하게 적용하는 도구다.
 
+이는 선언에 그치지 않고 순서를 강제하는 실제 계약(`contracts/learning-to-application-pipeline.v1.json`)이 있다: 학습결과를 대상 프로그램에 적용하는 것(`TARGET_PRODUCT_APPLY`, 곧 OTraining)은 ONSure가 자기 자신의 학습결과를 승격시키는 경로(OMemory, `VALIDATION_PACK_APPLY`)를 최소 1건 `APPLIED_LOCKED`까지 증명하기 전까지 허용되지 않는다. 대상을 재학습시키는 도구이기 전에, 먼저 스스로를 안전하게 재학습시킬 수 있어야 한다.
+
 ## 3. 독립성 원칙
 - ONSure의 제품 정의, 실행 구조, 고객 데이터, 릴리스는 ORUDA에 종속되지 않는다.
 - ONSure는 독립 저장소, 독립 배포, 독립 상품, 독립 SLA를 가진다.

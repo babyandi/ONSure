@@ -150,10 +150,15 @@ PatchPlan은 hunk 단위(`hunk_id`, `finding_id`, `preimage_sha256`, `approval_s
 
 이 설계서의 KnowledgePattern(CANDIDATE→VALIDATED→TENANT_SCOPED/PROMOTED)과 `scope`(PROJECT_ONLY/REUSABLE_CANDIDATE는 계약에 이미 존재)는 위 세 계약으로 대체·정정한다. 재현 임계치는 이 설계서가 "3회 이상"으로 썼으나 계약은 최소 2회이므로 [08 체크리스트](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md) C6을 계약값(2회) 기준으로 재검토해야 한다. `pattern_class` 5종 분류와 이 설계서의 AI/바이브 코딩 진단표([03 §4-1](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md))가 어떻게 매핑되는지는 아직 미정 — `DESIGN_ONLY`.
 
+### MissedFinding / 재귀학습 승격 파이프라인 — `contracts/learning-to-application-pipeline.v1.json`, `contracts/learning-validation-engine.v1.json`
+`LEARNING_CANDIDATE → VALIDATION_REQUESTED → VALIDATION_RUNNING → (VALIDATION_PASSED 또는 VALIDATION_FAILED) → PROMOTION_REVIEW → PROMOTION_APPROVED → SHADOW_APPLIED → CANARY_APPLIED → STABLE_APPLIED → APPLIED_LOCKED`(예외 ROLLED_BACK)가 실제 계약이며, 이 설계서가 이전에 쓴 MissedFinding의 `DETECTED→RCA_DONE→CAPABILITY_UPDATED→REGRESSION_VALIDATED→PROMOTED` 5단계보다 훨씬 세분화되어 있다(SHADOW/CANARY 점진 배포 단계 포함). 적용 등급은 3가지로 나뉜다: `VALIDATION_PACK_APPLY`(허용), `ONSURE_RUNTIME_CODE_APPLY`(제한적 허용, Human Review 필수), `TARGET_PRODUCT_APPLY`(현재 불허 — §7-2 OTraining 참조). `applied_count`는 Active Selector·Apply Commit·Post-apply Verification·Rollback Pointer가 모두 있는 STABLE_APPLIED/APPLIED_LOCKED만 집계한다.
+
 ### 아직 계약이 없는 이 설계서의 확장 (DESIGN_ONLY)
 다음은 이번 세션에서 제안했으나 대응하는 `contracts/*.schema.json`을 찾지 못했다. 아이디어 자체를 폐기하라는 뜻이 아니라, 구현 전 계약부터 만들어야 한다는 뜻이다.
 
-CaseRevision, Baseline 동시성 다중 Branch 처리, MissedFinding(재귀학습 루프), ComponentContract/Cross-Program Impact Scan, BlastRadiusReport(PatchPlan.preapply_assessment로 부분 흡수됨), RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ProgramRiskScore, ReproducibilityAuditSample, SBOM, TrainingRequest/Plan/Run, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval/ProductionObservation/RelearnTrigger
+CaseRevision, Baseline 동시성 다중 Branch 처리, ComponentContract/Cross-Program Impact Scan, BlastRadiusReport(PatchPlan.preapply_assessment로 부분 흡수됨), RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ProgramRiskScore, ReproducibilityAuditSample, SBOM, TrainingRequest/Plan/Run, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval/ProductionObservation/RelearnTrigger
+
+MissedFinding은 위 절로 이동해 이제 DESIGN_ONLY 목록에서 제외한다(실제 계약 확인됨).
 
 ### TrainingRequest / TrainingRun (DESIGN_ONLY)
 TrainingRequest: DRAFT → SCOPED → APPROVED → TRAINING_IN_PROGRESS → EVALUATION_PENDING → (INDEPENDENTLY_VERIFIED → DEPLOYMENT_APPROVED → DEPLOYED) 또는 (EVALUATION_FAILED → SCOPED로 재진입)

@@ -159,18 +159,23 @@ OReview, OVerification, OImprovement의 실행 결과와 Before/After Evidence�
 - 재현 3회 이상 실패(False Positive)한 Pattern은 자동 강등
 
 ### 기능 — 재귀학습(Recursive Detection Learning)
-자동 Review/Verification이 놓친 결함이 Independent Review 불일치, Human Review Override, Production Incident, 고객 신고, 뒤늦은 Regression으로 확인되면 다음 루프를 수행한다.
+실제 `contracts/learning-validation-engine.v1.json`과 `contracts/learning-to-application-pipeline.v1.json`이 이 루프의 권위다. 자동 Review/Verification이 놓친 결함이 Independent Review 불일치, Human Review Override, Production Incident, 고객 신고, 뒤늦은 Regression으로 확인되면 다음 파이프라인을 수행한다.
 
-1. MissedFinding 등록: 놓친 결함을 원 Case, 원 Rule Pack/모델 버전과 함께 기록
-2. RCA: Rule 미존재, Confidence Threshold 오류, 모델 한계, Fixture 미포함 중 원인 분류
-3. 보강안 생성: 신규/개정 KnowledgePattern 또는 Rule Pack 개정안, 필요 시 Golden Review Fixture·OLicense Fixture에 해당 사례 추가
-4. 회귀 검증: 개정안이 동일 MissedFinding을 재현 탐지하는지 확인하는 동시에, 기존 Golden Fixture 전체에 대해 False Positive가 급증하지 않는지 확인(모델/Rule 개정도 하나의 Patch로 취급해 회귀검증)
-5. 승격: 회귀 검증을 통과한 개정안만 프로덕션 Rule Pack/Pattern Library에 반영하고 Rule Pack Digest를 갱신
+`LEARNING_CANDIDATE → VALIDATION_REQUESTED → VALIDATION_RUNNING → (VALIDATION_PASSED 또는 VALIDATION_FAILED) → PROMOTION_REVIEW → PROMOTION_APPROVED → SHADOW_APPLIED → CANARY_APPLIED → STABLE_APPLIED → APPLIED_LOCKED`(예외 ROLLED_BACK)
+
+4개 엔진으로 역할을 분리하며 어느 엔진도 자기 자신을 검증·승인하지 않는다(계약의 `hard_invariants`).
+
+- **Learning Engine**(후보 생성 전담): FAILURE_RECEIPT_ANALYSIS, RCA_CLUSTERING, FAILURE_MODE/FIXTURE/ORACLE/RUBRIC/REMEDIATION_PATTERN Candidate 생성만 수행. PASS_DECISION, PROMOTION_GATE_OPEN, SILENT_RUBRIC_CHANGE, **SELF_APPROVAL**은 금지(`LEARNING_ENGINE_CANNOT_PASS_VALIDATE_OR_PROMOTE`)
+- **Validator Engine**(독립 판정 전담): FALSE_PASS, FALSE_FAIL, NONDETERMINISM, GOLDEN_REGRESSION, HIDDEN_TEST_RESULT를 측정하며 Learner 출력을 재계산 없이 신뢰하지 않는다(`VALIDATOR_MUST_RECALCULATE_CANDIDATE_FROM_SOURCE_EVIDENCE`). Hidden Dataset은 Learning Engine이 접근할 수 없다(`HIDDEN_DATASET_MUST_NOT_BE_USED_BY_LEARNING_ENGINE`)
+- **Executor Engine**(Queue 소비·실행): READY→RUNNING→DONE/RETRY/HOLD/CANCELLED/EXPIRED→APPLY_PENDING→POST_APPLY_VERIFY→APPLIED_LOCKED. Queue Lease, Idempotency Key, 중복소비 차단, Checkpoint Resume을 강제
+- **Governance Engine**(승격·적용 통제): Promotion Receipt, Reviewer/Approver 분리, Apply Commit 또는 안정 Registry Version, Post-apply Verification, Rollback Pointer, Applied Count 회계를 강제. Candidate를 Applied로 집계하거나 Rollback Pointer 없이 승격하는 것을 금지
+
+승격은 SHADOW_APPLIED(제한 노출) → CANARY_APPLIED(부분 확대) → STABLE_APPLIED(전체 적용) → APPLIED_LOCKED(불변 Evidence로 고정) 순으로 점진적이다. `applied_count`는 STABLE_APPLIED 또는 APPLIED_LOCKED이면서 Active Selector·Apply Commit·Post-apply Verification Receipt·Rollback Pointer가 모두 있어야만 집계한다(`MISSING_APPLY_RECEIPT_IS_ZERO_APPLIED`) — Candidate가 Queue에 있거나 PASS Receipt만 있고 Promotion Approval이 없으면 0건으로 취급한다.
 
 이 루프는 사람이 승인한 개정만 프로덕션에 반영하며, 탐지 결과를 스스로 무비판 재학습해 자기 자신을 검증하지 않는다(자기 참조 승인 금지). Cycle마다 Recall(놓친 결함 비율 감소)과 False Positive율 변화를 함께 추적해 개선/퇴보를 판정한다.
 
 ### 산출물
-KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevision, DetectionCapabilityChangeReport
+KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevision, DetectionCapabilityChangeReport, PromotionReceipt, ApplyReceipt, RollbackPointer
 
 ### 수용기준
 - 모든 Pattern은 최초 근거가 된 ReviewFinding, VerificationFinding 또는 ImprovementRequest로 역추적 가능
@@ -179,9 +184,14 @@ KnowledgePattern, MissedFinding, PatternApplicationReceipt, PatternLibraryRevisi
 - FR-COM-009의 Opt-out을 선택한 Organization의 데이터는 어떤 형태로도 공유 Corpus 후보 추출 대상에서 제외한다(Tenant 전용 Pattern 생성은 계속 가능)
 - 재귀학습으로 인한 Rule/모델 개정은 반드시 전체 Golden Fixture Regression을 통과한 뒤에만 프로덕션에 반영한다
 - MissedFinding은 발견 경로(Independent Review/Human Override/Incident/고객신고/지연 Regression)를 구분해 기록한다
+- Rollback Pointer 없는 승격, Active Selector 없는 Applied 집계는 금지한다(계약의 `hard_invariants` 그대로 적용)
+- 이 루프가 최초로 APPLIED_LOCKED에 1건 이상 도달하기 전까지는 §7-2 OTraining의 TARGET_PRODUCT_APPLY(대상 프로그램에 학습결과 적용)를 MVP 범위에 포함하지 않는다(`contracts/learning-to-application-pipeline.v1.json`의 `TARGET_PRODUCT_APPLY: mvp_allowed=false`, 사유 "ONSure Core가 자신의 승격 경로를 먼저 증명해야 함")
 
 ## 7-2. OTraining (Target AI Auto-Learning)
 `docs/v2/09_TARGET_AI_AUTO_LEARNING_BUSINESS_AND_DEVELOPMENT_STRATEGY.md`에서 흡수. OLearning(Program Understanding Learning)과 다른 축이다 — OLearning은 ONSure가 대상 프로그램을 이해하는 학습이고, OTraining은 대상 프로그램 **안의** RAG·Prompt·Agent·Model 자체를 실제 데이터로 재학습·개선하는 기능이다.
+
+### 출시 전제조건(하드 게이트)
+`contracts/learning-to-application-pipeline.v1.json`은 학습결과 적용을 3등급으로 나눈다: VALIDATION_PACK_APPLY(허용), ONSURE_RUNTIME_CODE_APPLY(제한적 허용, Human Review 필수), **TARGET_PRODUCT_APPLY(현재 불허 — "ONSure Core가 자신의 승격 경로를 먼저 증명해야 함")**. OTraining이 대상 프로그램에 학습결과를 적용하는 것은 정확히 TARGET_PRODUCT_APPLY에 해당한다. 따라서 **OMemory의 자기 재귀학습 루프(§7-1)가 APPLIED_LOCKED에 최소 1건 도달하기 전까지 OTraining은 MVP·상용 출시 대상이 아니다.** 이 순서를 임의로 앞당기지 않는다 — ONSure가 대상 프로그램을 재학습시키려면, 먼저 자기 자신의 학습 결과를 안전하게 승격시킬 수 있음을 증명해야 한다.
 
 ### 책임
 검증된 Finding 또는 승인된 개선 목표(정확도·안정성·속도·비용)에 근거해 대상 프로그램의 AI 구성요소를 재학습하고, 독립 재검증을 통과한 경우에만 배포를 승인한다.
