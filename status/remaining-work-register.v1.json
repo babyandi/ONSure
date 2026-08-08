@@ -224,9 +224,9 @@
     },
     {
       "id": "P1-BUILD-DEPENDENCY-VERIFICATION",
-      "state": "PARTIAL_BUILD_TEST_PASS_PRODUCT_SBOM_VULNERABILITY_LICENSE_PACK_INCOMPLETE",
+      "state": "PARTIAL_LICENSE_POLICY_AND_VULNERABILITY_DENYLIST_AND_SBOM_GENERATOR_ADDED_TRANSITIVE_SCAN_AND_LIVE_CVE_FEED_STILL_MISSING",
       "requires_human": false,
-      "next_action": "Add dependency lock, SBOM, vulnerability and license packs."
+      "next_action": "Resolve transitive (not just direct) dependency graph and wire a live CVE feed or an out-of-band-reviewed update process for the denylist; wire SbomGenerator output into the build lane receipt."
     },
     {
       "id": "P1-PERFORMANCE-RECOVERY",

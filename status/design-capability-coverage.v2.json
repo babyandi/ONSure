@@ -187,20 +187,30 @@
         "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
       ],
       "contract_refs": [
-        "contracts/approved-dependency-manifest.v1.json"
+        "contracts/approved-dependency-manifest.v1.json",
+        "contracts/dependency-license-policy.v1.json",
+        "contracts/dependency-vulnerability-denylist.v1.json",
+        "contracts/assurance-lanes.v1.json"
       ],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/DependencyManifestVerifier.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DependencyManifestVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LicensePolicyVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifier.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SbomGenerator.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LicensePolicyVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerabilityDenylistVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SbomGeneratorTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "DEPENDENCY_MANIFEST_VERIFICATION_ONLY_NO_CVE_DATABASE_LOOKUP",
-        "NO_TRANSITIVE_DEPENDENCY_OR_LICENSE_SCAN",
+        "VULNERABILITY_DENYLIST_MANUALLY_CURATED_NOT_LIVE_CVE_FEED",
+        "LICENSE_AND_VULNERABILITY_CHECKS_COVER_DIRECT_DEPENDENCIES_ONLY_NO_TRANSITIVE_SCAN",
+        "SBOM_GENERATOR_NOT_WIRED_INTO_BUILD_LANE_RECEIPT_OUTPUT",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"
