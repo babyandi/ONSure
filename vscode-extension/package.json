@@ -31,6 +31,8 @@
     "onCommand:onsure.runWorkflowRequest",
     "onCommand:onsure.approvePlan",
     "onCommand:onsure.applyApprovedPatch",
+    "onCommand:onsure.installDeploymentPackage",
+    "onCommand:onsure.rollbackDeployment",
     "onCommand:onsure.openLastArtifact",
     "onCommand:onsure.clearToken"
   ],
@@ -44,6 +46,8 @@
       {"command": "onsure.runWorkflowRequest", "title": "ONSure: Run Signed Workflow Request"},
       {"command": "onsure.approvePlan", "title": "ONSure: Review and Consume Plan Approval"},
       {"command": "onsure.applyApprovedPatch", "title": "ONSure: Review and Apply Approved Hunks"},
+      {"command": "onsure.installDeploymentPackage", "title": "ONSure: Install Deployment Package"},
+      {"command": "onsure.rollbackDeployment", "title": "ONSure: Roll Back Deployment"},
       {"command": "onsure.openLastArtifact", "title": "ONSure: Open Last Artifact"},
       {"command": "onsure.clearToken", "title": "ONSure: Clear Local API Token"}
     ],
@@ -78,6 +82,8 @@
         {"command": "onsure.runWorkflowRequest", "when": "view == onsure.workspace", "group": "navigation@4"}
         ,{"command": "onsure.approvePlan", "when": "view == onsure.plan", "group": "navigation@1"}
         ,{"command": "onsure.applyApprovedPatch", "when": "view == onsure.improvement", "group": "navigation@1"}
+        ,{"command": "onsure.installDeploymentPackage", "when": "view == onsure.admin", "group": "navigation@1"}
+        ,{"command": "onsure.rollbackDeployment", "when": "view == onsure.admin", "group": "navigation@2"}
       ],
       "commandPalette": [
         {"command": "onsure.clearToken"}

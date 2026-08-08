@@ -44,7 +44,7 @@
     },
     {
       "id": "P0-WORKFLOW-SURFACE-PARITY",
-      "state": "45_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+      "state": "47_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
       "next_action": "Run workflow surface and critical-callpath gates whenever Dispatcher, CLI, Local API, VS Code commands or overloads change."
     },
@@ -242,9 +242,9 @@
     },
     {
       "id": "P1-DEPLOYMENT",
-      "state": "PARTIAL_PROFILE_VALIDATOR_SIGNED_PACKAGE_BUILDER_INSTALL_UPDATE_ROLLBACK_AND_REAL_VSIX_SIGNING_VERIFIED_ONCE_MANUALLY_INTERACTIVE_UI_AND_PIPELINE_WIRING_MISSING",
+      "state": "PARTIAL_PROFILE_VALIDATOR_SIGNED_PACKAGE_BUILDER_INSTALL_UPDATE_ROLLBACK_DISPATCHER_OPERATIONS_VSCODE_INTERACTIVE_FLOW_AND_REAL_VSIX_SIGNING_IMPLEMENTED_HEALTH_CHECK_AUTO_ROLLBACK_MISSING",
       "requires_human": false,
-      "next_action": "Wire SignedArtifactService as an automated step after npm run package in a release pipeline; add an interactive installer UI."
+      "next_action": "Add health-check-triggered automatic rollback; wire SignedArtifactService into an automated release pipeline step after npm run package."
     },
     {
       "id": "FINAL-EXECUTION-STAGE",
@@ -269,6 +269,12 @@
       "state": "HOLD",
       "requires_human": true,
       "next_action": "Keep all release flags false until every gate passes."
+    },
+    {
+      "id": "DESIGN-AUTHORITY-ORPHANED-REGISTRY-CLEANUP",
+      "state": "FOUND_STATUS_FINAL_PRODUCT_REQUIREMENT_COVERAGE_V1_JSON_STILL_BOUND_TO_DEPRECATED_DOCS_40_44_NEVER_REBOUND_TO_DOCS_MASTER",
+      "requires_human": false,
+      "next_action": "Either rebind status/final-product-requirement-coverage.v1.json (companion_authorities) to the corresponding docs/master concepts per ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md Sec.3-1, or retire the file if docs/master fully superseded it. Do not treat its FR-FIN-* items as authoritative until this is resolved."
     }
   ],
   "final_lock_allowed": false,

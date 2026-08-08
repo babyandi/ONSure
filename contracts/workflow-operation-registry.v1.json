@@ -19,6 +19,8 @@
     "job.control",
     "job.read",
     "job.recover",
+    "deployment.install",
+    "deployment.rollback",
     "git.commit",
     "git.draft-pr",
     "license.issue",
@@ -53,7 +55,7 @@
     "all_operations_must_reach_generic_dispatcher": true,
     "dedicated_vscode_commands_required": ["program.learn", "validation.run"]
   },
-  "operation_count": 45,
+  "operation_count": 47,
   "current_source_execution": "LOCAL_RECEIPT_REQUIRED",
   "final_claim_allowed": false
 }

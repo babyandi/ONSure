@@ -705,21 +705,24 @@
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentProfileValidator.java",
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilder.java",
         "src/main/java/kr/co/oruda/onsure/platform/DeploymentInstallationService.java",
-        "src/main/java/kr/co/oruda/onsure/platform/SignedArtifactService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/SignedArtifactService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
+        "vscode-extension/extension.js"
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/DeploymentProfileValidatorTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/DeploymentPackageBuilderTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/DeploymentInstallationServiceTest.java",
         "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactServiceTest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactRealVsixTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/SignedArtifactRealVsixTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcherDeploymentTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "INSTALL_UPDATE_ROLLBACK_IS_A_CLI_LEVEL_SERVICE_NO_INTERACTIVE_UI_OR_HEALTH_CHECK_TRIGGERED_AUTO_ROLLBACK",
-        "SIGNED_FILE_PACKAGE_ONLY_NO_INTERACTIVE_INSTALLER_UI",
+        "INSTALL_ROLLBACK_HAVE_AN_INTERACTIVE_VSCODE_FLOW_PACKAGE_BUILDING_ITSELF_IS_STILL_A_SEPARATE_JAVA_API_CLI_STEP",
+        "NO_HEALTH_CHECK_TRIGGERED_AUTOMATIC_ROLLBACK",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN",
         "REAL_VSIX_SIGNING_VERIFIED_ONCE_MANUALLY_NOT_WIRED_INTO_AN_AUTOMATED_RELEASE_PIPELINE_STEP"
       ],

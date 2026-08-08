@@ -3,11 +3,13 @@ package kr.co.oruda.onsure.platform;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import kr.co.oruda.onsure.assurance.LocalReceiptCrypto;
 import kr.co.oruda.onsure.platform.ValidationModel.TargetType;
 import kr.co.oruda.onsure.platform.ValidationModel.ValidationTarget;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.security.PublicKey;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +74,8 @@ public final class LocalWorkflowDispatcher {
             case "job.control" -> jobControl(request);
             case "job.read" -> jobRead(request);
             case "job.recover" -> jobRecover(request);
+            case "deployment.install" -> deploymentInstall(request);
+            case "deployment.rollback" -> deploymentRollback(request);
             case "git.commit" -> gitCommit(request);
             case "git.draft-pr" -> gitDraftPr(request);
             case "license.issue" -> licenseIssue(request);
@@ -256,6 +260,28 @@ public final class LocalWorkflowDispatcher {
 
     private Map<String, Object> jobRecover(JsonNode request) throws Exception {
         return jobs().recoverAllAfterRestart(actor(request));
+    }
+
+    private DeploymentInstallationService deploymentInstallation(JsonNode request) {
+        return new DeploymentInstallationService(outputPath(request, "install_root", ".onsure/deployment"));
+    }
+
+    private PublicKey deploymentVerificationKey(JsonNode request) throws Exception {
+        Path verificationKeyFile = optionalInputPath(request, "verification_key_file");
+        return verificationKeyFile == null ? null : LocalReceiptCrypto.readPublicKey(verificationKeyFile);
+    }
+
+    private Map<String, Object> deploymentInstall(JsonNode request) throws Exception {
+        DeploymentInstallationService.InstalledVersion installed = deploymentInstallation(request).install(
+                inputPath(request, "package_dir", true), requiredId(request, "version"),
+                deploymentVerificationKey(request));
+        return Map.of("installed_version", installed, "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> deploymentRollback(JsonNode request) throws Exception {
+        DeploymentInstallationService.InstalledVersion rolledBack = deploymentInstallation(request).rollback(
+                requiredId(request, "target_version"), deploymentVerificationKey(request));
+        return Map.of("rolled_back_to", rolledBack, "final_claim_allowed", false);
     }
 
     private Map<String, Object> programLearn(JsonNode request) throws Exception {
