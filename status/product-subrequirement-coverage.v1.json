@@ -193,11 +193,19 @@
       "semantic_assertions": [
         {
           "path": "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java",
-          "tokens": ["parent_profile", "source_inventory", "change_set", "PARENT_PROGRAM_PROFILE_HASH_INVALID"]
+          "tokens": [
+            "parent_profile",
+            "source_inventory",
+            "change_set",
+            "PARENT_PROGRAM_PROFILE_HASH_INVALID"
+          ]
         },
         {
           "path": "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java",
-          "tokens": ["repeatedLearningBindsParentAndReportsAddedModifiedDeletedAndUnchanged", "tamperedParentProfileFailsClosed"]
+          "tokens": [
+            "repeatedLearningBindsParentAndReportsAddedModifiedDeletedAndUnchanged",
+            "tamperedParentProfileFailsClosed"
+          ]
         }
       ]
     },
@@ -547,11 +555,18 @@
       "semantic_assertions": [
         {
           "path": "src/main/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaService.java",
-          "tokens": ["impact_scope", "unknown_items", "IMPACT_BOUNDARY_NOT_CAUSALLY_VERIFIED"]
+          "tokens": [
+            "impact_scope",
+            "unknown_items",
+            "IMPACT_BOUNDARY_NOT_CAUSALLY_VERIFIED"
+          ]
         },
         {
           "path": "src/test/java/kr/co/oruda/onsure/platform/EvidenceBasedRcaServiceTest.java",
-          "tokens": ["sourceCandidateSeparatesObservedImpactFromExplicitUnknowns", "boundExperimentCanVerifyImpactButNeverInventIndependentConfirmation"]
+          "tokens": [
+            "sourceCandidateSeparatesObservedImpactFromExplicitUnknowns",
+            "boundExperimentCanVerifyImpactButNeverInventIndependentConfirmation"
+          ]
         }
       ]
     },
@@ -636,11 +651,21 @@
       "semantic_assertions": [
         {
           "path": "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java",
-          "tokens": ["preapply_assessment", "risk_score", "impact_scope", "BYTE_EXACT_PREIMAGE_BACKUP", "SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH"]
+          "tokens": [
+            "preapply_assessment",
+            "risk_score",
+            "impact_scope",
+            "BYTE_EXACT_PREIMAGE_BACKUP",
+            "SHA256_PREIMAGE_RESTORE_AND_SOURCE_TREE_MATCH"
+          ]
         },
         {
           "path": "src/test/java/kr/co/oruda/onsure/platform/ProductWorkflowServicesTest.java",
-          "tokens": ["patchPlanRequiresApprovalAndDoesNotModifySource", "preapply_assessment", "target_source_mutated_before_approval"]
+          "tokens": [
+            "patchPlanRequiresApprovalAndDoesNotModifySource",
+            "preapply_assessment",
+            "target_source_mutated_before_approval"
+          ]
         }
       ]
     },
@@ -847,15 +872,27 @@
       "semantic_assertions": [
         {
           "path": "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
-          "tokens": ["recoverAllAfterRestart", "approval_history_restored", "RECOVERY_HOLD", "JOB_APPROVAL_HISTORY_CHECKPOINT_MISMATCH"]
+          "tokens": [
+            "recoverAllAfterRestart",
+            "approval_history_restored",
+            "RECOVERY_HOLD",
+            "JOB_APPROVAL_HISTORY_CHECKPOINT_MISMATCH"
+          ]
         },
         {
           "path": "vscode-extension/extension.js",
-          "tokens": ["job.recover", "LAST_RESTORE_KEY", "vscode-extension-restart-controller"]
+          "tokens": [
+            "job.recover",
+            "LAST_RESTORE_KEY",
+            "vscode-extension-restart-controller"
+          ]
         },
         {
           "path": "src/test/java/kr/co/oruda/onsure/platform/DurableJobServiceTest.java",
-          "tokens": ["restartRestoresCheckpointAndConsumedApprovalHistoryAsPaused", "runningJobWithoutCheckpointRecoversToHold"]
+          "tokens": [
+            "restartRestoresCheckpointAndConsumedApprovalHistoryAsPaused",
+            "runningJobWithoutCheckpointRecoversToHold"
+          ]
         }
       ]
     },
@@ -1069,11 +1106,19 @@
       "semantic_assertions": [
         {
           "path": "src/main/java/kr/co/oruda/onsure/platform/KnowledgeSeparationService.java",
-          "tokens": ["ALLOWLISTED_TAXONOMY_ONLY", "lineage_commitment_sha256", "cross_project_retrieval_allowed", "REUSABLE_PATTERN_PRIVACY_REVIEW_REQUIRED"]
+          "tokens": [
+            "ALLOWLISTED_TAXONOMY_ONLY",
+            "lineage_commitment_sha256",
+            "cross_project_retrieval_allowed",
+            "REUSABLE_PATTERN_PRIVACY_REVIEW_REQUIRED"
+          ]
         },
         {
           "path": "src/test/java/kr/co/oruda/onsure/platform/KnowledgeSeparationServiceTest.java",
-          "tokens": ["rawProjectMemoryNeverEntersAllowlistedReusablePattern", "insufficientOrUnreviewedEvidenceStaysProjectOnlyOnHold"]
+          "tokens": [
+            "rawProjectMemoryNeverEntersAllowlistedReusablePattern",
+            "insufficientOrUnreviewedEvidenceStaysProjectOnlyOnHold"
+          ]
         }
       ]
     },
@@ -1231,15 +1276,29 @@
       "semantic_assertions": [
         {
           "path": "src/main/java/kr/co/oruda/onsure/platform/DurableJobService.java",
-          "tokens": ["checkpoint", "pause", "resume", "cancel", "JOB_REVISION_CONFLICT", "recoverAllAfterRestart"]
+          "tokens": [
+            "checkpoint",
+            "pause",
+            "resume",
+            "cancel",
+            "JOB_REVISION_CONFLICT",
+            "recoverAllAfterRestart"
+          ]
         },
         {
           "path": "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java",
-          "tokens": ["job.create", "job.control", "job.read", "job.recover"]
+          "tokens": [
+            "job.create",
+            "job.control",
+            "job.read",
+            "job.recover"
+          ]
         },
         {
           "path": "src/test/java/kr/co/oruda/onsure/platform/DurableJobServiceTest.java",
-          "tokens": ["checkpointPauseResumeCancelAndRevisionCasAreEnforced"]
+          "tokens": [
+            "checkpointPauseResumeCancelAndRevisionCasAreEnforced"
+          ]
         }
       ]
     },
@@ -1247,18 +1306,26 @@
       "id": "NFR-05",
       "name": "Replaceable provider and model",
       "normative_phrase": "Provider와 모델 교체 가능성",
-      "implementation_status": "DESIGN_ONLY",
+      "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
-      "code_refs": [],
-      "test_refs": [],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/ModelProviderAdapter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ModelProviderRegistry.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/ModelProviderAdapterCompatibilityTest.java"
+      ],
       "evidence_refs": [],
       "required_surfaces": [
         "CORE"
       ],
-      "implemented_surfaces": [],
+      "implemented_surfaces": [
+        "CORE"
+      ],
       "missing_controls": [
-        "MODEL_PROVIDER_ADAPTER_CONTRACT_MISSING",
-        "PROVIDER_COMPATIBILITY_TEST_MISSING"
+        "PRODUCTION_CALL_SITE_INTEGRATION_MISSING",
+        "REAL_PROVIDER_NETWORK_INTEGRATION_MISSING",
+        "CURRENT_MAIN_LOCAL_RECEIPT_NOT_RUN"
       ],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE",
@@ -1362,9 +1429,9 @@
   "summary": {
     "total": 43,
     "implemented": 13,
-    "partial": 28,
+    "partial": 29,
     "stub": 1,
-    "design_only": 1,
+    "design_only": 0,
     "verification_not_run": 43
   },
   "assurance": {
