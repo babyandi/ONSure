@@ -130,7 +130,7 @@
       "code_refs": [],
       "test_refs": [],
       "evidence_refs": [],
-      "status": "DESIGN_ONLY",
+      "status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "gap": "See status/design-capability-coverage.v2.json for detailed code, test, process, data, failure and control mappings."
     },
@@ -428,9 +428,9 @@
   ],
   "summary": {
     "implemented": 0,
-    "partial": 26,
+    "partial": 27,
     "stub": 1,
-    "design_only": 1,
+    "design_only": 0,
     "conflict": 0,
     "deprecated": 0,
     "verification": {

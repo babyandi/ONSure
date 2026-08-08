@@ -1,0 +1,31 @@
+{
+  "contract": "ONSURE_APPROVED_DEPENDENCY_MANIFEST_V1",
+  "version": "1.0.0",
+  "authority": "Manual security/license review before any dependency is added to pom.xml",
+  "approved_dependencies": [
+    {
+      "groupId": "com.fasterxml.jackson.core",
+      "artifactId": "jackson-databind",
+      "version": "2.18.2",
+      "scope": "compile",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-08"
+    },
+    {
+      "groupId": "com.fasterxml.jackson.datatype",
+      "artifactId": "jackson-datatype-jsr310",
+      "version": "2.18.2",
+      "scope": "compile",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-08"
+    },
+    {
+      "groupId": "org.junit.jupiter",
+      "artifactId": "junit-jupiter",
+      "version": "5.11.4",
+      "scope": "test",
+      "license": "EPL-2.0",
+      "reviewed_at": "2026-08-08"
+    }
+  ]
+}

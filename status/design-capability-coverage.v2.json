@@ -186,14 +186,21 @@
       "design_refs": [
         "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
       ],
-      "contract_refs": [],
-      "code_refs": [],
-      "test_refs": [],
+      "contract_refs": [
+        "contracts/approved-dependency-manifest.v1.json"
+      ],
+      "code_refs": [
+        "src/main/java/kr/co/oruda/onsure/platform/DependencyManifestVerifier.java"
+      ],
+      "test_refs": [
+        "src/test/java/kr/co/oruda/onsure/platform/DependencyManifestVerifierTest.java"
+      ],
       "evidence_refs": [],
-      "implementation_status": "DESIGN_ONLY",
+      "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
-        "IMPLEMENTATION_INCOMPLETE",
+        "DEPENDENCY_MANIFEST_VERIFICATION_ONLY_NO_CVE_DATABASE_LOOKUP",
+        "NO_TRANSITIVE_DEPENDENCY_OR_LICENSE_SCAN",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"

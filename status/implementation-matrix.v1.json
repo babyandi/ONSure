@@ -16,7 +16,7 @@
     "risk_planning": "PARTIAL",
     "oreview": "PARTIAL",
     "verification_static": "PARTIAL",
-    "verification_build": "DESIGN_ONLY",
+    "verification_build": "PARTIAL",
     "verification_runtime": "PARTIAL",
     "verification_api_ui": "STUB",
     "verification_security": "PARTIAL",
@@ -40,9 +40,9 @@
   },
   "counts": {
     "IMPLEMENTED": 0,
-    "PARTIAL": 26,
+    "PARTIAL": 27,
     "STUB": 1,
-    "DESIGN_ONLY": 1,
+    "DESIGN_ONLY": 0,
     "CONFLICT": 0,
     "DEPRECATED": 0
   },
