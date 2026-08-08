@@ -99,15 +99,19 @@
         "contracts/behavior-observation-receipt.v1.schema.json"
       ],
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetector.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetectorTest.java"
       ],
       "evidence_refs": [],
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "limitations": [
+        "VULNERABLE_BEHAVIOR_DETECTION_IS_PATTERN_BASED_ON_CAPTURED_OUTPUT_TEXT_ONLY_NOT_DYNAMIC_TAINT_TRACKING",
+        "VULNERABLE_SIGNAL_IS_ROUTING_EVIDENCE_FOR_REVIEW_NOT_A_FINAL_VULNERABILITY_DETERMINATION",
         "CURRENT_BRANCH_RUNTIME_RECEIPT_NOT_RUN"
       ],
       "coverage_profile": "STANDARD_FAIL_CLOSED"

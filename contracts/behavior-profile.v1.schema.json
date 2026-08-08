@@ -8,7 +8,7 @@
     "contract", "profile_id", "program_profile_id", "source_baseline_hash",
     "coverage_class", "direct_behavior_telemetry", "production_behavior_telemetry",
     "runtime_context", "observations", "variability", "failure_conditions",
-    "policy_violations", "evidence_refs", "receipt_directory", "state", "generated_at",
+    "policy_violations", "vulnerable_conditions", "evidence_refs", "receipt_directory", "state", "generated_at",
     "learning_method", "human_review", "independent_validation", "final_claim_allowed",
     "profile_sha256"
   ],
@@ -82,6 +82,7 @@
     },
     "failure_conditions": {"type": "array", "items": {"type": "string"}},
     "policy_violations": {"type": "array", "items": {"type": "string"}},
+    "vulnerable_conditions": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string", "pattern": "^receipt-file:sha256:[0-9a-f]{64}$"}, "minItems": 1},
     "receipt_directory": {"type": "string", "minLength": 1},
     "state": {"enum": ["BEHAVIOR_CANDIDATE", "BEHAVIOR_VERIFIED", "BEHAVIOR_ACTIVE", "STALE", "HOLD"]},

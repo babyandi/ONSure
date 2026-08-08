@@ -54,6 +54,7 @@
   },
   "failure_conditions": [],
   "policy_violations": [],
+  "vulnerable_conditions": [],
   "evidence_refs": [
     "receipt-file:sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
     "receipt-file:sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"

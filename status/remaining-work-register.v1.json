@@ -128,9 +128,9 @@
     },
     {
       "id": "P0-BEHAVIOR-VULNERABILITY-TAXONOMY",
-      "state": "PARTIAL",
+      "state": "PARTIAL_SUCCESS_FAILURE_POLICY_VIOLATION_AND_PATTERN_BASED_VULNERABLE_SIGNAL_DISTINGUISHED_NO_PRODUCTION_TELEMETRY_YET",
       "requires_human": false,
-      "next_action": "Model successful, failed, policy-violating and vulnerable behavior conditions with direct production telemetry."
+      "next_action": "Wire direct production telemetry (not just fixture-proxy output) into the same taxonomy, and expand vulnerable-signal patterns beyond the current curated set."
     },
     {
       "id": "P0-RCA-IMPACT-UNKNOWN-SEPARATION",
