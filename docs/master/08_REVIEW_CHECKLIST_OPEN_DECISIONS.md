@@ -60,7 +60,7 @@
 |---|---|---|---|
 | G1 | CreditReservation 소진 시 대기 상태 | [04 CreditReservation절](04_ARCHITECTURE_DATA_API_OLICENSE.md)에 이미 결정 반영됨: 5개 실행 상태기계의 기존 HOLD로 전이(재사용), ServiceCase 별도 대기 상태는 도입 안 함. 체크리스트만 갱신 안 돼 있었음 | FIXED |
 | G2 | CaseRevision | `service-case-state.v1.schema.json`에 필드/상태 확장 필요 | OPEN |
-| G3 | ComponentContract / Cross-Program Impact Scan | 신규 `component-contract.v1.schema.json` 계약 제정 필요 | OPEN |
+| G3 | ComponentContract / Cross-Program Impact Scan | `contracts/component-contract.v1.schema.json`(Component ID/Baseline 결속, `component_signature`{code_hash_sha256, interface_hash_sha256}, Provided/Required Interface, Data/AI(nullable)/Quality Contract, 상태 DRAFT→ACTIVE→SUPERSEDED/BREAKING_CHANGE_FLAGGED, SUPERSEDED 시 `superseded_by_component_id` 필수를 allOf/if/then으로 강제)와 `contracts/reuse-link.v1.schema.json`(Provided Interface 단위 Provider Component→Consumer Component/Program 역조회 Link, Cross-Program Impact Scan의 실제 색인 레코드) 신규 제정 완료, `schema-instance-registry.v1.json`에 등록. Java 소비 코드(ComponentContractService 등)는 아직 없음 — 순수 계약 제정 단계이며 구현은 별도 결정 사항 | FIXED |
 | G4 | MissedFinding 재귀학습 루프 | 신규 계약 제정 필요, `contracts/state-model-mapping.v1.json`과의 관계 정의 | OPEN |
 | G5 | ReviewFinding/VerificationFinding 장기 생애주기 | 결정: 새 계약 제정 없이 스냅샷 모델(기존 3단계 + 최신 validation_run)로 단순화 — 04에 반영 | FIXED |
 | G6 | PatchRun DRY_RUN 확장 | 결정: 별도 엔티티 신설 없이 기존 `preapply_assessment`/`patch-rollback-receipt.v1.schema.json`으로 단순화 — 04에 반영. BehaviorDiffReport만 신규계약 필요 여부 재검토 남음 | FIXED (BehaviorDiffReport는 별도 추적) |

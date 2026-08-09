@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/component-contract.v1.schema.json",
+  "title": "ONSure Component Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "component_id", "program_id", "system_id",
+    "component_signature", "baseline_reference",
+    "provided_interfaces", "required_interfaces",
+    "data_contract", "ai_contract", "quality_contract",
+    "state", "superseded_by_component_id",
+    "created_at", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_COMPONENT_CONTRACT_V1"},
+    "component_id": {"type": "string", "minLength": 1},
+    "program_id": {"type": "string", "minLength": 1},
+    "system_id": {"type": "string", "minLength": 1},
+    "component_signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code_hash_sha256", "interface_hash_sha256"],
+      "properties": {
+        "code_hash_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "interface_hash_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "description": "07 SS2.1: Component ID is bound to a Baseline; each Revision is tracked via ComponentSignature (code hash + interface hash)."
+    },
+    "baseline_reference": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The Baseline (see program-profile.v1.schema.json source_baseline / profile_id) this component's contract revision is bound to."
+    },
+    "provided_interfaces": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/interfaceDescriptor"},
+      "description": "07 SS2.2 Provided Interface: API/Event/Function this component exposes. Changes here trigger a Cross-Program Impact Scan via reuse-link.v1.schema.json (07 SS2.3)."
+    },
+    "required_interfaces": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/interfaceDescriptor"},
+      "description": "07 SS2.2 Required Interface: what this component depends on."
+    },
+    "data_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_schema_reference", "output_schema_reference"],
+      "properties": {
+        "input_schema_reference": {"type": "string", "minLength": 1},
+        "output_schema_reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "ai_contract": {
+      "description": "07 SS2.2 AI Contract, only when applicable. Null for non-AI components.",
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["prompt_version", "tool_permissions", "rag_source", "model_binding"],
+          "properties": {
+            "prompt_version": {"type": "string", "minLength": 1},
+            "tool_permissions": {
+              "type": "array",
+              "items": {"type": "string", "minLength": 1},
+              "uniqueItems": true
+            },
+            "rag_source": {"type": ["string", "null"], "minLength": 1},
+            "model_binding": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "quality_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_test_coverage_percent", "max_complexity", "required_review_domains"],
+      "properties": {
+        "required_test_coverage_percent": {"type": "integer", "minimum": 0, "maximum": 100},
+        "max_complexity": {"type": "integer", "minimum": 1},
+        "required_review_domains": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "state": {
+      "enum": ["DRAFT", "ACTIVE", "SUPERSEDED", "BREAKING_CHANGE_FLAGGED"],
+      "description": "04 SS5 ComponentContract (DESIGN_ONLY until this schema): DRAFT -> ACTIVE -> SUPERSEDED, exception BREAKING_CHANGE_FLAGGED. 07 SS2.3: contract violations (circular reference, Interface Breaking Change) transition state to BREAKING_CHANGE_FLAGGED at top Architecture Review priority."
+    },
+    "superseded_by_component_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Required (non-null) when state is SUPERSEDED; see the allOf/if/then rule below."
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "interfaceDescriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "kind"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["API", "EVENT", "FUNCTION"]},
+        "schema_reference": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"state": {"const": "SUPERSEDED"}},
+        "required": ["state"]
+      },
+      "then": {
+        "properties": {"superseded_by_component_id": {"type": "string", "minLength": 1}},
+        "required": ["superseded_by_component_id"]
+      },
+      "description": "G3/07 SS2.3: a SUPERSEDED ComponentContract must name its successor; fails closed otherwise. Mirrors the allOf/if/then conditional technique used in reusable-pattern-memory.v1.schema.json for its DEMOTED state rule."
+    }
+  ]
+}
