@@ -50,7 +50,16 @@ function budgetRowsFromExecutionPlan(plan) {
     { label: 'Token Estimate', description: describe(budget.token_estimate), icon: 'symbol-number' },
     { label: 'Cost Ceiling (micros)', description: describe(budget.cost_ceiling_micros), icon: 'credit-card' },
     { label: 'Data Transfer Scope', description: describe(budget.data_transfer_scope), icon: 'cloud' },
-    { label: 'Scenario Expectations', description: `${scenarios.length} registered`, icon: 'checklist' }
+    {
+      label: 'Scenario Expectations',
+      description: `${scenarios.length} registered`,
+      icon: 'checklist',
+      children: scenarios.map(scenario => ({
+        label: describe(scenario.scenario_class),
+        description: describe(scenario.expected_result),
+        icon: 'symbol-event'
+      }))
+    }
   ];
 }
 
