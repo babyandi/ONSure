@@ -41,6 +41,7 @@ Queue 우선순위는 Plan 등급(Enterprise > Team > Developer > Web One-time)�
 고객별 격리 실행, CPU/Memory/Time/Network Policy, Secret Injection, Artifact Export를 관리한다.
 
 - 격리 기술: 실제 `contracts/sandbox-boundary.v1.json`(README의 "Rootless Bubblewrap Sandbox"와 일치)은 Rootless Bubblewrap(`bwrap`)을 기본이자 유일한 허용 Backend로 고정한다(`remote_ci_backend: FORBIDDEN`) — Network/User Namespace 분리, Source는 Read-only 마운트, 쓰기는 `/tmp`로만 한정, 모든 Capability Drop, 실패 시 Fail-closed가 계약으로 강제된다. 이 설계서가 이전에 쓴 "MicroVM 또는 동급 격리 Container"는 부정확한 일반화이며 실제 백엔드는 Bubblewrap으로 고정이다. 실행 단위마다 신규 프로비저닝하며 이전 실행의 파일시스템·메모리·프로세스를 재사용하지 않는다. Tenant 격리는 organization_id/project_id/program_id/run_id를 모두 필수로 요구하고 Cross-tenant 읽기·쓰기를 기본 거부한다
+- Syscall 필터링(DESIGN_ONLY, 신규 — NIST SP 800-190/일반 Linux 샌드박싱 관행 대조로 2026-08-09 발견): 현재 격리는 Namespace 분리 + Capability Drop까지만 적용되고 Seccomp-bpf 기반 Syscall Allowlist는 계약(`contracts/sandbox-boundary.v1.json`)에도 실제 `bwrap` 호출 스크립트에도 없다(`grep -rn seccomp` 결과 0건, 2026-08-09 확인). Capability Drop은 "무엇을 할 수 있는가"를 제한하지만 Seccomp은 "어떤 Syscall 자체를 호출할 수 있는가"를 제한하는 별개의 방어 계층이다 — 대상 코드의 실제 분석 툴체인(컴파일러·테스트러너 등)이 필요로 하는 Syscall 집합을 조사해 Allowlist를 만드는 별도 작업이 선행되어야 하므로 지금 코드에 반영하지 않고 설계서에만 기록한다
 - Lifecycle: Provision(Baseline과 정책 결속) → Execute → Artifact Export(Secret Scrub 후) → Destroy. Destroy는 실행 종료 후 수 분 내 완료하며 잔존 Volume은 자동 회수된다
 - Network Policy: 기본 Egress Deny. Organization Policy와 Case Scope 승인이 있는 도메인만 Allowlist에 등록하며 DNS/HTTP(S) 단위로 필터링한다. 외부 Network 허용은 [05_UI_UX_WORKFLOW_SPECIFICATION.md](05_UI_UX_WORKFLOW_SPECIFICATION.md)의 2단계 확인 대상이다
 - Resource Quota: Plan/Case별 CPU·Memory·Disk·실행시간 상한을 적용하며 초과 시 Graceful Timeout 후 Evidence에 Truncated로 표시하고 NOT_RUN 또는 BLOCKED로 판정한다
@@ -193,6 +194,8 @@ DRAFT → ACTIVE → SUPERSEDED, 예외 BREAKING_CHANGE_FLAGGED. Cross-Program I
 - PII와 Secret을 오류 본문에 넣지 않는다.
 - 인증: Web/Admin Console은 Session Cookie + CSRF Token, VS Code Extension은 OAuth2 Authorization Code + PKCE로 발급한 단기 Access Token과 Refresh Token, 외부 시스템 M2M 연동은 OAuth2 Client Credentials를 기본으로 하며 Enterprise에 한해 IP Allowlist가 결속된 장기 API Key를 허용한다
 - Access Token 수명은 1시간 이내로 하고 Refresh Token 회전(Rotation)을 적용한다
+- 객체 수준 권한 검사(신규, OWASP API Security Top 10 API1 대조로 2026-08-09 발견): `GET /v1/cases/{caseId}` 같은 객체 ID 기반 API는 호출자가 인증됐다는 것만으로 부족하며, 매 요청마다 해당 caseId/programId 등 구체적 객체가 호출자의 Organization/Tenant Context에 실제로 속하는지 검사해야 한다 — 인증(누구인지)과 객체 수준 인가(이 특정 객체에 접근 가능한지)를 분리한다
+- 민감 업무 흐름 보호(신규, API6 대조로 2026-08-09 발견): `POST /v1/orders`, `POST /v1/cases/{caseId}/approve-scope` 등 금전·승인이 걸린 흐름은 일반 Rate Limit(NFR-AVAIL)과 별개로 남용 탐지(동일 Actor의 비정상적으로 빈번한 반복 호출)를 적용한다
 
 ## 7. 주요 API
 ### Case

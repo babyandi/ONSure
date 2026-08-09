@@ -234,11 +234,15 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 동일 위험행위라도 상위 등급 승인이 하위 등급 확인을 대체하지 않는다 — 예를 들어 Merge 승인이 그 전 단계의 Push 승인을 소급 생략시키지 않는다.
 
 ## 8. 접근성·국제화
+- 목표 기준: WCAG 2.1 AA(신규, 2026-08-09 — 이전에는 준수 수준 자체가 명시돼 있지 않았다)
 - 키보드 탐색
 - 색상 외 Severity 표시
 - Screen Reader Label
 - 시간대·통화·언어 분리
 - 긴 Log의 Progressive Loading
+- 명도 대비 4.5:1 이상(WCAG 1.4.3, 신규)
+- 키보드 포커스 표시자 항상 가시(WCAG 2.4.7, 신규)
+- 200%까지 확대해도 레이아웃 깨짐·정보손실 없음(WCAG 1.4.4, 신규)
 
 ## 9. 화면 수용기준
 - 고객은 3분 안에 Case 상태와 다음 행동을 파악할 수 있어야 한다.

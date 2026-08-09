@@ -36,6 +36,23 @@
 | C5 | ProgramRiskScore 등급 컷오프 | A≥90, B≥75, C≥60, D≥40 | [04](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | C6 | KnowledgePattern 승격/강등 임계치 | 두 개의 서로 다른 개념이 섞여 있었음: (1) 승격에 필요한 독립 재현 횟수는 계약값(최소 2회)이 권위이며 02·04를 정정 완료. (2) 재현 실패 누적에 따른 자동 강등은 대응 계약 필드 자체가 없는 별도의 `DESIGN_ONLY` 항목으로 02에 명시함 — 강등 임계치·카운터·상태전이 계약 제정은 G31로 이관 | [02](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §5](04_ARCHITECTURE_DATA_API_OLICENSE.md) | FIXED (승격 임계치 정정 완료, 강등 계약 제정은 G31로 신규 추적) |
 | C7 | 사고 공지 대응시간 | Critical 사고 15분 이내 Status Page+개별통지 동시 시작 | [06](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | DRAFT |
+| C8 | NFR-SEC 저장 암호화 알고리즘 | AES-256 이상(제안) | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+| C9 | NFR-REL 최대 재시도·Backoff 정책 | 미정 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
+| C10 | NFR-PRIV 고객별 데이터 보존기간 | 미정(계약별 협의 대상) | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
+| C11 | NFR-OBS 구조화 로그 최소 필드셋 | 제안값(operation/actor/duration/decision/evidence_ref) | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+| C12 | NFR-SESSION 세션 타임아웃·동시세션 상한 | 미정 — 외부표준(OWASP ASVS V3) 대조로 2026-08-09 신규 발견 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
+| C13 | NFR-CONFIG 필수 HTTP 보안 헤더 목록 | 제안값(Strict-Transport-Security, X-Content-Type-Options 등) — 외부표준(OWASP ASVS V14) 대조로 2026-08-09 신규 발견 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+
+### 외부표준 대조 (2026-08-09) — OWASP ASVS / ISO-IEC 25010 / NIST SSDF
+기능정의(02·03)를 이 세 표준과 항목 단위로 대조했다. Security Review(03 §4)는 예상보다 탄탄해서(JWT/SSRF/XSS/CSRF/SQLi/암호화/키회전까지 구체적으로 존재) ASVS 대비 큰 구멍은 세션관리(V3)·보안설정(V14)·파일업로드(V12) 세 항목뿐이었고 위에 반영했다(03 Security Review, C12/C13). NIST SSDF는 PW(Produce Well-Secured Software)는 잘 커버되지만 **RV(Respond to Vulnerabilities, 배포 후 취약점 대응)가 구조적으로 약하다** — 이건 새로 발견한 게 아니라 이미 `status/product-subrequirement-coverage.v1.json`의 FR-03-A/FR-03-C가 `DIRECT_PRODUCTION_TOOL_TELEMETRY_NOT_RUN`/`DIRECT_PRODUCTION_POLICY_TELEMETRY_NOT_RUN`으로 추적 중이던 gap과 정확히 일치한다 — 외부표준 대조와 기존 self-tracking이 독립적으로 같은 결론에 도달한 것이므로 새 항목을 추가하지 않고 기존 추적으로 합류시킨다. ISO/IEC 25010은 NFR-PORT(Portability)·05(Usability 접근성)가 이미 해당 특성을 커버하고 있어 별도 gap 없음.
+
+요구사항 품질 측면에서는 OReview/OMemory(02 §5, §7-1, 03 §9-1)가 이례적으로 검증 가능한 형태(모델버전+Temperature까지 Receipt 결속, Confidence Calibration 실측)로 쓰인 반면 11장 비기능요구사항은 전부 키워드 나열이라 테스트 케이스를 만들 수 없었다 — 위에서 전면 재작성했다(NFR-SEC~NFR-CONFIG, 신규 NFR-SESSION/NFR-CONFIG 포함).
+
+**추가 대조 (같은 날, ONSure 자신의 핵심 차별점인 AI Review를 AI 전용 표준으로 대조)**: OWASP Top 10 for LLM Applications를 03 AI Review 절과 대조한 결과, Prompt Injection/RAG 오염/Excessive Agency/Unbounded Consumption/Misinformation은 이미 커버됐지만 **민감정보 노출(LLM02), 공급망(LLM03, Model/Plugin/Embedding 출처·서명), 출력 처리(LLM05, 모델 출력을 신뢰되지 않은 입력으로 취급)가 완전히 빠져 있었다** — 03 AI Review에 반영했다. 05의 접근성 절도 WCAG 준수 "수준" 자체가 명시돼 있지 않았던 걸 발견해 WCAG 2.1 AA를 목표로 명시하고 명도대비·포커스표시·확대 3개 항목을 추가했다.
+
+**3차 대조 (같은 날, API·AI Agent 거버넌스)**: 04 §7의 실제 API 목록(POST /v1/orders 등)을 OWASP API Security Top 10과 대조한 결과 API9(Improper Inventory Management)는 `workflow-operation-registry.v1.json`이라는 실제 단일 권위 레지스트리로 이미 충족하고 있었지만(강점으로 확인, 문서 변경 없음), **객체 수준 권한 검사(API1)와 민감 업무 흐름 남용 방지(API6)가 원칙으로 명시돼 있지 않았다** — 04 §6에 추가했다. 07의 AI Agent 방법론을 NIST AI RMF의 4개 기능(GOVERN/MAP/MEASURE/MANAGE)과 대조한 결과 GOVERN/MAP/MEASURE는 강하게 커버됐지만(Agent별 최소권한, AIProfile Drift 탐지, Confidence Calibration), **MANAGE(위험 대응) 쪽에서 AI Agent 이상행동이 06 사고 유형 목록에 없었다** — Plan-Act-Observe 루프의 기존 반복·비용 상한 메커니즘([07 §3.2](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))은 있었으나 이게 반복 발생할 때 사고로 승격하는 절차가 없어서 06에 추가했다.
+
+**4차 대조 (같은 날, Sandbox 격리)**: ONSure가 고객 코드를 실제로 실행하는 가장 위험한 경계인 04 Sandbox 절을 NIST SP 800-190/일반 Linux 샌드박싱 관행과 대조했다. Namespace 분리, Read-only Source 마운트, 전체 Capability Drop, Fail-closed, Tenant별 Cross-read/write 거부, Egress Deny-by-default까지 이미 이례적으로 탄탄했다(이번 세션에서 대조한 절 중 가장 견고함). 다만 **Seccomp-bpf Syscall 필터링이 계약과 실제 `bwrap` 호출 코드 어디에도 없었다**(`grep -rn seccomp` 0건, 직접 확인) — Capability Drop과는 다른 방어 계층이라 04에 DESIGN_ONLY로 기록했다. 실제 코드 반영은 대상 분석 툴체인이 필요로 하는 Syscall 집합을 먼저 조사해야 하는 별도 작업이라 이번엔 하지 않았다.
 
 ## D. 영업/상품 확인 필요
 

@@ -114,6 +114,7 @@ Requirement, Architecture, Design, Policy, Code, AI, Security, Performance, Test
 - 요구사항별 Test Claim 생성
 - 실제 실행결과와 Expected 결과 비교
 - Mutation Testing: 대상 코드에 결함을 의도적으로 주입해 기존 Test Suite가 실제로 탐지하는지 측정(Mutation Score)하여 "테스트 존재"와 "테스트 실효성"을 구분
+- DAST/Fuzzing(신규, NIST SSDF PW.8 대조로 2026-08-09 발견): 위 Adversarial 검증 중 보안 특화 항목으로, 실행 중인 대상에 구조화되지 않은/경계값 입력을 자동 생성해 주입하고 비정상 종료·행 hang·메모리 손상 여부를 관찰한다. 정적 분석(OReview Security Review)이 놓치는 런타임 전용 결함(입력 파싱 경계, 메모리 안전성 등)을 보완하는 목적이며, Mutation Testing(기존 Test Suite의 실효성 측정)과는 대상이 다르다(DAST는 대상 자체의 방어력을 측정)
 - Negative Test와 Fail-closed 확인
 - Regression Set 구성
 - 결과 재실행과 Flaky 분리
@@ -294,19 +295,47 @@ NotificationRule, NotificationEvent, NotificationDeliveryReceipt
 - 고객이 구독하지 않은 채널로는 발송하지 않는다(Opt-in 채널만 사용)
 
 ## 11. 비기능 요구사항
-- NFR-SEC: 저장·전송 암호화, Secret 비노출, 최소권한
-- NFR-REL: 멱등성, 재시도, 중복 이벤트 방어
-- NFR-PERF: 대규모 Repository의 단계적 분석과 중단·재개. 목표치는 다음을 기본값으로 하며 고객 SLA로 협의 변경 가능하다.
+**2026-08-09 재작성**: 이 절은 원래 한 줄짜리 키워드 나열이라 검증(테스트) 기준을 만들 수 없었다. 각 NFR을 "무엇을 몇 개 이상/이하로 측정해 통과·실패를 가르는가"까지 명시하는 형태로 다시 썼다. 구체적 수치가 이미 있는 것은 그대로 쓰고, 수치가 사업적으로 아직 미확정인 항목은 검증 방법과 측정 대상은 확정하되 수치 자체는 DRAFT로 표시해 [08 체크리스트](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)에 새로 추가했다(C8~C13). "검증 가능한 요구사항"과 "수치가 확정된 요구사항"은 서로 다른 축이며, 이 재작성은 전자만 해결한다.
+
+- **NFR-SEC**: 저장·전송 암호화, Secret 비노출, 최소권한.
+  - 저장 암호화: 고객 데이터 저장소(DB/파일)는 AES-256 이상(DRAFT, C8)으로 저장 시 암호화한다.
+  - 전송 암호화: 모든 외부 API/Webhook은 TLS 1.2 이상만 허용하고, 하위 버전 요청은 거부하며 실패로 기록한다.
+  - Secret 비노출: 로그·에러메시지·커밋 히스토리에서 Secret 패턴이 검출되면 0건이어야 한다 — `BuiltInStages`의 `SECRET_` Rule 토큰 정적 탐지(이미 구현됨)를 감사 도구로 재사용해 정기 스캔한다.
+  - 최소권한: `contracts/tenant-context.v1.schema.json`의 5개 RBAC 역할(VIEWER/OPERATOR/APPROVER/AUDITOR/ADMIN)별로 "이 역할이 실제로 호출 가능한 Operation 목록"이 `contracts/workflow-operation-registry.v1.json`과 대조해 문서화된 허용 목록을 벗어나지 않는지 주기적으로 검증한다.
+
+- **NFR-REL**: 멱등성, 재시도, 중복 이벤트 방어.
+  - 멱등성: [04 API 원칙](04_ARCHITECTURE_DATA_API_OLICENSE.md)의 "모든 Write API는 Idempotency-Key를 지원한다" 원칙을 실행 증거로 검증한다 — 동일 Idempotency-Key로 같은 Write API를 N회 재호출해도 부작용(중복 상태 변경)이 1회분만 발생해야 한다. `ServiceCaseLifecycleService`의 외부 영수증 재생 방지(`registerExternalReceipt`가 동일 provider+receipt_id 재등록을 거부하는 것, 이미 구현·테스트됨)가 이 원칙의 실제 선례다.
+  - 재시도: 재시도 가능 오류와 불가능 오류를 구분해 응답에 명시하고(machine-readable retryable 플래그, [04 §6](04_ARCHITECTURE_DATA_API_OLICENSE.md)에 이미 원칙으로 존재), 최대 재시도 횟수·Backoff 정책은 DRAFT(C9)로 확정 대기.
+  - 중복 이벤트 방어: Webhook 수신측은 동일 이벤트 ID를 중복 처리하지 않는다 — 처리 이력을 조회해 이미 처리된 이벤트는 무해하게 재확인만 하고 부작용을 다시 일으키지 않는다.
+
+- **NFR-PERF**: 대규모 Repository의 단계적 분석과 중단·재개. 목표치는 다음을 기본값으로 하며 고객 SLA로 협의 변경 가능하다.
   - Learning: 100만 LOC 기준 8시간 이내 최초 완료, 이후 증분 학습은 변경분 10만 LOC 기준 30분 이내
   - Continuous Review(VS Code Fast Review): Diff 저장 후 5초 이내 1차 결과
   - Verification Scenario 실행: Verification Pack 1개당 평균 15분 이내, 병렬 실행 시 Case당 동시 Scenario 20개 이상 지원
   - Preflight 예상량 응답: 대상 Repository 접근 후 10분 이내
-- NFR-AVAIL: SaaS Control Plane 월간 가용성 99.9%, API 요청 기준 Rate Limit과 Tenant별 동시 실행 상한을 적용해 특정 고객의 폭주가 다른 Tenant에 영향을 주지 않는다
-- NFR-AUDIT: 모든 권한·실행·변경 감사
-- NFR-PORT: SaaS, Local Runtime, 폐쇄망 배포 가능
-- NFR-PRIV: 고객별 보존기간과 완전 삭제 증명
-- NFR-OBS: Trace, Metric, Structured Log
-- NFR-ACCESS: 관리자·개발자·감사자 역할 분리
+  - (이 수치들 자체는 여전히 [08 체크리스트 C1~C3](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md) 기준 DRAFT — 검증 방법은 이미 명확하다: 각 목표치를 실제 Repository로 측정해 기준 초과 시 실패로 기록)
+
+- **NFR-AVAIL**: SaaS Control Plane 월간 가용성 99.9%, API 요청 기준 Rate Limit과 Tenant별 동시 실행 상한을 적용해 특정 고객의 폭주가 다른 Tenant에 영향을 주지 않는다.
+  - 검증: 월간 다운타임을 실측해 43분(99.9% 기준) 이내인지 확인. Rate Limit 초과 요청은 429 응답과 함께 거부되어야 하며, 한 Tenant가 상한을 초과해도 다른 Tenant의 요청 성공률은 영향받지 않아야 한다(Noisy Neighbor 격리 테스트).
+
+- **NFR-AUDIT**: 모든 권한·실행·변경 감사.
+  - 검증: 임의로 표본 추출한 API 호출/상태 변경 100건에 대해, 대응하는 Evidence Receipt(OEvidence, [8절](#8-oevidence))가 100% 존재해야 한다. `DurableStateLedger` 기반 서비스(예: `ServiceCaseLifecycleService`)는 이미 모든 상태 변경을 해시 체인 이벤트로 기록하는 실제 선례다.
+
+- **NFR-PORT**: SaaS, Local Runtime, 폐쇄망(Air-gapped) 배포 가능.
+  - 검증: 폐쇄망 배포는 `AirGappedDependencyPackager`(이미 구현됨, NFR-01)로 패키징한 의존성만으로 외부 네트워크 접근 없이 빌드·실행이 성공해야 한다.
+
+- **NFR-PRIV**: 고객별 보존기간과 완전 삭제 증명.
+  - 검증: 삭제 요청 후 계약된 보존기간 내 `deletion_receipt`가 발급되고 `retention_state`가 `DELETED_SIGNED_EXTERNAL_VERIFICATION`으로 전이해야 한다(`service-case-state.v1.schema.json`에 이미 필드 존재). 보존기간 수치 자체는 DRAFT(C10).
+
+- **NFR-OBS**: Trace, Metric, Structured Log.
+  - 검증: 모든 Workflow Operation 실행이 Trace ID로 상호 연결 가능해야 하며, 최소 필드셋(operation, actor, duration, decision, evidence_ref)을 포함한 구조화 로그를 남겨야 한다. 필드셋 확정은 DRAFT(C11).
+
+- **NFR-ACCESS**: 관리자·개발자·감사자 역할 분리.
+  - 검증: `contracts/tenant-context.v1.schema.json`의 5개 RBAC 역할이 실제로 서로 다른 Operation 권한 집합을 가지는지(권한 집합이 완전히 겹치지 않는지) 계약 대조로 확인한다. [02 §1](#1-actor)의 10개 업무 Actor→RBAC 매핑은 여전히 `DESIGN_ONLY`([08 체크리스트 G12](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)).
+
+- **NFR-SESSION** (신규, 외부표준 대조로 발견): 세션 관리. JWT Access Token 검증(`NFR-SEC`/03 Security Review에 이미 있음)과 별개로, 세션 타임아웃·동시 세션 수 제한·세션 고정(Session Fixation) 방지 기준이 이 설계서에 없었다. 수치는 DRAFT(C12), 검증 방법은: 만료된 세션으로의 요청은 거부되어야 하고, 동일 사용자의 동시 활성 세션 수가 상한을 넘으면 가장 오래된 세션이 무효화되어야 한다.
+
+- **NFR-CONFIG** (신규, 외부표준 대조로 발견): 보안 설정. HTTP 응답에 표준 보안 헤더(예: `Strict-Transport-Security`, `X-Content-Type-Options`)가 포함되어야 하고, CORS는 명시적으로 허용된 Origin만 반영해야 한다. 검증: 응답 헤더 스캔으로 필수 헤더 누락을 탐지. 헤더 목록 확정은 DRAFT(C13).
 
 ## 12. 추적성
 Requirement → Design Component → Code Module → Test Case → Evidence → Release를 단일 ID 체계로 연결한다.
