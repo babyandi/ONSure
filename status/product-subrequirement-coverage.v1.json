@@ -412,7 +412,7 @@
       "id": "FR-05-A",
       "name": "Validation execution types",
       "normative_phrase": "정적 분석, 단위·통합·E2E, API, CLI, 컨테이너와 AI 행동 검증을 실행할 수 있어야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/BuiltInStages.java",
@@ -421,7 +421,8 @@
       ],
       "test_refs": [
         "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java",
-        "src/test/java/kr/co/oruda/onsure/platform/DependencyScanStageTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/DependencyScanStageTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ContainerValidationStageTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -432,9 +433,7 @@
         "CORE",
         "LOCAL_GATE"
       ],
-      "missing_controls": [
-        "PRODUCT_CONTAINER_TARGET_VALIDATION_INCOMPLETE"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_REFERENCE_GATE"
       ],
@@ -1434,8 +1433,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 21,
-    "partial": 22,
+    "implemented": 22,
+    "partial": 21,
     "stub": 0,
     "design_only": 0,
     "verification_not_run": 43
