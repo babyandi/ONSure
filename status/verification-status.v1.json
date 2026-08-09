@@ -80,7 +80,7 @@
   },
   "workflow_surface_parity": {
     "authority": "contracts/workflow-operation-registry.v1.json",
-    "dispatcher_operation_count": 47,
+    "dispatcher_operation_count": 49,
     "surfaces": [
       "CLI",
       "LOCAL_AUTHENTICATED_API",

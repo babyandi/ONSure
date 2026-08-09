@@ -63,8 +63,59 @@ function budgetRowsFromExecutionPlan(plan) {
   ];
 }
 
+/**
+ * "Model Providers" + "Token Usage" rows for the Admin view (NFR-05 provider/model replaceability
+ * and token/cost visibility), derived from a real `provider.status` + `provider.usage` workflow
+ * result pair (LocalWorkflowDispatcher's provider.status/provider.usage operations). Pure and VS
+ * Code-independent so it can be unit tested directly.
+ */
+function providerRowsFromStatusAndUsage(status, usage) {
+  const providers = Array.isArray(status && status.providers) ? status.providers : [];
+  const providersRow = {
+    label: 'Model Providers',
+    description: providers.length ? `${providers.length} registered` : 'No providers registered yet',
+    icon: 'organization',
+    children: providers.map(provider => ({
+      label: describe(provider.provider_id),
+      description: `models: ${joinOrFallback(provider.declared_model_ids)}`
+        + ` · task classes: ${joinOrFallback(provider.supported_task_classes)}`,
+      icon: 'server-process'
+    }))
+  };
+
+  const usageByProvider = (usage && usage.providers) || {};
+  const providerIds = Object.keys(usageByProvider);
+  const overall = (usage && usage.overall) || {};
+  const usageRow = {
+    label: 'Token Usage',
+    description: providerIds.length ? describeUsage(overall) : 'No usage recorded yet',
+    icon: 'graph-line',
+    children: providerIds.map(providerId => ({
+      label: providerId,
+      description: describeUsage(usageByProvider[providerId]),
+      icon: 'symbol-number'
+    }))
+  };
+
+  return [providersRow, usageRow];
+}
+
+function describeUsage(usage) {
+  const invocationCount = describe((usage || {}).invocationCount);
+  const inputTokens = describe((usage || {}).totalInputTokens);
+  const outputTokens = describe((usage || {}).totalOutputTokens);
+  const costMicros = describe((usage || {}).totalCostMicros);
+  return `${invocationCount} call(s) · ${inputTokens} in / ${outputTokens} out tokens · ${costMicros} micros`;
+}
+
+function joinOrFallback(values) {
+  return Array.isArray(values) && values.length ? values.join(', ') : 'NONE';
+}
+
 function describe(value) {
   return (value === undefined || value === null) ? 'NOT_AVAILABLE' : String(value);
 }
 
-module.exports = { VIEW_IDS, VIEW_MODELS, rowsForView, budgetRowsFromExecutionPlan };
+module.exports = {
+  VIEW_IDS, VIEW_MODELS, rowsForView, budgetRowsFromExecutionPlan, providerRowsFromStatusAndUsage
+};

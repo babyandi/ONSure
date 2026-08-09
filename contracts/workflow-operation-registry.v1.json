@@ -15,6 +15,8 @@
     "patch.rollback",
     "improvement.prove",
     "knowledge.separate",
+    "provider.status",
+    "provider.usage",
     "job.create",
     "job.control",
     "job.read",
@@ -55,7 +57,7 @@
     "all_operations_must_reach_generic_dispatcher": true,
     "dedicated_vscode_commands_required": ["program.learn", "validation.run"]
   },
-  "operation_count": 47,
+  "operation_count": 49,
   "current_source_execution": "LOCAL_RECEIPT_REQUIRED",
   "final_claim_allowed": false
 }
