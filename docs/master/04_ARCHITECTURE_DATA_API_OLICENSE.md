@@ -162,20 +162,18 @@ PatchPlan은 hunk 단위(`hunk_id`, `finding_id`, `preimage_sha256`, `approval_s
 
 **MissedFinding 엔티티(신규 기능정의, 2026-08-09 — 아직 `DESIGN_ONLY`, 계약 미제정)**: 자동 판정이 놓친 결함을 위 파이프라인에 투입하기 전 단계에서 포착·분류하는 엔티티. 필드:
 - `missed_finding_id`
-- `discovery_path`(enum, 02 §7-1 수용기준에 이미 있던 5가지를 그대로 채택): `INDEPENDENT_REVIEW_DISAGREEMENT`(Cross-Model Verification 불일치로 발견), `HUMAN_REVIEW_OVERRIDE`(사람이 자동판정을 뒤집음), `PRODUCTION_INCIDENT`(실제 운영 사고로 확인), `CUSTOMER_REPORT`(고객 신고), `DELAYED_REGRESSION`(뒤늦은 회귀)
-- `original_run_reference`: 놓쳤어야 할 원 OReview/OVerification 실행의 run_id·리뷰 영역·시각 — "어떤 판정이 왜 틀렸는지" 역추적의 시작점
-- `agent_context`: 원 실행을 수행한 Agent 역할, 모델 버전, Rule Pack Digest([07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) §4 "MissedFinding의 RCA는 항상 어떤 Agent·모델버전·Rule Pack Digest에서 발생했는지 식별하는 것에서 시작한다"를 필드로 구체화한 것)
-- `rca_reference`: `contracts/evidence-based-rca.v1.schema.json` 결과로의 링크(이미 실재하는 RCA 계약을 재사용, 신규 RCA 형식을 만들지 않음)
-- `promoted_candidate_id`: RCA 완료 후 Rule/Pattern 개정안이 나오면, 그 시점부터는 위 일반 파이프라인의 `LEARNING_CANDIDATE`가 되며 이 필드가 `candidate_source_receipt_sha256`로 두 엔티티를 연결하는 다리 역할을 한다
-- `status`: `OPEN`(등록됨) → `RCA_IN_PROGRESS` → `CANDIDATE_SUBMITTED`(이후 상태는 일반 파이프라인의 `states`를 그대로 참조, 별도 상태를 새로 정의하지 않는다)
+- `discovery_path`: INDEPENDENT_REVIEW_DISAGREEMENT | HUMAN_REVIEW_OVERRIDE | PRODUCTION_INCIDENT | CUSTOMER_REPORT | DELAYED_REGRESSION
+- `original_run_reference`
+- `agent_context`: Agent 역할, 모델 버전, Rule Pack Digest
+- `rca_reference`: `contracts/evidence-based-rca.v1.schema.json` 결과 링크
+- `promoted_candidate_id`
+- `status`: OPEN → RCA_IN_PROGRESS → CANDIDATE_SUBMITTED
 - `registered_at`, `registered_by`
 
-이 설계는 기존 5단계(`DETECTED→RCA_DONE→CAPABILITY_UPDATED→REGRESSION_VALIDATED→PROMOTED`)를 완전히 대체한다 — 승격 이후 단계는 이미 실재하는 일반 파이프라인의 더 세분화된 상태머신(SHADOW/CANARY 포함)을 그대로 쓰고, MissedFinding 고유 상태는 파이프라인 투입 이전 구간(`OPEN`/`RCA_IN_PROGRESS`/`CANDIDATE_SUBMITTED`)만 남긴다.
+이 설계는 기존 5단계를 대체한다. 승격 이후 단계는 일반 파이프라인을 그대로 사용한다.
 
 ### 아직 계약이 없는 이 설계서의 확장 (DESIGN_ONLY)
-다음은 이번 세션에서 제안했으나 대응하는 `contracts/*.schema.json`을 찾지 못했다. 아이디어 자체를 폐기하라는 뜻이 아니라, 구현 전 계약부터 만들어야 한다는 뜻이다. (2026-08-09 갱신: CaseRevision·ComponentContract/Cross-Program Impact Scan·ProgramRiskScore는 G2/G3/G7 작업으로 실제 계약이 생겨 목록에서 제외했다. BlastRadiusReport는 PatchPlan.preapply_assessment로 부분 흡수된 것으로 이미 정리됨.)
-
-**MissedFinding**(위 절 참조 — 신규 기능정의는 있으나 계약은 아직 없음), RollbackVerificationReceipt, **ConfidenceCalibrationReport**(아래 §OReview 자체 품질 절에 신규 기능정의 추가, 계약은 아직 없음), ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, **CoverageReport**([02 §4](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)에 신규 기능정의 추가, 계약은 아직 없음), NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ReproducibilityAuditSample, SBOM, TrainingRequest/Plan/Run, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval/ProductionObservation/RelearnTrigger
+MissedFinding, RollbackVerificationReceipt, ConfidenceCalibrationReport, ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, CoverageReport, NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ReproducibilityAuditSample, SBOM, TrainingRequest/Plan/Run, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval/ProductionObservation/RelearnTrigger는 계약 미제정 범위다.
 
 ### TrainingRequest / TrainingRun (DESIGN_ONLY)
 TrainingRequest: DRAFT → SCOPED → APPROVED → TRAINING_IN_PROGRESS → EVALUATION_PENDING → (INDEPENDENTLY_VERIFIED → DEPLOYMENT_APPROVED → DEPLOYED) 또는 (EVALUATION_FAILED → SCOPED로 재진입)
@@ -184,18 +182,12 @@ TrainingRequest: DRAFT → SCOPED → APPROVED → TRAINING_IN_PROGRESS → EVAL
 TrainingRun: PENDING → DATA_QUALITY_CHECK → RUNNING → EVALUATION_RUNNING → (EVALUATION_PASSED 또는 EVALUATION_FAILED)
 예외: FAILED, ABORTED
 
-DEPLOYMENT_APPROVED는 Training을 수행한 모델·Provider와 다른 계열의 독립 재검증([03 §10-1](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) Cross-Model Verification 재사용)을 통과해야만 도달한다(자기 참조 승인 금지). DEPLOYED 이후 ProductionObservation에서 임계치를 넘는 성능저하가 확인되면 RelearnTrigger가 새 TrainingRequest 초안을 제안하며, 이는 [OMemory](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) MissedFinding과 동일하게 "제안일 뿐 자동 실행 아님" 원칙을 따른다.
+DEPLOYMENT_APPROVED는 Training을 수행한 모델·Provider와 다른 계열의 독립 재검증을 통과해야만 도달한다. DEPLOYED 이후 ProductionObservation에서 임계치를 넘는 성능저하가 확인되면 RelearnTrigger가 새 TrainingRequest 초안을 제안한다.
 
 ### CreditReservation — `contracts/license-state.v1.schema.json`의 `reservations` 필드
-RESERVED → COMMITTED 또는 RELEASED 또는 EXPIRED(계약상 4개 상태이며, 이 설계서가 이전에 "Timeout 시 자동 RELEASED"라 쓴 것과 달리 EXPIRED는 RELEASED와 별개 상태로 구분된다 — 정정)
+RESERVED → COMMITTED 또는 RELEASED 또는 EXPIRED.
 
-License 자체는 `contracts/license-state.v1.schema.json`에 이미 실재한다: `status`(ISSUED/ACTIVE/SUSPENDED/REVOKED/EXPIRED), `offline_grace_hours`, `clock_tolerance_seconds`, `credits{total,available,reserved,committed}`가 필드로 존재해 이 설계서의 Offline 정책(§11)·Credit 개념과 상당히 부합한다. 실행 도중 Credit이 소진되면 진행 중인 `validation_run`은 안전한 Checkpoint까지만 진행한 뒤 위 5개 실행 상태기계의 HOLD로 전이하는 것이 계약과 일치하며, ServiceCase 자체를 별도 대기 상태로 두는 것은 계약에 없다(이 설계서의 이전 서술을 정정).
-
-### CaseRevision (DESIGN_ONLY)
-Improve & Re-verify를 DELIVERY_ACCEPTED 이후의 새 CaseRevision으로 처리한다는 설계는 유지하되, `service-case-state.v1.schema.json`에 CaseRevision을 위한 필드나 상태가 없으므로 계약 확장이 선행되어야 한다.
-
-### ComponentContract (DESIGN_ONLY)
-DRAFT → ACTIVE → SUPERSEDED, 예외 BREAKING_CHANGE_FLAGGED. Cross-Program Impact Scan 아이디어(Provided Interface 변경 시 다른 Program에 Finding 전파)는 유효하나 이를 뒷받침할 `component-contract.v1.schema.json` 계약이 아직 없다.
+License 자체는 `contracts/license-state.v1.schema.json`에 이미 실재한다: `status`(ISSUED/ACTIVE/SUSPENDED/REVOKED/EXPIRED), `offline_grace_hours`, `clock_tolerance_seconds`, `credits{total,available,reserved,committed}`가 필드로 존재한다. 실행 도중 Credit이 소진되면 진행 중인 `validation_run`은 안전한 Checkpoint까지만 진행한 뒤 HOLD로 전이한다.
 
 ## 6. API 원칙
 - REST와 Event를 병행한다.
@@ -206,8 +198,8 @@ DRAFT → ACTIVE → SUPERSEDED, 예외 BREAKING_CHANGE_FLAGGED. Cross-Program I
 - PII와 Secret을 오류 본문에 넣지 않는다.
 - 인증: Web/Admin Console은 Session Cookie + CSRF Token, VS Code Extension은 OAuth2 Authorization Code + PKCE로 발급한 단기 Access Token과 Refresh Token, 외부 시스템 M2M 연동은 OAuth2 Client Credentials를 기본으로 하며 Enterprise에 한해 IP Allowlist가 결속된 장기 API Key를 허용한다
 - Access Token 수명은 1시간 이내로 하고 Refresh Token 회전(Rotation)을 적용한다
-- 객체 수준 권한 검사(신규, OWASP API Security Top 10 API1 대조로 2026-08-09 발견): `GET /v1/cases/{caseId}` 같은 객체 ID 기반 API는 호출자가 인증됐다는 것만으로 부족하며, 매 요청마다 해당 caseId/programId 등 구체적 객체가 호출자의 Organization/Tenant Context에 실제로 속하는지 검사해야 한다 — 인증(누구인지)과 객체 수준 인가(이 특정 객체에 접근 가능한지)를 분리한다
-- 민감 업무 흐름 보호(신규, API6 대조로 2026-08-09 발견): `POST /v1/orders`, `POST /v1/cases/{caseId}/approve-scope` 등 금전·승인이 걸린 흐름은 일반 Rate Limit(NFR-AVAIL)과 별개로 남용 탐지(동일 Actor의 비정상적으로 빈번한 반복 호출)를 적용한다
+- 객체 수준 권한 검사: 객체 ID 기반 API는 매 요청마다 구체적 객체가 호출자의 Organization/Tenant Context에 실제로 속하는지 검사한다
+- 민감 업무 흐름 보호: 금전·승인이 걸린 흐름은 일반 Rate Limit과 별개로 남용 탐지를 적용한다
 
 ## 7. 주요 API
 ### Case
@@ -224,7 +216,7 @@ GET /v1/cases/{caseId}/deliveries
 GET /v1/cases/{caseId}/coverage-report
 POST /v1/cases/{caseId}/acceptance-certificates
 POST /v1/cases/{caseId}/external-acceptors
-GET /v1/certificates/{certId}/verify(인증 불필요 — §6 API 인증 원칙의 유일한 예외. 서명 유효성과 발급 사실만 반환하며 Finding 상세·소스는 노출하지 않는다)
+GET /v1/certificates/{certId}/verify
 
 ### Learning and Review
 POST /v1/learning-runs
@@ -303,7 +295,7 @@ GET /v1/license/jwks
 - EvidenceSealed, DeliveryPublished, DeletionCompleted
 - PatternLearned, PatternPromoted, PatternDeprecated
 - MissDetected, DetectionCapabilityUpdated, DetectionRegressionValidated
-- NotificationSent, NotificationFailed, NotificationSuppressed(Opt-in 없음)
+- NotificationSent, NotificationFailed, NotificationSuppressed
 - MutationTestCompleted, BlastRadiusComputed, BehaviorDiffCompleted, SBOMGenerated
 - CrossModelVerificationRequested, CrossModelVerificationDisagreed, SelfClaimMismatchDetected
 - ComponentContractBreakingChange, CrossProgramImpactDetected
@@ -315,29 +307,19 @@ GET /v1/license/jwks
 이벤트는 event_id, occurred_at, producer, schema_version, organization_id, correlation_id, causation_id를 포함한다.
 
 ## 9. OLicense 책임과 경계
-ORUDA/OLicense는 ProductCode ONSURE에 대해 다음을 관리한다.
-- Catalog, Plan, Edition, Feature
-- Web Case License와 VS Code Subscription
-- Seat, Device, Active System, Program Capacity
-- Learning Unit, ONSure Credit, Storage, Concurrency
-- Validity, Suspension, Revocation
-- Signed Entitlement Snapshot
-- Offline Grace와 Clock Rollback 방어
-- Usage와 Audit 원장
-
-ONSure는 Validate, Activate, Reserve, Commit, Release, Report를 수행하며 발급·가격·한도 변경 권한을 갖지 않는다.
+ORUDA/OLicense는 ProductCode ONSURE에 대해 Catalog, Plan, Edition, Feature, Web Case License/VS Code Subscription, Seat/Device/System/Program Capacity, Credit, Validity/Suspension/Revocation, Signed Entitlement Snapshot, Offline Grace, Usage/Audit 원장을 관리한다. ONSure는 Validate, Activate, Reserve, Commit, Release, Report를 수행하며 발급·가격·한도 변경 권한을 갖지 않는다.
 
 ## 10. License Token 필드
 - issuer, audience, subject
 - organization_id
 - product_code=ONSURE
-- channel=WEB_CASE|VSCODE|API (`docs/v2/05` §3과 일치)
-- service_type=LEARN|VERIFY|LEARN_VERIFY|IMPROVE_REVERIFY|TRAIN_REVERIFY (`docs/v2/05` §3 값에 TRAIN_REVERIFY 추가)
-- plan=DEVELOPER|TEAM|ENTERPRISE (`docs/v2/05` §3과 일치)
+- channel=WEB_CASE|VSCODE|API
+- service_type=LEARN|VERIFY|LEARN_VERIFY|IMPROVE_REVERIFY|TRAIN_REVERIFY
+- plan=DEVELOPER|TEAM|ENTERPRISE
 - feature_entitlements
 - system_limit, program_limit, program_unit_limit
 - learning_unit_limit, credit_balance 또는 credit_policy
-- dataset_limit, training_run_limit, model_version_limit (`docs/v2/00` §3 "Dataset·Training·Model Version 한도"에서 흡수, OTraining 전용, DESIGN_ONLY)
+- dataset_limit, training_run_limit, model_version_limit (OTraining DESIGN_ONLY)
 - case_id 또는 subscription_id
 - baseline_binding
 - valid_from, valid_until
@@ -361,19 +343,189 @@ ONSure는 Validate, Activate, Reserve, Commit, Release, Report를 수행하며 �
 - 관리자 Break-glass 승인과 감사
 - 결제 카드정보 비보관, PCI-DSS 범위는 Payment Provider Tokenization으로 최소화
 - Tenant Key 또는 Enterprise 전용 Key 옵션
-- 신뢰 경계 원칙(`docs/v2/07` §10에서 흡수): 고객 Repository의 자체 결과를 최종 판정으로 신뢰하지 않는다. 개선을 생성한 Model과 최종 Reviewer/Oracle을 분리한다(§10-1 Cross-Model Verification과 동일 근거). 클라이언트(VS Code/Web)의 Feature 표시를 권한 증거로 사용하지 않으며 실행마다 서버가 Entitlement를 재확인한다. 결제 성공 Event만으로 실행을 허용하지 않고 OLicense의 License ACTIVE 상태를 별도로 확인한다
+- 신뢰 경계 원칙: 고객 Repository의 자체 결과를 최종 판정으로 신뢰하지 않는다. 개선을 생성한 Model과 최종 Reviewer/Oracle을 분리한다. 클라이언트의 Feature 표시를 권한 증거로 사용하지 않으며 실행마다 서버가 Entitlement를 재확인한다. 결제 성공 Event만으로 실행을 허용하지 않고 OLicense의 License ACTIVE 상태를 별도로 확인한다
 
 ## 12-1. 규제산업 컴플라이언스 설계
-목표 고객에 금융·공공·의료 규제 산업이 포함되므로([01_BUSINESS_PRODUCT_SERVICE_PLAN.md:17](01_BUSINESS_PRODUCT_SERVICE_PLAN.md)) 다음을 Organization Plan 속성으로 관리한다.
-
-- 데이터 거주지(Data Residency): Organization 단위로 처리·저장 Region을 고정하고 Cross-region 이동을 기본 차단
-- 국내 개인정보보호법 대응: 개인정보 포함 가능 로그·소스에 대한 자동 탐지·마스킹과 처리방침 고지
-- 금융권: 망분리 환경 대응은 On-premises/Air-gapped 배포 모델([04:19-21](04_ARCHITECTURE_DATA_API_OLICENSE.md))로 충족하며 SaaS Control Plane에는 원본 Source가 전송되지 않는 모드를 필수 옵션으로 제공
-- 공공·의료: 고객별 별도 감사 로그 보존기간과 제3자 접근이력 조회 기능
-- 규제 프레임워크 버전관리: NIST, ISO, OWASP, MITRE, 금융권 MRM(Model Risk Management) 등 외부 규제·표준 프레임워크를 버전 단위로 등록하고 PolicyPack에 매핑하며, 프레임워크 개정 시 영향받는 정책과 재검증 대상을 추적한다(Compliance Officer 승인 필요)
-- 이 절의 요건은 Enterprise Edition Feature Gate로 관리하며 일반 Plan에는 기본 보안 설계(위 12절)만 적용한다
+목표 고객에 금융·공공·의료 규제 산업이 포함되므로 다음을 Organization Plan 속성으로 관리한다.
+- 데이터 거주지(Data Residency)
+- 국내 개인정보보호법 대응
+- 금융권 망분리/On-premises/Air-gapped
+- 공공·의료 감사 로그 보존/제3자 접근이력
+- 규제 프레임워크 버전관리(NIST, ISO, OWASP, MITRE, 금융권 MRM 등)
+- Enterprise Edition Feature Gate
 
 ## 13. 보존과 삭제
 계약별 Retention 종료 후 Source, Build Artifact, Log, Profile, Evidence를 유형별 정책으로 삭제한다. Legal Hold가 없으면 삭제 작업과 결과 Hash를 Deletion Receipt로 남긴다.
 
 Legal Hold는 Security Auditor 또는 Customer Owner의 명시적 요청과 ONSure Operator의 승인으로만 설정·해제하며(단독 설정 불가), 대상 Case/Evidence ID, 사유, 요청자, 예상 해제일을 기록한다. Legal Hold가 설정된 대상은 삭제 SLA 계산에서 제외하되 해제 즉시 원래 Retention 정책을 재적용한다. 규제산업 계약의 장기 보존 요구가 일반 삭제 SLA와 충돌하는 경우 계약서의 보존기간을 우선한다.
+
+## 14. Meta-Validation Architecture 및 Cross-Contract Final Assurance 상세설계 (신규, 2026-08-09)
+이 절은 개별 Schema 유효성만으로 Final Claim을 만들지 않고 **Target·Scope·Evidence·Oracle·Authority·State의 전체 Contract Graph를 재계산**하기 위한 설계다. 기존 계약이 강제하는 `final_claim_allowed:false`는 유지하며, 아래 항목은 현 시점 `DESIGN_ONLY`인 신규 설계다.
+
+### 14.1 신규 논리 컴포넌트
+- **ValidationTargetManifestService**: 검증 대상의 전체 정체성을 생성·잠금
+- **ScopeEpochService**: Scope/Requirement Universe의 버전·변경 추적
+- **ValidatorCapabilityQualificationService**: Target 유형별 검증자격 계산
+- **ObservabilityQualificationService**: 결함 유형별 필요한 관측채널 충족 여부 계산
+- **CrossContractInvariantEngine**: Contract/Receipt 간 의미 불변식 재검산
+- **AtomicSnapshotAssembler**: 동일 Context에서 동시에 성립한 결과만 Snapshot 구성
+- **FinalClaimReconstructor**: 저장된 PASS/Score를 믿지 않고 Raw Evidence에서 Final Claim 재계산
+- **FinalFreshnessBarrier**: Lock 직전 변경·신규 Finding·만료 여부 재검증
+- **AssuranceValidityService**: VALID/STALE/INVALIDATED/SUPERSEDED 수명주기 관리
+- **HistoricalImpactScanner**: 새 Rule/MissedFinding 발생 시 과거 인증 영향분석
+
+### 14.2 ValidationTargetManifest(ProductLock)
+SourceLock보다 넓은 제품 정체성을 정의한다. 필수 digest 후보:
+- source/commit/tree
+- build artifact
+- dependency artifacts + provenance
+- runtime configuration
+- feature flags
+- policy/rule pack
+- model/provider/deployment
+- system prompt/tool definitions
+- RAG corpus/embedding/index
+- external service contracts
+- OS/runtime/DB/deployment environment
+
+`target_manifest_digest`가 바뀌면 기존 Final Claim은 자동 STALE 대상이다.
+
+### 14.3 Scope/Requirement Epoch
+- `scope_epoch`, `scope_digest`
+- `requirement_epoch`, `requirement_set_digest`
+- `discovered_components`, `excluded_components`, `unknown_components`
+
+새 Component/Requirement 발견 시 denominator를 다시 계산하고 이전 Coverage를 `STALE_COVERAGE`로 만든다. Scope 축소·확대는 기존 PASS를 유지한 채 조용히 변경할 수 없다.
+
+### 14.4 Evidence Target Binding
+현재 Evidence Receipt의 source/policy/environment/toolchain 결속에 더해 Final용 Evidence는 다음을 필수 결속한다.
+- target_manifest_digest
+- scope_epoch_digest
+- requirement_set_digest
+- oracle_set_digest
+- detector_pack_digest
+- validation_generation_id
+- run_id/nonce
+
+다른 Target/Run/Scope의 증거를 재사용하는 Evidence Substitution을 차단한다.
+
+### 14.5 Atomic Validation Snapshot
+Final은 여러 Run의 좋은 결과를 선택해 조립하지 않는다. Snapshot에 포함되는 모든 필수 Lane은 같은 target/scope/requirement/policy/config generation에 속해야 한다. 서로 다른 Epoch의 PASS fragment를 합친 결과는 Final 후보가 될 수 없다.
+
+### 14.6 Cross-Contract Invariant Engine
+최소 불변식:
+- X001 FinalLock의 Approval decision은 `APPROVE`
+- X002 FinalLock.candidate_digest = FinalCandidate.candidate_digest
+- X003 FinalCandidate `eligible=true` ↔ `decision=PASS`
+- X004 Run1/Run2 모두 PASS이며 required context가 동일
+- X005 Run1/Run2는 정책이 요구하는 principal/execution 독립성 충족
+- X006 CANCELLED/NOT_RUN/HOLD/BLOCKED/INCONCLUSIVE는 positive Final Evidence로 사용 금지
+- X007 ServiceVerification approval_purpose ↔ verification_type 일치
+- X008 `approved_at < expires_at`, 소비시각은 validity window 안
+- X009 RiskScore = raw findings에서 독립 재계산한 값
+- X010 Key Registry key_id/fingerprint uniqueness 및 authority cardinality
+- X011 revoked/revoked_at/validity window 의미 일치
+- X012 모든 Final material claim은 PRIMARY Evidence까지 역추적
+
+각 invariant에는 최소 1개의 dedicated negative fixture를 등록한다.
+
+### 14.7 상태 온톨로지 분리
+다음은 서로 다른 차원이며 하나의 선형 상태로 혼합하지 않는다.
+- Execution Lifecycle: RUNNING/CANCELLED/FAILED/EVIDENCE_LOCKED
+- Verification Decision: PASS/FAIL/HOLD/NOT_RUN/INCONCLUSIVE/NON_FINAL
+- Technical Assurance: SELF_VALIDATION_NONFINAL/INDEPENDENT_* / FINAL_LOCKED
+- Human Acceptance
+- Deployment Authorization(PRODUCTION_GO)
+- Commercial Authorization(COMMERCIAL_GO)
+
+`PUBLICATION_ELIGIBLE` 같은 내부 상태가 UI/API에서 `FINAL_LOCKED`로 의미 상승되지 않도록 명시적 mapping을 둔다.
+
+### 14.8 State Authenticity / Reconstruction
+DB의 `current_state` 문자열을 권위로 사용하지 않는다. Strong State는 predecessor, event, receipts, decisions, authority, lineage를 재구성할 때만 유효하다. 재시작 시 ledger/event chain으로 상태를 다시 계산할 수 있어야 한다.
+
+### 14.9 Final Claim Reconstructor
+Final report/score의 저장된 값을 읽어 승인하지 않는다. 다음 raw source에서 다시 계산한다.
+1. Target Manifest
+2. Scope/Requirement Epoch
+3. Run receipts
+4. Oracle results
+5. Findings/closure/accepted risk
+6. OTester/OAudit receipts
+7. Human acceptance
+8. Evidence graph
+9. Freshness/Revocation events
+
+재구성 결과와 저장된 report가 다르면 `FINAL_CLAIM_MISMATCH_HOLD`다.
+
+### 14.10 ProgramRiskScore 재계산
+`program-risk-score.v1.schema.json`은 필드와 grade band를 검증하지만 JSON Schema만으로 설명문상의 산술공식을 증명하지 못한다. 따라서 Score consumer/Final Claim은 raw Finding/MissedFinding에서 점수를 독립 재계산하고 저장된 `score`와 비교한다. Score는 보조지표이며 Hard Invariant를 대체하지 않는다.
+
+### 14.11 Approval Context Binding
+Approval은 candidate digest뿐 아니라 `target_manifest + scope + requirement + policy + assurance policy`의 canonical `approval_context_digest`에 결속한다. `nonce`, single-consume ledger, expires/revocation 검사를 강제한다. Action 승인에는 verb뿐 아니라 resource/scope/parameter/purpose를 canonical `action_intent_digest`로 결속한다.
+
+### 14.12 Final Freshness Barrier
+Final Lock 직전에 다음을 원시 상태에서 재검산한다.
+- target/config/dependency/model/prompt/RAG 변경 없음
+- scope/requirement/policy/rule/oracle 변경 없음
+- Candidate 이후 신규 Critical/High 없음
+- Approval 유효·미폐기·미사용
+- required observer/collector complete
+- OTester/OAudit receipts current
+- Certificate invalidation event 없음
+
+하나라도 실패하면 Lock을 발행하지 않는다.
+
+### 14.13 Evidence Transactionality
+Evidence/Receipt/Ledger/ChainHead는 논리 transaction으로 기록한다. 상태는 `PREPARED→COMMITTED`를 사용하고 crash 중간 기록은 `ABORTED_UNTRUSTED`로 복구한다. 일부 파일 존재만으로 PASS를 재구성하지 않는다.
+
+### 14.14 Final Lock 원자성·멱등성
+- candidate_digest당 active Final Lock 최대 1개
+- approval_id/nonce single-consume
+- 동일 요청 retry는 동일 결과 반환
+- candidate revalidation, approval consume, lock creation, audit append 중간 crash는 재시작 후 결정론적으로 복구
+
+### 14.15 Assurance Revocation
+Final Lock 기록은 삭제/변조하지 않지만 현재 유효성은 변경 가능하다.
+- `VALID`
+- `STALE`
+- `INVALIDATED`
+- `SUPERSEDED`
+
+새 Critical, CVE, policy/regulation 변경, deployed artifact drift, MissedFinding 영향이 발생하면 certificate 상태를 갱신하고 영향을 받은 사용자에게 통지한다.
+
+### 14.16 Verified-to-Deployed Identity
+`validated_artifact_digest == deployed_artifact_digest`가 아니면 운영 제품에 대한 Final Claim을 유지하지 않는다. Validation Environment와 Production Environment 차이를 `MATCH|NON_MATERIAL|MATERIAL|UNKNOWN`으로 분류하며 MATERIAL/UNKNOWN은 Assurance Ceiling에 반영한다.
+
+### 14.17 Observability Qualification
+결함 종류마다 Required Observation Matrix를 정의한다. 예: Cross-tenant DB write 검증은 API 결과만으로 충분하지 않고 Authority Event/DB State 또는 동등한 독립 관측을 요구할 수 있다. Collector가 중간 종료되면 부재 주장(No leak 등)을 PROVEN으로 만들지 않는다.
+
+### 14.18 Evidence Origin / Claim Graph
+Evidence에는 origin과 변환계보를 부여한다.
+- PRIMARY
+- DERIVED
+- AGGREGATED
+
+같은 원천에서 생성된 여러 파일은 독립증거 하나로 센다. Claim graph는 자기 자신으로 순환해 증명할 수 없고 PRIMARY source까지 역추적 가능해야 한다.
+
+### 14.19 Trust Registry Semantic Integrity
+Key Registry는 단순 Schema-valid를 넘어 다음을 강제한다.
+- unique key_id / public-key fingerprint
+- independent role에 요구되는 principal 분리
+- 각 필수 authority 최소 cardinality
+- valid_from < valid_until
+- revoked=true면 revoked_at 필수
+- signing time이 key validity window 내
+- revoked/replaced key의 소비정책 명시
+
+`different key_id`만으로 독립 principal을 증명하지 않는다.
+
+### 14.20 Validator TCB(Trusted Computing Base)
+Final verifier가 암묵적으로 신뢰하는 OS/kernel/JVM/crypto library/filesystem/time source/key registry/sandbox runtime을 TCB Manifest로 공개한다. TCB를 최소화하고 Final Receipt Verifier는 가능한 한 ONSure business logic과 독립된 작은 reference implementation으로 유지한다.
+
+### 14.21 API/운영 수용기준
+- Final 관련 API는 저장된 PASS/LOCKED 상태만 읽어 성공을 반환하지 않는다.
+- `REJECT` Approval, mismatched Target/Scope/Epoch, expired approval은 Final Lock에 절대 사용되지 않는다.
+- 동일 Candidate의 이중 Lock과 동일 Approval 재사용을 차단한다.
+- 신규 invalidation event가 있으면 Certificate verify API가 즉시 현재 상태를 반환한다.
+- ProgramRiskScore A등급이 Final Hard Gate를 우회할 수 없다.
+- Schema-valid하더라도 Cross-Contract Invariant가 실패하면 요청은 fail-closed한다.
