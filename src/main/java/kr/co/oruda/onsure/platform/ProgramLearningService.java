@@ -18,6 +18,7 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -54,7 +55,9 @@ public final class ProgramLearningService {
         Map<String, Integer> languages = languageInventory(sourceFiles);
         List<Map<String, Object>> components = components(root, sourceFiles);
         List<Map<String, Object>> dependencies = dependencies(root, sourceFiles);
-        List<Map<String, Object>> aiComponents = aiComponents(root, sourceFiles);
+        List<Map<String, Object>> aiComponents = new ArrayList<>(aiComponents(root, sourceFiles));
+        aiComponents.addAll(toolContracts(root, sourceFiles));
+        aiComponents.addAll(executionLogs(root, sourceFiles));
         List<Map<String, Object>> dataFlows = dataFlows(root, sourceFiles);
         Set<String> unknowns = new LinkedHashSet<>();
         Set<String> conflicts = new LinkedHashSet<>();
@@ -318,6 +321,137 @@ public final class ProgramLearningService {
             }
         }
         return List.copyOf(values);
+    }
+
+    /**
+     * TOOL_CONTRACT detection (FR-02-A: Tool Contract inventory). Uses the same lightweight
+     * path/filename signal matching as {@link #aiComponents(Path, List)} -- no deep semantic
+     * validation, just structural detection -- but goes one step further for files it matches:
+     * it attempts to parse them as JSON and, if the parsed shape looks like a recognizable
+     * tool/function-calling schema, extracts the declared tool names. Parsing never throws: a
+     * file that matches the path signal but fails to parse (or doesn't look like a tool schema)
+     * is still recorded as a TOOL_CONTRACT candidate, just at a lower confidence, mirroring the
+     * fail-safe philosophy in {@link GitMetadataInventory} (degrade, never crash the whole scan).
+     */
+    private List<Map<String, Object>> toolContracts(Path root, List<Path> files) {
+        List<Map<String, Object>> values = new ArrayList<>();
+        for (Path file : files) {
+            String relative = Hashing.relative(root, file);
+            if (!isToolContractCandidate(relative.toLowerCase(Locale.ROOT))) continue;
+            List<String> declaredToolNames = null;
+            double confidence = 0.5;
+            try {
+                JsonNode node = mapper.readTree(file.toFile());
+                declaredToolNames = extractDeclaredToolNames(node);
+                if (declaredToolNames != null) confidence = 0.85;
+            } catch (Exception ignored) {
+                // Not parseable JSON, or an empty/unreadable file -- keep the lower,
+                // path-signal-only confidence rather than dropping the candidate.
+            }
+            Map<String, Object> value = new LinkedHashMap<>(item(
+                    "TC-" + Hashing.sha256(relative).substring(0, 12),
+                    file.getFileName().toString(), "TOOL_CONTRACT", relative, confidence, false));
+            if (declaredToolNames != null) {
+                value.put("declared_tool_names", List.copyOf(declaredToolNames));
+            }
+            values.add(Map.copyOf(value));
+        }
+        return List.copyOf(values);
+    }
+
+    /**
+     * Path-segment-aware Tool Contract signal. Well-known conventional filenames (mcp.json,
+     * tools.json, tool-contract*.json, *.tool.json) always match. Otherwise, "tool" and a
+     * contract/schema/manifest term must co-occur within the SAME path segment (a directory
+     * name or the filename) -- not merely anywhere in the full path -- so an unrelated
+     * "tools/" utility-scripts directory (e.g. {@code tools/build.sh}, or {@code tools/}
+     * paired with an unrelated {@code schema-check.py} several segments away) does not match
+     * just because both words appear somewhere below it. As a narrow addition, a "tool"/"tools"
+     * directory immediately containing a file whose name itself carries a contract/schema/
+     * manifest term (e.g. {@code tools/contract.json}) also matches.
+     */
+    private static boolean isToolContractCandidate(String relativeLower) {
+        String[] segments = relativeLower.split("/");
+        String filename = segments[segments.length - 1];
+        if (filename.equals("mcp.json") || filename.equals("tools.json")
+                || filename.matches("tool-contract.*\\.json")
+                || filename.matches(".*\\.tool\\.json")) {
+            return true;
+        }
+        boolean filenameHasContractTerm = filename.contains("contract") || filename.contains("schema")
+                || filename.contains("manifest");
+        if (segments.length >= 2) {
+            String parentDir = segments[segments.length - 2];
+            if ((parentDir.equals("tool") || parentDir.equals("tools")) && filenameHasContractTerm) {
+                return true;
+            }
+        }
+        for (String segment : segments) {
+            if (segment.contains("tool")
+                    && (segment.contains("contract") || segment.contains("schema") || segment.contains("manifest"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Recognizes two tool/function-calling schema shapes: an OpenAI-style top-level array of
+     * objects each with "name" plus "parameters" or "input_schema", or an MCP-style object with
+     * a top-level "tools" array of such objects. Returns null (not a recognizable shape) rather
+     * than throwing, so callers can degrade to path-signal-only detection.
+     */
+    private static List<String> extractDeclaredToolNames(JsonNode node) {
+        if (node.isArray()) {
+            return toolNamesFromArray(node);
+        }
+        if (node.isObject() && node.path("tools").isArray()) {
+            return toolNamesFromArray(node.path("tools"));
+        }
+        return null;
+    }
+
+    private static List<String> toolNamesFromArray(JsonNode array) {
+        List<String> names = new ArrayList<>();
+        for (JsonNode entry : array) {
+            if (!entry.isObject()) continue;
+            JsonNode name = entry.path("name");
+            boolean hasSchema = entry.has("parameters") || entry.has("input_schema");
+            if (name.isTextual() && !name.asText().isBlank() && hasSchema) {
+                names.add(name.asText());
+            }
+        }
+        return names.isEmpty() ? null : List.copyOf(names);
+    }
+
+    /**
+     * EXECUTION_LOG detection (FR-02-A: execution log inventory). Path-signal-only, no content
+     * parsing -- matches an exact "logs"/"log" path segment, or filenames matching *.log,
+     * execution-log*, trace*.json, run-log*. Segment/prefix matching (not raw
+     * {@code contains("log")}) deliberately avoids false positives on unrelated words that
+     * merely contain "log" as a substring, such as "catalog", "login", or "dialogue".
+     */
+    private List<Map<String, Object>> executionLogs(Path root, List<Path> files) {
+        List<Map<String, Object>> values = new ArrayList<>();
+        for (Path file : files) {
+            String relative = Hashing.relative(root, file);
+            if (!isExecutionLogCandidate(relative.toLowerCase(Locale.ROOT))) continue;
+            values.add(item("LOG-" + Hashing.sha256(relative).substring(0, 12),
+                    file.getFileName().toString(), "EXECUTION_LOG", relative, 0.6, false));
+        }
+        return List.copyOf(values);
+    }
+
+    private static boolean isExecutionLogCandidate(String relativeLower) {
+        String[] segments = relativeLower.split("/");
+        for (String segment : segments) {
+            if (segment.equals("logs") || segment.equals("log")) return true;
+        }
+        String filename = segments[segments.length - 1];
+        return filename.endsWith(".log")
+                || filename.matches("execution-log.*")
+                || filename.matches("trace.*\\.json")
+                || filename.matches("run-log.*");
     }
 
     private List<Map<String, Object>> dataFlows(Path root, List<Path> files) throws Exception {

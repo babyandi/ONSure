@@ -111,6 +111,101 @@ class ProgramLearningServiceTest {
         assertEquals("PARENT_PROGRAM_PROFILE_HASH_INVALID", failure.getMessage());
     }
 
+    @Test
+    void openAiStyleToolContractIsDetectedWithExtractedToolNames() throws Exception {
+        Path source = temp.resolve("tool-contract-openai-source");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("main.py"), "print('hello')\n");
+        Files.writeString(source.resolve("tool-contract.json"), """
+                [
+                  {"name": "search_documents", "parameters": {"type": "object"}},
+                  {"name": "create_ticket", "input_schema": {"type": "object"}}
+                ]
+                """);
+        Map<String, Object> profile = new ProgramLearningService().learn(
+                source, "project-tool-contract-openai", "program-tool-contract-openai",
+                temp.resolve("tool-contract-openai-profile.json"));
+        Map<String, Object> item = aiComponentByKind(profile, "TOOL_CONTRACT");
+        assertEquals(0.85, ((Number) item.get("confidence")).doubleValue());
+        assertEquals(List.of("search_documents", "create_ticket"), item.get("declared_tool_names"));
+    }
+
+    @Test
+    void mcpStyleToolContractIsDetectedWithExtractedToolNames() throws Exception {
+        Path source = temp.resolve("tool-contract-mcp-source");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("main.py"), "print('hello')\n");
+        Files.writeString(source.resolve("mcp.json"), """
+                {"tools": [
+                  {"name": "read_file", "parameters": {"type": "object"}}
+                ]}
+                """);
+        Map<String, Object> profile = new ProgramLearningService().learn(
+                source, "project-tool-contract-mcp", "program-tool-contract-mcp",
+                temp.resolve("tool-contract-mcp-profile.json"));
+        Map<String, Object> item = aiComponentByKind(profile, "TOOL_CONTRACT");
+        assertEquals(0.85, ((Number) item.get("confidence")).doubleValue());
+        assertEquals(List.of("read_file"), item.get("declared_tool_names"));
+    }
+
+    @Test
+    void malformedToolContractShapedFileIsDetectedAtLowerConfidenceWithoutCrashing() throws Exception {
+        Path source = temp.resolve("tool-contract-malformed-source");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("main.py"), "print('hello')\n");
+        Files.writeString(source.resolve("tool-contract-broken.json"), "{ this is not valid json ][");
+        Map<String, Object> profile = new ProgramLearningService().learn(
+                source, "project-tool-contract-malformed", "program-tool-contract-malformed",
+                temp.resolve("tool-contract-malformed-profile.json"));
+        Map<String, Object> item = aiComponentByKind(profile, "TOOL_CONTRACT");
+        assertEquals(0.5, ((Number) item.get("confidence")).doubleValue());
+        assertNull(item.get("declared_tool_names"));
+    }
+
+    @Test
+    void executionLogsUnderLogsDirectoryAndDotLogFilesAreDetected() throws Exception {
+        Path source = temp.resolve("execution-log-source");
+        Files.createDirectories(source.resolve("logs"));
+        Files.writeString(source.resolve("main.py"), "print('hello')\n");
+        Files.writeString(source.resolve("logs/run-1.json"), "{}");
+        Files.writeString(source.resolve("execution-trace.log"), "step=1\n");
+        Map<String, Object> profile = new ProgramLearningService().learn(
+                source, "project-execution-log", "program-execution-log",
+                temp.resolve("execution-log-profile.json"));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> aiComponents = (List<Map<String, Object>>) profile.get("ai_components");
+        List<String> logLocations = aiComponents.stream()
+                .filter(component -> "EXECUTION_LOG".equals(component.get("kind")))
+                .flatMap(component -> ((List<String>) component.get("source_locations")).stream())
+                .toList();
+        assertTrue(logLocations.contains("logs/run-1.json"));
+        assertTrue(logLocations.contains("execution-trace.log"));
+    }
+
+    @Test
+    void catalogAndLoginFilenamesAreNotFalselyDetectedAsExecutionLogs() throws Exception {
+        Path source = temp.resolve("execution-log-false-positive-source");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("catalog.json"), "{}");
+        Files.writeString(source.resolve("login.py"), "print('login')\n");
+        Files.writeString(source.resolve("dialogue.txt"), "hi\n");
+        Map<String, Object> profile = new ProgramLearningService().learn(
+                source, "project-execution-log-false-positive", "program-execution-log-false-positive",
+                temp.resolve("execution-log-false-positive-profile.json"));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> aiComponents = (List<Map<String, Object>>) profile.get("ai_components");
+        assertTrue(aiComponents.stream().noneMatch(component -> "EXECUTION_LOG".equals(component.get("kind"))));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> aiComponentByKind(Map<String, Object> profile, String kind) {
+        List<Map<String, Object>> aiComponents = (List<Map<String, Object>>) profile.get("ai_components");
+        return aiComponents.stream()
+                .filter(component -> kind.equals(component.get("kind")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("no ai_components entry with kind " + kind));
+    }
+
     private static void git(Path root, String... arguments) throws Exception {
         java.util.ArrayList<String> command = new java.util.ArrayList<>();
         command.add("git"); command.addAll(java.util.List.of(arguments));

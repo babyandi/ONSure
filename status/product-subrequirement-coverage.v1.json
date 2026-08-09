@@ -99,7 +99,7 @@
       "id": "FR-02-A",
       "name": "Repository and AI asset inventory",
       "normative_phrase": "소스코드, 설정, 문서, 테스트, 프롬프트, RAG 구성, Tool Contract와 실행 로그를 인벤토리화해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
@@ -114,10 +114,7 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "TOOL_CONTRACT_CONTENT_PARSING_INCOMPLETE",
-        "EXECUTION_LOG_INVENTORY_INCOMPLETE"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE"
       ],
@@ -320,7 +317,7 @@
       "id": "FR-04-B",
       "name": "Execution preview and budget",
       "normative_phrase": "실행 명령, 예상 결과, 필요한 권한, 시간과 비용을 실행 전 제시해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java",
@@ -343,9 +340,7 @@
         "CORE",
         "VSCODE"
       ],
-      "missing_controls": [
-        "VSCODE_PLAN_PREVIEW_IS_SUMMARY_ROWS_NOT_A_PER_SCENARIO_DETAIL_PANEL"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_SURFACE_GATE"
       ],
@@ -425,7 +420,8 @@
         "scripts/onsure-local-gate.sh"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ValidationPlatformE2ETest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/DependencyScanStageTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -437,8 +433,7 @@
         "LOCAL_GATE"
       ],
       "missing_controls": [
-        "PRODUCT_CONTAINER_TARGET_VALIDATION_INCOMPLETE",
-        "DEPENDENCY_SCAN_INCOMPLETE"
+        "PRODUCT_CONTAINER_TARGET_VALIDATION_INCOMPLETE"
       ],
       "detector_controls": [
         "SUBREQ_REFERENCE_GATE"
@@ -1436,8 +1431,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 18,
-    "partial": 25,
+    "implemented": 20,
+    "partial": 23,
     "stub": 0,
     "design_only": 0,
     "verification_not_run": 43
