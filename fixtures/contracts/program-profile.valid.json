@@ -12,6 +12,24 @@
     "snapshot_complete": true,
     "source_file_count": 1
   },
+  "git_metadata": {
+    "repository": true,
+    "submodules": [
+      {
+        "path": "vendor/example-lib",
+        "commit_sha": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "status": "UP_TO_DATE"
+      }
+    ],
+    "lfs_patterns": ["*.psd"],
+    "remotes": [
+      {
+        "name": "origin",
+        "url": "https://github.com/example/sample.git",
+        "provider": "GITHUB"
+      }
+    ]
+  },
   "source_inventory": [
     {
       "path": "src/main/java/example/Api.java",

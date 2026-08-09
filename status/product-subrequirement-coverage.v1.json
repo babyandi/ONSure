@@ -43,14 +43,16 @@
       "id": "FR-01-B",
       "name": "Git metadata inventory",
       "normative_phrase": "현재 Branch, HEAD SHA, Dirty 상태, Submodule, LFS와 원격 Provider를 식별해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/SourceReferenceBinding.java",
-        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/GitMetadataInventory.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/HashingSourceSetTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/HashingSourceSetTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/GitMetadataInventoryTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -59,11 +61,7 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "SUBMODULE_DISCOVERY_INCOMPLETE",
-        "LFS_DISCOVERY_INCOMPLETE",
-        "REMOTE_PROVIDER_DISCOVERY_INCOMPLETE"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_MISSING_CONTROL_GATE"
       ],
@@ -270,10 +268,12 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetector.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetectorTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -283,7 +283,6 @@
         "CORE"
       ],
       "missing_controls": [
-        "VULNERABLE_CONDITION_TAXONOMY_INCOMPLETE",
         "DIRECT_PRODUCTION_POLICY_TELEMETRY_NOT_RUN"
       ],
       "detector_controls": [
@@ -295,13 +294,14 @@
       "id": "FR-04-A",
       "name": "Scenario proposal",
       "normative_phrase": "정상·경계·실패·적대 시나리오를 자동 제안해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ExecutionPlanService.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanApprovalServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ExecutionPlanExecutionBudgetTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -310,9 +310,7 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "TARGET_SPECIFIC_SCENARIO_GENERATION_INCOMPLETE"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_REFERENCE_GATE"
       ],
@@ -1058,14 +1056,16 @@
       "id": "FR-12-A",
       "name": "Versioned profiles memories and evidence ledger",
       "normative_phrase": "Program Profile, Failure Memory, Improvement Memory와 Evidence Ledger를 버전 관리해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java",
-        "src/main/java/kr/co/oruda/onsure/platform/DurableStateLedger.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DurableStateLedger.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java"
+        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1074,9 +1074,7 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "PROGRAM_PROFILE_INCREMENTAL_VERSION_CHAIN_MISSING"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_REFERENCE_GATE"
       ],
@@ -1157,14 +1155,16 @@
       "id": "NFR-01",
       "name": "Local and offline execution",
       "normative_phrase": "기본 로컬 실행, Enterprise Offline Mode 지원",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "scripts/onsure-local-gate.sh",
-        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java"
+        "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+        "src/main/java/kr/co/oruda/onsure/platform/AirGappedDependencyPackager.java"
       ],
       "test_refs": [
-        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java"
+        "modules/onsure-local-api/src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerSmokeTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/AirGappedDependencyPackagerTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1175,9 +1175,7 @@
         "LOCAL_GATE",
         "CORE"
       ],
-      "missing_controls": [
-        "AIR_GAPPED_DEPENDENCY_INSTALL_PACK_MISSING"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_REFERENCE_GATE"
       ],
@@ -1438,8 +1436,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 14,
-    "partial": 29,
+    "implemented": 18,
+    "partial": 25,
     "stub": 0,
     "design_only": 0,
     "verification_not_run": 43
