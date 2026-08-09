@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0.0",
+  "record_id": "ONSURE_PHASE_B_D23_CONTINUATION_TODO_20260810",
+  "status": "READY_FOR_D23_PREPARATION_HOLD",
+  "recorded_at": "2026-08-10T00:59:00+09:00",
+  "branch": "work/onsure-phase-b-d23-continuation-20260810",
+  "purpose": "Preserve the exact ONSure continuation point after creation of the isolated canonical-method Codex Phase B candidate. This is a TODO/handoff record only and grants no PASS or production authority.",
+  "phase_b_candidate": {
+    "filename": "onsure_phase_b_codex_candidate.json",
+    "sha256": "334132a72b84d4de0fe8c1795213e23ac3d959e1100868f351e9740a0bc40de0",
+    "run_id": "onsure-phase-b-codex-20260809T154348Z-7f31c892",
+    "phase_role": "INDEPENDENT_RECONSTRUCTION",
+    "run_status": "FROZEN_CANDIDATE_NONFINAL",
+    "semantic_artifact_count": 22,
+    "semantic_pass_range": "D01-D22",
+    "archetype_domain_evidence_count": 26,
+    "d23_executed": false,
+    "golden_comparison_executed": false,
+    "final_pass_fail_declared": false,
+    "transport_attestation_present": true,
+    "context_attestation_present": true,
+    "freeze_marker_present": true,
+    "qualification_state": "CANONICAL_SEMANTIC_CANDIDATE_NOT_YET_FULLY_QUALIFIED",
+    "regeneration_policy": "DO_NOT_REGENERATE_MERELY_TO_ADD_EVIDENCE_SHELL"
+  },
+  "next_actions": [
+    {
+      "id": "TODO-01",
+      "action": "PRESERVE_PHASE_B_EXACT_BYTES",
+      "status": "TODO",
+      "acceptance": [
+        "Preserve the exact candidate bytes without rewriting or pretty-printing.",
+        "Recompute SHA-256 and require 334132a72b84d4de0fe8c1795213e23ac3d959e1100868f351e9740a0bc40de0."
+      ]
+    },
+    {
+      "id": "TODO-02",
+      "action": "VALIDATE_PHASE_B_STRUCTURE_AND_SEMANTIC_DEPTH",
+      "status": "TODO",
+      "acceptance": [
+        "Exactly D01-D22, no D23 record.",
+        "Exactly 26 archetype domain records.",
+        "No boilerplate-only semantic artifact.",
+        "No Golden score or final PASS/FAIL in Phase B."
+      ]
+    },
+    {
+      "id": "TODO-03",
+      "action": "VERIFY_METHOD_TRANSPORT_FIDELITY",
+      "status": "TODO",
+      "acceptance": [
+        "Compare the five recorded canonical method/input SHA-256 values against the canonical OBuilder method transport set.",
+        "Do not substitute a manually summarized method prompt."
+      ]
+    },
+    {
+      "id": "TODO-04",
+      "action": "KEEP_ISOLATION_QUALIFICATION_SEPARATE",
+      "status": "HOLD_EXTERNAL_EVIDENCE",
+      "acceptance": [
+        "Treat context_attestation as an evidence claim, not independent authority proof.",
+        "Obtain isolation authority proof/trust-root evidence separately if required for final OBuilder method qualification.",
+        "Do not rerun D01-D22 solely because isolation proof is incomplete."
+      ]
+    },
+    {
+      "id": "TODO-05",
+      "action": "BIND_FROZEN_PHASE_A_AND_PHASE_B",
+      "status": "TODO",
+      "acceptance": [
+        "Read actual frozen Phase A bytes and actual frozen Phase B bytes.",
+        "Recompute both SHA-256 values.",
+        "Verify distinct run/context identities and same sealed basic input."
+      ]
+    },
+    {
+      "id": "TODO-06",
+      "action": "RUN_D23_POST_FREEZE_COMPARATOR",
+      "status": "NOT_RUN",
+      "acceptance": [
+        "Derive A/B difference records from bound artifacts, not caller declarations.",
+        "D23 must remain outside Phase A and Phase B.",
+        "Do not start Golden comparison until both frozen bindings are accepted."
+      ]
+    },
+    {
+      "id": "TODO-07",
+      "action": "RUN_GOLDEN_CRITICAL_53_STRICT_COMPARISON",
+      "status": "NOT_RUN",
+      "acceptance": [
+        "Derive Critical denominator from Golden Corpus; expected 53.",
+        "Each FOUND must have bound Phase B evidence.",
+        "PARTIAL does not count as FOUND.",
+        "Target is 53/53 = 100.0 percent strict recall."
+      ]
+    },
+    {
+      "id": "TODO-08",
+      "action": "DESIGN_ESCAPE_FEEDBACK_ON_ANY_STRICT_MISS",
+      "status": "PENDING_D23",
+      "acceptance": [
+        "Any Critical miss creates or updates DesignEscapeIncident.",
+        "Patch OBuilder method/rule/corpus/test, not ONSure manually to match Golden.",
+        "Require affected historical design recheck and OBuilder requalification."
+      ]
+    },
+    {
+      "id": "TODO-09",
+      "action": "METHOD_REQUALIFICATION",
+      "status": "HOLD",
+      "acceptance": [
+        "D23 validated from actual A/B artifacts.",
+        "Golden Critical 53/53 strict recall.",
+        "No open Critical DesignEscape requalification blocker.",
+        "No NOT_RUN, PARTIAL or self-attested result promoted to PASS."
+      ]
+    }
+  ],
+  "non_substitutable_evidence": [
+    "First Claude Phase B diagnostic result",
+    "Claude provider-policy-blocked attempts",
+    "nonblind Phase A/preflight result",
+    "static method-to-Golden mapping"
+  ],
+  "provider_policy_note": {
+    "claude_policy_blocked_attempts": "NOT_RUN_PROVIDER_POLICY_BLOCKED",
+    "effect_on_discovery_quality": "NONE"
+  },
+  "hard_gates": {
+    "merge": false,
+    "deploy": false,
+    "production_go": false,
+    "commercial_go": false,
+    "final_lock": false
+  }
+}
