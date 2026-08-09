@@ -1,0 +1,27 @@
+{
+  "contract": "ONSURE_TARGET_MANIFEST_V1",
+  "target_id": "onsure-self",
+  "target_type": "GENERAL_SOFTWARE",
+  "language": "Java",
+  "framework": "Maven",
+  "self_reported_final_decision": false,
+  "capabilities": ["BUILD_VERIFICATION", "STATIC_CONTRACT_VALIDATION", "UNIT_TEST_EXECUTION"],
+  "fixtures": [
+    {
+      "id": "repository-contracts-pass",
+      "input": "",
+      "expected": "ONSURE_REPOSITORY_CONTRACTS_PASS",
+      "oracle": "CONTAINS",
+      "command": ["bash", "onsure-fixtures/repository-contracts.sh"],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "python-regression-pass",
+      "input": "",
+      "expected": "OK",
+      "oracle": "CONTAINS",
+      "command": ["bash", "onsure-fixtures/python-regression.sh"],
+      "timeout_seconds": 120
+    }
+  ]
+}

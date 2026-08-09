@@ -319,17 +319,23 @@ public final class BuiltInStages {
                 title, description, location, evidenceIds, stageId));
     }
 
+    /**
+     * Reuses {@link Hashing#sourceFiles} (git-tracked files, or the same generated/vendored
+     * exclusions when git isn't available) instead of a raw filesystem walk, so pattern-matching
+     * evidence is derived only from real source -- not build output, node_modules, or old
+     * .onsure/ receipt directories that can contain many byte-identical vendored files and would
+     * otherwise collide on the same (file content, rule token) evidence id.
+     */
     private static List<Path> textFiles(Path root) throws Exception {
         List<Path> files = new ArrayList<>();
-        try (var stream = Files.walk(root)) {
-            stream.filter(Files::isRegularFile)
-                    .filter(path -> isTextExtension(path.getFileName().toString()))
-                    .filter(path -> {
-                        try { return Files.size(path) <= 1_000_000; }
-                        catch (Exception e) { return false; }
-                    })
-                    .sorted()
-                    .forEach(files::add);
+        for (Path path : Hashing.sourceFiles(root)) {
+            if (!isTextExtension(path.getFileName().toString())) continue;
+            try {
+                if (Files.size(path) > 1_000_000) continue;
+            } catch (Exception ignored) {
+                continue;
+            }
+            files.add(path);
         }
         return files;
     }
