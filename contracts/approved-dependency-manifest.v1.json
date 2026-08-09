@@ -107,6 +107,33 @@
       "license": "Apache-2.0",
       "reviewed_at": "2026-08-08",
       "note": "transitive dependency of junit-jupiter-api"
+    },
+    {
+      "groupId": "org.flywaydb",
+      "artifactId": "flyway-core",
+      "version": "11.11.2",
+      "scope": "compile",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-09",
+      "note": "NFR-03 database rollback: schema migration engine for PostgreSQL"
+    },
+    {
+      "groupId": "org.flywaydb",
+      "artifactId": "flyway-database-postgresql",
+      "version": "11.11.2",
+      "scope": "compile",
+      "license": "Apache-2.0",
+      "reviewed_at": "2026-08-09",
+      "note": "NFR-03 database rollback: PostgreSQL-specific Flyway database support"
+    },
+    {
+      "groupId": "org.postgresql",
+      "artifactId": "postgresql",
+      "version": "42.7.11",
+      "scope": "runtime",
+      "license": "BSD-2-Clause",
+      "reviewed_at": "2026-08-09",
+      "note": "NFR-03 database rollback: PostgreSQL JDBC driver"
     }
   ]
 }

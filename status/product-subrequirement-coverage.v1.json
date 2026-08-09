@@ -1214,13 +1214,18 @@
       "id": "NFR-03",
       "name": "Rollback for every change",
       "normative_phrase": "모든 변경의 롤백 가능성",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ImprovementWorkflowService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/migration/DatabaseSnapshotService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/migration/PostgresqlMigrationConfiguration.java",
+        "src/main/java/kr/co/oruda/onsure/platform/migration/PostgresqlMigrationMain.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ImprovementWorkflowServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/migration/DatabaseSnapshotServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/migration/PostgresqlMigrationConfigurationTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1229,9 +1234,7 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "DATABASE_PROMPT_DATASET_ROLLBACK_NOT_IMPLEMENTED"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_REFERENCE_GATE"
       ],
@@ -1431,8 +1434,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 20,
-    "partial": 23,
+    "implemented": 21,
+    "partial": 22,
     "stub": 0,
     "design_only": 0,
     "verification_not_run": 43
