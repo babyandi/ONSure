@@ -97,3 +97,109 @@ ONSure의 1차 사용 시나리오는 Claude 등 AI Agent 또는 바이브 코�
 | 화면·흐름 | [05_UI_UX_WORKFLOW_SPECIFICATION.md](05_UI_UX_WORKFLOW_SPECIFICATION.md) |
 | 시험·운영·구현 순서 | [06_TEST_OPERATION_IMPLEMENTATION_PLAN.md](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) |
 | Component 모델·AI Agent 방법론(본 문서) | 07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md |
+
+## 8. AI·Agent 메타검증 및 Truth Assurance 방법론 (신규, 2026-08-09)
+이 절은 AI Agent가 검증을 수행하는 ONSure에서 가장 위험한 실패인 **상관된 오판, 학습된 오판의 자기강화, Hidden/Golden 데이터 누출, Ground Truth 오염**을 차단하기 위한 공통 방법론이다. 단순히 Agent ID나 모델 이름이 다르다는 이유만으로 독립검증으로 인정하지 않는다.
+
+### 8.1 독립성 6축
+모든 고신뢰 판정은 다음 독립성 축을 별도로 기록한다.
+
+| 독립성 축 | 질문 | 최소 증거 |
+|---|---|---|
+| Execution Independence | 다른 실행인가 | 서로 다른 `execution_id`, fresh state/seed |
+| Principal Independence | 다른 실제 주체인가 | 서로 다른 `principal_id`, key, credential |
+| Implementation Independence | 같은 코드를 재사용하지 않았는가 | verifier implementation digest |
+| Oracle Independence | 같은 정답 계산기를 공유하지 않았는가 | oracle digest 및 target-code dependency |
+| Discovery Independence | 같은 규칙/시나리오 생성 경로만 사용하지 않았는가 | detector/scenario-generator digest |
+| Knowledge Independence | 이전 판정/Memory가 독립검증을 오염시키지 않았는가 | memory-blind 여부와 입력 manifest |
+
+`different_run=true` 또는 `different_model=true` 하나만으로 Independent PASS를 발급하지 않는다. Critical Claim은 최소한 Execution + Principal + Oracle Independence를 만족하고, 가능한 경우 Discovery/Implementation Independence까지 확보한다.
+
+### 8.2 Ground Truth 등급
+Cross-Model Agreement는 Ground Truth가 아니라 `CORROBORATION`으로 취급한다. Ground Truth는 다음 등급으로 관리한다.
+
+- `GT0_UNKNOWN`: 정답을 확정할 독립 근거 없음
+- `GT1_CORROBORATED`: 복수 모델/Reviewer가 같은 결론이나 독립 실행 근거 부족
+- `GT2_INDEPENDENT_TOOL`: 독립 도구/분석기로 재계산
+- `GT3_EXECUTABLE_ORACLE`: 실행 가능한 독립 Oracle이 결과를 재계산
+- `GT4_EXPERT_VERIFIED`: 전문 Reviewer가 원시 증거를 보고 독립 판정
+- `GT5_REAL_WORLD_OBSERVED`: 운영 관측 또는 외부 권위 시스템 결과로 확인
+
+Confidence Calibration 및 Validator Qualification은 원칙적으로 GT3 이상 표본을 우선 사용한다. GT1을 정답으로 사용해야 하는 경우 Assurance Ceiling을 낮추고 제한사항을 노출한다.
+
+### 8.3 Ground Truth Provenance와 Epoch
+Ground Truth는 문자열 Expected Result가 아니라 버전된 객체로 관리한다. 필수 속성은 `ground_truth_id`, `source_type`, `requirement_digest`, `oracle_digest`, `created_by`, `reviewed_by`, `valid_from`, `valid_until`, `evidence_refs`, `scope`, `epoch`이다. 요구사항·정책·규제·Oracle이 변경되면 기존 Ground Truth는 `STALE`로 전이하고 해당 Fixture/Calibration 결과를 재평가한다.
+
+### 8.4 Memory-Blind Independent Review
+OMemory의 KnowledgePattern은 시나리오 발견과 우선순위 조정에는 사용할 수 있으나 Critical Ground Truth의 유일 근거로 사용할 수 없다. 고신뢰 검증에는 일부 Lane을 `memory_blind=true`로 실행하여 이전 Finding, ProgramRiskScore, Vendor reputation, 이전 PASS/FAIL을 입력에서 제거한다. Memory-aware 결과와 Memory-blind 결과가 충돌하면 자동 평균/다수결로 정리하지 않고 `DISAGREEMENT_HOLD`로 승격한다.
+
+### 8.5 Semantic Dataset Separation
+`training_validation_hidden_golden_overlap_allowed=false`의 byte-level 분리만으로 충분하지 않다. Dataset은 다음 Family ID를 가진다.
+
+- `defect_class`
+- `semantic_family_id`
+- `implementation_family_id`
+- `source_project_family_id`
+- `generation_method`
+
+Hidden Qualification Set은 학습 데이터와 byte가 다를 뿐 아니라 가능한 범위에서 semantic family와 구현 family도 분리한다. 최종 Qualification은 `KNOWN_GOLDEN`, `UNSEEN_VARIANT`, `NOVEL_COMPOSITION`, `OUT_OF_DISTRIBUTION` 네 집합 결과를 따로 제시한다.
+
+### 8.6 Oracle Coupling Gate
+Oracle이 대상 구현의 동일 함수·동일 라이브러리·동일 Rule을 호출하면 공통 결함을 공유할 수 있다. 모든 Oracle에는 `target_code_dependency`를 `NONE|PARTIAL|SHARED`로 표시한다. Critical Claim의 Final Oracle은 원칙적으로 `NONE`이어야 한다. `SHARED`인 경우 결과는 보조증거로만 인정하고 별도 독립 Oracle을 요구한다.
+
+### 8.7 Rule/Detector 변경 위험등급
+학습 결과의 변경 유형을 구분한다.
+
+- `NEW_DETECTOR`: 탐지 능력 추가
+- `DETECTOR_TIGHTENING`: 기존 규칙 강화
+- `DETECTOR_WEAKENING`: 규칙 완화
+- `DETECTOR_REMOVAL`: 탐지기 제거
+- `ORACLE_CHANGE`: 정답 판정 변경
+- `SEVERITY_POLICY_CHANGE`: Severity/Blocking 기준 변경
+- `COVERAGE_POLICY_CHANGE`: 검증 범위 선택 로직 변경
+
+`DETECTOR_WEAKENING`, `DETECTOR_REMOVAL`, `ORACLE_CHANGE`는 최고 위험 변경으로 취급한다. Golden Regression뿐 아니라 Hidden Benchmark, Critical Recall 비교, Independent Reviewer 승인을 통과하지 못하면 SHADOW/CANARY로도 승격하지 않는다.
+
+### 8.8 Learning Regression Guard
+새 Rule Pack은 전체 평균 점수가 올라도 다음 중 하나가 악화되면 승격하지 않는다.
+
+- 기존에 탐지하던 Critical seeded defect가 새 버전에서 escape
+- Critical Recall 감소
+- Cross-tenant/권한/증거무결성 defect-class Recall 감소
+- False Negative가 증가했는데 평균 F1 향상만으로 이를 가림
+- 새로운 Rule이 특정 언어·Framework에서만 성능을 높이고 다른 대상군을 심각하게 악화
+
+### 8.9 Counterexample Search
+KnowledgePattern/Rule Candidate는 긍정 재현 횟수만으로 승격하지 않는다. `positive_reproduction`, `counterexample_search`, `domain_transfer_test`, `negative_control`을 모두 수행한다. 동일 Framework에서 2회 재현된 것보다 서로 다른 Architecture/Language에서 재현된 것을 더 강한 증거로 취급하며, 재현 다양성은 별도 `reproduction_diversity_score`로 관리한다.
+
+### 8.10 AI가 지켜야 할 금지규칙
+- 이전 PASS/Grade를 Ground Truth로 사용하지 않는다.
+- Memory에 저장된 Pattern을 Expected Result로 직접 승격하지 않는다.
+- Cross-Model 일치를 사실의 증명으로 표현하지 않는다.
+- Hidden answer key 또는 Hidden 결과의 반복 피드백으로 Rule을 튜닝하지 않는다.
+- Human 승인 자체를 사실 검증의 대체물로 사용하지 않는다.
+- 자신이 생성한 Patch/Rule/Oracle의 Final Effect를 스스로 승인하지 않는다.
+- 낮은 Confidence를 다수결로 세탁하지 않는다.
+
+### 8.11 개발자가 지켜야 할 구현규칙
+- Independent Lane은 동일 service method를 단순 재호출하는 형태로 구현하지 않는다.
+- Reviewer/Verifier/Oracle 구현의 digest와 version을 Receipt에 결속한다.
+- `memory_blind` 실행은 Memory/RiskScore/previous verdict 접근을 기술적으로 차단한다.
+- Dataset registry는 byte hash와 semantic family를 모두 보관한다.
+- Rule weakening/removal API는 일반 Rule 추가 API보다 높은 권한·승인·회귀 Gate를 요구한다.
+- Oracle이 대상 코드를 import하면 자동으로 coupling level을 PARTIAL/SHARED로 표기한다.
+
+### 8.12 운영자가 확인할 운영체크
+- Independent 실행이 실제로 다른 principal/key/환경에서 수행됐는가
+- Hidden Qualification Set 접근권한이 개발·학습 Agent에 열려 있지 않은가
+- Rule Pack 변경 후 과거 인증 대상에 영향분석이 수행됐는가
+- MissedFinding 발생 시 Target RCA와 별도로 Validator RCA가 생성됐는가
+- Critical Recall 회귀가 발생했는데 평균 점수 향상으로 승격되지 않았는가
+- Memory-blind 결과와 일반 결과의 불일치가 HOLD로 남아 있는가
+
+### 8.13 수용기준
+- Critical Final Claim은 독립성 축과 Ground Truth 등급을 명시하지 않고 발급할 수 없다.
+- `GT0_UNKNOWN` 또는 `GT1_CORROBORATED`만 존재하는 Critical Claim은 `PROVEN`으로 승격할 수 없다.
+- Hidden/Golden/Training 데이터 분리 위반이 발견되면 관련 Qualification 결과 전체를 무효화한다.
+- Rule/Oracle 변경은 적용 전후 Critical Recall과 escaped-defect 목록을 반드시 비교한다.
+- 새 MissedFinding을 학습한 뒤에는 영향받는 과거 Validation을 검색해 `SAFE|REASSESSMENT_REQUIRED|STALE` 중 하나로 판정한다.
