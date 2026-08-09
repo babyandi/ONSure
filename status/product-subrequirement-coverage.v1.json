@@ -270,10 +270,12 @@
       "implementation_status": "PARTIAL",
       "verification_state": "NOT_RUN",
       "code_refs": [
-        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java"
+        "src/main/java/kr/co/oruda/onsure/platform/BehaviorLearningService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetector.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/BehaviorLearningServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/VulnerableBehaviorDetectorTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -283,7 +285,6 @@
         "CORE"
       ],
       "missing_controls": [
-        "VULNERABLE_CONDITION_TAXONOMY_INCOMPLETE",
         "DIRECT_PRODUCTION_POLICY_TELEMETRY_NOT_RUN"
       ],
       "detector_controls": [
@@ -1058,14 +1059,16 @@
       "id": "FR-12-A",
       "name": "Versioned profiles memories and evidence ledger",
       "normative_phrase": "Program Profile, Failure Memory, Improvement Memory와 Evidence Ledger를 버전 관리해야 합니다.",
-      "implementation_status": "PARTIAL",
+      "implementation_status": "IMPLEMENTED",
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java",
-        "src/main/java/kr/co/oruda/onsure/platform/DurableStateLedger.java"
+        "src/main/java/kr/co/oruda/onsure/platform/DurableStateLedger.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ProgramLearningService.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java"
+        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ProgramLearningServiceTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1074,9 +1077,7 @@
       "implemented_surfaces": [
         "CORE"
       ],
-      "missing_controls": [
-        "PROGRAM_PROFILE_INCREMENTAL_VERSION_CHAIN_MISSING"
-      ],
+      "missing_controls": [],
       "detector_controls": [
         "SUBREQ_REFERENCE_GATE"
       ],
@@ -1438,8 +1439,8 @@
   ],
   "summary": {
     "total": 43,
-    "implemented": 14,
-    "partial": 29,
+    "implemented": 15,
+    "partial": 28,
     "stub": 0,
     "design_only": 0,
     "verification_not_run": 43
