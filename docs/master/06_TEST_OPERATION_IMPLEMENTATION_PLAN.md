@@ -300,3 +300,210 @@ Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진�
 - 고객 데이터 삭제 증명 PASS
 - OMemory 재귀학습 루프가 의도적으로 주입한 MissedFinding 사례를 RCA→개정→회귀 통과까지 완결 처리
 - Final Evidence Pack 봉인
+
+## 13. Meta-Validation Qualification·시험·운영 계획 (신규, 2026-08-09)
+이 절은 대상 제품 시험과 별개로 **ONSure 자체가 결함을 실제로 잡을 능력이 있는지, 잘못된 PASS를 낼 수 없는지**를 검증한다. 현재 `contracts/omission-failure-injection-counts.v1.json`의 118건은 등록된 주입 케이스 수이며, 실행·탐지·escape가 입증된 수가 아니다. 따라서 개수 집계에서 실제 탐지자격 증명으로 전환한다.
+
+### 13.1 Detector Qualification Report
+모든 seeded fault corpus 실행마다 다음을 기록한다.
+
+- `registered_faults`
+- `executed_faults`
+- `valid_non_equivalent_faults`
+- `detected_faults`
+- `escaped_faults`
+- `invalid_or_equivalent_faults`
+- `critical_escaped_fault_ids`
+- `fault_class_coverage`
+- `detector_pack_digest`
+- `oracle_pack_digest`
+- `benchmark_set_digest`
+- `execution_environment_digest`
+
+Known Critical Seeded Defect Escape가 1건이라도 있으면 해당 Capability의 `QUALIFIED` 발급을 금지한다.
+
+### 13.2 Benchmark Corpus 분리
+Corpus는 최소 다음 네 세트로 분리한다.
+
+1. `PUBLIC_REGRESSION`: 개발자가 볼 수 있는 회귀세트
+2. `PRIVATE_QUALIFICATION`: 독립 검증조직만 정답 접근
+3. `ROTATING_UNSEEN`: 주기적으로 교체하는 미공개 변형
+4. `NOVEL_COMPOSITION`: 기존 단일 결함을 새로운 조합으로 합성한 케이스
+
+AI/학습 계열은 [07 §8](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md)의 Semantic Dataset Separation을 적용한다. Hidden 결과를 반복적으로 조회해 Rule을 튜닝하는 행위를 금지한다.
+
+### 13.3 Fault Class Coverage
+최소 다음 defect class를 독립적으로 관리한다.
+- Functional/Boundary/State
+- Authentication/Authorization/Tenant Isolation
+- Data Integrity/Transaction/Consistency
+- Concurrency/Race/Deadlock/TOCTOU
+- Timeout/Retry/Resource Exhaustion
+- Recovery/Restart/Rollback
+- Security Injection/SSRF/XSS/Command/Path
+- Supply Chain/Dependency/Artifact Drift
+- Evidence Tampering/Replay/Substitution
+- Approval/Authority/Privilege Escalation
+- AI Prompt/RAG/Tool/Memory/Model Drift
+- Validation Bypass/Observer Failure/False Assurance
+
+전체 평균 Recall이 높더라도 Critical class의 Recall 저하는 허용하지 않는다.
+
+### 13.4 Validator Mutation Testing
+대상 제품이 아니라 ONSure 자신의 검증기 코드를 고의로 훼손하여 Meta-Suite가 이를 탐지하는지 확인한다. 최소 Mutant:
+
+- Detector 하나 제거
+- Severity CRITICAL→MEDIUM 강제 하향
+- Oracle 결과 반전/Skip
+- NOT_RUN을 PASS로 변환
+- Evidence target binding 제거
+- stale receipt 허용
+- receipt hash/signature verification 비활성화
+- Final Candidate eligibility 검사 제거
+- REJECT approval을 APPROVE처럼 소비
+- 동일 principal의 두 key를 독립 reviewer로 간주
+- Collector health 확인 제거
+- Scope Epoch 비교 제거
+- retry 실패 이력 삭제
+
+각 Mutant는 하나 이상의 전용 Negative Fixture에 의해 반드시 kill되어야 한다.
+
+### 13.5 Cross-Contract Semantic Fixture
+개별 JSON Schema가 valid여도 조합이 잘못된 사례를 고정 Fixture로 등록한다.
+
+- FinalApproval `REJECT` + FinalLock 요청 → BLOCK
+- FinalCandidate `eligible=false` + `decision=PASS` → BLOCK
+- Candidate digest mismatch → BLOCK
+- FinalLock target ≠ Approval target → BLOCK
+- Run1 PASS + Run2 FAIL → BLOCK
+- Run1/Run2 Scope Epoch 불일치 → BLOCK
+- CANCELLED run Evidence 사용 → BLOCK
+- ServiceVerification `PAYMENT_VERIFICATION` + `verification_type=DELETION` → BLOCK
+- `expires_at <= approved_at` → BLOCK
+- duplicate key_id / same principal independent roles → BLOCK
+- RiskScore 저장값 ≠ raw finding 독립 재계산값 → BLOCK
+
+### 13.6 Atomic Validation Snapshot 시험
+다음 Cross-Run Mixing 공격을 반드시 시험한다.
+
+- Run1: Security PASS / Performance FAIL
+- Run2: Security FAIL / Performance PASS
+- Aggregator가 Run1 Security + Run2 Performance를 조립해 전체 PASS하려는 시도
+
+동일 `target_manifest_digest`, `scope_epoch`, `requirement_epoch`, `policy_digest`, `validation_generation`에 속한 결과만 하나의 Final Snapshot으로 묶을 수 있어야 한다.
+
+### 13.7 Flakiness·Retry·통계 시험
+- 최초 Attempt와 Retry 결과를 모두 보존한다.
+- `FAIL→PASS`는 안정 PASS가 아니라 Flaky 신호로 집계한다.
+- 비결정 시스템은 고정 2회가 아니라 위험 기반 sample size를 사용한다.
+- 반복 결과에는 `sample_size`, `observed_failures`, `failure_rate`, `confidence_bound`, `random_seed/generator_version`을 기록한다.
+- Fuzz/Property-based test는 Replay Seed Set과 Fresh Exploration Seed Set을 분리한다.
+
+### 13.8 Fixture Precondition Proof
+Negative Fixture는 공격 전 선행조건이 실제로 성립함을 증명한다. 예:
+- actor가 권한 P를 보유하지 않음
+- 대상 resource가 다른 tenant 소유
+- approval이 없음/만료됨
+- token이 실제 expired 상태
+
+Positive counterpart도 함께 실행해 과도한 fail-close로 정상권리가 사라지지 않았는지 확인한다.
+
+### 13.9 Observability / Collector Failure 시험
+- Log/Trace/Network/DB/Authority Collector를 실행 중 강제 종료한다.
+- Collector가 10%만 동작한 상태에서 "문제 없음" 결론이 생성되지 않아야 한다.
+- `collector_started`, `collector_healthy`, `collector_complete`, `collector_digest`가 없으면 해당 관측에 의존하는 부재 주장(No leak, No unauthorized access 등)을 PROVEN으로 만들지 않는다.
+
+### 13.10 Crash Consistency / Evidence Transactionality
+검증 프로세스를 Evidence 기록 각 단계에서 강제 종료한다.
+
+- result 생성 직후
+- receipt 생성 직후
+- ledger append 전/후
+- chain head 갱신 전/후
+- approval consume 직후
+- Final Lock 기록 직전/직후
+
+미완료 기록은 `ABORTED_UNTRUSTED` 또는 INCONCLUSIVE로 복구되어야 하며 파일 일부 존재만으로 PASS를 복원하면 실패다. Final Lock은 재시도해도 동일 candidate/approval에 하나의 active lock만 생성해야 한다.
+
+### 13.11 Final Freshness / TOCTOU 시험
+다음 이벤트를 Candidate와 Lock 사이에 주입한다.
+- 새 Critical Finding
+- Policy/Rule Pack 변경
+- Scope/Requirement Epoch 변경
+- Dependency/CVE 정보 변경
+- Target Artifact 변경
+- Approval 만료/Revocation
+
+Final Freshness Barrier가 하나라도 탐지하면 Lock을 거부해야 한다.
+
+### 13.12 Validation Isolation / Contamination
+- 같은 Target의 Run A/B를 동시에 실행하고 한쪽 상태 변경이 다른쪽에 관찰되지 않는지 확인한다.
+- DB/cache/queue/workspace의 `pre_state_digest`, `post_state_digest`, `cleanup_result`를 검증한다.
+- Test 순서를 무작위화하여 순서 의존성을 측정한다.
+- Instrumented/Uninstrumented 실행을 비교해 Observer Effect를 확인한다.
+
+### 13.13 Operational Equivalence 시험
+검증된 Artifact와 실제 배포 Artifact의 digest가 동일한지 확인한다. 검증환경과 운영환경의 차이를 `MATCH|MATERIAL_DIFFERENCE|UNKNOWN`으로 분류하고 MATERIAL/UNKNOWN 차이가 있는 경우 운영환경 전체 VALIDATED를 금지한다.
+
+검증 항목:
+- OS/CPU/runtime/DB version
+- dependency artifact digest와 provenance
+- runtime config/feature flags
+- model/prompt/RAG corpus
+- network topology/external service contract
+- deployed artifact digest
+
+### 13.14 Mock Fidelity / Real Trace
+Mock 기반 검증에는 API schema뿐 아니라 error/timing/retry/order/side-effect fidelity를 측정한다. 고위험 외부연계는 가능한 경우 Recorded Real Trace 또는 Production Shadow로 보완한다.
+
+### 13.15 Anti-Evasion 시험
+대상이 검증환경을 인식해 다르게 행동하는 경우를 시험한다.
+- validator marker 변화
+- instrumented vs minimally-instrumented
+- Sandbox/realistic simulation 차이
+- AI에 "safety test"임을 알리는/알리지 않는 자연스러운 시나리오 비교
+
+### 13.16 Validation Resource Exhaustion 시험
+대규모 생성파일·의존그래프·무한상태공간으로 검증 예산을 고갈시킨다. 예산 소진 때문에 Scope가 자동 축소되어 PASS하면 실패다. 반드시 `VALIDATION_BUDGET_EXHAUSTED`/HOLD/PARTIAL로 승격하고 CoverageReport에 영향을 반영한다.
+
+### 13.17 Historical Revalidation 시험
+새 MissedFinding 또는 새 Detector가 승격되면 과거 Validation을 영향분석해 `SAFE|REASSESSMENT_REQUIRED|STALE`로 분류하는지 시험한다. 과거 PASS를 변경 없이 유지하는 것은 실패다.
+
+### 13.18 운영 모니터링 추가지표
+- Critical Seeded Defect Escape Rate
+- Capability별 Recall/Precision/Specificity/False Alarm Rate
+- Cross-contract invariant violation count
+- Collector incomplete rate
+- Final Freshness Barrier block count
+- Stale/Revoked Certificate count
+- Cross-run evidence mixing rejection count
+- Validator Mutation kill rate
+- Hidden/OOD benchmark 성능
+- Critical Recall regression count
+
+### 13.19 구현 우선순위(P0)
+다른 Meta 기능보다 먼저 다음을 구현한다.
+1. ValidationTargetManifest + Scope/Requirement Epoch
+2. Evidence Target Binding
+3. Cross-Contract Invariant Engine
+4. Final Claim/Lineage Reconstructor
+5. Validator Capability + Observability Qualification
+6. Atomic Validation Snapshot
+7. Final Freshness Barrier + Assurance Revocation
+8. Detector Qualification Report + Hidden Benchmark
+9. Validator Mutation Suite
+10. Historical Revalidation
+
+### 13.20 최종 수용기준 보강
+기존 §12에 더해 다음을 모두 만족해야 ONSure 자체가 고신뢰 검증기로 Qualification된다.
+- 등록된 fault 수가 아니라 실제 `executed/detected/escaped` 결과가 존재
+- Critical seeded defect escape 0
+- Cross-contract semantic negative fixture 100% 차단
+- Final Snapshot cross-run mixing 차단
+- Validator mutation critical mutant kill 100%
+- Collector failure가 PASS로 세탁되지 않음
+- Crash 중간 Evidence가 Final로 승격되지 않음
+- Rule/Oracle 변경 후 Critical Recall 회귀 0
+- Hidden/OOD benchmark 결과 공개 Golden과 별도 유지
+- 검증 Artifact와 배포 Artifact 동일성 검증
+- Final Freshness Barrier PASS 후에만 Final Lock 가능
