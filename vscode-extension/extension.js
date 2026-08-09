@@ -128,7 +128,10 @@ class AssuranceTreeProvider {
           run_root: lastRun, artifact: 'execution-plan.json'
         });
         for (const row of budgetRowsFromExecutionPlan(result.body)) {
-          items.push(item(row.label, row.description, row.icon));
+          const children = Array.isArray(row.children)
+            ? row.children.map(child => item(child.label, child.description, child.icon))
+            : undefined;
+          items.push(item(row.label, row.description, row.icon, undefined, children));
         }
       } catch (error) {
         items.push(item('Execution Budget', `NOT_AVAILABLE: ${error.message}`, 'warning'));
@@ -138,12 +141,16 @@ class AssuranceTreeProvider {
   }
 }
 
-function item(label, description, icon, command) {
-  const value = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
+function item(label, description, icon, command, children) {
+  const collapsibleState = children && children.length
+    ? vscode.TreeItemCollapsibleState.Collapsed
+    : vscode.TreeItemCollapsibleState.None;
+  const value = new vscode.TreeItem(label, collapsibleState);
   value.description = String(description);
   value.tooltip = `${label}: ${description}`;
   value.iconPath = new vscode.ThemeIcon(icon);
   if (command) value.command = { command, title: label };
+  if (children) value.children = children;
   return value;
 }
 
