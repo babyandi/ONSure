@@ -156,7 +156,8 @@ OReview, OVerification, OImprovement의 실행 결과와 Before/After Evidence�
 - Component Signature(코드 Hash + Interface Hash) 단위로 Pattern을 매칭해 신규 Case의 대상과 대조
 - Pattern Confidence를 재현 횟수, 적용 성공률, False Positive 이력으로 산정
 - 신규/기존 고객 소스에서 나온 Pattern은 기본적으로 Tenant 전용이며, 고객 식별 정보를 제거한 뒤에만 공유 Corpus로 승격 가능
-- 재현 3회 이상 실패(False Positive)한 Pattern은 자동 강등
+- Pattern 승격에는 최소 2회의 독립 재현이 필요하다(`contracts/reusable-pattern-memory.v1.schema.json`의 `independent_reproduction_count` minimum 2가 권위) — 설계서가 과거 "3회 이상"으로 썼던 것은 계약값 기준으로 정정한다
+- 재현 실패(False Positive) 누적에 따른 자동 강등은 이 설계서의 의도이나, 대응하는 계약 필드가 아직 없다(`DESIGN_ONLY`) — 강등 임계치·카운터·상태전이를 `reusable-pattern-memory.v1.schema.json`에 추가 제정해야 한다
 
 ### 기능 — 재귀학습(Recursive Detection Learning)
 실제 `contracts/learning-validation-engine.v1.json`과 `contracts/learning-to-application-pipeline.v1.json`이 이 루프의 권위다. 자동 Review/Verification이 놓친 결함이 Independent Review 불일치, Human Review Override, Production Incident, 고객 신고, 뒤늦은 Regression으로 확인되면 다음 파이프라인을 수행한다.
