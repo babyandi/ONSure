@@ -7,7 +7,7 @@
     {"schema": "contracts/behavior-observation-receipt.v1.schema.json", "instances": ["fixtures/contracts/behavior-observation-receipt.valid.json"]},
     {"schema": "contracts/failure-memory.v1.schema.json", "instances": ["fixtures/contracts/failure-memory.valid.json"]},
     {"schema": "contracts/improvement-memory.v1.schema.json", "instances": ["fixtures/contracts/improvement-memory.valid.json"]},
-    {"schema": "contracts/reusable-pattern-memory.v1.schema.json", "instances": ["fixtures/contracts/reusable-pattern-memory.valid.json"]},
+    {"schema": "contracts/reusable-pattern-memory.v1.schema.json", "instances": ["fixtures/contracts/reusable-pattern-memory.valid.json", "fixtures/contracts/reusable-pattern-memory.demoted.valid.json"], "invalid_instances": ["fixtures/contracts/reusable-pattern-memory.invalid.json"]},
     {"schema": "contracts/durable-job-state.v1.schema.json", "instances": ["fixtures/contracts/durable-job-state.valid.json"]},
     {"schema": "contracts/restart-restore-receipt.v1.schema.json", "instances": ["fixtures/contracts/restart-restore-receipt.valid.json"]},
     {"schema": "contracts/evidence-receipt.v1.schema.json", "instances": ["fixtures/contracts/evidence-receipt.valid.json"]},
