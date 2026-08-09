@@ -60,7 +60,7 @@
 |---|---|---|---|
 | G1 | CreditReservation 소진 시 대기 상태 | 5개 실행 상태기계의 HOLD를 재사용할지, 별도 상태 신설할지 결정 | OPEN |
 | G2 | CaseRevision | `service-case-state.v1.schema.json`에 필드/상태 확장 필요 | OPEN |
-| G3 | ComponentContract / Cross-Program Impact Scan | 신규 `component-contract.v1.schema.json` 계약 제정 필요 | OPEN |
+| G3 | ComponentContract / Cross-Program Impact Scan | `contracts/component-contract.v1.schema.json`(Component ID/Baseline 결속, `component_signature`{code_hash_sha256, interface_hash_sha256}, Provided/Required Interface, Data/AI(nullable)/Quality Contract, 상태 DRAFT→ACTIVE→SUPERSEDED/BREAKING_CHANGE_FLAGGED, SUPERSEDED 시 `superseded_by_component_id` 필수를 allOf/if/then으로 강제)와 `contracts/reuse-link.v1.schema.json`(Provided Interface 단위 Provider Component→Consumer Component/Program 역조회 Link, Cross-Program Impact Scan의 실제 색인 레코드) 신규 제정 완료, `schema-instance-registry.v1.json`에 등록. Java 소비 코드(ComponentContractService 등)는 아직 없음 — 순수 계약 제정 단계이며 구현은 별도 결정 사항 | FIXED |
 | G4 | MissedFinding 재귀학습 루프 | 신규 계약 제정 필요, `contracts/state-model-mapping.v1.json`과의 관계 정의 | OPEN |
 | G5 | ReviewFinding/VerificationFinding 장기 생애주기 | 실제는 `validation_run`마다 스냅샷(`oreview-result.v1.schema.json`)만 존재 — Finding을 가로지르는 생애주기 계약이 필요한지, 아니면 설계를 스냅샷 모델에 맞출지 결정 | OPEN |
 | G6 | PatchRun DRY_RUN 확장 | `patch-plan.v1.schema.json`의 `preapply_assessment`로 이미 부분 커버됨 — 설계서를 계약에 맞춰 단순화할지 검토 | OPEN |
