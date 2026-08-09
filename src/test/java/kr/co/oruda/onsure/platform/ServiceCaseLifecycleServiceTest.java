@@ -83,6 +83,68 @@ class ServiceCaseLifecycleServiceTest {
                 "case-stale", receipt, key.registry(), temp.resolve("stale-replay.jsonl"), "operator-001"));
     }
 
+    @Test
+    void improvementRevisionReopensDeliveryCycleAndAppendsCaseRevision() throws Exception {
+        ServiceCaseLifecycleService service = new ServiceCaseLifecycleService(temp.resolve("revisions"));
+        String caseId = "case-revision-001";
+        openAndQuote(service, caseId);
+        assertEquals(1, revisions(service, caseId).size());
+        assertEquals("OPEN", revisions(service, caseId).get(0).get("status"));
+
+        confirmPayment(service, caseId, "provider-001", "receipt-001", "e".repeat(64));
+        service.startWork(caseId, "operator-001");
+        service.deliver(caseId, "f".repeat(64), "s3://evidence/v1", "operator-001");
+        assertEquals("DELIVERED", revisions(service, caseId).get(0).get("status"));
+        service.acceptDelivery(caseId, "1".repeat(64), "customer-001");
+        assertEquals("ACCEPTED", revisions(service, caseId).get(0).get("status"));
+        assertEquals("DELIVERY_ACCEPTED", service.read(caseId).get("status"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.requestImprovementRevision(caseId, "", "customer-001"));
+
+        service.requestImprovementRevision(caseId, "ORDER-improve-001", "customer-001");
+        Map<String, Object> secondRevision = revisions(service, caseId).get(1);
+        assertEquals(2L, ((Number) secondRevision.get("revision_number")).longValue());
+        assertEquals("IMPROVE_AND_REVERIFY", secondRevision.get("revision_type"));
+        assertEquals("f".repeat(64), secondRevision.get("baseline_before_source_digest"));
+        assertEquals("IN_PROGRESS", service.read(caseId).get("status"));
+        assertEquals(2, revisions(service, caseId).size());
+        assertEquals("ACCEPTED", revisions(service, caseId).get(0).get("status"));
+        assertEquals("OPEN", revisions(service, caseId).get(1).get("status"));
+
+        assertThrows(IllegalStateException.class,
+                () -> service.requestImprovementRevision(caseId, "ORDER-improve-002", "customer-001"));
+
+        service.deliver(caseId, "2".repeat(64), "s3://evidence/v2", "operator-001");
+        assertEquals("DELIVERED", revisions(service, caseId).get(1).get("status"));
+        service.acceptDelivery(caseId, "3".repeat(64), "customer-001");
+        assertEquals("ACCEPTED", revisions(service, caseId).get(1).get("status"));
+        assertEquals("ACCEPTED", revisions(service, caseId).get(0).get("status"),
+                "the first revision's own status must stay untouched by the second cycle");
+        assertTrue(service.verify(caseId).valid());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> revisions(
+            ServiceCaseLifecycleService service, String caseId) throws Exception {
+        return (List<Map<String, Object>>) service.read(caseId).get("case_revisions");
+    }
+
+    private void confirmPayment(
+            ServiceCaseLifecycleService service, String caseId,
+            String provider, String providerReceiptId, String receiptDigest) throws Exception {
+        service.recordPaymentReceipt(caseId, provider, providerReceiptId,
+                "KRW", 100000, receiptDigest, "customer-001");
+        KeyMaterial key = approvalKey("payment-key-" + caseId);
+        Map<String, Object> state = service.read(caseId);
+        Path receipt = signedVerification(
+                key, "payment-approval-" + caseId, "PAYMENT_VERIFICATION", "PAYMENT",
+                caseId, ((Number) state.get("revision")).longValue(),
+                provider, providerReceiptId, receiptDigest, "PASS");
+        service.verifyPayment(caseId, receipt, key.registry(),
+                temp.resolve(caseId + "-replay.jsonl"), "operator-001");
+    }
+
     private void openAndQuote(ServiceCaseLifecycleService service, String caseId) throws Exception {
         service.open(tenant(), caseId, "AI_CODE_VALIDATION", "git:" + "a".repeat(40), "customer-001");
         service.recordPreflight(caseId, "PASS", "b".repeat(64), List.of(), "operator-001");

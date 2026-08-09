@@ -8,8 +8,8 @@
     "contract", "case_id", "organization_id", "tenant_id", "workspace_id",
     "service_type", "target_reference", "status", "preflight", "quote", "order",
     "payment", "delivery", "refund", "deletion_receipt", "legal_hold",
-    "legal_hold_reason", "retention_state", "revision", "ledger_sequence", "ledger_head",
-    "created_at", "updated_at", "final_claim_allowed", "state_sha256"
+    "legal_hold_reason", "retention_state", "case_revisions", "revision", "ledger_sequence",
+    "ledger_head", "created_at", "updated_at", "final_claim_allowed", "state_sha256"
   ],
   "properties": {
     "contract": {"const": "ONSURE_SERVICE_CASE_STATE_V1"},
@@ -42,6 +42,26 @@
     "retention_state": {"enum": ["ACTIVE", "DELETED_SIGNED_EXTERNAL_VERIFICATION"]},
     "cancellation_reason": {"type": "string"},
     "cancelled_at": {"type": "string", "format": "date-time"},
+    "case_revisions": {
+      "type": "array",
+      "minItems": 1,
+      "description": "G2: Improve & Re-verify is a new CaseRevision opened after DELIVERY_ACCEPTED, not a separate Case. Entry [0] (revision_number=1, revision_type=INITIAL) is seeded when the case is opened; requestImprovementRevision() appends one IMPROVE_AND_REVERIFY entry per re-verify cycle. This is a plain array (not a separate CaseRevision contract file) because a CaseRevision has no independent lifecycle outside its parent ServiceCaseState -- it's always read/written together with the case.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["revision_number", "revision_type", "status", "opened_at"],
+        "properties": {
+          "revision_number": {"type": "integer", "minimum": 1},
+          "revision_type": {"enum": ["INITIAL", "IMPROVE_AND_REVERIFY"]},
+          "triggered_by_order_id": {"type": ["string", "null"], "minLength": 1},
+          "baseline_before_source_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+          "status": {"enum": ["OPEN", "DELIVERED", "ACCEPTED"]},
+          "opened_at": {"type": "string", "format": "date-time"},
+          "delivered_at": {"type": "string", "format": "date-time"},
+          "accepted_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
     "revision": {"type": "integer", "minimum": 1},
     "ledger_sequence": {"type": "integer", "minimum": 1},
     "ledger_head": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
