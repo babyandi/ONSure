@@ -44,6 +44,16 @@
   "legal_hold": false,
   "legal_hold_reason": null,
   "retention_state": "ACTIVE",
+  "case_revisions": [
+    {
+      "revision_number": 1,
+      "revision_type": "INITIAL",
+      "triggered_by_order_id": "ORDER-case-sample-001",
+      "baseline_before_source_digest": null,
+      "status": "OPEN",
+      "opened_at": "2026-07-26T00:00:00Z"
+    }
+  ],
   "revision": 5,
   "ledger_sequence": 5,
   "ledger_head": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",

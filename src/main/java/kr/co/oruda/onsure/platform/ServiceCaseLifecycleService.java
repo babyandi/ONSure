@@ -67,6 +67,14 @@ public final class ServiceCaseLifecycleService {
         state.put("legal_hold", false);
         state.put("legal_hold_reason", null);
         state.put("retention_state", "ACTIVE");
+        Map<String, Object> initialRevision = new LinkedHashMap<>();
+        initialRevision.put("revision_number", 1);
+        initialRevision.put("revision_type", "INITIAL");
+        initialRevision.put("triggered_by_order_id", null);
+        initialRevision.put("baseline_before_source_digest", null);
+        initialRevision.put("status", "OPEN");
+        initialRevision.put("opened_at", Instant.now().toString());
+        state.put("case_revisions", List.of(java.util.Collections.unmodifiableMap(initialRevision)));
         state.put("created_at", Instant.now().toString());
         state.put("final_claim_allowed", false);
         return state(store(caseId).initialize(state, "CASE_OPENED", actor, Map.of(
@@ -286,6 +294,10 @@ public final class ServiceCaseLifecycleService {
                     "final_claim_allowed", false);
             state.put("delivery", delivery);
             state.put("status", "DELIVERED_AWAITING_ACCEPTANCE");
+            updateLatestRevision(state, revision -> {
+                revision.put("status", "DELIVERED");
+                revision.put("delivered_at", Instant.now().toString());
+            });
             return delivery;
         });
     }
@@ -305,8 +317,69 @@ public final class ServiceCaseLifecycleService {
             accepted.put("accepted_at", Instant.now().toString());
             state.put("delivery", Map.copyOf(accepted));
             state.put("status", "DELIVERY_ACCEPTED");
+            updateLatestRevision(state, revision -> {
+                revision.put("status", "ACCEPTED");
+                revision.put("accepted_at", Instant.now().toString());
+            });
             return Map.copyOf(accepted);
         });
+    }
+
+    /**
+     * G2: opens a new CaseRevision for an Improve &amp; Re-verify cycle. Requires the case to be
+     * in DELIVERY_ACCEPTED (the prior revision's delivery was already accepted) and reuses the
+     * existing IN_PROGRESS -&gt; DELIVERED_AWAITING_ACCEPTANCE -&gt; DELIVERY_ACCEPTED transitions
+     * for the new revision's own cycle via the existing {@link #deliver} / {@link #acceptDelivery}
+     * -- no new {@code status} values were introduced, per docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md
+     * G2's resolution (simplify by reusing the existing state machine rather than adding new states).
+     */
+    public Map<String, Object> requestImprovementRevision(
+            String caseId, String triggeringOrderId, String actor) throws Exception {
+        requireId(triggeringOrderId, "TRIGGERING_ORDER_ID_INVALID");
+        return mutate(caseId, actor, "IMPROVEMENT_REVISION_OPENED", state -> {
+            requireStatus(state, "DELIVERY_ACCEPTED");
+            List<Map<String, Object>> revisions = revisions(state);
+            Map<String, Object> previous = revisions.get(revisions.size() - 1);
+            if (!"ACCEPTED".equals(previous.get("status"))) {
+                throw new IllegalStateException("PRIOR_REVISION_NOT_ACCEPTED");
+            }
+            Map<String, Object> delivery = map(state.get("delivery"), "DELIVERY_MISSING");
+            Map<String, Object> next = new LinkedHashMap<>();
+            next.put("revision_number", number(previous.get("revision_number")) + 1L);
+            next.put("revision_type", "IMPROVE_AND_REVERIFY");
+            next.put("triggered_by_order_id", triggeringOrderId);
+            next.put("baseline_before_source_digest", delivery.get("evidence_bundle_digest"));
+            next.put("status", "OPEN");
+            next.put("opened_at", Instant.now().toString());
+            List<Map<String, Object>> updated = new java.util.ArrayList<>(revisions);
+            updated.add(java.util.Collections.unmodifiableMap(next));
+            state.put("case_revisions", List.copyOf(updated));
+            state.put("status", "IN_PROGRESS");
+            return java.util.Collections.unmodifiableMap(next);
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> revisions(Map<String, Object> state) {
+        Object raw = state.get("case_revisions");
+        if (!(raw instanceof List<?> list) || list.isEmpty()) {
+            throw new IllegalStateException("CASE_REVISIONS_MISSING");
+        }
+        List<Map<String, Object>> revisions = new java.util.ArrayList<>();
+        for (Object entry : list) revisions.add(new LinkedHashMap<>((Map<String, Object>) entry));
+        return revisions;
+    }
+
+    private interface RevisionMutation {
+        void apply(Map<String, Object> revision);
+    }
+
+    private static void updateLatestRevision(Map<String, Object> state, RevisionMutation mutation) {
+        List<Map<String, Object>> revisions = revisions(state);
+        Map<String, Object> latest = revisions.get(revisions.size() - 1);
+        mutation.apply(latest);
+        revisions.set(revisions.size() - 1, java.util.Collections.unmodifiableMap(latest));
+        state.put("case_revisions", List.copyOf(revisions));
     }
 
     public Map<String, Object> requestRefund(
