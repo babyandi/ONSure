@@ -192,6 +192,21 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 - 독립 Blind Review
 - Confidence Calibration: Confidence 90%로 표시된 Finding 집합이 실제로 약 90% 비율로 맞는지 등 신뢰도 구간별 실측 정확도를 주기적으로 측정(Calibration Curve). 특정 구간이 체계적으로 과신/과소평가되면 Confidence 산정 로직을 재보정 대상으로 지정한다
 
+### Confidence Calibration 상세 기능정의(2026-08-09 — 계약은 아직 없음, `DESIGN_ONLY`)
+가장 먼저 결정해야 했던 것은 "실제로 맞았다"를 무엇으로 판정하느냐다 — 이게 없으면 Calibration 자체가 성립하지 않는다. `contracts/security-findings.v1.schema.json`의 Finding 상태는 실제로 `OPEN`/`CLOSED`/`ACCEPTED_RISK` 3개뿐이며 `FALSE_POSITIVE` 같은 별도 상태가 계약에 없다(G10에서 이미 확인됨). 따라서 새 상태를 추가하지 않고, **이미 실재하는 두 메커니즘의 결과를 정답 신호로 재사용**한다:
+1. Critical 후보의 Cross-Model Verification 결과([§10-1](#10-1-cross-model-verification)) — 두 모델이 일치하면 그 판정을 정답으로 채택, 불일치해서 Human/Professional Reviewer로 회부된 건은 그 사람의 최종 판정을 정답으로 채택
+2. Critical이 아닌 Finding이 `CLOSED`로 전이될 때 Human/Professional Reviewer가 남기는 명시적 동의/반대 표시(기존 Reviewer 워크플로에 이미 있는 승인/반려 결정)
+
+필드:
+- `calibration_report_id`
+- `window`: 측정 기간(예: 최근 90일) 또는 고정 Golden Fixture Set 중 하나
+- `buckets`: 배열. 각 항목은 `confidence_range`(예: "80-90%"), `predicted_count`(이 구간으로 표시된 Finding 수), `ground_truth_correct_count`(위 정답 신호로 확인된 건수 — 아직 CLOSED/재확인 안 된 Finding은 이 표본에서 제외), `actual_accuracy_percent`, `calibration_error`(구간 중앙값 − 실측 정확도)
+- `systematic_bias`: 구간별 `OVERCONFIDENT`(표시 Confidence보다 실제 정확도가 낮음) / `UNDERCONFIDENT`(반대) / `WELL_CALIBRATED`. 판정 임계치(`calibration_error`가 몇 %p 이상이면 편향으로 보는지)는 아직 수치 미확정 — [08 체크리스트](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)에 DRAFT로 추적
+- `recalibration_flag`: 연속 N개 Window에서 같은 구간이 계속 편향으로 나오면 true. N값도 수치 미확정, DRAFT로 추적
+- `generated_at`
+
+수용기준: 판정에 사용된 표본(`ground_truth_correct_count`가 산출된 실제 Finding 목록)은 감사 가능해야 한다 — Calibration 결과 자체도 "무엇으로부터 계산됐는지" 역추적 가능해야 CoverageReport와 같은 원칙(주장이 아니라 근거)을 따르게 된다.
+
 ## 9-1. OReview 자체 판정 재현성
 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 FR-COM-005("동일 입력·정책·도구 버전은 재현 가능한 판정 구조를 가져야 한다")는 고객 코드뿐 아니라 OReview·OVerification 자신의 AI 기반 판정에도 동일하게 적용된다.
 
