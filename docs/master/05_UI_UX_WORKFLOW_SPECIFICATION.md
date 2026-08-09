@@ -250,3 +250,95 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - 비용 차감 전 예상량을 확인할 수 있어야 한다.
 - BLOCKED와 NOT_RUN을 PASS처럼 보이게 표현하지 않는다.
 - VS Code에서 Baseline과 License 상태를 항상 확인할 수 있어야 한다.
+
+## 10. Assurance UX 및 False-Assurance 방지 상세설계 (신규, 2026-08-09)
+이 절의 목적은 기술적으로 NON_FINAL·PARTIAL·STALE인 결과가 화면 축약 과정에서 일반 사용자에게 "완료된 PASS"처럼 보이는 것을 금지하는 것이다. UI는 단일 점수보다 **어디까지 증명했고 어디부터는 미확인인지**를 먼저 보여준다.
+
+### 10.1 Assurance Summary Card
+Case Dashboard, Verification, Delivery Center의 모든 결과 화면에 다음 항목을 하나의 고정 Summary Card로 표시한다.
+
+- `decision`: PASS | FAIL | HOLD | BLOCKED | NOT_RUN | INCONCLUSIVE | NON_FINAL
+- `assurance_level`: L0_UNASSESSED | L1_STATIC_REVIEWED | L2_EXECUTION_VERIFIED | L3_INDEPENDENTLY_VERIFIED | L4_ADVERSARIALLY_VERIFIED | L5_QUALIFIED_HIGH_ASSURANCE
+- `scope_assurance`: 포함/제외/Unknown/Unobservable 수와 Scope Epoch
+- `validator_capability`: QUALIFIED | PARTIAL | NOT_PROVEN
+- `observability`: COMPLETE | PARTIAL | INSUFFICIENT
+- `oracle_assurance`: Ground Truth 등급과 Oracle 유형
+- `evidence_assurance`: PRIMARY/DERIVED 증거, 독립 Evidence Origin 수
+- `independence_assurance`: execution/principal/oracle/discovery 독립성 충족여부
+- `validation_age`: 검증시각, 유효성, STALE 여부
+- `accepted_risks`: Severity별 건수와 만료일
+- `critical_unknowns`: Critical 영향영역 중 미검증/관찰불가 건수
+
+### 10.2 PASS 표기 규칙
+- `SELF_VALIDATION_NONFINAL`의 `decision=PASS`는 화면에서 단독 녹색 `PASS`로 표시하지 않는다. **"내부 검증 통과 / 최종 독립검증 미완료"**로 표기한다.
+- `PASS_WITH_COVERAGE_LIMIT`, `PASS_WITH_ASSURANCE_LIMIT`, `PARTIAL_PASS` 성격의 결과는 일반 PASS와 동일한 배지·색상·정렬 우선순위를 사용하지 않는다.
+- Critical Unknown, Observability Insufficient, Validator Capability NOT_PROVEN이 하나라도 있으면 상단에 "전체 검증 완료" 표현을 금지한다.
+- "결함 없음", "완전히 안전", "모든 요구사항 충족" 같은 절대 표현을 사용하지 않는다. 허용 표현은 "선언된 범위·방법·증거 내에서 차단 결함이 탐지되지 않음" 형태다.
+
+### 10.3 Coverage와 제외영역 표시
+- `coverage_percent`는 항상 동일 화면 또는 한 클릭 이내에 `excluded`, `unknown`, `unobservable` 목록을 함께 표시한다.
+- Critical Component가 제외되면 Coverage 숫자와 무관하게 Critical 경고 배너를 표시한다.
+- Scope Epoch가 변경되면 이전 Coverage를 회색 처리하고 `STALE_COVERAGE`로 표시한다.
+
+### 10.4 상태 차원 분리
+다음 상태를 하나의 진행률로 합치지 않는다.
+
+- Technical Assurance: OReview/OVerification/OTester/OAudit 결과
+- Human Acceptance: 고객/전문가의 인수 또는 위험수용
+- Deployment Authorization: Production Go
+- Commercial Authorization: Commercial Go
+
+예를 들어 `HUMAN_ACCEPTANCE_PASS`는 기술적 L5를 의미하지 않고, `COMMERCIAL_GO`도 기술적 품질점수가 상승한 것을 뜻하지 않는다.
+
+### 10.5 Finding 상태와 Closure Reason
+Finding이 `CLOSED`여도 UI는 원인을 반드시 표시한다.
+- FIXED
+- FALSE_POSITIVE
+- DUPLICATE
+- NOT_APPLICABLE
+- MITIGATED
+- SUPERSEDED
+
+`ACCEPTED_RISK`는 해결된 Finding과 같은 완료 배지로 표시하지 않는다. Critical Accepted Risk는 Final Assurance Ceiling 제한을 명시한다.
+
+### 10.6 Flaky·Retry 표기
+- 최초 실행 결과, retry 횟수, 최종 결과를 분리 표시한다.
+- `FAIL→PASS` 재시도 결과는 `FLAKY_PASS` 또는 동등한 경고 상태로 표시하며 안정된 PASS와 동일하게 취급하지 않는다.
+- 최근 N회 실행의 PASS/FAIL 분포와 flakiness rate를 Verification 상세에서 확인할 수 있게 한다.
+
+### 10.7 Evidence/Observer 상태
+- Log/Trace/Network/DB 등 필요한 Collector가 중간에 종료되었으면 "관찰된 문제 없음"을 표시하지 않고 `OBSERVATION_INCOMPLETE`를 노출한다.
+- Evidence가 Target Manifest·Scope Epoch·Run에 결속되지 않았거나 freshness 검사를 통과하지 못하면 Evidence 카드에 `STALE_OR_UNBOUND`를 표시한다.
+
+### 10.8 Stale 및 재검증 알림
+다음 변경이 발생하면 기존 결과 상단에 `REASSESSMENT_REQUIRED` 배너를 표시한다.
+- Source/Artifact/Dependency/Config/Feature Flag 변경
+- Policy/Rule Pack/Oracle 변경
+- Model/Prompt/RAG Corpus 변경
+- 중요 외부 API/규제기준 변경
+- 새 MissedFinding이 기존 인증 범위에 영향
+
+### 10.9 Final Snapshot 표시
+Final Candidate/Lock 화면은 최소 다음을 한 화면에서 확인할 수 있어야 한다.
+- Target Manifest Digest
+- Scope/Requirement Epoch Digest
+- Run1/Run2 ID와 동일 Context 여부
+- OTester/OAudit/Human 승인 상태
+- Final Freshness Barrier 시각
+- Approval ID와 만료/소비상태
+- Atomic Validation Snapshot ID
+- 현재 Certificate 상태: VALID | STALE | INVALIDATED | SUPERSEDED
+
+### 10.10 청중별 기본 뷰
+**AI/Agent용**: machine-readable 상태, digest, epoch, unverified list, forbidden next action을 우선 표시한다.
+
+**개발자용**: 실패 재현경로, Oracle, Fixture, 변경으로 stale된 영역, 재실행해야 할 Test Pack을 우선 표시한다.
+
+**운영자용**: Case/Run 상태, collector health, queue/sandbox, 승인 만료, Certificate revocation, 고객 통지 필요여부를 우선 표시한다.
+
+### 10.11 화면 수용기준 추가
+- 사용자는 10초 안에 `Final 여부`, `미검증 Critical 영역 존재여부`, `Stale 여부`를 판단할 수 있어야 한다.
+- 사용자는 30초 안에 어떤 Scope/Oracle/Evidence/독립검증이 Assurance를 지지하는지 확인할 수 있어야 한다.
+- ProgramRiskScore A등급이어도 Critical Unknown 또는 Accepted Critical Risk가 있으면 이를 점수보다 시각적으로 우선 노출한다.
+- Self-validation PASS, Final PASS, Production Go, Commercial Go는 서로 다른 라벨과 아이콘을 사용한다.
+- 숨겨진 탭을 열어야만 제외범위·Unknown·Accepted Risk를 알 수 있는 UI는 수용하지 않는다.
