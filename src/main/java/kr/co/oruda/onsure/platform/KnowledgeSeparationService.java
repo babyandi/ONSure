@@ -26,6 +26,12 @@ import java.util.Set;
 public final class KnowledgeSeparationService {
     public static final String PROJECT_CONTRACT = "ONSURE_PROJECT_KNOWLEDGE_RECORD_V1";
     public static final String REUSABLE_CONTRACT = "ONSURE_REUSABLE_PATTERN_MEMORY_V1";
+    /**
+     * G31: fixed per docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md's demotion design
+     * ("재현 3회 이상 실패한 Pattern은 자동 강등"). Matches
+     * {@code reusable-pattern-memory.v1.schema.json}'s {@code demotion_threshold} const.
+     */
+    public static final int DEMOTION_THRESHOLD = 3;
     private static final Set<String> SUPPORTED_SOURCE_CONTRACTS = Set.of(
             "ONSURE_FAILURE_MEMORY_V1", "ONSURE_IMPROVEMENT_MEMORY_V1");
 
@@ -136,6 +142,8 @@ public final class KnowledgeSeparationService {
         reusable.put("trigger_class", triggerClass(memory));
         reusable.put("remediation_class", remediationClass(memory));
         reusable.put("independent_reproduction_count", independentProjects.size());
+        reusable.put("reproduction_failure_count", 0);
+        reusable.put("demotion_threshold", DEMOTION_THRESHOLD);
         reusable.put("lineage_commitment_sha256", commitment);
         reusable.put("deidentification", Map.of(
                 "strategy", "ALLOWLISTED_TAXONOMY_ONLY",

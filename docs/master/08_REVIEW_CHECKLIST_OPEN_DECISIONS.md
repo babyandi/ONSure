@@ -34,7 +34,7 @@
 | C3 | Verification 처리량 | Pack당 평균 15분, Case당 동시 20개 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
 | C4 | SaaS 가용성 / Token 수명 | 월 99.9% / Access Token 1시간 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §6](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | C5 | ProgramRiskScore 등급 컷오프 | A≥90, B≥75, C≥60, D≥40 | [04](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
-| C6 | KnowledgePattern 강등 임계치 | 설계서는 3회 이상, 실제 계약 `contracts/reusable-pattern-memory.v1.schema.json`은 `independent_reproduction_count` 최소 2회 — 계약값으로 정정 필요 | [02](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §5](04_ARCHITECTURE_DATA_API_OLICENSE.md) | CONTRACT_MISMATCH |
+| C6 | KnowledgePattern 승격/강등 임계치 | 두 개의 서로 다른 개념이 섞여 있었음: (1) 승격에 필요한 독립 재현 횟수는 계약값(최소 2회)이 권위이며 02·04를 정정 완료. (2) 재현 실패 누적에 따른 자동 강등은 대응 계약 필드 자체가 없는 별도의 `DESIGN_ONLY` 항목으로 02에 명시함 — 강등 임계치·카운터·상태전이 계약 제정은 G31로 이관 | [02](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §5](04_ARCHITECTURE_DATA_API_OLICENSE.md) | FIXED (승격 임계치 정정 완료, 강등 계약 제정은 G31로 신규 추적) |
 | C7 | 사고 공지 대응시간 | Critical 사고 15분 이내 Status Page+개별통지 동시 시작 | [06](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | DRAFT |
 
 ## D. 영업/상품 확인 필요
@@ -58,13 +58,13 @@
 
 | # | 항목 | 필요 조치 | 상태 |
 |---|---|---|---|
-| G1 | CreditReservation 소진 시 대기 상태 | 5개 실행 상태기계의 HOLD를 재사용할지, 별도 상태 신설할지 결정 | OPEN |
+| G1 | CreditReservation 소진 시 대기 상태 | [04 CreditReservation절](04_ARCHITECTURE_DATA_API_OLICENSE.md)에 이미 결정 반영됨: 5개 실행 상태기계의 기존 HOLD로 전이(재사용), ServiceCase 별도 대기 상태는 도입 안 함. 체크리스트만 갱신 안 돼 있었음 | FIXED |
 | G2 | CaseRevision | `service-case-state.v1.schema.json`에 필드/상태 확장 필요 | OPEN |
-| G3 | ComponentContract / Cross-Program Impact Scan | 신규 `component-contract.v1.schema.json` 계약 제정 필요 | OPEN |
+| G3 | ComponentContract / Cross-Program Impact Scan | `contracts/component-contract.v1.schema.json`(Component ID/Baseline 결속, `component_signature`{code_hash_sha256, interface_hash_sha256}, Provided/Required Interface, Data/AI(nullable)/Quality Contract, 상태 DRAFT→ACTIVE→SUPERSEDED/BREAKING_CHANGE_FLAGGED, SUPERSEDED 시 `superseded_by_component_id` 필수를 allOf/if/then으로 강제)와 `contracts/reuse-link.v1.schema.json`(Provided Interface 단위 Provider Component→Consumer Component/Program 역조회 Link, Cross-Program Impact Scan의 실제 색인 레코드) 신규 제정 완료, `schema-instance-registry.v1.json`에 등록. Java 소비 코드(ComponentContractService 등)는 아직 없음 — 순수 계약 제정 단계이며 구현은 별도 결정 사항 | FIXED |
 | G4 | MissedFinding 재귀학습 루프 | 신규 계약 제정 필요, `contracts/state-model-mapping.v1.json`과의 관계 정의 | OPEN |
-| G5 | ReviewFinding/VerificationFinding 장기 생애주기 | 실제는 `validation_run`마다 스냅샷(`oreview-result.v1.schema.json`)만 존재 — Finding을 가로지르는 생애주기 계약이 필요한지, 아니면 설계를 스냅샷 모델에 맞출지 결정 | OPEN |
-| G6 | PatchRun DRY_RUN 확장 | `patch-plan.v1.schema.json`의 `preapply_assessment`로 이미 부분 커버됨 — 설계서를 계약에 맞춰 단순화할지 검토 | OPEN |
-| G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, ProgramRiskScore, PolicyPack, NotificationRule, SBOM 등) | 전부 `DESIGN_ONLY` — 계약 제정 우선순위를 06 §11 우선구현순서와 맞춰 재정렬 필요 | OPEN |
+| G5 | ReviewFinding/VerificationFinding 장기 생애주기 | 결정: 새 계약 제정 없이 스냅샷 모델(기존 3단계 + 최신 validation_run)로 단순화 — 04에 반영 | FIXED |
+| G6 | PatchRun DRY_RUN 확장 | 결정: 별도 엔티티 신설 없이 기존 `preapply_assessment`/`patch-rollback-receipt.v1.schema.json`으로 단순화 — 04에 반영. BehaviorDiffReport만 신규계약 필요 여부 재검토 남음 | FIXED (BehaviorDiffReport는 별도 추적) |
+| G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, PolicyPack, NotificationRule, SBOM 등) | 전부 `DESIGN_ONLY` — 계약 제정 우선순위를 06 §11 우선구현순서와 맞춰 재정렬 필요. ProgramRiskScore는 계약 제정 완료로 G7에서 분리 — G32 참조 | OPEN |
 
 이 표는 04 §5의 "아직 계약이 없는 확장" 절과 같은 내용을 재무/영업용 체크리스트와 같은 형식으로 옮긴 것이다.
 
@@ -138,6 +138,16 @@ docs/v2/04(VS Code 구독정책), 06(운영프로세스·고객여정), 07(아�
 - 4개 엔진(Learning/Validator/Executor/Governance) 역할 분리와 `hard_invariants`(LEARNING_ENGINE_CANNOT_PASS_VALIDATE_OR_PROMOTE 등)를 02에 반영했다.
 
 06 §11 우선 구현 순서에 이 의존성을 반영했다(11번 OMemory가 APPLIED_LOCKED 1건을 실제로 달성하기 전까지 12번 OTraining 착수 금지).
+
+### G31 — KnowledgePattern 자동 강등 계약 제정 완료 (2026-08-09, C6에서 분리)
+`contracts/reusable-pattern-memory.v1.schema.json`에는 승격 임계치(`independent_reproduction_count` 최소 2회)만 있고, 02가 설계한 "재현 실패 누적 시 자동 강등" 메커니즘에 대응하는 계약 필드가 없었다. `reproduction_failure_count`(정수)와 `demotion_threshold`(const 3, 02의 원래 설계값)를 추가하고, `state`를 `REUSABLE_CANDIDATE` 단일 const에서 `[REUSABLE_CANDIDATE, DEMOTED]` enum으로 확장했으며, `allOf`/`if`/`then` 조건절로 failure_count>=3이면 state=DEMOTED, failure_count<=2이면 state=REUSABLE_CANDIDATE를 강제해 fail-closed로 만들었다. 이 계약의 유일한 실제 작성자인 `KnowledgeSeparationService.java`도 새 필수 필드를 채우도록 갱신(신규 candidate는 failure_count=0, threshold=3)해 실제 코드가 계속 스키마 유효 출력을 내도록 확인했다(`KnowledgeSeparationServiceTest` 2/2 통과). 양성 Fixture(`reusable-pattern-memory.demoted.valid.json`)와 음성 Fixture(`reusable-pattern-memory.invalid.json`, failure_count=3인데 state가 REUSABLE_CANDIDATE로 남은 위반 사례)를 등록했다. `validate-structured-contracts.py --require-full` PASS. | FIXED
+
+### G32 — ProgramRiskScore 계약 제정 완료 (2026-08-09, G7에서 분리)
+G7이 묶어서 추적하던 5개 엔티티(AcceptanceCertificate, ProgramRiskScore, PolicyPack, NotificationRule, SBOM) 중 ProgramRiskScore만 이번에 실제 계약으로 제정했다. 나머지 4개는 여전히 `DESIGN_ONLY`로 G7에 남는다.
+
+`contracts/program-risk-score.v1.schema.json` 신설: `docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md` Risk Scoring 절의 공식(`100 - clamp(10*OpenCritical + 4*OpenHigh + 1*OpenMedium + 2*RecentMissedFinding + 1.5*AIGeneratedRatio점수 + 0.5*평균미해결일수, 0, 100)`)이 쓰는 5개 원시 입력(`open_critical_count`, `open_high_count`, `open_medium_count`, `recent_missed_finding_count`, `ai_generated_ratio_score`, `average_unresolved_days_score`)과 산출값(`score`, `grade`)을 필드로 정의했다. 등급 산정(A/B/C/D/E 5개 구간)과 "Critical Finding이 1건이라도 있으면 등급은 C를 초과할 수 없다" 규칙을 `reusable-pattern-memory.v1.schema.json`에 적용된 것과 같은 `allOf`/`if`/`then` 조건절 기법으로 인코딩했다 — 특히 Critical 상한 규칙이 등급 구간 조건절과 동시에 걸릴 때 서로 모순되지 않도록, A/B 구간 조건에 `open_critical_count == 0`을 함께 요구해 두 조건절이 겹치지 않게 분리했다. 양성 Fixture 2건(`program-risk-score.valid.json` 일반 B등급 사례, `program-risk-score.critical-cap.valid.json` — 원시 점수는 90점으로 A 구간에 해당하지만 Critical 1건 때문에 등급이 C로 강제 하향되는 사례)과 음성 Fixture 1건(`program-risk-score.invalid.json` — 동일 조건에서 등급을 A로 둔 위반 사례)을 `contracts/schema-instance-registry.v1.json`에 등록했다. `python3 scripts/validate-structured-contracts.py --require-full`, `python3 scripts/validate-repository-contracts.py` 모두 PASS.
+
+**등급 컷오프 수치(90/75/60/40)는 여전히 C5 기준 DRAFT다** — 이번 작업은 그 DRAFT 수치를 스키마/계약 구조에 그대로 인코딩(`reusable-pattern-memory.v1.schema.json`에 `demotion_threshold`를 추가했을 때와 같은 이 저장소의 관례)한 것일 뿐, 값 자체를 business-confirm한 것이 아니다. 스키마 설명문에도 이 네 컷오프가 확정값이 아니라는 점을 명시했다. 실제로 Finding/MissedFinding 원본 데이터에서 이 점수를 계산해 채우는 로직(생산 연동)은 이 작업 범위 밖이며 별도 후속 작업이다. `src/main/java/`에는 아직 이 계약을 참조하는 코드가 없음을 확인했다. | FIXED (ProgramRiskScore 계약 제정 완료, 등급 컷오프 확정은 C5로 계속 추적)
 
 ## F. 문서 거버넌스 (참고, 결정 아님)
 

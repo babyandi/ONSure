@@ -4,7 +4,7 @@
   "title": "ONSure Reusable Pattern Memory v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["contract", "pattern_id", "pattern_class", "trigger_class", "remediation_class", "independent_reproduction_count", "lineage_commitment_sha256", "deidentification", "state", "activation_allowed", "created_at", "final_claim_allowed"],
+  "required": ["contract", "pattern_id", "pattern_class", "trigger_class", "remediation_class", "independent_reproduction_count", "reproduction_failure_count", "demotion_threshold", "lineage_commitment_sha256", "deidentification", "state", "activation_allowed", "created_at", "final_claim_allowed"],
   "properties": {
     "contract": {"const": "ONSURE_REUSABLE_PATTERN_MEMORY_V1"},
     "pattern_id": {"type": "string", "pattern": "^PATTERN-[0-9a-f]{24}$"},
@@ -12,6 +12,15 @@
     "trigger_class": {"enum": ["CONTROLLED_SCENARIO_EXECUTION", "BUILD_OR_COMPILE_EXECUTION", "VALIDATION_EXECUTION"]},
     "remediation_class": {"enum": ["POLICY_ENFORCEMENT_AND_NEGATIVE_REGRESSION", "REGRESSION_COVERAGE_STRENGTHENING", "CONTROL_AND_REGRESSION_STRENGTHENING"]},
     "independent_reproduction_count": {"type": "integer", "minimum": 2},
+    "reproduction_failure_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "G31: count of independent reproduction attempts that came back False Positive. Reaching demotion_threshold forces state=DEMOTED and activation_allowed=false (see the conditional block below)."
+    },
+    "demotion_threshold": {
+      "const": 3,
+      "description": "G31: fixed at 3 per docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md's original design intent (\"재현 3회 이상 실패한 Pattern은 자동 강등\"). A const, not a per-pattern configurable value, so every pattern is demoted under the same rule."
+    },
     "lineage_commitment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "deidentification": {
       "type": "object",
@@ -26,9 +35,22 @@
         "rights_review": {"const": "PASS"}
       }
     },
-    "state": {"const": "REUSABLE_CANDIDATE"},
+    "state": {
+      "enum": ["REUSABLE_CANDIDATE", "DEMOTED"],
+      "description": "G31 adds DEMOTED alongside the pre-existing single REUSABLE_CANDIDATE state. The fuller CANDIDATE->VALIDATED->PROMOTED promotion lattice described in docs/master/04 §5 remains a separate, not-yet-contracted extension (G7) -- this schema still only formalizes the demotion side-path, not the full lifecycle."
+    },
     "activation_allowed": {"const": false},
     "created_at": {"type": "string", "format": "date-time"},
     "final_claim_allowed": {"const": false}
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"reproduction_failure_count": {"minimum": 3}}},
+      "then": {"properties": {"state": {"const": "DEMOTED"}}}
+    },
+    {
+      "if": {"properties": {"reproduction_failure_count": {"maximum": 2}}},
+      "then": {"properties": {"state": {"const": "REUSABLE_CANDIDATE"}}}
+    }
+  ]
 }

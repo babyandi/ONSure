@@ -1,13 +1,13 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.7.0",
+  "version": "1.9.0",
   "pairs": [
     {"schema": "contracts/program-profile.v1.schema.json", "instances": ["fixtures/contracts/program-profile.valid.json"]},
     {"schema": "contracts/behavior-profile.v1.schema.json", "instances": ["fixtures/contracts/behavior-profile.valid.json"], "invalid_instances": ["fixtures/contracts/behavior-profile.invalid.json"]},
     {"schema": "contracts/behavior-observation-receipt.v1.schema.json", "instances": ["fixtures/contracts/behavior-observation-receipt.valid.json"]},
     {"schema": "contracts/failure-memory.v1.schema.json", "instances": ["fixtures/contracts/failure-memory.valid.json"]},
     {"schema": "contracts/improvement-memory.v1.schema.json", "instances": ["fixtures/contracts/improvement-memory.valid.json"]},
-    {"schema": "contracts/reusable-pattern-memory.v1.schema.json", "instances": ["fixtures/contracts/reusable-pattern-memory.valid.json"]},
+    {"schema": "contracts/reusable-pattern-memory.v1.schema.json", "instances": ["fixtures/contracts/reusable-pattern-memory.valid.json", "fixtures/contracts/reusable-pattern-memory.demoted.valid.json"], "invalid_instances": ["fixtures/contracts/reusable-pattern-memory.invalid.json"]},
     {"schema": "contracts/durable-job-state.v1.schema.json", "instances": ["fixtures/contracts/durable-job-state.valid.json"]},
     {"schema": "contracts/restart-restore-receipt.v1.schema.json", "instances": ["fixtures/contracts/restart-restore-receipt.valid.json"]},
     {"schema": "contracts/evidence-receipt.v1.schema.json", "instances": ["fixtures/contracts/evidence-receipt.valid.json"]},
@@ -26,7 +26,10 @@
     {"schema": "contracts/license-state.v1.schema.json", "instances": ["fixtures/contracts/license-state.valid.json"], "invalid_instances": ["fixtures/contracts/license-state.invalid.json"]},
     {"schema": "contracts/service-case-state.v1.schema.json", "instances": ["fixtures/contracts/service-case-state.valid.json"]},
     {"schema": "contracts/service-verification-receipt.v1.schema.json", "instances": ["fixtures/contracts/service-verification-receipt.valid.json"], "invalid_instances": ["fixtures/contracts/service-verification-receipt.invalid.json"]},
-    {"schema": "contracts/tenant-context.v1.schema.json", "instances": ["fixtures/contracts/tenant-context.valid.json"]}
+    {"schema": "contracts/tenant-context.v1.schema.json", "instances": ["fixtures/contracts/tenant-context.valid.json"]},
+    {"schema": "contracts/component-contract.v1.schema.json", "instances": ["fixtures/contracts/component-contract.valid.json"], "invalid_instances": ["fixtures/contracts/component-contract.superseded.invalid.json"]},
+    {"schema": "contracts/reuse-link.v1.schema.json", "instances": ["fixtures/contracts/reuse-link.valid.json"]},
+    {"schema": "contracts/program-risk-score.v1.schema.json", "instances": ["fixtures/contracts/program-risk-score.valid.json", "fixtures/contracts/program-risk-score.critical-cap.valid.json"], "invalid_instances": ["fixtures/contracts/program-risk-score.invalid.json"]}
   ],
   "negative_instances_required_before_final": true,
   "runtime_validation": "NOT_RUN",

@@ -1,0 +1,10 @@
+{
+  "contract": "ONSURE_REUSE_LINK_V1",
+  "link_id": "REUSELINK-payment-authorization-api-0001",
+  "provider_component_id": "COMPONENT-checkout-payment-adapter",
+  "interface_name": "PaymentAuthorizationApi",
+  "consumer_component_id": "COMPONENT-subscription-billing-service",
+  "consumer_program_id": "PROGRAM-subscription-billing",
+  "discovered_at": "2026-08-05T00:00:00Z",
+  "final_claim_allowed": false
+}

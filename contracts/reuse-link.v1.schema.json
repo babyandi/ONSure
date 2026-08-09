@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/reuse-link.v1.schema.json",
+  "title": "ONSure Reuse Link v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "link_id", "provider_component_id", "interface_name",
+    "consumer_component_id", "consumer_program_id", "discovered_at",
+    "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_REUSE_LINK_V1"},
+    "link_id": {"type": "string", "minLength": 1},
+    "provider_component_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "component_id of the component-contract.v1.schema.json record that provides the interface."
+    },
+    "interface_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Matches the name field of one entry in the provider component's provided_interfaces array."
+    },
+    "consumer_component_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "component_id of the component that consumes provider_component_id's interface_name via its own required_interfaces."
+    },
+    "consumer_program_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "07 SS2.3: Provided Interface change is reverse-looked-up via ReuseLink to scan impact on other Programs in the same System (Cross-Program Impact Scan). One ReuseLink record is one provider-interface-to-consumer edge; the reverse index is the set of ReuseLink records sharing a provider_component_id/interface_name pair."
+    },
+    "discovered_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  }
+}
