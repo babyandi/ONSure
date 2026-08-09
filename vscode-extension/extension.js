@@ -4,7 +4,7 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const { WORK_MODES, classifyOperation, authorize } = require('./work-mode-policy');
-const { VIEW_IDS, rowsForView, budgetRowsFromExecutionPlan } = require('./view-model');
+const { VIEW_IDS, rowsForView, budgetRowsFromExecutionPlan, providerRowsFromStatusAndUsage } = require('./view-model');
 const { reviewPlanApproval, reviewHunkApproval } = require('./approval-review');
 
 const TOKEN_KEY = 'onsure.localApiToken';
@@ -135,6 +135,20 @@ class AssuranceTreeProvider {
         }
       } catch (error) {
         items.push(item('Execution Budget', `NOT_AVAILABLE: ${error.message}`, 'warning'));
+      }
+    }
+    if (this.viewId === 'onsure.admin') {
+      try {
+        const status = await this.client.workflow('provider.status', {});
+        const usage = await this.client.workflow('provider.usage', {});
+        for (const row of providerRowsFromStatusAndUsage(status.result, usage.result)) {
+          const children = Array.isArray(row.children)
+            ? row.children.map(child => item(child.label, child.description, child.icon))
+            : undefined;
+          items.push(item(row.label, row.description, row.icon, undefined, children));
+        }
+      } catch (error) {
+        items.push(item('Model Providers', `NOT_AVAILABLE: ${error.message}`, 'warning'));
       }
     }
     return items;

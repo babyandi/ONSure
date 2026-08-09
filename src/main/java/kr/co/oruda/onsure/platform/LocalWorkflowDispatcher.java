@@ -25,9 +25,11 @@ public final class LocalWorkflowDispatcher {
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+    private static final List<String> KNOWN_MODEL_TASK_CLASSES = List.of("REVIEW", "PLANNING");
     private final Path workspaceRoot;
     private final ApprovalAuthorityPaths approvalAuthority;
     private final AuthenticatedWorkflowIdentity identity;
+    private final ModelProviderRegistry modelProviderRegistry;
 
     public LocalWorkflowDispatcher(Path workspaceRoot) {
         this(workspaceRoot, AuthenticatedWorkflowIdentity.localAdministrator());
@@ -35,12 +37,27 @@ public final class LocalWorkflowDispatcher {
 
     public LocalWorkflowDispatcher(
             Path workspaceRoot, AuthenticatedWorkflowIdentity authenticatedIdentity) {
+        this(workspaceRoot, authenticatedIdentity, null);
+    }
+
+    /**
+     * Package-private overload used by tests to exercise {@code provider.status}/{@code
+     * provider.usage} with providers registered. Production wiring of a real
+     * {@link ModelProviderRegistry} is an explicitly separate, not-yet-decided step (see
+     * PRODUCTION_CALL_SITE_INTEGRATION_MISSING in NFR-05's missing_controls); the two public
+     * constructors above always leave this {@code null}, and the dispatcher degrades gracefully
+     * (NO_PROVIDER_REGISTERED) rather than requiring one.
+     */
+    LocalWorkflowDispatcher(
+            Path workspaceRoot, AuthenticatedWorkflowIdentity authenticatedIdentity,
+            ModelProviderRegistry modelProviderRegistry) {
         this.workspaceRoot = requireWorkspace(workspaceRoot);
         this.approvalAuthority = ApprovalAuthorityPaths.forWorkspace(this.workspaceRoot);
         if (authenticatedIdentity == null) {
             throw new IllegalArgumentException("AUTHENTICATED_IDENTITY_REQUIRED");
         }
         this.identity = authenticatedIdentity;
+        this.modelProviderRegistry = modelProviderRegistry;
     }
 
     public Map<String, Object> dispatch(String operation, JsonNode request) throws Exception {
@@ -70,6 +87,8 @@ public final class LocalWorkflowDispatcher {
             case "patch.rollback" -> patchRollback(request);
             case "improvement.prove" -> improvementProve(request);
             case "knowledge.separate" -> knowledgeSeparate(request);
+            case "provider.status" -> providerStatus(request);
+            case "provider.usage" -> providerUsage(request);
             case "job.create" -> jobCreate(request);
             case "job.control" -> jobControl(request);
             case "job.read" -> jobRead(request);
@@ -203,6 +222,40 @@ public final class LocalWorkflowDispatcher {
         result.put("violations", separated.violations());
         result.put("final_claim_allowed", false);
         return Map.copyOf(result);
+    }
+
+    private Map<String, Object> providerStatus(JsonNode request) {
+        if (modelProviderRegistry == null) {
+            return Map.of(
+                    "state", "NO_PROVIDER_REGISTERED",
+                    "providers", List.of(),
+                    "final_claim_allowed", false);
+        }
+        List<Map<String, Object>> providers = new java.util.ArrayList<>();
+        for (String providerId : modelProviderRegistry.providerIds()) {
+            ModelProviderAdapter adapter = modelProviderRegistry.adapter(providerId);
+            List<String> supportedTaskClasses = KNOWN_MODEL_TASK_CLASSES.stream()
+                    .filter(adapter::supportsTaskClass)
+                    .toList();
+            providers.add(Map.of(
+                    "provider_id", providerId,
+                    "declared_model_ids", adapter.declaredModelIds(),
+                    "supported_task_classes", supportedTaskClasses));
+        }
+        return Map.of(
+                "state", "PROVIDERS_REGISTERED",
+                "providers", List.copyOf(providers),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> providerUsage(JsonNode request) throws Exception {
+        Path ledgerFile = outputPath(request, "ledger_file", ".onsure/model-usage/ledger.jsonl");
+        ModelInvocationLedger.Summary summary = ModelInvocationLedger.summarize(ledgerFile);
+        return Map.of(
+                "ledger_file", ledgerFile.toString(),
+                "overall", summary.overall(),
+                "providers", summary.byProvider(),
+                "final_claim_allowed", false);
     }
 
     private DurableJobService jobs() {
