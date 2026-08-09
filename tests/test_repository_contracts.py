@@ -32,7 +32,7 @@ class RepositoryContractsTest(unittest.TestCase):
             self.assertFalse(body["final_claim_allowed"])
             self.assertEqual(body["product_subrequirements"], 43)
             self.assertEqual(body["mvp_acceptance_items"], 11)
-            self.assertEqual(body["workflow_operations"], 47)
+            self.assertEqual(body["workflow_operations"], 49)
             self.assertEqual(body["registered_failure_injections"], 118)
             self.assertEqual(body["runtime_execution"], "NOT_RUN_BY_STATIC_VALIDATOR")
 

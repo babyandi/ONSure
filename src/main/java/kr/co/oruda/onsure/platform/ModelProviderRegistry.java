@@ -55,4 +55,11 @@ public final class ModelProviderRegistry {
     public synchronized List<String> providerIds() {
         return List.copyOf(providers.keySet());
     }
+
+    /** Returns the registered adapter for {@code providerId} regardless of task-class bindings. */
+    public synchronized ModelProviderAdapter adapter(String providerId) {
+        ModelProviderAdapter provider = providers.get(providerId);
+        if (provider == null) throw new IllegalArgumentException("NO_MODEL_PROVIDER: " + providerId);
+        return provider;
+    }
 }
