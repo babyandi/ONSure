@@ -57,7 +57,25 @@
     }
   ],
   "dependencies": [],
-  "ai_components": [],
+  "ai_components": [
+    {
+      "id": "ai-tool-contract-mcp",
+      "name": "mcp.json",
+      "kind": "TOOL_CONTRACT",
+      "source_locations": ["src/main/resources/mcp.json"],
+      "confidence": 0.85,
+      "verified": false,
+      "declared_tool_names": ["search_documents", "create_ticket"]
+    },
+    {
+      "id": "ai-execution-log-sample",
+      "name": "run-2026-07-26.log",
+      "kind": "EXECUTION_LOG",
+      "source_locations": ["logs/run-2026-07-26.log"],
+      "confidence": 0.6,
+      "verified": false
+    }
+  ],
   "data_flows": [],
   "unknowns": [],
   "conflicts": [],
