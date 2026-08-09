@@ -38,8 +38,8 @@
   "legacy_product_decomposition": {
     "authority": "contracts/legacy-product-subrequirement-authority.v1.json",
     "requirement_count": 43,
-    "implemented": 18,
-    "partial": 25,
+    "implemented": 20,
+    "partial": 23,
     "stub": 0,
     "design_only": 0,
     "state": "LEGACY_NONAUTHORITATIVE_FOR_FINAL_PRODUCT",
