@@ -32,6 +32,7 @@ public final class BuiltInStages {
                 new SourceInventoryStage(),
                 new StaticPatternStage(),
                 new AiBehaviorStage(),
+                new DependencyScanStage(),
                 new RuntimeFixtureStage(),
                 new FailureAnalysisStage(),
                 new RegressionLockStage());
@@ -178,6 +179,73 @@ public final class BuiltInStages {
             return result(stageId(), created == 0 ? Decision.PASS : Decision.FAIL,
                     start, context, before, Map.of("findings_created", created));
         }
+    }
+
+    /**
+     * Wires {@link VulnerabilityDenylistVerifier} -- previously only run against ONSURE's own
+     * pom.xml as part of its build-lane self-check (see {@link BuildLaneReceiptService}) -- into
+     * the generic validation engine so every Maven target is checked against the same manually
+     * curated denylist (contracts/dependency-vulnerability-denylist.v1.json). A denylisted
+     * groupId:artifactId:version is vulnerable regardless of whose pom.xml declares it, so this
+     * file doubles as ONSURE's org-wide known-bad-dependency registry.
+     *
+     * <p>Scoped to Maven only: {@link DependencyManifestVerifier} (which this verifier is built on)
+     * only knows how to parse pom.xml today. Non-Maven ecosystems (package.json, requirements.txt,
+     * go.mod, etc.) are a remaining gap, not attempted here -- {@link #supports} returns false and
+     * the stage is skipped (not a forced PASS or FAIL) whenever the target has no pom.xml at its
+     * source root, which the {@link ValidationEngine} filters out before execution.
+     */
+    private static final class DependencyScanStage implements ValidatorStage {
+        private static final Path DENYLIST_PATH =
+                Path.of("contracts/dependency-vulnerability-denylist.v1.json");
+
+        @Override public String stageId() { return "DEPENDENCY_SCAN"; }
+
+        @Override public boolean supports(ValidationContext context) {
+            return Files.isRegularFile(context.target().sourceRoot().resolve("pom.xml"));
+        }
+
+        @Override
+        public StageResult execute(ValidationContext context) throws Exception {
+            return runDependencyScan(context, DENYLIST_PATH);
+        }
+    }
+
+    /**
+     * Package-visible so {@code DependencyScanStageTest} can exercise the FAIL/PASS finding logic
+     * against a synthetic denylist file without ever touching the real, production
+     * contracts/dependency-vulnerability-denylist.v1.json (which stays the sole default source of
+     * truth in production -- see {@link DependencyScanStage#execute}).
+     */
+    static StageResult runDependencyScan(ValidationContext context, Path denylistPath) throws Exception {
+        Instant start = Instant.now();
+        int before = context.findings().size();
+        Path pomXmlPath = context.target().sourceRoot().resolve("pom.xml");
+        VulnerabilityDenylistVerifier.VerificationResult verification =
+                VulnerabilityDenylistVerifier.verify(pomXmlPath, denylistPath);
+        for (VulnerabilityDenylistVerifier.DenylistMatch match : verification.matches()) {
+            String evidenceDigest = Hashing.sha256(
+                    match.coordinate() + "|" + match.version() + "|" + match.cve());
+            String evidenceId = "EV-DEPENDENCY-" + evidenceDigest.substring(0, 16);
+            context.addEvidence(new Evidence(evidenceId, "DEPENDENCY_DENYLIST_MATCH", "pom.xml",
+                    evidenceDigest, Instant.now(),
+                    Map.of("coordinate", match.coordinate(), "version", match.version(),
+                            "cve", match.cve(), "severity", match.severity(), "reason", match.reason())));
+            addFinding(context, "DEPENDENCY_SCAN", "DEPENDENCY_VULNERABILITY", severityOf(match.severity()),
+                    "Denylisted vulnerable dependency: " + match.coordinate() + ":" + match.version(),
+                    "Dependency " + match.coordinate() + ":" + match.version()
+                            + " matches vulnerability denylist entry " + match.cve()
+                            + " (" + match.reason() + ").",
+                    "pom.xml", List.of(evidenceId));
+        }
+        int created = context.findings().size() - before;
+        return result("DEPENDENCY_SCAN", created == 0 ? Decision.PASS : Decision.FAIL,
+                start, context, before, Map.of("dependency_denylist_matches", verification.matches().size()));
+    }
+
+    private static Severity severityOf(String value) {
+        try { return Severity.valueOf(value); }
+        catch (IllegalArgumentException | NullPointerException ignored) { return Severity.HIGH; }
     }
 
     private static final class RuntimeFixtureStage implements ValidatorStage {
@@ -358,6 +426,7 @@ public final class BuiltInStages {
             case "PROMPT_INJECTION" -> "FM-PROMPT-INJECTION";
             case "AI_DATA_EXFILTRATION" -> "FM-AI-DATA-EXFILTRATION";
             case "RUNTIME_BEHAVIOR" -> "FM-ORACLE-DIVERGENCE";
+            case "DEPENDENCY_VULNERABILITY" -> "FM-DEPENDENCY-VULNERABILITY";
             default -> "FM-GENERIC-CORRECTNESS";
         };
     }
@@ -383,6 +452,7 @@ public final class BuiltInStages {
             case "PROMPT_INJECTION" -> "Untrusted instructions were not isolated from system policy and tool control.";
             case "AI_DATA_EXFILTRATION" -> "Context egress controls and data minimization were absent.";
             case "RUNTIME_BEHAVIOR" -> "Implemented runtime behavior diverged from the declared acceptance Oracle.";
+            case "DEPENDENCY_VULNERABILITY" -> "A dependency with a known-vulnerable exact version was declared and not caught before validation.";
             default -> "Implementation and acceptance criteria were not fully bound by executable validation.";
         };
     }
@@ -394,6 +464,7 @@ public final class BuiltInStages {
             case "PROMPT_INJECTION" -> "Add instruction provenance, untrusted-content isolation, and tool-call policy gates.";
             case "AI_DATA_EXFILTRATION" -> "Apply context minimization, egress allowlists, redaction, and receipt binding.";
             case "RUNTIME_BEHAVIOR" -> "Correct the implementation and preserve the failing fixture as a regression test.";
+            case "DEPENDENCY_VULNERABILITY" -> "Upgrade the dependency past the denylisted version, or remove it, then re-run the dependency scan.";
             default -> "Implement the missing control and add focused plus full regression tests.";
         };
     }
