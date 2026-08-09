@@ -72,6 +72,10 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 - 비용·Token·Context 폭주
 - AI 자기주장과 실제 Evidence 불일치(Self-Claim Verification) — "구현 완료", "테스트 통과" 등 AI가 스스로 밝힌 주장을 별도 추출해 대조
 - 이전 Baseline 대비 AI 구성 Drift(Tool 권한 확대, 신규 외부 연동 등)가 검토 없이 반영되었는지 확인([02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OLearning AI 구성 Drift 탐지와 연동)
+- 민감정보 노출(신규, OWASP Top 10 for LLM Applications LLM02 대조로 2026-08-09 발견): 모델 출력·RAG 검색결과·Memory에 PII·Secret·내부정책 문구가 그대로 포함되어 최종 사용자나 로그에 노출되는지 별도 점검(일반 Secret Review는 소스코드 대상이며 이 항목은 런타임 AI 출력 대상이라 범위가 다름)
+- 공급망(신규, LLM03 대조로 2026-08-09 발견): 사용 중인 Model/Plugin/사전학습 Embedding의 출처·서명·버전 고정 여부, 검증되지 않은 제3자 Model/RAG 소스 사용 여부
+- 출력 처리(신규, LLM05 대조로 2026-08-09 발견): 모델 출력을 검증 없이 신뢰해 하위 시스템(DB 쿼리, 쉘 명령, 다른 서비스 API 호출, 렌더링되는 HTML)에 그대로 전달하는지 — 모델 출력은 항상 신뢰되지 않은 입력으로 취급되어야 한다
+- 시스템 프롬프트 유출(LLM07, 기존 "System/User/Tool instruction 경계" 항목을 2026-08-09 명확화): 사용자에게 시스템 프롬프트 전체 또는 그 안의 정책·Tool 정의가 직접 노출되는 응답 경로가 있는지 별도 확인
 
 ### Training Review (OTraining 대상, [02 §7-2](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OTraining과 연동)
 - 학습 데이터 편향·중복·유출·오염(Poisoning) 여부

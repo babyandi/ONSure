@@ -48,6 +48,8 @@
 
 요구사항 품질 측면에서는 OReview/OMemory(02 §5, §7-1, 03 §9-1)가 이례적으로 검증 가능한 형태(모델버전+Temperature까지 Receipt 결속, Confidence Calibration 실측)로 쓰인 반면 11장 비기능요구사항은 전부 키워드 나열이라 테스트 케이스를 만들 수 없었다 — 위에서 전면 재작성했다(NFR-SEC~NFR-CONFIG, 신규 NFR-SESSION/NFR-CONFIG 포함).
 
+**추가 대조 (같은 날, ONSure 자신의 핵심 차별점인 AI Review를 AI 전용 표준으로 대조)**: OWASP Top 10 for LLM Applications를 03 AI Review 절과 대조한 결과, Prompt Injection/RAG 오염/Excessive Agency/Unbounded Consumption/Misinformation은 이미 커버됐지만 **민감정보 노출(LLM02), 공급망(LLM03, Model/Plugin/Embedding 출처·서명), 출력 처리(LLM05, 모델 출력을 신뢰되지 않은 입력으로 취급)가 완전히 빠져 있었다** — 03 AI Review에 반영했다. 05의 접근성 절도 WCAG 준수 "수준" 자체가 명시돼 있지 않았던 걸 발견해 WCAG 2.1 AA를 목표로 명시하고 명도대비·포커스표시·확대 3개 항목을 추가했다.
+
 ## D. 영업/상품 확인 필요
 
 | # | 항목 | 현재 초안값 | 위치 | 상태 |
