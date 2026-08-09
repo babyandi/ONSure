@@ -1,10 +1,17 @@
 {
   "schema_version": "1.0.0",
   "record_id": "ONSURE_PHASE_B_D23_CONTINUATION_TODO_20260810",
-  "status": "READY_FOR_D23_PREPARATION_HOLD",
+  "status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
   "recorded_at": "2026-08-10T00:59:00+09:00",
   "branch": "work/onsure-phase-b-d23-continuation-20260810",
   "purpose": "Preserve the exact ONSure continuation point after creation of the isolated canonical-method Codex Phase B candidate. This is a TODO/handoff record only and grants no PASS or production authority.",
+  "phase_a_provenance": {
+    "record_ref": "validation/phase_a/ONSURE_PHASE_A_PROVENANCE_DISCOVERY_20260810.candidate.json",
+    "status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
+    "exact_byte_identity_locked": false,
+    "d23": "NOT_RUN_PHASE_A_ARTIFACT_UNRESOLVED",
+    "substitute_or_reconstructed_phase_a_allowed": false
+  },
   "phase_b_candidate": {
     "filename": "onsure_phase_b_codex_candidate.json",
     "sha256": "334132a72b84d4de0fe8c1795213e23ac3d959e1100868f351e9740a0bc40de0",
@@ -66,7 +73,7 @@
     {
       "id": "TODO-05",
       "action": "BIND_FROZEN_PHASE_A_AND_PHASE_B",
-      "status": "TODO",
+      "status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
       "acceptance": [
         "Read actual frozen Phase A bytes and actual frozen Phase B bytes.",
         "Recompute both SHA-256 values.",
@@ -76,7 +83,7 @@
     {
       "id": "TODO-06",
       "action": "RUN_D23_POST_FREEZE_COMPARATOR",
-      "status": "NOT_RUN",
+      "status": "NOT_RUN_PHASE_A_ARTIFACT_UNRESOLVED",
       "acceptance": [
         "Derive A/B difference records from bound artifacts, not caller declarations.",
         "D23 must remain outside Phase A and Phase B.",
@@ -86,7 +93,7 @@
     {
       "id": "TODO-07",
       "action": "RUN_GOLDEN_CRITICAL_53_STRICT_COMPARISON",
-      "status": "NOT_RUN",
+      "status": "NOT_RUN_PHASE_A_ARTIFACT_UNRESOLVED",
       "acceptance": [
         "Derive Critical denominator from Golden Corpus; expected 53.",
         "Each FOUND must have bound Phase B evidence.",

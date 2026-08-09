@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0.0",
+  "record_id": "ONSURE_PHASE_A_PROVENANCE_DISCOVERY_20260810",
+  "status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
+  "purpose": "Discover and exact-byte lock the trustworthy original ONSure Phase A D01-D22 artifact before any D23 or Golden comparison. Similar, reconstructed, non-blind, or later-modified artifacts are not substitutable.",
+  "required_identity": {
+    "artifact": "Original Phase A D01-D22 output",
+    "exact_frozen_bytes_required": true,
+    "sha256_required": true,
+    "git_blob_and_commit_required": true,
+    "later_copy_disallowed": true,
+    "pre_golden_freeze_required": true,
+    "freeze_or_execution_receipt_required": true
+  },
+  "search_scope": [
+    "/workspace filesystem ONSure/Phase/D01-D22 candidate search",
+    "ONSure Git refs and history",
+    "ORUDA Git refs, history, reflogs, and unreachable blobs",
+    "Codex execution-session provenance records from 2026-08-09",
+    "/tmp/ORUDA-onsure-phaseb preserved worktree"
+  ],
+  "candidates": [
+    {
+      "path": "products/obuilder/benchmarks/OBUILDER_ONSURE_NONBLIND_PREFLIGHT_DISCOVERY.candidate.v1.0.0.json",
+      "repository": "https://github.com/babyandi/ORUDA.git",
+      "sha256": "632501e9524aae548286a4a82d9fcc81c0415bdcd4f257d0e018de3ebe9ebff6",
+      "git_blob": "16c76a01aa9e11e5af94e30c7312527f4a3c626f",
+      "introduced_by_commit": "cb5be80ee12e0f672771566901c3afd9d7ab517b",
+      "commit_time": "2026-08-09T20:32:33+09:00",
+      "declared_status": "FROZEN_CANDIDATE_NONFINAL",
+      "declared_eligibility": "NOT_BLIND_CONTEXT_CONTAMINATED",
+      "assessment": "REJECT_AS_TRUSTWORTHY_PHASE_A_ORIGINAL",
+      "reasons": [
+        "The artifact explicitly declares NOT_BLIND_CONTEXT_CONTAMINATED.",
+        "It is a 98-line preflight catalog and does not contain 22 individually frozen semantic_artifacts for D01-D22.",
+        "Its coverage list includes D23 rather than representing only frozen D01-D22 output.",
+        "The Golden Corpus commit 41807242226b0656e7edb7605d27ac4b18eb8bd0 is an ancestor of the freeze commit, so pre-Golden-publication provenance is not established.",
+        "No independent freeze/execution receipt binds these exact bytes and establishes pre-Golden isolation."
+      ]
+    },
+    {
+      "path": "products/obuilder/benchmarks/OBUILDER_ONSURE_PHASE_A_SEMANTIC_REPLAY.candidate.v1.0.0.json",
+      "repository": "https://github.com/babyandi/ORUDA.git",
+      "sha256": "4165b4713d2b48b0ff72a3032110da310c804a270796ebde341dbc354c567d44",
+      "git_blob": "8eecbea6de4eb1710207f2963fe4dc2a2f5e5acc",
+      "introduced_by_commit": "2a8f52057e2106a2420b48cb06c94f93f0d98abb",
+      "commit_time": "2026-08-09T21:13:09+09:00",
+      "declared_status": "FROZEN_PHASE_A_NONBLIND_HOLD",
+      "declared_eligibility": "NOT_BLIND_CONTEXT_CONTAMINATED",
+      "assessment": "REJECT_AS_TRUSTWORTHY_PHASE_A_ORIGINAL",
+      "reasons": [
+        "The artifact purpose explicitly says it is a Phase A re-run after semantic-pass gate hardening.",
+        "The artifact explicitly says it is non-blind and cannot satisfy independent reconstruction.",
+        "The Golden Corpus commit is an ancestor of this replay commit.",
+        "A later semantic replay cannot substitute for the exact bytes of the original Phase A run."
+      ]
+    }
+  ],
+  "related_receipt": {
+    "path": "products/obuilder/contracts/OBUILDER_ONSURE_PHASE_A_SEMANTIC_BUNDLE_RECEIPT.candidate.v1.0.0.json",
+    "sha256": "dda2aa3832a133756d0f6fbcbfeaf79e3ea008b0f9d085596f0768313e52a63d",
+    "git_blob": "1f3cf845f9cc89174a32aa75c47d80f23686b919",
+    "introduced_by_commit": "34e9aeb5875b8408a30c6249188d73cfaee98194",
+    "declared_status": "HOLD_ISOLATED_RECONSTRUCTION_REQUIRED",
+    "assessment": "INSUFFICIENT_FOR_ORIGINAL_PHASE_A_IDENTITY",
+    "reasons": [
+      "The receipt points to the non-blind semantic replay and archetype evidence, not an independently preserved original Phase A artifact.",
+      "The receipt does not bind the referenced files by SHA-256 or Git blob.",
+      "The receipt explicitly says blind replay effect is NONE."
+    ]
+  },
+  "phase_b": {
+    "path": "/workspace/onsure_phase_b_codex_candidate.json",
+    "sha256": "334132a72b84d4de0fe8c1795213e23ac3d959e1100868f351e9740a0bc40de0",
+    "run_id": "onsure-phase-b-codex-20260809T154348Z-7f31c892",
+    "status": "FROZEN_CANDIDATE_NONFINAL",
+    "d23_executed": false,
+    "golden_comparison_executed": false,
+    "final_pass_fail_declared": false
+  },
+  "decision": {
+    "phase_a_exact_byte_identity_locked": false,
+    "d23": "NOT_RUN_PHASE_A_ARTIFACT_UNRESOLVED",
+    "golden_comparison": "NOT_RUN_PHASE_A_ARTIFACT_UNRESOLVED",
+    "substitute_or_reconstructed_phase_a_allowed": false,
+    "next_action": "Locate an independently preserved original Phase A D01-D22 artifact and a receipt or manifest that binds its exact SHA-256/Git identity and establishes freeze before Golden exposure."
+  },
+  "authority": {
+    "merge": false,
+    "deploy": false,
+    "production_go": false,
+    "commercial_go": false,
+    "final_lock": false
+  }
+}
