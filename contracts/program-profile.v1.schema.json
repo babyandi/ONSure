@@ -5,7 +5,7 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "contract", "profile_id", "project_id", "program_id", "source_baseline",
+    "contract", "profile_id", "project_id", "program_id", "source_baseline", "git_metadata",
     "purpose", "components", "dependencies", "ai_components", "data_flows",
     "unknowns", "conflicts", "evidence_refs", "revision", "state", "generated_at",
     "learning_method", "language_inventory", "dynamic_trace", "runtime_verification",
@@ -31,6 +31,17 @@
         "worktree_clean": {"type": ["boolean", "null"]},
         "snapshot_complete": {"const": true},
         "source_file_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "git_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "submodules", "lfs_patterns", "remotes"],
+      "properties": {
+        "repository": {"type": "boolean"},
+        "submodules": {"type": "array", "items": {"$ref": "#/$defs/gitSubmodule"}},
+        "lfs_patterns": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "remotes": {"type": "array", "items": {"$ref": "#/$defs/gitRemote"}}
       }
     },
     "source_inventory": {
@@ -71,6 +82,32 @@
       "type": "string",
       "minLength": 1,
       "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+    },
+    "gitSubmodule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "commit_sha", "status"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "commit_sha": {"type": "string", "minLength": 1},
+        "status": {
+          "enum": [
+            "NOT_INITIALIZED", "CHECKED_OUT_DIFFERENT_COMMIT", "MERGE_CONFLICT", "UP_TO_DATE"
+          ]
+        }
+      }
+    },
+    "gitRemote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "url", "provider"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "url": {"type": "string", "minLength": 1},
+        "provider": {
+          "enum": ["GITHUB", "GITLAB", "BITBUCKET", "AZURE_DEVOPS", "UNKNOWN"]
+        }
+      }
     },
     "sourceInventoryItem": {
       "type": "object",

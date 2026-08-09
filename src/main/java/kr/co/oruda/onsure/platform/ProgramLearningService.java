@@ -50,6 +50,7 @@ public final class ProgramLearningService {
         List<Map<String, Object>> sourceInventory = sourceInventory(root, sourceFiles);
         Map<String, Object> changeSet = changeSet(parent, sourceInventory);
         Map<String, Object> baseline = sourceBaseline(root, sourceDigest, sourceFiles.size());
+        Map<String, Object> gitMetadata = gitMetadataInventory(root);
         Map<String, Integer> languages = languageInventory(sourceFiles);
         List<Map<String, Object>> components = components(root, sourceFiles);
         List<Map<String, Object>> dependencies = dependencies(root, sourceFiles);
@@ -77,6 +78,7 @@ public final class ProgramLearningService {
         profile.put("project_id", projectId);
         profile.put("program_id", programId);
         profile.put("source_baseline", baseline);
+        profile.put("git_metadata", gitMetadata);
         profile.put("source_inventory", sourceInventory);
         profile.put("parent_profile", parent == null ? null : parent.reference());
         profile.put("change_set", changeSet);
@@ -219,6 +221,30 @@ public final class ProgramLearningService {
         baseline.put("snapshot_complete", true);
         baseline.put("source_file_count", fileCount);
         return java.util.Collections.unmodifiableMap(baseline);
+    }
+
+    private static Map<String, Object> gitMetadataInventory(Path root) {
+        GitMetadataInventory.Inventory inventory = GitMetadataInventory.inspect(root);
+        List<Map<String, Object>> submodules = new ArrayList<>();
+        for (GitMetadataInventory.Submodule submodule : inventory.submodules()) {
+            submodules.add(Map.of(
+                    "path", submodule.path(),
+                    "commit_sha", submodule.commitSha(),
+                    "status", submodule.status().name()));
+        }
+        List<Map<String, Object>> remotes = new ArrayList<>();
+        for (GitMetadataInventory.Remote remote : inventory.remotes()) {
+            remotes.add(Map.of(
+                    "name", remote.name(),
+                    "url", remote.url(),
+                    "provider", remote.provider().name()));
+        }
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("repository", inventory.repository());
+        metadata.put("submodules", List.copyOf(submodules));
+        metadata.put("lfs_patterns", List.copyOf(inventory.lfsPatterns()));
+        metadata.put("remotes", List.copyOf(remotes));
+        return java.util.Collections.unmodifiableMap(metadata);
     }
 
     private GitBaseline gitBaseline(Path root) throws Exception {
