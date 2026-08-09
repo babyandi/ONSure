@@ -1,0 +1,16 @@
+{
+  "contract": "ONSURE_PROGRAM_RISK_SCORE_V1",
+  "program_id": "PROGRAM-7f3a1c2e9b4d4f6a8c1e2b3d4f5a6b7c",
+  "case_id": "CASE-2026-08-000512",
+  "open_critical_count": 0,
+  "open_high_count": 2,
+  "open_medium_count": 3,
+  "recent_missed_finding_count": 1,
+  "ai_generated_ratio_score": 4,
+  "average_unresolved_days_score": 6,
+  "score": 78,
+  "grade": "B",
+  "computed_at": "2026-08-09T02:15:00Z",
+  "source_validation_run_id": "RUN-2026-08-09-0007",
+  "final_claim_allowed": false
+}

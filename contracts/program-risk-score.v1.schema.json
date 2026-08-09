@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/program-risk-score.v1.schema.json",
+  "title": "ONSure Program Risk Score v1",
+  "description": "ProgramRiskScore per docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md 'Risk Scoring' section: score = 100 - clamp(10*OpenCritical + 4*OpenHigh + 1*OpenMedium + 2*RecentMissedFinding + 1.5*AIGeneratedRatioScore + 0.5*AverageUnresolvedDaysScore, 0, 100). The grade cutoff boundaries (90/75/60/40) and the Critical-caps-at-C override are the current DRAFT design values tracked as item C5 in docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md and are NOT yet business-confirmed; this schema encodes them as the concrete, enforceable contract value pending that confirmation. Nothing in this schema should be read as a claim that the cutoffs themselves are final.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "program_id", "case_id",
+    "open_critical_count", "open_high_count", "open_medium_count",
+    "recent_missed_finding_count", "ai_generated_ratio_score", "average_unresolved_days_score",
+    "score", "grade", "computed_at", "source_validation_run_id", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PROGRAM_RISK_SCORE_V1"},
+    "program_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "minLength": 1},
+    "open_critical_count": {
+      "type": "integer", "minimum": 0,
+      "description": "Count of currently-unresolved ReviewFinding+VerificationFinding at CRITICAL severity."
+    },
+    "open_high_count": {
+      "type": "integer", "minimum": 0,
+      "description": "Count of currently-unresolved ReviewFinding+VerificationFinding at HIGH severity."
+    },
+    "open_medium_count": {
+      "type": "integer", "minimum": 0,
+      "description": "Count of currently-unresolved ReviewFinding+VerificationFinding at MEDIUM severity."
+    },
+    "recent_missed_finding_count": {
+      "type": "integer", "minimum": 0,
+      "description": "Count of MissedFinding confirmed within the trailing 90-day window (see docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md §7-1)."
+    },
+    "ai_generated_ratio_score": {
+      "type": "number", "minimum": 0, "maximum": 10,
+      "description": "AIProfile AI-generated-code ratio, normalized to 0-10."
+    },
+    "average_unresolved_days_score": {
+      "type": "number", "minimum": 0, "maximum": 10,
+      "description": "Average days findings have stayed OPEN, normalized to 0-10."
+    },
+    "score": {"type": "integer", "minimum": 0, "maximum": 100},
+    "grade": {"enum": ["A", "B", "C", "D", "E"]},
+    "computed_at": {"type": "string", "format": "date-time"},
+    "source_validation_run_id": {"type": "string", "minLength": 1},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "description": "Grade band A (score>=90) applies only when there is no open Critical finding -- DRAFT cutoff per C5.",
+      "if": {
+        "properties": {"score": {"minimum": 90}, "open_critical_count": {"const": 0}},
+        "required": ["score", "open_critical_count"]
+      },
+      "then": {"properties": {"grade": {"const": "A"}}, "required": ["grade"]}
+    },
+    {
+      "description": "Grade band B (75<=score<90) applies only when there is no open Critical finding -- DRAFT cutoff per C5.",
+      "if": {
+        "properties": {"score": {"minimum": 75, "exclusiveMaximum": 90}, "open_critical_count": {"const": 0}},
+        "required": ["score", "open_critical_count"]
+      },
+      "then": {"properties": {"grade": {"const": "B"}}, "required": ["grade"]}
+    },
+    {
+      "description": "Grade band C (60<=score<75) -- DRAFT cutoff per C5.",
+      "if": {
+        "properties": {"score": {"minimum": 60, "exclusiveMaximum": 75}},
+        "required": ["score"]
+      },
+      "then": {"properties": {"grade": {"const": "C"}}, "required": ["grade"]}
+    },
+    {
+      "description": "Grade band D (40<=score<60) -- DRAFT cutoff per C5.",
+      "if": {
+        "properties": {"score": {"minimum": 40, "exclusiveMaximum": 60}},
+        "required": ["score"]
+      },
+      "then": {"properties": {"grade": {"const": "D"}}, "required": ["grade"]}
+    },
+    {
+      "description": "Grade band E (score<40) -- DRAFT cutoff per C5.",
+      "if": {
+        "properties": {"score": {"exclusiveMaximum": 40}},
+        "required": ["score"]
+      },
+      "then": {"properties": {"grade": {"const": "E"}}, "required": ["grade"]}
+    },
+    {
+      "description": "Hard override, independent of the numeric score band: at least one open Critical finding caps grade at C or worse (A and B are excluded).",
+      "if": {
+        "properties": {"open_critical_count": {"minimum": 1}},
+        "required": ["open_critical_count"]
+      },
+      "then": {"properties": {"grade": {"not": {"enum": ["A", "B"]}}}, "required": ["grade"]}
+    }
+  ]
+}

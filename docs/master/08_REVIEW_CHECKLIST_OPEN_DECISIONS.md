@@ -64,7 +64,7 @@
 | G4 | MissedFinding 재귀학습 루프 | 신규 계약 제정 필요, `contracts/state-model-mapping.v1.json`과의 관계 정의 | OPEN |
 | G5 | ReviewFinding/VerificationFinding 장기 생애주기 | 결정: 새 계약 제정 없이 스냅샷 모델(기존 3단계 + 최신 validation_run)로 단순화 — 04에 반영 | FIXED |
 | G6 | PatchRun DRY_RUN 확장 | 결정: 별도 엔티티 신설 없이 기존 `preapply_assessment`/`patch-rollback-receipt.v1.schema.json`으로 단순화 — 04에 반영. BehaviorDiffReport만 신규계약 필요 여부 재검토 남음 | FIXED (BehaviorDiffReport는 별도 추적) |
-| G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, ProgramRiskScore, PolicyPack, NotificationRule, SBOM 등) | 전부 `DESIGN_ONLY` — 계약 제정 우선순위를 06 §11 우선구현순서와 맞춰 재정렬 필요 | OPEN |
+| G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, PolicyPack, NotificationRule, SBOM 등) | 전부 `DESIGN_ONLY` — 계약 제정 우선순위를 06 §11 우선구현순서와 맞춰 재정렬 필요. ProgramRiskScore는 계약 제정 완료로 G7에서 분리 — G32 참조 | OPEN |
 
 이 표는 04 §5의 "아직 계약이 없는 확장" 절과 같은 내용을 재무/영업용 체크리스트와 같은 형식으로 옮긴 것이다.
 
@@ -139,8 +139,15 @@ docs/v2/04(VS Code 구독정책), 06(운영프로세스·고객여정), 07(아�
 
 06 §11 우선 구현 순서에 이 의존성을 반영했다(11번 OMemory가 APPLIED_LOCKED 1건을 실제로 달성하기 전까지 12번 OTraining 착수 금지).
 
-### G31 — KnowledgePattern 자동 강등 계약 부재 (2026-08-09, C6에서 분리)
-`contracts/reusable-pattern-memory.v1.schema.json`에는 승격 임계치(`independent_reproduction_count` 최소 2회)만 있고, 02가 설계한 "재현 실패 누적 시 자동 강등" 메커니즘에 대응하는 계약 필드가 없다. 강등 임계치·실패 카운터·강등 후 상태(예: `DEMOTED`/`DEACTIVATED`)를 이 스키마에 추가 제정해야 한다. `activation_allowed` 필드가 이미 있어 강등을 "false로 전이"로 표현할 수 있을 것으로 보이나, 그 전이를 트리거하는 카운터 필드 자체가 없다. | OPEN
+### G31 — KnowledgePattern 자동 강등 계약 제정 완료 (2026-08-09, C6에서 분리)
+`contracts/reusable-pattern-memory.v1.schema.json`에는 승격 임계치(`independent_reproduction_count` 최소 2회)만 있고, 02가 설계한 "재현 실패 누적 시 자동 강등" 메커니즘에 대응하는 계약 필드가 없었다. `reproduction_failure_count`(정수)와 `demotion_threshold`(const 3, 02의 원래 설계값)를 추가하고, `state`를 `REUSABLE_CANDIDATE` 단일 const에서 `[REUSABLE_CANDIDATE, DEMOTED]` enum으로 확장했으며, `allOf`/`if`/`then` 조건절로 failure_count>=3이면 state=DEMOTED, failure_count<=2이면 state=REUSABLE_CANDIDATE를 강제해 fail-closed로 만들었다. 이 계약의 유일한 실제 작성자인 `KnowledgeSeparationService.java`도 새 필수 필드를 채우도록 갱신(신규 candidate는 failure_count=0, threshold=3)해 실제 코드가 계속 스키마 유효 출력을 내도록 확인했다(`KnowledgeSeparationServiceTest` 2/2 통과). 양성 Fixture(`reusable-pattern-memory.demoted.valid.json`)와 음성 Fixture(`reusable-pattern-memory.invalid.json`, failure_count=3인데 state가 REUSABLE_CANDIDATE로 남은 위반 사례)를 등록했다. `validate-structured-contracts.py --require-full` PASS. | FIXED
+
+### G32 — ProgramRiskScore 계약 제정 완료 (2026-08-09, G7에서 분리)
+G7이 묶어서 추적하던 5개 엔티티(AcceptanceCertificate, ProgramRiskScore, PolicyPack, NotificationRule, SBOM) 중 ProgramRiskScore만 이번에 실제 계약으로 제정했다. 나머지 4개는 여전히 `DESIGN_ONLY`로 G7에 남는다.
+
+`contracts/program-risk-score.v1.schema.json` 신설: `docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md` Risk Scoring 절의 공식(`100 - clamp(10*OpenCritical + 4*OpenHigh + 1*OpenMedium + 2*RecentMissedFinding + 1.5*AIGeneratedRatio점수 + 0.5*평균미해결일수, 0, 100)`)이 쓰는 5개 원시 입력(`open_critical_count`, `open_high_count`, `open_medium_count`, `recent_missed_finding_count`, `ai_generated_ratio_score`, `average_unresolved_days_score`)과 산출값(`score`, `grade`)을 필드로 정의했다. 등급 산정(A/B/C/D/E 5개 구간)과 "Critical Finding이 1건이라도 있으면 등급은 C를 초과할 수 없다" 규칙을 `reusable-pattern-memory.v1.schema.json`에 적용된 것과 같은 `allOf`/`if`/`then` 조건절 기법으로 인코딩했다 — 특히 Critical 상한 규칙이 등급 구간 조건절과 동시에 걸릴 때 서로 모순되지 않도록, A/B 구간 조건에 `open_critical_count == 0`을 함께 요구해 두 조건절이 겹치지 않게 분리했다. 양성 Fixture 2건(`program-risk-score.valid.json` 일반 B등급 사례, `program-risk-score.critical-cap.valid.json` — 원시 점수는 90점으로 A 구간에 해당하지만 Critical 1건 때문에 등급이 C로 강제 하향되는 사례)과 음성 Fixture 1건(`program-risk-score.invalid.json` — 동일 조건에서 등급을 A로 둔 위반 사례)을 `contracts/schema-instance-registry.v1.json`에 등록했다. `python3 scripts/validate-structured-contracts.py --require-full`, `python3 scripts/validate-repository-contracts.py` 모두 PASS.
+
+**등급 컷오프 수치(90/75/60/40)는 여전히 C5 기준 DRAFT다** — 이번 작업은 그 DRAFT 수치를 스키마/계약 구조에 그대로 인코딩(`reusable-pattern-memory.v1.schema.json`에 `demotion_threshold`를 추가했을 때와 같은 이 저장소의 관례)한 것일 뿐, 값 자체를 business-confirm한 것이 아니다. 스키마 설명문에도 이 네 컷오프가 확정값이 아니라는 점을 명시했다. 실제로 Finding/MissedFinding 원본 데이터에서 이 점수를 계산해 채우는 로직(생산 연동)은 이 작업 범위 밖이며 별도 후속 작업이다. `src/main/java/`에는 아직 이 계약을 참조하는 코드가 없음을 확인했다. | FIXED (ProgramRiskScore 계약 제정 완료, 등급 컷오프 확정은 C5로 계속 추적)
 
 ## F. 문서 거버넌스 (참고, 결정 아님)
 
