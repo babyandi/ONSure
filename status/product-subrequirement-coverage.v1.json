@@ -1309,10 +1309,18 @@
       "verification_state": "NOT_RUN",
       "code_refs": [
         "src/main/java/kr/co/oruda/onsure/platform/ModelProviderAdapter.java",
-        "src/main/java/kr/co/oruda/onsure/platform/ModelProviderRegistry.java"
+        "src/main/java/kr/co/oruda/onsure/platform/ModelProviderRegistry.java",
+        "src/main/java/kr/co/oruda/onsure/platform/OpenAiModelProviderAdapter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/AnthropicModelProviderAdapter.java",
+        "src/main/java/kr/co/oruda/onsure/platform/ModelInvocationLedger.java",
+        "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java"
       ],
       "test_refs": [
-        "src/test/java/kr/co/oruda/onsure/platform/ModelProviderAdapterCompatibilityTest.java"
+        "src/test/java/kr/co/oruda/onsure/platform/ModelProviderAdapterCompatibilityTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/OpenAiModelProviderAdapterTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/AnthropicModelProviderAdapterTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/ModelInvocationLedgerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcherProviderTest.java"
       ],
       "evidence_refs": [],
       "required_surfaces": [
@@ -1323,7 +1331,6 @@
       ],
       "missing_controls": [
         "PRODUCTION_CALL_SITE_INTEGRATION_MISSING",
-        "REAL_PROVIDER_NETWORK_INTEGRATION_MISSING",
         "CURRENT_MAIN_LOCAL_RECEIPT_NOT_RUN"
       ],
       "detector_controls": [

@@ -25,7 +25,8 @@ public final class LocalWorkflowDispatcher {
             .findAndRegisterModules()
             .enable(SerializationFeature.INDENT_OUTPUT)
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-    private static final List<String> KNOWN_MODEL_TASK_CLASSES = List.of("REVIEW", "PLANNING");
+    private static final List<String> KNOWN_MODEL_TASK_CLASSES = List.of(
+            "REVIEW", "PLANNING", "RCA", "IMPROVEMENT_PLAN", "AI_BEHAVIOR_VALIDATION", "BEHAVIOR_LEARNING");
     private final Path workspaceRoot;
     private final ApprovalAuthorityPaths approvalAuthority;
     private final AuthenticatedWorkflowIdentity identity;
@@ -37,16 +38,29 @@ public final class LocalWorkflowDispatcher {
 
     public LocalWorkflowDispatcher(
             Path workspaceRoot, AuthenticatedWorkflowIdentity authenticatedIdentity) {
-        this(workspaceRoot, authenticatedIdentity, null);
+        this(workspaceRoot, authenticatedIdentity, defaultModelProviderRegistry());
+    }
+
+    /**
+     * Registers the real OpenAI and Anthropic adapters so {@code provider.status} reflects actual
+     * production availability. Constructing these adapters performs no network I/O and does not
+     * require an API key to be present -- both adapters read their key lazily from the environment
+     * only inside {@code invoke()}, so registration is safe even when no key is configured (an
+     * {@code invoke()} call would simply fail closed at that point, per each adapter's own
+     * fail-closed contract). No production call site invokes {@code invoke()} yet -- that remains a
+     * separate, not-yet-decided step (PRODUCTION_CALL_SITE_INTEGRATION_MISSING in NFR-05's
+     * missing_controls) -- this only makes the registry itself real for status/usage visibility.
+     */
+    private static ModelProviderRegistry defaultModelProviderRegistry() {
+        return new ModelProviderRegistry(List.of(
+                OpenAiModelProviderAdapter.fromEnvironment(),
+                AnthropicModelProviderAdapter.fromEnvironment()));
     }
 
     /**
      * Package-private overload used by tests to exercise {@code provider.status}/{@code
-     * provider.usage} with providers registered. Production wiring of a real
-     * {@link ModelProviderRegistry} is an explicitly separate, not-yet-decided step (see
-     * PRODUCTION_CALL_SITE_INTEGRATION_MISSING in NFR-05's missing_controls); the two public
-     * constructors above always leave this {@code null}, and the dispatcher degrades gracefully
-     * (NO_PROVIDER_REGISTERED) rather than requiring one.
+     * provider.usage} against a caller-supplied registry (e.g. empty/fake providers) instead of the
+     * real default. Pass {@code null} to exercise the NO_PROVIDER_REGISTERED degrade path.
      */
     LocalWorkflowDispatcher(
             Path workspaceRoot, AuthenticatedWorkflowIdentity authenticatedIdentity,

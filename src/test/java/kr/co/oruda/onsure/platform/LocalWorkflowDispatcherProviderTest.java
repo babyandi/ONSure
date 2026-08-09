@@ -16,16 +16,30 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Exercises {@code provider.status}/{@code provider.usage} through the real dispatch() boundary
- * (RBAC included), covering both the current production state (no registry wired in) and a
- * registry populated with in-test fake adapters.
+ * (RBAC included): the current production default (real OpenAI + Anthropic adapters registered,
+ * per {@code LocalWorkflowDispatcher.defaultModelProviderRegistry()}), the explicit
+ * NO_PROVIDER_REGISTERED degrade path, and a registry populated with in-test fake adapters.
  */
 class LocalWorkflowDispatcherProviderTest {
     @TempDir Path temp;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    void providerStatusDegradesGracefullyWhenNoRegistryIsConfigured() throws Exception {
+    void providerStatusListsTheRealDefaultProvidersRegisteredInProduction() throws Exception {
         LocalWorkflowDispatcher dispatcher = new LocalWorkflowDispatcher(temp);
+        Map<String, Object> result = result(dispatcher.dispatch("provider.status", request(Map.of())));
+        assertEquals("PROVIDERS_REGISTERED", result.get("state"));
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> providers = (List<Map<String, Object>>) result.get("providers");
+        List<Object> providerIds = providers.stream().map(entry -> entry.get("provider_id")).toList();
+        assertTrue(providerIds.contains("openai"));
+        assertTrue(providerIds.contains("anthropic"));
+    }
+
+    @Test
+    void providerStatusDegradesGracefullyWhenNoRegistryIsConfigured() throws Exception {
+        LocalWorkflowDispatcher dispatcher = new LocalWorkflowDispatcher(
+                temp, AuthenticatedWorkflowIdentity.localAdministrator(), null);
         Map<String, Object> result = result(dispatcher.dispatch("provider.status", request(Map.of())));
         assertEquals("NO_PROVIDER_REGISTERED", result.get("state"));
         assertEquals(List.of(), result.get("providers"));
