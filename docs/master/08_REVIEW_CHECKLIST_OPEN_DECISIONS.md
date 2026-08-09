@@ -50,6 +50,8 @@
 
 **추가 대조 (같은 날, ONSure 자신의 핵심 차별점인 AI Review를 AI 전용 표준으로 대조)**: OWASP Top 10 for LLM Applications를 03 AI Review 절과 대조한 결과, Prompt Injection/RAG 오염/Excessive Agency/Unbounded Consumption/Misinformation은 이미 커버됐지만 **민감정보 노출(LLM02), 공급망(LLM03, Model/Plugin/Embedding 출처·서명), 출력 처리(LLM05, 모델 출력을 신뢰되지 않은 입력으로 취급)가 완전히 빠져 있었다** — 03 AI Review에 반영했다. 05의 접근성 절도 WCAG 준수 "수준" 자체가 명시돼 있지 않았던 걸 발견해 WCAG 2.1 AA를 목표로 명시하고 명도대비·포커스표시·확대 3개 항목을 추가했다.
 
+**3차 대조 (같은 날, API·AI Agent 거버넌스)**: 04 §7의 실제 API 목록(POST /v1/orders 등)을 OWASP API Security Top 10과 대조한 결과 API9(Improper Inventory Management)는 `workflow-operation-registry.v1.json`이라는 실제 단일 권위 레지스트리로 이미 충족하고 있었지만(강점으로 확인, 문서 변경 없음), **객체 수준 권한 검사(API1)와 민감 업무 흐름 남용 방지(API6)가 원칙으로 명시돼 있지 않았다** — 04 §6에 추가했다. 07의 AI Agent 방법론을 NIST AI RMF의 4개 기능(GOVERN/MAP/MEASURE/MANAGE)과 대조한 결과 GOVERN/MAP/MEASURE는 강하게 커버됐지만(Agent별 최소권한, AIProfile Drift 탐지, Confidence Calibration), **MANAGE(위험 대응) 쪽에서 AI Agent 이상행동이 06 사고 유형 목록에 없었다** — Plan-Act-Observe 루프의 기존 반복·비용 상한 메커니즘([07 §3.2](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))은 있었으나 이게 반복 발생할 때 사고로 승격하는 절차가 없어서 06에 추가했다.
+
 ## D. 영업/상품 확인 필요
 
 | # | 항목 | 현재 초안값 | 위치 | 상태 |

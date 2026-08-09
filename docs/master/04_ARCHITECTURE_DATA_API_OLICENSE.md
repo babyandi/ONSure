@@ -193,6 +193,8 @@ DRAFT → ACTIVE → SUPERSEDED, 예외 BREAKING_CHANGE_FLAGGED. Cross-Program I
 - PII와 Secret을 오류 본문에 넣지 않는다.
 - 인증: Web/Admin Console은 Session Cookie + CSRF Token, VS Code Extension은 OAuth2 Authorization Code + PKCE로 발급한 단기 Access Token과 Refresh Token, 외부 시스템 M2M 연동은 OAuth2 Client Credentials를 기본으로 하며 Enterprise에 한해 IP Allowlist가 결속된 장기 API Key를 허용한다
 - Access Token 수명은 1시간 이내로 하고 Refresh Token 회전(Rotation)을 적용한다
+- 객체 수준 권한 검사(신규, OWASP API Security Top 10 API1 대조로 2026-08-09 발견): `GET /v1/cases/{caseId}` 같은 객체 ID 기반 API는 호출자가 인증됐다는 것만으로 부족하며, 매 요청마다 해당 caseId/programId 등 구체적 객체가 호출자의 Organization/Tenant Context에 실제로 속하는지 검사해야 한다 — 인증(누구인지)과 객체 수준 인가(이 특정 객체에 접근 가능한지)를 분리한다
+- 민감 업무 흐름 보호(신규, API6 대조로 2026-08-09 발견): `POST /v1/orders`, `POST /v1/cases/{caseId}/approve-scope` 등 금전·승인이 걸린 흐름은 일반 Rate Limit(NFR-AVAIL)과 별개로 남용 탐지(동일 Actor의 비정상적으로 빈번한 반복 호출)를 적용한다
 
 ## 7. 주요 API
 ### Case

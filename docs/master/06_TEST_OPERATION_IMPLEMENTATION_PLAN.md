@@ -250,6 +250,7 @@ SLA, Support, Billing, Security 문서, Incident Runbook, Rollback 준비 완료
 - Evidence 손상
 - 삭제 실패
 - 재귀학습 개정 회귀 실패(Rule/Pattern 개정이 False Positive를 급증시킨 경우 즉시 이전 Rule Pack Digest로 Rollback)
+- AI Agent 이상행동(신규, NIST AI RMF MANAGE 기능 대조로 2026-08-09 발견): Agent가 [07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) §3.1 권한표를 벗어난 Tool 호출을 시도하거나, §3.2 Plan-Act-Observe 루프의 반복·비용 상한(Max Turn/Token/Credit)에 비정상적으로 자주 도달하는 경우. 상한 도달 자체는 이미 정상 Stop Condition으로 처리되지만(강제종료 후 INCONCLUSIVE 표시), 짧은 기간 내 반복 발생하면 개별 실행 실패가 아니라 이 사고 유형으로 승격해 Containment(해당 Agent Credential 즉시 정지)와 RCA를 별도로 남긴다
 
 사고는 Severity, Owner, Timeline, Customer Communication, Containment, RCA, Corrective Action, Regression Test를 남긴다.
 
