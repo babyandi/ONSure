@@ -15,12 +15,15 @@ import kr.co.oruda.onsure.platform.ValidationModel.TargetType;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /** Default generic stages used by the first commercial ONSURE engine slice. */
 public final class BuiltInStages {
@@ -34,6 +37,7 @@ public final class BuiltInStages {
                 new AiBehaviorStage(),
                 new DependencyScanStage(),
                 new RuntimeFixtureStage(),
+                new ContainerValidationStage(),
                 new FailureAnalysisStage(),
                 new RegressionLockStage());
     }
@@ -314,6 +318,158 @@ public final class BuiltInStages {
         }
     }
 
+    /**
+     * Adds a container-based execution type to the generic Validator Engine: when a target's
+     * source root has its own {@code Dockerfile}, this stage builds it and runs a bounded
+     * smoke-test container, observing exit code and output -- the exact same PASS/FAIL-oracle
+     * philosophy {@link RuntimeFixtureStage} already applies to fixture command execution. This
+     * closes the "container validation" execution-type gap in FR-05-A (validation execution types
+     * must include static analysis, unit/integration/e2e, API, CLI, AI-behavior, and container
+     * validation).
+     *
+     * <p>Scope: this validates a target repository's OWN {@code Dockerfile} as one check among
+     * many. It intentionally does NOT accept a container image as the top-level thing being
+     * validated -- that is the separate, larger, still-undefined {@code CONTAINER_IMAGE}
+     * supported_source_kind on {@link TargetAdapter} / {@code contracts/target-adapter.v1.json},
+     * and is out of scope here.
+     *
+     * <p>A target's Dockerfile is arbitrary, untrusted build/run instructions and is treated
+     * exactly as untrusted as {@link RuntimeFixtureStage} treats target fixtures: every docker
+     * invocation goes through {@link BoundedProcessRunner} (wall-clock timeout, bounded output
+     * capture, fully-controlled allowlisted environment) -- never a raw {@code ProcessBuilder} and
+     * never shell string concatenation. The build uses a per-run-unique image tag (never {@code
+     * latest}), the smoke-test container runs with {@code --network none} (matching the {@code
+     * DENY_BY_DEFAULT} network-egress posture {@link ExecutionPlanService} already enforces
+     * elsewhere) and {@code --rm}, and the built image is always removed afterward -- success or
+     * failure -- via a {@code finally} block.
+     */
+    private static final class ContainerValidationStage implements ValidatorStage {
+        private static final Duration BUILD_TIMEOUT = Duration.ofSeconds(120);
+        private static final Duration RUN_TIMEOUT = Duration.ofSeconds(30);
+        private static final Duration CLEANUP_TIMEOUT = Duration.ofSeconds(30);
+        private static final String IMAGE_TAG_PREFIX = "onsure-container-validation:";
+
+        @Override public String stageId() { return "CONTAINER_VALIDATION"; }
+
+        @Override public boolean supports(ValidationContext context) {
+            return Files.isRegularFile(context.target().sourceRoot().resolve("Dockerfile"));
+        }
+
+        @Override
+        public StageResult execute(ValidationContext context) throws Exception {
+            Instant start = Instant.now();
+            int before = context.findings().size();
+            Path sourceRoot = context.target().sourceRoot();
+            Map<String, String> environment = dockerEnvironment();
+            String imageTag = IMAGE_TAG_PREFIX + UUID.randomUUID().toString().replace("-", "");
+
+            try {
+                CommandOutcome build = runDocker(
+                        List.of("docker", "build", "-t", imageTag, "."),
+                        sourceRoot, BUILD_TIMEOUT, environment, "CONTAINER_VALIDATION_BUILD");
+                String buildEvidenceId = recordEvidence(context, "CONTAINER_BUILD_RESULT", imageTag, build);
+                if (!build.succeeded()) {
+                    addFinding(context, stageId(), "CONTAINER_BUILD_OR_RUNTIME_FAILURE", Severity.HIGH,
+                            "Container image failed to build",
+                            "docker build of " + sourceRoot.resolve("Dockerfile") + " " + build.summary(),
+                            "Dockerfile", List.of(buildEvidenceId));
+                    return result(stageId(), Decision.FAIL, start, context, before, Map.of(
+                            "build_succeeded", false, "run_executed", false));
+                }
+
+                CommandOutcome run = runDocker(
+                        List.of("docker", "run", "--rm", "--network", "none", imageTag),
+                        sourceRoot, RUN_TIMEOUT, environment, "CONTAINER_VALIDATION_RUN");
+                String runEvidenceId = recordEvidence(context, "CONTAINER_RUN_RESULT", imageTag, run);
+                if (!run.succeeded()) {
+                    addFinding(context, stageId(), "CONTAINER_BUILD_OR_RUNTIME_FAILURE", Severity.HIGH,
+                            "Container smoke-test run failed",
+                            "docker run of " + imageTag + " " + run.summary(),
+                            "Dockerfile", List.of(runEvidenceId));
+                    return result(stageId(), Decision.FAIL, start, context, before, Map.of(
+                            "build_succeeded", true, "run_executed", true, "exit_code", run.exitCode()));
+                }
+
+                return result(stageId(), Decision.PASS, start, context, before, Map.of(
+                        "build_succeeded", true, "run_executed", true, "exit_code", run.exitCode()));
+            } finally {
+                cleanupImage(sourceRoot, imageTag, environment);
+            }
+        }
+
+        /**
+         * Only PATH is allowlisted: docker build/run against a locally-cached base image needs
+         * nothing else (verified against this sandbox's real dockerd, which uses the default
+         * rootful unix socket and needs no DOCKER_HOST/HOME/XDG_RUNTIME_DIR to be reachable).
+         */
+        private static Map<String, String> dockerEnvironment() {
+            Map<String, String> environment = new LinkedHashMap<>();
+            String path = System.getenv("PATH");
+            if (path != null) environment.put("PATH", path);
+            return environment;
+        }
+
+        private static CommandOutcome runDocker(List<String> command, Path directory, Duration timeout,
+                Map<String, String> environment, String authority) {
+            try {
+                BoundedProcessRunner.Result processResult = BoundedProcessRunner.run(
+                        command, directory, timeout, environment, authority);
+                return new CommandOutcome(processResult.exitCode() == 0, false, processResult.exitCode(),
+                        processResult.output(), processResult.outputTruncated());
+            } catch (IllegalStateException timeoutOrDrainFailure) {
+                return new CommandOutcome(false, true, -1,
+                        String.valueOf(timeoutOrDrainFailure.getMessage()), false);
+            } catch (Exception unexpected) {
+                return new CommandOutcome(false, false, -1, String.valueOf(unexpected.getMessage()), false);
+            }
+        }
+
+        /**
+         * Best-effort image cleanup that always runs, whether the build/run steps succeeded,
+         * failed, or threw. If the build never produced this tag (e.g. it failed before the final
+         * layer was named), there is nothing to remove and docker reports a non-zero exit that is
+         * intentionally swallowed here rather than masking the real stage result.
+         */
+        private static void cleanupImage(Path directory, String imageTag, Map<String, String> environment) {
+            try {
+                BoundedProcessRunner.run(List.of("docker", "image", "rm", "-f", imageTag),
+                        directory, CLEANUP_TIMEOUT, environment, "CONTAINER_VALIDATION_CLEANUP");
+            } catch (Exception ignored) {
+                // Nothing to remove, or removal itself failed; the stage result already reflects
+                // the real build/run outcome and must not be overridden by cleanup failure.
+            }
+        }
+
+        private static String recordEvidence(ValidationContext context, String evidenceType, String imageTag,
+                CommandOutcome outcome) {
+            String outputDigest = Hashing.sha256(outcome.output() == null ? "" : outcome.output());
+            String digest = Hashing.sha256(evidenceType + "|" + imageTag + "|" + outcome.exitCode()
+                    + "|" + outputDigest);
+            String evidenceId = "EV-CONTAINER-" + digest.substring(0, 16);
+            context.addEvidence(new Evidence(evidenceId, evidenceType, imageTag, digest, Instant.now(),
+                    Map.of(
+                            "image_tag", imageTag,
+                            "succeeded", outcome.succeeded(),
+                            "timed_out", outcome.timedOut(),
+                            "exit_code", outcome.exitCode(),
+                            "output_sha256", outputDigest,
+                            "output_truncated", outcome.outputTruncated())));
+            return evidenceId;
+        }
+
+        private record CommandOutcome(
+                boolean succeeded, boolean timedOut, int exitCode, String output, boolean outputTruncated) {
+            String summary() {
+                String excerpt = output == null ? "" : output.strip();
+                if (excerpt.length() > 500) excerpt = excerpt.substring(0, 500) + "...(truncated)";
+                String base = timedOut
+                        ? "timed out"
+                        : "exited with code " + exitCode + (outputTruncated ? " (docker output truncated)" : "");
+                return excerpt.isEmpty() ? base : base + ": " + excerpt;
+            }
+        }
+    }
+
     private static final class FailureAnalysisStage implements ValidatorStage {
         @Override public String stageId() { return "FAILURE_MODE_AND_RCA"; }
         @Override public boolean supports(ValidationContext context) { return true; }
@@ -427,6 +583,7 @@ public final class BuiltInStages {
             case "AI_DATA_EXFILTRATION" -> "FM-AI-DATA-EXFILTRATION";
             case "RUNTIME_BEHAVIOR" -> "FM-ORACLE-DIVERGENCE";
             case "DEPENDENCY_VULNERABILITY" -> "FM-DEPENDENCY-VULNERABILITY";
+            case "CONTAINER_BUILD_OR_RUNTIME_FAILURE" -> "FM-CONTAINER-VALIDATION-FAILURE";
             default -> "FM-GENERIC-CORRECTNESS";
         };
     }
@@ -453,6 +610,7 @@ public final class BuiltInStages {
             case "AI_DATA_EXFILTRATION" -> "Context egress controls and data minimization were absent.";
             case "RUNTIME_BEHAVIOR" -> "Implemented runtime behavior diverged from the declared acceptance Oracle.";
             case "DEPENDENCY_VULNERABILITY" -> "A dependency with a known-vulnerable exact version was declared and not caught before validation.";
+            case "CONTAINER_BUILD_OR_RUNTIME_FAILURE" -> "The target's container image did not build cleanly or its smoke-test run diverged from the expected zero-exit oracle.";
             default -> "Implementation and acceptance criteria were not fully bound by executable validation.";
         };
     }
@@ -465,6 +623,7 @@ public final class BuiltInStages {
             case "AI_DATA_EXFILTRATION" -> "Apply context minimization, egress allowlists, redaction, and receipt binding.";
             case "RUNTIME_BEHAVIOR" -> "Correct the implementation and preserve the failing fixture as a regression test.";
             case "DEPENDENCY_VULNERABILITY" -> "Upgrade the dependency past the denylisted version, or remove it, then re-run the dependency scan.";
+            case "CONTAINER_BUILD_OR_RUNTIME_FAILURE" -> "Fix the Dockerfile build or the container's runtime behavior so the image builds cleanly and the smoke-test container exits 0, then re-run the container validation stage.";
             default -> "Implement the missing control and add focused plus full regression tests.";
         };
     }
