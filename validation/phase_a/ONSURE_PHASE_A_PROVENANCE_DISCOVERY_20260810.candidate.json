@@ -16,9 +16,36 @@
     "/workspace filesystem ONSure/Phase/D01-D22 candidate search",
     "ONSure Git refs and history",
     "ORUDA Git refs, history, reflogs, and unreachable blobs",
+    "GitHub babyandi/ORUDA PR #950 metadata, changed-file inventory, and discussion timeline",
+    "GitHub babyandi/ORUDA remote branch search for ONSure branches",
     "Codex execution-session provenance records from 2026-08-09",
     "/tmp/ORUDA-onsure-phaseb preserved worktree"
   ],
+  "external_provenance": {
+    "pull_request": {
+      "repository": "babyandi/ORUDA",
+      "number": 950,
+      "url": "https://github.com/babyandi/ORUDA/pull/950",
+      "state": "OPEN_DRAFT",
+      "head_ref": "obuilder/hantong-semantic-depth-gate-20260809",
+      "observed_head_sha": "9f01ce149eed7539df0fcabb3e00eef6c4951c1a",
+      "assessment": [
+        "The PR description says the actual blind generative replay/independent reconstruction was NOT_RUN at the initial method-validation boundary.",
+        "PR discussion comment 5231304704 explicitly classifies the preflight as NONBLIND because the session had already seen Golden-related context.",
+        "PR discussion comment 5231467298 describes OBUILDER_ONSURE_PHASE_A_SEMANTIC_REPLAY.candidate.v1.0.0.json as a new Phase A artifact created during semantic replay, not preserved original bytes.",
+        "PR discussion comment 5231517499 defines the intended order as Phase A freeze, isolated Phase B freeze, post-freeze D23, then Golden; it does not supply a pre-Golden original Phase A identity receipt."
+      ]
+    },
+    "remote_branch_search": {
+      "query": "onsure",
+      "branches_found": [
+        "codex/onsure-verification-cause-remediation-20260724",
+        "work/obuilder-onsure-discovery-baseline-20260809"
+      ],
+      "baseline_branch_head": "b7971429d219c61ad6ff8bc28df2df41143af6a0",
+      "baseline_branch_assessment": "No ONSure Phase A, D01-D22 freeze, D23, or associated provenance receipt/manifest file is present on the baseline branch."
+    }
+  },
   "candidates": [
     {
       "path": "products/obuilder/benchmarks/OBUILDER_ONSURE_NONBLIND_PREFLIGHT_DISCOVERY.candidate.v1.0.0.json",
