@@ -78,6 +78,24 @@ ExecutionPlan, ScopeManifest, ScenarioPlan, ResourceEstimate, ApprovalReceipt, C
 ### 수용기준
 - CoverageReport 없이 "전체 검토 완료"로 표현하지 않는다. 제외된 Component가 있으면 Case Dashboard와 Delivery에 항상 노출한다
 
+### CoverageReport 상세 기능정의(2026-08-09 — "우리가 정말 다 봤는지 어떻게 보장하냐"는 질문에 대한 실제 답. 계약은 아직 없음, `DESIGN_ONLY`)
+CoverageReport는 "전체 검토 완료"라는 표현을 원천적으로 막기 위한 장치다 — 무엇을 봤는지가 아니라 **무엇을 안/못 봤는지와 왜**를 항상 같이 공개한다.
+
+- `coverage_report_id`
+- `run_reference`: 이 CoverageReport가 속한 ExecutionPlan/OReview/OVerification 실행 참조
+- `scope_source`: 전체 범위의 기준(Program Profile의 ComponentGraph — [3장 OLearning](#3-olearning) 산출물)
+- `included`: 배열. 각 항목은 `component_id`, 적용된 Review/Verification 영역 목록(예: Requirement/Architecture/Code/Security/Test), 결과(PASS/FAIL/HOLD)
+- `excluded`: 배열. 각 항목은:
+  - `component_id`
+  - `exclusion_reason`(enum): `RISK_BASED_DEPRIORITIZATION`(위험기반 범위축소), `OUT_OF_CONTRACT_SCOPE`(계약범위 밖), `NO_ACCESS`(접근불가), `UNSUPPORTED_LANGUAGE_OR_FORMAT`(미지원 언어/형식), `TIME_BUDGET_EXCEEDED`(시간예산 초과), `CUSTOMER_REQUESTED_EXCLUSION`(고객요청)
+  - `excluded_by`: 이 제외를 결정한 Actor 또는 정책
+  - `excluded_at`
+- `domain_coverage`: 리뷰 영역별([5장 OReview](#5-oreview) 11개 영역 기준) RUN/NOT_RUN/PARTIAL 집계 — OReview §6의 `NOT_RUN` Decision과 직접 연동
+- `coverage_percent`: `included / (included + excluded)`로 계산하되, **이 숫자 하나만 단독으로 노출하지 않는다** — 반드시 `excluded` 목록과 함께 표시해야 한다(숫자만 보여주면 정확히 이 절이 막으려는 "봤다고 착각하게 만드는" 실패 모드를 그대로 재현하게 된다)
+- `generated_at`
+
+수용기준(기존 79번 항목을 필드 수준으로 구체화): Case Dashboard와 Delivery Report는 `coverage_percent`를 표시하는 화면마다 반드시 같은 화면 또는 한 클릭 이내 거리에 `excluded` 목록을 노출해야 한다.
+
 ## 5. OReview
 ### Review 영역
 Requirement, Architecture, Design, Policy, Code, AI, Security, Performance, Test, Quality, Merge

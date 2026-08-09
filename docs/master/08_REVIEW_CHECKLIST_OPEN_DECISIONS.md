@@ -42,6 +42,8 @@
 | C11 | NFR-OBS 구조화 로그 최소 필드셋 | 제안값(operation/actor/duration/decision/evidence_ref) | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
 | C12 | NFR-SESSION 세션 타임아웃·동시세션 상한 | 미정 — 외부표준(OWASP ASVS V3) 대조로 2026-08-09 신규 발견 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
 | C13 | NFR-CONFIG 필수 HTTP 보안 헤더 목록 | 제안값(Strict-Transport-Security, X-Content-Type-Options 등) — 외부표준(OWASP ASVS V14) 대조로 2026-08-09 신규 발견 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+| C14 | Confidence Calibration 편향 판정 임계치 | 미정(calibration_error 몇 %p 이상이면 편향으로 볼지) | [03 §9](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) | OPEN |
+| C15 | Confidence Calibration 재보정 트리거 연속 Window 수(N) | 미정 | [03 §9](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) | OPEN |
 
 ### 외부표준 대조 (2026-08-09) — OWASP ASVS / ISO-IEC 25010 / NIST SSDF
 기능정의(02·03)를 이 세 표준과 항목 단위로 대조했다. Security Review(03 §4)는 예상보다 탄탄해서(JWT/SSRF/XSS/CSRF/SQLi/암호화/키회전까지 구체적으로 존재) ASVS 대비 큰 구멍은 세션관리(V3)·보안설정(V14)·파일업로드(V12) 세 항목뿐이었고 위에 반영했다(03 Security Review, C12/C13). NIST SSDF는 PW(Produce Well-Secured Software)는 잘 커버되지만 **RV(Respond to Vulnerabilities, 배포 후 취약점 대응)가 구조적으로 약하다** — 이건 새로 발견한 게 아니라 이미 `status/product-subrequirement-coverage.v1.json`의 FR-03-A/FR-03-C가 `DIRECT_PRODUCTION_TOOL_TELEMETRY_NOT_RUN`/`DIRECT_PRODUCTION_POLICY_TELEMETRY_NOT_RUN`으로 추적 중이던 gap과 정확히 일치한다 — 외부표준 대조와 기존 self-tracking이 독립적으로 같은 결론에 도달한 것이므로 새 항목을 추가하지 않고 기존 추적으로 합류시킨다. ISO/IEC 25010은 NFR-PORT(Portability)·05(Usability 접근성)가 이미 해당 특성을 커버하고 있어 별도 gap 없음.
@@ -53,6 +55,14 @@
 **3차 대조 (같은 날, API·AI Agent 거버넌스)**: 04 §7의 실제 API 목록(POST /v1/orders 등)을 OWASP API Security Top 10과 대조한 결과 API9(Improper Inventory Management)는 `workflow-operation-registry.v1.json`이라는 실제 단일 권위 레지스트리로 이미 충족하고 있었지만(강점으로 확인, 문서 변경 없음), **객체 수준 권한 검사(API1)와 민감 업무 흐름 남용 방지(API6)가 원칙으로 명시돼 있지 않았다** — 04 §6에 추가했다. 07의 AI Agent 방법론을 NIST AI RMF의 4개 기능(GOVERN/MAP/MEASURE/MANAGE)과 대조한 결과 GOVERN/MAP/MEASURE는 강하게 커버됐지만(Agent별 최소권한, AIProfile Drift 탐지, Confidence Calibration), **MANAGE(위험 대응) 쪽에서 AI Agent 이상행동이 06 사고 유형 목록에 없었다** — Plan-Act-Observe 루프의 기존 반복·비용 상한 메커니즘([07 §3.2](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))은 있었으나 이게 반복 발생할 때 사고로 승격하는 절차가 없어서 06에 추가했다.
 
 **4차 대조 (같은 날, Sandbox 격리)**: ONSure가 고객 코드를 실제로 실행하는 가장 위험한 경계인 04 Sandbox 절을 NIST SP 800-190/일반 Linux 샌드박싱 관행과 대조했다. Namespace 분리, Read-only Source 마운트, 전체 Capability Drop, Fail-closed, Tenant별 Cross-read/write 거부, Egress Deny-by-default까지 이미 이례적으로 탄탄했다(이번 세션에서 대조한 절 중 가장 견고함). 다만 **Seccomp-bpf Syscall 필터링이 계약과 실제 `bwrap` 호출 코드 어디에도 없었다**(`grep -rn seccomp` 0건, 직접 확인) — Capability Drop과는 다른 방어 계층이라 04에 DESIGN_ONLY로 기록했다. 실제 코드 반영은 대상 분석 툴체인이 필요로 하는 Syscall 집합을 먼저 조사해야 하는 별도 작업이라 이번엔 하지 않았다.
+
+### 완전성 보장 메커니즘 상세설계 (2026-08-09) — "ONSure가 대상을 완벽히 검증한다고 어떻게 보장하냐"는 질문에 대한 실제 답
+사용자가 제기한 핵심 질문: 어떤 검증 시스템도 대상의 완전한 결함 부재를 일반적으로 증명할 수 없다(정지 문제와 연결되는 근본적 한계). ONSure의 실제 답은 "완벽하다"가 아니라 "정확히 뭘 봤고 뭘 못 봤는지, 얼마나 확신했고 그 확신이 실제로 맞았는지를 항상 감사 가능하게 공개한다"는 것이다. 이 답을 실제로 지탱하는 3개 장치를 코드/계약에서 확인한 결과 **`final_claim_allowed: false`만 실제로 21개 계약에 강제되고 있었고, CoverageReport·Confidence Calibration·MissedFinding은 이름만 여러 문서에 흩어져 있을 뿐 필드 수준 설계가 없었다**(MissedFinding은 특히 "실제 계약 확인됨"이라는 잘못된 서술까지 있었다 — 04에서 정정). 이번 라운드에서 셋 다 필드 수준 기능정의를 새로 작성했다(구현은 하지 않음, 사용자 지시):
+- **CoverageReport**: [02 §4 OPlanning](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)에 `included`/`excluded`(사유·결정자 포함)/`domain_coverage`/`coverage_percent` 필드와 "숫자만 단독 노출 금지" 원칙을 추가
+- **MissedFinding**: [04](04_ARCHITECTURE_DATA_API_OLICENSE.md)에 `discovery_path`(5종, 02 §7-1 수용기준에서 이미 쓰던 어휘 재사용)/`original_run_reference`/`agent_context`/`rca_reference`/`promoted_candidate_id` 필드를 추가하고, 이미 실재하는 일반 승격 파이프라인(`learning-to-application-pipeline.v1.json`)의 "투입 이전 입구" 역할로 명확히 분리
+- **Confidence Calibration**: [03 §9](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md)에 정답 판정 신호(Cross-Model Verification 결과/Human Reviewer 결정 재사용, 새 Finding 상태 발명 안 함)와 `buckets`/`systematic_bias`/`recalibration_flag` 필드 추가. 편향 임계치·재보정 트리거 Window 수는 C14/C15로 신규 추적
+
+셋 다 여전히 `DESIGN_ONLY`다(계약·코드는 다음 단계). 이번 라운드의 목적은 "구현 가능한 수준으로 설계를 끝내는 것"이었다.
 
 ## D. 영업/상품 확인 필요
 
