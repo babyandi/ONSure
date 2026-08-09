@@ -52,6 +52,8 @@
 
 **3차 대조 (같은 날, API·AI Agent 거버넌스)**: 04 §7의 실제 API 목록(POST /v1/orders 등)을 OWASP API Security Top 10과 대조한 결과 API9(Improper Inventory Management)는 `workflow-operation-registry.v1.json`이라는 실제 단일 권위 레지스트리로 이미 충족하고 있었지만(강점으로 확인, 문서 변경 없음), **객체 수준 권한 검사(API1)와 민감 업무 흐름 남용 방지(API6)가 원칙으로 명시돼 있지 않았다** — 04 §6에 추가했다. 07의 AI Agent 방법론을 NIST AI RMF의 4개 기능(GOVERN/MAP/MEASURE/MANAGE)과 대조한 결과 GOVERN/MAP/MEASURE는 강하게 커버됐지만(Agent별 최소권한, AIProfile Drift 탐지, Confidence Calibration), **MANAGE(위험 대응) 쪽에서 AI Agent 이상행동이 06 사고 유형 목록에 없었다** — Plan-Act-Observe 루프의 기존 반복·비용 상한 메커니즘([07 §3.2](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))은 있었으나 이게 반복 발생할 때 사고로 승격하는 절차가 없어서 06에 추가했다.
 
+**4차 대조 (같은 날, Sandbox 격리)**: ONSure가 고객 코드를 실제로 실행하는 가장 위험한 경계인 04 Sandbox 절을 NIST SP 800-190/일반 Linux 샌드박싱 관행과 대조했다. Namespace 분리, Read-only Source 마운트, 전체 Capability Drop, Fail-closed, Tenant별 Cross-read/write 거부, Egress Deny-by-default까지 이미 이례적으로 탄탄했다(이번 세션에서 대조한 절 중 가장 견고함). 다만 **Seccomp-bpf Syscall 필터링이 계약과 실제 `bwrap` 호출 코드 어디에도 없었다**(`grep -rn seccomp` 0건, 직접 확인) — Capability Drop과는 다른 방어 계층이라 04에 DESIGN_ONLY로 기록했다. 실제 코드 반영은 대상 분석 툴체인이 필요로 하는 Syscall 집합을 먼저 조사해야 하는 별도 작업이라 이번엔 하지 않았다.
+
 ## D. 영업/상품 확인 필요
 
 | # | 항목 | 현재 초안값 | 위치 | 상태 |
