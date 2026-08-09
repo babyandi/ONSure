@@ -90,6 +90,9 @@ OReview는 단순한 문법·버그 탐지기가 아니다. 요구사항, 설계
 - SSRF, XSS, CSRF, SQL/Command Injection
 - 암호화와 키 회전
 - 관리자 권한과 감사로그
+- 세션 관리(신규, OWASP ASVS V3 대조로 2026-08-09 발견): 세션 타임아웃 누락, 동시 세션 수 무제한, 세션 고정(Session Fixation) 취약점, 로그아웃 시 서버측 세션 무효화 누락
+- 보안 설정(신규, OWASP ASVS V14 대조로 2026-08-09 발견): 필수 HTTP 보안 헤더 누락(Strict-Transport-Security, X-Content-Type-Options 등), CORS가 모든 Origin을 허용하는 과도한 설정, 불필요한 디버그/상세 에러 정보 노출
+- 파일 업로드 검증(신규, OWASP ASVS V12 대조로 2026-08-09 발견): 업로드 파일의 확장자·MIME Type·크기 미검증, 업로드 경로에 대한 별도 Path Traversal 검토 누락
 
 ### Test Review
 - 정상경로만 존재하는지

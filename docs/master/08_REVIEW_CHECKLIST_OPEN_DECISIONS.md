@@ -36,6 +36,17 @@
 | C5 | ProgramRiskScore 등급 컷오프 | A≥90, B≥75, C≥60, D≥40 | [04](04_ARCHITECTURE_DATA_API_OLICENSE.md) | DRAFT |
 | C6 | KnowledgePattern 승격/강등 임계치 | 두 개의 서로 다른 개념이 섞여 있었음: (1) 승격에 필요한 독립 재현 횟수는 계약값(최소 2회)이 권위이며 02·04를 정정 완료. (2) 재현 실패 누적에 따른 자동 강등은 대응 계약 필드 자체가 없는 별도의 `DESIGN_ONLY` 항목으로 02에 명시함 — 강등 임계치·카운터·상태전이 계약 제정은 G31로 이관 | [02](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §5](04_ARCHITECTURE_DATA_API_OLICENSE.md) | FIXED (승격 임계치 정정 완료, 강등 계약 제정은 G31로 신규 추적) |
 | C7 | 사고 공지 대응시간 | Critical 사고 15분 이내 Status Page+개별통지 동시 시작 | [06](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | DRAFT |
+| C8 | NFR-SEC 저장 암호화 알고리즘 | AES-256 이상(제안) | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+| C9 | NFR-REL 최대 재시도·Backoff 정책 | 미정 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
+| C10 | NFR-PRIV 고객별 데이터 보존기간 | 미정(계약별 협의 대상) | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
+| C11 | NFR-OBS 구조화 로그 최소 필드셋 | 제안값(operation/actor/duration/decision/evidence_ref) | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+| C12 | NFR-SESSION 세션 타임아웃·동시세션 상한 | 미정 — 외부표준(OWASP ASVS V3) 대조로 2026-08-09 신규 발견 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN |
+| C13 | NFR-CONFIG 필수 HTTP 보안 헤더 목록 | 제안값(Strict-Transport-Security, X-Content-Type-Options 등) — 외부표준(OWASP ASVS V14) 대조로 2026-08-09 신규 발견 | [02 §11](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | DRAFT |
+
+### 외부표준 대조 (2026-08-09) — OWASP ASVS / ISO-IEC 25010 / NIST SSDF
+기능정의(02·03)를 이 세 표준과 항목 단위로 대조했다. Security Review(03 §4)는 예상보다 탄탄해서(JWT/SSRF/XSS/CSRF/SQLi/암호화/키회전까지 구체적으로 존재) ASVS 대비 큰 구멍은 세션관리(V3)·보안설정(V14)·파일업로드(V12) 세 항목뿐이었고 위에 반영했다(03 Security Review, C12/C13). NIST SSDF는 PW(Produce Well-Secured Software)는 잘 커버되지만 **RV(Respond to Vulnerabilities, 배포 후 취약점 대응)가 구조적으로 약하다** — 이건 새로 발견한 게 아니라 이미 `status/product-subrequirement-coverage.v1.json`의 FR-03-A/FR-03-C가 `DIRECT_PRODUCTION_TOOL_TELEMETRY_NOT_RUN`/`DIRECT_PRODUCTION_POLICY_TELEMETRY_NOT_RUN`으로 추적 중이던 gap과 정확히 일치한다 — 외부표준 대조와 기존 self-tracking이 독립적으로 같은 결론에 도달한 것이므로 새 항목을 추가하지 않고 기존 추적으로 합류시킨다. ISO/IEC 25010은 NFR-PORT(Portability)·05(Usability 접근성)가 이미 해당 특성을 커버하고 있어 별도 gap 없음.
+
+요구사항 품질 측면에서는 OReview/OMemory(02 §5, §7-1, 03 §9-1)가 이례적으로 검증 가능한 형태(모델버전+Temperature까지 Receipt 결속, Confidence Calibration 실측)로 쓰인 반면 11장 비기능요구사항은 전부 키워드 나열이라 테스트 케이스를 만들 수 없었다 — 위에서 전면 재작성했다(NFR-SEC~NFR-CONFIG, 신규 NFR-SESSION/NFR-CONFIG 포함).
 
 ## D. 영업/상품 확인 필요
 
