@@ -1,44 +1,22 @@
 {
   "contract": "ONSURE_SEMANTIC_ASSURANCE_V2_SCHEMA_INSTANCE_REGISTRY_CANDIDATE_V1",
-  "version": "1.0.0-candidate",
+  "version": "1.1.0-candidate",
   "status": "DESIGN_ONLY_NONFINAL",
   "pairs": [
-    {
-      "schema": "contracts/assurance-status-vocabulary.candidate.v2.schema.json",
-      "valid_instances": ["fixtures/contracts/v2/assurance-status-v2.valid.json"],
-      "invalid_instances": [
-        "fixtures/contracts/v2/assurance-status-v2.pass-not-run.invalid.json",
-        "fixtures/contracts/v2/assurance-status-v2.final-stale.invalid.json"
-      ],
-      "semantic_invariants": ["PASS_REQUIRES_EXECUTED_AND_EVIDENCE_BOUND", "FINAL_REQUIRES_CURRENT_FRESHNESS_AND_QUALIFIED_INDEPENDENCE"]
-    },
-    {
-      "schema": "contracts/assurance-receipt-envelope.candidate.v2.schema.json",
-      "valid_instances": ["fixtures/contracts/v2/assurance-receipt-envelope-v2.valid.json"],
-      "invalid_instances": [
-        "fixtures/contracts/v2/assurance-receipt-envelope-v2.independent-false.invalid.json",
-        "fixtures/contracts/v2/assurance-receipt-envelope-v2.pass-stale.invalid.json"
-      ],
-      "semantic_invariants": ["INDEPENDENT_CLASS_REQUIRES_INDEPENDENT_TRUE", "PASS_REQUIRES_CURRENT_FRESHNESS"]
-    },
-    {
-      "schema": "contracts/authority-principal-profile.candidate.v2.schema.json",
-      "valid_instances": ["fixtures/contracts/v2/authority-principal-v2.valid.json"],
-      "invalid_instances": [
-        "fixtures/contracts/v2/authority-principal-v2.revoked-without-time.invalid.json",
-        "fixtures/contracts/v2/authority-principal-v2.qualification-required-not-required.invalid.json"
-      ],
-      "semantic_invariants": ["REVOKED_REQUIRES_REVOCATION_TIME_AND_REASON", "REQUIRED_QUALIFICATION_CANNOT_BE_NOT_REQUIRED"]
-    },
-    {
-      "schema": "contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json",
-      "valid_instances": ["fixtures/contracts/v2/semantic-gate-v2.valid.json"],
-      "invalid_instances": [
-        "fixtures/contracts/v2/semantic-gate-v2.pass-with-open-p0.invalid.json",
-        "fixtures/contracts/v2/semantic-gate-v2.pass-with-self-otester.invalid.json"
-      ],
-      "semantic_invariants": ["PASS_REQUIRES_ZERO_BLOCKING_FINDINGS", "PASS_REQUIRES_INDEPENDENT_QUALIFIED_OTESTER_OAUDIT", "PASS_REQUIRES_ZERO_SEMANTIC_NOT_RUN"]
-    }
+    {"schema":"contracts/assurance-status-vocabulary.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/assurance-status-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/assurance-status-v2.pass-not-run.invalid.json","fixtures/contracts/v2/assurance-status-v2.final-stale.invalid.json"],"semantic_invariants":["PASS_REQUIRES_EXECUTED_AND_EVIDENCE_BOUND","FINAL_REQUIRES_CURRENT_FRESHNESS_AND_QUALIFIED_INDEPENDENCE"]},
+    {"schema":"contracts/assurance-receipt-envelope.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/assurance-receipt-envelope-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/assurance-receipt-envelope-v2.independent-false.invalid.json","fixtures/contracts/v2/assurance-receipt-envelope-v2.pass-stale.invalid.json"],"semantic_invariants":["INDEPENDENT_CLASS_REQUIRES_INDEPENDENT_TRUE","PASS_REQUIRES_CURRENT_FRESHNESS"]},
+    {"schema":"contracts/authority-principal-profile.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/authority-principal-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/authority-principal-v2.revoked-without-time.invalid.json","fixtures/contracts/v2/authority-principal-v2.qualification-required-not-required.invalid.json"],"semantic_invariants":["REVOKED_REQUIRES_REVOCATION_TIME_AND_REASON","REQUIRED_QUALIFICATION_CANNOT_BE_NOT_REQUIRED"]},
+    {"schema":"contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/semantic-gate-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/semantic-gate-v2.pass-with-open-p0.invalid.json","fixtures/contracts/v2/semantic-gate-v2.pass-with-self-otester.invalid.json"],"semantic_invariants":["PASS_REQUIRES_ZERO_BLOCKING_FINDINGS","PASS_REQUIRES_INDEPENDENT_QUALIFIED_OTESTER_OAUDIT","PASS_REQUIRES_ZERO_SEMANTIC_NOT_RUN"]},
+    {"schema":"contracts/semantic-denominator-epoch.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/semantic-denominator-epoch-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/semantic-denominator-epoch-v2.empty-source-class.invalid.json","fixtures/contracts/v2/semantic-denominator-epoch-v2.no-discovery-method.invalid.json"],"semantic_invariants":["DENOMINATOR_REQUIRES_SOURCE_CLASS","UNKNOWN_DISCOVERY_REQUIRES_METHOD"]},
+    {"schema":"contracts/semantic-applicability-set.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/semantic-applicability-set-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/semantic-applicability-set-v2.missing-capability.invalid.json","fixtures/contracts/v2/semantic-applicability-set-v2.invalid-capability-id.json"],"semantic_invariants":["ALL_SA_01_TO_SA_14_PRESENT","CAPABILITY_ID_CANONICAL"]},
+    {"schema":"contracts/assurance-population-denominator.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/assurance-population-denominator-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/assurance-population-denominator-v2.empty-items.invalid.json","fixtures/contracts/v2/assurance-population-denominator-v2.zero-total.invalid.json"],"semantic_invariants":["POPULATION_HAS_EXACT_ITEM_IDENTITIES","TOTAL_IS_POSITIVE"]},
+    {"schema":"contracts/execution-identity.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/execution-identity-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/execution-identity-v2.invalid-attempt-number.json","fixtures/contracts/v2/execution-identity-v2.bad-hash.invalid.json"],"semantic_invariants":["ATTEMPT_NUMBER_STARTS_AT_ONE","TARGET_FIXTURE_COMMAND_ORACLE_VALIDATOR_HASHED"]},
+    {"schema":"contracts/validator-qualification-record.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/validator-qualification-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/validator-qualification-v2.qualified-with-miss.invalid.json","fixtures/contracts/v2/validator-qualification-v2.qualified-with-partial-isolation.invalid.json"],"semantic_invariants":["QUALIFIED_REQUIRES_ZERO_CRITICAL_MISS","QUALIFIED_REQUIRES_STRICT_RECALL_ONE","QUALIFIED_REQUIRES_PROVEN_ISOLATION"]},
+    {"schema":"contracts/blind-context-manifest.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/blind-context-manifest-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/blind-context-manifest-v2.cache-not-reset.invalid.json","fixtures/contracts/v2/blind-context-manifest-v2.scratch-not-reset.invalid.json"],"semantic_invariants":["BLIND_REQUIRES_CACHE_RESET","BLIND_REQUIRES_SCRATCH_RESET"]},
+    {"schema":"contracts/human-reviewer-qualification.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/human-reviewer-qualification-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/human-reviewer-qualification-v2.zero-golden.invalid.json","fixtures/contracts/v2/human-reviewer-qualification-v2.empty-domain.invalid.json"],"semantic_invariants":["REVIEWER_REQUIRES_DOMAIN","REVIEWER_REQUIRES_CALIBRATION_FIXTURES"]},
+    {"schema":"contracts/qualification-benchmark-manifest.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/qualification-benchmark-manifest-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/qualification-benchmark-manifest-v2.post-result-selection.invalid.json","fixtures/contracts/v2/qualification-benchmark-manifest-v2.post-result-exclusion.invalid.json"],"semantic_invariants":["BENCHMARK_SELECTION_FROZEN_BEFORE_RESULTS","POST_RESULT_EXCLUSION_FORBIDDEN"]},
+    {"schema":"contracts/verified-to-deployed-receipt.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/verified-to-deployed-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/verified-to-deployed-v2.wrong-authority-purpose.invalid.json","fixtures/contracts/v2/verified-to-deployed-v2.short-signature.invalid.json"],"semantic_invariants":["DEPLOYMENT_VERIFICATION_REQUIRES_SCOPED_AUTHORITY","DEPLOYMENT_RECEIPT_SIGNED"]},
+    {"schema":"contracts/contract-active-selector.candidate.v2.schema.json","valid_instances":["fixtures/contracts/v2/contract-active-selector-v2.valid.json"],"invalid_instances":["fixtures/contracts/v2/contract-active-selector-v2.wrong-authority-purpose.invalid.json","fixtures/contracts/v2/contract-active-selector-v2.short-signature.invalid.json"],"semantic_invariants":["ACTIVATION_REQUIRES_CONTRACT_ACTIVATION_AUTHORITY","ACTIVE_SELECTOR_SIGNED_AND_ROLLBACKABLE"]}
   ],
   "requirements": {
     "minimum_invalid_instances_per_schema": 2,
@@ -47,6 +25,7 @@
     "schema_and_fixture_digests_required_in_execution": true,
     "meta_mutation_required_before_final": true
   },
+  "coverage": {"schema_count":14,"valid_fixture_count":14,"invalid_fixture_count":28},
   "execution_state": "NOT_RUN",
   "qualification_state": "NOT_QUALIFIED",
   "final_claim_allowed": false
