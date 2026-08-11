@@ -81,7 +81,9 @@ v2 Candidate Contract는 기존 v1을 즉시 대체하지 않는다.
 - Finding Ledger: source-confirmed design input, Finding closure는 아님
 - P0 수직 Traceability: 설계 반영 완료, Runtime 미실행
 - v2 Core Contract 6종: `CONTRACT_CANDIDATE_CREATED / EXECUTION_NOT_RUN`
+- Workflow/Lineage v2: `EXECUTION_PATH_CANDIDATE_CREATED / RUNTIME_NOT_WIRED`
 - v1→v2 adapter/runtime/active selector: 미구현
+- Validation Case/Final Acceptance denominator migration: 미완료
 - independent OTester/OAudit qualification: 미실행
 - FinalLock/Production/Commercial authority: 없음
 
