@@ -307,3 +307,130 @@ Privacy 때문에 raw prompt/response 전체 저장을 default evidence requirem
 - memory-blind lane이 선언만이 아니라 기술적으로 context 차단을 증명
 - validator method 변경 후 current qualification receipt가 없으면 L5/고신뢰 claim 불가
 - hidden leakage가 확인되면 영향받는 qualification을 무효화
+
+## 21. Human Reviewer Qualification
+Human/Professional Reviewer도 독립 Oracle의 한 종류로 취급하며, `expert` 라벨만으로 GT4 또는 independent authority를 부여하지 않는다.
+
+최소 Qualification record:
+- reviewer_id/principal_id
+- domain/role
+- credential 또는 domain basis
+- conflict_of_interest
+- qualification_valid_from/until
+- calibration/golden fixture history
+- override/overturn/error history
+- blind-review capability
+- current workload/fatigue signal(측정 가능한 경우)
+
+규칙:
+- qualification이 만료되거나 기준 미달이면 해당 reviewer의 high-risk assurance ceiling을 낮춘다.
+- reviewer가 AI recommendation 또는 기존 verdict를 먼저 본 경우 독립성 축을 별도로 낮춰 기록한다.
+- 같은 조직/상사/공통 draft에 의존하는 다수 reviewer를 principal independence로 자동 계산하지 않는다.
+
+## 22. Ground Truth Producer Qualification
+GT 등급과 Ground Truth 생성자/Oracle의 Qualification을 분리한다.
+
+각 Ground Truth에는 최소:
+- ground_truth_id/epoch
+- producer principal/tool
+- producer implementation digest
+- oracle digest
+- target-code dependency
+- calibration evidence
+- known failure modes
+- source/evidence refs
+- validity scope
+을 가진다.
+
+`GT3_EXECUTABLE_ORACLE`도 producer/oracle qualification이 `NOT_PROVEN`이면 Critical PROVEN claim의 단독 근거가 아니다.
+
+## 23. Memory-Blind Technical Isolation Proof
+`memory_blind=true` 선언만으로 blind lane을 인정하지 않는다.
+
+필수 technical evidence 후보:
+- prior Finding/Score/Verdict 접근 거부
+- KnowledgePattern/RAG source deny list
+- shared vector index 접근 차단
+- prompt/conversation cache reset
+- scratch state reset
+- denied-source access audit
+
+산출물:
+- `BlindContextManifest`
+- `DeniedSourceAccessReceipt`
+
+blind execution 중 금지 source 접근이 한 번이라도 발생하면 해당 lane은 `BLINDNESS_COMPROMISED_HOLD`다.
+
+## 24. Independence Proof Recursion
+독립성 판정 자체가 self-attestation이 되지 않도록 Independence Verifier도 Qualification 대상에 포함한다.
+
+확인 차원:
+- 실제 principal ownership
+- key/KMS administrative ownership
+- implementation lineage
+- oracle lineage
+- discovery lineage
+- shared input/knowledge manifest
+
+`different key`, `different model`, `different run_id`는 필요조건이 될 수 있으나 충분조건이 아니다.
+
+## 25. Semantic Contamination Classifier Qualification
+semantic-family/near-duplicate 판정기 자체가 오염 여부를 잘못 판단할 수 있다.
+
+Classifier record:
+- classifier/model/version
+- embedding/version if applicable
+- threshold
+- calibration set
+- false-same/false-different rate
+- confidence
+- disagreement policy
+
+low-confidence 또는 classifier 간 불일치는 `NO_OVERLAP`으로 자동 정리하지 않고 HOLD/추가 판정을 요구한다.
+
+## 26. Benchmark Precommitment
+Qualification benchmark는 실행 전에 다음을 고정한다.
+- corpus IDs/revisions
+- denominator
+- required subsets
+- selection policy
+- exclusion rule
+- result visibility boundary
+
+결과를 본 뒤 실패 corpus를 제외하거나 잘 나온 subset만 선택하면 `BENCHMARK_SELECTION_AFTER_RESULT_FAIL`이다.
+
+## 27. Meta-Validator Qualification
+FinalClaimReconstructor, CrossContractInvariantEngine, IndependenceVerifier, ContaminationClassifier처럼 다른 검증을 판정하는 component도 seeded failure와 mutation을 가진다.
+
+필수 mutation 예:
+- mandatory invariant 하나 제거
+- 신규 enum/mandatory field 무시
+- parse exception을 warning 처리 후 PASS
+- NOT_RUN을 PASS로 매핑
+- partial execution을 complete로 집계
+- revoked evidence 허용
+- independence key count만 확인
+
+Critical meta-validator mutant escape가 있으면 해당 고신뢰 Capability Qualification은 HOLD다.
+
+## 28. Validator Self-Improvement Governance
+Detector/Rule/Oracle/Scenario Generator 변경은 일반 feature update가 아니라 `REQUALIFICATION_EVENT`다.
+
+필수 영향분석:
+- current qualification stale 범위
+- critical recall regression
+- hidden/OOD benchmark
+- historical certificate 영향
+- independence/TCB 변경
+- rollback pointer
+
+변경된 validator가 자기 변경을 스스로 유일하게 승인하지 않는다.
+
+## 29. 추가 수용기준
+- Human Reviewer qualification 없이 GT4/Independent high-assurance를 자동 부여하지 않음
+- Ground Truth producer qualification이 claim assurance와 함께 공개됨
+- blind lane이 technical isolation evidence를 보유
+- benchmark set이 result visibility 이전에 freeze됨
+- contamination classifier가 current calibration을 가짐
+- meta-validator critical mutant escape 0이 qualification 후보 조건
+- validator self-improvement 후 이전 qualification 자동 상속 금지
