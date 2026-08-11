@@ -1,0 +1,53 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_V2_SCHEMA_INSTANCE_REGISTRY_CANDIDATE_V1",
+  "version": "1.0.0-candidate",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "pairs": [
+    {
+      "schema": "contracts/assurance-status-vocabulary.candidate.v2.schema.json",
+      "valid_instances": ["fixtures/contracts/v2/assurance-status-v2.valid.json"],
+      "invalid_instances": [
+        "fixtures/contracts/v2/assurance-status-v2.pass-not-run.invalid.json",
+        "fixtures/contracts/v2/assurance-status-v2.final-stale.invalid.json"
+      ],
+      "semantic_invariants": ["PASS_REQUIRES_EXECUTED_AND_EVIDENCE_BOUND", "FINAL_REQUIRES_CURRENT_FRESHNESS_AND_QUALIFIED_INDEPENDENCE"]
+    },
+    {
+      "schema": "contracts/assurance-receipt-envelope.candidate.v2.schema.json",
+      "valid_instances": ["fixtures/contracts/v2/assurance-receipt-envelope-v2.valid.json"],
+      "invalid_instances": [
+        "fixtures/contracts/v2/assurance-receipt-envelope-v2.independent-false.invalid.json",
+        "fixtures/contracts/v2/assurance-receipt-envelope-v2.pass-stale.invalid.json"
+      ],
+      "semantic_invariants": ["INDEPENDENT_CLASS_REQUIRES_INDEPENDENT_TRUE", "PASS_REQUIRES_CURRENT_FRESHNESS"]
+    },
+    {
+      "schema": "contracts/authority-principal-profile.candidate.v2.schema.json",
+      "valid_instances": ["fixtures/contracts/v2/authority-principal-v2.valid.json"],
+      "invalid_instances": [
+        "fixtures/contracts/v2/authority-principal-v2.revoked-without-time.invalid.json",
+        "fixtures/contracts/v2/authority-principal-v2.qualification-required-not-required.invalid.json"
+      ],
+      "semantic_invariants": ["REVOKED_REQUIRES_REVOCATION_TIME_AND_REASON", "REQUIRED_QUALIFICATION_CANNOT_BE_NOT_REQUIRED"]
+    },
+    {
+      "schema": "contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json",
+      "valid_instances": ["fixtures/contracts/v2/semantic-gate-v2.valid.json"],
+      "invalid_instances": [
+        "fixtures/contracts/v2/semantic-gate-v2.pass-with-open-p0.invalid.json",
+        "fixtures/contracts/v2/semantic-gate-v2.pass-with-self-otester.invalid.json"
+      ],
+      "semantic_invariants": ["PASS_REQUIRES_ZERO_BLOCKING_FINDINGS", "PASS_REQUIRES_INDEPENDENT_QUALIFIED_OTESTER_OAUDIT", "PASS_REQUIRES_ZERO_SEMANTIC_NOT_RUN"]
+    }
+  ],
+  "requirements": {
+    "minimum_invalid_instances_per_schema": 2,
+    "negative_instances_are_semantic_not_only_type_errors": true,
+    "validator_execution_receipt_required_before_qualified": true,
+    "schema_and_fixture_digests_required_in_execution": true,
+    "meta_mutation_required_before_final": true
+  },
+  "execution_state": "NOT_RUN",
+  "qualification_state": "NOT_QUALIFIED",
+  "final_claim_allowed": false
+}
