@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_ASSURANCE_RECEIPT_ENVELOPE_V2_CANDIDATE",
+  "receipt_id": "receipt-invalid-pass-stale",
+  "receipt_type": "VALIDATION",
+  "subject": {"target_id":"target-001","target_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","subject_type":"RUN","subject_id":"run-001","subject_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "context": {"tenant_id":"tenant-001","workspace_id":"workspace-001","scope_epoch":"scope-1","requirement_epoch":"req-1","denominator_epoch":"denom-1","policy_epoch":"policy-1","environment_digest":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","toolchain_digest":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","oracle_set_digest":null,"validator_set_digest":null},
+  "authority": {"principal_id":"principal-001","authority_profile_id":"authority-001","authority_profile_sha256":"1111111111111111111111111111111111111111111111111111111111111111","registry_epoch":"auth-epoch-1","purpose":"VALIDATION","nonce":null,"approved_at":null,"expires_at":null,"valid_at_effect":true},
+  "independence": {"assurance_class":"SELF_VALIDATION_NONFINAL","independent":false,"profile_id":"independence-001","profile_sha256":"2222222222222222222222222222222222222222222222222222222222222222"},
+  "qualification": {"state":"PARTIAL","qualification_epoch":"qual-1","qualification_receipt_sha256":null},
+  "freshness": {"state":"STALE","evaluated_at":"2026-08-11T14:00:00Z","freshness_epoch":"fresh-2","freshness_receipt_sha256":null},
+  "decision": "PASS",
+  "reason_codes": ["INVALID_PASS_STALE"],
+  "parent_receipts": [],
+  "evidence_refs": [],
+  "canonicalization": {"profile":"ONSURE_CANONICAL_JSON","profile_version":"2.0","payload_sha256":"4444444444444444444444444444444444444444444444444444444444444444"},
+  "created_at": "2026-08-11T14:00:00Z",
+  "signature": {"key_id":"key-001","algorithm":"Ed25519","signature":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "receipt_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+}
