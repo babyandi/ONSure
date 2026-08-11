@@ -1,0 +1,30 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/hidden-corpus-governance.candidate.v2.schema.json",
+  "title":"ONSure Hidden Corpus Governance Candidate v2",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","corpus_id","corpus_epoch","owner_profile_sha256","corpus_digest","semantic_family_digest","authorized_reader_profiles","access_log_digest","sealed_at","first_disclosure_at","rotation_state","leakage_state","selection_precommitment_sha256","governance_state","governance_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_HIDDEN_CORPUS_GOVERNANCE_V2_CANDIDATE"},
+    "corpus_id":{"type":"string","minLength":1},
+    "corpus_epoch":{"type":"string","minLength":1},
+    "owner_profile_sha256":{"$ref":"#/$defs/sha256"},
+    "corpus_digest":{"$ref":"#/$defs/sha256"},
+    "semantic_family_digest":{"$ref":"#/$defs/sha256"},
+    "authorized_reader_profiles":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/sha256"}},
+    "access_log_digest":{"$ref":"#/$defs/sha256"},
+    "sealed_at":{"type":"string","format":"date-time"},
+    "first_disclosure_at":{"type":["string","null"],"format":"date-time"},
+    "rotation_state":{"enum":["SEALED_CURRENT","ROTATION_REQUIRED","ROTATED","RETIRED"]},
+    "leakage_state":{"enum":["NO_KNOWN_LEAKAGE","SUSPECTED","CONFIRMED","IMPACT_ASSESSED"]},
+    "selection_precommitment_sha256":{"$ref":"#/$defs/sha256"},
+    "governance_state":{"enum":["CANDIDATE","QUALIFICATION_READY","STALE","HOLD","INVALIDATED"]},
+    "governance_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "allOf":[{
+    "if":{"properties":{"leakage_state":{"const":"CONFIRMED"}}},
+    "then":{"properties":{"governance_state":{"enum":["HOLD","INVALIDATED"]}}}
+  }],
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}
