@@ -113,8 +113,8 @@ G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영
 
 | # | 항목 | 발견 | 조치 |
 |---|---|---|---|
-| G15 | 01 목표고객 분류 | 실제 `product-scope.v1.json`은 `primary_users` 4종(NON_DEVELOPER_AI_BUILDERS/SOFTWARE_DEVELOPERS/PRODUCT_TEAMS/ENTERPRISE_ASSURANCE_TEAMS)만 정의 — 설계서의 6개 세그먼트는 더 세분화된 DESIGN_ONLY 분류, 계약 매핑 없음 | FLAGGED |
-| G16 | 검증 대상 범위 | 계약의 `supported_target_types`에 Desktop/Mobile/Automation Workflow가 있는데 01은 언급 안 함 | FLAGGED |
+| G15 | 01 목표고객 분류 | 01 §3-1에 6개 세그먼트→4종 `primary_users` 최선 매핑 표를 추가했으나 깨끗한 1:1이 아님을 확인: "규제 산업"은 role이 아니라 industry vertical이라 대응값이 없고, "AI Agent·RAG·LLM 서비스 구축 기업"은 SOFTWARE_DEVELOPERS/PRODUCT_TEAMS 중 불명확하며, "SI·컨설팅·품질관리"와 "발주기관"은 서로 다른 사업관계인데 둘 다 ENTERPRISE_ASSURANCE_TEAMS로 수렴함. `primary_users` enum 확장 vs 01 세그먼트 재정리는 사업 판단이 필요한 미해결 사항으로 명시 | FLAGGED (정밀화됨 — 매핑표+미해결 지점 3건 문서화, 계약 변경은 별도 사업 결정 필요) |
+| G16 | 검증 대상 범위 | 01 §3-2에 `supported_target_types` 8종(AI_APPLICATION/AGENTIC_SYSTEM/GENERAL_SOFTWARE/WEB_APPLICATION/API_SERVICE/DESKTOP_APPLICATION/MOBILE_APPLICATION/AUTOMATION_WORKFLOW) 전체가 검증 대상 범위임을 명시 — Desktop/Mobile/Automation Workflow 포함 | FIXED |
 | G17 | 상품 채널 vs 엔진 배포 형태 혼동 위험 | `delivery_modes`(로컬/독립실행 중심)와 01의 Web/VS Code 상품구조는 서로 다른 계층 — 01에 구분 설명 추가 | FIXED |
 | G18 | 05 Web이 별도 Operation Surface인지 | 실제 `generic_surfaces`는 CLI/LOCAL_AUTHENTICATED_API/VSCODE뿐, WEB 없음. Web은 LOCAL_AUTHENTICATED_API 클라이언트로 구현돼야 함을 05에 명시 | FIXED |
 | G19 | Preflight 입력 종류 | 실제 `target-adapter.v1.json`은 Package/Binary/Deployed Service/Document 세트도 지원하는데 05는 Git/Archive/Container만 언급 | FIXED |

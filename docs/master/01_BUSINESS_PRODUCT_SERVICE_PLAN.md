@@ -21,7 +21,31 @@ AI를 활용한 소프트웨어 개발은 생산성을 높이지만 요구사항
 - AI로 제품을 만든 비전문 개발자와 스타트업
 - 고객 소프트웨어를 인수·검수해야 하는 발주기관
 
-실제 `contracts/product-scope.v1.json`은 `primary_users`를 NON_DEVELOPER_AI_BUILDERS, SOFTWARE_DEVELOPERS, PRODUCT_TEAMS, ENTERPRISE_ASSURANCE_TEAMS 4종으로만 정의한다. 위 6개 세그먼트는 이 4종보다 세분화된 마케팅용 분류이며, 계약과의 정확한 매핑은 아직 없다(`DESIGN_ONLY`). 같은 계약의 `supported_target_types`(AI_APPLICATION, AGENTIC_SYSTEM, GENERAL_SOFTWARE, WEB_APPLICATION, API_SERVICE, DESKTOP_APPLICATION, MOBILE_APPLICATION, AUTOMATION_WORKFLOW)는 이 문서가 명시적으로 언급하지 않은 Desktop·Mobile·Automation Workflow 대상도 포함하므로, 검증 대상 범위를 이 문서보다 넓게 잡아야 한다.
+### 3-1. 목표 고객과 계약 `primary_users`의 관계
+
+실제 `contracts/product-scope.v1.json`의 `primary_users`는 NON_DEVELOPER_AI_BUILDERS/SOFTWARE_DEVELOPERS/PRODUCT_TEAMS/ENTERPRISE_ASSURANCE_TEAMS 4종만 정의한다. 위 6개 세그먼트는 영업·마케팅 목적의 세분화 분류(`DESIGN_ONLY`)이며, 아래는 현재 파악한 최선의 대응 관계다. 다만 이 매핑은 완전한 1:1이 아니며, 표 아래에 남는 미해결 지점을 함께 명시한다.
+
+| 01의 목표 고객 세그먼트 | 계약 `primary_users` 대응 | 비고 |
+|---|---|---|
+| AI Coding을 도입한 일반 기업 개발조직 | SOFTWARE_DEVELOPERS | 직접 대응 |
+| AI Agent·RAG·LLM 서비스를 구축하는 기업 | SOFTWARE_DEVELOPERS 또는 PRODUCT_TEAMS | 불명확 — 아래 미해결 지점 2 참고 |
+| 금융·공공·의료 등 규제 산업 | 대응 없음 | 아래 미해결 지점 1 참고 — role이 아니라 industry vertical |
+| SI·컨설팅·품질관리 회사 | ENTERPRISE_ASSURANCE_TEAMS | 발주기관 세그먼트와 동일 계약값으로 수렴 |
+| AI로 제품을 만든 비전문 개발자와 스타트업 | NON_DEVELOPER_AI_BUILDERS | 직접 대응 |
+| 고객 소프트웨어를 인수·검수해야 하는 발주기관 | ENTERPRISE_ASSURANCE_TEAMS | SI·품질관리 세그먼트와 동일 계약값으로 수렴 |
+
+**미해결 지점 (깨끗한 매핑이 아직 아님, 사업 판단 필요):**
+1. "금융·공공·의료 등 규제 산업"은 사용자 역할(role)이 아니라 산업(industry vertical)이다. 규제 산업에 속한 조직도 내부적으로는 SOFTWARE_DEVELOPERS·NON_DEVELOPER_AI_BUILDERS·ENTERPRISE_ASSURANCE_TEAMS 중 무엇이든 될 수 있어 `primary_users`와 같은 축이 아니다.
+2. "AI Agent·RAG·LLM 서비스를 구축하는 기업"은 SOFTWARE_DEVELOPERS와 PRODUCT_TEAMS 중 어느 쪽인지 계약이 구분하지 않는다. 같은 회사 안에 개발자와 제품 책임자가 함께 있을 수 있어 세그먼트 대 enum이 1:1이 아니다.
+3. "SI·컨설팅·품질관리 회사"(검증을 위탁받는 공급자)와 "발주기관"(검증을 위탁하는 발주자)은 서로 다른 사업 관계이지만 계약상으로는 둘 다 ENTERPRISE_ASSURANCE_TEAMS로 수렴한다. 계약이 "누가 검증을 요청했는가"라는 관계를 구분하지 않기 때문이다.
+
+**결론:** 01의 6개 세그먼트는 계약의 `primary_users`(사용자 역할 축)와 산업·사업관계 축을 함께 담은 GTM(영업) 분류이며, 4종 enum으로 깨끗하게 축소되지 않는다. `primary_users` enum을 01의 세분화 수준까지 확장할지(예: industry·사업관계를 별도 필드로 분리), 아니면 01의 세그먼트를 계약이 구분하는 4종 역할 축 기준으로 재정리할지는 아직 결정되지 않은 사업 판단 사항으로 남긴다.
+
+### 3-2. 검증 대상 유형 (Target Types)
+
+계약 `product-scope.v1.json`의 `supported_target_types`는 AI_APPLICATION, AGENTIC_SYSTEM, GENERAL_SOFTWARE, WEB_APPLICATION, API_SERVICE, DESKTOP_APPLICATION, MOBILE_APPLICATION, AUTOMATION_WORKFLOW 8종을 정의한다. 01의 검증 대상 범위는 이 8종 전체를 포함한다 — Desktop Application·Mobile Application·Automation Workflow도 Web Application·API Service·AI Application·Agentic System·General Software와 동일하게 Learn·Verify 상품의 검증 대상이며, 이 문서가 특정 대상 유형만을 다룬다고 해석해서는 안 된다.
+
+### 3-3. 엔진 배포 형태와 상품 채널
 
 `delivery_modes`(STANDALONE_DESKTOP_OR_SERVER, LOCAL_CLI, PRIVATE_NETWORK_SERVICE, EMBEDDED_VALIDATION_MODULE, TARGET_SIDE_VALIDATION_AGENT)는 검증 엔진 자체의 배포 형태를 말하며, 이 문서의 "Web One-time / VS Code 구독" 같은 판매채널·상품 구조와는 다른 계층이다. 엔진 배포 형태와 상품/과금 구조를 같은 표로 섞어 쓰지 않도록 주의해야 한다 — 엔진은 로컬/독립 실행이 기본이고, Web은 그 위에 얹히는 상거래 채널(ServiceCase)이다.
 
