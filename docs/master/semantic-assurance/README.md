@@ -31,6 +31,8 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `contracts/assurance-receipt-envelope.candidate.v2.schema.json`
 - `contracts/authority-principal-profile.candidate.v2.schema.json`
 - `contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json`
+- `contracts/workflow-operation-registry.candidate.v2.json`
+- `contracts/product-process-lineage.candidate.v2.json`
 
 위 v2 Candidate는 다음 P0 defect family를 우선 차단하도록 설계한다.
 - success-only/strong-label false assurance
@@ -39,6 +41,8 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - Local OTester/OAudit와 true independent gate 혼동
 - stale/revoked/qualification state 표현 부재
 - Final Candidate/Lock의 scope/epoch/freshness/OTester/OAudit/Human binding 부족
+- Semantic Assurance 기능이 canonical operation/path 밖에 남는 문제
+- deployment와 검증 artifact identity가 분리되는 문제
 
 ## 적용 원칙
 기존 02~08을 대체하지 않는다. 각 companion 문서는 해당 parent 문서에 병합될 상세 설계를 별도 보존한 것이며, 기존 본문을 삭제하거나 약화하지 않는다.
@@ -69,13 +73,14 @@ v2 Candidate Contract는 기존 v1을 즉시 대체하지 않는다.
 - v1 PASS를 v2 PASS로 자동 승격하지 않는다.
 - v1에서 복원할 수 없는 nonce/expiry/authority/independence/freshness는 추정값으로 채우지 않는다.
 - v2 Gate는 static qualification, negative fixture, runtime enforcement, shadow comparison, independent qualification 이후에만 active selector 후보가 된다.
+- `workflow-operation-registry.candidate.v2.json`과 `product-process-lineage.candidate.v2.json`은 실행경로 후보이며 아직 dispatcher/runtime authority가 아니다.
 
 ## 현재 상태
 - SA-01~14: `DESIGN_ONLY`
 - XC-01~30: `DESIGN_ONLY`
 - Finding Ledger: source-confirmed design input, Finding closure는 아님
 - P0 수직 Traceability: 설계 반영 완료, Runtime 미실행
-- v2 Core Contract 4종: `CONTRACT_CANDIDATE_CREATED / EXECUTION_NOT_RUN`
+- v2 Core Contract 6종: `CONTRACT_CANDIDATE_CREATED / EXECUTION_NOT_RUN`
 - v1→v2 adapter/runtime/active selector: 미구현
 - independent OTester/OAudit qualification: 미실행
 - FinalLock/Production/Commercial authority: 없음
