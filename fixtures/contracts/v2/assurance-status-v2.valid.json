@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_ASSURANCE_STATUS_V2_CANDIDATE",
+  "status_id": "status-valid-001",
+  "subject": {"subject_type":"RUN","subject_id":"run-001","subject_digest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "implementation_state": "IMPLEMENTED",
+  "execution_state": "EXECUTED",
+  "evidence_state": "EVIDENCE_BOUND",
+  "independence_state": "SELF_VALIDATION",
+  "qualification_state": "QUALIFIED_NONFINAL",
+  "freshness_state": "CURRENT",
+  "publication_state": "SELF_VALIDATION_NONFINAL",
+  "decision": "PASS",
+  "reason_codes": ["CURRENT_EXECUTION_EVIDENCE_BOUND"],
+  "evidence_refs": [{"receipt_id":"receipt-001","receipt_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","evidence_role":"PRIMARY"}],
+  "authority_ref": {"id":"authority-profile-001","sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+  "qualification_ref": {"id":"qualification-001","sha256":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"},
+  "freshness_ref": {"id":"freshness-001","sha256":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"},
+  "supersedes_status_sha256": null,
+  "effective_at": "2026-08-11T14:00:00Z",
+  "status_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+}
