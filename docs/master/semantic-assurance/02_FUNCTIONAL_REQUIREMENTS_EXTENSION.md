@@ -314,3 +314,97 @@ ONSure validator/detector/oracle/rule/scenario generator 변경 후 기존 quali
 - `INPUT_REQUIRED`가 남은 영역은 PASS로 승격하지 않는다.
 - current execution/evidence가 없는 설계는 `DESIGN_ONLY` 또는 `NOT_RUN`이다.
 - 신규 Capability를 적용해 denominator/authority/evidence가 변경되면 관련 CoverageReport와 Final Claim은 stale 처리한다.
+
+## 17. 독립검토 Cross-Cutting 기능 요구사항
+아래 항목은 신규 Capability가 아니라 SA-01~SA-14의 필수 하위 기능이다. 세부 설계는 `09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md`를 따른다.
+
+### 17.1 SA-01 Evidence Truth 강화
+- `DistributedEvidenceConsistency`: DB/Object/Queue/Git/Certificate Store 간 부분 commit을 `CONSISTENT`와 분리한다.
+- `AttemptSelectionLedger`: 모든 first/retry attempt를 보존하고 선택·제외 사유를 기록한다.
+- `TrustedTimeEvidence`: expiry/freshness/revocation 판정에 사용한 시간 source, skew/uncertainty를 기록한다.
+
+추가 수용기준:
+- `FAIL→PASS` retry history를 삭제하고 PASS만 보고할 수 없음
+- `PARTIALLY_COMMITTED|ORPHANED|UNKNOWN` evidence는 Final positive claim 불가
+- time authority가 불명확한 expiry/freshness claim은 HOLD
+
+### 17.2 SA-02 Requirement Universe / Unknown / Exclusion 강화
+Requirement Universe는 최소 business/user, contract/policy, code/config, architecture/API/data, operations/deployment, security/privacy, rights/remedy, runtime/incident, external normative source class를 검토한다.
+
+각 source class는 `DISCOVERED|PARTIAL|NOT_PROVEN|NOT_APPLICABLE_WITH_JUSTIFICATION` 상태를 가진다.
+
+추가 산출물:
+- `RequirementUniverseSourceInventory`
+- `DenominatorAuthorityDivergenceReport`
+- `UnknownDiscoveryCoverageReport`
+- `ExclusionDispositionReceipt`
+
+추가 수용기준:
+- Critical source class `NOT_PROVEN` 상태에서 Requirement Complete 주장 금지
+- `unknown_count=0`만으로 completeness PASS 금지
+- Critical exclusion을 denominator에서 삭제해 coverage를 높일 수 없음
+- legacy/docs/master/contract/runtime denominator 충돌은 명시적 supersession/authority decision 필요
+
+### 17.3 SA-03 Assurance Ceiling / Design-Omission Mutation
+Assurance Level은 Scope/Capability/Observability/Oracle/Evidence/Independence/Freshness 중 critical dimension의 최저 충족수준을 ceiling으로 사용한다.
+
+평균점수로 낮은 critical dimension을 상쇄하지 않는다.
+
+Design-Omission Mutation은 Function, Right, Recovery, Observer, denominator, state-owner, contract-consumer를 제거/약화하는 mutation family를 포함한다.
+
+### 17.4 SA-04/SA-09 Independence & Accepted Risk 강화
+Independence는 actual principal ownership, credential/KMS ownership, implementation/oracle/discovery lineage, shared knowledge/input manifest를 검증한다.
+
+`different_model`, `different_key`, `different_run_id`만으로 Independent PASS 금지.
+
+Accepted Risk는 누적 critical/high 수, repeated waiver, same-finding recurrence, approver concentration, expiry, compensating-control execution을 추적한다.
+
+### 17.5 SA-08 Revocation / Historical / Recovery 강화
+추가 기능:
+- `OfflineVerificationFreshness`: maximum offline freshness와 revocation epoch 관리
+- `RevocationPropagation`: API/cache/CDN/downstream/offline bundle까지 current disposition 전파 검증
+- `HistoricalImpactScan`: 새 MissedFinding/Rule/CVE의 과거 certificate 영향 대량 검색
+- `QueueReplayAuthorityGuard`: async message에 authority/policy epoch, nonce, expiry 결속
+- `AssuranceRecoveryVerification`: 서비스 복구 후 authority/evidence/replay/approval graph 재검증
+
+### 17.6 SA-10 Assurance Communication / Consumer 강화
+동일 assurance ontology를 Web, VS Code, CLI, API, webhook, PDF/Report, Certificate에 유지한다.
+
+`SELF_VALIDATION_NONFINAL PASS`를 단순 PASS로 축약하거나 `0 Critical Found`를 `No Critical Defects`로 표현하지 않는다.
+
+Human Misinterpretation Test와 Certificate Consumer Misuse negative test를 필수 후보로 둔다.
+
+### 17.7 SA-11 Human / Ground Truth / Blind 강화
+추가 산출물:
+- `ReviewerQualificationRecord`
+- `GroundTruthProducerQualification`
+- `BlindContextManifest`
+- `DeniedSourceAccessReceipt`
+
+Human Reviewer/Expert, executable oracle, real-world collector도 qualification 대상이다.
+
+Blind lane은 prior Finding/Score/Verdict/KnowledgePattern/RAG/cache 접근 차단을 기술적으로 증명한다.
+
+### 17.8 SA-14 Meta-Qualification / Benchmark Governance 강화
+추가 기능:
+- Meta-Validator Qualification
+- Hidden/Golden access governance
+- Benchmark Precommitment
+- Semantic Contamination Classifier Qualification
+- Mutation Diversity
+- Validator Self-Improvement Requalification
+
+Qualification benchmark는 result visibility 전에 corpus/denominator/selection policy를 freeze한다.
+
+Detector/Rule/Oracle/Scenario Generator 변경은 일반 feature update가 아니라 `REQUALIFICATION_EVENT`다.
+
+## 18. Cross-Cutting 공통 금지
+- 성공한 retry만 선택해 보고
+- 실패 fixture를 사후 denominator에서 제외
+- 결과를 본 뒤 benchmark/corpus subset 선택
+- Hidden label만으로 contamination 없음 주장
+- Human approval만으로 factual truth 확정
+- 다른 model/key/run만으로 independent 주장
+- stale/offline certificate를 현재 VALID처럼 표현
+- 서비스 복구만으로 assurance graph 복구 주장
+- 평균 assurance score로 critical dimension 미달을 덮음
