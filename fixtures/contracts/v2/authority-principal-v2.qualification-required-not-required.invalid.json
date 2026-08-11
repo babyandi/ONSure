@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_AUTHORITY_PRINCIPAL_PROFILE_V2_CANDIDATE",
+  "profile_id": "authority-profile-invalid-qualification",
+  "principal_id": "principal-reviewer-001",
+  "principal_type": "HUMAN",
+  "roles": ["REVIEWER"],
+  "credential": {"key_id":"key-reviewer-001","algorithm":"Ed25519","public_key_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","administrative_owner_id":"kms-admin-reviewer-001","credential_epoch":"cred-1"},
+  "scope": {"tenant_ids":["tenant-001"],"target_ids":["target-001"],"purposes":["BLIND_REVIEW"],"operations":["assurance.otester.accept"],"resource_patterns":["target-001/*"]},
+  "validity": {"valid_from":"2026-08-11T00:00:00Z","valid_until":"2027-08-11T00:00:00Z","revoked":false,"revoked_at":null,"revocation_reason":null,"authority_epoch":"auth-epoch-1"},
+  "registry": {"registry_id":"authority-registry-001","registry_epoch":"registry-epoch-1","registry_sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","root_signer_profile_sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","registry_signature":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "separation_constraints": {"mutually_exclusive_roles":[],"prohibited_shared_principals":[],"prohibited_shared_admin_owners":[]},
+  "qualification": {"required":true,"state":"NOT_REQUIRED","qualification_epoch":"qual-epoch-1","qualification_receipt_sha256":null},
+  "created_at": "2026-08-11T14:00:00Z",
+  "profile_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}
