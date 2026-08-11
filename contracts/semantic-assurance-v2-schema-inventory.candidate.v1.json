@@ -1,0 +1,37 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_V2_SCHEMA_INVENTORY_CANDIDATE_V1",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "fixture_registry": "contracts/semantic-assurance-v2-schema-instance-registry.candidate.v1.json",
+  "fixture_covered_schemas": 14,
+  "fixture_covered_contracts": [
+    "assurance-status-vocabulary.candidate.v2.schema.json",
+    "assurance-receipt-envelope.candidate.v2.schema.json",
+    "authority-principal-profile.candidate.v2.schema.json",
+    "semantic-assurance-gate-receipt.candidate.v2.schema.json",
+    "semantic-denominator-epoch.candidate.v2.schema.json",
+    "semantic-applicability-set.candidate.v2.schema.json",
+    "assurance-population-denominator.candidate.v2.schema.json",
+    "execution-identity.candidate.v2.schema.json",
+    "validator-qualification-record.candidate.v2.schema.json",
+    "blind-context-manifest.candidate.v2.schema.json",
+    "human-reviewer-qualification.candidate.v2.schema.json",
+    "qualification-benchmark-manifest.candidate.v2.schema.json",
+    "verified-to-deployed-receipt.candidate.v2.schema.json",
+    "contract-active-selector.candidate.v2.schema.json"
+  ],
+  "new_schema_contracts_pending_fixture_registration": [
+    "validation-case-population.candidate.v2.schema.json",
+    "final-acceptance-population.candidate.v2.schema.json",
+    "final-approval-receipt.candidate.v2.schema.json",
+    "final-lock.candidate.v2.schema.json",
+    "independence-profile.candidate.v2.schema.json",
+    "independent-assurance-receipt.candidate.v2.schema.json",
+    "ground-truth-producer-qualification.candidate.v2.schema.json",
+    "hidden-corpus-governance.candidate.v2.schema.json",
+    "shadow-gate-comparison.candidate.v1.schema.json"
+  ],
+  "pending_schema_count": 9,
+  "hard_rule": "PENDING_SCHEMA_CANNOT_BE_QUALIFIED_OR_ACTIVE",
+  "execution_state": "NOT_RUN",
+  "final_claim_allowed": false
+}
