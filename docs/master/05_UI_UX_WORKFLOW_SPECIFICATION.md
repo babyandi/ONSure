@@ -9,6 +9,13 @@
 - Finding은 문제, 근거, 영향, 수정방법, 확인방법 순으로 표현한다.
 - 개발자는 VS Code를 떠나지 않고 주요 흐름을 수행할 수 있어야 한다.
 
+### G14 대조 결과(2026-08-11, [08_REVIEW_CHECKLIST_OPEN_DECISIONS.md](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md) G14)
+이 설계서를 `contracts/*.json`과 처음으로 전면 대조한 결과다. 화면이 표시를 전제하는 데이터를 실제로 만들어내는 Operation·필드가 있는지 기준으로 확인했다.
+
+- **Operation Registry에 아직 없는 기능군**: [G13](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)에서 이미 확인된 대로 `contracts/workflow-operation-registry.v1.json`에 등록된 Operation은 49개뿐이며, 아래 §4·§6의 다음 화면이 전제하는 기능은 이 목록에 없다 — Organization Portfolio의 PortfolioSnapshot·동종 규모 대비 상대적 위치, 관리자 화면의 PolicyPack 업로드/버전관리/회귀결과, Organization Portfolio·Support Center의 알림 채널 구독, Delivery Center의 Acceptance Certificate 발급, Case Dashboard의 CoverageReport·ProgramRiskScore 추세 스파크라인, Verification의 Mutation Score, Finding Explorer의 Cross-Model Verification 결과, Improvement의 Blast Radius 미리보기. 화면 설계 자체는 유효하지만 이를 뒷받침하는 API가 아직 미등록이므로 `DESIGN_ONLY`로 취급하며, 계약 확장은 G13에서 별도 추적한다.
+- **실제 계약과 일치 확인된 부분**: `service-case-state.v1.schema.json`의 `status`(PREFLIGHT_REQUIRED~CLOSED 18단계), `security-findings.v1.schema.json`의 `severity`(CRITICAL/HIGH/MEDIUM/LOW/INFO), `program-risk-score.v1.schema.json`의 `grade`(A~E, A/B 등급은 `open_critical_count`가 0일 때만 부여), `license-state.v1.schema.json`의 `reservations[].state`(RESERVED/COMMITTED/RELEASED/EXPIRED), `program-profile.v1.schema.json`의 Component/Dependency/AI Component/Unknown/Conflict/Revision 필드, `target-adapter.v1.json`의 `supported_source_kinds`, `unattended-autopilot.v1.json`의 `forbidden_actions`/`merge_authorization`/`maximum_stage_attempts` — 각각 아래 §4·§6이 참조하는 화면 설명과 필드 이름·값이 일치한다.
+- **새로 반영한 실제 기능(이번 세션에 추가된 `provider.status`/`provider.usage` Operation)**: §5 관리자 화면에 AI Model Provider 상태·토큰/비용 사용량 조회 항목을 추가했다 — 실제 등록된 Operation과 `ModelInvocationLedger`가 이 데이터를 이미 만들어내는데도 이전 버전 설계서에는 반영되어 있지 않았다.
+
 ## 1-1. Organization Switcher
 여러 Organization Membership을 가진 사용자(SI·컨설팅·품질관리 회사 등)를 위해 모든 화면 상단에 Organization Switcher를 고정 노출한다. 전환 시 이전 Organization의 데이터·세션 컨텍스트는 즉시 폐기하고 새 Organization Context로 재조회한다.
 
@@ -64,11 +71,11 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 - Critical Finding의 Cross-Model Verification 결과(1차/2차 모델 일치 여부)
 - AI 자기주장과 실제 Evidence 불일치 시 별도 배지 표시
 - 개선 제안
-- Accept Risk, False Positive, Improve 선택
+- Accept Risk, False Positive, Improve 선택 — 실제 `contracts/security-findings.v1.schema.json`의 `status`는 OPEN/CLOSED/ACCEPTED_RISK 3개뿐이며 `FALSE_POSITIVE`라는 별도 상태는 계약에 없다(G10에서 이미 확인). 따라서 이 3개 버튼은 계약 상태 값이 아니라 UI 동작이며, Accept Risk는 `status=ACCEPTED_RISK`로, False Positive는 `status=CLOSED`(자유서술 `resolution` 필드에 오탐 사유 기록)로, Improve는 Patch 완료 후 `status=CLOSED`(resolution에 수정 근거 기록)로 귀결된다
 - 대량 Finding 발생 시 일괄 처리: 필터로 좁힌 결과에 대해 일괄 Accept Risk/False Positive 지정, 저장된 필터 뷰, CSV 내보내기 후 일괄 재반영. 단 Critical/High의 일괄 Accept Risk는 개별 확인 없이 처리하지 않으며 §7 위험행위 확인을 거친다
 
 ### Finding Explorer 내 전문가 검토 요청
-Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택하면 대상 Finding/범위, 예상 소요시간, 추가 비용을 표시하고 승인 시 결제 후 관리자 화면의 "전문가 리뷰 배정" 큐로 전달한다. 배정된 전문가의 소견은 별도 Decision(EXPERT_CONCUR, EXPERT_OVERRIDE, EXPERT_ESCALATE)으로 Finding에 결합되며 자동 Decision을 덮어쓰지 않고 병기한다.
+Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택하면 대상 Finding/범위, 예상 소요시간, 추가 비용을 표시하고 승인 시 결제 후 관리자 화면의 "전문가 리뷰 배정" 큐로 전달한다. 배정된 전문가의 소견은 별도 Decision(EXPERT_CONCUR, EXPERT_OVERRIDE, EXPERT_ESCALATE)으로 Finding에 결합되며 자동 Decision을 덮어쓰지 않고 병기한다 — 이 3개 값은 어떤 계약에도 정의돼 있지 않은 `DESIGN_ONLY` 어휘이며(G14 대조로 확인), 실제로 세분화하려면 계약을 먼저 확장해야 한다. 현재 계약 수준에서 전문가 소견을 저장하려면 `status`는 OPEN/CLOSED/ACCEPTED_RISK 중 하나로, 소견 내용 자체는 `resolution`의 자유서술 텍스트로 기록하는 방식만 가능하다.
 
 ### Organization Portfolio
 - 조직에 속한 모든 System/Program을 한 화면에서 통합 조회(PortfolioSnapshot 기반)
@@ -82,7 +89,7 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 ### Support Center
 - 등급별 SLA 표시: Web 고객(영업일 기준 1차 응답), VS Code Developer(2 영업일), Team(1 영업일), Enterprise(계약 SLA, 예: 4시간)
 - 티켓 생성 시 관련 Case/Finding/License를 자동 첨부
-- 상태: OPEN → IN_PROGRESS → WAITING_ON_CUSTOMER → RESOLVED → CLOSED
+- 상태: OPEN → IN_PROGRESS → WAITING_ON_CUSTOMER → RESOLVED → CLOSED — `contracts/*.json`에 지원 티켓 전용 계약이 없어 이 상태값은 `DESIGN_ONLY`다(G14 대조로 확인). 세분화하려면 계약을 먼저 신설해야 한다
 - Professional Reviewer 요청("Finding Explorer 내 전문가 검토 요청" 화면 참조)과 일반 기술지원 티켓을 구분해 큐잉
 
 ### Delivery Center
@@ -99,8 +106,8 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 - OLicense 상태
 - Web Case와 VS Code 구독
 - Seat, System, Program, Credit
-- Reserve/Commit/Release 내역
-- Hard Stop, Auto Top-up, Approval Required 설정
+- Reserve/Commit/Release 내역 — 실제 `contracts/license-state.v1.schema.json`의 `reservations[].state`(RESERVED/COMMITTED/RELEASED/EXPIRED)와 일치
+- Hard Stop, Auto Top-up, Approval Required 설정 — `license-state.v1.schema.json`에는 `credits`(total/available/reserved/committed)만 있고 이 3개 정책을 담을 필드가 없다. `01_BUSINESS_PRODUCT_SERVICE_PLAN.md`·`07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md`가 정책 개념으로만 언급한 것을 이 화면이 앞서 반영한 것이며 `DESIGN_ONLY`다(G14 대조로 확인) — 세분화하려면 계약을 먼저 확장해야 한다
 
 ## 5. 관리자 화면
 - Product Catalog와 Feature Entitlement 조회
@@ -109,6 +116,7 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 - 결제·환불·정산 상태
 - License 발급 실패 및 재처리
 - Worker와 Sandbox 상태
+- AI Model Provider 상태와 토큰/비용 사용량 조회(신규, G14 대조로 반영) — 실제 등록된 `provider.status`/`provider.usage` Operation과 `ModelInvocationLedger`가 이 데이터를 만든다. `provider.status`는 등록된 Provider별 `provider_id`·`declared_model_ids`·`supported_task_classes`를, `provider.usage`는 Provider별·전체 합산 호출수·입력/출력 토큰·비용(µ단위)을 반환하며 두 응답 모두 `final_claim_allowed: false`를 포함한다
 - 고객 승인 대기
 - 전문가 리뷰 배정
 - 보존·삭제 작업
@@ -159,10 +167,10 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - Re-review 상태
 
 ### Verification
-- Verification Pack
+- Verification Pack — 아직 전용 계약이 없는 `DESIGN_ONLY` 개념(`02`·`06` 설계서에만 존재, G14 대조로 확인)
 - Scenario와 Test 상태
-- PASS/FAIL/BLOCKED/NOT_RUN
-- Mutation Score(Test Suite 실효성 지표)와 취약 구간 표시
+- PASS/FAIL/BLOCKED/HOLD/NOT_RUN/INCONCLUSIVE/NON_FINAL — 실제 `contracts/status-vocabulary.v1.json`의 `verification_states`/`run_decisions` 7개 값 전체(이전에는 4개만 표기해 HOLD·INCONCLUSIVE·NON_FINAL이 누락돼 있었다). `06_TEST_OPERATION_IMPLEMENTATION_PLAN.md`가 Stop Condition 강제종료 시 INCONCLUSIVE를 사용자에게 표시한다고 명시하므로 이 값도 실제 노출 대상이다
+- Mutation Score(Test Suite 실효성 지표)와 취약 구간 표시 — 계약에 아직 없는 `DESIGN_ONLY` 지표(G14 대조로 확인)
 - Log와 Evidence
 - 재실행 비용
 
