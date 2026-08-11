@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/blind-context-manifest.candidate.v2.schema.json",
+  "title":"ONSure Blind Context Manifest Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","blind_context_id","target_id","review_or_run_id","allowed_sources","denied_sources","cache_reset","scratch_reset","access_audit_digest","principal_profile_sha256","created_at","manifest_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_BLIND_CONTEXT_MANIFEST_V2_CANDIDATE"},"blind_context_id":{"type":"string","minLength":1},"target_id":{"type":"string","minLength":1},"review_or_run_id":{"type":"string","minLength":1},
+    "allowed_sources":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/sourceRef"}},
+    "denied_sources":{"type":"array","minItems":1,"uniqueItems":true,"items":{"$ref":"#/$defs/sourceRef"}},
+    "cache_reset":{"const":true},"scratch_reset":{"const":true},"access_audit_digest":{"$ref":"#/$defs/sha256"},"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"created_at":{"type":"string","format":"date-time"},"manifest_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"sourceRef":{"type":"object","additionalProperties":false,"required":["source_id","source_class","source_digest"],"properties":{"source_id":{"type":"string","minLength":1},"source_class":{"enum":["PRIOR_FINDING","PRIOR_SCORE","PRIOR_VERDICT","KNOWLEDGE_PATTERN","RAG_INDEX","CONVERSATION_CACHE","VENDOR_REPUTATION","RAW_EVIDENCE","NORMATIVE_SOURCE"]},"source_digest":{"$ref":"#/$defs/sha256"}}}}
+}
