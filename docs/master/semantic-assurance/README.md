@@ -21,6 +21,7 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `contracts/semantic-assurance-capability-registry.candidate.v1.json`: SA-01~SA-14 Capability registry
 - `contracts/semantic-assurance-cross-cutting-controls.candidate.v1.json`: XC-01~XC-30 독립검토 cross-cutting control registry
 - `contracts/semantic-assurance-finding-ledger.candidate.v1.json`: source-confirmed Finding/defect-family/canonical-gate block의 machine-readable candidate registry
+- `contracts/semantic-assurance-gate-integration.candidate.v1.json`: Product Lineage, Workflow Operation, Validation Case, Final Acceptance/Publication 네 canonical path에 Semantic Assurance를 편입하기 위한 hard-block/operation 후보 contract
 
 모든 Registry는 현재 `DESIGN_ONLY_NONFINAL`이며 구현·실행·Qualification을 주장하지 않는다.
 
@@ -44,4 +45,4 @@ Semantic Assurance가 실제 제품 Gate가 되려면 설계 문서 존재만으
 - validation case/negative fixture denominator
 - Final acceptance/publication/freshness reconstruction path
 
-한 곳이라도 빠지면 `DESIGNED_CONTROL_OUTSIDE_CANONICAL_GATE_PATH`로 취급하며 Final positive claim의 근거가 될 수 없다.
+한 곳이라도 빠지면 `DESIGNED_CONTROL_OUTSIDE_CANONICAL_GATE_PATH`로 취급하며 Final positive claim의 근거가 될 수 없다. 현재 편입 설계 상태는 `contracts/semantic-assurance-gate-integration.candidate.v1.json`이 추적한다.
