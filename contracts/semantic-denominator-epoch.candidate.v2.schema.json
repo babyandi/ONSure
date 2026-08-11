@@ -1,0 +1,21 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/semantic-denominator-epoch.candidate.v2.schema.json",
+  "title":"ONSure Semantic Denominator Epoch Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","denominator_id","target_id","dimension","epoch","source_classes","items","population_digest","unknown_discovery","exclusions","created_at","denominator_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_SEMANTIC_DENOMINATOR_EPOCH_V2_CANDIDATE"},
+    "denominator_id":{"type":"string","minLength":1},"target_id":{"type":"string","minLength":1},
+    "dimension":{"enum":["REQUIREMENT","FUNCTION","API","STATE","RIGHT","FAILURE","TEST_CASE","SEMANTIC_CAPABILITY","FINAL_ACCEPTANCE_SOURCE","PACKAGE","DOCUMENT"]},
+    "epoch":{"type":"string","minLength":1},
+    "source_classes":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"object","additionalProperties":false,"required":["source_class","state","source_digest"],"properties":{"source_class":{"type":"string","minLength":1},"state":{"enum":["DISCOVERED","PARTIAL","NOT_PROVEN","NOT_APPLICABLE_WITH_JUSTIFICATION"]},"source_digest":{"$ref":"#/$defs/sha256"},"justification":{"type":["string","null"]}}}},
+    "items":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["item_id","item_digest","criticality","disposition"],"properties":{"item_id":{"type":"string","minLength":1},"item_digest":{"$ref":"#/$defs/sha256"},"criticality":{"enum":["CRITICAL","HIGH","MEDIUM","LOW","INFO"]},"disposition":{"enum":["INCLUDED","EXCLUDED_WITH_JUSTIFICATION","UNKNOWN","NOT_APPLICABLE_JUSTIFIED"]},"justification_ref":{"type":["string","null"]}}}},
+    "population_digest":{"$ref":"#/$defs/sha256"},
+    "unknown_discovery":{"type":"object","additionalProperties":false,"required":["methods","coverage_state"],"properties":{"methods":{"type":"array","minItems":1,"uniqueItems":true,"items":{"enum":["STATIC_STRUCTURAL","RUNTIME_DYNAMIC","FAILURE_ADVERSARIAL","INDEPENDENT_RECONSTRUCTION","EXTERNAL_NORMATIVE"]}},"coverage_state":{"enum":["PROVEN","PARTIAL","NOT_PROVEN"]}}},
+    "exclusions":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["item_id","authority_ref","reason","review_at"],"properties":{"item_id":{"type":"string","minLength":1},"authority_ref":{"type":"string","minLength":1},"reason":{"type":"string","minLength":1},"review_at":{"type":"string","format":"date-time"}}}},
+    "supersedes_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"},
+    "created_at":{"type":"string","format":"date-time"},"denominator_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}
