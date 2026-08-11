@@ -1,0 +1,150 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_GATE_INTEGRATION_CANDIDATE_V1",
+  "schema_version": "1.0.0-candidate",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "authority": {
+    "implementation": false,
+    "merge": false,
+    "deploy": false,
+    "production_go": false,
+    "commercial_go": false,
+    "final_lock": false
+  },
+  "references": {
+    "capability_registry": "contracts/semantic-assurance-capability-registry.candidate.v1.json",
+    "cross_cutting_registry": "contracts/semantic-assurance-cross-cutting-controls.candidate.v1.json",
+    "finding_ledger": "contracts/semantic-assurance-finding-ledger.candidate.v1.json",
+    "human_finding_ledger": "docs/master/semantic-assurance/10_FINDING_LEDGER.md",
+    "contract_upgrade_blueprint": "docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md"
+  },
+  "required_canonical_paths": [
+    {
+      "id": "CG-01",
+      "name": "PRODUCT_LINEAGE",
+      "current_authority": "contracts/product-process-lineage.v1.json",
+      "required_future_artifacts": [
+        "SA_APPLICABILITY_SET",
+        "SA_EXECUTION_SET",
+        "SA_CLOSURE_RECEIPT",
+        "FINAL_FRESHNESS_BARRIER_RECEIPT",
+        "FINAL_CLAIM_RECONSTRUCTION_RECEIPT",
+        "VERIFIED_TO_DEPLOYED_BINDING_RECEIPT"
+      ],
+      "current_integration": "MISSING",
+      "positive_promotion_allowed": false
+    },
+    {
+      "id": "CG-02",
+      "name": "WORKFLOW_OPERATION_REACHABILITY",
+      "current_authority": "contracts/workflow-operation-registry.v1.json",
+      "required_future_operations": [
+        "assurance.applicability-evaluate",
+        "assurance.reperform",
+        "assurance.denominator-challenge",
+        "assurance.obligation-close",
+        "assurance.authority-revalidate",
+        "assurance.invalidate",
+        "assurance.current-disposition",
+        "assurance.sod-assess",
+        "assurance.validator-requalify",
+        "assurance.final-freshness-barrier",
+        "assurance.final-reconstruct",
+        "assurance.human-acceptance",
+        "assurance.final-candidate",
+        "assurance.final-lock",
+        "git.push",
+        "deployment.verify-readback"
+      ],
+      "current_integration": "MISSING",
+      "positive_promotion_allowed": false
+    },
+    {
+      "id": "CG-03",
+      "name": "VALIDATION_CASE_DENOMINATOR",
+      "current_authority": "contracts/validation-case-registry.v1.json",
+      "required_future_coverage": [
+        "ALL_APPLICABLE_SA_CAPABILITIES",
+        "ALL_P0_XC_CONTROLS",
+        "SEMANTIC_TYPE_ERASURE_FIXTURES",
+        "CANONICAL_GATE_BYPASS_FIXTURES",
+        "CROSS_CONTRACT_CONFLICT_FIXTURES",
+        "META_VALIDATOR_QUALIFICATION_FIXTURES"
+      ],
+      "current_integration": "MISSING",
+      "positive_promotion_allowed": false
+    },
+    {
+      "id": "CG-04",
+      "name": "FINAL_ACCEPTANCE_PUBLICATION",
+      "current_authorities": [
+        "contracts/final-acceptance-source-registry.v1.json",
+        "contracts/final-acceptance-execution.v1.json",
+        "contracts/state-model-mapping.v1.json",
+        "contracts/state-machine.v1.json"
+      ],
+      "required_future_gates": [
+        "CURRENT_REQUIREMENT_DENOMINATOR",
+        "CURRENT_SA_CLOSURE",
+        "CURRENT_VALIDATOR_QUALIFICATION",
+        "CURRENT_AUTHORITY_AND_REVOCATION_EPOCH",
+        "INDEPENDENT_OTESTER_RECEIPT",
+        "INDEPENDENT_OAUDIT_RECEIPT",
+        "HUMAN_ACCEPTANCE_RECEIPT",
+        "FINAL_FRESHNESS_BARRIER",
+        "FINAL_RECONSTRUCTION",
+        "VERIFIED_TO_DEPLOYED_BINDING"
+      ],
+      "current_integration": "INCOMPLETE",
+      "positive_promotion_allowed": false
+    }
+  ],
+  "required_operation_contract_fields": [
+    "operation_id",
+    "operation_version",
+    "required_principal_policy",
+    "tenant_scope",
+    "resource_scope",
+    "purpose_scope",
+    "effect_class",
+    "reversibility_class",
+    "required_input_contracts",
+    "required_output_contracts",
+    "sod_rule",
+    "idempotency_rule",
+    "replay_rule",
+    "minimum_client_version",
+    "minimum_executor_version",
+    "fail_closed_disposition"
+  ],
+  "hard_block_findings": [
+    "FL-P0-069",
+    "FL-P0-071",
+    "FL-P0-098",
+    "FL-P0-099",
+    "FL-P0-106",
+    "FL-P0-107",
+    "FL-P0-108",
+    "FL-P0-109",
+    "FL-P0-122",
+    "FL-P0-123",
+    "FL-P0-124",
+    "FL-P0-125",
+    "FL-P0-126",
+    "FL-P0-127",
+    "FL-P0-128",
+    "FL-P0-129",
+    "FL-P0-130",
+    "FL-P0-131",
+    "FL-P0-132"
+  ],
+  "rules": {
+    "designed_control_outside_canonical_path_blocks_positive_promotion": true,
+    "missing_operation_path_is_not_implementation": true,
+    "missing_validation_case_is_not_covered": true,
+    "missing_final_gate_binding_is_not_final_ready": true,
+    "self_validation_receipt_cannot_satisfy_independent_gate": true,
+    "material_semantics_must_survive_receipt_envelope_lineage_handoffs": true,
+    "final_history_and_current_validity_must_be_separate": true
+  },
+  "final_claim_allowed": false
+}
