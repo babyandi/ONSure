@@ -95,6 +95,13 @@ Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하
 
 이 목록은 신규 서비스 14개를 의미하지 않는다. 기존 ONSure 프로그램이 재사용하는 검증 Capability 분류이며, 실제 Runtime 경계는 `04_ARCHITECTURE_DATA_API_OLICENSE.md`와 향후 Contract에서 결정한다. 현재는 `DESIGN_ONLY`다.
 
+### 5-2. Semantic Assurance Finding Authority (`DESIGN_ONLY`)
+반복 독립검토에서 발견한 구체 결함은 [semantic-assurance/10_FINDING_LEDGER.md](semantic-assurance/10_FINDING_LEDGER.md)를 canonical human ledger로 사용한다. 원시 검토의 candidate observation count와 canonical defect count를 분리하며, 동일 주제라도 실패 시나리오·영향·필수 계약 변경이 다르면 별도 Finding으로 유지한다.
+
+현재 Ledger는 P0 `FL-P0-001~132`, P1 `FL-P1-001~048`의 source-confirmed canonical batch를 기록하고, machine 후보는 `contracts/semantic-assurance-finding-ledger.candidate.v1.json`에 둔다. 이 등록은 결함 해결을 의미하지 않는다.
+
+계약 변경 설계는 [semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md](semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md)를 따른다.
+
 ## 6. 핵심 경계
 ### Review와 Verification
 Review는 구현 또는 변경이 적절한지 판단한다. Verification은 요구사항과 정책을 실제로 만족하는지 증거로 판정한다. Review PASS가 Verification PASS를 의미하지 않으며, 두 결과는 독립 저장한다.
@@ -110,6 +117,16 @@ Target AI Auto-Learning도 Improvement와 동일하게 임의 요청에서 시�
 
 ### Semantic Assurance 경계
 Semantic Assurance Capability는 기존 기능/검증 결과의 의미적 closure를 강화하는 계층이다. 문서상 적용, Schema 존재, Runtime 구현, 실행, Evidence 결속, 독립 검증, Qualification은 서로 다른 상태다. `contracts/semantic-assurance-capability-registry.candidate.v1.json`은 현재 Candidate Registry이며 구현 권위를 만들지 않는다.
+
+### Canonical Gate 편입 경계
+Semantic Assurance가 실제 Final Gate가 되려면 설계 문서나 Candidate Registry 존재만으로 충분하지 않다. 최소 다음 네 경로에 모두 편입되어야 한다.
+
+1. canonical product lineage
+2. workflow operation registry
+3. validation case/negative fixture denominator
+4. Final acceptance/publication/freshness reconstruction path
+
+한 곳이라도 빠지면 `DESIGNED_CONTROL_OUTSIDE_CANONICAL_GATE_PATH`로 취급한다. 특히 `10_FINDING_LEDGER.md`의 canonical gate blocker가 OPEN이면 Semantic Assurance를 근거로 Full-Chain/Final Candidate/FinalLock/Production/Commercial positive claim을 승격하지 않는다.
 
 ## 7. 주요 산출물
 - Business Plan
@@ -137,6 +154,9 @@ Semantic Assurance Capability는 기존 기능/검증 결과의 의미적 closur
 - Semantic Assurance Test/Operation Extension ([semantic-assurance/06_TEST_OPERATION_EXTENSION.md](semantic-assurance/06_TEST_OPERATION_EXTENSION.md))
 - Semantic Assurance AI/Agent Method Extension ([semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md](semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md))
 - Semantic Assurance Open Decisions ([semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md](semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md))
+- Semantic Assurance Independent Review Integration ([semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md](semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md))
+- Semantic Assurance Finding Ledger ([semantic-assurance/10_FINDING_LEDGER.md](semantic-assurance/10_FINDING_LEDGER.md))
+- Semantic Assurance Contract Upgrade Blueprint ([semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md](semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md))
 
 ## 8. 출시 Gate
 다음이 모두 충족되어야 상용 출시 후보가 된다.
@@ -150,6 +170,8 @@ Semantic Assurance Capability는 기존 기능/검증 결과의 의미적 closur
 - 운영 복구 및 Rollback 시험 PASS
 
 Semantic Assurance Capability가 출시 Gate의 하드 조건으로 승격되려면 각 Capability별 Contract/Runtime/Execution/Qualification이 먼저 제정되어야 한다. Candidate Registry 존재만으로 출시 Gate를 확대하거나 통과시킨 것으로 간주하지 않는다.
+
+추가로 `semantic-assurance/10_FINDING_LEDGER.md`의 `CANONICAL_GATE_BYPASS`, `SEMANTIC_TYPE_ERASURE`, Status/Receipt/Final/Independent trust-chain P0 blocker가 OPEN인 동안 신규 Semantic Assurance를 근거로 Final Gate를 강화 완료했다고 주장하지 않는다. P0 blocker의 해소는 문서 반영이 아니라 Contracted→Implemented→Executed→Evidence Bound→Independently Verified→Qualified 상태로 확인한다.
 
 ## 9. 비최종 상태
 문서 작성, 코드 구현, 단위시험, PR 생성만으로 Final PASS를 선언하지 않는다. 실제 환경 E2E, 독립 리뷰, Evidence 고정 전까지 모든 결과는 NON_FINAL이다.
