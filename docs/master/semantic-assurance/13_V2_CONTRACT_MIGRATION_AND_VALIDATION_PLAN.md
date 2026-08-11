@@ -10,8 +10,10 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `contracts/assurance-receipt-envelope.candidate.v2.schema.json`
 - `contracts/authority-principal-profile.candidate.v2.schema.json`
 - `contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json`
+- `contracts/workflow-operation-registry.candidate.v2.json`
+- `contracts/product-process-lineage.candidate.v2.json`
 
-이 파일들은 Candidate Schema이며 현재 v1 authority를 대체하지 않는다.
+이 파일들은 Candidate Contract이며 현재 v1 authority를 대체하지 않는다.
 
 ## 2. Migration 공통 원칙
 1. **Dual Read, Single Authority**: transition 동안 v1/v2 read는 가능하되 동일 logical state에 두 writer가 존재하지 않는다.
@@ -105,7 +107,7 @@ Schema 자체가 의도한 P0 invariant를 표현하는지 검증한다.
 ### Status Adapter
 v1 verification state를 v2 multi-dimensional state로 변환하되 알려지지 않은 차원을 명시한다.
 예:
-- v1 PASS + no evidence proof → v2 `execution=EXECUTED?`를 추정하지 않고 `evidence=UNKNOWN`, publication NON_FINAL
+- v1 PASS + no evidence proof → v2 `evidence=UNKNOWN`, publication NON_FINAL
 - v1 NOT_RUN → execution NOT_RUN, decision NOT_RUN
 
 ### Receipt Reconstructor
@@ -124,7 +126,7 @@ role/key 이름만으로 독립성이나 권한을 복원하지 않는다.
 Final Candidate를 v1 job IDs/count로 계산하지 않고 exact receipt digest set과 current epochs에서 재구성한다.
 
 ## 6. Phase 3 — Workflow Operation v2 편입
-다음 operation을 canonical registry에 추가한 뒤 dispatcher coverage를 검증한다.
+`contracts/workflow-operation-registry.candidate.v2.json`은 기존 v1 operation을 보존하면서 다음 operation을 canonical 후보로 추가한다.
 - `semantic.applicability.evaluate`
 - `semantic.denominator.discover`
 - `semantic.denominator.challenge`
@@ -142,34 +144,52 @@ Final Candidate를 v1 job IDs/count로 계산하지 않고 exact receipt digest 
 - `git.push`
 - `deployment.verify-installed`
 
-Operation entry는 이름만 등록하지 않고 최소:
-- version
-- required principal/role
-- permit/purpose
-- effect class
-- input contracts
-- output contracts
-- idempotency
-- retry policy
-- timeout
-- stale/revocation behavior
-를 가진다.
+각 신규 operation은 version, effect class, required role, purpose, input/output contract family, idempotency, retry, stale trigger를 가진다.
+
+### 검증
+- 모든 신규 operation이 generic dispatcher에 route되는지
+- unknown operation fail-closed
+- read-only와 external/canonical effect가 다른 permit policy를 쓰는지
+- operation metadata 변경이 old receipt를 stale 처리하는지
 
 ## 7. Phase 4 — Canonical Product Lineage v2
-필수 추가 artifact/stage:
+`contracts/product-process-lineage.candidate.v2.json`은 기존 v1 lineage를 즉시 대체하지 않고 다음 필수 stage/artifact를 추가하는 candidate다.
+
+### 필수 추가 stage
+- REQUIREMENT_UNIVERSE
+- SEMANTIC_APPLICABILITY
+- DENOMINATOR_DISCOVERY
+- DENOMINATOR_LOCK
+- SEMANTIC_ASSURANCE_EXECUTION
+- FRESHNESS_BARRIER
+- VALIDATOR_QUALIFICATION_CHECK
+- INDEPENDENCE_ASSESSMENT
+- HUMAN_ACCEPTANCE
+- FINAL_RECONSTRUCTION
+- DEPLOYMENT
+- VERIFIED_TO_DEPLOYED
+- POST_DEPLOYMENT_CURRENTNESS
+
+### 필수 추가 artifact
+- `REQUIREMENT_UNIVERSE_SNAPSHOT`
 - `SEMANTIC_APPLICABILITY_SET`
 - `DENOMINATOR_EPOCH`
 - `SEMANTIC_ASSURANCE_EXECUTION_SET`
 - `SEMANTIC_ASSURANCE_CLOSURE_RECEIPT`
 - `FRESHNESS_BARRIER_RECEIPT`
-- `INDEPENDENCE_PROFILE`
 - `VALIDATOR_QUALIFICATION_SET`
+- `INDEPENDENCE_PROFILE`
+- `INDEPENDENT_OTESTER_RECEIPT`
+- `INDEPENDENT_OAUDIT_RECEIPT`
 - `HUMAN_ACCEPTANCE_RECEIPT`
-- `FINAL_RECONSTRUCTION_RECEIPT`
+- `SEMANTIC_ASSURANCE_GATE_RECEIPT_V2`
 - `DEPLOYMENT_RECEIPT`
 - `VERIFIED_TO_DEPLOYED_RECEIPT`
 
-모든 artifact는 exact parent digest를 갖는다. Stage consumes 집합과 artifact parent_bindings 집합의 semantic closure를 CrossContractInvariantEngine이 검사한다.
+모든 artifact는 exact parent digest를 갖는다. Stage consumes 집합과 artifact parent 집합의 semantic closure를 CrossContractInvariantEngine이 검사해야 한다.
+
+### 역방향 invalidation
+v2 lineage는 순방향 parent graph뿐 아니라 source/requirement/denominator/policy/authority/oracle/validator/finding/deployment 변경의 stale propagation edge를 갖는다.
 
 ## 8. Phase 5 — Validation Case / Denominator Migration
 고정 숫자를 canonical authority로 사용하지 않는다.
@@ -286,14 +306,14 @@ P0 Finding은 다음을 모두 만족할 때만 `VERIFIED_CLOSED` 후보가 된�
 - Receipt Envelope v2 candidate schema
 - Authority Principal Profile v2 candidate schema
 - Semantic Assurance Gate Receipt v2 candidate schema
+- Workflow Operation Registry v2 candidate
+- Product Process Lineage v2 candidate
 
 아직 완료되지 않은 것은:
 - schema fixture 실제 파일 생성/실행
 - v1→v2 adapter 구현
-- operation registry v2
-- product lineage v2
 - Final Acceptance/Validation Case denominator migration
 - independent qualification
 - active selector 전환
 
-따라서 현재 상태는 `DESIGN_ONLY / CONTRACT_CANDIDATE_CREATED / EXECUTION_NOT_RUN / NON_FINAL`이다.
+따라서 현재 상태는 `DESIGN_ONLY / CONTRACT_CANDIDATE_CREATED / EXECUTION_PATH_CANDIDATE_CREATED / EXECUTION_NOT_RUN / NON_FINAL`이다.
