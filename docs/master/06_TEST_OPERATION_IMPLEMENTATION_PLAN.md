@@ -280,15 +280,21 @@ Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진�
 1. Schema, Receipt, OLicense 계약
 2. Local Runtime과 OLearning 최소기능
 3. OReview 코드리뷰 최소기능
+3-1. **SBOM(대상 Program용, G7)** — 03 Security Review가 이미 "Dependency 취약점과 License"를 리뷰 입력으로 요구하므로(3번의 일부로 이미 필요한 의존성 인벤토리), 그 인벤토리를 표준 산출물로 굳히는 작업. ONSure 자체 내부 빌드 SBOM(`SbomGenerator.java`, CycloneDX 1.5)이 이미 실제로 동작 중이라 포맷·라이선스 보강 패턴을 그대로 재사용할 수 있어 4개 항목 중 엔지니어링 위험이 가장 낮다. 다만 임의 생태계(npm/pip/cargo 등) 파서 확장은 신규 작업
 4. OVerification 실행 Harness
 5. Web Learn & Verify Case
+5-1. **NotificationRule/NotificationEvent/NotificationDeliveryReceipt(ONotify, G7)** — Web Case가 실제로 상태를 갖기 시작하는 5번 이후에야 통지할 대상 사건이 생긴다. MVP는 Email/Webhook 채널만으로 충분하며 VS Code 채널은 8번(VS Code Developer)이 붙을 때 자연 확장
+5-2. **AcceptanceCertificate/ExternalAcceptorGrant(G7)** — Case가 `DELIVERY_ACCEPTED`에 실제로 도달해야 발급 대상이 생기므로 5번에 종속. `decision_summary.coverage_percent`는 CoverageReport 계약 제정 전까지 비워둘 수 있어 하드 블로커는 아니지만, `program_risk_score`/`program_risk_grade`는 G32로 이미 계약이 있어 채울 수 있다
 6. OImprovement Worktree Patch
 7. OMemory 최소기능(Pattern 추출·매칭, MissedFinding 등록)
 8. VS Code Developer
 9. Payment/Refund와 운영화
 10. Team/Enterprise 기능
+10-1. **PolicyPack/PolicyPackVersion(G7)** — 01·04가 이미 Enterprise 전용 유료 기능으로 명시했고, 신규/개정 버전은 7번 OMemory의 Golden Review Fixture 회귀 절차를 그대로 재사용해야 하므로 7번과 10번이 모두 갖춰진 뒤가 순서상 맞다. 4개 항목 중 유일하게 두 개의 선행 Lane(7, 10)에 동시 의존
 11. OMemory 재귀학습 루프 자동화(RCA→Rule 개정→Golden Fixture 회귀→Promote), `contracts/learning-to-application-pipeline.v1.json`의 `VALIDATION_PACK_APPLY` 경로로 `APPLIED_LOCKED` 최소 1건 달성
 12. OTraining(Target AI Auto-Learning) — 11번이 `APPLIED_LOCKED` 1건 이상을 실제로 달성하기 전까지 착수하지 않는다(`TARGET_PRODUCT_APPLY: mvp_allowed=false` 하드 게이트, [00_ONSURE_MASTER_DESIGN_SET.md §2-2](00_ONSURE_MASTER_DESIGN_SET.md))
+
+**G7 삽입 근거 요약(2026-08-11)**: 위 11/12번은 G30에서 이미 번호로 참조되고 있어(같은 문서 §1-1, [08 체크리스트 G30](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)) 기존 번호를 보존하고 신규 4개 항목은 하위번호(N-1 등)로 삽입했다. 순서는 각 항목이 실제로 소비 가능해지는 선행 Lane 기준이며, 계약 제정(§6 변경 규칙: Requirement→Design→Contract/Schema→Code 순서)은 이 구현 순서보다 항상 먼저 와야 한다 — 이 절은 "계약이 생긴 뒤 코드를 어떤 순서로 짤지"이지 "언제 계약을 만들지"가 아니다.
 
 ## 12. 최종 수용기준
 - 문서와 코드 Traceability 확보

@@ -175,7 +175,7 @@ PatchPlan은 hunk 단위(`hunk_id`, `finding_id`, `preimage_sha256`, `approval_s
 ### 아직 계약이 없는 이 설계서의 확장 (DESIGN_ONLY)
 다음은 이번 세션에서 제안했으나 대응하는 `contracts/*.schema.json`을 찾지 못했다. 아이디어 자체를 폐기하라는 뜻이 아니라, 구현 전 계약부터 만들어야 한다는 뜻이다. (2026-08-09 갱신: CaseRevision·ComponentContract/Cross-Program Impact Scan·ProgramRiskScore는 G2/G3/G7 작업으로 실제 계약이 생겨 목록에서 제외했다. BlastRadiusReport는 PatchPlan.preapply_assessment로 부분 흡수된 것으로 이미 정리됨.)
 
-**MissedFinding**(위 절 참조 — 신규 기능정의는 있으나 계약은 아직 없음), RollbackVerificationReceipt, **ConfidenceCalibrationReport**(아래 §OReview 자체 품질 절에 신규 기능정의 추가, 계약은 아직 없음), ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, AcceptanceCertificate/ExternalAcceptorGrant, **CoverageReport**([02 §4](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)에 신규 기능정의 추가, 계약은 아직 없음), NotificationRule/NotificationEvent, PolicyPack/PolicyPackVersion, ReproducibilityAuditSample, SBOM, TrainingRequest/Plan/Run, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval/ProductionObservation/RelearnTrigger
+**MissedFinding**(위 절 참조 — 신규 기능정의는 있으나 계약은 아직 없음), RollbackVerificationReceipt, **ConfidenceCalibrationReport**(아래 §OReview 자체 품질 절에 신규 기능정의 추가, 계약은 아직 없음), ReviewerAccuracyScore, AIConfigDriftReport, PeerBenchmark, **AcceptanceCertificate/ExternalAcceptorGrant**(위 절 참조 — G7, 2026-08-11 신규 기능정의 추가, 계약은 아직 없음), **CoverageReport**([02 §4](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)에 신규 기능정의 추가, 계약은 아직 없음), **NotificationRule/NotificationEvent/NotificationDeliveryReceipt**(위 절 참조 — G7, 2026-08-11 신규 기능정의 추가, 계약은 아직 없음), **PolicyPack/PolicyPackVersion**(위 절 참조 — G7, 2026-08-11 신규 기능정의 추가, 계약은 아직 없음. `dependency-license-policy.v1.json`이 ONSure 자체 빌드용으로 같은 모양의 라이선스 규칙 계약을 이미 갖고 있어 향후 계약 제정 시 선례로 재사용 가능), ReproducibilityAuditSample, **SBOM**(대상 Program용 — 위 절 참조. G7, 2026-08-11 신규 기능정의 추가, 계약은 아직 없음. ONSure 자체 내부 빌드 SBOM은 `SbomGenerator.java`로 이미 구현되어 있으나 범위가 다름), TrainingRequest/Plan/Run, ModelVersion/RAGIndexVersion/PromptVersion/AgentPolicyVersion, DeploymentApproval/ProductionObservation/RelearnTrigger
 
 ### TrainingRequest / TrainingRun (DESIGN_ONLY)
 TrainingRequest: DRAFT → SCOPED → APPROVED → TRAINING_IN_PROGRESS → EVALUATION_PENDING → (INDEPENDENTLY_VERIFIED → DEPLOYMENT_APPROVED → DEPLOYED) 또는 (EVALUATION_FAILED → SCOPED로 재진입)
@@ -196,6 +196,66 @@ Improve & Re-verify를 DELIVERY_ACCEPTED 이후의 새 CaseRevision으로 처리
 
 ### ComponentContract (DESIGN_ONLY)
 DRAFT → ACTIVE → SUPERSEDED, 예외 BREAKING_CHANGE_FLAGGED. Cross-Program Impact Scan 아이디어(Provided Interface 변경 시 다른 Program에 Finding 전파)는 유효하나 이를 뒷받침할 `component-contract.v1.schema.json` 계약이 아직 없다.
+
+### AcceptanceCertificate / ExternalAcceptorGrant (신규 기능정의, 2026-08-11 — `DESIGN_ONLY`, G7)
+[02 §10](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)와 [08 체크리스트 B2](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)가 이미 목적("소스나 Finding 상세 없이도 서명 검증만으로 확인 가능한 요약 증명서")을 정의했고 §7 API 목록에도 `POST /v1/cases/{caseId}/acceptance-certificates`, `POST /v1/cases/{caseId}/external-acceptors`, `GET /v1/certificates/{certId}/verify`가 이미 있다 — 이 절은 그 API가 실제로 다루는 엔티티의 필드 수준 설계다.
+
+**중요한 제약**: `service-case-state.v1.schema.json`의 `final_claim_allowed`는 예외 없는 `const: false`이고(70행), G30에서 확인한 `TARGET_PRODUCT_APPLY: mvp_allowed=false` 하드 게이트와 같은 근거를 공유한다 — 즉 AcceptanceCertificate는 "결함이 없다"를 증명하는 문서가 될 수 없고, "이 시점에 이 정책·범위로 이런 결과를 받았다"만 증명할 수 있다. [08 §C 완전성 보장 메커니즘 절](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)이 실제로 강제되는 유일한 장치로 지목한 `final_claim_allowed: false`를 이 인증서가 우회하지 않도록, 아래처럼 완전성 부인 문구를 선택이 아닌 필수 필드로 둔다.
+
+**AcceptanceCertificate 필드**:
+- `acceptance_certificate_id`
+- `case_id`, `case_revision_number`(nullable — `service-case-state.v1.schema.json`의 `case_revisions` 배열 중 `status: ACCEPTED`인 revision을 가리킴, G2 참조. CaseRevision이 없는 최초 Delivery는 top-level `status: DELIVERY_ACCEPTED`를 직접 참조)
+- `baseline_reference`: 인증 대상 Baseline digest와 RepositoryBinding 참조
+- `policy_binding`: `rule_pack_digest`, `policy_pack_version_id`(nullable — 조직이 표준 Rule Pack만 쓰면 없음, 아래 PolicyPack 참조), 판정 시점에 고정(03 §10 감사 Receipt 결속과 같은 패턴)
+- `decision_summary`: `quality_decision`(PASS/FAIL/HOLD — `oreview-result.v1.schema.json` 어휘 재사용, G9), `open_finding_counts_by_severity`(Critical/High/Medium/Low, 발급 시점 `security-findings.v1.schema.json` OPEN 상태 스냅샷), `coverage_percent`(nullable — [02 §4 CoverageReport](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) 계약 제정 전까지 채울 수 없음), `program_risk_score`/`program_risk_grade`(발급 시점 `contracts/program-risk-score.v1.schema.json` 스냅샷 — G32로 실제 계약이 생겼으므로 이 필드는 채울 수 있음)
+- `completeness_disclaimer`: 고정 상수 텍스트/코드("이 인증서는 명시된 정책·범위 내 판정이며 결함 부재를 증명하지 않는다. `final_claim_allowed`는 항상 false다") — 생략 불가 필수 필드, `final_claim_allowed: const false`와 같은 방식으로 계약화되어야 함
+- `issued_at`, `issued_by`(시스템 발급, Evidence로 봉인)
+- `external_acceptor_grants`: 아래 ExternalAcceptorGrant 배열(nullable/빈 배열 허용)
+- `signature`: `key_id`, `signature`, `signed_at`(§10 License Token의 `key_id`/`signature` 패턴 재사용)
+- `status`: `ISSUED` → `REVOKED`(예외 없음). Revoke는 사후 Case 내용 변조 발견 또는 Legal Hold 충돌 시에만 — `AcceptanceCertificateRevoked`(§8 Event, 이미 목록에 있음)와 결속
+- `revoked_at`, `revoked_reason`(nullable, `REVOKED`가 아니면 null)
+
+**ExternalAcceptorGrant 필드**: `grant_id`, `case_id`, `acceptor_identity`(이메일, ONSure 유료 계정 불필요 — [02 Actor 표](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) External Acceptor 정의와 일치), `scope`(`VIEW_CERTIFICATE_VERIFICATION_ONLY` — 공개 엔드포인트라 이 Grant 자체가 불필요 / `VIEW_DELIVERY_READONLY` — Delivery 읽기 전용 열람, 이 Grant 필수), `granted_by`(Customer Owner만 가능 — 02 Actor 표), `granted_at`, `expires_at`(nullable), `revoked_at`. 상태: `ACTIVE` → `EXPIRED` 또는 `REVOKED`.
+
+**선행조건**: ServiceCase가 `DELIVERY_ACCEPTED`(또는 CaseRevision `ACCEPTED`)에 도달해야 발급 가능. `coverage_percent`는 CoverageReport 계약 제정 전까지 비워둘 수 있으므로 AcceptanceCertificate MVP는 이 필드 없이도 발급 가능하게 설계했다(하드 의존 아님). B2(법적 효력 문구)는 이 필드 설계로 해결되지 않으며 여전히 별도 법무 확인이 필요하다.
+
+### PolicyPack / PolicyPackVersion (신규 기능정의, 2026-08-11 — `DESIGN_ONLY`, G7)
+[Policy Management 절](#3-핵심-서비스)이 이미 원칙(Additive-only, Critical 규칙 비활성화 불가, Digest 고정, Golden Fixture 회귀 필수)을 정의했다 — 이 절은 필드 수준 설계를 추가한다.
+
+**PolicyPack(부모) 필드**: `policy_pack_id`, `organization_id`, `name`, `description`, `created_by`, `created_at`, `status`(`DRAFT` → `ACTIVE` → `DEPRECATED` — 최소 하나의 ACTIVE 버전이 있는지 여부를 반영)
+
+**PolicyPackVersion(자식, 버전관리 단위) 필드**: `policy_pack_version_id`, `policy_pack_id`, `version_number`(단조증가), `digest`(sha256 — 03 §10 감사 Receipt 결속에 이미 쓰는 값), `rules`(배열: `rule_id`, `category`[CODING/ARCHITECTURE/SECURITY/LICENSE], `severity`, `condition_reference`, `additive_only: true` — 표준 Rule Pack의 Critical 규칙 비활성화가 불가능함을 각 rule 레코드 수준에서도 강제), `regulatory_framework_mappings`(배열: `framework_name`[NIST/ISO/OWASP/MITRE/금융MRM], `framework_version`, `mapped_rule_ids` — [08 체크리스트 E1](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)이 원칙만 기술했던 부분의 필드화, nullable), `golden_fixture_regression_receipt_reference`(OMemory의 기존 Golden Review Fixture 회귀 절차 결과 링크, 신규 회귀 메커니즘을 만들지 않고 재사용), `status`(`DRAFT` → `PENDING_REGRESSION` → `REGRESSION_PASSED` → `ACTIVE` → `SUPERSEDED`, 예외 `REGRESSION_FAILED`→`DRAFT` 재진입 — G3의 ComponentContract가 이미 쓰는 DRAFT→ACTIVE→SUPERSEDED 어휘를 그대로 재사용해 새 상태 어휘를 만들지 않았다), `activated_at`, `superseded_by_version_id`(nullable)
+
+**기존 실재 계약과의 관계(정직한 확인)**: `contracts/dependency-license-policy.v1.json`이 이미 ONSure **자신의** 빌드 의존성에 대해 정확히 같은 모양의 개념(SPDX id → `ALLOWED`/`FORBIDDEN` 결정 + 사유, `default_decision_for_unlisted_license: FORBIDDEN`)을 실제 계약으로 갖고 있다 — 이는 고객이 자체 Organization에 업로드하는 PolicyPack이 아니라 ONSure 내부 빌드용이라 별개 엔티티이지만, B5(Copyleft 차단 정책)가 요구하는 License 허용/차단 목록의 실제 스키마 모양은 이미 이 계약에 검증된 형태로 존재한다 — 향후 `policy-pack.v1.schema.json`을 제정할 때 라이선스 규칙 부분은 이 계약을 참고 선례로 재사용해야 하며 새로 발명할 필요가 없다.
+
+### NotificationRule / NotificationEvent / NotificationDeliveryReceipt (신규 기능정의, 2026-08-11 — `DESIGN_ONLY`, G7)
+[02 §10-1 ONotify](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)가 이미 책임·기능·수용기준(Critical 5분 이내, Opt-in 채널만, Webhook 서명·재시도·Dead Letter, 발송 자체도 Evidence화)을 정의했으나 "산출물: NotificationRule, NotificationEvent, NotificationDeliveryReceipt" 세 이름만 나열했을 뿐 필드가 없었다 — 이 절이 그 필드를 채운다.
+
+**NotificationRule 필드**: `notification_rule_id`, `organization_id`, `user_id`(nullable — 조직 기본값 vs 사용자별 override), `subscribed_event_types`(배열, 02 §10-1이 이미 정의한 8종 고정: `CaseBlocked`/`CriticalFindingOpened`/`VerificationFailed`/`LicenseExpiringSoon`/`LicenseSuspended`/`CreditLow`/`PatchRegressionFailed`/`DeletionCompleted`), `channel`(`EMAIL`/`WEBHOOK`/`VSCODE`/`ADMIN_INBOX`, Opt-in만 — 수용기준 그대로), `batching`(`IMMEDIATE`[Critical] 또는 `DAILY_DIGEST`[Medium 이하] — 02 §10-1 그대로), `webhook_endpoint_url`, `webhook_secret_reference`(nullable, WEBHOOK 채널일 때만), `created_by`, `created_at`, `updated_at`, `status`(`ACTIVE`/`DISABLED`)
+
+**NotificationEvent 필드**(발생 사실의 append-only 기록): `notification_event_id`, `event_type`(같은 8종 enum), `source_reference`(case_id/finding_id/license_id 등 트리거 원본), `occurred_at`, `severity`
+
+**NotificationDeliveryReceipt 필드**(발송 자체의 Evidence — 02 §10-1 "발송 자체도 Evidence로 기록"의 필드화): `delivery_receipt_id`, `notification_event_id`, `notification_rule_id`, `channel`, `attempted_at`, `delivered_at`(nullable), `delivery_status`(`PENDING` → `DELIVERED` 또는 `FAILED` → `RETRYING` → `DELIVERED` 또는 `DEAD_LETTERED` — 02 §10-1의 "실패 시 Dead Letter로 격리"를 상태기계로 구체화), `retry_count`, `fallback_triggered`(boolean — Webhook 반복 실패로 관리자 알림함 Fallback 발동 여부, 수용기준 그대로), `evidence_reference`
+
+**Lifecycle 요약**: NotificationEvent는 Evidence와 동일하게 불변 append-only이며 별도 상태전이가 없다. 실제 상태기계는 NotificationDeliveryReceipt에만 있다(발송 채널 하나당 하나).
+
+### SBOM — 대상 Program용 (신규 기능정의, 2026-08-11 — `DESIGN_ONLY`, G7, ONSure 자체 내부 SBOM과는 범위가 다름)
+§7 API 목록에 이미 `GET /v1/program-profiles/{id}/sbom`이 있고 [02 §10](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) ODelivery 산출물에도 "SBOM(CycloneDX/SPDX 포맷)"이 있다 — 이 절은 그 엔티티의 필드 설계다.
+
+**정직한 확인(코드까지 실제로 읽음)**: ONSure는 이미 실제로 동작하는 SBOM 생성 코드를 갖고 있다 — `src/main/java/kr/co/oruda/onsure/platform/SbomGenerator.java`(+ `SbomGeneratorTest.java`, 4개 테스트 모두 통과)가 `pom.xml`의 직접 의존성을 `contracts/approved-dependency-manifest.v1.json`의 License로 보강해 CycloneDX 1.5 JSON을 생성하고, 이 출력이 `contracts/assurance-lanes.v1.json`의 `ORUDA_BUILD` Lane `required_outputs`(125행, `"sbom"` 포함)를 충족한다. **하지만 이것은 ONSure 자신의 Maven 빌드 공급망 자기증명이지, 고객의 임의 대상 Program(npm/pip/cargo/go/gradle 등 다양한 생태계 가능)을 분석하는 이 기능과는 범위가 다르다** — 같은 이름(SBOM)의 서로 다른 두 엔티티를 혼동하면 안 된다. 재사용 가능한 것은 출력 포맷(CycloneDX 1.5)과 "Manifest에서 License를 조회해 보강" 패턴뿐이며, 임의 생태계의 의존성 트리를 추출하는 파서 계층은 아직 없다. 코드 자체의 주석도 "직접 의존성만 다루고 전이 의존성은 다루지 않는다"고 명시한다 — 이 한계를 고객向 설계에도 정직하게 반영한다.
+
+**필드**:
+- `sbom_id`
+- `program_profile_id`(§5 `program_profile` 상태기계 참조, 최소 `PROFILE_ACTIVE` 도달 후 생성 가능)
+- `baseline_reference`: 생성 시점 분석 대상 Source digest
+- `format`: `CYCLONEDX_1_5`(ONSure 자체 생성기가 이미 검증한 포맷 재사용 — SPDX는 02가 대안으로 언급했으나 주 포맷 결정은 아직 안 됨, `DRAFT`)
+- `ecosystems`: 감지된 패키지 매니저 배열(`MAVEN`/`NPM`/`PIP`/`CARGO`/`GO_MODULES`/`GRADLE`/`OTHER` — 하나의 Program이 모노레포로 여러 개일 수 있음)
+- `components`: 배열, 각 항목 `type`, `group`, `name`, `version`, `scope`(required/optional), `purl`, `licenses`(배열), `transitive`(boolean)
+- `transitive_resolution_status`: `DIRECT_ONLY` 또는 `FULL_TREE` — ONSure 자체 생성기가 현재 `DIRECT_ONLY`이므로, 고객向 MVP도 같은 제약으로 출발할지 이번 라운드에서 결정하지 않고 필드만 남긴다(`DRAFT`)
+- `generated_at`
+- `license_source`: License 보강에 쓰인 근거(고객 조직의 PolicyPack License 허용/차단 목록 — 위 PolicyPack 절 참조. 이 필드는 PolicyPack이 아직 계약이 없으므로 함께 `DESIGN_ONLY`)
+
+**Lifecycle**: 별도 상태전이 없음 — CoverageReport와 마찬가지로 특정 실행 시점의 불변 스냅샷 산출물이다.
 
 ## 6. API 원칙
 - REST와 Event를 병행한다.
