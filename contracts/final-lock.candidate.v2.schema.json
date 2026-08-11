@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/final-lock.candidate.v2.schema.json",
+  "title": "ONSure Final Lock Candidate v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract","lock_id","target_id","target_artifact_sha256","gate_receipt_sha256","final_approval_sha256","final_approval_decision","freshness_barrier_sha256","otester_receipt_sha256","oaudit_receipt_sha256","human_acceptance_receipt_sha256","epochs","locked_at","lock_state","reason_codes","lock_sha256","production_go_allowed","commercial_go_allowed"],
+  "properties": {
+    "contract": {"const": "ONSURE_FINAL_LOCK_V2_CANDIDATE"},
+    "lock_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "target_artifact_sha256": {"$ref": "#/$defs/sha256"},
+    "gate_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "final_approval_sha256": {"$ref": "#/$defs/sha256"},
+    "final_approval_decision": {"const": "APPROVE"},
+    "freshness_barrier_sha256": {"$ref": "#/$defs/sha256"},
+    "otester_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "oaudit_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "human_acceptance_receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "epochs": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scope","requirement","denominator","policy","oracle","validator_qualification","authority","freshness"],
+      "properties": {
+        "scope":{"type":"string","minLength":1},"requirement":{"type":"string","minLength":1},"denominator":{"type":"string","minLength":1},"policy":{"type":"string","minLength":1},"oracle":{"type":"string","minLength":1},"validator_qualification":{"type":"string","minLength":1},"authority":{"type":"string","minLength":1},"freshness":{"type":"string","minLength":1}
+      }
+    },
+    "locked_at": {"type": "string", "format": "date-time"},
+    "lock_state": {"enum": ["LOCK_CANDIDATE", "LOCKED_CURRENT", "STALE", "REVOKED", "INVALIDATED", "REASSESSMENT_REQUIRED"]},
+    "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "lock_sha256": {"$ref": "#/$defs/sha256"},
+    "production_go_allowed": {"const": false},
+    "commercial_go_allowed": {"const": false}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}
