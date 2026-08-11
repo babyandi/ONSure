@@ -51,7 +51,7 @@ OBuilder Gate를 이름만 바꿔 복제하지 않는다. 새로운 Finding이 �
 
 ## Finding 관리 원칙
 1. Review 횟수와 Finding 개수를 혼동하지 않는다.
-2. 서로 다른 실패 시나리오·영향·계약 변경이 필요한 결함은 같은 테마라도 합치지 않는다.
+2. 서로 다른 실패 시나리오·영향·필수 계약 변경이 필요한 결함은 같은 테마라도 합치지 않는다.
 3. 동일 root defect가 여러 contract에서 반복되면 canonical Finding 하나에 source를 추가한다.
 4. `NEW_DEFECT_CLASS`, `EXISTING_CONTROL_ENFORCEMENT_GAP`, `CROSS_CONTRACT_SEMANTIC_CONFLICT`, `SEMANTIC_TYPE_ERASURE`, `CANONICAL_GATE_BYPASS`, `DECLARATIVE_ASSERTION_WITHOUT_ENFORCEMENT_PROOF`, `COUNT_OR_LABEL_AS_PROOF`, `STRONG_SEMANTIC_LABEL_EXCEEDS_AVAILABLE_EVIDENCE`를 기본 분류로 사용한다.
 5. Finding은 문서에 적혔다고 CLOSED가 아니다. `CONTRACTED -> IMPLEMENTED -> EXECUTED -> EVIDENCE_BOUND -> INDEPENDENTLY_VERIFIED -> QUALIFIED`를 통과해야 한다.
