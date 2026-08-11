@@ -299,3 +299,143 @@ rule/oracle/detector/method 변경 시 affected capability를 즉시 STALE 처�
 - stale current artifact 0 또는 명시적 HOLD
 - AI adopted use case의 per-UC TEVV closure
 - validator qualification이 current method revision에 대해 fresh
+
+## 20. 독립검토 Cross-Cutting Failure Injection Pack
+### 20.1 Distributed Evidence Consistency
+- DB만 COMMITTED, object artifact 누락
+- object 생성 후 ledger append 실패
+- queue duplicate로 receipt 두 번 생성
+- Git/external effect 성공 후 local evidence transaction 실패
+- certificate publish 후 validity registry 갱신 실패
+
+기대판정: `PARTIALLY_COMMITTED|ORPHANED|UNKNOWN`은 Final Evidence 금지.
+
+### 20.2 Result Selection / Retry Cherry-Picking
+- `FAIL -> FAIL -> PASS` 후 마지막 run만 summary에 포함
+- first attempt 삭제
+- retry reason/authorization 없음
+- 실패 fixture를 EXCLUDED로 사후 변경
+
+기대판정: `RESULT_SELECTION_INTEGRITY_HOLD` 또는 `FLAKY_PASS`, 단순 PASS 금지.
+
+### 20.3 Trusted Time
+- 시스템 clock rollback으로 expired approval 재활성화
+- NTP skew 상태에서 certificate validity 오판
+- timezone 변환으로 expiry boundary 우회
+- offline verifier의 clock이 기준보다 오래됐는데 VALID 표시
+
+기대판정: time authority가 불충분하면 `TIME_AUTHORITY_UNPROVEN_HOLD`.
+
+### 20.4 Requirement Universe / Unknown Discovery
+- contract에는 없지만 runtime behavior에서 critical authority effect 발견
+- docs/master에는 있으나 legacy denominator에는 없는 requirement
+- static discovery에는 안 나오고 dynamic trace에서만 나오는 component
+- unknown_count=0인데 독립 reconstruction에서 신규 critical domain 발견
+
+### 20.5 Exclusion Abuse
+- 비용/시간 부족을 이유로 가장 어려운 security component만 반복 제외
+- Critical exclusion을 denominator에서도 삭제
+- exclusion expiry/review 없이 영구 제외
+
+### 20.6 Assurance-Level Ceiling
+Scope L5 / Oracle L2 / Independence L1 / Evidence L4를 평균내 L3+로 승격하려는 fixture.
+
+기대판정: critical assurance dimension의 최저 수준이 ceiling을 제한.
+
+## 21. Revocation / Historical / Recovery Pack
+### Offline Revocation
+- 어제 다운로드한 certificate bundle이 오늘 revoked됐는데 offline verifier가 VALID 표시
+- maximum offline freshness 초과 후 상태 미확인인데 VALID 표시
+
+### Revocation Propagation
+- authoritative registry는 INVALIDATED이나 CDN/report cache는 VALID
+- webhook consumer가 stale certificate를 계속 허용
+
+### Historical Revalidation Scale
+- 신규 Critical MissedFinding을 10k historical certificate에 영향분석
+- 일부 partition만 scan 후 complete로 표시
+- backlog가 있는데 SAFE 집계
+
+### Queue Replay / Authority Resurrection
+- expired approval을 담은 old message 재전달
+- superseded remediation event 재실행
+- revoked certificate publish message replay
+
+### Assurance Recovery
+- DB restore 후 replay ledger head 소실
+- 서비스는 healthy지만 pending approval consumption state가 복구되지 않음
+- authority graph와 evidence graph revision 불일치
+
+## 22. Human / AI / Qualification Pack
+### Human Reviewer Qualification
+- domain 미적합 reviewer가 GT4 판정
+- conflict-of-interest reviewer
+- qualification expired
+- Golden calibration 지속 미달
+
+### Reviewer Common-Mode Bias
+- 3명의 reviewer가 같은 AI summary와 prior verdict를 보고 동시에 승인
+- independent decision timestamp 없이 discussion 후 같은 결론
+
+### Memory-Blind Proof
+- blind flag=true지만 vector store에서 prior Finding retrieval
+- cached conversation에 prior PASS 포함
+- score API를 간접 호출
+
+### Ground Truth Producer Qualification
+- executable oracle GT3지만 oracle implementation이 target code와 동일 함수 사용
+- expert GT4지만 raw evidence 미열람
+- real-world GT5지만 collector incomplete
+
+### Benchmark Precommitment
+- 4개 hidden corpus 중 가장 잘 나온 2개만 qualification에 제출
+- 결과 확인 후 denominator 축소
+
+### Semantic Contamination Classifier
+- near-duplicate를 low-confidence로 NO_OVERLAP 판정
+- threshold 변경 후 old contamination result 재사용
+
+### Meta-Validator Mutation
+- invariant 하나 제거
+- NOT_RUN→PASS mapping
+- parse exception 무시
+- mandatory field unconsumed
+- same-principal different-key를 independent로 계산
+
+## 23. Assurance Communication / Consumer Misuse Pack
+- API는 NON_FINAL인데 Web은 초록색 PASS
+- CLI exit 0이 Final PASS로 소비됨
+- PDF에서 excluded critical scope가 숨겨짐
+- localized UI에서 STALE 문구가 사라짐
+- accessibility tree가 limitation을 읽지 않음
+- certificate를 다른 target에 재사용
+- stale certificate consumer가 current-status lookup 생략
+
+### Human Misinterpretation Test
+대표 사용자가 3초 내 다음을 정확히 식별해야 한다.
+- Final 여부
+- Critical Unknown 존재
+- Stale/Revoked 여부
+- 검증 범위 제한
+
+시각 hierarchy 때문에 실제 상태와 다른 결론을 내리면 UX FAIL.
+
+## 24. Validator Self-Improvement Requalification Pack
+Detector/Rule/Oracle/Scenario Generator 변경 시:
+- 이전 qualification 자동 상속 시도
+- critical recall 감소를 평균 F1 상승으로 숨김
+- hidden/OOD 미실행
+- historical certificate impact scan 생략
+- rollback pointer 없음
+- 변경한 validator가 자기 변경을 유일하게 승인
+
+기대판정: 하나라도 발생하면 `REQUALIFICATION_REQUIRED_HOLD`.
+
+## 25. 추가 최종 수용기준
+- cross-cutting P0 failure injection이 모두 materialized/executed되기 전 L5 후보 금지
+- clock rollback, partial evidence commit, queue replay가 positive PASS로 세탁되지 않음
+- retry history와 failed attempts가 Evidence에서 삭제되지 않음
+- Requirement Universe의 Critical source class NOT_PROVEN 0이거나 명시적 assurance ceiling 적용
+- benchmark corpus가 result visibility 전에 freeze됨
+- Human Reviewer/Oracle/Meta-Validator qualification limitation이 claim에 전파됨
+- revocation이 authoritative state뿐 아니라 소비 surface까지 전파됐음을 검증
