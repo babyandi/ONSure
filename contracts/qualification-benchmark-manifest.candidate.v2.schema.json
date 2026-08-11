@@ -1,0 +1,17 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/qualification-benchmark-manifest.candidate.v2.schema.json",
+  "title":"ONSure Qualification Benchmark Manifest Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","benchmark_id","benchmark_epoch","sealed_at","result_visibility_boundary","corpora","selection_policy","exclusion_policy","denominator","access_control","manifest_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_QUALIFICATION_BENCHMARK_MANIFEST_V2_CANDIDATE"},"benchmark_id":{"type":"string","minLength":1},"benchmark_epoch":{"type":"string","minLength":1},"sealed_at":{"type":"string","format":"date-time"},"result_visibility_boundary":{"type":"string","format":"date-time"},
+    "corpora":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"object","additionalProperties":false,"required":["corpus_id","revision","corpus_digest","family","hidden","owner_profile_sha256"],"properties":{"corpus_id":{"type":"string","minLength":1},"revision":{"type":"string","minLength":1},"corpus_digest":{"$ref":"#/$defs/sha256"},"family":{"enum":["PUBLIC_REGRESSION","PRIVATE_QUALIFICATION","ROTATING_UNSEEN","NOVEL_COMPOSITION","OUT_OF_DISTRIBUTION"]},"hidden":{"type":"boolean"},"owner_profile_sha256":{"$ref":"#/$defs/sha256"}}}},
+    "selection_policy":{"type":"object","additionalProperties":false,"required":["policy_id","policy_digest","frozen_before_results"],"properties":{"policy_id":{"type":"string","minLength":1},"policy_digest":{"$ref":"#/$defs/sha256"},"frozen_before_results":{"const":true}}},
+    "exclusion_policy":{"type":"object","additionalProperties":false,"required":["policy_id","policy_digest","post_result_exclusion_forbidden"],"properties":{"policy_id":{"type":"string","minLength":1},"policy_digest":{"$ref":"#/$defs/sha256"},"post_result_exclusion_forbidden":{"const":true}}},
+    "denominator":{"type":"object","additionalProperties":false,"required":["case_count","case_set_digest","critical_case_count"],"properties":{"case_count":{"type":"integer","minimum":1},"case_set_digest":{"$ref":"#/$defs/sha256"},"critical_case_count":{"type":"integer","minimum":1}}},
+    "access_control":{"type":"object","additionalProperties":false,"required":["authorized_principal_profiles","access_log_digest","rotation_rule"],"properties":{"authorized_principal_profiles":{"type":"array","minItems":1,"uniqueItems":true,"items":{"$ref":"#/$defs/sha256"}},"access_log_digest":{"$ref":"#/$defs/sha256"},"rotation_rule":{"type":"string","minLength":1}}},
+    "manifest_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}
