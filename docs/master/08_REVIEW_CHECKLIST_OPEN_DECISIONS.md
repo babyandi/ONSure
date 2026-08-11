@@ -104,7 +104,7 @@
 | G10 | Finding 상태 생애주기 | 실제 계약(`security-findings.v1.schema.json`)은 OPEN/CLOSED/ACCEPTED_RISK 3단계뿐. 설계서의 6단계 생애주기는 DESIGN_ONLY로 명시 | FIXED (명시만, 계약 확장은 미정) |
 | G11 | OGit Merge 권한 | `git-change-set.v1.schema.json`의 `merge_state`가 계약상 항상 `PROHIBITED` — "APPROVE≠Merge" 수준이 아니라 이 버전에서 Merge 승인 자체가 발급 안 됨. 02 정정 완료 | FIXED |
 | G12 | Actor/RBAC | 설계서의 10개 업무 Actor가 실제 `tenant-context.v1.schema.json`의 5개 RBAC 역할(VIEWER/OPERATOR/APPROVER/AUDITOR/ADMIN)과 매핑되지 않은 채 존재. 02에 매핑 제안 표 추가(매핑 자체는 아직 계약화 안 됨) | PARTIAL |
-| G13 | Workflow Operation Registry | 실제 등록된 Operation은 45개(`workflow-operation-registry.v1.json`)뿐. 이 설계서(특히 04 §7)가 제안한 Notification/Portfolio/PolicyPack/AcceptanceCertificate/SBOM/MutationTesting/CrossModel/BlastRadius/CoverageReport/RiskScore 관련 API는 전부 미등록 — 06에 교차참조 추가 | FLAGGED |
+| G13 | Workflow Operation Registry | 실제 등록된 Operation은 49개(`workflow-operation-registry.v1.json`, 2026-08-11 재확인 — 이전 45개는 그 사이 `provider.status`/`provider.usage` 등이 추가되며 갱신 안 된 값이었음)뿐. 이 설계서(특히 04 §7)가 제안한 Notification/Portfolio/PolicyPack/AcceptanceCertificate/SBOM/MutationTesting/CrossModel/BlastRadius/CoverageReport/RiskScore 관련 API는 전부 미등록 — 06에 교차참조 추가 | FLAGGED |
 | G14 | `05_UI_UX_WORKFLOW_SPECIFICATION.md`, `05`의 화면 구성 | 아직 실제 계약과 대조 안 함(주로 화면 설계라 직접 대응 계약이 적을 것으로 예상되나 확인 필요) | OPEN |
 
 G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영했을 뿐, 02·03·06 전체를 계약과 완전히 재대조한 것은 아니다.
