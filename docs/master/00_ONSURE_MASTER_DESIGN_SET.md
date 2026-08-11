@@ -75,6 +75,26 @@ Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하
 - ODelivery: 보고서, Patch, PR, Evidence Pack, Program Profile을 납품한다.
 - OLicense Adapter: ORUDA/OLicense의 Entitlement와 Credit을 검증·소비·보고한다.
 
+### 5-1. Semantic Assurance Companion Capability Set (`DESIGN_ONLY`)
+기존 프로그램 구성을 대체하지 않고 OLearning/OPlanning/OReview/OVerification/OEvidence/OMemory에 흡수되는 고급 검증 Capability다. 상세 책임은 [semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md](semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md)를 기준으로 한다.
+
+- SA-01 Evidence Reperformance & Truth Binding
+- SA-02 Denominator & Coverage Discovery
+- SA-03 Obligation Closure Engine
+- SA-04 Authority Lifecycle Validator
+- SA-05 Canonical State Authority Validator
+- SA-06 Rights & Remedy Executability
+- SA-07 Distributed Effect Integrity
+- SA-08 Freshness & Invalidation Graph
+- SA-09 Principal / Policy / SoD Validator
+- SA-10 Privacy Disclosure & Observer Validator
+- SA-11 AI Lifecycle & Authority Closure
+- SA-12 Cross-Model Semantic Trace Validator
+- SA-13 Business Semantic Integrity
+- SA-14 Validator Requalification Engine
+
+이 목록은 신규 서비스 14개를 의미하지 않는다. 기존 ONSure 프로그램이 재사용하는 검증 Capability 분류이며, 실제 Runtime 경계는 `04_ARCHITECTURE_DATA_API_OLICENSE.md`와 향후 Contract에서 결정한다. 현재는 `DESIGN_ONLY`다.
+
 ## 6. 핵심 경계
 ### Review와 Verification
 Review는 구현 또는 변경이 적절한지 판단한다. Verification은 요구사항과 정책을 실제로 만족하는지 증거로 판정한다. Review PASS가 Verification PASS를 의미하지 않으며, 두 결과는 독립 저장한다.
@@ -87,6 +107,9 @@ Review는 구현 또는 변경이 적절한지 판단한다. Verification은 요
 
 ### Train 시작 조건과 배포 경계
 Target AI Auto-Learning도 Improvement와 동일하게 임의 요청에서 시작하지 않고 검증된 Finding 또는 승인된 목표에서만 시작한다. Training 결과는 독립 재검증(Independently Re-verify)을 통과하고 권한자 승인을 받기 전까지 운영에 배포하지 않는다. Deploy·Observe·Re-learn은 자동화 편의를 위해 승인 경계를 생략하지 않는다([05_UI_UX_WORKFLOW_SPECIFICATION.md](05_UI_UX_WORKFLOW_SPECIFICATION.md) §7 고위험 별도 승인).
+
+### Semantic Assurance 경계
+Semantic Assurance Capability는 기존 기능/검증 결과의 의미적 closure를 강화하는 계층이다. 문서상 적용, Schema 존재, Runtime 구현, 실행, Evidence 결속, 독립 검증, Qualification은 서로 다른 상태다. `contracts/semantic-assurance-capability-registry.candidate.v1.json`은 현재 Candidate Registry이며 구현 권위를 만들지 않는다.
 
 ## 7. 주요 산출물
 - Business Plan
@@ -106,6 +129,14 @@ Target AI Auto-Learning도 Improvement와 동일하게 임의 요청에서 시�
 - Epic/Capability/Story Backlog
 - Component Model and AI Agent Methodology ([07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))
 - Knowledge Pattern Library and Recursive Detection Learning Design
+- Semantic Assurance Integration/Ownership ([semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md](semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md))
+- Semantic Assurance Functional Extension ([semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md](semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md))
+- Semantic Assurance Review Extension ([semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md](semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md))
+- Semantic Assurance Architecture/Data/API Extension ([semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md](semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md))
+- Semantic Assurance UI/UX Extension ([semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md](semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md))
+- Semantic Assurance Test/Operation Extension ([semantic-assurance/06_TEST_OPERATION_EXTENSION.md](semantic-assurance/06_TEST_OPERATION_EXTENSION.md))
+- Semantic Assurance AI/Agent Method Extension ([semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md](semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md))
+- Semantic Assurance Open Decisions ([semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md](semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md))
 
 ## 8. 출시 Gate
 다음이 모두 충족되어야 상용 출시 후보가 된다.
@@ -117,6 +148,8 @@ Target AI Auto-Learning도 Improvement와 동일하게 임의 요청에서 시�
 - Code Review와 Independent Review 완료
 - 보안·개인정보·소스 삭제 검증 PASS
 - 운영 복구 및 Rollback 시험 PASS
+
+Semantic Assurance Capability가 출시 Gate의 하드 조건으로 승격되려면 각 Capability별 Contract/Runtime/Execution/Qualification이 먼저 제정되어야 한다. Candidate Registry 존재만으로 출시 Gate를 확대하거나 통과시킨 것으로 간주하지 않는다.
 
 ## 9. 비최종 상태
 문서 작성, 코드 구현, 단위시험, PR 생성만으로 Final PASS를 선언하지 않는다. 실제 환경 E2E, 독립 리뷰, Evidence 고정 전까지 모든 결과는 NON_FINAL이다.
