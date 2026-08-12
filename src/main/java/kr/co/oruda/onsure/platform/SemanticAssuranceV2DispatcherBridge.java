@@ -2,6 +2,7 @@ package kr.co.oruda.onsure.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -11,12 +12,12 @@ import java.util.Map;
  *
  * <p>Every semantic target operation first performs the existing authenticated
  * project.read-target path, so tenant/resource ownership and authenticated context substitution
- * checks are not bypassed. This is a preflight, not an atomic authorization transaction; therefore
- * this bridge is still SELF_VALIDATION_NONFINAL and must not become an active effect authority
- * before a canonical semantic operation is added to TenantRbacService itself.</p>
+ * checks are not bypassed. The registered target source root is then injected by this server-side
+ * bridge; callers cannot choose or override the authorized path root. This is still a preflight,
+ * not an atomic authorization transaction, so the bridge remains SELF_VALIDATION_NONFINAL.</p>
  */
 public final class SemanticAssuranceV2DispatcherBridge {
-    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V2";
+    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V3";
     private final LocalWorkflowDispatcher legacy;
     private final SemanticAssuranceV2WorkflowService semantic;
     private final AuthenticatedWorkflowIdentity identity;
@@ -40,24 +41,63 @@ public final class SemanticAssuranceV2DispatcherBridge {
         }
         requireSemanticRole(operation);
         requireTargetContext(request);
+        rejectCallerInjectedAuthority(request);
 
-        // Reuse the existing authenticated tenant/resource boundary before entering v2 candidate code.
+        String projectId = request.path("project_id").asText();
+        String targetId = request.path("target_id").asText();
         JsonNode readTargetRequest = mapper.createObjectNode()
-                .put("project_id", request.path("project_id").asText())
-                .put("target_id", request.path("target_id").asText());
-        legacy.dispatch("project.read-target", readTargetRequest);
+                .put("project_id", projectId)
+                .put("target_id", targetId);
+        Map<String, Object> authorized = legacy.dispatch("project.read-target", readTargetRequest);
+        ProductCatalog.RegisteredTarget registered = registeredTarget(authorized, projectId, targetId);
 
-        Map<String, Object> value = semantic.dispatch(operation, request);
+        ObjectNode routed = ((ObjectNode) request).deepCopy();
+        routed.put("_authorized_target_root", registered.target().sourceRoot().toString());
+        routed.put("_authorized_target_id", registered.target().targetId());
+        routed.put("_authorized_project_id", registered.projectId());
+
+        // v1 deployment installation is not target-scoped. Therefore no authorized deployment root
+        // is injected yet; deployment.verify-installed must fail closed until a target-bound
+        // deployment receipt/installation root exists.
+        Map<String, Object> value = semantic.dispatch(operation, routed);
         return Map.of(
                 "contract", CONTRACT,
                 "route", "SEMANTIC_V2_CANDIDATE",
                 "operation", operation,
                 "result", value,
                 "tenant_resource_preflight", "PROJECT_READ_TARGET_AUTHORIZED",
+                "target_path_binding", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT",
                 "authorization_atomic_with_effect", false,
                 "assurance_class", "SELF_VALIDATION_NONFINAL",
                 "active_authority", false,
                 "final_claim_allowed", false);
+    }
+
+    private ProductCatalog.RegisteredTarget registeredTarget(
+            Map<String, Object> envelope, String projectId, String targetId) {
+        Object payload = envelope.get("result");
+        if (!(payload instanceof Map<?, ?> values)) {
+            throw new IllegalStateException("SEMANTIC_V2_TARGET_PREFLIGHT_PAYLOAD_MISSING");
+        }
+        Object value = values.get("registered_target");
+        if (!(value instanceof ProductCatalog.RegisteredTarget registered)) {
+            throw new IllegalStateException("SEMANTIC_V2_REGISTERED_TARGET_TYPE_MISSING");
+        }
+        if (!projectId.equals(registered.projectId())
+                || !targetId.equals(registered.target().targetId())) {
+            throw new SecurityException("SEMANTIC_V2_REGISTERED_TARGET_IDENTITY_MISMATCH");
+        }
+        return registered;
+    }
+
+    private void rejectCallerInjectedAuthority(JsonNode request) {
+        var fields = request.fieldNames();
+        while (fields.hasNext()) {
+            String field = fields.next();
+            if (field.startsWith("_authorized_")) {
+                throw new SecurityException("SEMANTIC_V2_SERVER_AUTHORITY_FIELD_SUBSTITUTION:" + field);
+            }
+        }
     }
 
     private void requireTargetContext(JsonNode request) {
@@ -86,10 +126,11 @@ public final class SemanticAssuranceV2DispatcherBridge {
         boolean allowed = switch (operation) {
             case "semantic.applicability.evaluate", "semantic.denominator.discover",
                     "semantic.denominator.challenge", "semantic.denominator.lock",
-                    "semantic.reperformance.run", "deployment.verify-installed" -> auditor || operator || admin;
+                    "semantic.reperformance.run" -> auditor || operator || admin;
             case "semantic.authority.revalidate", "semantic.independence.assess",
                     "semantic.freshness.invalidate", "semantic.freshness.reconstruct",
-                    "semantic.validator.requalify", "assurance.final-candidate.reconstruct" -> auditor || admin;
+                    "semantic.validator.requalify", "assurance.final-candidate.reconstruct",
+                    "deployment.verify-installed" -> auditor || admin;
             case "assurance.human-accept" -> approver || admin;
             case "assurance.otester.accept", "assurance.oaudit.accept" -> auditor;
             case "git.push" -> operator || admin;
