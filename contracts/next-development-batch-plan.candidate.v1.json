@@ -1,0 +1,63 @@
+{
+  "contract": "ONSURE_NEXT_DEVELOPMENT_BATCH_PLAN_V1_CANDIDATE",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "authority": "NOT_ACTIVE_RUNTIME_AUTHORITY",
+  "predecessor_handoff": "docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md",
+  "design_source": "docs/master/semantic-assurance/81_NEXT_DEVELOPMENT_BATCH_F_TO_K.md",
+  "batches": [
+    {
+      "id": "F",
+      "name": "CURRENTNESS_DEPLOYMENT_RUNTIME",
+      "depends_on": ["DEV-01..DEV-13"],
+      "deliverables": ["deployment_target_contract", "deployment_revision_contract", "runtime_population_contract", "currentness_engine", "drift_detection", "invalidation_propagation"],
+      "positive_authority_ceiling": "NONFINAL"
+    },
+    {
+      "id": "G",
+      "name": "COMPOSITION_EVIDENCE_GRAPH",
+      "depends_on": ["F"],
+      "deliverables": ["assurance_subject_graph", "composition_snapshot", "evidence_graph_store", "reverse_impact_index", "explanation_path"],
+      "positive_authority_ceiling": "NONFINAL"
+    },
+    {
+      "id": "H",
+      "name": "CERTIFICATE_REVOCATION",
+      "depends_on": ["G"],
+      "deliverables": ["assurance_certificate", "revocation_receipt", "online_verifier", "offline_trust_bundle", "currentness_verifier"],
+      "positive_authority_ceiling": "NONFINAL"
+    },
+    {
+      "id": "I",
+      "name": "ENTERPRISE_AUTHORITY_POLICY",
+      "depends_on": ["F"],
+      "deliverables": ["authority_grant", "delegation_enforcement", "four_eyes", "break_glass", "assurance_policy_profile", "weakening_gate"],
+      "positive_authority_ceiling": "NONFINAL"
+    },
+    {
+      "id": "J",
+      "name": "SCALE_PLUGIN_AI",
+      "depends_on": ["F", "I"],
+      "deliverables": ["work_unit", "deterministic_aggregation", "plugin_qualification", "ai_behavior_population", "runtime_ai_identity", "statistical_assurance", "multi_agent_checks"],
+      "positive_authority_ceiling": "NONFINAL"
+    },
+    {
+      "id": "K",
+      "name": "ONSURE_META_ASSURANCE",
+      "depends_on": ["F", "G", "I", "J"],
+      "deliverables": ["onsure_release_qualification", "validator_oracle_adapter_binding", "target_archetype_qualification", "validator_rca_requalification", "self_validation_ceiling"],
+      "positive_authority_ceiling": "NONFINAL"
+    }
+  ],
+  "global_done_requirements": [
+    "CONTRACT_PRESENT",
+    "RUNTIME_ENFORCEMENT_PRESENT",
+    "POSITIVE_FIXTURE_PRESENT",
+    "SEMANTIC_NEGATIVE_FIXTURE_PRESENT",
+    "RAW_EVIDENCE_PRESENT",
+    "RECEIPT_PRESENT",
+    "TRACE_REGISTERED",
+    "NO_NOT_RUN_TO_PASS_PROMOTION"
+  ],
+  "forbidden_promotions": ["ACTIVE_SELECTOR", "FINAL_LOCK", "PRODUCTION_GO", "COMMERCIAL_GO"],
+  "notes": "Candidate development sequence only. Completion of a batch does not create final or production authority."
+}
