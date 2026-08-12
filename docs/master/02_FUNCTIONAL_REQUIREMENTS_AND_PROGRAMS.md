@@ -490,6 +490,57 @@ Final Lock 기록은 immutable하게 보존하되 현재 유효성은 revocable�
 ### FR-META-043 AI·개발자·운영자 표시 일관성
 API, Web, VS Code, Report는 동일 상태 온톨로지와 Assurance Ceiling을 사용한다. `SELF_VALIDATION_NONFINAL PASS`를 단순 Final PASS로 축약하는 UI/문서 변환을 금지한다.
 
+### FR-META-044 Verified-to-Deployed-to-Running Currentness
+검증된 Build Artifact, 실제 DeploymentRevision, active RuntimeInstance population을 digest로 연결한다. `VERIFIED`, `DEPLOYED`, `RUNNING`, `CURRENT`를 서로 다른 상태로 관리하며 source commit 또는 image tag 동일성만으로 CURRENT를 발급하지 않는다.
+
+### FR-META-045 Runtime Drift Classification and Impact
+Artifact, Config, Feature Flag, Dependency, Secret Reference, Policy, Model, System Prompt, Tool Registry, RAG Corpus/Index, Embedding, External Contract, Infrastructure, Observer, Validator Qualification, Authority drift를 구분하고 affected claim과 revalidation 범위를 계산한다.
+
+### FR-META-046 Rollout-aware Assurance
+Rolling/Blue-Green/Canary/Multi-region 배포는 population/traffic cohort별로 별도 Currentness를 계산한다. 일부 canary PASS 또는 일부 region PASS를 전체 Production PASS로 승격하지 않는다.
+
+### FR-META-047 Assurance Revocation and Recovery
+FinalLock은 historical fact로 보존하되 current validity는 STALE/REASSESSMENT_REQUIRED/INVALIDATED/REVOKED/SUPERSEDED로 변화할 수 있다. Rollback/DR/Service Recovery는 과거 PASS를 자동 복원하지 않고 현재 policy/authority/validator qualification에서 재평가한다.
+
+### FR-META-048 Product-level Assurance Composition
+Web/API/DB/Agent/LLM/RAG/External Service/Region 등 다중 Target 결과를 dependency topology와 exact population으로 합성한다. Critical HARD dependency의 FAIL/BLOCKED/UNKNOWN/HOLD/STALE을 평균으로 숨길 수 없다.
+
+### FR-META-049 Assurance Strength Dimension
+Decision과 Assurance Strength를 분리한다. 후보 단계는 AL0_UNASSESSED, AL1_EXECUTED, AL2_EVIDENCE_BOUND, AL3_INDEPENDENTLY_REPERFORMED, AL4_QUALIFIED, AL5_PRODUCTION_BOUND_CURRENT이며, 상위 결과는 필수 Critical Child의 최저 strength/currentness ceiling을 넘을 수 없다. 기존 L0~L5 명칭과의 최종 통합은 08 Open Decision에서 결정한다.
+
+### FR-META-050 Evidence Graph and Explainable Ceiling
+Source→Requirement→Oracle→Execution→Evidence→Final→Deployment→Runtime→Certificate 관계를 Evidence Graph로 관리하고 DERIVED_FROM/REPERFORMED_FROM/CONTRADICTS/SUPERSEDES/INVALIDATES/REVOKES 등의 edge를 보존한다. Product 결과의 ceiling 이유는 최소 하나의 graph path로 설명 가능해야 한다.
+
+### FR-META-051 Assurance Certificate Separation
+내부 FinalLock/Evidence와 고객·감사자용 Certificate를 분리한다. Certificate에는 subject/scope/requirement denominator/assurance level/currentness/independent verification/limitation/exclusion/revocation verification 정보를 포함하되 고객 source·secret·hidden corpus를 기본 공개하지 않는다.
+
+### FR-META-052 Offline Trust and Revocation Uncertainty
+Air-gapped 환경은 root key, key registry, policy, validator qualification, revocation snapshot, trusted-time evidence를 포함한 signed Offline Trust Bundle을 사용한다. 마지막 online sync 이후 uncertainty가 증가하면 CURRENT를 영구 유지하지 않고 OFFLINE_REVALIDATION_DUE/STATUS_UNCERTAIN/BLOCKED로 제한한다.
+
+### FR-META-053 Authority Delegation / Four-eyes / Break-glass
+AuthorityGrant는 tenant/subject/operation/purpose/time/delegation chain에 결속한다. 위임권한은 원 권한보다 넓을 수 없고, Final Approval/Certificate revoke/Legal Hold/Policy relaxation/Hidden Corpus access 같은 고위험 operation은 정책상 서로 다른 principal의 다중 승인을 요구한다. Break-glass는 operation 허용만 할 수 있고 Assurance Strength를 올릴 수 없다.
+
+### FR-META-054 Distributed Work Integrity
+대규모 검증은 immutable WorkUnit으로 분해하고 at-least-once delivery를 허용하되 logical effect, receipt commitment, nonce consumption의 중복을 막는다. Duplicate/retry/stale lease/partition omission/worker restart가 denominator와 aggregate를 부풀리지 않아야 한다.
+
+### FR-META-055 Deterministic Aggregation and Resource Exhaustion
+병렬 실행 완료 순서가 aggregate digest를 바꾸지 않아야 한다. CPU/GPU/token/storage/API budget 소진은 요구사항상 실패가 아닌 경우 BLOCKED/RESOURCE_LIMIT으로 처리하며 비용 때문에 required denominator를 축소하지 않는다.
+
+### FR-META-056 Plugin / Adapter Trust and Qualification
+Plugin/Adapter는 publisher identity, artifact digest/signature, declared privilege, supported target archetype, input/output contract, qualification record를 가져야 한다. unsigned/unqualified/revoked plugin 결과는 authoritative Final evidence가 될 수 없고, plugin update는 requalification trigger다.
+
+### FR-META-057 AI Runtime Identity Closure
+AI Target은 provider/model/deployment, system/developer/user prompt hierarchy, Tool Registry, Agent Memory, RAG corpus/index/embedding/chunking/retrieval policy를 version/digest로 고정한다. Provider alias나 이름 동일성만으로 model identity/currentness를 주장하지 않는다.
+
+### FR-META-058 AI Nondeterminism and Multi-Agent Assurance
+비결정 AI는 단일 PASS를 충분조건으로 사용하지 않는다. repeated run population, sampling config, outcome distribution, sample size/confidence method, metamorphic/property oracle을 기록한다. Multi-agent는 agent identity/role/delegation/shared memory/message contract/authority escalation/common-mode failure를 별도 검증한다.
+
+### FR-META-059 ONSure Release Qualification
+ONSure 자신도 release/version별 validator/oracle/adapter/fixture/benchmark/hidden corpus/environment/independent verifier를 결속한 Qualification을 가져야 한다. Self-test는 입력일 뿐 자기 자신을 QUALIFIED로 만드는 최종 authority가 아니다. Qualification은 target archetype별 QUALIFIED|PARTIAL|NOT_PROVEN으로 관리한다.
+
+### FR-META-060 Certificate and Product Assurance Final Ceiling
+Product-level Certificate 발급은 exact CompositionSnapshot, current FinalLock, required independent verification, current qualification/authority, scope 내 unresolved P0 blocker 0, 그리고 요구 Assurance Level이 production-bound이면 Verified-to-Deployed-to-Running Currentness가 모두 닫혀야 한다. 하나라도 UNKNOWN/HOLD이면 positive Certificate 발급을 금지한다.
+
 ### 13.1 Meta-Validation 종합 수용기준
 - 검증 대상의 Target Manifest와 Scope/Requirement Epoch가 없으면 Final Claim 불가
 - Critical Capability가 NOT_PROVEN이면 L5 불가
@@ -501,3 +552,7 @@ API, Web, VS Code, Report는 동일 상태 온톨로지와 Assurance Ceiling을 
 - 새 MissedFinding은 과거 인증 영향분석을 발생시킴
 - Critical seeded defect escape 0이 검증기 Qualification의 하드 조건
 - 검증기 자신의 Rule/Oracle 완화는 Critical Recall 회귀 0을 증명해야 함
+- Product-level CURRENT는 Verified→Deployed→Running identity chain과 active runtime population closure 없이는 발급하지 않음
+- Multi-target Product Assurance는 exact subject/dependency population과 composition rule version으로 재계산 가능해야 함
+- Certificate는 발급 당시 결과와 현재 validity를 분리하며 revoked/stale/offline uncertainty를 숨기지 않음
+- ONSure 자체 Qualification이 NOT_PROVEN인 target archetype에 대해 고신뢰 Assurance를 발급하지 않음
