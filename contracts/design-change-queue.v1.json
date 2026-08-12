@@ -1,0 +1,11 @@
+{
+  "type": "ONSURE_DESIGN_CHANGE_QUEUE_V1",
+  "purpose": "Capture only implementation-discovered design gaps or semantic conflicts after product design scope closure.",
+  "status": "OPEN_EMPTY",
+  "items": [],
+  "required_fields": ["change_id", "discovered_in_batch", "requirement_or_design_ref", "current_design_semantics", "implementation_conflict_or_new_semantics", "severity", "proposed_disposition", "affected_contracts", "affected_tests", "affected_evidence", "status"],
+  "severity_values": ["P0", "P1", "P2"],
+  "status_values": ["OPEN", "ACCEPTED_FOR_DESIGN_CHANGE", "REJECTED_AS_IMPLEMENTATION_ERROR", "SUPERSEDED", "CLOSED_WITH_TRACE"],
+  "gate": "Any unresolved P0 blocks the affected batch from EVIDENCE_READY.",
+  "anti_recursion": "Do not create new product-design axes unless an implementation-discovered gap cannot be owned by an existing design authority."
+}
