@@ -202,7 +202,7 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 - `buckets`: `confidence_range`, `predicted_count`, `ground_truth_correct_count`, `actual_accuracy_percent`, `calibration_error`
 - `systematic_bias`: OVERCONFIDENT | UNDERCONFIDENT | WELL_CALIBRATED
 - `recalibration_flag`
-- `ground_truth_refs`: 계산에 사용된 Finding/Oracle/Evidence 목록
+- `ground_truth_refs`: 계산에 사용한 Finding/Oracle/Evidence 목록
 - `generated_at`
 
 수용기준: GT0/GT1 표본만으로 Critical Confidence를 보정하거나 "정확도 확인"을 주장하지 않는다. 표본과 Ground Truth가 감사 가능해야 하고, Requirement/Oracle Epoch가 변경되면 과거 Calibration을 STALE로 처리한다.
@@ -339,3 +339,59 @@ Risk/Business Acceptance를 사실 검증의 Ground Truth로 사용하지 않는
 - Composite risk 분석 없이 여러 LOW/MEDIUM을 단순 개별 상태로만 종료하지 않는다.
 - Critical Review의 최소 한 Lane은 Memory/previous verdict blind 상태로 수행 가능해야 한다.
 - 모든 Material Claim은 PRIMARY Evidence까지 역추적되어야 한다.
+
+## 13. Deployment·Currentness·Composition·Certificate·Meta-Assurance Review (신규)
+이 절은 `02 FR-META-044~060`을 OReview 책임으로 내린다.
+
+### 13.1 Deployment Identity Review
+- verified artifact digest와 deployed/running artifact digest의 직접 결속 여부
+- mutable tag/name을 identity authority로 사용하는지
+- Rolling/Blue-Green/Canary/Multi-region의 mixed population을 전체 PASS로 오인하는지
+- target→deployment root/cluster/account binding이 tenant/target authority와 일치하는지
+
+### 13.2 Runtime Currentness / Revocation Review
+- artifact/config/feature/dependency/model/prompt/RAG/external contract drift가 currentness graph에 반영되는지
+- FinalLock을 영구 CURRENT로 취급하는지
+- rollback/DR/service recovery가 과거 PASS를 자동 복원하는지
+- INVALIDATED/REASSESSMENT_REQUIRED와 signed REVOKED를 구분하는지
+
+### 13.3 Product Assurance Composition Review
+- exact subject/dependency population이 존재하는지
+- HARD dependency의 HOLD/UNKNOWN/STALE을 평균으로 숨기는지
+- N/A가 applicability evidence 없이 denominator에서 빠지는지
+- self-validation result가 independent/qualified level로 승격되는지
+- conflicting PASS/FAIL이 supersession proof 없이 latest-wins로 처리되는지
+
+### 13.4 Evidence Graph Review
+- material Final/Certificate parent를 PRIMARY evidence까지 재구성 가능한지
+- dangling/cross-tenant edge, DERIVED_FROM/SUPERSEDES cycle이 있는지
+- CONTRADICTS/INVALIDATES/REVOKES 관계가 실제 currentness에 전파되는지
+- retry PASS가 과거 failure node를 삭제하는지
+
+### 13.5 Certificate / Offline Review
+- Certificate가 내부 Evidence 전체를 과다 공개하는지
+- limitation/exclusion/currentness/revocation 확인정보가 누락되는지
+- Offline Trust Bundle의 key/policy/qualification/revocation/trusted-time snapshot이 결속되는지
+- offline uncertainty를 CURRENT로 숨기는지
+
+### 13.6 Enterprise Authority Review
+- delegation이 parent grant보다 넓은지
+- 동일 principal의 여러 key/account를 four-eyes로 세는지
+- Break-glass가 Final PASS/Assurance strength를 직접 생성하는지
+- Legal Hold가 freshness/validity를 자동 연장하는지
+
+### 13.7 Scale / Plugin / Adapter Review
+- duplicate/retry/stale lease로 denominator/result가 중복 집계되는지
+- parallel aggregation이 execution order에 따라 digest가 바뀌는지
+- unsigned/unqualified/revoked plugin/adapter가 authoritative evidence를 생성하는지
+- declared privilege보다 실제 filesystem/network/effect scope가 넓은지
+
+### 13.8 AI Runtime / Meta-Assurance Review
+- model/provider alias가 실제 model identity를 대체하는지
+- dynamic prompt/tool/RAG/memory identity가 target/currentness digest에서 누락되는지
+- nondeterministic AI를 단일 favorable run으로 PASS 처리하는지
+- multi-agent majority agreement를 Ground Truth로 오인하는지
+- ONSure 자체 validator/oracle/adapter/benchmark 변경 후 requalification 없이 기존 qualification을 재사용하는지
+
+### 13.9 Review Decision Ceiling
+위 영역에서 Critical HARD dependency, deployment identity mismatch, unresolved currentness conflict, invalid/revoked authority, unqualified ONSure capability가 발견되면 OReview `quality_decision=PASS`를 만들 수 없다. Review가 PASS여도 Final/Certificate authority를 직접 만들지 않는다.
