@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/design-lock-check-report.candidate.v1.schema.json",
+  "title": "ONSure Design Lock Check Report Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "status",
+    "baseline_candidate_id",
+    "commit_sha",
+    "inventory_digest",
+    "requirement_count",
+    "traced_requirement_count",
+    "orphan_counts_by_type",
+    "contradiction_counts_by_severity",
+    "open_decision_count",
+    "hidden_default_count",
+    "duplicate_canonical_name_count",
+    "index_drift_count",
+    "lock_eligible",
+    "blockers"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DESIGN_LOCK_CHECK_REPORT_V1_CANDIDATE"},
+    "status": {"enum": ["NOT_RUN", "BLOCKED", "CHECKED_NONFINAL"]},
+    "baseline_candidate_id": {"type": "string", "minLength": 1},
+    "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "inventory_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "requirement_count": {"type": "integer", "minimum": 0},
+    "traced_requirement_count": {"type": "integer", "minimum": 0},
+    "orphan_counts_by_type": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "contradiction_counts_by_severity": {
+      "type": "object",
+      "required": ["P0", "P1", "P2"],
+      "additionalProperties": false,
+      "properties": {
+        "P0": {"type": "integer", "minimum": 0},
+        "P1": {"type": "integer", "minimum": 0},
+        "P2": {"type": "integer", "minimum": 0}
+      }
+    },
+    "open_decision_count": {"type": "integer", "minimum": 0},
+    "hidden_default_count": {"type": "integer", "minimum": 0},
+    "duplicate_canonical_name_count": {"type": "integer", "minimum": 0},
+    "index_drift_count": {"type": "integer", "minimum": 0},
+    "lock_eligible": {"type": "boolean"},
+    "blockers": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"lock_eligible": {"const": true}}},
+      "then": {
+        "properties": {
+          "hidden_default_count": {"const": 0},
+          "duplicate_canonical_name_count": {"const": 0},
+          "index_drift_count": {"const": 0},
+          "blockers": {"maxItems": 0},
+          "contradiction_counts_by_severity": {
+            "properties": {"P0": {"const": 0}}
+          }
+        }
+      }
+    }
+  ]
+}
