@@ -1,0 +1,18 @@
+{
+  "contract_type":"ONSURE_DESIGN_LOCK_CHECK_EXECUTION_CANDIDATE_V1",
+  "status":"EXECUTED_HOLD_NONFINAL",
+  "frozen_design_commit":"abe122ef9438f41e8b074f03b8017b6d30cbc389",
+  "gates":[
+    {"id":"GLOBAL_REQUIREMENT_EXACT_POPULATION","result":"HOLD","detail":"explicit 73 only; global total not materialized"},
+    {"id":"APPLICABILITY_EXACT_POPULATION","result":"HOLD","detail":"73 unknown pending context"},
+    {"id":"GLOBAL_TRACE_CLOSURE","result":"HOLD","detail":"60/73 explicit traced; FR-COM 13 untraced candidates"},
+    {"id":"REPOSITORY_ORPHAN_ZERO","result":"NOT_PROVEN"},
+    {"id":"P0_DESIGN_CONTRADICTION_ZERO","result":"NOT_PROVEN"},
+    {"id":"GIT_ARTIFACT_IDENTITY","result":"PASS"},
+    {"id":"CONTENT_SHA256_INVENTORY","result":"HOLD"},
+    {"id":"BASELINE_MANIFEST_RECONSTRUCTABLE","result":"HOLD"}
+  ],
+  "overall":"HOLD",
+  "design_baseline_locked":false,
+  "ready_for_lock":false
+}
