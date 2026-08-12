@@ -122,19 +122,22 @@ Candidate fix 존재만으로 Finding을 CLOSED하지 않는다.
 `81~91`은 Claude Batch F~K, Schema Wave, persistence migration, policy bootstrap, runtime API semantics, exact design inventory, Lock scanner, Global Requirement Universe, requirement normalization, global trace scanner, RU-01~07 materialization을 정의한다.
 
 ### 50개 설계 정밀화 Batch
-`92~101`은 사용자가 지시한 50개 후속 설계 작업을 모두 설계 산출물로 닫는다.
-- `92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md`
-- `93_REQUIREMENT_CONFLICT_BASELINE_AND_CHANGE_CONTROL.md`
-- `94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md`
-- `95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md`
-- `96_DEPLOYMENT_CERTIFICATE_AUTHORITY_POLICY_INDUSTRY_TIER_FINALIZATION.md`
-- `97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md`
-- `98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md`
-- `99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md`
-- `100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md`
-- `101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md`
+`92~101`은 50개 후속 설계 작업을 모두 설계 산출물로 닫는다.
 
-Machine registry: `contracts/fifty-task-design-closure.candidate.v1.json`.
+### 15단계 Design Lock Closure
+`102~107`은 Global Requirement materialization부터 Design Baseline Candidate 판정, Claude 구현 inventory alignment, semantic change intake까지 15개 후속 단계를 연결한다.
+- `102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md`
+- `103_GLOBAL_ORPHAN_CONTRADICTION_INVENTORY_AND_BASELINE_LOCK.md`
+- `104_DESIGN_BASELINE_CANDIDATE_DECISION_AND_CHANGE_CONTROL.md`
+- `105_DESIGN_TO_IMPLEMENTATION_INVENTORY_ALIGNMENT.md`
+- `106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md`
+- `107_FIFTEEN_STEP_DESIGN_LOCK_CLOSURE_MASTER_MATRIX.md`
+
+Machine candidates:
+- `contracts/fifteen-step-design-lock-closure.candidate.v1.json`
+- `contracts/design-implementation-alignment.candidate.v1.json`
+- `contracts/design-semantic-change-queue.candidate.v1.json`
+- `contracts/design-baseline-candidate-decision.candidate.v1.json`
 
 또한 06/07은 신규 Runtime/AI/Meta-Assurance 내용을 본문에 직접 흡수했고, 08은 기존 결정 이력을 보존하기 위해 `08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md`를 부속 정본으로 사용한다.
 
@@ -162,17 +165,19 @@ Tier는 증거조건으로 계산한다. Enterprise 구매만으로 높은 Tier�
 Unknown/partial/stale/unverifiable은 positive strong claim으로 자동 승격하지 않는다.
 
 ## 10. 설계 폐쇄 상태
-50개 후속 설계 작업은 **설계 산출물 기준 50/50 수행**되었다. 다만 다음이 아직 실제 실행되지 않았으므로 Design Lock을 선언하지 않는다.
-- Global Requirement Universe exact population materialization
-- repository-wide orphan/contradiction scan
-- exact content SHA-256 design inventory 생성
-- Design Lock Check 실제 실행
-- Machine Contract 구현/fixture/runtime
+50개 설계 정밀화와 후속 15단계 closure는 설계/대조/판정 수준까지 수행됐다. 다만 다음 실제 materialization/scan은 아직 실행되지 않았다.
+- Global Requirement Universe exact population
+- Applicability exact population
+- repository-wide global trace/orphan/contradiction scan
+- exact content SHA-256 design inventory
+- Design Lock Check
+- full implementation reverse scan
+- semantic change queue unresolved P0=0 증명
 
 현재 최고 설계 상태:
-**`FIFTY_TASK_DESIGN_CLOSURE_COMPLETE / GLOBAL_DENOMINATOR_MATERIALIZATION_PENDING / DESIGN_LOCK_EXECUTION_PENDING / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
+**`FIFTEEN_STEP_DESIGN_CLOSURE_DESIGNED / IMPLEMENTATION_INVENTORY_PARTIAL / DESIGN_BASELINE_CANDIDATE_HOLD / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
 
-`50/50 DESIGN WORK PERFORMED`는 `DESIGN LOCKED` 또는 Product PASS를 의미하지 않는다.
+15개 작업을 다뤘다는 사실은 `DESIGN LOCKED` 또는 Product PASS를 의미하지 않는다.
 
 ## 11. 구현/검증과의 경계
 다음 전까지 Product/Final authority를 올리지 않는다.
