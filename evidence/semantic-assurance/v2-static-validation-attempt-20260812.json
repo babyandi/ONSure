@@ -1,19 +1,25 @@
 {
   "contract": "ONSURE_SEMANTIC_ASSURANCE_STATIC_VALIDATION_ATTEMPT_V1",
-  "attempt_id": "SA-V2-STATIC-20260812-001",
+  "attempt_id": "SA-V2-STATIC-20260812-002",
   "branch": "codex/meta-validation-doc-refresh",
   "validator": "scripts/validate-semantic-assurance-v2-contracts.py",
-  "expected_schema_count": 14,
-  "expected_valid_fixture_count": 14,
-  "expected_invalid_fixture_count": 28,
+  "expected_schema_count": 23,
+  "expected_valid_fixture_count": 23,
+  "expected_invalid_fixture_count": 46,
   "execution_environment": "CHATGPT_CONTAINER_RUNTIME",
   "execution_attempted": true,
+  "attempt_methods": [
+    "raw.githubusercontent.com materialization attempt",
+    "git ls-remote https://github.com/babyandi/ONSure.git HEAD"
+  ],
   "execution_state": "BLOCKED",
-  "blocker": "RUNTIME_NETWORK_DNS_UNAVAILABLE_AND_PRIVATE_BRANCH_RAW_CONTENT_NOT_MOUNTED",
+  "blocker": "RUNTIME_NETWORK_DNS_UNAVAILABLE_AND_BRANCH_CONTENT_NOT_MOUNTED",
+  "observed_error": "fatal: unable to access https://github.com/babyandi/ONSure.git/: Could not resolve host: github.com",
+  "repository_materialized_locally": false,
   "github_actions_used": false,
   "fallback_to_unverified_pass": false,
   "decision": "NOT_RUN",
   "assurance_class": "SELF_VALIDATION_NONFINAL",
   "final_claim_allowed": false,
-  "recorded_at": "2026-08-12T00:25:00+09:00"
+  "recorded_at": "2026-08-12T18:12:00+09:00"
 }
