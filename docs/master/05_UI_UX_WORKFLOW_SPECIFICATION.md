@@ -342,3 +342,128 @@ Final Candidate/Lock 화면은 최소 다음을 한 화면에서 확인할 수 �
 - ProgramRiskScore A등급이어도 Critical Unknown 또는 Accepted Critical Risk가 있으면 이를 점수보다 시각적으로 우선 노출한다.
 - Self-validation PASS, Final PASS, Production Go, Commercial Go는 서로 다른 라벨과 아이콘을 사용한다.
 - 숨겨진 탭을 열어야만 제외범위·Unknown·Accepted Risk를 알 수 있는 UI는 수용하지 않는다.
+
+## 11. Runtime Currentness·Product Composition·Certificate UX (신규)
+이 절은 `02 FR-META-044~060`, `semantic-assurance/29~32`를 사용자 경험으로 내린다.
+
+### 11.1 Validation / Deployment / Running 3단 Identity Panel
+Production-bound 결과 화면은 다음을 같은 카드에 나란히 표시한다.
+- Validated Artifact: artifact_id/digest, 검증시각, FinalLock
+- Deployed Artifact: environment/region/cluster/revision, observed digest
+- Running Population: active instance 수, expected digest 일치율, mixed revision 여부
+
+세 값이 모두 닫히지 않으면 `CURRENT` 배지를 표시하지 않는다. Tag/branch 이름이 같아도 digest mismatch는 Critical 경고다.
+
+### 11.2 Currentness Banner
+상단 고정 상태:
+- CURRENT
+- STALE
+- REASSESSMENT_REQUIRED
+- INVALIDATED
+- REVOKED
+- UNKNOWN
+
+`Historical PASS / Currently STALE`처럼 발급 당시 결과와 현재 상태를 동시에 보여준다. 과거 PASS를 숨기지도, 현재 stale을 숨기지도 않는다.
+
+### 11.3 Rollout / Region View
+Rolling/Blue-Green/Canary/Multi-region은 cohort/traffic/region별 상태를 분리한다.
+- stable vs canary
+- blue vs green
+- region A/B/C
+- expected vs observed artifact
+- traffic percentage
+- currentness
+
+일부 cohort PASS를 전체 Production PASS로 표시하지 않는다.
+
+### 11.4 Product Composition Panel
+제품 단위 화면은 단일 점수보다 다음을 우선한다.
+- Product decision
+- Assurance Strength/Level
+- Product currentness
+- Critical HARD dependencies
+- weakest required child
+- unresolved conflict
+- N/A/excluded/unknown population
+- CompositionSnapshot ID/rule version
+
+Critical child HOLD/UNKNOWN/STALE가 있으면 전체 녹색 PASS 배지 금지.
+
+### 11.5 Evidence Graph Explorer
+사용자는 `왜 이 결과인가?`를 그래프로 확인한다.
+- Claim → Requirement → Oracle → Execution → Evidence
+- Finding/RCA/Patch/Approval
+- FinalLock → Deployment → Runtime → Certificate
+- CONTRADICTS/SUPERSEDES/INVALIDATES/REVOKES 강조
+
+Ceiling 이유를 클릭하면 최소 하나의 실제 graph path와 필요한 다음 조치를 표시한다.
+
+### 11.6 Certificate Center
+Certificate 목록/상세는 다음을 표시한다.
+- certificate_id/version
+- subject/product version
+- decision + assurance level
+- currentness
+- issued/expires/revalidation due
+- independent verification summary
+- limitation/exclusion
+- revocation status
+- public verification 링크/QR
+
+QR에 secret/token/raw evidence를 포함하지 않는다. `REVOKED`, `EXPIRED`, `OFFLINE_STATUS_UNCERTAIN`은 발급 당시 PASS보다 시각적으로 우선한다.
+
+### 11.7 Offline Status UI
+Air-gapped/Offline에서는 마지막 sync 시각과 trust bundle generation을 항상 표시한다.
+- OFFLINE_CURRENT_WITHIN_GRACE
+- OFFLINE_REVALIDATION_DUE
+- OFFLINE_STATUS_UNCERTAIN
+- OFFLINE_BLOCKED
+
+사용자는 `현재 온라인 revocation 상태를 확인할 수 없음`을 한 화면에서 이해할 수 있어야 한다.
+
+### 11.8 Authority / Delegation / Four-eyes UX
+고위험 승인 화면은 다음을 보여준다.
+- 요청 operation/subject/purpose
+- 현재 principal authority와 expiry
+- delegation chain
+- 필요한 승인자 수
+- 이미 승인한 principal identity
+- 동일 principal multi-key 중복 경고
+- Break-glass 여부/TTL/incident reference
+
+Break-glass 사용 시 `운영 허용`과 `Assurance 승인`을 분리해 표시한다.
+
+### 11.9 Plugin / Adapter Qualification UX
+Target/Profile/Verification 화면에 Plugin/Adapter 상태를 표시한다.
+- QUALIFIED
+- QUALIFICATION_REQUIRED
+- PARTIAL
+- NOT_PROVEN
+- SUSPENDED
+- REVOKED
+
+Plugin 이름/버전만 보여주지 않고 publisher, artifact digest, privilege summary, qualification generation을 확인 가능하게 한다.
+
+### 11.10 AI Runtime Identity UX
+AI Target 화면에 다음 Drift를 별도 노출한다.
+- Model/provider/deployment
+- System/developer prompt bundle
+- Tool Registry
+- Agent Memory scope
+- RAG corpus/index/embedding
+- sampling config
+
+이전 검증과 하나라도 material drift가 있으면 `AI_RUNTIME_REASSESSMENT_REQUIRED`를 표시한다.
+
+### 11.11 ONSure Qualification 표시
+고객 결과 화면에는 해당 검증을 수행한 ONSure release qualification generation과 target archetype status를 표시한다.
+예: `Java/Spring: QUALIFIED`, `Kubernetes: PARTIAL`, `Custom RTOS: NOT_PROVEN`.
+ONSure가 NOT_PROVEN인 영역을 결과 화면에서 숨기지 않는다.
+
+### 11.12 추가 화면 수용기준
+- 사용자는 10초 안에 `현재 CURRENT인지`, `STALE/REVOKED인지`, `왜 그런지` 판단할 수 있어야 한다.
+- Critical subtarget가 STALE/UNKNOWN/HOLD이면 Product 전체를 단일 녹색 PASS로 표시하지 않는다.
+- Certificate limitation/exclusion/currentness/revocation은 숨겨진 고급 탭에만 두지 않는다.
+- Offline uncertainty와 마지막 revocation sync 시각을 항상 확인 가능해야 한다.
+- Validated/Deployed/Running artifact가 다른 경우 사용자에게 digest mismatch를 직접 노출한다.
+- Assurance Level/Strength와 Decision, Currentness는 서로 다른 시각 요소로 표현한다.
