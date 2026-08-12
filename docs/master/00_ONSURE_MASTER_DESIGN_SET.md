@@ -31,9 +31,9 @@ Understand → Verify → Diagnose → Decide(Improve 또는 Train) → Improve 
 - Deploy/Observe/Re-learn: 승인된 개선·재학습을 배포한 뒤 운영 데이터를 관찰하고, 새 실패·성능저하가 확인되면 다시 Diagnose로 돌아간다. Deploy는 자동이 아니며 §6의 배포 승인 경계를 따른다.
 
 ### 2-2. 재귀학습 원칙은 ONSure 자신에게도 적용된다
-OMemory(§5)의 재귀학습(자동 판정이 놓친 결함을 RCA→개정→회귀→승격으로 흡수해 ONSure 자신의 탐지 능력을 보강하는 루프, [02 §7-1](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md))과 Target AI Auto-Learning(대상 프로그램의 AI를 재학습하는 루프)은 **같은 원칙을 공유하는 두 적용 사례**다. 검증된 근거에서만 시작하고, 자기 자신이 낸 개정을 스스로 승인하지 않으며, 독립 재검증을 통과해야 승격·배포된다. ONSure는 대상 프로그램만 재귀학습시키는 도구가 아니라, 그 재귀학습 원칙을 자기 자신의 판정 능력에도 동일하게 적용하는 도구다.
+OMemory(§5)의 재귀학습과 Target AI Auto-Learning은 **같은 원칙을 공유하는 두 적용 사례**다. 검증된 근거에서만 시작하고, 자기 자신이 낸 개정을 스스로 승인하지 않으며, 독립 재검증을 통과해야 승격·배포된다.
 
-이는 선언에 그치지 않고 순서를 강제하는 실제 계약(`contracts/learning-to-application-pipeline.v1.json`)이 있다: 학습결과를 대상 프로그램에 적용하는 것(`TARGET_PRODUCT_APPLY`, 곧 OTraining)은 ONSure가 자기 자신의 학습결과를 승격시키는 경로(OMemory, `VALIDATION_PACK_APPLY`)를 최소 1건 `APPLIED_LOCKED`까지 증명하기 전까지 허용되지 않는다. 대상을 재학습시키는 도구이기 전에, 먼저 스스로를 안전하게 재학습시킬 수 있어야 한다.
+이는 선언에 그치지 않고 `contracts/learning-to-application-pipeline.v1.json`이 순서를 강제한다. `TARGET_PRODUCT_APPLY`는 ONSure 자체 `VALIDATION_PACK_APPLY`가 최소 1건 `APPLIED_LOCKED`까지 증명되기 전 허용되지 않는다.
 
 ## 3. 독립성 원칙
 - ONSure의 제품 정의, 실행 구조, 고객 데이터, 릴리스는 ORUDA에 종속되지 않는다.
@@ -58,9 +58,7 @@ Service Case = System + Programs + Baseline + Scope + Capacity + Validity + Deli
 - Enterprise
 - Unlimited Systems & Programs
 
-VS Code는 지속 학습, 지속 리뷰, 지속 검증, 지속 개선을 제공한다.
-
-Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하는 옵션이며, AI·학습·GPU·컴퓨팅·Storage·전문가 지원까지 무제한을 의미하지 않는다(`docs/v2/00_MASTER_INDEX.md` §4). Seat, Credit, 동시 실행, Compute, Storage는 별도 계약 한도를 적용한다.
+VS Code는 지속 학습, 지속 리뷰, 지속 검증, 지속 개선을 제공한다. Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하며 AI·학습·GPU·Compute·Storage·지원까지 무제한을 의미하지 않는다.
 
 ## 5. 프로그램 구성
 - OLearning: Repository와 실행 구조를 학습하고 Program Profile을 생성한다.
@@ -68,15 +66,15 @@ Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하
 - OReview: 요구사항·설계·정책·코드·AI·보안·테스트·품질·Merge 리뷰를 수행한다.
 - OVerification: 정적·동적·시나리오·적대·회귀 검증을 수행한다.
 - OImprovement: Finding 기반 RCA와 Patch를 생성하고 회귀검증한다.
-- OTraining: 검증된 Finding과 승인된 목표에 근거해 대상 프로그램의 RAG·Prompt·Agent·Model을 재학습·개선하고, 배포 전 독립 재검증을 거친다(Target AI Auto-Learning).
+- OTraining: 검증된 Finding과 승인된 목표에 근거해 대상 프로그램의 RAG·Prompt·Agent·Model을 재학습·개선하고, 배포 전 독립 재검증을 거친다.
 - OEvidence: 입력·정책·결과·실행환경·해시·Receipt를 관리한다.
-- OMemory: 유효했던 개선 패턴과 실패 패턴을 재사용 가능한 지식으로 축적하고, 자동 판정이 놓친 결함을 재귀학습으로 흡수해 탐지 능력을 지속 보강한다.
+- OMemory: 개선·실패 패턴과 MissedFinding을 재귀학습으로 축적한다.
 - OGit: Worktree, Branch, Commit, Push, Draft PR, CI 상태를 관리한다.
 - ODelivery: 보고서, Patch, PR, Evidence Pack, Program Profile을 납품한다.
 - OLicense Adapter: ORUDA/OLicense의 Entitlement와 Credit을 검증·소비·보고한다.
 
 ### 5-1. Semantic Assurance Companion Capability Set (`DESIGN_ONLY`)
-기존 프로그램 구성을 대체하지 않고 OLearning/OPlanning/OReview/OVerification/OEvidence/OMemory에 흡수되는 고급 검증 Capability다. 상세 책임은 [semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md](semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md)를 기준으로 한다.
+기존 프로그램을 대체하지 않고 OLearning/OPlanning/OReview/OVerification/OEvidence/OMemory가 재사용하는 고급 검증 Capability다.
 
 - SA-01 Evidence Reperformance & Truth Binding
 - SA-02 Denominator & Coverage Discovery
@@ -93,87 +91,92 @@ Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하
 - SA-13 Business Semantic Integrity
 - SA-14 Validator Requalification Engine
 
-이 목록은 신규 서비스 14개를 의미하지 않는다. 기존 ONSure 프로그램이 재사용하는 검증 Capability 분류이며, 실제 Runtime 경계는 `04_ARCHITECTURE_DATA_API_OLICENSE.md`와 향후 Contract에서 결정한다. 현재는 `DESIGN_ONLY`다.
+이 목록은 신규 서비스 14개를 의미하지 않는다. 실제 Runtime 경계는 04 문서와 Candidate/향후 Active Contract에서 결정한다.
 
 ### 5-2. Semantic Assurance Finding Authority (`DESIGN_ONLY`)
-반복 독립검토에서 발견한 구체 결함은 [semantic-assurance/10_FINDING_LEDGER.md](semantic-assurance/10_FINDING_LEDGER.md)를 canonical human ledger로 사용한다. 원시 검토의 candidate observation count와 canonical defect count를 분리하며, 동일 주제라도 실패 시나리오·영향·필수 계약 변경이 다르면 별도 Finding으로 유지한다.
+반복 독립검토에서 발견한 결함은 최초 Ledger [semantic-assurance/10_FINDING_LEDGER.md](semantic-assurance/10_FINDING_LEDGER.md)와 post-v2 Ledger [semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md](semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md)를 함께 canonical human ledger로 사용한다.
 
-현재 Ledger는 P0 `FL-P0-001~132`, P1 `FL-P1-001~048`의 source-confirmed canonical batch를 기록하고, machine 후보는 `contracts/semantic-assurance-finding-ledger.candidate.v1.json`에 둔다. 이 등록은 결함 해결을 의미하지 않는다.
+현재 source-grounded baseline:
+- raw candidate observation: **562**
+- canonical P0: **FL-P0-001~141 / 141건**
+- canonical P1: **FL-P1-001~050 / 50건**
+- verified closed: **0**
 
-계약 변경 설계는 [semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md](semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md)를 따른다.
+Machine index는 `contracts/semantic-assurance-finding-ledger.candidate.v1.json`, disposition은 `contracts/semantic-assurance-finding-disposition.candidate.v1.json`이 추적한다. Candidate fix가 같은 branch에 존재한다는 사실만으로 Finding을 CLOSED하지 않는다.
 
 ## 6. 핵심 경계
 ### Review와 Verification
-Review는 구현 또는 변경이 적절한지 판단한다. Verification은 요구사항과 정책을 실제로 만족하는지 증거로 판정한다. Review PASS가 Verification PASS를 의미하지 않으며, 두 결과는 독립 저장한다.
+Review는 구현 또는 변경이 적절한지 판단한다. Verification은 요구사항과 정책을 실제로 만족하는지 증거로 판정한다. Review PASS가 Verification PASS를 의미하지 않는다.
 
 ### Improvement 시작 조건
-개선은 임의 코딩 요청에서 시작하지 않는다. 반드시 검증된 Finding 또는 승인된 Review Finding에서 시작한다.
+개선은 반드시 검증된 Finding 또는 승인된 Review Finding에서 시작한다.
 
 ### Learning 경계
-학습은 범용 기업 지식관리 제품으로 확장하지 않는다. Program Learning, Behavior Learning, Improvement Learning, Target AI Auto-Learning(대상 프로그램의 RAG·Prompt·Agent·Model에 한정)에 한정한다.
+학습은 Program Learning, Behavior Learning, Improvement Learning, Target AI Auto-Learning에 한정한다.
 
 ### Train 시작 조건과 배포 경계
-Target AI Auto-Learning도 Improvement와 동일하게 임의 요청에서 시작하지 않고 검증된 Finding 또는 승인된 목표에서만 시작한다. Training 결과는 독립 재검증(Independently Re-verify)을 통과하고 권한자 승인을 받기 전까지 운영에 배포하지 않는다. Deploy·Observe·Re-learn은 자동화 편의를 위해 승인 경계를 생략하지 않는다([05_UI_UX_WORKFLOW_SPECIFICATION.md](05_UI_UX_WORKFLOW_SPECIFICATION.md) §7 고위험 별도 승인).
+Target AI Auto-Learning 결과는 독립 재검증과 권한자 승인 전 운영 배포하지 않는다.
 
 ### Semantic Assurance 경계
-Semantic Assurance Capability는 기존 기능/검증 결과의 의미적 closure를 강화하는 계층이다. 문서상 적용, Schema 존재, Runtime 구현, 실행, Evidence 결속, 독립 검증, Qualification은 서로 다른 상태다. `contracts/semantic-assurance-capability-registry.candidate.v1.json`은 현재 Candidate Registry이며 구현 권위를 만들지 않는다.
+문서상 적용, Schema 존재, Fixture 존재, Runtime Candidate, 실행, Evidence 결속, 독립 검증, Qualification은 서로 다른 상태다.
 
 ### Canonical Gate 편입 경계
-Semantic Assurance가 실제 Final Gate가 되려면 설계 문서나 Candidate Registry 존재만으로 충분하지 않다. 최소 다음 네 경로에 모두 편입되어야 한다.
-
+Semantic Assurance가 실제 Final Gate가 되려면 최소 다음 경로에 모두 편입되어야 한다.
 1. canonical product lineage
-2. workflow operation registry
-3. validation case/negative fixture denominator
-4. Final acceptance/publication/freshness reconstruction path
+2. workflow operation registry / dispatcher
+3. validation case exact denominator
+4. Final acceptance exact denominator + publication/freshness reconstruction
 
-한 곳이라도 빠지면 `DESIGNED_CONTROL_OUTSIDE_CANONICAL_GATE_PATH`로 취급한다. 특히 `10_FINDING_LEDGER.md`의 canonical gate blocker가 OPEN이면 Semantic Assurance를 근거로 Full-Chain/Final Candidate/FinalLock/Production/Commercial positive claim을 승격하지 않는다.
+Post-v2 runtime에서는 semantic operation이 `TenantRbacService` durable authorization 경계 안에서 실제 operation 이름으로 기록되도록 Candidate를 보강했고, RegisteredTarget의 server-resolved sourceRoot로 target file access를 제한했다. 하지만 compile/JUnit/independent verification이 실행되지 않았으므로 active authority가 아니다.
+
+독립성·Human Acceptance·Validator Qualification·Authority effect-time validity는 caller boolean/string으로 승격하지 않는다. 실제 cryptographic/runtime verifier가 연결되기 전 Candidate Runtime은 HOLD한다.
 
 ## 7. 주요 산출물
-- Business Plan
-- Product Requirement Document
-- Service Policy
-- Program Specification
-- OReview Specification
-- OVerification Specification
-- OImprovement Specification
-- UI/UX Specification
-- Architecture and Data Model
-- API/Event/Token Contract
-- OLicense Integration Contract
-- Security and Privacy Design
-- Test Strategy and Fixtures
-- Operation and Deployment Runbook
-- Epic/Capability/Story Backlog
-- Component Model and AI Agent Methodology ([07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))
-- Knowledge Pattern Library and Recursive Detection Learning Design
-- Semantic Assurance Integration/Ownership ([semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md](semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md))
-- Semantic Assurance Functional Extension ([semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md](semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md))
-- Semantic Assurance Review Extension ([semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md](semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md))
-- Semantic Assurance Architecture/Data/API Extension ([semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md](semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md))
-- Semantic Assurance UI/UX Extension ([semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md](semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md))
-- Semantic Assurance Test/Operation Extension ([semantic-assurance/06_TEST_OPERATION_EXTENSION.md](semantic-assurance/06_TEST_OPERATION_EXTENSION.md))
-- Semantic Assurance AI/Agent Method Extension ([semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md](semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md))
-- Semantic Assurance Open Decisions ([semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md](semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md))
-- Semantic Assurance Independent Review Integration ([semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md](semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md))
-- Semantic Assurance Finding Ledger ([semantic-assurance/10_FINDING_LEDGER.md](semantic-assurance/10_FINDING_LEDGER.md))
-- Semantic Assurance Contract Upgrade Blueprint ([semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md](semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md))
+기존 Business/Product/Service/Program/Review/Verification/Improvement/UI/Architecture/API/Security/Test/Operation/Backlog 산출물에 더해 다음 Semantic Assurance companion set을 관리한다.
+
+- [semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md](semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md)
+- [semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md](semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md)
+- [semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md](semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md)
+- [semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md](semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md)
+- [semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md](semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md)
+- [semantic-assurance/06_TEST_OPERATION_EXTENSION.md](semantic-assurance/06_TEST_OPERATION_EXTENSION.md)
+- [semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md](semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md)
+- [semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md](semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md)
+- [semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md](semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md)
+- [semantic-assurance/10_FINDING_LEDGER.md](semantic-assurance/10_FINDING_LEDGER.md)
+- [semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md](semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md)
+- [semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md](semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md)
+- [semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md](semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md)
+- [semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md](semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md)
+- [semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md](semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md)
+- [semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md](semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md)
+- [semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md](semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md)
+- [semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md](semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md)
+- [semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md](semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md)
+- [semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md](semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md)
+
+Machine Candidate 현황은 `contracts/semantic-assurance-artifact-coverage.candidate.v1.json`을 따른다. 현재 23 Schema, valid 23, semantic-invalid 46, pending registration 0이다.
 
 ## 8. 출시 Gate
-다음이 모두 충족되어야 상용 출시 후보가 된다.
-- 요구사항 Traceability 100%
-- Critical/High 미해결 결함 0건
-- Web Full-Chain 연속 2회 PASS
-- VS Code Full-Chain 연속 2회 PASS
-- OLicense 발급·정지·만료·폐기·Offline 시나리오 PASS
-- Code Review와 Independent Review 완료
-- 보안·개인정보·소스 삭제 검증 PASS
-- 운영 복구 및 Rollback 시험 PASS
+상용 출시 후보는 요구사항 Traceability, Critical/High unresolved 0, Web/VS Code Full-Chain 연속 PASS, OLicense lifecycle, Code/Independent Review, 보안·개인정보·삭제, 복구·Rollback 등 기존 Gate를 모두 만족해야 한다.
 
-Semantic Assurance Capability가 출시 Gate의 하드 조건으로 승격되려면 각 Capability별 Contract/Runtime/Execution/Qualification이 먼저 제정되어야 한다. Candidate Registry 존재만으로 출시 Gate를 확대하거나 통과시킨 것으로 간주하지 않는다.
+Semantic Assurance를 근거로 Final/Release를 강화하려면 추가로 다음이 필요하다.
+- 23 Schema / 69 Fixture 실제 validation PASS
+- Java compile/JUnit PASS
+- 실제 v1→v2 reconstruction population 실행
+- Validation/Final exact denominator migration 실행
+- true independent OTester/OAudit execution + qualification
+- signed Human Acceptance verification
+- Validator Qualification independent execution
+- target-bound deployment identity + Verified-to-Deployed 실행
+- Shadow Gate disagreement closure
+- signed Active Selector 승인
 
-추가로 `semantic-assurance/10_FINDING_LEDGER.md`의 `CANONICAL_GATE_BYPASS`, `SEMANTIC_TYPE_ERASURE`, Status/Receipt/Final/Independent trust-chain P0 blocker가 OPEN인 동안 신규 Semantic Assurance를 근거로 Final Gate를 강화 완료했다고 주장하지 않는다. P0 blocker의 해소는 문서 반영이 아니라 Contracted→Implemented→Executed→Evidence Bound→Independently Verified→Qualified 상태로 확인한다.
+이 조건 전까지 v1 authority를 유지하고 v2 Candidate는 Active가 아니다.
 
 ## 9. 비최종 상태
-문서 작성, 코드 구현, 단위시험, PR 생성만으로 Final PASS를 선언하지 않는다. 실제 환경 E2E, 독립 리뷰, Evidence 고정 전까지 모든 결과는 NON_FINAL이다.
+문서 작성, Candidate Contract, Fixture, Runtime class, 단위시험 source, PR 생성만으로 Final PASS를 선언하지 않는다. 실제 실행환경 E2E, Evidence 고정, 독립 검증, Qualification 전까지 결과는 NON_FINAL이다.
 
-Target AI Auto-Learning(OTraining)은 다른 프로그램보다 사업성 검증이 늦은 단계다. 초기에는 GPU 학습이 필요한 전체 Model Fine-tuning까지 동시에 개발하지 않고, 재현성과 고객가치가 확인된 RAG 재인덱싱·Prompt 개선·AI 생성 코드 안정화부터 유료 Case로 시장을 검증한다([01_BUSINESS_PRODUCT_SERVICE_PLAN.md](01_BUSINESS_PRODUCT_SERVICE_PLAN.md) §11-2).
+현재 Static validator 실행은 repository local mount 및 github.com DNS 부재로 `BLOCKED_NOT_RUN`이며, `evidence/semantic-assurance/v2-static-validation-attempt-20260812.json`에 기록되어 있다. GitHub Actions로 우회하지 않았고 unverified PASS를 만들지 않았다.
+
+현재 최고 표현은 **`DESIGN_CONTRACT_FIXTURE_AND_FAIL_CLOSED_IMPLEMENTATION_CANDIDATES_PRESENT / EXECUTION_BLOCKED_OR_NOT_RUN / NON_FINAL`**이다.
