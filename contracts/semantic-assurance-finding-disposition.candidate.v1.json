@@ -4,8 +4,8 @@
   "scope": {
     "severity": "P0",
     "first_finding_id": "FL-P0-001",
-    "last_finding_id": "FL-P0-136",
-    "finding_count": 136
+    "last_finding_id": "FL-P0-141",
+    "finding_count": 141
   },
   "current_disposition_rule": {
     "all_p0_findings": "DESIGN_ACCEPTED",
@@ -13,15 +13,17 @@
     "candidate_contract_does_not_equal_contracted": true,
     "candidate_runtime_does_not_equal_implemented": true,
     "fixture_presence_does_not_equal_executed": true,
-    "same_branch_fix_does_not_equal_verified_closed": true
+    "same_branch_fix_does_not_equal_verified_closed": true,
+    "caller_self_attestation_does_not_equal_independence_or_qualification": true
   },
   "coverage_axes": {
     "design": {
-      "count": 136,
+      "count": 141,
       "state": "DESIGN_ACCEPTED",
       "evidence": [
         "docs/master/semantic-assurance/10_FINDING_LEDGER.md",
         "docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md",
+        "docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md",
         "docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md"
       ]
     },
@@ -56,12 +58,21 @@
       ]
     },
     "implementation_candidate": {
-      "state": "PARTIAL",
+      "state": "PARTIAL_FAIL_CLOSED_HARDENED",
       "artifacts": [
         "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2Reconstructor.java",
         "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
         "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
-        "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceShadowGateComparator.java"
+        "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceShadowGateComparator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java"
+      ],
+      "hardening": [
+        "SEMANTIC_OPERATION_NAME_PRESERVED_IN_DURABLE_AUTHORIZATION_LEDGER",
+        "TENANT_AND_TARGET_OWNERSHIP_CHECKED_IN_SAME_AUTHORIZATION_TRANSACTION_AS_SEMANTIC_CALL",
+        "SERVER_RESOLVED_TARGET_ROOT_REQUIRED",
+        "DIRECT_WORKFLOW_SERVICE_CALL_REQUIRES_SERVER_BOUND_CONTEXT",
+        "SELF_ATTESTED_INDEPENDENCE_HUMAN_ACCEPTANCE_AUTHORITY_AND_QUALIFICATION_IGNORED",
+        "TARGET_BOUND_DEPLOYMENT_IDENTITY_MISSING_FAILS_CLOSED"
       ]
     },
     "test_design": {
@@ -84,7 +95,8 @@
     "FL-P0-069","FL-P0-070","FL-P0-071","FL-P0-098","FL-P0-099","FL-P0-106","FL-P0-107",
     "FL-P0-108","FL-P0-109","FL-P0-110","FL-P0-111","FL-P0-114","FL-P0-122","FL-P0-123",
     "FL-P0-124","FL-P0-125","FL-P0-126","FL-P0-127","FL-P0-128","FL-P0-129","FL-P0-130",
-    "FL-P0-131","FL-P0-132","FL-P0-133","FL-P0-134","FL-P0-135","FL-P0-136"
+    "FL-P0-131","FL-P0-132","FL-P0-133","FL-P0-134","FL-P0-135","FL-P0-136","FL-P0-137",
+    "FL-P0-138","FL-P0-139","FL-P0-140","FL-P0-141"
   ],
   "closure_rule": {
     "verified_closed_requires": [
