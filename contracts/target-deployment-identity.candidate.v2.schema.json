@@ -1,0 +1,35 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/target-deployment-identity.candidate.v2.schema.json",
+  "title":"ONSure Target Deployment Identity Candidate v2",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","deployment_identity_id","tenant_id","project_id","target_id","target_manifest_sha256","source_tree_sha256","build_provenance_sha256","release_manifest_sha256","package_sha256","deployment_environment_sha256","installed_artifact_set_digest","active_revision","state","authority","installed_at","identity_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_TARGET_DEPLOYMENT_IDENTITY_V2_CANDIDATE"},
+    "deployment_identity_id":{"type":"string","minLength":1},
+    "tenant_id":{"type":"string","minLength":1},
+    "project_id":{"type":"string","minLength":1},
+    "target_id":{"type":"string","minLength":1},
+    "target_manifest_sha256":{"$ref":"#/$defs/sha256"},
+    "source_tree_sha256":{"$ref":"#/$defs/sha256"},
+    "build_provenance_sha256":{"$ref":"#/$defs/sha256"},
+    "release_manifest_sha256":{"$ref":"#/$defs/sha256"},
+    "package_sha256":{"$ref":"#/$defs/sha256"},
+    "deployment_environment_sha256":{"$ref":"#/$defs/sha256"},
+    "installed_artifact_set_digest":{"$ref":"#/$defs/sha256"},
+    "active_revision":{"type":"integer","minimum":1},
+    "state":{"enum":["PACKAGE_VERIFIED","INSTALLED_INACTIVE","ACTIVATION_PENDING","ACTIVE_CURRENT","ACTIVE_STALE","ROLLBACK_PENDING","ROLLED_BACK","REVOKED","UNKNOWN"]},
+    "activation":{"type":"object","additionalProperties":false,"required":["active","activated_at","active_pointer_digest"],"properties":{"active":{"type":"boolean"},"activated_at":{"type":["string","null"],"format":"date-time"},"active_pointer_digest":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"}}},
+    "variant":{"type":["object","null"],"additionalProperties":false,"required":["variant_id","population_digest"],"properties":{"variant_id":{"type":"string","minLength":1},"population_digest":{"$ref":"#/$defs/sha256"}}},
+    "region":{"type":["object","null"],"additionalProperties":false,"required":["region_id","region_epoch"],"properties":{"region_id":{"type":"string","minLength":1},"region_epoch":{"type":"string","minLength":1}}},
+    "authority":{"type":"object","additionalProperties":false,"required":["executor_profile_sha256","activation_authority_profile_sha256","authority_epoch"],"properties":{"executor_profile_sha256":{"$ref":"#/$defs/sha256"},"activation_authority_profile_sha256":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1}}},
+    "installed_at":{"type":"string","format":"date-time"},
+    "identity_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "allOf":[
+    {"if":{"properties":{"state":{"const":"ACTIVE_CURRENT"}}},"then":{"properties":{"activation":{"properties":{"active":{"const":true},"activated_at":{"type":"string"},"active_pointer_digest":{"$ref":"#/$defs/sha256"}}}}}},
+    {"if":{"properties":{"state":{"enum":["REVOKED","ACTIVE_STALE"]}}},"then":{"properties":{"activation":{"properties":{"active":{"type":"boolean"}}}}}}
+  ],
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}
