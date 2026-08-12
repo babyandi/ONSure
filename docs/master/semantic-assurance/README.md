@@ -25,6 +25,9 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md`: Validation/Final fixed-count authority 제거
 - `19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md`: 1~15 최종 재검토 및 실제 실행 Blocker
 - `20_POST_V2_FINAL_REVIEW_FINDINGS.md`: v2 Candidate 자체 재검토 Finding 확장 Ledger
+- `21_CLAUDE_DEVELOPMENT_HANDOFF.md`: Claude 개발 실행 정본. DEV-01~13 순서, 금지사항, 실행증거, Batch A~E를 정의한다.
+
+**현재 개발 진입점은 `21_CLAUDE_DEVELOPMENT_HANDOFF.md`다.** Claude는 21번을 실행 기준으로 사용하고, 설계 권위는 00~20 및 기존 `docs/master/02~08`을 따른다.
 
 기존 `docs/master/02~08` 본문에도 FR-META-001~043과 Meta Review/Architecture/Test/AI 기준이 직접 반영되어 있으며 companion 문서는 이를 삭제하거나 대체하지 않는다.
 
@@ -115,7 +118,19 @@ Validator entrypoint: `scripts/validate-semantic-assurance-v2-contracts.py`.
 
 Compile/JUnit/독립 재검증이 실행되지 않았으므로 이 코드는 `IMPLEMENTATION_CANDIDATE`다.
 
-## 6. Canonical Gate 편입
+## 6. Claude 개발 실행
+Claude 개발은 `21_CLAUDE_DEVELOPMENT_HANDOFF.md`를 따른다.
+
+우선순위:
+1. Batch A: branch/materialization → 23 Schema/69 Fixture 실제 실행 → Java compile/JUnit
+2. Batch B: primary dispatcher/runtime authority → v1→v2 actual reconstruction
+3. Batch C: Validation Case / Final Acceptance exact population migration
+4. Batch D: Independent OTester/OAudit / Human Acceptance / Validator Qualification
+5. Batch E: Shadow Gate / target-bound Deployment Identity / Active Selector 준비
+
+Batch A 실패 상태에서 B~E의 positive assurance를 주장하지 않는다. 개발은 병렬 진행할 수 있으나 상태 승격은 실행증거 순서를 따른다.
+
+## 7. Canonical Gate 편입
 Semantic Assurance가 실제 제품 Gate가 되려면 최소 다음 경로가 동시에 닫혀야 한다.
 1. Product Process Lineage
 2. Workflow Operation Registry / Dispatcher
@@ -124,22 +139,23 @@ Semantic Assurance가 실제 제품 Gate가 되려면 최소 다음 경로가 �
 
 현재 Candidate 설계와 fail-closed runtime 후보는 존재하지만 v2는 active authority가 아니다.
 
-## 7. Independent Gate 원칙
+## 8. Independent Gate 원칙
 Local Agent의 `OTESTER|OAUDIT` 명칭이나 caller `independent=true`는 독립성 증명이 아니다. 실제 independent gate는 Principal/Credential Admin/Implementation/Oracle/Discovery/Knowledge independence와 current Qualification, 서명/키 유효성, exact receipt binding을 검증해야 한다. 현재 runtime은 verifier가 없으므로 HOLD한다.
 
-## 8. Final / Selector 경계
+## 9. Final / Selector 경계
 Final 순서는 다음을 분리한다.
 `Semantic Gate Reconstruction -> Independent OTester -> Independent OAudit -> Human Acceptance -> Final Approval -> Final Lock -> Verified-to-Deployed -> Currentness`
 
 Active Selector는 현재 HOLD이며 v1 authority를 유지한다. Candidate 파일을 검색해 자동 활성화하지 않는다.
 
-## 9. 현재 상태
+## 10. 현재 상태
 - canonical Finding: P0 141 / P1 50 / raw baseline 562
 - v2 Schema Candidate: 23
 - valid/invalid fixture: 23/46
 - Fixture registration pending: 0
 - Adapter/Reconstructor/Workflow/Bridge/Shadow runtime candidate: 존재
 - semantic durable RBAC + target-bound JUnit: 존재
+- Claude development handoff: `21_CLAUDE_DEVELOPMENT_HANDOFF.md`
 - Static Schema 실제 실행: `BLOCKED_NOT_RUN`
 - Java compile/JUnit: `NOT_RUN`
 - v1→v2 actual reconstruction population: `NOT_RUN`
