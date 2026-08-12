@@ -1,8 +1,9 @@
 {
   "contract": "ONSURE_SEMANTIC_ASSURANCE_V2_SCHEMA_INVENTORY_CANDIDATE_V1",
-  "version": "1.1.0-candidate",
+  "version": "1.2.0-candidate",
   "status": "DESIGN_ONLY_NONFINAL",
   "fixture_registry": "contracts/semantic-assurance-v2-schema-instance-registry.candidate.v1.json",
+  "total_schema_candidates": 27,
   "fixture_covered_schemas": 23,
   "fixture_covered_contracts": [
     "assurance-status-vocabulary.candidate.v2.schema.json",
@@ -29,10 +30,19 @@
     "hidden-corpus-governance.candidate.v2.schema.json",
     "shadow-gate-comparison.candidate.v1.schema.json"
   ],
-  "new_schema_contracts_pending_fixture_registration": [],
-  "pending_schema_count": 0,
+  "new_schema_contracts_pending_fixture_registration": [
+    "independent-assurance-execution-plan.candidate.v2.schema.json",
+    "target-deployment-identity.candidate.v2.schema.json",
+    "runtime-execution-receipt.candidate.v2.schema.json",
+    "contract-selector-transition-receipt.candidate.v2.schema.json"
+  ],
+  "pending_schema_count": 4,
   "fixture_counts": {"valid":23,"invalid":46},
-  "hard_rule": "FIXTURE_COVERAGE_DOES_NOT_EQUAL_EXECUTION_OR_QUALIFICATION",
+  "hard_rules": {
+    "PENDING_SCHEMA_CANNOT_BE_QUALIFIED_OR_ACTIVE": true,
+    "FIXTURE_COVERAGE_DOES_NOT_EQUAL_EXECUTION_OR_QUALIFICATION": true,
+    "DESIGN_SCHEMA_MAY_EXIST_BEFORE_DEVELOPER_FIXTURE_IMPLEMENTATION": true
+  },
   "execution_state": "NOT_RUN",
   "qualification_state": "NOT_QUALIFIED",
   "final_claim_allowed": false
