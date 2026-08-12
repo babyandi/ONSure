@@ -20,10 +20,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
 
     @BeforeEach
     void registerOwnedTarget() throws Exception {
-        AuthenticatedWorkflowIdentity admin = new AuthenticatedWorkflowIdentity(
-                "organization", "tenant-a", "workspace", "admin-a",
-                Set.of(AuthenticatedWorkflowIdentity.Role.ADMIN), "LOCAL",
-                AuthenticatedWorkflowIdentity.AuthenticationMethod.SIGNED_ENTERPRISE_IDENTITY);
+        AuthenticatedWorkflowIdentity admin = identity("tenant-a", "admin-a");
         bridge = new SemanticAssuranceV2DispatcherBridge(temp, admin);
         Files.createDirectories(temp.resolve("target-src"));
         Files.writeString(temp.resolve("target-src/subject.txt"), "subject");
@@ -64,6 +61,19 @@ class SemanticAssuranceV2DispatcherBridgeTest {
     }
 
     @Test
+    void crossTenantSemanticOperationIsDeniedInsideDurableOwnershipTransaction() throws Exception {
+        SemanticAssuranceV2DispatcherBridge tenantB = new SemanticAssuranceV2DispatcherBridge(
+                temp, identity("tenant-b", "admin-b"));
+        SecurityException denied = assertThrows(SecurityException.class, () -> tenantB.dispatch(
+                "semantic.denominator.discover", request(Map.of(
+                        "project_id", "project-1",
+                        "target_id", "target-1",
+                        "items", java.util.List.of(Map.of(
+                                "item_id", "REQ-1", "item_sha256", "a".repeat(64)))))));
+        assertEquals("CROSS_TENANT_RESOURCE_ACCESS_DENIED:project:project-1", denied.getMessage());
+    }
+
+    @Test
     void callerCannotInjectServerAuthorityFields() {
         SecurityException denied = assertThrows(SecurityException.class, () -> bridge.dispatch(
                 "semantic.denominator.discover", request(Map.of(
@@ -86,6 +96,13 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals("BLOCKED", result.get("decision"));
         assertEquals("TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE",
                 ((java.util.List<?>) result.get("reasons")).get(0));
+    }
+
+    private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
+        return new AuthenticatedWorkflowIdentity(
+                "organization", tenant, "workspace", actor,
+                Set.of(AuthenticatedWorkflowIdentity.Role.ADMIN), "LOCAL",
+                AuthenticatedWorkflowIdentity.AuthenticationMethod.SIGNED_ENTERPRISE_IDENTITY);
     }
 
     private JsonNode request(Map<String, Object> value) {
