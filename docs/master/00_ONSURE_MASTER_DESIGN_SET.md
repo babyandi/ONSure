@@ -17,8 +17,6 @@ Understand → Plan → Review → Verify → Improve → Prove → Remember
 - Remember: 유효했던 개선과 실패 패턴을 재사용 가능한 지식으로 축적한다.
 
 ### 2-1. 두 종류의 학습
-ONSure가 말하는 "학습"은 반드시 둘을 구분한다.
-
 - **Program Understanding Learning**: OLearning이 대상 프로그램의 목적·구조·기능·행동·실행환경을 학습한다.
 - **Target AI Auto-Learning**: OTraining이 검증된 Finding과 승인 목표에 근거해 대상 프로그램 안의 RAG·Prompt·Agent·Model을 실제 데이터로 개선한다.
 
@@ -118,18 +116,25 @@ Candidate fix 존재만으로 Finding을 CLOSED하지 않는다.
 `53~69`는 End-to-End Trace, Failure Sequence, Authority/SoD, Safe Default, Design Closure, P0 Machine Contract, Workflow Operation v2, Event/Receipt, Policy Profile, AuthorityGrant/RBAC, Canonical Serialization, Recovery Receipt, Design Trace Registry, Configurable Policy, Industry Profile, Assurance Tier, Claim Language를 정의한다.
 
 ### 30개 설계 폐쇄 Batch
-`70~80`은 사용자가 지시한 30개 설계 작업을 실제 폐쇄 세트로 묶는다.
-- `70_THIRTY_TASK_DESIGN_CLOSURE_MASTER_PLAN.md`
-- `71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md`
-- `72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md`
-- `73_GLOBAL_STATE_TRANSITION_MATRIX.md`
-- `74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md`
-- `75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md`
-- `76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md`
-- `77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md`
-- `78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md`
-- `79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md`
-- `80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md`
+`70~80`은 30개 설계 폐쇄 작업을 구조화한다.
+
+### 후속 개발·Lock·Global Denominator
+`81~91`은 Claude Batch F~K, Schema Wave, persistence migration, policy bootstrap, runtime API semantics, exact design inventory, Lock scanner, Global Requirement Universe, requirement normalization, global trace scanner, RU-01~07 materialization을 정의한다.
+
+### 50개 설계 정밀화 Batch
+`92~101`은 사용자가 지시한 50개 후속 설계 작업을 모두 설계 산출물로 닫는다.
+- `92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md`
+- `93_REQUIREMENT_CONFLICT_BASELINE_AND_CHANGE_CONTROL.md`
+- `94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md`
+- `95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md`
+- `96_DEPLOYMENT_CERTIFICATE_AUTHORITY_POLICY_INDUSTRY_TIER_FINALIZATION.md`
+- `97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md`
+- `98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md`
+- `99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md`
+- `100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md`
+- `101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md`
+
+Machine registry: `contracts/fifty-task-design-closure.candidate.v1.json`.
 
 또한 06/07은 신규 Runtime/AI/Meta-Assurance 내용을 본문에 직접 흡수했고, 08은 기존 결정 이력을 보존하기 위해 `08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md`를 부속 정본으로 사용한다.
 
@@ -157,12 +162,17 @@ Tier는 증거조건으로 계산한다. Enterprise 구매만으로 높은 Tier�
 Unknown/partial/stale/unverifiable은 positive strong claim으로 자동 승격하지 않는다.
 
 ## 10. 설계 폐쇄 상태
-`80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md` 기준 현재 설계 문서 폐쇄성은 **97~98% 후보**로 재평가한다. 이는 구현률/검증률이 아니다.
+50개 후속 설계 작업은 **설계 산출물 기준 50/50 수행**되었다. 다만 다음이 아직 실제 실행되지 않았으므로 Design Lock을 선언하지 않는다.
+- Global Requirement Universe exact population materialization
+- repository-wide orphan/contradiction scan
+- exact content SHA-256 design inventory 생성
+- Design Lock Check 실제 실행
+- Machine Contract 구현/fixture/runtime
 
-현재 설계 상태:
-**`DESIGN_BASELINE_CANDIDATE_READY_FOR_LOCK_CHECK / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
+현재 최고 설계 상태:
+**`FIFTY_TASK_DESIGN_CLOSURE_COMPLETE / GLOBAL_DENOMINATOR_MATERIALIZATION_PENDING / DESIGN_LOCK_EXECUTION_PENDING / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
 
-설계 Lock을 아직 선언하지 않는 이유는 exact machine-readable inventory/trace/orphan/conflict 검사가 실행되지 않았기 때문이다.
+`50/50 DESIGN WORK PERFORMED`는 `DESIGN LOCKED` 또는 Product PASS를 의미하지 않는다.
 
 ## 11. 구현/검증과의 경계
 다음 전까지 Product/Final authority를 올리지 않는다.
