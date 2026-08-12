@@ -1,8 +1,22 @@
 {
   "type": "ONSURE_DESIGN_CHANGE_QUEUE_V1",
   "purpose": "Capture only implementation-discovered design gaps or semantic conflicts after product design scope closure.",
-  "status": "OPEN_EMPTY",
-  "items": [],
+  "status": "OPEN",
+  "items": [
+    {
+      "change_id": "DCQ-0001",
+      "discovered_in_batch": "BATCH_0",
+      "requirement_or_design_ref": "88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md SS2 (Requirement Source Class), 00_INTEGRATION_AND_OWNERSHIP.md (SA-01~14, XC-01~30)",
+      "current_design_semantics": "88 SS2 defines EXPLICIT_ID as 'FR-COM, FR-META, NFR-* 등 명시 ID'. Separately, the semantic-assurance companion set defines SA-01~14 (Semantic Assurance Capability) and XC-01~30 (Cross-Cutting Control) as its own explicit ID vocabulary, used pervasively (189 SA-* and 13+ XC-* subtype mentions across docs/master/semantic-assurance). 90 SS3's trace node list (REQUIREMENT, DESIGN, CONTRACT, OPERATION, API, EVENT, RECEIPT, TEST, FIXTURE, EVIDENCE_TYPE, POLICY, AUTHORITY_RULE, UI_CLAIM, FINDING) has no CAPABILITY or CONTROL node type.",
+      "implementation_conflict_or_new_semantics": "generate-requirement-universe.py (RU-02) only extracts FR-COM-*, FR-META-*, FR-FRESH-*, NFR-* as EXPLICIT_ID requirements, per 88 SS2's literal examples. SA-*/XC-* IDs are excluded from the Requirement Universe entirely for Batch 0. It is undefined whether each SA-*/XC-* item IS a Requirement (and should get its own requirement_id, e.g. as CONTRACT_REQUIRED or a new source class), or whether it is a distinct artifact type that requirements merely reference (design_refs), or whether it should map 1:1 onto FR-META-*/FR-COM-* records that already exist. Guessing this would risk either silently inflating the denominator with a artifact class the design docs never authorized as EXPLICIT_ID, or silently omitting a real requirement source, either of which 137 SS5 prohibits ('구현 편의를 위해 requirement/design 의미를 축소 삭제 금지').",
+      "severity": "P1",
+      "proposed_disposition": "Recommend a human/design decision in a future companion doc (e.g. a 88-addendum or new SS in 92) explicitly stating whether SA-*/XC-* are (a) a 7th Requirement Source Class, (b) CONTRACT_REQUIRED-derived requirements owned by their parent FR-META entry, or (c) a separate CAPABILITY/CONTROL trace node type to be added to 90 SS3. Until resolved, RU-02 continues to exclude SA-*/XC-* from EXPLICIT_ID extraction; this does not block Batch 0 EVIDENCE_READY because 88 SS2's literal examples do not name SA-*/XC-* as requirement sources.",
+      "affected_contracts": ["requirement-record.v2.schema.json", "requirement-universe-snapshot.v2.schema.json"],
+      "affected_tests": [],
+      "affected_evidence": [".onsure/requirement-universe/requirement-records.json"],
+      "status": "OPEN"
+    }
+  ],
   "required_fields": ["change_id", "discovered_in_batch", "requirement_or_design_ref", "current_design_semantics", "implementation_conflict_or_new_semantics", "severity", "proposed_disposition", "affected_contracts", "affected_tests", "affected_evidence", "status"],
   "severity_values": ["P0", "P1", "P2"],
   "status_values": ["OPEN", "ACCEPTED_FOR_DESIGN_CHANGE", "REJECTED_AS_IMPLEMENTATION_ERROR", "SUPERSEDED", "CLOSED_WITH_TRACE"],

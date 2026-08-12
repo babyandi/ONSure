@@ -2,9 +2,59 @@
   "type": "ONSURE_CLAUDE_DEVELOPMENT_PROGRESS_REGISTRY_V1",
   "authority": "137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md",
   "allowed_states": ["NOT_STARTED", "IN_PROGRESS", "IMPLEMENTED", "TESTED", "EVIDENCE_READY", "BLOCKED"],
-  "current_overall_state": "NOT_STARTED",
+  "current_overall_state": "IN_PROGRESS",
   "batches": [
-    {"batch":"BATCH_0","name":"Baseline / Requirement Materialization","state":"NOT_STARTED"},
+    {
+      "batch": "BATCH_0",
+      "name": "Baseline / Requirement Materialization",
+      "state": "EVIDENCE_READY",
+      "scope": "RU-01..RU-07 per 91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md, taxonomy/applicability per 92, Global Trace Registry per 90",
+      "contracts": [
+        "contracts/requirement-record.v2.schema.json",
+        "contracts/requirement-universe-snapshot.v2.schema.json",
+        "contracts/requirement-semantic-relation.v1.schema.json",
+        "contracts/requirement-universe-generation-receipt.v1.schema.json",
+        "contracts/global-trace-scan-report.v1.schema.json",
+        "contracts/requirement-applicability-evaluation.v1.schema.json"
+      ],
+      "implementation": [
+        "scripts/generate-requirement-universe.py (RU-01..RU-06)",
+        "scripts/scan-global-trace-closure.py (RU-07)"
+      ],
+      "tests": [
+        "tests/test_requirement_universe.py (11 tests, real execution, not fixture-only)",
+        "fixtures/contracts/requirement-record.v2.{valid,invalid}.json",
+        "fixtures/contracts/requirement-universe-snapshot.v2.{valid,invalid}.json",
+        "fixtures/contracts/requirement-semantic-relation.v1.{valid,invalid}.json",
+        "fixtures/contracts/requirement-universe-generation-receipt.v1.{valid,invalid}.json",
+        "fixtures/contracts/global-trace-scan-report.v1.{valid,invalid}.json",
+        "fixtures/contracts/requirement-applicability-evaluation.v1.{valid,invalid}.json"
+      ],
+      "evidence": [
+        ".onsure/requirement-universe/requirement-universe-snapshot.json (gitignored local receipt, regenerable via scripts/generate-requirement-universe.py)",
+        ".onsure/requirement-universe/global-trace-scan-report.json (gitignored local receipt, regenerable via scripts/scan-global-trace-closure.py)",
+        "python3 scripts/validate-structured-contracts.py --require-full -> ONSURE_STRUCTURED_CONTRACTS_PASS (34 registered schemas, 36 positive + 13 negative instances)",
+        "python3 -m unittest tests.test_requirement_universe -> 11/11 PASS",
+        "mvn -q compile -> clean (no Java touched this batch)"
+      ],
+      "real_findings": {
+        "authority_documents_scanned": 152,
+        "explicit_id_requirements": 89,
+        "candidate_extracted_requirements": 810,
+        "duplicate_candidate_groups": 16,
+        "explicit_id_cross_document_text_variants": 31,
+        "trace_orphan_p0_count": 1,
+        "trace_orphan_p1_count": 898,
+        "trace_completeness_ratio": 0.0,
+        "lock_eligible": false
+      },
+      "unresolved_blockers": [
+        "P0 trace orphan FR-COM-008 (CRITICAL, POSITIVE_CLAIM_GATE, cites contracts/main-branch-protection.v1.json): 0 test_refs, 0 evidence_refs found by mechanical scan. Not a design ambiguity (design-change-queue) -- a real, disclosed test/evidence-path gap to be closed in Batch 9 (Test Materialization) or earlier if a dependent batch needs it sooner.",
+        "31 explicit IDs have text that differs across the documents mentioning them (canonical text picked by longest-occurrence heuristic; other variants preserved in .onsure/requirement-universe/explicit-id-cross-document-variants.json for human review, not silently merged).",
+        "DCQ-0001 (P1, OPEN): SA-*/XC-* capability/control ID taxonomy relationship to the Requirement Universe is undefined by 88-92; intentionally excluded from EXPLICIT_ID extraction rather than guessed."
+      ],
+      "note": "775->810 candidate_extracted_requirement_count correction: an earlier version of dedupe_candidates() silently dropped non-canonical duplicate-group members from the population, contradicting 88 SS6 ('record the relation, do not delete'); fixed to keep every source-anchored occurrence and only relate duplicates as an overlay. Caught by tests/test_requirement_universe.py's cross-contract referential-integrity test before being reported here as passing."
+    },
     {"batch":"BATCH_1","name":"Core Contract Foundation","state":"NOT_STARTED"},
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},
     {"batch":"BATCH_3","name":"Assurance Core","state":"NOT_STARTED"},
@@ -17,7 +67,7 @@
   ],
   "done_gate": ["CONTRACT", "IMPLEMENTATION", "POSITIVE_FIXTURE_OR_TEST", "NEGATIVE_FIXTURE_OR_TEST", "CROSS_CONTRACT_TEST_IF_APPLICABLE", "COMPILE_BUILD_PASS", "AUTOMATED_TEST_EXECUTED_PASS", "EVIDENCE_RECEIPT_REPORT", "TRACE_UPDATED", "UNRESOLVED_BLOCKERS_RECORDED"],
   "forbidden_promotions": ["ACTIVE_SELECTOR", "FINAL_LOCK", "PRODUCTION_GO", "COMMERCIAL_GO"],
-  "implementation_started": false,
+  "implementation_started": true,
   "test_phase_started": false,
   "independent_assurance_started": false,
   "production_authorized": false

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/requirement-universe-snapshot.v2.schema.json",
+  "title": "ONSure Global Requirement Universe Snapshot v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "generation_algorithm_version", "requirement_ids", "requirement_manifest_digest",
+    "authority_document_population", "authority_document_population_digest",
+    "superseded_requirement_ids", "unresolved_duplicate_candidates", "generated_at",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_REQUIREMENT_UNIVERSE_SNAPSHOT_V2"},
+    "generation_algorithm_version": {"type": "string", "minLength": 1},
+    "requirement_ids": {
+      "type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true
+    },
+    "requirement_manifest_digest": {"$ref": "#/$defs/sha256"},
+    "authority_document_population": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "content_sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "content_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "authority_document_population_digest": {"$ref": "#/$defs/sha256"},
+    "superseded_requirement_ids": {
+      "type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true
+    },
+    "unresolved_duplicate_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["normalized_text_digest", "requirement_ids"],
+        "properties": {
+          "normalized_text_digest": {"$ref": "#/$defs/sha256"},
+          "requirement_ids": {
+            "type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}, "uniqueItems": true
+          }
+        }
+      }
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

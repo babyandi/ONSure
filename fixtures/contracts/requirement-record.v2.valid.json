@@ -1,0 +1,30 @@
+{
+  "applicability_rule_ref": null,
+  "applicability_state": "UNKNOWN",
+  "authority_document": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+  "authority_document_sha256": "9e767ccaade196458b35fbdbf5d970df4482a8183f64642708dd57e186ce4b55",
+  "claim_effect": "POSITIVE_CLAIM_GATE",
+  "criticality": "CRITICAL",
+  "exact_source_digest": "92cd24d0d7c29daee76877aceab479a0f29758c7b99ba911510794ae3abc4a61",
+  "explicit_id": "FR-COM-008",
+  "extraction_method": "EXPLICIT_ID_PARSED",
+  "mention_count": 3,
+  "mention_documents": [
+    "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+    "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md",
+    "docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md"
+  ],
+  "normative_text": "FR-COM-008 고객 승인 전 Main Branch 직접 변경을 금지한다. 실제 `contracts/main-branch-protection.v1.json`이 이를 강제하는 구체 설정이다: PR 필수, 최소 승인 1명, 오래된 승인 자동 무효화, 대화 스레드 전부 해결 필수, 직접 Push·Force Push·Branch 삭제 차단, 관리자도 예외 없이 적용, Merge 전 독립 Status Check 필수.",
+  "normative_text_digest": "cd4500abbd62a7ea2fa6f1b89d34f3af8545e18d7e235d2daaf18af073ca5a55",
+  "owner_domain": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS",
+  "requirement_id": "FR-COM-008",
+  "source_anchor": {
+    "heading": "2. 공통 기능 요구사항",
+    "line": 28
+  },
+  "source_class": "EXPLICIT_ID",
+  "status": "ACTIVE",
+  "subject": "PRODUCT",
+  "taxonomy": "FUNCTIONAL",
+  "waivability": "NON_WAIVABLE"
+}

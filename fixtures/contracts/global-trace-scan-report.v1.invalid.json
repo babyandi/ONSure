@@ -1,0 +1,103 @@
+{
+  "contract": "ONSURE_GLOBAL_TRACE_SCAN_REPORT_V1",
+  "final_claim_allowed": false,
+  "lock_eligible": true,
+  "methodology_note": "Mechanical severity heuristic: an orphan dimension is escalated to P0 only when claim_effect=POSITIVE_CLAIM_GATE and criticality=CRITICAL and the dimension is REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED or REQUIREMENT_WITHOUT_EVIDENCE_PATH; all other found orphans are P1. This approximates but does not replace the human/semantic judgment described in 90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md SS6.",
+  "missing_negative_fixture_requirement_ids": [],
+  "orphans": {
+    "p0": [
+      "FR-COM-008"
+    ],
+    "p1": [
+      "FR-COM-001",
+      "REQ::docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md::3-3::765754f2166842994edd"
+    ],
+    "p2": []
+  },
+  "rows": [
+    {
+      "api_refs": [],
+      "authority_refs": [],
+      "contract_refs": [
+        "contracts/fr-com-global-trace-extension.candidate.v1.json",
+        "contracts/global-trace-execution-report.candidate.v1.json",
+        "contracts/main-branch-protection.v1.json",
+        "contracts/repository-orphan-scan-report.execution.candidate.v1.json"
+      ],
+      "design_refs": [
+        "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
+        "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md",
+        "docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md"
+      ],
+      "event_refs": [],
+      "evidence_refs": [],
+      "final_gate_refs": [],
+      "operation_refs": [],
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_TEST",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH"
+      ],
+      "policy_refs": [],
+      "receipt_refs": [],
+      "requirement_digest": "cd4500abbd62a7ea2fa6f1b89d34f3af8545e18d7e235d2daaf18af073ca5a55",
+      "requirement_id": "FR-COM-008",
+      "test_refs": []
+    },
+    {
+      "api_refs": [],
+      "authority_refs": [],
+      "contract_refs": [
+        "contracts/fr-com-global-trace-extension.candidate.v1.json",
+        "contracts/global-trace-execution-report.candidate.v1.json",
+        "contracts/repository-orphan-scan-report.execution.candidate.v1.json"
+      ],
+      "design_refs": [
+        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+        "docs/master/semantic-assurance/102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md",
+        "docs/master/semantic-assurance/108_GLOBAL_REQUIREMENT_UNIVERSE_EXECUTION_SNAPSHOT.md",
+        "docs/master/semantic-assurance/110_GLOBAL_TRACE_AND_ORPHAN_EXECUTION_SNAPSHOT.md",
+        "docs/master/semantic-assurance/115_EIGHT_STEP_DESIGN_LOCK_EXECUTION_MASTER_MATRIX.md",
+        "docs/master/semantic-assurance/129_DESIGN_QA_EIGHT_STEP_EXECUTION_AFTER_SCOPE_CLOSURE.md",
+        "docs/master/semantic-assurance/README.md"
+      ],
+      "event_refs": [],
+      "evidence_refs": [],
+      "final_gate_refs": [],
+      "operation_refs": [],
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_TEST",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH"
+      ],
+      "policy_refs": [],
+      "receipt_refs": [],
+      "requirement_digest": "d954b740703962d44fb2833a5a5eb18059c3bc048cb2e24bf5661e7ca6b46bc2",
+      "requirement_id": "FR-COM-001",
+      "test_refs": []
+    },
+    {
+      "api_refs": [],
+      "authority_refs": [],
+      "contract_refs": [],
+      "design_refs": [],
+      "event_refs": [],
+      "evidence_refs": [],
+      "final_gate_refs": [],
+      "operation_refs": [],
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_TEST",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH"
+      ],
+      "policy_refs": [],
+      "receipt_refs": [],
+      "requirement_digest": "765754f2166842994eddf6a21c2f87ce69f46907aa13e2953cba85e6dbe30aee",
+      "requirement_id": "REQ::docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md::3-3::765754f2166842994edd",
+      "test_refs": []
+    }
+  ],
+  "scanned_at": "2026-08-12T16:26:27.189653+00:00",
+  "scanned_requirement_count": 3,
+  "self_validation_nonfinal": true,
+  "trace_completeness_ratio": 0.0,
+  "universe_digest": "0dcbaf1644996c603cb36c615ec5f1a0260e4280733bf11e3bcb3dee29665042",
+  "unresolved_semantic_conflicts": []
+}

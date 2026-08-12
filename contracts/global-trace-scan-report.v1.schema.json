@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/global-trace-scan-report.v1.schema.json",
+  "title": "ONSure Global Trace Closure Scan Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "universe_digest", "scanned_requirement_count", "rows",
+    "orphans", "unresolved_semantic_conflicts", "missing_negative_fixture_requirement_ids",
+    "trace_completeness_ratio", "lock_eligible", "scanned_at", "self_validation_nonfinal",
+    "final_claim_allowed", "methodology_note"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_GLOBAL_TRACE_SCAN_REPORT_V1"},
+    "universe_digest": {"$ref": "#/$defs/sha256"},
+    "scanned_requirement_count": {"type": "integer", "minimum": 0},
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement_id", "requirement_digest", "design_refs", "contract_refs", "operation_refs",
+          "api_refs", "event_refs", "receipt_refs", "test_refs", "evidence_refs", "policy_refs",
+          "authority_refs", "final_gate_refs", "orphan_dimensions"
+        ],
+        "properties": {
+          "requirement_id": {"type": "string", "minLength": 1},
+          "requirement_digest": {"$ref": "#/$defs/sha256"},
+          "design_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "contract_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "operation_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "api_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "event_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "receipt_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "test_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "policy_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "authority_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "final_gate_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "orphan_dimensions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "REQUIREMENT_WITHOUT_DESIGN", "REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED",
+                "REQUIREMENT_WITHOUT_TEST", "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+                "DESIGN_WITHOUT_REQUIREMENT", "CONTRACT_WITHOUT_REQUIREMENT_OR_GOVERNANCE_JUSTIFICATION"
+              ]
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "orphans": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p0", "p1", "p2"],
+      "properties": {
+        "p0": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "p1": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "p2": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "unresolved_semantic_conflicts": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "missing_negative_fixture_requirement_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "trace_completeness_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+    "lock_eligible": {"type": "boolean"},
+    "scanned_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false},
+    "methodology_note": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"lock_eligible": {"const": true}}},
+      "then": {"properties": {"orphans": {"properties": {"p0": {"maxItems": 0}}}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
