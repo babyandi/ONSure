@@ -1,0 +1,21 @@
+{
+  "contract_type": "ONSURE_PRE_MERGE_PHASE_STATUS_CANDIDATE_V1",
+  "status": "PRE_MERGE_BASELINE_NONFINAL",
+  "product_design_scope": "COMPLETE_CANDIDATE",
+  "phase_a_design_qa": "IN_PROGRESS_HOLD",
+  "phase_b_claude_implementation": "NOT_STARTED",
+  "phase_c_test_runtime_verification": "NOT_STARTED",
+  "phase_d_independent_assurance_release_qualification": "NOT_STARTED",
+  "phase_e_production_operate_change": "NOT_STARTED_NOT_AUTHORIZED",
+  "handoff_ready": true,
+  "design_baseline_locked": false,
+  "production_go": false,
+  "commercial_go": false,
+  "supersedes_progress_interpretation_of": [
+    "docs/master/semantic-assurance/131_PHASE_B_IMPLEMENTATION_ALIGNMENT_EXECUTION.md",
+    "docs/master/semantic-assurance/132_PHASE_C_TEST_RUNTIME_VERIFICATION_EXECUTION.md",
+    "docs/master/semantic-assurance/133_PHASE_D_INDEPENDENT_ASSURANCE_RELEASE_QUALIFICATION_EXECUTION.md",
+    "docs/master/semantic-assurance/134_PHASE_E_PRODUCTION_OPERATE_CHANGE_EXECUTION.md",
+    "docs/master/semantic-assurance/135_FIVE_PHASE_END_TO_END_EXECUTION_MASTER.md"
+  ]
+}
