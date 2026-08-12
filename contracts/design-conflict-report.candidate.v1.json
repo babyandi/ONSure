@@ -1,0 +1,46 @@
+{
+  "contract_type": "ONSURE_DESIGN_CONFLICT_REPORT_CANDIDATE_V1",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "canonicalization_ref": "docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md",
+  "resolved_conflicts": [
+    {
+      "id": "DC-001",
+      "topic": "document number 21 duplication",
+      "resolution": "logical ids DEV-HANDOFF-01 and SA-DESIGN-21; physical rename deferred to maintenance to avoid development collision"
+    },
+    {
+      "id": "DC-002",
+      "topic": "AcceptanceCertificate vs AssuranceCertificate",
+      "resolution": "legacy customer acceptance concept separated from machine AssuranceCertificate; HumanAcceptanceReceipt is distinct"
+    },
+    {
+      "id": "DC-003",
+      "topic": "PASS/Final/Current/Qualified conflation",
+      "resolution": "orthogonal Decision, Strength, Currentness, Qualification, Independence, Human Acceptance axes"
+    },
+    {
+      "id": "DC-004",
+      "topic": "L0-L5 vs AL0-AL5 vs AT0-AT5 naming",
+      "resolution": "AT0-AT5 reserved for customer/product assurance tier candidate; internal strength vocabulary normalized through AssuranceStatusVocabulary; legacy labels require compatibility mapping"
+    },
+    {
+      "id": "DC-005",
+      "topic": "ProductLock/TargetLock/SourceLock naming",
+      "resolution": "ValidationTargetManifest is canonical full target identity; SourceLock remains lower-level source identity"
+    },
+    {
+      "id": "DC-006",
+      "topic": "FinalLock historical fact vs current assurance",
+      "resolution": "FinalLock immutable issuance fact, AssuranceCurrentnessSnapshot carries present validity"
+    }
+  ],
+  "unresolved_p0_design_semantic_conflicts": [],
+  "unresolved_p0_design_semantic_conflict_count_candidate": 0,
+  "known_nonblocking_maintenance": [
+    "physical rename of duplicate numeric prefix 21",
+    "legacy vocabulary compatibility mappings must be implemented and tested",
+    "candidate contract names must be checked against actual repository registry during implementation"
+  ],
+  "positive_promotion_allowed": false,
+  "decision": "DESIGN_SEMANTIC_CONFLICT_ZERO_CANDIDATE_IMPLEMENTATION_COLLISION_CHECK_PENDING"
+}
