@@ -2,89 +2,135 @@
 
 Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 
-이 디렉터리는 기존 `docs/master/02~08`의 문서 책임과 상세도에 맞춰, OBuilder에서 재사용 가치가 확인된 검증 메커니즘과 ONSure 자체 독립검토에서 발견한 false-assurance·권위·시간·독립성·상태·파생 Receipt 의미손실·canonical gate 우회 문제를 ONSure용으로 재구성한 companion design set이다.
+이 디렉터리는 ONSure가 다른 제품을 검증할 때 발생할 수 있는 false assurance, 권위 오판, 독립성 오판, stale/revoked 결과 재사용, denominator 축소, Receipt 의미손실, canonical gate 우회를 기존 `docs/master/02~08`의 책임구조에 맞춰 통합한다.
 
-## 문서
-- `00_INTEGRATION_AND_OWNERSHIP.md`: 14개 Capability 통합·권위·중복 방지 + 독립검토 cross-cutting control 배치
+## 1. 문서 Set
+- `00_INTEGRATION_AND_OWNERSHIP.md`: SA-01~14 통합·권위·중복 방지
 - `02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md`: 기능·입력·산출물·수용기준
-- `03_REVIEW_SPECIFICATION_EXTENSION.md`: Review Domain·Finding·Decision 규칙
+- `03_REVIEW_SPECIFICATION_EXTENSION.md`: Finding·Review·Decision 규칙
 - `04_ARCHITECTURE_DATA_API_EXTENSION.md`: Service·Entity·State·API·Invariant
-- `05_UI_UX_WORKFLOW_EXTENSION.md`: Dashboard·Verification·Rights·Authority·Freshness·AI UX
-- `06_TEST_OPERATION_EXTENSION.md`: negative/adversarial fixture·failure injection·Runbook
-- `07_AI_AGENT_METHOD_EXTENSION.md`: AI-UC authority, TEVV, Human judgment, Method requalification
-- `08_OPEN_DECISIONS_EXTENSION.md`: Contract/정책/임계치/구현 미확정 추적
-- `09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md`: Requirement Universe, Meta-Validator, Hidden/Golden governance, Trusted Time, Offline Revocation, Retry Cherry-Picking, Reviewer Qualification 등 독립검토 결과의 14개 Capability 통합설계
-- `10_FINDING_LEDGER.md`: 반복 독립검토에서 실제 source로 확인한 P0/P1 Finding의 canonical ledger. Raw candidate observation과 canonical defect를 분리하고 source/실패시나리오/영향/SA-XC mapping/필수 변경을 보존
-- `11_CONTRACT_UPGRADE_BLUEPRINT.md`: Finding을 Status/Receipt/Authority/Target/Requirement/Harness/Learning/Patch-Git-Deployment/Final/Workflow/Meta-validator v2 Contract로 내리는 상세 설계
-- `12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md`: P0 Finding을 기존 02~08 책임구조로 역매핑한 수직 적용설계. Finding→Requirement→Review→Contract→UX→Fixture→Qualification 계보 정의
-- `13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md`: Candidate v2 Contract의 v1→v2 migration, static qualification, negative fixture, shadow gate, active selector, rollback 계획
+- `05_UI_UX_WORKFLOW_EXTENSION.md`: Assurance 상태·Freshness·Rights·Authority UX
+- `06_TEST_OPERATION_EXTENSION.md`: negative/adversarial/failure-injection
+- `07_AI_AGENT_METHOD_EXTENSION.md`: AI-UC, GT, Blind, Reviewer, Qualification
+- `08_OPEN_DECISIONS_EXTENSION.md`: 미확정 Contract/정책/임계치
+- `09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md`: 독립검토 cross-cutting 통합
+- `10_FINDING_LEDGER.md`: P0/P1 canonical Finding ledger
+- `11_CONTRACT_UPGRADE_BLUEPRINT.md`: v2 Contract Bundle A~J
+- `12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md`: Finding→02~08 수직 적용
+- `13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md`: v1→v2 migration/shadow/selector
+- `14_V1_V2_SEMANTIC_GAP_MATRIX.md`: DIRECT/READBACK/REPERFORMANCE/UNRECOVERABLE 분류
+- `15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md`: semantic negative fixture 기준
+- `16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md`: 현재 산출물·완성도 정본
+- `17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md`: Adapter/Reconstructor/Runtime wiring
+- `18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md`: Validation/Final fixed-count authority 제거
 
-## Machine-level 후보
-### Semantic Assurance Registry
-- `contracts/semantic-assurance-capability-registry.candidate.v1.json`: SA-01~SA-14 Capability registry
-- `contracts/semantic-assurance-cross-cutting-controls.candidate.v1.json`: XC-01~XC-30 독립검토 cross-cutting control registry
-- `contracts/semantic-assurance-finding-ledger.candidate.v1.json`: source-confirmed Finding/defect-family/canonical-gate block의 machine-readable candidate registry
-- `contracts/semantic-assurance-gate-integration.candidate.v1.json`: Product Lineage, Workflow Operation, Validation Case, Final Acceptance/Publication 네 canonical path에 Semantic Assurance를 편입하기 위한 hard-block/operation 후보 contract
+기존 `docs/master/02~08` 본문에도 FR-META-001~043과 Meta Review/Architecture/Test/AI 기준이 직접 반영되어 있으며 companion 문서는 이를 삭제하거나 대체하지 않는다.
 
-### P0 Core Contract v2 Candidate
-- `contracts/assurance-status-vocabulary.candidate.v2.schema.json`
-- `contracts/assurance-receipt-envelope.candidate.v2.schema.json`
-- `contracts/authority-principal-profile.candidate.v2.schema.json`
-- `contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json`
-- `contracts/workflow-operation-registry.candidate.v2.json`
-- `contracts/product-process-lineage.candidate.v2.json`
+## 2. Finding 기준
+현재 source-grounded review 기준:
+- raw candidate observation: 551
+- canonical P0: `FL-P0-001~132`
+- canonical P1: `FL-P1-001~048`
 
-위 v2 Candidate는 다음 P0 defect family를 우선 차단하도록 설계한다.
-- success-only/strong-label false assurance
-- semantic type erasure across derived receipts
-- authority role/key self-attestation
-- Local OTester/OAudit와 true independent gate 혼동
-- stale/revoked/qualification state 표현 부재
-- Final Candidate/Lock의 scope/epoch/freshness/OTester/OAudit/Human binding 부족
-- Semantic Assurance 기능이 canonical operation/path 밖에 남는 문제
-- deployment와 검증 artifact identity가 분리되는 문제
+Raw count는 canonical defect count가 아니다. `semantic-assurance-finding-disposition.candidate.v1.json`은 Candidate Contract/Fixture가 존재하더라도 실제 실행·독립검증 전 Finding 상태를 자동 승격하지 않는다. 현재 `VERIFIED_CLOSED=0`이다.
 
-## 적용 원칙
-기존 02~08을 대체하지 않는다. 각 companion 문서는 해당 parent 문서에 병합될 상세 설계를 별도 보존한 것이며, 기존 본문을 삭제하거나 약화하지 않는다.
+## 3. Machine Contract Set
+현재 fixture registry가 추적하는 Schema Candidate는 **23개**다.
 
-OBuilder Gate를 이름만 바꿔 복제하지 않는다. 새로운 Finding이 발생하면 먼저 SA-01~SA-14 중 기존 Capability에 흡수 가능한지 확인하고, 기존 14개로 표현할 수 없는 독립 defect class가 입증될 때만 신규 Capability를 검토한다.
+### Status / Receipt / Authority / Independence
+- `assurance-status-vocabulary.candidate.v2.schema.json`
+- `assurance-receipt-envelope.candidate.v2.schema.json`
+- `authority-principal-profile.candidate.v2.schema.json`
+- `independence-profile.candidate.v2.schema.json`
+- `independent-assurance-receipt.candidate.v2.schema.json`
 
-## Finding 관리 원칙
-1. Review 횟수와 Finding 개수를 혼동하지 않는다.
-2. 서로 다른 실패 시나리오·영향·필수 계약 변경이 필요한 결함은 같은 테마라도 합치지 않는다.
-3. 동일 root defect가 여러 contract에서 반복되면 canonical Finding 하나에 source를 추가한다.
-4. `NEW_DEFECT_CLASS`, `EXISTING_CONTROL_ENFORCEMENT_GAP`, `CROSS_CONTRACT_SEMANTIC_CONFLICT`, `SEMANTIC_TYPE_ERASURE`, `CANONICAL_GATE_BYPASS`, `DECLARATIVE_ASSERTION_WITHOUT_ENFORCEMENT_PROOF`, `COUNT_OR_LABEL_AS_PROOF`, `STRONG_SEMANTIC_LABEL_EXCEEDS_AVAILABLE_EVIDENCE`를 기본 분류로 사용한다.
-5. Finding은 문서에 적혔다고 CLOSED가 아니다. `CONTRACTED -> IMPLEMENTED -> EXECUTED -> EVIDENCE_BOUND -> INDEPENDENTLY_VERIFIED -> QUALIFIED`를 통과해야 한다.
-6. P0 Finding은 `12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md`의 02~08 책임열이 모두 닫히기 전에는 설계 완료로도 승격하지 않는다.
+### Denominator / Applicability / Population
+- `semantic-denominator-epoch.candidate.v2.schema.json`
+- `semantic-applicability-set.candidate.v2.schema.json`
+- `assurance-population-denominator.candidate.v2.schema.json`
+- `validation-case-population.candidate.v2.schema.json`
+- `final-acceptance-population.candidate.v2.schema.json`
 
-## Canonical Gate 편입 원칙
-Semantic Assurance가 실제 제품 Gate가 되려면 설계 문서 존재만으로 충분하지 않다. 최소 다음 네 곳에 모두 편입되어야 한다.
+### Execution / Qualification / Learning Assurance
+- `execution-identity.candidate.v2.schema.json`
+- `validator-qualification-record.candidate.v2.schema.json`
+- `blind-context-manifest.candidate.v2.schema.json`
+- `human-reviewer-qualification.candidate.v2.schema.json`
+- `qualification-benchmark-manifest.candidate.v2.schema.json`
+- `ground-truth-producer-qualification.candidate.v2.schema.json`
+- `hidden-corpus-governance.candidate.v2.schema.json`
 
-- canonical product lineage
-- workflow operation registry
-- validation case/negative fixture denominator
-- Final acceptance/publication/freshness reconstruction path
+### Final / Deployment / Activation / Shadow
+- `semantic-assurance-gate-receipt.candidate.v2.schema.json`
+- `final-approval-receipt.candidate.v2.schema.json`
+- `final-lock.candidate.v2.schema.json`
+- `verified-to-deployed-receipt.candidate.v2.schema.json`
+- `contract-active-selector.candidate.v2.schema.json`
+- `shadow-gate-comparison.candidate.v1.schema.json`
 
-한 곳이라도 빠지면 `DESIGNED_CONTROL_OUTSIDE_CANONICAL_GATE_PATH`로 취급하며 Final positive claim의 근거가 될 수 없다. 현재 편입 설계 상태는 `contracts/semantic-assurance-gate-integration.candidate.v1.json`이 추적한다.
+Orchestration Candidate:
+- `workflow-operation-registry.candidate.v2.json`
+- `product-process-lineage.candidate.v2.json`
+- `contract-selector-rollout-state.candidate.v1.json`
 
-## v2 이행 경계
-v2 Candidate Contract는 기존 v1을 즉시 대체하지 않는다.
-- transition은 `Dual Read / Single Authority`를 따른다.
-- v1 PASS를 v2 PASS로 자동 승격하지 않는다.
-- v1에서 복원할 수 없는 nonce/expiry/authority/independence/freshness는 추정값으로 채우지 않는다.
-- v2 Gate는 static qualification, negative fixture, runtime enforcement, shadow comparison, independent qualification 이후에만 active selector 후보가 된다.
-- `workflow-operation-registry.candidate.v2.json`과 `product-process-lineage.candidate.v2.json`은 실행경로 후보이며 아직 dispatcher/runtime authority가 아니다.
+## 4. Static Fixture Coverage
+`semantic-assurance-v2-schema-instance-registry.candidate.v1.json` 기준:
+- 23 Schema
+- 23 valid fixture
+- 46 semantic invalid fixture
+- Schema당 최소 2 negative fixture
+- fixture registration pending 0
 
-## 현재 상태
-- SA-01~14: `DESIGN_ONLY`
-- XC-01~30: `DESIGN_ONLY`
-- Finding Ledger: source-confirmed design input, Finding closure는 아님
-- P0 수직 Traceability: 설계 반영 완료, Runtime 미실행
-- v2 Core Contract 6종: `CONTRACT_CANDIDATE_CREATED / EXECUTION_NOT_RUN`
-- Workflow/Lineage v2: `EXECUTION_PATH_CANDIDATE_CREATED / RUNTIME_NOT_WIRED`
-- v1→v2 adapter/runtime/active selector: 미구현
-- Validation Case/Final Acceptance denominator migration: 미완료
-- independent OTester/OAudit qualification: 미실행
+Validator entrypoint:
+- `scripts/validate-semantic-assurance-v2-contracts.py`
+
+실제 실행은 시도했으나 현재 ChatGPT container가 `github.com` DNS를 해석하지 못하고 branch가 local mount되어 있지 않아 `BLOCKED_NOT_RUN`이다. 실행 시도는 `evidence/semantic-assurance/v2-static-validation-attempt-20260812.json`에 보존한다. Fixture가 존재한다고 PASS/QUALIFIED를 주장하지 않는다.
+
+## 5. Runtime Candidate
+- `SemanticAssuranceV2Reconstructor.java`
+- `SemanticAssuranceV2WorkflowService.java`
+- `SemanticAssuranceV2DispatcherBridge.java`
+- `SemanticAssuranceShadowGateComparator.java`
+- `SemanticAssuranceV2WorkflowServiceTest.java`
+
+Reconstructor는 v1 PASS를 v2 PASS로 자동 변환하지 않는다. 누락된 tenant/scope/requirement/denominator/authority/independence/qualification/freshness/oracle/validator 정보는 `READBACK`, `REPERFORMANCE`, `HUMAN_OR_EXTERNAL_AUTHORITY`, `UNRECOVERABLE`로 분류한다.
+
+Runtime class가 존재한다고 `IMPLEMENTED`로 승격하지 않는다. compile/JUnit/primary dispatcher wiring evidence가 필요하다.
+
+## 6. Canonical Gate 편입
+Semantic Assurance가 실제 제품 Gate가 되려면 최소 다음 네 경로가 동시에 닫혀야 한다.
+1. Product Process Lineage
+2. Workflow Operation Registry / Dispatcher
+3. Validation Case / Final Acceptance exact denominator
+4. Final Reconstruction → Approval → Lock → Deployment currentness
+
+현재 네 경로 모두 Candidate 설계는 존재하지만 v2가 active authority는 아니다.
+
+## 7. Independent Gate 원칙
+Local Agent의 `OTESTER|OAUDIT` 명칭은 `SELF_VALIDATION_NONFINAL`일 수 있다. 실제 independent gate는 `independence-profile.candidate.v2.schema.json`과 `independent-assurance-receipt.candidate.v2.schema.json`의 Principal/Credential Admin/Implementation/Oracle/Discovery/Knowledge independence 및 current Qualification을 요구한다.
+
+다른 key/model/run ID만으로 independent를 주장하지 않는다.
+
+## 8. Final / Selector 경계
+Final은 다음 순서를 분리한다.
+`Semantic Gate Reconstruction -> Independent OTester -> Independent OAudit -> Human Acceptance -> Final Approval -> Final Lock -> Verified-to-Deployed -> Currentness`
+
+`contract-active-selector.candidate.v2.schema.json`은 Candidate일 뿐이며 `contract-selector-rollout-state.candidate.v1.json`은 현재 v1 authority 유지, v2 activation HOLD를 명시한다. Candidate 파일을 검색해 자동 활성화하지 않는다.
+
+## 9. 현재 상태
+- 설계: 광범위 반영
+- P0 vertical trace: 존재
+- v2 Schema Candidate: 23
+- valid/invalid fixture: 23/46
+- Adapter/Reconstructor/Workflow/Shadow runtime candidate: 존재
+- Static Schema 실제 실행: `BLOCKED_NOT_RUN`
+- Java compile/JUnit: `NOT_RUN`
+- primary Dispatcher v2 wiring: `NOT_RUN`
+- v1→v2 actual reconstruction population: `NOT_RUN`
+- exact denominator migration execution: `NOT_RUN`
+- independent OTester/OAudit: `NOT_RUN`
+- Shadow Gate actual comparison: `NOT_RUN`
+- Active Selector: `HOLD / V2_NOT_ACTIVE`
 - FinalLock/Production/Commercial authority: 없음
 
-따라서 현재 산출물은 설계·계약 후보 수준이며 구현·실행·Final PASS를 주장하지 않는다.
+따라서 현재 최고 표현은 **`DESIGN_CONTRACT_FIXTURE_AND_IMPLEMENTATION_CANDIDATES_PRESENT / EXECUTION_BLOCKED_OR_NOT_RUN / NON_FINAL`**이다.
