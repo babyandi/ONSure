@@ -15,6 +15,23 @@
       "affected_tests": [],
       "affected_evidence": [".onsure/requirement-universe/requirement-records.json"],
       "status": "OPEN"
+    },
+    {
+      "change_id": "DCQ-0002",
+      "discovered_in_batch": "BATCH_1",
+      "requirement_or_design_ref": "88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md SS2, 92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md SS2, 11_CONTRACT_UPGRADE_BLUEPRINT.md SS6.2, contracts/requirement-universe-snapshot.candidate.v2.schema.json 'source_classes'",
+      "current_design_semantics": "Four different, mutually inconsistent enumerations exist for what 88 and 11 both literally call 'Requirement source class' (or 92's 'taxonomy', same concept): (1) 88 SS2: EXPLICIT_ID|PROGRAM_FUNCTION|ACCEPTANCE_CRITERION|INVARIANT|POLICY_REQUIRED|CONTRACT_REQUIRED|REGULATORY_REQUIRED (an extraction-origin axis). (2) 92 SS2 'taxonomy': FUNCTIONAL|NON_FUNCTIONAL|ASSURANCE|SECURITY|PRIVACY|OPERATIONAL|DEPLOYMENT|AI_SPECIFIC|REGULATORY|COMMERCIAL_CONTRACTUAL (a subject-matter axis). (3) 11 SS6.2 'Source class' (RequirementUniverseV2): BUSINESS|CONTRACT|POLICY|CODE|CONFIG|ARCHITECTURE|DATA|API|SECURITY|PRIVACY|OPERATIONS|RIGHTS|FAILURE_RECOVERY|RUNTIME_BEHAVIOR|EXTERNAL_STANDARD (a third, larger vocabulary blending origin and subject axes). (4) The already-existing contracts/requirement-universe-snapshot.candidate.v2.schema.json's 'source_classes' field: BUSINESS|FUNCTIONAL|NON_FUNCTIONAL|SECURITY_PRIVACY_LEGAL|ARCHITECTURE_DATA|RUNTIME_DEPLOYMENT|AI_AGENT_MODEL|INFERRED|EXTERNAL_STANDARD|OPERATION_RECOVERY (a fourth, differently-blended vocabulary already shipped as a real machine contract). No document states a mapping or supersession relationship between any of these four.",
+      "implementation_conflict_or_new_semantics": "Batch 0's requirement-record.v2.schema.json implemented (1) as source_class and (2) as taxonomy as two SEPARATE fields on the same record, treating them as orthogonal axes -- this was my own resolution choice, made before discovering (3) and (4) also claim the 'source class' name for yet other vocabularies. It is now unclear whether: (a) 88/92's two-axis split is the intended final design and 11/the existing candidate schema are stale/superseded drafts, (b) 11's Bundle D (TargetManifestV2/RequirementUniverseV2) is meant to fully replace 88/89/90/91/92's RU flow rather than coexist with it (in which case Batch 0's whole RU-01..RU-07 implementation may need to migrate to 11's vocabulary), or (c) the existing shipped requirement-universe-snapshot.candidate.v2.schema.json is a DIFFERENT contract for a DIFFERENT purpose (target-Program-scoped SA-02 requirement discovery, vs. Batch 0's ONSure-own-product requirement universe) that only coincidentally reuses the same field name. This is a DENOMINATOR_SEMANTIC-class conflict per 89 SS6 (P0 class) because it directly determines what counts in the Requirement Universe denominator.",
+      "severity": "P0",
+      "proposed_disposition": "Requires a human/design-authority decision: which document (88+92, or 11) is canonical for Requirement source classification, and whether contracts/requirement-universe-snapshot.candidate.v2.schema.json is the same concept as Batch 0's requirement-universe-snapshot.v2.schema.json (in which case one must supersede the other) or a genuinely distinct target-scoped contract (in which case both may coexist under different names, and 89's naming-canonicalization rule SS5 should be applied so the names stop colliding). Until resolved, no further contract in this lineage should invent a fifth vocabulary or silently pick one of the four.",
+      "affected_contracts": [
+        "requirement-record.v2.schema.json",
+        "requirement-universe-snapshot.v2.schema.json",
+        "requirement-universe-snapshot.candidate.v2.schema.json"
+      ],
+      "affected_tests": ["tests/test_requirement_universe.py"],
+      "affected_evidence": [".onsure/requirement-universe/requirement-universe-snapshot.json"],
+      "status": "OPEN"
     }
   ],
   "required_fields": ["change_id", "discovered_in_batch", "requirement_or_design_ref", "current_design_semantics", "implementation_conflict_or_new_semantics", "severity", "proposed_disposition", "affected_contracts", "affected_tests", "affected_evidence", "status"],
