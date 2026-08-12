@@ -1,0 +1,45 @@
+{
+  "contract": "ONSURE_DESIGN_ARTIFACT_INVENTORY_POLICY_V1_CANDIDATE",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "design_source": "docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md",
+  "required_hashes": ["git_blob_sha", "content_sha256"],
+  "hash_semantics": {
+    "git_blob_sha": "repository object identity",
+    "content_sha256": "raw file bytes interoperability digest"
+  },
+  "required_authority_classes": ["MASTER", "COMPANION", "CHECKLIST", "MACHINE_CANDIDATE", "HANDOFF"],
+  "required_inventory_fields": [
+    "artifact_path",
+    "artifact_role",
+    "authority_class",
+    "git_blob_sha",
+    "content_sha256",
+    "byte_size",
+    "parent_refs",
+    "supersedes",
+    "status"
+  ],
+  "population_sort_key": "artifact_path_ASC",
+  "population_commitment_tuple": ["artifact_path", "content_sha256", "authority_class"],
+  "lock_states": [
+    "INVENTORY_BUILDING",
+    "INVENTORY_COMPLETE",
+    "TRACE_CHECK_REQUIRED",
+    "CONFLICT_CHECK_REQUIRED",
+    "POLICY_CHECK_REQUIRED",
+    "LOCK_CANDIDATE_READY",
+    "LOCKED",
+    "SUPERSEDED"
+  ],
+  "lock_preconditions": [
+    "EXACT_INVENTORY_COMPLETE",
+    "DUPLICATE_CANONICAL_NAMES_RESOLVED",
+    "REQUIREMENT_ORPHAN_ZERO",
+    "P0_DESIGN_SEMANTIC_CONFLICT_ZERO",
+    "OPEN_DECISIONS_EXPLICITLY_MODELED",
+    "MASTER_README_INDEX_MATCH_INVENTORY",
+    "SUPERSESSION_RELATION_EXPLICIT"
+  ],
+  "current_authority_ceiling": "LOCK_CANDIDATE_READY_ONLY",
+  "notes": "This policy does not itself lock the design baseline. A separate signed lock receipt is required."
+}
