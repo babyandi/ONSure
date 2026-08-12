@@ -1,0 +1,32 @@
+{
+  "contract_type": "FIFTEEN_STEP_DESIGN_LOCK_CLOSURE_CANDIDATE_V1",
+  "authority": "DESIGN_ONLY_NONFINAL",
+  "task_count": 15,
+  "tasks": [
+    {"id":1,"name":"global_requirement_universe_materialization","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":2,"name":"requirement_semantic_normalization","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":3,"name":"applicability_population","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":4,"name":"global_trace_registry","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":5,"name":"repository_wide_orphan_scan","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":6,"name":"cross_design_contradiction_scan","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":7,"name":"exact_design_artifact_inventory","design_state":"DESIGNED","execution_state":"PARTIAL_GIT_BLOB_INVENTORY_ONLY"},
+    {"id":8,"name":"design_baseline_manifest_regeneration","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":9,"name":"design_lock_check","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":10,"name":"design_baseline_candidate_decision","design_state":"DESIGNED","execution_state":"EVALUATED_HOLD_MATERIALIZATION_INCOMPLETE"},
+    {"id":11,"name":"design_to_implementation_inventory_compare","design_state":"DESIGNED","execution_state":"INVENTORY_LEVEL_DONE_SEMANTIC_REVIEW_DEFERRED"},
+    {"id":12,"name":"implementation_missing_against_design","design_state":"DESIGNED","execution_state":"PARTIAL_DESIGNED_NOT_MATERIALIZED_CLASSIFICATION"},
+    {"id":13,"name":"design_orphan_reverse_scan","design_state":"DESIGNED","execution_state":"NOT_RUN"},
+    {"id":14,"name":"claude_semantic_change_intake","design_state":"DESIGNED","execution_state":"QUEUE_NOT_YET_MATERIALIZED"},
+    {"id":15,"name":"final_design_baseline_candidate","design_state":"DESIGNED","execution_state":"DESIGN_BASELINE_CANDIDATE_HOLD"}
+  ],
+  "current_decision": "DESIGN_BASELINE_CANDIDATE_HOLD",
+  "hold_reasons": [
+    "GLOBAL_REQUIREMENT_EXACT_POPULATION_NOT_MATERIALIZED",
+    "GLOBAL_TRACE_SCAN_NOT_RUN",
+    "REPOSITORY_WIDE_ORPHAN_SCAN_NOT_RUN",
+    "CONTENT_SHA256_ARTIFACT_INVENTORY_NOT_MATERIALIZED",
+    "DESIGN_LOCK_CHECK_NOT_RUN",
+    "FULL_IMPLEMENTATION_REVERSE_SCAN_NOT_RUN"
+  ],
+  "final_authority": false
+}
