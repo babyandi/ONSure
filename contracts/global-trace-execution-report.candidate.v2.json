@@ -1,0 +1,17 @@
+{
+  "contract_type": "ONSURE_GLOBAL_TRACE_EXECUTION_REPORT_CANDIDATE_V2",
+  "status": "EXPLICIT_LAYER_PARTIAL_GLOBAL_NONFINAL",
+  "explicit_candidate_requirement_count": 78,
+  "traced_explicit_candidate_count": 73,
+  "untraced_explicit_candidate_ids": [
+    "FR-META-061",
+    "FR-META-062",
+    "FR-FRESH-001",
+    "FR-FRESH-002",
+    "FR-FRESH-003"
+  ],
+  "explicit_trace_coverage_percent": 93.5897435897,
+  "global_trace_complete": false,
+  "non_id_requirement_population_materialized": false,
+  "lock_effect": "HOLD"
+}
