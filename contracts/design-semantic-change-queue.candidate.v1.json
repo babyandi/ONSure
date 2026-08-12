@@ -1,0 +1,29 @@
+{
+  "contract_type": "DESIGN_SEMANTIC_CHANGE_QUEUE_CANDIDATE_V1",
+  "authority": "DESIGN_ONLY_NONFINAL",
+  "queue_state": "OPEN_FOR_INTAKE",
+  "allowed_change_types": [
+    "NEW_REQUIREMENT",
+    "DESIGN_AMBIGUITY",
+    "CONTRACT_GAP",
+    "STATE_SEMANTIC_CONFLICT",
+    "AUTHORITY_GAP",
+    "POLICY_VALUE_REQUIRED",
+    "MIGRATION_EXCEPTION",
+    "IMPLEMENTATION_CONSTRAINT",
+    "SECURITY_BOUNDARY_CHANGE",
+    "NEW_FAILURE_MODE"
+  ],
+  "allowed_dispositions": [
+    "ACCEPT_DESIGN_CHANGE",
+    "IMPLEMENTATION_MUST_CONFORM_TO_DESIGN",
+    "NEEDS_NEW_OPEN_DECISION",
+    "DEFERRED_NON_BLOCKING",
+    "REJECTED",
+    "HOLD_FOR_INDEPENDENT_REVIEW"
+  ],
+  "items": [],
+  "unresolved_p0_count": null,
+  "note": "Empty queue means no intake item has been materialized yet; it does not prove zero semantic drift.",
+  "final_authority": false
+}
