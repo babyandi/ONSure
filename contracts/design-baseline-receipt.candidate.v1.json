@@ -1,0 +1,33 @@
+{
+  "contract_type": "ONSURE_DESIGN_BASELINE_RECEIPT_CANDIDATE_V1",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "manifest_ref": "contracts/design-baseline-manifest.candidate.v1.json",
+  "trace_registry_ref": "contracts/design-trace-registry.candidate.v1.json",
+  "orphan_report_ref": "contracts/design-orphan-report.candidate.v1.json",
+  "conflict_report_ref": "contracts/design-conflict-report.candidate.v1.json",
+  "checks": {
+    "fr_meta_001_060_rows_present": true,
+    "requirement_orphan_count_candidate": 0,
+    "unresolved_p0_design_semantic_conflict_count_candidate": 0,
+    "master_responsibility_defined": true,
+    "safe_default_defined": true,
+    "cross_contract_rules_defined": true,
+    "state_transition_matrix_defined": true,
+    "operation_event_receipt_authority_matrix_defined": true,
+    "policy_industry_tier_defined": true,
+    "composition_evidence_recovery_certificate_defined": true,
+    "external_plugin_ai_meta_assurance_defined": true,
+    "data_api_threat_observability_defined": true
+  },
+  "checks_not_proven": [
+    "exact repository-wide contract orphan inventory against implemented contracts",
+    "exact operation orphan inventory against active workflow registry",
+    "automated file digest inventory for every design document",
+    "runtime compile/test/fixture/independent verification"
+  ],
+  "decision": "DESIGN_BASELINE_CANDIDATE_READY_NOT_LOCKED",
+  "positive_product_assurance_allowed": false,
+  "final_lock_authority_created": false,
+  "production_go_authority_created": false,
+  "commercial_go_authority_created": false
+}

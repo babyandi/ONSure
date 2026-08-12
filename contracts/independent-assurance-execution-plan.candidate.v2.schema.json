@@ -1,0 +1,30 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/independent-assurance-execution-plan.candidate.v2.schema.json",
+  "title":"ONSure Independent Assurance Execution Plan Candidate v2",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","plan_id","lane","target","epochs","principal","independence_profile_sha256","execution_identity","blind_context","effect_policy","retry_policy","expected_evidence","authority","created_at","plan_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_INDEPENDENT_ASSURANCE_EXECUTION_PLAN_V2_CANDIDATE"},
+    "plan_id":{"type":"string","minLength":1},
+    "lane":{"enum":["OTESTER","OAUDIT","HUMAN_FACT_VALIDATION"]},
+    "target":{"type":"object","additionalProperties":false,"required":["target_id","source_tree_sha256","artifact_sha256"],"properties":{"target_id":{"type":"string","minLength":1},"source_tree_sha256":{"$ref":"#/$defs/sha256"},"artifact_sha256":{"$ref":"#/$defs/sha256"}}},
+    "epochs":{"type":"object","additionalProperties":false,"required":["scope","requirement","denominator","policy","oracle","validator_qualification","authority"],"properties":{"scope":{"type":"string","minLength":1},"requirement":{"type":"string","minLength":1},"denominator":{"type":"string","minLength":1},"policy":{"type":"string","minLength":1},"oracle":{"type":"string","minLength":1},"validator_qualification":{"type":"string","minLength":1},"authority":{"type":"string","minLength":1}}},
+    "principal":{"type":"object","additionalProperties":false,"required":["principal_id","principal_profile_sha256","credential_id","credential_admin_owner_id","qualification_profile_sha256"],"properties":{"principal_id":{"type":"string","minLength":1},"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"credential_id":{"type":"string","minLength":1},"credential_admin_owner_id":{"type":"string","minLength":1},"qualification_profile_sha256":{"$ref":"#/$defs/sha256"}}},
+    "independence_profile_sha256":{"$ref":"#/$defs/sha256"},
+    "execution_identity":{"type":"object","additionalProperties":false,"required":["fixture_set_sha256","oracle_set_sha256","validator_set_sha256","environment_sha256","toolchain_sha256"],"properties":{"fixture_set_sha256":{"$ref":"#/$defs/sha256"},"oracle_set_sha256":{"$ref":"#/$defs/sha256"},"validator_set_sha256":{"$ref":"#/$defs/sha256"},"environment_sha256":{"$ref":"#/$defs/sha256"},"toolchain_sha256":{"$ref":"#/$defs/sha256"}}},
+    "blind_context":{"type":"object","additionalProperties":false,"required":["required","manifest_sha256"],"properties":{"required":{"type":"boolean"},"manifest_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"}}},
+    "effect_policy":{"enum":["NO_EFFECT","SIMULATED","SANDBOXED","SHADOW","REAL_EFFECT_AUTHORIZED"]},
+    "retry_policy":{"type":"object","additionalProperties":false,"required":["max_attempts","selection_rule","preserve_all_attempts"],"properties":{"max_attempts":{"type":"integer","minimum":1,"maximum":100},"selection_rule":{"enum":["ALL_ATTEMPTS_MATERIAL","NO_CHERRY_PICKING"]},"preserve_all_attempts":{"const":true}}},
+    "expected_evidence":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "authority":{"type":"object","additionalProperties":false,"required":["purpose","profile_sha256","authority_epoch"],"properties":{"purpose":{"const":"INDEPENDENT_ASSURANCE_EXECUTION"},"profile_sha256":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1}}},
+    "created_at":{"type":"string","format":"date-time"},
+    "plan_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "allOf":[
+    {"if":{"properties":{"blind_context":{"properties":{"required":{"const":true}}}}},"then":{"properties":{"blind_context":{"properties":{"manifest_sha256":{"$ref":"#/$defs/sha256"}}}}}},
+    {"if":{"properties":{"lane":{"const":"HUMAN_FACT_VALIDATION"}}},"then":{"properties":{"effect_policy":{"const":"NO_EFFECT"}}}}
+  ],
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

@@ -1,0 +1,44 @@
+{
+  "type": "ONSURE_PRODUCT_DESIGN_SCOPE_CLOSURE_CANDIDATE_V1",
+  "status": "PRODUCT_DESIGN_SCOPE_COMPLETE_CANDIDATE_NONFINAL",
+  "fresh_review": {
+    "independent_new_design_axes_found": 0,
+    "existing_owner_refinements_found": 3,
+    "refinements": [
+      {
+        "id": "FR-FRESH-001",
+        "name": "Rules of Engagement / Target Testing Authorization",
+        "owners": ["OPlanning", "AuthorityGrant", "SecurityExternalEffect"]
+      },
+      {
+        "id": "FR-FRESH-002",
+        "name": "Accessibility / Internationalization / Locale Integrity",
+        "owners": ["UIUX", "NFR", "ClaimLanguage"]
+      },
+      {
+        "id": "FR-FRESH-003",
+        "name": "Contract Termination / Tenant Offboarding Closure",
+        "owners": ["License", "SecurityPrivacyDataGovernance", "Delivery", "Authority"]
+      }
+    ]
+  },
+  "phase_boundary": {
+    "product_design": "COMPLETE_CANDIDATE",
+    "design_qa_baseline_lock": "PENDING_HOLD",
+    "implementation": "IN_PROGRESS_BY_CLAUDE",
+    "implementation_verification_independent_assurance": "PENDING"
+  },
+  "anti_recursion": {
+    "design_qa_is_not_product_design": true,
+    "implementation_review_is_not_product_design": true,
+    "generic_more_review_does_not_reopen_scope": true,
+    "reopen_only_via_change_queue_for_new_requirement_regulation_use_case_or_semantic_gap": true
+  },
+  "not_claimed": [
+    "DESIGN_BASELINE_LOCKED",
+    "IMPLEMENTED",
+    "QUALIFIED",
+    "PRODUCTION_READY",
+    "FINAL"
+  ]
+}

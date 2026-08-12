@@ -1,0 +1,39 @@
+{
+  "type": "ONSURE_PRODUCT_DESIGN_SCOPE_CLOSURE_RECONCILED_CANDIDATE_V2",
+  "status": "PRODUCT_DESIGN_SCOPE_COMPLETE_CANDIDATE_NONFINAL",
+  "fresh_review": {
+    "first_pass_new_independent_axes": [
+      "Safety/Hazard Assurance",
+      "Contestability/Appeal/Dispute Governance"
+    ],
+    "axes_integrated": true,
+    "rerun_additional_independent_axes_found": 0,
+    "existing_owner_refinements": [
+      "FR-FRESH-001 Rules of Engagement / Target Testing Authorization",
+      "FR-FRESH-002 Accessibility / Internationalization / Locale Integrity",
+      "FR-FRESH-003 Contract Termination / Tenant Offboarding Closure"
+    ]
+  },
+  "canonical_requirements_to_materialize": [
+    "FR-META-061",
+    "FR-META-062",
+    "FR-FRESH-001",
+    "FR-FRESH-002",
+    "FR-FRESH-003"
+  ],
+  "supersession": {
+    "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW.md": "VALID_HISTORY_FIRST_PASS",
+    "docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md": "ACTIVE_AXIS_DESIGN",
+    "docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md": "ACTIVE_SAFETY_DEEP_DIVE",
+    "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md": "SUPERSEDED_CONCLUSION",
+    "docs/master/semantic-assurance/127_PRODUCT_DESIGN_TO_DESIGN_QA_PHASE_HANDOFF.md": "SUPERSEDED_PHASE_AUTHORITY",
+    "docs/master/semantic-assurance/128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md": "CURRENT_PHASE_AUTHORITY"
+  },
+  "phase_boundary": {
+    "product_design": "COMPLETE_CANDIDATE",
+    "design_qa_baseline_lock": "HOLD_PENDING",
+    "implementation": "IN_PROGRESS_BY_CLAUDE",
+    "implementation_verification": "PENDING"
+  },
+  "not_claimed": ["DESIGN_BASELINE_LOCKED", "IMPLEMENTED", "QUALIFIED", "PRODUCTION_READY", "FINAL"]
+}

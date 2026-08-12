@@ -1,0 +1,29 @@
+{
+  "contract_type": "ONSURE_DESIGN_ORPHAN_REPORT_CANDIDATE_V1",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "scope": {
+    "requirements": "FR-META-001..060",
+    "design_docs": "docs/master + docs/master/semantic-assurance through logical design id 80",
+    "runtime_implementation": "OUT_OF_SCOPE_FOR_THIS_REPORT"
+  },
+  "requirement_orphans": [],
+  "requirement_orphan_count": 0,
+  "trace_registry": "contracts/design-trace-registry.candidate.v1.json",
+  "contract_orphan_assessment": {
+    "state": "DESIGN_OWNER_REFERENCES_PRESENT_NOT_RUNTIME_INVENTORIED",
+    "note": "contract_owner entries are design ownership targets; actual JSON Schema/registry materialization remains Claude development work"
+  },
+  "operation_orphan_assessment": {
+    "state": "MAPPED_BY_DESIGN_MATRIX_NOT_RUNTIME_INVENTORIED",
+    "design_ref": "docs/master/semantic-assurance/74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md"
+  },
+  "claim_orphan_assessment": {
+    "state": "DESIGN_CEILING_AND_LANGUAGE_RULES_PRESENT",
+    "design_refs": [
+      "docs/master/semantic-assurance/69_CUSTOMER_DELIVERY_REPORT_AND_CLAIM_LANGUAGE_GOVERNANCE.md",
+      "docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md"
+    ]
+  },
+  "positive_promotion_allowed": false,
+  "decision": "DESIGN_REQUIREMENT_ORPHAN_ZERO_CANDIDATE_RUNTIME_ORPHAN_CHECK_PENDING"
+}

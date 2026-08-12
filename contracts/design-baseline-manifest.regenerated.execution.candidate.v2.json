@@ -1,0 +1,45 @@
+{
+  "contract_type": "ONSURE_DESIGN_BASELINE_MANIFEST_REGENERATED_EXECUTION_CANDIDATE_V2",
+  "status": "INCOMPLETE_HOLD_NONFINAL",
+  "source_commit": "3c7cce99d9585ac22bbded6c6ec2784b30a1e104",
+  "product_design_scope": "PRODUCT_DESIGN_SCOPE_COMPLETE_CANDIDATE",
+  "requirement_universe": {
+    "explicit_candidate_count": 78,
+    "global_count": null,
+    "population_digest": null,
+    "authoritative": false
+  },
+  "applicability": {
+    "evaluated_explicit_candidate_count": 78,
+    "unknown_pending_authoritative_context": 78,
+    "population_digest": null,
+    "authoritative": false
+  },
+  "trace": {
+    "traced_explicit_candidate_count": 73,
+    "explicit_candidate_count": 78,
+    "global_population_digest": null,
+    "global_complete": false
+  },
+  "qa_scan": {
+    "repository_wide_orphan_zero_proven": false,
+    "unresolved_p0_contradiction_zero_proven": false,
+    "physical_numbering_collisions": [21,126,127]
+  },
+  "artifact_inventory": {
+    "git_identity_available": true,
+    "content_sha256_manifest_complete": false,
+    "population_digest": null
+  },
+  "registry_digests": {
+    "contract": null,
+    "operation": null,
+    "event": null,
+    "receipt": null,
+    "policy": null,
+    "trace": null,
+    "applicability": null
+  },
+  "baseline_reconstructable": false,
+  "lock_candidate": false
+}

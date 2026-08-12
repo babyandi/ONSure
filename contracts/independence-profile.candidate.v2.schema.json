@@ -1,0 +1,32 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/independence-profile.candidate.v2.schema.json",
+  "title":"ONSure Independence Profile Candidate v2",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","profile_id","subject_id","producer_principal_id","verifier_principal_id","producer_admin_owner_id","verifier_admin_owner_id","principal_independence","credential_admin_independence","implementation_independence","oracle_independence","discovery_independence","knowledge_independence","shared_inputs_digest","assessment_receipt_sha256","state","profile_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_INDEPENDENCE_PROFILE_V2_CANDIDATE"},
+    "profile_id":{"type":"string","minLength":1},
+    "subject_id":{"type":"string","minLength":1},
+    "producer_principal_id":{"type":"string","minLength":1},
+    "verifier_principal_id":{"type":"string","minLength":1},
+    "producer_admin_owner_id":{"type":"string","minLength":1},
+    "verifier_admin_owner_id":{"type":"string","minLength":1},
+    "principal_independence":{"type":"boolean"},
+    "credential_admin_independence":{"type":"boolean"},
+    "implementation_independence":{"type":"boolean"},
+    "oracle_independence":{"type":"boolean"},
+    "discovery_independence":{"type":"boolean"},
+    "knowledge_independence":{"type":"boolean"},
+    "shared_inputs_digest":{"$ref":"#/$defs/sha256"},
+    "assessment_receipt_sha256":{"$ref":"#/$defs/sha256"},
+    "state":{"enum":["SELF_VALIDATION","PARTIAL_INDEPENDENCE","INDEPENDENT","COMPROMISED"]},
+    "profile_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "allOf":[{
+    "if":{"properties":{"state":{"const":"INDEPENDENT"}}},
+    "then":{"properties":{"principal_independence":{"const":true},"credential_admin_independence":{"const":true},"implementation_independence":{"const":true},"oracle_independence":{"const":true},"discovery_independence":{"const":true},"knowledge_independence":{"const":true}}}
+  }],
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

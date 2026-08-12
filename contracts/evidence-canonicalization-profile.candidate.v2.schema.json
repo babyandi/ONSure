@@ -1,0 +1,25 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/evidence-canonicalization-profile.candidate.v2.schema.json",
+  "title":"ONSure Evidence Canonicalization Profile Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","profile_id","profile_version","artifact_class","encoding","unicode_normalization","key_order","number_normalization","null_semantics","timestamp_profile","self_hash_exclusions","signature_payload_rules","algorithm","created_at","profile_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_EVIDENCE_CANONICALIZATION_PROFILE_V2_CANDIDATE"},
+    "profile_id":{"type":"string","minLength":1},
+    "profile_version":{"type":"string","minLength":1},
+    "artifact_class":{"enum":["JSON","TEXT","BINARY","ARCHIVE","DIRECTORY_MANIFEST","DATABASE_SNAPSHOT"]},
+    "encoding":{"enum":["UTF-8","BINARY_EXACT","ENGINE_SPECIFIC"]},
+    "unicode_normalization":{"enum":["NFC","NONE"]},
+    "key_order":{"enum":["LEXICOGRAPHIC","NOT_APPLICABLE"]},
+    "number_normalization":{"enum":["CANONICAL_JSON_NUMBER","BYTE_EXACT","NOT_APPLICABLE"]},
+    "null_semantics":{"enum":["NULL_DISTINCT_FROM_MISSING","BYTE_EXACT","NOT_APPLICABLE"]},
+    "timestamp_profile":{"enum":["RFC3339_CANONICAL","BYTE_EXACT","NOT_APPLICABLE"]},
+    "self_hash_exclusions":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "signature_payload_rules":{"type":"object","additionalProperties":false,"required":["include_contract_version","include_profile_id","include_profile_version","exclude_signature_field"],"properties":{"include_contract_version":{"const":true},"include_profile_id":{"const":true},"include_profile_version":{"const":true},"exclude_signature_field":{"const":true}}},
+    "algorithm":{"type":"object","additionalProperties":false,"required":["digest","signature"],"properties":{"digest":{"const":"SHA-256"},"signature":{"enum":["Ed25519","NONE"]}}},
+    "created_at":{"type":"string","format":"date-time"},
+    "profile_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

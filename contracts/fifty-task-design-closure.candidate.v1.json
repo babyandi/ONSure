@@ -1,0 +1,36 @@
+{
+  "schema_version": "candidate.v1",
+  "authority": "DESIGN_ONLY_NON_FINAL",
+  "task_count": 50,
+  "design_work_performed_count": 50,
+  "design_lock_executed": false,
+  "global_requirement_universe_materialized": false,
+  "repository_wide_orphan_scan_executed": false,
+  "exact_content_sha256_inventory_generated": false,
+  "machine_contract_implementation_complete": false,
+  "current_state": "FIFTY_TASK_DESIGN_CLOSURE_COMPLETE_GLOBAL_DENOMINATOR_AND_LOCK_EXECUTION_PENDING_NONFINAL",
+  "task_groups": [
+    {"range":"1-5","artifact":"docs/master/semantic-assurance/92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md"},
+    {"range":"6-10","artifact":"docs/master/semantic-assurance/93_REQUIREMENT_CONFLICT_BASELINE_AND_CHANGE_CONTROL.md"},
+    {"range":"11-16","artifact":"docs/master/semantic-assurance/94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md"},
+    {"range":"17-21","artifact":"docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md"},
+    {"range":"22-27","artifact":"docs/master/semantic-assurance/96_DEPLOYMENT_CERTIFICATE_AUTHORITY_POLICY_INDUSTRY_TIER_FINALIZATION.md"},
+    {"range":"28-30","artifact":"docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md"},
+    {"range":"31-37","artifact":"docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md"},
+    {"range":"38-44","artifact":"docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md"},
+    {"range":"45-50","artifact":"docs/master/semantic-assurance/100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md"}
+  ],
+  "master_matrix": "docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md",
+  "known_execution_blockers": [
+    "GLOBAL_REQUIREMENT_UNIVERSE_NOT_YET_MATERIALIZED",
+    "REPOSITORY_WIDE_ORPHAN_SCAN_NOT_RUN",
+    "EXACT_CONTENT_SHA256_DESIGN_INVENTORY_NOT_GENERATED",
+    "DESIGN_LOCK_CHECK_NOT_RUN",
+    "MACHINE_CONTRACT_IMPLEMENTATION_PENDING"
+  ],
+  "anti_false_completion": {
+    "design_closed_does_not_mean_implemented": true,
+    "design_work_performed_does_not_mean_design_locked": true,
+    "candidate_zero_orphans_does_not_mean_global_zero_orphans": true
+  }
+}

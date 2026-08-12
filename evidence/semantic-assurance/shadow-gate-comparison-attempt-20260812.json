@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_SHADOW_GATE_COMPARISON_ATTEMPT_V1",
+  "comparison_id": "SHADOW-20260812-001",
+  "target_id": "ONSURE_SELF",
+  "branch": "codex/meta-validation-doc-refresh",
+  "legacy_gate_execution_state": "NOT_RUN",
+  "v2_gate_execution_state": "NOT_RUN",
+  "comparison_state": "NOT_RUN",
+  "reason": "NO_EXECUTED_LEGACY_AND_V2_GATE_RECEIPT_SET_AVAILABLE_IN_CURRENT_ASSISTANT_RUNTIME",
+  "legacy_pass_assumed": false,
+  "v2_pass_assumed": false,
+  "decision": "NOT_RUN",
+  "final_claim_allowed": false,
+  "recorded_at": "2026-08-12T00:25:00+09:00"
+}

@@ -1,0 +1,11 @@
+{
+  "contract_type":"ONSURE_DESIGN_CONTRADICTION_SCAN_REPORT_EXECUTION_CANDIDATE_V1",
+  "status":"PARTIAL_MANUAL_INVENTORY_NONFINAL",
+  "known_conflicts":[
+    {"type":"CANONICAL_NUMBERING_COLLISION","severity":"P1_DESIGN_GOVERNANCE","items":["docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md","docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md"],"resolved":false}
+  ],
+  "unresolved_p0_semantic_conflict_count":null,
+  "unresolved_p0_semantic_conflict_zero_proven":false,
+  "full_cross_design_scanner_executed":false,
+  "lock_effect":"HOLD"
+}

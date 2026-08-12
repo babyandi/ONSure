@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/assurance-population-denominator.candidate.v2.schema.json",
+  "title":"ONSure Assurance Population Denominator Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","population_id","population_type","target_id","epoch","items","population_digest","counts","authority","created_at","population_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_ASSURANCE_POPULATION_DENOMINATOR_V2_CANDIDATE"},"population_id":{"type":"string","minLength":1},"population_type":{"enum":["VALIDATION_CASE","FINAL_ACCEPTANCE_SOURCE","PACKAGE","DOCUMENT","OMISSION_MUTATION","INDEPENDENT_RUN"]},"target_id":{"type":"string","minLength":1},"epoch":{"type":"string","minLength":1},
+    "items":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["item_id","item_digest","source_class","criticality","disposition"],"properties":{"item_id":{"type":"string","minLength":1},"item_digest":{"$ref":"#/$defs/sha256"},"source_class":{"type":"string","minLength":1},"criticality":{"enum":["CRITICAL","HIGH","MEDIUM","LOW","INFO"]},"disposition":{"enum":["REQUIRED","NOT_APPLICABLE_JUSTIFIED","EXCLUDED_WITH_AUTHORITY","SUPERSEDED_LEGACY"]},"disposition_receipt_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"}}}},
+    "population_digest":{"$ref":"#/$defs/sha256"},"counts":{"type":"object","additionalProperties":false,"required":["total","required","not_applicable","excluded","legacy"],"properties":{"total":{"type":"integer","minimum":1},"required":{"type":"integer","minimum":0},"not_applicable":{"type":"integer","minimum":0},"excluded":{"type":"integer","minimum":0},"legacy":{"type":"integer","minimum":0}}},
+    "authority":{"type":"object","additionalProperties":false,"required":["principal_profile_sha256","source_inventory_digest","authority_epoch"],"properties":{"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"source_inventory_digest":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1}}},"supersedes_population_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"},"created_at":{"type":"string","format":"date-time"},"population_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

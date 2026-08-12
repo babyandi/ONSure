@@ -1,0 +1,47 @@
+{
+  "contract_type": "ONSURE_DESIGN_BASELINE_MANIFEST_CANDIDATE_V1",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "baseline_name": "ONSURE_DESIGN_BASELINE_30_TASK_CLOSURE_CANDIDATE",
+  "master_documents": [
+    "docs/master/00_ONSURE_MASTER_DESIGN_SET.md",
+    "docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md",
+    "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+    "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md",
+    "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md",
+    "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
+    "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
+    "docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md",
+    "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md",
+    "docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md"
+  ],
+  "semantic_assurance_logical_range": "00..80 with historical missing numeric identifiers and duplicate physical prefix 21 preserved",
+  "closure_documents": [
+    "docs/master/semantic-assurance/70_THIRTY_TASK_DESIGN_CLOSURE_MASTER_PLAN.md",
+    "docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md",
+    "docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md",
+    "docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md",
+    "docs/master/semantic-assurance/74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md",
+    "docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md",
+    "docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md",
+    "docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md",
+    "docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md",
+    "docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md",
+    "docs/master/semantic-assurance/80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md"
+  ],
+  "machine_design_artifacts": [
+    "contracts/design-trace-registry.candidate.v1.json",
+    "contracts/design-orphan-report.candidate.v1.json",
+    "contracts/design-conflict-report.candidate.v1.json"
+  ],
+  "requirement_scope": "FR-META-001..060",
+  "requirement_trace_rows": 60,
+  "requirement_orphan_count_candidate": 0,
+  "unresolved_p0_design_semantic_conflict_count_candidate": 0,
+  "design_closure_estimate": "97-98% candidate",
+  "implementation_state": "SEPARATE_NOT_PROVEN_BY_THIS_MANIFEST",
+  "active_contract_state": "NOT_ACTIVATED_BY_THIS_MANIFEST",
+  "final_authority_created": false,
+  "production_authority_created": false,
+  "commercial_authority_created": false,
+  "candidate_decision": "READY_FOR_DESIGN_BASELINE_LOCK_CHECK"
+}

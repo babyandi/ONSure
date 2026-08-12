@@ -1,0 +1,20 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/execution-identity.candidate.v2.schema.json",
+  "title":"ONSure Execution Identity Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","execution_id","target","fixture","command","oracle","validator","environment","policy","authority","attempt","identity_digest","created_at"],
+  "properties":{
+    "contract":{"const":"ONSURE_EXECUTION_IDENTITY_V2_CANDIDATE"},
+    "execution_id":{"type":"string","minLength":1},
+    "target":{"$ref":"#/$defs/idDigest"},"fixture":{"$ref":"#/$defs/idDigest"},
+    "command":{"type":"object","additionalProperties":false,"required":["executable","executable_sha256","script_or_entry","script_or_entry_sha256","working_directory_digest"],"properties":{"executable":{"type":"string","minLength":1},"executable_sha256":{"$ref":"#/$defs/sha256"},"script_or_entry":{"type":"string","minLength":1},"script_or_entry_sha256":{"$ref":"#/$defs/sha256"},"working_directory_digest":{"$ref":"#/$defs/sha256"}}},
+    "oracle":{"$ref":"#/$defs/idDigest"},"validator":{"$ref":"#/$defs/idDigest"},
+    "environment":{"type":"object","additionalProperties":false,"required":["environment_digest","toolchain_digest","sandbox_profile_digest","network_policy_digest"],"properties":{"environment_digest":{"$ref":"#/$defs/sha256"},"toolchain_digest":{"$ref":"#/$defs/sha256"},"sandbox_profile_digest":{"$ref":"#/$defs/sha256"},"network_policy_digest":{"$ref":"#/$defs/sha256"}}},
+    "policy":{"type":"object","additionalProperties":false,"required":["scope_epoch","requirement_epoch","denominator_epoch","policy_epoch"],"properties":{"scope_epoch":{"type":"string","minLength":1},"requirement_epoch":{"type":"string","minLength":1},"denominator_epoch":{"type":"string","minLength":1},"policy_epoch":{"type":"string","minLength":1}}},
+    "authority":{"type":"object","additionalProperties":false,"required":["principal_profile_sha256","authority_epoch","purpose"],"properties":{"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1},"purpose":{"type":"string","minLength":1}}},
+    "attempt":{"type":"object","additionalProperties":false,"required":["attempt_id","attempt_number","previous_attempt_sha256","retry_reason"],"properties":{"attempt_id":{"type":"string","minLength":1},"attempt_number":{"type":"integer","minimum":1},"previous_attempt_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"},"retry_reason":{"type":["string","null"]}}},
+    "identity_digest":{"$ref":"#/$defs/sha256"},"created_at":{"type":"string","format":"date-time"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"idDigest":{"type":"object","additionalProperties":false,"required":["id","sha256"],"properties":{"id":{"type":"string","minLength":1},"sha256":{"$ref":"#/$defs/sha256"}}}}
+}

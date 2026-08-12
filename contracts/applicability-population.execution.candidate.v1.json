@@ -1,0 +1,10 @@
+{
+  "contract_type":"ONSURE_APPLICABILITY_POPULATION_EXECUTION_CANDIDATE_V1",
+  "status":"EXECUTED_PARTIAL_NONFINAL",
+  "source_requirement_snapshot":"contracts/global-requirement-universe-snapshot.execution.candidate.v1.json",
+  "evaluated_explicit_requirement_count":73,
+  "counts":{"APPLICABLE":0,"NOT_APPLICABLE":0,"CONDITIONAL":0,"UNKNOWN_PENDING_CONTEXT":73},
+  "authoritative_population_digest":null,
+  "critical_unknown_zero":false,
+  "lock_effect":"HOLD"
+}

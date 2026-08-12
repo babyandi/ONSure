@@ -1,0 +1,25 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/validator-build-manifest.candidate.v2.schema.json",
+  "title":"ONSure Validator Build Manifest Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","validator_id","validator_version","source_tree_sha256","build_script_sha256","build_config_sha256","toolchain","dependency_manifest_sha256","sbom_sha256","build_environment_sha256","output_artifact_set_sha256","signing","tcb_manifest_sha256","built_at","manifest_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_VALIDATOR_BUILD_MANIFEST_V2_CANDIDATE"},
+    "validator_id":{"type":"string","minLength":1},
+    "validator_version":{"type":"string","minLength":1},
+    "source_tree_sha256":{"$ref":"#/$defs/sha256"},
+    "build_script_sha256":{"$ref":"#/$defs/sha256"},
+    "build_config_sha256":{"$ref":"#/$defs/sha256"},
+    "toolchain":{"type":"object","additionalProperties":false,"required":["runtime","compiler","toolchain_sha256"],"properties":{"runtime":{"type":"string","minLength":1},"compiler":{"type":"string","minLength":1},"toolchain_sha256":{"$ref":"#/$defs/sha256"}}},
+    "dependency_manifest_sha256":{"$ref":"#/$defs/sha256"},
+    "sbom_sha256":{"$ref":"#/$defs/sha256"},
+    "build_environment_sha256":{"$ref":"#/$defs/sha256"},
+    "output_artifact_set_sha256":{"$ref":"#/$defs/sha256"},
+    "signing":{"type":"object","additionalProperties":false,"required":["key_id","signer_profile_sha256","algorithm","signature"],"properties":{"key_id":{"type":"string","minLength":1},"signer_profile_sha256":{"$ref":"#/$defs/sha256"},"algorithm":{"const":"Ed25519"},"signature":{"type":"string","minLength":32}}},
+    "tcb_manifest_sha256":{"$ref":"#/$defs/sha256"},
+    "built_at":{"type":"string","format":"date-time"},
+    "manifest_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

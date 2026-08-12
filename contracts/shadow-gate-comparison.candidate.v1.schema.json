@@ -1,0 +1,29 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/shadow-gate-comparison.candidate.v1.schema.json",
+  "title":"ONSure Shadow Gate Comparison Candidate v1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","comparison_id","target_id","source_tree_sha256","legacy_gate","v2_gate","disagreement","disagreement_reasons","missing_v2_evidence","decision","compared_at","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_SHADOW_GATE_COMPARISON_V1_CANDIDATE"},
+    "comparison_id":{"type":"string","minLength":1},
+    "target_id":{"type":"string","minLength":1},
+    "source_tree_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "legacy_gate":{"$ref":"#/$defs/gate"},
+    "v2_gate":{"$ref":"#/$defs/gate"},
+    "disagreement":{"type":"boolean"},
+    "disagreement_reasons":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "missing_v2_evidence":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "decision":{"enum":["AGREE_NONFINAL","DISAGREEMENT_HOLD","NOT_RUN","BLOCKED"]},
+    "compared_at":{"type":"string","format":"date-time"},
+    "final_claim_allowed":{"const":false}
+  },
+  "allOf":[
+    {"if":{"properties":{"disagreement":{"const":true}}},"then":{"properties":{"decision":{"const":"DISAGREEMENT_HOLD"}},"required":["disagreement_reasons"]}},
+    {"if":{"properties":{"decision":{"const":"AGREE_NONFINAL"}}},"then":{"properties":{"disagreement":{"const":false}}}}
+  ],
+  "$defs":{
+    "gate":{"type":"object","additionalProperties":false,"required":["decision","receipt_sha256","assurance_class"],"properties":{"decision":{"enum":["PASS","FAIL","BLOCKED","HOLD","INCONCLUSIVE","NOT_RUN"]},"receipt_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"},"assurance_class":{"type":"string","minLength":1}}}
+  }
+}

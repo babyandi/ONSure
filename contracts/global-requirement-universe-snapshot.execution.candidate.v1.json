@@ -1,0 +1,14 @@
+{
+  "contract_type":"ONSURE_GLOBAL_REQUIREMENT_UNIVERSE_EXECUTION_CANDIDATE_V1",
+  "status":"EXECUTED_PARTIAL_NONFINAL",
+  "source_commit":"abe122ef9438f41e8b074f03b8017b6d30cbc389",
+  "explicit_populations":[
+    {"prefix":"FR-COM","first":1,"last":13,"count":13,"source":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"},
+    {"prefix":"FR-META","first":1,"last":60,"count":60,"source":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"}
+  ],
+  "explicit_requirement_count":73,
+  "global_requirement_count":null,
+  "global_population_digest":null,
+  "unmaterialized_classes":["NON_ID_PROGRAM_FUNCTION","ACCEPTANCE_CRITERION","NFR","ARCHITECTURE_INVARIANT","POLICY_REQUIREMENT","REGULATORY_REQUIREMENT"],
+  "global_denominator_authoritative":false
+}

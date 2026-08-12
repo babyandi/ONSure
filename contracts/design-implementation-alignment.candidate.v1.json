@@ -1,0 +1,51 @@
+{
+  "contract_type": "DESIGN_IMPLEMENTATION_ALIGNMENT_CANDIDATE_V1",
+  "authority": "INVENTORY_ONLY_NONFINAL",
+  "source_scope": "PR_44_CHANGED_FILE_SET",
+  "semantic_code_review_performed": false,
+  "observed_runtime_sources": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2Reconstructor.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceShadowGateComparator.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java"
+  ],
+  "observed_test_sources": [
+    "scripts/validate-semantic-assurance-v2-contracts.py",
+    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java",
+    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowServiceTest.java"
+  ],
+  "materialized_candidate_domains": [
+    "STATUS_RECEIPT_AUTHORITY",
+    "DENOMINATOR_APPLICABILITY_EXECUTION_IDENTITY",
+    "VALIDATOR_AND_REVIEWER_QUALIFICATION",
+    "INDEPENDENT_ASSURANCE",
+    "FINAL_APPROVAL_LOCK",
+    "TARGET_DEPLOYMENT_RUNTIME_RECEIPT",
+    "REVOCATION_EVENT",
+    "ACTIVE_SELECTOR",
+    "REQUIREMENT_UNIVERSE_SNAPSHOT",
+    "CANONICALIZATION_PROFILE",
+    "VALIDATOR_BUILD_MANIFEST",
+    "WORKFLOW_OPERATION_REGISTRY",
+    "PRODUCT_PROCESS_LINEAGE"
+  ],
+  "designed_not_yet_independently_materialized_domains": [
+    "ASSURANCE_CURRENTNESS_SNAPSHOT",
+    "ASSURANCE_SUBJECT_DEPENDENCY_GRAPH",
+    "COMPOSITION_SNAPSHOT_RECEIPT",
+    "EVIDENCE_GRAPH_SNAPSHOT_HEAD",
+    "ASSURANCE_CERTIFICATE_VERIFICATION",
+    "AUTHORITY_GRANT_CANONICAL_CONTRACT",
+    "DISTRIBUTED_WORK_AND_AGGREGATION",
+    "PLUGIN_ADAPTER_QUALIFICATION_V2",
+    "AI_BEHAVIOR_POPULATION_AUTHORITY",
+    "ONSURE_RELEASE_QUALIFICATION_AUTHORITY",
+    "ASSURANCE_POLICY_PROFILE_ACTIVE_AUTHORITY",
+    "RECOVERY_QUALIFICATION_RECEIPT",
+    "GLOBAL_REQUIREMENT_EXACT_MATERIALIZATION",
+    "REPOSITORY_WIDE_DESIGN_LOCK_SCANNER"
+  ],
+  "full_reverse_design_orphan_scan_performed": false,
+  "final_authority": false
+}

@@ -1,0 +1,27 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/assurance-revocation-event.candidate.v2.schema.json",
+  "title":"ONSure Assurance Revocation Event Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","revocation_id","subject","reason","severity","triggering_evidence","authority","issued_at","effective_at","propagation_scope","revocation_epoch","signature","revocation_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_ASSURANCE_REVOCATION_EVENT_V2_CANDIDATE"},
+    "revocation_id":{"type":"string","minLength":1},
+    "subject":{"type":"object","additionalProperties":false,"required":["subject_type","subject_id","subject_sha256"],"properties":{"subject_type":{"enum":["RECEIPT","CERTIFICATE","QUALIFICATION","SELECTOR","DEPLOYMENT","AUTHORITY_PROFILE","VALIDATOR","TARGET"]},"subject_id":{"type":"string","minLength":1},"subject_sha256":{"$ref":"#/$defs/sha256"}}},
+    "reason":{"type":"string","minLength":1},
+    "severity":{"enum":["CRITICAL","HIGH","MEDIUM","LOW"]},
+    "triggering_evidence":{"type":"array","minItems":1,"uniqueItems":true,"items":{"$ref":"#/$defs/digestRef"}},
+    "authority":{"type":"object","additionalProperties":false,"required":["principal_profile_sha256","authority_epoch","purpose"],"properties":{"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1},"purpose":{"const":"ASSURANCE_REVOCATION"}}},
+    "issued_at":{"type":"string","format":"date-time"},
+    "effective_at":{"type":"string","format":"date-time"},
+    "propagation_scope":{"type":"object","additionalProperties":false,"required":["scope_type","scope_digest"],"properties":{"scope_type":{"enum":["GLOBAL","TENANT","TARGET","REGION","SUBJECT_GRAPH"]},"scope_digest":{"$ref":"#/$defs/sha256"}}},
+    "revocation_epoch":{"type":"string","minLength":1},
+    "supersedes_revocation_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"},
+    "signature":{"type":"object","additionalProperties":false,"required":["key_id","algorithm","signature"],"properties":{"key_id":{"type":"string","minLength":1},"algorithm":{"const":"Ed25519"},"signature":{"type":"string","minLength":32}}},
+    "revocation_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{
+    "sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "digestRef":{"type":"object","additionalProperties":false,"required":["id","sha256"],"properties":{"id":{"type":"string","minLength":1},"sha256":{"$ref":"#/$defs/sha256"}}}
+  }
+}

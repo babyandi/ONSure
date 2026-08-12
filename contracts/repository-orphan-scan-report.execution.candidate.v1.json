@@ -1,0 +1,15 @@
+{
+  "contract_type":"ONSURE_REPOSITORY_ORPHAN_SCAN_REPORT_EXECUTION_CANDIDATE_V1",
+  "status":"PARTIAL_INVENTORY_SCAN_NONFINAL",
+  "requirement_trace_orphan_candidates":13,
+  "requirement_trace_orphan_ids":["FR-COM-001","FR-COM-002","FR-COM-003","FR-COM-004","FR-COM-005","FR-COM-006","FR-COM-007","FR-COM-008","FR-COM-009","FR-COM-010","FR-COM-011","FR-COM-012","FR-COM-013"],
+  "contract_orphan_count":null,
+  "operation_orphan_count":null,
+  "event_orphan_count":null,
+  "test_orphan_count":null,
+  "policy_orphan_count":null,
+  "ui_claim_orphan_count":null,
+  "repository_wide_semantic_scan_executed":false,
+  "orphan_zero_proven":false,
+  "lock_effect":"HOLD"
+}

@@ -1,0 +1,21 @@
+{
+  "contract_type":"ONSURE_DESIGN_ARTIFACT_INVENTORY_EXECUTION_CANDIDATE_V1",
+  "status":"GIT_IDENTITY_EXECUTED_CONTENT_SHA256_PENDING_NONFINAL",
+  "frozen_commit":"abe122ef9438f41e8b074f03b8017b6d30cbc389",
+  "top_level_master_blobs":{
+    "00":"cfe0005290481eceaccc3ca5805da5f0ea3d2aea",
+    "01":"4813c8a1326fd96c3eb6a22ea44d60fe32f245f4",
+    "02":"0c363ed5f2a2bd8702fc517f3d0274792f58953b",
+    "03":"eacd4924dc89332acafa12f9d2a77272701743ab",
+    "04":"0abb83152e300f25e79025c7a91eb645e83421be",
+    "05":"4245de7222d5a91b7a3cd4f26fd0bf485c65dce0",
+    "06":"830a22e2ed44793f619cdef6c17362aae54004a1",
+    "07":"420264cfcf4b371188e575c89dcea32e1868d7e6",
+    "08":"3aa6b1acc6fb310e67a1d957d14bea2ce3d3b9b9",
+    "08A":"ede0dfc0578694a992e0803a18d64126a5ecbcf9"
+  },
+  "semantic_assurance_subtree_git_tree_sha":"44a290f0369ef6991fcaf363c452a1b24f2842a2",
+  "content_sha256_manifest":null,
+  "dual_digest_complete":false,
+  "lock_effect":"HOLD"
+}

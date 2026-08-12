@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/authority-principal-profile.candidate.v2.schema.json",
+  "title": "ONSure Authority Principal Profile Candidate v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "profile_id", "principal_id", "principal_type", "roles", "credential",
+    "scope", "validity", "registry", "separation_constraints", "qualification",
+    "created_at", "profile_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AUTHORITY_PRINCIPAL_PROFILE_V2_CANDIDATE"},
+    "profile_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "principal_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "principal_type": {"enum": ["HUMAN", "SERVICE", "EXTERNAL_ORGANIZATION", "AUTOMATION"]},
+    "roles": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"enum": ["REQUESTER", "APPROVER", "EXECUTOR", "VERIFIER", "AUDITOR", "OVERRIDER", "FINAL_AUTHORITY", "REVIEWER", "BUILDER", "IMPROVER"]}
+    },
+    "credential": {
+      "type": "object", "additionalProperties": false,
+      "required": ["key_id", "algorithm", "public_key_sha256", "administrative_owner_id", "credential_epoch"],
+      "properties": {
+        "key_id": {"type": "string", "minLength": 1},
+        "algorithm": {"const": "Ed25519"},
+        "public_key_sha256": {"$ref": "#/$defs/sha256"},
+        "administrative_owner_id": {"type": "string", "minLength": 1},
+        "credential_epoch": {"type": "string", "minLength": 1}
+      }
+    },
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["tenant_ids", "target_ids", "purposes", "operations", "resource_patterns"],
+      "properties": {
+        "tenant_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "target_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "purposes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "operations": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "resource_patterns": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "validity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["valid_from", "valid_until", "revoked", "authority_epoch"],
+      "properties": {
+        "valid_from": {"type": "string", "format": "date-time"},
+        "valid_until": {"type": "string", "format": "date-time"},
+        "revoked": {"type": "boolean"},
+        "revoked_at": {"type": ["string", "null"], "format": "date-time"},
+        "revocation_reason": {"type": ["string", "null"]},
+        "authority_epoch": {"type": "string", "minLength": 1}
+      }
+    },
+    "registry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["registry_id", "registry_epoch", "registry_sha256", "root_signer_profile_sha256", "registry_signature"],
+      "properties": {
+        "registry_id": {"type": "string", "minLength": 1},
+        "registry_epoch": {"type": "string", "minLength": 1},
+        "registry_sha256": {"$ref": "#/$defs/sha256"},
+        "root_signer_profile_sha256": {"$ref": "#/$defs/sha256"},
+        "registry_signature": {"type": "string", "minLength": 32}
+      }
+    },
+    "separation_constraints": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mutually_exclusive_roles", "prohibited_shared_principals", "prohibited_shared_admin_owners"],
+      "properties": {
+        "mutually_exclusive_roles": {
+          "type": "array", "items": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        },
+        "prohibited_shared_principals": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "prohibited_shared_admin_owners": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "qualification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["required", "state", "qualification_epoch"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "state": {"enum": ["NOT_REQUIRED", "NOT_QUALIFIED", "PARTIAL", "QUALIFIED_NONFINAL", "QUALIFIED", "STALE", "FAILED"]},
+        "qualification_epoch": {"type": "string", "minLength": 1},
+        "qualification_receipt_sha256": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})$"}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "profile_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"validity": {"properties": {"revoked": {"const": true}}}}},
+      "then": {"properties": {"validity": {"required": ["revoked_at", "revocation_reason"], "properties": {"revoked_at": {"type": "string"}, "revocation_reason": {"type": "string", "minLength": 1}}}}}
+    },
+    {
+      "if": {"properties": {"qualification": {"properties": {"required": {"const": true}}}}},
+      "then": {"not": {"properties": {"qualification": {"properties": {"state": {"const": "NOT_REQUIRED"}}}}}
+    }
+  ],
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

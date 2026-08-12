@@ -1,0 +1,21 @@
+{
+  "contract_type": "ONSURE_DESIGN_QA_ORPHAN_AND_CONTRADICTION_EXECUTION_CANDIDATE_V2",
+  "status": "PARTIAL_EXECUTION_NONFINAL",
+  "explicit_trace_orphan_candidates": [
+    "FR-META-061",
+    "FR-META-062",
+    "FR-FRESH-001",
+    "FR-FRESH-002",
+    "FR-FRESH-003"
+  ],
+  "repository_wide_semantic_orphan_scan_executed": false,
+  "repository_wide_orphan_zero_proven": false,
+  "known_numbering_collisions": [
+    {"prefix":"21","files":2,"severity":"P1_DESIGN_GOVERNANCE"},
+    {"prefix":"126","files":2,"severity":"P1_DESIGN_GOVERNANCE"},
+    {"prefix":"127","files":3,"severity":"P1_DESIGN_GOVERNANCE"}
+  ],
+  "semantic_supersession_authority": "docs/master/semantic-assurance/128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md",
+  "unresolved_p0_semantic_conflict_zero_proven": false,
+  "lock_effect": "HOLD"
+}

@@ -1,0 +1,14 @@
+{
+  "contract_type":"ONSURE_DESIGN_BASELINE_MANIFEST_REGENERATED_EXECUTION_CANDIDATE_V1",
+  "status":"INCOMPLETE_HOLD_NONFINAL",
+  "frozen_design_commit":"abe122ef9438f41e8b074f03b8017b6d30cbc389",
+  "design_git_identity":{"semantic_assurance_subtree_tree_sha":"44a290f0369ef6991fcaf363c452a1b24f2842a2","available":true},
+  "requirement_universe":{"explicit_count":73,"global_count":null,"population_digest":null,"authoritative":false},
+  "applicability":{"evaluated_explicit_count":73,"unknown_pending_context":73,"population_digest":null,"authoritative":false},
+  "trace":{"traced_explicit_count":60,"explicit_count":73,"population_digest":null,"global_complete":false},
+  "orphan_scan":{"repository_wide_executed":false,"zero_proven":false},
+  "contradiction_scan":{"full_executed":false,"p0_zero_proven":false,"known_numbering_collision_count":1},
+  "artifact_inventory":{"git_identity_complete":true,"content_sha256_manifest_complete":false,"population_digest":null},
+  "baseline_reconstructable":false,
+  "lock_candidate":false
+}

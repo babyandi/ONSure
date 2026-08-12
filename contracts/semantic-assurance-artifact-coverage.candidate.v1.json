@@ -1,0 +1,93 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_ARTIFACT_COVERAGE_CANDIDATE_V1",
+  "version": "1.5.0-candidate",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "finding_scope": {"canonical_p0":141,"canonical_p1":50,"raw_candidate_observations":562},
+  "layers": [
+    {"layer":"MASTER_02_TO_08","artifact":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md..08_REVIEW_CHECKLIST_OPEN_DECISIONS.md","state":"META_VALIDATION_DESIGN_DIRECTLY_PRESENT"},
+    {"layer":"COMPANION_00_TO_11","artifact":"docs/master/semantic-assurance/","state":"DESIGN_PRESENT"},
+    {"layer":"P0_VERTICAL_TRACE","artifact":"docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md","state":"DESIGN_PRESENT"},
+    {"layer":"MIGRATION","artifact":"docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md","state":"DESIGN_PRESENT"},
+    {"layer":"V1_V2_GAP_MATRIX","artifact":"docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md","state":"DESIGN_PRESENT"},
+    {"layer":"STATIC_QUALIFICATION_SPEC","artifact":"docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md","state":"DESIGN_PRESENT"},
+    {"layer":"ARTIFACT_COVERAGE","artifact":"docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md","state":"CURRENT_INDEX"},
+    {"layer":"RUNTIME_WIRING","artifact":"docs/master/semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md","state":"IMPLEMENTATION_CANDIDATE_FAIL_CLOSED_HARDENED_EXECUTION_NOT_RUN"},
+    {"layer":"DENOMINATOR_MIGRATION","artifact":"docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md","state":"CONTRACT_AND_FIXTURE_CANDIDATE_PRESENT_RUNTIME_NOT_RUN"},
+    {"layer":"FINAL_SELF_REVIEW","artifact":"docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md","state":"CURRENT_REVIEW_AUTHORITY_NONFINAL"},
+    {"layer":"POST_V2_FINDINGS","artifact":"docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md","state":"POST_V2_CANONICAL_FINDINGS_PRESENT"}
+  ],
+  "contract_bundles": [
+    {"bundle":"A_STATUS_ONTOLOGY","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
+    {"bundle":"B_RECEIPT_SEMANTIC_PRESERVATION","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
+    {"bundle":"C_AUTHORITY_SOD_INDEPENDENCE","state":"CONTRACT_FIXTURES_CREATED_RUNTIME_SELF_ATTESTATION_BLOCKED"},
+    {"bundle":"D_DENOMINATOR_APPLICABILITY","state":"CONTRACT_FIXTURES_CREATED_RUNTIME_14_CAPABILITY_AND_DISPOSITION_ENFORCEMENT_CANDIDATE"},
+    {"bundle":"E_EXECUTION_ORACLE_IDENTITY","state":"CONTRACT_FIXTURES_CREATED_RUNTIME_REPERFORMANCE_TARGET_BOUND"},
+    {"bundle":"F_LEARNING_BLIND_REVIEW_BENCHMARK_GT","state":"CONTRACT_FIXTURES_CREATED_QUALIFICATION_RUNTIME_REMAINS_HOLD"},
+    {"bundle":"G_PATCH_GIT_DEPLOYMENT","state":"VERIFIED_TO_DEPLOYED_CONTRACT_FIXTURE_PRESENT_TARGET_BOUND_DEPLOYMENT_RUNTIME_BLOCKED"},
+    {"bundle":"H_FINAL_RECONSTRUCTION_APPROVAL_LOCK","state":"GATE_APPROVAL_LOCK_CONTRACT_FIXTURES_CREATED_RUNTIME_FINAL_CANDIDATE_NONFINAL"},
+    {"bundle":"I_WORKFLOW_LINEAGE","state":"SEMANTIC_OPERATION_DURABLE_TENANT_AUTHORIZATION_AND_TARGET_BOUND_BRIDGE_CANDIDATE_CREATED"},
+    {"bundle":"J_ACTIVATION_META_QUALIFICATION","state":"ACTIVE_SELECTOR_SCHEMA_FIXTURES_AND_ROLLOUT_HOLD_CREATED"},
+    {"bundle":"K_SHADOW_GATE","state":"COMPARATOR_SCHEMA_FIXTURES_RUNTIME_ALIGNED_EXECUTION_NOT_RUN"}
+  ],
+  "fixture_coverage": {
+    "schemas_with_semantic_valid_invalid_fixtures":23,
+    "valid_fixture_count":23,
+    "invalid_fixture_count":46,
+    "minimum_invalid_instances_per_schema":2,
+    "pending_schema_registration":0,
+    "registry":"contracts/semantic-assurance-v2-schema-instance-registry.candidate.v1.json",
+    "inventory":"contracts/semantic-assurance-v2-schema-inventory.candidate.v1.json",
+    "validator":"scripts/validate-semantic-assurance-v2-contracts.py",
+    "execution_state":"BLOCKED_NOT_RUN",
+    "execution_attempt_evidence":"evidence/semantic-assurance/v2-static-validation-attempt-20260812.json"
+  },
+  "runtime_candidates": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2Reconstructor.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceShadowGateComparator.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowServiceTest.java",
+    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java"
+  ],
+  "runtime_self_review_fixes": [
+    "RECONSTRUCTOR_NULL_FAIL_CLOSED_FIXED",
+    "COLLECTION_DIGEST_MAP_COERCION_FIXED",
+    "SCHEMA_REGISTRY_DRIFT_FIXED",
+    "SEMANTIC_OPERATION_REGISTERED_IN_TENANT_RBAC",
+    "SEMANTIC_OPERATION_NAME_PRESERVED_IN_DURABLE_AUTHORIZATION_LEDGER",
+    "SEMANTIC_BRIDGE_TENANT_AND_TARGET_OWNERSHIP_ATOMIC_WITH_CANDIDATE_CALL",
+    "SEMANTIC_BRIDGE_SERVER_RESOLVED_TARGET_ROOT_ADDED",
+    "SEMANTIC_TARGET_PATH_ESCAPE_BLOCKED",
+    "PUBLIC_DIRECT_WORKFLOW_SERVICE_SURFACE_REMOVED",
+    "DIRECT_SERVICE_CALL_REQUIRES_SERVER_BOUND_CONTEXT",
+    "SELF_ATTESTED_INDEPENDENCE_IGNORED",
+    "SELF_ATTESTED_HUMAN_ACCEPTANCE_IGNORED",
+    "SELF_ATTESTED_VALIDATOR_QUALIFICATION_IGNORED",
+    "SELF_ATTESTED_AUTHORITY_VALIDITY_CANNOT_PROMOTE",
+    "DEPLOYMENT_VERIFY_BLOCKED_UNTIL_TARGET_BOUND_DEPLOYMENT_IDENTITY_EXISTS",
+    "SHADOW_RECEIPT_NULL_SCHEMA_CONFLICT_FIXED",
+    "SHADOW_CONTRACT_DISCRIMINATOR_ALIGNED"
+  ],
+  "canonical_gate_paths": [
+    {"path":"PRODUCT_LINEAGE","state":"V2_CANDIDATE_CREATED_RUNTIME_NOT_ACTIVE"},
+    {"path":"WORKFLOW_OPERATION","state":"SEMANTIC_OPERATIONS_DURABLE_TENANT_AUTHORIZATION_CANDIDATE_CREATED_PRIMARY_SELECTOR_NOT_ACTIVE"},
+    {"path":"VALIDATION_CASE_DENOMINATOR","state":"EXACT_POPULATION_SCHEMA_FIXTURES_CREATED_RUNTIME_MIGRATION_NOT_RUN"},
+    {"path":"FINAL_ACCEPTANCE_PUBLICATION","state":"POPULATION_GATE_APPROVAL_LOCK_SCHEMA_FIXTURES_CREATED_RUNTIME_MIGRATION_NOT_RUN"}
+  ],
+  "finding_disposition": {"registry":"contracts/semantic-assurance-finding-disposition.candidate.v1.json","highest_canonical_state":"DESIGN_ACCEPTED","verified_closed":0},
+  "active_selector": {"rollout_state":"contracts/contract-selector-rollout-state.candidate.v1.json","v2_active":false,"state":"HOLD"},
+  "completion_rule": {
+    "design_present_is_not_implemented":true,
+    "contract_candidate_is_not_active":true,
+    "fixture_present_is_not_executed":true,
+    "runtime_candidate_is_not_implemented_without_compile_and_test":true,
+    "server_bound_context_is_not_independent_authority":true,
+    "target_bound_source_is_not_target_bound_deployment_identity":true,
+    "runtime_execution_required":true,
+    "independent_reperformance_required":true,
+    "qualification_required":true
+  },
+  "overall_state":"DESIGN_CONTRACT_FIXTURE_AND_FAIL_CLOSED_IMPLEMENTATION_CANDIDATES_PRESENT_EXECUTION_BLOCKED_NONFINAL",
+  "final_claim_allowed":false
+}

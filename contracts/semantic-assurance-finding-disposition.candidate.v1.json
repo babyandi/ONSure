@@ -1,0 +1,115 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_FINDING_DISPOSITION_CANDIDATE_V1",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "scope": {
+    "severity": "P0",
+    "first_finding_id": "FL-P0-001",
+    "last_finding_id": "FL-P0-141",
+    "finding_count": 141
+  },
+  "current_disposition_rule": {
+    "all_p0_findings": "DESIGN_ACCEPTED",
+    "reason": "SOURCE_CONFIRMED_BASELINE_AND_POST_V2_LEDGER_EXIST",
+    "candidate_contract_does_not_equal_contracted": true,
+    "candidate_runtime_does_not_equal_implemented": true,
+    "fixture_presence_does_not_equal_executed": true,
+    "same_branch_fix_does_not_equal_verified_closed": true,
+    "caller_self_attestation_does_not_equal_independence_or_qualification": true
+  },
+  "coverage_axes": {
+    "design": {
+      "count": 141,
+      "state": "DESIGN_ACCEPTED",
+      "evidence": [
+        "docs/master/semantic-assurance/10_FINDING_LEDGER.md",
+        "docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md",
+        "docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md",
+        "docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md"
+      ]
+    },
+    "contract_candidate": {
+      "state": "BROAD_CANDIDATE_COVERAGE",
+      "artifacts": [
+        "contracts/assurance-status-vocabulary.candidate.v2.schema.json",
+        "contracts/assurance-receipt-envelope.candidate.v2.schema.json",
+        "contracts/authority-principal-profile.candidate.v2.schema.json",
+        "contracts/semantic-denominator-epoch.candidate.v2.schema.json",
+        "contracts/semantic-applicability-set.candidate.v2.schema.json",
+        "contracts/assurance-population-denominator.candidate.v2.schema.json",
+        "contracts/validation-case-population.candidate.v2.schema.json",
+        "contracts/final-acceptance-population.candidate.v2.schema.json",
+        "contracts/execution-identity.candidate.v2.schema.json",
+        "contracts/validator-qualification-record.candidate.v2.schema.json",
+        "contracts/blind-context-manifest.candidate.v2.schema.json",
+        "contracts/human-reviewer-qualification.candidate.v2.schema.json",
+        "contracts/qualification-benchmark-manifest.candidate.v2.schema.json",
+        "contracts/ground-truth-producer-qualification.candidate.v2.schema.json",
+        "contracts/hidden-corpus-governance.candidate.v2.schema.json",
+        "contracts/independence-profile.candidate.v2.schema.json",
+        "contracts/independent-assurance-receipt.candidate.v2.schema.json",
+        "contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json",
+        "contracts/final-approval-receipt.candidate.v2.schema.json",
+        "contracts/final-lock.candidate.v2.schema.json",
+        "contracts/verified-to-deployed-receipt.candidate.v2.schema.json",
+        "contracts/workflow-operation-registry.candidate.v2.json",
+        "contracts/product-process-lineage.candidate.v2.json",
+        "contracts/contract-active-selector.candidate.v2.schema.json",
+        "contracts/shadow-gate-comparison.candidate.v1.schema.json"
+      ]
+    },
+    "implementation_candidate": {
+      "state": "PARTIAL_FAIL_CLOSED_HARDENED",
+      "artifacts": [
+        "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2Reconstructor.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+        "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceShadowGateComparator.java",
+        "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java"
+      ],
+      "hardening": [
+        "SEMANTIC_OPERATION_NAME_PRESERVED_IN_DURABLE_AUTHORIZATION_LEDGER",
+        "TENANT_AND_TARGET_OWNERSHIP_CHECKED_IN_SAME_AUTHORIZATION_TRANSACTION_AS_SEMANTIC_CALL",
+        "SERVER_RESOLVED_TARGET_ROOT_REQUIRED",
+        "DIRECT_WORKFLOW_SERVICE_CALL_REQUIRES_SERVER_BOUND_CONTEXT",
+        "SELF_ATTESTED_INDEPENDENCE_HUMAN_ACCEPTANCE_AUTHORITY_AND_QUALIFICATION_IGNORED",
+        "TARGET_BOUND_DEPLOYMENT_IDENTITY_MISSING_FAILS_CLOSED"
+      ]
+    },
+    "test_design": {
+      "state": "PRESENT",
+      "schema_fixture_registry": "contracts/semantic-assurance-v2-schema-instance-registry.candidate.v1.json",
+      "runtime_tests": [
+        "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowServiceTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java"
+      ]
+    },
+    "execution": {
+      "state": "NOT_RUN_OR_BLOCKED",
+      "blocked_attempt": "evidence/semantic-assurance/v2-static-validation-attempt-20260812.json"
+    },
+    "independent_verification": {"state": "NOT_RUN"},
+    "qualification": {"state": "NOT_RUN"}
+  },
+  "canonical_gate_blockers": [
+    "FL-P0-017","FL-P0-018","FL-P0-019","FL-P0-020","FL-P0-021","FL-P0-022","FL-P0-023",
+    "FL-P0-069","FL-P0-070","FL-P0-071","FL-P0-098","FL-P0-099","FL-P0-106","FL-P0-107",
+    "FL-P0-108","FL-P0-109","FL-P0-110","FL-P0-111","FL-P0-114","FL-P0-122","FL-P0-123",
+    "FL-P0-124","FL-P0-125","FL-P0-126","FL-P0-127","FL-P0-128","FL-P0-129","FL-P0-130",
+    "FL-P0-131","FL-P0-132","FL-P0-133","FL-P0-134","FL-P0-135","FL-P0-136","FL-P0-137",
+    "FL-P0-138","FL-P0-139","FL-P0-140","FL-P0-141"
+  ],
+  "closure_rule": {
+    "verified_closed_requires": [
+      "ACTIVE_REQUIREMENT",
+      "ACTIVE_CONTRACT_OR_EXPLICIT_RUNTIME_ENFORCEMENT",
+      "IMPLEMENTED_RUNTIME",
+      "NEGATIVE_FIXTURE",
+      "EXECUTION_RECEIPT",
+      "REGRESSION_CLEAN",
+      "INDEPENDENT_REPERFORMANCE",
+      "CURRENT_QUALIFICATION"
+    ],
+    "current_verified_closed_count": 0
+  },
+  "final_claim_allowed": false
+}

@@ -357,3 +357,202 @@ NotificationRule, NotificationEvent, NotificationDeliveryReceipt
 
 ## 12. 추적성
 Requirement → Design Component → Code Module → Test Case → Evidence → Release를 단일 ID 체계로 연결한다.
+
+## 13. Validation Completeness·Assurance 기능 요구사항 (신규, 2026-08-09)
+이 절은 "ONSure가 대상의 결함 부재를 절대적으로 증명한다"는 기능이 아니라, **무엇을 검증했고 무엇을 검증하지 못했는지, 검증기가 그 대상을 검증할 자격이 있는지, Final Claim이 어느 근거에서 나왔는지를 기계적으로 증명**하는 기능을 정의한다. 계약·코드 구현상태는 [08](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)에서 추적한다.
+
+### FR-META-001 Validation Target Manifest
+모든 Validation은 Source SHA만이 아니라 제품 전체 정체성을 하나의 `ValidationTargetManifest`로 고정한다. 대상에는 source/tree/build artifact, dependency artifact/provenance, runtime config/feature flags, policy/rule pack, model/prompt/tool/RAG, external service contract, OS/runtime/DB/deployment environment를 포함한다. Manifest digest가 바뀌면 기존 Final/Certificate는 STALE 또는 REASSESSMENT_REQUIRED다.
+
+### FR-META-002 Scope/Requirement Epoch Lock
+Scope와 Requirement Universe를 각각 epoch/digest로 관리한다. 신규 Component/Requirement 발견 또는 제외 변경 시 epoch를 증가시키고 Coverage를 다시 계산한다. 검증 중 Scope를 줄여 기존 PASS를 유지하거나 새 Requirement 발견 후 이전 100% Coverage를 유지할 수 없다.
+
+### FR-META-003 Validator Capability Qualification
+Target 유형별로 언어/Framework/Architecture/Deployment/Defect Class 기준 ONSure Capability를 `QUALIFIED|PARTIAL|NOT_PROVEN`으로 관리한다. NOT_PROVEN Capability가 필요한 Target에는 해당 영역 Full Assurance를 발급하지 않는다.
+
+### FR-META-004 Observability Qualification
+각 Fault/Claim별 Required Observation Matrix를 정의한다. 필요한 Collector가 실패/부분수집이면 해당 Claim의 absence를 PROVEN으로 만들 수 없다.
+
+### FR-META-005 Oracle 유형과 독립성
+Oracle은 SPEC, EXECUTABLE, METAMORPHIC, DIFFERENTIAL, EXPERT, REAL_WORLD를 구분하고 `oracle_digest`, `target_code_dependency`, `ground_truth_grade`, `independence_class`를 기록한다. Cross-Model Agreement는 corroboration이며 Ground Truth가 아니다.
+
+### FR-META-006 Evidence Target Binding
+Final Evidence는 `target_manifest_digest`, `scope_epoch_digest`, `requirement_set_digest`, `policy_digest`, `oracle_set_digest`, `detector_pack_digest`, `environment_digest`, `run_id`, `nonce`에 결속한다. 다른 Target/Scope/Run의 정상 Evidence를 현재 Claim에 대입하면 fail-closed한다.
+
+### FR-META-007 Evidence Freshness / Anti-Reuse
+Evidence/Approval/Receipt의 생성시각, run, nonce, validity context, single-consume 여부를 확인하고 stale/replayed 증거를 Final에서 제외한다.
+
+### FR-META-008 Independence Profile
+독립성을 Execution, Principal, Implementation, Oracle, Discovery, Knowledge 6축으로 기록한다. 서로 다른 run_id나 key_id만으로 완전 독립을 주장하지 않는다.
+
+### FR-META-009 Decision Propagation
+의존 하위 결과의 FAIL/HOLD/BLOCKED/NOT_RUN/INCONCLUSIVE/UNKNOWN은 상위 Claim에 전파한다. Critical dependency가 미검증이면 전체 PASS로 평균화하지 않는다.
+
+### FR-META-010 Atomic Validation Snapshot
+Final은 동일 Target/Scope/Requirement/Policy generation에서 필수 Lane이 동시에 성립한 Snapshot이어야 한다. 서로 다른 Run의 좋은 결과를 선택적으로 조립하지 않는다.
+
+### FR-META-011 Validation Staleness / Invalidation
+source/artifact/dependency/config/feature flag/policy/rule/oracle/model/prompt/RAG/external interface/규제/중요 CVE/MissedFinding 변경은 기존 Validation 유효성을 재평가한다. 상태는 VALID|STALE|INVALIDATED|SUPERSEDED다.
+
+### FR-META-012 Final Freshness Barrier
+Final Lock 직전에 Target/Scope/Policy/Findings/Approval/Observer/Independent Receipt를 원시 상태에서 다시 검증한다.
+
+### FR-META-013 Final Claim Reconstruction
+저장된 report/score/current_state를 신뢰하지 않고 Raw Evidence와 Contract Graph에서 Final Claim을 다시 계산한다. 재계산 결과가 저장값과 다르면 HOLD한다.
+
+### FR-META-014 ProgramRiskScore Independent Recalculation
+ProgramRiskScore는 raw Finding/MissedFinding에서 독립 재계산한다. 저장된 score/grade의 Schema-valid 여부만으로 의사결정하지 않으며 Hard Gate를 대체하지 못한다.
+
+### FR-META-015 Accepted Risk / Waiver Integrity
+Waiver나 Risk Accept는 FAIL/NOT_RUN을 PASS로 바꾸지 않는다. affected requirement/claim, reason, approver, scope, risk, expiry, compensating control, revalidation rule을 기록한다. Evidence integrity, Final decision integrity, target identity, tenant isolation, validator independence는 non-waivable 후보로 취급한다.
+
+### FR-META-016 Finding Closure Semantics
+CLOSED는 FIXED/FALSE_POSITIVE/DUPLICATE/NOT_APPLICABLE/MITIGATED/SUPERSEDED를 구분한다. ACCEPTED_RISK는 해결상태와 분리한다.
+
+### FR-META-017 Composite / Interaction Risk
+Attack/Failure/Privilege/Data Leakage Chain을 생성하고 Component×Component, Permission×State, Failure×Recovery, AI×Tool×RAG 상호작용을 위험기반으로 탐색한다.
+
+### FR-META-018 Negative Assurance
+`count(CRITICAL)=0`과 `CRITICAL_ABSENCE_PROVEN`을 분리한다. 부재 주장은 detector 실행, scope/observability 충분성, unsupported critical surface 0, tool health, Evidence binding을 요구한다.
+
+### FR-META-019 Flakiness / Statistical Assurance
+Retry 전후 결과를 모두 보존하고 Flaky PASS를 안정 PASS와 분리한다. 비결정 시스템은 위험 기반 sample size, failure rate, confidence bound, seed/generator version을 기록한다.
+
+### FR-META-020 Fixture Precondition Proof
+Negative/Adversarial Fixture는 공격 전 실제 비권한/다른 Tenant/만료 Token/승인부재 등 선행조건을 증명한다. Positive counterpart도 함께 실행하여 정상 권리가 보존됐는지 검증한다.
+
+### FR-META-021 Rights / Capability Preservation
+Remediation 후 원 결함 해소뿐 아니라 정당한 사용자·운영자 권리의 `Declared→Authorized→Reachable→Invocable→Effective→Recoverable` 체인을 검증한다. 보안 Fix로 operator recovery가 사라지면 Rights Regression으로 HOLD한다.
+
+### FR-META-022 Evidence Transactionality / Survivability
+검증기 crash·timeout·disk full에도 incomplete execution이 PASS로 복구되지 않아야 한다. Evidence는 PREPARED→COMMITTED 또는 동등한 durable transaction을 사용하고 미완료는 ABORTED_UNTRUSTED/INCONCLUSIVE로 처리한다.
+
+### FR-META-023 Validation Isolation
+동시 Run이 workspace/DB/cache/queue/state를 서로 오염시키지 않도록 immutable workspace 또는 lease를 사용한다. pre/post state digest와 cleanup 결과를 기록한다.
+
+### FR-META-024 Verified-to-Deployed Identity
+검증 Artifact와 실제 배포 Artifact digest가 동일한지 확인한다. Environment 차이는 MATCH/NON_MATERIAL/MATERIAL/UNKNOWN으로 분류하고 MATERIAL/UNKNOWN은 Assurance Ceiling에 반영한다.
+
+### FR-META-025 Dependency / External Freshness
+Dependency approval은 version/license뿐 아니라 artifact hash, origin, provenance를 포함한다. CVE/advisory 확인은 검사시점과 advisory snapshot을 기록하며 "denylist 0건"을 "취약점 없음"으로 표현하지 않는다.
+
+### FR-META-026 Evidence Origin Independence
+Evidence 파일 수가 아니라 독립 origin 수를 계산한다. PRIMARY/DERIVED/AGGREGATED를 구분하고 Material Claim은 PRIMARY Evidence까지 역추적 가능해야 한다.
+
+### FR-META-027 Trust Registry Semantic Integrity
+Key registry에서 unique key/fingerprint, principal separation, authority cardinality, validity window, revocation semantics를 검증한다. 다른 key가 같은 principal이면 완전 독립자로 세지 않는다.
+
+### FR-META-028 Trusted Computing Base Manifest
+ONSure가 암묵적으로 신뢰하는 OS/kernel/JVM/crypto/filesystem/time/key registry/sandbox 등을 TCB Manifest로 공개하고 Final Verifier의 TCB를 최소화한다.
+
+### FR-META-029 Detector Qualification
+Seeded fault를 `registered→executed→detected/escaped`로 추적한다. Critical seeded defect escape가 있으면 해당 Capability Qualification을 발급하지 않는다.
+
+### FR-META-030 Validation Saturation Proof
+동일 방법을 반복해 신규 Finding이 0건인 것만으로 saturation을 선언하지 않는다. independent discovery method, ontology diversity, hidden fault sensitivity, observability 충분성을 함께 요구한다.
+
+### FR-META-031 Semantic Dataset Separation
+Training/Validation/Hidden/Golden은 byte hash뿐 아니라 semantic family 기준으로 오염을 관리한다. Hidden 결과의 반복 피드백으로 Rule을 최적화하지 않는다.
+
+### FR-META-032 Memory-Blind Independent Review
+고신뢰 Lane 일부는 이전 score/verdict/KnowledgePattern을 보지 않고 수행한다. Memory-aware와 blind 결과 불일치는 자동 다수결이 아니라 HOLD/제3 검증으로 처리한다.
+
+### FR-META-033 Ground Truth Provenance / Epoch
+Ground Truth는 source, requirement_digest, oracle_digest, created/reviewed_by, evidence, validity_scope, epoch을 가진 버전 객체다. Requirement/Policy/Oracle 변경 시 stale 처리한다.
+
+### FR-META-034 Learning Regression Guard
+Rule Pack 변경 후 전체 평균이 좋아져도 Critical Recall 또는 기존 Critical seeded defect 탐지력이 감소하면 승격하지 않는다.
+
+### FR-META-035 Rule Weakening High-Risk Gate
+Detector weakening/removal, Oracle change, Severity policy change, Coverage policy change는 신규 detector 추가보다 강한 승인·Hidden Benchmark·Critical Recall 회귀를 요구한다.
+
+### FR-META-036 Historical Revalidation
+새 MissedFinding/Detector/Rule이 과거 Validation에 영향을 줄 수 있으면 영향 대상 Certificate를 찾아 SAFE/REASSESSMENT_REQUIRED/STALE로 분류한다.
+
+### FR-META-037 Assurance Level / Claim Semantics
+단일 PASS와 Assurance Strength를 분리한다. L0 UNASSESSED, L1 STATIC_REVIEWED, L2 EXECUTION_VERIFIED, L3 INDEPENDENTLY_VERIFIED, L4 ADVERSARIALLY_VERIFIED, L5 QUALIFIED_HIGH_ASSURANCE를 기본 레벨로 하고 Scope/Capability/Observability/Oracle/Evidence/Independence/Temporal assurance를 함께 공개한다.
+
+### FR-META-038 Unknown / Uncertainty Budget
+KNOWN_UNKNOWN, DISCOVERED_UNKNOWN, UNRESOLVED, UNCLASSIFIED, UNOBSERVABLE를 분리하고 dependency graph로 uncertainty를 상위 Claim에 전파한다. L5의 Critical Unknown 허용치는 0을 원칙으로 한다.
+
+### FR-META-039 Anti-Evasion Validation
+대상이 ONSure/Sandbox/안전시험을 감지해 다르게 행동하는 경우를 탐지하기 위해 instrumented/uninstrumented, validator marker 변화, naturalistic/blind scenario를 비교한다.
+
+### FR-META-040 Validation Resource Exhaustion Integrity
+검증 예산 소진 때문에 Scope가 조용히 축소되어 PASS하지 못하게 한다. Budget Exhausted는 CoverageReport와 Decision에 반영되어 HOLD/PARTIAL/INCONCLUSIVE로 처리한다.
+
+### FR-META-041 Cross-Contract Semantic Validation
+개별 Schema valid를 넘어 Contract 간 관계를 검증한다. 예: REJECT Approval은 Final Lock 불가, purpose/type 일치, target/candidate digest 일치, run context 일치, cancelled evidence 사용 금지.
+
+### FR-META-042 Final Lock / Certificate Revocation
+Final Lock 기록은 immutable하게 보존하되 현재 유효성은 revocable해야 한다. 새 Critical/CVE/Drift/Policy change 발생 시 Certificate 상태와 영향범위를 갱신하고 사용자에게 통지한다.
+
+### FR-META-043 AI·개발자·운영자 표시 일관성
+API, Web, VS Code, Report는 동일 상태 온톨로지와 Assurance Ceiling을 사용한다. `SELF_VALIDATION_NONFINAL PASS`를 단순 Final PASS로 축약하는 UI/문서 변환을 금지한다.
+
+### FR-META-044 Verified-to-Deployed-to-Running Currentness
+검증된 Build Artifact, 실제 DeploymentRevision, active RuntimeInstance population을 digest로 연결한다. `VERIFIED`, `DEPLOYED`, `RUNNING`, `CURRENT`를 서로 다른 상태로 관리하며 source commit 또는 image tag 동일성만으로 CURRENT를 발급하지 않는다.
+
+### FR-META-045 Runtime Drift Classification and Impact
+Artifact, Config, Feature Flag, Dependency, Secret Reference, Policy, Model, System Prompt, Tool Registry, RAG Corpus/Index, Embedding, External Contract, Infrastructure, Observer, Validator Qualification, Authority drift를 구분하고 affected claim과 revalidation 범위를 계산한다.
+
+### FR-META-046 Rollout-aware Assurance
+Rolling/Blue-Green/Canary/Multi-region 배포는 population/traffic cohort별로 별도 Currentness를 계산한다. 일부 canary PASS 또는 일부 region PASS를 전체 Production PASS로 승격하지 않는다.
+
+### FR-META-047 Assurance Revocation and Recovery
+FinalLock은 historical fact로 보존하되 current validity는 STALE/REASSESSMENT_REQUIRED/INVALIDATED/REVOKED/SUPERSEDED로 변화할 수 있다. Rollback/DR/Service Recovery는 과거 PASS를 자동 복원하지 않고 현재 policy/authority/validator qualification에서 재평가한다.
+
+### FR-META-048 Product-level Assurance Composition
+Web/API/DB/Agent/LLM/RAG/External Service/Region 등 다중 Target 결과를 dependency topology와 exact population으로 합성한다. Critical HARD dependency의 FAIL/BLOCKED/UNKNOWN/HOLD/STALE을 평균으로 숨길 수 없다.
+
+### FR-META-049 Assurance Strength Dimension
+Decision과 Assurance Strength를 분리한다. 후보 단계는 AL0_UNASSESSED, AL1_EXECUTED, AL2_EVIDENCE_BOUND, AL3_INDEPENDENTLY_REPERFORMED, AL4_QUALIFIED, AL5_PRODUCTION_BOUND_CURRENT이며, 상위 결과는 필수 Critical Child의 최저 strength/currentness ceiling을 넘을 수 없다. 기존 L0~L5 명칭과의 최종 통합은 08 Open Decision에서 결정한다.
+
+### FR-META-050 Evidence Graph and Explainable Ceiling
+Source→Requirement→Oracle→Execution→Evidence→Final→Deployment→Runtime→Certificate 관계를 Evidence Graph로 관리하고 DERIVED_FROM/REPERFORMED_FROM/CONTRADICTS/SUPERSEDES/INVALIDATES/REVOKES 등의 edge를 보존한다. Product 결과의 ceiling 이유는 최소 하나의 graph path로 설명 가능해야 한다.
+
+### FR-META-051 Assurance Certificate Separation
+내부 FinalLock/Evidence와 고객·감사자용 Certificate를 분리한다. Certificate에는 subject/scope/requirement denominator/assurance level/currentness/independent verification/limitation/exclusion/revocation verification 정보를 포함하되 고객 source·secret·hidden corpus를 기본 공개하지 않는다.
+
+### FR-META-052 Offline Trust and Revocation Uncertainty
+Air-gapped 환경은 root key, key registry, policy, validator qualification, revocation snapshot, trusted-time evidence를 포함한 signed Offline Trust Bundle을 사용한다. 마지막 online sync 이후 uncertainty가 증가하면 CURRENT를 영구 유지하지 않고 OFFLINE_REVALIDATION_DUE/STATUS_UNCERTAIN/BLOCKED로 제한한다.
+
+### FR-META-053 Authority Delegation / Four-eyes / Break-glass
+AuthorityGrant는 tenant/subject/operation/purpose/time/delegation chain에 결속한다. 위임권한은 원 권한보다 넓을 수 없고, Final Approval/Certificate revoke/Legal Hold/Policy relaxation/Hidden Corpus access 같은 고위험 operation은 정책상 서로 다른 principal의 다중 승인을 요구한다. Break-glass는 operation 허용만 할 수 있고 Assurance Strength를 올릴 수 없다.
+
+### FR-META-054 Distributed Work Integrity
+대규모 검증은 immutable WorkUnit으로 분해하고 at-least-once delivery를 허용하되 logical effect, receipt commitment, nonce consumption의 중복을 막는다. Duplicate/retry/stale lease/partition omission/worker restart가 denominator와 aggregate를 부풀리지 않아야 한다.
+
+### FR-META-055 Deterministic Aggregation and Resource Exhaustion
+병렬 실행 완료 순서가 aggregate digest를 바꾸지 않아야 한다. CPU/GPU/token/storage/API budget 소진은 요구사항상 실패가 아닌 경우 BLOCKED/RESOURCE_LIMIT으로 처리하며 비용 때문에 required denominator를 축소하지 않는다.
+
+### FR-META-056 Plugin / Adapter Trust and Qualification
+Plugin/Adapter는 publisher identity, artifact digest/signature, declared privilege, supported target archetype, input/output contract, qualification record를 가져야 한다. unsigned/unqualified/revoked plugin 결과는 authoritative Final evidence가 될 수 없고, plugin update는 requalification trigger다.
+
+### FR-META-057 AI Runtime Identity Closure
+AI Target은 provider/model/deployment, system/developer/user prompt hierarchy, Tool Registry, Agent Memory, RAG corpus/index/embedding/chunking/retrieval policy를 version/digest로 고정한다. Provider alias나 이름 동일성만으로 model identity/currentness를 주장하지 않는다.
+
+### FR-META-058 AI Nondeterminism and Multi-Agent Assurance
+비결정 AI는 단일 PASS를 충분조건으로 사용하지 않는다. repeated run population, sampling config, outcome distribution, sample size/confidence method, metamorphic/property oracle을 기록한다. Multi-agent는 agent identity/role/delegation/shared memory/message contract/authority escalation/common-mode failure를 별도 검증한다.
+
+### FR-META-059 ONSure Release Qualification
+ONSure 자신도 release/version별 validator/oracle/adapter/fixture/benchmark/hidden corpus/environment/independent verifier를 결속한 Qualification을 가져야 한다. Self-test는 입력일 뿐 자기 자신을 QUALIFIED로 만드는 최종 authority가 아니다. Qualification은 target archetype별 QUALIFIED|PARTIAL|NOT_PROVEN으로 관리한다.
+
+### FR-META-060 Certificate and Product Assurance Final Ceiling
+Product-level Certificate 발급은 exact CompositionSnapshot, current FinalLock, required independent verification, current qualification/authority, scope 내 unresolved P0 blocker 0, 그리고 요구 Assurance Level이 production-bound이면 Verified-to-Deployed-to-Running Currentness가 모두 닫혀야 한다. 하나라도 UNKNOWN/HOLD이면 positive Certificate 발급을 금지한다.
+
+### 13.1 Meta-Validation 종합 수용기준
+- 검증 대상의 Target Manifest와 Scope/Requirement Epoch가 없으면 Final Claim 불가
+- Critical Capability가 NOT_PROVEN이면 L5 불가
+- Critical Observation Gap/Unknown이 있으면 "전체 검증 완료" 표현 금지
+- Cross-Run Evidence Mixing 금지
+- Waiver/Accepted Risk가 FAIL/NOT_RUN을 PASS로 변경하지 않음
+- Final Claim은 Raw Evidence에서 재구성 가능
+- Final Lock 직전 Freshness Barrier 통과 필수
+- 새 MissedFinding은 과거 인증 영향분석을 발생시킴
+- Critical seeded defect escape 0이 검증기 Qualification의 하드 조건
+- 검증기 자신의 Rule/Oracle 완화는 Critical Recall 회귀 0을 증명해야 함
+- Product-level CURRENT는 Verified→Deployed→Running identity chain과 active runtime population closure 없이는 발급하지 않음
+- Multi-target Product Assurance는 exact subject/dependency population과 composition rule version으로 재계산 가능해야 함
+- Certificate는 발급 당시 결과와 현재 validity를 분리하며 revoked/stale/offline uncertainty를 숨기지 않음
+- ONSure 자체 Qualification이 NOT_PROVEN인 target archetype에 대해 고신뢰 Assurance를 발급하지 않음

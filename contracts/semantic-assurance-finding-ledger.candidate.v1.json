@@ -1,0 +1,77 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_FINDING_LEDGER_CANDIDATE_V1",
+  "schema_version": "1.2.0-candidate",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "source_review": {
+    "raw_candidate_observations": 562,
+    "raw_count_includes_duplicates_and_refinements": true,
+    "canonicalization_status": "BASELINE_AND_POST_V2_SOURCE_CONFIRMED_FINDINGS_RECORDED",
+    "canonical_human_ledgers": [
+      "docs/master/semantic-assurance/10_FINDING_LEDGER.md",
+      "docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md"
+    ],
+    "upgrade_blueprint": "docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md",
+    "final_review": "docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md"
+  },
+  "authority": {
+    "implementation": false,
+    "merge": false,
+    "deploy": false,
+    "production_go": false,
+    "commercial_go": false,
+    "final_lock": false
+  },
+  "defect_families": [
+    "NEW_DEFECT_CLASS",
+    "EXISTING_CONTROL_ENFORCEMENT_GAP",
+    "CROSS_CONTRACT_SEMANTIC_CONFLICT",
+    "SEMANTIC_TYPE_ERASURE",
+    "CANONICAL_GATE_BYPASS",
+    "DESIGNED_CONTROL_OUTSIDE_CANONICAL_GATE_PATH",
+    "DECLARATIVE_ASSERTION_WITHOUT_ENFORCEMENT_PROOF",
+    "COUNT_OR_LABEL_AS_PROOF",
+    "STRONG_SEMANTIC_LABEL_EXCEEDS_AVAILABLE_EVIDENCE"
+  ],
+  "canonical_p0_finding_range": {
+    "first": "FL-P0-001",
+    "last": "FL-P0-141",
+    "count": 141
+  },
+  "canonical_p1_finding_range": {
+    "first": "FL-P1-001",
+    "last": "FL-P1-050",
+    "count": 50
+  },
+  "post_v2_review_findings": [
+    "FL-P0-133","FL-P0-134","FL-P0-135","FL-P0-136","FL-P0-137",
+    "FL-P0-138","FL-P0-139","FL-P0-140","FL-P0-141","FL-P1-049","FL-P1-050"
+  ],
+  "canonical_gate_blockers": [
+    "FL-P0-017","FL-P0-018","FL-P0-019","FL-P0-020","FL-P0-021","FL-P0-022","FL-P0-023",
+    "FL-P0-069","FL-P0-070","FL-P0-071","FL-P0-098","FL-P0-099","FL-P0-106","FL-P0-107",
+    "FL-P0-108","FL-P0-109","FL-P0-110","FL-P0-111","FL-P0-114","FL-P0-122","FL-P0-123",
+    "FL-P0-124","FL-P0-125","FL-P0-126","FL-P0-127","FL-P0-128","FL-P0-129","FL-P0-130",
+    "FL-P0-131","FL-P0-132","FL-P0-133","FL-P0-134","FL-P0-135","FL-P0-136","FL-P0-137",
+    "FL-P0-138","FL-P0-139","FL-P0-140","FL-P0-141"
+  ],
+  "hard_rules": {
+    "finding_documented_is_not_closed": true,
+    "contract_created_is_not_implemented": true,
+    "implemented_is_not_executed": true,
+    "executed_is_not_evidence_bound": true,
+    "evidence_bound_is_not_independent": true,
+    "independent_is_not_qualified": true,
+    "raw_candidate_count_is_not_canonical_defect_count": true,
+    "canonical_gate_bypass_blocks_positive_promotion": true,
+    "semantic_type_erasure_must_preserve_material_fields_or_require_explicit_revalidation": true,
+    "cross_contract_conflict_requires_single_authority_resolution": true,
+    "strong_semantic_label_must_not_exceed_available_evidence": true,
+    "post_v2_findings_are_subject_to_same_closure_rules": true,
+    "caller_self_attestation_cannot_issue_independence_human_acceptance_authority_or_qualification": true
+  },
+  "required_disposition_states": [
+    "OPEN","DESIGN_ACCEPTED","CONTRACTED","IMPLEMENTED","EXECUTED","EVIDENCE_BOUND",
+    "INDEPENDENTLY_VERIFIED","QUALIFIED","DUPLICATE","SUPERSEDED"
+  ],
+  "final_claim_allowed": false
+}

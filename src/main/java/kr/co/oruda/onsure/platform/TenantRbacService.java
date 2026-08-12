@@ -24,6 +24,26 @@ public final class TenantRbacService {
     private static final Set<String> READ_OPERATIONS = Set.of(
             "project.read-target", "project.list-targets", "job.read", "license.read", "case.read",
             "artifact.read");
+    private static final Set<String> SEMANTIC_OPERATOR_OR_AUDITOR_OPERATIONS = Set.of(
+            "semantic.applicability.evaluate",
+            "semantic.denominator.discover",
+            "semantic.denominator.challenge",
+            "semantic.denominator.lock",
+            "semantic.reperformance.run");
+    private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
+            "semantic.authority.revalidate",
+            "semantic.independence.assess",
+            "semantic.freshness.invalidate",
+            "semantic.freshness.reconstruct",
+            "semantic.validator.requalify",
+            "assurance.final-candidate.reconstruct",
+            "assurance.otester.accept",
+            "assurance.oaudit.accept",
+            "deployment.verify-installed");
+    private static final Set<String> SEMANTIC_APPROVAL_OPERATIONS = Set.of(
+            "assurance.human-accept");
+    private static final Set<String> SEMANTIC_OPERATOR_OPERATIONS = Set.of(
+            "git.push");
 
     @FunctionalInterface
     public interface AuthorizedCall<T> { T call() throws Exception; }
@@ -106,7 +126,20 @@ public final class TenantRbacService {
         if (roles.contains(AuthenticatedWorkflowIdentity.Role.ADMIN)) return;
         AuthenticatedWorkflowIdentity.Role required;
         boolean allowed;
-        if (APPROVAL_OPERATIONS.contains(operation)) {
+        if (SEMANTIC_AUDITOR_OPERATIONS.contains(operation)) {
+            required = AuthenticatedWorkflowIdentity.Role.AUDITOR;
+            allowed = roles.contains(required);
+        } else if (SEMANTIC_APPROVAL_OPERATIONS.contains(operation)) {
+            required = AuthenticatedWorkflowIdentity.Role.APPROVER;
+            allowed = roles.contains(required);
+        } else if (SEMANTIC_OPERATOR_OR_AUDITOR_OPERATIONS.contains(operation)) {
+            required = AuthenticatedWorkflowIdentity.Role.OPERATOR;
+            allowed = roles.contains(AuthenticatedWorkflowIdentity.Role.OPERATOR)
+                    || roles.contains(AuthenticatedWorkflowIdentity.Role.AUDITOR);
+        } else if (SEMANTIC_OPERATOR_OPERATIONS.contains(operation)) {
+            required = AuthenticatedWorkflowIdentity.Role.OPERATOR;
+            allowed = roles.contains(required);
+        } else if (APPROVAL_OPERATIONS.contains(operation)) {
             required = AuthenticatedWorkflowIdentity.Role.APPROVER;
             allowed = roles.contains(required);
         } else if (READ_OPERATIONS.contains(operation)) {

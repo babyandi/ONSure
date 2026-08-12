@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/assurance-status-vocabulary.candidate.v2.schema.json",
+  "title": "ONSure Assurance Status Vocabulary Candidate v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "status_id", "subject", "implementation_state", "execution_state",
+    "evidence_state", "independence_state", "qualification_state", "freshness_state",
+    "publication_state", "decision", "reason_codes", "evidence_refs", "authority_ref",
+    "effective_at", "status_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ASSURANCE_STATUS_V2_CANDIDATE"},
+    "status_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_type", "subject_id", "subject_digest"],
+      "properties": {
+        "subject_type": {"enum": ["TARGET", "RUN", "CLAIM", "RECEIPT", "REPORT", "CERTIFICATE", "VALIDATOR", "DATASET", "DEPLOYMENT"]},
+        "subject_id": {"type": "string", "minLength": 1},
+        "subject_digest": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "implementation_state": {"enum": ["DESIGN_ONLY", "CONTRACTED", "PARTIAL", "IMPLEMENTED", "DEPRECATED", "CONFLICT"]},
+    "execution_state": {"enum": ["NOT_RUN", "PLANNED", "RUNNING", "EXECUTED", "BLOCKED", "HOLD", "FAILED", "INCONCLUSIVE"]},
+    "evidence_state": {"enum": ["NOT_BOUND", "PARTIALLY_BOUND", "EVIDENCE_BOUND", "CONTRADICTED", "UNKNOWN"]},
+    "independence_state": {"enum": ["NOT_ASSESSED", "SELF_VALIDATION", "PARTIAL_INDEPENDENCE", "INDEPENDENT", "COMPROMISED"]},
+    "qualification_state": {"enum": ["NOT_QUALIFIED", "QUALIFICATION_PLANNED", "PARTIAL", "QUALIFIED_NONFINAL", "QUALIFIED", "STALE", "FAILED"]},
+    "freshness_state": {"enum": ["CURRENT", "STALE", "REVOKED", "INVALIDATED", "STATUS_UNKNOWN", "REASSESSMENT_REQUIRED"]},
+    "publication_state": {"enum": ["NONE", "SELF_VALIDATION_NONFINAL", "INDEPENDENT_OTESTER_PASS", "INDEPENDENT_OAUDIT_PASS", "HUMAN_ACCEPTANCE_PASS", "FINAL_CANDIDATE", "FINAL_LOCKED", "PRODUCTION_GO", "COMMERCIAL_GO", "PUBLICATION_HOLD", "PUBLICATION_BLOCKED"]},
+    "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE", "NON_FINAL", "INPUT_REQUIRED"]},
+    "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z0-9_:-]{3,160}$"}},
+    "evidence_refs": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/evidenceRef"}},
+    "authority_ref": {"$ref": "#/$defs/digestRef"},
+    "qualification_ref": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digestRef"}]},
+    "freshness_ref": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digestRef"}]},
+    "supersedes_status_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+    "effective_at": {"type": "string", "format": "date-time"},
+    "status_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "PASS"}}},
+      "then": {
+        "properties": {
+          "execution_state": {"const": "EXECUTED"},
+          "evidence_state": {"const": "EVIDENCE_BOUND"},
+          "freshness_state": {"const": "CURRENT"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"publication_state": {"enum": ["FINAL_CANDIDATE", "FINAL_LOCKED", "PRODUCTION_GO", "COMMERCIAL_GO"]}}},
+      "then": {
+        "properties": {
+          "independence_state": {"const": "INDEPENDENT"},
+          "qualification_state": {"const": "QUALIFIED"},
+          "freshness_state": {"const": "CURRENT"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"freshness_state": {"enum": ["STALE", "REVOKED", "INVALIDATED", "STATUS_UNKNOWN", "REASSESSMENT_REQUIRED"]}}},
+      "then": {"not": {"properties": {"publication_state": {"enum": ["FINAL_CANDIDATE", "FINAL_LOCKED", "PRODUCTION_GO", "COMMERCIAL_GO"]}}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "digestRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": {"id": {"type": "string", "minLength": 1}, "sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "evidenceRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["receipt_id", "receipt_sha256", "evidence_role"],
+      "properties": {
+        "receipt_id": {"type": "string", "minLength": 1},
+        "receipt_sha256": {"$ref": "#/$defs/sha256"},
+        "evidence_role": {"enum": ["PRIMARY", "CORROBORATING", "LIMITATION", "REVOCATION", "QUALIFICATION", "FRESHNESS"]}
+      }
+    }
+  }
+}

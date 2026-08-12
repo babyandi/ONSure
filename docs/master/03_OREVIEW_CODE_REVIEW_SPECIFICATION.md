@@ -193,19 +193,19 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 - Confidence Calibration: Confidence 90%로 표시된 Finding 집합이 실제로 약 90% 비율로 맞는지 등 신뢰도 구간별 실측 정확도를 주기적으로 측정(Calibration Curve). 특정 구간이 체계적으로 과신/과소평가되면 Confidence 산정 로직을 재보정 대상으로 지정한다
 
 ### Confidence Calibration 상세 기능정의(2026-08-09 — 계약은 아직 없음, `DESIGN_ONLY`)
-가장 먼저 결정해야 했던 것은 "실제로 맞았다"를 무엇으로 판정하느냐다 — 이게 없으면 Calibration 자체가 성립하지 않는다. `contracts/security-findings.v1.schema.json`의 Finding 상태는 실제로 `OPEN`/`CLOSED`/`ACCEPTED_RISK` 3개뿐이며 `FALSE_POSITIVE` 같은 별도 상태가 계약에 없다(G10에서 이미 확인됨). 따라서 새 상태를 추가하지 않고, **이미 실재하는 두 메커니즘의 결과를 정답 신호로 재사용**한다:
-1. Critical 후보의 Cross-Model Verification 결과([§10-1](#10-1-cross-model-verification)) — 두 모델이 일치하면 그 판정을 정답으로 채택, 불일치해서 Human/Professional Reviewer로 회부된 건은 그 사람의 최종 판정을 정답으로 채택
-2. Critical이 아닌 Finding이 `CLOSED`로 전이될 때 Human/Professional Reviewer가 남기는 명시적 동의/반대 표시(기존 Reviewer 워크플로에 이미 있는 승인/반려 결정)
+가장 먼저 결정해야 했던 것은 "실제로 맞았다"를 무엇으로 판정하느냐다. **정정: Cross-Model Agreement 자체는 Ground Truth가 아니며 `CORROBORATION`일 뿐이다.** 두 모델이 같은 blind spot을 공유할 수 있으므로, Calibration의 정답 표본은 [07 §8.2](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md)의 Ground Truth 등급을 사용하고 원칙적으로 GT3(EXECUTABLE_ORACLE) 이상을 우선한다. Human/Professional Reviewer 결정 역시 독립 원시증거를 검토한 경우에만 GT4로 분류하며, 단순 승인행위 자체를 Truth로 간주하지 않는다.
 
 필드:
 - `calibration_report_id`
-- `window`: 측정 기간(예: 최근 90일) 또는 고정 Golden Fixture Set 중 하나
-- `buckets`: 배열. 각 항목은 `confidence_range`(예: "80-90%"), `predicted_count`(이 구간으로 표시된 Finding 수), `ground_truth_correct_count`(위 정답 신호로 확인된 건수 — 아직 CLOSED/재확인 안 된 Finding은 이 표본에서 제외), `actual_accuracy_percent`, `calibration_error`(구간 중앙값 − 실측 정확도)
-- `systematic_bias`: 구간별 `OVERCONFIDENT`(표시 Confidence보다 실제 정확도가 낮음) / `UNDERCONFIDENT`(반대) / `WELL_CALIBRATED`. 판정 임계치(`calibration_error`가 몇 %p 이상이면 편향으로 보는지)는 아직 수치 미확정 — [08 체크리스트](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)에 DRAFT로 추적
-- `recalibration_flag`: 연속 N개 Window에서 같은 구간이 계속 편향으로 나오면 true. N값도 수치 미확정, DRAFT로 추적
+- `window`: 측정 기간 또는 고정 Golden/Qualification Fixture Set
+- `ground_truth_grade`: 표본에 사용한 GT 등급과 분포
+- `buckets`: `confidence_range`, `predicted_count`, `ground_truth_correct_count`, `actual_accuracy_percent`, `calibration_error`
+- `systematic_bias`: OVERCONFIDENT | UNDERCONFIDENT | WELL_CALIBRATED
+- `recalibration_flag`
+- `ground_truth_refs`: 계산에 사용한 Finding/Oracle/Evidence 목록
 - `generated_at`
 
-수용기준: 판정에 사용된 표본(`ground_truth_correct_count`가 산출된 실제 Finding 목록)은 감사 가능해야 한다 — Calibration 결과 자체도 "무엇으로부터 계산됐는지" 역추적 가능해야 CoverageReport와 같은 원칙(주장이 아니라 근거)을 따르게 된다.
+수용기준: GT0/GT1 표본만으로 Critical Confidence를 보정하거나 "정확도 확인"을 주장하지 않는다. 표본과 Ground Truth가 감사 가능해야 하고, Requirement/Oracle Epoch가 변경되면 과거 Calibration을 STALE로 처리한다.
 
 ## 9-1. OReview 자체 판정 재현성
 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)의 FR-COM-005("동일 입력·정책·도구 버전은 재현 가능한 판정 구조를 가져야 한다")는 고객 코드뿐 아니라 OReview·OVerification 자신의 AI 기반 판정에도 동일하게 적용된다.
@@ -221,11 +221,12 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 ## 10-1. Cross-Model Verification
 동일 모델(계열)이 코드를 생성하고 그 코드를 리뷰까지 하면, 그 모델이 원래 놓치는 유형의 결함을 리뷰에서도 동일하게 놓치는 상관된 blind spot 위험이 있다. 이를 줄이기 위해 다음을 규칙화한다.
 
-- Critical로 잠정 판정된 Finding은 원 구현에 사용된 모델·Provider와 다른 계열의 모델로 2차 확인을 거친 뒤에만 최종 확정한다(예: 원 구현이 Claude 계열이면 2차 확인은 다른 Provider/다른 세대 모델)
-- 두 모델의 판정이 불일치하면 자동 승격하지 않고 Human 또는 Professional Reviewer에게 회부한다(INCONCLUSIVE로 표시)
-- 2차 확인에 사용된 모델·버전은 §9-1(OReview 자체 판정 재현성) 원칙에 따라 Receipt에 함께 고정한다
-- Cross-Model 불일치 이력은 [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OMemory의 MissedFinding/KnowledgePattern 후보로 연결해 반복되는 blind spot 유형을 축적한다
-- 비용 관리를 위해 Cross-Model 2차 확인은 Critical 후보에 한정하며 Medium/Low까지 전수 적용하지 않는다
+- Critical로 잠정 판정된 Finding은 원 구현에 사용된 모델·Provider와 다른 계열의 모델로 2차 확인을 거친다. **이 결과는 corroboration이며 Ground Truth 확정 자체가 아니다.**
+- 두 모델의 판정이 불일치하면 자동 승격하지 않고 Human/Professional Reviewer 또는 독립 Executable Oracle로 회부한다(INCONCLUSIVE/HOLD).
+- 두 모델이 일치해도 Critical Final Claim은 [07 §8](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md)의 독립성·Ground Truth 요건을 별도로 충족해야 한다.
+- 2차 확인에 사용된 모델·버전은 §9-1 원칙에 따라 Receipt에 함께 고정한다.
+- Cross-Model 불일치 이력은 [02](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) OMemory의 MissedFinding/KnowledgePattern 후보로 연결한다.
+- 비용 관리를 위해 자동 Cross-Model 2차 확인은 Critical 후보에 우선 적용하되, Assurance 등급 요구가 더 높으면 High/Selected Medium으로 확대할 수 있다.
 
 ## 11. 금지사항
 - 실행하지 않은 Test를 PASS로 표기
@@ -234,3 +235,163 @@ Finding → 사용자 선택 → OImprovement Patch Plan → Worktree → Patch 
 - 고객 정책보다 모델의 일반 선호를 우선
 - 기존 Finding을 설명 없이 삭제
 - Review 결과를 이용해 라이선스 한도를 우회
+
+## 12. Truth Assurance·Review Meta-Validation 상세설계 (신규, 2026-08-09)
+이 절은 Finding 탐지 이후 **그 Finding과 최종 Review Claim이 실제로 참인지**, 그리고 "찾지 못했다"가 "없다"로 잘못 승격되지 않는지를 통제한다.
+
+### 12.1 Finding 의미모델
+Finding은 다음 차원을 분리한다.
+- `severity`: 영향의 심각도
+- `confidence`: 해당 Finding이 참일 확률/판정 신뢰도
+- `exploitability_or_triggerability`: 공격·실패 조건의 실현가능성
+- `impact`: 데이터/금전/권한/가용성/안전 영향
+- `exposure`: 실제 운영 노출범위
+- `evidence_strength`: 근거 강도
+
+Severity와 Confidence를 하나의 점수로 뭉개지 않는다. 낮은 Confidence의 Critical 후보는 삭제하지 않고 독립 검증으로 회부한다.
+
+### 12.2 Closure Reason
+실제 `security-findings.v1.schema.json`의 `CLOSED`가 무엇을 의미하는지 구분하기 위해 다음 보조 필드/엔티티를 `DESIGN_ONLY`로 정의한다.
+- FIXED
+- FALSE_POSITIVE
+- DUPLICATE
+- NOT_APPLICABLE
+- MITIGATED
+- SUPERSEDED
+
+`ACCEPTED_RISK`는 CLOSED/FIXED와 구분한다. Risk Accept는 결함 소멸이 아니며 Critical Accepted Risk는 Full Assurance를 차단하거나 Ceiling을 낮춘다.
+
+### 12.3 Severity Downgrade Guard
+Critical/High Finding의 Severity 변경은 원 Finding, 변경 전/후 Severity, 이유, 승인자, 증거, 정책 버전을 남긴다. 다음 변조를 전용 Meta-Test로 검증한다.
+- CRITICAL→HIGH
+- CRITICAL→MEDIUM
+- HIGH→MEDIUM
+
+근거 없는 downgrade가 Final 차단조건을 우회하면 실패다.
+
+### 12.4 Negative Assurance
+`open_critical_count=0`은 Critical 부재 증명이 아니다. `NO_CRITICAL_FINDING_PROVEN_WITHIN_SCOPE`를 주장하려면 다음을 모두 요구한다.
+- Critical defect-class detector 실행
+- Critical scope coverage 충분
+- 필요한 observation channel complete
+- unsupported/unobservable Critical surface 0
+- 관련 scanner/tool 정상 종료
+- Critical fixture/negative test 실행
+- Evidence target/context binding PASS
+
+하나라도 부족하면 `NO_CRITICAL_OBSERVED` 또는 `NOT_PROVEN`으로만 표현한다.
+
+### 12.5 Evidence-to-Claim Sufficiency
+각 Claim은 `required_evidence_types`와 `minimum_independent_origins`를 갖고, 각 Evidence는 `supports_claim_ids`, `origin_source_id`, `PRIMARY|DERIVED|AGGREGATED`를 갖는다. Critical Claim은 최소 하나의 PRIMARY evidence까지 역추적되어야 한다. 동일 scanner output에서 파생된 log/report/receipt 3개를 독립증거 3개로 세지 않는다.
+
+### 12.6 Evidence/Claim 순환 금지
+Claim→Report→동일 Claim로 되돌아오는 순환증명을 금지한다. Final Claim을 지지하는 Evidence Graph는 원시 증거 방향으로 역추적 가능한 DAG여야 한다.
+
+### 12.7 Composite / Interaction Risk
+개별 LOW/MEDIUM Finding들의 조합이 Critical attack/failure chain을 만들 수 있으므로 다음 상호작용을 별도 분석한다.
+- Authorization × Cache/Retry/State
+- Permission × Recovery
+- API × DB transaction
+- Component × Component
+- AI Agent × Tool × RAG
+- Failure × Recovery × Concurrency
+
+AttackChain/FailureChain/PrivilegeEscalationChain/DataLeakageChain을 생성하고, 단일 Finding 최대 Severity만으로 전체 Risk를 결정하지 않는다.
+
+### 12.8 Finding Deduplication Integrity
+중복 통합 시 `finding_identity`, `equivalence_basis`, `root_cause_group`, `instance_count`를 구분한다. 서로 다른 공격경로를 하나의 Finding으로 합쳐 위험을 낮추거나, 같은 원인을 여러 건으로 중복 계산해 RiskScore를 부풀리는 것을 금지한다.
+
+### 12.9 Decision Propagation
+의존관계가 있는 하위 상태는 상위 Claim에 전파한다.
+- child FAIL → parent FAIL
+- critical child HOLD/BLOCKED/NOT_RUN/INCONCLUSIVE → parent는 PASS 불가
+- optional child NOT_RUN → 명시적 exclusion이 있을 때만 제한된 PASS 가능
+- unknown dependency → parent Assurance Ceiling 하향
+
+평균 점수로 Unknown/NOT_RUN을 상쇄하지 않는다.
+
+### 12.10 Review Blindness와 Bias 방지
+고신뢰 독립 Review 중 일부는 다음 context를 제거한다.
+- 이전 ProgramRiskScore
+- 이전 PASS/FAIL
+- Vendor/팀 평판
+- OMemory pattern recommendation
+- 1차 Reviewer의 결론
+
+Blind 결과와 일반 결과가 충돌하면 불일치 자체를 Evidence로 남기고 제3 Oracle/Reviewer로 회부한다.
+
+### 12.11 Policy/Requirement Correctness Review
+OReview는 "요구사항대로 구현됐는가"뿐 아니라 "그 요구사항/정책 자체가 외부 규범·안전·보안 기준과 충돌하지 않는가"를 별도 판단한다. 문서·코드·테스트·API·DB·운영 Runbook·규제 기준이 충돌하면 임의로 하나를 선택하지 않고 `REQUIREMENT_CONFLICT_HOLD`를 생성한다.
+
+### 12.12 Human Approval의 의미 제한
+Human/Professional Approval은 다음 중 어떤 행위인지 구분한다.
+- FACT_VALIDATION
+- RISK_ACCEPTANCE
+- BUSINESS_ACCEPTANCE
+
+Risk/Business Acceptance를 사실 검증의 Ground Truth로 사용하지 않는다.
+
+### 12.13 수용기준
+- Cross-Model Agreement만으로 Critical Ground Truth를 확정하지 않는다.
+- Critical absence claim은 Coverage/Observability/Detector/Evidence sufficiency가 모두 있어야 한다.
+- CLOSED Finding은 closure reason을 설명할 수 있어야 한다.
+- Accepted Risk를 Fixed와 동일하게 표시/집계하지 않는다.
+- Composite risk 분석 없이 여러 LOW/MEDIUM을 단순 개별 상태로만 종료하지 않는다.
+- Critical Review의 최소 한 Lane은 Memory/previous verdict blind 상태로 수행 가능해야 한다.
+- 모든 Material Claim은 PRIMARY Evidence까지 역추적되어야 한다.
+
+## 13. Deployment·Currentness·Composition·Certificate·Meta-Assurance Review (신규)
+이 절은 `02 FR-META-044~060`을 OReview 책임으로 내린다.
+
+### 13.1 Deployment Identity Review
+- verified artifact digest와 deployed/running artifact digest의 직접 결속 여부
+- mutable tag/name을 identity authority로 사용하는지
+- Rolling/Blue-Green/Canary/Multi-region의 mixed population을 전체 PASS로 오인하는지
+- target→deployment root/cluster/account binding이 tenant/target authority와 일치하는지
+
+### 13.2 Runtime Currentness / Revocation Review
+- artifact/config/feature/dependency/model/prompt/RAG/external contract drift가 currentness graph에 반영되는지
+- FinalLock을 영구 CURRENT로 취급하는지
+- rollback/DR/service recovery가 과거 PASS를 자동 복원하는지
+- INVALIDATED/REASSESSMENT_REQUIRED와 signed REVOKED를 구분하는지
+
+### 13.3 Product Assurance Composition Review
+- exact subject/dependency population이 존재하는지
+- HARD dependency의 HOLD/UNKNOWN/STALE을 평균으로 숨기는지
+- N/A가 applicability evidence 없이 denominator에서 빠지는지
+- self-validation result가 independent/qualified level로 승격되는지
+- conflicting PASS/FAIL이 supersession proof 없이 latest-wins로 처리되는지
+
+### 13.4 Evidence Graph Review
+- material Final/Certificate parent를 PRIMARY evidence까지 재구성 가능한지
+- dangling/cross-tenant edge, DERIVED_FROM/SUPERSEDES cycle이 있는지
+- CONTRADICTS/INVALIDATES/REVOKES 관계가 실제 currentness에 전파되는지
+- retry PASS가 과거 failure node를 삭제하는지
+
+### 13.5 Certificate / Offline Review
+- Certificate가 내부 Evidence 전체를 과다 공개하는지
+- limitation/exclusion/currentness/revocation 확인정보가 누락되는지
+- Offline Trust Bundle의 key/policy/qualification/revocation/trusted-time snapshot이 결속되는지
+- offline uncertainty를 CURRENT로 숨기는지
+
+### 13.6 Enterprise Authority Review
+- delegation이 parent grant보다 넓은지
+- 동일 principal의 여러 key/account를 four-eyes로 세는지
+- Break-glass가 Final PASS/Assurance strength를 직접 생성하는지
+- Legal Hold가 freshness/validity를 자동 연장하는지
+
+### 13.7 Scale / Plugin / Adapter Review
+- duplicate/retry/stale lease로 denominator/result가 중복 집계되는지
+- parallel aggregation이 execution order에 따라 digest가 바뀌는지
+- unsigned/unqualified/revoked plugin/adapter가 authoritative evidence를 생성하는지
+- declared privilege보다 실제 filesystem/network/effect scope가 넓은지
+
+### 13.8 AI Runtime / Meta-Assurance Review
+- model/provider alias가 실제 model identity를 대체하는지
+- dynamic prompt/tool/RAG/memory identity가 target/currentness digest에서 누락되는지
+- nondeterministic AI를 단일 favorable run으로 PASS 처리하는지
+- multi-agent majority agreement를 Ground Truth로 오인하는지
+- ONSure 자체 validator/oracle/adapter/benchmark 변경 후 requalification 없이 기존 qualification을 재사용하는지
+
+### 13.9 Review Decision Ceiling
+위 영역에서 Critical HARD dependency, deployment identity mismatch, unresolved currentness conflict, invalid/revoked authority, unqualified ONSure capability가 발견되면 OReview `quality_decision=PASS`를 만들 수 없다. Review가 PASS여도 Final/Certificate authority를 직접 만들지 않는다.

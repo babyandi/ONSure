@@ -1,0 +1,17 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/human-reviewer-qualification.candidate.v2.schema.json",
+  "title":"ONSure Human Reviewer Qualification Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","reviewer_profile_id","principal_profile_sha256","domains","conflict_of_interest","calibration","blind_capability","validity","decision","qualification_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_HUMAN_REVIEWER_QUALIFICATION_V2_CANDIDATE"},"reviewer_profile_id":{"type":"string","minLength":1},"principal_profile_sha256":{"$ref":"#/$defs/sha256"},
+    "domains":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"conflict_of_interest":{"enum":["NONE_DECLARED_AND_CHECKED","POTENTIAL","CONFIRMED","NOT_PROVEN"]},
+    "calibration":{"type":"object","additionalProperties":false,"required":["golden_fixture_count","correct_count","overturn_rate","error_rate","calibration_receipt_sha256"],"properties":{"golden_fixture_count":{"type":"integer","minimum":1},"correct_count":{"type":"integer","minimum":0},"overturn_rate":{"type":"number","minimum":0,"maximum":1},"error_rate":{"type":"number","minimum":0,"maximum":1},"calibration_receipt_sha256":{"$ref":"#/$defs/sha256"}}},
+    "blind_capability":{"type":"object","additionalProperties":false,"required":["supported","last_blind_manifest_sha256"],"properties":{"supported":{"type":"boolean"},"last_blind_manifest_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"}}},
+    "validity":{"type":"object","additionalProperties":false,"required":["qualification_epoch","valid_from","valid_until"],"properties":{"qualification_epoch":{"type":"string","minLength":1},"valid_from":{"type":"string","format":"date-time"},"valid_until":{"type":"string","format":"date-time"}}},
+    "workload_signal":{"type":["object","null"],"additionalProperties":false,"properties":{"active_reviews":{"type":"integer","minimum":0},"fatigue_risk":{"enum":["LOW","MEDIUM","HIGH","UNKNOWN"]}}},
+    "decision":{"enum":["QUALIFIED","QUALIFIED_NONFINAL","PARTIAL","FAILED","HOLD"]},"qualification_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

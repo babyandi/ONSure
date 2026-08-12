@@ -1,0 +1,165 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_CAPABILITY_REGISTRY_CANDIDATE_V1",
+  "schema_version": "1.0.0-candidate",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "authority": {
+    "implementation": false,
+    "merge": false,
+    "deploy": false,
+    "production_go": false,
+    "commercial_go": false,
+    "final_lock": false
+  },
+  "capabilities": [
+    {
+      "id": "SA-01",
+      "name": "EVIDENCE_REPERFORMANCE_TRUTH_BINDING",
+      "priority": "P0",
+      "owner_programs": ["OReview", "OVerification", "OEvidence"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["reperformance-report", "evidence-strength-classification"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-02",
+      "name": "DENOMINATOR_COVERAGE_DISCOVERY",
+      "priority": "P0",
+      "owner_programs": ["OLearning", "OPlanning", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["denominator-epoch", "denominator-change-candidate"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-03",
+      "name": "OBLIGATION_CLOSURE_ENGINE",
+      "priority": "P0",
+      "owner_programs": ["OPlanning", "OReview", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["obligation-closure", "obligation-routing"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-04",
+      "name": "AUTHORITY_LIFECYCLE_VALIDATOR",
+      "priority": "P0",
+      "owner_programs": ["OReview", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["authority-lifecycle", "authorization-decision-snapshot"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-05",
+      "name": "CANONICAL_STATE_AUTHORITY_VALIDATOR",
+      "priority": "P0",
+      "owner_programs": ["OLearning", "OReview", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["canonical-state-authority-map"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-06",
+      "name": "RIGHTS_REMEDY_EXECUTABILITY",
+      "priority": "P0",
+      "owner_programs": ["OLearning", "OPlanning", "OReview", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["rights-reachability", "actionable-rights-closure", "rights-fixed-point"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-07",
+      "name": "DISTRIBUTED_EFFECT_INTEGRITY",
+      "priority": "P0",
+      "owner_programs": ["OPlanning", "OVerification", "OEvidence"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["handoff-work", "batch-operation", "item-effect-receipt", "effect-reversibility", "terminal-impact-closure"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-08",
+      "name": "FRESHNESS_INVALIDATION_GRAPH",
+      "priority": "P0",
+      "owner_programs": ["OEvidence", "ODelivery", "OMemory"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["freshness-graph", "invalidation-event", "current-disposition-receipt"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-09",
+      "name": "PRINCIPAL_POLICY_SOD_VALIDATOR",
+      "priority": "P1",
+      "owner_programs": ["OReview", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["principal-resolution", "policy-precedence", "sod-assessment"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-10",
+      "name": "PRIVACY_DISCLOSURE_OBSERVER_VALIDATOR",
+      "priority": "P1",
+      "owner_programs": ["OReview", "OVerification", "ODelivery"],
+      "design_refs": ["docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["observer-equivalence", "disclosure-profile", "cross-channel-disclosure"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-11",
+      "name": "AI_LIFECYCLE_AUTHORITY_CLOSURE",
+      "priority": "P1",
+      "owner_programs": ["OLearning", "OPlanning", "OReview", "OVerification", "OTraining"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md", "docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["ai-use-case-assurance", "human-review-mode", "ai-profile-identity"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-12",
+      "name": "CROSS_MODEL_SEMANTIC_TRACE",
+      "priority": "P1",
+      "owner_programs": ["OLearning", "OReview", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["cross-model-mapping", "contract-enforcement-closure"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-13",
+      "name": "BUSINESS_SEMANTIC_INTEGRITY",
+      "priority": "P1",
+      "owner_programs": ["OReview", "OVerification"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md", "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md", "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["business-semantic-invariant", "quantitative-integrity-report"],
+      "required_execution": true
+    },
+    {
+      "id": "SA-14",
+      "name": "VALIDATOR_REQUALIFICATION_ENGINE",
+      "priority": "P1",
+      "owner_programs": ["OMemory", "OVerification", "OEvidence"],
+      "design_refs": ["docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md", "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md", "docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md", "docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md"],
+      "maturity": "DESIGN_ONLY",
+      "required_contracts": ["validator-qualification-run", "method-requalification-receipt"],
+      "required_execution": true
+    }
+  ],
+  "rules": {
+    "designed_is_not_implemented": true,
+    "implemented_is_not_executed": true,
+    "executed_is_not_evidence_bound": true,
+    "evidence_bound_is_not_independent": true,
+    "independent_is_not_qualified": true,
+    "not_applicable_requires_justification": true,
+    "input_required_blocks_positive_promotion": true,
+    "new_capability_requires_distinct_defect_class": true
+  }
+}

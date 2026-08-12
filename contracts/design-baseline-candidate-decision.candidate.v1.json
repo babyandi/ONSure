@@ -1,0 +1,31 @@
+{
+  "contract_type": "DESIGN_BASELINE_CANDIDATE_DECISION_V1",
+  "authority": "DESIGN_ONLY_NONFINAL",
+  "decision": "HOLD_MATERIALIZATION_INCOMPLETE",
+  "ready_conditions": {
+    "global_requirement_population_locked": false,
+    "applicability_population_locked": false,
+    "global_trace_scan_complete": false,
+    "p0_orphan_zero_proven": false,
+    "p0_design_conflict_zero_proven": false,
+    "unknown_critical_requirement_zero_proven": false,
+    "exact_content_sha256_inventory_locked": false,
+    "baseline_manifest_reconstructable_proven": false,
+    "implementation_alignment_full_reverse_scan_complete": false,
+    "unresolved_p0_semantic_change_queue_zero_proven": false
+  },
+  "hold_reasons": [
+    "GLOBAL_REQUIREMENT_EXACT_POPULATION_NOT_MATERIALIZED",
+    "GLOBAL_APPLICABILITY_POPULATION_NOT_MATERIALIZED",
+    "GLOBAL_TRACE_SCAN_NOT_RUN",
+    "REPOSITORY_WIDE_ORPHAN_SCAN_NOT_RUN",
+    "CONTENT_SHA256_ARTIFACT_INVENTORY_NOT_MATERIALIZED",
+    "DESIGN_LOCK_CHECK_NOT_RUN",
+    "FULL_IMPLEMENTATION_REVERSE_SCAN_NOT_RUN",
+    "SEMANTIC_CHANGE_QUEUE_ZERO_NOT_PROVEN"
+  ],
+  "may_activate_v2_selector": false,
+  "may_issue_final_lock": false,
+  "may_issue_production_go": false,
+  "may_issue_commercial_go": false
+}

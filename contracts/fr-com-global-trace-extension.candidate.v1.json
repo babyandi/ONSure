@@ -1,0 +1,24 @@
+{
+  "contract_type": "ONSURE_FR_COM_GLOBAL_TRACE_EXTENSION_CANDIDATE_V1",
+  "status": "CANDIDATE_NONFINAL",
+  "source": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+  "explicit_requirement_range": "FR-COM-001..013",
+  "count": 13,
+  "rows": [
+    {"id":"FR-COM-001","design":["02","04","53"],"contract_owner":["tenant-context.v1.schema.json","product-process-lineage.candidate.v2.json"],"operation_owner":["workflow.dispatch"],"receipt_owner":["runtime-execution-receipt"],"test_owner":["06"]},
+    {"id":"FR-COM-002","design":["04","46","49"],"contract_owner":["tenant-context.v1.schema.json","authority-principal-profile.candidate.v2.schema.json"],"operation_owner":["tenant-scoped-operations"],"receipt_owner":["authorization-audit-receipt"],"test_owner":["06-security"]},
+    {"id":"FR-COM-003","design":["04-OLicense"],"contract_owner":["entitlement-credit-registry"],"operation_owner":["license.validate","license.consume"],"receipt_owner":["license-receipt"],"test_owner":["06-license"]},
+    {"id":"FR-COM-004","design":["04","60","63"],"contract_owner":["assurance-receipt-envelope.candidate.v2.schema.json"],"operation_owner":["all-effect-operations"],"receipt_owner":["execution-receipt"],"test_owner":["06-evidence"]},
+    {"id":"FR-COM-005","design":["43","63"],"contract_owner":["evidence-canonicalization-profile.candidate.v2.schema.json"],"operation_owner":["semantic.reperformance.run"],"receipt_owner":["reperformance-receipt"],"test_owner":["06-deterministic"]},
+    {"id":"FR-COM-006","design":["43","47"],"contract_owner":["usage-reservation-settlement-owner"],"operation_owner":["credit.settle"],"receipt_owner":["usage-receipt"],"test_owner":["06-fault-injection"]},
+    {"id":"FR-COM-007","design":["02-OImprovement"],"contract_owner":["git-change-registry-owner"],"operation_owner":["improvement.patch"],"receipt_owner":["git-operation-receipt"],"test_owner":["06-git"]},
+    {"id":"FR-COM-008","design":["03","52"],"contract_owner":["main-branch-protection.v1.json"],"operation_owner":["git.merge","git.push"],"receipt_owner":["git-operation-receipt"],"test_owner":["branch-protection-test"]},
+    {"id":"FR-COM-009","design":["46","67"],"contract_owner":["privacy-policy-profile"],"operation_owner":["corpus.contribute"],"receipt_owner":["consent-audit-receipt"],"test_owner":["privacy-test"]},
+    {"id":"FR-COM-010","design":["05"],"contract_owner":["portfolio-projection-owner"],"operation_owner":["portfolio.read"],"receipt_owner":["read-audit"],"test_owner":["ui-api-test"]},
+    {"id":"FR-COM-011","design":["05","47"],"contract_owner":["notification-rule-event"],"operation_owner":["notification.dispatch"],"receipt_owner":["notification-delivery-receipt"],"test_owner":["notification-test"]},
+    {"id":"FR-COM-012","design":["04","46"],"contract_owner":["seat-credential-authority"],"operation_owner":["seat.revoke","seat.reassign"],"receipt_owner":["authority-receipt"],"test_owner":["rbac-session-test"]},
+    {"id":"FR-COM-013","design":["55","62","67"],"contract_owner":["authority-grant","assurance-policy-profile"],"operation_owner":["high-risk-operations"],"receipt_owner":["authority-approval-receipt"],"test_owner":["sod-negative-test"]}
+  ],
+  "explicit_trace_candidate": {"covered":73,"denominator":73},
+  "global_requirement_denominator_authoritative": false
+}

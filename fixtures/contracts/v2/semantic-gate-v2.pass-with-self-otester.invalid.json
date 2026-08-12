@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_GATE_RECEIPT_V2_CANDIDATE",
+  "gate_receipt_id": "gate-invalid-self-otester",
+  "target": {"target_id":"target-001","source_tree_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","artifact_digest":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","deployment_digest":null},
+  "epochs": {"scope_epoch":"scope-1","requirement_epoch":"req-1","denominator_epoch":"denom-1","policy_epoch":"policy-1","oracle_epoch":"oracle-1","validator_qualification_epoch":"validator-qual-1","authority_epoch":"auth-1"},
+  "evidence_bundle": {"receipt_id":"bundle-001","receipt_type":"EVIDENCE_BUNDLE","receipt_sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+  "semantic_capability_closure": {"applicable_count":1,"passed_count":1,"blocked_count":0,"hold_count":0,"not_run_count":0,"capability_set_digest":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","closure_receipts":[{"capability_id":"SA-01","applicability":"APPLICABLE","decision":"PASS","receipt_sha256":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}]},
+  "freshness_barrier": {"receipt_id":"freshness-001","receipt_type":"FRESHNESS_BARRIER","receipt_sha256":"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+  "independent_otester": {"receipt_id":"otester-local-001","receipt_sha256":"1111111111111111111111111111111111111111111111111111111111111111","principal_profile_sha256":"2222222222222222222222222222222222222222222222222222222222222222","independence_profile_sha256":"3333333333333333333333333333333333333333333333333333333333333333","independence_state":"SELF_VALIDATION","qualification_state":"QUALIFIED"},
+  "independent_oaudit": {"receipt_id":"oaudit-001","receipt_sha256":"4444444444444444444444444444444444444444444444444444444444444444","principal_profile_sha256":"5555555555555555555555555555555555555555555555555555555555555555","independence_profile_sha256":"6666666666666666666666666666666666666666666666666666666666666666","independence_state":"INDEPENDENT","qualification_state":"QUALIFIED"},
+  "human_acceptance": {"receipt_id":"human-001","receipt_type":"HUMAN_ACCEPTANCE","receipt_sha256":"7777777777777777777777777777777777777777777777777777777777777777"},
+  "open_findings": {"p0_count":0,"p1_count":0,"blocking_set_digest":"8888888888888888888888888888888888888888888888888888888888888888"},
+  "revocation": {"state":"CURRENT","revocation_epoch":"rev-1","current_status_receipt_sha256":"9999999999999999999999999999999999999999999999999999999999999999"},
+  "decision": "PASS",
+  "reason_codes": ["INVALID_SELF_VALIDATION_OTESTER"],
+  "reconstructed_at": "2026-08-11T14:00:00Z",
+  "authority": {"principal_profile_id":"final-authority-001","principal_profile_sha256":"abababababababababababababababababababababababababababababababab","authority_epoch":"auth-1"},
+  "signature": {"key_id":"final-key-001","algorithm":"Ed25519","signature":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+  "gate_receipt_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+  "final_lock_allowed": false
+}

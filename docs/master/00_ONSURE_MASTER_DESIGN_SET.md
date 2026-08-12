@@ -17,108 +17,178 @@ Understand → Plan → Review → Verify → Improve → Prove → Remember
 - Remember: 유효했던 개선과 실패 패턴을 재사용 가능한 지식으로 축적한다.
 
 ### 2-1. 두 종류의 학습
-ONSure가 말하는 "학습"은 반드시 둘을 구분한다.
+- **Program Understanding Learning**: OLearning이 대상 프로그램의 목적·구조·기능·행동·실행환경을 학습한다.
+- **Target AI Auto-Learning**: OTraining이 검증된 Finding과 승인 목표에 근거해 대상 프로그램 안의 RAG·Prompt·Agent·Model을 실제 데이터로 개선한다.
 
-- **Program Understanding Learning**(위 Understand, OLearning이 수행): ONSure가 대상 프로그램의 목적·구조·기능·행동·실행환경을 학습한다. ONSure 자신의 판정 능력을 위한 학습이다.
-- **Target AI Auto-Learning**(OTraining이 수행, [02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) §7-2): 검증된 Finding과 승인된 목표에 근거해 **대상 프로그램 안의 RAG·Prompt·Agent·Model 자체**를 실제 데이터로 재학습·개선한다. 코드 Patch(Improve)를 넘어서는 별도 축이며, 목적·입력·산출물·비용·위험·라이선스 단위를 Program Understanding Learning과 분리한다.
-
-두 학습이 모두 검증 Finding에서 시작해 독립 재검증을 거쳐야 배포된다는 원칙(Fail-closed, 자기 자신 승인 금지)은 동일하다. Target AI Auto-Learning을 포함하는 확장 흐름은 다음과 같다.
-
-Understand → Verify → Diagnose → Decide(Improve 또는 Train) → Improve 또는 Train → Independently Re-verify → Prove → Deploy → Observe → Re-learn
-
-- Diagnose: RCA로 원인이 코드·정책·데이터·검색(RAG)·Prompt·Agent·Model 중 어디에 있는지 판정한다([02 §7 OImprovement](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)와 [02 §7-2 OTraining](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md)이 공유하는 RCA).
-- Decide: 원인에 따라 코드 Patch(Improve)로 고칠지, AI 구성요소 재학습(Train)으로 고칠지 결정한다.
-- Deploy/Observe/Re-learn: 승인된 개선·재학습을 배포한 뒤 운영 데이터를 관찰하고, 새 실패·성능저하가 확인되면 다시 Diagnose로 돌아간다. Deploy는 자동이 아니며 §6의 배포 승인 경계를 따른다.
+두 학습 모두 검증된 근거에서 시작하며 자기 산출물을 자기 자신이 Final 승인하지 않는다.
 
 ### 2-2. 재귀학습 원칙은 ONSure 자신에게도 적용된다
-OMemory(§5)의 재귀학습(자동 판정이 놓친 결함을 RCA→개정→회귀→승격으로 흡수해 ONSure 자신의 탐지 능력을 보강하는 루프, [02 §7-1](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md))과 Target AI Auto-Learning(대상 프로그램의 AI를 재학습하는 루프)은 **같은 원칙을 공유하는 두 적용 사례**다. 검증된 근거에서만 시작하고, 자기 자신이 낸 개정을 스스로 승인하지 않으며, 독립 재검증을 통과해야 승격·배포된다. ONSure는 대상 프로그램만 재귀학습시키는 도구가 아니라, 그 재귀학습 원칙을 자기 자신의 판정 능력에도 동일하게 적용하는 도구다.
-
-이는 선언에 그치지 않고 순서를 강제하는 실제 계약(`contracts/learning-to-application-pipeline.v1.json`)이 있다: 학습결과를 대상 프로그램에 적용하는 것(`TARGET_PRODUCT_APPLY`, 곧 OTraining)은 ONSure가 자기 자신의 학습결과를 승격시키는 경로(OMemory, `VALIDATION_PACK_APPLY`)를 최소 1건 `APPLIED_LOCKED`까지 증명하기 전까지 허용되지 않는다. 대상을 재학습시키는 도구이기 전에, 먼저 스스로를 안전하게 재학습시킬 수 있어야 한다.
+`contracts/learning-to-application-pipeline.v1.json`은 TARGET_PRODUCT_APPLY보다 ONSure 자체 VALIDATION_PACK_APPLY가 먼저 실제 승격되어야 함을 강제한다.
 
 ## 3. 독립성 원칙
 - ONSure의 제품 정의, 실행 구조, 고객 데이터, 릴리스는 ORUDA에 종속되지 않는다.
 - ONSure는 독립 저장소, 독립 배포, 독립 상품, 독립 SLA를 가진다.
-- OLicense 연계가 중단되어도 계약된 Offline Grace 정책 범위에서 제한 실행할 수 있다.
-- ONSure는 라이선스를 생성하거나 임의 변경하지 않는다. Validate, Consume, Report만 수행한다.
+- Offline Grace는 제한실행일 뿐 Final assurance 권위를 자동 보존하지 않는다.
+- ONSure는 OLicense entitlement를 Validate/Consume/Report하며 임의 발급·변경하지 않는다.
 
 ## 4. 상품 체계
 ### 4.1 Web One-time Service
-- Learn
-- Verify
-- Learn & Verify
-- 후속 Improve & Re-verify
-
-Web의 1회는 버튼 실행 횟수가 아니라 Service Case 단위다.
-
-Service Case = System + Programs + Baseline + Scope + Capacity + Validity + Deliverables
+Learn / Verify / Learn & Verify / Improve & Re-verify.
 
 ### 4.2 VS Code Continuous Subscription
-- Developer
-- Team
-- Enterprise
-- Unlimited Systems & Programs
+Developer / Team / Enterprise / Unlimited Systems & Programs.
 
-VS Code는 지속 학습, 지속 리뷰, 지속 검증, 지속 개선을 제공한다.
-
-Unlimited는 등록·활성화 가능한 System·Program 수 제한만 제거하는 옵션이며, AI·학습·GPU·컴퓨팅·Storage·전문가 지원까지 무제한을 의미하지 않는다(`docs/v2/00_MASTER_INDEX.md` §4). Seat, Credit, 동시 실행, Compute, Storage는 별도 계약 한도를 적용한다.
+판매 Plan은 기술적 Assurance Tier와 분리한다.
 
 ## 5. 프로그램 구성
-- OLearning: Repository와 실행 구조를 학습하고 Program Profile을 생성한다.
-- OPlanning: 검토·검증·개선 계획과 실행 순서를 생성한다.
-- OReview: 요구사항·설계·정책·코드·AI·보안·테스트·품질·Merge 리뷰를 수행한다.
-- OVerification: 정적·동적·시나리오·적대·회귀 검증을 수행한다.
-- OImprovement: Finding 기반 RCA와 Patch를 생성하고 회귀검증한다.
-- OTraining: 검증된 Finding과 승인된 목표에 근거해 대상 프로그램의 RAG·Prompt·Agent·Model을 재학습·개선하고, 배포 전 독립 재검증을 거친다(Target AI Auto-Learning).
-- OEvidence: 입력·정책·결과·실행환경·해시·Receipt를 관리한다.
-- OMemory: 유효했던 개선 패턴과 실패 패턴을 재사용 가능한 지식으로 축적하고, 자동 판정이 놓친 결함을 재귀학습으로 흡수해 탐지 능력을 지속 보강한다.
-- OGit: Worktree, Branch, Commit, Push, Draft PR, CI 상태를 관리한다.
-- ODelivery: 보고서, Patch, PR, Evidence Pack, Program Profile을 납품한다.
-- OLicense Adapter: ORUDA/OLicense의 Entitlement와 Credit을 검증·소비·보고한다.
+- OLearning
+- OPlanning
+- OReview
+- OVerification
+- OImprovement
+- OTraining
+- OEvidence
+- OMemory
+- OGit
+- ODelivery
+- OLicense Adapter
+
+### 5-1. Semantic Assurance Capability Set (`DESIGN_ONLY`)
+- SA-01 Evidence Reperformance & Truth Binding
+- SA-02 Denominator & Coverage Discovery
+- SA-03 Obligation Closure Engine
+- SA-04 Authority Lifecycle Validator
+- SA-05 Canonical State Authority Validator
+- SA-06 Rights & Remedy Executability
+- SA-07 Distributed Effect Integrity
+- SA-08 Freshness & Invalidation Graph
+- SA-09 Principal / Policy / SoD Validator
+- SA-10 Privacy Disclosure & Observer Validator
+- SA-11 AI Lifecycle & Authority Closure
+- SA-12 Cross-Model Semantic Trace Validator
+- SA-13 Business Semantic Integrity
+- SA-14 Validator Requalification Engine
+
+### 5-2. Finding Authority
+현재 source-grounded baseline:
+- raw candidate observations: **562**
+- canonical P0: **141**
+- canonical P1: **50**
+- VERIFIED_CLOSED: **0**
+
+Candidate fix 존재만으로 Finding을 CLOSED하지 않는다.
 
 ## 6. 핵심 경계
-### Review와 Verification
-Review는 구현 또는 변경이 적절한지 판단한다. Verification은 요구사항과 정책을 실제로 만족하는지 증거로 판정한다. Review PASS가 Verification PASS를 의미하지 않으며, 두 결과는 독립 저장한다.
+- Review PASS != Verification PASS
+- Self-validation PASS != Independent PASS
+- Independent PASS != Qualified
+- Qualified != Current Production-bound
+- FinalLock은 historical issuance fact이며 currentness와 분리
+- Human Acceptance != Technical Assurance
+- Production/Commercial GO != 품질 강도 상승
+- Product Plan != Assurance Tier
 
-### Improvement 시작 조건
-개선은 임의 코딩 요청에서 시작하지 않는다. 반드시 검증된 Finding 또는 승인된 Review Finding에서 시작한다.
+### Canonical Gate 편입
+실제 Final/Certificate path는 최소 다음을 닫아야 한다.
+1. Product Lineage
+2. Workflow Operation Registry/Dispatcher
+3. Requirement/Validation/Final exact denominator
+4. Independent OTester/OAudit/Human Fact Validation
+5. Final Reconstruction→Approval→Lock
+6. Verified→Deployed→Running identity
+7. Currentness/Revocation
+8. Product Composition/Evidence Graph
+9. Certificate issuance/current verification
+10. Active Selector transition/rollback
+11. ONSure Release Qualification
+12. Policy/Authority/Persistence/Recovery/Observability integrity
 
-### Learning 경계
-학습은 범용 기업 지식관리 제품으로 확장하지 않는다. Program Learning, Behavior Learning, Improvement Learning, Target AI Auto-Learning(대상 프로그램의 RAG·Prompt·Agent·Model에 한정)에 한정한다.
+## 7. 설계 산출물 기준선
+기존 `docs/master/01~08` 정본과 `docs/master/semantic-assurance` companion을 함께 사용한다.
 
-### Train 시작 조건과 배포 경계
-Target AI Auto-Learning도 Improvement와 동일하게 임의 요청에서 시작하지 않고 검증된 Finding 또는 승인된 목표에서만 시작한다. Training 결과는 독립 재검증(Independently Re-verify)을 통과하고 권한자 승인을 받기 전까지 운영에 배포하지 않는다. Deploy·Observe·Re-learn은 자동화 편의를 위해 승인 경계를 생략하지 않는다([05_UI_UX_WORKFLOW_SPECIFICATION.md](05_UI_UX_WORKFLOW_SPECIFICATION.md) §7 고위험 별도 승인).
+### Core/Migration/Runtime
+`00~28` companion은 Integration, Finding Ledger, v2 migration, Runtime wiring, Independent Assurance, Deployment identity, Runtime Evidence, Selector, TCB, Requirement Universe, Canonicalization/Crypto, Distributed Currentness를 정의한다.
 
-## 7. 주요 산출물
-- Business Plan
-- Product Requirement Document
-- Service Policy
-- Program Specification
-- OReview Specification
-- OVerification Specification
-- OImprovement Specification
-- UI/UX Specification
-- Architecture and Data Model
-- API/Event/Token Contract
-- OLicense Integration Contract
-- Security and Privacy Design
-- Test Strategy and Fixtures
-- Operation and Deployment Runbook
-- Epic/Capability/Story Backlog
-- Component Model and AI Agent Methodology ([07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md))
-- Knowledge Pattern Library and Recursive Detection Learning Design
+### Extended Assurance Architecture
+`29~52`는 Deployment/Runtime Currentness, Product Composition, Evidence Graph, Certificate, Offline/Enterprise Governance, Scale/Plugin/AI/Meta-Assurance, Formal Algebra, Invalidation, Persistence, API, Security/Privacy, Observability, Physical Model, Threat Model, Versioning, DR, External Trust를 정의한다.
 
-## 8. 출시 Gate
-다음이 모두 충족되어야 상용 출시 후보가 된다.
-- 요구사항 Traceability 100%
-- Critical/High 미해결 결함 0건
-- Web Full-Chain 연속 2회 PASS
-- VS Code Full-Chain 연속 2회 PASS
-- OLicense 발급·정지·만료·폐기·Offline 시나리오 PASS
-- Code Review와 Independent Review 완료
-- 보안·개인정보·소스 삭제 검증 PASS
-- 운영 복구 및 Rollback 시험 PASS
+### Closure/Policy/Machine Semantics
+`53~69`는 End-to-End Trace, Failure Sequence, Authority/SoD, Safe Default, Design Closure, P0 Machine Contract, Workflow Operation v2, Event/Receipt, Policy Profile, AuthorityGrant/RBAC, Canonical Serialization, Recovery Receipt, Design Trace Registry, Configurable Policy, Industry Profile, Assurance Tier, Claim Language를 정의한다.
 
-## 9. 비최종 상태
-문서 작성, 코드 구현, 단위시험, PR 생성만으로 Final PASS를 선언하지 않는다. 실제 환경 E2E, 독립 리뷰, Evidence 고정 전까지 모든 결과는 NON_FINAL이다.
+### 30개 설계 폐쇄 Batch
+`70~80`은 30개 설계 폐쇄 작업을 구조화한다.
 
-Target AI Auto-Learning(OTraining)은 다른 프로그램보다 사업성 검증이 늦은 단계다. 초기에는 GPU 학습이 필요한 전체 Model Fine-tuning까지 동시에 개발하지 않고, 재현성과 고객가치가 확인된 RAG 재인덱싱·Prompt 개선·AI 생성 코드 안정화부터 유료 Case로 시장을 검증한다([01_BUSINESS_PRODUCT_SERVICE_PLAN.md](01_BUSINESS_PRODUCT_SERVICE_PLAN.md) §11-2).
+### 후속 개발·Lock·Global Denominator
+`81~91`은 Claude Batch F~K, Schema Wave, persistence migration, policy bootstrap, runtime API semantics, exact design inventory, Lock scanner, Global Requirement Universe, requirement normalization, global trace scanner, RU-01~07 materialization을 정의한다.
+
+### 50개 설계 정밀화 Batch
+`92~101`은 50개 후속 설계 작업을 모두 설계 산출물로 닫는다.
+
+### 15단계 Design Lock Closure
+`102~107`은 Global Requirement materialization부터 Design Baseline Candidate 판정, Claude 구현 inventory alignment, semantic change intake까지 15개 후속 단계를 연결한다.
+- `102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md`
+- `103_GLOBAL_ORPHAN_CONTRADICTION_INVENTORY_AND_BASELINE_LOCK.md`
+- `104_DESIGN_BASELINE_CANDIDATE_DECISION_AND_CHANGE_CONTROL.md`
+- `105_DESIGN_TO_IMPLEMENTATION_INVENTORY_ALIGNMENT.md`
+- `106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md`
+- `107_FIFTEEN_STEP_DESIGN_LOCK_CLOSURE_MASTER_MATRIX.md`
+
+Machine candidates:
+- `contracts/fifteen-step-design-lock-closure.candidate.v1.json`
+- `contracts/design-implementation-alignment.candidate.v1.json`
+- `contracts/design-semantic-change-queue.candidate.v1.json`
+- `contracts/design-baseline-candidate-decision.candidate.v1.json`
+
+또한 06/07은 신규 Runtime/AI/Meta-Assurance 내용을 본문에 직접 흡수했고, 08은 기존 결정 이력을 보존하기 위해 `08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md`를 부속 정본으로 사용한다.
+
+## 8. Assurance Tier (`DESIGN_ONLY`)
+- AT0 UNASSESSED
+- AT1 EXECUTED
+- AT2 EVIDENCE_BOUND
+- AT3 INDEPENDENT
+- AT4 QUALIFIED
+- AT5 PRODUCTION_BOUND_CURRENT
+
+Tier는 증거조건으로 계산한다. Enterprise 구매만으로 높은 Tier가 되지 않는다.
+
+## 9. 상태 온톨로지
+다음 축을 분리한다.
+- Verification Decision
+- Assurance Strength
+- Currentness
+- Qualification
+- Independence
+- Human Acceptance
+- Deployment Authorization
+- Commercial Authorization
+
+Unknown/partial/stale/unverifiable은 positive strong claim으로 자동 승격하지 않는다.
+
+## 10. 설계 폐쇄 상태
+50개 설계 정밀화와 후속 15단계 closure는 설계/대조/판정 수준까지 수행됐다. 다만 다음 실제 materialization/scan은 아직 실행되지 않았다.
+- Global Requirement Universe exact population
+- Applicability exact population
+- repository-wide global trace/orphan/contradiction scan
+- exact content SHA-256 design inventory
+- Design Lock Check
+- full implementation reverse scan
+- semantic change queue unresolved P0=0 증명
+
+현재 최고 설계 상태:
+**`FIFTEEN_STEP_DESIGN_CLOSURE_DESIGNED / IMPLEMENTATION_INVENTORY_PARTIAL / DESIGN_BASELINE_CANDIDATE_HOLD / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
+
+15개 작업을 다뤘다는 사실은 `DESIGN LOCKED` 또는 Product PASS를 의미하지 않는다.
+
+## 11. 구현/검증과의 경계
+다음 전까지 Product/Final authority를 올리지 않는다.
+- Candidate Schema/registry 실제 제정 및 fixture
+- compile/JUnit
+- actual reconstruction/migration
+- independent OTester/OAudit
+- Human Acceptance verifier
+- Validator/ONSure qualification
+- target-bound deployment/currentness
+- Shadow Gate disagreement closure
+- Active Selector 승인
+
+문서가 자세하다는 사실은 PASS/QUALIFIED/FINAL 증거가 아니다.

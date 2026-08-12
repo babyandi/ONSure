@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/contract-active-selector.candidate.v2.schema.json",
+  "title":"ONSure Contract Active Selector Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","selector_id","contract_family","active_version","active_contract_digest","effective_at","superseded_version","migration_receipt_sha256","rollback_pointer","authority","signature","selector_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_CONTRACT_ACTIVE_SELECTOR_V2_CANDIDATE"},"selector_id":{"type":"string","minLength":1},"contract_family":{"type":"string","minLength":1},"active_version":{"type":"string","minLength":1},"active_contract_digest":{"$ref":"#/$defs/sha256"},"effective_at":{"type":"string","format":"date-time"},"superseded_version":{"type":["string","null"]},"migration_receipt_sha256":{"$ref":"#/$defs/sha256"},
+    "rollback_pointer":{"type":"object","additionalProperties":false,"required":["selector_id","selector_sha256"],"properties":{"selector_id":{"type":"string","minLength":1},"selector_sha256":{"$ref":"#/$defs/sha256"}}},
+    "authority":{"type":"object","additionalProperties":false,"required":["principal_profile_sha256","authority_epoch","purpose"],"properties":{"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1},"purpose":{"const":"CONTRACT_ACTIVATION"}}},
+    "signature":{"type":"object","additionalProperties":false,"required":["key_id","algorithm","signature"],"properties":{"key_id":{"type":"string","minLength":1},"algorithm":{"const":"Ed25519"},"signature":{"type":"string","minLength":32}}},"selector_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

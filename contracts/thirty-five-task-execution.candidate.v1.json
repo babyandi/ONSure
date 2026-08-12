@@ -1,0 +1,14 @@
+{
+  "contract_type":"ONSURE_THIRTY_FIVE_TASK_EXECUTION_CANDIDATE_V1",
+  "status":"EXECUTED_TO_HOLD_NONFINAL",
+  "explicit_trace":{"fr_meta":60,"fr_com":13,"covered":73,"denominator":73,"scope":"EXPLICIT_REQUIREMENTS_ONLY"},
+  "global_requirement_universe":{"authoritative":false,"reason":"non-id program, acceptance, NFR, invariant, policy and regulatory requirements not fully materialized"},
+  "applicability":{"authoritative":false,"critical_unknown_zero_proven":false},
+  "orphan_scan":{"repository_wide_zero_proven":false},
+  "contradiction_scan":{"repository_wide_p0_zero_proven":false,"known_numeric_collision":"canonical-id-resolved-physical-alias-remains"},
+  "artifact_inventory":{"git_identity_partial":true,"content_sha256_complete":false,"population_digest_complete":false},
+  "baseline":{"manifest_regenerated":true,"reconstructable":false,"lock_check":"HOLD"},
+  "implementation_alignment":{"inventory_level_executed":true,"semantic_review":"DEFERRED","change_queue_zero_proven":false,"design_drift_zero_proven":false},
+  "final_design_baseline_candidate":"HOLD",
+  "authoritative_claims_forbidden":["DESIGN_LOCKED","QUALIFIED","FINAL","PRODUCTION_READY"]
+}
