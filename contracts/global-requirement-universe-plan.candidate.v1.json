@@ -1,0 +1,50 @@
+{
+  "contract": "GLOBAL_REQUIREMENT_UNIVERSE_PLAN_V1_CANDIDATE",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "authority_documents": [
+    "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+    "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md",
+    "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md",
+    "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
+    "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
+    "docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md",
+    "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md",
+    "docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md"
+  ],
+  "known_explicit_families": [
+    {"prefix":"FR-COM","known_count":13,"count_authority":"SOURCE_OBSERVED"},
+    {"prefix":"FR-META","known_count":60,"count_authority":"SOURCE_OBSERVED"},
+    {"prefix":"NFR","known_count":null,"count_authority":"MATERIALIZATION_REQUIRED"}
+  ],
+  "structured_requirement_classes": [
+    "PROGRAM_FUNCTION",
+    "ACCEPTANCE_CRITERION",
+    "INVARIANT",
+    "POLICY_REQUIRED",
+    "CONTRACT_REQUIRED",
+    "REGULATORY_REQUIRED"
+  ],
+  "known_explicit_requirement_floor": 73,
+  "global_total_requirement_count": null,
+  "global_total_authority": "NOT_YET_MATERIALIZED",
+  "required_outputs": [
+    "requirement-record.v2.schema.json",
+    "requirement-universe-snapshot.v2.schema.json",
+    "requirement-semantic-relation.v1.schema.json",
+    "requirement-universe-generation-receipt.v1.schema.json",
+    "global-trace-scan-report.v1.schema.json"
+  ],
+  "anti_false_completion": [
+    "KNOWN_EXPLICIT_FLOOR_IS_NOT_GLOBAL_TOTAL",
+    "FR_META_ONLY_IS_NOT_GLOBAL_REQUIREMENT_UNIVERSE",
+    "ID_LESS_NORMATIVE_REQUIREMENTS_MUST_NOT_BE_DROPPED",
+    "COUNT_IS_NOT_DENOMINATOR_AUTHORITY",
+    "EXACT_POPULATION_DIGEST_REQUIRED"
+  ],
+  "design_refs": [
+    "docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md",
+    "docs/master/semantic-assurance/89_REQUIREMENT_ID_NORMALIZATION_AND_SEMANTIC_DEDUPLICATION.md",
+    "docs/master/semantic-assurance/90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md",
+    "docs/master/semantic-assurance/91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md"
+  ]
+}
