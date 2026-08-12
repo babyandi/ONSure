@@ -41,8 +41,15 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `26_REQUIREMENT_UNIVERSE_AND_DISCOVERY_AUTHORITY.md`: Requirement Universe/Discovery/Applicability/Denominator authority
 - `27_EVIDENCE_CANONICALIZATION_AND_CRYPTO_LIFECYCLE.md`: canonicalization, self-hash, signature, key lifecycle, replay
 - `28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md`: distributed stale/revocation/currentness/offline propagation
+- `29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md`: Verified→Deployed→Running→Currentness, rollout, drift, invalidation, rollback/recovery
+- `30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md`: multi-target Product Assurance composition, dependency propagation, Evidence Graph
+- `31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md`: customer Certificate, public verification, Offline Trust, delegation/four-eyes/break-glass
+- `32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md`: WorkUnit/scale, Plugin/Adapter trust, AI runtime/nondeterminism/multi-agent, ONSure release qualification
+- `33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md`: 29~32에 대한 negative/adversarial/failure-injection/운영 시험 정본
+- `34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md`: AI runtime identity, stochastic validation, multi-agent, provider drift, ONSure Meta-Assurance 방법론
+- `35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md`: Currentness/Composition/Certificate/Offline/Enterprise/Scale/Plugin/AI 정책 미확정값
 
-기존 `docs/master/02~08` 본문에도 FR-META-001~043과 Meta Review/Architecture/Test/AI 기준이 직접 반영되어 있다. Companion 문서는 이를 삭제하거나 대체하지 않는다.
+기존 `docs/master/02~08` 본문에도 FR-META-001~043과 Meta Review/Architecture/Test/AI 기준이 직접 반영되어 있다. 이번 설계 확장에서는 `02`에 FR-META-044~060을 직접 흡수하고, `03`에 Deployment/Currentness/Composition/Certificate/Meta-Assurance Review를, `04`에 신규 서비스·Entity·API·Event·Invariant를, `05`에 Runtime Currentness/Product Composition/Certificate UX를 직접 반영했다. `06~08`은 기존 본문의 상세도를 손상시키지 않기 위해 33~35 companion을 정식 확장 산출물로 두며 후속 안전 병합 시 본문에 흡수한다.
 
 ## 2. 역할 분리
 - **Claude**: 개발·컴파일·테스트·runtime implementation·migration execution
@@ -78,6 +85,8 @@ Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 �
 
 `semantic-assurance-v2-schema-inventory.candidate.v1.json`은 `total=31 / fixture-covered=23 / pending=8`을 추적한다.
 
+29~35에서 추가로 설계한 CompositionSnapshot, EvidenceGraph, AssuranceCertificate, AuthorityGrant, WorkUnit, PluginManifest, AI Runtime Identity, ONSureReleaseQualification은 아직 Candidate Schema로 제정되지 않은 **다음 Contract Batch**다. 문서 존재를 Contract 존재로 해석하지 않는다.
+
 ## 5. Static Fixture / Execution 상태
 기존 fixture registry:
 - 23 Schema
@@ -85,7 +94,7 @@ Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 �
 - 46 semantic invalid fixture
 - Schema당 최소 2 negative fixture
 
-신규 8 Schema는 설계 단계이며 fixture/runtime 구현 대기다.
+신규 8 Schema는 설계 단계이며 fixture/runtime 구현 대기다. 29~35의 다음 Contract Batch는 Schema 제정 전이다.
 
 실제 static execution은 현재 ChatGPT container의 branch mount/DNS 제약으로 `BLOCKED_NOT_RUN`. Fixture 존재를 PASS/QUALIFIED로 해석하지 않는다.
 
@@ -102,8 +111,10 @@ Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 �
 
 Compile/JUnit/독립 재검증 전에는 `IMPLEMENTATION_CANDIDATE`다.
 
+새 29~35 설계는 현재 Runtime Candidate를 임의로 활성화하지 않는다. Verified→Deployed→Running Currentness, Product Composition, Certificate, Offline Trust, Enterprise Authority, Scale/Plugin/AI/Meta-Assurance는 별도 Contract/Fixture/Handoff 이후 개발한다.
+
 ## 7. Claude 개발 순서
-`21_CLAUDE_DEVELOPMENT_HANDOFF.md`가 개발 실행 기준이다. 추가로 신규 설계는 다음 우선순위로 구현한다.
+`21_CLAUDE_DEVELOPMENT_HANDOFF.md`가 현재 개발 실행 기준이다. 추가로 기존 신규 설계는 다음 우선순위로 구현한다.
 
 1. RuntimeExecutionReceipt / Attempt history
 2. IndependentAssuranceExecutionPlan
@@ -114,7 +125,7 @@ Compile/JUnit/독립 재검증 전에는 `IMPLEMENTATION_CANDIDATE`다.
 7. Canonicalization/Crypto common library
 8. Distributed Revocation/Currentness
 
-기존 Batch A 실패 상태에서 후속 positive assurance를 주장하지 않는다.
+29~35는 **다음 개발 Handoff**에 편입한다. 현재 DEV-01~13 완료조건을 중간에 변경하지 않는다.
 
 ## 8. Canonical Gate 편입
 실제 제품 Gate가 되려면 최소 다음이 동시에 닫혀야 한다.
@@ -124,22 +135,47 @@ Compile/JUnit/독립 재검증 전에는 `IMPLEMENTATION_CANDIDATE`다.
 4. Independent OTester/OAudit/Human Fact Validation
 5. Final Reconstruction → Approval → Lock
 6. Target-bound Deployment/Verified-to-Deployed
-7. Currentness/Revocation
-8. Active Selector transition/rollback
+7. Running Population/Currentness/Revocation
+8. Multi-target Product Composition / Evidence Graph
+9. Certificate issuance/current verification
+10. Active Selector transition/rollback
+11. ONSure Release Qualification
 
-## 9. 현재 상태
-- 설계 기준선: 00~28 + Claude handoff
+## 9. 설계 확장 후 남은 Contract Batch
+다음은 설계는 존재하지만 machine contract가 아직 필요한 영역이다.
+- BuildArtifactIdentity / DeploymentRevision / RuntimeInstance / CurrentnessSnapshot v2
+- AssuranceSubject / AssuranceDependencyEdge / CompositionSnapshot
+- EvidenceGraph node/edge/graph-head contract
+- AssuranceCertificate / RevocationReceipt / OfflineTrustBundle
+- AuthorityGrant / Delegation / BreakGlassSession
+- WorkUnit / DistributedAggregationReceipt
+- PluginManifest / AdapterQualification
+- AIRuntimeIdentity / BehaviorPopulation
+- ONSureReleaseQualification / TargetArchetypeQualification
+
+각 Contract는 최소 valid 1 + semantic invalid 2 fixture, runtime operation, receipt, lineage binding을 가져야 한다.
+
+## 10. 현재 상태
+- 설계 기준선: **00~35 + Claude handoff**
+- `02`: FR-META-001~060
+- `03`: 기존 Truth Assurance + 신규 Runtime/Composition/Certificate Review
+- `04`: 기존 Meta-Validation + 신규 Deployment/Composition/Certificate/Scale Architecture
+- `05`: 기존 Assurance UX + 신규 Currentness/Composition/Certificate UX
+- `06~08`: 33~35 companion으로 상세 확장
 - canonical Finding: P0 141 / P1 50 / raw 562
 - Schema Candidate: 31
 - Fixture-covered: 23
 - 신규 fixture/runtime pending: 8
 - 기존 valid/invalid fixture: 23/46
+- 29~35 next Contract Batch: `NOT_CONTRACTED`
 - Static 실행: `BLOCKED_NOT_RUN`
 - Java compile/JUnit: `NOT_RUN`
 - independent execution: `NOT_RUN`
 - target-bound deployment identity runtime: `NOT_IMPLEMENTED`
+- Product Composition runtime: `NOT_IMPLEMENTED`
+- Certificate/Offline runtime: `NOT_IMPLEMENTED`
 - Shadow Gate actual comparison: `NOT_RUN`
 - Active Selector: `HOLD / V2_NOT_ACTIVE`
 - FinalLock/Production/Commercial authority: 없음
 
-현재 최고 표현은 **`DESIGN_BASELINE_EXTENDED_AHEAD_OF_DEVELOPMENT / CANDIDATE_ONLY / NON_FINAL`**이다.
+현재 최고 표현은 **`DESIGN_BASELINE_00_TO_35_EXTENDED_AHEAD_OF_DEVELOPMENT / NEXT_CONTRACT_BATCH_NOT_CONTRACTED / NON_FINAL`**이다.
