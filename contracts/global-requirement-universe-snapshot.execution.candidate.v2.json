@@ -1,0 +1,24 @@
+{
+  "contract_type": "ONSURE_GLOBAL_REQUIREMENT_UNIVERSE_EXECUTION_CANDIDATE_V2",
+  "status": "EXECUTED_PARTIAL_NONFINAL",
+  "source_commit": "3c7cce99d9585ac22bbded6c6ec2784b30a1e104",
+  "explicit_candidate_populations": [
+    {"prefix":"FR-COM","first":1,"last":13,"count":13,"source":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"},
+    {"prefix":"FR-META","first":1,"last":60,"count":60,"source":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"},
+    {"prefix":"FR-META","first":61,"last":62,"count":2,"source":"docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md"},
+    {"prefix":"FR-FRESH","first":1,"last":3,"count":3,"source":"docs/master/semantic-assurance/128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md"}
+  ],
+  "explicit_candidate_requirement_count": 78,
+  "global_requirement_count": null,
+  "global_population_digest": null,
+  "unmaterialized_classes": [
+    "NON_ID_PROGRAM_FUNCTION",
+    "ACCEPTANCE_CRITERION",
+    "NFR",
+    "ARCHITECTURE_INVARIANT",
+    "POLICY_REQUIREMENT",
+    "REGULATORY_REQUIREMENT"
+  ],
+  "global_denominator_authoritative": false,
+  "lock_effect": "HOLD"
+}
