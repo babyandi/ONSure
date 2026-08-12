@@ -1,0 +1,21 @@
+{
+  "contract_type": "ONSURE_DESIGN_LOCK_CHECK_EXECUTION_CANDIDATE_V2",
+  "status": "EXECUTED_HOLD_NONFINAL",
+  "frozen_design_input_commit": "3c7cce99d9585ac22bbded6c6ec2784b30a1e104",
+  "product_design_scope_complete_candidate": true,
+  "gates": [
+    {"id":"GLOBAL_REQUIREMENT_EXACT_POPULATION","result":"HOLD","detail":"78 explicit candidate requirements identified; non-ID/NFR/invariant/policy/regulatory population not exactly materialized"},
+    {"id":"APPLICABILITY_EXACT_POPULATION","result":"HOLD","detail":"authoritative product/target/industry/environment/tier/policy context population not materialized; critical UNKNOWN zero not proven"},
+    {"id":"GLOBAL_TRACE_CLOSURE","result":"HOLD","detail":"73/78 explicit candidate requirements traced; FR-META-061/062 and FR-FRESH-001~003 not yet machine-traced; non-ID layer pending"},
+    {"id":"REPOSITORY_ORPHAN_ZERO","result":"NOT_PROVEN","detail":"repository-wide semantic scanner not executed"},
+    {"id":"P0_DESIGN_CONTRADICTION_ZERO","result":"NOT_PROVEN","detail":"full scanner not executed; numbering collisions 21/126/127 remain physical governance issues"},
+    {"id":"EXACT_ARTIFACT_GIT_IDENTITY","result":"PARTIAL_PASS","detail":"Git identities are available for prior frozen population, but authoritative post-fresh-review population has not been fully re-inventoried"},
+    {"id":"CONTENT_SHA256_INVENTORY","result":"HOLD","detail":"exact content SHA-256 manifest not generated"},
+    {"id":"REGISTRY_DIGEST_CLOSURE","result":"HOLD","detail":"Contract/Operation/Event/Receipt/Policy/Trace/Applicability exact authoritative digests not all generated"},
+    {"id":"BASELINE_MANIFEST_RECONSTRUCTABLE","result":"HOLD","detail":"mandatory population digests missing"}
+  ],
+  "overall": "HOLD",
+  "design_qa_status": "DESIGN_QA_HOLD",
+  "ready_for_lock": false,
+  "design_baseline_locked": false
+}
