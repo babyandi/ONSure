@@ -71,6 +71,14 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md`
 - `101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md`
 
+### 15단계 Design Lock Closure 102~107
+- `102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md`
+- `103_GLOBAL_ORPHAN_CONTRADICTION_INVENTORY_AND_BASELINE_LOCK.md`
+- `104_DESIGN_BASELINE_CANDIDATE_DECISION_AND_CHANGE_CONTROL.md`
+- `105_DESIGN_TO_IMPLEMENTATION_INVENTORY_ALIGNMENT.md`
+- `106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md`
+- `107_FIFTEEN_STEP_DESIGN_LOCK_CLOSURE_MASTER_MATRIX.md`
+
 ## 2. Parent 정본 통합 상태
 - `02`: FR-COM-001~013, FR-META-001~060 및 프로그램 기능/수용기준 직접 존재
 - `03`: Runtime/Composition/Certificate/Meta-Assurance Review 직접 흡수
@@ -104,20 +112,26 @@ Claude 구현은 설계 상태를 임의로 ACTIVE/QUALIFIED/FINAL로 승격하�
 - `contracts/design-artifact-inventory-policy.candidate.v1.json`
 - `contracts/design-lock-check-report.candidate.v1.schema.json`
 - `contracts/global-requirement-universe-plan.candidate.v1.json`
-- `contracts/fifty-task-design-closure.candidate.v1.json`: 50개 설계 작업 수행상태와 Anti-False-Completion 경계
+- `contracts/fifty-task-design-closure.candidate.v1.json`
+- `contracts/fifteen-step-design-lock-closure.candidate.v1.json`
+- `contracts/design-implementation-alignment.candidate.v1.json`
+- `contracts/design-semantic-change-queue.candidate.v1.json`
+- `contracts/design-baseline-candidate-decision.candidate.v1.json`
 
 중요: 현재 machine trace 60행 + 확인된 FR-COM 13건의 **73건은 global Requirement 총수가 아니다.** NFR 및 ID 없는 Program 기능/수용기준/Invariant/Policy/Regulatory requirement까지 materialize한 exact population digest가 있어야 global denominator를 선언한다.
 
 ## 6. Machine Contract 구현 상태
-기존 Schema Inventory 기준 31개 Candidate 계열이 있고, 기존 23개에 valid 23 + semantic-invalid 46 fixture가 있다. 29~101에서 정의한 신규 계약·registry·scanner는 Claude가 실제 machine contract/runtime/fixture로 materialize할 후속 개발 대상이다.
+PR #44 changed-file inventory에는 v2 candidate Contract/Registry, SemanticAssurance Runtime candidate, validator script, JUnit source가 존재한다. 그러나 81~107에서 설계한 Currentness/Composition/EvidenceGraph/Certificate/AuthorityGrant/DistributedWork/AIBehavior/ONSureReleaseQualification/PolicyProfile/Recovery/Global Lock Scanner 중 상당수는 독립 machine contract/runtime로 아직 materialize되지 않았다.
+
+파일 존재는 ACTIVE/IMPLEMENTED/VALIDATED를 의미하지 않는다. `105_DESIGN_TO_IMPLEMENTATION_INVENTORY_ALIGNMENT.md`는 inventory-level 비교만 수행했으며 semantic code review는 의도적으로 뒤로 미뤘다.
 
 ## 7. Canonical Gate
 실제 제품 Gate는 Product Lineage, Workflow Operation, exact global Requirement denominator, Independent Assurance, Final Reconstruction/Approval/Lock, Verified→Deployed→Running, Currentness/Revocation, Product Composition/Evidence Graph, Certificate verification, Active Selector, ONSure Release Qualification, Policy/Authority/Persistence/Recovery/Observability/Event/Receipt/Trace closure를 모두 요구한다.
 
 ## 8. 현재 설계 판단
-사용자가 지시한 **50개 후속 설계 작업은 설계 산출물 기준 50/50 수행**했다. 그러나 Global Requirement Universe materialization, repository-wide orphan scan, exact content SHA-256 inventory, Design Lock Check는 실제 실행되지 않았다.
+50개 설계 정밀화와 후속 15단계 Design Lock Closure를 설계/대조/판정 수준까지 수행했다. 그러나 Global Requirement Universe materialization, repository-wide orphan/contradiction scan, exact content SHA-256 inventory, Design Lock Check, full implementation reverse scan은 아직 실행되지 않았다.
 
 현재 최고 표현:
-**`FIFTY_TASK_DESIGN_CLOSURE_COMPLETE / GLOBAL_DENOMINATOR_MATERIALIZATION_PENDING / DESIGN_LOCK_EXECUTION_PENDING / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
+**`FIFTEEN_STEP_DESIGN_CLOSURE_DESIGNED / IMPLEMENTATION_INVENTORY_PARTIAL / DESIGN_BASELINE_CANDIDATE_HOLD / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
 
-`50/50 DESIGN WORK PERFORMED`를 `DESIGN LOCKED`, `QUALIFIED`, `FINAL`, `PRODUCTION READY`로 해석하지 않는다.
+`15/15 DESIGN TASKS ADDRESSED`를 `DESIGN LOCKED`, `QUALIFIED`, `FINAL`, `PRODUCTION READY`로 해석하지 않는다.
