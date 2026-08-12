@@ -6,17 +6,17 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 
 ## 1. 문서 Set
 ### Core/Review Integration
-- `00_INTEGRATION_AND_OWNERSHIP.md`: SA-01~14 통합·권위·중복 방지
-- `02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md`: 기능·입력·산출물·수용기준
-- `03_REVIEW_SPECIFICATION_EXTENSION.md`: Finding·Review·Decision 규칙
-- `04_ARCHITECTURE_DATA_API_EXTENSION.md`: Service·Entity·State·API·Invariant
-- `05_UI_UX_WORKFLOW_EXTENSION.md`: Assurance 상태·Freshness·Rights·Authority UX
-- `06_TEST_OPERATION_EXTENSION.md`: negative/adversarial/failure-injection
-- `07_AI_AGENT_METHOD_EXTENSION.md`: AI-UC, GT, Blind, Reviewer, Qualification
-- `08_OPEN_DECISIONS_EXTENSION.md`: 미확정 Contract/정책/임계치
-- `09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md`: 독립검토 cross-cutting 통합
-- `10_FINDING_LEDGER.md`: 최초 P0/P1 canonical Finding ledger
-- `11_CONTRACT_UPGRADE_BLUEPRINT.md`: v2 Contract Bundle A~J
+- `00_INTEGRATION_AND_OWNERSHIP.md`
+- `02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md`
+- `03_REVIEW_SPECIFICATION_EXTENSION.md`
+- `04_ARCHITECTURE_DATA_API_EXTENSION.md`
+- `05_UI_UX_WORKFLOW_EXTENSION.md`
+- `06_TEST_OPERATION_EXTENSION.md`
+- `07_AI_AGENT_METHOD_EXTENSION.md`
+- `08_OPEN_DECISIONS_EXTENSION.md`
+- `09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md`
+- `10_FINDING_LEDGER.md`
+- `11_CONTRACT_UPGRADE_BLUEPRINT.md`
 
 ### Migration / Runtime / Final Gate
 - `12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md`
@@ -78,6 +78,10 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `63_CANONICAL_SERIALIZATION_AND_DIGEST_PROFILE.md`
 - `64_RECOVERY_QUALIFICATION_RECEIPT_CONTRACT_DESIGN.md`
 - `65_DESIGN_TRACE_REGISTRY_MACHINE_SPEC.md`
+- `66_OPEN_DECISION_TO_CONFIGURABLE_POLICY_MODEL.md`
+- `67_INDUSTRY_ASSURANCE_PROFILE_DESIGN.md`
+- `68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md`
+- `69_CUSTOMER_DELIVERY_REPORT_AND_CLAIM_LANGUAGE_GOVERNANCE.md`
 
 기존 `docs/master/02~08` 본문에도 FR-META-001~060과 Meta Review/Architecture/Test/AI 기준이 직접 또는 companion으로 반영된다. Companion은 기존 정본을 대체하지 않고 상세설계와 machine-contract 후보를 제공한다.
 
@@ -98,7 +102,7 @@ Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 �
 ## 4. Machine Contract Set
 현재 Schema Inventory 기준 **31개 Schema Candidate**이며, 기존 23개는 valid 23 + semantic-invalid 46 fixture가 있다. 신규 8개는 fixture/runtime 구현 대기다.
 
-29~65에서 다음 Contract/Runtime Batch의 의미를 상세설계했다: Composition, Evidence Graph, Certificate, AuthorityGrant, Distributed Work, AI Behavior Population, ONSure Release Qualification, AssurancePolicyProfile, Persistence/Operation/API/Data Governance/Observability/Physical Model/Versioning/DR/External Trust, Event/Receipt, Canonicalization, RecoveryQualification, DesignTraceRegistry. 문서 존재를 Contract/Runtime 존재로 해석하지 않는다.
+29~69에서 다음 Contract/Runtime Batch의 의미를 상세설계했다: Composition, Evidence Graph, Certificate, AuthorityGrant, Distributed Work, AI Behavior Population, ONSure Release Qualification, AssurancePolicyProfile, Persistence/Operation/API/Data Governance/Observability/Physical Model/Versioning/DR/External Trust, Event/Receipt, Canonicalization, RecoveryQualification, DesignTraceRegistry, Industry/Profile/Tier/Claim Language Governance. 문서 존재를 Contract/Runtime 존재로 해석하지 않는다.
 
 ## 5. Canonical Gate 편입
 실제 제품 Gate가 되려면 최소 다음이 동시에 닫혀야 한다.
@@ -120,15 +124,16 @@ Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 �
 16. Operational degraded-mode/issuance-suspension propagation
 17. Event/Receipt causation and canonical serialization
 18. machine-readable Design Trace closure
+19. Assurance Tier/Industry Profile/claim-language ceiling consistency
 
 ## 6. 현재 설계 판단
-`57_DESIGN_CLOSURE_REFRESH_00_TO_56.md` 기준 설계 명세 폐쇄성은 약 **95~97% 후보 범위**다. 58~65는 57에서 식별한 P0 설계 Closure 8개를 문서/계약명/필드/불변식 수준으로 추가로 구체화했다.
+`57_DESIGN_CLOSURE_REFRESH_00_TO_56.md` 기준 설계 명세 폐쇄성은 약 **95~97% 후보 범위**다. 58~69는 57에서 식별한 P0 설계 Closure를 contract naming/operation/event/policy/authority/canonicalization/recovery/trace 수준까지 구체화하고, Open Decision을 configurable policy로 전환하며 산업·상품·고객 Claim 표현까지 연결했다.
 
 남은 것은 주로:
-- 실제 JSON Schema/registry 제정
-- 02~08 parent 정본 안전 병합/인덱스 동기화
-- P0 Open Decision의 configurable policy 확정
+- 실제 JSON Schema/registry 제정 및 fixture
+- 02~08 parent 정본의 안전한 최종 병합/인덱스 동기화
+- configurable policy의 상품/산업별 초기값 확정
 - 개발/실행/독립검증 결과에 따른 예외 규칙 보정
 이다.
 
-현재 최고 표현은 **DESIGN_BASELINE_00_TO_65_HIGH_CLOSURE_CANDIDATE / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL**이다.
+현재 최고 표현은 **DESIGN_BASELINE_00_TO_69_HIGH_CLOSURE_CANDIDATE / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL**이다.
