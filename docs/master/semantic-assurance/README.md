@@ -55,6 +55,16 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `40_EVIDENCE_GRAPH_STORAGE_INDEX_AND_QUERY.md`: evidence graph persistence, graph head, index/query, compaction, tenant isolation
 - `41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL.md`: online/offline/historical certificate verification protocol
 - `42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md`: assurance policy profile, rule versioning, weakening gate, policy epoch
+- `43_PERSISTENCE_CONSISTENCY_AND_RECOVERY_ARCHITECTURE.md`: authority storage, Evidence commit protocol, graph head, restore/recovery qualification
+- `44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md`: intent→authorization→effect→evidence→decision lifecycle, retry/cancel/timeout semantics
+- `45_API_ERROR_IDEMPOTENCY_AND_TRANSACTION_SEMANTICS.md`: transport/business/assurance 분리, idempotency, snapshot pagination, bulk/async error semantics
+- `46_SECURITY_PRIVACY_AND_DATA_GOVERNANCE.md`: data class/purpose/tenant/hidden corpus/AI provider/retention/export governance
+- `47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md`: degraded mode, assurance issuance suspension, audit, incident→assurance impact
+- `48_PHYSICAL_DATA_MODEL_AND_STORAGE_PARTITIONING.md`: physical tables, keys, uniqueness, partition, population storage, semantic migration
+- `49_THREAT_MODEL_AND_TRUST_BOUNDARY_ARCHITECTURE.md`: trust boundary, attacker model, false-assurance threat classes, abuse cases
+- `50_VERSIONING_COMPATIBILITY_AND_INTEROPERABILITY.md`: semantic versioning, mixed-version cluster, migration receipt, certificate/plugin compatibility
+- `51_DISASTER_RECOVERY_AND_BUSINESS_CONTINUITY_ASSURANCE.md`: DR lifecycle, recovery qualification, failover authority, evidence/key loss
+- `52_EXTERNAL_INTEGRATION_AND_SUPPLY_CHAIN_TRUST.md`: Git/CI/OLicense/AI/registry integration provenance, reconciliation, supply-chain trust
 
 기존 `docs/master/02~08` 본문에도 FR-META-001~060과 Meta Review/Architecture/Test/AI 기준이 직접 또는 companion으로 반영된다. Companion은 기존 정본을 대체하지 않고 상세설계와 machine-contract 후보를 제공한다.
 
@@ -75,7 +85,7 @@ Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 �
 ## 4. Machine Contract Set
 현재 Schema Inventory 기준 **31개 Schema Candidate**이며, 기존 23개는 valid 23 + semantic-invalid 46 fixture가 있다. 신규 8개는 fixture/runtime 구현 대기다.
 
-29~42에서 설계한 Composition, Evidence Graph, Certificate, AuthorityGrant, Distributed Work, AI Behavior Population, ONSure Release Qualification, Assurance Policy Profile 등은 다음 Contract Batch에 해당한다. 문서 존재를 Contract/Runtime 존재로 해석하지 않는다.
+29~52에서 설계한 Composition, Evidence Graph, Certificate, AuthorityGrant, Distributed Work, AI Behavior Population, ONSure Release Qualification, Assurance Policy, Persistence/Operation/API/Data Governance/Observability/Physical Model/Versioning/DR/External Trust 영역은 다음 Contract/Runtime Batch다. 문서 존재를 Contract/Runtime 존재로 해석하지 않는다.
 
 ## 5. Canonical Gate 편입
 실제 제품 Gate가 되려면 최소 다음이 동시에 닫혀야 한다.
@@ -91,8 +101,12 @@ Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 �
 10. Active Selector transition/rollback
 11. ONSure Release Qualification
 12. Assurance Policy Profile/epoch binding
+13. Authoritative persistence/graph-head/recovery qualification
+14. Effect-time authorization/idempotency/operation lifecycle
+15. Data governance/tenant/privacy trust boundary
+16. Operational degraded-mode/issuance-suspension propagation
 
 ## 6. 현재 설계 판단
-`36_DESIGN_COMPLETION_AND_REMAINING_GAPS.md` 기준 전체 설계 명세는 약 **92~94%** 수준의 후보로 평가한다. 남은 비중은 큰 기능 발견보다는 Contract/persistence/transaction/security/operation semantics와 Open Decision 확정에 집중되어 있다.
+36번의 92~94% 평가는 00~35 시점 기준선이다. 38~52에서 formal semantics, persistence, operation, API, data governance, observability, physical storage, threat model, versioning, DR, external trust까지 추가되어 **큰 구조적 설계 공백은 더 감소했다.** 다만 Contract 제정, Open Decision 확정, 02~08 안전 병합, 개발·실행·독립검증이 남아 있으므로 별도 재평가 전 기존 숫자를 자동 상향하지 않는다.
 
-현재 최고 표현은 **DESIGN_BASELINE_00_TO_42_EXTENDED_AHEAD_OF_DEVELOPMENT / NEXT_CONTRACT_BATCH_NOT_CONTRACTED / NON_FINAL**이다.
+현재 최고 표현은 **DESIGN_BASELINE_00_TO_52_EXTENDED_AHEAD_OF_DEVELOPMENT / MACHINE_CONTRACT_AND_POLICY_CLOSURE_PENDING / NON_FINAL**이다.
