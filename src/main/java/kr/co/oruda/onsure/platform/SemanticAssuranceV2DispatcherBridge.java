@@ -1,7 +1,6 @@
 package kr.co.oruda.onsure.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.Path;
 import java.util.List;
@@ -11,19 +10,21 @@ import java.util.Map;
  * Dual-read dispatcher bridge. Existing v1 operations remain on LocalWorkflowDispatcher while
  * Semantic Assurance v2 candidate operations are routed to the isolated v2 service.
  *
- * <p>Every semantic target operation first performs the existing authenticated
- * project.read-target path, so tenant/resource ownership and authenticated context substitution
- * checks are not bypassed. File-reading semantic operations are additionally restricted to the
- * server-resolved registered target root. This is still a preflight, not an atomic authorization
- * transaction, so the bridge remains SELF_VALIDATION_NONFINAL.</p>
+ * <p>Semantic operations execute inside the existing TenantRbacService durable ownership
+ * transaction by reusing the project.read-target authorization shape. The semantic operation name
+ * is still carried in the v2 receipt, while target ownership is checked atomically around the
+ * candidate semantic call. RegisteredTarget.sourceRoot is resolved server-side and caller injected
+ * authority fields are rejected.</p>
+ *
+ * <p>This is still a candidate bridge: it has not been compile/JUnit/independently verified and is
+ * not installed as the product's active contract selector.</p>
  */
 public final class SemanticAssuranceV2DispatcherBridge {
-    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V4";
+    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V5";
     private final Path workspaceRoot;
     private final LocalWorkflowDispatcher legacy;
     private final SemanticAssuranceV2WorkflowService semantic;
     private final AuthenticatedWorkflowIdentity identity;
-    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
     public SemanticAssuranceV2DispatcherBridge(Path workspaceRoot, AuthenticatedWorkflowIdentity identity) {
         if (workspaceRoot == null || identity == null) {
@@ -46,22 +47,23 @@ public final class SemanticAssuranceV2DispatcherBridge {
         requireTargetContext(request);
         rejectCallerInjectedAuthority(request);
 
+        return new TenantRbacService(workspaceRoot).execute(
+                identity,
+                "project.read-target",
+                request,
+                () -> executeAuthorizedSemantic(operation, request));
+    }
+
+    private Map<String, Object> executeAuthorizedSemantic(String operation, JsonNode request) throws Exception {
         String projectId = request.path("project_id").asText();
         String targetId = request.path("target_id").asText();
-        JsonNode readTargetRequest = mapper.createObjectNode()
-                .put("project_id", projectId)
-                .put("target_id", targetId);
-        Map<String, Object> authorized = legacy.dispatch("project.read-target", readTargetRequest);
-        ProductCatalog.RegisteredTarget registered = registeredTarget(authorized, projectId, targetId);
+        ProductCatalog.RegisteredTarget registered = registeredTarget(projectId, targetId);
         Path authorizedTargetRoot = registered.target().sourceRoot().toAbsolutePath().normalize();
 
         if ("semantic.reperformance.run".equals(operation)) {
             requirePathWithinTarget(request, "subject_path", authorizedTargetRoot);
         }
         if ("deployment.verify-installed".equals(operation)) {
-            // v1 DeploymentInstallationService is install-root/version scoped, not target scoped.
-            // Until a target->deployment receipt/root binding is authoritative, accepting arbitrary
-            // paths here could cross tenant/target boundaries. Fail closed instead.
             return blocked(operation, "TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE");
         }
 
@@ -71,7 +73,15 @@ public final class SemanticAssuranceV2DispatcherBridge {
         routed.put("_authorized_project_id", registered.projectId());
 
         Map<String, Object> value = semantic.dispatch(operation, routed);
-        return envelope(operation, value, "PROJECT_READ_TARGET_AUTHORIZED", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT");
+        return envelope(operation, value, "TENANT_RBAC_PROJECT_TARGET_TRANSACTION", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT");
+    }
+
+    private ProductCatalog.RegisteredTarget registeredTarget(String projectId, String targetId) throws Exception {
+        ProductCatalog catalog = new ProductCatalog(workspaceRoot.resolve(".onsure/product-catalog"));
+        return catalog.targets(projectId).stream()
+                .filter(value -> targetId.equals(value.target().targetId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("SEMANTIC_V2_REGISTERED_TARGET_NOT_FOUND"));
     }
 
     private Map<String, Object> blocked(String operation, String reason) {
@@ -80,19 +90,19 @@ public final class SemanticAssuranceV2DispatcherBridge {
                 "decision", "BLOCKED",
                 "reasons", List.of(reason),
                 "final_claim_allowed", false);
-        return envelope(operation, result, "PROJECT_READ_TARGET_AUTHORIZED", "DEPLOYMENT_TARGET_BINDING_UNAVAILABLE");
+        return envelope(operation, result, "TENANT_RBAC_PROJECT_TARGET_TRANSACTION", "DEPLOYMENT_TARGET_BINDING_UNAVAILABLE");
     }
 
     private Map<String, Object> envelope(
-            String operation, Map<String, Object> value, String preflight, String pathBinding) {
+            String operation, Map<String, Object> value, String authorization, String pathBinding) {
         return Map.of(
                 "contract", CONTRACT,
                 "route", "SEMANTIC_V2_CANDIDATE",
                 "operation", operation,
                 "result", value,
-                "tenant_resource_preflight", preflight,
+                "tenant_resource_authorization", authorization,
                 "target_path_binding", pathBinding,
-                "authorization_atomic_with_effect", false,
+                "authorization_atomic_with_semantic_call", true,
                 "assurance_class", "SELF_VALIDATION_NONFINAL",
                 "active_authority", false,
                 "final_claim_allowed", false);
@@ -105,23 +115,6 @@ public final class SemanticAssuranceV2DispatcherBridge {
         if (!candidate.startsWith(authorizedTargetRoot)) {
             throw new SecurityException("SEMANTIC_V2_TARGET_PATH_ESCAPE:" + field);
         }
-    }
-
-    private ProductCatalog.RegisteredTarget registeredTarget(
-            Map<String, Object> envelope, String projectId, String targetId) {
-        Object payload = envelope.get("result");
-        if (!(payload instanceof Map<?, ?> values)) {
-            throw new IllegalStateException("SEMANTIC_V2_TARGET_PREFLIGHT_PAYLOAD_MISSING");
-        }
-        Object value = values.get("registered_target");
-        if (!(value instanceof ProductCatalog.RegisteredTarget registered)) {
-            throw new IllegalStateException("SEMANTIC_V2_REGISTERED_TARGET_TYPE_MISSING");
-        }
-        if (!projectId.equals(registered.projectId())
-                || !targetId.equals(registered.target().targetId())) {
-            throw new SecurityException("SEMANTIC_V2_REGISTERED_TARGET_IDENTITY_MISMATCH");
-        }
-        return registered;
     }
 
     private void rejectCallerInjectedAuthority(JsonNode request) {
