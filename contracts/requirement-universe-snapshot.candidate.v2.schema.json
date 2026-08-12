@@ -1,0 +1,23 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/requirement-universe-snapshot.candidate.v2.schema.json",
+  "title":"ONSure Requirement Universe Snapshot Candidate v2",
+  "type":"object","additionalProperties":false,
+  "required":["contract","universe_id","target_id","requirement_epoch","source_classes","requirements","discovery_methods","unknown_discovery","conflicts","population_digest","authority","created_at","snapshot_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_REQUIREMENT_UNIVERSE_SNAPSHOT_V2_CANDIDATE"},
+    "universe_id":{"type":"string","minLength":1},
+    "target_id":{"type":"string","minLength":1},
+    "requirement_epoch":{"type":"string","minLength":1},
+    "source_classes":{"type":"array","minItems":1,"uniqueItems":true,"items":{"enum":["BUSINESS","FUNCTIONAL","NON_FUNCTIONAL","SECURITY_PRIVACY_LEGAL","ARCHITECTURE_DATA","RUNTIME_DEPLOYMENT","AI_AGENT_MODEL","INFERRED","EXTERNAL_STANDARD","OPERATION_RECOVERY"]}},
+    "requirements":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["requirement_id","source_id","source_digest","statement_digest","criticality","disposition"],"properties":{"requirement_id":{"type":"string","minLength":1},"source_id":{"type":"string","minLength":1},"source_digest":{"$ref":"#/$defs/sha256"},"statement_digest":{"$ref":"#/$defs/sha256"},"criticality":{"enum":["CRITICAL","HIGH","MEDIUM","LOW","INFO"]},"disposition":{"enum":["APPLICABLE","NOT_APPLICABLE_JUSTIFIED","EXCLUDED_WITH_AUTHORITY","UNKNOWN","UNOBSERVABLE","SUPERSEDED"]},"disposition_receipt_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"}}}},
+    "discovery_methods":{"type":"array","minItems":1,"uniqueItems":true,"items":{"enum":["MANUAL_DECLARED","STATIC_DISCOVERY","RUNTIME_DISCOVERY","ARCHITECTURE_INFERENCE","EXTERNAL_STANDARD_IMPORT","ADVERSARIAL_DISCOVERY","INDEPENDENT_DISCOVERY"]}},
+    "unknown_discovery":{"type":"object","additionalProperties":false,"required":["executed","search_space_digest","blind_spot_count","unobservable_count"],"properties":{"executed":{"type":"boolean"},"search_space_digest":{"$ref":"#/$defs/sha256"},"blind_spot_count":{"type":"integer","minimum":0},"unobservable_count":{"type":"integer","minimum":0}}},
+    "conflicts":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["conflict_id","requirement_ids","state"],"properties":{"conflict_id":{"type":"string","minLength":1},"requirement_ids":{"type":"array","minItems":2,"uniqueItems":true,"items":{"type":"string","minLength":1}},"state":{"enum":["OPEN","HOLD","RESOLVED_WITH_AUTHORITY"]},"resolution_receipt_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"}}}},
+    "population_digest":{"$ref":"#/$defs/sha256"},
+    "authority":{"type":"object","additionalProperties":false,"required":["principal_profile_sha256","authority_epoch"],"properties":{"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1}}},
+    "created_at":{"type":"string","format":"date-time"},
+    "snapshot_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}
