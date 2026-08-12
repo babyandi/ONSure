@@ -1,58 +1,75 @@
 {
   "contract": "ONSURE_SEMANTIC_ASSURANCE_ARTIFACT_COVERAGE_CANDIDATE_V1",
-  "version": "1.1.0-candidate",
+  "version": "1.2.0-candidate",
   "status": "DESIGN_ONLY_NONFINAL",
-  "finding_scope": {"canonical_p0": 132, "canonical_p1": 48, "raw_candidate_observations": 551},
+  "finding_scope": {"canonical_p0":132,"canonical_p1":48,"raw_candidate_observations":551},
   "layers": [
-    {"layer":"FUNCTIONAL_REQUIREMENTS","artifact":"docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md","state":"DESIGN_PRESENT"},
-    {"layer":"REVIEW_RULES","artifact":"docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md","state":"DESIGN_PRESENT"},
-    {"layer":"ARCHITECTURE_DATA_API","artifact":"docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md","state":"DESIGN_PRESENT"},
-    {"layer":"UI_UX","artifact":"docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md","state":"DESIGN_PRESENT"},
-    {"layer":"TEST_OPERATION","artifact":"docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md","state":"DESIGN_PRESENT"},
-    {"layer":"AI_AGENT_METHOD","artifact":"docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md","state":"DESIGN_PRESENT"},
-    {"layer":"OPEN_DECISIONS","artifact":"docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md","state":"DESIGN_PRESENT"},
-    {"layer":"FINDING_LEDGER","artifact":"docs/master/semantic-assurance/10_FINDING_LEDGER.md","state":"CANONICAL_BATCH_PRESENT"},
+    {"layer":"MASTER_02_TO_08","artifact":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md..08_REVIEW_CHECKLIST_OPEN_DECISIONS.md","state":"META_VALIDATION_DESIGN_DIRECTLY_PRESENT"},
+    {"layer":"COMPANION_00_TO_11","artifact":"docs/master/semantic-assurance/","state":"DESIGN_PRESENT"},
     {"layer":"P0_VERTICAL_TRACE","artifact":"docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md","state":"DESIGN_PRESENT"},
     {"layer":"MIGRATION","artifact":"docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md","state":"DESIGN_PRESENT"},
     {"layer":"V1_V2_GAP_MATRIX","artifact":"docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md","state":"DESIGN_PRESENT"},
-    {"layer":"STATIC_QUALIFICATION_FIXTURE_SPEC","artifact":"docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md","state":"DESIGN_PRESENT"},
-    {"layer":"ARTIFACT_COVERAGE_MATRIX","artifact":"docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md","state":"CURRENT_INDEX"}
+    {"layer":"STATIC_QUALIFICATION_SPEC","artifact":"docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md","state":"DESIGN_PRESENT"},
+    {"layer":"ARTIFACT_COVERAGE","artifact":"docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md","state":"REQUIRES_SYNC_WITH_THIS_REGISTRY"},
+    {"layer":"RUNTIME_WIRING","artifact":"docs/master/semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md","state":"IMPLEMENTATION_CANDIDATE_PRESENT_EXECUTION_NOT_RUN"},
+    {"layer":"DENOMINATOR_MIGRATION","artifact":"docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md","state":"CONTRACT_AND_FIXTURE_CANDIDATE_PRESENT_RUNTIME_NOT_RUN"}
   ],
   "contract_bundles": [
-    {"bundle":"A_STATUS_ONTOLOGY","contracts":["contracts/assurance-status-vocabulary.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
-    {"bundle":"B_RECEIPT_SEMANTIC_PRESERVATION","contracts":["contracts/assurance-receipt-envelope.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
-    {"bundle":"C_AUTHORITY_SOD","contracts":["contracts/authority-principal-profile.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
-    {"bundle":"D_DENOMINATOR_APPLICABILITY","contracts":["contracts/semantic-denominator-epoch.candidate.v2.schema.json","contracts/semantic-applicability-set.candidate.v2.schema.json","contracts/assurance-population-denominator.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
-    {"bundle":"E_EXECUTION_ORACLE_IDENTITY","contracts":["contracts/execution-identity.candidate.v2.schema.json","contracts/validator-qualification-record.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
-    {"bundle":"F_LEARNING_BLIND_REVIEW_BENCHMARK","contracts":["contracts/blind-context-manifest.candidate.v2.schema.json","contracts/human-reviewer-qualification.candidate.v2.schema.json","contracts/qualification-benchmark-manifest.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
-    {"bundle":"G_PATCH_GIT_DEPLOYMENT","contracts":["contracts/verified-to-deployed-receipt.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED_PATCH_GIT_RUNTIME_MIGRATION_PENDING"},
-    {"bundle":"H_FINAL_RECONSTRUCTION","contracts":["contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
-    {"bundle":"I_WORKFLOW_LINEAGE","contracts":["contracts/workflow-operation-registry.candidate.v2.json","contracts/product-process-lineage.candidate.v2.json"],"state":"EXECUTION_PATH_CANDIDATE_CREATED"},
-    {"bundle":"J_ACTIVATION_META_QUALIFICATION","contracts":["contracts/contract-active-selector.candidate.v2.schema.json","contracts/semantic-assurance-v2-schema-instance-registry.candidate.v1.json"],"state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"}
+    {"bundle":"A_STATUS_ONTOLOGY","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
+    {"bundle":"B_RECEIPT_SEMANTIC_PRESERVATION","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
+    {"bundle":"C_AUTHORITY_SOD_INDEPENDENCE","state":"AUTHORITY_AND_INDEPENDENCE_CONTRACT_FIXTURES_CREATED"},
+    {"bundle":"D_DENOMINATOR_APPLICABILITY","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
+    {"bundle":"E_EXECUTION_ORACLE_IDENTITY","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
+    {"bundle":"F_LEARNING_BLIND_REVIEW_BENCHMARK_GT","state":"BLIND_REVIEWER_BENCHMARK_GROUND_TRUTH_HIDDEN_CORPUS_CONTRACT_FIXTURES_CREATED"},
+    {"bundle":"G_PATCH_GIT_DEPLOYMENT","state":"VERIFIED_TO_DEPLOYED_CONTRACT_FIXTURE_AND_RUNTIME_CANDIDATE_PRESENT_PATCH_GIT_MIGRATION_PARTIAL"},
+    {"bundle":"H_FINAL_RECONSTRUCTION_APPROVAL_LOCK","state":"GATE_APPROVAL_LOCK_CONTRACT_FIXTURES_CREATED"},
+    {"bundle":"I_WORKFLOW_LINEAGE","state":"EXECUTION_PATH_AND_DISPATCH_BRIDGE_CANDIDATE_CREATED_RUNTIME_NOT_RUN"},
+    {"bundle":"J_ACTIVATION_META_QUALIFICATION","state":"ACTIVE_SELECTOR_SCHEMA_FIXTURES_AND_ROLLOUT_HOLD_CREATED"},
+    {"bundle":"K_SHADOW_GATE","state":"COMPARATOR_SCHEMA_AND_FIXTURES_CREATED_EXECUTION_NOT_RUN"}
   ],
   "fixture_coverage": {
-    "schemas_with_semantic_valid_invalid_fixtures": 14,
-    "valid_fixture_count": 14,
-    "invalid_fixture_count": 28,
-    "minimum_invalid_instances_per_schema": 2,
-    "registry": "contracts/semantic-assurance-v2-schema-instance-registry.candidate.v1.json",
-    "validator": "scripts/validate-semantic-assurance-v2-contracts.py",
-    "execution_state": "NOT_RUN"
+    "schemas_with_semantic_valid_invalid_fixtures":23,
+    "valid_fixture_count":23,
+    "invalid_fixture_count":46,
+    "minimum_invalid_instances_per_schema":2,
+    "registry":"contracts/semantic-assurance-v2-schema-instance-registry.candidate.v1.json",
+    "inventory":"contracts/semantic-assurance-v2-schema-inventory.candidate.v1.json",
+    "validator":"scripts/validate-semantic-assurance-v2-contracts.py",
+    "execution_state":"BLOCKED_NOT_RUN",
+    "execution_attempt_evidence":"evidence/semantic-assurance/v2-static-validation-attempt-20260812.json"
   },
-  "canonical_gate_paths": [
-    {"path":"PRODUCT_LINEAGE","state":"V2_CANDIDATE_CREATED"},
-    {"path":"WORKFLOW_OPERATION","state":"V2_CANDIDATE_CREATED"},
-    {"path":"VALIDATION_CASE_DENOMINATOR","state":"DENOMINATOR_CONTRACT_AND_FIXTURE_CANDIDATE_CREATED_RUNTIME_MIGRATION_NOT_RUN"},
-    {"path":"FINAL_ACCEPTANCE_PUBLICATION","state":"GATE_CONTRACT_AND_FIXTURE_CANDIDATE_CREATED_RUNTIME_MIGRATION_NOT_RUN"}
+  "runtime_candidates": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2Reconstructor.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceShadowGateComparator.java",
+    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowServiceTest.java"
   ],
-  "completion_rule": {
-    "design_present_is_not_implemented": true,
-    "contract_candidate_is_not_active": true,
-    "fixture_present_is_not_executed": true,
-    "runtime_execution_required": true,
-    "independent_reperformance_required": true,
-    "qualification_required": true
+  "canonical_gate_paths": [
+    {"path":"PRODUCT_LINEAGE","state":"V2_CANDIDATE_CREATED_RUNTIME_NOT_ACTIVE"},
+    {"path":"WORKFLOW_OPERATION","state":"V2_CANDIDATE_AND_BRIDGE_CREATED_NOT_WIRED_INTO_PRIMARY_DISPATCHER"},
+    {"path":"VALIDATION_CASE_DENOMINATOR","state":"EXACT_POPULATION_SCHEMA_FIXTURES_CREATED_RUNTIME_MIGRATION_NOT_RUN"},
+    {"path":"FINAL_ACCEPTANCE_PUBLICATION","state":"POPULATION_GATE_APPROVAL_LOCK_SCHEMA_FIXTURES_CREATED_RUNTIME_MIGRATION_NOT_RUN"}
+  ],
+  "finding_disposition": {
+    "registry":"contracts/semantic-assurance-finding-disposition.candidate.v1.json",
+    "highest_canonical_state":"DESIGN_ACCEPTED",
+    "verified_closed":0
   },
-  "overall_state": "DESIGN_CONTRACT_AND_STATIC_FIXTURE_CANDIDATES_PRESENT_EXECUTION_NOT_RUN_NONFINAL",
-  "final_claim_allowed": false
+  "active_selector": {
+    "rollout_state":"contracts/contract-selector-rollout-state.candidate.v1.json",
+    "v2_active":false,
+    "state":"HOLD"
+  },
+  "completion_rule": {
+    "design_present_is_not_implemented":true,
+    "contract_candidate_is_not_active":true,
+    "fixture_present_is_not_executed":true,
+    "implementation_candidate_is_not_runtime_wired":true,
+    "runtime_execution_required":true,
+    "independent_reperformance_required":true,
+    "qualification_required":true
+  },
+  "overall_state":"DESIGN_CONTRACT_FIXTURE_AND_IMPLEMENTATION_CANDIDATES_PRESENT_EXECUTION_BLOCKED_NONFINAL",
+  "final_claim_allowed":false
 }
