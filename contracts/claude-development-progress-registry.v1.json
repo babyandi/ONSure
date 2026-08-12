@@ -1,0 +1,24 @@
+{
+  "type": "ONSURE_CLAUDE_DEVELOPMENT_PROGRESS_REGISTRY_V1",
+  "authority": "137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md",
+  "allowed_states": ["NOT_STARTED", "IN_PROGRESS", "IMPLEMENTED", "TESTED", "EVIDENCE_READY", "BLOCKED"],
+  "current_overall_state": "NOT_STARTED",
+  "batches": [
+    {"batch":"BATCH_0","name":"Baseline / Requirement Materialization","state":"NOT_STARTED"},
+    {"batch":"BATCH_1","name":"Core Contract Foundation","state":"NOT_STARTED"},
+    {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},
+    {"batch":"BATCH_3","name":"Assurance Core","state":"NOT_STARTED"},
+    {"batch":"BATCH_4","name":"Enterprise / Trust","state":"NOT_STARTED"},
+    {"batch":"BATCH_5","name":"AI / Meta-Assurance","state":"NOT_STARTED"},
+    {"batch":"BATCH_6","name":"Safety / Appeal","state":"NOT_STARTED"},
+    {"batch":"BATCH_7","name":"Fresh Review Refinements","state":"NOT_STARTED"},
+    {"batch":"BATCH_8","name":"Migration / Integration","state":"NOT_STARTED"},
+    {"batch":"BATCH_9","name":"Test Materialization","state":"NOT_STARTED"}
+  ],
+  "done_gate": ["CONTRACT", "IMPLEMENTATION", "POSITIVE_FIXTURE_OR_TEST", "NEGATIVE_FIXTURE_OR_TEST", "CROSS_CONTRACT_TEST_IF_APPLICABLE", "COMPILE_BUILD_PASS", "AUTOMATED_TEST_EXECUTED_PASS", "EVIDENCE_RECEIPT_REPORT", "TRACE_UPDATED", "UNRESOLVED_BLOCKERS_RECORDED"],
+  "forbidden_promotions": ["ACTIVE_SELECTOR", "FINAL_LOCK", "PRODUCTION_GO", "COMMERCIAL_GO"],
+  "implementation_started": false,
+  "test_phase_started": false,
+  "independent_assurance_started": false,
+  "production_authorized": false
+}
