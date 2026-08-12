@@ -1,0 +1,31 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/runtime-execution-receipt.candidate.v2.schema.json",
+  "title":"ONSure Runtime Execution Receipt Candidate v2",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","execution_receipt_id","operation","target","identity","epochs","executor","attempt","raw_evidence","decision","reason_codes","side_effects","parent_receipts","started_at","completed_at","signature","receipt_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_RUNTIME_EXECUTION_RECEIPT_V2_CANDIDATE"},
+    "execution_receipt_id":{"type":"string","minLength":1},
+    "operation":{"type":"object","additionalProperties":false,"required":["operation_id","operation_version","request_sha256"],"properties":{"operation_id":{"type":"string","minLength":1},"operation_version":{"type":"string","minLength":1},"request_sha256":{"$ref":"#/$defs/sha256"}}},
+    "target":{"type":"object","additionalProperties":false,"required":["target_id","source_tree_sha256"],"properties":{"target_id":{"type":"string","minLength":1},"source_tree_sha256":{"$ref":"#/$defs/sha256"},"artifact_sha256":{"type":["string","null"],"pattern":"^(?:[0-9a-f]{64})$"}}},
+    "identity":{"type":"object","additionalProperties":false,"required":["contract_set_sha256","validator_set_sha256","fixture_set_sha256","oracle_set_sha256","environment_sha256","toolchain_sha256"],"properties":{"contract_set_sha256":{"$ref":"#/$defs/sha256"},"validator_set_sha256":{"$ref":"#/$defs/sha256"},"fixture_set_sha256":{"$ref":"#/$defs/sha256"},"oracle_set_sha256":{"$ref":"#/$defs/sha256"},"environment_sha256":{"$ref":"#/$defs/sha256"},"toolchain_sha256":{"$ref":"#/$defs/sha256"}}},
+    "epochs":{"type":"object","additionalProperties":false,"required":["scope","requirement","denominator","policy","authority"],"properties":{"scope":{"type":"string","minLength":1},"requirement":{"type":"string","minLength":1},"denominator":{"type":"string","minLength":1},"policy":{"type":"string","minLength":1},"authority":{"type":"string","minLength":1}}},
+    "executor":{"type":"object","additionalProperties":false,"required":["principal_id","principal_profile_sha256","authority_profile_sha256"],"properties":{"principal_id":{"type":"string","minLength":1},"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"authority_profile_sha256":{"$ref":"#/$defs/sha256"}}},
+    "attempt":{"type":"object","additionalProperties":false,"required":["attempt_id","attempt_number","attempt_history_sha256"],"properties":{"attempt_id":{"type":"string","minLength":1},"attempt_number":{"type":"integer","minimum":1},"attempt_history_sha256":{"$ref":"#/$defs/sha256"}}},
+    "raw_evidence":{"type":"object","additionalProperties":false,"required":["result_sha256","stdout_sha256","stderr_sha256"],"properties":{"result_sha256":{"$ref":"#/$defs/sha256"},"stdout_sha256":{"$ref":"#/$defs/sha256"},"stderr_sha256":{"$ref":"#/$defs/sha256"}}},
+    "decision":{"enum":["PASS_NONFINAL","FAIL","BLOCKED_ENVIRONMENT","BLOCKED_AUTHORITY","BLOCKED_DEPENDENCY","HOLD","INCONCLUSIVE","INPUT_REQUIRED","EVIDENCE_INCOMPLETE","NOT_RUN","STALE"]},
+    "reason_codes":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "side_effects":{"type":"object","additionalProperties":false,"required":["effect_class","effect_receipts"],"properties":{"effect_class":{"enum":["NONE","SIMULATED","SANDBOXED","SHADOW","REAL_AUTHORIZED"]},"effect_receipts":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/digestRef"}}}},
+    "parent_receipts":{"type":"array","uniqueItems":true,"items":{"$ref":"#/$defs/digestRef"}},
+    "started_at":{"type":"string","format":"date-time"},
+    "completed_at":{"type":"string","format":"date-time"},
+    "signature":{"type":"object","additionalProperties":false,"required":["key_id","algorithm","signature"],"properties":{"key_id":{"type":"string","minLength":1},"algorithm":{"const":"Ed25519"},"signature":{"type":"string","minLength":32}}},
+    "receipt_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{
+    "sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "digestRef":{"type":"object","additionalProperties":false,"required":["id","sha256"],"properties":{"id":{"type":"string","minLength":1},"sha256":{"$ref":"#/$defs/sha256"}}}
+  }
+}
