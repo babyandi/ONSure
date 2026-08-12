@@ -14,7 +14,7 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `07_AI_AGENT_METHOD_EXTENSION.md`: AI-UC, GT, Blind, Reviewer, Qualification
 - `08_OPEN_DECISIONS_EXTENSION.md`: 미확정 Contract/정책/임계치
 - `09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md`: 독립검토 cross-cutting 통합
-- `10_FINDING_LEDGER.md`: P0/P1 canonical Finding ledger
+- `10_FINDING_LEDGER.md`: 최초 P0/P1 canonical Finding ledger
 - `11_CONTRACT_UPGRADE_BLUEPRINT.md`: v2 Contract Bundle A~J
 - `12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md`: Finding→02~08 수직 적용
 - `13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md`: v1→v2 migration/shadow/selector
@@ -24,16 +24,17 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md`: Adapter/Reconstructor/Runtime wiring
 - `18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md`: Validation/Final fixed-count authority 제거
 - `19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md`: 1~15 최종 재검토, 신규 v2 결함 수정, 실제 실행 Blocker 정본
+- `20_POST_V2_FINAL_REVIEW_FINDINGS.md`: v2 Candidate 자체 재검토에서 새로 발견한 P0/P1 Finding 확장 Ledger
 
 기존 `docs/master/02~08` 본문에도 FR-META-001~043과 Meta Review/Architecture/Test/AI 기준이 직접 반영되어 있으며 companion 문서는 이를 삭제하거나 대체하지 않는다.
 
 ## 2. Finding 기준
 현재 source-grounded review 기준:
-- raw candidate observation: 551
-- canonical P0: `FL-P0-001~132`
-- canonical P1: `FL-P1-001~048`
+- raw candidate observation baseline: 556
+- canonical P0: `FL-P0-001~136`
+- canonical P1: `FL-P1-001~049`
 
-Raw count는 canonical defect count가 아니다. `semantic-assurance-finding-disposition.candidate.v1.json`은 Candidate Contract/Fixture가 존재하더라도 실제 실행·독립검증 전 Finding 상태를 자동 승격하지 않는다. 현재 `VERIFIED_CLOSED=0`이다.
+기존 10 Ledger 이후 post-v2 review에서 `FL-P0-133~136`, `FL-P1-049`가 추가됐다. 같은 branch에서 수정됐다는 이유만으로 CLOSED하지 않는다. `semantic-assurance-finding-disposition.candidate.v1.json` 기준 현재 `VERIFIED_CLOSED=0`이다.
 
 ## 3. Machine Contract Set
 현재 fixture registry가 추적하는 Schema Candidate는 **23개**다.
@@ -93,14 +94,19 @@ Validator entrypoint:
 - `SemanticAssuranceV2DispatcherBridge.java`
 - `SemanticAssuranceShadowGateComparator.java`
 - `SemanticAssuranceV2WorkflowServiceTest.java`
+- `SemanticAssuranceV2DispatcherBridgeTest.java`
 
 재검토에서 Runtime 후보 자체의 결함도 수정했다.
 - Reconstructor null→Map.copyOf crash 가능성 제거
-- Semantic Bridge tenant/resource ownership preflight 추가
+- Semantic Bridge에 기존 tenant/resource ownership preflight 추가
+- Bridge가 RegisteredTarget의 server-resolved sourceRoot를 주입하고 reperformance path를 target root 아래로 제한
+- caller의 `_authorized_*` field injection 금지
+- v1 Deployment 구조에 target→deployment root binding이 없으므로 `deployment.verify-installed`는 BLOCKED
 - Shadow Comparator missing receipt null semantics 정합화
 - Shadow Comparator contract discriminator를 Schema와 일치
+- 23 Schema 전체를 Instance Registry에 재등록하여 registry drift 제거
 
-단, Bridge의 ownership check와 semantic effect는 아직 하나의 atomic authorization transaction이 아니므로 Active authority가 아니다.
+단, Bridge의 ownership/path preflight와 semantic effect는 아직 하나의 atomic authorization transaction이 아니므로 Active authority가 아니다.
 
 ## 6. Canonical Gate 편입
 Semantic Assurance가 실제 제품 Gate가 되려면 최소 다음 경로가 동시에 닫혀야 한다.
@@ -122,11 +128,12 @@ Active Selector는 현재 HOLD이며 v1 authority를 유지한다. Candidate 파
 
 ## 9. 현재 상태
 - 설계: 광범위 반영
-- P0 vertical trace: 존재
+- canonical Finding: P0 136 / P1 49
 - v2 Schema Candidate: 23
 - valid/invalid fixture: 23/46
 - Fixture registration pending: 0
 - Adapter/Reconstructor/Workflow/Bridge/Shadow runtime candidate: 존재
+- target-bound Bridge JUnit: 존재
 - Static Schema 실제 실행: `BLOCKED_NOT_RUN`
 - Java compile/JUnit: `NOT_RUN`
 - primary Dispatcher v2 atomic wiring: `NOT_RUN`
@@ -134,6 +141,7 @@ Active Selector는 현재 HOLD이며 v1 authority를 유지한다. Candidate 파
 - exact denominator migration execution: `NOT_RUN`
 - independent OTester/OAudit: `NOT_RUN`
 - Shadow Gate actual comparison: `NOT_RUN`
+- target-bound Deployment identity: `NOT_AVAILABLE / deployment.verify-installed BLOCKED`
 - Active Selector: `HOLD / V2_NOT_ACTIVE`
 - FinalLock/Production/Commercial authority: 없음
 
