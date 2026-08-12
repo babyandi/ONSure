@@ -1,8 +1,8 @@
 {
   "contract": "ONSURE_SEMANTIC_ASSURANCE_ARTIFACT_COVERAGE_CANDIDATE_V1",
-  "version": "1.3.0-candidate",
+  "version": "1.4.0-candidate",
   "status": "DESIGN_ONLY_NONFINAL",
-  "finding_scope": {"canonical_p0":132,"canonical_p1":48,"raw_candidate_observations":551},
+  "finding_scope": {"canonical_p0":136,"canonical_p1":49,"raw_candidate_observations":556},
   "layers": [
     {"layer":"MASTER_02_TO_08","artifact":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md..08_REVIEW_CHECKLIST_OPEN_DECISIONS.md","state":"META_VALIDATION_DESIGN_DIRECTLY_PRESENT"},
     {"layer":"COMPANION_00_TO_11","artifact":"docs/master/semantic-assurance/","state":"DESIGN_PRESENT"},
@@ -13,7 +13,8 @@
     {"layer":"ARTIFACT_COVERAGE","artifact":"docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md","state":"CURRENT_INDEX"},
     {"layer":"RUNTIME_WIRING","artifact":"docs/master/semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md","state":"IMPLEMENTATION_CANDIDATE_PRESENT_EXECUTION_NOT_RUN"},
     {"layer":"DENOMINATOR_MIGRATION","artifact":"docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md","state":"CONTRACT_AND_FIXTURE_CANDIDATE_PRESENT_RUNTIME_NOT_RUN"},
-    {"layer":"FINAL_SELF_REVIEW","artifact":"docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md","state":"CURRENT_REVIEW_AUTHORITY_NONFINAL"}
+    {"layer":"FINAL_SELF_REVIEW","artifact":"docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md","state":"CURRENT_REVIEW_AUTHORITY_NONFINAL"},
+    {"layer":"POST_V2_FINDINGS","artifact":"docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md","state":"POST_V2_CANONICAL_FINDINGS_PRESENT"}
   ],
   "contract_bundles": [
     {"bundle":"A_STATUS_ONTOLOGY","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
@@ -22,9 +23,9 @@
     {"bundle":"D_DENOMINATOR_APPLICABILITY","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
     {"bundle":"E_EXECUTION_ORACLE_IDENTITY","state":"CONTRACT_AND_FIXTURE_CANDIDATE_CREATED"},
     {"bundle":"F_LEARNING_BLIND_REVIEW_BENCHMARK_GT","state":"BLIND_REVIEWER_BENCHMARK_GROUND_TRUTH_HIDDEN_CORPUS_CONTRACT_FIXTURES_CREATED"},
-    {"bundle":"G_PATCH_GIT_DEPLOYMENT","state":"VERIFIED_TO_DEPLOYED_CONTRACT_FIXTURE_AND_RUNTIME_CANDIDATE_PRESENT_PATCH_GIT_MIGRATION_PARTIAL"},
+    {"bundle":"G_PATCH_GIT_DEPLOYMENT","state":"VERIFIED_TO_DEPLOYED_CONTRACT_FIXTURE_PRESENT_TARGET_BOUND_DEPLOYMENT_RUNTIME_BLOCKED"},
     {"bundle":"H_FINAL_RECONSTRUCTION_APPROVAL_LOCK","state":"GATE_APPROVAL_LOCK_CONTRACT_FIXTURES_CREATED"},
-    {"bundle":"I_WORKFLOW_LINEAGE","state":"EXECUTION_PATH_BRIDGE_AND_TENANT_PREFLIGHT_CANDIDATE_CREATED_ATOMIC_AUTHORIZATION_OPEN"},
+    {"bundle":"I_WORKFLOW_LINEAGE","state":"EXECUTION_PATH_BRIDGE_TENANT_AND_TARGET_PREFLIGHT_CANDIDATE_CREATED_ATOMIC_AUTHORIZATION_OPEN"},
     {"bundle":"J_ACTIVATION_META_QUALIFICATION","state":"ACTIVE_SELECTOR_SCHEMA_FIXTURES_AND_ROLLOUT_HOLD_CREATED"},
     {"bundle":"K_SHADOW_GATE","state":"COMPARATOR_SCHEMA_FIXTURES_AND_RUNTIME_SCHEMA_ALIGNMENT_CREATED_EXECUTION_NOT_RUN"}
   ],
@@ -45,18 +46,22 @@
     "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
     "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
     "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceShadowGateComparator.java",
-    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowServiceTest.java"
+    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowServiceTest.java",
+    "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java"
   ],
   "runtime_self_review_fixes": [
     "RECONSTRUCTOR_NULL_FAIL_CLOSED_FIXED",
     "SCHEMA_REGISTRY_DRIFT_FIXED",
     "SEMANTIC_BRIDGE_TENANT_RESOURCE_PREFLIGHT_ADDED",
+    "SEMANTIC_BRIDGE_SERVER_RESOLVED_TARGET_ROOT_ADDED",
+    "SEMANTIC_TARGET_PATH_ESCAPE_BLOCKED",
+    "DEPLOYMENT_VERIFY_BLOCKED_UNTIL_TARGET_BOUND_DEPLOYMENT_IDENTITY_EXISTS",
     "SHADOW_RECEIPT_NULL_SCHEMA_CONFLICT_FIXED",
     "SHADOW_CONTRACT_DISCRIMINATOR_ALIGNED"
   ],
   "canonical_gate_paths": [
     {"path":"PRODUCT_LINEAGE","state":"V2_CANDIDATE_CREATED_RUNTIME_NOT_ACTIVE"},
-    {"path":"WORKFLOW_OPERATION","state":"V2_CANDIDATE_BRIDGE_WITH_PREFLIGHT_CREATED_PRIMARY_ATOMIC_WIRING_NOT_DONE"},
+    {"path":"WORKFLOW_OPERATION","state":"V2_CANDIDATE_BRIDGE_WITH_TENANT_TARGET_PREFLIGHT_CREATED_PRIMARY_ATOMIC_WIRING_NOT_DONE"},
     {"path":"VALIDATION_CASE_DENOMINATOR","state":"EXACT_POPULATION_SCHEMA_FIXTURES_CREATED_RUNTIME_MIGRATION_NOT_RUN"},
     {"path":"FINAL_ACCEPTANCE_PUBLICATION","state":"POPULATION_GATE_APPROVAL_LOCK_SCHEMA_FIXTURES_CREATED_RUNTIME_MIGRATION_NOT_RUN"}
   ],
@@ -68,6 +73,7 @@
     "fixture_present_is_not_executed":true,
     "implementation_candidate_is_not_runtime_wired":true,
     "preflight_is_not_atomic_authorization":true,
+    "target_path_preflight_is_not_deployment_identity":true,
     "runtime_execution_required":true,
     "independent_reperformance_required":true,
     "qualification_required":true
