@@ -11,16 +11,14 @@ import java.util.Map;
  * Semantic Assurance v2 candidate operations are routed to the isolated v2 service.
  *
  * <p>Semantic operations execute inside the existing TenantRbacService durable ownership
- * transaction by reusing the project.read-target authorization shape. The semantic operation name
- * is still carried in the v2 receipt, while target ownership is checked atomically around the
- * candidate semantic call. RegisteredTarget.sourceRoot is resolved server-side and caller injected
- * authority fields are rejected.</p>
+ * transaction under their real semantic operation name. RegisteredTarget.sourceRoot is resolved
+ * server-side and caller-injected authority fields are rejected.</p>
  *
  * <p>This is still a candidate bridge: it has not been compile/JUnit/independently verified and is
  * not installed as the product's active contract selector.</p>
  */
 public final class SemanticAssuranceV2DispatcherBridge {
-    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V5";
+    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V6";
     private final Path workspaceRoot;
     private final LocalWorkflowDispatcher legacy;
     private final SemanticAssuranceV2WorkflowService semantic;
@@ -49,7 +47,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
 
         return new TenantRbacService(workspaceRoot).execute(
                 identity,
-                "project.read-target",
+                operation,
                 request,
                 () -> executeAuthorizedSemantic(operation, request));
     }
@@ -73,7 +71,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
         routed.put("_authorized_project_id", registered.projectId());
 
         Map<String, Object> value = semantic.dispatch(operation, routed);
-        return envelope(operation, value, "TENANT_RBAC_PROJECT_TARGET_TRANSACTION", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT");
+        return envelope(operation, value, "TENANT_RBAC_SEMANTIC_OPERATION_TRANSACTION", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT");
     }
 
     private ProductCatalog.RegisteredTarget registeredTarget(String projectId, String targetId) throws Exception {
@@ -90,7 +88,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                 "decision", "BLOCKED",
                 "reasons", List.of(reason),
                 "final_claim_allowed", false);
-        return envelope(operation, result, "TENANT_RBAC_PROJECT_TARGET_TRANSACTION", "DEPLOYMENT_TARGET_BINDING_UNAVAILABLE");
+        return envelope(operation, result, "TENANT_RBAC_SEMANTIC_OPERATION_TRANSACTION", "DEPLOYMENT_TARGET_BINDING_UNAVAILABLE");
     }
 
     private Map<String, Object> envelope(
