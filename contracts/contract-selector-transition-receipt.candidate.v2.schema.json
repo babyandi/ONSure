@@ -1,0 +1,31 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/contract-selector-transition-receipt.candidate.v2.schema.json",
+  "title":"ONSure Contract Selector Transition Receipt Candidate v2",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","transition_id","contract_family","from_selector","to_selector","prerequisites","shadow","blockers","authority","transition_type","effective_at","rollback_pointer","signature","transition_sha256"],
+  "properties":{
+    "contract":{"const":"ONSURE_CONTRACT_SELECTOR_TRANSITION_RECEIPT_V2_CANDIDATE"},
+    "transition_id":{"type":"string","minLength":1},
+    "contract_family":{"type":"string","minLength":1},
+    "from_selector":{"$ref":"#/$defs/selectorRef"},
+    "to_selector":{"$ref":"#/$defs/selectorRef"},
+    "prerequisites":{"type":"object","additionalProperties":false,"required":["static_qualification_sha256","runtime_test_receipt_sha256","migration_receipt_sha256","independent_qualification_sha256","rollback_test_receipt_sha256"],"properties":{"static_qualification_sha256":{"$ref":"#/$defs/sha256"},"runtime_test_receipt_sha256":{"$ref":"#/$defs/sha256"},"migration_receipt_sha256":{"$ref":"#/$defs/sha256"},"independent_qualification_sha256":{"$ref":"#/$defs/sha256"},"rollback_test_receipt_sha256":{"$ref":"#/$defs/sha256"}}},
+    "shadow":{"type":"object","additionalProperties":false,"required":["comparison_set_sha256","disagreement_count","unresolved_count"],"properties":{"comparison_set_sha256":{"$ref":"#/$defs/sha256"},"disagreement_count":{"type":"integer","minimum":0},"unresolved_count":{"type":"integer","minimum":0}}},
+    "blockers":{"type":"object","additionalProperties":false,"required":["p0_count","blocking_set_sha256"],"properties":{"p0_count":{"type":"integer","minimum":0},"blocking_set_sha256":{"$ref":"#/$defs/sha256"}}},
+    "authority":{"type":"object","additionalProperties":false,"required":["principal_profile_sha256","authority_epoch","purpose","nonce","expires_at"],"properties":{"principal_profile_sha256":{"$ref":"#/$defs/sha256"},"authority_epoch":{"type":"string","minLength":1},"purpose":{"const":"CONTRACT_ACTIVATION"},"nonce":{"type":"string","minLength":16},"expires_at":{"type":"string","format":"date-time"}}},
+    "transition_type":{"enum":["ACTIVATE","ROLLBACK","EMERGENCY_ROLLBACK","REVOKE"]},
+    "effective_at":{"type":"string","format":"date-time"},
+    "rollback_pointer":{"$ref":"#/$defs/selectorRef"},
+    "signature":{"type":"object","additionalProperties":false,"required":["key_id","algorithm","signature"],"properties":{"key_id":{"type":"string","minLength":1},"algorithm":{"const":"Ed25519"},"signature":{"type":"string","minLength":32}}},
+    "transition_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "allOf":[
+    {"if":{"properties":{"transition_type":{"const":"ACTIVATE"}}},"then":{"properties":{"shadow":{"properties":{"unresolved_count":{"const":0}}},"blockers":{"properties":{"p0_count":{"const":0}}}}}}
+  ],
+  "$defs":{
+    "sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "selectorRef":{"type":"object","additionalProperties":false,"required":["selector_id","selector_sha256","version"],"properties":{"selector_id":{"type":"string","minLength":1},"selector_sha256":{"$ref":"#/$defs/sha256"},"version":{"type":"string","minLength":1}}}
+  }
+}
