@@ -102,9 +102,13 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md`: Runtime API response/error/idempotency/async semantics
 - `86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md`: Git blob SHA/content SHA-256/exact population lock
 - `87_DESIGN_LOCK_CHECK_AND_REPOSITORY_ORPHAN_SCAN.md`: repository-wide orphan/contradiction/lock candidate scanner 규칙
+- `88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md`: FR-META 외 전체 Requirement Universe와 exact denominator
+- `89_REQUIREMENT_ID_NORMALIZATION_AND_SEMANTIC_DEDUPLICATION.md`: ID 정규화, duplicate/refine/conflict semantics
+- `90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md`: Requirement→Design→Contract→Operation→Test→Evidence global closure scan
+- `91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md`: Claude Requirement Universe materialization RU-01~07
 
 ## 2. Parent 정본 통합 상태
-- `02`: FR-META-001~060 직접 존재
+- `02`: FR-COM-001~013, FR-META-001~060 및 프로그램 기능/수용기준 직접 존재
 - `03`: Runtime/Composition/Certificate/Meta-Assurance Review 직접 흡수
 - `04`: Deployment/Currentness/Composition/Certificate/Scale Architecture 직접 흡수
 - `05`: Runtime Currentness/Product Composition/Certificate UX 직접 흡수
@@ -127,29 +131,30 @@ Claude 구현은 설계 상태를 임의로 ACTIVE/QUALIFIED/FINAL로 승격하�
 - VERIFIED_CLOSED: **0**
 
 ## 5. Machine-readable Design Closure·Handoff 산출물
-- `contracts/design-trace-registry.candidate.v1.json`: FR-META-001~060 60행
-- `contracts/design-orphan-report.candidate.v1.json`: requirement orphan 후보 0
+- `contracts/design-trace-registry.candidate.v1.json`: FR-META-001~060 60행(부분 Universe)
+- `contracts/design-orphan-report.candidate.v1.json`: FR-META requirement orphan 후보 0
 - `contracts/design-conflict-report.candidate.v1.json`: unresolved P0 design semantic conflict 후보 0
 - `contracts/design-baseline-manifest.candidate.v1.json`
 - `contracts/design-baseline-receipt.candidate.v1.json`
 - `contracts/next-development-batch-plan.candidate.v1.json`: Claude Batch F~K machine-readable 계획
 - `contracts/design-artifact-inventory-policy.candidate.v1.json`: exact design artifact population/lock 정책
 - `contracts/design-lock-check-report.candidate.v1.schema.json`: lock check 결과 schema 후보
+- `contracts/global-requirement-universe-plan.candidate.v1.json`: 전체 Requirement Universe materialization 계획
 
-이들은 **설계 후보 산출물**이며 runtime implementation/verification을 증명하지 않는다.
+중요: 현재 machine trace의 60행과 known explicit FR-COM 13건을 합친 **73건은 전체 Requirement 총수가 아니라 확인된 명시 Requirement의 최소치**다. NFR 및 ID 없는 Program 기능/수용기준/Invariant/Policy/Regulatory requirement까지 materialize한 exact population digest가 생겨야 global denominator를 선언할 수 있다.
 
 ## 6. Machine Contract 구현 상태
-기존 Schema Inventory 기준 31개 Candidate 계열이 있고, 기존 23개에 valid 23 + semantic-invalid 46 fixture가 있다. 29~87에서 정의한 신규 계약은 Claude가 실제 registry/runtime/fixture로 materialize할 후속 개발 대상이다.
+기존 Schema Inventory 기준 31개 Candidate 계열이 있고, 기존 23개에 valid 23 + semantic-invalid 46 fixture가 있다. 29~91에서 정의한 신규 계약은 Claude가 실제 registry/runtime/fixture로 materialize할 후속 개발 대상이다.
 
 ## 7. Canonical Gate
-실제 제품 Gate는 Product Lineage, Workflow Operation, exact denominator, Independent Assurance, Final Reconstruction/Approval/Lock, Verified→Deployed→Running, Currentness/Revocation, Product Composition/Evidence Graph, Certificate verification, Active Selector, ONSure Release Qualification, Policy/Authority/Persistence/Recovery/Observability/Event/Receipt/Trace closure를 모두 요구한다.
+실제 제품 Gate는 Product Lineage, Workflow Operation, exact global Requirement denominator, Independent Assurance, Final Reconstruction/Approval/Lock, Verified→Deployed→Running, Currentness/Revocation, Product Composition/Evidence Graph, Certificate verification, Active Selector, ONSure Release Qualification, Policy/Authority/Persistence/Recovery/Observability/Event/Receipt/Trace closure를 모두 요구한다.
 
 ## 8. 현재 설계 판단
-30개 설계 폐쇄 작업을 문서 기준으로 모두 수행했고, 후속 개발 Batch F~K, migration/API/policy bootstrap, exact inventory 및 repository-wide Lock Check까지 설계했다.
+30개 설계 폐쇄 작업과 후속 개발 Batch F~K, migration/API/policy bootstrap, exact inventory, repository-wide Lock Check, Global Requirement Universe materialization까지 설계했다.
 
 현재 설계 문서 폐쇄성은 **97~98% 후보**를 유지한다. 숫자를 구현률로 해석하지 않는다.
 
 현재 최고 표현:
-**`DESIGN_BASELINE_CANDIDATE_READY_FOR_LOCK_CHECK / NEXT_DEVELOPMENT_BATCH_F_TO_K_DESIGNED / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
+**`DESIGN_BASELINE_CANDIDATE_READY_FOR_GLOBAL_DENOMINATOR_MATERIALIZATION / NEXT_DEVELOPMENT_BATCH_F_TO_K_DESIGNED / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
 
-아직 Design Baseline을 LOCKED로 선언하지 않는다. exact content SHA-256 inventory 생성, repository-wide implemented Contract/Operation orphan 검증, 실제 LockCheck 실행, compile/test/independent verification은 별도다.
+아직 Design Baseline을 LOCKED로 선언하지 않는다. global Requirement Universe exact population, exact content SHA-256 inventory, repository-wide implemented Contract/Operation orphan 검증, 실제 LockCheck 실행, compile/test/independent verification은 별도다.
