@@ -9,7 +9,7 @@ import java.util.Map;
 
 /** Compares legacy and v2 gate decisions without promoting either side to final authority. */
 public final class SemanticAssuranceShadowGateComparator {
-    public static final String CONTRACT = "ONSURE_SHADOW_GATE_COMPARATOR_V2";
+    public static final String CONTRACT = "ONSURE_SHADOW_GATE_COMPARISON_V1_CANDIDATE";
 
     public Map<String, Object> compare(
             String comparisonId,
