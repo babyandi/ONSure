@@ -9,6 +9,13 @@
 - Finding은 문제, 근거, 영향, 수정방법, 확인방법 순으로 표현한다.
 - 개발자는 VS Code를 떠나지 않고 주요 흐름을 수행할 수 있어야 한다.
 
+### G14 대조 결과(2026-08-11, [08_REVIEW_CHECKLIST_OPEN_DECISIONS.md](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md) G14)
+이 설계서를 `contracts/*.json`과 처음으로 전면 대조한 결과다. 화면이 표시를 전제하는 데이터를 실제로 만들어내는 Operation·필드가 있는지 기준으로 확인했다.
+
+- **Operation Registry에 아직 없는 기능군**: [G13](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)에서 이미 확인된 대로 `contracts/workflow-operation-registry.v1.json`에 등록된 Operation은 49개뿐이며, 아래 §4·§6의 다음 화면이 전제하는 기능은 이 목록에 없다 — Organization Portfolio의 PortfolioSnapshot·동종 규모 대비 상대적 위치, 관리자 화면의 PolicyPack 업로드/버전관리/회귀결과, Organization Portfolio·Support Center의 알림 채널 구독, Delivery Center의 Acceptance Certificate 발급, Case Dashboard의 CoverageReport·ProgramRiskScore 추세 스파크라인, Verification의 Mutation Score, Finding Explorer의 Cross-Model Verification 결과, Improvement의 Blast Radius 미리보기. 화면 설계 자체는 유효하지만 이를 뒷받침하는 API가 아직 미등록이므로 `DESIGN_ONLY`로 취급하며, 계약 확장은 G13에서 별도 추적한다.
+- **실제 계약과 일치 확인된 부분**: `service-case-state.v1.schema.json`의 `status`(PREFLIGHT_REQUIRED~CLOSED 18단계), `security-findings.v1.schema.json`의 `severity`(CRITICAL/HIGH/MEDIUM/LOW/INFO), `program-risk-score.v1.schema.json`의 `grade`(A~E, A/B 등급은 `open_critical_count`가 0일 때만 부여), `license-state.v1.schema.json`의 `reservations[].state`(RESERVED/COMMITTED/RELEASED/EXPIRED), `program-profile.v1.schema.json`의 Component/Dependency/AI Component/Unknown/Conflict/Revision 필드, `target-adapter.v1.json`의 `supported_source_kinds`, `unattended-autopilot.v1.json`의 `forbidden_actions`/`merge_authorization`/`maximum_stage_attempts` — 각각 아래 §4·§6이 참조하는 화면 설명과 필드 이름·값이 일치한다.
+- **새로 반영한 실제 기능(이번 세션에 추가된 `provider.status`/`provider.usage` Operation)**: §5 관리자 화면에 AI Model Provider 상태·토큰/비용 사용량 조회 항목을 추가했다 — 실제 등록된 Operation과 `ModelInvocationLedger`가 이 데이터를 이미 만들어내는데도 이전 버전 설계서에는 반영되어 있지 않았다.
+
 ## 1-1. Organization Switcher
 여러 Organization Membership을 가진 사용자(SI·컨설팅·품질관리 회사 등)를 위해 모든 화면 상단에 Organization Switcher를 고정 노출한다. 전환 시 이전 Organization의 데이터·세션 컨텍스트는 즉시 폐기하고 새 Organization Context로 재조회한다.
 
@@ -64,11 +71,11 @@ Finding 목록 → 대상 선택 → 영향범위와 견적 → 승인·추가�
 - Critical Finding의 Cross-Model Verification 결과(1차/2차 모델 일치 여부)
 - AI 자기주장과 실제 Evidence 불일치 시 별도 배지 표시
 - 개선 제안
-- Accept Risk, False Positive, Improve 선택
+- Accept Risk, False Positive, Improve 선택 — 실제 `contracts/security-findings.v1.schema.json`의 `status`는 OPEN/CLOSED/ACCEPTED_RISK 3개뿐이며 `FALSE_POSITIVE`라는 별도 상태는 계약에 없다(G10에서 이미 확인). 따라서 이 3개 버튼은 계약 상태 값이 아니라 UI 동작이며, Accept Risk는 `status=ACCEPTED_RISK`로, False Positive는 `status=CLOSED`(자유서술 `resolution` 필드에 오탐 사유 기록)로, Improve는 Patch 완료 후 `status=CLOSED`(resolution에 수정 근거 기록)로 귀결된다
 - 대량 Finding 발생 시 일괄 처리: 필터로 좁힌 결과에 대해 일괄 Accept Risk/False Positive 지정, 저장된 필터 뷰, CSV 내보내기 후 일괄 재반영. 단 Critical/High의 일괄 Accept Risk는 개별 확인 없이 처리하지 않으며 §7 위험행위 확인을 거친다
 
 ### Finding Explorer 내 전문가 검토 요청
-Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택하면 대상 Finding/범위, 예상 소요시간, 추가 비용을 표시하고 승인 시 결제 후 관리자 화면의 "전문가 리뷰 배정" 큐로 전달한다. 배정된 전문가의 소견은 별도 Decision(EXPERT_CONCUR, EXPERT_OVERRIDE, EXPERT_ESCALATE)으로 Finding에 결합되며 자동 Decision을 덮어쓰지 않고 병기한다.
+Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택하면 대상 Finding/범위, 예상 소요시간, 추가 비용을 표시하고 승인 시 결제 후 관리자 화면의 "전문가 리뷰 배정" 큐로 전달한다. 배정된 전문가의 소견은 별도 Decision(EXPERT_CONCUR, EXPERT_OVERRIDE, EXPERT_ESCALATE)으로 Finding에 결합되며 자동 Decision을 덮어쓰지 않고 병기한다 — 이 3개 값은 어떤 계약에도 정의돼 있지 않은 `DESIGN_ONLY` 어휘이며(G14 대조로 확인), 실제로 세분화하려면 계약을 먼저 확장해야 한다. 현재 계약 수준에서 전문가 소견을 저장하려면 `status`는 OPEN/CLOSED/ACCEPTED_RISK 중 하나로, 소견 내용 자체는 `resolution`의 자유서술 텍스트로 기록하는 방식만 가능하다.
 
 ### Organization Portfolio
 - 조직에 속한 모든 System/Program을 한 화면에서 통합 조회(PortfolioSnapshot 기반)
@@ -82,7 +89,7 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 ### Support Center
 - 등급별 SLA 표시: Web 고객(영업일 기준 1차 응답), VS Code Developer(2 영업일), Team(1 영업일), Enterprise(계약 SLA, 예: 4시간)
 - 티켓 생성 시 관련 Case/Finding/License를 자동 첨부
-- 상태: OPEN → IN_PROGRESS → WAITING_ON_CUSTOMER → RESOLVED → CLOSED
+- 상태: OPEN → IN_PROGRESS → WAITING_ON_CUSTOMER → RESOLVED → CLOSED — `contracts/*.json`에 지원 티켓 전용 계약이 없어 이 상태값은 `DESIGN_ONLY`다(G14 대조로 확인). 세분화하려면 계약을 먼저 신설해야 한다
 - Professional Reviewer 요청("Finding Explorer 내 전문가 검토 요청" 화면 참조)과 일반 기술지원 티켓을 구분해 큐잉
 
 ### Delivery Center
@@ -99,8 +106,8 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 - OLicense 상태
 - Web Case와 VS Code 구독
 - Seat, System, Program, Credit
-- Reserve/Commit/Release 내역
-- Hard Stop, Auto Top-up, Approval Required 설정
+- Reserve/Commit/Release 내역 — 실제 `contracts/license-state.v1.schema.json`의 `reservations[].state`(RESERVED/COMMITTED/RELEASED/EXPIRED)와 일치
+- Hard Stop, Auto Top-up, Approval Required 설정 — `license-state.v1.schema.json`에는 `credits`(total/available/reserved/committed)만 있고 이 3개 정책을 담을 필드가 없다. `01_BUSINESS_PRODUCT_SERVICE_PLAN.md`·`07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md`가 정책 개념으로만 언급한 것을 이 화면이 앞서 반영한 것이며 `DESIGN_ONLY`다(G14 대조로 확인) — 세분화하려면 계약을 먼저 확장해야 한다
 
 ## 5. 관리자 화면
 - Product Catalog와 Feature Entitlement 조회
@@ -109,6 +116,7 @@ Finding 목록 또는 Case Dashboard에서 "전문가 검토 요청"을 선택�
 - 결제·환불·정산 상태
 - License 발급 실패 및 재처리
 - Worker와 Sandbox 상태
+- AI Model Provider 상태와 토큰/비용 사용량 조회(신규, G14 대조로 반영) — 실제 등록된 `provider.status`/`provider.usage` Operation과 `ModelInvocationLedger`가 이 데이터를 만든다. `provider.status`는 등록된 Provider별 `provider_id`·`declared_model_ids`·`supported_task_classes`를, `provider.usage`는 Provider별·전체 합산 호출수·입력/출력 토큰·비용(µ단위)을 반환하며 두 응답 모두 `final_claim_allowed: false`를 포함한다
 - 고객 승인 대기
 - 전문가 리뷰 배정
 - 보존·삭제 작업
@@ -159,10 +167,10 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - Re-review 상태
 
 ### Verification
-- Verification Pack
+- Verification Pack — 아직 전용 계약이 없는 `DESIGN_ONLY` 개념(`02`·`06` 설계서에만 존재, G14 대조로 확인)
 - Scenario와 Test 상태
-- PASS/FAIL/BLOCKED/NOT_RUN
-- Mutation Score(Test Suite 실효성 지표)와 취약 구간 표시
+- PASS/FAIL/BLOCKED/HOLD/NOT_RUN/INCONCLUSIVE/NON_FINAL — 실제 `contracts/status-vocabulary.v1.json`의 `verification_states`/`run_decisions` 7개 값 전체(이전에는 4개만 표기해 HOLD·INCONCLUSIVE·NON_FINAL이 누락돼 있었다). `06_TEST_OPERATION_IMPLEMENTATION_PLAN.md`가 Stop Condition 강제종료 시 INCONCLUSIVE를 사용자에게 표시한다고 명시하므로 이 값도 실제 노출 대상이다
+- Mutation Score(Test Suite 실효성 지표)와 취약 구간 표시 — 계약에 아직 없는 `DESIGN_ONLY` 지표(G14 대조로 확인)
 - Log와 Evidence
 - 재실행 비용
 
@@ -250,220 +258,3 @@ Component Tree, Dependency Graph, AI Component, Unknown/Conflict, Profile Revisi
 - 비용 차감 전 예상량을 확인할 수 있어야 한다.
 - BLOCKED와 NOT_RUN을 PASS처럼 보이게 표현하지 않는다.
 - VS Code에서 Baseline과 License 상태를 항상 확인할 수 있어야 한다.
-
-## 10. Assurance UX 및 False-Assurance 방지 상세설계 (신규, 2026-08-09)
-이 절의 목적은 기술적으로 NON_FINAL·PARTIAL·STALE인 결과가 화면 축약 과정에서 일반 사용자에게 "완료된 PASS"처럼 보이는 것을 금지하는 것이다. UI는 단일 점수보다 **어디까지 증명했고 어디부터는 미확인인지**를 먼저 보여준다.
-
-### 10.1 Assurance Summary Card
-Case Dashboard, Verification, Delivery Center의 모든 결과 화면에 다음 항목을 하나의 고정 Summary Card로 표시한다.
-
-- `decision`: PASS | FAIL | HOLD | BLOCKED | NOT_RUN | INCONCLUSIVE | NON_FINAL
-- `assurance_level`: L0_UNASSESSED | L1_STATIC_REVIEWED | L2_EXECUTION_VERIFIED | L3_INDEPENDENTLY_VERIFIED | L4_ADVERSARIALLY_VERIFIED | L5_QUALIFIED_HIGH_ASSURANCE
-- `scope_assurance`: 포함/제외/Unknown/Unobservable 수와 Scope Epoch
-- `validator_capability`: QUALIFIED | PARTIAL | NOT_PROVEN
-- `observability`: COMPLETE | PARTIAL | INSUFFICIENT
-- `oracle_assurance`: Ground Truth 등급과 Oracle 유형
-- `evidence_assurance`: PRIMARY/DERIVED 증거, 독립 Evidence Origin 수
-- `independence_assurance`: execution/principal/oracle/discovery 독립성 충족여부
-- `validation_age`: 검증시각, 유효성, STALE 여부
-- `accepted_risks`: Severity별 건수와 만료일
-- `critical_unknowns`: Critical 영향영역 중 미검증/관찰불가 건수
-
-### 10.2 PASS 표기 규칙
-- `SELF_VALIDATION_NONFINAL`의 `decision=PASS`는 화면에서 단독 녹색 `PASS`로 표시하지 않는다. **"내부 검증 통과 / 최종 독립검증 미완료"**로 표기한다.
-- `PASS_WITH_COVERAGE_LIMIT`, `PASS_WITH_ASSURANCE_LIMIT`, `PARTIAL_PASS` 성격의 결과는 일반 PASS와 동일한 배지·색상·정렬 우선순위를 사용하지 않는다.
-- Critical Unknown, Observability Insufficient, Validator Capability NOT_PROVEN이 하나라도 있으면 상단에 "전체 검증 완료" 표현을 금지한다.
-- "결함 없음", "완전히 안전", "모든 요구사항 충족" 같은 절대 표현을 사용하지 않는다. 허용 표현은 "선언된 범위·방법·증거 내에서 차단 결함이 탐지되지 않음" 형태다.
-
-### 10.3 Coverage와 제외영역 표시
-- `coverage_percent`는 항상 동일 화면 또는 한 클릭 이내에 `excluded`, `unknown`, `unobservable` 목록을 함께 표시한다.
-- Critical Component가 제외되면 Coverage 숫자와 무관하게 Critical 경고 배너를 표시한다.
-- Scope Epoch가 변경되면 이전 Coverage를 회색 처리하고 `STALE_COVERAGE`로 표시한다.
-
-### 10.4 상태 차원 분리
-다음 상태를 하나의 진행률로 합치지 않는다.
-
-- Technical Assurance: OReview/OVerification/OTester/OAudit 결과
-- Human Acceptance: 고객/전문가의 인수 또는 위험수용
-- Deployment Authorization: Production Go
-- Commercial Authorization: Commercial Go
-
-예를 들어 `HUMAN_ACCEPTANCE_PASS`는 기술적 L5를 의미하지 않고, `COMMERCIAL_GO`도 기술적 품질점수가 상승한 것을 뜻하지 않는다.
-
-### 10.5 Finding 상태와 Closure Reason
-Finding이 `CLOSED`여도 UI는 원인을 반드시 표시한다.
-- FIXED
-- FALSE_POSITIVE
-- DUPLICATE
-- NOT_APPLICABLE
-- MITIGATED
-- SUPERSEDED
-
-`ACCEPTED_RISK`는 해결된 Finding과 같은 완료 배지로 표시하지 않는다. Critical Accepted Risk는 Final Assurance Ceiling 제한을 명시한다.
-
-### 10.6 Flaky·Retry 표기
-- 최초 실행 결과, retry 횟수, 최종 결과를 분리 표시한다.
-- `FAIL→PASS` 재시도 결과는 `FLAKY_PASS` 또는 동등한 경고 상태로 표시하며 안정된 PASS와 동일하게 취급하지 않는다.
-- 최근 N회 실행의 PASS/FAIL 분포와 flakiness rate를 Verification 상세에서 확인할 수 있게 한다.
-
-### 10.7 Evidence/Observer 상태
-- Log/Trace/Network/DB 등 필요한 Collector가 중간에 종료되었으면 "관찰된 문제 없음"을 표시하지 않고 `OBSERVATION_INCOMPLETE`를 노출한다.
-- Evidence가 Target Manifest·Scope Epoch·Run에 결속되지 않았거나 freshness 검사를 통과하지 못하면 Evidence 카드에 `STALE_OR_UNBOUND`를 표시한다.
-
-### 10.8 Stale 및 재검증 알림
-다음 변경이 발생하면 기존 결과 상단에 `REASSESSMENT_REQUIRED` 배너를 표시한다.
-- Source/Artifact/Dependency/Config/Feature Flag 변경
-- Policy/Rule Pack/Oracle 변경
-- Model/Prompt/RAG Corpus 변경
-- 중요 외부 API/규제기준 변경
-- 새 MissedFinding이 기존 인증 범위에 영향
-
-### 10.9 Final Snapshot 표시
-Final Candidate/Lock 화면은 최소 다음을 한 화면에서 확인할 수 있어야 한다.
-- Target Manifest Digest
-- Scope/Requirement Epoch Digest
-- Run1/Run2 ID와 동일 Context 여부
-- OTester/OAudit/Human 승인 상태
-- Final Freshness Barrier 시각
-- Approval ID와 만료/소비상태
-- Atomic Validation Snapshot ID
-- 현재 Certificate 상태: VALID | STALE | INVALIDATED | SUPERSEDED
-
-### 10.10 청중별 기본 뷰
-**AI/Agent용**: machine-readable 상태, digest, epoch, unverified list, forbidden next action을 우선 표시한다.
-
-**개발자용**: 실패 재현경로, Oracle, Fixture, 변경으로 stale된 영역, 재실행해야 할 Test Pack을 우선 표시한다.
-
-**운영자용**: Case/Run 상태, collector health, queue/sandbox, 승인 만료, Certificate revocation, 고객 통지 필요여부를 우선 표시한다.
-
-### 10.11 화면 수용기준 추가
-- 사용자는 10초 안에 `Final 여부`, `미검증 Critical 영역 존재여부`, `Stale 여부`를 판단할 수 있어야 한다.
-- 사용자는 30초 안에 어떤 Scope/Oracle/Evidence/독립검증이 Assurance를 지지하는지 확인할 수 있어야 한다.
-- ProgramRiskScore A등급이어도 Critical Unknown 또는 Accepted Critical Risk가 있으면 이를 점수보다 시각적으로 우선 노출한다.
-- Self-validation PASS, Final PASS, Production Go, Commercial Go는 서로 다른 라벨과 아이콘을 사용한다.
-- 숨겨진 탭을 열어야만 제외범위·Unknown·Accepted Risk를 알 수 있는 UI는 수용하지 않는다.
-
-## 11. Runtime Currentness·Product Composition·Certificate UX (신규)
-이 절은 `02 FR-META-044~060`, `semantic-assurance/29~32`를 사용자 경험으로 내린다.
-
-### 11.1 Validation / Deployment / Running 3단 Identity Panel
-Production-bound 결과 화면은 다음을 같은 카드에 나란히 표시한다.
-- Validated Artifact: artifact_id/digest, 검증시각, FinalLock
-- Deployed Artifact: environment/region/cluster/revision, observed digest
-- Running Population: active instance 수, expected digest 일치율, mixed revision 여부
-
-세 값이 모두 닫히지 않으면 `CURRENT` 배지를 표시하지 않는다. Tag/branch 이름이 같아도 digest mismatch는 Critical 경고다.
-
-### 11.2 Currentness Banner
-상단 고정 상태:
-- CURRENT
-- STALE
-- REASSESSMENT_REQUIRED
-- INVALIDATED
-- REVOKED
-- UNKNOWN
-
-`Historical PASS / Currently STALE`처럼 발급 당시 결과와 현재 상태를 동시에 보여준다. 과거 PASS를 숨기지도, 현재 stale을 숨기지도 않는다.
-
-### 11.3 Rollout / Region View
-Rolling/Blue-Green/Canary/Multi-region은 cohort/traffic/region별 상태를 분리한다.
-- stable vs canary
-- blue vs green
-- region A/B/C
-- expected vs observed artifact
-- traffic percentage
-- currentness
-
-일부 cohort PASS를 전체 Production PASS로 표시하지 않는다.
-
-### 11.4 Product Composition Panel
-제품 단위 화면은 단일 점수보다 다음을 우선한다.
-- Product decision
-- Assurance Strength/Level
-- Product currentness
-- Critical HARD dependencies
-- weakest required child
-- unresolved conflict
-- N/A/excluded/unknown population
-- CompositionSnapshot ID/rule version
-
-Critical child HOLD/UNKNOWN/STALE가 있으면 전체 녹색 PASS 배지 금지.
-
-### 11.5 Evidence Graph Explorer
-사용자는 `왜 이 결과인가?`를 그래프로 확인한다.
-- Claim → Requirement → Oracle → Execution → Evidence
-- Finding/RCA/Patch/Approval
-- FinalLock → Deployment → Runtime → Certificate
-- CONTRADICTS/SUPERSEDES/INVALIDATES/REVOKES 강조
-
-Ceiling 이유를 클릭하면 최소 하나의 실제 graph path와 필요한 다음 조치를 표시한다.
-
-### 11.6 Certificate Center
-Certificate 목록/상세는 다음을 표시한다.
-- certificate_id/version
-- subject/product version
-- decision + assurance level
-- currentness
-- issued/expires/revalidation due
-- independent verification summary
-- limitation/exclusion
-- revocation status
-- public verification 링크/QR
-
-QR에 secret/token/raw evidence를 포함하지 않는다. `REVOKED`, `EXPIRED`, `OFFLINE_STATUS_UNCERTAIN`은 발급 당시 PASS보다 시각적으로 우선한다.
-
-### 11.7 Offline Status UI
-Air-gapped/Offline에서는 마지막 sync 시각과 trust bundle generation을 항상 표시한다.
-- OFFLINE_CURRENT_WITHIN_GRACE
-- OFFLINE_REVALIDATION_DUE
-- OFFLINE_STATUS_UNCERTAIN
-- OFFLINE_BLOCKED
-
-사용자는 `현재 온라인 revocation 상태를 확인할 수 없음`을 한 화면에서 이해할 수 있어야 한다.
-
-### 11.8 Authority / Delegation / Four-eyes UX
-고위험 승인 화면은 다음을 보여준다.
-- 요청 operation/subject/purpose
-- 현재 principal authority와 expiry
-- delegation chain
-- 필요한 승인자 수
-- 이미 승인한 principal identity
-- 동일 principal multi-key 중복 경고
-- Break-glass 여부/TTL/incident reference
-
-Break-glass 사용 시 `운영 허용`과 `Assurance 승인`을 분리해 표시한다.
-
-### 11.9 Plugin / Adapter Qualification UX
-Target/Profile/Verification 화면에 Plugin/Adapter 상태를 표시한다.
-- QUALIFIED
-- QUALIFICATION_REQUIRED
-- PARTIAL
-- NOT_PROVEN
-- SUSPENDED
-- REVOKED
-
-Plugin 이름/버전만 보여주지 않고 publisher, artifact digest, privilege summary, qualification generation을 확인 가능하게 한다.
-
-### 11.10 AI Runtime Identity UX
-AI Target 화면에 다음 Drift를 별도 노출한다.
-- Model/provider/deployment
-- System/developer prompt bundle
-- Tool Registry
-- Agent Memory scope
-- RAG corpus/index/embedding
-- sampling config
-
-이전 검증과 하나라도 material drift가 있으면 `AI_RUNTIME_REASSESSMENT_REQUIRED`를 표시한다.
-
-### 11.11 ONSure Qualification 표시
-고객 결과 화면에는 해당 검증을 수행한 ONSure release qualification generation과 target archetype status를 표시한다.
-예: `Java/Spring: QUALIFIED`, `Kubernetes: PARTIAL`, `Custom RTOS: NOT_PROVEN`.
-ONSure가 NOT_PROVEN인 영역을 결과 화면에서 숨기지 않는다.
-
-### 11.12 추가 화면 수용기준
-- 사용자는 10초 안에 `현재 CURRENT인지`, `STALE/REVOKED인지`, `왜 그런지` 판단할 수 있어야 한다.
-- Critical subtarget가 STALE/UNKNOWN/HOLD이면 Product 전체를 단일 녹색 PASS로 표시하지 않는다.
-- Certificate limitation/exclusion/currentness/revocation은 숨겨진 고급 탭에만 두지 않는다.
-- Offline uncertainty와 마지막 revocation sync 시각을 항상 확인 가능해야 한다.
-- Validated/Deployed/Running artifact가 다른 경우 사용자에게 digest mismatch를 직접 노출한다.
-- Assurance Level/Strength와 Decision, Currentness는 서로 다른 시각 요소로 표현한다.

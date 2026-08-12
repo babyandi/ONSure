@@ -88,10 +88,10 @@
 | G1 | CreditReservation 소진 시 대기 상태 | [04 CreditReservation절](04_ARCHITECTURE_DATA_API_OLICENSE.md)에 이미 결정 반영됨: 5개 실행 상태기계의 기존 HOLD로 전이(재사용), ServiceCase 별도 대기 상태는 도입 안 함. 체크리스트만 갱신 안 돼 있었음 | FIXED |
 | G2 | CaseRevision | `service-case-state.v1.schema.json`에 `case_revisions`(배열: revision_number/revision_type[INITIAL\|IMPROVE_AND_REVERIFY]/triggered_by_order_id/baseline_before_source_digest/status[OPEN\|DELIVERED\|ACCEPTED]/opened_at/delivered_at/accepted_at) 필드 추가. 별도 CaseRevision 계약 파일 대신 ServiceCaseState에 내장된 배열로 설계(독립 생애주기가 없어 항상 부모 Case와 함께 읽고 쓰이므로). `ServiceCaseLifecycleService.java`에 `requestImprovementRevision(caseId, triggeringOrderId, actor)` 추가: DELIVERY_ACCEPTED에서만 호출 가능, 새 상태값을 신설하지 않고 기존 IN_PROGRESS→DELIVERED_AWAITING_ACCEPTANCE→DELIVERY_ACCEPTED 전이를 재사용(`deliver()`/`acceptDelivery()`가 최신 revision의 상태도 함께 갱신하도록 확장). 전체 사이클(open→...→acceptDelivery→requestImprovementRevision→deliver→acceptDelivery)을 실제로 구동하는 테스트 추가, `mvn test` 458/0/0/7-skip 회귀 없음, `validate-structured-contracts.py --require-full` PASS | FIXED |
 | G3 | ComponentContract / Cross-Program Impact Scan | `contracts/component-contract.v1.schema.json`(Component ID/Baseline 결속, `component_signature`{code_hash_sha256, interface_hash_sha256}, Provided/Required Interface, Data/AI(nullable)/Quality Contract, 상태 DRAFT→ACTIVE→SUPERSEDED/BREAKING_CHANGE_FLAGGED, SUPERSEDED 시 `superseded_by_component_id` 필수를 allOf/if/then으로 강제)와 `contracts/reuse-link.v1.schema.json`(Provided Interface 단위 Provider Component→Consumer Component/Program 역조회 Link, Cross-Program Impact Scan의 실제 색인 레코드) 신규 제정 완료, `schema-instance-registry.v1.json`에 등록. Java 소비 코드(ComponentContractService 등)는 아직 없음 — 순수 계약 제정 단계이며 구현은 별도 결정 사항 | FIXED |
-| G4 | MissedFinding 재귀학습 루프 | 신규 계약 제정 필요, `contracts/state-model-mapping.v1.json`과의 관계 정의 | OPEN |
+| G4 | MissedFinding 재귀학습 루프 | 결정(2026-08-11): `state-model-mapping.v1.json`의 `machines`는 실제로 5개(program_profile/validation_run/improvement/git_delivery/assurance_publication)뿐이며 전부 고객 대상 실행 계층(G28과 동일 범위) — MissedFinding·`learning-to-application-pipeline.v1.json`은 ONSure 자신의 내부 역량개선 루프(G28의 state-machine.v1.json과 같은 범주)라 이 레지스트리에 등록 대상이 아님. 04 MissedFinding 절에 등록 비대상 사유·향후 계약화 시 처리 원칙(promoted_candidate_id 다리만으로 충분, 6번째 machine으로 추가 금지) 반영 | FIXED |
 | G5 | ReviewFinding/VerificationFinding 장기 생애주기 | 결정: 새 계약 제정 없이 스냅샷 모델(기존 3단계 + 최신 validation_run)로 단순화 — 04에 반영 | FIXED |
 | G6 | PatchRun DRY_RUN 확장 | 결정: 별도 엔티티 신설 없이 기존 `preapply_assessment`/`patch-rollback-receipt.v1.schema.json`으로 단순화 — 04에 반영. BehaviorDiffReport만 신규계약 필요 여부 재검토 남음 | FIXED (BehaviorDiffReport는 별도 추적) |
-| G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, PolicyPack, NotificationRule, SBOM 등) | 전부 `DESIGN_ONLY` — 계약 제정 우선순위를 06 §11 우선구현순서와 맞춰 재정렬 필요. ProgramRiskScore는 계약 제정 완료로 G7에서 분리 — G32 참조 | OPEN |
+| G7 | 이 세션에서 추가한 나머지 엔티티(AcceptanceCertificate, PolicyPack, NotificationRule, SBOM 등) | 4개 전부 필드 수준 기능정의 작성 완료(04, G33 참조) — 여전히 전부 `DESIGN_ONLY`(계약은 아직 없음, 이 정의는 구현 전 단계). ProgramRiskScore는 계약 제정 완료로 G7에서 분리 — G32 참조 | FIXED (설계 공백 해소, 계약 제정은 별도 후속) |
 
 이 표는 04 §5의 "아직 계약이 없는 확장" 절과 같은 내용을 재무/영업용 체크리스트와 같은 형식으로 옮긴 것이다.
 
@@ -104,8 +104,8 @@
 | G10 | Finding 상태 생애주기 | 실제 계약(`security-findings.v1.schema.json`)은 OPEN/CLOSED/ACCEPTED_RISK 3단계뿐. 설계서의 6단계 생애주기는 DESIGN_ONLY로 명시 | FIXED (명시만, 계약 확장은 미정) |
 | G11 | OGit Merge 권한 | `git-change-set.v1.schema.json`의 `merge_state`가 계약상 항상 `PROHIBITED` — "APPROVE≠Merge" 수준이 아니라 이 버전에서 Merge 승인 자체가 발급 안 됨. 02 정정 완료 | FIXED |
 | G12 | Actor/RBAC | 설계서의 10개 업무 Actor가 실제 `tenant-context.v1.schema.json`의 5개 RBAC 역할(VIEWER/OPERATOR/APPROVER/AUDITOR/ADMIN)과 매핑되지 않은 채 존재. 02에 매핑 제안 표 추가(매핑 자체는 아직 계약화 안 됨) | PARTIAL |
-| G13 | Workflow Operation Registry | 실제 등록된 Operation은 45개(`workflow-operation-registry.v1.json`)뿐. 이 설계서(특히 04 §7)가 제안한 Notification/Portfolio/PolicyPack/AcceptanceCertificate/SBOM/MutationTesting/CrossModel/BlastRadius/CoverageReport/RiskScore 관련 API는 전부 미등록 — 06에 교차참조 추가 | FLAGGED |
-| G14 | `05_UI_UX_WORKFLOW_SPECIFICATION.md`, `05`의 화면 구성 | 아직 실제 계약과 대조 안 함(주로 화면 설계라 직접 대응 계약이 적을 것으로 예상되나 확인 필요) | OPEN |
+| G13 | Workflow Operation Registry | 실제 등록된 Operation은 49개(`workflow-operation-registry.v1.json`, G14 대조 중 재확인 — 이전 45개는 그 사이 `provider.status`/`provider.usage`가 추가되며 갱신 안 된 값이었음). 이 설계서(특히 04 §7)가 제안한 Notification/Portfolio/PolicyPack/AcceptanceCertificate/SBOM/MutationTesting/CrossModel/BlastRadius/CoverageReport/RiskScore 관련 API는 여전히 미등록 — 06에 교차참조 추가 | FLAGGED |
+| G14 | `05_UI_UX_WORKFLOW_SPECIFICATION.md`, `05`의 화면 구성 | 전면 대조 완료. (1) `service-case-state.v1`/`security-findings.v1`/`program-risk-score.v1`/`license-state.v1`/`program-profile.v1`/`target-adapter.v1`/`unattended-autopilot.v1`의 상태값·필드는 05가 이미 정확히 인용 중이었음. (2) Finding Explorer의 "False Positive"와 전문가 소견 Decision(EXPERT_CONCUR/OVERRIDE/ESCALATE)이 계약에 없는 `DESIGN_ONLY` 어휘였는데 그 사실이 명시돼 있지 않았음(G10과 같은 유형의 누락) — 05에 명시 추가. (3) Verification 화면의 상태 표기가 `status-vocabulary.v1`의 7개 값 중 4개(PASS/FAIL/BLOCKED/NOT_RUN)만 반영해 HOLD/INCONCLUSIVE/NON_FINAL 누락 — 05 정정 완료. (4) License & Usage의 Hard Stop/Auto Top-up/Approval Required, Support Center 티켓 상태(OPEN→...→CLOSED)가 대응 계약 없이 이미 확정된 것처럼 서술돼 있었음 — `DESIGN_ONLY` 명시 추가. (5) Organization Portfolio/PolicyPack/알림 구독/AcceptanceCertificate/CoverageReport/MutationScore/CrossModel/BlastRadius는 G13의 미등록 Operation 목록과 겹침 — 05에 교차참조 추가. (6) 이번 세션에 추가된 실제 Operation(`provider.status`/`provider.usage`, `ModelInvocationLedger`)이 관리자 화면에 반영돼 있지 않았음 — 05 §5에 추가 | FIXED |
 
 G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영했을 뿐, 02·03·06 전체를 계약과 완전히 재대조한 것은 아니다.
 
@@ -113,8 +113,8 @@ G9~G13은 대조 범위가 넓어 이번 라운드에서 발견된 것을 반영
 
 | # | 항목 | 발견 | 조치 |
 |---|---|---|---|
-| G15 | 01 목표고객 분류 | 실제 `product-scope.v1.json`은 `primary_users` 4종(NON_DEVELOPER_AI_BUILDERS/SOFTWARE_DEVELOPERS/PRODUCT_TEAMS/ENTERPRISE_ASSURANCE_TEAMS)만 정의 — 설계서의 6개 세그먼트는 더 세분화된 DESIGN_ONLY 분류, 계약 매핑 없음 | FLAGGED |
-| G16 | 검증 대상 범위 | 계약의 `supported_target_types`에 Desktop/Mobile/Automation Workflow가 있는데 01은 언급 안 함 | FLAGGED |
+| G15 | 01 목표고객 분류 | 01 §3-1에 6개 세그먼트→4종 `primary_users` 최선 매핑 표를 추가했으나 깨끗한 1:1이 아님을 확인: "규제 산업"은 role이 아니라 industry vertical이라 대응값이 없고, "AI Agent·RAG·LLM 서비스 구축 기업"은 SOFTWARE_DEVELOPERS/PRODUCT_TEAMS 중 불명확하며, "SI·컨설팅·품질관리"와 "발주기관"은 서로 다른 사업관계인데 둘 다 ENTERPRISE_ASSURANCE_TEAMS로 수렴함. `primary_users` enum 확장 vs 01 세그먼트 재정리는 사업 판단이 필요한 미해결 사항으로 명시 | FLAGGED (정밀화됨 — 매핑표+미해결 지점 3건 문서화, 계약 변경은 별도 사업 결정 필요) |
+| G16 | 검증 대상 범위 | 01 §3-2에 `supported_target_types` 8종(AI_APPLICATION/AGENTIC_SYSTEM/GENERAL_SOFTWARE/WEB_APPLICATION/API_SERVICE/DESKTOP_APPLICATION/MOBILE_APPLICATION/AUTOMATION_WORKFLOW) 전체가 검증 대상 범위임을 명시 — Desktop/Mobile/Automation Workflow 포함 | FIXED |
 | G17 | 상품 채널 vs 엔진 배포 형태 혼동 위험 | `delivery_modes`(로컬/독립실행 중심)와 01의 Web/VS Code 상품구조는 서로 다른 계층 — 01에 구분 설명 추가 | FIXED |
 | G18 | 05 Web이 별도 Operation Surface인지 | 실제 `generic_surfaces`는 CLI/LOCAL_AUTHENTICATED_API/VSCODE뿐, WEB 없음. Web은 LOCAL_AUTHENTICATED_API 클라이언트로 구현돼야 함을 05에 명시 | FIXED |
 | G19 | Preflight 입력 종류 | 실제 `target-adapter.v1.json`은 Package/Binary/Deployed Service/Document 세트도 지원하는데 05는 Git/Archive/Container만 언급 | FIXED |
@@ -176,97 +176,21 @@ G7이 묶어서 추적하던 5개 엔티티(AcceptanceCertificate, ProgramRiskSc
 
 **등급 컷오프 수치(90/75/60/40)는 여전히 C5 기준 DRAFT다** — 이번 작업은 그 DRAFT 수치를 스키마/계약 구조에 그대로 인코딩(`reusable-pattern-memory.v1.schema.json`에 `demotion_threshold`를 추가했을 때와 같은 이 저장소의 관례)한 것일 뿐, 값 자체를 business-confirm한 것이 아니다. 스키마 설명문에도 이 네 컷오프가 확정값이 아니라는 점을 명시했다. 실제로 Finding/MissedFinding 원본 데이터에서 이 점수를 계산해 채우는 로직(생산 연동)은 이 작업 범위 밖이며 별도 후속 작업이다. `src/main/java/`에는 아직 이 계약을 참조하는 코드가 없음을 확인했다. | FIXED (ProgramRiskScore 계약 제정 완료, 등급 컷오프 확정은 C5로 계속 추적)
 
+### G33 — AcceptanceCertificate/PolicyPack/NotificationRule/SBOM 필드 수준 설계 완료 (2026-08-11, G7 마감)
+G7이 추적하던 나머지 4개 엔티티 전부 [04_ARCHITECTURE_DATA_API_OLICENSE.md](04_ARCHITECTURE_DATA_API_OLICENSE.md) §5(상태 모델)에 필드 수준 기능정의를 새로 작성했다. **사용자 지시대로 계약(`contracts/*.schema.json`)이나 Java 코드는 만들지 않았다** — 기능 정의와 설계만 완료했다.
+
+- **AcceptanceCertificate/ExternalAcceptorGrant**: `case_id`/`case_revision_number`/`baseline_reference`/`policy_binding`/`decision_summary`(quality_decision, open_finding_counts_by_severity, coverage_percent, program_risk_score/grade)/`completeness_disclaimer`(신규, 필수 — `final_claim_allowed: const false`와 같은 근거를 이 인증서도 우회하지 않도록 강제)/`signature`/`status`(ISSUED→REVOKED) 필드 정의. ExternalAcceptorGrant는 `scope`(VIEW_CERTIFICATE_VERIFICATION_ONLY/VIEW_DELIVERY_READONLY)까지 분리
+- **PolicyPack/PolicyPackVersion**: 부모(PolicyPack)/자식(PolicyPackVersion) 분리, `rules`(category/severity/additive_only:true 강제), `regulatory_framework_mappings`(E1 필드화), `golden_fixture_regression_receipt_reference`, `status`(DRAFT→PENDING_REGRESSION→REGRESSION_PASSED→ACTIVE→SUPERSEDED, G3의 ComponentContract 어휘 재사용). **정직한 확인**: `contracts/dependency-license-policy.v1.json`이 ONSure 자체 빌드용으로 이미 같은 모양(SPDX id→ALLOWED/FORBIDDEN+사유)의 실제 계약을 갖고 있어, 향후 PolicyPack 계약 제정 시 라이선스 규칙 부분의 선례로 재사용해야 한다고 명시(새로 발명 금지)
+- **NotificationRule/NotificationEvent/NotificationDeliveryReceipt**: 02 §10-1이 이름만 나열했던 세 산출물에 필드를 채움. `subscribed_event_types`(8종 고정), `batching`(IMMEDIATE/DAILY_DIGEST), `delivery_status`(PENDING→DELIVERED/FAILED→RETRYING→DELIVERED/DEAD_LETTERED), `fallback_triggered`
+- **SBOM(대상 Program용)**: `program_profile_id`/`baseline_reference`/`format`(CYCLONEDX_1_5, DRAFT)/`ecosystems`/`components`/`transitive_resolution_status`(DIRECT_ONLY/FULL_TREE, DRAFT) 필드 정의. **정직한 확인(코드까지 실제로 읽음)**: ONSure는 이미 실제로 동작하는 `SbomGenerator.java`(+ `SbomGeneratorTest.java`, 4개 테스트 통과)를 갖고 있어 CycloneDX 1.5 JSON을 생성하고 `contracts/assurance-lanes.v1.json`의 `ORUDA_BUILD` Lane `required_outputs`(`"sbom"`)를 충족한다 — 하지만 이는 **ONSure 자신의 Maven 빌드 공급망 자기증명**이며 고객의 임의 대상 Program(다양한 언어/패키지 매니저)을 분석하는 이 엔티티와는 범위가 다르다. 같은 이름의 서로 다른 두 엔티티를 혼동하지 않도록 04에 명시했고, 재사용 가능한 것은 출력 포맷과 라이선스 보강 패턴뿐이라는 것도 밝혔다.
+
+**06 §11 우선구현순서 재정렬**: 4개 항목을 기존 1~12번 번호를 유지한 채(11/12번이 G30에서 이미 번호로 참조되고 있어 보존 필요) 하위번호로 삽입했다 — SBOM은 3-1(OReview의 Dependency 리뷰가 이미 요구하는 인벤토리라 가장 이른 지점, ONSure 자체 SbomGenerator 선례가 있어 위험 최저), NotificationRule은 5-1과 AcceptanceCertificate는 5-2(둘 다 Web Learn & Verify Case가 실제 상태를 갖기 시작해야 의미가 생김, AcceptanceCertificate는 DELIVERY_ACCEPTED 도달이 선행조건), PolicyPack은 10-1(Enterprise 전용 유료 기능이라 10번에 종속, 신규 버전 승격은 7번 OMemory의 Golden Fixture 회귀를 재사용하므로 7번에도 종속되는 유일한 항목).
+
+**04 §4 데이터 엔터티 목록**과 "아직 계약이 없는 이 설계서의 확장" 절도 4개 엔티티를 굵게 표시하고 이 절로 교차참조하도록 갱신했다. G13(Workflow Operation Registry 미등록)과 G14 관계는 그대로 유지된다 — API Operation 등록은 이번 작업 범위 밖이다. | FIXED (필드 수준 설계 완료, 계약 제정·코드 구현은 별도 후속 작업)
+
 ## F. 문서 거버넌스 (참고, 결정 아님)
 
 | # | 항목 | 현재 상태 | 위치 |
 |---|---|---|---|
 | F1 | `status/design-conflict-register.v1.json`의 CONFLICT-003/005/006이 여전히 `docs/05`를 authority로 인용 | 무관한 진행 중 작업이라 미수정 | [ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md §0](../architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md) |
 | F2 | 229개 파일 규모의 기존 staged 변경(패키지 리네임 `io.onsure`→`kr.co.oruda.onsure` 등)이 일부 파일에서 디렉터리만 옮기고 `package` 선언은 갱신 안 됨 (예: `LocalAuthenticatedApiServerTest.java`가 `kr/co/oruda/...` 경로에 있으나 `package io.onsure.platform;`) | 빌드 깨질 가능성 높음, 커밋 보류 권장 | 리포 루트 (제가 수정하지 않음) |
-
-## H. Meta-Validation P0 보완 백로그 (2026-08-09 추가검토)
-이 절은 02~07에 이번 라운드에서 반영한 Meta-Validation 기능·설계 중 **실제 계약/코드/Negative Fixture/독립실행이 아직 없는 항목을 구현 우선순위로 추적**한다. 문서에 상세 정의가 추가됐다는 사실만으로 IMPLEMENTED 또는 PASS로 간주하지 않는다. 모든 항목의 기본 상태는 `OPEN / DESIGN_ONLY`이며, 다음 네 단계가 모두 증명된 뒤에만 FIXED 후보가 된다.
-
-`Contract/Schema → Enforcement Code → Dedicated Negative/Adversarial Fixture → Independent Runtime Evidence`
-
-### H1. Target·Scope·Evidence 완전성
-| P0 | 항목 | 핵심 실패모드 | 주 설계 위치 | 상태 |
-|---|---|---|---|---|
-| P0-01 | Validation Target Manifest | Source SHA만 같고 실제 Artifact/Config/Model/RAG가 다른 대상을 동일 검증으로 오인 | [02 §13 FR-META-001](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.2](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-02 | Scope/Requirement Epoch Lock | 검증 중 Scope 축소·확대/신규 Requirement 발견 후 이전 Coverage 유지 | [02 FR-META-002](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.3](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-03 | Evidence Target Binding | 다른 Target/Run/Scope의 정상 Evidence를 재사용해 허위 PASS | [02 FR-META-006](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.4](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-04 | Validator Capability Qualification | ONSure가 검증 자격이 입증되지 않은 Target/Defect class에 Full Assurance 발급 | [02 FR-META-003](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-05 | Observability Qualification | 필요한 현상을 못 봤는데 "문제 없음"으로 결론 | [02 FR-META-004](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.17](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-06 | Oracle/Discovery Independence | L1/L2가 같은 Oracle·Rule·Implementation blind spot을 공유 | [07 §8](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md), [03 §12](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) | OPEN / DESIGN_ONLY |
-| P0-07 | Validation Staleness | 대상/정책/의존성 변경 후 과거 PASS가 계속 유효하게 보임 | [02 FR-META-011](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN / DESIGN_ONLY |
-| P0-08 | Accepted-Risk Assurance Ceiling | Critical/High를 ACCEPTED_RISK로 바꿔 Full Validation 의미를 세탁 | [02 FR-META-015](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [05 §10](05_UI_UX_WORKFLOW_SPECIFICATION.md) | OPEN / DESIGN_ONLY |
-
-### H2. Final·State·Contract Graph
-| P0 | 항목 | 핵심 실패모드 | 주 설계 위치 | 상태 |
-|---|---|---|---|---|
-| P0-09 | Waiver Integrity | FAIL/NOT_RUN을 Human Waiver로 PASS 변환 | [02 FR-META-015](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) | OPEN / DESIGN_ONLY |
-| P0-10 | Historical Revalidation | 새 Detector/MissedFinding이 생겨도 과거 인증 영향분석 없음 | [02 FR-META-036](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13.17](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-11 | Finding Closure Semantics | CLOSED가 FIXED/FP/DUPLICATE를 구분하지 못해 Risk/Calibration 오염 | [03 §12.2](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) | OPEN / DESIGN_ONLY |
-| P0-12 | Final Claim Reconstruction | 저장된 PASS/Score/State를 그대로 신뢰 | [02 FR-META-013](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.9](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-15 | Final Lineage Reconstruction | Final Candidate/Lock 객체가 Schema-valid라는 이유만으로 정당한 경로로 간주 | [04 §14.8~14.14](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-16 | Atomic Validation Snapshot | Run1의 좋은 Security + Run2의 좋은 Performance를 섞어 존재한 적 없는 PASS 생성 | [02 FR-META-010](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13.6](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-19 | Final Freshness Barrier | Candidate/Approval 이후 새 Critical·정책변경이 있는데 Lock 발급 | [02 FR-META-012](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.12](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-20 | Approval Context Binding | Candidate만 승인하고 Scope/Policy/Parameter가 바뀐 실행에 재사용 | [04 §14.11](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-21 | Evidence Transactionality | Crash 중간에 생성된 일부 파일을 정상 PASS Evidence로 복구 | [02 FR-META-022](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.13](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-22 | Validation Isolation | 동시 Run/DB/cache/queue 상태가 서로 오염 | [02 FR-META-023](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13.12](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-23 | Assurance Revocation | Final Lock을 영구적 안전성으로 오인, 새 CVE/Drift에도 유효 | [02 FR-META-042](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.15](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-24 | State Semantic Unification | PUBLICATION_ELIGIBLE/FINAL_LOCKED/PRODUCTION_GO 의미 강도 혼동 | [04 §14.7](04_ARCHITECTURE_DATA_API_OLICENSE.md), [05 §10.4](05_UI_UX_WORKFLOW_SPECIFICATION.md) | OPEN / DESIGN_ONLY |
-| P0-25 | Global Status Ontology | CANCELLED lifecycle과 verification decision vocabulary가 섞임 | [04 §14.7](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-26 | State Authenticity & Reconstruction | DB current_state를 직접 강한 상태로 주입/위조 | [04 §14.8](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-27 | Orthogonal Authorization States | Technical Assurance, Human Acceptance, Production/Commercial GO를 한 축으로 오인 | [04 §14.7](04_ARCHITECTURE_DATA_API_OLICENSE.md), [05 §10.4](05_UI_UX_WORKFLOW_SPECIFICATION.md) | OPEN / DESIGN_ONLY |
-| P0-28 | Cross-Contract Invariant Engine | 개별 Schema는 valid하나 계약 연결 의미가 모순 | [04 §14.6](04_ARCHITECTURE_DATA_API_OLICENSE.md), [06 §13.5](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-29 | Cross-Field Semantic Invariants | purpose/type, approved_at/expires_at 등 같은 객체 내부 의미 모순 | [04 §14.6](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-30 | Purpose & Parameter Binding | 승인 Action ID는 같지만 resource/parameter/purpose가 바뀜 | [04 §14.11](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-34 | Trust Registry Semantic Integrity | 다른 key가 같은 principal, 중복 key_id, revocation 시간 모순 | [02 FR-META-027](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.19](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-
-### H3. 검증기 Qualification·Benchmark·Truth Assurance
-| P0 | 항목 | 핵심 실패모드 | 주 설계 위치 | 상태 |
-|---|---|---|---|---|
-| P0-13 | Validation Saturation Proof | 같은 blind spot을 반복해 신규 Finding 0인데 "포화"로 오인 | [02 FR-META-030](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-14 | Detector Qualification Report | 118개 seeded fault가 등록됐다는 사실을 실제 탐지성능으로 오인 | [02 FR-META-029](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13.1](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-17 | Flakiness / Retry Integrity | FAIL/FAIL/PASS를 최종 PASS 하나로 세탁 | [02 FR-META-019](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13.7](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-18 | Fixture Precondition Proof | Negative Test의 Actor가 사실 권한 보유 등 Fixture 자체가 잘못됨 | [02 FR-META-020](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13.8](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-31 | Evidence Collector Health | Observer가 중간에 죽었는데 "관찰된 문제 없음"으로 PASS | [06 §13.9](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-32 | Validator Supply-Chain Qualification | Scanner/JDK/OS/Rule/Model 오염이 검증결과를 오염 | [02 FR-META-028](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.20](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-33 | Anti-Evasion Validation | Target/Agent가 검증환경을 감지해 안전한 척함 | [02 FR-META-039](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [06 §13.15](06_TEST_OPERATION_IMPLEMENTATION_PLAN.md) | OPEN / DESIGN_ONLY |
-| P0-35 | Evidence-to-Claim Sufficiency | Hash가 맞는 증거가 실제 Claim을 충분히 입증하지 못함 | [03 §12.5](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) | OPEN / DESIGN_ONLY |
-| P0-36 | Evidence Origin Independence | 같은 scanner 원천의 여러 파일을 여러 독립증거로 오인 | [02 FR-META-026](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [03 §12.5~12.6](03_OREVIEW_CODE_REVIEW_SPECIFICATION.md) | OPEN / DESIGN_ONLY |
-| P0-37 | Oracle Coupling Gate | Product와 Oracle이 같은 함수/로직을 공유해 같은 버그를 PASS | [07 §8.6](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) | OPEN / DESIGN_ONLY |
-| P0-38 | Trusted Computing Base Manifest | ONSure가 무엇을 검증하지 않고 신뢰하는지 불명 | [02 FR-META-028](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [04 §14.20](04_ARCHITECTURE_DATA_API_OLICENSE.md) | OPEN / DESIGN_ONLY |
-| P0-39 | Semantic Dataset Separation | byte는 다르지만 사실상 같은 결함패턴으로 Hidden set 과적합 | [02 FR-META-031](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [07 §8.5](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) | OPEN / DESIGN_ONLY |
-| P0-40 | Memory-Blind Independent Review | 과거 Pattern/점수가 독립 Reviewer 판단을 자기강화 | [02 FR-META-032](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [07 §8.4](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) | OPEN / DESIGN_ONLY |
-| P0-41 | Ground Truth Provenance & Epoch | Expected Result 자체가 틀리거나 오래됐는데 정답으로 고정 | [02 FR-META-033](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [07 §8.2~8.3](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) | OPEN / DESIGN_ONLY |
-| P0-42 | Learning Regression Guard | 평균 성능은 증가하지만 Critical Recall이 감소 | [02 FR-META-034](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [07 §8.8](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) | OPEN / DESIGN_ONLY |
-| P0-43 | Rule Weakening High-Risk Gate | False Positive 감소를 이유로 Detector/Oracle을 완화해 Critical escape | [02 FR-META-035](02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md), [07 §8.7](07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md) | OPEN / DESIGN_ONLY |
-
-### H4. 이번 문서 반영으로 바뀐 것 / 아직 바뀌지 않은 것
-**문서상 상세 정의 완료**
-- 02: FR-META-001~043 기능 요구사항과 종합 수용기준
-- 03: Truth Assurance, Negative Assurance, Closure, Composite Risk, Evidence Sufficiency
-- 04: Target Manifest, Contract Graph, Final Reconstructor, Freshness/Revocation/TCB
-- 05: Assurance Summary Card와 false-assurance 방지 UX
-- 06: Detector Qualification, Hidden Benchmark, Validator Mutation, Crash/TOCTOU/Anti-evasion 시험
-- 07: 독립성 6축, Ground Truth 등급, Memory-Blind, Semantic Dataset, Rule Weakening Gate
-
-**아직 구현됐다고 주장하지 않는 것**
-- 위 H 표의 신규 P0는 별도 계약/코드/테스트가 생기기 전까지 전부 OPEN/DESIGN_ONLY다.
-- `CoverageReport`, `MissedFinding`, `ConfidenceCalibrationReport`도 기존 상태대로 DESIGN_ONLY다.
-- ONSure 현재 자체 Final Acceptance Runtime, 독립 OTester/OAudit, Human Final Gate가 실제로 모두 실행됐다는 주장으로 바꾸지 않는다.
-- 문서 보강만으로 `final_claim_allowed` 또는 Production/Commercial Gate를 올리지 않는다.
-
-### H5. 구현 완료 판정 Gate
-각 P0를 FIXED로 바꾸려면 최소 다음 증적을 요구한다.
-1. 권위 Contract/Schema 또는 명시적 기존 Contract 재사용 결정
-2. Runtime Enforcement 코드
-3. 정상 Fixture + 적어도 하나의 의미적 Negative/Adversarial Fixture
-4. `NOT_RUN/BLOCKED/HOLD/INCONCLUSIVE` 세탁 방지 확인
-5. Raw Evidence/Receipt/Target Context 결속
-6. 독립 실행 또는 독립 재계산 Evidence
-7. 기존 Regression 전체 무회귀
-8. `status/*` 또는 본 체크리스트의 상태 갱신
-
-하나라도 없으면 문서상 설계가 자세해도 FIXED/IMPLEMENTED로 표기하지 않는다.

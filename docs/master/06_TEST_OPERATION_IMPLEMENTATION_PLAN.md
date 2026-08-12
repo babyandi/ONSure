@@ -280,15 +280,21 @@ Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진�
 1. Schema, Receipt, OLicense 계약
 2. Local Runtime과 OLearning 최소기능
 3. OReview 코드리뷰 최소기능
+3-1. **SBOM(대상 Program용, G7)** — 03 Security Review가 이미 "Dependency 취약점과 License"를 리뷰 입력으로 요구하므로(3번의 일부로 이미 필요한 의존성 인벤토리), 그 인벤토리를 표준 산출물로 굳히는 작업. ONSure 자체 내부 빌드 SBOM(`SbomGenerator.java`, CycloneDX 1.5)이 이미 실제로 동작 중이라 포맷·라이선스 보강 패턴을 그대로 재사용할 수 있어 4개 항목 중 엔지니어링 위험이 가장 낮다. 다만 임의 생태계(npm/pip/cargo 등) 파서 확장은 신규 작업
 4. OVerification 실행 Harness
 5. Web Learn & Verify Case
+5-1. **NotificationRule/NotificationEvent/NotificationDeliveryReceipt(ONotify, G7)** — Web Case가 실제로 상태를 갖기 시작하는 5번 이후에야 통지할 대상 사건이 생긴다. MVP는 Email/Webhook 채널만으로 충분하며 VS Code 채널은 8번(VS Code Developer)이 붙을 때 자연 확장
+5-2. **AcceptanceCertificate/ExternalAcceptorGrant(G7)** — Case가 `DELIVERY_ACCEPTED`에 실제로 도달해야 발급 대상이 생기므로 5번에 종속. `decision_summary.coverage_percent`는 CoverageReport 계약 제정 전까지 비워둘 수 있어 하드 블로커는 아니지만, `program_risk_score`/`program_risk_grade`는 G32로 이미 계약이 있어 채울 수 있다
 6. OImprovement Worktree Patch
 7. OMemory 최소기능(Pattern 추출·매칭, MissedFinding 등록)
 8. VS Code Developer
 9. Payment/Refund와 운영화
 10. Team/Enterprise 기능
+10-1. **PolicyPack/PolicyPackVersion(G7)** — 01·04가 이미 Enterprise 전용 유료 기능으로 명시했고, 신규/개정 버전은 7번 OMemory의 Golden Review Fixture 회귀 절차를 그대로 재사용해야 하므로 7번과 10번이 모두 갖춰진 뒤가 순서상 맞다. 4개 항목 중 유일하게 두 개의 선행 Lane(7, 10)에 동시 의존
 11. OMemory 재귀학습 루프 자동화(RCA→Rule 개정→Golden Fixture 회귀→Promote), `contracts/learning-to-application-pipeline.v1.json`의 `VALIDATION_PACK_APPLY` 경로로 `APPLIED_LOCKED` 최소 1건 달성
 12. OTraining(Target AI Auto-Learning) — 11번이 `APPLIED_LOCKED` 1건 이상을 실제로 달성하기 전까지 착수하지 않는다(`TARGET_PRODUCT_APPLY: mvp_allowed=false` 하드 게이트, [00_ONSURE_MASTER_DESIGN_SET.md §2-2](00_ONSURE_MASTER_DESIGN_SET.md))
+
+**G7 삽입 근거 요약(2026-08-11)**: 위 11/12번은 G30에서 이미 번호로 참조되고 있어(같은 문서 §1-1, [08 체크리스트 G30](08_REVIEW_CHECKLIST_OPEN_DECISIONS.md)) 기존 번호를 보존하고 신규 4개 항목은 하위번호(N-1 등)로 삽입했다. 순서는 각 항목이 실제로 소비 가능해지는 선행 Lane 기준이며, 계약 제정(§6 변경 규칙: Requirement→Design→Contract/Schema→Code 순서)은 이 구현 순서보다 항상 먼저 와야 한다 — 이 절은 "계약이 생긴 뒤 코드를 어떤 순서로 짤지"이지 "언제 계약을 만들지"가 아니다.
 
 ## 12. 최종 수용기준
 - 문서와 코드 Traceability 확보
@@ -300,124 +306,3 @@ Customer Communication은 공개 Status Page(구성요소별 가동 상태, 진�
 - 고객 데이터 삭제 증명 PASS
 - OMemory 재귀학습 루프가 의도적으로 주입한 MissedFinding 사례를 RCA→개정→회귀 통과까지 완결 처리
 - Final Evidence Pack 봉인
-
-## 13. Meta-Validation Qualification·시험·운영 계획 (신규, 2026-08-09)
-이 절은 대상 제품 시험과 별개로 **ONSure 자체가 결함을 실제로 잡을 능력이 있는지, 잘못된 PASS를 낼 수 없는지**를 검증한다. 현재 `contracts/omission-failure-injection-counts.v1.json`의 118건은 등록된 주입 케이스 수이며, 실행·탐지·escape가 입증된 수가 아니다. 따라서 개수 집계에서 실제 탐지자격 증명으로 전환한다.
-
-### 13.1 Detector Qualification Report
-모든 seeded fault corpus 실행마다 다음을 기록한다.
-- `registered_faults`, `executed_faults`, `valid_non_equivalent_faults`, `detected_faults`, `escaped_faults`, `invalid_or_equivalent_faults`
-- `critical_escaped_fault_ids`, `fault_class_coverage`, `detector_pack_digest`, `oracle_pack_digest`, `benchmark_set_digest`, `execution_environment_digest`
-Known Critical Seeded Defect Escape가 1건이라도 있으면 해당 Capability의 `QUALIFIED` 발급을 금지한다.
-
-### 13.2 Benchmark Corpus 분리
-1. `PUBLIC_REGRESSION`
-2. `PRIVATE_QUALIFICATION`
-3. `ROTATING_UNSEEN`
-4. `NOVEL_COMPOSITION`
-AI/학습 계열은 07 §8 Semantic Dataset Separation을 적용한다.
-
-### 13.3 Fault Class Coverage
-Functional/Boundary/State, Authentication/Authorization/Tenant Isolation, Data Integrity/Transaction/Consistency, Concurrency/Race/Deadlock/TOCTOU, Timeout/Retry/Resource Exhaustion, Recovery/Restart/Rollback, Security Injection/SSRF/XSS/Command/Path, Supply Chain/Dependency/Artifact Drift, Evidence Tampering/Replay/Substitution, Approval/Authority/Privilege Escalation, AI Prompt/RAG/Tool/Memory/Model Drift, Validation Bypass/Observer Failure/False Assurance를 독립 관리한다.
-
-### 13.4 Validator Mutation Testing
-Detector 제거, Severity 하향, Oracle 반전/Skip, NOT_RUN→PASS, Evidence binding 제거, stale receipt 허용, signature 검증 제거, Final eligibility 제거, REJECT approval 소비, same-principal independence, Collector health 제거, Scope Epoch 제거, retry failure history 삭제 mutant를 전용 Negative Fixture로 kill한다.
-
-### 13.5 Cross-Contract Semantic Fixture
-FinalApproval REJECT+FinalLock, Candidate eligible=false+PASS, candidate digest mismatch, target mismatch, Run1 PASS+Run2 FAIL, Scope Epoch 불일치, CANCELLED Evidence, purpose/type mismatch, expires<=approved, duplicate key/same-principal independence, RiskScore 저장값 불일치를 모두 BLOCK한다.
-
-### 13.6 Atomic Validation Snapshot
-서로 다른 Run의 좋은 결과만 조립하는 cross-run mixing을 금지하고 동일 target/scope/requirement/policy/config generation의 결과만 Final Snapshot으로 묶는다.
-
-### 13.7~13.20 공통 Meta Gate
-Flakiness/Retry history, Fixture precondition proof, Collector failure, crash consistency, Final TOCTOU, isolation contamination, operational equivalence, mock fidelity, anti-evasion, resource exhaustion, historical revalidation, 운영지표, P0 구현순서 및 qualification 수용기준은 기존 설계대로 유지한다.
-
-## 14. Runtime·Composition·Certificate·Scale 시험 정본 흡수 (2026-08-12)
-본 절은 `semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md`의 시험 의미를 본 정본에 직접 흡수한다. 세부 fixture ID와 향후 machine schema는 companion을 참조하지만, 아래 시험군은 이제 본 문서의 필수 시험범위다.
-
-### 14.1 Deployment / Currentness
-- mutable tag 동일·digest 상이 배포
-- rolling update old/new revision 혼재
-- canary 일부 population PASS의 전체 승격 시도
-- multi-region 중 일부 region STALE/UNKNOWN
-- source 동일·config/feature flag 변경
-- model/provider/prompt/RAG silent drift
-- rollback 후 과거 FinalLock 자동복원 시도
-- runtime observer 장애 중 CURRENT 발급 시도
-- verified/deployed/running digest mismatch
-
-기대결과: `CURRENT`는 verified→deployed→running chain과 current policy/qualification/authority가 모두 닫힐 때만 허용한다. 일부 혼재·미관측·stale 상태는 product CURRENT를 만들지 못한다.
-
-### 14.2 Product Composition / Evidence Graph
-- Critical HARD child HOLD/FAIL/UNKNOWN 숨김
-- Critical child를 SOFT로 위장
-- N/A proof 없는 denominator 제외
-- conflicting PASS/FAIL 중 PASS만 선택
-- supersession 없는 latest-wins
-- retry PASS로 이전 critical failure 삭제
-- cross-tenant graph edge
-- DERIVED_FROM/SUPERSEDES cycle
-- graph head 이후 child result 변경
-- product population 일부 누락
-
-기대결과: composition은 exact subject/edge population과 graph head에서 결정론적으로 재현되며 모든 ceiling reason을 graph path로 설명해야 한다.
-
-### 14.3 Certificate / Offline
-- expired/stale/revoked certificate를 CURRENT로 표시
-- stale revocation snapshot으로 offline unlimited PASS
-- revoked key certificate 발급/검증
-- QR/공개 payload에 secret/raw evidence 노출
-- exclusion/limitation 누락
-- historical signature valid를 current assurance로 표현
-- reconnect 후 remote revocation과 offline result 충돌
-
-기대결과: 발급 당시 사실과 현재 validity를 분리하고 online/offline/historical verification mode를 명시한다.
-
-### 14.4 Enterprise Authority
-- delegation이 parent grant보다 넓음
-- 같은 principal의 두 key를 four-eyes로 계산
-- expired/revoked grant effect-time 사용
-- break-glass로 Final PASS/Certificate strength 상승
-- legal hold를 evidence freshness 연장 근거로 사용
-- authority snapshot은 valid하나 effect 시점에 revoke된 경우
-
-기대결과: operation authority는 effect-time principal/resource/purpose/tenant에 결속되고 emergency flow는 assurance strength를 올리지 않는다.
-
-### 14.5 Scale / Distributed Work
-- duplicate delivery double count
-- stale lease worker late commit
-- partition omission
-- scheduling 순서에 따른 aggregate digest 변화
-- cost/resource exhaustion으로 scope 축소 후 PASS
-- cross-tenant WorkUnit 혼합
-- coordinator restart 후 stale authority resurrection
-
-기대결과: logical effect/receipt commitment는 idempotent하고 exact denominator 및 deterministic aggregation이 유지된다.
-
-### 14.6 Plugin / Adapter Trust
-- unsigned/revoked publisher plugin
-- manifest보다 넓은 privilege 사용
-- parser가 unsupported syntax를 조용히 drop
-- plugin update 후 qualification 재사용
-- plugin과 independent oracle가 같은 publisher/admin chain
-- sandbox escape
-
-### 14.7 AI Runtime Assurance
-- provider alias의 silent model replacement
-- dynamic system fragment가 prompt digest에서 빠짐
-- RAG corpus/index/embedding 변경 미추적
-- undeclared tool 사용 및 tool parameter 권한상승
-- cross-tenant memory retrieval
-- favorable seed/sample만 선택
-- judge model과 target model 공통 blind spot
-- multi-agent majority를 ground truth로 오인
-
-### 14.8 ONSure Meta-Assurance
-- validator/oracle/adapter 변경 후 과거 release qualification 재사용
-- self-test만으로 ONSure release QUALIFIED
-- target archetype 미검증인데 global QUALIFIED
-- hidden benchmark contamination
-- MissedFinding proving blind spot 발생 후 requalification 누락
-
-## 15. 통합 완료조건
-`FR-META-044~060` 및 29~69 설계에서 파생된 P0 test obligation은 본 문서 §14 또는 기존 §13에 최소 한 항목으로 연결되어야 한다. 세부 fixture가 아직 없는 항목은 `TEST_DESIGNED_NOT_EXECUTED`로 관리하며, 실제 실행 전 PASS/QUALIFIED를 주장하지 않는다.
