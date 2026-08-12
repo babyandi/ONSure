@@ -2,13 +2,14 @@ package kr.co.oruda.onsure.platform;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /** Compares legacy and v2 gate decisions without promoting either side to final authority. */
 public final class SemanticAssuranceShadowGateComparator {
-    public static final String CONTRACT = "ONSURE_SHADOW_GATE_COMPARATOR_V1";
+    public static final String CONTRACT = "ONSURE_SHADOW_GATE_COMPARATOR_V2";
 
     public Map<String, Object> compare(
             String comparisonId,
@@ -34,13 +35,16 @@ public final class SemanticAssuranceShadowGateComparator {
         boolean disagreement = !reasons.isEmpty();
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("contract", CONTRACT);
-        result.put("comparison_id", comparisonId);
-        result.put("target_id", targetId);
+        result.put("comparison_id", safeRequired(comparisonId, "comparison_id"));
+        result.put("target_id", safeRequired(targetId, "target_id"));
+        if (sourceTreeSha256 == null || !sourceTreeSha256.matches("[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("SHADOW_GATE_SOURCE_DIGEST_INVALID");
+        }
         result.put("source_tree_sha256", sourceTreeSha256);
         result.put("legacy_gate", legacy.asMap());
         result.put("v2_gate", v2.asMap());
         result.put("disagreement", disagreement);
-        result.put("disagreement_reasons", reasons);
+        result.put("disagreement_reasons", List.copyOf(reasons));
         result.put("missing_v2_evidence", missingV2Evidence == null ? List.of() : List.copyOf(missingV2Evidence));
         result.put("decision", disagreement ? "DISAGREEMENT_HOLD" : "AGREE_NONFINAL");
         result.put("compared_at", Instant.now().toString());
@@ -48,18 +52,26 @@ public final class SemanticAssuranceShadowGateComparator {
         return Map.copyOf(result);
     }
 
+    private static String safeRequired(String value, String field) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException("SHADOW_GATE_FIELD_REQUIRED:" + field);
+        return value;
+    }
+
     public record GateResult(String decision, String receiptSha256, String assuranceClass) {
         public GateResult {
             if (decision == null || decision.isBlank()) throw new IllegalArgumentException("SHADOW_GATE_DECISION_REQUIRED");
+            if (receiptSha256 != null && !receiptSha256.matches("[0-9a-f]{64}")) {
+                throw new IllegalArgumentException("SHADOW_GATE_RECEIPT_DIGEST_INVALID");
+            }
             if (assuranceClass == null || assuranceClass.isBlank()) throw new IllegalArgumentException("SHADOW_GATE_ASSURANCE_CLASS_REQUIRED");
         }
 
         Map<String, Object> asMap() {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("decision", decision);
-            map.put("receipt_sha256", receiptSha256 == null ? "NOT_AVAILABLE" : receiptSha256);
+            map.put("receipt_sha256", receiptSha256);
             map.put("assurance_class", assuranceClass);
-            return Map.copyOf(map);
+            return Collections.unmodifiableMap(map);
         }
     }
 }
