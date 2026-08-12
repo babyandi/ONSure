@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,12 +13,13 @@ import java.util.Map;
  *
  * <p>Every semantic target operation first performs the existing authenticated
  * project.read-target path, so tenant/resource ownership and authenticated context substitution
- * checks are not bypassed. The registered target source root is then injected by this server-side
- * bridge; callers cannot choose or override the authorized path root. This is still a preflight,
- * not an atomic authorization transaction, so the bridge remains SELF_VALIDATION_NONFINAL.</p>
+ * checks are not bypassed. File-reading semantic operations are additionally restricted to the
+ * server-resolved registered target root. This is still a preflight, not an atomic authorization
+ * transaction, so the bridge remains SELF_VALIDATION_NONFINAL.</p>
  */
 public final class SemanticAssuranceV2DispatcherBridge {
-    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V3";
+    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V4";
+    private final Path workspaceRoot;
     private final LocalWorkflowDispatcher legacy;
     private final SemanticAssuranceV2WorkflowService semantic;
     private final AuthenticatedWorkflowIdentity identity;
@@ -27,9 +29,10 @@ public final class SemanticAssuranceV2DispatcherBridge {
         if (workspaceRoot == null || identity == null) {
             throw new IllegalArgumentException("SEMANTIC_V2_BRIDGE_CONTEXT_REQUIRED");
         }
+        this.workspaceRoot = workspaceRoot.toAbsolutePath().normalize();
         this.identity = identity;
-        this.legacy = new LocalWorkflowDispatcher(workspaceRoot, identity);
-        this.semantic = new SemanticAssuranceV2WorkflowService(workspaceRoot, identity);
+        this.legacy = new LocalWorkflowDispatcher(this.workspaceRoot, identity);
+        this.semantic = new SemanticAssuranceV2WorkflowService(this.workspaceRoot, identity);
     }
 
     public Map<String, Object> dispatch(String operation, JsonNode request) throws Exception {
@@ -50,27 +53,58 @@ public final class SemanticAssuranceV2DispatcherBridge {
                 .put("target_id", targetId);
         Map<String, Object> authorized = legacy.dispatch("project.read-target", readTargetRequest);
         ProductCatalog.RegisteredTarget registered = registeredTarget(authorized, projectId, targetId);
+        Path authorizedTargetRoot = registered.target().sourceRoot().toAbsolutePath().normalize();
+
+        if ("semantic.reperformance.run".equals(operation)) {
+            requirePathWithinTarget(request, "subject_path", authorizedTargetRoot);
+        }
+        if ("deployment.verify-installed".equals(operation)) {
+            // v1 DeploymentInstallationService is install-root/version scoped, not target scoped.
+            // Until a target->deployment receipt/root binding is authoritative, accepting arbitrary
+            // paths here could cross tenant/target boundaries. Fail closed instead.
+            return blocked(operation, "TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE");
+        }
 
         ObjectNode routed = ((ObjectNode) request).deepCopy();
-        routed.put("_authorized_target_root", registered.target().sourceRoot().toString());
+        routed.put("_authorized_target_root", authorizedTargetRoot.toString());
         routed.put("_authorized_target_id", registered.target().targetId());
         routed.put("_authorized_project_id", registered.projectId());
 
-        // v1 deployment installation is not target-scoped. Therefore no authorized deployment root
-        // is injected yet; deployment.verify-installed must fail closed until a target-bound
-        // deployment receipt/installation root exists.
         Map<String, Object> value = semantic.dispatch(operation, routed);
+        return envelope(operation, value, "PROJECT_READ_TARGET_AUTHORIZED", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT");
+    }
+
+    private Map<String, Object> blocked(String operation, String reason) {
+        Map<String, Object> result = Map.of(
+                "artifact_type", "FAIL_CLOSED_RESULT",
+                "decision", "BLOCKED",
+                "reasons", List.of(reason),
+                "final_claim_allowed", false);
+        return envelope(operation, result, "PROJECT_READ_TARGET_AUTHORIZED", "DEPLOYMENT_TARGET_BINDING_UNAVAILABLE");
+    }
+
+    private Map<String, Object> envelope(
+            String operation, Map<String, Object> value, String preflight, String pathBinding) {
         return Map.of(
                 "contract", CONTRACT,
                 "route", "SEMANTIC_V2_CANDIDATE",
                 "operation", operation,
                 "result", value,
-                "tenant_resource_preflight", "PROJECT_READ_TARGET_AUTHORIZED",
-                "target_path_binding", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT",
+                "tenant_resource_preflight", preflight,
+                "target_path_binding", pathBinding,
                 "authorization_atomic_with_effect", false,
                 "assurance_class", "SELF_VALIDATION_NONFINAL",
                 "active_authority", false,
                 "final_claim_allowed", false);
+    }
+
+    private void requirePathWithinTarget(JsonNode request, String field, Path authorizedTargetRoot) {
+        String text = request.path(field).asText("");
+        if (text.isBlank()) throw new IllegalArgumentException("SEMANTIC_V2_FIELD_REQUIRED:" + field);
+        Path candidate = workspaceRoot.resolve(text).normalize();
+        if (!candidate.startsWith(authorizedTargetRoot)) {
+            throw new SecurityException("SEMANTIC_V2_TARGET_PATH_ESCAPE:" + field);
+        }
     }
 
     private ProductCatalog.RegisteredTarget registeredTarget(
