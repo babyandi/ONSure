@@ -1,0 +1,16 @@
+{
+  "contract_type": "ONSURE_APPLICABILITY_POPULATION_EXECUTION_CANDIDATE_V2",
+  "status": "EXECUTED_PARTIAL_NONFINAL",
+  "source_requirement_snapshot": "contracts/global-requirement-universe-snapshot.execution.candidate.v2.json",
+  "evaluated_explicit_candidate_requirement_count": 78,
+  "counts": {
+    "APPLICABLE": 0,
+    "NOT_APPLICABLE": 0,
+    "CONDITIONAL": 0,
+    "UNKNOWN_PENDING_AUTHORITATIVE_CONTEXT": 78
+  },
+  "context_key_required": ["product","target","industry","environment","assurance_tier","policy_profile","requirement_epoch"],
+  "authoritative_population_digest": null,
+  "critical_unknown_zero": false,
+  "lock_effect": "HOLD"
+}
