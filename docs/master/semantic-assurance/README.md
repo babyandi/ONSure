@@ -2,10 +2,10 @@
 
 Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 
-이 디렉터리는 ONSure가 다른 제품을 검증할 때 발생할 수 있는 false assurance, 권위 오판, 독립성 오판, stale/revoked 결과 재사용, denominator 축소, Receipt 의미손실, canonical gate 우회를 기존 `docs/master/02~08` 책임구조에 맞춰 통합한다.
+이 디렉터리는 ONSure의 false assurance, 권위 오판, 독립성 오판, stale/revoked 결과 재사용, denominator 축소, Receipt 의미손실, canonical gate 우회를 기존 `docs/master/02~08` 책임구조에 맞춰 통합한다.
 
 ## 1. 문서 Set
-### Core/Review Integration
+### Core / Review / Migration
 - `00_INTEGRATION_AND_OWNERSHIP.md`
 - `02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md`
 - `03_REVIEW_SPECIFICATION_EXTENSION.md`
@@ -17,8 +17,6 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md`
 - `10_FINDING_LEDGER.md`
 - `11_CONTRACT_UPGRADE_BLUEPRINT.md`
-
-### Migration / Runtime / Final Gate
 - `12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md`
 - `13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md`
 - `14_V1_V2_SEMANTIC_GAP_MATRIX.md`
@@ -32,7 +30,7 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 ### Claude Development Handoff
 - `21_CLAUDE_DEVELOPMENT_HANDOFF.md`: 현재 Claude 개발 실행 정본
 
-### Design Continuation — 개발보다 앞서 정의하는 기준선
+### Design Continuation
 - `21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md`
 - `22_TARGET_BOUND_DEPLOYMENT_AND_RELEASE_IDENTITY.md`
 - `23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md`
@@ -83,57 +81,61 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md`
 - `69_CUSTOMER_DELIVERY_REPORT_AND_CLAIM_LANGUAGE_GOVERNANCE.md`
 
-기존 `docs/master/02~08` 본문에도 FR-META-001~060과 Meta Review/Architecture/Test/AI 기준이 직접 또는 companion으로 반영된다. Companion은 기존 정본을 대체하지 않고 상세설계와 machine-contract 후보를 제공한다.
+### 30개 설계 폐쇄 Batch
+- `70_THIRTY_TASK_DESIGN_CLOSURE_MASTER_PLAN.md`
+- `71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md`
+- `72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md`
+- `73_GLOBAL_STATE_TRANSITION_MATRIX.md`
+- `74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md`
+- `75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md`
+- `76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md`
+- `77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md`
+- `78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md`
+- `79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md`
+- `80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md`
 
-## 2. 역할 분리
-- **Claude**: 개발·컴파일·테스트·runtime implementation·migration execution
-- **ONSure 설계 정본**: 본 디렉터리와 `docs/master/02~08`
-- **검토/독립검증**: 실제 실행 산출물이 충분히 쌓인 후 별도 수행
+## 2. Parent 정본 통합 상태
+- `02`: FR-META-001~060 직접 존재
+- `03`: Runtime/Composition/Certificate/Meta-Assurance Review 직접 흡수
+- `04`: Deployment/Currentness/Composition/Certificate/Scale Architecture 직접 흡수
+- `05`: Runtime Currentness/Product Composition/Certificate UX 직접 흡수
+- `06`: Runtime/Composition/Certificate/Scale/Plugin/AI/Meta-Assurance 시험 직접 흡수
+- `07`: AI Runtime/Behavior Population/Tool/Memory/RAG/Multi-Agent/ONSure Meta-Assurance 직접 흡수
+- `08`: 기존 결정이력 보존
+- `08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md`: 신규 Assurance policy 결정 부속 정본
 
-Claude 구현은 설계 상태를 임의로 `ACTIVE`, `QUALIFIED`, `FINAL`로 승격하지 않는다.
+## 3. 역할 분리
+- Claude: 개발·컴파일·테스트·runtime implementation·migration execution
+- ONSure 설계 정본: `docs/master`와 본 companion set
+- 검토/독립검증: 실제 실행 산출물이 충분히 쌓인 후 별도 수행
 
-## 3. Finding 기준
-현재 source-grounded review 기준:
+Claude 구현은 설계 상태를 임의로 ACTIVE/QUALIFIED/FINAL로 승격하지 않는다.
+
+## 4. Finding 기준
 - raw candidate observation baseline: **562**
-- canonical P0: **FL-P0-001~141 / 141건**
-- canonical P1: **FL-P1-001~050 / 50건**
-- `VERIFIED_CLOSED`: **0**
+- canonical P0: **141**
+- canonical P1: **50**
+- VERIFIED_CLOSED: **0**
 
-## 4. Machine Contract Set
-현재 Schema Inventory 기준 **31개 Schema Candidate**이며, 기존 23개는 valid 23 + semantic-invalid 46 fixture가 있다. 신규 8개는 fixture/runtime 구현 대기다.
+## 5. Machine-readable Design Closure 산출물
+- `contracts/design-trace-registry.candidate.v1.json`: FR-META-001~060 60행
+- `contracts/design-orphan-report.candidate.v1.json`: requirement orphan 후보 0
+- `contracts/design-conflict-report.candidate.v1.json`: unresolved P0 design semantic conflict 후보 0
+- `contracts/design-baseline-manifest.candidate.v1.json`
+- `contracts/design-baseline-receipt.candidate.v1.json`
 
-29~69에서 다음 Contract/Runtime Batch의 의미를 상세설계했다: Composition, Evidence Graph, Certificate, AuthorityGrant, Distributed Work, AI Behavior Population, ONSure Release Qualification, AssurancePolicyProfile, Persistence/Operation/API/Data Governance/Observability/Physical Model/Versioning/DR/External Trust, Event/Receipt, Canonicalization, RecoveryQualification, DesignTraceRegistry, Industry/Profile/Tier/Claim Language Governance. 문서 존재를 Contract/Runtime 존재로 해석하지 않는다.
+이들은 **설계 후보 산출물**이며 runtime contract/implementation/verification을 증명하지 않는다.
 
-## 5. Canonical Gate 편입
-실제 제품 Gate가 되려면 최소 다음이 동시에 닫혀야 한다.
-1. Product Process Lineage
-2. Workflow Operation Registry / Dispatcher
-3. Requirement/Validation/Final exact denominator
-4. Independent OTester/OAudit/Human Fact Validation
-5. Final Reconstruction → Approval → Lock
-6. Target-bound Deployment/Verified-to-Deployed
-7. Running Population/Currentness/Revocation
-8. Multi-target Product Composition / Evidence Graph
-9. Certificate issuance/current verification
-10. Active Selector transition/rollback
-11. ONSure Release Qualification
-12. Assurance Policy Profile/epoch binding
-13. Authoritative persistence/graph-head/recovery qualification
-14. Effect-time authorization/idempotency/operation lifecycle
-15. Data governance/tenant/privacy trust boundary
-16. Operational degraded-mode/issuance-suspension propagation
-17. Event/Receipt causation and canonical serialization
-18. machine-readable Design Trace closure
-19. Assurance Tier/Industry Profile/claim-language ceiling consistency
+## 6. Machine Contract 구현 상태
+기존 Schema Inventory 기준 31개 Candidate 계열이 있고, 기존 23개에 valid 23 + semantic-invalid 46 fixture가 있다. 29~80에서 정의한 신규 Composition/Evidence/Certificate/Authority/Distributed/AI/Meta/Policy/Recovery/Trace 계약은 Claude가 실제 JSON Schema/registry/runtime으로 materialize할 후속 개발 대상이다.
 
-## 6. 현재 설계 판단
-`57_DESIGN_CLOSURE_REFRESH_00_TO_56.md` 기준 설계 명세 폐쇄성은 약 **95~97% 후보 범위**다. 58~69는 57에서 식별한 P0 설계 Closure를 contract naming/operation/event/policy/authority/canonicalization/recovery/trace 수준까지 구체화하고, Open Decision을 configurable policy로 전환하며 산업·상품·고객 Claim 표현까지 연결했다.
+## 7. Canonical Gate
+실제 제품 Gate는 Product Lineage, Workflow Operation, exact denominator, Independent Assurance, Final Reconstruction/Approval/Lock, Verified→Deployed→Running, Currentness/Revocation, Product Composition/Evidence Graph, Certificate verification, Active Selector, ONSure Release Qualification, Policy/Authority/Persistence/Recovery/Observability/Event/Receipt/Trace closure를 모두 요구한다.
 
-남은 것은 주로:
-- 실제 JSON Schema/registry 제정 및 fixture
-- 02~08 parent 정본의 안전한 최종 병합/인덱스 동기화
-- configurable policy의 상품/산업별 초기값 확정
-- 개발/실행/독립검증 결과에 따른 예외 규칙 보정
-이다.
+## 8. 현재 설계 판단
+30개 설계 폐쇄 작업을 문서 기준으로 모두 수행했다. `80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md` 기준 현재 설계 문서 폐쇄성은 **97~98% 후보**다.
 
-현재 최고 표현은 **DESIGN_BASELINE_00_TO_69_HIGH_CLOSURE_CANDIDATE / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL**이다.
+현재 최고 표현:
+**`DESIGN_BASELINE_CANDIDATE_READY_FOR_LOCK_CHECK / MACHINE_CONTRACT_IMPLEMENTATION_PENDING / NON_FINAL`**
+
+아직 Design Baseline을 LOCKED로 선언하지 않는다. repository-wide implemented Contract/Operation orphan inventory, 모든 문서 exact digest inventory, compile/test/independent verification은 별도다.
