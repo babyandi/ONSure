@@ -23,6 +23,7 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - `16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md`: 현재 산출물·완성도 정본
 - `17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md`: Adapter/Reconstructor/Runtime wiring
 - `18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md`: Validation/Final fixed-count authority 제거
+- `19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md`: 1~15 최종 재검토, 신규 v2 결함 수정, 실제 실행 Blocker 정본
 
 기존 `docs/master/02~08` 본문에도 FR-META-001~043과 Meta Review/Architecture/Test/AI 기준이 직접 반영되어 있으며 companion 문서는 이를 삭제하거나 대체하지 않는다.
 
@@ -93,39 +94,42 @@ Validator entrypoint:
 - `SemanticAssuranceShadowGateComparator.java`
 - `SemanticAssuranceV2WorkflowServiceTest.java`
 
-Reconstructor는 v1 PASS를 v2 PASS로 자동 변환하지 않는다. 누락된 tenant/scope/requirement/denominator/authority/independence/qualification/freshness/oracle/validator 정보는 `READBACK`, `REPERFORMANCE`, `HUMAN_OR_EXTERNAL_AUTHORITY`, `UNRECOVERABLE`로 분류한다.
+재검토에서 Runtime 후보 자체의 결함도 수정했다.
+- Reconstructor null→Map.copyOf crash 가능성 제거
+- Semantic Bridge tenant/resource ownership preflight 추가
+- Shadow Comparator missing receipt null semantics 정합화
+- Shadow Comparator contract discriminator를 Schema와 일치
 
-Runtime class가 존재한다고 `IMPLEMENTED`로 승격하지 않는다. compile/JUnit/primary dispatcher wiring evidence가 필요하다.
+단, Bridge의 ownership check와 semantic effect는 아직 하나의 atomic authorization transaction이 아니므로 Active authority가 아니다.
 
 ## 6. Canonical Gate 편입
-Semantic Assurance가 실제 제품 Gate가 되려면 최소 다음 네 경로가 동시에 닫혀야 한다.
+Semantic Assurance가 실제 제품 Gate가 되려면 최소 다음 경로가 동시에 닫혀야 한다.
 1. Product Process Lineage
 2. Workflow Operation Registry / Dispatcher
 3. Validation Case / Final Acceptance exact denominator
 4. Final Reconstruction → Approval → Lock → Deployment currentness
 
-현재 네 경로 모두 Candidate 설계는 존재하지만 v2가 active authority는 아니다.
+현재 Candidate 설계는 존재하지만 v2는 active authority가 아니다.
 
 ## 7. Independent Gate 원칙
-Local Agent의 `OTESTER|OAUDIT` 명칭은 `SELF_VALIDATION_NONFINAL`일 수 있다. 실제 independent gate는 `independence-profile.candidate.v2.schema.json`과 `independent-assurance-receipt.candidate.v2.schema.json`의 Principal/Credential Admin/Implementation/Oracle/Discovery/Knowledge independence 및 current Qualification을 요구한다.
-
-다른 key/model/run ID만으로 independent를 주장하지 않는다.
+Local Agent의 `OTESTER|OAUDIT` 명칭은 `SELF_VALIDATION_NONFINAL`일 수 있다. 실제 independent gate는 Principal/Credential Admin/Implementation/Oracle/Discovery/Knowledge independence와 current Qualification을 요구한다. 다른 key/model/run ID만으로 independent를 주장하지 않는다.
 
 ## 8. Final / Selector 경계
 Final은 다음 순서를 분리한다.
 `Semantic Gate Reconstruction -> Independent OTester -> Independent OAudit -> Human Acceptance -> Final Approval -> Final Lock -> Verified-to-Deployed -> Currentness`
 
-`contract-active-selector.candidate.v2.schema.json`은 Candidate일 뿐이며 `contract-selector-rollout-state.candidate.v1.json`은 현재 v1 authority 유지, v2 activation HOLD를 명시한다. Candidate 파일을 검색해 자동 활성화하지 않는다.
+Active Selector는 현재 HOLD이며 v1 authority를 유지한다. Candidate 파일을 검색해 자동 활성화하지 않는다.
 
 ## 9. 현재 상태
 - 설계: 광범위 반영
 - P0 vertical trace: 존재
 - v2 Schema Candidate: 23
 - valid/invalid fixture: 23/46
-- Adapter/Reconstructor/Workflow/Shadow runtime candidate: 존재
+- Fixture registration pending: 0
+- Adapter/Reconstructor/Workflow/Bridge/Shadow runtime candidate: 존재
 - Static Schema 실제 실행: `BLOCKED_NOT_RUN`
 - Java compile/JUnit: `NOT_RUN`
-- primary Dispatcher v2 wiring: `NOT_RUN`
+- primary Dispatcher v2 atomic wiring: `NOT_RUN`
 - v1→v2 actual reconstruction population: `NOT_RUN`
 - exact denominator migration execution: `NOT_RUN`
 - independent OTester/OAudit: `NOT_RUN`
