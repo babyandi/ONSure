@@ -1,0 +1,12 @@
+{
+  "contract_type":"ONSURE_GLOBAL_TRACE_EXECUTION_REPORT_CANDIDATE_V1",
+  "status":"EXECUTED_PARTIAL_NONFINAL",
+  "explicit_requirement_count":73,
+  "traced_requirement_count":60,
+  "trace_coverage_ratio":"60/73",
+  "untraced_explicit_requirement_ids":["FR-COM-001","FR-COM-002","FR-COM-003","FR-COM-004","FR-COM-005","FR-COM-006","FR-COM-007","FR-COM-008","FR-COM-009","FR-COM-010","FR-COM-011","FR-COM-012","FR-COM-013"],
+  "source_trace_registry":"contracts/design-trace-registry.candidate.v1.json",
+  "global_universe_complete":false,
+  "global_trace_complete":false,
+  "lock_effect":"HOLD"
+}
