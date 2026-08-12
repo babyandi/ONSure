@@ -1,0 +1,36 @@
+{
+  "contract_type": "ONSURE_FIVE_PHASE_END_TO_END_EXECUTION_CANDIDATE_V1",
+  "status": "EXECUTED_TO_AVAILABLE_EVIDENCE_OVERALL_HOLD_NONFINAL",
+  "phases": {
+    "A_DESIGN_QA": "HOLD",
+    "B_IMPLEMENTATION_ALIGNMENT": "PARTIAL_HOLD",
+    "C_TEST_RUNTIME_VERIFICATION": "NOT_RUN_HOLD",
+    "D_INDEPENDENT_ASSURANCE_RELEASE_QUALIFICATION": "HOLD",
+    "E_PRODUCTION_OPERATE_CHANGE": "BLOCKED_NOT_AUTHORIZED"
+  },
+  "evidence_facts": {
+    "product_design_scope_complete_candidate": true,
+    "explicit_requirement_candidate_minimum": 78,
+    "global_requirement_exact_population_proven": false,
+    "applicability_authoritative": false,
+    "design_lock_ready": false,
+    "implementation_inventory_observed": true,
+    "safety_appeal_fresh_runtime_implementation_evidenced": false,
+    "current_head_ci_statuses_present": false,
+    "current_head_pr_workflow_runs_present": false,
+    "static_validation_pass_evidenced": false,
+    "shadow_gate_comparison_executed": false,
+    "independent_assurance_completed": false,
+    "release_qualified": false,
+    "production_authorized": false,
+    "commercial_authorized": false
+  },
+  "forbidden_promotions": [
+    "DESIGN_LOCKED",
+    "IMPLEMENTATION_QUALIFIED",
+    "FINAL_PASS",
+    "ACTIVE_V2_SELECTOR",
+    "PRODUCTION_GO",
+    "COMMERCIAL_GO"
+  ]
+}
