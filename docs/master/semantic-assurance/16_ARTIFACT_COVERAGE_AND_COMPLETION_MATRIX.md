@@ -3,29 +3,37 @@
 Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 
 ## 1. 목적
-현재까지 검토된 P0/P1 Finding이 기능·Review·아키텍처·UI·시험·AI·계약·Fixture·Runtime 후보·Migration·Final Gate까지 빠짐없이 내려갔는지 관리한다. 이 문서는 산출물 개수표가 아니라 **Finding → Artifact → Enforcement → Execution → Qualification** 상태표다.
+현재까지 검토된 Finding이 기능·Review·아키텍처·UI·시험·AI·계약·Fixture·Runtime 후보·Migration·Final Gate까지 빠짐없이 내려갔는지 관리한다. 이 문서는 산출물 개수표가 아니라 **Finding → Artifact → Enforcement → Execution → Qualification** 상태표다.
+
+현재 canonical review baseline:
+- raw candidate observation: **562**
+- P0: **FL-P0-001~141 / 141건**
+- P1: **FL-P1-001~050 / 50건**
+- `VERIFIED_CLOSED`: **0**
 
 ## 2. 설계 산출물 Coverage
 | Layer | Artifact | 현재 상태 | 남은 완료 조건 |
 |---|---|---|---|
-| Master 기능/Meta Requirement | `../02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md` | FR-META-001~043 직접 반영 | atomic runtime binding |
+| Master 기능/Meta Requirement | `../02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md` | FR-META-001~043 직접 반영 | active runtime/evidence |
 | Master Review | `../03_OREVIEW_CODE_REVIEW_SPECIFICATION.md` | meta-review 직접 반영 | validator/rule actual execution |
-| Master Architecture/API | `../04_ARCHITECTURE_DATA_API_OLICENSE.md` | meta architecture 직접 반영 | runtime wiring |
+| Master Architecture/API | `../04_ARCHITECTURE_DATA_API_OLICENSE.md` | meta architecture 직접 반영 | runtime execution/qualification |
 | Master UI/UX | `../05_UI_UX_WORKFLOW_SPECIFICATION.md` | assurance semantics 반영 | surface parity execution |
 | Master Test/Operation | `../06_TEST_OPERATION_IMPLEMENTATION_PLAN.md` | adversarial/meta test 반영 | actual execution receipt |
 | Master AI/Agent | `../07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md` | independence/GT/qualification 반영 | independent qualification execution |
 | Master Open Decision | `../08_REVIEW_CHECKLIST_OPEN_DECISIONS.md` | DESIGN_ONLY/open decision 추적 | authority closure |
-| Semantic Companion | `00~11` | DESIGN_PRESENT | parent/runtime contract closure |
+| Semantic Companion | `00~11` | DESIGN_PRESENT | runtime/contract closure |
 | P0 Vertical Trace | `12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md` | DESIGN_PRESENT | per-Finding runtime evidence |
 | Migration Plan | `13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md` | DESIGN_PRESENT | shadow→selector execution |
 | v1-v2 Gap Matrix | `14_V1_V2_SEMANTIC_GAP_MATRIX.md` | DESIGN_PRESENT | adapter execution evidence |
 | Static Fixture Spec | `15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md` | DESIGN_PRESENT | validator run receipt |
 | Coverage Matrix | `16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md` | CURRENT_INDEX | 지속 동기화 |
-| Runtime Wiring | `17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md` | IMPLEMENTATION_CANDIDATE_PRESENT | compile/test/dispatcher integration |
+| Runtime Wiring | `17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md` | FAIL_CLOSED_IMPLEMENTATION_CANDIDATE | compile/JUnit/independent review |
 | Denominator Migration | `18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md` | CONTRACT_FIXTURE_CANDIDATE_PRESENT | runtime population generation |
+| Final Self Review | `19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md` | REVIEW_PRESENT | execution blocker 해소 |
+| Post-v2 Finding | `20_POST_V2_FINAL_REVIEW_FINDINGS.md` | P0/P1 EXTENSION PRESENT | 각 Finding actual execution/closure |
 
 ## 3. Machine Contract Coverage
-현재 Schema-level Candidate는 23개다.
+Schema-level Candidate는 **23개**이며 Registry pending은 0이다.
 
 ### Status / Receipt / Authority / Independence
 - `assurance-status-vocabulary.candidate.v2.schema.json`
@@ -69,74 +77,92 @@ Status: `DESIGN_ONLY / DRAFT / NON_FINAL`
 - Valid fixture: **23**
 - Semantic invalid fixture: **46**
 - Schema당 최소 negative fixture: **2**
-- Fixture registration pending Schema: **0**
+- Fixture registration pending: **0**
 
-`contracts/semantic-assurance-v2-schema-inventory.candidate.v1.json`도 동일한 23개를 추적한다.
-
-Fixture 존재는 실행을 의미하지 않는다. `scripts/validate-semantic-assurance-v2-contracts.py`의 실제 실행은 현재 Runtime에서 repository branch를 materialize하지 못해 `BLOCKED_NOT_RUN`이며, 그 시도는 `evidence/semantic-assurance/v2-static-validation-attempt-20260812.json`에 남아 있다.
+실제 `scripts/validate-semantic-assurance-v2-contracts.py` 실행은 시도했으나 현재 ChatGPT Runtime에서 repository branch가 local mount되지 않고 `github.com` DNS도 해석되지 않아 `BLOCKED_NOT_RUN`이다. 실행 시도 증적은 `evidence/semantic-assurance/v2-static-validation-attempt-20260812.json`에 있다.
 
 ## 5. Runtime Implementation Candidate
-- `SemanticAssuranceV2Reconstructor.java`: v1 PASS 자동승격 금지, READBACK/REPERFORMANCE/EXTERNAL_AUTHORITY/UNRECOVERABLE 분류
-- `SemanticAssuranceV2WorkflowService.java`: semantic operation 및 verified-to-deployed 후보 실행 경계
-- `SemanticAssuranceV2DispatcherBridge.java`: 기존 Dispatcher를 즉시 교체하지 않는 dual-read bridge
-- `SemanticAssuranceShadowGateComparator.java`: legacy/v2 disagreement를 HOLD로 보존
-- `SemanticAssuranceV2WorkflowServiceTest.java`: fail-closed 구현 요구를 JUnit으로 고정
+현재 후보:
+- `SemanticAssuranceV2Reconstructor.java`
+- `SemanticAssuranceV2WorkflowService.java`
+- `SemanticAssuranceV2DispatcherBridge.java`
+- `SemanticAssuranceShadowGateComparator.java`
+- `TenantRbacService.java` semantic operation authorization extension
+- `SemanticAssuranceV2WorkflowServiceTest.java`
+- `SemanticAssuranceV2DispatcherBridgeTest.java`
 
-현재 최고 상태는 **IMPLEMENTATION_CANDIDATE_PRESENT**이며 compile/test/runtime wiring을 실행하지 않았으므로 `IMPLEMENTED`로 승격하지 않는다.
+### 재검토 후 적용된 Hardening
+- v1 PASS 자동 v2 PASS 승격 금지
+- Reconstructor null fail-closed crash 제거
+- collection/List digest Map 강제변환 제거
+- WorkflowService public product surface 제거(package-local)
+- direct Service call은 server-bound project/target/root context 없으면 거부
+- semantic operation을 실제 이름으로 `TenantRbacService` durable authorization ledger에 기록
+- target ownership 확인과 candidate semantic call을 같은 durable authorization mutation 경계에서 실행
+- RegisteredTarget.sourceRoot를 server-side authoritative file root로 사용
+- target root 밖 reperformance path 거부
+- caller `_authorized_*` context injection 거부
+- `independent=true`, `signature_verified=true`, `QUALIFIED`, `explicit_acceptance=true`, `critical_miss_count=0` 같은 caller self-attestation을 assurance proof로 사용하지 않음
+- independent OTester/OAudit, Human Acceptance, Validator Qualification, Authority effect-time revalidation은 실제 verifier가 연결될 때까지 HOLD
+- target-bound deployment identity가 없으므로 `deployment.verify-installed`는 실제 Bridge 경로에서 BLOCKED
+- Shadow comparator output/schema 의미 정합화
+
+Compile/JUnit/독립 재검증이 실행되지 않았으므로 최고 상태는 계속 `IMPLEMENTATION_CANDIDATE`다.
 
 ## 6. Canonical Gate Coverage
 | Gate Path | Candidate 상태 | 실제 Runtime 상태 |
 |---|---|---|
-| Product Lineage | v2 candidate 존재 | 기존 lineage active, v2 NOT_ACTIVE |
-| Workflow Operation | v2 registry + bridge 존재 | primary dispatcher wiring NOT_RUN |
+| Product Lineage | v2 candidate 존재 | v2 NOT_ACTIVE |
+| Workflow Operation | v2 registry + durable RBAC semantic operation 지원 + Bridge 존재 | compile/JUnit NOT_RUN, active selector 미적용 |
 | Validation Case Denominator | exact population schema/fixture 존재 | v1 count authority migration NOT_RUN |
 | Final Acceptance Population | exact population schema/fixture 존재 | v1 acceptance migration NOT_RUN |
-| Independent OTester/OAudit | typed profile/receipt 존재 | independent execution NOT_RUN |
+| Independent OTester/OAudit | typed profile/receipt 존재 | runtime acceptance fail-closed HOLD, true independent execution NOT_RUN |
+| Human Acceptance | signed contract candidate 존재 | runtime verifier 미연결로 HOLD |
+| Validator Qualification | contract/fixture 존재 | runtime self-attestation 무시, actual qualification NOT_RUN |
 | Final Gate | Gate→Approval→Lock v2 존재 | shadow/runtime adoption NOT_RUN |
-| Deployment Identity | Verified-to-Deployed schema/runtime candidate 존재 | real deployment execution NOT_RUN |
-| Active Selector | signed selector schema 존재 | rollout state HOLD, v1 authority 유지 |
+| Deployment Identity | Verified-to-Deployed schema 존재 | target-bound deployment identity 미구현, runtime BLOCKED |
+| Active Selector | signed selector schema 존재 | rollout HOLD, v1 authority 유지 |
 
-## 7. P0 Finding Disposition
-`contracts/semantic-assurance-finding-disposition.candidate.v1.json`의 원칙을 따른다.
+## 7. Finding Disposition
+`contracts/semantic-assurance-finding-disposition.candidate.v1.json` 기준 P0 141건의 canonical 최고 상태는 `DESIGN_ACCEPTED`다.
 
-현재 허용하는 canonical 상태:
-- 설계에 반영됨: `DESIGN_ACCEPTED`
-- Contract/Fixture/Runtime 후보 존재는 coverage metadata로 기록하되 canonical Finding을 자동 `CONTRACTED/IMPLEMENTED`로 승격하지 않음
-
-현재 금지 상태:
-- `EXECUTED`
-- `EVIDENCE_BOUND`
-- `INDEPENDENTLY_VERIFIED`
-- `QUALIFIED`
-- `VERIFIED_CLOSED`
+Candidate Contract, Fixture, Runtime 코드가 존재해도 다음을 자동 의미하지 않는다.
+- CONTRACTED
+- IMPLEMENTED
+- EXECUTED
+- EVIDENCE_BOUND
+- INDEPENDENTLY_VERIFIED
+- QUALIFIED
+- VERIFIED_CLOSED
 
 현재 `VERIFIED_CLOSED = 0`이다.
 
-## 8. 1~15 작업의 현재 결과
-1. Static Schema execution: **시도 완료 / 환경 제약으로 BLOCKED_NOT_RUN**
+## 8. 1~15 작업 현재 결과
+1. Static Schema execution: **실행 시도 / 환경 제약 BLOCKED_NOT_RUN**
 2. v1→v2 Gap Matrix: **설계 반영**
-3. Adapter/Reconstructor: **implementation candidate 생성**
-4. 02~08 본문: **Meta-validation 직접 반영 확인**
-5. Workflow Operation v2: **registry + bridge candidate 생성**
+3. Adapter/Reconstructor: **fail-closed implementation candidate**
+4. 02~08 본문: **Meta-validation 직접 반영**
+5. Workflow Operation v2: **registry + durable TenantRbac semantic authorization + Bridge candidate**
 6. Product Lineage v2: **candidate 생성**
 7. Validation/Final denominator migration: **schema+fixture+설계 생성**
 8. Final Candidate/Approval/Lock v2: **계약+fixture 생성**
-9. Independent OTester/OAudit 타입 분리: **profile+receipt 계약+fixture 생성**
-10. Learning/Memory/Benchmark Qualification: **Blind/Reviewer/Benchmark/GT/Hidden Corpus 계약+fixture 생성**
-11. Verified-to-Deployed: **계약+runtime candidate+test 생성**
-12. Shadow Gate: **schema+comparator+fixture 생성, 실행 NOT_RUN**
-13. Active Selector: **schema+rollout HOLD 생성, v2 미활성**
-14. P0 132 disposition: **보수적 DESIGN_ACCEPTED 기준 적용, CLOSED 0**
-15. 재검토: **Reconstructor null fail-close와 Schema Registry drift 발견·수정, PR mergeable transient 재확인**
+9. Independent OTester/OAudit: **typed 계약/fixture, runtime self-attestation 승격 차단**
+10. Learning/Memory/Benchmark Qualification: **Blind/Reviewer/Benchmark/GT/Hidden 계약+fixture; qualification runtime HOLD**
+11. Verified-to-Deployed: **계약/fixture 존재, target-bound deployment runtime은 BLOCKED**
+12. Shadow Gate: **schema+comparator+fixture 생성, runtime/schema drift 수정, 실제 실행 NOT_RUN**
+13. Active Selector: **schema+rollout HOLD, v2 미활성**
+14. Finding disposition: **P0 141 모두 최고 DESIGN_ACCEPTED, CLOSED 0**
+15. 재검토: **post-v2 P0 133~141/P1 049~050 발견 및 candidate remediation 반영**
 
 ## 9. 남은 Hard Blocker
 - static 23-schema/69-fixture 실제 실행
-- Java compile/JUnit 실행
-- primary LocalWorkflowDispatcher 실제 wiring
+- Java compile/JUnit 실제 실행
 - v1→v2 reconstruction을 실제 v1 receipt population에 수행
 - exact Validation/Final population 생성 및 v1 count authority shadow 비교
 - true independent OTester/OAudit execution/qualification
-- real deployment Verified-to-Deployed execution
+- signed Human Acceptance authority verification
+- Validator Qualification independent execution
+- target-bound deployment identity/receipt 구현 및 Verified-to-Deployed 실제 실행
 - Shadow Gate actual comparison
 - signed Active Selector 승인
 
