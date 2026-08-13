@@ -1,0 +1,35 @@
+{
+  "contract": "ONSURE_WORKFLOW_OPERATION_EXTENSION_CANDIDATE_V2",
+  "status": "CANDIDATE_NOT_ACTIVE",
+  "parent_registry": "contracts/workflow-operation-registry.v1.json",
+  "parent_operation_count": 49,
+  "candidate_operations": [
+    "notification.subscribe",
+    "notification.list-deliveries",
+    "portfolio.read",
+    "policy-pack.create-version",
+    "policy-pack.qualify-version",
+    "acceptance-certificate.issue",
+    "acceptance-certificate.verify",
+    "coverage-report.read",
+    "risk-score.read",
+    "verification.run-mutation",
+    "verification.run-cross-model",
+    "patch.preview-blast-radius",
+    "sbom.generate"
+  ],
+  "candidate_operation_count": 13,
+  "candidate_total_if_activated": 62,
+  "surface_rule": "Every activated operation must reach the same generic dispatcher and must not exist only as a UI/API special path.",
+  "required_before_activation": [
+    "operation schema or request/response contract",
+    "authority mapping",
+    "dispatcher registration",
+    "CLI/API/VSCODE surface parity or documented surface exception",
+    "positive test",
+    "negative/unauthorized test",
+    "receipt/event behavior",
+    "requirement trace"
+  ],
+  "anti_false_activation": "This candidate does not change the active workflow operation count. Active count remains exactly 49 until parent registry activation is changed by an evidence-backed update."
+}
