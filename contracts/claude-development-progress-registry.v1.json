@@ -115,6 +115,32 @@
         ],
         "unresolved_blockers": [],
         "design_change_queue_items_this_wave": []
+      },
+      "wave_3_qualification_independence": {
+        "state": "TESTED",
+        "items": [
+          {"item": "ValidatorQualification", "state": "TESTED", "contract": "contracts/validator-qualification-record.candidate.v2.schema.json", "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py (69/69 PASS_NONFINAL), not duplicated into the main registry."},
+          {"item": "IndependentAssuranceExecutionPlan", "state": "TESTED", "contract": "contracts/independent-assurance-execution-plan.candidate.v2.schema.json", "note": "Existed as a file with zero fixtures/registration before this batch (same 137 SS4 gap as Wave 2's RuntimeExecutionReceipt); now registered with real fixtures and a test."},
+          {"item": "IndependentAssuranceReceipt", "state": "TESTED", "contract": "contracts/independent-assurance-receipt.candidate.v2.schema.json", "note": "Pre-existing; validated via the same v2 pipeline."},
+          {"item": "HumanAcceptanceReceipt", "state": "TESTED", "contract": "contracts/human-acceptance-receipt.v1.schema.json", "note": "New (21_CLAUDE_DEVELOPMENT_HANDOFF.md DEV-09 field grounding: authoritative principal lookup, purpose/scope binding, nonce, expiry, revocation, signature, exact candidate/gate digest binding, replay consumption ledger)."},
+          {"item": "AuthorityGrant", "state": "TESTED", "contract": "contracts/authority-grant.v1.schema.json", "note": "New (71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS7)."}
+        ],
+        "negative_gates_verified": [
+          "delegated AuthorityGrant scope/expiry must be a subset of its parent (test_delegated_child_expiry_within_parent_window / test_child_exceeding_parent_expiry_is_detected)",
+          "same principal holding multiple keys must not count as multiple independent approvers, i.e. SoD (test_same_principal_multiple_keys_do_not_count_as_multiple_approvers)",
+          "HumanAcceptanceReceipt nonce replay across two receipts must be detected, not silently accepted (test_nonce_replay_across_two_receipts_is_detected)",
+          "HumanAcceptanceReceipt decision=ACCEPTED requires NOT_REVOKED and a consumed nonce (schema-level conditional + test_accepted_decision_requires_not_revoked_and_consumed_nonce)",
+          "HumanAcceptanceReceipt's cited AuthorityGrant must actually permit assurance.human-accept, not just exist (test_human_acceptance_grant_permits_the_operation)"
+        ],
+        "evidence": [
+          "python3 scripts/validate-semantic-assurance-v2-contracts.py -> PASS_NONFINAL 69/69",
+          "python3 scripts/validate-structured-contracts.py --require-full -> PASS (48 registered schemas, 50 positive + 27 negative instances)",
+          "python3 -m unittest tests.test_wave3_qualification_independence -> 11/11 PASS",
+          "full python suite (test_requirement_universe + test_target_assurance_wave1 + test_wave2_execution_evidence + test_wave3_qualification_independence + test_repository_contracts) -> 42/42 PASS",
+          "mvn -q compile -> clean"
+        ],
+        "unresolved_blockers": [],
+        "design_change_queue_items_this_wave": []
       }
     },
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},

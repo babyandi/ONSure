@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -344,6 +344,33 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/distributed-aggregation-receipt.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/independent-assurance-execution-plan.candidate.v2.schema.json",
+      "instances": [
+        "fixtures/contracts/independent-assurance-execution-plan.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/independent-assurance-execution-plan.candidate.v2.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/authority-grant.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/authority-grant.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/authority-grant.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/human-acceptance-receipt.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/human-acceptance-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/human-acceptance-receipt.v1.invalid.json"
       ]
     }
   ],

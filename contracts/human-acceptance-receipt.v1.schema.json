@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/human-acceptance-receipt.v1.schema.json",
+  "title": "ONSure Human Acceptance Receipt v1",
+  "description": "21_CLAUDE_DEVELOPMENT_HANDOFF.md DEV-09 Human Acceptance Verifier. Human Acceptance must never become positive from caller self-attestation: this schema requires an authoritative principal profile lookup, purpose/scope binding, nonce+expiry+revocation, signature verification, an exact candidate/gate digest binding, and a replay consumption record. 74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md: assurance.human-accept requires AUTHORIZED_ACCEPTOR role and emits HumanAcceptanceRecorded -> HumanAcceptanceReceipt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "receipt_id", "principal", "authority_grant_id", "purpose_scope",
+    "candidate_binding", "nonce", "issued_at", "expires_at", "revocation_state",
+    "signature", "replay_consumption", "decision", "self_validation_nonfinal",
+    "final_claim_allowed", "receipt_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_HUMAN_ACCEPTANCE_RECEIPT_V1"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "principal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal_id", "principal_profile_sha256", "authority_grant_id"],
+      "properties": {
+        "principal_id": {"type": "string", "minLength": 1},
+        "principal_profile_sha256": {"$ref": "#/$defs/sha256"},
+        "authority_grant_id": {"type": "string", "minLength": 1}
+      },
+      "description": "Authoritative principal profile lookup -- never a caller-supplied identity claim."
+    },
+    "authority_grant_id": {
+      "type": "string", "minLength": 1,
+      "description": "Must reference a real authority-grant.v1.schema.json instance whose allowed_operation_patterns cover 'assurance.human-accept' and whose purpose_scope covers this receipt's purpose_scope."
+    },
+    "purpose_scope": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "candidate_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "candidate_digest", "gate_id", "gate_digest"],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "candidate_digest": {"$ref": "#/$defs/sha256"},
+        "gate_id": {"type": "string", "minLength": 1},
+        "gate_digest": {"$ref": "#/$defs/sha256"}
+      },
+      "description": "Exact candidate/gate digest binding -- acceptance of one candidate/gate pair must not be reusable for a different one."
+    },
+    "nonce": {"type": "string", "minLength": 16},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "revocation_state": {"enum": ["NOT_REVOKED", "REVOKED"]},
+    "revoked_at": {"type": ["string", "null"], "format": "date-time"},
+    "revocation_reason": {"type": ["string", "null"]},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key_id", "algorithm", "signature"],
+      "properties": {
+        "key_id": {"type": "string", "minLength": 1},
+        "algorithm": {"const": "Ed25519"},
+        "signature": {"type": "string", "minLength": 32}
+      }
+    },
+    "replay_consumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["consumed", "consumed_at"],
+      "properties": {
+        "consumed": {"type": "boolean"},
+        "consumed_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "description": "A nonce may be consumed exactly once; a second presentation of the same nonce must be rejected as replay, not silently accepted."
+    },
+    "decision": {"enum": ["ACCEPTED", "HOLD"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false},
+    "receipt_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"revocation_state": {"const": "REVOKED"}}},
+      "then": {"required": ["revoked_at", "revocation_reason"], "properties": {"revoked_at": {"type": "string"}, "revocation_reason": {"type": "string", "minLength": 1}}}
+    },
+    {
+      "if": {"properties": {"decision": {"const": "ACCEPTED"}}},
+      "then": {
+        "properties": {
+          "revocation_state": {"const": "NOT_REVOKED"},
+          "replay_consumption": {"properties": {"consumed": {"const": true}}}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

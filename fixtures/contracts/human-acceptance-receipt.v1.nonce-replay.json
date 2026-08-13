@@ -1,0 +1,38 @@
+{
+  "contract": "ONSURE_HUMAN_ACCEPTANCE_RECEIPT_V1",
+  "receipt_id": "HAR::neutral-001::0002-REPLAY",
+  "principal": {
+    "principal_id": "otester-principal-001",
+    "principal_profile_sha256": "e530678b0be7c203840c1c28d6c361ee6d32fd15a1d3ffbc6a00f186c5cd9b02",
+    "authority_grant_id": "GRANT::child::0001"
+  },
+  "authority_grant_id": "GRANT::child::0001",
+  "purpose_scope": [
+    "ASSURANCE_EXECUTION"
+  ],
+  "candidate_binding": {
+    "candidate_id": "CANDIDATE::0002",
+    "candidate_digest": "cff36113f1ce47c7624fe3d67844f91f8b614c0cb3413d9c9d926d83816d1265",
+    "gate_id": "GATE::final-lock-v2",
+    "gate_digest": "02c250c0aac753bec15acabcfd86c897b1c18f0226c1f4900e154da879a3fca2"
+  },
+  "nonce": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+  "issued_at": "2026-08-13T15:02:38.250023+00:00",
+  "expires_at": "2026-08-13T15:52:38.250023+00:00",
+  "revocation_state": "NOT_REVOKED",
+  "revoked_at": null,
+  "revocation_reason": null,
+  "signature": {
+    "key_id": "otester-signing-key-001",
+    "algorithm": "Ed25519",
+    "signature": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+  },
+  "replay_consumption": {
+    "consumed": true,
+    "consumed_at": "2026-08-13T14:52:38.250023+00:00"
+  },
+  "decision": "ACCEPTED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false,
+  "receipt_sha256": "8da6980432f37b8d21f0f6bd95c8b170717d65a53fca4a17c9255b7e842e71ae"
+}
