@@ -7,7 +7,7 @@
     {
       "batch": "BATCH_0",
       "name": "Baseline / Requirement Materialization",
-      "state": "TESTED",
+      "state": "EVIDENCE_READY",
       "scope": "RU-01..RU-07 per 91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md, taxonomy/applicability per 92, Global Trace Registry per 90",
       "contracts": [
         "contracts/requirement-record.v2.schema.json",
@@ -52,7 +52,7 @@
         "P0 trace orphan FR-COM-008 (CRITICAL, POSITIVE_CLAIM_GATE, cites contracts/main-branch-protection.v1.json): 0 test_refs, 0 evidence_refs found by mechanical scan. Not a design ambiguity (design-change-queue) -- a real, disclosed test/evidence-path gap to be closed in Batch 9 (Test Materialization) or earlier if a dependent batch needs it sooner.",
         "31 explicit IDs have text that differs across the documents mentioning them (canonical text picked by longest-occurrence heuristic; other variants preserved in .onsure/requirement-universe/explicit-id-cross-document-variants.json for human review, not silently merged).",
         "DCQ-0001 (P1, OPEN): SA-*/XC-* capability/control ID taxonomy relationship to the Requirement Universe is undefined by 88-92; intentionally excluded from EXPLICIT_ID extraction rather than guessed.",
-        "DCQ-0002 (P0, OPEN, found while starting Batch 1 Wave 1): four mutually inconsistent 'Requirement source class' vocabularies exist across 88 SS2, 92 SS2, 11 SS6.2, and the pre-existing contracts/requirement-universe-snapshot.candidate.v2.schema.json -- directly affects this batch's own requirement-record.v2.schema.json/requirement-universe-snapshot.v2.schema.json taxonomy fields. Per 137 SS6 this batch is held at TESTED (demoted from an earlier, premature EVIDENCE_READY marking) until DCQ-0002 is resolved by a human/design-authority decision. All other Batch 0 done-gate items (contract/implementation/fixtures/compile/automated-test/evidence/trace) remain genuinely satisfied; only the P0 gate blocks the final promotion."
+        "DCQ-0002 RESOLVED_WITH_AUTHORITY 2026-08-13 (141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md, qa/onsure-design-baseline-lock): confirmed DCQ-0002 was two distinct Requirement Universe objects colliding under one name, not one conflicted enum. Product Design Requirement Universe (88+92, this batch's own scope) keeps the source_class+taxonomy two-axis split exactly as Batch 0 implemented it -- no rework required. Target Assurance Requirement Universe (11 Bundle D) is a separate identity, owned by Batch 1. Batch 0 restored to EVIDENCE_READY; P0 gate cleared."
       ],
       "note": "775->810 candidate_extracted_requirement_count correction: an earlier version of dedupe_candidates() silently dropped non-canonical duplicate-group members from the population, contradicting 88 SS6 ('record the relation, do not delete'); fixed to keep every source-anchored occurrence and only relate duplicates as an overlay. Caught by tests/test_requirement_universe.py's cross-contract referential-integrity test before being reported here as passing."
     },

@@ -31,12 +31,17 @@
       ],
       "affected_tests": ["tests/test_requirement_universe.py"],
       "affected_evidence": [".onsure/requirement-universe/requirement-universe-snapshot.json"],
-      "status": "OPEN"
+      "status": "RESOLVED_WITH_AUTHORITY",
+      "resolution": {
+        "authority_ref": "qa/onsure-design-baseline-lock:docs/master/semantic-assurance/141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md",
+        "decided_at": "2026-08-13",
+        "disposition": "DCQ-0002 was not one enum with four competing versions; it was two distinct Requirement Universe objects colliding under the same name. (A) Product Design Requirement Universe -- authority 88+92, purpose: ONSure's own product-design QA denominator, canonical names ProductDesignRequirementUniverse/ProductDesignRequirementUniverseSnapshot, fields source_class (88's 7 values) and taxonomy (92's 10 values) kept as two separate, non-merged axes. (B) Target Assurance Requirement Universe -- authority 11 Bundle D, purpose: the requirement denominator of the customer/target Program ONSure verifies, canonical names TargetAssuranceRequirementUniverse/TargetAssuranceRequirementUniverseSnapshot, using 11's 15-value source vocabulary. The pre-existing contracts/requirement-universe-snapshot.candidate.v2.schema.json (has target_id + target discovery fields) is classified as a Target Assurance candidate, not a Product Design contract, and remains non-authoritative pending an explicit mapping/migration to 11's vocabulary. Batch 0's source_class+taxonomy split is confirmed correct for (A) and unchanged. Batch 1's TargetManifest/RequirementUniverse work proceeds under identity (B) with distinct names -- it does not reuse Product Design schema names, and it does not invent a fifth vocabulary. Product Design exact population/applicability/trace/orphan/SHA-256 inventory/registry digest remain open under a separate Design QA gate, not blocked by this resolution."
+      }
     }
   ],
   "required_fields": ["change_id", "discovered_in_batch", "requirement_or_design_ref", "current_design_semantics", "implementation_conflict_or_new_semantics", "severity", "proposed_disposition", "affected_contracts", "affected_tests", "affected_evidence", "status"],
   "severity_values": ["P0", "P1", "P2"],
-  "status_values": ["OPEN", "ACCEPTED_FOR_DESIGN_CHANGE", "REJECTED_AS_IMPLEMENTATION_ERROR", "SUPERSEDED", "CLOSED_WITH_TRACE"],
+  "status_values": ["OPEN", "ACCEPTED_FOR_DESIGN_CHANGE", "REJECTED_AS_IMPLEMENTATION_ERROR", "SUPERSEDED", "CLOSED_WITH_TRACE", "RESOLVED_WITH_AUTHORITY"],
   "gate": "Any unresolved P0 blocks the affected batch from EVIDENCE_READY.",
   "anti_recursion": "Do not create new product-design axes unless an implementation-discovered gap cannot be owned by an existing design authority."
 }
