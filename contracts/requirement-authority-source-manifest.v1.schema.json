@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/requirement-authority-source-manifest.v1.schema.json",
+  "title": "ONSure Requirement Authority Source Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "baseline_ref",
+    "rows",
+    "population_digest",
+    "review_summary",
+    "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_REQUIREMENT_AUTHORITY_SOURCE_MANIFEST_V1"},
+    "baseline_ref": {"type": "string", "minLength": 1},
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_path",
+          "content_sha256",
+          "artifact_inventory_authority_class",
+          "requirement_source_disposition",
+          "authority_parent_refs",
+          "supersedes",
+          "rationale",
+          "review_state"
+        ],
+        "properties": {
+          "artifact_path": {"type": "string", "minLength": 1},
+          "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "artifact_inventory_authority_class": {
+            "enum": ["MASTER", "COMPANION", "CHECKLIST", "MACHINE_CANDIDATE", "HANDOFF"]
+          },
+          "requirement_source_disposition": {
+            "enum": [
+              "NORMATIVE_CURRENT",
+              "NORMATIVE_REFINEMENT",
+              "REFERENCE_ONLY",
+              "HANDOFF_ONLY",
+              "QA_EVIDENCE_ONLY",
+              "SUPERSEDED_PROVENANCE_ONLY",
+              "RETIRED_PROVENANCE_ONLY",
+              "OPEN_DECISION_INPUT_ONLY"
+            ]
+          },
+          "authority_parent_refs": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          },
+          "supersedes": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          },
+          "rationale": {"type": "string", "minLength": 1},
+          "review_state": {"enum": ["UNREVIEWED", "REVIEWED", "DISPUTED"]}
+        }
+      }
+    },
+    "population_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "review_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["row_count", "reviewed_count", "unreviewed_count", "disputed_count", "eligible_count", "ineligible_count"],
+      "properties": {
+        "row_count": {"type": "integer", "minimum": 0},
+        "reviewed_count": {"type": "integer", "minimum": 0},
+        "unreviewed_count": {"type": "integer", "minimum": 0},
+        "disputed_count": {"type": "integer", "minimum": 0},
+        "eligible_count": {"type": "integer", "minimum": 0},
+        "ineligible_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "final_claim_allowed": {"const": false}
+  }
+}
