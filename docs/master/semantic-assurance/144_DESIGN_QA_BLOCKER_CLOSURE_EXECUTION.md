@@ -81,32 +81,67 @@ P0 semantic conflict가 하나라도 남으면 Design Lock 금지.
 
 현재 상태: `16_GROUP_MEMBER_POPULATION_NOT_MATERIALIZED / HOLD`.
 
-## 4. Denominator 승격 금지
+## 4. Requirement source population root-cause finding
+
+Batch 0 generator의 `git_tracked_master_docs()`는 `docs/master` 아래 git-tracked Markdown 전체를 읽는다. 이 방식은 Design Artifact Inventory와 CURRENT Product Design Requirement source population을 같은 집합으로 취급한다.
+
+그러나 86의 Design Artifact Inventory는 provenance와 reconstructability를 위해 MASTER/COMPANION/CHECKLIST/MACHINE_CANDIDATE/HANDOFF까지 보존하는 population이다. 이는 모든 파일이 CURRENT Requirement를 새로 originate할 수 있다는 뜻이 아니다.
+
+따라서 다음을 분리한다.
+
+- `DesignArtifactInventory`: baseline provenance/bytes/supersession을 위한 전체 설계 산출물 population
+- `ProductDesignRequirementAuthorityPopulation`: CURRENT Product Design Requirement를 originate할 수 있는 normative source population
+
+Requirement source 기본 eligibility:
+- MASTER: eligible
+- COMPANION: current이고 parent/authority 관계가 명확하면 eligible
+- CHECKLIST: 실제 normative decision owner인 경우 conditional
+- HANDOFF: 새 Requirement originate source로 사용하지 않음
+- QA execution/status/progress/review result: 새 Requirement originate source로 사용하지 않음
+- SUPERSEDED/RETIRED: historical provenance only
+
+따라서 현재 899 record candidate는 authority-filtered regeneration 전 exact active denominator가 아니다. 31 variants와 16 duplicate groups도 authority filtering 후 count가 달라질 수 있으므로, review input을 확보하더라도 source population을 먼저 정규화한 후 최종 disposition한다.
+
+필수 재생성 순서:
+1. artifact별 requirement-source eligibility와 supersession 상태 materialize
+2. CURRENT ProductDesignRequirementAuthorityPopulation manifest/digest 생성
+3. Requirement generator 입력을 그 manifest로 제한
+4. 제외 artifact와 이유 보존
+5. authority-filtered Universe 재생성
+6. 그 결과에서 variants/duplicate groups 재계산
+
+NOT_ELIGIBLE은 파일 삭제를 뜻하지 않는다. Design Artifact Inventory와 Git history에는 계속 보존한다.
+
+## 5. Denominator 승격 금지
 
 현재 899는 계속 `record_population_candidate`다. 다음 조건 전에는 exact active denominator로 승격하지 않는다.
-- 31 semantic variant disposition complete
-- 16 duplicate group disposition complete
+- exact ProductDesignRequirementAuthorityPopulation
+- authority-filtered Requirement Universe regeneration
+- semantic variant disposition complete
+- duplicate group disposition complete
 - unresolved P0 semantic conflict = 0
 - resulting ACTIVE/SUPERSEDED/RETIRED/OPEN_POLICY population materialized
 - deterministic population digest generated
 
-## 5. 다음 QA closure 순서
+## 6. 다음 QA closure 순서
 
-1. FR-COM-008 control-plane evidence 획득 가능 권한/독립 snapshot 확보
-2. 31 semantic variant review input을 committed review evidence로 materialize
-3. 16 duplicate-group member/canonical decision input을 committed review evidence로 materialize
+1. ProductDesignRequirementAuthorityPopulation materialize
+2. authority-filtered Requirement Universe 재생성
+3. semantic variant/duplicate review evidence materialize
 4. canonical disposition 수행
 5. exact active denominator/digest 재계산
 6. applicability 1:1 population 재생성
 7. Global Trace 재실행
-8. 이후 naming/artifact SHA/registry digest/baseline reconstructability로 이동
+8. FR-COM-008 control-plane evidence 확보 후 P0 gate 재판정
+9. naming/artifact SHA/registry digest/baseline reconstructability로 이동
 
-## 6. 현재 판정
+## 7. 현재 판정
 
 - FR-COM-008: `P0_EXTERNAL_CONTROL_EVIDENCE_BLOCKED`
-- semantic variants: `31_PENDING_MATERIALIZED_REVIEW_INPUT`
-- duplicate groups: `16_PENDING_MATERIALIZED_REVIEW_INPUT`
+- Product Design requirement source population: `NOT_YET_MATERIALIZED`
+- semantic variants: `31_PENDING_REGENERATION_AND_REVIEW_INPUT`
+- duplicate groups: `16_PENDING_REGENERATION_AND_REVIEW_INPUT`
 - exact active denominator: `NOT_YET_PROVEN`
 - Design Lock: `HOLD`
 
-본 문서는 scanner의 과거 관측값을 삭제하거나 PASS로 덮지 않는다. 143의 `P0=1`은 마지막 실제 scan result로 보존되며, 144는 해당 P0의 closure state를 더 정확히 설명한다.
+본 문서는 scanner의 과거 관측값을 삭제하거나 PASS로 덮지 않는다. 143의 `P0=1`은 마지막 실제 scan result로 보존되며, 144는 해당 P0와 denominator blocker의 closure state를 더 정확히 설명한다.
