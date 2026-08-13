@@ -1,0 +1,26 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_SECOND_ORDER_TRACE_MATRIX_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "authority_refs":["docs/master/semantic-assurance/151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md"],
+  "rows":[
+    {"requirement_id":"FR-LEARN-026","development_batch":[5,9]},
+    {"requirement_id":"FR-LEARN-027","development_batch":[5,8,9]},
+    {"requirement_id":"FR-LEARN-028","development_batch":[1,5,9]},
+    {"requirement_id":"FR-LEARN-029","development_batch":[5,9]},
+    {"requirement_id":"FR-LEARN-030","development_batch":[5,9]},
+    {"requirement_id":"FR-LEARN-031","development_batch":[5,9]},
+    {"requirement_id":"FR-LEARN-032","development_batch":[5,9]},
+    {"requirement_id":"FR-LEARN-033","development_batch":[4,5,9]},
+    {"requirement_id":"FR-LEARN-034","development_batch":[5,9]},
+    {"requirement_id":"FR-LEARN-035","development_batch":[5,9]},
+    {"requirement_id":"FR-LEARN-036","development_batch":[3,5,9]},
+    {"requirement_id":"FR-LEARN-037","development_batch":[3,5,8,9]},
+    {"requirement_id":"FR-LEARN-038","development_batch":[4,5,9]},
+    {"requirement_id":"FR-LEARN-039","development_batch":[4,5,9]},
+    {"requirement_id":"FR-LEARN-040","development_batch":[5,9]}
+  ],
+  "row_count":15,
+  "unmapped_requirement_count":0,
+  "implementation_evidence_pending":15,
+  "final_claim_allowed":false
+}
