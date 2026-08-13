@@ -16,9 +16,21 @@
       "GLOBAL_TRACE_EVIDENCE_REF"
     ]
   },
+  "requirement_source_population": {
+    "current_generator_input": "ALL_GIT_TRACKED_MARKDOWN_UNDER_DOCS_MASTER",
+    "closure_state": "AUTHORITY_FILTER_REQUIRED",
+    "decision": "DESIGN_ARTIFACT_INVENTORY_IS_NOT_PRODUCT_DESIGN_REQUIREMENT_AUTHORITY_POPULATION",
+    "required_next_evidence": [
+      "ARTIFACT_SOURCE_ELIGIBILITY_DISPOSITION",
+      "SUPERSESSION_DISPOSITION",
+      "CURRENT_REQUIREMENT_AUTHORITY_MANIFEST",
+      "CURRENT_REQUIREMENT_AUTHORITY_POPULATION_DIGEST",
+      "AUTHORITY_FILTERED_REQUIREMENT_UNIVERSE_REGENERATION"
+    ]
+  },
   "semantic_variant_disposition": {
-    "count": 31,
-    "state": "REVIEW_INPUT_NOT_MATERIALIZED",
+    "observed_count_before_authority_filtering": 31,
+    "state": "PENDING_AUTHORITY_FILTERED_REGENERATION_AND_REVIEW_INPUT",
     "allowed_dispositions": [
       "SAME_SEMANTICS_VARIANT_TEXT",
       "CANONICAL_WITH_REFINEMENT",
@@ -27,11 +39,11 @@
     ]
   },
   "duplicate_groups": {
-    "count": 16,
-    "state": "GROUP_MEMBER_POPULATION_NOT_MATERIALIZED",
+    "observed_count_before_authority_filtering": 16,
+    "state": "PENDING_AUTHORITY_FILTERED_REGENERATION_AND_GROUP_MEMBER_POPULATION",
     "rule": "Preserve source-anchored occurrences; canonical contributes 1 to active denominator and DUPLICATES members contribute 0."
   },
-  "record_population_candidate": 899,
+  "record_population_candidate_before_authority_filtering": 899,
   "active_denominator_exact": false,
   "design_lock_ready": false
 }
