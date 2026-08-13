@@ -7,7 +7,8 @@
     {"artifact_path":"docs/master/semantic-assurance/141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md","git_blob_sha":"91ebadd2d6447cd1d4ff8b4ce5dd4ab36e96407b","disposition":"NORMATIVE_REFINEMENT","review_state":"REVIEWED","rationale":"Explicit DESIGN_AUTHORITY_DECISION resolving DCQ-0002."},
     {"artifact_path":"docs/master/semantic-assurance/142_DCQ0001_SA_XC_AUTHORITY_DECISION.md","git_blob_sha":"0eee7ee6236593b30cd132987a233b28a6bebd77","disposition":"NORMATIVE_REFINEMENT","review_state":"REVIEWED","rationale":"Explicit DESIGN_AUTHORITY_DECISION resolving DCQ-0001."},
     {"artifact_path":"docs/master/semantic-assurance/143_DESIGN_QA_12_STEP_EXECUTION.md","git_blob_sha":"76402ef62444a44695668106184e7858f786dd08","disposition":"QA_EVIDENCE_ONLY","review_state":"REVIEWED","rationale":"QA execution/status evidence; does not originate current product requirements."},
-    {"artifact_path":"docs/master/semantic-assurance/144_DESIGN_QA_BLOCKER_CLOSURE_EXECUTION.md","git_blob_sha":"44ffac4e5dd164ea5fa77b53ee38e66af80c1745","disposition":"QA_EVIDENCE_ONLY","review_state":"REVIEWED","rationale":"QA blocker closure evidence; does not originate current product requirements."}
+    {"artifact_path":"docs/master/semantic-assurance/144_DESIGN_QA_BLOCKER_CLOSURE_EXECUTION.md","git_blob_sha":"44ffac4e5dd164ea5fa77b53ee38e66af80c1745","disposition":"QA_EVIDENCE_ONLY","review_state":"REVIEWED","rationale":"QA blocker closure evidence; does not originate current product requirements."},
+    {"artifact_path":"docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md","git_blob_sha":"19ef6c5aee50bed7a250ac9e16defd3a1641e5c5","disposition":"NORMATIVE_REFINEMENT","review_state":"REVIEWED","rationale":"Explicit learning/validation closed-loop refinement under 02 and 07; originates FR-LEARN-001 through FR-LEARN-025 after authority-filtered RU regeneration."}
   ],
   "final_claim_allowed":false
 }
