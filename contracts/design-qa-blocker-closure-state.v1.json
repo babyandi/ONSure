@@ -1,0 +1,37 @@
+{
+  "type": "ONSURE_DESIGN_QA_BLOCKER_CLOSURE_STATE_V1",
+  "status": "QA_DEFECT_CLOSURE_IN_PROGRESS_NONFINAL",
+  "authority": "docs/master/semantic-assurance/144_DESIGN_QA_BLOCKER_CLOSURE_EXECUTION.md",
+  "fr_com_008": {
+    "last_mechanical_scan": "P0_REQUIREMENT_TRACE_ORPHAN",
+    "closure_state": "P0_EXTERNAL_CONTROL_EVIDENCE_BLOCKED",
+    "declared_control_contract": "contracts/main-branch-protection.v1.json",
+    "control_plane_read_attempt": "HTTP_403_RESOURCE_NOT_ACCESSIBLE_BY_INTEGRATION",
+    "pass_claim_allowed": false,
+    "required_evidence": [
+      "GITHUB_MAIN_BRANCH_PROTECTION_SNAPSHOT",
+      "DECLARED_VS_OBSERVED_CONTROL_COMPARISON",
+      "IMMUTABLE_SNAPSHOT_IDENTITY_OR_DIGEST",
+      "GLOBAL_TRACE_TEST_REF",
+      "GLOBAL_TRACE_EVIDENCE_REF"
+    ]
+  },
+  "semantic_variant_disposition": {
+    "count": 31,
+    "state": "REVIEW_INPUT_NOT_MATERIALIZED",
+    "allowed_dispositions": [
+      "SAME_SEMANTICS_VARIANT_TEXT",
+      "CANONICAL_WITH_REFINEMENT",
+      "SUPERSEDED_TEXT",
+      "REAL_SEMANTIC_CONFLICT"
+    ]
+  },
+  "duplicate_groups": {
+    "count": 16,
+    "state": "GROUP_MEMBER_POPULATION_NOT_MATERIALIZED",
+    "rule": "Preserve source-anchored occurrences; canonical contributes 1 to active denominator and DUPLICATES members contribute 0."
+  },
+  "record_population_candidate": 899,
+  "active_denominator_exact": false,
+  "design_lock_ready": false
+}
