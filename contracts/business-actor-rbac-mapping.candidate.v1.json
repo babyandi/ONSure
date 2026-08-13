@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_BUSINESS_ACTOR_RBAC_MAPPING_CANDIDATE_V1",
+  "status": "CANDIDATE_NOT_ACTIVE",
+  "tenant_role_authority": "contracts/tenant-context.v1.schema.json",
+  "roles": ["VIEWER", "OPERATOR", "APPROVER", "AUDITOR", "ADMIN"],
+  "actor_mappings": [
+    {"business_actor":"CUSTOMER_OWNER","required_roles":["ADMIN"],"authority_classes":["CONTRACT","BILLING","SCOPE_APPROVAL","DELIVERY_ACCEPTANCE"]},
+    {"business_actor":"CUSTOMER_ADMIN","required_roles":["ADMIN"],"authority_classes":["ORG_ADMIN","USER_ADMIN","SYSTEM_ADMIN","POLICY_ADMIN"]},
+    {"business_actor":"DEVELOPER","required_roles":["OPERATOR"],"authority_classes":["LEARN","REVIEW_REQUEST","VERIFY_REQUEST","PATCH_REQUEST"]},
+    {"business_actor":"REVIEWER","required_roles":["APPROVER"],"authority_classes":["FINDING_DECISION","PATCH_APPROVAL"]},
+    {"business_actor":"PROFESSIONAL_REVIEWER","required_roles":["APPROVER"],"authority_classes":["EXPERT_REVIEW"]},
+    {"business_actor":"ONSURE_OPERATOR","required_roles":["OPERATOR"],"authority_classes":["CASE_OPERATION","EXECUTION_ENVIRONMENT_OPERATION"]},
+    {"business_actor":"SECURITY_AUDITOR","required_roles":["AUDITOR"],"authority_classes":["EVIDENCE_READ","AUDIT_READ"]},
+    {"business_actor":"EXTERNAL_ACCEPTOR","required_roles":["VIEWER"],"authority_classes":["CERTIFICATE_VERIFY","DELIVERY_READONLY"]},
+    {"business_actor":"COMPLIANCE_OFFICER","required_roles":["APPROVER"],"authority_classes":["REGULATORY_POLICY_APPROVAL","HIGH_RISK_APPROVAL"]}
+  ],
+  "system_principals": ["OLICENSE", "PAYMENT_PROVIDER"],
+  "segregation_of_duties": [
+    {"profile":"REGULATED_ENTERPRISE","forbid_same_principal_all_of":["PATCH_AUTHOR","REVERIFY_APPROVER","DELIVERY_ACCEPTOR"]},
+    {"profile":"APPEAL","forbid_same_principal_all_of":["ORIGINAL_DECISION_MAKER","APPEAL_REVIEWER"]},
+    {"profile":"FOUR_EYES","same_principal_multiple_keys_count_as_distinct":false}
+  ],
+  "authority_rule": "RBAC role is necessary but not sufficient for high-risk effect authority; operation-specific AuthorityGrant/SoD/expiry/context binding must also pass.",
+  "activation_gate": ["schema_or_registry_validation", "negative_SoD_fixture", "cross_tenant_fixture", "authority_context_binding_test"]
+}
