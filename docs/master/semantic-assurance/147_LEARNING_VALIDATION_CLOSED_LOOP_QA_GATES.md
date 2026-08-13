@@ -63,7 +63,7 @@ AI/Agent 대상은 동일 조건 N-run 반복, seed/config/model/provider versio
 OS/JDK/DB/browser/runtime/model/provider/region 등 적용 가능한 환경축을 matrix로 선언하고 NOT_RUN/PARTIAL을 PASS로 승격하지 않는다.
 
 ## 19. Evidence Absence Gate
-최소 `NOT_COLLECTED`, `COLLECTED_NOT_FOUND`, `COLLECTION_FAILED`, `ACCESS_DENIED`, `STALE`, `UNSUPPORTED`를 구분한다. Missing Evidence를 곧바로 negative fact로 해석 금지.
+Canonical vocabulary는 `EVIDENCE_NOT_COLLECTED`, `EVIDENCE_COLLECTION_FAILED`, `OBSERVED_ABSENCE`, `EVIDENCE_UNAVAILABLE`, `EVIDENCE_STALE`, `EVIDENCE_PRESENT`로 고정한다. `EVIDENCE_NOT_COLLECTED`를 `OBSERVED_ABSENCE`로 해석하거나 자동 변환하는 것을 금지한다.
 
 ## 20. Validator Drift Gate
 동일 Golden Set에 대해 validator version별 FP/FN/precision/recall trend를 기록하고 임계치 초과 drift 시 qualification을 재검토한다.
