@@ -1,0 +1,26 @@
+{
+  "contract":"ONSURE_DESIGN_ONLY_CORE_MATERIALIZATION_WAVE_CANDIDATE_V1",
+  "status":"CANDIDATE_NOT_ACTIVE",
+  "active_parent_operation_count":49,
+  "operation_extension":"contracts/workflow-operation-extension.candidate.v2.json",
+  "new_schema_candidates":[
+    "contracts/coverage-report.candidate.v1.schema.json",
+    "contracts/acceptance-certificate.candidate.v1.schema.json",
+    "contracts/policy-pack-version.candidate.v1.schema.json"
+  ],
+  "authority_candidate":"contracts/business-actor-rbac-mapping.candidate.v1.json",
+  "policy_binding_candidate":"contracts/open-decision-policy-binding.candidate.v1.json",
+  "activation_order":[
+    "validate schema/registry",
+    "add valid fixture",
+    "add semantic-invalid/negative fixture",
+    "register authority mapping",
+    "register dispatcher operation",
+    "implement runtime",
+    "run compile/test",
+    "generate evidence",
+    "update trace",
+    "activate only after gate pass"
+  ],
+  "final_claim_allowed":false
+}
