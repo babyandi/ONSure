@@ -1,0 +1,26 @@
+{
+  "contract":"ONSURE_REQUIREMENT_AUTHORITY_CLASSIFICATION_POLICY_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "principles":[
+    "CONTENT_ROLE_OVER_FILENAME",
+    "FAIL_CLOSED_ON_AMBIGUITY",
+    "ARTIFACT_PRESERVATION_IS_DISTINCT_FROM_REQUIREMENT_ORIGINATION_AUTHORITY",
+    "EXPLICIT_AUTHORITY_DECISION_OVERRIDES_GENERIC_DRAFT_STATUS",
+    "SUPERSEDED_CONTENT_IS_PROVENANCE_ONLY_FOR_CURRENT_EPOCH"
+  ],
+  "content_marker_rules":[
+    {"when":"document explicitly states it is not design authority","disposition":"REFERENCE_ONLY","auto_review_allowed":true},
+    {"when":"Status contains DESIGN_AUTHORITY_DECISION and decision is not superseded","disposition":"NORMATIVE_REFINEMENT","auto_review_allowed":true},
+    {"when":"Status or purpose explicitly identifies DEVELOPMENT_HANDOFF/HANDOFF","disposition":"HANDOFF_ONLY","auto_review_allowed":true},
+    {"when":"Status or purpose explicitly identifies QA execution, QA status, review result, blocker closure, progress report, execution evidence","disposition":"QA_EVIDENCE_ONLY","auto_review_allowed":true},
+    {"when":"document explicitly states SUPERSEDED for current design authority","disposition":"SUPERSEDED_PROVENANCE_ONLY","auto_review_allowed":true},
+    {"when":"document explicitly states RETIRED for current design authority","disposition":"RETIRED_PROVENANCE_ONLY","auto_review_allowed":true},
+    {"when":"document is an open-decision/checklist input and explicitly lacks final authority","disposition":"OPEN_DECISION_INPUT_ONLY","auto_review_allowed":true},
+    {"when":"Master Design Set or an explicit authority decision identifies document as current normative owner/companion","disposition":"NORMATIVE_CURRENT_OR_REFINEMENT_REQUIRES_RELATION_CHECK","auto_review_allowed":false},
+    {"when":"only marker is DESIGN_ONLY/DRAFT/NON_FINAL","disposition":"UNREVIEWED","auto_review_allowed":false}
+  ],
+  "mandatory_evidence_per_row":["artifact_path","git_blob_sha","content_sha256","observed_status_markers","authority_parent_refs","supersedes","classification_rule","rationale","review_state"],
+  "prohibited":["FILENAME_ONLY_CLASSIFICATION","NUMERIC_PREFIX_ONLY_CLASSIFICATION","LONGEST_TEXT_WINS","MODIFIED_TIME_WINS","ASSUME_ALL_COMPANIONS_NORMATIVE","ASSUME_ALL_DRAFTS_NON_NORMATIVE"],
+  "authoritative_manifest_gate":{"unreviewed":0,"disputed_p0":0,"missing_content_sha256":0,"missing_supersession_relation":0},
+  "final_claim_allowed":false
+}
