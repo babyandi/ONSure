@@ -19,6 +19,7 @@
       "api_refs": [],
       "authority_refs": [],
       "contract_refs": [
+        "contracts/claude-development-progress-registry.v1.json",
         "contracts/fr-com-global-trace-extension.candidate.v1.json",
         "contracts/global-trace-execution-report.candidate.v1.json",
         "contracts/main-branch-protection.v1.json",
@@ -94,10 +95,10 @@
       "test_refs": []
     }
   ],
-  "scanned_at": "2026-08-12T16:26:27.189653+00:00",
+  "scanned_at": "2026-08-13T13:52:40.301471+00:00",
   "scanned_requirement_count": 3,
   "self_validation_nonfinal": true,
   "trace_completeness_ratio": 0.0,
-  "universe_digest": "0dcbaf1644996c603cb36c615ec5f1a0260e4280733bf11e3bcb3dee29665042",
+  "universe_digest": "60547f45935a574949e10ce8a8023149bc901b61e1a13f93795c9704b8c2fa44",
   "unresolved_semantic_conflicts": []
 }

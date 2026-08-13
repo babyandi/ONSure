@@ -1,0 +1,40 @@
+{
+  "contract": "ONSURE_TARGET_MANIFEST_V1",
+  "manifest_id": "TM::neutral-target-001",
+  "target_id": "target-neutral-001",
+  "target_type": "GENERAL_SOFTWARE",
+  "archetype": "monorepo-java-service",
+  "classifier": {
+    "classifier_id": "target-type-classifier",
+    "classifier_version": "1.0.0",
+    "qualification_state": "QUALIFICATION_PENDING"
+  },
+  "confidence": 0.82,
+  "alternative_classifications": [
+    {
+      "target_type": "API_SERVICE",
+      "confidence": 0.15
+    }
+  ],
+  "applicable_sa_capabilities": [
+    {
+      "capability_id": "SA-11",
+      "applicability_state": "NOT_APPLICABLE"
+    }
+  ],
+  "source_surfaces": [
+    "GIT_REPOSITORY"
+  ],
+  "deployment_surfaces": [
+    "STANDALONE_DESKTOP_OR_SERVER"
+  ],
+  "runtime_surfaces": [
+    "PROCESS_EXIT",
+    "STDOUT_STDERR",
+    "LOG"
+  ],
+  "generated_at": "2026-08-13T13:48:24.971058+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false,
+  "manifest_sha256": "79e459b08ef89cc8b68b7c5fcad8ed3a435b3bd65aface1b47ba9a0a57dcdb2c"
+}

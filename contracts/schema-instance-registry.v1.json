@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -245,6 +245,42 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/requirement-applicability-evaluation.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/target-manifest.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/target-manifest.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/target-manifest.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/target-assurance-requirement-universe-snapshot.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-snapshot.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/target-assurance-requirement-universe-migration-mapping.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-migration-mapping.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-migration-mapping.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/denominator-epoch.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/denominator-epoch.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/denominator-epoch.v1.invalid.json"
       ]
     }
   ],

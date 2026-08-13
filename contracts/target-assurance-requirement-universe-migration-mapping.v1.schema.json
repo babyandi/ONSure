@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/target-assurance-requirement-universe-migration-mapping.v1.schema.json",
+  "title": "ONSure Target Assurance Requirement Universe Migration Mapping v1",
+  "description": "Explicit mapping from requirement-universe-snapshot.candidate.v2.schema.json's source_classes vocabulary (10 values) to target-assurance-requirement-universe-snapshot.v1.schema.json's vocabulary (11_CONTRACT_UPGRADE_BLUEPRINT.md SS6.2, 15 values), per 141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md's instruction not to silently activate migration. Classification follows 82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md SS4 (DIRECT|READBACK|REPERFORMANCE|EXTERNAL_AUTHORITY|UNRECOVERABLE).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "from_contract", "to_contract", "mappings", "generated_at", "self_validation_nonfinal", "final_claim_allowed"],
+  "properties": {
+    "contract": {"const": "ONSURE_TARGET_ASSURANCE_REQUIREMENT_UNIVERSE_MIGRATION_MAPPING_V1"},
+    "from_contract": {"const": "contracts/requirement-universe-snapshot.candidate.v2.schema.json"},
+    "to_contract": {"const": "contracts/target-assurance-requirement-universe-snapshot.v1.schema.json"},
+    "mappings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["old_value", "disposition", "candidate_new_values", "rationale"],
+        "properties": {
+          "old_value": {
+            "enum": [
+              "BUSINESS", "FUNCTIONAL", "NON_FUNCTIONAL", "SECURITY_PRIVACY_LEGAL",
+              "ARCHITECTURE_DATA", "RUNTIME_DEPLOYMENT", "AI_AGENT_MODEL", "INFERRED",
+              "EXTERNAL_STANDARD", "OPERATION_RECOVERY"
+            ]
+          },
+          "disposition": {"enum": ["DIRECT", "READBACK", "REPERFORMANCE", "EXTERNAL_AUTHORITY", "UNRECOVERABLE"]},
+          "candidate_new_values": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "BUSINESS", "CONTRACT", "POLICY", "CODE", "CONFIG", "ARCHITECTURE", "DATA", "API",
+                "SECURITY", "PRIVACY", "OPERATIONS", "RIGHTS", "FAILURE_RECOVERY", "RUNTIME_BEHAVIOR",
+                "EXTERNAL_STANDARD"
+              ]
+            },
+            "description": "Empty when disposition=UNRECOVERABLE (no candidate value exists in the new vocabulary)."
+          },
+          "rationale": {"type": "string", "minLength": 1}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"disposition": {"const": "DIRECT"}}},
+            "then": {"properties": {"candidate_new_values": {"minItems": 1, "maxItems": 1}}}
+          },
+          {
+            "if": {"properties": {"disposition": {"const": "UNRECOVERABLE"}}},
+            "then": {"properties": {"candidate_new_values": {"maxItems": 0}}}
+          }
+        ]
+      }
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

@@ -95,7 +95,10 @@ class RequirementUniverseBatch0Test(unittest.TestCase):
     def test_fr_com_008_is_flagged_orphan_without_test_or_evidence_path(self) -> None:
         # Known, disclosed real finding: FR-COM-008 (CRITICAL, POSITIVE_CLAIM_GATE, cites
         # contracts/main-branch-protection.v1.json) has zero test_refs/evidence_refs found
-        # by the mechanical scanner. This must surface, not silently pass.
+        # by the mechanical scanner. This must surface, not silently pass. (This test file's
+        # own citation of "FR-COM-008" is excluded from the scanner's test_refs via
+        # scan-global-trace-closure.py's META_TEST_FILES set -- otherwise this assertion
+        # would self-invalidate the moment it was written.)
         row = next(r for r in self.trace_report["rows"] if r["requirement_id"] == "FR-COM-008")
         self.assertIn("REQUIREMENT_WITHOUT_TEST", row["orphan_dimensions"])
         self.assertIn("REQUIREMENT_WITHOUT_EVIDENCE_PATH", row["orphan_dimensions"])

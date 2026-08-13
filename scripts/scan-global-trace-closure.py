@@ -38,6 +38,17 @@ SEVERITY_HEURISTIC_NOTE = (
 
 BACKTICK_CONTRACT_RE = re.compile(r"`(contracts/[A-Za-z0-9_./-]+\.json)`")
 
+META_TEST_FILES = {
+    "tests/test_requirement_universe.py",
+    "tests/test_target_assurance_wave1.py",
+    "tests/test_repository_contracts.py",
+}
+"""These test files exercise the RU generator/scanner tooling itself and cite
+requirement IDs (e.g. FR-COM-008) as worked examples in assertions/comments.
+Counting such a citation as "a test exists for this requirement" would be a
+false positive -- the requirement's own behavior is not what these tests
+verify. Excluded from test_refs scanning for that reason."""
+
 SCAN_GLOBS = {
     "contract_refs": ["contracts/**/*.json"],
     "test_refs": ["src/test/**/*.java", "tests/**/*.py"],
@@ -83,6 +94,9 @@ def scan() -> dict[str, Any]:
     records = {r["requirement_id"]: r for r in load_records()}
 
     file_sets = {field: git_tracked_glob(patterns) for field, patterns in SCAN_GLOBS.items()}
+    file_sets["test_refs"] = [
+        p for p in file_sets["test_refs"] if p.relative_to(ROOT).as_posix() not in META_TEST_FILES
+    ]
     file_texts: dict[str, dict[str, str]] = {}
     for field, files in file_sets.items():
         file_texts[field] = {}

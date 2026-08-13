@@ -1,7 +1,7 @@
 {
   "authority_document_population": [
     {
-      "content_sha256": "681feba714ded3c83493bb1a7e432578d42e9610ec7b3460efad35affbf0c221",
+      "content_sha256": "863d7d6c4d1401b90e85a13e03cab72ee8f04fe5ed7c048272f8def5302f6841",
       "path": "docs/master/00_ONSURE_MASTER_DESIGN_SET.md"
     },
     {
@@ -23,6 +23,10 @@
     {
       "content_sha256": "df6dd9b0810b4a243bff8e455d57d1a62cab6224b06cd9cbf42c38f4e62b87b8",
       "path": "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"
+    },
+    {
+      "content_sha256": "be29317a9cd51f4a008ad26122b3d752c0006b4e0226814d4dc1d1eb218b8dfc",
+      "path": "docs/master/06A_RUNTIME_AUTHORITY_CORRECTION.md"
     },
     {
       "content_sha256": "4dc8b41ebdbf1596eb98a728416f2607761da6a5c3be7db2cb44dd25b63a1c47",
@@ -249,8 +253,12 @@
       "path": "docs/master/semantic-assurance/136_PRE_MERGE_STATUS_CORRECTION_AND_BASELINE_HANDOFF.md"
     },
     {
-      "content_sha256": "61bf7cd906bda3c4ff9730e308779b054103c9a9e76f2f40ccd056f280c06cd6",
+      "content_sha256": "e8b474ce00d826abe7c09fc1af4b38c065a5930b8a60d7148cee805a0411a8de",
       "path": "docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md"
+    },
+    {
+      "content_sha256": "ea9447698a92a2d39c1c697f73a3de1794ca03034eb3778dfb286a54cda23c90",
+      "path": "docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md"
     },
     {
       "content_sha256": "02161c987bcfd118bc3c92b4c75a1138f3c74f25313357bce48e4766dfd4ce14",
@@ -609,10 +617,10 @@
       "path": "docs/master/semantic-assurance/README.md"
     }
   ],
-  "authority_document_population_digest": "7349c49a1bab71bbf04621886cb6295e93ed72d17dfe2bcfcfbf87d23bcb44c2",
+  "authority_document_population_digest": "8b65a6b9390a5438efcd9cb19e24603af693c03a0bc553cbc21b429167e4000c",
   "contract": "ONSURE_REQUIREMENT_UNIVERSE_SNAPSHOT_V2",
   "final_claim_allowed": true,
-  "generated_at": "2026-08-12T16:26:25.354134+00:00",
+  "generated_at": "2026-08-13T13:52:36.827748+00:00",
   "generation_algorithm_version": "RU-GEN-1.0.0",
   "requirement_ids": [
     "FR-COM-001",
@@ -1028,6 +1036,10 @@
     "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::c9d1408540e27eba131a",
     "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::cce41e8de81a9f5f8114",
     "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::f704a61598e3dc090fe7",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::1-authority-supersession-done::d6b515c8c577815a267b",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::4-business-actor-rbac-authority-done-as-candidate::0518633673644ae50b4c",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::6-open-decision-policy-binding-done-as-candidate::efd51f1fbf3a2f9b8583",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::contract::cf6531fd309de36ab328",
     "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::2-migration::99b21f45c54816ad9aca",
     "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::6-phase-3-workflow-operation-v2::39a2998641ff38c766b5",
     "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::7-phase-4-canonical-product-lineage-v2::5957af597754509f676f",
@@ -1515,7 +1527,7 @@
     "REQ::docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md::7-p0-design-conflict-closure::4b59ebd8f2ab39bd7754",
     "REQ::docs/master/semantic-assurance/README.md::5-machine-readable-design-closure-handoff::31dc56051ab606e2a63b"
   ],
-  "requirement_manifest_digest": "0dcbaf1644996c603cb36c615ec5f1a0260e4280733bf11e3bcb3dee29665042",
+  "requirement_manifest_digest": "60547f45935a574949e10ce8a8023149bc901b61e1a13f93795c9704b8c2fa44",
   "self_validation_nonfinal": true,
   "superseded_requirement_ids": [],
   "unresolved_duplicate_candidates": [

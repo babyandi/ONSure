@@ -1,0 +1,64 @@
+{
+  "contract": "ONSURE_TARGET_ASSURANCE_REQUIREMENT_UNIVERSE_SNAPSHOT_V1",
+  "universe_id": "TARU::neutral-target-001::0001",
+  "target_id": "target-neutral-001",
+  "target_manifest_id": "TM::neutral-target-001",
+  "requirement_epoch_id": "EPOCH::REQUIREMENT::0001",
+  "source_classes": [
+    "CODE",
+    "API",
+    "SECURITY"
+  ],
+  "requirements": [
+    {
+      "requirement_id": "TARU-REQ::neutral-target-001::0001",
+      "source_class": "API",
+      "source_id": "openapi.yaml#/paths/~1login/post",
+      "source_digest": "40bcc4c4ecb055db32cea73b58a7ec3b66972215207c71b7fc3f167980f793ef",
+      "statement_digest": "8871ba0573921b8faaa31f442b64266d9032d6fd5b1b129fd31b8719cd6d1ca1",
+      "criticality": "HIGH",
+      "disposition": "APPLICABLE",
+      "implementation_state": "IMPLEMENTED",
+      "implementation_trace_refs": [
+        "src/main/java/AuthController.java#login"
+      ]
+    }
+  ],
+  "completeness_by_source_class": [
+    {
+      "source_class": "CODE",
+      "completeness_state": "PARTIAL",
+      "evidence_ref": null
+    },
+    {
+      "source_class": "API",
+      "completeness_state": "COMPLETE",
+      "evidence_ref": "openapi.yaml"
+    },
+    {
+      "source_class": "SECURITY",
+      "completeness_state": "UNKNOWN",
+      "evidence_ref": null
+    }
+  ],
+  "discovery_methods": [
+    "STATIC_DISCOVERY",
+    "ARCHITECTURE_INFERENCE"
+  ],
+  "unknown_discovery": {
+    "executed": true,
+    "search_space_digest": "2d827cbc0e575d7e210d8cae9bc391e1fa8df5e6da9255232aed805349ffc1ec",
+    "blind_spot_count": 2,
+    "unobservable_count": 0
+  },
+  "conflicts": [],
+  "population_digest": "d249e9358dc81237880dfe7454bd355aa7eabc9aabe60f1cf6ef7e99e39e8bf0",
+  "authority": {
+    "principal_profile_sha256": "39b49588fea262cc758bd508741d6d0c2cf3701bc27a619b1773b00284447cd3",
+    "authority_epoch": "AUTH-EPOCH::0001"
+  },
+  "created_at": "2026-08-13T13:48:37.448809+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false,
+  "snapshot_sha256": "e47297018ae15b97b41f964d7a2e6aa74faa64fb8e33cd1c80732ba11392e23b"
+}

@@ -56,7 +56,42 @@
       ],
       "note": "775->810 candidate_extracted_requirement_count correction: an earlier version of dedupe_candidates() silently dropped non-canonical duplicate-group members from the population, contradicting 88 SS6 ('record the relation, do not delete'); fixed to keep every source-anchored occurrence and only relate duplicates as an overlay. Caught by tests/test_requirement_universe.py's cross-contract referential-integrity test before being reported here as passing."
     },
-    {"batch":"BATCH_1","name":"Core Contract Foundation","state":"NOT_STARTED"},
+    {
+      "batch": "BATCH_1",
+      "name": "Core Contract Foundation",
+      "state": "IN_PROGRESS",
+      "scope": "82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md Wave 1..7",
+      "wave_1_identity_foundation": {
+        "state": "IN_PROGRESS",
+        "items": [
+          {"item": "TargetManifest", "state": "TESTED", "contract": "contracts/target-manifest.v1.schema.json"},
+          {"item": "TargetAssuranceRequirementUniverseSnapshot", "state": "TESTED", "contract": "contracts/target-assurance-requirement-universe-snapshot.v1.schema.json", "note": "Formerly ambiguous with Product Design RU under DCQ-0002; resolved via 141, distinct identity per RESOLVED_WITH_AUTHORITY."},
+          {"item": "Scope/Requirement/Policy Epoch", "state": "TESTED", "contract": "contracts/denominator-epoch.v1.schema.json", "note": "One shared schema with an epoch_type discriminator (SCOPE|REQUIREMENT|POLICY) instead of three near-duplicate schemas."},
+          {"item": "AuthorityPrincipalProfile", "state": "TESTED", "contract": "contracts/authority-principal-profile.candidate.v2.schema.json", "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py (69/69 PASS_NONFINAL), not duplicated into the main registry."},
+          {"item": "ValidatorBuildManifest", "state": "TESTED", "contract": "contracts/validator-build-manifest.candidate.v2.schema.json", "note": "Pre-existing; same v2 pipeline evidence as AuthorityPrincipalProfile."},
+          {"item": "CanonicalizationProfile", "state": "TESTED", "contract": "contracts/evidence-canonicalization-profile.candidate.v2.schema.json", "note": "Pre-existing; same v2 pipeline evidence as AuthorityPrincipalProfile."}
+        ],
+        "migration_mapping": {
+          "contract": "contracts/target-assurance-requirement-universe-migration-mapping.v1.schema.json",
+          "instance": ".onsure/target-assurance/migration-mapping.json (gitignored local evidence, regenerable; fixtures/contracts/target-assurance-requirement-universe-migration-mapping.v1.valid.json is the committed copy)",
+          "old_values_mapped": 10,
+          "direct": 2,
+          "reperformance_required": 6,
+          "unrecoverable": 2,
+          "unrecoverable_detail": "AI_AGENT_MODEL (real vocabulary gap in 11 SS6.2) and INFERRED (axis-confusion with discovery_methods) logged as DCQ-0003 (P1, OPEN), does not block Wave 1."
+        }
+      },
+      "evidence": [
+        "python3 scripts/validate-structured-contracts.py --require-full -> PASS (38 registered schemas)",
+        "python3 -m unittest tests.test_target_assurance_wave1 -> 8/8 PASS",
+        "python3 -m unittest tests.test_requirement_universe -> 11/11 PASS (re-verified after Wave 1 additions; caught and fixed a self-citation false-positive in the trace scanner's test_refs detection)",
+        "mvn -q compile -> clean"
+      ],
+      "unresolved_blockers": [
+        "DCQ-0003 (P1, OPEN): AI_AGENT_MODEL/INFERRED have no destination in the Target Assurance source vocabulary migration; does not block Wave 1's own deliverables."
+      ],
+      "remaining_wave_1_scope": "None -- all 6 Wave 1 items now have real contracts and evidence. Wave 2 (Execution/Evidence: RuntimeExecutionReceipt, EvidenceReceiptEnvelope, EvidenceGraphNode/Edge, CollectorHealth/Observation qualification, WorkUnit/Attempt) not started."
+    },
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},
     {"batch":"BATCH_3","name":"Assurance Core","state":"NOT_STARTED"},
     {"batch":"BATCH_4","name":"Enterprise / Trust","state":"NOT_STARTED"},

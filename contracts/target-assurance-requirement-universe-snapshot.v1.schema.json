@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/target-assurance-requirement-universe-snapshot.v1.schema.json",
+  "title": "ONSure Target Assurance Requirement Universe Snapshot v1",
+  "description": "11_CONTRACT_UPGRADE_BLUEPRINT.md Bundle D (RequirementUniverseV2/DenominatorEpoch). Canonical per 141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md as the Target Assurance identity, distinct from the Product Design Requirement Universe (requirement-universe-snapshot.v2.schema.json, 88+92). The pre-existing requirement-universe-snapshot.candidate.v2.schema.json is a non-authoritative predecessor of THIS contract pending migration (see target-assurance-requirement-universe-migration-mapping.v1.schema.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "universe_id", "target_id", "target_manifest_id", "requirement_epoch_id",
+    "source_classes", "requirements", "completeness_by_source_class", "discovery_methods",
+    "unknown_discovery", "conflicts", "population_digest", "authority", "created_at",
+    "self_validation_nonfinal", "final_claim_allowed", "snapshot_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_TARGET_ASSURANCE_REQUIREMENT_UNIVERSE_SNAPSHOT_V1"},
+    "universe_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "target_manifest_id": {"type": "string", "minLength": 1},
+    "requirement_epoch_id": {"type": "string", "minLength": 1},
+    "source_classes": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {
+        "enum": [
+          "BUSINESS", "CONTRACT", "POLICY", "CODE", "CONFIG", "ARCHITECTURE", "DATA", "API",
+          "SECURITY", "PRIVACY", "OPERATIONS", "RIGHTS", "FAILURE_RECOVERY", "RUNTIME_BEHAVIOR",
+          "EXTERNAL_STANDARD"
+        ]
+      },
+      "description": "11_CONTRACT_UPGRADE_BLUEPRINT.md SS6.2 vocabulary verbatim (15 values). Not the Product Design source_class/taxonomy vocabulary (88/92) -- see 141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md."
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["requirement_id", "source_class", "source_id", "source_digest", "statement_digest", "criticality", "disposition", "implementation_state"],
+        "properties": {
+          "requirement_id": {"type": "string", "minLength": 1},
+          "source_class": {
+            "enum": [
+              "BUSINESS", "CONTRACT", "POLICY", "CODE", "CONFIG", "ARCHITECTURE", "DATA", "API",
+              "SECURITY", "PRIVACY", "OPERATIONS", "RIGHTS", "FAILURE_RECOVERY", "RUNTIME_BEHAVIOR",
+              "EXTERNAL_STANDARD"
+            ]
+          },
+          "source_id": {"type": "string", "minLength": 1},
+          "source_digest": {"$ref": "#/$defs/sha256"},
+          "statement_digest": {"$ref": "#/$defs/sha256"},
+          "criticality": {"enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]},
+          "disposition": {
+            "enum": ["APPLICABLE", "NOT_APPLICABLE_JUSTIFIED", "EXCLUDED_WITH_AUTHORITY", "UNKNOWN", "UNOBSERVABLE", "SUPERSEDED"]
+          },
+          "disposition_receipt_sha256": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"},
+          "implementation_state": {
+            "enum": ["DESIGN_ONLY", "PARTIAL", "IMPLEMENTED", "CONFLICT", "DEPRECATED"],
+            "description": "11 SS6.3 AtomicRequirementV2: IMPLEMENTED requires at least one real code/contract/data/API implementation trace."
+          },
+          "implementation_trace_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"disposition": {"enum": ["NOT_APPLICABLE_JUSTIFIED", "EXCLUDED_WITH_AUTHORITY"]}}},
+            "then": {"required": ["disposition_receipt_sha256"], "properties": {"disposition_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}
+          },
+          {
+            "if": {"properties": {"implementation_state": {"const": "IMPLEMENTED"}}},
+            "then": {"required": ["implementation_trace_refs"], "properties": {"implementation_trace_refs": {"minItems": 1}}}
+          }
+        ]
+      }
+    },
+    "completeness_by_source_class": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_class", "completeness_state", "evidence_ref"],
+        "properties": {
+          "source_class": {
+            "enum": [
+              "BUSINESS", "CONTRACT", "POLICY", "CODE", "CONFIG", "ARCHITECTURE", "DATA", "API",
+              "SECURITY", "PRIVACY", "OPERATIONS", "RIGHTS", "FAILURE_RECOVERY", "RUNTIME_BEHAVIOR",
+              "EXTERNAL_STANDARD"
+            ]
+          },
+          "completeness_state": {"enum": ["COMPLETE", "PARTIAL", "UNKNOWN", "NOT_DISCOVERED"]},
+          "evidence_ref": {"type": ["string", "null"]}
+        }
+      },
+      "description": "11 SS6.2: each source class carries its own completeness state and evidence, not a single document denominator authority."
+    },
+    "discovery_methods": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {
+        "enum": [
+          "MANUAL_DECLARED", "STATIC_DISCOVERY", "RUNTIME_DISCOVERY", "ARCHITECTURE_INFERENCE",
+          "EXTERNAL_STANDARD_IMPORT", "ADVERSARIAL_DISCOVERY", "INDEPENDENT_DISCOVERY"
+        ]
+      }
+    },
+    "unknown_discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executed", "search_space_digest", "blind_spot_count", "unobservable_count"],
+      "properties": {
+        "executed": {"type": "boolean"},
+        "search_space_digest": {"$ref": "#/$defs/sha256"},
+        "blind_spot_count": {"type": "integer", "minimum": 0},
+        "unobservable_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["conflict_id", "requirement_ids", "state"],
+        "properties": {
+          "conflict_id": {"type": "string", "minLength": 1},
+          "requirement_ids": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "state": {"enum": ["OPEN", "HOLD", "RESOLVED_WITH_AUTHORITY"]},
+          "resolution_receipt_sha256": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"}
+        }
+      }
+    },
+    "population_digest": {"$ref": "#/$defs/sha256"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal_profile_sha256", "authority_epoch"],
+      "properties": {
+        "principal_profile_sha256": {"$ref": "#/$defs/sha256"},
+        "authority_epoch": {"type": "string", "minLength": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false},
+    "snapshot_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
