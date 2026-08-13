@@ -1,0 +1,61 @@
+{
+  "contract": "ONSURE_RUNTIME_EXECUTION_RECEIPT_V2_CANDIDATE",
+  "execution_receipt_id": "RER::neutral-target-001::0001",
+  "operation": {
+    "operation_id": "validation.run",
+    "operation_version": "1.0.0",
+    "request_sha256": "0ba80474d53910a0de5b172ae0ab8486ef2a2504150ad1296b564b4b915e066f"
+  },
+  "target": {
+    "target_id": "target-neutral-001",
+    "source_tree_sha256": "7169e22c4321bfc856a5a7826e04fd020e4aa6fb1c4cb0b729f8cd569a65800a",
+    "artifact_sha256": null
+  },
+  "identity": {
+    "contract_set_sha256": "03bec5bbfb31cad5b76982ad4ffc07d19afb67442e7d8debb9c2af6ddd583743",
+    "validator_set_sha256": "5c3c626163522d2a71fe576abd4efc5278ead4f2d33f14f9ff093ed99aec9e0a",
+    "fixture_set_sha256": "212aa9852073426786a21e234c7723cefe0fb39d8cf937e32dacde82ab16338c",
+    "oracle_set_sha256": "ddca906f93664bbc4f906fd30c52c8f663dd379e07052db6a2110a6b15c66201",
+    "environment_sha256": "162aa7f44dbe659f4e9e1a79e247a900d11027e90397070cc2743ca171958e34",
+    "toolchain_sha256": "bbf836490c50e184ce5567c518e5326014f1fc1e3ac407f9d13a209c8a064fa5"
+  },
+  "epochs": {
+    "scope": "EPOCH::SCOPE::0001",
+    "requirement": "EPOCH::REQUIREMENT::0001",
+    "denominator": "EPOCH::DENOMINATOR::0001",
+    "policy": "EPOCH::POLICY::0001",
+    "authority": "AUTH-EPOCH::0001"
+  },
+  "executor": {
+    "principal_id": "onsure-runner-001",
+    "principal_profile_sha256": "be789cd0ca49a6cee7d6e063dec90e5763fceb173cee23aa2136672ad0302a2b",
+    "authority_profile_sha256": "9cd4ff95f535c10eb27c361d4507df667c1ddf481d54346a49da5ff74dc4b662"
+  },
+  "attempt": {
+    "attempt_id": "ATTEMPT::0001",
+    "attempt_number": 1,
+    "attempt_history_sha256": "540a613a923d2160f4deb8b7ed8eb7ff85e60190912a27675b04a42e1d94d218"
+  },
+  "raw_evidence": {
+    "result_sha256": "2b03ddb79f54934771b40fb32fd5b54357feb41f98a00fbc1ba01413e2c939fd",
+    "stdout_sha256": "e02242c2f94e37df03b7e91d2e7e013c99069e5d3b960fa62975b1611f65aa4a",
+    "stderr_sha256": "548ea1bf413b86b60a9b330e3d74d013777603dd697996ef7b37611d8c08caad"
+  },
+  "decision": "PASS_NONFINAL",
+  "reason_codes": [
+    "ALL_ORACLES_PASSED"
+  ],
+  "side_effects": {
+    "effect_class": "SANDBOXED",
+    "effect_receipts": []
+  },
+  "parent_receipts": [],
+  "started_at": "2026-08-13T13:58:14.923799+00:00",
+  "completed_at": "2026-08-13T13:58:14.923799+00:00",
+  "signature": {
+    "key_id": "onsure-runtime-signing-key-001",
+    "algorithm": "Ed25519",
+    "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  },
+  "receipt_sha256": "07f6b3a0eaf82289e6fb7afe9fc91bb7987953694d5e172be64793965fef2a8e"
+}

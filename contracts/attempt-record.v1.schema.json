@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/attempt-record.v1.schema.json",
+  "title": "ONSure Attempt Record v1",
+  "description": "23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md SS4 Attempt History. Append-only: failed attempts are never deleted, and a WorkUnit's final decision must consume the whole attempt history, not just the successful one (SA-01 'Result Selection / Retry Cherry-Picking'). retry_policy_digest is precommitted before the attempt's result is known.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "attempt_id", "work_unit_id", "attempt_number", "retry_policy_digest",
+    "retry_reason", "execution_receipt_id", "outcome", "started_at", "completed_at",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ATTEMPT_RECORD_V1"},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "work_unit_id": {"type": "string", "minLength": 1},
+    "attempt_number": {"type": "integer", "minimum": 1},
+    "retry_policy_digest": {
+      "$ref": "#/$defs/sha256",
+      "description": "Digest of the retry policy as it was fixed BEFORE this attempt ran; must be identical across every attempt of the same work_unit_id (a policy that changes after seeing a result is a fixture/policy-integrity violation, not a valid retry)."
+    },
+    "retry_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "INITIAL_ATTEMPT", "TIMEOUT", "ENVIRONMENT_FAILURE", "TRANSIENT_DEPENDENCY_FAILURE",
+        "LEASE_EXPIRED_RECOVERY", "EXPLICIT_RETRY_REQUEST", null
+      ]
+    },
+    "execution_receipt_id": {"type": "string", "minLength": 1},
+    "outcome": {"enum": ["SUCCEEDED", "FAILED", "TIMED_OUT", "CANCELLED"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"attempt_number": {"const": 1}}},
+      "then": {"properties": {"retry_reason": {"const": "INITIAL_ATTEMPT"}}}
+    },
+    {
+      "if": {"not": {"properties": {"attempt_number": {"const": 1}}}},
+      "then": {
+        "properties": {"retry_reason": {"enum": ["TIMEOUT", "ENVIRONMENT_FAILURE", "TRANSIENT_DEPENDENCY_FAILURE", "LEASE_EXPIRED_RECOVERY", "EXPLICIT_RETRY_REQUEST"]}},
+        "required": ["retry_reason"]
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/collector-health-record.v1.schema.json",
+  "title": "ONSure Collector Health Record v1",
+  "description": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md: '필요한 Collector가 실패/부분수집이면 해당 Claim의 absence를 PROVEN으로 만들 수 없다.' Tracks whether the Collector that produced a given execution's observations was itself healthy and qualified, since an unqualified/stale/failed Collector's observations cannot be treated as authoritative. Separate object from ObservationRecord (observation-record.v1.schema.json): a CollectorHealthRecord's lifecycle is per-execution-session, an ObservationRecord's lifecycle is per-datapoint, and many ObservationRecords reference one CollectorHealthRecord.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "collector_health_id", "collector_id", "channel", "execution_receipt_id",
+    "health_state", "qualification_state", "coverage_state", "checked_at",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_COLLECTOR_HEALTH_RECORD_V1"},
+    "collector_health_id": {"type": "string", "minLength": 1},
+    "collector_id": {"type": "string", "minLength": 1},
+    "channel": {
+      "enum": [
+        "PROCESS_EXIT", "STDOUT_STDERR", "FILESYSTEM_DIFF", "NETWORK_ACTIVITY", "LOG",
+        "METRIC", "TRACE", "SCREEN_OR_UI_STATE", "DATABASE_STATE", "AI_MODEL_RESPONSE",
+        "AI_TOOL_CALL", "AUTHORITY_AND_PERMISSION_EVENT"
+      ],
+      "description": "Reuses target-adapter.v1.json observation_channels verbatim."
+    },
+    "execution_receipt_id": {"type": "string", "minLength": 1},
+    "health_state": {"enum": ["HEALTHY", "DEGRADED", "FAILED", "UNKNOWN"]},
+    "qualification_state": {"enum": ["QUALIFIED", "NOT_QUALIFIED", "QUALIFICATION_PENDING", "STALE"]},
+    "qualification_receipt_ref": {"type": ["string", "null"]},
+    "coverage_state": {"enum": ["FULL", "PARTIAL", "NONE"]},
+    "partial_coverage_reason": {"type": ["string", "null"]},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"qualification_state": {"const": "QUALIFIED"}}},
+      "then": {"required": ["qualification_receipt_ref"], "properties": {"qualification_receipt_ref": {"type": "string", "minLength": 1}}}
+    },
+    {
+      "if": {"properties": {"coverage_state": {"const": "PARTIAL"}}},
+      "then": {"required": ["partial_coverage_reason"], "properties": {"partial_coverage_reason": {"type": "string", "minLength": 1}}}
+    }
+  ]
+}

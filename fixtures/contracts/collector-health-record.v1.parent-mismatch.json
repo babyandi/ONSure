@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_COLLECTOR_HEALTH_RECORD_V1",
+  "collector_health_id": "CH::neutral-001::PROCESS_EXIT::0099-mismatch",
+  "collector_id": "process-exit-collector-v1",
+  "channel": "PROCESS_EXIT",
+  "execution_receipt_id": "RER::neutral-target-001::WRONG-RECEIPT",
+  "health_state": "HEALTHY",
+  "qualification_state": "QUALIFIED",
+  "qualification_receipt_ref": "208e56cb96c839c5e4cdf39c09d61d84d887c40b7eb69c0513ed1d4d5beae701",
+  "coverage_state": "FULL",
+  "partial_coverage_reason": null,
+  "checked_at": "2026-08-13T14:02:16.477050+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.11.0",
+  "version": "1.13.0",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -281,6 +281,69 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/denominator-epoch.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/runtime-execution-receipt.candidate.v2.schema.json",
+      "instances": [
+        "fixtures/contracts/runtime-execution-receipt.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/runtime-execution-receipt.candidate.v2.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/evidence-graph-snapshot.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/evidence-graph-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/evidence-graph-snapshot.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/collector-health-record.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/collector-health-record.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/collector-health-record.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/observation-record.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/observation-record.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/observation-record.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/work-unit.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/work-unit.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/work-unit.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/attempt-record.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/attempt-record.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/attempt-record.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/distributed-aggregation-receipt.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/distributed-aggregation-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/distributed-aggregation-receipt.v1.invalid.json"
       ]
     }
   ],

@@ -1,0 +1,30 @@
+{
+  "contract": "ONSURE_DISTRIBUTED_AGGREGATION_RECEIPT_V1",
+  "aggregate_id": "AGG::run-001::0001",
+  "exact_work_unit_ids": [
+    "WU::run-001::partition-0",
+    "WU::run-001::partition-1"
+  ],
+  "exact_result_digests": [
+    "b45049b28ffb87d42825c6929f70f4d3bf298ba01e6e2199c0eb7db5115d2bac",
+    "648a3dae48bae0e7539c3390fad4f1f2c517f606b219277e09711db0b561e10e"
+  ],
+  "denominator_digest": "e8a8dd1e58e53a036be752225798758711f11229e531ba767e9f205e3d44f002",
+  "missing_partitions": [],
+  "duplicate_attempts": [
+    {
+      "work_unit_id": "WU::run-001::partition-0",
+      "attempt_ids": [
+        "ATTEMPT::WU-partition-0::0001",
+        "ATTEMPT::WU-partition-0::0001-REPLAY"
+      ],
+      "resolution": "LATEST_LEASE_WINS"
+    }
+  ],
+  "canonical_sort_profile": "SORT_BY_WORK_UNIT_ID_ASC",
+  "aggregate_digest": "d90539ca80fd987847cf5513d42891a129634306ad90b676f4158c9585afca22",
+  "decision": "COMPLETE_PASS",
+  "created_at": "2026-08-13T14:02:39.662480+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

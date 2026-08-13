@@ -90,7 +90,32 @@
       "unresolved_blockers": [
         "DCQ-0003 (P1, OPEN): AI_AGENT_MODEL/INFERRED have no destination in the Target Assurance source vocabulary migration; does not block Wave 1's own deliverables."
       ],
-      "remaining_wave_1_scope": "None -- all 6 Wave 1 items now have real contracts and evidence. Wave 2 (Execution/Evidence: RuntimeExecutionReceipt, EvidenceReceiptEnvelope, EvidenceGraphNode/Edge, CollectorHealth/Observation qualification, WorkUnit/Attempt) not started."
+      "remaining_wave_1_scope": "None -- all 6 Wave 1 items have real contracts and evidence.",
+      "wave_2_execution_evidence": {
+        "state": "TESTED",
+        "items": [
+          {"item": "RuntimeExecutionReceipt", "state": "TESTED", "contract": "contracts/runtime-execution-receipt.candidate.v2.schema.json", "note": "Pre-existing file had zero fixtures/registration before this batch (137 SS4 violation); now registered in schema-instance-registry.v1.json with real valid+invalid fixtures and a cross-contract test."},
+          {"item": "EvidenceReceiptEnvelope", "state": "TESTED", "contract": "contracts/assurance-receipt-envelope.candidate.v2.schema.json", "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py, not duplicated into the main registry."},
+          {"item": "EvidenceGraphNode/Edge", "state": "TESTED", "contract": "contracts/evidence-graph-snapshot.v1.schema.json", "note": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS5: one snapshot contract carrying nodes[]+edges[] together (their own spec), not split into two files. Dangling-edge invariant is a cross-array check, enforced in tests/test_wave2_execution_evidence.py, not expressible in JSON Schema alone."},
+          {"item": "CollectorHealth/Observation qualification", "state": "TESTED", "contracts": ["contracts/collector-health-record.v1.schema.json", "contracts/observation-record.v1.schema.json"], "note": "Two files, per-execution-session lifecycle (CollectorHealthRecord) vs per-datapoint lifecycle (ObservationRecord), deliberately not merged."},
+          {"item": "WorkUnit/Attempt", "state": "TESTED", "contracts": ["contracts/work-unit.v1.schema.json", "contracts/attempt-record.v1.schema.json", "contracts/distributed-aggregation-receipt.v1.schema.json"], "note": "Three files (71 SS8/SS9 + 23 SS4): WorkUnit (lease/partition envelope), AttemptRecord (append-only retry history), DistributedAggregationReceipt (the only object allowed to declare a cross-WorkUnit aggregate decision)."}
+        ],
+        "negative_gates_verified": [
+          "dangling EvidenceGraph edge (test_dangling_evidence_graph_edge_is_detected)",
+          "stale/unqualified Collector producing an authoritative observation (test_stale_collector_cannot_back_an_authoritative_observation)",
+          "duplicate/replayed Attempt silently dropped or double-counted (test_replayed_attempt_is_recorded_not_silently_dropped_or_doubled)",
+          "Attempt failure misjudged as WorkUnit-wide success (test_work_unit_success_requires_at_least_one_succeeded_attempt)",
+          "execution/receipt/evidence parent mismatch (test_collector_execution_receipt_id_must_match_the_attempt_that_ran_it)"
+        ],
+        "evidence": [
+          "python3 scripts/validate-structured-contracts.py --require-full -> PASS (45 registered schemas, 47 positive + 24 negative instances)",
+          "python3 -m unittest tests.test_wave2_execution_evidence -> 11/11 PASS",
+          "full python suite (test_requirement_universe + test_target_assurance_wave1 + test_wave2_execution_evidence + test_repository_contracts) -> 31/31 PASS",
+          "mvn -q compile -> clean"
+        ],
+        "unresolved_blockers": [],
+        "design_change_queue_items_this_wave": []
+      }
     },
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},
     {"batch":"BATCH_3","name":"Assurance Core","state":"NOT_STARTED"},

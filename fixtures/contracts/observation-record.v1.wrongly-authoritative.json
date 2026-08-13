@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_OBSERVATION_RECORD_V1",
+  "observation_id": "OBS::0002",
+  "collector_health_id": "CH::neutral-001::LOG::0002",
+  "channel": "LOG",
+  "observed_at": "2026-08-13T14:02:16.477050+00:00",
+  "content_digest": "abe2a860e0b5aff7581762f81f246527dc3320bae82cd8059caaf2dbc5ac91ca",
+  "authoritative": true,
+  "non_authoritative_reason": null,
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

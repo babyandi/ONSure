@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_COLLECTOR_HEALTH_RECORD_V1",
+  "collector_health_id": "CH::neutral-001::LOG::0002",
+  "collector_id": "process-exit-collector-v1",
+  "channel": "LOG",
+  "execution_receipt_id": "RER::neutral-target-001::0001",
+  "health_state": "DEGRADED",
+  "qualification_state": "STALE",
+  "coverage_state": "PARTIAL",
+  "partial_coverage_reason": "Qualification benchmark rerun overdue by 40 days.",
+  "checked_at": "2026-08-13T14:02:16.477050+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

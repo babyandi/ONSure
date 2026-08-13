@@ -1,0 +1,45 @@
+{
+  "contract": "ONSURE_EVIDENCE_GRAPH_SNAPSHOT_V1",
+  "evidence_graph_id": "EG::neutral-target-001::0001",
+  "graph_generation": 1,
+  "graph_head_digest": "eb6847862a43a6815526e53c09081386c4df916e12e67700e8177d26c99b5bb5",
+  "node_population_digest": "c5db3e2a00c587f7f7a79b96b15c56353f4a98e7d628f7f65ecdcc17f6bc32d1",
+  "edge_population_digest": "5503c65686fa07fa4f8391770a4b9c545ff7d25a3cfd625d1b286e973285b10c",
+  "canonical_order_profile": "SORT_BY_NODE_ID_ASC",
+  "tenant_id": "tenant-001",
+  "nodes": [
+    {
+      "node_id": "NODE::A",
+      "node_type": "SECURITY_FINDING",
+      "content_digest": "4a5e1e8ee1be849b2e26fb1a28fa54003fb38ccea702acba4b60919e42db49bf",
+      "origin_class": "SELF_ATTESTED",
+      "tenant_id": "tenant-001",
+      "validity_generation": 1,
+      "superseded_by_node_id": null
+    },
+    {
+      "node_id": "NODE::B",
+      "node_type": "PATCH_RECEIPT",
+      "content_digest": "7ce2181f5e21b91a613cd758fa0306d6996db808ae3322adf9746c901d013146",
+      "origin_class": "DERIVED",
+      "tenant_id": "tenant-001",
+      "validity_generation": 1,
+      "superseded_by_node_id": null
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "EDGE::A-B",
+      "edge_type": "INVALIDATES",
+      "source_node_id": "NODE::B",
+      "target_node_id": "NODE::A",
+      "source_digest": "7ce2181f5e21b91a613cd758fa0306d6996db808ae3322adf9746c901d013146",
+      "target_digest": "4a5e1e8ee1be849b2e26fb1a28fa54003fb38ccea702acba4b60919e42db49bf",
+      "rule_id": "PATCH_INVALIDATES_FINDING",
+      "evidence_digest": "3168d90c038ab14c253f31eb8d352204806071ad2a81b936f890b55bca793d48"
+    }
+  ],
+  "created_at": "2026-08-13T14:01:59.937729+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
