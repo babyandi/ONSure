@@ -98,6 +98,36 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 ((java.util.List<?>) result.get("reasons")).get(0));
     }
 
+    @Test
+    void deploymentVerificationSucceedsOnceRegisteredAndInstalled() throws Exception {
+        bridge.dispatch("deployment.register-target", request(Map.of(
+                "project_id", "project-1",
+                "target_id", "target-1",
+                "deployment_target_id", "deploy-1",
+                "environment_class", "PROD",
+                "deployment_root", temp.resolve("deployment-1").toString())));
+
+        Files.createDirectories(temp.resolve("package-src"));
+        Files.writeString(temp.resolve("package-src/subject.txt"), "subject");
+        DeploymentPackageBuilder.build(
+                temp.resolve("package-src"), temp.resolve("package-build"),
+                DeploymentProfile.ON_PREMISES, null, null);
+        new DeploymentInstallationService(temp.resolve("deployment-1"))
+                .install(temp.resolve("package-build"), "v1", null);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "deployment.verify-installed", request(Map.of(
+                        "project_id", "project-1",
+                        "target_id", "target-1",
+                        "deployment_target_id", "deploy-1",
+                        "verified_artifact_path", "target-src/subject.txt",
+                        "deployed_artifact_path", "deployment-1/versions/v1/subject.txt"))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("NON_FINAL", result.get("decision"));
+        assertEquals(true, result.get("identity_equal"));
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

@@ -13,7 +13,7 @@ Status: `CLAUDE_IMPLEMENTATION_NOT_STARTED / DEVELOPMENT_ENTRYPOINT_READY`
 - `contracts/policy-pack-version.candidate.v1.schema.json`
 - `contracts/open-decision-policy-binding.candidate.v1.json`
 
-Active Workflow Operation count의 단일 권위는 `contracts/workflow-operation-registry.v1.json`의 49개다.
+Active Workflow Operation count의 단일 권위는 `contracts/workflow-operation-registry.v1.json`이다 (Batch 2/3 개발 중 real operation 추가로 개수는 계속 증가할 수 있으므로 이 문서에 숫자를 하드코딩하지 않는다; 현재값은 registry 파일과 `status/verification-status.v1.json`의 `workflow_surface_parity.dispatcher_operation_count`를 참조).
 
 ## 1. 기준선
 - Product Design Scope: COMPLETE_CANDIDATE

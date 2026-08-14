@@ -61,17 +61,50 @@ public final class SemanticAssuranceV2DispatcherBridge {
         if ("semantic.reperformance.run".equals(operation)) {
             requirePathWithinTarget(request, "subject_path", authorizedTargetRoot);
         }
-        if ("deployment.verify-installed".equals(operation)) {
-            return blocked(operation, "TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE");
-        }
 
         ObjectNode routed = ((ObjectNode) request).deepCopy();
         routed.put("_authorized_target_root", authorizedTargetRoot.toString());
         routed.put("_authorized_target_id", registered.target().targetId());
         routed.put("_authorized_project_id", registered.projectId());
 
+        String pathBinding = "SERVER_RESOLVED_REGISTERED_TARGET_ROOT";
+        if ("deployment.verify-installed".equals(operation)) {
+            Path activeInstallationPath = resolveActiveDeploymentPath(operation, request, registered);
+            if (activeInstallationPath == null) {
+                return blocked(operation, "TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE");
+            }
+            routed.put("_authorized_deployment_root", activeInstallationPath.toString());
+            pathBinding = "SERVER_RESOLVED_DEPLOYMENT_IDENTITY";
+        }
+
         Map<String, Object> value = semantic.dispatch(operation, routed);
-        return envelope(operation, value, "TENANT_RBAC_SEMANTIC_OPERATION_TRANSACTION", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT");
+        return envelope(operation, value, "TENANT_RBAC_SEMANTIC_OPERATION_TRANSACTION", pathBinding);
+    }
+
+    /**
+     * Resolves the currently active installed version's directory for a registered deployment
+     * binding (deployment.register-target), the real target-bound deployment identity that
+     * verifyInstalled() digest-compares deployed_artifact_path against. Returns null (never
+     * throws) whenever the identity genuinely is not available yet -- unregistered deployment
+     * binding or zero installed versions -- so the caller fails closed with BLOCKED instead of a
+     * 500, matching every other "identity not yet available" path in this bridge.
+     */
+    private Path resolveActiveDeploymentPath(
+            String operation, JsonNode request, ProductCatalog.RegisteredTarget registered) throws Exception {
+        String deploymentTargetId = request.path("deployment_target_id").asText("");
+        if (deploymentTargetId.isBlank()) return null;
+        ProductCatalog.RegisteredDeployment deployment;
+        try {
+            deployment = new ProductCatalog(workspaceRoot.resolve(".onsure/product-catalog"))
+                    .requireDeployment(registered.projectId(), registered.target().targetId(), deploymentTargetId);
+        } catch (IllegalArgumentException notFound) {
+            return null;
+        }
+        try {
+            return new DeploymentInstallationService(deployment.deploymentRoot()).activeInstallationPath();
+        } catch (IllegalStateException noVersionInstalled) {
+            return null;
+        }
     }
 
     private ProductCatalog.RegisteredTarget registeredTarget(String projectId, String targetId) throws Exception {

@@ -41,6 +41,26 @@ public final class ProductCatalog {
         }
     }
 
+    /**
+     * deployment-target.v1.schema.json SS3.2: created once per environment/cluster/namespace a
+     * RegisteredTarget is deployed to, so a single target can carry several of these (e.g. STAGE
+     * and PROD). {@code deploymentRoot} is the server-resolved directory
+     * DeploymentInstallationService is rooted at for this binding -- callers never supply it again
+     * after registration, matching how RegisteredTarget.sourceRoot is resolved server-side.
+     */
+    public record RegisteredDeployment(
+            String projectId, String targetId, String deploymentTargetId, String environmentClass,
+            Path deploymentRoot, Instant registeredAt) {
+        public RegisteredDeployment {
+            requireId(projectId, "projectId");
+            requireId(targetId, "targetId");
+            requireId(deploymentTargetId, "deploymentTargetId");
+            requireText(environmentClass, "environmentClass");
+            Objects.requireNonNull(deploymentRoot, "deploymentRoot");
+            Objects.requireNonNull(registeredAt, "registeredAt");
+        }
+    }
+
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules().enable(SerializationFeature.INDENT_OUTPUT);
     private final Path root;
@@ -101,6 +121,34 @@ public final class ProductCatalog {
     public synchronized List<RegisteredTarget> targets(String projectId) throws Exception {
         return read("targets.json", new TypeReference<List<RegisteredTarget>>() {}).stream()
                 .filter(value -> value.projectId().equals(projectId)).toList();
+    }
+
+    public synchronized void registerDeployment(RegisteredDeployment deployment) throws Exception {
+        withExclusiveMutation("REGISTER_DEPLOYMENT", () -> {
+            List<RegisteredTarget> targets = read("targets.json", new TypeReference<>() {});
+            if (targets.stream().noneMatch(value -> value.projectId().equals(deployment.projectId())
+                    && value.target().targetId().equals(deployment.targetId()))) {
+                throw new IllegalArgumentException("UNKNOWN_TARGET");
+            }
+            List<RegisteredDeployment> values = read("deployments.json", new TypeReference<>() {});
+            ensureUnique(values.stream().map(RegisteredDeployment::deploymentTargetId).toList(),
+                    deployment.deploymentTargetId(), "DEPLOYMENT_TARGET_EXISTS");
+            values.add(deployment);
+            write("deployments.json", values);
+        });
+    }
+
+    public synchronized RegisteredDeployment requireDeployment(
+            String projectId, String targetId, String deploymentTargetId) throws Exception {
+        return read("deployments.json", new TypeReference<List<RegisteredDeployment>>() {}).stream()
+                .filter(value -> value.projectId().equals(projectId) && value.targetId().equals(targetId)
+                        && value.deploymentTargetId().equals(deploymentTargetId))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("UNKNOWN_DEPLOYMENT_TARGET"));
+    }
+
+    public synchronized List<RegisteredDeployment> deployments(String projectId, String targetId) throws Exception {
+        return read("deployments.json", new TypeReference<List<RegisteredDeployment>>() {}).stream()
+                .filter(value -> value.projectId().equals(projectId) && value.targetId().equals(targetId)).toList();
     }
 
     public synchronized long revision() throws Exception {

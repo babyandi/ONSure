@@ -23,7 +23,7 @@ public final class TenantRbacService {
             "case.verify-refund", "case.legal-hold", "case.delete");
     private static final Set<String> READ_OPERATIONS = Set.of(
             "project.read-target", "project.list-targets", "job.read", "license.read", "case.read",
-            "artifact.read");
+            "artifact.read", "deployment.read-target");
     private static final Set<String> SEMANTIC_OPERATOR_OR_AUDITOR_OPERATIONS = Set.of(
             "semantic.applicability.evaluate",
             "semantic.denominator.discover",
@@ -209,6 +209,7 @@ public final class TenantRbacService {
         } else if (project != null && target != null) {
             requires.add("target:" + project + ":" + target);
         }
+        addEntity(operation, request, "deployment_target_id", "deployment", "deployment.register-target", requires, claims);
         addEntity(operation, request, "job_id", "job", "job.create", requires, claims);
         addEntity(operation, request, "license_id", "license", "license.issue", requires, claims);
         addEntity(operation, request, "case_id", "case", "case.open", requires, claims);

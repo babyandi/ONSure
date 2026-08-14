@@ -548,7 +548,32 @@
     {
       "batch": "BATCH_3",
       "name": "Assurance Core",
-      "state": "NOT_STARTED"
+      "state": "IN_PROGRESS",
+      "scope_note": "137 SS27 Batch 3 items (Evidence Graph, invalidation/currentness, deployment identity, product composition, certificate/revocation/offline verification) name the same domain objects as 82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md Waves 2/5/6, which Batch 1 already built as JSON Schema contracts. Doc 82 is explicitly DESIGN_ONLY/CANDIDATE/NON_FINAL -- a schema-enactment-order plan, not a runtime behavior plan. No P0/ambiguity: Batch 1 built the CONTRACT layer (shape + cross-contract JSON-Schema invariants); Batch 3 builds the real RUNTIME BEHAVIOR that produces/consumes/evaluates instances of those contracts, the same relationship Batch 2 had to Batch 1 Wave 3/4 (Authority/Grant, Operation/Event/Receipt contracts).",
+      "slice_1_deployment_identity": {
+        "state": "EVIDENCE_READY",
+        "note": "deployment.verify-installed previously always returned BLOCKED (TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE) unconditionally -- a hardcoded stub, not a real fail-closed decision. Added deployment.register-target / deployment.read-target (ProductCatalog.RegisteredDeployment, mirroring RegisteredTarget) so a (project, target) can bind one or more deployment_target_id + environment_class + server-resolved deployment_root (deployment-target.v1.schema.json shape). SemanticAssuranceV2DispatcherBridge resolves the real currently-active installed version via the pre-existing DeploymentInstallationService.activeInstallationPath() for a registered binding and only then lets verifyInstalled() do its real sha256 identity comparison (VERIFIED != DEPLOYED != RUNNING != CURRENT, doc 29). No deployment registered, or none installed yet, still fails closed to BLOCKED -- never fabricated.",
+        "contract_schema": "contracts/deployment-target.v1.schema.json (Wave 5, pre-existing)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/ProductCatalog.java (RegisteredDeployment + registerDeployment/requireDeployment/deployments)",
+          "src/main/java/kr/co/oruda/onsure/platform/LocalWorkflowDispatcher.java (deployment.register-target, deployment.read-target)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (resolveActiveDeploymentPath)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (deployment resource ownership + read classification)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/DeploymentIdentityRegistrationTest.java (6 tests: register/read, duplicate id, unknown target, invalid environment_class, cross-target lookup mismatch)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+1 test: real register+install+verify end-to-end NON_FINAL/identity_equal)"
+        ],
+        "active_operation_count": "49 -> 51, workflow-operation-registry.v1.json bumped 1.2.0 -> 1.3.0",
+        "consistency_files_updated_for_new_operation_count": [
+          "status/verification-status.v1.json (workflow_surface_parity.dispatcher_operation_count)",
+          "status/omission-detection-status.v1.json (coverage.workflow_operations)",
+          "status/remaining-work-register.v1.json (P0-WORKFLOW-SURFACE-PARITY state)",
+          "README.md (2 references)",
+          "tests/test_repository_contracts.py (hardcoded snapshot assertion)",
+          "docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md (removed the hardcoded 49 so this does not recur every time a real operation is added)"
+        ]
+      }
     },
     {
       "batch": "BATCH_4",
