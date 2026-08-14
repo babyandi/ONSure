@@ -184,7 +184,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
         boolean allowed = switch (operation) {
             case "semantic.applicability.evaluate", "semantic.denominator.discover",
                     "semantic.denominator.challenge", "semantic.denominator.lock",
-                    "semantic.reperformance.run" -> auditor || operator || admin;
+                    "semantic.reperformance.run", "assurance.evidence-graph.validate" -> auditor || operator || admin;
             case "semantic.authority.revalidate", "semantic.independence.assess",
                     "semantic.freshness.invalidate", "semantic.freshness.reconstruct",
                     "semantic.validator.requalify", "assurance.final-candidate.reconstruct",

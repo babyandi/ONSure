@@ -38,7 +38,8 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.human-accept",
             "assurance.final-candidate.reconstruct",
             "git.push",
-            "deployment.verify-installed");
+            "deployment.verify-installed",
+            "assurance.evidence-graph.validate");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -82,6 +83,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.final-candidate.reconstruct" -> finalCandidate(request);
             case "git.push" -> externalEffectNotImplemented(operation);
             case "deployment.verify-installed" -> verifyInstalled(request);
+            case "assurance.evidence-graph.validate" -> evidenceGraphValidate(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -277,6 +279,151 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("identity_equal", same);
         out.put("decision", same ? "NON_FINAL" : "FAIL");
         return immutable(out);
+    }
+
+    /**
+     * evidence-graph-snapshot.v1.schema.json real structural validation: referential integrity
+     * (every edge references a node that exists), edge digest binding (an edge's declared
+     * source/target digest must match the current content_digest of the node it references, so an
+     * edge can't outlive the node version it was computed against), DERIVED/AGGREGATED nodes must
+     * carry an actual derivation edge, superseded_by_node_id must be backed by a real SUPERSEDES
+     * edge from the successor, and the SUPERSEDES/DERIVES_FROM/AGGREGATES subgraph must be acyclic
+     * (a supersession/derivation chain with a cycle has no well-defined "current" node). All
+     * digests in the result are computed here, never trusted from the caller.
+     */
+    private Map<String, Object> evidenceGraphValidate(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String evidenceGraphId = requiredText(request, "evidence_graph_id");
+        JsonNode nodesNode = request.path("nodes");
+        JsonNode edgesNode = request.path("edges");
+        if (!nodesNode.isArray() || nodesNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("EVIDENCE_GRAPH_NODES_REQUIRED"));
+        }
+        if (!edgesNode.isArray()) {
+            return failClosed("INPUT_REQUIRED", List.of("EVIDENCE_GRAPH_EDGES_REQUIRED"));
+        }
+
+        List<String> violations = new ArrayList<>();
+        java.util.LinkedHashSet<String> nodeIds = new java.util.LinkedHashSet<>();
+        Map<String, String> nodeDigestById = new LinkedHashMap<>();
+        Map<String, String> nodeOriginById = new LinkedHashMap<>();
+        Map<String, String> nodeSupersededBy = new LinkedHashMap<>();
+        List<Map<String, Object>> nodeDigestRows = new ArrayList<>();
+
+        for (JsonNode node : nodesNode) {
+            String nodeId = requiredText(node, "node_id");
+            if (!nodeIds.add(nodeId)) { violations.add("DUPLICATE_NODE_ID:" + nodeId); continue; }
+            String contentDigest = requiredDigest(node, "content_digest");
+            String origin = node.path("origin_class").asText("");
+            if (!Set.of("PRIMARY", "DERIVED", "AGGREGATED").contains(origin)) {
+                violations.add("NODE_ORIGIN_CLASS_INVALID:" + nodeId);
+            }
+            if (!identity.tenantId().equals(node.path("tenant_id").asText(""))) {
+                violations.add("NODE_TENANT_MISMATCH:" + nodeId);
+            }
+            String supersededBy = node.path("superseded_by_node_id").asText(null);
+            if (supersededBy != null && !supersededBy.isBlank()) nodeSupersededBy.put(nodeId, supersededBy);
+            nodeDigestById.put(nodeId, contentDigest);
+            nodeOriginById.put(nodeId, origin);
+            nodeDigestRows.add(Map.of("node_id", nodeId, "content_digest", contentDigest));
+        }
+        for (Map.Entry<String, String> entry : nodeSupersededBy.entrySet()) {
+            if (!nodeIds.contains(entry.getValue())) {
+                violations.add("SUPERSEDED_BY_UNKNOWN_NODE:" + entry.getKey() + "->" + entry.getValue());
+            }
+        }
+
+        java.util.LinkedHashSet<String> edgeIds = new java.util.LinkedHashSet<>();
+        List<Map<String, Object>> edgeDigestRows = new ArrayList<>();
+        List<String[]> dagEdges = new ArrayList<>();
+        Map<String, java.util.Set<String>> derivationTargetsBySource = new LinkedHashMap<>();
+        Map<String, java.util.Set<String>> supersedesTargetsBySource = new LinkedHashMap<>();
+
+        for (JsonNode edge : edgesNode) {
+            String edgeId = requiredText(edge, "edge_id");
+            if (!edgeIds.add(edgeId)) { violations.add("DUPLICATE_EDGE_ID:" + edgeId); continue; }
+            String edgeType = edge.path("edge_type").asText("");
+            if (!Set.of("SUPERSEDES", "INVALIDATES", "REVOKES", "DERIVES_FROM", "AGGREGATES").contains(edgeType)) {
+                violations.add("EDGE_TYPE_INVALID:" + edgeId);
+                continue;
+            }
+            String source = requiredText(edge, "source_node_id");
+            String target = requiredText(edge, "target_node_id");
+            if (!nodeIds.contains(source)) { violations.add("EDGE_SOURCE_UNKNOWN:" + edgeId + ":" + source); continue; }
+            if (!nodeIds.contains(target)) { violations.add("EDGE_TARGET_UNKNOWN:" + edgeId + ":" + target); continue; }
+            String sourceDigest = requiredDigest(edge, "source_digest");
+            String targetDigest = requiredDigest(edge, "target_digest");
+            if (!sourceDigest.equals(nodeDigestById.get(source))) violations.add("EDGE_SOURCE_DIGEST_MISMATCH:" + edgeId);
+            if (!targetDigest.equals(nodeDigestById.get(target))) violations.add("EDGE_TARGET_DIGEST_MISMATCH:" + edgeId);
+
+            if (Set.of("SUPERSEDES", "DERIVES_FROM", "AGGREGATES").contains(edgeType)) {
+                dagEdges.add(new String[] {source, target});
+            }
+            if ("DERIVES_FROM".equals(edgeType) || "AGGREGATES".equals(edgeType)) {
+                derivationTargetsBySource.computeIfAbsent(source, key -> new java.util.LinkedHashSet<>()).add(target);
+            }
+            if ("SUPERSEDES".equals(edgeType)) {
+                supersedesTargetsBySource.computeIfAbsent(source, key -> new java.util.LinkedHashSet<>()).add(target);
+            }
+            edgeDigestRows.add(Map.of("edge_id", edgeId, "source_node_id", source, "target_node_id", target, "edge_type", edgeType));
+        }
+
+        for (Map.Entry<String, String> entry : nodeSupersededBy.entrySet()) {
+            java.util.Set<String> supersededByThatNode = supersedesTargetsBySource.get(entry.getValue());
+            if (supersededByThatNode == null || !supersededByThatNode.contains(entry.getKey())) {
+                violations.add("SUPERSEDED_BY_WITHOUT_MATCHING_SUPERSEDES_EDGE:" + entry.getKey());
+            }
+        }
+        for (String nodeId : nodeIds) {
+            String origin = nodeOriginById.get(nodeId);
+            java.util.Set<String> derivesFrom = derivationTargetsBySource.get(nodeId);
+            if (("DERIVED".equals(origin) || "AGGREGATED".equals(origin)) && (derivesFrom == null || derivesFrom.isEmpty())) {
+                violations.add("DERIVED_NODE_WITHOUT_DERIVATION_EDGE:" + nodeId);
+            }
+        }
+        if (hasCycle(nodeIds, dagEdges)) {
+            violations.add("EVIDENCE_GRAPH_CYCLE_DETECTED");
+        }
+
+        nodeDigestRows.sort(java.util.Comparator.comparing(row -> (String) row.get("node_id")));
+        edgeDigestRows.sort(java.util.Comparator.comparing(row -> (String) row.get("edge_id")));
+        String nodePopulationDigest = digest(nodeDigestRows);
+        String edgePopulationDigest = digest(edgeDigestRows);
+
+        Map<String, Object> out = base("EVIDENCE_GRAPH_VALIDATION", targetId);
+        out.put("evidence_graph_id", evidenceGraphId);
+        out.put("node_count", nodeIds.size());
+        out.put("edge_count", edgeIds.size());
+        out.put("node_population_digest", nodePopulationDigest);
+        out.put("edge_population_digest", edgePopulationDigest);
+        out.put("graph_head_digest", digest(nodePopulationDigest + edgePopulationDigest));
+        out.put("violations", List.copyOf(violations));
+        out.put("decision", violations.isEmpty() ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private boolean hasCycle(java.util.Set<String> nodeIds, List<String[]> edges) {
+        Map<String, List<String>> adjacency = new LinkedHashMap<>();
+        for (String[] edge : edges) adjacency.computeIfAbsent(edge[0], key -> new ArrayList<>()).add(edge[1]);
+        java.util.Set<String> visited = new java.util.HashSet<>();
+        java.util.Set<String> onStack = new java.util.HashSet<>();
+        for (String nodeId : nodeIds) {
+            if (!visited.contains(nodeId) && hasCycleFrom(nodeId, adjacency, visited, onStack)) return true;
+        }
+        return false;
+    }
+
+    private boolean hasCycleFrom(
+            String nodeId, Map<String, List<String>> adjacency,
+            java.util.Set<String> visited, java.util.Set<String> onStack) {
+        visited.add(nodeId);
+        onStack.add(nodeId);
+        for (String next : adjacency.getOrDefault(nodeId, List.of())) {
+            if (onStack.contains(next)) return true;
+            if (!visited.contains(next) && hasCycleFrom(next, adjacency, visited, onStack)) return true;
+        }
+        onStack.remove(nodeId);
+        return false;
     }
 
     private Map<String, Object> externalEffectNotImplemented(String operation) {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -126,6 +127,110 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         Map<?, ?> result = (Map<?, ?>) envelope.get("result");
         assertEquals("NON_FINAL", result.get("decision"));
         assertEquals(true, result.get("identity_equal"));
+    }
+
+    @Test
+    void evidenceGraphValidatesAnAcyclicPopulationWithARealDerivationEdge() throws Exception {
+        Map<String, Object> node1 = evidenceNode("node-1", "PRIMARY", "66570ff05a2074043084d4aca94293ef067530dde94ff4e92b8d8459253eb779", null);
+        Map<String, Object> node2 = evidenceNode("node-2", "DERIVED", "93ef37c6157138222b21a42be52183d08d75cd4fed49c1cbba571b06a69e39a4", null);
+        Map<String, Object> edge = Map.of(
+                "edge_id", "edge-1", "edge_type", "DERIVES_FROM",
+                "source_node_id", "node-2", "target_node_id", "node-1",
+                "source_digest", "93ef37c6157138222b21a42be52183d08d75cd4fed49c1cbba571b06a69e39a4",
+                "target_digest", "66570ff05a2074043084d4aca94293ef067530dde94ff4e92b8d8459253eb779",
+                "rule_id", "RULE-DERIVE-1", "evidence_digest", "092cd5e29db964781ac7520814627b0e5615fb9b04d4d2e8ce0eed8bdc97d318");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.evidence-graph.validate", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "evidence_graph_id", "graph-1",
+                        "nodes", List.of(node1, node2), "edges", List.of(edge)))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("NON_FINAL", result.get("decision"));
+        assertEquals(List.of(), result.get("violations"));
+        assertEquals(2, ((Number) result.get("node_count")).intValue());
+        assertEquals(1, ((Number) result.get("edge_count")).intValue());
+    }
+
+    @Test
+    void evidenceGraphRejectsACycleInTheSupersessionSubgraph() throws Exception {
+        Map<String, Object> nodeX = evidenceNode("node-x", "PRIMARY", "acc23c0064112f4a6c6a3e43c84c61c99fcc5212a50500099c18949cb5d7e000", null);
+        Map<String, Object> nodeY = evidenceNode("node-y", "PRIMARY", "8a14663daa887134b9091eb444fa6055d5b0ba19dbef43674476984bdd59776d", null);
+        Map<String, Object> edgeXtoY = supersedesEdge("edge-x-y", "node-x", "node-y",
+                "acc23c0064112f4a6c6a3e43c84c61c99fcc5212a50500099c18949cb5d7e000",
+                "8a14663daa887134b9091eb444fa6055d5b0ba19dbef43674476984bdd59776d");
+        Map<String, Object> edgeYtoX = supersedesEdge("edge-y-x", "node-y", "node-x",
+                "8a14663daa887134b9091eb444fa6055d5b0ba19dbef43674476984bdd59776d",
+                "acc23c0064112f4a6c6a3e43c84c61c99fcc5212a50500099c18949cb5d7e000");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.evidence-graph.validate", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "evidence_graph_id", "graph-2",
+                        "nodes", List.of(nodeX, nodeY), "edges", List.of(edgeXtoY, edgeYtoX)))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("EVIDENCE_GRAPH_CYCLE_DETECTED"), result.get("violations"));
+    }
+
+    @Test
+    void evidenceGraphRejectsAnEdgeWhoseDigestNoLongerMatchesItsNode() throws Exception {
+        Map<String, Object> node1 = evidenceNode("node-1", "PRIMARY", "66570ff05a2074043084d4aca94293ef067530dde94ff4e92b8d8459253eb779", null);
+        Map<String, Object> node2 = evidenceNode("node-2", "DERIVED", "93ef37c6157138222b21a42be52183d08d75cd4fed49c1cbba571b06a69e39a4", null);
+        Map<String, Object> edge = Map.of(
+                "edge_id", "edge-1", "edge_type", "DERIVES_FROM",
+                "source_node_id", "node-2", "target_node_id", "node-1",
+                "source_digest", "93ef37c6157138222b21a42be52183d08d75cd4fed49c1cbba571b06a69e39a4",
+                "target_digest", "c74e255491c53f792c2efe8b79b00da8e06f2deef1d0dc59c5ccd76ae9e0a408",
+                "rule_id", "RULE-DERIVE-1", "evidence_digest", "092cd5e29db964781ac7520814627b0e5615fb9b04d4d2e8ce0eed8bdc97d318");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.evidence-graph.validate", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "evidence_graph_id", "graph-3",
+                        "nodes", List.of(node1, node2), "edges", List.of(edge)))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("EDGE_TARGET_DIGEST_MISMATCH:edge-1"), result.get("violations"));
+    }
+
+    @Test
+    void evidenceGraphRejectsADerivedNodeWithNoDerivationEdge() throws Exception {
+        Map<String, Object> node1 = evidenceNode("node-1", "PRIMARY", "66570ff05a2074043084d4aca94293ef067530dde94ff4e92b8d8459253eb779", null);
+        Map<String, Object> node2 = evidenceNode("node-2", "DERIVED", "93ef37c6157138222b21a42be52183d08d75cd4fed49c1cbba571b06a69e39a4", null);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.evidence-graph.validate", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "evidence_graph_id", "graph-4",
+                        "nodes", List.of(node1, node2), "edges", List.of()))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("DERIVED_NODE_WITHOUT_DERIVATION_EDGE:node-2"), result.get("violations"));
+    }
+
+    private Map<String, Object> evidenceNode(String nodeId, String origin, String contentDigest, String supersededBy) {
+        Map<String, Object> node = new java.util.LinkedHashMap<>();
+        node.put("node_id", nodeId);
+        node.put("node_type", "OBSERVATION");
+        node.put("content_digest", contentDigest);
+        node.put("origin_class", origin);
+        node.put("tenant_id", "tenant-a");
+        if (supersededBy != null) node.put("superseded_by_node_id", supersededBy);
+        return node;
+    }
+
+    private Map<String, Object> supersedesEdge(
+            String edgeId, String source, String target, String sourceDigest, String targetDigest) {
+        return Map.of(
+                "edge_id", edgeId, "edge_type", "SUPERSEDES",
+                "source_node_id", source, "target_node_id", target,
+                "source_digest", sourceDigest, "target_digest", targetDigest,
+                "rule_id", "RULE-SUPERSEDE-1", "evidence_digest", "092cd5e29db964781ac7520814627b0e5615fb9b04d4d2e8ce0eed8bdc97d318");
     }
 
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {

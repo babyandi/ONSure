@@ -573,6 +573,20 @@
           "tests/test_repository_contracts.py (hardcoded snapshot assertion)",
           "docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md (removed the hardcoded 49 so this does not recur every time a real operation is added)"
         ]
+      },
+      "slice_2_evidence_graph": {
+        "state": "EVIDENCE_READY",
+        "note": "New v2 candidate operation assurance.evidence-graph.validate performs real structural validation of an evidence-graph-snapshot.v1.schema.json population (nodes+edges supplied by the caller, target/project-scoped through the same Bridge authorization every other v2 semantic op uses): referential integrity (every edge references a node that exists), edge digest binding (an edge's declared source/target digest must match the current content_digest of the node it references), DERIVED/AGGREGATED nodes must carry a real outgoing DERIVES_FROM/AGGREGATES edge, superseded_by_node_id must be backed by a real SUPERSEDES edge from its successor, and the SUPERSEDES/DERIVES_FROM/AGGREGATES subgraph must be acyclic (DFS cycle detection). node_population_digest / edge_population_digest / graph_head_digest are computed here, never trusted from the caller. decision is NON_FINAL only when violations is empty, else HOLD with the specific violation codes -- self-validation-nonfinal throughout, matching every other v2 op in this service.",
+        "contract_schema": "contracts/evidence-graph-snapshot.v1.schema.json (Wave 2, pre-existing, already registered with fixtures)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (evidenceGraphValidate, hasCycle/hasCycleFrom)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate: operator/auditor/admin, same tier as denominator/reperformance)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (SEMANTIC_OPERATOR_OR_AUDITOR_OPERATIONS)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: acyclic population with a real derivation edge -> NON_FINAL, SUPERSEDES cycle -> HOLD, stale edge digest -> HOLD, DERIVED node missing its derivation edge -> HOLD)"
+        ],
+        "bug_found_and_fixed_during_own_test_writing": "DERIVED_NODE_WITHOUT_DERIVATION_EDGE initially checked whether a DERIVED/AGGREGATED node_id appeared as an edge TARGET, but DERIVES_FROM/AGGREGATES edges point FROM the derived node TO its origin (node-2 DERIVES_FROM node-1 means node-2 is the edge source), so every legitimately-derived node was flagged as a false violation. Caught immediately by the first positive-path test (expected NON_FINAL, got HOLD) before this was ever claimed passing; fixed to check outgoing derivation edges (nodeId as source) instead of incoming."
       }
     },
     {
