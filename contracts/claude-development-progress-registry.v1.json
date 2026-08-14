@@ -227,6 +227,30 @@
         ],
         "unresolved_blockers": [],
         "design_change_queue_items_this_wave": []
+      },
+      "wave_6_composition_certificate": {
+        "state": "TESTED",
+        "items": [
+          {"item": "AssuranceSubjectGraph", "state": "TESTED", "contract": "contracts/assurance-subject-graph.v1.schema.json", "note": "New (71 SS3). Tracks SUBJECT composition (what depends on what) -- distinct from Wave 2's evidence-graph-snapshot.v1 (EVIDENCE lineage)."},
+          {"item": "CompositionSnapshot", "state": "TESTED", "contract": "contracts/assurance-composition-snapshot.v1.schema.json", "note": "New (71 SS4). The Critical-HARD-child-forbids-parent-PASS invariant turned out expressible directly in the schema's own allOf/items conditional -- verified as a real schema-level rejection, not just a documented convention."},
+          {"item": "AssuranceCertificate", "state": "TESTED", "contract": "contracts/assurance-certificate.v1.schema.json", "note": "New (71 SS6). Customer/auditor-facing artifact, deliberately separate from internal Receipt/FinalLock. signature valid != current assurance -- decision is gated by currentness_state_at_issue at schema level."},
+          {"item": "RevocationReceipt", "state": "TESTED", "contract": "contracts/assurance-revocation-event.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch."},
+          {"item": "OfflineTrustBundle", "state": "TESTED", "contract": "contracts/offline-trust-bundle.v1.schema.json", "note": "New (31 SS8). Offline uncertainty must never be hidden -- offline_status has 4 explicit degrading states, and a LOCAL_OS_CLOCK_ONLY time source caps trust_level at LOW/UNTRUSTED at schema level."}
+        ],
+        "negative_gates_verified": [
+          "a Critical HARD-edge child FAIL with parent decision=PASS is rejected at schema level, not just convention (test_hard_edge_child_fail_with_parent_pass_is_rejected_at_schema_level)",
+          "AssuranceCertificate decision is gated by currentness_state_at_issue (test_certificate_currentness_gates_decision)",
+          "a LOCAL_OS_CLOCK_ONLY OfflineTrustBundle cannot claim HIGH trust_level, enforced at schema level (test_offline_trust_bundle_caps_trust_level_on_local_clock_only)",
+          "offline uncertainty degrades through explicit distinct states, never silently hidden as still-current (test_offline_uncertainty_is_never_hidden_status_degrades_explicitly)"
+        ],
+        "evidence": [
+          "python3 scripts/validate-structured-contracts.py --require-full -> PASS (66 registered schemas, 68 positive + 45 negative instances)",
+          "python3 -m unittest tests.test_wave6_composition_certificate -> 10/10 PASS",
+          "full python suite -> 79/79 PASS",
+          "mvn -q compile -> clean"
+        ],
+        "unresolved_blockers": [],
+        "design_change_queue_items_this_wave": []
       }
     },
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},

@@ -1,0 +1,29 @@
+{
+  "contract": "ONSURE_OFFLINE_TRUST_BUNDLE_V1",
+  "bundle_id": "OTB::neutral-001::0001",
+  "trusted_root_key_ids": [
+    "onsure-root-key-001"
+  ],
+  "key_registry_snapshot_digest": "f49976b1802f9442f7c90bc446058d23ae6d07772d4475eceb53d9a33855f532",
+  "policy_snapshot_digest": "088ce5d9393418feb605bbd1f5d818f1a12231e18d6954fdcfd6325cd1afff33",
+  "validator_qualification_snapshot_digest": "ef4ace3dbd7b794fb0e29a6255f0c3dfdafb3a8f9e486c41c9a3ec8452956946",
+  "revocation_snapshot_digest": "3ef1f52463ed912c27b4c89b8d314141844ab7c689372163531296d8ddc5db92",
+  "trusted_time_evidence": {
+    "source": "ENTERPRISE_TIME_AUTHORITY",
+    "observed_at": "2026-08-14T13:44:18.506758+00:00",
+    "trust_level": "HIGH"
+  },
+  "generated_at": "2026-08-14T13:44:18.506758+00:00",
+  "expires_at": "2026-08-14T14:44:18.506758+00:00",
+  "grace_period_seconds": 86400,
+  "last_online_sync_at": "2026-08-14T13:44:18.506758+00:00",
+  "offline_status": "OFFLINE_CURRENT_WITHIN_GRACE",
+  "bundle_signature": {
+    "key_id": "onsure-root-key-001",
+    "algorithm": "Ed25519",
+    "signature": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+  },
+  "bundle_sha256": "f89eb95df5418fd3fdd6ab62f7683fb98295f08c5560c2309724bee999f91428",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

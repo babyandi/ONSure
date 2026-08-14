@@ -1,0 +1,38 @@
+{
+  "contract": "ONSURE_ASSURANCE_SUBJECT_GRAPH_V1",
+  "graph_id": "ASG::neutral-001::0001",
+  "graph_generation": 1,
+  "product_subject_id": "SUBJ::neutral-001::product",
+  "subject_population_digest": "236bee8278a8eb686c051e7bf94df053ecfd10fe06f83242f960adae4ac83615",
+  "edge_population_digest": "5503c65686fa07fa4f8391770a4b9c545ff7d25a3cfd625d1b286e973285b10c",
+  "graph_head_digest": "9caf570709d0ae9c6eecefd2e3dd0ac3f03d1adb1d988b6906b1b57fdfcdc0d9",
+  "nodes": [
+    {
+      "subject_id": "SUBJ::neutral-001::product",
+      "subject_digest": "c05d6ee65877d1a125a5e9bfdeb12054eac7efe0c8f484a228342ae9eab626dc",
+      "tenant_id": "tenant-001"
+    },
+    {
+      "subject_id": "SUBJ::neutral-001::auth-component",
+      "subject_digest": "97cb644322088d2a07114854647f6d1fdb61000f7c9589100823fcc54ca7565c",
+      "tenant_id": "tenant-001"
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "EDGE::product-auth",
+      "source_subject_id": "SUBJ::neutral-001::product",
+      "source_digest": "c05d6ee65877d1a125a5e9bfdeb12054eac7efe0c8f484a228342ae9eab626dc",
+      "target_subject_id": "SUBJ::neutral-001::auth-component",
+      "target_digest": "97cb644322088d2a07114854647f6d1fdb61000f7c9589100823fcc54ca7565c",
+      "dependency_type": "COMPOSED_OF",
+      "propagation_class": "HARD",
+      "affected_claim_ids": [
+        "CLAIM::auth-security"
+      ],
+      "condition_ref": null
+    }
+  ],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/assurance-composition-snapshot.v1.schema.json",
+  "title": "ONSure Assurance Composition Snapshot v1",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS4. Rolls up an assurance-subject-graph.v1.schema.json into one parent decision. A Critical HARD-edge child that FAILED/INVALIDATED/REVOKED must forbid a parent PASS; an UNKNOWN/HOLD/NOT_RUN child restricts a positive parent decision -- both enforced structurally, not just documented.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "composition_id", "product_subject_digest", "subject_population_digest",
+    "edge_population_digest", "graph_head_digest", "requirement_epoch", "policy_epoch",
+    "composition_rule_version", "input_results", "decision", "assurance_strength",
+    "currentness_state", "qualification_state", "independence_state", "uncertainty_state",
+    "ceiling_reasons", "generated_at", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ASSURANCE_COMPOSITION_SNAPSHOT_V1"},
+    "composition_id": {"type": "string", "minLength": 1},
+    "product_subject_digest": {"$ref": "#/$defs/sha256"},
+    "subject_population_digest": {"$ref": "#/$defs/sha256"},
+    "edge_population_digest": {"$ref": "#/$defs/sha256"},
+    "graph_head_digest": {"$ref": "#/$defs/sha256"},
+    "requirement_epoch": {"type": "string", "minLength": 1},
+    "policy_epoch": {"type": "string", "minLength": 1},
+    "composition_rule_version": {"type": "string", "minLength": 1},
+    "input_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subject_id", "edge_propagation_class", "child_decision", "result_digest"],
+        "properties": {
+          "subject_id": {"type": "string", "minLength": 1},
+          "edge_propagation_class": {"enum": ["HARD", "SOFT", "CONDITIONAL", "INFORMATIONAL"]},
+          "child_decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE", "INVALIDATED", "REVOKED", "NOT_APPLICABLE_JUSTIFIED"]},
+          "result_digest": {"$ref": "#/$defs/sha256"},
+          "applicability_proof_digest": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"child_decision": {"const": "NOT_APPLICABLE_JUSTIFIED"}}},
+            "then": {"required": ["applicability_proof_digest"], "properties": {"applicability_proof_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}
+          }
+        ]
+      }
+    },
+    "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]},
+    "assurance_strength": {"enum": ["NONE", "SELF_VALIDATION", "PARTIAL_INDEPENDENCE", "INDEPENDENT", "QUALIFIED_INDEPENDENT"]},
+    "currentness_state": {"enum": ["CURRENT", "STALE", "REASSESSMENT_REQUIRED", "INVALIDATED", "REVOKED", "UNKNOWN"]},
+    "qualification_state": {"enum": ["NOT_QUALIFIED", "PARTIAL", "QUALIFIED_NONFINAL", "QUALIFIED", "STALE", "FAILED"]},
+    "independence_state": {"enum": ["SELF_VALIDATION", "PARTIAL_INDEPENDENCE", "INDEPENDENT", "COMPROMISED"]},
+    "uncertainty_state": {"enum": ["NONE", "BOUNDED", "UNBOUNDED"]},
+    "ceiling_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "PASS"}}},
+      "then": {
+        "properties": {
+          "input_results": {
+            "items": {
+              "if": {"properties": {"edge_propagation_class": {"const": "HARD"}}},
+              "then": {"properties": {"child_decision": {"enum": ["PASS", "NOT_APPLICABLE_JUSTIFIED"]}}}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "contract": "ONSURE_ASSURANCE_COMPOSITION_SNAPSHOT_V1",
+  "composition_id": "COMP::neutral-001::0001",
+  "product_subject_digest": "c05d6ee65877d1a125a5e9bfdeb12054eac7efe0c8f484a228342ae9eab626dc",
+  "subject_population_digest": "236bee8278a8eb686c051e7bf94df053ecfd10fe06f83242f960adae4ac83615",
+  "edge_population_digest": "5503c65686fa07fa4f8391770a4b9c545ff7d25a3cfd625d1b286e973285b10c",
+  "graph_head_digest": "9caf570709d0ae9c6eecefd2e3dd0ac3f03d1adb1d988b6906b1b57fdfcdc0d9",
+  "requirement_epoch": "EPOCH::REQUIREMENT::0002",
+  "policy_epoch": "EPOCH::POLICY::0001",
+  "composition_rule_version": "COMP-RULE-1.0.0",
+  "input_results": [
+    {
+      "subject_id": "SUBJ::neutral-001::auth-component",
+      "edge_propagation_class": "HARD",
+      "child_decision": "PASS",
+      "result_digest": "96f61e7d8e7278d5d1dd6b47f5722a908fa20a087986e507533d86d8794b6d20",
+      "applicability_proof_digest": null
+    }
+  ],
+  "decision": "PARTIAL_PASS",
+  "assurance_strength": "QUALIFIED_INDEPENDENT",
+  "currentness_state": "CURRENT",
+  "qualification_state": "QUALIFIED",
+  "independence_state": "INDEPENDENT",
+  "uncertainty_state": "NONE",
+  "ceiling_reasons": [],
+  "generated_at": "2026-08-14T13:43:24.562068+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

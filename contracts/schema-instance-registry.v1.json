@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -488,6 +488,51 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/recovery-qualification-receipt.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/assurance-subject-graph.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/assurance-subject-graph.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-subject-graph.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/assurance-composition-snapshot.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/assurance-composition-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-composition-snapshot.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/assurance-certificate.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/assurance-certificate.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-certificate.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/assurance-revocation-event.candidate.v2.schema.json",
+      "instances": [
+        "fixtures/contracts/assurance-revocation-event.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-revocation-event.candidate.v2.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/offline-trust-bundle.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/offline-trust-bundle.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/offline-trust-bundle.v1.invalid.json"
       ]
     }
   ],
