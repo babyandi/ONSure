@@ -41,7 +41,10 @@ final class SemanticAssuranceV2WorkflowService {
             "deployment.verify-installed",
             "assurance.evidence-graph.validate",
             "assurance.composition.compute",
-            "assurance.certificate.issue");
+            "assurance.certificate.issue",
+            "assurance.revocation.issue",
+            "assurance.revocation.check",
+            "assurance.offline-trust-bundle.evaluate");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -88,6 +91,9 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.evidence-graph.validate" -> evidenceGraphValidate(request);
             case "assurance.composition.compute" -> compositionCompute(request);
             case "assurance.certificate.issue" -> certificateIssue(request);
+            case "assurance.revocation.issue" -> revocationIssue(request);
+            case "assurance.revocation.check" -> revocationCheck(request);
+            case "assurance.offline-trust-bundle.evaluate" -> offlineTrustBundleEvaluate(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -598,6 +604,233 @@ final class SemanticAssuranceV2WorkflowService {
         String signatureValue = kr.co.oruda.onsure.assurance.LocalReceiptCrypto.sign(unsigned, keyPair.getPrivate());
         Map<String, Object> out = new LinkedHashMap<>(unsigned);
         out.put("signature", Map.of("algorithm", "Ed25519", "signature", signatureValue));
+        return immutable(out);
+    }
+
+    /**
+     * assurance-revocation-event.candidate.v2.schema.json real issuance: real Ed25519 signature
+     * (ephemeral key, same self-validation-nonfinal boundary as certificateIssue -- this is not
+     * the trust-rooted production revocation authority), real revocation_sha256, and durably
+     * persisted via RevocationLedger so a later assurance.revocation.check can actually find it.
+     * Persisting the fact of a revocation is not a positive assurance claim, so unlike composition/
+     * certificate this can reach NON_FINAL on success -- there is nothing here to fail closed on
+     * except malformed input or a colliding revocation_id.
+     */
+    private Map<String, Object> revocationIssue(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String revocationId = requiredText(request, "revocation_id");
+
+        JsonNode subjectNode = request.path("subject");
+        String subjectType = subjectNode.path("subject_type").asText("");
+        if (!Set.of("RECEIPT", "CERTIFICATE", "QUALIFICATION", "SELECTOR", "DEPLOYMENT",
+                "AUTHORITY_PROFILE", "VALIDATOR", "TARGET").contains(subjectType)) {
+            return failClosed("HOLD", List.of("REVOCATION_SUBJECT_TYPE_INVALID"));
+        }
+        String subjectId = requiredText(subjectNode, "subject_id");
+        String subjectSha256 = requiredDigest(subjectNode, "subject_sha256");
+
+        String reason = requiredText(request, "reason");
+        String severity = requiredText(request, "severity");
+        if (!Set.of("CRITICAL", "HIGH", "MEDIUM", "LOW").contains(severity)) {
+            return failClosed("HOLD", List.of("REVOCATION_SEVERITY_INVALID"));
+        }
+        JsonNode triggeringEvidenceNode = request.path("triggering_evidence");
+        if (!triggeringEvidenceNode.isArray() || triggeringEvidenceNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("REVOCATION_TRIGGERING_EVIDENCE_REQUIRED"));
+        }
+        List<Map<String, Object>> triggeringEvidence = new ArrayList<>();
+        for (JsonNode item : triggeringEvidenceNode) {
+            triggeringEvidence.add(Map.of("id", requiredText(item, "id"), "sha256", requiredDigest(item, "sha256")));
+        }
+
+        JsonNode authorityNode = request.path("authority");
+        String principalProfileSha256 = requiredDigest(authorityNode, "principal_profile_sha256");
+        String authorityEpoch = requiredText(authorityNode, "authority_epoch");
+
+        JsonNode scopeNode = request.path("propagation_scope");
+        String scopeType = scopeNode.path("scope_type").asText("");
+        if (!Set.of("GLOBAL", "TENANT", "TARGET", "REGION", "SUBJECT_GRAPH").contains(scopeType)) {
+            return failClosed("HOLD", List.of("REVOCATION_PROPAGATION_SCOPE_INVALID"));
+        }
+        String scopeDigest = requiredDigest(scopeNode, "scope_digest");
+        String revocationEpoch = requiredText(request, "revocation_epoch");
+        String supersedes = request.path("supersedes_revocation_sha256").asText(null);
+        if (supersedes != null && !supersedes.matches("[0-9a-f]{64}")) {
+            return failClosed("HOLD", List.of("REVOCATION_SUPERSEDES_DIGEST_INVALID"));
+        }
+
+        String issuedAt = Instant.now().toString();
+        String effectiveAt = request.path("effective_at").asText(issuedAt);
+
+        Map<String, Object> unsigned = new LinkedHashMap<>();
+        unsigned.put("contract", "ONSURE_ASSURANCE_REVOCATION_EVENT_V2_CANDIDATE");
+        unsigned.put("revocation_id", revocationId);
+        unsigned.put("subject", Map.of("subject_type", subjectType, "subject_id", subjectId, "subject_sha256", subjectSha256));
+        unsigned.put("reason", reason);
+        unsigned.put("severity", severity);
+        unsigned.put("triggering_evidence", List.copyOf(triggeringEvidence));
+        unsigned.put("authority", Map.of(
+                "principal_profile_sha256", principalProfileSha256, "authority_epoch", authorityEpoch,
+                "purpose", "ASSURANCE_REVOCATION"));
+        unsigned.put("issued_at", issuedAt);
+        unsigned.put("effective_at", effectiveAt);
+        unsigned.put("propagation_scope", Map.of("scope_type", scopeType, "scope_digest", scopeDigest));
+        unsigned.put("revocation_epoch", revocationEpoch);
+        unsigned.put("supersedes_revocation_sha256", supersedes);
+        unsigned.put("revocation_sha256", digest(unsigned));
+
+        java.security.KeyPair keyPair = kr.co.oruda.onsure.assurance.LocalReceiptCrypto.generate();
+        String signatureValue = kr.co.oruda.onsure.assurance.LocalReceiptCrypto.sign(unsigned, keyPair.getPrivate());
+        Map<String, Object> event = new LinkedHashMap<>(unsigned);
+        event.put("signature", Map.of(
+                "key_id", "EPHEMERAL_SELF_VALIDATION_KEY", "algorithm", "Ed25519", "signature", signatureValue));
+
+        try {
+            new RevocationLedger(workspaceRoot.resolve(".onsure/assurance/revocations")).issue(event);
+        } catch (IllegalArgumentException duplicate) {
+            return failClosed("HOLD", List.of(duplicate.getMessage()));
+        }
+
+        Map<String, Object> out = base("ASSURANCE_REVOCATION_ISSUED", targetId);
+        out.put("revocation_id", revocationId);
+        out.put("revocation_sha256", unsigned.get("revocation_sha256"));
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * Looks up whether a subject currently has an active (not superseded by a later event)
+     * revocation on record. Fail-closed in the sense that matters here: an unreadable/missing
+     * ledger reads as CLEAR only because there is genuinely nothing recorded, never because a read
+     * failure was swallowed -- forSubject()/all() propagate real I/O errors.
+     */
+    private Map<String, Object> revocationCheck(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        JsonNode subjectNode = request.path("subject");
+        String subjectType = subjectNode.path("subject_type").asText("");
+        String subjectId = subjectNode.path("subject_id").asText("");
+        if (subjectType.isBlank() || subjectId.isBlank()) {
+            return failClosed("INPUT_REQUIRED", List.of("REVOCATION_CHECK_SUBJECT_REQUIRED"));
+        }
+
+        RevocationLedger ledger = new RevocationLedger(workspaceRoot.resolve(".onsure/assurance/revocations"));
+        List<Map<String, Object>> matches = ledger.forSubject(subjectType, subjectId);
+        java.util.Set<String> supersededDigests = new java.util.HashSet<>();
+        for (Map<String, Object> event : ledger.all()) {
+            Object supersedes = event.get("supersedes_revocation_sha256");
+            if (supersedes instanceof String value) supersededDigests.add(value);
+        }
+        List<Map<String, Object>> active = matches.stream()
+                .filter(event -> !supersededDigests.contains(event.get("revocation_sha256")))
+                .sorted(java.util.Comparator.comparing(event -> String.valueOf(event.get("issued_at"))))
+                .toList();
+
+        Map<String, Object> out = base("ASSURANCE_REVOCATION_CHECK", targetId);
+        out.put("subject_type", subjectType);
+        out.put("subject_id", subjectId);
+        out.put("decision", "NON_FINAL");
+        if (active.isEmpty()) {
+            out.put("revocation_state", "CLEAR");
+        } else {
+            Map<String, Object> mostRecent = active.get(active.size() - 1);
+            out.put("revocation_state", "REVOKED");
+            out.put("revocation_id", mostRecent.get("revocation_id"));
+            out.put("severity", mostRecent.get("severity"));
+            out.put("reason", mostRecent.get("reason"));
+        }
+        return immutable(out);
+    }
+
+    /**
+     * offline-trust-bundle.v1.schema.json real degradation computation (doc 31 SS8): offline_status
+     * is computed from real elapsed time since last_online_sync_at against grace_period_seconds,
+     * not accepted as a caller claim. A single local OS clock is never trusted enough to certify
+     * freshness on its own (source LOCAL_OS_CLOCK_ONLY caps trust_level at LOW/UNTRUSTED per the
+     * schema's own conditional); UNTRUSTED time forces OFFLINE_BLOCKED unconditionally regardless
+     * of the elapsed-time arithmetic, since an untrusted clock can't even certify how much time has
+     * actually elapsed.
+     */
+    private Map<String, Object> offlineTrustBundleEvaluate(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String bundleId = requiredText(request, "bundle_id");
+        JsonNode rootKeyIdsNode = request.path("trusted_root_key_ids");
+        if (!rootKeyIdsNode.isArray() || rootKeyIdsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("OFFLINE_BUNDLE_TRUSTED_ROOT_KEY_IDS_REQUIRED"));
+        }
+        List<String> rootKeyIds = stringList(rootKeyIdsNode);
+        String keyRegistrySnapshotDigest = requiredDigest(request, "key_registry_snapshot_digest");
+        String policySnapshotDigest = requiredDigest(request, "policy_snapshot_digest");
+        String validatorQualificationSnapshotDigest = requiredDigest(request, "validator_qualification_snapshot_digest");
+        String revocationSnapshotDigest = requiredDigest(request, "revocation_snapshot_digest");
+
+        JsonNode timeEvidenceNode = request.path("trusted_time_evidence");
+        String source = timeEvidenceNode.path("source").asText("");
+        if (!Set.of("TPM", "SECURE_CLOCK", "ENTERPRISE_TIME_AUTHORITY", "LOCAL_OS_CLOCK_ONLY").contains(source)) {
+            return failClosed("HOLD", List.of("OFFLINE_BUNDLE_TIME_SOURCE_INVALID"));
+        }
+        String trustLevel = timeEvidenceNode.path("trust_level").asText("");
+        if (!Set.of("HIGH", "MEDIUM", "LOW", "UNTRUSTED").contains(trustLevel)) {
+            return failClosed("HOLD", List.of("OFFLINE_BUNDLE_TIME_TRUST_LEVEL_INVALID"));
+        }
+        if ("LOCAL_OS_CLOCK_ONLY".equals(source) && !Set.of("LOW", "UNTRUSTED").contains(trustLevel)) {
+            return failClosed("HOLD", List.of("OFFLINE_BUNDLE_LOCAL_CLOCK_TRUST_LEVEL_TOO_HIGH"));
+        }
+        Instant observedAt = Instant.parse(requiredText(timeEvidenceNode, "observed_at"));
+
+        int gracePeriodSeconds = request.path("grace_period_seconds").asInt(-1);
+        if (gracePeriodSeconds < 0) return failClosed("HOLD", List.of("OFFLINE_BUNDLE_GRACE_PERIOD_INVALID"));
+        String lastOnlineSyncAt = request.path("last_online_sync_at").asText(null);
+
+        String offlineStatus;
+        if ("UNTRUSTED".equals(trustLevel)) {
+            offlineStatus = "OFFLINE_BLOCKED";
+        } else if (lastOnlineSyncAt == null || lastOnlineSyncAt.isBlank()) {
+            offlineStatus = "OFFLINE_BLOCKED";
+        } else {
+            long elapsedSeconds = java.time.Duration.between(Instant.parse(lastOnlineSyncAt), observedAt).getSeconds();
+            if (elapsedSeconds < 0) {
+                return failClosed("HOLD", List.of("OFFLINE_BUNDLE_LAST_SYNC_IN_FUTURE"));
+            } else if (elapsedSeconds <= gracePeriodSeconds) {
+                offlineStatus = "OFFLINE_CURRENT_WITHIN_GRACE";
+            } else if (elapsedSeconds <= gracePeriodSeconds * 2L) {
+                offlineStatus = "OFFLINE_REVALIDATION_DUE";
+            } else if (elapsedSeconds <= gracePeriodSeconds * 4L) {
+                offlineStatus = "OFFLINE_STATUS_UNCERTAIN";
+            } else {
+                offlineStatus = "OFFLINE_BLOCKED";
+            }
+        }
+
+        String generatedAt = Instant.now().toString();
+        Map<String, Object> unsigned = new LinkedHashMap<>();
+        unsigned.put("contract", "ONSURE_OFFLINE_TRUST_BUNDLE_V1");
+        unsigned.put("bundle_id", bundleId);
+        unsigned.put("trusted_root_key_ids", rootKeyIds);
+        unsigned.put("key_registry_snapshot_digest", keyRegistrySnapshotDigest);
+        unsigned.put("policy_snapshot_digest", policySnapshotDigest);
+        unsigned.put("validator_qualification_snapshot_digest", validatorQualificationSnapshotDigest);
+        unsigned.put("revocation_snapshot_digest", revocationSnapshotDigest);
+        unsigned.put("trusted_time_evidence", Map.of("source", source, "observed_at", observedAt.toString(), "trust_level", trustLevel));
+        unsigned.put("generated_at", generatedAt);
+        unsigned.put("expires_at", request.path("expires_at").asText(generatedAt));
+        unsigned.put("grace_period_seconds", gracePeriodSeconds);
+        unsigned.put("last_online_sync_at", lastOnlineSyncAt);
+        unsigned.put("offline_status", offlineStatus);
+        unsigned.put("target_id", targetId);
+        unsigned.put("decision", "OFFLINE_CURRENT_WITHIN_GRACE".equals(offlineStatus) ? "NON_FINAL" : "HOLD");
+        unsigned.put("self_validation_nonfinal", true);
+        unsigned.put("final_claim_allowed", false);
+        unsigned.put("bundle_sha256", digest(unsigned));
+
+        // Every field above this line is part of the signed payload, matching certificateIssue's
+        // fix: signature is added last so a verifier excludes only the signature field itself when
+        // recomputing the same canonical bytes.
+        java.security.KeyPair keyPair = kr.co.oruda.onsure.assurance.LocalReceiptCrypto.generate();
+        String signatureValue = kr.co.oruda.onsure.assurance.LocalReceiptCrypto.sign(unsigned, keyPair.getPrivate());
+        Map<String, Object> out = new LinkedHashMap<>(unsigned);
+        out.put("bundle_signature", Map.of(
+                "key_id", "EPHEMERAL_SELF_VALIDATION_KEY", "algorithm", "Ed25519", "signature", signatureValue));
+        out.put("issuer_public_key_der_base64", java.util.Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
         return immutable(out);
     }
 

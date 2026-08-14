@@ -189,7 +189,9 @@ public final class SemanticAssuranceV2DispatcherBridge {
             case "semantic.authority.revalidate", "semantic.independence.assess",
                     "semantic.freshness.invalidate", "semantic.freshness.reconstruct",
                     "semantic.validator.requalify", "assurance.final-candidate.reconstruct",
-                    "deployment.verify-installed", "assurance.certificate.issue" -> auditor || admin;
+                    "deployment.verify-installed", "assurance.certificate.issue",
+                    "assurance.revocation.issue", "assurance.revocation.check",
+                    "assurance.offline-trust-bundle.evaluate" -> auditor || admin;
             case "assurance.human-accept" -> approver || admin;
             case "assurance.otester.accept", "assurance.oaudit.accept" -> auditor;
             case "git.push" -> operator || admin;

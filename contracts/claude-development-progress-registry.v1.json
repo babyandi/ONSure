@@ -548,7 +548,7 @@
     {
       "batch": "BATCH_3",
       "name": "Assurance Core",
-      "state": "IN_PROGRESS",
+      "state": "EVIDENCE_READY",
       "scope_note": "137 SS27 Batch 3 items (Evidence Graph, invalidation/currentness, deployment identity, product composition, certificate/revocation/offline verification) name the same domain objects as 82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md Waves 2/5/6, which Batch 1 already built as JSON Schema contracts. Doc 82 is explicitly DESIGN_ONLY/CANDIDATE/NON_FINAL -- a schema-enactment-order plan, not a runtime behavior plan. No P0/ambiguity: Batch 1 built the CONTRACT layer (shape + cross-contract JSON-Schema invariants); Batch 3 builds the real RUNTIME BEHAVIOR that produces/consumes/evaluates instances of those contracts, the same relationship Batch 2 had to Batch 1 Wave 3/4 (Authority/Grant, Operation/Event/Receipt contracts).",
       "slice_1_deployment_identity": {
         "state": "EVIDENCE_READY",
@@ -607,6 +607,41 @@
           "First composition test used a NOT_RUN child on a non-HARD edge expecting PASS, which is wrong per the rule itself (any child HOLD/NOT_RUN/INCONCLUSIVE forces HOLD regardless of edge class) -- fixed the test fixture, not the rule.",
           "certificateIssue originally added issuer_public_key_der_base64/independent_verification_summary_digest/limitation_summary/exclusion_summary/target_id/tenant_id/actor_id/self_validation_nonfinal/final_claim_allowed to the output AFTER signing, so a verifier reconstructing \"the certificate minus signature\" got a different byte sequence than what was actually signed and verification always failed. Caught immediately by the first signature-verification test. Fixed by moving every field into the signed payload before calling sign(), so signature really is the last field added."
         ]
+      },
+      "slice_4_revocation_offline_trust": {
+        "state": "EVIDENCE_READY",
+        "note": "assurance.revocation.issue/check give assurance-revocation-event.candidate.v2 real durable persistence (RevocationLedger.java, ExclusiveFileLock-protected, workspaceRoot/.onsure/assurance/revocations), unlike the stateless-computation operations from slices 2-3 -- issuing a revocation is a real write, and check genuinely finds what was issued, excluding any event later superseded by another (supersedes_revocation_sha256). assurance.offline-trust-bundle.evaluate computes offline_status for real from elapsed time (doc 31 SS8 degradation curve: CURRENT_WITHIN_GRACE -> REVALIDATION_DUE -> STATUS_UNCERTAIN -> BLOCKED as multiples of grace_period_seconds elapse since last_online_sync_at) instead of accepting a caller-declared status; UNTRUSTED trusted_time_evidence forces BLOCKED unconditionally since an untrusted clock cannot even certify how much time has elapsed, and LOCAL_OS_CLOCK_ONLY is rejected outright if it claims a trust_level above LOW (the schema-level conditional Wave 6 already declared, now also enforced here). Both new operations use the same real-Ed25519-signature, ephemeral-key, self-validation-nonfinal pattern as certificateIssue.",
+        "contract_schema": [
+          "contracts/assurance-revocation-event.candidate.v2.schema.json (Wave 6, pre-existing, already registered)",
+          "contracts/offline-trust-bundle.v1.schema.json (Wave 6, pre-existing, already registered)"
+        ],
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/RevocationLedger.java (NEW -- durable, append-only, ExclusiveFileLock-protected)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (revocationIssue, revocationCheck, offlineTrustBundleEvaluate)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates, auditor||admin tier)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+9 tests: revocation CLEAR before issuance, issue-then-check REVOKED, duplicate revocation_id rejected, supersession replaces the earlier event in the active check; offline bundle within-grace NON_FINAL, past-4x-grace BLOCKED, never-synced BLOCKED, UNTRUSTED time forces BLOCKED regardless of elapsed time, LOCAL_OS_CLOCK_ONLY cannot claim HIGH trust, real cryptographic signature verification)"
+        ],
+        "proactive_fix_from_slice_3_lesson": "offlineTrustBundleEvaluate originally added target_id/decision/self_validation_nonfinal/final_claim_allowed to the output map AFTER signing, the exact same bug class caught in slice 3's certificateIssue. Caught and fixed before writing any test this time, by moving every field into the signed payload before calling sign() -- the same fix, applied proactively."
+      },
+      "batch_3_closure": {
+        "slices_complete": "4/4",
+        "state": "EVIDENCE_READY",
+        "new_v2_operations_this_batch": [
+          "assurance.evidence-graph.validate",
+          "assurance.composition.compute",
+          "assurance.certificate.issue",
+          "assurance.revocation.issue",
+          "assurance.revocation.check",
+          "assurance.offline-trust-bundle.evaluate"
+        ],
+        "new_v1_operations_this_batch": [
+          "deployment.register-target",
+          "deployment.read-target"
+        ],
+        "note": "All 6 named Batch 3 items (Evidence Graph, invalidation/currentness, deployment identity, product composition, certificate/revocation/offline verification) now have real runtime behavior on top of the Wave 2/5/6 JSON Schema contracts Batch 1 built. \"invalidation/currentness\" is addressed by deployment.verify-installed's real identity comparison and the offline-trust-bundle degradation computation; a dedicated standalone CurrentnessSnapshot compute engine (Wave 5's currentness-snapshot.v1.schema.json in isolation from a deployment context) remains a real gap, noted here rather than silently claimed complete, and is natural follow-on work for a later batch/wave rather than a blocker for Batch 3's own named scope."
       }
     },
     {

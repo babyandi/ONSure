@@ -341,6 +341,158 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void revocationCheckIsClearBeforeAnyRevocationIsIssued() throws Exception {
+        Map<?, ?> check = revocationCheck("CERTIFICATE", "cert-never-revoked");
+        assertEquals("CLEAR", check.get("revocation_state"));
+    }
+
+    @Test
+    void issuedRevocationIsFoundByCheck() throws Exception {
+        Map<?, ?> issued = revocationIssue("rev-1", "CERTIFICATE", "cert-1", null);
+        assertEquals("NON_FINAL", issued.get("decision"));
+
+        Map<?, ?> check = revocationCheck("CERTIFICATE", "cert-1");
+        assertEquals("REVOKED", check.get("revocation_state"));
+        assertEquals("rev-1", check.get("revocation_id"));
+        assertEquals("CRITICAL", check.get("severity"));
+    }
+
+    @Test
+    void duplicateRevocationIdIsRejected() throws Exception {
+        revocationIssue("rev-2", "CERTIFICATE", "cert-2", null);
+        Map<?, ?> duplicate = revocationIssue("rev-2", "CERTIFICATE", "cert-2", null);
+        assertEquals("HOLD", duplicate.get("decision"));
+        assertEquals(List.of("REVOCATION_ID_ALREADY_EXISTS:rev-2"), duplicate.get("reasons"));
+    }
+
+    @Test
+    void aSupersedingRevocationReplacesTheEarlierOneInTheActiveCheck() throws Exception {
+        Map<?, ?> original = revocationIssue("rev-3", "CERTIFICATE", "cert-3", null);
+        String originalDigest = (String) original.get("revocation_sha256");
+        revocationIssue("rev-4", "CERTIFICATE", "cert-3", originalDigest);
+
+        Map<?, ?> check = revocationCheck("CERTIFICATE", "cert-3");
+        assertEquals("REVOKED", check.get("revocation_state"));
+        assertEquals("rev-4", check.get("revocation_id"));
+    }
+
+    @Test
+    void offlineTrustBundleWithinGraceIsNonFinal() throws Exception {
+        Map<?, ?> bundle = offlineBundle("HIGH", "SECURE_CLOCK", java.time.Instant.now().minusSeconds(10), 3600);
+        assertEquals("OFFLINE_CURRENT_WITHIN_GRACE", bundle.get("offline_status"));
+        assertEquals("NON_FINAL", bundle.get("decision"));
+    }
+
+    @Test
+    void offlineTrustBundlePastFourTimesGraceIsBlocked() throws Exception {
+        Map<?, ?> bundle = offlineBundle("HIGH", "SECURE_CLOCK", java.time.Instant.now().minusSeconds(20_000), 3600);
+        assertEquals("OFFLINE_BLOCKED", bundle.get("offline_status"));
+        assertEquals("HOLD", bundle.get("decision"));
+    }
+
+    @Test
+    void offlineTrustBundleNeverSyncedIsBlocked() throws Exception {
+        Map<?, ?> bundle = offlineBundle("HIGH", "SECURE_CLOCK", null, 3600);
+        assertEquals("OFFLINE_BLOCKED", bundle.get("offline_status"));
+    }
+
+    @Test
+    void untrustedTimeForcesBlockedEvenWhenElapsedTimeWouldOtherwiseBeWithinGrace() throws Exception {
+        Map<?, ?> bundle = offlineBundle("UNTRUSTED", "SECURE_CLOCK", java.time.Instant.now().minusSeconds(1), 3600);
+        assertEquals("OFFLINE_BLOCKED", bundle.get("offline_status"));
+    }
+
+    @Test
+    void localClockOnlyCannotClaimHighTrust() throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.offline-trust-bundle.evaluate", request(offlineBundleRequest(
+                        "HIGH", "LOCAL_OS_CLOCK_ONLY", java.time.Instant.now(), 3600))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("OFFLINE_BUNDLE_LOCAL_CLOCK_TRUST_LEVEL_TOO_HIGH"), result.get("reasons"));
+    }
+
+    @Test
+    void offlineTrustBundleSignatureIsCryptographicallyVerifiable() throws Exception {
+        Map<?, ?> bundle = offlineBundle("HIGH", "SECURE_CLOCK", java.time.Instant.now().minusSeconds(10), 3600);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> signature = (Map<String, Object>) bundle.get("bundle_signature");
+        byte[] publicKeyBytes = java.util.Base64.getDecoder().decode((String) bundle.get("issuer_public_key_der_base64"));
+        java.security.PublicKey publicKey = java.security.KeyFactory.getInstance("Ed25519")
+                .generatePublic(new java.security.spec.X509EncodedKeySpec(publicKeyBytes));
+
+        Map<String, Object> forVerify = new java.util.LinkedHashMap<>();
+        bundle.forEach((key, value) -> forVerify.put((String) key, value));
+        forVerify.remove("bundle_signature");
+        forVerify.remove("issuer_public_key_der_base64");
+        forVerify.put("signature", signature.get("signature"));
+        assertEquals(true, kr.co.oruda.onsure.assurance.LocalReceiptCrypto.verify(forVerify, publicKey));
+    }
+
+    private Map<String, Object> offlineBundleRequest(
+            String trustLevel, String source, java.time.Instant lastSyncOrNull, int gracePeriodSeconds) {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("project_id", "project-1");
+        body.put("target_id", "target-1");
+        body.put("bundle_id", "bundle-" + java.util.UUID.randomUUID());
+        body.put("trusted_root_key_ids", List.of("root-key-1"));
+        body.put("key_registry_snapshot_digest", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1");
+        body.put("policy_snapshot_digest", "70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b");
+        body.put("validator_qualification_snapshot_digest", "07614cb0e158c8e8c223883f5a9173e813b3c0c302fe8d42a9aaf85300810606");
+        body.put("revocation_snapshot_digest", "db40281222139a3cc745f264e56507a56bebaeeae19ead23000d88948f9b8faf");
+        body.put("trusted_time_evidence", Map.of(
+                "source", source, "observed_at", java.time.Instant.now().toString(), "trust_level", trustLevel));
+        body.put("grace_period_seconds", gracePeriodSeconds);
+        if (lastSyncOrNull != null) body.put("last_online_sync_at", lastSyncOrNull.toString());
+        return body;
+    }
+
+    private Map<?, ?> offlineBundle(
+            String trustLevel, String source, java.time.Instant lastSyncOrNull, int gracePeriodSeconds) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.offline-trust-bundle.evaluate",
+                request(offlineBundleRequest(trustLevel, source, lastSyncOrNull, gracePeriodSeconds))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    private Map<?, ?> revocationIssue(String revocationId, String subjectType, String subjectId, String supersedes) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("project_id", "project-1");
+        body.put("target_id", "target-1");
+        body.put("revocation_id", revocationId);
+        body.put("subject", Map.of(
+                "subject_type", subjectType, "subject_id", subjectId,
+                "subject_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1"));
+        body.put("reason", "COMPROMISED_KEY");
+        body.put("severity", "CRITICAL");
+        body.put("triggering_evidence", List.of(Map.of(
+                "id", "finding-1", "sha256", "70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b")));
+        body.put("authority", Map.of(
+                "principal_profile_sha256", "07614cb0e158c8e8c223883f5a9173e813b3c0c302fe8d42a9aaf85300810606",
+                "authority_epoch", "EPOCH::AUTHORITY::0001"));
+        body.put("propagation_scope", Map.of(
+                "scope_type", "TARGET",
+                "scope_digest", "db40281222139a3cc745f264e56507a56bebaeeae19ead23000d88948f9b8faf"));
+        body.put("revocation_epoch", "EPOCH::REVOCATION::0001");
+        if (supersedes != null) body.put("supersedes_revocation_sha256", supersedes);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.revocation.issue", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    private Map<?, ?> revocationCheck(String subjectType, String subjectId) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.revocation.check", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "subject", Map.of("subject_type", subjectType, "subject_id", subjectId)))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,
