@@ -66,7 +66,8 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.oracle.multi-evaluate",
             "assurance.corpus.integrity-check",
             "assurance.validator.regression-qualify",
-            "assurance.learning.stop-decision.compute");
+            "assurance.learning.stop-decision.compute",
+            "assurance.release.qualify");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -137,6 +138,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.corpus.integrity-check" -> corpusIntegrityCheck(request);
             case "assurance.validator.regression-qualify" -> validatorRegressionQualify(request);
             case "assurance.learning.stop-decision.compute" -> learningStopDecisionCompute(request);
+            case "assurance.release.qualify" -> releaseQualify(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1524,6 +1526,77 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("marginal_gain", marginalGain);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * onsure-release-qualification.v1.schema.json real computation (71 SS11, Wave 7 schema --
+     * existed since Batch 1 with zero runtime consumer until this operation). "Self-validation
+     * receipts alone can never produce QUALIFIED": an empty independent_verifier_receipts forces
+     * NOT_QUALIFIED regardless of anything else. A release whose valid_until has already passed is
+     * STALE even if every other input looks clean. Any archetype in the caller-supplied
+     * archetype_qualification_map that is not itself QUALIFIED caps the overall release state --
+     * a release is never QUALIFIED as a whole while one of its target archetypes individually
+     * is not, closing the "critical blind spot leaves the archetype silently QUALIFIED" case the
+     * schema description itself names.
+     */
+    private Map<String, Object> releaseQualify(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String releaseQualificationId = requiredText(request, "release_qualification_id");
+        String onsureReleaseDigest = requiredDigest(request, "onsure_release_digest");
+
+        JsonNode archetypeMapNode = request.path("archetype_qualification_map");
+        if (!archetypeMapNode.isArray() || archetypeMapNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("RELEASE_ARCHETYPE_QUALIFICATION_MAP_REQUIRED"));
+        }
+        Set<String> validScopeStates = Set.of("QUALIFIED", "NOT_QUALIFIED", "STALE", "REASSESSMENT_REQUIRED");
+        java.util.LinkedHashSet<String> archetypes = new java.util.LinkedHashSet<>();
+        List<String> nonQualifiedArchetypes = new ArrayList<>();
+        for (JsonNode row : archetypeMapNode) {
+            String archetype = requiredText(row, "target_archetype");
+            if (!archetypes.add(archetype)) return failClosed("HOLD", List.of("DUPLICATE_ARCHETYPE:" + archetype));
+            String scopeState = row.path("scope_state").asText("");
+            if (!validScopeStates.contains(scopeState)) {
+                return failClosed("HOLD", List.of("RELEASE_ARCHETYPE_SCOPE_STATE_INVALID:" + archetype));
+            }
+            if (!"QUALIFIED".equals(scopeState)) nonQualifiedArchetypes.add(archetype + ":" + scopeState);
+        }
+
+        JsonNode receiptsNode = request.path("independent_verifier_receipts");
+        int receiptCount = receiptsNode.isArray() ? receiptsNode.size() : 0;
+
+        Instant now = Instant.now();
+        Instant validUntil;
+        try {
+            validUntil = Instant.parse(requiredText(request, "valid_until"));
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("RELEASE_VALID_UNTIL_MALFORMED"));
+        }
+
+        String state;
+        List<String> reasons = new ArrayList<>();
+        if (receiptCount == 0) {
+            state = "NOT_QUALIFIED";
+            reasons.add("SELF_VALIDATION_RECEIPTS_ALONE_CANNOT_QUALIFY");
+        } else if (!now.isBefore(validUntil)) {
+            state = "STALE";
+            reasons.add("RELEASE_QUALIFICATION_EXPIRED");
+        } else if (!nonQualifiedArchetypes.isEmpty()) {
+            state = "REASSESSMENT_REQUIRED";
+            reasons.add("ARCHETYPE_NOT_QUALIFIED:" + String.join(",", nonQualifiedArchetypes));
+        } else {
+            state = "QUALIFIED";
+        }
+
+        Map<String, Object> out = base("ONSURE_RELEASE_QUALIFICATION", targetId);
+        out.put("release_qualification_id", releaseQualificationId);
+        out.put("onsure_release_digest", onsureReleaseDigest);
+        out.put("independent_verifier_receipt_count", receiptCount);
+        out.put("archetype_count", archetypes.size());
+        out.put("non_qualified_archetypes", List.copyOf(nonQualifiedArchetypes));
+        out.put("state", state);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "QUALIFIED".equals(state) ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

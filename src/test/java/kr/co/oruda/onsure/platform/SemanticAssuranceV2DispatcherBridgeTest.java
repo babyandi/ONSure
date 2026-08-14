@@ -987,6 +987,77 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals("HOLD", result.get("decision"));
     }
 
+    @Test
+    void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
+        Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());
+        assertEquals("NOT_QUALIFIED", result.get("state"));
+        assertEquals(List.of("SELF_VALIDATION_RECEIPTS_ALONE_CANNOT_QUALIFY"), result.get("reasons"));
+    }
+
+    @Test
+    void releaseQualificationIsStaleOncePastValidUntilEvenWithReceipts() throws Exception {
+        Map<?, ?> result = releaseQualify(
+                List.of(verifierReceipt("receipt-1")), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")),
+                "2020-01-01T00:00:00Z");
+        assertEquals("STALE", result.get("state"));
+    }
+
+    @Test
+    void releaseQualificationRequiresEveryArchetypeIndividuallyQualified() throws Exception {
+        Map<?, ?> result = releaseQualify(
+                List.of(verifierReceipt("receipt-1")),
+                List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED"), archetype("AI_AGENTIC_PLATFORM", "NOT_QUALIFIED")),
+                futureIso());
+        assertEquals("REASSESSMENT_REQUIRED", result.get("state"));
+        assertEquals(List.of("ARCHETYPE_NOT_QUALIFIED:AI_AGENTIC_PLATFORM:NOT_QUALIFIED"), result.get("reasons"));
+    }
+
+    @Test
+    void releaseQualificationReachesQualifiedWithReceiptsCurrentValidityAndEveryArchetypeQualified() throws Exception {
+        Map<?, ?> result = releaseQualify(
+                List.of(verifierReceipt("receipt-1")), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")),
+                futureIso());
+        assertEquals("QUALIFIED", result.get("state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    private String futureIso() {
+        return java.time.Instant.now().plusSeconds(3600 * 24 * 90).toString();
+    }
+
+    private Map<String, Object> archetype(String targetArchetype, String scopeState) {
+        return Map.of("target_archetype", targetArchetype, "scope_state", scopeState);
+    }
+
+    private Map<String, Object> verifierReceipt(String receiptId) {
+        return Map.of(
+                "receipt_id", receiptId,
+                "receipt_sha256", "fea5396a7f4325c408b1b65b33a4d77ba5486ceba941804d8889a8546cfbab96",
+                "principal_profile_sha256", "df772cb57d0dfafb14f45df86e575a3d5e506ead160f271351bb14b2a5c9d098");
+    }
+
+    private Map<?, ?> releaseQualify(
+            List<Map<String, Object>> receipts, List<Map<String, Object>> archetypeMap, String validUntil) throws Exception {
+        Map<String, Object> body = Map.ofEntries(
+                Map.entry("project_id", "project-1"), Map.entry("target_id", "target-1"),
+                Map.entry("release_qualification_id", "release-1"),
+                Map.entry("onsure_release_digest", "6b6509445d39461297f1bc9e09e35d2f5f4d1202827c84c821c0e2f93e4fd548"),
+                Map.entry("validator_set_digest", "df772cb57d0dfafb14f45df86e575a3d5e506ead160f271351bb14b2a5c9d098"),
+                Map.entry("oracle_set_digest", "bb71411077c1d289f7063e86f5ba66636429bd452c76cb8540503501fbd76185"),
+                Map.entry("adapter_set_digest", "59197c2d3af0b425ccf621506a8470f20b2128b74f7d1c9c65fed40e39a3c52a"),
+                Map.entry("fixture_set_digest", "79894ed9210c17e798dbb6d01bc9d4c6298d02a10186d2e0180a260ba5349fdc"),
+                Map.entry("build_provenance_digest", "824cf8b9ca8210437e5fdf9f1a6aa6e2d3eddbce6211c6229289ff6762456624"),
+                Map.entry("sbom_digest", "98f3ae1ef67113d8140d4f6cb8d2830070e21ea48f091be519659846c771a374"),
+                Map.entry("tcb_manifest_digest", "c328c02df6479c788f8f548d5af24d1c07d39682b5813ed3274186ad958bf8c5"),
+                Map.entry("archetype_qualification_map", archetypeMap),
+                Map.entry("independent_verifier_receipts", receipts),
+                Map.entry("valid_until", validUntil));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.release.qualify", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

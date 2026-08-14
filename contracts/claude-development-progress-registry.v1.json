@@ -854,6 +854,19 @@
           "validatorRegressionQualify used Set.of(golden, blind, challenge) to check membership, but Set.of() throws IllegalArgumentException on duplicate constructor arguments -- since these three fields are commonly all \"PASS\" in the healthy case, every qualifying-validator test crashed instead of passing. Fixed by using a List (which permits duplicates) for membership checks instead of a Set.",
           "oracleMultiEvaluate originally named its request field \"case_id\", colliding with an unrelated, already-RBAC-tracked customer-service resource identifier of the same name elsewhere in TenantRbacService (case.open et al.) -- any call carrying that field name was silently required to own an unrelated \"case:\" resource it had never claimed, denying every test with TENANT_RESOURCE_BINDING_MISSING. Renamed to disagreement_case_id."
         ]
+      },
+      "slice_4_onsure_release_qualification": {
+        "state": "EVIDENCE_READY",
+        "note": "137's own Batch 5 scope names \"ONSure release/validator/oracle/fixture/adapter qualification\" -- onsure-release-qualification.v1.schema.json (71 SS11) already existed since Wave 7 (Batch 1) but, like OfficialLearningLedger before slice 1, had zero Java references anywhere: a real schema with a real stated invariant (\"Self-validation receipts alone can never produce QUALIFIED\") and no runtime that enforced it. assurance.release.qualify computes state for real: an empty independent_verifier_receipts forces NOT_QUALIFIED regardless of anything else; a release whose valid_until has already passed is STALE even with receipts; any archetype in the caller-supplied per-archetype map that is not itself QUALIFIED caps the whole release at REASSESSMENT_REQUIRED -- closing the schema description's own named \"critical blind spot leaves the archetype silently QUALIFIED\" case with real per-archetype cross-referencing, not just a schema-level constraint.",
+        "contract_schema": "contracts/onsure-release-qualification.v1.schema.json (Wave 7, pre-existing, already registered, zero prior Java consumer)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (releaseQualify)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: self-validation-only receipts cannot reach QUALIFIED, past valid_until is STALE even with receipts, one non-QUALIFIED archetype caps the whole release at REASSESSMENT_REQUIRED, real QUALIFIED path)"
+        ]
       }
     },
     {
