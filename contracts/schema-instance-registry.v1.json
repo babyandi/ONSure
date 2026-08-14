@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -416,6 +416,78 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/final-lock.candidate.v2.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/build-artifact-identity.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/build-artifact-identity.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/build-artifact-identity.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/deployment-target.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/deployment-target.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/deployment-target.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/deployment-revision.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/deployment-revision.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/deployment-revision.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/runtime-instance.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/runtime-instance.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/runtime-instance.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/runtime-population-snapshot.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/runtime-population-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/runtime-population-snapshot.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/currentness-snapshot.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/currentness-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/currentness-snapshot.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/invalidation-event.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/invalidation-event.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/invalidation-event.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/recovery-qualification-receipt.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/recovery-qualification-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/recovery-qualification-receipt.v1.invalid.json"
       ]
     }
   ],

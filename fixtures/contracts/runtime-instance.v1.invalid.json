@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_RUNTIME_INSTANCE_V1",
+  "runtime_instance_id": "RI::neutral-001::pod-a",
+  "deployment_revision_id": "DR::neutral-001::0001",
+  "process_identity": "pod-a-proc-1",
+  "boot_id": "3ae51f9c0f7ed6666967a68f9b1c1d984c76b2188d68fb1d79ed0baf22d49547",
+  "observed_artifact_digest": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "observed_config_digest": "e3155b20e134632816c8611c4e9ee5cbd0e00689f7c4c955ee9f896580d02fdb",
+  "observed_dependency_digest": "ddbe46f99704325f669afa563d7f7bce310635171db86cced86435fc456b7e1d",
+  "model_runtime_digest": null,
+  "prompt_bundle_digest": null,
+  "rag_runtime_digest": null,
+  "external_contract_set_digest": "64eda3d65996b43daee2f487005c40e867056555790be3f41eeba9e38cd1072e",
+  "first_seen_at": "2026-08-14T13:37:45.363817+00:00",
+  "last_seen_at": "2026-08-14T13:42:45.363817+00:00",
+  "health_state": "PENDING",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

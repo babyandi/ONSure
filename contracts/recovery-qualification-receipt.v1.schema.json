@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/recovery-qualification-receipt.v1.schema.json",
+  "title": "ONSure Recovery Qualification Receipt v1",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS12, grounded by 64_RECOVERY_QUALIFICATION_RECEIPT_CONTRACT_DESIGN.md and 98's '복구 후 자동 Current 금지'. After any DR/restore, resuming strong issuance is bound to a current RecoveryQualificationReceipt with qualification_decision=PASS -- missing authoritative evidence/ledger/key state must block automatic restoration of prior Final status, never silently assume continuity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "recovery_qualification_id", "recovery_event_id", "restored_component_ids",
+    "pre_failure_generation", "restored_generation", "backup_manifest_digest",
+    "restored_ledger_head_digest", "key_registry_snapshot_digest", "integrity_checks",
+    "missing_or_unverifiable_objects", "qualification_decision", "assurance_ceiling",
+    "evaluated_at", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_RECOVERY_QUALIFICATION_RECEIPT_V1"},
+    "recovery_qualification_id": {"type": "string", "minLength": 1},
+    "recovery_event_id": {"type": "string", "minLength": 1},
+    "restored_component_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "pre_failure_generation": {"type": "integer", "minimum": 0},
+    "restored_generation": {"type": "integer", "minimum": 0},
+    "backup_manifest_digest": {"$ref": "#/$defs/sha256"},
+    "restored_ledger_head_digest": {"$ref": "#/$defs/sha256"},
+    "key_registry_snapshot_digest": {"$ref": "#/$defs/sha256"},
+    "integrity_checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check_id", "check_type", "result"],
+        "properties": {
+          "check_id": {"type": "string", "minLength": 1},
+          "check_type": {"enum": ["LEDGER_HASH_CHAIN", "GENERATION_CONTINUITY", "MISSING_RANGE_SCAN", "REPLAY_CHECK", "KEY_RECONCILIATION", "CURRENT_AUTHORITY_POLICY_COMPATIBILITY"]},
+          "result": {"enum": ["PASS", "FAIL", "INCONCLUSIVE"]}
+        }
+      }
+    },
+    "missing_or_unverifiable_objects": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "qualification_decision": {"enum": ["PASS", "FAIL", "PARTIAL_HOLD"]},
+    "assurance_ceiling": {
+      "enum": ["FULL_PRIOR_ASSURANCE_ELIGIBLE", "REASSESSMENT_REQUIRED", "NO_PRIOR_ASSURANCE_CARRYOVER"],
+      "description": "Even qualification_decision=PASS does not automatically restore prior Final status -- it only bounds the ceiling of what MAY be reassessed next."
+    },
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"missing_or_unverifiable_objects": {"minItems": 1}}},
+      "then": {"properties": {"qualification_decision": {"enum": ["FAIL", "PARTIAL_HOLD"]}, "assurance_ceiling": {"const": "NO_PRIOR_ASSURANCE_CARRYOVER"}}}
+    },
+    {
+      "if": {"properties": {"qualification_decision": {"const": "PASS"}}},
+      "then": {"properties": {"assurance_ceiling": {"enum": ["FULL_PRIOR_ASSURANCE_ELIGIBLE", "REASSESSMENT_REQUIRED"]}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

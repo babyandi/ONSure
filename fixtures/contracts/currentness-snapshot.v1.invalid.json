@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_CURRENTNESS_SNAPSHOT_V1",
+  "currentness_snapshot_id": "CS::neutral-001::0001",
+  "final_lock_digest": "28f213035773e57be53b6754345ae339af77f75b986c8fa06449f92ad0fa00e0",
+  "target_manifest_digest": "79e459b08ef89cc8b68b7c5fcad8ed3a435b3bd65aface1b47ba9a0a57dcdb2c",
+  "deployment_revision_id": "DR::neutral-001::0001",
+  "expected_artifact_digest": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "observed_artifact_digest": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "runtime_population_digest": "5dacbf20049e3072efc73c4c1282071668591e73c76dd9f8bd7dd66239d05190",
+  "runtime_population_complete": true,
+  "policy_epoch": "EPOCH::POLICY::0001",
+  "validator_qualification_epoch": "EPOCH::VQ::0001",
+  "authority_epoch": "AUTH-EPOCH::0001",
+  "observation_epoch": "EPOCH::OBSERVATION::0001",
+  "evaluated_at": "2026-08-14T13:38:01.569597+00:00",
+  "state": "PENDING",
+  "reasons": [
+    "ARTIFACT_DIGEST_MATCH",
+    "RUNTIME_POPULATION_COMPLETE"
+  ],
+  "next_required_actions": [],
+  "revocation_receipt_digest": null,
+  "positive_final_eligible": true,
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

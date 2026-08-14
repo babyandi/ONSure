@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_DEPLOYMENT_REVISION_V1",
+  "deployment_revision_id": "DR::neutral-001::0002-DRIFT",
+  "deployment_target_id": "DT::neutral-001::prod-us-east",
+  "expected_artifact_digest": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "observed_artifact_digest": "84ecdd7ccae38d6dba91ff97457f5f6c174cc989a544451d19f26e08f777bfbd",
+  "deployment_manifest_digest": "15c1a4a9e1a9427ef70c3f42dce297212d407ba85920eeecf75a87532ea7f4cd",
+  "config_digest": "e3155b20e134632816c8611c4e9ee5cbd0e00689f7c4c955ee9f896580d02fdb",
+  "secret_reference_set_digest": "e9403607c5ffd7a076e720c051a364af7abd8010774b0fee503303fa6dbc6b02",
+  "dependency_runtime_digest": "ddbe46f99704325f669afa563d7f7bce310635171db86cced86435fc456b7e1d",
+  "deployment_strategy": "ROLLING",
+  "rollout_generation": 1,
+  "started_at": "2026-08-14T13:37:19.479567+00:00",
+  "completed_at": "2026-08-14T13:42:19.479567+00:00",
+  "state": "COMPLETE",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

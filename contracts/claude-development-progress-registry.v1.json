@@ -199,6 +199,34 @@
         "unresolved_blockers": [],
         "design_change_queue_items_this_wave": [],
         "note": "FinalLock's real ACTIVE mechanism is the v1 ORUDA path (contracts/oruda-final-candidate-gate.v1.schema.json, oruda-final-approval-receipt.v1.schema.json, oruda-final-lock.v1.schema.json, backed by real Java: OrudaFinalCandidateMain/OrudaFinalLockGate/FinalCandidateGate). This wave's v2 candidates are a separate, NONFINAL reconstruction path per 11 SS9/14 SS9 (shadow-comparable against v1, never auto-promoting v1 PASS to v2 PASS) -- this wave did not touch, modify, or activate the v1 mechanism."
+      },
+      "wave_5_deployment_currentness": {
+        "state": "TESTED",
+        "items": [
+          {"item": "BuildArtifactIdentity", "state": "TESTED", "contract": "contracts/build-artifact-identity.v1.schema.json", "note": "New (29 SS3.1). First link of the Verified-to-Deployed-to-Running chain."},
+          {"item": "DeploymentTarget", "state": "TESTED", "contract": "contracts/deployment-target.v1.schema.json", "note": "New, not in the user's explicit Wave-5 name list but a required prerequisite (29 SS3.2): DeploymentRevision.deployment_target_id needs a real referenced contract, and DeploymentTarget has a distinct lifecycle (created once per environment) from DeploymentRevision (created per rollout)."},
+          {"item": "DeploymentRevision", "state": "TESTED", "contract": "contracts/deployment-revision.v1.schema.json", "note": "New (29 SS3.3). Deployment success != Assurance success -- this record only asserts what was deployed/observed, never a validity claim."},
+          {"item": "RuntimeInstance", "state": "TESTED", "contract": "contracts/runtime-instance.v1.schema.json", "note": "New, prerequisite for RuntimePopulationSnapshot (29 SS3.4): a running instance has its own identity, health success != semantic assurance success."},
+          {"item": "RuntimePopulationSnapshot", "state": "TESTED", "contract": "contracts/runtime-population-snapshot.v1.schema.json", "note": "New. Exhaustive instance-id population claim (not a sampled count) per 71 SS2's runtime_population_complete conditional."},
+          {"item": "CurrentnessSnapshot", "state": "TESTED", "contract": "contracts/currentness-snapshot.v1.schema.json", "note": "New (29 SS3.5 AssuranceCurrentnessSnapshot + 71 SS2 conditionals). The separate, repeatedly-re-evaluated mutable axis FinalLock (Wave 4, immutable historical fact) explicitly does not carry -- references FinalLock only by digest."},
+          {"item": "InvalidationEvent", "state": "TESTED", "contract": "contracts/invalidation-event.v1.schema.json", "note": "New (39 SS3). Append-only fact only; does not itself flip currentness state (Impact Rule traversal per 39 SS4 deferred, not implemented this wave)."},
+          {"item": "RecoveryQualificationReceipt", "state": "TESTED", "contract": "contracts/recovery-qualification-receipt.v1.schema.json", "note": "New (71 SS12, grounded by 64 and 98's '복구 후 자동 Current 금지'). Missing/unverifiable evidence forces assurance_ceiling=NO_PRIOR_ASSURANCE_CARRYOVER at schema level."}
+        ],
+        "negative_gates_verified": [
+          "drifted DeploymentRevision (expected != observed artifact digest) is detected (test_drifted_deployment_revision_is_detected)",
+          "CurrentnessSnapshot state=CURRENT requires matching digests AND complete runtime population, both structurally and via fixture (test_currentness_current_requires_matching_digests_and_complete_population)",
+          "a STALE currentness from drift is never positive_final_eligible (test_stale_currentness_from_drift_is_not_positive_final_eligible)",
+          "CurrentnessSnapshot is confirmed to be the separate mutable axis -- two different currentness records reference the SAME immutable FinalLock digest without that lock ever being rewritten (test_currentness_is_the_separate_mutable_axis_final_lock_is_not)",
+          "recovery with missing/unverifiable evidence forbids prior Final carryover, never a silent full-PASS restore (test_recovery_with_missing_evidence_forbids_prior_final_carryover)"
+        ],
+        "evidence": [
+          "python3 scripts/validate-structured-contracts.py --require-full -> PASS (61 registered schemas, 63 positive + 40 negative instances)",
+          "python3 -m unittest tests.test_wave5_deployment_currentness -> 10/10 PASS",
+          "full python suite -> 69/69 PASS",
+          "mvn -q compile -> clean"
+        ],
+        "unresolved_blockers": [],
+        "design_change_queue_items_this_wave": []
       }
     },
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/invalidation-event.v1.schema.json",
+  "title": "ONSure Invalidation Event v1",
+  "description": "39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md SS3. An append-only fact that something changed; it does not itself flip a CurrentnessSnapshot's state -- a separate Impact Rule traversal (SS4, not implemented here, deferred with the runtime engine) consumes these events and any source_subject_ids-referencing CurrentnessSnapshot must be reassessed, never silently left CURRENT.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "event_id", "event_type", "observed_at", "effective_at", "organization_id",
+    "tenant_id", "source_subject_ids", "changed_from_digest", "changed_to_digest",
+    "triggering_evidence_digest", "severity", "authority_context", "source_system",
+    "confidence", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_INVALIDATION_EVENT_V1"},
+    "event_id": {"type": "string", "minLength": 1},
+    "event_type": {
+      "enum": [
+        "SOURCE_CHANGED", "BUILD_ARTIFACT_CHANGED", "DEPENDENCY_CHANGED", "CVE_DISCLOSED",
+        "CONFIG_CHANGED", "FEATURE_FLAG_CHANGED", "POLICY_CHANGED", "REGULATION_CHANGED",
+        "ORACLE_CHANGED", "VALIDATOR_CHANGED", "VALIDATOR_DEFECT_DISCOVERED",
+        "QUALIFICATION_EXPIRED", "MODEL_CHANGED", "PROMPT_CHANGED", "TOOL_CHANGED",
+        "RAG_CHANGED", "EXTERNAL_CONTRACT_CHANGED", "AUTHORITY_REVOKED", "KEY_COMPROMISED",
+        "MISSED_FINDING_CONFIRMED", "EVIDENCE_TAMPER_DETECTED", "DEPLOYMENT_DRIFT",
+        "OBSERVER_FAILURE", "CLOCK_TRUST_LOST"
+      ]
+    },
+    "observed_at": {"type": "string", "format": "date-time"},
+    "effective_at": {"type": ["string", "null"], "format": "date-time"},
+    "organization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "source_subject_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "changed_from_digest": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"},
+    "changed_to_digest": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"},
+    "triggering_evidence_digest": {"$ref": "#/$defs/sha256"},
+    "severity": {"enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]},
+    "authority_context": {"type": ["string", "null"]},
+    "source_system": {"type": "string", "minLength": 1},
+    "confidence": {"enum": ["CONFIRMED", "PROBABLE", "SUSPECTED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
