@@ -664,6 +664,21 @@
           "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: enforced regulated policy blocks the same actor across a real Bridge/RBAC-authenticated call; different actors under the same enforced policy both succeed and sod.check reports clean; STANDARD industry cannot declare ENFORCED; ADVISORY records and surfaces the conflict via sod.check)"
         ],
         "known_gap_not_yet_covered": "sod.record-stage is an additive v2 candidate op that a caller must choose to invoke -- it is not yet a MANDATORY gate wired directly into the real v1 patch.apply/plan.approve/git.commit dispatcher chain (those operations do not yet call this ledger themselves). That deeper integration -- and reading the actual signer identity out of each stage's approval receipt rather than trusting a caller-declared stage label -- is real follow-on work, noted here rather than silently claimed complete. four-eyes/delegation/break-glass and Plugin/Adapter qualification and external integration trust remain open Batch 4 items."
+      },
+      "slice_2_four_eyes": {
+        "state": "EVIDENCE_READY",
+        "note": "policy-profile.v1.schema.json's four_eyes_required flag now has real enforcement. FourEyesLedger.java (durable, ExclusiveFileLock-protected, one file per approval_subject_id) only reports a subject satisfied once REQUIRED_DISTINCT_APPROVERS (2) genuinely distinct actors have each recorded an approval. The same actor approving twice is rejected outright (SecurityException) rather than silently double-counted or silently ignored -- either failure mode would defeat the entire point of a dual-control check.",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/FourEyesLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (assurance.four-eyes.record-approval, assurance.four-eyes.check)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/FourEyesLedgerTest.java (NEW, 4 tests)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests, including a real two-distinct-authenticated-identity satisfaction case)"
+        ],
+        "known_gap_not_yet_covered": "Same additive-not-mandatory-gate caveat as slice 1's sod.record-stage -- this is not yet wired as a required precondition inside any real v1 dispatcher operation (e.g. license.revoke, case.legal-hold) that doc 08A/04 would actually want dual control on. Delegation/break-glass, Plugin/Adapter qualification, and external integration trust remain open Batch 4 items."
       }
     },
     {

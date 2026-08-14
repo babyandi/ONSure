@@ -554,6 +554,65 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void fourEyesIsNotSatisfiedByASingleApproverEvenWhenPolicyRequiresIt() throws Exception {
+        Map<?, ?> result = fourEyesApprove(bridge, "subject-1");
+        assertEquals(false, result.get("satisfied"));
+        assertEquals(1L, result.get("distinct_approver_count"));
+    }
+
+    @Test
+    void fourEyesIsSatisfiedOnceTwoDistinctActorsApprove() throws Exception {
+        SemanticAssuranceV2DispatcherBridge secondActor = new SemanticAssuranceV2DispatcherBridge(
+                temp, identity("tenant-a", "admin-b"));
+        fourEyesApprove(bridge, "subject-2");
+        Map<?, ?> second = fourEyesApprove(secondActor, "subject-2");
+        assertEquals(true, second.get("satisfied"));
+
+        Map<?, ?> check = fourEyesCheck("subject-2");
+        assertEquals(true, check.get("satisfied"));
+        assertEquals(List.of("admin-a", "admin-b"), check.get("approver_actor_ids"));
+    }
+
+    @Test
+    void fourEyesRejectsTheSameActorApprovingTwice() throws Exception {
+        fourEyesApprove(bridge, "subject-3");
+        SecurityException denied = assertThrows(SecurityException.class, () -> fourEyesApprove(bridge, "subject-3"));
+        assertEquals("FOUR_EYES_SAME_ACTOR_CANNOT_COUNT_TWICE:admin-a", denied.getMessage());
+    }
+
+    @Test
+    void fourEyesRecordApprovalIsANoOpWhenPolicyDoesNotRequireIt() throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.four-eyes.record-approval", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "approval_subject_id", "subject-4",
+                        "policy_profile", Map.of("four_eyes_required", false)))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("FOUR_EYES_NOT_REQUIRED_BY_POLICY"), result.get("reasons"));
+    }
+
+    private Map<?, ?> fourEyesApprove(SemanticAssuranceV2DispatcherBridge caller, String approvalSubjectId) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) caller.dispatch(
+                "assurance.four-eyes.record-approval", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "approval_subject_id", approvalSubjectId,
+                        "policy_profile", Map.of("four_eyes_required", true)))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    private Map<?, ?> fourEyesCheck(String approvalSubjectId) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.four-eyes.check", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "approval_subject_id", approvalSubjectId))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

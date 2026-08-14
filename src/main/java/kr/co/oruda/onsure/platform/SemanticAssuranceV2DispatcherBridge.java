@@ -186,7 +186,8 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "semantic.denominator.challenge", "semantic.denominator.lock",
                     "semantic.reperformance.run", "assurance.evidence-graph.validate",
                     "assurance.composition.compute", "assurance.sod.record-stage",
-                    "assurance.sod.check" -> auditor || operator || admin;
+                    "assurance.sod.check", "assurance.four-eyes.record-approval",
+                    "assurance.four-eyes.check" -> auditor || operator || admin;
             case "semantic.authority.revalidate", "semantic.independence.assess",
                     "semantic.freshness.invalidate", "semantic.freshness.reconstruct",
                     "semantic.validator.requalify", "assurance.final-candidate.reconstruct",

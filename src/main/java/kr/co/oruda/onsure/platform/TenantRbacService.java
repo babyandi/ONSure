@@ -33,7 +33,9 @@ public final class TenantRbacService {
             "assurance.evidence-graph.validate",
             "assurance.composition.compute",
             "assurance.sod.record-stage",
-            "assurance.sod.check");
+            "assurance.sod.check",
+            "assurance.four-eyes.record-approval",
+            "assurance.four-eyes.check");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",

@@ -46,7 +46,9 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.revocation.check",
             "assurance.offline-trust-bundle.evaluate",
             "assurance.sod.record-stage",
-            "assurance.sod.check");
+            "assurance.sod.check",
+            "assurance.four-eyes.record-approval",
+            "assurance.four-eyes.check");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -98,6 +100,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.offline-trust-bundle.evaluate" -> offlineTrustBundleEvaluate(request);
             case "assurance.sod.record-stage" -> sodRecordStage(request);
             case "assurance.sod.check" -> sodCheck(request);
+            case "assurance.four-eyes.record-approval" -> fourEyesRecordApproval(request);
+            case "assurance.four-eyes.check" -> fourEyesCheck(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -905,6 +909,49 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("recorded_stage_count", stages.size());
         out.put("actors_with_multiple_stages", actorsWithMultipleStages);
         out.put("clean", actorsWithMultipleStages.isEmpty());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * policy-profile.v1.schema.json four_eyes_required real enforcement: records that the caller
+     * approved {@code approval_subject_id}, and reports whether the required number of genuinely
+     * distinct approvers (FourEyesLedger.REQUIRED_DISTINCT_APPROVERS) has now been reached. The
+     * same actor approving the same subject twice is rejected -- it would silently defeat the
+     * control -- so an actor who wants to "recheck" gets FOUR_EYES_SAME_ACTOR_CANNOT_COUNT_TWICE,
+     * not a quiet no-op success.
+     */
+    private Map<String, Object> fourEyesRecordApproval(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String approvalSubjectId = requiredText(request, "approval_subject_id");
+        boolean fourEyesRequired = request.path("policy_profile").path("four_eyes_required").asBoolean(false);
+        if (!fourEyesRequired) {
+            return failClosed("HOLD", List.of("FOUR_EYES_NOT_REQUIRED_BY_POLICY"));
+        }
+
+        FourEyesLedger ledger = new FourEyesLedger(workspaceRoot.resolve(".onsure/assurance/four-eyes"));
+        FourEyesLedger.Result result = ledger.recordApproval(approvalSubjectId, identity.actorId());
+
+        Map<String, Object> out = base("FOUR_EYES_APPROVAL_RECORD", targetId);
+        out.put("approval_subject_id", approvalSubjectId);
+        out.put("distinct_approver_count", result.approvals().stream().map(FourEyesLedger.ApprovalRecord::actorId).distinct().count());
+        out.put("required_distinct_approvers", FourEyesLedger.REQUIRED_DISTINCT_APPROVERS);
+        out.put("satisfied", result.satisfied());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    private Map<String, Object> fourEyesCheck(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String approvalSubjectId = requiredText(request, "approval_subject_id");
+        FourEyesLedger ledger = new FourEyesLedger(workspaceRoot.resolve(".onsure/assurance/four-eyes"));
+        FourEyesLedger.Result result = ledger.approvalsFor(approvalSubjectId);
+
+        Map<String, Object> out = base("FOUR_EYES_CHECK", targetId);
+        out.put("approval_subject_id", approvalSubjectId);
+        out.put("approver_actor_ids", result.approvals().stream().map(FourEyesLedger.ApprovalRecord::actorId).distinct().toList());
+        out.put("required_distinct_approvers", FourEyesLedger.REQUIRED_DISTINCT_APPROVERS);
+        out.put("satisfied", result.satisfied());
         out.put("decision", "NON_FINAL");
         return immutable(out);
     }
