@@ -1,0 +1,42 @@
+{
+  "contract": "ONSURE_RELEASE_QUALIFICATION_V1",
+  "release_qualification_id": "ORQ::v2026.08.0::0001",
+  "onsure_release_digest": "175b5a2c0f0d31666a7aa33b373a796b54426481e4a15c2d2648def30a069fb2",
+  "validator_set_digest": "5c3c626163522d2a71fe576abd4efc5278ead4f2d33f14f9ff093ed99aec9e0a",
+  "oracle_set_digest": "ddca906f93664bbc4f906fd30c52c8f663dd379e07052db6a2110a6b15c66201",
+  "adapter_set_digest": "ab06f722a2790078f447de840ddb7d631508410be632a754eead4be754cce952",
+  "fixture_set_digest": "212aa9852073426786a21e234c7723cefe0fb39d8cf937e32dacde82ab16338c",
+  "hidden_benchmark_generation": 3,
+  "build_provenance_digest": "a3dfa47c908ea7d0fed63e3e6ff872f68ffdd5782e10e291a27cafd6092e21ee",
+  "sbom_digest": "845c856101cdc4c43bc5f32fd7bf759ea31f5beecaadf8ef5917201d2ad0c1b1",
+  "tcb_manifest_digest": "5cdb2d23825d51c282c520f5c8d7a77ae2b6004f0914381acc472a2e89d128be",
+  "archetype_qualification_map": [
+    {
+      "target_archetype": "NODE_NPM_SERVICE",
+      "scope_state": "QUALIFIED"
+    },
+    {
+      "target_archetype": "PYTHON_DJANGO_SERVICE",
+      "scope_state": "NOT_QUALIFIED"
+    }
+  ],
+  "independent_verifier_receipts": [
+    {
+      "receipt_id": "OAUDIT::release-v2026-08-0::0001",
+      "receipt_sha256": "9c35718d5755df52edcc679e6be6d57490362fb7b7a2d5515e8a096effdb18c8",
+      "principal_profile_sha256": "5fb3c9511c82890ad33222b948f463d001557355b8c3cef2840463f51f8c0d0f"
+    }
+  ],
+  "known_limitations": [
+    "PYTHON_DJANGO_SERVICE archetype not yet independently qualified."
+  ],
+  "valid_from": "2026-08-14T13:48:38.615628+00:00",
+  "valid_until": "2027-02-10T13:48:38.615628+00:00",
+  "requalification_triggers": [
+    "VALIDATOR_SET_CHANGED",
+    "CRITICAL_MISSED_FINDING_CONFIRMED"
+  ],
+  "state": "QUALIFIED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

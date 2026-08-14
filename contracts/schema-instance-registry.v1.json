@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -533,6 +533,42 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/offline-trust-bundle.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/plugin-manifest.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/plugin-manifest.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/plugin-manifest.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/ai-population-receipt.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/ai-population-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ai-population-receipt.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/onsure-release-qualification.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/onsure-release-qualification.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/onsure-release-qualification.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/contract-active-selector.candidate.v2.schema.json",
+      "instances": [
+        "fixtures/contracts/contract-active-selector.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/contract-active-selector.candidate.v2.invalid.json"
       ]
     }
   ],

@@ -34,7 +34,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "target_id", "target-1",
                 "target_name", "Target",
                 "target_type", "GENERAL_SOFTWARE",
-                "source_root", "target-src")));
+                "source_root", temp.resolve("target-src").toString())));
     }
 
     @Test

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/ai-population-receipt.v1.schema.json",
+  "title": "ONSure AI Population Receipt v1 (AIBehaviorPopulation)",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS10. zero observed failure != zero failure probability -- a small/lucky sample must never be read as a clean bill of health; sample_size and the statistical method together bound the claim, and confidence_level/interval_or_bound must accompany any observed_failures count. A runtime identity drift STALEs the previous population rather than silently reusing it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "population_id", "target_runtime_identity_digest",
+    "exact_scenario_population_digest", "sample_size", "observed_failures",
+    "critical_failures", "seed_profile_digest", "sampling_config_digest",
+    "excluded_run_ids", "statistical_method", "statistical_method_version",
+    "confidence_level", "interval_or_bound", "generated_at",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AI_POPULATION_RECEIPT_V1"},
+    "population_id": {"type": "string", "minLength": 1},
+    "target_runtime_identity_digest": {"$ref": "#/$defs/sha256"},
+    "exact_scenario_population_digest": {"$ref": "#/$defs/sha256"},
+    "sample_size": {"type": "integer", "minimum": 1},
+    "observed_failures": {"type": "integer", "minimum": 0},
+    "critical_failures": {"type": "integer", "minimum": 0},
+    "seed_profile_digest": {"$ref": "#/$defs/sha256"},
+    "sampling_config_digest": {"$ref": "#/$defs/sha256"},
+    "excluded_run_ids": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["run_id", "reason"],
+        "properties": {
+          "run_id": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "statistical_method": {"type": "string", "minLength": 1},
+    "statistical_method_version": {"type": "string", "minLength": 1},
+    "confidence_level": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "interval_or_bound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "lower", "upper"],
+      "properties": {
+        "kind": {"enum": ["TWO_SIDED_INTERVAL", "UPPER_BOUND_ONLY", "LOWER_BOUND_ONLY"]},
+        "lower": {"type": ["number", "null"]},
+        "upper": {"type": ["number", "null"]}
+      }
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"critical_failures": {"minimum": 1}}},
+      "then": {"properties": {"observed_failures": {"minimum": 1}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

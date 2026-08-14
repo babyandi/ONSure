@@ -88,7 +88,7 @@
     {
       "batch": "BATCH_1",
       "name": "Core Contract Foundation",
-      "state": "IN_PROGRESS",
+      "state": "EVIDENCE_READY",
       "scope": "82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md Wave 1..7",
       "wave_1_identity_foundation": {
         "state": "IN_PROGRESS",
@@ -251,6 +251,36 @@
         ],
         "unresolved_blockers": [],
         "design_change_queue_items_this_wave": []
+      },
+      "wave_7_platform_meta": {
+        "state": "TESTED",
+        "items": [
+          {"item": "PluginManifest", "state": "TESTED", "contract": "contracts/plugin-manifest.v1.schema.json", "note": "New (77 SS5). Unsigned/revoked publisher forbids execution; a plugin result alone can never create independent Final assurance -- enforced at schema level (publisher_revoked=true forces qualification_state=REVOKED)."},
+          {"item": "AIPopulationReceipt", "state": "TESTED", "contract": "contracts/ai-population-receipt.v1.schema.json", "note": "New (71 SS10, AIBehaviorPopulation). zero observed failure != zero failure probability -- confidence interval/bound required, critical_failures without observed_failures rejected at schema level."},
+          {"item": "ONSureReleaseQualification", "state": "TESTED", "contract": "contracts/onsure-release-qualification.v1.schema.json", "note": "New (71 SS11). Self-validation receipts alone cannot produce state=QUALIFIED -- independent_verifier_receipts non-empty is enforced at schema level. Scoped per target archetype, not a single global claim."},
+          {"item": "ActiveContractSelector", "state": "TESTED", "contract": "contracts/contract-active-selector.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. Fixture confirms v1 stays active (superseded_version=null) per 137 SS5's 'Active Selector 임의 변경 금지' -- does not promote v2."}
+        ],
+        "negative_gates_verified": [
+          "a revoked-publisher plugin cannot be QUALIFIED, enforced at schema level (test_revoked_publisher_plugin_cannot_be_qualified)",
+          "critical_failures without observed_failures is rejected at schema level (test_critical_failures_without_observed_failures_is_rejected)",
+          "self-validation alone (empty independent_verifier_receipts) cannot produce state=QUALIFIED, enforced at schema level (test_self_validation_alone_cannot_produce_qualified_release)",
+          "release qualification is confirmed scoped per archetype, not uniformly global (test_release_qualification_is_scoped_per_archetype_not_global)",
+          "the active contract selector fixture does not arbitrarily flip the active version (test_active_contract_selector_does_not_arbitrarily_flip_the_active_version)"
+        ],
+        "evidence": [
+          "python3 scripts/validate-structured-contracts.py --require-full -> PASS (70 registered schemas, 72 positive + 49 negative instances)",
+          "python3 -m unittest tests.test_wave7_platform_meta -> 8/8 PASS",
+          "full python suite -> 87/87 PASS",
+          "mvn -q compile -> clean"
+        ],
+        "unresolved_blockers": [],
+        "design_change_queue_items_this_wave": []
+      },
+      "batch_1_closure": {
+        "waves_complete": "7/7",
+        "total_new_or_registered_schemas_this_batch": 34,
+        "total_python_tests_this_batch": 39,
+        "note": "All 7 Waves of 82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md complete with real fixtures, cross-contract tests, and evidence. No P0 design-change-queue item open against Batch 1's scope. Batch 1's own Done Gate (Contract/Schema -> Implementation -> Positive Fixture -> Negative Fixture -> Cross-contract Test -> Compile/Test -> Evidence -> Trace/Registry, per each wave) is satisfied for all 7 waves."
       }
     },
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},
