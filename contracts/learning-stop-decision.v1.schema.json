@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/learning-stop-decision.v1.schema.json",
+  "title": "ONSure Learning Stop Decision v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS L. Knowledge freshness / learning stop condition. A CONTINUE decision requires a stated rationale digest -- 'unbounded CONTINUE with no basis' is the named negative case, and high regression_risk combined with coverage_saturation is the named positive case forcing STOP/HOLD.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "candidate_id", "learning_epoch", "marginal_gain", "regression_risk",
+    "false_positive_cost", "coverage_saturation", "budget_state", "decision", "rationale_digest", "decided_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_LEARNING_STOP_DECISION_V1"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "learning_epoch": {"type": "string", "minLength": 1},
+    "marginal_gain": {"type": "number"},
+    "regression_risk": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+    "false_positive_cost": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+    "coverage_saturation": {"type": "number", "minimum": 0, "maximum": 1},
+    "budget_state": {"enum": ["WITHIN_BUDGET", "NEAR_LIMIT", "EXCEEDED"]},
+    "decision": {"enum": ["CONTINUE", "STOP", "HOLD"]},
+    "rationale_digest": {"$ref": "#/$defs/sha256"},
+    "decided_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "coverage_saturation": {"minimum": 0.95},
+          "regression_risk": {"const": "HIGH"}
+        },
+        "required": ["coverage_saturation", "regression_risk"]
+      },
+      "then": {"properties": {"decision": {"enum": ["STOP", "HOLD"]}}}
+    },
+    {
+      "if": {"properties": {"budget_state": {"const": "EXCEEDED"}}},
+      "then": {"properties": {"decision": {"enum": ["STOP", "HOLD"]}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

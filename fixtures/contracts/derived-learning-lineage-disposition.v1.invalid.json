@@ -1,0 +1,10 @@
+{
+  "contract": "ONSURE_DERIVED_LEARNING_LINEAGE_DISPOSITION_V1",
+  "disposition_id": "disposition-002",
+  "source_id": "source-002",
+  "derived_asset_ids": ["candidate-003"],
+  "trigger": "CONSENT_WITHDRAWAL",
+  "disposition": "NO_ACTION_WITH_PROOF",
+  "evidence_refs": ["5108deb71ee1d00d8e14ad48f2ddee3dca264528a5ae802ac5a682ee11ecc0d7"],
+  "decided_at": "2026-08-14T00:00:00Z"
+}

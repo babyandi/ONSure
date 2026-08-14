@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/derived-learning-lineage-disposition.v1.schema.json",
+  "title": "ONSure Derived Learning Lineage Disposition v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS H. 148 P0 invariant 7: once a source is under consent withdrawal, every derived asset in derived_asset_ids must have a disposition of REVOKE/DELETE/REQUALIFY_REQUIRED -- an unresolved derived asset staying implicitly ACTIVE is exactly the named negative case, so NO_ACTION_WITH_PROOF is only permitted for a trigger other than CONSENT_WITHDRAWAL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "disposition_id", "source_id", "derived_asset_ids", "trigger",
+    "disposition", "evidence_refs", "decided_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DERIVED_LEARNING_LINEAGE_DISPOSITION_V1"},
+    "disposition_id": {"type": "string", "minLength": 1},
+    "source_id": {"type": "string", "minLength": 1},
+    "derived_asset_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "trigger": {"enum": ["CONSENT_WITHDRAWAL", "CORPUS_REVOCATION", "TENANT_OFFBOARDING", "POLICY_CHANGE"]},
+    "disposition": {"enum": ["REVOKE", "DELETE", "REQUALIFY_REQUIRED", "NO_ACTION_WITH_PROOF"]},
+    "evidence_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sha256"}, "uniqueItems": true},
+    "decided_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"trigger": {"const": "CONSENT_WITHDRAWAL"}}},
+      "then": {"properties": {"disposition": {"enum": ["REVOKE", "DELETE", "REQUALIFY_REQUIRED"]}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

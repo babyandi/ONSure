@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/oracle-disagreement-case.v1.schema.json",
+  "title": "ONSure Oracle Disagreement Case v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS F. 148 P0 invariant 5: an unresolved (OPEN) disagreement forbids the related decision from being PASS, and resolution must never be a simple majority vote -- resolution_authority_ref/resolution_evidence_refs are required once RESOLVED, naming who/what actually adjudicated it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "case_id", "subject_id", "oracle_results", "status",
+    "related_decision", "opened_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ORACLE_DISAGREEMENT_CASE_V1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "subject_id": {"type": "string", "minLength": 1},
+    "oracle_results": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["oracle_id", "decision"],
+        "properties": {
+          "oracle_id": {"type": "string", "minLength": 1},
+          "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]}
+        }
+      }
+    },
+    "status": {"enum": ["OPEN", "RESOLVED", "ESCALATED"]},
+    "related_decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]},
+    "resolution_authority_ref": {"type": ["string", "null"]},
+    "resolution_evidence_refs": {"type": "array", "items": {"$ref": "#/$defs/sha256"}},
+    "opened_at": {"type": "string", "format": "date-time"},
+    "resolved_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "OPEN"}}},
+      "then": {"properties": {"related_decision": {"enum": ["HOLD", "BLOCKED", "NOT_RUN"]}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "RESOLVED"}}},
+      "then": {"required": ["resolution_authority_ref", "resolution_evidence_refs", "resolved_at"]}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

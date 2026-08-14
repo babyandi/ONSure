@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/validation-experiment.v1.schema.json",
+  "title": "ONSure Validation Experiment v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS J. Covers stochastic, metamorphic, differential, and environment-matrix validation. 148 P0 invariant 12: a single stochastic run must never claim stability -- STOCHASTIC mode requires run_count >= 2 with every run represented in runs[]; a NOT_RUN cell inside an ENVIRONMENT_MATRIX result must not be silently treated as PASS.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "experiment_id", "mode", "subject_id", "run_count", "runs", "environment", "result", "generated_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_VALIDATION_EXPERIMENT_V1"},
+    "experiment_id": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["STOCHASTIC", "METAMORPHIC", "DIFFERENTIAL", "ENVIRONMENT_MATRIX"]},
+    "subject_id": {"type": "string", "minLength": 1},
+    "run_count": {"type": "integer", "minimum": 1},
+    "runs": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["run_id", "outcome"],
+        "properties": {
+          "run_id": {"type": "string", "minLength": 1},
+          "outcome": {"enum": ["PASS", "FAIL", "NOT_RUN", "INCONCLUSIVE"]},
+          "seed": {"type": ["string", "null"]},
+          "transformation": {"type": ["string", "null"]},
+          "relation": {"type": ["string", "null"]},
+          "comparator": {"type": ["string", "null"]},
+          "matrix_cell": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "environment": {"type": "string", "minLength": 1},
+    "result": {"enum": ["STABLE", "UNSTABLE", "INCONCLUSIVE", "NOT_RUN"]},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "STOCHASTIC"}}},
+      "then": {"properties": {"run_count": {"minimum": 2}}}
+    },
+    {
+      "if": {"properties": {"result": {"const": "STABLE"}}},
+      "then": {
+        "properties": {
+          "run_count": {"minimum": 2},
+          "runs": {"items": {"properties": {"outcome": {"const": "PASS"}}}}
+        }
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.19.3",
+  "version": "1.19.4",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -596,6 +596,105 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/official-learning-ledger-entry.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/learning-candidate-asset.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/learning-candidate-asset.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-candidate-asset.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/learning-promotion-receipt.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/learning-promotion-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-promotion-receipt.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/corpus-integrity-report.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/corpus-integrity-report.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/corpus-integrity-report.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/learning-effectiveness-report.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/learning-effectiveness-report.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-effectiveness-report.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/oracle-qualification.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/oracle-qualification.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/oracle-qualification.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/oracle-disagreement-case.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/oracle-disagreement-case.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/oracle-disagreement-case.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/validator-regression-qualification.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/validator-regression-qualification.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/validator-regression-qualification.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/derived-learning-lineage-disposition.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/derived-learning-lineage-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/derived-learning-lineage-disposition.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/learning-scope-promotion.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/learning-scope-promotion.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-scope-promotion.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/validation-experiment.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/validation-experiment.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/validation-experiment.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/learning-stop-decision.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/learning-stop-decision.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-stop-decision.v1.invalid.json"
       ]
     }
   ],

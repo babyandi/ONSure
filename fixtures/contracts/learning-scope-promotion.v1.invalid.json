@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_LEARNING_SCOPE_PROMOTION_V1",
+  "promotion_id": "promotion-002",
+  "asset_id": "candidate-002",
+  "from_scope": "TENANT",
+  "to_scope": "GLOBAL",
+  "consent_ref": "CONSENT::ORG-001::0002",
+  "privacy_proof_ref": "PRIVACY-PROOF::ORG-001::0002",
+  "corpus_integrity_report_decision": "CLEAR",
+  "policy_approval_ref": "POLICY-APPROVAL::0002",
+  "decision": "APPROVED",
+  "decided_at": "2026-08-14T00:00:00Z"
+}

@@ -786,6 +786,44 @@
           "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+3 tests: a full 6-distinct-actor end-to-end pipeline reaching APPLIED_LOCKED, learner-cannot-request-own-validation surfaces as HOLD through the wired operation, completion-status before registration reads HOLD_NO_CANDIDATE)",
           "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java (pre-existing, 16 tests, unmodified -- verified passing, not rebuilt)"
         ]
+      },
+      "slice_2_learning_validation_contract_family": {
+        "state": "IMPLEMENTED_PENDING_RUNTIME_CONSUMER",
+        "note": "Found 146/147/148/149_LEARNING_VALIDATION_*.md -- a dedicated, thorough, NORMATIVE_REFINEMENT design closure (status DESIGN_ONLY/NON_FINAL) enumerating exactly the requirement denominator for this slice: 14 schema objects (A-N) and 12 named P0 negative fixture cases, with 148 SS4 explicitly assigning A/B/E/F/G/C/D to Batch 5. Materialized 11 of the 14 objects as new JSON Schema contracts with real structural allOf invariants (not merely documented convention) plus positive and semantic-invalid fixtures for each, directly covering the user-directed list: LearningCandidateAsset (final_decision_authority const false = \"cannot hold ACTIVE/PASS/FAIL authority directly\"), LearningPromotionReceipt (schema-level rejection of a direct CANDIDATE->ACTIVE transition), CorpusIntegrityReport (CONFIRMED poisoning/tenant-leakage/benchmark-contamination forces BLOCKED, never CLEAR), LearningEffectivenessReport, OracleQualification (QUALIFIED requires independent=true and a fresh_until date), OracleDisagreementCase (OPEN status forces the related decision to HOLD/BLOCKED/NOT_RUN, never PASS), ValidatorRegressionQualification (QUALIFIED requires golden/blind/challenge all PASS), DerivedLearningLineageDisposition (CONSENT_WITHDRAWAL trigger forbids NO_ACTION_WITH_PROOF), LearningScopePromotion (GLOBAL scope unreachable except from INDUSTRY), ValidationExperiment (STOCHASTIC/STABLE both require run_count>=2, closing the single-run-stability-PASS negative case), and LearningStopDecision (EXCEEDED budget or HIGH-regression-risk-at-saturation forces STOP/HOLD, never bare CONTINUE). EvidenceObservation (K) is intentionally deferred -- 148 SS4 assigns it to Batch 3, already closed, and its EVIDENCE_NOT_COLLECTED/OBSERVED_ABSENCE state machine is a currentness concern more than a learning concern. FailureRegistryEntry (M) and CoverageBalanceReport (N) are explicitly 148 SS4 Batch 9 (test materialization) scope and are deferred there rather than pulled forward.",
+        "p0_negative_cases_covered_with_a_real_schema_level_rejection": [
+          "1. Candidate->ACTIVE direct promotion (learning-promotion-receipt.v1)",
+          "4. Unqualified/stale oracle in final PASS (oracle-qualification.v1)",
+          "5. Unresolved multi-oracle disagreement PASS (oracle-disagreement-case.v1)",
+          "6. Confirmed corpus poisoning/tenant-leak activation (corpus-integrity-report.v1)",
+          "7. Consent-withdrawal lineage left unresolved (derived-learning-lineage-disposition.v1)",
+          "9. Validator regression threshold exceeded, still qualified (validator-regression-qualification.v1)",
+          "12. Single stochastic run claiming stability (validation-experiment.v1)"
+        ],
+        "p0_negative_cases_still_needing_a_runtime_computation_layer": [
+          "2. creator=evaluator=approver self-approval (schema alone cannot cross-reference LearningCandidateAsset.created_by against the receipt actor_id -- needs a cross-contract runtime validator, same class of gap OfficialLearningLedger already closes for its own pipeline)",
+          "3. ACTIVE without qualification evidence",
+          "8. Golden/Blind contamination used as qualification evidence",
+          "11. Stale knowledge asset used as final decision authority",
+          "Numeric drift-vs-threshold comparison in ValidatorRegressionQualification (JSON Schema draft 2020-12 without $data cannot compare two sibling numeric fields declaratively; noted explicitly in the schema description rather than faked with a no-op constraint)"
+        ],
+        "contract_schema": [
+          "contracts/learning-candidate-asset.v1.schema.json (NEW)",
+          "contracts/learning-promotion-receipt.v1.schema.json (NEW)",
+          "contracts/corpus-integrity-report.v1.schema.json (NEW)",
+          "contracts/learning-effectiveness-report.v1.schema.json (NEW)",
+          "contracts/oracle-qualification.v1.schema.json (NEW)",
+          "contracts/oracle-disagreement-case.v1.schema.json (NEW)",
+          "contracts/validator-regression-qualification.v1.schema.json (NEW)",
+          "contracts/derived-learning-lineage-disposition.v1.schema.json (NEW)",
+          "contracts/learning-scope-promotion.v1.schema.json (NEW)",
+          "contracts/validation-experiment.v1.schema.json (NEW)",
+          "contracts/learning-stop-decision.v1.schema.json (NEW)"
+        ],
+        "tests": [
+          "tests/test_learning_validation_contracts.py (NEW, 12 tests: schema self-validity, every valid/invalid fixture pair, plus one targeted test per P0 negative case above demonstrating the rejection is a genuine jsonschema.ValidationError, not just a documented convention)"
+        ],
+        "known_gap_not_yet_covered": "No Java runtime consumer/producer yet for these 11 schemas (unlike slice 1's OfficialLearningLedger wiring) -- they exist as validated contracts with real structural invariants but nothing in the product currently emits or ingests instances of them. The cross-contract P0 cases requiring actor/state cross-referencing (2, 3, 8, 11 above) are real follow-on work for a runtime validator layer, analogous to how OfficialLearningLedger enforces its own cross-entry invariants in Java rather than in JSON Schema alone.",
+        "done_gate_self_check": "137 SS4 Done Gate requires Contract/Schema -> Implementation -> Fixtures -> Cross-contract Test -> Compile/Test -> Evidence -> Trace/Registry, in that order, before a unit reaches EVIDENCE_READY. This slice only completed Contract/Schema + Fixtures + a schema-level Cross-contract Test -- the Implementation step (a real runtime producer/consumer) is still missing, so per the user's 2026-08-14 explicit instruction not to treat schema/fixture/test-count existence alone as completion, this is deliberately NOT marked EVIDENCE_READY. It advances to EVIDENCE_READY only once slice 3 lands real Java implementation consuming these contracts."
       }
     },
     {

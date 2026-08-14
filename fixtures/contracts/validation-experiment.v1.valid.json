@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_VALIDATION_EXPERIMENT_V1",
+  "experiment_id": "experiment-001",
+  "mode": "STOCHASTIC",
+  "subject_id": "candidate-001",
+  "run_count": 5,
+  "runs": [
+    {"run_id": "run-1", "outcome": "PASS", "seed": "seed-1", "transformation": null, "relation": null, "comparator": null, "matrix_cell": null},
+    {"run_id": "run-2", "outcome": "PASS", "seed": "seed-2", "transformation": null, "relation": null, "comparator": null, "matrix_cell": null},
+    {"run_id": "run-3", "outcome": "PASS", "seed": "seed-3", "transformation": null, "relation": null, "comparator": null, "matrix_cell": null},
+    {"run_id": "run-4", "outcome": "PASS", "seed": "seed-4", "transformation": null, "relation": null, "comparator": null, "matrix_cell": null},
+    {"run_id": "run-5", "outcome": "PASS", "seed": "seed-5", "transformation": null, "relation": null, "comparator": null, "matrix_cell": null}
+  ],
+  "environment": "ci-runner-1",
+  "result": "STABLE",
+  "generated_at": "2026-08-14T00:00:00Z"
+}

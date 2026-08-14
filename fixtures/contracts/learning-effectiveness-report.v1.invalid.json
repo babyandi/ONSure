@@ -1,0 +1,27 @@
+{
+  "contract": "ONSURE_LEARNING_EFFECTIVENESS_REPORT_V1",
+  "report_id": "report-002",
+  "candidate_id": "candidate-001",
+  "learning_epoch": "EPOCH::LEARNING::0001",
+  "benchmark_id": "benchmark-002",
+  "before": {
+    "precision": 0.80,
+    "recall": 0.75,
+    "false_positive_rate": 0.10,
+    "false_negative_rate": 0.15,
+    "coverage": 0.70,
+    "latency_ms": 120
+  },
+  "after": {
+    "precision": 1.40,
+    "recall": 0.60,
+    "false_positive_rate": 0.30,
+    "false_negative_rate": 0.35,
+    "coverage": 0.50,
+    "latency_ms": 300
+  },
+  "variance": 0.02,
+  "confidence": 0.95,
+  "decision": "IMPROVED",
+  "generated_at": "2026-08-14T00:00:00Z"
+}

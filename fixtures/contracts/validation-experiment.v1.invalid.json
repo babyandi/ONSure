@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_VALIDATION_EXPERIMENT_V1",
+  "experiment_id": "experiment-002",
+  "mode": "STOCHASTIC",
+  "subject_id": "candidate-002",
+  "run_count": 1,
+  "runs": [
+    {"run_id": "run-1", "outcome": "PASS", "seed": "seed-1", "transformation": null, "relation": null, "comparator": null, "matrix_cell": null}
+  ],
+  "environment": "ci-runner-1",
+  "result": "STABLE",
+  "generated_at": "2026-08-14T00:00:00Z"
+}
