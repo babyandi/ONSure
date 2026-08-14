@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/policy-profile.v1.schema.json",
+  "title": "ONSure Policy Profile v1",
+  "description": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-013: regulated-industry Enterprise Edition enforces Separation of Duties (the same actor cannot both develop -- Patch apply -- and verify/accept the same ImprovementRequest); a general Plan only recommends SoD, it does not enforce it. sod_enforcement is the single switch between those two behaviors, evaluated by SeparationOfDutiesLedger.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "policy_profile_id", "industry_class", "sod_enforcement",
+    "four_eyes_required", "created_at", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_POLICY_PROFILE_V1"},
+    "policy_profile_id": {"type": "string", "minLength": 1},
+    "industry_class": {
+      "enum": [
+        "STANDARD", "REGULATED_FINANCIAL", "REGULATED_HEALTHCARE",
+        "REGULATED_GOVERNMENT", "REGULATED_OTHER"
+      ]
+    },
+    "sod_enforcement": {"enum": ["ADVISORY", "ENFORCED"]},
+    "four_eyes_required": {"type": "boolean"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"industry_class": {"const": "STANDARD"}}},
+      "then": {"not": {"properties": {"sod_enforcement": {"const": "ENFORCED"}}}},
+      "description": "FR-COM-013: SoD is only ever ENFORCED for a regulated industry class -- STANDARD stays ADVISORY (recommend, don't block)."
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

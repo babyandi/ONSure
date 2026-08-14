@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.19.1",
+  "version": "1.19.2",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -578,6 +578,15 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/idempotency-record.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/policy-profile.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/policy-profile.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/policy-profile.v1.invalid.json"
       ]
     }
   ],

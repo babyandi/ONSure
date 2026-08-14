@@ -44,7 +44,9 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.certificate.issue",
             "assurance.revocation.issue",
             "assurance.revocation.check",
-            "assurance.offline-trust-bundle.evaluate");
+            "assurance.offline-trust-bundle.evaluate",
+            "assurance.sod.record-stage",
+            "assurance.sod.check");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -94,6 +96,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.revocation.issue" -> revocationIssue(request);
             case "assurance.revocation.check" -> revocationCheck(request);
             case "assurance.offline-trust-bundle.evaluate" -> offlineTrustBundleEvaluate(request);
+            case "assurance.sod.record-stage" -> sodRecordStage(request);
+            case "assurance.sod.check" -> sodCheck(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -831,6 +835,77 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("bundle_signature", Map.of(
                 "key_id", "EPHEMERAL_SELF_VALIDATION_KEY", "algorithm", "Ed25519", "signature", signatureValue));
         out.put("issuer_public_key_der_base64", java.util.Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
+        return immutable(out);
+    }
+
+    /**
+     * FR-COM-013 real enforcement: records that the caller performed {@code stage} (DEVELOP/
+     * VERIFY/ACCEPT) for an ImprovementRequest. Under a REGULATED industry_class with
+     * sod_enforcement ENFORCED, an actor who already recorded a different stage for the same
+     * request is rejected outright (SecurityException, before anything is written) rather than
+     * merely flagged after the fact -- "동일 사용자가... 모두 수행할 수 없다" means genuinely
+     * cannot, not just logged. STANDARD/ADVISORY still records the conflict but does not block it.
+     */
+    private Map<String, Object> sodRecordStage(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String improvementRequestId = requiredText(request, "improvement_request_id");
+        String stage = requiredText(request, "stage");
+        if (!SeparationOfDutiesLedger.STAGES.contains(stage)) {
+            return failClosed("HOLD", List.of("SOD_STAGE_INVALID"));
+        }
+
+        JsonNode policyNode = request.path("policy_profile");
+        String industryClass = policyNode.path("industry_class").asText("");
+        if (!Set.of("STANDARD", "REGULATED_FINANCIAL", "REGULATED_HEALTHCARE",
+                "REGULATED_GOVERNMENT", "REGULATED_OTHER").contains(industryClass)) {
+            return failClosed("HOLD", List.of("SOD_POLICY_INDUSTRY_CLASS_INVALID"));
+        }
+        String sodEnforcement = policyNode.path("sod_enforcement").asText("");
+        if (!Set.of("ADVISORY", "ENFORCED").contains(sodEnforcement)) {
+            return failClosed("HOLD", List.of("SOD_POLICY_ENFORCEMENT_INVALID"));
+        }
+        if ("STANDARD".equals(industryClass) && "ENFORCED".equals(sodEnforcement)) {
+            return failClosed("HOLD", List.of("SOD_STANDARD_INDUSTRY_CANNOT_ENFORCE"));
+        }
+        boolean enforced = "ENFORCED".equals(sodEnforcement);
+
+        SeparationOfDutiesLedger ledger = new SeparationOfDutiesLedger(workspaceRoot.resolve(".onsure/assurance/sod"));
+        SeparationOfDutiesLedger.Result result = ledger.recordStage(improvementRequestId, stage, identity.actorId(), enforced);
+
+        Map<String, Object> out = base("SOD_STAGE_RECORD", targetId);
+        out.put("improvement_request_id", improvementRequestId);
+        out.put("stage", stage);
+        out.put("industry_class", industryClass);
+        out.put("sod_enforcement", sodEnforcement);
+        out.put("advisory_violation", result.outcome() == SeparationOfDutiesLedger.Outcome.ADVISORY_VIOLATION);
+        out.put("conflicting_stage", result.conflictingStage());
+        out.put("stage_count", result.stages().size());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    private Map<String, Object> sodCheck(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String improvementRequestId = requiredText(request, "improvement_request_id");
+        SeparationOfDutiesLedger ledger = new SeparationOfDutiesLedger(workspaceRoot.resolve(".onsure/assurance/sod"));
+        List<SeparationOfDutiesLedger.StageRecord> stages = ledger.stagesFor(improvementRequestId);
+
+        Map<String, java.util.Set<String>> stagesByActor = new LinkedHashMap<>();
+        for (SeparationOfDutiesLedger.StageRecord record : stages) {
+            stagesByActor.computeIfAbsent(record.actorId(), key -> new java.util.LinkedHashSet<>()).add(record.stage());
+        }
+        List<String> actorsWithMultipleStages = stagesByActor.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 1)
+                .map(Map.Entry::getKey)
+                .sorted()
+                .toList();
+
+        Map<String, Object> out = base("SOD_CHECK", targetId);
+        out.put("improvement_request_id", improvementRequestId);
+        out.put("recorded_stage_count", stages.size());
+        out.put("actors_with_multiple_stages", actorsWithMultipleStages);
+        out.put("clean", actorsWithMultipleStages.isEmpty());
+        out.put("decision", "NON_FINAL");
         return immutable(out);
     }
 

@@ -493,6 +493,67 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void sodRecordStageBlocksTheSameActorUnderAnEnforcedRegulatedPolicy() throws Exception {
+        sodRecordStage(bridge, "req-1", "DEVELOP", "REGULATED_FINANCIAL", "ENFORCED");
+        SecurityException violation = assertThrows(SecurityException.class,
+                () -> sodRecordStage(bridge, "req-1", "VERIFY", "REGULATED_FINANCIAL", "ENFORCED"));
+        assertEquals("SOD_VIOLATION:actor_already_performed:DEVELOP:cannot_also_perform:VERIFY", violation.getMessage());
+    }
+
+    @Test
+    void sodRecordStageAllowsDifferentActorsUnderTheSameEnforcedPolicy() throws Exception {
+        SemanticAssuranceV2DispatcherBridge secondActor = new SemanticAssuranceV2DispatcherBridge(
+                temp, identity("tenant-a", "admin-b"));
+        sodRecordStage(bridge, "req-2", "DEVELOP", "REGULATED_FINANCIAL", "ENFORCED");
+        Map<?, ?> verify = sodRecordStage(secondActor, "req-2", "VERIFY", "REGULATED_FINANCIAL", "ENFORCED");
+        assertEquals(false, verify.get("advisory_violation"));
+
+        Map<?, ?> check = sodCheck("req-2");
+        assertEquals(true, check.get("clean"));
+        assertEquals(List.of(), check.get("actors_with_multiple_stages"));
+    }
+
+    @Test
+    void sodStandardIndustryCannotDeclareEnforcedPolicy() throws Exception {
+        Map<?, ?> result = sodRecordStage(bridge, "req-3", "DEVELOP", "STANDARD", "ENFORCED");
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("SOD_STANDARD_INDUSTRY_CANNOT_ENFORCE"), result.get("reasons"));
+    }
+
+    @Test
+    void sodAdvisoryPolicyRecordsTheConflictAndSodCheckReportsIt() throws Exception {
+        sodRecordStage(bridge, "req-4", "DEVELOP", "STANDARD", "ADVISORY");
+        Map<?, ?> verify = sodRecordStage(bridge, "req-4", "VERIFY", "STANDARD", "ADVISORY");
+        assertEquals(true, verify.get("advisory_violation"));
+
+        Map<?, ?> check = sodCheck("req-4");
+        assertEquals(false, check.get("clean"));
+        assertEquals(List.of("admin-a"), check.get("actors_with_multiple_stages"));
+    }
+
+    private Map<?, ?> sodRecordStage(
+            SemanticAssuranceV2DispatcherBridge caller, String improvementRequestId, String stage,
+            String industryClass, String sodEnforcement) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) caller.dispatch(
+                "assurance.sod.record-stage", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "improvement_request_id", improvementRequestId, "stage", stage,
+                        "policy_profile", Map.of(
+                                "industry_class", industryClass, "sod_enforcement", sodEnforcement)))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    private Map<?, ?> sodCheck(String improvementRequestId) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.sod.check", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "improvement_request_id", improvementRequestId))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

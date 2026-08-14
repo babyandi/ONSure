@@ -31,7 +31,9 @@ public final class TenantRbacService {
             "semantic.denominator.lock",
             "semantic.reperformance.run",
             "assurance.evidence-graph.validate",
-            "assurance.composition.compute");
+            "assurance.composition.compute",
+            "assurance.sod.record-stage",
+            "assurance.sod.check");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",

@@ -647,7 +647,24 @@
     {
       "batch": "BATCH_4",
       "name": "Enterprise / Trust",
-      "state": "NOT_STARTED"
+      "state": "IN_PROGRESS",
+      "scope_note": "137 SS27 Batch 4 items: Policy Profile, industry profile, RBAC/SoD/four-eyes/delegation/break-glass, Plugin/Adapter qualification, external integration trust. Unlike Batch 3, none of these had a pre-existing Wave-built JSON Schema contract from Batch 1 -- this batch needs new contracts as well as new runtime behavior.",
+      "slice_1_policy_profile_and_sod": {
+        "state": "EVIDENCE_READY",
+        "note": "FR-COM-013 (02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md): a regulated-industry Enterprise Edition must enforce Separation of Duties -- the same actor cannot both develop (Patch apply) and verify/accept the same ImprovementRequest; a general Plan only recommends this, it does not enforce it. New policy-profile.v1.schema.json establishes industry_class (STANDARD vs 4 REGULATED_* values) and sod_enforcement (ADVISORY vs ENFORCED) as the single switch between those two behaviors, with the schema itself forbidding STANDARD+ENFORCED (matching FR-COM-013's own wording). SeparationOfDutiesLedger.java is a durable per-improvement_request_id ledger (ExclusiveFileLock-protected): under ENFORCED, an actor who already recorded a different stage (DEVELOP/VERIFY/ACCEPT) for the same request is rejected outright (SecurityException, before anything is written) rather than merely flagged -- \"\ubaa8\ub450 \uc218\ud589\ud560 \uc218 \uc5c6\ub2e4\" means genuinely cannot, not just logged. Under ADVISORY the conflict is still recorded but not blocked, and assurance.sod.check surfaces it.",
+        "contract_schema": "contracts/policy-profile.v1.schema.json (NEW, registered with positive/negative fixtures)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/SeparationOfDutiesLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (assurance.sod.record-stage, assurance.sod.check)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SeparationOfDutiesLedgerTest.java (NEW, 6 tests: enforced conflict rejected + leaves no partial record, advisory conflict recorded not blocked, different actors never conflict, same actor/same stage twice is not a conflict, unrecorded request has no stages)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: enforced regulated policy blocks the same actor across a real Bridge/RBAC-authenticated call; different actors under the same enforced policy both succeed and sod.check reports clean; STANDARD industry cannot declare ENFORCED; ADVISORY records and surfaces the conflict via sod.check)"
+        ],
+        "known_gap_not_yet_covered": "sod.record-stage is an additive v2 candidate op that a caller must choose to invoke -- it is not yet a MANDATORY gate wired directly into the real v1 patch.apply/plan.approve/git.commit dispatcher chain (those operations do not yet call this ledger themselves). That deeper integration -- and reading the actual signer identity out of each stage's approval receipt rather than trusting a caller-declared stage label -- is real follow-on work, noted here rather than silently claimed complete. four-eyes/delegation/break-glass and Plugin/Adapter qualification and external integration trust remain open Batch 4 items."
+      }
     },
     {
       "batch": "BATCH_5",
