@@ -1,0 +1,18 @@
+{
+  "contract_type":"ONSURE_GLOBAL_REQUIREMENT_UNIVERSE_EXECUTION_CANDIDATE_V3",
+  "status":"EXECUTED_PARTIAL_NONFINAL",
+  "explicit_candidate_populations":[
+    {"prefix":"FR-COM","count":13,"source":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"},
+    {"prefix":"FR-META","count":62,"sources":["docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md","docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md"]},
+    {"prefix":"FR-FRESH","count":3,"source":"docs/master/semantic-assurance/128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md"},
+    {"prefix":"FR-LEARN","count":25,"source":"docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md"}
+  ],
+  "explicit_candidate_requirement_count":103,
+  "learning_extension_count":25,
+  "global_requirement_count":null,
+  "global_population_digest":null,
+  "unmaterialized_classes":["NON_ID_PROGRAM_FUNCTION","ACCEPTANCE_CRITERION","NFR","ARCHITECTURE_INVARIANT","POLICY_REQUIREMENT","REGULATORY_REQUIREMENT"],
+  "global_denominator_authoritative":false,
+  "lock_effect":"HOLD",
+  "note":"103 is the current explicit-ID candidate count only. It is not the exact active Product Design Requirement denominator until authority-filtered non-ID materialization, deduplication, supersession and digest generation complete."
+}
