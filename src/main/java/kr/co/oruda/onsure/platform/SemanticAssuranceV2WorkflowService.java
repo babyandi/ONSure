@@ -39,7 +39,9 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.final-candidate.reconstruct",
             "git.push",
             "deployment.verify-installed",
-            "assurance.evidence-graph.validate");
+            "assurance.evidence-graph.validate",
+            "assurance.composition.compute",
+            "assurance.certificate.issue");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -84,6 +86,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "git.push" -> externalEffectNotImplemented(operation);
             case "deployment.verify-installed" -> verifyInstalled(request);
             case "assurance.evidence-graph.validate" -> evidenceGraphValidate(request);
+            case "assurance.composition.compute" -> compositionCompute(request);
+            case "assurance.certificate.issue" -> certificateIssue(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -424,6 +428,177 @@ final class SemanticAssuranceV2WorkflowService {
         }
         onStack.remove(nodeId);
         return false;
+    }
+
+    /**
+     * assurance-composition-snapshot.v1.schema.json real rollup: computes the parent decision
+     * from real child inputs instead of validating a caller-declared one. A HARD-edge child that
+     * FAILED/INVALIDATED/REVOKED forbids parent PASS (mapped to parent FAIL, since that state
+     * needs remediation, not just a pending precondition); a HARD-edge child BLOCKED forbids
+     * parent PASS but is less severe (mapped to parent BLOCKED); any child (any edge class) still
+     * HOLD/NOT_RUN/INCONCLUSIVE also forbids a positive parent decision. Only when every HARD
+     * child is PASS/NOT_APPLICABLE_JUSTIFIED and nothing is still outstanding does the parent
+     * reach PASS. This mirrors, at the runtime level, the invariant Wave 6 already expressed
+     * structurally in the schema's own allOf conditional.
+     */
+    private Map<String, Object> compositionCompute(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String compositionId = requiredText(request, "composition_id");
+        JsonNode inputs = request.path("input_results");
+        if (!inputs.isArray() || inputs.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("COMPOSITION_INPUT_RESULTS_REQUIRED"));
+        }
+        Set<String> validEdgeClasses = Set.of("HARD", "SOFT", "CONDITIONAL", "INFORMATIONAL");
+        Set<String> validChildDecisions = Set.of(
+                "PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE",
+                "INVALIDATED", "REVOKED", "NOT_APPLICABLE_JUSTIFIED");
+
+        java.util.LinkedHashSet<String> seenSubjects = new java.util.LinkedHashSet<>();
+        List<Map<String, Object>> normalizedRows = new ArrayList<>();
+        List<String> ceilingReasons = new ArrayList<>();
+        java.util.LinkedHashSet<String> hardBlockingDecisions = new java.util.LinkedHashSet<>();
+        boolean anyOutstanding = false;
+
+        for (JsonNode row : inputs) {
+            String subjectId = requiredText(row, "subject_id");
+            if (!seenSubjects.add(subjectId)) {
+                return failClosed("HOLD", List.of("DUPLICATE_COMPOSITION_SUBJECT:" + subjectId));
+            }
+            String edgeClass = row.path("edge_propagation_class").asText("");
+            if (!validEdgeClasses.contains(edgeClass)) {
+                return failClosed("HOLD", List.of("COMPOSITION_EDGE_CLASS_INVALID:" + subjectId));
+            }
+            String childDecision = row.path("child_decision").asText("");
+            if (!validChildDecisions.contains(childDecision)) {
+                return failClosed("HOLD", List.of("COMPOSITION_CHILD_DECISION_INVALID:" + subjectId));
+            }
+            String resultDigest = requiredDigest(row, "result_digest");
+            if ("NOT_APPLICABLE_JUSTIFIED".equals(childDecision)
+                    && !row.path("applicability_proof_digest").asText("").matches("[0-9a-f]{64}")) {
+                return failClosed("HOLD", List.of("COMPOSITION_APPLICABILITY_PROOF_REQUIRED:" + subjectId));
+            }
+
+            if ("HARD".equals(edgeClass) && Set.of("FAIL", "BLOCKED", "INVALIDATED", "REVOKED").contains(childDecision)) {
+                hardBlockingDecisions.add(childDecision);
+                ceilingReasons.add("HARD_EDGE_CHILD_" + childDecision + ":" + subjectId);
+            }
+            if (Set.of("HOLD", "NOT_RUN", "INCONCLUSIVE").contains(childDecision)) {
+                anyOutstanding = true;
+                ceilingReasons.add("CHILD_" + childDecision + ":" + subjectId);
+            }
+            normalizedRows.add(Map.of("subject_id", subjectId, "result_digest", resultDigest));
+        }
+
+        String decision;
+        if (hardBlockingDecisions.contains("FAIL") || hardBlockingDecisions.contains("INVALIDATED")
+                || hardBlockingDecisions.contains("REVOKED")) {
+            decision = "FAIL";
+        } else if (hardBlockingDecisions.contains("BLOCKED")) {
+            decision = "BLOCKED";
+        } else if (anyOutstanding) {
+            decision = "HOLD";
+        } else {
+            decision = "PASS";
+        }
+
+        normalizedRows.sort(java.util.Comparator.comparing(row -> (String) row.get("subject_id")));
+        Map<String, Object> out = base("ASSURANCE_COMPOSITION_SNAPSHOT", targetId);
+        out.put("composition_id", compositionId);
+        out.put("subject_population_digest", digest(normalizedRows));
+        out.put("input_result_count", normalizedRows.size());
+        out.put("decision", decision);
+        out.put("assurance_strength", "SELF_VALIDATION");
+        out.put("currentness_state", "UNKNOWN");
+        out.put("qualification_state", "NOT_QUALIFIED");
+        out.put("independence_state", "SELF_VALIDATION");
+        out.put("uncertainty_state", "UNBOUNDED");
+        out.put("ceiling_reasons", List.copyOf(ceilingReasons));
+        out.put("limitation", "COMPOSITION_ROLLUP_ONLY_NO_INDEPENDENT_CURRENTNESS_VERIFIER_WIRED");
+        return immutable(out);
+    }
+
+    /**
+     * assurance-certificate.v1.schema.json real issuance path: real Ed25519 signature over the
+     * real canonical certificate payload (LocalReceiptCrypto, the same primitive used for
+     * approval receipts), gated by the composition decision passed to it and an honestly UNKNOWN
+     * currentness_state_at_issue -- no currentness verifier is wired anywhere in this codebase
+     * yet, so this can never claim CURRENT and, per the schema's own conditional, therefore can
+     * never issue a positive PASS/PASS_WITH_LIMITATIONS certificate. A composition decision other
+     * than PASS issues a BLOCKED certificate; a PASS composition still only reaches HOLD here
+     * (the composition passed, but currentness itself is not yet certifiable). The signing key is
+     * generated fresh per call (issuer_key_id EPHEMERAL_SELF_VALIDATION_KEY) since this is a
+     * self-validation-nonfinal candidate path, not the real trust-rooted certificate authority.
+     */
+    private Map<String, Object> certificateIssue(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String certificateId = requiredText(request, "certificate_id");
+        String subjectId = requiredText(request, "subject_id");
+        String subjectDigest = requiredDigest(request, "subject_digest");
+        String productVersion = requiredText(request, "product_version");
+        String targetManifestDigest = requiredDigest(request, "target_manifest_digest");
+        String requirementEpoch = requiredText(request, "requirement_epoch");
+        String compositionSnapshotDigest = requiredDigest(request, "composition_snapshot_digest");
+        String finalLockDigest = requiredDigest(request, "final_lock_digest");
+        String assuranceTier = requiredText(request, "assurance_tier");
+        if (!Set.of("TIER_1_BASIC", "TIER_2_STANDARD", "TIER_3_HIGH", "TIER_4_CRITICAL").contains(assuranceTier)) {
+            return failClosed("HOLD", List.of("CERTIFICATE_ASSURANCE_TIER_INVALID"));
+        }
+        String compositionDecision = requiredText(request, "composition_decision");
+        if (!Set.of("PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE").contains(compositionDecision)) {
+            return failClosed("HOLD", List.of("CERTIFICATE_COMPOSITION_DECISION_INVALID"));
+        }
+        String verifierIdentityRef = requiredText(request, "verifier_identity_ref");
+
+        List<String> limitations = new ArrayList<>(List.of("CERTIFICATE_CURRENTNESS_VERIFIER_NOT_WIRED"));
+        String decision;
+        if ("PASS".equals(compositionDecision)) {
+            decision = "HOLD";
+            limitations.add("COMPOSITION_PASS_BUT_CURRENTNESS_UNKNOWN");
+        } else {
+            decision = "BLOCKED";
+            limitations.add("COMPOSITION_DECISION_NOT_PASS:" + compositionDecision);
+        }
+
+        String issuedAt = Instant.now().toString();
+        java.security.KeyPair keyPair = kr.co.oruda.onsure.assurance.LocalReceiptCrypto.generate();
+        Map<String, Object> unsigned = new LinkedHashMap<>();
+        unsigned.put("contract", "ONSURE_ASSURANCE_CERTIFICATE_V1");
+        unsigned.put("certificate_id", certificateId);
+        unsigned.put("certificate_version", "1");
+        unsigned.put("subject_id", subjectId);
+        unsigned.put("subject_digest", subjectDigest);
+        unsigned.put("product_version", productVersion);
+        unsigned.put("target_manifest_digest", targetManifestDigest);
+        unsigned.put("requirement_epoch", requirementEpoch);
+        unsigned.put("composition_snapshot_digest", compositionSnapshotDigest);
+        unsigned.put("final_lock_digest", finalLockDigest);
+        unsigned.put("assurance_tier", assuranceTier);
+        unsigned.put("decision", decision);
+        unsigned.put("currentness_state_at_issue", "UNKNOWN");
+        unsigned.put("issued_at", issuedAt);
+        unsigned.put("not_before", issuedAt);
+        unsigned.put("revalidation_due_at", null);
+        unsigned.put("expires_at", null);
+        unsigned.put("verifier_identity_ref", verifierIdentityRef);
+        unsigned.put("revocation_reference", null);
+        unsigned.put("issuer_key_id", "EPHEMERAL_SELF_VALIDATION_KEY");
+        unsigned.put("issuer_public_key_der_base64", java.util.Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
+        unsigned.put("independent_verification_summary_digest", digest("NO_INDEPENDENT_VERIFICATION_PERFORMED"));
+        unsigned.put("limitation_summary", List.copyOf(limitations));
+        unsigned.put("exclusion_summary", List.of());
+        unsigned.put("target_id", targetId);
+        unsigned.put("tenant_id", identity.tenantId());
+        unsigned.put("actor_id", identity.actorId());
+        unsigned.put("self_validation_nonfinal", true);
+        unsigned.put("final_claim_allowed", false);
+
+        // Every field above this line is part of the signed payload -- signature is added last and
+        // is, by construction (LocalReceiptCrypto.canonicalPayload strips only "signature"), the
+        // only field a verifier excludes when recomputing the same canonical bytes.
+        String signatureValue = kr.co.oruda.onsure.assurance.LocalReceiptCrypto.sign(unsigned, keyPair.getPrivate());
+        Map<String, Object> out = new LinkedHashMap<>(unsigned);
+        out.put("signature", Map.of("algorithm", "Ed25519", "signature", signatureValue));
+        return immutable(out);
     }
 
     private Map<String, Object> externalEffectNotImplemented(String operation) {

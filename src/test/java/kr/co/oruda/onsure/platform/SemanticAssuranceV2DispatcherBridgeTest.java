@@ -233,6 +233,114 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "rule_id", "RULE-SUPERSEDE-1", "evidence_digest", "092cd5e29db964781ac7520814627b0e5615fb9b04d4d2e8ce0eed8bdc97d318");
     }
 
+    @Test
+    void compositionPassesOnlyWhenEveryHardChildPassesAndNothingIsOutstanding() throws Exception {
+        Map<?, ?> result = compositionResult("comp-1", List.of(
+                inputResult("subject-a", "HARD", "PASS"),
+                inputResult("subject-b", "SOFT", "FAIL"),
+                inputResult("subject-c", "INFORMATIONAL", "FAIL")));
+        assertEquals("PASS", result.get("decision"));
+        assertEquals(List.of(), result.get("ceiling_reasons"));
+    }
+
+    @Test
+    void compositionFailsWhenAHardChildFails() throws Exception {
+        Map<?, ?> result = compositionResult("comp-2", List.of(
+                inputResult("subject-a", "HARD", "FAIL"),
+                inputResult("subject-b", "HARD", "PASS")));
+        assertEquals("FAIL", result.get("decision"));
+        assertEquals(List.of("HARD_EDGE_CHILD_FAIL:subject-a"), result.get("ceiling_reasons"));
+    }
+
+    @Test
+    void compositionIsBlockedNotFailedWhenAHardChildIsOnlyBlocked() throws Exception {
+        Map<?, ?> result = compositionResult("comp-3", List.of(
+                inputResult("subject-a", "HARD", "BLOCKED")));
+        assertEquals("BLOCKED", result.get("decision"));
+    }
+
+    @Test
+    void compositionHoldsWhenAnyChildIsStillOutstandingRegardlessOfEdgeClass() throws Exception {
+        Map<?, ?> result = compositionResult("comp-4", List.of(
+                inputResult("subject-a", "HARD", "PASS"),
+                inputResult("subject-b", "INFORMATIONAL", "HOLD")));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("CHILD_HOLD:subject-b"), result.get("ceiling_reasons"));
+    }
+
+    @Test
+    void compositionRejectsDuplicateSubjectIds() throws Exception {
+        Map<?, ?> result = compositionResult("comp-5", List.of(
+                inputResult("subject-a", "HARD", "PASS"),
+                inputResult("subject-a", "HARD", "PASS")));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("DUPLICATE_COMPOSITION_SUBJECT:subject-a"), result.get("reasons"));
+    }
+
+    @Test
+    void certificateIssuanceNeverClaimsPassBecauseNoCurrentnessVerifierIsWired() throws Exception {
+        Map<?, ?> certificate = certificateResult("PASS");
+        assertEquals("HOLD", certificate.get("decision"));
+        assertEquals("UNKNOWN", certificate.get("currentness_state_at_issue"));
+        assertEquals(false, certificate.get("final_claim_allowed"));
+    }
+
+    @Test
+    void certificateIssuanceIsBlockedWhenCompositionDidNotPass() throws Exception {
+        Map<?, ?> certificate = certificateResult("FAIL");
+        assertEquals("BLOCKED", certificate.get("decision"));
+    }
+
+    @Test
+    void certificateSignatureIsCryptographicallyVerifiableAgainstItsOwnEmbeddedKey() throws Exception {
+        Map<?, ?> certificate = certificateResult("PASS");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> signature = (Map<String, Object>) certificate.get("signature");
+        byte[] publicKeyBytes = java.util.Base64.getDecoder().decode((String) certificate.get("issuer_public_key_der_base64"));
+        java.security.PublicKey publicKey = java.security.KeyFactory.getInstance("Ed25519")
+                .generatePublic(new java.security.spec.X509EncodedKeySpec(publicKeyBytes));
+
+        Map<String, Object> forVerify = new java.util.LinkedHashMap<>();
+        certificate.forEach((key, value) -> forVerify.put((String) key, value));
+        forVerify.put("signature", signature.get("signature"));
+        assertEquals(true, kr.co.oruda.onsure.assurance.LocalReceiptCrypto.verify(forVerify, publicKey));
+    }
+
+    private Map<String, Object> inputResult(String subjectId, String edgeClass, String childDecision) {
+        return Map.of(
+                "subject_id", subjectId, "edge_propagation_class", edgeClass,
+                "child_decision", childDecision,
+                "result_digest", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1");
+    }
+
+    private Map<?, ?> compositionResult(String compositionId, List<Map<String, Object>> inputs) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.composition.compute", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "composition_id", compositionId, "input_results", inputs))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    private Map<?, ?> certificateResult(String compositionDecision) throws Exception {
+        Map<String, Object> body = Map.ofEntries(
+                Map.entry("project_id", "project-1"), Map.entry("target_id", "target-1"),
+                Map.entry("certificate_id", "cert-1"), Map.entry("subject_id", "subject-a"),
+                Map.entry("subject_digest", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1"),
+                Map.entry("product_version", "1.0.0"),
+                Map.entry("target_manifest_digest", "db40281222139a3cc745f264e56507a56bebaeeae19ead23000d88948f9b8faf"),
+                Map.entry("requirement_epoch", "EPOCH::REQUIREMENT::0001"),
+                Map.entry("composition_snapshot_digest", "70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b"),
+                Map.entry("final_lock_digest", "fb3ad22cb997c7e8e3c4d27ffc0bf0dff7acdb7bf03b72b66687ca05c133a47b"),
+                Map.entry("assurance_tier", "TIER_2_STANDARD"),
+                Map.entry("composition_decision", compositionDecision),
+                Map.entry("verifier_identity_ref", "admin-a"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.certificate.issue", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

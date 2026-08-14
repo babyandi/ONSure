@@ -30,7 +30,8 @@ public final class TenantRbacService {
             "semantic.denominator.challenge",
             "semantic.denominator.lock",
             "semantic.reperformance.run",
-            "assurance.evidence-graph.validate");
+            "assurance.evidence-graph.validate",
+            "assurance.composition.compute");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",
@@ -40,7 +41,8 @@ public final class TenantRbacService {
             "assurance.final-candidate.reconstruct",
             "assurance.otester.accept",
             "assurance.oaudit.accept",
-            "deployment.verify-installed");
+            "deployment.verify-installed",
+            "assurance.certificate.issue");
     private static final Set<String> SEMANTIC_APPROVAL_OPERATIONS = Set.of(
             "assurance.human-accept");
     private static final Set<String> SEMANTIC_OPERATOR_OPERATIONS = Set.of(

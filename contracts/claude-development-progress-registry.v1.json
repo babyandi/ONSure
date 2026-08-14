@@ -587,6 +587,26 @@
           "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: acyclic population with a real derivation edge -> NON_FINAL, SUPERSEDES cycle -> HOLD, stale edge digest -> HOLD, DERIVED node missing its derivation edge -> HOLD)"
         ],
         "bug_found_and_fixed_during_own_test_writing": "DERIVED_NODE_WITHOUT_DERIVATION_EDGE initially checked whether a DERIVED/AGGREGATED node_id appeared as an edge TARGET, but DERIVES_FROM/AGGREGATES edges point FROM the derived node TO its origin (node-2 DERIVES_FROM node-1 means node-2 is the edge source), so every legitimately-derived node was flagged as a false violation. Caught immediately by the first positive-path test (expected NON_FINAL, got HOLD) before this was ever claimed passing; fixed to check outgoing derivation edges (nodeId as source) instead of incoming."
+      },
+      "slice_3_composition_certificate": {
+        "state": "EVIDENCE_READY",
+        "note": "Two new v2 candidate operations. assurance.composition.compute performs the real assurance-composition-snapshot.v1.schema.json rollup (computes the parent decision from real child inputs rather than validating a caller-declared one): a HARD-edge child FAIL/INVALIDATED/REVOKED forces parent FAIL, a HARD-edge child BLOCKED (with no worse sibling) forces parent BLOCKED, any child (any edge class) still HOLD/NOT_RUN/INCONCLUSIVE forces parent HOLD, and only when every HARD child is PASS/NOT_APPLICABLE_JUSTIFIED and nothing is outstanding does the parent reach PASS -- the same invariant Wave 6 already expressed structurally in the schema, now also enforced at the runtime level. assurance.certificate.issue performs real Ed25519 signing (LocalReceiptCrypto, same primitive as approval receipts) over the full assurance-certificate.v1.schema.json payload, but since no currentness verifier is wired anywhere in this codebase yet, currentness_state_at_issue is honestly UNKNOWN always -- which, per the schema's own conditional, means this path can never issue a positive PASS/PASS_WITH_LIMITATIONS certificate (composition PASS still only reaches certificate HOLD; anything else reaches BLOCKED). Signing key is generated fresh per call (issuer_key_id EPHEMERAL_SELF_VALIDATION_KEY), not a trust-rooted production issuer key -- this stays a self-validation-nonfinal candidate path, same boundary Wave 4 drew around FinalCandidate/FinalApproval/FinalLock.",
+        "contract_schema": [
+          "contracts/assurance-composition-snapshot.v1.schema.json (Wave 6, pre-existing, HARD-edge allOf conditional already registered)",
+          "contracts/assurance-certificate.v1.schema.json (Wave 6, pre-existing, CURRENT<=>PASS allOf conditional already registered)"
+        ],
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (compositionCompute, certificateIssue)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+8 tests: composition PASS/HARD-FAIL/HARD-BLOCKED/HOLD-from-any-edge-class/duplicate-subject; certificate PASS-composition-still-HOLD, non-PASS-composition-BLOCKED, real cryptographic signature verification against its own embedded public key)"
+        ],
+        "bugs_found_and_fixed_during_own_test_writing": [
+          "First composition test used a NOT_RUN child on a non-HARD edge expecting PASS, which is wrong per the rule itself (any child HOLD/NOT_RUN/INCONCLUSIVE forces HOLD regardless of edge class) -- fixed the test fixture, not the rule.",
+          "certificateIssue originally added issuer_public_key_der_base64/independent_verification_summary_digest/limitation_summary/exclusion_summary/target_id/tenant_id/actor_id/self_validation_nonfinal/final_claim_allowed to the output AFTER signing, so a verifier reconstructing \"the certificate minus signature\" got a different byte sequence than what was actually signed and verification always failed. Caught immediately by the first signature-verification test. Fixed by moving every field into the signed payload before calling sign(), so signature really is the last field added."
+        ]
       }
     },
     {
