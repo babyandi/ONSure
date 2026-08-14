@@ -48,7 +48,11 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.sod.record-stage",
             "assurance.sod.check",
             "assurance.four-eyes.record-approval",
-            "assurance.four-eyes.check");
+            "assurance.four-eyes.check",
+            "assurance.delegation.grant",
+            "assurance.delegation.check",
+            "assurance.break-glass.invoke",
+            "assurance.break-glass.review");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -102,6 +106,10 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.sod.check" -> sodCheck(request);
             case "assurance.four-eyes.record-approval" -> fourEyesRecordApproval(request);
             case "assurance.four-eyes.check" -> fourEyesCheck(request);
+            case "assurance.delegation.grant" -> delegationGrant(request);
+            case "assurance.delegation.check" -> delegationCheck(request);
+            case "assurance.break-glass.invoke" -> breakGlassInvoke(request);
+            case "assurance.break-glass.review" -> breakGlassReview(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -952,6 +960,113 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("approver_actor_ids", result.approvals().stream().map(FourEyesLedger.ApprovalRecord::actorId).distinct().toList());
         out.put("required_distinct_approvers", FourEyesLedger.REQUIRED_DISTINCT_APPROVERS);
         out.put("satisfied", result.satisfied());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * Real bounded-time role delegation: the delegator must currently hold the role being
+     * delegated (identity.roles(), server-authenticated -- never a caller-declared claim), the
+     * expiry must be strictly in the future, and self-delegation is rejected. Grants are checked
+     * for real expiry at read time by DelegationLedger, never trusted as a caller-declared "still
+     * active" flag.
+     */
+    private Map<String, Object> delegationGrant(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String delegationId = requiredText(request, "delegation_id");
+        String delegateActorId = requiredText(request, "delegate_actor_id");
+        String role = requiredText(request, "role");
+        if (!Set.of("VIEWER", "OPERATOR", "APPROVER", "AUDITOR", "ADMIN").contains(role)) {
+            return failClosed("HOLD", List.of("DELEGATION_ROLE_INVALID"));
+        }
+        if (identity.roles().stream().noneMatch(value -> value.name().equals(role))) {
+            throw new SecurityException("DELEGATION_DELEGATOR_DOES_NOT_HOLD_ROLE:" + role);
+        }
+        String justification = requiredText(request, "justification");
+        Instant expiresAt;
+        try {
+            expiresAt = Instant.parse(requiredText(request, "expires_at"));
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("DELEGATION_EXPIRY_MALFORMED"));
+        }
+
+        DelegationLedger ledger = new DelegationLedger(workspaceRoot.resolve(".onsure/assurance/delegations"));
+        DelegationLedger.Grant grant;
+        try {
+            grant = ledger.grant(delegationId, identity.actorId(), delegateActorId, role, expiresAt, justification, Instant.now());
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+
+        Map<String, Object> out = base("DELEGATION_GRANT", targetId);
+        out.put("delegation_id", grant.delegationId());
+        out.put("delegate_actor_id", grant.delegateActorId());
+        out.put("role", grant.role());
+        out.put("expires_at", grant.expiresAt());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    private Map<String, Object> delegationCheck(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String delegateActorId = requiredText(request, "delegate_actor_id");
+        String role = requiredText(request, "role");
+        DelegationLedger ledger = new DelegationLedger(workspaceRoot.resolve(".onsure/assurance/delegations"));
+        List<DelegationLedger.Grant> active = ledger.activeGrantsFor(delegateActorId, role, Instant.now());
+
+        Map<String, Object> out = base("DELEGATION_CHECK", targetId);
+        out.put("delegate_actor_id", delegateActorId);
+        out.put("role", role);
+        out.put("active", !active.isEmpty());
+        out.put("active_grant_count", active.size());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * Emergency override, always created with review_required permanently true -- there is no
+     * path here that creates an already-reviewed event -- so every invocation is guaranteed
+     * discoverable as outstanding until a genuinely distinct reviewer closes it.
+     */
+    private Map<String, Object> breakGlassInvoke(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String eventId = requiredText(request, "event_id");
+        String justification = requiredText(request, "justification");
+
+        BreakGlassLedger ledger = new BreakGlassLedger(workspaceRoot.resolve(".onsure/assurance/break-glass"));
+        BreakGlassLedger.Event event;
+        try {
+            event = ledger.invoke(eventId, identity.actorId(), justification, Instant.now());
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+
+        Map<String, Object> out = base("BREAK_GLASS_EVENT", targetId);
+        out.put("event_id", event.eventId());
+        out.put("invoker_actor_id", event.invokerActorId());
+        out.put("review_required", event.reviewRequired());
+        out.put("review_completed", event.reviewCompleted());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    private Map<String, Object> breakGlassReview(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String eventId = requiredText(request, "event_id");
+        String reviewNotes = requiredText(request, "review_notes");
+
+        BreakGlassLedger ledger = new BreakGlassLedger(workspaceRoot.resolve(".onsure/assurance/break-glass"));
+        BreakGlassLedger.Event reviewed;
+        try {
+            reviewed = ledger.recordReview(eventId, identity.actorId(), reviewNotes, Instant.now());
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+
+        Map<String, Object> out = base("BREAK_GLASS_REVIEW", targetId);
+        out.put("event_id", reviewed.eventId());
+        out.put("reviewer_actor_id", reviewed.reviewerActorId());
+        out.put("review_completed", reviewed.reviewCompleted());
         out.put("decision", "NON_FINAL");
         return immutable(out);
     }

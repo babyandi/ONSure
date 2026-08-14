@@ -613,6 +613,67 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void delegationGrantRejectsADelegatorWhoDoesNotHoldTheRole() throws Exception {
+        SecurityException denied = assertThrows(SecurityException.class, () -> bridge.dispatch(
+                "assurance.delegation.grant", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "delegation_id", "del-1", "delegate_actor_id", "admin-b",
+                        "role", "AUDITOR", "expires_at", java.time.Instant.now().plusSeconds(3600).toString(),
+                        "justification", "coverage"))));
+        assertEquals("DELEGATION_DELEGATOR_DOES_NOT_HOLD_ROLE:AUDITOR", denied.getMessage());
+    }
+
+    @Test
+    void delegationGrantSucceedsAndIsFoundByCheckWhenTheDelegatorHoldsTheRole() throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.delegation.grant", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "delegation_id", "del-2", "delegate_actor_id", "admin-b",
+                        "role", "ADMIN", "expires_at", java.time.Instant.now().plusSeconds(3600).toString(),
+                        "justification", "coverage while on leave"))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals("NON_FINAL", result.get("decision"));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> checkEnvelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.delegation.check", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "delegate_actor_id", "admin-b", "role", "ADMIN"))).get("result");
+        Map<?, ?> check = (Map<?, ?>) checkEnvelope.get("result");
+        assertEquals(true, check.get("active"));
+    }
+
+    @Test
+    void breakGlassEventCannotBeReviewedByItsOwnInvoker() throws Exception {
+        bridge.dispatch("assurance.break-glass.invoke", request(Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "event_id", "bg-1", "justification", "production outage")));
+        SecurityException denied = assertThrows(SecurityException.class, () -> bridge.dispatch(
+                "assurance.break-glass.review", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "event_id", "bg-1", "review_notes", "self-approved"))));
+        assertEquals("BREAK_GLASS_REVIEWER_CANNOT_BE_THE_INVOKER", denied.getMessage());
+    }
+
+    @Test
+    void breakGlassEventIsClosedByADistinctReviewer() throws Exception {
+        SemanticAssuranceV2DispatcherBridge reviewer = new SemanticAssuranceV2DispatcherBridge(
+                temp, identity("tenant-a", "admin-b"));
+        bridge.dispatch("assurance.break-glass.invoke", request(Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "event_id", "bg-2", "justification", "production outage")));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) reviewer.dispatch(
+                "assurance.break-glass.review", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "event_id", "bg-2", "review_notes", "confirmed necessary"))).get("result");
+        Map<?, ?> result = (Map<?, ?>) envelope.get("result");
+        assertEquals(true, result.get("review_completed"));
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

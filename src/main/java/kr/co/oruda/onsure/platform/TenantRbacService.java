@@ -49,7 +49,11 @@ public final class TenantRbacService {
             "assurance.certificate.issue",
             "assurance.revocation.issue",
             "assurance.revocation.check",
-            "assurance.offline-trust-bundle.evaluate");
+            "assurance.offline-trust-bundle.evaluate",
+            "assurance.delegation.grant",
+            "assurance.delegation.check",
+            "assurance.break-glass.invoke",
+            "assurance.break-glass.review");
     private static final Set<String> SEMANTIC_APPROVAL_OPERATIONS = Set.of(
             "assurance.human-accept");
     private static final Set<String> SEMANTIC_OPERATOR_OPERATIONS = Set.of(

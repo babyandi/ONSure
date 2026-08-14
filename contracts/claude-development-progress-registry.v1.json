@@ -679,6 +679,24 @@
           "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests, including a real two-distinct-authenticated-identity satisfaction case)"
         ],
         "known_gap_not_yet_covered": "Same additive-not-mandatory-gate caveat as slice 1's sod.record-stage -- this is not yet wired as a required precondition inside any real v1 dispatcher operation (e.g. license.revoke, case.legal-hold) that doc 08A/04 would actually want dual control on. Delegation/break-glass, Plugin/Adapter qualification, and external integration trust remain open Batch 4 items."
+      },
+      "slice_3_delegation_break_glass": {
+        "state": "EVIDENCE_READY",
+        "note": "Real bounded-time role delegation and emergency-override audit trail, the remaining \"RBAC/SoD/four-eyes/delegation/break-glass\" items. DelegationLedger.java (one file per delegation_id, matching RevocationLedger/BreakGlassLedger's proven globally-unique-ID pattern) real-expiry-checks grants at read time -- an expired grant is simply never returned by activeGrantsFor, never a caller-declared \"still active\" flag -- and rejects self-delegation and a delegator who does not actually hold (via server-authenticated identity.roles(), never a caller claim) the role being delegated. BreakGlassLedger.java creates every emergency-override event with review_required permanently true and review_completed false -- there is no constructor path that creates an already-reviewed event -- and rejects a reviewer who is the same actor as the invoker (the same actor cannot grant themselves emergency access and also sign off on it), mirroring the FR-COM-013 SoD principle from slice 1 applied to break-glass review.",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/DelegationLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/BreakGlassLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (delegationGrant, delegationCheck, breakGlassInvoke, breakGlassReview)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate, auditor||admin tier)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/DelegationLedgerTest.java (NEW, 6 tests)",
+          "src/test/java/kr/co/oruda/onsure/platform/BreakGlassLedgerTest.java (NEW, 6 tests)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: delegator-without-role rejected, successful grant found by check, invoker cannot review own break-glass event, distinct reviewer closes it)"
+        ],
+        "bug_found_and_fixed_during_own_test_writing": "DelegationLedger originally stored grants one-file-per-delegate-actor, so its delegation_id uniqueness check only scanned that one delegate's file -- two different delegates could be granted under the SAME delegation_id without either call ever seeing the other, silently breaking the \"one ID identifies exactly one grant\" invariant every other ledger this session relies on. Caught by the first duplicate-ID test (used a different delegate on the second call, expected rejection, got silent success). Fixed by switching to one-file-per-delegation_id (matching RevocationLedger/BreakGlassLedger's already-proven pattern) with activeGrantsFor scanning and filtering instead of a single direct file lookup.",
+        "known_gap_not_yet_covered": "Same additive-not-mandatory-gate caveat as slices 1-2 -- delegation is not yet consulted by TenantRbacService.requireRole itself (a delegated role does not actually widen what the delegate is allowed to do at the real RBAC boundary yet). Plugin/Adapter qualification and external integration trust remain open Batch 4 items."
       }
     },
     {
