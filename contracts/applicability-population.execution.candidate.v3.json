@@ -1,0 +1,14 @@
+{
+  "contract_type":"ONSURE_APPLICABILITY_POPULATION_EXECUTION_CANDIDATE_V3",
+  "status":"EXECUTED_PARTIAL_NONFINAL",
+  "source_requirement_snapshot":"contracts/global-requirement-universe-snapshot.execution.candidate.v3.json",
+  "evaluated_explicit_candidate_requirement_count":103,
+  "counts":{"APPLICABLE":21,"NOT_APPLICABLE":0,"CONDITIONAL":4,"UNKNOWN_PENDING_AUTHORITATIVE_CONTEXT":78},
+  "learning_extension":{"count":25,"APPLICABLE":21,"CONDITIONAL":4,"UNKNOWN":0},
+  "legacy_explicit_population":{"count":78,"UNKNOWN_PENDING_AUTHORITATIVE_CONTEXT":78},
+  "context_key_required":["product","target","industry","environment","assurance_tier","policy_profile","requirement_epoch"],
+  "authoritative_population_digest":null,
+  "critical_unknown_zero":false,
+  "lock_effect":"HOLD",
+  "note":"FR-LEARN applicability is fully classified, but the previous 78 explicit requirements still require authoritative applicability context."
+}
