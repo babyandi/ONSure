@@ -53,7 +53,8 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.delegation.check",
             "assurance.break-glass.invoke",
             "assurance.break-glass.review",
-            "assurance.plugin.qualify");
+            "assurance.plugin.qualify",
+            "assurance.external-integration.reconcile");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -112,6 +113,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.break-glass.invoke" -> breakGlassInvoke(request);
             case "assurance.break-glass.review" -> breakGlassReview(request);
             case "assurance.plugin.qualify" -> pluginQualify(request);
+            case "assurance.external-integration.reconcile" -> externalIntegrationReconcile(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1143,6 +1145,60 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("qualification_state", qualificationState);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "QUALIFIED".equals(qualificationState) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * 52_EXTERNAL_INTEGRATION_AND_SUPPLY_CHAIN_TRUST.md SS6/SS10/SS11 real reconciliation: an
+     * external provider's state and ONSure's local state can genuinely differ (a CI success
+     * webhook for a different commit, a mutable container tag whose digest moved, a license cached
+     * ACTIVE locally while the provider now says REVOKED), and doc 52 is explicit that a mismatch
+     * must become EXTERNAL_STATE_CONFLICT_HOLD -- never an automatic pick of "whichever side looks
+     * better." Just as important: a failed/timed-out provider lookup must never be treated as a
+     * clean/zero result (SS7/SS10's "advisory lookup timeout을 0 vulnerability로 처리" negative
+     * test) -- it fails closed to HOLD exactly like a genuine conflict, not to CONSISTENT.
+     */
+    private Map<String, Object> externalIntegrationReconcile(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String integrationType = requiredText(request, "integration_type");
+        if (!Set.of("CI_STATUS", "CONTAINER_DIGEST", "LICENSE_STATUS", "DEPENDENCY_ADVISORY").contains(integrationType)) {
+            return failClosed("HOLD", List.of("EXTERNAL_INTEGRATION_TYPE_INVALID"));
+        }
+        String expectedSubject = requiredText(request, "expected_subject");
+
+        JsonNode localNode = request.path("local_state");
+        String localSubject = requiredText(localNode, "subject");
+        String localValue = requiredText(localNode, "value");
+
+        JsonNode providerNode = request.path("provider_state");
+        boolean lookupSucceeded = providerNode.path("lookup_succeeded").asBoolean(false);
+
+        Map<String, Object> out = base("EXTERNAL_INTEGRATION_RECONCILIATION", targetId);
+        out.put("integration_type", integrationType);
+        out.put("expected_subject", expectedSubject);
+
+        if (!lookupSucceeded) {
+            out.put("reconciliation_state", "HOLD");
+            out.put("reasons", List.of("EXTERNAL_LOOKUP_FAILED_NOT_TREATED_AS_CLEAN"));
+            out.put("decision", "HOLD");
+            return immutable(out);
+        }
+
+        String providerSubject = requiredText(providerNode, "subject");
+        String providerValue = requiredText(providerNode, "value");
+
+        List<String> reasons = new ArrayList<>();
+        if (!expectedSubject.equals(providerSubject) || !localSubject.equals(providerSubject)) {
+            reasons.add("EXTERNAL_STATE_CONFLICT_HOLD:SUBJECT_MISMATCH");
+        }
+        if (!localValue.equals(providerValue)) {
+            reasons.add("EXTERNAL_STATE_CONFLICT_HOLD:VALUE_MISMATCH");
+        }
+
+        String reconciliationState = reasons.isEmpty() ? "CONSISTENT" : "CONFLICT";
+        out.put("reconciliation_state", reconciliationState);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", reasons.isEmpty() ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

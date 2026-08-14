@@ -647,7 +647,7 @@
     {
       "batch": "BATCH_4",
       "name": "Enterprise / Trust",
-      "state": "IN_PROGRESS",
+      "state": "EVIDENCE_READY",
       "scope_note": "137 SS27 Batch 4 items: Policy Profile, industry profile, RBAC/SoD/four-eyes/delegation/break-glass, Plugin/Adapter qualification, external integration trust. Unlike Batch 3, none of these had a pre-existing Wave-built JSON Schema contract from Batch 1 -- this batch needs new contracts as well as new runtime behavior.",
       "slice_1_policy_profile_and_sod": {
         "state": "EVIDENCE_READY",
@@ -713,6 +713,39 @@
           "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: revoked publisher, invalid signature, undeclared privilege, full qualification, digest-change drops a QUALIFIED plugin to QUALIFICATION_PENDING)"
         ],
         "known_gap_not_yet_covered": "publisher_signature_valid/publisher_revoked are accepted as caller-declared inputs here, not independently re-verified against a real trust-rooted publisher key registry (analogous to how deployment.install's verification_key already does real Ed25519 verification -- plugin qualification could reuse that same primitive as later follow-on work). External integration trust remains the last open Batch 4 item."
+      },
+      "slice_5_external_integration_trust": {
+        "state": "EVIDENCE_READY",
+        "note": "52_EXTERNAL_INTEGRATION_AND_SUPPLY_CHAIN_TRUST.md (DESIGN_ONLY/DRAFT/NON_FINAL, no JSON Schema of its own yet) SS6/SS7/SS10/SS11 real reconciliation: an external provider's state and ONSure's local state can genuinely differ, and the doc is explicit a mismatch becomes EXTERNAL_STATE_CONFLICT_HOLD -- never an automatic pick of \"whichever side looks better\" (\"\uc790\ub3d9 \uc88b\uc740 \ucabd \uc120\ud0dd \uae08\uc9c0\"). Implemented as real subject-identity and value comparison across the 4 provider classes doc 52 names as concrete examples (CI_STATUS, CONTAINER_DIGEST, LICENSE_STATUS, DEPENDENCY_ADVISORY): a provider subject that does not match the expected/local subject (CI status from a different commit; a mutable tag whose digest moved) is SUBJECT_MISMATCH; a matching subject with a differing value (license ACTIVE locally, REVOKED at the provider) is VALUE_MISMATCH. Just as important: a failed/timed-out provider lookup is never silently treated as a clean/zero result (doc 52's own named negative test, \"advisory lookup timeout\uc744 0 vulnerability\ub85c \ucc98\ub9ac\") -- it fails closed to HOLD exactly like a genuine conflict, before the subject/value comparison ever runs.",
+        "contract_schema": "None -- doc 52 has no dedicated JSON Schema yet (its own Integration Profile object, SS2, remains design-only). This slice implements the reconciliation ALGORITHM (SS6/SS10), the most concrete and directly actionable part of the doc, rather than the full Integration Profile data model, which is real follow-on work.",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (externalIntegrationReconcile)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests, each directly mapped to a doc 52 named example: failed lookup never reads clean, CI status from a different commit is a conflict not an auto-pick, license ACTIVE-cached/REVOKED-remote is a conflict, matching state is CONSISTENT)"
+        ],
+        "known_gap_not_yet_covered": "The full Integration Profile object (SS2: credential mode, allowed operations, data classes, trust basis, freshness/replay policy, qualification status) and per-provider-class specific binding rules (SS3: Git/CI repository+tree binding, Package/Container SBOM+signature, AI provider model/deployment/profile tracking, Payment/OLicense entitlement-authority separation, Notification delivery-receipt vs business-acknowledgment) remain design-only and are real follow-on work, not silently claimed complete."
+      },
+      "batch_4_closure": {
+        "slices_complete": "5/5",
+        "new_v2_operations_this_batch": [
+          "assurance.sod.record-stage",
+          "assurance.sod.check",
+          "assurance.four-eyes.record-approval",
+          "assurance.four-eyes.check",
+          "assurance.delegation.grant",
+          "assurance.delegation.check",
+          "assurance.break-glass.invoke",
+          "assurance.break-glass.review",
+          "assurance.plugin.qualify",
+          "assurance.external-integration.reconcile"
+        ],
+        "new_contracts_this_batch": [
+          "contracts/policy-profile.v1.schema.json"
+        ],
+        "note": "All 5 named Batch 4 items (Policy Profile, industry profile, RBAC/SoD/four-eyes/delegation/break-glass, Plugin/Adapter qualification, external integration trust) now have real, tested runtime behavior. Unlike Batch 3, most of this batch had no pre-existing Wave-built schema, so slice 1 added policy-profile.v1.schema.json; plugin-manifest.v1.schema.json (Wave 7) already existed and slice 4 built on it the same way Batch 3 built on Wave 5/6. Every slice's known-gap section names its real remaining work (mandatory-gate wiring into the real v1 dispatcher chain for SoD/four-eyes; RBAC actually consulting delegation grants; real publisher-signature verification for plugins; the full external Integration Profile data model) rather than silently claiming full closure."
       }
     },
     {

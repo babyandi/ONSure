@@ -737,6 +737,59 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void aFailedProviderLookupNeverReadsAsClean() throws Exception {
+        // doc 52 SS10 negative test: "advisory lookup timeout을 0 vulnerability로 처리" must not happen.
+        Map<?, ?> result = reconcile("DEPENDENCY_ADVISORY", "pkg-1", "pkg-1", "0-known-cves", "pkg-1", "0-known-cves", false);
+        assertEquals("HOLD", result.get("reconciliation_state"));
+        assertEquals(List.of("EXTERNAL_LOOKUP_FAILED_NOT_TREATED_AS_CLEAN"), result.get("reasons"));
+    }
+
+    @Test
+    void aCiStatusForADifferentCommitIsAConflictNotAnAutomaticPick() throws Exception {
+        // doc 52 SS10 negative test: "CI status가 다른 commit에서 온 것".
+        Map<?, ?> result = reconcile("CI_STATUS", "commit-abc", "commit-abc", "SUCCESS", "commit-xyz", "SUCCESS", true);
+        assertEquals("CONFLICT", result.get("reconciliation_state"));
+        assertEquals(List.of("EXTERNAL_STATE_CONFLICT_HOLD:SUBJECT_MISMATCH"), result.get("reasons"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void aLicenseCachedActiveWhileTheProviderNowSaysRevokedIsAConflict() throws Exception {
+        // doc 52 SS6 named example: "license ACTIVE cache이나 remote REVOKED".
+        Map<?, ?> result = reconcile("LICENSE_STATUS", "license-1", "license-1", "ACTIVE", "license-1", "REVOKED", true);
+        assertEquals("CONFLICT", result.get("reconciliation_state"));
+        assertEquals(List.of("EXTERNAL_STATE_CONFLICT_HOLD:VALUE_MISMATCH"), result.get("reasons"));
+    }
+
+    @Test
+    void matchingLocalAndProviderStateIsConsistent() throws Exception {
+        Map<?, ?> result = reconcile("CONTAINER_DIGEST", "image:latest", "image:latest", "sha256:aaa", "image:latest", "sha256:aaa", true);
+        assertEquals("CONSISTENT", result.get("reconciliation_state"));
+        assertEquals(List.of(), result.get("reasons"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    private Map<?, ?> reconcile(
+            String integrationType, String expectedSubject, String localSubject, String localValue,
+            String providerSubject, String providerValue, boolean lookupSucceeded) throws Exception {
+        Map<String, Object> providerState = new java.util.LinkedHashMap<>();
+        providerState.put("lookup_succeeded", lookupSucceeded);
+        if (lookupSucceeded) {
+            providerState.put("subject", providerSubject);
+            providerState.put("value", providerValue);
+        }
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "integration_type", integrationType, "expected_subject", expectedSubject,
+                "local_state", Map.of("subject", localSubject, "value", localValue),
+                "provider_state", providerState);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.external-integration.reconcile", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,
