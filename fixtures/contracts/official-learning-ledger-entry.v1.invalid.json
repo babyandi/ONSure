@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_OFFICIAL_LEARNING_LEDGER_V1",
+  "sequence": 1,
+  "entry_type": "LEARNING_CANDIDATE",
+  "subject_id": "candidate-001",
+  "artifact_digest": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "payload": {
+    "candidate_id": "candidate-001"
+  },
+  "recorded_at": "2026-08-14T00:00:00Z",
+  "previous_hash": "not-a-sha256",
+  "entry_hash": "07614cb0e158c8e8c223883f5a9173e813b3c0c302fe8d42a9aaf85300810606"
+}

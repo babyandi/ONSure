@@ -790,6 +790,119 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void learningPipelineReachesAppliedLockedOnlyThroughSixDistinctActors() throws Exception {
+        // FR-LEARN: learner, requester, two independent verifiers, and a reviewer/approver pair
+        // must all be genuinely distinct actors -- this is the wiring's real end-to-end shape, not
+        // a re-test of OfficialLearningLedgerTest's own unit coverage of each individual rule.
+        SemanticAssuranceV2DispatcherBridge learner = bridge; // admin-a
+        SemanticAssuranceV2DispatcherBridge requester = actorBridge("admin-b");
+        SemanticAssuranceV2DispatcherBridge verifierA = actorBridge("admin-c");
+        SemanticAssuranceV2DispatcherBridge verifierB = actorBridge("admin-d");
+        SemanticAssuranceV2DispatcherBridge reviewer = actorBridge("admin-e");
+        SemanticAssuranceV2DispatcherBridge approver = actorBridge("admin-f");
+
+        Map<?, ?> registered = learningDispatch(learner, "assurance.learning.candidate.register", Map.of(
+                "candidate_id", "candidate-1", "candidate_type", "FIXTURE_CANDIDATE",
+                "source_receipt_sha256", "63442cdf121e0c8eb0d67253584000468fcb88171e31d87fac9d0362ca5f9797",
+                "learner_output_sha256", "06fff4ae59c6b03277cae82de40523da4a542e4ecd898f9bf8446977b2d8e05f",
+                "training_dataset_version", "TRAIN::2026-08-01",
+                "hidden_dataset_non_access_attestation", true));
+        assertEquals("NON_FINAL", registered.get("decision"));
+
+        Map<?, ?> requested = learningDispatch(requester, "assurance.learning.validation.request", Map.of(
+                "request_id", "request-1", "candidate_id", "candidate-1", "queue_item_id", "queue-1",
+                "policy_version", "POLICY::1", "dataset_versions_digest",
+                "99667e8fc5a9c3afc82a8e0a8029bdc6bba0af7fcce047a6f8e1f6685e694bda",
+                "validator_version", "VALIDATOR::1"));
+        assertEquals("NON_FINAL", requested.get("decision"));
+
+        Map<?, ?> packed = learningDispatch(learner, "assurance.learning.validation.pack.issue", Map.of(
+                "pack_id", "pack-1", "request_id", "request-1", "candidate_id", "candidate-1",
+                "fixture_digest", "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+                "harness_digest", "49f756463ad9dcfb9b6ade54d7d6f15476e7214f46a65b4b0c55d46845b12f70",
+                "oracle_digest", "9202af6ce925b26ae6b25adfff0b2705147e195fa38dd58ae6ecc58ed263751f",
+                "expected_evidence_digest", "843a358f2dffcb9b2a477cb8b5a2d1fb8725efcd3ac24c5d758e07e7624bc111"));
+        assertEquals("NON_FINAL", packed.get("decision"));
+
+        String projection = "1b250ea199bec73d392caad39d1167d6edc43c81f20edead86eea52c52b94fc1";
+        Map<?, ?> receiptA = learningDispatch(verifierA, "assurance.learning.validation.receipt.record", Map.of(
+                "receipt_id", "receipt-a", "pack_id", "pack-1", "candidate_id", "candidate-1",
+                "run_id", "run-a", "decision", "PASS", "projection_digest", projection,
+                "evidence_digest", "5b181a581a374d0510150c19437e4c6dc266a82ee735affc9bb33cec7f656224",
+                "independent_recalculation", true, "copied_learner_output", false));
+        assertEquals("NON_FINAL", receiptA.get("decision"));
+        Map<?, ?> receiptB = learningDispatch(verifierB, "assurance.learning.validation.receipt.record", Map.of(
+                "receipt_id", "receipt-b", "pack_id", "pack-1", "candidate_id", "candidate-1",
+                "run_id", "run-b", "decision", "PASS", "projection_digest", projection,
+                "evidence_digest", "06359feace303be91155e031c2ac5e902b1e0829f11e0b0d8e107d5ce77003ec",
+                "independent_recalculation", true, "copied_learner_output", false));
+        assertEquals("NON_FINAL", receiptB.get("decision"));
+
+        String artifactDigest = "c7c5c1d70c5dec4416ab6158afd0b223ef40c29b1dc1f97ed9428b94d4cadb1c";
+        Map<?, ?> promotion = learningDispatch(reviewer, "assurance.learning.promotion.approve", Map.of(
+                "promotion_id", "promotion-1", "candidate_id", "candidate-1", "artifact_digest", artifactDigest,
+                "application_class", "BEHAVIOR_PROFILE_PATCH", "reviewer_identity", "admin-e",
+                "approver_identity", "admin-f", "rollback_plan_id", "rollback-1"));
+        assertEquals("NON_FINAL", promotion.get("decision"));
+
+        Map<String, Object> lockFields = Map.ofEntries(
+                Map.entry("lock_id", "lock-1"), Map.entry("candidate_id", "candidate-1"),
+                Map.entry("artifact_digest", artifactDigest),
+                Map.entry("active_selector", "SELECTOR::PRIMARY"), Map.entry("active_artifact_digest", artifactDigest),
+                Map.entry("main_or_stable_ref_sha", "a".repeat(40)),
+                Map.entry("immutable_evidence_bundle_digest", "ce2f654eb9114ffb3474989a5908dfef40d268057bb52c53005d155b9ab6c880"),
+                Map.entry("post_apply_verification_receipt_id", "receipt-a"),
+                Map.entry("rollback_pointer", "rollback-pointer-1"),
+                Map.entry("applied_count_increment_receipt_digest", "78b92f509b2352449b7f58f73e3f4d0e97fc3f4ec66007970052c0876182f8a2"),
+                Map.entry("read_only_reverification_pass", true));
+        Map<?, ?> locked = learningDispatch(approver, "assurance.learning.applied-lock.record", lockFields);
+        assertEquals("NON_FINAL", locked.get("decision"));
+
+        Map<?, ?> status = learningDispatch(learner, "assurance.learning.completion-status.check", Map.of(
+                "candidate_id", "candidate-1"));
+        assertEquals("APPLIED_LOCKED", status.get("completion_status"));
+        assertEquals(true, status.get("applied_locked"));
+    }
+
+    @Test
+    void learnerCannotRequestTheirOwnValidationThroughTheWiredOperation() throws Exception {
+        learningDispatch(bridge, "assurance.learning.candidate.register", Map.of(
+                "candidate_id", "candidate-2", "candidate_type", "FIXTURE_CANDIDATE",
+                "source_receipt_sha256", "63442cdf121e0c8eb0d67253584000468fcb88171e31d87fac9d0362ca5f9797",
+                "learner_output_sha256", "06fff4ae59c6b03277cae82de40523da4a542e4ecd898f9bf8446977b2d8e05f",
+                "training_dataset_version", "TRAIN::2026-08-01",
+                "hidden_dataset_non_access_attestation", true));
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.validation.request", Map.of(
+                "request_id", "request-2", "candidate_id", "candidate-2", "queue_item_id", "queue-2",
+                "policy_version", "POLICY::1", "dataset_versions_digest",
+                "99667e8fc5a9c3afc82a8e0a8029bdc6bba0af7fcce047a6f8e1f6685e694bda",
+                "validator_version", "VALIDATOR::1"));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("LEARNER_CANNOT_REQUEST_OWN_VALIDATION"), result.get("reasons"));
+    }
+
+    @Test
+    void completionStatusBeforeAnyCandidateIsRegisteredIsHoldNoCandidate() throws Exception {
+        Map<?, ?> status = learningDispatch(bridge, "assurance.learning.completion-status.check", Map.of(
+                "candidate_id", "candidate-never-registered"));
+        assertEquals("HOLD_NO_CANDIDATE", status.get("completion_status"));
+    }
+
+    private SemanticAssuranceV2DispatcherBridge actorBridge(String actor) throws Exception {
+        return new SemanticAssuranceV2DispatcherBridge(temp, identity("tenant-a", actor));
+    }
+
+    private Map<?, ?> learningDispatch(
+            SemanticAssuranceV2DispatcherBridge caller, String operation, Map<String, Object> fields) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>(fields);
+        body.put("project_id", "project-1");
+        body.put("target_id", "target-1");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) caller.dispatch(operation, request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

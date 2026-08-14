@@ -37,7 +37,10 @@ public final class TenantRbacService {
             "assurance.four-eyes.record-approval",
             "assurance.four-eyes.check",
             "assurance.plugin.qualify",
-            "assurance.external-integration.reconcile");
+            "assurance.external-integration.reconcile",
+            "assurance.learning.candidate.register",
+            "assurance.learning.validation.request",
+            "assurance.learning.completion-status.check");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",
@@ -55,7 +58,11 @@ public final class TenantRbacService {
             "assurance.delegation.grant",
             "assurance.delegation.check",
             "assurance.break-glass.invoke",
-            "assurance.break-glass.review");
+            "assurance.break-glass.review",
+            "assurance.learning.validation.pack.issue",
+            "assurance.learning.validation.receipt.record",
+            "assurance.learning.promotion.approve",
+            "assurance.learning.applied-lock.record");
     private static final Set<String> SEMANTIC_APPROVAL_OPERATIONS = Set.of(
             "assurance.human-accept");
     private static final Set<String> SEMANTIC_OPERATOR_OPERATIONS = Set.of(

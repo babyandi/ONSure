@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/official-learning-ledger-entry.v1.schema.json",
+  "title": "ONSure Official Learning Ledger Entry v1",
+  "description": "FR-LEARN: one hash-chained entry in kr.co.oruda.onsure.learning.OfficialLearningLedger's append-only sequence (LEARNING_CANDIDATE -> VALIDATION_REQUEST -> VALIDATION_PACK -> VALIDATION_RECEIPT -> PROMOTION -> APPLIED_LOCK). No learning or scheduled-validation result is recognized complete merely because a file, PASS result, or artifact exists -- only a full hash-bound chain through APPLIED_LOCK counts, and entry_hash covers every other field so a single mutated byte anywhere in the entry is detectable.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "sequence", "entry_type", "subject_id", "artifact_digest",
+    "payload", "recorded_at", "previous_hash", "entry_hash"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_OFFICIAL_LEARNING_LEDGER_V1"},
+    "sequence": {"type": "integer", "minimum": 1},
+    "entry_type": {
+      "enum": [
+        "LEARNING_CANDIDATE", "VALIDATION_REQUEST", "VALIDATION_PACK",
+        "VALIDATION_RECEIPT", "PROMOTION", "APPLIED_LOCK"
+      ]
+    },
+    "subject_id": {"type": "string", "minLength": 1},
+    "artifact_digest": {"$ref": "#/$defs/sha256"},
+    "payload": {"type": "object"},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "previous_hash": {"$ref": "#/$defs/sha256"},
+    "entry_hash": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

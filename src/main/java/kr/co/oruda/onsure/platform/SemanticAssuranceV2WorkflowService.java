@@ -3,6 +3,7 @@ package kr.co.oruda.onsure.platform;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import kr.co.oruda.onsure.learning.OfficialLearningLedger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -54,7 +55,14 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.break-glass.invoke",
             "assurance.break-glass.review",
             "assurance.plugin.qualify",
-            "assurance.external-integration.reconcile");
+            "assurance.external-integration.reconcile",
+            "assurance.learning.candidate.register",
+            "assurance.learning.validation.request",
+            "assurance.learning.validation.pack.issue",
+            "assurance.learning.validation.receipt.record",
+            "assurance.learning.promotion.approve",
+            "assurance.learning.applied-lock.record",
+            "assurance.learning.completion-status.check");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -114,6 +122,13 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.break-glass.review" -> breakGlassReview(request);
             case "assurance.plugin.qualify" -> pluginQualify(request);
             case "assurance.external-integration.reconcile" -> externalIntegrationReconcile(request);
+            case "assurance.learning.candidate.register" -> learningCandidateRegister(request);
+            case "assurance.learning.validation.request" -> learningValidationRequest(request);
+            case "assurance.learning.validation.pack.issue" -> learningValidationPackIssue(request);
+            case "assurance.learning.validation.receipt.record" -> learningValidationReceiptRecord(request);
+            case "assurance.learning.promotion.approve" -> learningPromotionApprove(request);
+            case "assurance.learning.applied-lock.record" -> learningAppliedLockRecord(request);
+            case "assurance.learning.completion-status.check" -> learningCompletionStatusCheck(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1199,6 +1214,125 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("reconciliation_state", reconciliationState);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", reasons.isEmpty() ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * Real wiring for kr.co.oruda.onsure.learning.OfficialLearningLedger (FR-LEARN): the ledger
+     * class itself already hash-chains LEARNING_CANDIDATE through APPLIED_LOCK and enforces
+     * self-approval/self-validation blocking, two-independent-run promotion, reviewer/approver
+     * separation and rollback-pointer requirements, but until this wiring it was not reachable
+     * from any dispatch operation -- a real, tested engine with no door into the product. actor
+     * identity fields that describe *this call's own actor* (learner_identity, requested_by,
+     * verifier_identity) are bound to the authenticated caller, never accepted as a caller claim,
+     * closing an identity-spoofing gap the ledger's own internal checks assume is already closed
+     * upstream.
+     */
+    private OfficialLearningLedger learningLedger() {
+        return new OfficialLearningLedger(
+                workspaceRoot.resolve(".onsure/assurance/official-learning-ledger.jsonl"));
+    }
+
+    private Map<String, Object> learningLedgerResult(String targetId, String artifactType, Runnable ledgerCall) {
+        Map<String, Object> out = base(artifactType, targetId);
+        try {
+            ledgerCall.run();
+            out.put("decision", "NON_FINAL");
+        } catch (IllegalStateException violation) {
+            out.put("decision", "HOLD");
+            out.put("reasons", List.of(violation.getMessage()));
+        }
+        return immutable(out);
+    }
+
+    private Map<String, Object> learningCandidateRegister(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        var ledger = learningLedger();
+        return learningLedgerResult(targetId, "LEARNING_CANDIDATE_REGISTERED", () -> ledger.registerCandidate(
+                new OfficialLearningLedger.LearningCandidate(
+                        requiredText(request, "candidate_id"), requiredText(request, "candidate_type"),
+                        requiredDigest(request, "source_receipt_sha256"), requiredDigest(request, "learner_output_sha256"),
+                        requiredText(request, "training_dataset_version"),
+                        request.path("hidden_dataset_non_access_attestation").asBoolean(false),
+                        identity.actorId())));
+    }
+
+    private Map<String, Object> learningValidationRequest(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        var ledger = learningLedger();
+        return learningLedgerResult(targetId, "LEARNING_VALIDATION_REQUESTED", () -> ledger.requestValidation(
+                new OfficialLearningLedger.ValidationRequest(
+                        requiredText(request, "request_id"), requiredText(request, "candidate_id"),
+                        requiredText(request, "queue_item_id"), requiredText(request, "policy_version"),
+                        requiredDigest(request, "dataset_versions_digest"), requiredText(request, "validator_version"),
+                        identity.actorId())));
+    }
+
+    private Map<String, Object> learningValidationPackIssue(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        var ledger = learningLedger();
+        return learningLedgerResult(targetId, "LEARNING_VALIDATION_PACK_ISSUED", () -> ledger.issueValidationPack(
+                new OfficialLearningLedger.ValidationPack(
+                        requiredText(request, "pack_id"), requiredText(request, "request_id"),
+                        requiredText(request, "candidate_id"), requiredDigest(request, "fixture_digest"),
+                        requiredDigest(request, "harness_digest"), requiredDigest(request, "oracle_digest"),
+                        requiredDigest(request, "expected_evidence_digest"))));
+    }
+
+    private Map<String, Object> learningValidationReceiptRecord(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        var ledger = learningLedger();
+        return learningLedgerResult(targetId, "LEARNING_VALIDATION_RECEIPT_RECORDED", () -> ledger.recordValidationReceipt(
+                new OfficialLearningLedger.ValidationReceipt(
+                        requiredText(request, "receipt_id"), requiredText(request, "pack_id"),
+                        requiredText(request, "candidate_id"), requiredText(request, "run_id"),
+                        identity.actorId(), requiredText(request, "decision"),
+                        requiredDigest(request, "projection_digest"), requiredDigest(request, "evidence_digest"),
+                        request.path("independent_recalculation").asBoolean(false),
+                        request.path("copied_learner_output").asBoolean(false))));
+    }
+
+    private Map<String, Object> learningPromotionApprove(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        var ledger = learningLedger();
+        return learningLedgerResult(targetId, "LEARNING_PROMOTION_APPROVED", () -> ledger.approvePromotion(
+                new OfficialLearningLedger.Promotion(
+                        requiredText(request, "promotion_id"), requiredText(request, "candidate_id"),
+                        requiredDigest(request, "artifact_digest"), requiredText(request, "application_class"),
+                        requiredText(request, "reviewer_identity"), requiredText(request, "approver_identity"),
+                        requiredText(request, "rollback_plan_id"))));
+    }
+
+    private Map<String, Object> learningAppliedLockRecord(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        var ledger = learningLedger();
+        return learningLedgerResult(targetId, "LEARNING_APPLIED_LOCK_RECORDED", () -> ledger.lockApplied(
+                new OfficialLearningLedger.AppliedLock(
+                        requiredText(request, "lock_id"), requiredText(request, "candidate_id"),
+                        requiredDigest(request, "artifact_digest"), requiredText(request, "active_selector"),
+                        requiredDigest(request, "active_artifact_digest"), requiredText(request, "main_or_stable_ref_sha"),
+                        requiredDigest(request, "immutable_evidence_bundle_digest"),
+                        requiredText(request, "post_apply_verification_receipt_id"),
+                        requiredText(request, "rollback_pointer"),
+                        requiredDigest(request, "applied_count_increment_receipt_digest"),
+                        request.path("read_only_reverification_pass").asBoolean(false))));
+    }
+
+    private Map<String, Object> learningCompletionStatusCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String candidateId = requiredText(request, "candidate_id");
+        var ledger = learningLedger();
+        Map<String, Object> out = base("LEARNING_COMPLETION_STATUS", targetId);
+        out.put("candidate_id", candidateId);
+        try {
+            var status = ledger.completionStatus(candidateId);
+            out.put("completion_status", status.name());
+            out.put("applied_locked", status == OfficialLearningLedger.CompletionStatus.APPLIED_LOCKED);
+            out.put("decision", "NON_FINAL");
+        } catch (IllegalStateException violation) {
+            out.put("decision", "HOLD");
+            out.put("reasons", List.of(violation.getMessage()));
+        }
         return immutable(out);
     }
 

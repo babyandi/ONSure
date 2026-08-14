@@ -751,7 +751,42 @@
     {
       "batch": "BATCH_5",
       "name": "AI / Meta-Assurance",
-      "state": "NOT_STARTED"
+      "state": "IN_PROGRESS",
+      "scope_note": "137 SS27 Batch 5 items: Model/provider/prompt/RAG/tool/memory/multi-agent identity, stochastic validation, provider drift, ONSure release/validator/oracle/fixture/adapter qualification. User directive 2026-08-14 additionally names 14 specific FR-LEARN-001~095 concerns to not omit: LearningCandidate cannot hold ACTIVE/PASS/FAIL authority directly, self-approval/self-qualification blocking, OracleQualification, Multi-Oracle disagreement, False Positive/Negative feedback, corpus contamination/poisoning/tenant leakage, train/test leakage, validator drift/regression, rollback, learning provenance/derived deletion lineage, tenant scope promotion, stochastic/metamorphic/differential validation, challenge set/blind regression, knowledge freshness/learning stop condition. Per that directive, file/schema existence or test-count increase alone does not count as done -- each item is judged against real coverage and evidence closure.",
+      "slice_1_official_learning_ledger_wiring": {
+        "state": "EVIDENCE_READY",
+        "note": "kr.co.oruda.onsure.learning.OfficialLearningLedger pre-existed this session (680 lines, 16 passing unit tests in OfficialLearningLedgerTest.java) as a real, hash-chained, append-only ledger covering LEARNING_CANDIDATE -> VALIDATION_REQUEST -> VALIDATION_PACK -> VALIDATION_RECEIPT -> PROMOTION -> APPLIED_LOCK, already enforcing: a learner cannot request or validate their own candidate (self-approval/self-qualification blocking), promotion requires two INDEPENDENT pass runs from two distinct verifiers with a matching projection digest (false-positive resistance), a stale validation pack cannot receive a new receipt (drift/regression resistance), reviewer and approver must be two further distinct actors disjoint from learner/requester/verifiers (SoD), and APPLIED_LOCK requires a real post-apply PASS receipt plus an explicit rollback_pointer. Despite all of this, it was reachable from NO dispatch operation -- a fully real, fully tested engine with no door into the product, exactly the \"existence != completion\" trap the directive warns against. This slice wires it to 7 new v2 candidate operations (assurance.learning.candidate.register through .completion-status.check) through the same Bridge/RBAC boundary as every other v2 op, binding learner_identity/requested_by/verifier_identity to the authenticated caller (never a caller claim) to close an identity-spoofing gap the ledger internally assumes is already closed upstream, and adds official-learning-ledger-entry.v1.schema.json (the ledger had no JSON Schema contract at all before this) with positive/negative fixtures.",
+        "requirement_coverage_this_slice": [
+          "LearningCandidate\uac00 \uc9c1\uc811 ACTIVE/PASS/FAIL \uad8c\uc704\ub97c \uac16\uc9c0 \ubabb\ud558\ub3c4\ub85d \ucc28\ub2e8 -- COVERED (candidate registration only ever produces a HOLD-capable, self_validation_nonfinal, final_claim_allowed:false record; APPLIED_LOCKED is a ledger completion-status read, not a promoted authority claim)",
+          "self-approval / self-qualification \ucc28\ub2e8 -- COVERED (learnerCannotRequestOwnValidation, LEARNER_CANNOT_VALIDATE, REQUESTER_CANNOT_VALIDATE, reviewer/approver role separation, all now reachable and exercised end-to-end through the wired operations, not just unit-tested in isolation)",
+          "rollback -- COVERED (rollback_plan_id required at promotion, rollback_pointer required at applied-lock, both real required fields with format validation)"
+        ],
+        "requirement_coverage_still_open_this_batch": [
+          "OracleQualification",
+          "Multi-Oracle disagreement",
+          "False Positive / False Negative feedback (as a first-class feedback LOOP, not just the promotion-time false-positive resistance already covered)",
+          "corpus contamination / poisoning / tenant leakage",
+          "train/test leakage",
+          "validator drift/regression (as an explicit drift-detection computation, beyond the existing stale-pack rejection)",
+          "learning provenance / derived deletion lineage",
+          "tenant scope promotion",
+          "stochastic / metamorphic / differential validation",
+          "challenge set / blind regression",
+          "knowledge freshness / learning stop condition",
+          "Model/provider/prompt/RAG/tool/memory/multi-agent identity, provider drift, ONSure release/validator/oracle/fixture/adapter qualification (137's own named Batch 5 scope, distinct from the FR-LEARN list)"
+        ],
+        "contract_schema": "contracts/official-learning-ledger-entry.v1.schema.json (NEW, registered with positive/negative fixtures)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/learning/OfficialLearningLedger.java (pre-existing, unmodified -- verified, not rebuilt)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (7 new operations wrapping the ledger)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates: register/request/status operator-tier, pack/receipt/promotion/lock auditor-tier)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+3 tests: a full 6-distinct-actor end-to-end pipeline reaching APPLIED_LOCKED, learner-cannot-request-own-validation surfaces as HOLD through the wired operation, completion-status before registration reads HOLD_NO_CANDIDATE)",
+          "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java (pre-existing, 16 tests, unmodified -- verified passing, not rebuilt)"
+        ]
+      }
     },
     {
       "batch": "BATCH_6",
