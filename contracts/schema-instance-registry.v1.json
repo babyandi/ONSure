@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -371,6 +371,15 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/human-acceptance-receipt.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/requirement-authority-source-manifest.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/requirement-authority-source-manifest.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requirement-authority-source-manifest.v1.invalid.json"
       ]
     }
   ],

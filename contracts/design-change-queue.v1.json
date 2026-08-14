@@ -14,7 +14,12 @@
       "affected_contracts": ["requirement-record.v2.schema.json", "requirement-universe-snapshot.v2.schema.json"],
       "affected_tests": [],
       "affected_evidence": [".onsure/requirement-universe/requirement-records.json"],
-      "status": "OPEN"
+      "status": "RESOLVED_WITH_AUTHORITY",
+      "resolution": {
+        "authority_ref": "docs/master/semantic-assurance/142_DCQ0001_SA_XC_AUTHORITY_DECISION.md (DESIGN_AUTHORITY_DECISION / DCQ-0001_RESOLVED_FOR_DESIGN)",
+        "decided_at": "2026-08-14",
+        "disposition": "SA-01~14 and XC-01~30 are NOT independent Product Design Requirement Universe requirement_ids. They are Semantic Assurance companion Design Capability (SA-*) / Cross-Cutting Control (XC-*) IDs that must each be justified by at least one real Requirement; a SA/XC with no Requirement link is a DESIGN_WITHOUT_REQUIREMENT orphan. They are recorded in Global Trace design_refs[], not materialized as EXPLICIT_ID requirement records, and requirement-record.v2.schema.json's source_class enum gains no SA/XC-specific value. Batch 0's original exclusion of SA-*/XC-* from EXPLICIT_ID extraction is confirmed correct by this decision -- no rework was required."
+      }
     },
     {
       "change_id": "DCQ-0002",

@@ -52,7 +52,12 @@
     "status": {"enum": ["ACTIVE", "SUPERSEDED", "RETIRED", "OPEN_POLICY"]},
     "superseded_by_requirement_id": {"type": ["string", "null"]},
     "mention_count": {"type": "integer", "minimum": 1},
-    "mention_documents": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+    "mention_documents": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "canonicalization_authority": {
+      "type": ["string", "null"],
+      "enum": ["NORMATIVE_CURRENT", "NORMATIVE_REFINEMENT", null],
+      "description": "For EXPLICIT_ID records: which authority tier the canonical normative_text was drawn from (145: authority/refine/supersession-based selection, never longest-text-wins)."
+    }
   },
   "allOf": [
     {

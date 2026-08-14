@@ -1,0 +1,15 @@
+{
+  "type":"ONSURE_REQUIREMENT_AUTHORITY_SOURCE_REVIEW_SEED_LEARNING_GATES_V1",
+  "status":"PARTIAL_REVIEW_NONAUTHORITATIVE",
+  "rows":[
+    {
+      "artifact_path":"docs/master/semantic-assurance/147_LEARNING_VALIDATION_CLOSED_LOOP_QA_GATES.md",
+      "git_blob_sha":"33f9339359f3bcdf2a17e476fb0ab6adf5e7d01f",
+      "disposition":"NORMATIVE_REFINEMENT",
+      "review_state":"REVIEWED",
+      "authority_parent_refs":["docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md"],
+      "rationale":"Defines enforceable QA gates for the learning/validation closed-loop capabilities. Requirement/Trace/Test population must consume these gates before Design Lock."
+    }
+  ],
+  "final_claim_allowed":false
+}

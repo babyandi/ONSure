@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_DENOMINATOR_EPOCH_V1",
+  "epoch_id": "EPOCH::REQUIREMENT::0002",
+  "epoch_type": "REQUIREMENT",
+  "epoch_sequence": 2,
+  "source_digest": "f61c01c3ea7992624bf46ac018a5c2bd78bd3039d992139370d587f81d273b01",
+  "effective_at": "2026-08-14T12:19:53.941309+00:00",
+  "superseded_epoch_id": "EPOCH::REQUIREMENT::0001",
+  "supersession_reason": "SEMANTIC_BREAKING",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

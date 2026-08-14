@@ -5,7 +5,8 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "contract", "generation_algorithm_version", "requirement_ids", "requirement_manifest_digest",
+    "contract", "generation_algorithm_version", "requirement_epoch_id",
+    "superseded_requirement_epoch_id", "requirement_ids", "requirement_manifest_digest",
     "authority_document_population", "authority_document_population_digest",
     "superseded_requirement_ids", "unresolved_duplicate_candidates", "generated_at",
     "self_validation_nonfinal", "final_claim_allowed"
@@ -13,6 +14,14 @@
   "properties": {
     "contract": {"const": "ONSURE_REQUIREMENT_UNIVERSE_SNAPSHOT_V2"},
     "generation_algorithm_version": {"type": "string", "minLength": 1},
+    "requirement_epoch_id": {
+      "type": "string", "minLength": 1,
+      "description": "References a denominator-epoch.v1.schema.json instance with epoch_type=REQUIREMENT."
+    },
+    "superseded_requirement_epoch_id": {
+      "type": ["string", "null"],
+      "description": "The prior REQUIREMENT epoch this snapshot supersedes, if any. Per 145 SS1, a superseded population is preserved (LEGACY_UNFILTERED_ALL_TRACKED_MARKDOWN_RECORD_POPULATION_CANDIDATE), never deleted."
+    },
     "requirement_ids": {
       "type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true
     },

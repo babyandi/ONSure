@@ -1,18 +1,30 @@
 #!/usr/bin/env python3
 """RU-01..RU-06: materialize the Global Requirement Universe from docs/master.
 
-Implements 88/89/91/92 (Batch 0 of 137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md):
-- RU-01 authority document inventory (exact population lock)
-- RU-02 explicit ID extractor (FR-COM-*, FR-META-*, FR-FRESH-*, NFR-*)
-- RU-03 structured non-ID requirement extractor (CANDIDATE_EXTRACTED, not auto-promoted)
+Implements 88/89/91/92 (Batch 0 of 137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md), REVISED
+per 145_REQUIREMENT_AUTHORITY_POPULATION_CLOSURE_CHECKPOINT.md and the 2026-08-14 Batch 0
+authority-change requalification:
+- RU-01 authority document inventory is now the Requirement Authority Source Manifest's
+  ELIGIBLE rows (NORMATIVE_CURRENT / NORMATIVE_REFINEMENT), not "every tracked markdown
+  file". Run scripts/materialize-requirement-authority-manifest.py first.
+- RU-02 explicit ID extractor (FR-COM-*, FR-META-*, FR-FRESH-*, FR-LEARN-*, NFR-*)
+- RU-03 structured non-ID requirement extractor (CANDIDATE_EXTRACTED, not auto-promoted),
+  now scanning only eligible authority sources.
 - RU-04 semantic normalizer (normalized text digest, exact-duplicate grouping only)
-- RU-05 rule resolution (only literal exact-duplicate auto-resolved; no fuzzy/semantic merge)
-- RU-06 universe snapshot sealing
+- RU-05 rule resolution: canonical text for an explicit ID with multiple eligible
+  occurrences is chosen by AUTHORITY (NORMATIVE_REFINEMENT overrides NORMATIVE_CURRENT),
+  never by "longest text wins" (removed -- prohibited by
+  requirement-authority-classification-policy.candidate.v1.json). Any remaining ambiguity
+  (multiple disagreeing occurrences at the same authority tier) is a disclosed, deterministic
+  tie-break (lexicographically-first source path) AND is recorded as an unresolved relation
+  candidate -- it is never silently merged.
+- RU-06 universe snapshot sealing, now epoch-tagged (denominator-epoch.v1.schema.json,
+  epoch_type=REQUIREMENT). The prior all-markdown-scanned population is preserved as epoch 1
+  (superseded, LEGACY_UNFILTERED_ALL_TRACKED_MARKDOWN_RECORD_POPULATION_CANDIDATE per 145 SS1),
+  never deleted.
 
-This does NOT perform fuzzy semantic deduplication or auto-merge P0 conflicts (89 SS4).
 Ambiguous ID taxonomies (e.g. SA-*/XC-*) are intentionally excluded from EXPLICIT_ID
-extraction and must be routed through contracts/design-change-queue.v1.json instead of
-guessed here.
+extraction and remain DCQ-0001 (P1, still OPEN). See design-change-queue.v1.json.
 """
 from __future__ import annotations
 
@@ -27,10 +39,13 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-ALGORITHM_VERSION = "RU-GEN-1.0.0"
+ALGORITHM_VERSION = "RU-GEN-2.0.0"
+REQUIREMENT_EPOCH_SEQUENCE = 2
+REQUIREMENT_EPOCH_ID = "EPOCH::REQUIREMENT::0002"
+SUPERSEDED_REQUIREMENT_EPOCH_ID = "EPOCH::REQUIREMENT::0001"
 
 EXPLICIT_ID_RE = re.compile(
-    r"\b(FR-COM-\d+|FR-META-\d+|FR-FRESH-\d+|NFR-[A-Z]+(?:-\d+)?)\b"
+    r"\b(FR-COM-\d+|FR-META-\d+|FR-FRESH-\d+|FR-LEARN-\d+|NFR-[A-Z]+(?:-\d+)?)\b"
 )
 NORMATIVE_RE = re.compile(
     r"(?:해야 합니다|해야 한다|하여야|금지|필수|수용\s*기준|완료\s*조건|MUST|SHALL|REQUIRED|PROHIBITED|MUST NOT)",
@@ -45,6 +60,8 @@ SOURCE_CLASS_KEYWORDS = [
     ("CONTRACT_REQUIRED", ("contract", "계약", "schema")),
 ]
 
+AUTHORITY_RANK = {"NORMATIVE_REFINEMENT": 2, "NORMATIVE_CURRENT": 1}
+
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
@@ -54,16 +71,22 @@ def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
 
 
-def git_tracked_master_docs() -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "docs/master"], cwd=ROOT, capture_output=True, check=False
-    )
-    if result.returncode != 0:
-        raise RuntimeError("GIT_LS_FILES_FAILED")
-    paths = sorted(
-        ROOT / item.decode("utf-8") for item in result.stdout.split(b"\0") if item.endswith(b".md")
-    )
-    return paths
+def load_eligible_authority_sources() -> dict[str, str]:
+    """Returns {artifact_path: requirement_source_disposition} for ELIGIBLE rows only,
+    per requirement-authority-source-manifest.candidate.v1.json's denominator_contribution_rules."""
+    manifest_path = ROOT / ".onsure" / "requirement-universe" / "requirement-authority-source-manifest.json"
+    if not manifest_path.exists():
+        raise RuntimeError(
+            "AUTHORITY_MANIFEST_MISSING: run scripts/materialize-requirement-authority-manifest.py first"
+        )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    eligible = {}
+    for row in manifest["rows"]:
+        if row["requirement_source_disposition"] in AUTHORITY_RANK:
+            eligible[row["artifact_path"]] = row["requirement_source_disposition"]
+    if not eligible:
+        raise RuntimeError("NO_ELIGIBLE_AUTHORITY_SOURCES")
+    return eligible
 
 
 def paragraph_after(lines: list[str], heading_line_number: int, heading: str, max_lines: int = 6) -> str:
@@ -106,7 +129,7 @@ def taxonomy_for(path: str, text: str) -> str:
         return "SECURITY"
     if any(k in value for k in ("privacy", "개인정보", "gdpr", "pii")):
         return "PRIVACY"
-    if any(k in value for k in ("assurance", "independent", "qualification", "currentness", "evidence")):
+    if any(k in value for k in ("assurance", "independent", "qualification", "currentness", "evidence", "learning", "학습")):
         return "ASSURANCE"
     if any(k in value for k in ("deploy", "배포", "installation", "rollback")):
         return "DEPLOYMENT"
@@ -136,14 +159,15 @@ def owner_domain_for(relative_path: str) -> str:
     return Path(relative_path).stem
 
 
-def collect(paths: list[Path]) -> dict[str, Any]:
+def collect(eligible_sources: dict[str, str]) -> dict[str, Any]:
     authority_population: list[dict[str, str]] = []
     explicit_occurrences: dict[str, list[dict[str, Any]]] = defaultdict(list)
     candidate_records: list[dict[str, Any]] = []
     raw_evidence: list[dict[str, Any]] = []
 
-    for doc in paths:
-        relative = doc.relative_to(ROOT).as_posix()
+    for relative in sorted(eligible_sources):
+        doc = ROOT / relative
+        disposition = eligible_sources[relative]
         content_sha = sha256_file(doc)
         authority_population.append({"path": relative, "content_sha256": content_sha})
         heading = "ROOT"
@@ -159,6 +183,7 @@ def collect(paths: list[Path]) -> dict[str, Any]:
                         "explicit_id": explicit_id,
                         "authority_document": relative,
                         "authority_document_sha256": content_sha,
+                        "disposition": disposition,
                         "heading": heading,
                         "line": line_number,
                         "raw": raw,
@@ -183,6 +208,7 @@ def collect(paths: list[Path]) -> dict[str, Any]:
                     "explicit_id": explicit_id,
                     "authority_document": relative,
                     "authority_document_sha256": content_sha,
+                    "disposition": disposition,
                     "heading": heading,
                     "line": line_number,
                     "raw": raw,
@@ -239,8 +265,11 @@ def collect(paths: list[Path]) -> dict[str, Any]:
 
 
 def resolve_explicit(explicit_occurrences: dict[str, list[dict[str, Any]]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """RU-04/05 for EXPLICIT_ID: one canonical record per ID; conflicting text across
-    documents is NOT silently merged, it is reported as an unresolved relation candidate."""
+    """RU-04/05 for EXPLICIT_ID: canonical text is chosen by AUTHORITY tier
+    (NORMATIVE_REFINEMENT > NORMATIVE_CURRENT), never by text length. Occurrences that
+    disagree within the SAME authority tier are NOT silently merged -- they are reported
+    as an unresolved relation candidate and broken only by a disclosed, deterministic
+    tie-break (lexicographically-first source document) so reruns stay reproducible."""
     records: list[dict[str, Any]] = []
     relation_candidates: list[dict[str, Any]] = []
     for explicit_id, occurrences in sorted(explicit_occurrences.items()):
@@ -252,11 +281,15 @@ def resolve_explicit(explicit_occurrences: dict[str, list[dict[str, Any]]]) -> t
                 "explicit_id": explicit_id,
                 "distinct_normalized_variants": len(by_norm),
                 "occurrences": [
-                    {"authority_document": o["authority_document"], "line": o["line"], "text": o["text"]}
+                    {"authority_document": o["authority_document"], "disposition": o["disposition"], "line": o["line"], "text": o["text"]}
                     for group in by_norm.values() for o in group
                 ],
             })
-        canonical = max(occurrences, key=lambda o: len(o["text"]))
+
+        highest_rank = max(AUTHORITY_RANK[o["disposition"]] for o in occurrences)
+        top_tier = [o for o in occurrences if AUTHORITY_RANK[o["disposition"]] == highest_rank]
+        canonical = min(top_tier, key=lambda o: (o["authority_document"], o["line"]))
+
         norm = normalized_text(canonical["text"])
         records.append({
             "requirement_id": explicit_id,
@@ -278,6 +311,7 @@ def resolve_explicit(explicit_occurrences: dict[str, list[dict[str, Any]]]) -> t
             "applicability_state": "UNKNOWN",
             "applicability_rule_ref": None,
             "status": "ACTIVE",
+            "canonicalization_authority": canonical["disposition"],
             "mention_count": len(occurrences),
             "mention_documents": sorted({o["authority_document"] for o in occurrences}),
         })
@@ -313,11 +347,9 @@ def dedupe_candidates(candidate_records: list[dict[str, Any]]) -> tuple[list[dic
 
 def main() -> int:
     started_at = datetime.now(timezone.utc).isoformat()
-    paths = git_tracked_master_docs()
-    if not paths:
-        raise RuntimeError("NO_AUTHORITY_DOCUMENTS_FOUND")
+    eligible_sources = load_eligible_authority_sources()
 
-    collected = collect(paths)
+    collected = collect(eligible_sources)
     explicit_records, explicit_relation_candidates = resolve_explicit(collected["explicit_occurrences"])
     candidate_records, candidate_duplicate_groups = dedupe_candidates(collected["candidate_records"])
 
@@ -341,6 +373,8 @@ def main() -> int:
     snapshot = {
         "contract": "ONSURE_REQUIREMENT_UNIVERSE_SNAPSHOT_V2",
         "generation_algorithm_version": ALGORITHM_VERSION,
+        "requirement_epoch_id": REQUIREMENT_EPOCH_ID,
+        "superseded_requirement_epoch_id": SUPERSEDED_REQUIREMENT_EPOCH_ID,
         "requirement_ids": requirement_ids,
         "requirement_manifest_digest": requirement_manifest_digest,
         "authority_document_population": authority_population_sorted,

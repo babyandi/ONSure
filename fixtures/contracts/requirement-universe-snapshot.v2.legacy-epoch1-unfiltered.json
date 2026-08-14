@@ -1,0 +1,1666 @@
+{
+  "authority_document_population": [
+    {
+      "content_sha256": "863d7d6c4d1401b90e85a13e03cab72ee8f04fe5ed7c048272f8def5302f6841",
+      "path": "docs/master/00_ONSURE_MASTER_DESIGN_SET.md"
+    },
+    {
+      "content_sha256": "83bc110f135e79165b4475a1224f561463718ca87425e6c7ddfb39b6ae713495",
+      "path": "docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md"
+    },
+    {
+      "content_sha256": "9e767ccaade196458b35fbdbf5d970df4482a8183f64642708dd57e186ce4b55",
+      "path": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md"
+    },
+    {
+      "content_sha256": "663dd8bb0643d97214742afc7c6cbe63ec8a7ed5eb8c3a0da510029ab8d5d4b0",
+      "path": "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md"
+    },
+    {
+      "content_sha256": "de313daa88f292a1317b88e5b2b3626a4a28e41ba1a9fdaa216776f056645db1",
+      "path": "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md"
+    },
+    {
+      "content_sha256": "df6dd9b0810b4a243bff8e455d57d1a62cab6224b06cd9cbf42c38f4e62b87b8",
+      "path": "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md"
+    },
+    {
+      "content_sha256": "be29317a9cd51f4a008ad26122b3d752c0006b4e0226814d4dc1d1eb218b8dfc",
+      "path": "docs/master/06A_RUNTIME_AUTHORITY_CORRECTION.md"
+    },
+    {
+      "content_sha256": "4dc8b41ebdbf1596eb98a728416f2607761da6a5c3be7db2cb44dd25b63a1c47",
+      "path": "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md"
+    },
+    {
+      "content_sha256": "fac5c7d1e8037918772b3775c13db57e0efd20041616094117a93ad75f1b3f3c",
+      "path": "docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md"
+    },
+    {
+      "content_sha256": "6f499d597b26e6ed1c8056841001fed2dd32e02f2932d1e5a393bd40ef9d9f62",
+      "path": "docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md"
+    },
+    {
+      "content_sha256": "0cfc76f3d48d57ef977342907afaea59d3d240f636a1a838e4a4a1697df308d2",
+      "path": "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md"
+    },
+    {
+      "content_sha256": "7af2d8d10f3574630bc23562ebd33a0cf505ae437b0b37fcba36a30beae78810",
+      "path": "docs/master/semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md"
+    },
+    {
+      "content_sha256": "6b927f922098ba149597c47f2d8b8a5cbae956a193a96502a43fa19cbe1c2f77",
+      "path": "docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md"
+    },
+    {
+      "content_sha256": "a496bef04f8899c697fa00053c1cc3e328ae00999d8364fbc93d2b23508d58cd",
+      "path": "docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md"
+    },
+    {
+      "content_sha256": "a6eeabe6aa90b3c20bd6086a07ee7ad8a6f2149176ddec83fead143fd1b68ac1",
+      "path": "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md"
+    },
+    {
+      "content_sha256": "2b9d7a1a27bf57c2b55c7591be617b7dc5ce046a0c10854e935589bfd3574d36",
+      "path": "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md"
+    },
+    {
+      "content_sha256": "24392f7eb299942a7a30f829910e79d9177604768ce863494ad7cc018502fc6b",
+      "path": "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md"
+    },
+    {
+      "content_sha256": "4a37d0264e380c3a3aeba7253c6b765d0172acebdec09d5c3891e3086cf1662a",
+      "path": "docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md"
+    },
+    {
+      "content_sha256": "3db588617570d6434aa86c4873741b7c6f293821060a0a21f28f2b3f85083567",
+      "path": "docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md"
+    },
+    {
+      "content_sha256": "c00da13d65dd3cd2238869a0d02d9538b526da464ae34ac6900f435d18e94f8f",
+      "path": "docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md"
+    },
+    {
+      "content_sha256": "ef8f12c84ceffc58bc6f93abda4e4198fbb209b6ce3caf6d1fe971a6bc7a6a63",
+      "path": "docs/master/semantic-assurance/100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md"
+    },
+    {
+      "content_sha256": "a639986c321c7f4cdcf48227ce4dfcb4ebdd36a8aa1dd7a05977edb1b8227e7a",
+      "path": "docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md"
+    },
+    {
+      "content_sha256": "e6150a431709cce51ecfaac222a1a843177ee88995e4a75d07fcbd088ec7774f",
+      "path": "docs/master/semantic-assurance/102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md"
+    },
+    {
+      "content_sha256": "319d01ba5bb6421d4dd2ca201aabc013651b8aba49402bbeac6b135e66c43c5a",
+      "path": "docs/master/semantic-assurance/103_GLOBAL_ORPHAN_CONTRADICTION_INVENTORY_AND_BASELINE_LOCK.md"
+    },
+    {
+      "content_sha256": "609469888a5fff843fe3fd9e168c0e95ae85ff50338c132445580c3c84320032",
+      "path": "docs/master/semantic-assurance/104_DESIGN_BASELINE_CANDIDATE_DECISION_AND_CHANGE_CONTROL.md"
+    },
+    {
+      "content_sha256": "be31a08eaeba3f320988f0676cdc5c0c281f046ecb019542f42bfe84b31d992a",
+      "path": "docs/master/semantic-assurance/105_DESIGN_TO_IMPLEMENTATION_INVENTORY_ALIGNMENT.md"
+    },
+    {
+      "content_sha256": "2e0b5dedd26c804e71478cca685732f4aefbb0d4f6d89511f28103482d554ff6",
+      "path": "docs/master/semantic-assurance/106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md"
+    },
+    {
+      "content_sha256": "c8f627b547c1e903b9839f819390d65d2a3dfc15b87fa820eb364e32937fe4e6",
+      "path": "docs/master/semantic-assurance/107_FIFTEEN_STEP_DESIGN_LOCK_CLOSURE_MASTER_MATRIX.md"
+    },
+    {
+      "content_sha256": "28e6aebc267f014e13c2983cde686af9c5a1cede2347ca09528e42b40ce890c3",
+      "path": "docs/master/semantic-assurance/108_GLOBAL_REQUIREMENT_UNIVERSE_EXECUTION_SNAPSHOT.md"
+    },
+    {
+      "content_sha256": "342ecd99f67cf659f3212cbc83c5edbe415f8a91c41ae17868160392815c3936",
+      "path": "docs/master/semantic-assurance/109_APPLICABILITY_POPULATION_EXECUTION_SNAPSHOT.md"
+    },
+    {
+      "content_sha256": "2e0a44a42514573e35074cff1ebee78cb261d9e2650a6ca47fa2e04b387d901f",
+      "path": "docs/master/semantic-assurance/10_FINDING_LEDGER.md"
+    },
+    {
+      "content_sha256": "b81f8ef2e539811d00ab7e469fc3502af8b03e0c487e0ef9a53c814da6b4d71a",
+      "path": "docs/master/semantic-assurance/110_GLOBAL_TRACE_AND_ORPHAN_EXECUTION_SNAPSHOT.md"
+    },
+    {
+      "content_sha256": "1fc784c7e67db56e58f79fd39d01becb040c43746a936296252f7a809aef93dd",
+      "path": "docs/master/semantic-assurance/111_CROSS_DESIGN_CONTRADICTION_EXECUTION_SNAPSHOT.md"
+    },
+    {
+      "content_sha256": "10f1b014ac009caf59e237473ebc95d388f3d081665ff50f0e9c0f79e113a31b",
+      "path": "docs/master/semantic-assurance/112_EXACT_DESIGN_ARTIFACT_INVENTORY_EXECUTION.md"
+    },
+    {
+      "content_sha256": "a1999a43b199717f63da7a09dc9f684c15e898246f3a9f7d569776131222bc3e",
+      "path": "docs/master/semantic-assurance/113_BASELINE_MANIFEST_REGENERATION_ATTEMPT.md"
+    },
+    {
+      "content_sha256": "a54192469bd93065541db1abcae59d74edb38c5db6d1907280c90aed3d37fef7",
+      "path": "docs/master/semantic-assurance/114_DESIGN_LOCK_CHECK_EXECUTION_REPORT.md"
+    },
+    {
+      "content_sha256": "95c7e1de889014776880764e8d7c3aa0d6b0fd1fd73412b295840315650f711d",
+      "path": "docs/master/semantic-assurance/115_EIGHT_STEP_DESIGN_LOCK_EXECUTION_MASTER_MATRIX.md"
+    },
+    {
+      "content_sha256": "3731358755e04b8526565a700f6e68656932a91faf0f80fe02471eac51595c73",
+      "path": "docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md"
+    },
+    {
+      "content_sha256": "23a188a8e5734ee7700cda0624af52dd54eddef9fe91d78fe0930810a1fba808",
+      "path": "docs/master/semantic-assurance/117_APPLICABILITY_CONTEXT_AND_GLOBAL_POPULATION_CLOSURE.md"
+    },
+    {
+      "content_sha256": "1b8b8f42a7cf56b50b02d7daf8c9b45b198d1c23c3972ce56db1cbab8c4450ea",
+      "path": "docs/master/semantic-assurance/118_GLOBAL_TRACE_ORPHAN_AND_CONTRADICTION_RERUN.md"
+    },
+    {
+      "content_sha256": "0a445f823c404ce8c19b02771a8239e0b8bfd665b468a7a7d88fe3b8c458bd45",
+      "path": "docs/master/semantic-assurance/119_EXACT_DESIGN_ARTIFACT_POPULATION_AND_DIGEST_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "2401c4c4bb22f85359fdaa5b56bc128409f2adb28b51de04d52876d3d3154dc0",
+      "path": "docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md"
+    },
+    {
+      "content_sha256": "978b9ee4c448abed3a9ad4b00f436599f1bca23df63f849be888f71d316a9bf1",
+      "path": "docs/master/semantic-assurance/120_BASELINE_MANIFEST_REGENERATION_AND_RECONSTRUCTABILITY.md"
+    },
+    {
+      "content_sha256": "4f65ffeefb68849c1a790061b51e5e39e8a52b7b47dc0db4768ff5df421765cb",
+      "path": "docs/master/semantic-assurance/121_DESIGN_LOCK_RERUN_AND_CANDIDATE_DECISION.md"
+    },
+    {
+      "content_sha256": "679902d1a630d6fa4a30404c7fff294db26b1a0bb30d03c736bbb5b86b56f506",
+      "path": "docs/master/semantic-assurance/122_CLAUDE_REVERSE_ALIGNMENT_SEMANTIC_CHANGE_AND_DESIGN_DRIFT.md"
+    },
+    {
+      "content_sha256": "02ddf65f1ff18f8005465bfa4ea7eccadc101d6d56a7789454c2460b04d60748",
+      "path": "docs/master/semantic-assurance/123_THIRTY_FIVE_TASK_EXECUTION_MASTER_MATRIX.md"
+    },
+    {
+      "content_sha256": "0728e9cc024eb263630ac395e87b652255671dd86f38ec930388184aebc80fca",
+      "path": "docs/master/semantic-assurance/124_POST_35_TASK_EXECUTION_INDEX_AND_AUTHORITY.md"
+    },
+    {
+      "content_sha256": "e06d3d6fd0f8b318218668b7afd25285e9cfbdd2d2cfe40421f554f7d402f0d8",
+      "path": "docs/master/semantic-assurance/125_SEVENTEEN_STEP_POST_HOLD_CLOSURE_EXECUTION.md"
+    },
+    {
+      "content_sha256": "58c09da732458877706b57ab12cee8581738b076a22ce235dcce921c4f5945e0",
+      "path": "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW.md"
+    },
+    {
+      "content_sha256": "e9f5780ffc5f76ac063493a1b938d47f1b8f986171e249b5670a23586fef33ea",
+      "path": "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md"
+    },
+    {
+      "content_sha256": "12c9cfb082e64966bec77bbb654ad507b5e0195da8b3d1d0b795afc0208fa72c",
+      "path": "docs/master/semantic-assurance/127_PRODUCT_DESIGN_TO_DESIGN_QA_PHASE_HANDOFF.md"
+    },
+    {
+      "content_sha256": "e1ae4c8e2fd509da1b47401f69e81a08d4d3ef3130c0344d528438bb2c2c44ad",
+      "path": "docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "812fbaae2616783d01609a4dbb9b23b15b9e0b8889b5f7a73e2e511f28a73bd6",
+      "path": "docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md"
+    },
+    {
+      "content_sha256": "d1141bf97f9b525da5d156b9e2c782936e72edcf4a4227d01065128f82607809",
+      "path": "docs/master/semantic-assurance/128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md"
+    },
+    {
+      "content_sha256": "a6952ee167dbe1374b09aa16e8f1fc3531c21bd5071c5eec6c1683db74eb28ee",
+      "path": "docs/master/semantic-assurance/129_DESIGN_QA_EIGHT_STEP_EXECUTION_AFTER_SCOPE_CLOSURE.md"
+    },
+    {
+      "content_sha256": "cccefe8d07b896eb31bbae0b964ffefa0dd3cd0f3af20bac213d4355fb6d2f0d",
+      "path": "docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md"
+    },
+    {
+      "content_sha256": "7cb3b8d077393d45d19f0342e744e9ae78eaae1d3634a6152a0a597b96f934ab",
+      "path": "docs/master/semantic-assurance/130_PHASE_A_DESIGN_QA_EXECUTION.md"
+    },
+    {
+      "content_sha256": "176fbc134fda532dc6b90d53c2651edf9187a5d9d135f0fb79e64d944de61d28",
+      "path": "docs/master/semantic-assurance/131_PHASE_B_IMPLEMENTATION_ALIGNMENT_EXECUTION.md"
+    },
+    {
+      "content_sha256": "42cf68d902b8f073b0d17b08ad4758c699bd7d40b75ef213cedd4e2b68f78766",
+      "path": "docs/master/semantic-assurance/132_PHASE_C_TEST_RUNTIME_VERIFICATION_EXECUTION.md"
+    },
+    {
+      "content_sha256": "c2eb4c4bacf4233bfae6d7256c5d0c9bb79c168ad33f927e6cea52347c8dfe77",
+      "path": "docs/master/semantic-assurance/133_PHASE_D_INDEPENDENT_ASSURANCE_RELEASE_QUALIFICATION_EXECUTION.md"
+    },
+    {
+      "content_sha256": "e1443121bd96307efd6de6c3b90587b2880890a8d94498fafdd445aefdcd9453",
+      "path": "docs/master/semantic-assurance/134_PHASE_E_PRODUCTION_OPERATE_CHANGE_EXECUTION.md"
+    },
+    {
+      "content_sha256": "612753c042000531f88df5c31492b7da5798e4cdbf12defb1312f6148a55882d",
+      "path": "docs/master/semantic-assurance/135_FIVE_PHASE_END_TO_END_EXECUTION_MASTER.md"
+    },
+    {
+      "content_sha256": "d3ea555707f963dc741c0bec9cc1eb86f89d90d594d31d9ce56d5f7f139d9694",
+      "path": "docs/master/semantic-assurance/136_PRE_MERGE_STATUS_CORRECTION_AND_BASELINE_HANDOFF.md"
+    },
+    {
+      "content_sha256": "e8b474ce00d826abe7c09fc1af4b38c065a5930b8a60d7148cee805a0411a8de",
+      "path": "docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md"
+    },
+    {
+      "content_sha256": "ea9447698a92a2d39c1c697f73a3de1794ca03034eb3778dfb286a54cda23c90",
+      "path": "docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md"
+    },
+    {
+      "content_sha256": "02161c987bcfd118bc3c92b4c75a1138f3c74f25313357bce48e4766dfd4ce14",
+      "path": "docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md"
+    },
+    {
+      "content_sha256": "6a4b652f643d4d1511b0dbe615352d894d494e57f2a0a0c017643be393844686",
+      "path": "docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md"
+    },
+    {
+      "content_sha256": "843d69f92ad519543c846d7ccfc1a8f64ff270459c899b2e8d57ce2b138d54d3",
+      "path": "docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md"
+    },
+    {
+      "content_sha256": "28284e61607b734691ac62dcd06bf78967db64057f2a9955515f4f75b80d7b81",
+      "path": "docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md"
+    },
+    {
+      "content_sha256": "8156e7664e32f572c8db014332380bb1729536de6365360c9e3843edaea430ac",
+      "path": "docs/master/semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md"
+    },
+    {
+      "content_sha256": "45cb941deeba731add68a02a3a9d0a3b6719d7c0fdc0965cabb53d8ea07cb4c3",
+      "path": "docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md"
+    },
+    {
+      "content_sha256": "2a8fe67c408d537a62b63ea049e659474ac4829314ae146a60997c3547413fb0",
+      "path": "docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md"
+    },
+    {
+      "content_sha256": "02abef3261a6e6a2206471783c547d0b5c02143ecec6990db5da65ae00fa99db",
+      "path": "docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md"
+    },
+    {
+      "content_sha256": "f477cb195dc4b3a787b4d685422b78fdd71b8c75a63e33169eaaad33325f4bcd",
+      "path": "docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md"
+    },
+    {
+      "content_sha256": "a3ed6c3cb6f837807622645f9f73fec0f39f1cc815a3f1ff3dbefecd9da42f78",
+      "path": "docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md"
+    },
+    {
+      "content_sha256": "463720a9a08a84fd596c7c7bfed6de6e5e4e1447d06bf401e2b83d9b060f6c9c",
+      "path": "docs/master/semantic-assurance/22_TARGET_BOUND_DEPLOYMENT_AND_RELEASE_IDENTITY.md"
+    },
+    {
+      "content_sha256": "15344c3d92395be4de03ec724d134725a2c79425e7c7edfabeb1c697af8272ba",
+      "path": "docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md"
+    },
+    {
+      "content_sha256": "61e0bfe4bc1a4e9b558cf6978db500f530e6ed75402a121bfa3f16e57edd3076",
+      "path": "docs/master/semantic-assurance/24_ACTIVE_SELECTOR_ROLLOUT_AND_ROLLBACK_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "bf3f6125f62a694df880942c3a7f760c75c332f3889d8ff2d8a77934ad74bcd4",
+      "path": "docs/master/semantic-assurance/25_VALIDATOR_BUILD_PROVENANCE_AND_TCB.md"
+    },
+    {
+      "content_sha256": "a96d8120ab39acac3fe152870fb910eded4d5ec51db26000d2126f48b2267486",
+      "path": "docs/master/semantic-assurance/26_REQUIREMENT_UNIVERSE_AND_DISCOVERY_AUTHORITY.md"
+    },
+    {
+      "content_sha256": "ee109813f31fc4fe81e9690309e244f099b24494df06bf34113140c233d965b9",
+      "path": "docs/master/semantic-assurance/27_EVIDENCE_CANONICALIZATION_AND_CRYPTO_LIFECYCLE.md"
+    },
+    {
+      "content_sha256": "0730598cfabda9e762b9ca1e099543c042dddcff62b838f0a51cfa633413e63d",
+      "path": "docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md"
+    },
+    {
+      "content_sha256": "510226339fca76727b2ff916445912187c1bc45447e2c784788ae861e3437fba",
+      "path": "docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md"
+    },
+    {
+      "content_sha256": "25c0482e08fe972f002d0dbfc7beac7c2497bf0adca9a17d48cd39eefe5c85cd",
+      "path": "docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md"
+    },
+    {
+      "content_sha256": "8ff34a3bd40cdb636af98b84ba6973d29109ca8ca2566f92ae69ca0be78f1d77",
+      "path": "docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "fe11c4a10797363383fb8f622454da045da132009be57cd31ab3a9c975ed6c76",
+      "path": "docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md"
+    },
+    {
+      "content_sha256": "2c40d30368daa9a622cbced83ebac778c737a3bef0403dd2ecca5c20d145c4af",
+      "path": "docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md"
+    },
+    {
+      "content_sha256": "b1e31f63404b61e2740d9d983c9734b072efb3d8b74639801bfca658ec9c3220",
+      "path": "docs/master/semantic-assurance/34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md"
+    },
+    {
+      "content_sha256": "f17f7bcf6d50c38b79701c1795125c3157091cfe7e2e3feddd307a9dc466318e",
+      "path": "docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md"
+    },
+    {
+      "content_sha256": "031b3653aa3de745450a6ab8f18c3924506d00435a594ca4b21cfe2dbfda7f4d",
+      "path": "docs/master/semantic-assurance/36_DESIGN_COMPLETION_AND_REMAINING_GAPS.md"
+    },
+    {
+      "content_sha256": "3e376e2732e61b2e088b73885a3b2c14db949e1c4b770f0f3471df291b08d505",
+      "path": "docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md"
+    },
+    {
+      "content_sha256": "4250af5a4f0a4a716e7829390f28f4810ceca3ecb40ae7c40d539b74d4fa97c1",
+      "path": "docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md"
+    },
+    {
+      "content_sha256": "707c8bcceefb0f52f5da9487593e6028fd7648fa79259117b7152a242e1d98f7",
+      "path": "docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md"
+    },
+    {
+      "content_sha256": "ee34ebfcb1605e9c715cefcfe94790727cc56521d077fcc2cd711eaae2091438",
+      "path": "docs/master/semantic-assurance/40_EVIDENCE_GRAPH_STORAGE_INDEX_AND_QUERY_DESIGN.md"
+    },
+    {
+      "content_sha256": "6ab93083321455095e4ddf229b4bebc0a050c6ba811d9e04d53bf7ddde3f2728",
+      "path": "docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md"
+    },
+    {
+      "content_sha256": "0e02a007f934448a422748fe3f2b8c226df463910acf7d2df795ae656b9f5708",
+      "path": "docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "a100be16bcd4449ca4ead13a59ac3ccef49b294ff9153de5e6203a26cf3b27c5",
+      "path": "docs/master/semantic-assurance/43_PERSISTENCE_CONSISTENCY_AND_RECOVERY_ARCHITECTURE.md"
+    },
+    {
+      "content_sha256": "6ef0605817d9095771c42f2c280cf3ad56ec7eb302214885e24b20594a960603",
+      "path": "docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md"
+    },
+    {
+      "content_sha256": "4064f4a159e10f3f5c11d73db4af4631bbb1f24853b2d6c6743dd4f0dbd7aa2f",
+      "path": "docs/master/semantic-assurance/45_API_ERROR_IDEMPOTENCY_AND_TRANSACTION_SEMANTICS.md"
+    },
+    {
+      "content_sha256": "ed5008e766cfd88f5360adbe85209954670848f3a9716b7ff89234c2d0065e58",
+      "path": "docs/master/semantic-assurance/46_SECURITY_PRIVACY_AND_DATA_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "55dc35bb7f54ed9b12efcc16ad6d7064f1bbba713f115ab6eaf86e403835167b",
+      "path": "docs/master/semantic-assurance/47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md"
+    },
+    {
+      "content_sha256": "6af1957363eb09f62fb60fc581705f9397a6409c7b08d9b9abec97e4b473bea0",
+      "path": "docs/master/semantic-assurance/48_PHYSICAL_DATA_MODEL_AND_STORAGE_PARTITIONING.md"
+    },
+    {
+      "content_sha256": "ffcc4fa99773c99dab98853a04c2343cce4ed1775d5fe07e07e4032df4d22321",
+      "path": "docs/master/semantic-assurance/49_THREAT_MODEL_AND_TRUST_BOUNDARY_ARCHITECTURE.md"
+    },
+    {
+      "content_sha256": "b335444d11dda66c0156a0cf1ab7b479635b4e720e7914a0055563c17ab21a0c",
+      "path": "docs/master/semantic-assurance/50_VERSIONING_COMPATIBILITY_AND_INTEROPERABILITY.md"
+    },
+    {
+      "content_sha256": "791bf68740a6ea1037a6829164e7d84e82cf594ea49289e1ecb70ed33d5bdf06",
+      "path": "docs/master/semantic-assurance/51_DISASTER_RECOVERY_AND_BUSINESS_CONTINUITY_ASSURANCE.md"
+    },
+    {
+      "content_sha256": "b6369a3af8ee33f574f1690df69e00e6711d386807e099977b7b422a9a14a020",
+      "path": "docs/master/semantic-assurance/52_EXTERNAL_INTEGRATION_AND_SUPPLY_CHAIN_TRUST.md"
+    },
+    {
+      "content_sha256": "8ac96feb419db44a685eba9af3ac5b29a51f1e5f49b92f81a70ca2527e40de6a",
+      "path": "docs/master/semantic-assurance/53_END_TO_END_DESIGN_TRACEABILITY_MATRIX.md"
+    },
+    {
+      "content_sha256": "6e63e4dd7af60c9542c2bb2748abf94a7074280c7f90a031476808809ba6a1ea",
+      "path": "docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md"
+    },
+    {
+      "content_sha256": "1eaf5dad29ff490c984f7f062c098290884d89671470b193970c61f3251aeb86",
+      "path": "docs/master/semantic-assurance/55_DECISION_AUTHORITY_AND_SEGREGATION_MATRIX.md"
+    },
+    {
+      "content_sha256": "af62ba7b6986b3a24f43d3ba38e09eac55e9b171ec8c10489153cf2af9ebbd87",
+      "path": "docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md"
+    },
+    {
+      "content_sha256": "5cdafa7b1b67bbd2792524a8b66a63678b20088f703d76d74b3303b96c093f4b",
+      "path": "docs/master/semantic-assurance/57_DESIGN_CLOSURE_REFRESH_00_TO_56.md"
+    },
+    {
+      "content_sha256": "d905eb9a347377dbb9879db35410dc13d12513da457745dfcf2c9604c1c79a63",
+      "path": "docs/master/semantic-assurance/58_P0_MACHINE_CONTRACT_CLOSURE_BLUEPRINT.md"
+    },
+    {
+      "content_sha256": "e48349285e9bedd3f0ff67bf0718e246dc784cbee1cac81e79521d06be25c282",
+      "path": "docs/master/semantic-assurance/59_WORKFLOW_OPERATION_REGISTRY_V2_EXTENSION_DESIGN.md"
+    },
+    {
+      "content_sha256": "72f7a5fec2c7aaa12de7d69c18a079ea052fe58af18c278843463babb6141c82",
+      "path": "docs/master/semantic-assurance/60_EVENT_AND_RECEIPT_CONTRACT_ARCHITECTURE.md"
+    },
+    {
+      "content_sha256": "bb6e37bb94aead27a373a2b7c42941bbc2f38eac08275884165b2247e71a7e4e",
+      "path": "docs/master/semantic-assurance/61_ASSURANCE_POLICY_PROFILE_MACHINE_SCHEMA_SPEC.md"
+    },
+    {
+      "content_sha256": "676ad662d157652985b4427fc8aa0be4575f597bef9894e10b109a3da6cf2c9e",
+      "path": "docs/master/semantic-assurance/62_AUTHORITY_GRANT_AND_RBAC_MAPPING_CONTRACT_DESIGN.md"
+    },
+    {
+      "content_sha256": "4a8490392ecd95fc748ff03300e4651776fb5ec65ec90adf6e421f1f1cf77ed1",
+      "path": "docs/master/semantic-assurance/63_CANONICAL_SERIALIZATION_AND_DIGEST_PROFILE.md"
+    },
+    {
+      "content_sha256": "7e757e0e37a97f2e11d9b122dd5d28684dc648620640d9488ed64375a792ba45",
+      "path": "docs/master/semantic-assurance/64_RECOVERY_QUALIFICATION_RECEIPT_CONTRACT_DESIGN.md"
+    },
+    {
+      "content_sha256": "897a7947459091e8ef83faeab0f513bc7f608c53bb7711670577334190c69d35",
+      "path": "docs/master/semantic-assurance/65_DESIGN_TRACE_REGISTRY_MACHINE_SPEC.md"
+    },
+    {
+      "content_sha256": "9d19b8205172f22086b364417cc10ab18ef28c1bee0e2029e3bb8e32b6c053ee",
+      "path": "docs/master/semantic-assurance/66_OPEN_DECISION_TO_CONFIGURABLE_POLICY_MODEL.md"
+    },
+    {
+      "content_sha256": "e718bbca69982660994679e1ae724fe2b4d6e4e8bc0e4bba4c0d4a4f1421e4c7",
+      "path": "docs/master/semantic-assurance/67_INDUSTRY_ASSURANCE_PROFILE_DESIGN.md"
+    },
+    {
+      "content_sha256": "a973e1307181b9af0eae8c8f4d12214f220daa6a2e6a5fce79bc14019a6dc08f",
+      "path": "docs/master/semantic-assurance/68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md"
+    },
+    {
+      "content_sha256": "07bc7dec56dad75407473a98fd36d252ae29716a0e96365596f5617c981a5fcc",
+      "path": "docs/master/semantic-assurance/69_CUSTOMER_DELIVERY_REPORT_AND_CLAIM_LANGUAGE_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "f034bbcf6bf511bd8405fee55ecfc213374cf202931458932a448c12ec60a035",
+      "path": "docs/master/semantic-assurance/70_THIRTY_TASK_DESIGN_CLOSURE_MASTER_PLAN.md"
+    },
+    {
+      "content_sha256": "23fa25f8505ac9d01c0550fcd43614d1f1df32230404d07b2b1bbd34ef6c3668",
+      "path": "docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md"
+    },
+    {
+      "content_sha256": "0fe9db78658d5f08cb1598d6c039dc52b5ff240f8686a66a623b22ee8ccbe0d3",
+      "path": "docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md"
+    },
+    {
+      "content_sha256": "936da65e5722b56c3a9c8bab3d251dd332f2ef332295b784d07777b7bdbd5148",
+      "path": "docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md"
+    },
+    {
+      "content_sha256": "bb96a8020bc96b537388efce55abd1b0068d98c36dad73e800682e133454b095",
+      "path": "docs/master/semantic-assurance/74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md"
+    },
+    {
+      "content_sha256": "92a52ab1f3094f3f00f29ad6a7c50da614f75e11f2292e1afba7779b7c3eb71f",
+      "path": "docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md"
+    },
+    {
+      "content_sha256": "a0342a89a4467418f5a7f121b59b83d66908c2cea77ae34c51f27e0720476b6f",
+      "path": "docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md"
+    },
+    {
+      "content_sha256": "b72ba122e8eac583c04aa9bdef6d2d690997894757236f1c0e3d66af7d50281b",
+      "path": "docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md"
+    },
+    {
+      "content_sha256": "1361c2dea8bbbcb743064b54195eed156a7e6071abd5d98df645686ad3ac95f1",
+      "path": "docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md"
+    },
+    {
+      "content_sha256": "dac5bfbac7a6f27e87c11c5158d1f3129bfd30bc4c1872099cebbdedbe12aba0",
+      "path": "docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md"
+    },
+    {
+      "content_sha256": "57e9e9fe64b3a05b3487a50f3b0822a1079157fed0b6c5a984302fcb2a4fbd74",
+      "path": "docs/master/semantic-assurance/80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md"
+    },
+    {
+      "content_sha256": "02c1ccdfaf10fb05309d03ff880632b3b707a59021894bf638854fbaa2f99ee4",
+      "path": "docs/master/semantic-assurance/81_NEXT_DEVELOPMENT_BATCH_F_TO_K.md"
+    },
+    {
+      "content_sha256": "9292d5deba350a77f77596ab94d74c889c638fd43482428647241b146d5004ff",
+      "path": "docs/master/semantic-assurance/82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md"
+    },
+    {
+      "content_sha256": "8c4e79667cfc19c843fa06cae40ca8ae29975b579a6ab0bec9b1ae0950a83869",
+      "path": "docs/master/semantic-assurance/83_PERSISTENCE_MIGRATION_AND_DUAL_WRITE_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "fe4404859e6b8b2da2855729f7e8ea4385f1bedd16ef654319f22316f5555982",
+      "path": "docs/master/semantic-assurance/84_POLICY_BOOTSTRAP_AND_PROFILE_DEFAULTS.md"
+    },
+    {
+      "content_sha256": "f850b68c906988dce54e47a713c676a6db842a1a31758f0cb4f6d77e35c9d02f",
+      "path": "docs/master/semantic-assurance/85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md"
+    },
+    {
+      "content_sha256": "c8f2281e67a0ddac4cf7b9f0d9bf7c5d682d60007db7676189964295ba74db56",
+      "path": "docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md"
+    },
+    {
+      "content_sha256": "1aa2015b86a352c06cd8ac45eb61c26997ada01f13be7bee6d8cfe67525b6e5f",
+      "path": "docs/master/semantic-assurance/87_DESIGN_LOCK_CHECK_AND_REPOSITORY_ORPHAN_SCAN.md"
+    },
+    {
+      "content_sha256": "1eead44e237068f552c8350a8f28fac175bc79a8a56ecaced7c4107b25b06bde",
+      "path": "docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md"
+    },
+    {
+      "content_sha256": "dc15b2aa18e3fffb64bc310043e99b4d0a716a0cd06558d56935d4c1abe72071",
+      "path": "docs/master/semantic-assurance/89_REQUIREMENT_ID_NORMALIZATION_AND_SEMANTIC_DEDUPLICATION.md"
+    },
+    {
+      "content_sha256": "7c0ac5625581ba034e0bfb5dc02614955a796b188fc6e2f780b47ae053ed7d8d",
+      "path": "docs/master/semantic-assurance/90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md"
+    },
+    {
+      "content_sha256": "6d1854fde9634d79388243e5d7d31da2e416c75f3d9ba1092bbbcf6a9c93e61a",
+      "path": "docs/master/semantic-assurance/91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md"
+    },
+    {
+      "content_sha256": "a5873b59bac1af10742ce4e05401055ffd39724662a208ac0c08b60ac288b187",
+      "path": "docs/master/semantic-assurance/92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md"
+    },
+    {
+      "content_sha256": "1be7f9dfa319196ddaddb265cd0d5351e2d9914bfe5a422d21a455a133eab71d",
+      "path": "docs/master/semantic-assurance/93_REQUIREMENT_CONFLICT_BASELINE_AND_CHANGE_CONTROL.md"
+    },
+    {
+      "content_sha256": "1bf77c7d0677c133b92519b99427fc283950b4472fa89a7e7697a11ea3c3a5f4",
+      "path": "docs/master/semantic-assurance/94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md"
+    },
+    {
+      "content_sha256": "07797d75a7635112f8c059dfe54898da64d4fcda1e8cfe0c8f22dcd95594397b",
+      "path": "docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md"
+    },
+    {
+      "content_sha256": "02cb6fd2a8efc80210dec099332af965dcddf49294dc356d0c6ff3ff70af4bf3",
+      "path": "docs/master/semantic-assurance/96_DEPLOYMENT_CERTIFICATE_AUTHORITY_POLICY_INDUSTRY_TIER_FINALIZATION.md"
+    },
+    {
+      "content_sha256": "c6278ef6ef4e90d3812a27471f6be22768d54c21b323c3563297df5383fa743e",
+      "path": "docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md"
+    },
+    {
+      "content_sha256": "b149d42794b19ac26fc4182096bd3f4a666691f479991a90ffbf2cab1e0d3118",
+      "path": "docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md"
+    },
+    {
+      "content_sha256": "bb55e54ab7ab7317d2d194f4e3ad10e30599909d53c971e062f97a29511d6a9b",
+      "path": "docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md"
+    },
+    {
+      "content_sha256": "e0ce0b0cc96362a9e465a83aa5f6a457acc919726ea7bf8fe7dbd3ac699b730d",
+      "path": "docs/master/semantic-assurance/README.md"
+    }
+  ],
+  "authority_document_population_digest": "8b65a6b9390a5438efcd9cb19e24603af693c03a0bc553cbc21b429167e4000c",
+  "contract": "ONSURE_REQUIREMENT_UNIVERSE_SNAPSHOT_V2",
+  "final_claim_allowed": false,
+  "generated_at": "2026-08-13T13:52:36.827748+00:00",
+  "generation_algorithm_version": "RU-GEN-1.0.0",
+  "requirement_ids": [
+    "FR-COM-001",
+    "FR-COM-002",
+    "FR-COM-003",
+    "FR-COM-004",
+    "FR-COM-005",
+    "FR-COM-006",
+    "FR-COM-007",
+    "FR-COM-008",
+    "FR-COM-009",
+    "FR-COM-010",
+    "FR-COM-011",
+    "FR-COM-012",
+    "FR-COM-013",
+    "FR-FRESH-001",
+    "FR-FRESH-002",
+    "FR-FRESH-003",
+    "FR-META-001",
+    "FR-META-002",
+    "FR-META-003",
+    "FR-META-004",
+    "FR-META-005",
+    "FR-META-006",
+    "FR-META-007",
+    "FR-META-008",
+    "FR-META-009",
+    "FR-META-010",
+    "FR-META-011",
+    "FR-META-012",
+    "FR-META-013",
+    "FR-META-014",
+    "FR-META-015",
+    "FR-META-016",
+    "FR-META-017",
+    "FR-META-018",
+    "FR-META-019",
+    "FR-META-020",
+    "FR-META-021",
+    "FR-META-022",
+    "FR-META-023",
+    "FR-META-024",
+    "FR-META-025",
+    "FR-META-026",
+    "FR-META-027",
+    "FR-META-028",
+    "FR-META-029",
+    "FR-META-030",
+    "FR-META-031",
+    "FR-META-032",
+    "FR-META-033",
+    "FR-META-034",
+    "FR-META-035",
+    "FR-META-036",
+    "FR-META-037",
+    "FR-META-038",
+    "FR-META-039",
+    "FR-META-040",
+    "FR-META-041",
+    "FR-META-042",
+    "FR-META-043",
+    "FR-META-044",
+    "FR-META-045",
+    "FR-META-046",
+    "FR-META-047",
+    "FR-META-048",
+    "FR-META-049",
+    "FR-META-050",
+    "FR-META-051",
+    "FR-META-052",
+    "FR-META-053",
+    "FR-META-054",
+    "FR-META-055",
+    "FR-META-056",
+    "FR-META-057",
+    "FR-META-058",
+    "FR-META-059",
+    "FR-META-060",
+    "FR-META-061",
+    "FR-META-062",
+    "NFR-ACCESS",
+    "NFR-AUDIT",
+    "NFR-AVAIL",
+    "NFR-CONFIG",
+    "NFR-OBS",
+    "NFR-PERF",
+    "NFR-PORT",
+    "NFR-PRIV",
+    "NFR-REL",
+    "NFR-SEC",
+    "NFR-SESSION",
+    "REQ::docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md::3-3::765754f2166842994edd",
+    "REQ::docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md::8-1-credit-docs-v2-04-6::76f30db27baec3a0990c",
+    "REQ::docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md::verify::ae609673ee785bbcf17a",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::11::0f2ea09f088bd7e69819",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::11::a516b78171bf645650ac",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::11::cdb70070640074a421e8",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::11::ddcedc93cd3024bca677",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::13-1-meta-validation::aad9593f8b5dd074aee0",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::13-1-meta-validation::dc564c068e5a44c8674f",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::13-1-meta-validation::e06340e8788423a0588d",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::8-oevidence::4ed9eecefb33119876f7",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::9-ogit::15778baa3e5eea6d62ae",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::coveragereport-2026-08-09-design-only::9f4f9154955aa7a9fc4f",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::coveragereport-2026-08-09-design-only::c8f15106487245593a92",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-001-validation-target-manifest::2850452454b326a86823",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-004-observability-qualification::a4d71cb63b73e66742aa",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-010-atomic-validation-snapshot::7c4bd745a8b6ab1f921d",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-026-evidence-origin-independence::8a2f8bfa11f531cb666d",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-036-historical-revalidation::5e1e7abd573702fe6bc5",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-041-cross-contract-semantic-validation::eb8f22e8e836c0dbf64f",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-042-final-lock-certificate-revocation::943f9b3a69b04471337f",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-043-ai::c5256a7fa0b4f012be84",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-047-assurance-revocation-and-recovery::ed41b9610cf0c638546e",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-049-assurance-strength-dimension::40299bca1de833ac7726",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-050-evidence-graph-and-explainable-ceiling::0c5f191964477512a23a",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-055-deterministic-aggregation-and-resource-exhaustion::c18f4f622d5246126469",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::fr-meta-060-certificate-and-product-assurance-final-ceiling::0b79551a7809d6fda3fb",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::recursive-detection-learning::3f624bb6763b3347b591",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::recursive-detection-learning::8ba14a1c213a820648b3",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::recursive-detection-learning::b3c3ec46f6e0bcc5c578",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::recursive-detection-learning::bde9200486c6e0467261",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::30ced59c843f0afa361a",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::381d9b268a8eecfa7e18",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::5f3c4b883fac2c557821",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::98a4b7f2e99c98ed1c2e",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::b02b02027ee80a50cf9a",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::b457797d4533389e3aac",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::d0765a6847752670f444",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::eb05316035c861006a3f",
+    "REQ::docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md::root::f7138842660bd215a1af",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::10-1-cross-model-verification::dd203d73ca51c9040077",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::12-13::9f5d0260e6bec5dd62d7",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::12-5-evidence-to-claim-sufficiency::0d683460f07f7fa4a312",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::12-6-evidence-claim::b9353ad76299d0f677bf",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::12-8-finding-deduplication-integrity::ad9ece392a03d6421c8e",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::13-2-runtime-currentness-revocation-review::12cbbe05cffee399c7c1",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::3::9b28b388908dc9848ff7",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::9-1-oreview::728de67acf19c0df42c6",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::architecture-review::d37079bae7ce1089d75a",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::confidence-calibration-2026-08-09-design-only::a12a4774116d446a22de",
+    "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::security-review::6e5c69a7b4d6eb6d64f0",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::12-1::f5b998dab61caa90fd6c",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::5-contracts-state-model-mapping-v1-json::67ef573ac16313836f8b",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::6-api::fd22d31dd6de83c6d2e1",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::acceptancecertificate-externalacceptorgrant-2026-08-11-design-only-g7::2fcf07aedd5a52f0c590",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::acceptancecertificate-externalacceptorgrant-2026-08-11-design-only-g7::3c9340ac8fa4c0079824",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::acceptancecertificate-externalacceptorgrant-2026-08-11-design-only-g7::883f19b94ef0077b0888",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::extension-distribution::b2c4204ce00f89865059",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::identity-and-organization::5a65f34d59b23f81bb23",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::improvement-contracts-patch-plan-v1-schema-json::4fb123c7482deac22e5a",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::knowledge-memory-contracts-failure-memory-v1-schema-json-improvement-memory-v1-schema-json-reusable-pattern-memory-v1-schema-json::1ef4be45ce855c0a5942",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::knowledge-memory-contracts-failure-memory-v1-schema-json-improvement-memory-v1-schema-json-reusable-pattern-memory-v1-schema-json::c8bc6957ed5da42382cc",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::missedfinding::191479a4299404bc118a",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::missedfinding::a4cfce71d88e22f86d86",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::notificationrule-notificationevent-notificationdeliveryreceipt-2026-08-11-design-only-g7::5d51d31de95579f8deba",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::notificationrule-notificationevent-notificationdeliveryreceipt-2026-08-11-design-only-g7::d8de51456fc3859cbbf7",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::notificationrule-notificationevent-notificationdeliveryreceipt-2026-08-11-design-only-g7::f3fa5371d1c958b6465e",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::policypack-policypackversion-2026-08-11-design-only-g7::d6d10b99f6a0dd47db33",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::sandbox::60991959b7d2455bd44d",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::sbom-program-2026-08-11-design-only-g7-onsure-sbom::2a0cc880ced7a4bf5b45",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::sbom-program-2026-08-11-design-only-g7-onsure-sbom::2c1e0515b4d87904c085",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::servicecase-contracts-service-case-state-v1-schema-json::3bc56ce41e63cd2b8369",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::servicecase-contracts-service-case-state-v1-schema-json::51eb133cfcf0a0b78b8d",
+    "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::trainingrequest-trainingrun-design-only::21eb514628805cb1d152",
+    "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::1-ux::404d5205a27a341b4905",
+    "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::chat::0b9f7e75ca46485c9eaa",
+    "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::finding-explorer::08f253f8d53fcb14be09",
+    "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::g14-2026-08-11-08-review-checklist-open-decisions-md-08-review-checklist-open-decisions-md-g14::5956afd7c903730e1cbe",
+    "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::license-usage::ce79d549d82a99b290df",
+    "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::preflight::f8bb7861b2641efdb545",
+    "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::support-center::d4b39e7c9654b0dffe40",
+    "REQ::docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md::1-1-workflow-operation-registry::be2b2402a481b97e42d4",
+    "REQ::docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md::1-1-workflow-operation-registry::cc91e8d856764d071d3d",
+    "REQ::docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md::alpha::8c83d368489e7f96aa95",
+    "REQ::docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md::beta::59911230a39a1b04e418",
+    "REQ::docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md::otraining-fixture::f3d9227c91600de8f8b0",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::10-tool-calling-external-effect-assurance::a71e21d8b76d59ca6700",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::10-tool-calling-external-effect-assurance::c339038450499105b9b2",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::2-2-component-contract::6cfe06e26b182bdeb672",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::2-component-cbd::b0122d346450664f4922",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::3-1-agent::0e886a1fefb6a5fff5e1",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::4::df81d21c9ff7e2247029",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::8-10-ai::77e4160391d92ff7ae16",
+    "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::8-11::551424a2c303cedfadae",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::2-p0-configurable-policy::16739dfd8d0f96bc42ba",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::4::8329659daf86ee43a6c6",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::4::b72f43222115235f9b77",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::5-industry-profile::34a7f0a2c0b35f45e880",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::root::0ef02acf7a3213c19b16",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::root::2163d17b7dfad180aae2",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::root::29b35d1f91d8fec2bd64",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::root::5cf4ba1eee0618c0a31a",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::root::6f277d8fdb187e9cfef3",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::root::821b08f4ab4fdfb49af2",
+    "REQ::docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md::root::bbc5b50b815058debf45",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::2026-08-07-2-02-03-06::77ae0df5177760a0b81b",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::2026-08-07-2-02-03-06::dc5c26255a6cad393e1f",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::2026-08-07-3-01-05-07::4abe047cbaa84e9a5068",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::2026-08-07-4::5ab22b46f9896acd8364",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::2026-08-07-4::aeee9005499a44f9c80a",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::2026-08-09-onsure::06bd53c7cd60a2a131b2",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::2026-08-09-onsure::cf8313a82034b5e4d7d0",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::b::6bafc6cebc57cb760853",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g-2026-08-07::014519cafd3c3bb50ad5",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g-2026-08-07::3669f7a73e4091c1a093",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g29-target-ai-auto-learning-2026-08-08::3f22c6ddbe0295ff3e1c",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g29-target-ai-auto-learning-2026-08-08::5cac6f854a3a9861eab3",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g29-target-ai-auto-learning-2026-08-08::9bcb5cf58c11e7c08f35",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g30-omemory-otraining-2026-08-08::71005be263f0bf6d8ffb",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g30-omemory-otraining-2026-08-08::e173bea38463d573d493",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g30-omemory-otraining-2026-08-08::f33d9d9d6b388bb38c99",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g31-knowledgepattern-2026-08-09-c6::daade8ffdfff6b64887b",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g33-acceptancecertificate-policypack-notificationrule-sbom-2026-08-11-g7::2a9e98a3c11f9b9827c7",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g33-acceptancecertificate-policypack-notificationrule-sbom-2026-08-11-g7::4e0750d544eb1b036bca",
+    "REQ::docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md::g33-acceptancecertificate-policypack-notificationrule-sbom-2026-08-11-g7::a79461828874cf72c3b2",
+    "REQ::docs/master/semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md::02::131f4ab1e505dd4eb0f8",
+    "REQ::docs/master/semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md::3-1::568659da2f83bd35db96",
+    "REQ::docs/master/semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md::3-1::6c52d04ae5848d291f5e",
+    "REQ::docs/master/semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md::3-1::b339b279360cfadbf794",
+    "REQ::docs/master/semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md::6-machine-contract::e6b8829ff53ebbe9bcce",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::16::87593db6d646470c1e0e",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-1-sa-01-evidence-truth::95ab362a95593123dc20",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-2-sa-02-requirement-universe-unknown-exclusion::6077b5746a9e843933c1",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-2-sa-02-requirement-universe-unknown-exclusion::95ab362a95593123dc20",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-2-sa-02-requirement-universe-unknown-exclusion::ae840e66a4ecfaacb5bd",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-4-sa-04-sa-09-independence-accepted-risk::3c4b329046706cb5de2f",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-6-sa-10-assurance-communication-consumer::59a1820711ffbdc1d68c",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-cross-cutting::246df582e0a2c4c8fcb3",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::2a09305887d93237bba9",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::448e97ec8018b2fb8762",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::58d05e2b5b6be6eb03ba",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::66e13765bbec67a8274f",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::6acd216d3124c72cdb06",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::711a0cb6b83d6e68d1cd",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::8657e28c2d84fc935081",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::91e6a6a8efa61fe02b8c",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::c769f4a9c973c56971e9",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::cb4998d6fa964f53d59b",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::d16196b025d95ae8f8b3",
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::root::d87bc438b13e69b54c8e",
+    "REQ::docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md::16-decision::0f2ed00ea8d7487b36a8",
+    "REQ::docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md::16-decision::46bb3992bf52a91944c4",
+    "REQ::docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md::16-decision::4b264f5b8119d003ca4f",
+    "REQ::docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md::finding::f3c4fb20c7f9c603f50d",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::5-cross-contract-invariant::44da9585f6002f50b034",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::5-cross-contract-invariant::51b506cb8368809f707d",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::5-cross-contract-invariant::758ca20f9bca763921a4",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::5-cross-contract-invariant::c5d81d0a2f7064611a2d",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::5-cross-contract-invariant::da1f8143fb7475d306af",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::7-freshness-invalidation-graph::44f3a4adda720afc01af",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::8-transaction-survivability::ec51fa003d9d497a82a7",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::9::100cc89313c431eb7287",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::9::4a1934fe950c6a17ef94",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::denominatorchangecandidate::e8c31b48a6ff89068f73",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::handoff-work::a329416ce66e9de0f0b0",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::reperformancerun::c9b8d12faab88f698399",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::rightreachability::1024a8943fe09bfb6fd1",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::rights::e148797090dc25cfdc2b",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::rights::fea8974bb7fd0c241d7e",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::semanticcapabilitydefinition::19b3f319b6a8c42bceb7",
+    "REQ::docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md::semanticcapabilitydefinition::83f49c613ec6584aff24",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::14-delivery-report::23afa56dd2533befae6e",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::14-delivery-report::3374761e4927dff6b977",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::14-delivery-report::570df2cd8e2fae97eb4a",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::14-delivery-report::58322c67fd321c1de02c",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::14-delivery-report::fab0379f325983c310be",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::2-ux::1548ee524a64476a56ec",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::5-rights-remedy::1c13342a1361f4ab6d19",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::8-freshness-historical-view::103fdf929d23140f5c6c",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::semantic-assurance-summary::b0c21e3522040fde0720",
+    "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::ui::8e5257c485720711aa55",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::15-sa-13-business-semantic-integrity-pack::42c0a3e9db81a492756f",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::19::48b9d83a483b005c082b",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::19::db59d107138669ab74d2",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::20-1-distributed-evidence-consistency::43ce223f11e78afde91d",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::20-2-result-selection-retry-cherry-picking::333067e5ca802875abb1",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::24-validator-self-improvement-requalification-pack::729370ae69e2676ae09f",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::25::8433deb5ccf3f728cb2c",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::human-misinterpretation-test::1efe1ad4d65d1f65775e",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::root::52103754dab7a8cade29",
+    "REQ::docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md::root::86f1b8e04d64f0f2e532",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::15-learning-regression-guard::fe728c82b9e8caf1ba44",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::18-freshness-graph::4ea3f145b907af267ee1",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::20::67b254439067704d770d",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::23-memory-blind-technical-isolation-proof::6baf65cd89f5b29e3ae6",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::23-memory-blind-technical-isolation-proof::8038d98a6f9037d0acc1",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::26-benchmark-precommitment::b65d0f2b6bdd4ee9e391",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::27-meta-validator-qualification::e977473042a09711e18e",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::28-validator-self-improvement-governance::7655389927dda0e31a1b",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::29::9eb42a8734fe14eab64a",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::3-applicability-non-ai-baseline::5c2f14fb3ec66336e954",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::6-prompt-instruction-authority::55613e1473ac133bbf31",
+    "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::6-prompt-instruction-authority::5ae8d5ad95e9803bfd37",
+    "REQ::docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md::b-authority-identity::38512c78f0daabea0697",
+    "REQ::docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md::b-authority-identity::3adf35a0e5ba9a8d3263",
+    "REQ::docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md::d-coverage-denominator::08f9e968d1ee2d15691e",
+    "REQ::docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md::d-coverage-denominator::7735689f68ac2b550b49",
+    "REQ::docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md::d-coverage-denominator::aa787c726a353bbc7938",
+    "REQ::docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md::j-operation-registry::a0c9ec45208fc1d8df64",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::02-functional::f2bb5e5bede8d6aac52f",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::05-ui-ux::fd010a797aa4b61a8f05",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::06-test-operation::c8894dc9548a0072b598",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::3-1-distributed-evidence-consistency::6be2377c771d6a8b2ca3",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::3-2-result-selection-integrity::6b26c9256daed17f8264",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::6-2-reviewer-common-mode-bias-collusion::a06585f606cbc8de11b1",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::8-1-assurance-communication-fidelity::334b8e001e6a2ca1118a",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::8-1-assurance-communication-fidelity::4323ff3a29aa99222304",
+    "REQ::docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md::8-1-assurance-communication-fidelity::4de8d6a96dde4521360d",
+    "REQ::docs/master/semantic-assurance/100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md::5-design-change-intake-queue::0ffd925470cf78237640",
+    "REQ::docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md::1::4e6b71567e86c57938d9",
+    "REQ::docs/master/semantic-assurance/102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md::3-applicability-population::15e930bad90045c33638",
+    "REQ::docs/master/semantic-assurance/102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md::4-global-trace-registry-v2::0925fb95f054df8a3a59",
+    "REQ::docs/master/semantic-assurance/102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md::6::b9149691279e3234c4ff",
+    "REQ::docs/master/semantic-assurance/103_GLOBAL_ORPHAN_CONTRADICTION_INVENTORY_AND_BASELINE_LOCK.md::2-contradiction-scan::3e5200a20e86d7b84dea",
+    "REQ::docs/master/semantic-assurance/106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md::1-claude-implementation-semantic-intake::6808e9d688b2ab5edf62",
+    "REQ::docs/master/semantic-assurance/106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md::2-change-queue-disposition::213ae1d36ce4fb17c95c",
+    "REQ::docs/master/semantic-assurance/106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md::2-change-queue-disposition::d9a3c59cfbcc0e350945",
+    "REQ::docs/master/semantic-assurance/106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md::3-drift-classes::016ce0fddfb2b03e7651",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::3-finding::28c1e63d543367008c80",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::5-p1-finding-ledger::79468c0eff1b8f25eb8b",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::5-p1-finding-ledger::af9acbfdf47cbc84e655",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::8-fixture::6692c60dcdb5c6200bbe",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-001-canonical-identity-ambiguity::c76444d849456925ea53",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-002-root-trust-recovery-undefined::81f38d4cad09aee718cd",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-005-tcb-recursion-unbounded::24f2a56374fe7174d4f3",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-007-run-epoch-mixed::4149eedeae08ff151ae6",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-009-region-split-brain-assurance::1f04ddc7435e7fc41a4c",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-010-mixed-version-semantic-conflict::effb20ad39a23316cb61",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-011-canary-pass-promoted-globally::71a42e97b26a7448fc5d",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-012-live-state-snapshot-drift::fbdd7cd041da3308dfb9",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-013-capability-false-not-applicable::f2f564415151f9a830a3",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-014-verification-caused-unauthorized-effect::34a54b4ea8426113e698",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-015-shared-cache-contamination::bc36ae623e2ade7462d1",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-016-assurance-backup-restore-gap::1b8d08a49eeb238d3d58",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-017-core-status-ontology-gap::5a031fa0556c3c4bd45b",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-017-core-status-ontology-gap::7e284bf44f0ab537f1a5",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-018-evidence-receipt-meta-binding-gap::9f6fa707da5556a6198f",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-019-receipt-signature-optional::3b5acac23df54748de35",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-022-publication-history-validity-conflation::1ade336ed2d3b5dbedd2",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-026-observation-channel-sufficiency-gap::40648cd2552927c5937d",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-034-sandbox-historical-current-verification-conflation::8409317929eebae7bce3",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-036-evidence-actor-role-free-text::01c2399d6a56cebd1e61",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-040-public-sdk-operation-authorization-profile-missing::b4bef00b0871a2320da6",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-074-validation-target-required-evidence-pre-meta-model::2d226a398ee4deb91537",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-078-program-profile-snapshot-complete-without-inventory::0ccb67388ea963e1821c",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-083-schema-instance-negative-required-not-per-schema-enforced::8031854fe906bb7028b9",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-088-main-branch-protection-status-check-unspecified::e12caa1b3091c26d8e15",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-104-responsibility-separation-receipt-rule-conflict::725303f9905b78ec13e7",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-105-omaker-auto-allowed-conflicts-patch-approval::db4aa510a4589efc8529",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-125-semantic-control-without-executable-operation-path::00ba1c0af9ee5184b040",
+    "REQ::docs/master/semantic-assurance/10_FINDING_LEDGER.md::fl-p0-128-internal-otester-oaudit-can-match-external-gate-name::20b43abd4c7103b995d2",
+    "REQ::docs/master/semantic-assurance/113_BASELINE_MANIFEST_REGENERATION_ATTEMPT.md::root::2b08883307081155c975",
+    "REQ::docs/master/semantic-assurance/114_DESIGN_LOCK_CHECK_EXECUTION_REPORT.md::gate::335b2b6f34a6d1ec4932",
+    "REQ::docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md::3-explicit-trace::29131a4fe0d5a134c3d7",
+    "REQ::docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md::5-requirement-extraction::b199f7b9be3c5e8ce7aa",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::10-4-finallockv2::ae2fa9972af46231008a",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::11-bundle-i-workflow-operation-registry-v2::8c941fc415aaf9e29f0e",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::11-bundle-i-workflow-operation-registry-v2::dfca94262b611a062d47",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::12-2-cross-contract-invariant-suite::613348707ea80301dc12",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::13-migration::89d661bdba2b86d8858b",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::2-v2-contract-header::e6ff56e0bd97833106e7",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::3-1::32b4fe1f05d6876f1e92",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::3-3-hard-invariant::77e3d2cc62743bba9dbc",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::4-3-receiptenvelopev2::41f80afb4b5c2268a070",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::5-1-authoritykeyregistryv2::4155d3ccbafc72464e00",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::6-3-atomicrequirementv2::01d46902d0a543c6d7ea",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::8-5-memory::c5e1a87f98b10551d3cb",
+    "REQ::docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md::9-2-rollback::76d6965452b069ffad18",
+    "REQ::docs/master/semantic-assurance/122_CLAUDE_REVERSE_ALIGNMENT_SEMANTIC_CHANGE_AND_DESIGN_DRIFT.md::4-semantic-change-queue::abd40880767bda3eba85",
+    "REQ::docs/master/semantic-assurance/123_THIRTY_FIVE_TASK_EXECUTION_MASTER_MATRIX.md::123-thirty-five-task-execution-master-matrix::bfff48a2175438ad749a",
+    "REQ::docs/master/semantic-assurance/125_SEVENTEEN_STEP_POST_HOLD_CLOSURE_EXECUTION.md::1-4-requirement-universe-snapshot-applicability-trace::09ab4657acbf7e35c675",
+    "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW.md::root::66bb962063e8ae502410",
+    "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md::fr-fresh-001-rules-of-engagement-target-testing-authorization::d5040f1f06f87e9d8176",
+    "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md::fr-fresh-002-accessibility-internationalization-locale-integrity::cf5a3d136fa716897800",
+    "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md::fr-fresh-002-accessibility-internationalization-locale-integrity::d5040f1f06f87e9d8176",
+    "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md::fr-fresh-003-contract-termination-tenant-offboarding-closure::528e55bbc3e2055fe07e",
+    "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md::fr-fresh-003-contract-termination-tenant-offboarding-closure::828066af54f708d07a90",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::1-3::1021dfc8fe9428b29de7",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::1-3::4322f0918491593fb24f",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::1-3::a89ed7b4533ff4bd481b",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::1-4-safety-gate::32a4c85ea84b6ccb7646",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::1-5-safety-verification::dcbc5e3773e30d633379",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::2-4-appeal-lifecycle::50e7972664a5a4c83f4e",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::2-5-appeal-decision::1021dfc8fe9428b29de7",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::3-assurance-composition::d0bf886b758e616bb6d1",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::7-event-receipt::0223d3e8832f423bfa21",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::7-event-receipt::d0065c8a7594262b452e",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::11-incident-near-miss-feedback::103fdf929d23140f5c6c",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::2::1fc2cf0b42da5fc835ec",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::2::7a1f4467d2bdb343a9be",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::7-verification::19ecec549c502bb0a926",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::8-safety-decision::4322f0918491593fb24f",
+    "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::9-safety-acceptance-authority::f06a944911ddb38c85d6",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::02-functional::3f8e91c61b335902402d",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::07-ai-agent::94fad8c4a234409e2a61",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::13-02-08::b645271a2b7c1ff25294",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::1::403db5a0d057dd71358f",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::3-p0-root-defect-family-02-08::b28a2e043ccd70206dda",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::root::5724d704bcd34b75ba01",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::root::74496fe253028e12bf7a",
+    "REQ::docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md::root::c87129fb5f432e72df3d",
+    "REQ::docs/master/semantic-assurance/132_PHASE_C_TEST_RUNTIME_VERIFICATION_EXECUTION.md::test-domains-reviewed::43b1a9be0417addb4b4b",
+    "REQ::docs/master/semantic-assurance/133_PHASE_D_INDEPENDENT_ASSURANCE_RELEASE_QUALIFICATION_EXECUTION.md::required-independent-lanes::5e7277b991d70a95a033",
+    "REQ::docs/master/semantic-assurance/135_FIVE_PHASE_END_TO_END_EXECUTION_MASTER.md::blocking-chain::7634377f35cf660d9f43",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::01054f1a48a350142a2e",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::05b452532f856c0793ba",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::46c7244f23a523645af8",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::53b1922c31b40395ecdc",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::61ffd5fa25edef5f137d",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::97bcecd01d6d17f7286e",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::9f3edc8a67fc10f4b4bf",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::c9d1408540e27eba131a",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::cce41e8de81a9f5f8114",
+    "REQ::docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md::5::f704a61598e3dc090fe7",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::1-authority-supersession-done::d6b515c8c577815a267b",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::4-business-actor-rbac-authority-done-as-candidate::0518633673644ae50b4c",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::6-open-decision-policy-binding-done-as-candidate::efd51f1fbf3a2f9b8583",
+    "REQ::docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md::contract::cf6531fd309de36ab328",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::2-migration::99b21f45c54816ad9aca",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::6-phase-3-workflow-operation-v2::39a2998641ff38c766b5",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::7-phase-4-canonical-product-lineage-v2::5957af597754509f676f",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::9-phase-6-independent-gate-qualification::91ddbd6d4a37f6eb34ff",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::artifact::59754fde0d65bc7cbc1f",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::authority-profile-v2::2d34d964fd2cc76f2d89",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::root::aec1b9178dce8cc011ad",
+    "REQ::docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md::semantic-gate-receipt-v2::560feeac5ed32d97c355",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::11::de0560be4a08bd937321",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::1::fa4a0f3ae92f1ea365af",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::2-status-finality::68a4a2780bceb405a348",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::3-evidence-receipt::1d5e8132ee9666ad6b0a",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::3-evidence-receipt::eee56cbcc39ed0bc62f4",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::4-authority-principal::12eaffb046bda792d193",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::4-authority-principal::ba9b1814befe4885163f",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::7-learning-memory-qualification::2a0ecfeed9f9f67bd464",
+    "REQ::docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md::9-final-independent-gate::8369f3527a3fc023420f",
+    "REQ::docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md::3-fixture::8c6fc610f93d21d70cb3",
+    "REQ::docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md::3-fixture::a743ee66198becd2dd55",
+    "REQ::docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md::invalid-b::831801dbe4951dc446ca",
+    "REQ::docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md::invalid-b::a3f91197a57c7daa29d3",
+    "REQ::docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md::invalid-b::b9229076823cec2f34b7",
+    "REQ::docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md::2-coverage::c693e9b81f2f6992849e",
+    "REQ::docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md::hardening::4024377a3421dfb12895",
+    "REQ::docs/master/semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md::5-rbac-sod::4fe42ee5c45ad8f81d99",
+    "REQ::docs/master/semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md::5-rbac-sod::89a49d306cd125caab25",
+    "REQ::docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md::4-case-migration-rule::053dae8534570fac482a",
+    "REQ::docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md::4-case-migration-rule::20fe2f538be82b072fad",
+    "REQ::docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md::4-case-migration-rule::2ebc3b6bd1289626b5db",
+    "REQ::docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md::9-final-gate::61d7cc6afdca967c817b",
+    "REQ::docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md::9-final-gate::67ad890a159e2af26e46",
+    "REQ::docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md::validation-case::47e7581a85819d73a01e",
+    "REQ::docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md::6-1-atomic-semantic-authorization::baf4cf72b54abd8525a0",
+    "REQ::docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md::7-finding::c14f93c84d03a021849f",
+    "REQ::docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md::r15-003-semantic-v2-tenant-boundary-bypass::fe774c93b35144413fd2",
+    "REQ::docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md::3-fl-p0-134-semantic-v2-target-path-scope-escape::02cc6d56d94a9f25c595",
+    "REQ::docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md::6-fl-p0-137-semantic-v2-public-workflow-service-bypass::f5e860bde9800ea627b5",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::2::73766624b324de640c74",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::3-runtime-candidate::d4579a9a04133a6e7a66",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::3-runtime-candidate::f8506a7791567a2df474",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-03-java-compile-junit::f5f937103b68c1c811cf",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-05-v1-v2-actual-reconstruction-batch::1bd8c45c4bd3488eb702",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-05-v1-v2-actual-reconstruction-batch::318e4719acac6cd60c3c",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-05-v1-v2-actual-reconstruction-batch::89b34a071d6fb9b55cc2",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-06-validation-case-exact-population-migration::e1ef8d3fd076fd415b10",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-08-independent-otester-oaudit-runtime::1901a0eed214590a4a7e",
+    "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-12-target-bound-deployment-identity::1d3471dea4c3f8003e7c",
+    "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::11-otester-oaudit::822e490ca5382f088a99",
+    "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::15-ui-ux::c4dc243a752ffca6511f",
+    "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::16-negative-fixture::483f320f83f8d1ff3d0e",
+    "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::5-independent-execution-plan::654f03c47e1925ec0d79",
+    "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::8::5c2f14fb3ec66336e954",
+    "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::8::adf158c05ee2f2d9ba24",
+    "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::9-retry-attempt-integrity::1d6e21a03c01b05e7ad8",
+    "REQ::docs/master/semantic-assurance/22_TARGET_BOUND_DEPLOYMENT_AND_RELEASE_IDENTITY.md::16-negative-fixture::e125b9f72f741649f2cc",
+    "REQ::docs/master/semantic-assurance/22_TARGET_BOUND_DEPLOYMENT_AND_RELEASE_IDENTITY.md::5-release-manifest::78a99cff39e9feaa6c69",
+    "REQ::docs/master/semantic-assurance/22_TARGET_BOUND_DEPLOYMENT_AND_RELEASE_IDENTITY.md::6-installation-identity::4f862e374b87ca146a41",
+    "REQ::docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md::11-failure::5c2f14fb3ec66336e954",
+    "REQ::docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md::4-attempt-history::3bc47f0d491b486da14c",
+    "REQ::docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md::4-attempt-history::fd1b1f44334e39aa6fbf",
+    "REQ::docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md::8-qualification-benchmark::278d986553a636a052dd",
+    "REQ::docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md::9-qualification-metrics::bcb7ac75ee0e5b33bf91",
+    "REQ::docs/master/semantic-assurance/24_ACTIVE_SELECTOR_ROLLOUT_AND_ROLLBACK_GOVERNANCE.md::14-multi-node-region-consistency::1d5af19ae4ae8fd42088",
+    "REQ::docs/master/semantic-assurance/24_ACTIVE_SELECTOR_ROLLOUT_AND_ROLLBACK_GOVERNANCE.md::16::ecf769c9ea1593719f11",
+    "REQ::docs/master/semantic-assurance/24_ACTIVE_SELECTOR_ROLLOUT_AND_ROLLBACK_GOVERNANCE.md::17-negative-fixture::fe84f4e6e3eebe219bd6",
+    "REQ::docs/master/semantic-assurance/24_ACTIVE_SELECTOR_ROLLOUT_AND_ROLLBACK_GOVERNANCE.md::3::8a204029d2a63e7ad554",
+    "REQ::docs/master/semantic-assurance/24_ACTIVE_SELECTOR_ROLLOUT_AND_ROLLBACK_GOVERNANCE.md::8-atomic-selector-change::34f13395cbfdb7871e31",
+    "REQ::docs/master/semantic-assurance/25_VALIDATOR_BUILD_PROVENANCE_AND_TCB.md::10-self-update-self-improvement::bed86f628da1f6609bb7",
+    "REQ::docs/master/semantic-assurance/25_VALIDATOR_BUILD_PROVENANCE_AND_TCB.md::2-build-provenance-chain::9b47d4f7bceb80e03022",
+    "REQ::docs/master/semantic-assurance/25_VALIDATOR_BUILD_PROVENANCE_AND_TCB.md::9-qualification-binding::2d13f1570727a41bf019",
+    "REQ::docs/master/semantic-assurance/26_REQUIREMENT_UNIVERSE_AND_DISCOVERY_AUTHORITY.md::7-unknown-discovery::04709fe7e753036a27c5",
+    "REQ::docs/master/semantic-assurance/26_REQUIREMENT_UNIVERSE_AND_DISCOVERY_AUTHORITY.md::7-unknown-discovery::361914e33819d25675a7",
+    "REQ::docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md::2-currentness-model::1021dfc8fe9428b29de7",
+    "REQ::docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md::6-global-currentness::4127fd13b17d3fd753a7",
+    "REQ::docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md::6-global-currentness::cf41d0d08d418595f8ca",
+    "REQ::docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md::6-global-currentness::d16d6ca119a53f3e6c30",
+    "REQ::docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md::6-global-currentness::efcfa1db3acb8932b4b3",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::11-event::9c2be8a260c7d2f9d424",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::11-event::b2e34892f61f0a702ce3",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::12-ui-ux::cde537c49d39d350110e",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::14::3040b291e4914a022499",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::14::ce596ac61351e95e7cd1",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::3-5-assurancecurrentnesssnapshot::804db8693e689e1e47d4",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::3-5-assurancecurrentnesssnapshot::9e49aaf5d12eb81685ec",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::4-verified-to-deployed-to-running::86f29d81c22fdf43840e",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::revoked::e30b1ea545e737969c5d",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::rollback::f54a77a696503338e638",
+    "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::service-recovery::0d03e0325b19f440585d",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::11-ui-ux::34da97300d937cdf2dc1",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::13::1c196562235e6fd512b0",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::13::e1c158eb6a4bfddb7f2c",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::13::ed1ae424c5d8e86a64b7",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::1::e07c98070699b447b7bb",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::4-assurance-level::9f387501492f78ec1f00",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::5-1-hard-dependency::b8a86fa5198b5ff29302",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::5-1-hard-dependency::f38067df8c68e57966f4",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::5-2-soft-dependency::35e50f4e7943001e7e4e",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::6-multi-target-product-composition::b90c4cd0f57e03000652",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::8-graph-invariant::290b744a6d345b5acbc9",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::8-graph-invariant::c9a68a812ddcc03b14a1",
+    "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::8-graph-invariant::f08b194d48cb73681c97",
+    "REQ::docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md::10-delegation::cf7631feaf3431d7dfb1",
+    "REQ::docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md::14-enterprise-audit-investigation::a707ab68654a701718fa",
+    "REQ::docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md::4::779a0a5c35ee19541141",
+    "REQ::docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md::5-gate::3b5012dbbafbbd44d6f0",
+    "REQ::docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md::5-gate::5f01bbb459de1575129e",
+    "REQ::docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md::6-public-verification::317356ea84e96d850769",
+    "REQ::docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md::10-qualification-scope::ae5437c67a0c6b1f8646",
+    "REQ::docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md::15::594e68ff2fd1a6b7095f",
+    "REQ::docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md::3-deterministic-aggregation-cost-governance::21247dec37f1607cf44e",
+    "REQ::docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md::4-plugin-adapter-trust::071662601b6902163be6",
+    "REQ::docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md::4-plugin-adapter-trust::7fae39d9a6522a5dbe91",
+    "REQ::docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md::4-plugin-adapter-trust::905e3159cc8b609f66a2",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::2::9d5851b1c0797da9c26e",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::ai-rt-08-multi-agent-majority-ground-truth::8c318553b1701fdb0662",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::ce-02-revoked-certificate-offline-reuse::f1b71fde5363a01a4cd4",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::cp-02-hard-soft-spoof::7e199b6538673e771dc9",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::cp-03-n-a-without-applicability-proof::37333b471eb8fefe05b9",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::cp-04-critical-hold-averaging::d7ee38890e63ff37d72e",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::cp-05-stale-child-current-product::6d7e510787e152192cf4",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::cp-05-stale-child-current-product::d0f89ef7f0d013fa995f",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::dt-01-mutable-tag-substitution::266978559efaea1c4a48",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::dt-02-verified-vs-deployed-digest-mismatch::573df72f7df5c64ce36e",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::dt-03-running-instance-drift::4bb265396d3924fbf905",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::eg-03-break-glass-final-pass::bc89627514c044e9f1a3",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::eg-04-legal-hold-freshness-extension::8ec95827bf2f3405cea8",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::ro-01-rolling-mixed-population::94b3a7f74f63cbdeab3c",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::ro-02-blue-green-traffic-authority-mismatch::943e3391d976d8c3f550",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::ro-04-multi-region-partial-stale::d4a18d3f4e2b8a748f72",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::rv-01-revoked-key-historical-reuse::6f062aa0e66b425b3fe1",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::rv-02-missedfinding-historical-impact::4d9c1cf256a23a8d1518",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::rv-03-rollback-auto-restore-attack::20fbe91980c763429099",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::sc-03-retry-pass-hides-failure::ad4ffcf7ab6b50d6dbad",
+    "REQ::docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md::sc-07-budget-exhaustion::8df7fb2c9b0bd94a7c54",
+    "REQ::docs/master/semantic-assurance/34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md::13-3-target-archetype-matrix::87f4cdecf8c460bcb5da",
+    "REQ::docs/master/semantic-assurance/34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md::15-self-validation-ceiling::615bddabc17b552c15f4",
+    "REQ::docs/master/semantic-assurance/34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md::4-tool-authority-method::b54d61624a876209e56b",
+    "REQ::docs/master/semantic-assurance/34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md::7-3-critical-claims::159ff2974fc9beb57c9b",
+    "REQ::docs/master/semantic-assurance/34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md::8-metamorphic-property-oracle::8dd0cc188f8e6bbad95d",
+    "REQ::docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md::od-a02-product-composition-ceiling-policy::d41505b50277d5f5a91c",
+    "REQ::docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md::od-c03-invalidation-vs-reassessment-threshold::a2eaa0eca1e2296aba28",
+    "REQ::docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md::od-c04-revocation-authority::23a03239bdf1827a1942",
+    "REQ::docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md::od-d03-multi-region-composition::b9cdcd3b34a6d4795b6c",
+    "REQ::docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md::od-p01-hard-soft-dependency-authority::eae99c08790617f788b8",
+    "REQ::docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md::od-s02-retry-policy::e2fa908ff5e12abc89df",
+    "REQ::docs/master/semantic-assurance/36_DESIGN_COMPLETION_AND_REMAINING_GAPS.md::2::df5554e1cd4ad6468fd1",
+    "REQ::docs/master/semantic-assurance/36_DESIGN_COMPLETION_AND_REMAINING_GAPS.md::dg-p0-04-authoritygrant-delegation-contract::ec7e141922bc6c60b576",
+    "REQ::docs/master/semantic-assurance/36_DESIGN_COMPLETION_AND_REMAINING_GAPS.md::dg-p0-05-workunit-aggregation-integrity-contract::9fef3423d2da766c201f",
+    "REQ::docs/master/semantic-assurance/36_DESIGN_COMPLETION_AND_REMAINING_GAPS.md::dg-p0-06-ai-behavior-population-contract::d6e43b6885c376e59352",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::13-fixture::e8fc6a894c59b4d0d362",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::14-workflow-operation::df4c2ce5ef55c89fb504",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::15-lineage::e667ad773998a2917178",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::cross-field-invariant::6bf6857c7a5e31df602b",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::cross-field-invariant::7a0a0fba1d016cd85142",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::cross-field-invariant::c495131bc439f0929f2c",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::034a976c185bf1147014",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::290b744a6d345b5acbc9",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::40d80b42d708dd49f888",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::9811a0615ca02421dc8f",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::a091f2308aa0cf68c799",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::c28632be99d05231df59",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::c9a68a812ddcc03b14a1",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::dc6238434022732f84ee",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::e66bf76e618fc6692f38",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::root::a01e8b11908adc044cdc",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::root::ed66a3323409165c5794",
+    "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::subject::271ee9a60e6d64cb9e6f",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::10-1-hard::d5dd2fcc76eb49ebccc7",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::11-currentness-composition::17ce77b074bb5f12f6eb",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::11-currentness-composition::1ecf265ada7a29d10cff",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::11-currentness-composition::5249729e259fbdb6effa",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::11-currentness-composition::8161e7296fb7db1050ad",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::12-conflict-algebra::5d7be479631aeadade17",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::15-certificate-eligibility-predicate::aecfeb88a8da7de0ecb3",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::15-certificate-eligibility-predicate::c17bb5ae614c83e12ca8",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::16-ui-api-serialization::010e0ffa0e20b19e31c6",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::17-cross-contract-invariant::60dce9cdffecf51a56a4",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::18-fixture::b8515e8cf233c4b90acc",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::3-1-decision-total-order::9ee5f4f6c472ccd07d63",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::3-1-decision-total-order::c25df6df305bfc68e852",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::3-decision-domain-d::a8e5cd54db414e3f61c1",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::4-1-strength-monotonicity::3255d08654583151147e",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::4-1-strength-monotonicity::3663a00134eb4219c0f1",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::4-1-strength-monotonicity::79602de419d5b19ae3b0",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::5-currentness-domain-c::1021dfc8fe9428b29de7",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::7-independence-domain-i::fd624ab5149a9d6e00cd",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::8-qualification-domain-q::1e03b82952696c54e38b",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::c02-no-independence::184db96963527ea36d48",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::c03-qualification-not-proven::ef593cc535f8db0bb699",
+    "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::c05-critical-unknown::a3f22b3a4ee316ba0110",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::10-validator-defect-qualification-impact::1831e9fe57cb4f45e302",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::13-recovery::07583f8162b9625a3f17",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::17-event::3469f22e87b6aec4234c",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::17-event::50447caaa40c189ce150",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::18-negative-test::b3a8bf196e62d6b4b915",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::1::81d5e70fa4022f97f098",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::20::6f62ba9038379c95eab8",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::2::61cdf2e40b9d13d4a20f",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::4-impact-rule::91c3e3896c16b48e9ecc",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::5-impact-class::1021dfc8fe9428b29de7",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::5-impact-class::96a0f2a6fa25378952df",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::5-impact-class::aa8cc663c17babd38598",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::6-graph-traversal-algorithm::24325917910a0314b010",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::8-cve::27ffc036204549c8b685",
+    "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::compositionsnapshot::7b162ba566a4d34ad6fe",
+    "REQ::docs/master/semantic-assurance/40_EVIDENCE_GRAPH_STORAGE_INDEX_AND_QUERY_DESIGN.md::10-query-result-contract::5779be55d5056e09b593",
+    "REQ::docs/master/semantic-assurance/40_EVIDENCE_GRAPH_STORAGE_INDEX_AND_QUERY_DESIGN.md::15-consistency-model::f12d767955d424dd117b",
+    "REQ::docs/master/semantic-assurance/40_EVIDENCE_GRAPH_STORAGE_INDEX_AND_QUERY_DESIGN.md::20::a325c2df3bee4c2dd1f4",
+    "REQ::docs/master/semantic-assurance/40_EVIDENCE_GRAPH_STORAGE_INDEX_AND_QUERY_DESIGN.md::8-reverse-index::cf41a411e8ce920c2d3f",
+    "REQ::docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md::10-currentness-registry::78943f4fad402beebb50",
+    "REQ::docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md::10-currentness-registry::cde537c49d39d350110e",
+    "REQ::docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md::12-interoperability-profile::e1da2bd9c7dccc9afba0",
+    "REQ::docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md::3-canonical-certificate-profile::5d8900aac148063c67a1",
+    "REQ::docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md::7-verification-result::22c478a8b53928b6db1a",
+    "REQ::docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md::7-verification-result::7acdb3b3653fc017bc1f",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::10-authority-policy::6553ccc5cde7e0a4d8fa",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::11-qualification-policy::18a2e2fb16b51e7ace6a",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::14-plugin-trust-policy::c38f52fbb75648b7e292",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::15-policy-activation::d64316ff680afc55cec6",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::17-stricter-only-override::982f5cb6d9944c026c7b",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::19-rule-weakening-guard::ca0aab34bd600569a7d9",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::7-invalidation-policy::1021dfc8fe9428b29de7",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::7-invalidation-policy::96a0f2a6fa25378952df",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::7-invalidation-policy::aa8cc663c17babd38598",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::8-certificate-policy::2fc7895b7639271511e4",
+    "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::8-certificate-policy::e2c111bca45a3b4ff8fa",
+    "REQ::docs/master/semantic-assurance/43_PERSISTENCE_CONSISTENCY_AND_RECOVERY_ARCHITECTURE.md::4-evidence-commit-protocol::22af919dd3dca03a635a",
+    "REQ::docs/master/semantic-assurance/43_PERSISTENCE_CONSISTENCY_AND_RECOVERY_ARCHITECTURE.md::4-evidence-commit-protocol::555c068a255349fc286a",
+    "REQ::docs/master/semantic-assurance/43_PERSISTENCE_CONSISTENCY_AND_RECOVERY_ARCHITECTURE.md::6-optimistic-concurrency::0c6e2bb7769fad6f2e26",
+    "REQ::docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md::10-state-transition-guard::4f06577205964cd482c5",
+    "REQ::docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md::10-state-transition-guard::72fcc6b1ae6fd0a3a097",
+    "REQ::docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md::10-state-transition-guard::8e330eb376650d4feda8",
+    "REQ::docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md::2-operation-lifecycle::d232ca5602d96aa9f8e4",
+    "REQ::docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md::6-cancellation::a506c58935c0a3538a14",
+    "REQ::docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md::8-timeout::ae12ee27b671d7732e14",
+    "REQ::docs/master/semantic-assurance/45_API_ERROR_IDEMPOTENCY_AND_TRANSACTION_SEMANTICS.md::3-error-class::58d871c8cd8f20af2444",
+    "REQ::docs/master/semantic-assurance/45_API_ERROR_IDEMPOTENCY_AND_TRANSACTION_SEMANTICS.md::4-retryable::bec8343b4831b40b6750",
+    "REQ::docs/master/semantic-assurance/45_API_ERROR_IDEMPOTENCY_AND_TRANSACTION_SEMANTICS.md::8-bulk-api::cf8f4bd64152ca388a1a",
+    "REQ::docs/master/semantic-assurance/46_SECURITY_PRIVACY_AND_DATA_GOVERNANCE.md::10-retention-deletion::a30894836025530691e8",
+    "REQ::docs/master/semantic-assurance/46_SECURITY_PRIVACY_AND_DATA_GOVERNANCE.md::4-purpose-binding::e274934573e3b4f3ced6",
+    "REQ::docs/master/semantic-assurance/46_SECURITY_PRIVACY_AND_DATA_GOVERNANCE.md::6-hidden-qualification-data::7ce8f82cc9da0f0d2b1e",
+    "REQ::docs/master/semantic-assurance/46_SECURITY_PRIVACY_AND_DATA_GOVERNANCE.md::9-ai-provider-boundary::b824f7b944402af00ff7",
+    "REQ::docs/master/semantic-assurance/47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md::10-incident-assurance-impact::1021dfc8fe9428b29de7",
+    "REQ::docs/master/semantic-assurance/47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md::10-incident-assurance-impact::220cd6669af850ad340c",
+    "REQ::docs/master/semantic-assurance/47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md::10-incident-assurance-impact::dcb470dcc2f0c2702f62",
+    "REQ::docs/master/semantic-assurance/47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md::5-degraded-mode::f416813b4b885cc52705",
+    "REQ::docs/master/semantic-assurance/48_PHYSICAL_DATA_MODEL_AND_STORAGE_PARTITIONING.md::10-migration::71fed095604261623113",
+    "REQ::docs/master/semantic-assurance/50_VERSIONING_COMPATIBILITY_AND_INTEROPERABILITY.md::10-mixed-version-cluster::7e145737e2aeec716a80",
+    "REQ::docs/master/semantic-assurance/50_VERSIONING_COMPATIBILITY_AND_INTEROPERABILITY.md::3-compatibility-class::89b34a071d6fb9b55cc2",
+    "REQ::docs/master/semantic-assurance/50_VERSIONING_COMPATIBILITY_AND_INTEROPERABILITY.md::3-compatibility-class::c7e830a723af6dd1dfb6",
+    "REQ::docs/master/semantic-assurance/51_DISASTER_RECOVERY_AND_BUSINESS_CONTINUITY_ASSURANCE.md::13::72276704c75b049ed0f2",
+    "REQ::docs/master/semantic-assurance/51_DISASTER_RECOVERY_AND_BUSINESS_CONTINUITY_ASSURANCE.md::6-service-mode::5bfb0166b31792d52df7",
+    "REQ::docs/master/semantic-assurance/51_DISASTER_RECOVERY_AND_BUSINESS_CONTINUITY_ASSURANCE.md::7-multi-region-failover::b1f3f1b1c51849b5c8db",
+    "REQ::docs/master/semantic-assurance/52_EXTERNAL_INTEGRATION_AND_SUPPLY_CHAIN_TRUST.md::6-reconciliation::2c17727a8f104dc64e1d",
+    "REQ::docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md::10-rollback-path::b5d9502c0ea01afd5ff5",
+    "REQ::docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md::12-selector-migration-path::c59418aa3f7e5cca5b4d",
+    "REQ::docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md::2-sequence::1d99407e20d37d52e97a",
+    "REQ::docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md::4-evidence-commit-failure::4bf10ad1b93af82a7db3",
+    "REQ::docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md::4-evidence-commit-failure::c507a78c30c0d9e295ca",
+    "REQ::docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md::7-deployment-drift-path::5cf324bfa4de5c058219",
+    "REQ::docs/master/semantic-assurance/55_DECISION_AUTHORITY_AND_SEGREGATION_MATRIX.md::6-delegation::10943402736a3e7eeb37",
+    "REQ::docs/master/semantic-assurance/55_DECISION_AUTHORITY_AND_SEGREGATION_MATRIX.md::6-delegation::6aaf3020650ec37e6662",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::2::08218e56db0b4e3b1daf",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::2::0cfa36675d2cc84963a5",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::2::29ee3ec62f123d82886b",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::2::82f9aee979345270774f",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::2::a2039635a7f1a4693798",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::2::d7fce8f8729a49619b0e",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::4-default-authority::7b0f323a73da901a06e0",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::4-default-authority::b27f79a51b4c34a0496e",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::5-default-lifecycle::23d40533ff5ca28306fd",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::5-default-lifecycle::4b39fc87c3c1590e0e53",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::5-default-lifecycle::68505a0d4f082701570b",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::6-default-composition::3786a83dc57c88cbfaab",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::6-default-composition::f82ecd4237a6af04bef8",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::7-default-offline::dd9da2a22bcc63aacf9f",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::8-default-scale::0d1a87bec49958bbd8bd",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::8-default-scale::1b0289c15455fd63fff9",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::8-default-scale::73fba823220e1543cde4",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::9-default-certificate::1f9425a6684da9d8ce9f",
+    "REQ::docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md::9-default-certificate::d2e94a19c94a6340bfab",
+    "REQ::docs/master/semantic-assurance/59_WORKFLOW_OPERATION_REGISTRY_V2_EXTENSION_DESIGN.md::2-operation-entry::5ab9624bf2df5a9528b2",
+    "REQ::docs/master/semantic-assurance/59_WORKFLOW_OPERATION_REGISTRY_V2_EXTENSION_DESIGN.md::2-operation-entry::ee07a0277fd6616ebcf8",
+    "REQ::docs/master/semantic-assurance/59_WORKFLOW_OPERATION_REGISTRY_V2_EXTENSION_DESIGN.md::2-operation-entry::ff83a5b140a41456bbb9",
+    "REQ::docs/master/semantic-assurance/59_WORKFLOW_OPERATION_REGISTRY_V2_EXTENSION_DESIGN.md::5-receipt::380e7d90083e31a9269b",
+    "REQ::docs/master/semantic-assurance/59_WORKFLOW_OPERATION_REGISTRY_V2_EXTENSION_DESIGN.md::7-versioning::7ec92f807bafed286ecf",
+    "REQ::docs/master/semantic-assurance/61_ASSURANCE_POLICY_PROFILE_MACHINE_SCHEMA_SPEC.md::assurance-ceiling::badc6eaf430138bea622",
+    "REQ::docs/master/semantic-assurance/61_ASSURANCE_POLICY_PROFILE_MACHINE_SCHEMA_SPEC.md::independence-authority::6301e43ec65310ad7683",
+    "REQ::docs/master/semantic-assurance/61_ASSURANCE_POLICY_PROFILE_MACHINE_SCHEMA_SPEC.md::independence-authority::77225c18aef843c2858d",
+    "REQ::docs/master/semantic-assurance/62_AUTHORITY_GRANT_AND_RBAC_MAPPING_CONTRACT_DESIGN.md::2::f0106a2cd5de021b23e1",
+    "REQ::docs/master/semantic-assurance/62_AUTHORITY_GRANT_AND_RBAC_MAPPING_CONTRACT_DESIGN.md::5-rbac-mapping::b46f846d794a406e26ea",
+    "REQ::docs/master/semantic-assurance/63_CANONICAL_SERIALIZATION_AND_DIGEST_PROFILE.md::4-self-digest::bab00f0f3e1a28a2ee08",
+    "REQ::docs/master/semantic-assurance/64_RECOVERY_QUALIFICATION_RECEIPT_CONTRACT_DESIGN.md::4-decision::73f0315e8426dd114618",
+    "REQ::docs/master/semantic-assurance/65_DESIGN_TRACE_REGISTRY_MACHINE_SPEC.md::7-machine-validation::0fe0e1cc764cb796eb63",
+    "REQ::docs/master/semantic-assurance/66_OPEN_DECISION_TO_CONFIGURABLE_POLICY_MODEL.md::2-decision::3dbf82492b893d54ff36",
+    "REQ::docs/master/semantic-assurance/66_OPEN_DECISION_TO_CONFIGURABLE_POLICY_MODEL.md::2-decision::a4dba9e3a6ca1a4a86c8",
+    "REQ::docs/master/semantic-assurance/67_INDUSTRY_ASSURANCE_PROFILE_DESIGN.md::4-financial::d0b8195f27a8bf7b64b1",
+    "REQ::docs/master/semantic-assurance/68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md::4-tier-manifest::64cdccfa671099ba3703",
+    "REQ::docs/master/semantic-assurance/68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md::4-tier-manifest::b5a93b5dd491c1eba937",
+    "REQ::docs/master/semantic-assurance/68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md::5-claim-language::549e76b306d4a2b11a93",
+    "REQ::docs/master/semantic-assurance/68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md::6-upgrade-downgrade::3e5278efb65c7fd02ead",
+    "REQ::docs/master/semantic-assurance/69_CUSTOMER_DELIVERY_REPORT_AND_CLAIM_LANGUAGE_GOVERNANCE.md::7-coverage::2e211cc4888f76eb1f8d",
+    "REQ::docs/master/semantic-assurance/70_THIRTY_TASK_DESIGN_CLOSURE_MASTER_PLAN.md::3::b5ab4a455c51d6e2adb1",
+    "REQ::docs/master/semantic-assurance/70_THIRTY_TASK_DESIGN_CLOSURE_MASTER_PLAN.md::4::0f95dda1ab000c79a68a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::10-aibehaviorpopulation::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::11-onsurereleasequalification::8591afa326cd4c812d33",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::11-onsurereleasequalification::a70acb8f958c8df3b427",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::11-onsurereleasequalification::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::12-recoveryqualificationreceipt::703343b2f7d0551a965c",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::12-recoveryqualificationreceipt::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::2-deploymentruntimecurrentness::086858c832f40d4b8bb6",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::2-deploymentruntimecurrentness::6d19dca8847e7cc85d99",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::2-deploymentruntimecurrentness::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::3-assurancesubjectgraph::1f5ab69a2037d152ba5f",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::3-assurancesubjectgraph::c9a68a812ddcc03b14a1",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::3-assurancesubjectgraph::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::4-assurancecompositionsnapshot::3974b79dc4ddb9fe7d8a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::4-assurancecompositionsnapshot::c753a3317675f8f0b8cd",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::4-assurancecompositionsnapshot::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::4-assurancecompositionsnapshot::d1fa901235ece31f7b8d",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::5-evidencegraphsnapshot::290b744a6d345b5acbc9",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::5-evidencegraphsnapshot::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::6-assurancecertificate::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::7-authoritygrant::65651bb3f4cf19ff4015",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::7-authoritygrant::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::8-distributedworkunit::022cd6dd9859af7fbfda",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::8-distributedworkunit::9f34ffbb0a50a649dcb2",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::8-distributedworkunit::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::9-distributedaggregationreceipt::63f8a65181db12642cf3",
+    "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::9-distributedaggregationreceipt::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::10-ai-meta-assurance::264da1497d3fd36df002",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::10-ai-meta-assurance::54da7285c130cca95f2b",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::10-ai-meta-assurance::f39105064acdf438cb19",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::11-policy-tier::188c951754b5940a2bec",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::1::f96368f4b64bd28ea0fd",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::2-final-approval-lock::38b30abd888377916b9b",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::3-certificate-currentness::0dd16ca368acbea4caa4",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::3-certificate-currentness::4c301fd499f6440d60b3",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::3-certificate-currentness::ed93ea3e22a76fa32480",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::4-deployment-runtime::9cab70336a8a2ce79f97",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::4-deployment-runtime::a7c869c56e0de26d7ec6",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::5-composition::8e8615f7cf3f7a931003",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::5-composition::a8d0b013a68f6944de7d",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::6-authority-operation::1f7763240acca5f63b01",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::6-authority-operation::30689fb1b07fdb1348bb",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::6-authority-operation::89979701569aaccd6c88",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::7-event-receipt-evidence::79965d38ee37b0da0f16",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::7-event-receipt-evidence::caf53cac054b50b77dcf",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::7-event-receipt-evidence::dc971d1da29affe73567",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::8-recovery::bfdf0f90aae8950dcf7a",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::8-recovery::f9525edac091fb468bdd",
+    "REQ::docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md::9-distributed-work::1b2610d1e71962381f77",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::10-recovery::83c9b100cd3d1a688162",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::12::30c98cb70e468c7c9ca9",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::1::22cdf9e202097de9a06a",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::2-validation-run::1ce6ce8872757a43ecaa",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::2-validation-run::d3261721b1667833be57",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::4-deployment-revision::57c7cf5c20208bce247b",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::5-assurance-certificate::3078e7d7fd77fbeaea7d",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::5-assurance-certificate::902d82b54c6fd8d7a6e0",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::8-plugin-adapter::648ba8b7f3db61113b5f",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::8-plugin-adapter::cdfbffa205b72ec09115",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::9-onsure-release-qualification::89c0e67dfb30fe59a793",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::9-onsure-release-qualification::c1a0de1d8650757f222e",
+    "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::post-final-currentness::9b8d2c06a25664c0e2c0",
+    "REQ::docs/master/semantic-assurance/74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md::2-operation::4b6d25e60ec76e0f54c0",
+    "REQ::docs/master/semantic-assurance/74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md::2-operation::5518be1bae5a38c6530e",
+    "REQ::docs/master/semantic-assurance/74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md::2-operation::e7699cf9c0d60342537c",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::2-configurable::16f2f92cd292e896ffe3",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::2-configurable::1fef9d3a46f4a3180e84",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::2-configurable::4adbddd6a5b1200d1141",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::2-configurable::771f2f1b4edfa24841ab",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::2-configurable::784f195b9783449ace4e",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::2-configurable::7f84bf823c9ac1e62291",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::2-configurable::f8c4567d86a016e23e1f",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::3-configurable-policy::90cf5157cc5b22dac529",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::3-configurable-policy::9ff696b6c11dc46bd8c5",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::3-configurable-policy::bdf73bb432dfe2a39175",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::6-tier-ceiling::a3ae04391dd86a471626",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::9-claim-language::9329e4cc5c13f930174a",
+    "REQ::docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md::at3-independent::da023ccc6f2f5e63ba39",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::5-revocation::9b8aa256a2c4d12d2fb6",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::graph-rules::1e75cc9bf14654277740",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::graph-rules::290b744a6d345b5acbc9",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::hard-dependency::10458b24a8fe127af70d",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::hard-dependency::2758bd8e4d9d4a263c48",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::hard-dependency::d63e0333827e35714a33",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::partial-recovery::a94a49e23fe00bc1cdd6",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::root::8ae0907824de2f121444",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::trigger-examples::1d6aa95484201838097e",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::trigger-examples::b13286627387347608a4",
+    "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::trigger-examples::cdf293eda9cebcb22229",
+    "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::11-self-validation-ceiling::a50f06c07f511307fb23",
+    "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::14::c682f0c5ec9624f517ab",
+    "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::5-pluginmanifest::540c81854c77ebfb89bb",
+    "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::5-pluginmanifest::9c0b2f1aeaa5f3a7e93a",
+    "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::5-pluginmanifest::d0a3630555bbec7fc05a",
+    "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::5-pluginmanifest::e1ccfe122160589230ab",
+    "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::9-onsure-meta-assurance::6759157d1253a2afa944",
+    "REQ::docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md::1-physical-data-model::3dd7787c4e8abc6ffcd6",
+    "REQ::docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md::11-degraded-mode::e23347f588de76a51686",
+    "REQ::docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md::12-safe-default-matrix::159a7c97458589016042",
+    "REQ::docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md::12-safe-default-matrix::5aa3fff6728d7e934340",
+    "REQ::docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md::12-safe-default-matrix::9641fac861c610771889",
+    "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::5-acceptance-certificate-vs-assurance-certificate::f43ba60eb5dc353a4b00",
+    "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::8-02-08-responsibility-boundary::23275572b69b12b8ba28",
+    "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::9-contract-naming-rule::0d6c97e5bfc2fa8283f5",
+    "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::orphan-definitions::8416ede682e5d96d3910",
+    "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::root::b86a0afeef0092101dfd",
+    "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::root::da1c51cb04d288f86aa4",
+    "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::root::fd05f7a0dae6506bda23",
+    "REQ::docs/master/semantic-assurance/80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md::5-lock-check::44b894662753a965955d",
+    "REQ::docs/master/semantic-assurance/80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md::d-authority-closure::5d84175a0c0b1688f4fe",
+    "REQ::docs/master/semantic-assurance/80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md::e-policy-closure::03a5ff5cbc4eb305fbed",
+    "REQ::docs/master/semantic-assurance/81_NEXT_DEVELOPMENT_BATCH_F_TO_K.md::definition-of-done::27a18e8171565b809d4c",
+    "REQ::docs/master/semantic-assurance/81_NEXT_DEVELOPMENT_BATCH_F_TO_K.md::definition-of-done::7826e7ebf7aa352adddc",
+    "REQ::docs/master/semantic-assurance/83_PERSISTENCE_MIGRATION_AND_DUAL_WRITE_GOVERNANCE.md::4-migrationrecord::b44c5973ff7bc0d08d9e",
+    "REQ::docs/master/semantic-assurance/83_PERSISTENCE_MIGRATION_AND_DUAL_WRITE_GOVERNANCE.md::5-split-brain::01e88e1ec5c6a1513152",
+    "REQ::docs/master/semantic-assurance/83_PERSISTENCE_MIGRATION_AND_DUAL_WRITE_GOVERNANCE.md::8::0d30701a36c43a1ef822",
+    "REQ::docs/master/semantic-assurance/83_PERSISTENCE_MIGRATION_AND_DUAL_WRITE_GOVERNANCE.md::8::146f6a89a9581a1933bc",
+    "REQ::docs/master/semantic-assurance/84_POLICY_BOOTSTRAP_AND_PROFILE_DEFAULTS.md::2-default::82f21d9e89b7502e0108",
+    "REQ::docs/master/semantic-assurance/84_POLICY_BOOTSTRAP_AND_PROFILE_DEFAULTS.md::5-policy-weakening::ddd3b5fb977d56c2751a",
+    "REQ::docs/master/semantic-assurance/84_POLICY_BOOTSTRAP_AND_PROFILE_DEFAULTS.md::7::f78d07f3662143e8d24e",
+    "REQ::docs/master/semantic-assurance/85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md::8-bulk-api::38f4bb82ef28e692b2f8",
+    "REQ::docs/master/semantic-assurance/85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md::assurance-input::49a3f4f5cfa8e810bdc0",
+    "REQ::docs/master/semantic-assurance/85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md::authorization::7679a5a03176765de7c8",
+    "REQ::docs/master/semantic-assurance/85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md::final-currentness::4f0d834823627a3f0698",
+    "REQ::docs/master/semantic-assurance/85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md::migration-recovery::124b2d249fefe5bbbf5b",
+    "REQ::docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md::4-inventory-scope::eede6d6413a2405b7825",
+    "REQ::docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md::7-lock-state::7eff31ee98dfdc9901bb",
+    "REQ::docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md::7-lock-state::956776f836789ee8f03e",
+    "REQ::docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md::7-lock-state::aad8b5013b4ac31fff54",
+    "REQ::docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md::9-change-after-lock::0eb35b9be506d5fa59ea",
+    "REQ::docs/master/semantic-assurance/87_DESIGN_LOCK_CHECK_AND_REPOSITORY_ORPHAN_SCAN.md::8-false-closure::2b143d9e38ec8be361b6",
+    "REQ::docs/master/semantic-assurance/87_DESIGN_LOCK_CHECK_AND_REPOSITORY_ORPHAN_SCAN.md::8-false-closure::c499d851826d643f18c2",
+    "REQ::docs/master/semantic-assurance/87_DESIGN_LOCK_CHECK_AND_REPOSITORY_ORPHAN_SCAN.md::8-false-closure::e52c1abcb53b0b8c7822",
+    "REQ::docs/master/semantic-assurance/87_DESIGN_LOCK_CHECK_AND_REPOSITORY_ORPHAN_SCAN.md::8-false-closure::f55f6e56693970be718e",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::10::0b396886061465210393",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::10::4ef300949d3e04b696b0",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::2-requirement-source-class::0fa202c61246b73f3576",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::2-requirement-source-class::22721fb4865e691241f3",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::2-requirement-source-class::4fc25011ae5a044c42e2",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::2-requirement-source-class::63646022e76df59c4d2d",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::2-requirement-source-class::e7272afb918acd75bbda",
+    "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::9-orphan::850cccd3096518245e3e",
+    "REQ::docs/master/semantic-assurance/89_REQUIREMENT_ID_NORMALIZATION_AND_SEMANTIC_DEDUPLICATION.md::2::f6cdd2ff8f11656da87e",
+    "REQ::docs/master/semantic-assurance/89_REQUIREMENT_ID_NORMALIZATION_AND_SEMANTIC_DEDUPLICATION.md::8::ff8d4f53c946adfe51e8",
+    "REQ::docs/master/semantic-assurance/90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md::7-scanner::ad384f36818f837eae20",
+    "REQ::docs/master/semantic-assurance/91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md::ru-03-structured-requirement-extractor::6b02ec94ae66fa1ee7d4",
+    "REQ::docs/master/semantic-assurance/91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md::ru-05-human-rule-resolution::d7447aa4712d12960ba3",
+    "REQ::docs/master/semantic-assurance/92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md::1-global-requirement-universe-materialization::30abcc91c70051a7f99d",
+    "REQ::docs/master/semantic-assurance/92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md::3-applicability-model::be779605626980dd5525",
+    "REQ::docs/master/semantic-assurance/92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md::4-requirement-change-impact::3a468595f5e9981d04ca",
+    "REQ::docs/master/semantic-assurance/93_REQUIREMENT_CONFLICT_BASELINE_AND_CHANGE_CONTROL.md::6-acceptance::5554787c53ae4210c9b5",
+    "REQ::docs/master/semantic-assurance/94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md::2-cross-contract-relation-validator::b679f37f9165e2d62ca9",
+    "REQ::docs/master/semantic-assurance/94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md::3-canonical-operation-registry::e2a49c224a9f97329f40",
+    "REQ::docs/master/semantic-assurance/94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md::6-state-ontology::da1c51cb04d288f86aa4",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::2-product-composition::2758bd8e4d9d4a263c48",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::2-product-composition::47c0c607ad7c68f0f4d7",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::3-evidence-graph-formal-model::34c6fbcb315c0d778132",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::4-invalidation-rule::9760d4c87f49ba8f5380",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::5-currentness-engine::14bc87bceaadce0b4ab5",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::5-currentness-engine::2fe0ee9a39669cc99b8b",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::6-acceptance::b05e82b8257ed4a06785",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::ceiling::2ae1a1fdc8cc0d89f587",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::ceiling::610fda7f7595a7b3d29c",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::ceiling::6c9b33b7c70fc2564c7a",
+    "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::ceiling::ad8a0f82d9bf0e12f6bd",
+    "REQ::docs/master/semantic-assurance/96_DEPLOYMENT_CERTIFICATE_AUTHORITY_POLICY_INDUSTRY_TIER_FINALIZATION.md::6-assurance-tier::fb118b5bfdd163345e08",
+    "REQ::docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md::2-plugin-adapter-trust::648ba8b7f3db61113b5f",
+    "REQ::docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md::3-adapter-qualification::5dec973a223e4b56723e",
+    "REQ::docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md::4-onsure-meta-assurance::c00e1a7cb5096fdea46c",
+    "REQ::docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md::6-acceptance::995b40ed1520d28590f7",
+    "REQ::docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md::nondeterminism::1a9febb06087d5e781cf",
+    "REQ::docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md::1-persistence-data-model::32701ddd728f685407a5",
+    "REQ::docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md::6-recovery-dr::1b9b3412bdd4c9a2c5e4",
+    "REQ::docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md::6-recovery-dr::ef52991c1ab46d9a3163",
+    "REQ::docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md::8-acceptance::36f4184b4fafd4eaf5a2",
+    "REQ::docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md::8-acceptance::b12a6a71597b0d801d43",
+    "REQ::docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md::1-global-safe-default::23f085be9dd2c5b459d0",
+    "REQ::docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md::1-global-safe-default::3a9229adbfaa1382081d",
+    "REQ::docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md::1-global-safe-default::42d75abf939cb03e236c",
+    "REQ::docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md::1-global-safe-default::d19717ed82fdf7eb46e4",
+    "REQ::docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md::3-master-readme-trace::fd847b2cef7871c746e8",
+    "REQ::docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md::7-p0-design-conflict-closure::4b59ebd8f2ab39bd7754",
+    "REQ::docs/master/semantic-assurance/README.md::5-machine-readable-design-closure-handoff::31dc56051ab606e2a63b"
+  ],
+  "requirement_manifest_digest": "60547f45935a574949e10ce8a8023149bc901b61e1a13f93795c9704b8c2fa44",
+  "self_validation_nonfinal": true,
+  "superseded_requirement_ids": [],
+  "unresolved_duplicate_candidates": [
+    {
+      "normalized_text_digest": "95ab362a95593123dc208a675e6b17e2d6f208fc5e9357f503f7d056dfd63ef2",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-1-sa-01-evidence-truth::95ab362a95593123dc20",
+        "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-2-sa-02-requirement-universe-unknown-exclusion::95ab362a95593123dc20"
+      ]
+    },
+    {
+      "normalized_text_digest": "103fdf929d23140f5c6c9d5241f191719afe16fe74b40ee41d09592c65cc64aa",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md::8-freshness-historical-view::103fdf929d23140f5c6c",
+        "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::11-incident-near-miss-feedback::103fdf929d23140f5c6c"
+      ]
+    },
+    {
+      "normalized_text_digest": "5c2f14fb3ec66336e954cbebd5bcd2db477c5a0c5b4046be88fee5b7e49e6eca",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md::3-applicability-non-ai-baseline::5c2f14fb3ec66336e954",
+        "REQ::docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md::8::5c2f14fb3ec66336e954",
+        "REQ::docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md::11-failure::5c2f14fb3ec66336e954"
+      ]
+    },
+    {
+      "normalized_text_digest": "d5040f1f06f87e9d8176878dbd484ff9c34576f002e40aad0f95055d265a17bc",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md::fr-fresh-001-rules-of-engagement-target-testing-authorization::d5040f1f06f87e9d8176",
+        "REQ::docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md::fr-fresh-002-accessibility-internationalization-locale-integrity::d5040f1f06f87e9d8176"
+      ]
+    },
+    {
+      "normalized_text_digest": "4322f0918491593fb24fc1c5a4a7a5cc166eeadee4e1640e7d26ea31050a6dde",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::1-3::4322f0918491593fb24f",
+        "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md::8-safety-decision::4322f0918491593fb24f"
+      ]
+    },
+    {
+      "normalized_text_digest": "1021dfc8fe9428b29de788a1073ad296d643ef61a13e2cd6e1bcbe1f028b4a0e",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::1-3::1021dfc8fe9428b29de7",
+        "REQ::docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md::2-5-appeal-decision::1021dfc8fe9428b29de7",
+        "REQ::docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md::2-currentness-model::1021dfc8fe9428b29de7",
+        "REQ::docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md::5-currentness-domain-c::1021dfc8fe9428b29de7",
+        "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::5-impact-class::1021dfc8fe9428b29de7",
+        "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::7-invalidation-policy::1021dfc8fe9428b29de7",
+        "REQ::docs/master/semantic-assurance/47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md::10-incident-assurance-impact::1021dfc8fe9428b29de7"
+      ]
+    },
+    {
+      "normalized_text_digest": "89b34a071d6fb9b55cc222b39f38774457dc033dd46aa6f8b11aa0da52c82b27",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md::dev-05-v1-v2-actual-reconstruction-batch::89b34a071d6fb9b55cc2",
+        "REQ::docs/master/semantic-assurance/50_VERSIONING_COMPATIBILITY_AND_INTEROPERABILITY.md::3-compatibility-class::89b34a071d6fb9b55cc2"
+      ]
+    },
+    {
+      "normalized_text_digest": "cde537c49d39d350110e5c503463e6d2d7eeb5372666cb8dfd308e18d4f661e6",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md::12-ui-ux::cde537c49d39d350110e",
+        "REQ::docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md::10-currentness-registry::cde537c49d39d350110e"
+      ]
+    },
+    {
+      "normalized_text_digest": "c9a68a812ddcc03b14a1ebfe58c33a0f402e60e85ece590b8bdda6f70a82e57e",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::8-graph-invariant::c9a68a812ddcc03b14a1",
+        "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::c9a68a812ddcc03b14a1",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::3-assurancesubjectgraph::c9a68a812ddcc03b14a1"
+      ]
+    },
+    {
+      "normalized_text_digest": "290b744a6d345b5acbc94feabaeea5e0da12c50bf0722b2dc618fec63107d779",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md::8-graph-invariant::290b744a6d345b5acbc9",
+        "REQ::docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md::invariant::290b744a6d345b5acbc9",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::5-evidencegraphsnapshot::290b744a6d345b5acbc9",
+        "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::graph-rules::290b744a6d345b5acbc9"
+      ]
+    },
+    {
+      "normalized_text_digest": "aa8cc663c17babd38598bd61e5502b053c24eb0e2923b6f1bb33017ca18cb153",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::5-impact-class::aa8cc663c17babd38598",
+        "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::7-invalidation-policy::aa8cc663c17babd38598"
+      ]
+    },
+    {
+      "normalized_text_digest": "96a0f2a6fa25378952dff91a84c4a56ee1b8400a4e9a862860df4566fdcbd38d",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md::5-impact-class::96a0f2a6fa25378952df",
+        "REQ::docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md::7-invalidation-policy::96a0f2a6fa25378952df"
+      ]
+    },
+    {
+      "normalized_text_digest": "d0a3630555bbec7fc05a98d311c23b00fd1ab4d8296ac4a4125976d80b6a6959",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::10-aibehaviorpopulation::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::11-onsurereleasequalification::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::12-recoveryqualificationreceipt::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::2-deploymentruntimecurrentness::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::3-assurancesubjectgraph::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::4-assurancecompositionsnapshot::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::5-evidencegraphsnapshot::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::6-assurancecertificate::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::7-authoritygrant::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::8-distributedworkunit::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md::9-distributedaggregationreceipt::d0a3630555bbec7fc05a",
+        "REQ::docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md::5-pluginmanifest::d0a3630555bbec7fc05a"
+      ]
+    },
+    {
+      "normalized_text_digest": "648ba8b7f3db61113b5f146249fe41a42efb1c1567c1ad546a5377523bef49b0",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md::8-plugin-adapter::648ba8b7f3db61113b5f",
+        "REQ::docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md::2-plugin-adapter-trust::648ba8b7f3db61113b5f"
+      ]
+    },
+    {
+      "normalized_text_digest": "2758bd8e4d9d4a263c482b96db41200453eae5c06a379e9ed375847d5709ca88",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md::hard-dependency::2758bd8e4d9d4a263c48",
+        "REQ::docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md::2-product-composition::2758bd8e4d9d4a263c48"
+      ]
+    },
+    {
+      "normalized_text_digest": "da1c51cb04d288f86aa42f6c6c9d5ffce429ce9935b6f13a7ae7af8fc17890f4",
+      "requirement_ids": [
+        "REQ::docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md::root::da1c51cb04d288f86aa4",
+        "REQ::docs/master/semantic-assurance/94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md::6-state-ontology::da1c51cb04d288f86aa4"
+      ]
+    }
+  ]
+}

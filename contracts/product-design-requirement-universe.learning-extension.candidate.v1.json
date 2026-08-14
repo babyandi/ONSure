@@ -1,0 +1,13 @@
+{
+  "type":"ONSURE_PRODUCT_DESIGN_REQUIREMENT_UNIVERSE_LEARNING_EXTENSION_V1_CANDIDATE",
+  "status":"AUTHORITY_FILTERED_EXTENSION_CANDIDATE_NONFINAL",
+  "source_refs":["docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md","contracts/learning-validation-closed-loop.capabilities.candidate.v1.json"],
+  "requirement_ids":["FR-LEARN-001","FR-LEARN-002","FR-LEARN-003","FR-LEARN-004","FR-LEARN-005","FR-LEARN-006","FR-LEARN-007","FR-LEARN-008","FR-LEARN-009","FR-LEARN-010","FR-LEARN-011","FR-LEARN-012","FR-LEARN-013","FR-LEARN-014","FR-LEARN-015","FR-LEARN-016","FR-LEARN-017","FR-LEARN-018","FR-LEARN-019","FR-LEARN-020","FR-LEARN-021","FR-LEARN-022","FR-LEARN-023","FR-LEARN-024","FR-LEARN-025"],
+  "count":25,
+  "source_class":"EXPLICIT_ID",
+  "taxonomy":"ASSURANCE",
+  "dedup_rule":"Do not add 25 to the legacy 899 count. Full Product Design RU must be regenerated from the reviewed Requirement Authority Manifest.",
+  "trace_matrix_ref":"contracts/learning-validation-closed-loop.trace-matrix.candidate.v1.json",
+  "applicability_ref":"contracts/learning-validation-closed-loop.applicability.candidate.v1.json",
+  "final_claim_allowed":false
+}

@@ -3,10 +3,13 @@
   "final_claim_allowed": false,
   "lock_eligible": true,
   "methodology_note": "Mechanical severity heuristic: an orphan dimension is escalated to P0 only when claim_effect=POSITIVE_CLAIM_GATE and criticality=CRITICAL and the dimension is REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED or REQUIREMENT_WITHOUT_EVIDENCE_PATH; all other found orphans are P1. This approximates but does not replace the human/semantic judgment described in 90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md SS6.",
-  "missing_negative_fixture_requirement_ids": [],
+  "missing_negative_fixture_requirement_ids": [
+    "NFR-CONFIG"
+  ],
   "orphans": {
     "p0": [
-      "FR-COM-008"
+      "FR-COM-008",
+      "NFR-CONFIG"
     ],
     "p1": [
       "FR-COM-001",
@@ -28,7 +31,14 @@
       "design_refs": [
         "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
         "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md",
-        "docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md"
+        "docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md",
+        "docs/master/semantic-assurance/140_QA_TRACE_ORPHAN_CONTRADICTION_STATUS.md",
+        "docs/master/semantic-assurance/143_DESIGN_QA_12_STEP_EXECUTION.md",
+        "docs/master/semantic-assurance/144_DESIGN_QA_BLOCKER_CLOSURE_EXECUTION.md",
+        "docs/master/semantic-assurance/145_REQUIREMENT_AUTHORITY_POPULATION_CLOSURE_CHECKPOINT.md",
+        "docs/master/semantic-assurance/150_DESIGN_QA_LOCK_RERUN_AFTER_LEARNING_VALIDATION_REFINEMENT.md",
+        "docs/master/semantic-assurance/151_FINAL_REMAINING_EXECUTION_AND_CLAUDE_HANDOFF.md",
+        "docs/master/semantic-assurance/152_LEARNING_VALIDATION_40_CAPABILITY_CLOSURE_RERUN.md"
       ],
       "event_refs": [],
       "evidence_refs": [],
@@ -47,17 +57,39 @@
     {
       "api_refs": [],
       "authority_refs": [],
+      "contract_refs": [],
+      "design_refs": [
+        "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md"
+      ],
+      "event_refs": [],
+      "evidence_refs": [],
+      "final_gate_refs": [],
+      "operation_refs": [],
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED",
+        "REQUIREMENT_WITHOUT_TEST",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH"
+      ],
+      "policy_refs": [],
+      "receipt_refs": [],
+      "requirement_digest": "e1c30dd48c04ada739701d6444a136fc166da99ec832aec2b514a034fe843eb7",
+      "requirement_id": "NFR-CONFIG",
+      "test_refs": []
+    },
+    {
+      "api_refs": [],
+      "authority_refs": [],
       "contract_refs": [
         "contracts/fr-com-global-trace-extension.candidate.v1.json",
         "contracts/global-trace-execution-report.candidate.v1.json",
         "contracts/repository-orphan-scan-report.execution.candidate.v1.json"
       ],
       "design_refs": [
-        "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
         "docs/master/semantic-assurance/102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md",
         "docs/master/semantic-assurance/108_GLOBAL_REQUIREMENT_UNIVERSE_EXECUTION_SNAPSHOT.md",
         "docs/master/semantic-assurance/110_GLOBAL_TRACE_AND_ORPHAN_EXECUTION_SNAPSHOT.md",
         "docs/master/semantic-assurance/115_EIGHT_STEP_DESIGN_LOCK_EXECUTION_MASTER_MATRIX.md",
+        "docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md",
         "docs/master/semantic-assurance/129_DESIGN_QA_EIGHT_STEP_EXECUTION_AFTER_SCOPE_CLOSURE.md",
         "docs/master/semantic-assurance/README.md"
       ],
@@ -71,7 +103,7 @@
       ],
       "policy_refs": [],
       "receipt_refs": [],
-      "requirement_digest": "d954b740703962d44fb2833a5a5eb18059c3bc048cb2e24bf5661e7ca6b46bc2",
+      "requirement_digest": "29603acdae6a82d9dced1754a35592e1bacf397ba31165623a5640521f2aea94",
       "requirement_id": "FR-COM-001",
       "test_refs": []
     },
@@ -95,10 +127,10 @@
       "test_refs": []
     }
   ],
-  "scanned_at": "2026-08-13T13:52:40.301471+00:00",
-  "scanned_requirement_count": 3,
+  "scanned_at": "2026-08-14T12:18:20.179613+00:00",
+  "scanned_requirement_count": 4,
   "self_validation_nonfinal": true,
   "trace_completeness_ratio": 0.0,
-  "universe_digest": "60547f45935a574949e10ce8a8023149bc901b61e1a13f93795c9704b8c2fa44",
+  "universe_digest": "f61c01c3ea7992624bf46ac018a5c2bd78bd3039d992139370d587f81d273b01",
   "unresolved_semantic_conflicts": []
 }
