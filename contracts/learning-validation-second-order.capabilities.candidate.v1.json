@@ -1,0 +1,26 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_SECOND_ORDER_CAPABILITIES_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "authority":"docs/master/semantic-assurance/151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md",
+  "capabilities":[
+    {"id":"FR-LEARN-026","name":"Confidence Calibration and Abstention","p0":true},
+    {"id":"FR-LEARN-027","name":"Shadow and Canary Activation","p0":true},
+    {"id":"FR-LEARN-028","name":"Knowledge Conflict and Precedence","p0":true},
+    {"id":"FR-LEARN-029","name":"Catastrophic Forgetting and Interference","p0":true},
+    {"id":"FR-LEARN-030","name":"OOD and Novelty Detection","p0":true},
+    {"id":"FR-LEARN-031","name":"Active Learning Sampling Bias","p0":false},
+    {"id":"FR-LEARN-032","name":"Benchmark Overfitting Guard","p0":false},
+    {"id":"FR-LEARN-033","name":"Challenge Set Secrecy","p0":false},
+    {"id":"FR-LEARN-034","name":"Statistical Qualification","p0":true},
+    {"id":"FR-LEARN-035","name":"Correlated Oracle Failure","p0":true},
+    {"id":"FR-LEARN-036","name":"Decision-time Knowledge Snapshot","p0":true},
+    {"id":"FR-LEARN-037","name":"Emergency Quarantine and Kill Switch","p0":false},
+    {"id":"FR-LEARN-038","name":"Feedback-channel Poisoning Resistance","p0":false},
+    {"id":"FR-LEARN-039","name":"IP and License Provenance","p0":false},
+    {"id":"FR-LEARN-040","name":"Metric Gaming and Goodhart Guard","p0":false}
+  ],
+  "p0_count":8,
+  "capability_count":15,
+  "forbidden_shortcuts":["RAW_CONFIDENCE_TO_FINAL_PASS","APPROVED_TO_ACTIVE_BYPASSING_REQUIRED_SHADOW_CANARY","OOD_TO_PASS_WITHOUT_POLICY","CORRELATED_ORACLES_COUNTED_AS_INDEPENDENT","EXPOSED_CHALLENGE_SET_USED_AS_BLIND","SMALL_SAMPLE_POINT_ESTIMATE_TO_QUALIFIED","FEEDBACK_DIRECT_TO_ACTIVE_KNOWLEDGE","UNKNOWN_LICENSE_TO_GLOBAL_SCOPE"],
+  "final_claim_allowed":false
+}

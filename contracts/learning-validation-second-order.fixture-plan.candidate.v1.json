@@ -1,0 +1,24 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_SECOND_ORDER_FIXTURE_PLAN_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "fixtures":[
+    {"id":"FR-LEARN-026","positive":"calibrated confidence with abstention threshold","negative":"high raw confidence despite failed calibration accepted as PASS"},
+    {"id":"FR-LEARN-027","positive":"approved asset progresses through shadow/canary","negative":"approved asset jumps directly to active"},
+    {"id":"FR-LEARN-028","positive":"conflict resolved by explicit precedence authority","negative":"unresolved P0 rule conflict produces PASS"},
+    {"id":"FR-LEARN-029","positive":"new epoch preserves prior capability thresholds","negative":"new metric improves while prior critical capability regresses"},
+    {"id":"FR-LEARN-030","positive":"OOD input abstains/holds","negative":"OOD input receives ordinary PASS"},
+    {"id":"FR-LEARN-031","positive":"selection policy and population bias recorded","negative":"biased selected sample generalized to full population"},
+    {"id":"FR-LEARN-032","positive":"exposed benchmark replaced by unseen holdout","negative":"repeated tuned benchmark used as independent qualification"},
+    {"id":"FR-LEARN-033","positive":"challenge answers evaluator-only","negative":"challenge answers visible to learning/development actor"},
+    {"id":"FR-LEARN-034","positive":"qualification includes sample size/CI/variance","negative":"small-sample point estimate alone qualifies"},
+    {"id":"FR-LEARN-035","positive":"oracle dependency graph detects common cause","negative":"three correlated oracles counted as three independent"},
+    {"id":"FR-LEARN-036","positive":"decision binds complete knowledge snapshot hash","negative":"past PASS cannot resolve active rule/oracle epoch"},
+    {"id":"FR-LEARN-037","positive":"incident quarantines asset before rollback","negative":"known poisoned asset remains active while rollback pending"},
+    {"id":"FR-LEARN-038","positive":"feedback becomes candidate after corroboration","negative":"untrusted feedback directly activates rule"},
+    {"id":"FR-LEARN-039","positive":"license rights bound to scope promotion","negative":"unknown-license asset promoted global"},
+    {"id":"FR-LEARN-040","positive":"multi-objective gate detects severe regression","negative":"single improved metric masks critical FN/user-harm regression"}
+  ],
+  "planned_fixture_groups":15,
+  "runtime_execution_status":"NOT_RUN",
+  "final_claim_allowed":false
+}

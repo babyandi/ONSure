@@ -1,0 +1,54 @@
+{
+  "contract": "ONSURE_REQUIREMENT_AUTHORITY_SOURCE_MANIFEST_V1_CANDIDATE",
+  "status": "DESIGN_QA_CANDIDATE_NONFINAL",
+  "purpose": "Separate Design Artifact Inventory membership from eligibility to originate CURRENT Product Design Requirements.",
+  "authority_principle": "DESIGN_ARTIFACT_INVENTORY_MEMBERSHIP_DOES_NOT_IMPLY_REQUIREMENT_ORIGINATION_AUTHORITY",
+  "source_dispositions": [
+    "NORMATIVE_CURRENT",
+    "NORMATIVE_REFINEMENT",
+    "REFERENCE_ONLY",
+    "HANDOFF_ONLY",
+    "QA_EVIDENCE_ONLY",
+    "SUPERSEDED_PROVENANCE_ONLY",
+    "RETIRED_PROVENANCE_ONLY",
+    "OPEN_DECISION_INPUT_ONLY"
+  ],
+  "denominator_contribution_rules": {
+    "NORMATIVE_CURRENT": "ELIGIBLE",
+    "NORMATIVE_REFINEMENT": "ELIGIBLE_WITH_PARENT_AUTHORITY",
+    "REFERENCE_ONLY": "INELIGIBLE",
+    "HANDOFF_ONLY": "INELIGIBLE",
+    "QA_EVIDENCE_ONLY": "INELIGIBLE",
+    "SUPERSEDED_PROVENANCE_ONLY": "INELIGIBLE_CURRENT_EPOCH",
+    "RETIRED_PROVENANCE_ONLY": "INELIGIBLE_CURRENT_EPOCH",
+    "OPEN_DECISION_INPUT_ONLY": "NOT_ACTIVE_REQUIREMENT_UNLESS_EXPLICITLY_PROMOTED"
+  },
+  "required_row_fields": [
+    "artifact_path",
+    "content_sha256",
+    "artifact_inventory_authority_class",
+    "requirement_source_disposition",
+    "authority_parent_refs",
+    "supersedes",
+    "rationale",
+    "review_state"
+  ],
+  "review_states": ["UNREVIEWED", "REVIEWED", "DISPUTED"],
+  "authoritative_generation_preconditions": [
+    "EXACT_ARTIFACT_POPULATION_IDENTIFIED",
+    "EVERY_SCANNED_SOURCE_HAS_MANIFEST_ROW",
+    "UNREVIEWED_SOURCE_COUNT_ZERO",
+    "DISPUTED_P0_SOURCE_COUNT_ZERO",
+    "SUPERSESSION_RELATIONS_EXPLICIT",
+    "MANIFEST_DIGEST_BOUND_TO_GENERATION_RECEIPT"
+  ],
+  "prohibited_shortcuts": [
+    "ALL_TRACKED_MARKDOWN_AUTO_ELIGIBLE",
+    "FILENAME_ONLY_AUTHORITY_INFERENCE",
+    "LONGEST_TEXT_WINS_CANONICALIZATION",
+    "LATEST_MODIFIED_WINS_WITHOUT_SUPERSESSION_PROOF",
+    "HANDOFF_OR_QA_REPORT_ORIGINATES_REQUIREMENT_BY_DEFAULT"
+  ],
+  "current_state": "ROW_POPULATION_PENDING",
+  "final_claim_allowed": false
+}

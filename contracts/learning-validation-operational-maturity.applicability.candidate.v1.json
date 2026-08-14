@@ -1,0 +1,21 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_OPERATIONAL_MATURITY_APPLICABILITY_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "authority":"docs/master/semantic-assurance/151_LEARNING_VALIDATION_OPERATIONAL_MATURITY_REFINEMENT.md",
+  "rows":[
+    {"id":"FR-LEARN-041","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-042","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-043","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-044","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-045","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-046","applicability":"CONDITIONAL","condition":"Tenant-derived knowledge is promoted beyond PRIVATE/ORGANIZATION scope."},
+    {"id":"FR-LEARN-047","applicability":"CONDITIONAL","condition":"Synthetic or derived-synthetic learning assets are used."},
+    {"id":"FR-LEARN-048","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-049","applicability":"CONDITIONAL","condition":"Human or Professional Reviewer override is enabled."},
+    {"id":"FR-LEARN-050","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-051","applicability":"APPLICABLE"},
+    {"id":"FR-LEARN-052","applicability":"APPLICABLE"}
+  ],
+  "summary":{"APPLICABLE":9,"CONDITIONAL":3,"NOT_APPLICABLE":0,"UNKNOWN":0,"critical_unknown":0},
+  "final_claim_allowed":false
+}

@@ -1,0 +1,25 @@
+{
+  "type": "ONSURE_REQUIREMENT_AUTHORITY_SOURCE_REVIEW_SEED_V1",
+  "status": "PARTIAL_REVIEW_NONAUTHORITATIVE",
+  "purpose": "Human-reviewed disposition seed. Content SHA-256 and exact full population must be materialized by the authority-manifest generator before authoritative RU generation.",
+  "rows": [
+    {"artifact_path":"docs/master/00_ONSURE_MASTER_DESIGN_SET.md","git_blob_sha":"cfe0005290481eceaccc3ca5805da5f0ea3d2aea","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Master Design Set explicitly defines the integrated design baseline and points to 01~08/08A and semantic-assurance companions."},
+    {"artifact_path":"docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md","git_blob_sha":"a0564160f751631b069d80aeafcfdb98634d6b04","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Current business/product/service master design content."},
+    {"artifact_path":"docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md","git_blob_sha":"0c363ed5f2a2bd8702fc517f3d0274792f58953b","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Current functional requirement and program specification; contains explicit requirement semantics and design-only flags where applicable."},
+    {"artifact_path":"docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md","git_blob_sha":"eacd4924dc89332acafa12f9d2a77272701743ab","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Current OReview detailed design specification."},
+    {"artifact_path":"docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md","git_blob_sha":"bc9a078579d60a9cf6dc535c371623d7e973bf84","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Current architecture/data/API/OLicense detailed design."},
+    {"artifact_path":"docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md","git_blob_sha":"907e9614323f74ff31936f8745bafa2e85114058","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Current UI/UX/workflow detailed design with explicit fail-closed UX semantics."},
+    {"artifact_path":"docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md","git_blob_sha":"054124f7880f093bf500ad7afa86fd38284df159","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Current test/operation/implementation design; explicitly separates DESIGN_ONLY operations from registered executable operations."},
+    {"artifact_path":"docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md","git_blob_sha":"420264cfcf4b371188e575c89dcea32e1868d7e6","disposition":"NORMATIVE_CURRENT","review_state":"REVIEWED","rationale":"Current component and AI-agent methodology design."},
+    {"artifact_path":"docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md","git_blob_sha":"e8e12ff6e07acce5e54873f1a8591cafa9772493","disposition":"REFERENCE_ONLY","review_state":"REVIEWED","rationale":"Document explicitly states that it is not design authority and is used to track confirmation progress."},
+    {"artifact_path":"docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md","git_blob_sha":"ede0dfc0578694a992e0803a18d64126a5ecbcf9","disposition":"OPEN_DECISION_INPUT_ONLY","review_state":"REVIEWED","rationale":"DESIGN_ONLY/DRAFT/NON_FINAL companion tracking policy/open decisions; values become active only through explicit policy/authority promotion."}
+  ],
+  "rules": {
+    "seed_is_not_complete_manifest": true,
+    "filename_only_inference_prohibited": true,
+    "all_remaining_docs_require_content_role_review": true,
+    "authoritative_generation_requires_full_rows_and_content_sha256": true,
+    "unreviewed_zero_required": true,
+    "final_claim_allowed": false
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_FIXTURE_PLAN_V1_CANDIDATE",
+  "status":"DESIGN_ONLY_NONFINAL",
+  "schema_spec":"docs/master/semantic-assurance/149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md",
+  "fixtures":[
+    {"contract":"LearningCandidateAsset","positive":"candidate with lineage/hash and final_decision_authority=false","negative":"candidate grants final PASS authority"},
+    {"contract":"LearningPromotionReceipt","positive":"EVALUATED to QUALIFIED with independent evidence","negative":"CANDIDATE to ACTIVE direct promotion"},
+    {"contract":"CorpusIntegrityReport","positive":"poisoning/leakage/contamination CLEAR","negative":"confirmed contamination with PASS"},
+    {"contract":"LearningEffectivenessReport","positive":"same benchmark before/after metrics","negative":"regression reported as improved"},
+    {"contract":"OracleQualification","positive":"independent current qualified oracle","negative":"stale or unqualified oracle used for PASS"},
+    {"contract":"OracleDisagreementCase","positive":"open disagreement forces HOLD","negative":"open disagreement produces PASS"},
+    {"contract":"ValidatorRegressionQualification","positive":"drift within threshold","negative":"threshold breach remains qualified"},
+    {"contract":"DerivedLearningLineageDisposition","positive":"withdrawal dispositions all derived assets","negative":"unresolved derived asset remains ACTIVE"},
+    {"contract":"LearningScopePromotion","positive":"scope promotion has consent/privacy/corpus/policy proofs","negative":"automatic GLOBAL promotion"},
+    {"contract":"ValidationExperiment","positive":"declared N-run or environment matrix completed","negative":"single stochastic run claims stability PASS"},
+    {"contract":"EvidenceObservation","positive":"collected no-result is OBSERVED_ABSENCE","negative":"not-collected becomes OBSERVED_ABSENCE"},
+    {"contract":"LearningStopDecision","positive":"stop/hold when saturation or regression risk dominates","negative":"unbounded CONTINUE without evidence"},
+    {"contract":"FailureRegistryEntry","positive":"recurrence increments same signature lineage","negative":"CLOSED without reproduction fixture/closure evidence"},
+    {"contract":"CoverageBalanceReport","positive":"underrepresented bucket exposed as COVERAGE_GAP","negative":"zero bucket hidden by global average"}
+  ],
+  "required_fixture_classes":["POSITIVE","SCHEMA_INVALID","SEMANTIC_INVALID","CROSS_CONTRACT_P0"],
+  "runtime_execution_required_for_tested_state":true,
+  "final_claim_allowed":false
+}
