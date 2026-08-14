@@ -30,7 +30,9 @@ public final class ONSureCli {
             }
             ObjectMapper mapper = mapper();
             JsonNode request = mapper.readTree(requestFile.toFile());
-            var result = new LocalWorkflowDispatcher(workspace).dispatch(operation, request);
+            var result = new SemanticAssuranceV2DispatcherBridge(
+                            workspace, AuthenticatedWorkflowIdentity.localAdministrator())
+                    .dispatch(operation, request);
             out.println(mapper.writeValueAsString(result));
             out.println("ONSURE_WORKFLOW_COMPLETE_NONFINAL " + operation);
             return 0;

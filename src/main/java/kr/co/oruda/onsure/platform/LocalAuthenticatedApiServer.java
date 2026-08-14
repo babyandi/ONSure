@@ -191,7 +191,7 @@ public final class LocalAuthenticatedApiServer {
         JsonNode envelope = readJson(exchange);
         String operation = envelope.path("operation").asText();
         JsonNode request = envelope.path("request");
-        Map<String, Object> result = new LocalWorkflowDispatcher(workspaceRoot, identity)
+        Map<String, Object> result = new SemanticAssuranceV2DispatcherBridge(workspaceRoot, identity)
                 .dispatch(operation, request);
         respond(exchange, 200, Map.of(
                 "contract", CONTRACT,
@@ -205,7 +205,7 @@ public final class LocalAuthenticatedApiServer {
             respond(exchange, 405, error("METHOD_NOT_ALLOWED", "POST is required."));
             return;
         }
-        Map<String, Object> result = new LocalWorkflowDispatcher(workspaceRoot, identity)
+        Map<String, Object> result = new SemanticAssuranceV2DispatcherBridge(workspaceRoot, identity)
                 .dispatch(operation, readJson(exchange));
         @SuppressWarnings("unchecked")
         Map<String, Object> payload = (Map<String, Object>) result.get("result");
