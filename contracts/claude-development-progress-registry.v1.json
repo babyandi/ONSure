@@ -788,7 +788,7 @@
         ]
       },
       "slice_2_learning_validation_contract_family": {
-        "state": "IMPLEMENTED_PENDING_RUNTIME_CONSUMER",
+        "state": "PARTIALLY_EVIDENCE_READY",
         "note": "Found 146/147/148/149_LEARNING_VALIDATION_*.md -- a dedicated, thorough, NORMATIVE_REFINEMENT design closure (status DESIGN_ONLY/NON_FINAL) enumerating exactly the requirement denominator for this slice: 14 schema objects (A-N) and 12 named P0 negative fixture cases, with 148 SS4 explicitly assigning A/B/E/F/G/C/D to Batch 5. Materialized 11 of the 14 objects as new JSON Schema contracts with real structural allOf invariants (not merely documented convention) plus positive and semantic-invalid fixtures for each, directly covering the user-directed list: LearningCandidateAsset (final_decision_authority const false = \"cannot hold ACTIVE/PASS/FAIL authority directly\"), LearningPromotionReceipt (schema-level rejection of a direct CANDIDATE->ACTIVE transition), CorpusIntegrityReport (CONFIRMED poisoning/tenant-leakage/benchmark-contamination forces BLOCKED, never CLEAR), LearningEffectivenessReport, OracleQualification (QUALIFIED requires independent=true and a fresh_until date), OracleDisagreementCase (OPEN status forces the related decision to HOLD/BLOCKED/NOT_RUN, never PASS), ValidatorRegressionQualification (QUALIFIED requires golden/blind/challenge all PASS), DerivedLearningLineageDisposition (CONSENT_WITHDRAWAL trigger forbids NO_ACTION_WITH_PROOF), LearningScopePromotion (GLOBAL scope unreachable except from INDUSTRY), ValidationExperiment (STOCHASTIC/STABLE both require run_count>=2, closing the single-run-stability-PASS negative case), and LearningStopDecision (EXCEEDED budget or HIGH-regression-risk-at-saturation forces STOP/HOLD, never bare CONTINUE). EvidenceObservation (K) is intentionally deferred -- 148 SS4 assigns it to Batch 3, already closed, and its EVIDENCE_NOT_COLLECTED/OBSERVED_ABSENCE state machine is a currentness concern more than a learning concern. FailureRegistryEntry (M) and CoverageBalanceReport (N) are explicitly 148 SS4 Batch 9 (test materialization) scope and are deferred there rather than pulled forward.",
         "p0_negative_cases_covered_with_a_real_schema_level_rejection": [
           "1. Candidate->ACTIVE direct promotion (learning-promotion-receipt.v1)",
@@ -823,7 +823,37 @@
           "tests/test_learning_validation_contracts.py (NEW, 12 tests: schema self-validity, every valid/invalid fixture pair, plus one targeted test per P0 negative case above demonstrating the rejection is a genuine jsonschema.ValidationError, not just a documented convention)"
         ],
         "known_gap_not_yet_covered": "No Java runtime consumer/producer yet for these 11 schemas (unlike slice 1's OfficialLearningLedger wiring) -- they exist as validated contracts with real structural invariants but nothing in the product currently emits or ingests instances of them. The cross-contract P0 cases requiring actor/state cross-referencing (2, 3, 8, 11 above) are real follow-on work for a runtime validator layer, analogous to how OfficialLearningLedger enforces its own cross-entry invariants in Java rather than in JSON Schema alone.",
-        "done_gate_self_check": "137 SS4 Done Gate requires Contract/Schema -> Implementation -> Fixtures -> Cross-contract Test -> Compile/Test -> Evidence -> Trace/Registry, in that order, before a unit reaches EVIDENCE_READY. This slice only completed Contract/Schema + Fixtures + a schema-level Cross-contract Test -- the Implementation step (a real runtime producer/consumer) is still missing, so per the user's 2026-08-14 explicit instruction not to treat schema/fixture/test-count existence alone as completion, this is deliberately NOT marked EVIDENCE_READY. It advances to EVIDENCE_READY only once slice 3 lands real Java implementation consuming these contracts."
+        "done_gate_self_check": "137 SS4 Done Gate requires Contract/Schema -> Implementation -> Fixtures -> Cross-contract Test -> Compile/Test -> Evidence -> Trace/Registry, in that order, before a unit reaches EVIDENCE_READY. This slice only completed Contract/Schema + Fixtures + a schema-level Cross-contract Test -- the Implementation step (a real runtime producer/consumer) is still missing, so per the user's 2026-08-14 explicit instruction not to treat schema/fixture/test-count existence alone as completion, this is deliberately NOT marked EVIDENCE_READY. It advances to EVIDENCE_READY only once slice 3 lands real Java implementation consuming these contracts.",
+        "objects_now_evidence_ready_via_slice_3": [
+          "C. CorpusIntegrityReport",
+          "F. OracleDisagreementCase",
+          "G. ValidatorRegressionQualification",
+          "L. LearningStopDecision"
+        ],
+        "objects_still_pending_runtime_consumer": [
+          "A. LearningCandidateAsset",
+          "B. LearningPromotionReceipt",
+          "D. LearningEffectivenessReport",
+          "H. DerivedLearningLineageDisposition",
+          "I. LearningScopePromotion",
+          "J. ValidationExperiment"
+        ]
+      },
+      "slice_3_learning_validation_real_computation": {
+        "state": "EVIDENCE_READY",
+        "note": "Real runtime computation for the 4 highest-value learning-validation objects, closing the Implementation gap slice 2 was honest about not having yet. 4 new v2 operations, each computing its own decision field for real rather than trusting a caller-declared one, mirroring compositionCompute/evidenceGraphValidate's established pattern: assurance.oracle.multi-evaluate (F -- OracleDisagreementCase: agreement requires every named oracle to report the exact same decision; anything else is disagreement, forced OPEN/HOLD, never resolved by majority vote), assurance.corpus.integrity-check (C -- CorpusIntegrityReport: any CONFIRMED/IMPACT_ASSESSED axis forces BLOCKED, any SUSPECTED-with-nothing-worse forces HOLD, only three genuinely CLEAR axes reach CLEAR), assurance.validator.regression-qualify (G -- ValidatorRegressionQualification: the numeric false_positive_drift/false_negative_drift vs drift_threshold comparison JSON Schema alone could not express without $data support, now a real double comparison -- a validator whose drift exceeds its own declared threshold is REGRESSED regardless of caller claim), assurance.learning.stop-decision.compute (L -- LearningStopDecision: EXCEEDED budget or HIGH regression risk at >=0.95 coverage saturation forces STOP; a non-positive marginal_gain can never reach CONTINUE).",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (oracleMultiEvaluate, corpusIntegrityCheck, validatorRegressionQualify, learningStopDecisionCompute)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+9 tests: oracle agreement resolves, oracle disagreement opens+forces HOLD, corpus BLOCKED on confirmed poisoning, corpus CLEAR only when all 3 axes clear, validator REGRESSED past its own threshold, validator QUALIFIED within threshold, learning STOP on exceeded budget regardless of marginal gain, learning CONTINUE only with real positive basis, learning HOLD on zero marginal gain even within budget)"
+        ],
+        "bugs_found_and_fixed_during_own_test_writing": [
+          "validatorRegressionQualify used Set.of(golden, blind, challenge) to check membership, but Set.of() throws IllegalArgumentException on duplicate constructor arguments -- since these three fields are commonly all \"PASS\" in the healthy case, every qualifying-validator test crashed instead of passing. Fixed by using a List (which permits duplicates) for membership checks instead of a Set.",
+          "oracleMultiEvaluate originally named its request field \"case_id\", colliding with an unrelated, already-RBAC-tracked customer-service resource identifier of the same name elsewhere in TenantRbacService (case.open et al.) -- any call carrying that field name was silently required to own an unrelated \"case:\" resource it had never claimed, denying every test with TENANT_RESOURCE_BINDING_MISSING. Renamed to disagreement_case_id."
+        ]
       }
     },
     {

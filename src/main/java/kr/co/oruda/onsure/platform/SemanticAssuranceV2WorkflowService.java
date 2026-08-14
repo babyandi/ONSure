@@ -62,7 +62,11 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.validation.receipt.record",
             "assurance.learning.promotion.approve",
             "assurance.learning.applied-lock.record",
-            "assurance.learning.completion-status.check");
+            "assurance.learning.completion-status.check",
+            "assurance.oracle.multi-evaluate",
+            "assurance.corpus.integrity-check",
+            "assurance.validator.regression-qualify",
+            "assurance.learning.stop-decision.compute");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -129,6 +133,10 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.promotion.approve" -> learningPromotionApprove(request);
             case "assurance.learning.applied-lock.record" -> learningAppliedLockRecord(request);
             case "assurance.learning.completion-status.check" -> learningCompletionStatusCheck(request);
+            case "assurance.oracle.multi-evaluate" -> oracleMultiEvaluate(request);
+            case "assurance.corpus.integrity-check" -> corpusIntegrityCheck(request);
+            case "assurance.validator.regression-qualify" -> validatorRegressionQualify(request);
+            case "assurance.learning.stop-decision.compute" -> learningStopDecisionCompute(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1333,6 +1341,189 @@ final class SemanticAssuranceV2WorkflowService {
             out.put("decision", "HOLD");
             out.put("reasons", List.of(violation.getMessage()));
         }
+        return immutable(out);
+    }
+
+    /**
+     * oracle-disagreement-case.v1.schema.json real computation (148 P0 invariant 5): given two or
+     * more named oracle results for the same subject, computes whether they genuinely disagree --
+     * never resolved by a simple majority vote (149 SS F's own named negative case) -- and, when
+     * they do, forces the case OPEN with related_decision HOLD. Agreement requires every oracle to
+     * report the exact same decision; anything else is a real disagreement, not a caller-declared
+     * one.
+     */
+    private Map<String, Object> oracleMultiEvaluate(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        // Deliberately not "case_id": that field name is a distinct, already-RBAC-tracked
+        // customer-service resource identifier elsewhere in the dispatcher (case.open et al.),
+        // and reusing it here would make this call require ownership of an unrelated resource.
+        String disagreementCaseId = requiredText(request, "disagreement_case_id");
+        String subjectId = requiredText(request, "subject_id");
+        JsonNode resultsNode = request.path("oracle_results");
+        if (!resultsNode.isArray() || resultsNode.size() < 2) {
+            return failClosed("INPUT_REQUIRED", List.of("ORACLE_MULTI_EVALUATE_REQUIRES_AT_LEAST_TWO_RESULTS"));
+        }
+        Set<String> validDecisions = Set.of("PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE");
+        List<Map<String, Object>> results = new ArrayList<>();
+        java.util.LinkedHashSet<String> oracleIds = new java.util.LinkedHashSet<>();
+        java.util.LinkedHashSet<String> distinctDecisions = new java.util.LinkedHashSet<>();
+        for (JsonNode row : resultsNode) {
+            String oracleId = requiredText(row, "oracle_id");
+            if (!oracleIds.add(oracleId)) return failClosed("HOLD", List.of("DUPLICATE_ORACLE_RESULT:" + oracleId));
+            String decision = row.path("decision").asText("");
+            if (!validDecisions.contains(decision)) return failClosed("HOLD", List.of("ORACLE_DECISION_INVALID:" + oracleId));
+            distinctDecisions.add(decision);
+            results.add(Map.of("oracle_id", oracleId, "decision", decision));
+        }
+
+        boolean disagreement = distinctDecisions.size() > 1;
+        String status = disagreement ? "OPEN" : "RESOLVED";
+        String relatedDecision = disagreement ? "HOLD" : distinctDecisions.iterator().next();
+
+        Map<String, Object> out = base("ORACLE_DISAGREEMENT_CASE", targetId);
+        out.put("disagreement_case_id", disagreementCaseId);
+        out.put("subject_id", subjectId);
+        out.put("oracle_results", List.copyOf(results));
+        out.put("disagreement", disagreement);
+        out.put("status", status);
+        out.put("related_decision", relatedDecision);
+        out.put("decision", disagreement ? "HOLD" : "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * corpus-integrity-report.v1.schema.json real computation (148 P0 invariant 6): the decision
+     * is derived from the three integrity axes, never trusted from the caller. Any CONFIRMED or
+     * IMPACT_ASSESSED axis forces BLOCKED; a SUSPECTED axis with nothing worse forces HOLD; only
+     * three genuinely CLEAR axes reach CLEAR.
+     */
+    private Map<String, Object> corpusIntegrityCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String corpusId = requiredText(request, "corpus_id");
+        Set<String> validStates = Set.of("CLEAR", "SUSPECTED", "CONFIRMED", "IMPACT_ASSESSED");
+        String poisoningState = requiredText(request, "poisoning_state");
+        String tenantLeakageState = requiredText(request, "tenant_leakage_state");
+        String benchmarkContaminationState = requiredText(request, "benchmark_contamination_state");
+        for (var entry : Map.of(
+                "poisoning_state", poisoningState, "tenant_leakage_state", tenantLeakageState,
+                "benchmark_contamination_state", benchmarkContaminationState).entrySet()) {
+            if (!validStates.contains(entry.getValue())) {
+                return failClosed("HOLD", List.of("CORPUS_INTEGRITY_STATE_INVALID:" + entry.getKey()));
+            }
+        }
+        List<String> axes = List.of(poisoningState, tenantLeakageState, benchmarkContaminationState);
+        String decision;
+        if (axes.stream().anyMatch(value -> Set.of("CONFIRMED", "IMPACT_ASSESSED").contains(value))) {
+            decision = "BLOCKED";
+        } else if (axes.stream().anyMatch("SUSPECTED"::equals)) {
+            decision = "HOLD";
+        } else {
+            decision = "CLEAR";
+        }
+
+        Map<String, Object> out = base("CORPUS_INTEGRITY_REPORT", targetId);
+        out.put("corpus_id", corpusId);
+        out.put("poisoning_state", poisoningState);
+        out.put("tenant_leakage_state", tenantLeakageState);
+        out.put("benchmark_contamination_state", benchmarkContaminationState);
+        out.put("decision", decision);
+        return immutable(out);
+    }
+
+    /**
+     * validator-regression-qualification.v1.schema.json real computation (148 P0 invariant 9): the
+     * numeric false_positive_drift/false_negative_drift vs drift_threshold comparison JSON Schema
+     * alone cannot express (no $data support) happens here for real -- a validator whose drift
+     * exceeds its own declared threshold is REGRESSED, never QUALIFIED, regardless of what the
+     * caller might otherwise claim.
+     */
+    private Map<String, Object> validatorRegressionQualify(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String validatorId = requiredText(request, "validator_id");
+        Set<String> validRunResult = Set.of("PASS", "FAIL", "NOT_RUN");
+        String golden = requiredText(request, "golden_result");
+        String blind = requiredText(request, "blind_result");
+        String challenge = requiredText(request, "challenge_result");
+        if (!validRunResult.contains(golden) || !validRunResult.contains(blind) || !validRunResult.contains(challenge)) {
+            return failClosed("HOLD", List.of("VALIDATOR_REGRESSION_RUN_RESULT_INVALID"));
+        }
+        double falsePositiveDrift = request.path("false_positive_drift").asDouble(-1);
+        double falseNegativeDrift = request.path("false_negative_drift").asDouble(-1);
+        double driftThreshold = request.path("drift_threshold").asDouble(-1);
+        if (falsePositiveDrift < 0 || falseNegativeDrift < 0 || driftThreshold < 0) {
+            return failClosed("HOLD", List.of("VALIDATOR_REGRESSION_DRIFT_VALUES_INVALID"));
+        }
+
+        List<String> runResults = List.of(golden, blind, challenge);
+        String decision;
+        if (runResults.contains("FAIL")) {
+            decision = "REGRESSED";
+        } else if (falsePositiveDrift > driftThreshold || falseNegativeDrift > driftThreshold) {
+            decision = "REGRESSED";
+        } else if (runResults.contains("NOT_RUN")) {
+            decision = "STALE";
+        } else {
+            decision = "QUALIFIED";
+        }
+
+        Map<String, Object> out = base("VALIDATOR_REGRESSION_QUALIFICATION", targetId);
+        out.put("validator_id", validatorId);
+        out.put("false_positive_drift", falsePositiveDrift);
+        out.put("false_negative_drift", falseNegativeDrift);
+        out.put("drift_threshold", driftThreshold);
+        out.put("decision", decision);
+        return immutable(out);
+    }
+
+    /**
+     * learning-stop-decision.v1.schema.json real computation. Regression risk at coverage
+     * saturation, or an exceeded budget, forces STOP/HOLD regardless of a positive marginal_gain
+     * claim -- there is no path here that reaches CONTINUE without an actual basis for it.
+     */
+    private Map<String, Object> learningStopDecisionCompute(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String candidateId = requiredText(request, "candidate_id");
+        Set<String> riskLevels = Set.of("LOW", "MEDIUM", "HIGH");
+        String regressionRisk = requiredText(request, "regression_risk");
+        String falsePositiveCost = requiredText(request, "false_positive_cost");
+        if (!riskLevels.contains(regressionRisk) || !riskLevels.contains(falsePositiveCost)) {
+            return failClosed("HOLD", List.of("LEARNING_STOP_RISK_LEVEL_INVALID"));
+        }
+        double coverageSaturation = request.path("coverage_saturation").asDouble(-1);
+        if (coverageSaturation < 0 || coverageSaturation > 1) {
+            return failClosed("HOLD", List.of("LEARNING_STOP_COVERAGE_SATURATION_INVALID"));
+        }
+        Set<String> budgetStates = Set.of("WITHIN_BUDGET", "NEAR_LIMIT", "EXCEEDED");
+        String budgetState = requiredText(request, "budget_state");
+        if (!budgetStates.contains(budgetState)) {
+            return failClosed("HOLD", List.of("LEARNING_STOP_BUDGET_STATE_INVALID"));
+        }
+        double marginalGain = request.path("marginal_gain").asDouble(0);
+
+        String decision;
+        List<String> reasons = new ArrayList<>();
+        if ("EXCEEDED".equals(budgetState)) {
+            decision = "STOP";
+            reasons.add("BUDGET_EXCEEDED");
+        } else if (coverageSaturation >= 0.95 && "HIGH".equals(regressionRisk)) {
+            decision = "STOP";
+            reasons.add("COVERAGE_SATURATED_WITH_HIGH_REGRESSION_RISK");
+        } else if ("NEAR_LIMIT".equals(budgetState) || "HIGH".equals(regressionRisk) || marginalGain <= 0) {
+            decision = "HOLD";
+            reasons.add("BUDGET_OR_RISK_OR_GAIN_REQUIRES_REVIEW");
+        } else {
+            decision = "CONTINUE";
+        }
+
+        Map<String, Object> out = base("LEARNING_STOP_DECISION", targetId);
+        out.put("candidate_id", candidateId);
+        out.put("regression_risk", regressionRisk);
+        out.put("false_positive_cost", falsePositiveCost);
+        out.put("coverage_saturation", coverageSaturation);
+        out.put("budget_state", budgetState);
+        out.put("marginal_gain", marginalGain);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
 

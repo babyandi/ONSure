@@ -903,6 +903,90 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void oracleMultiEvaluateResolvesWhenEveryOracleAgrees() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.multi-evaluate", Map.of(
+                "disagreement_case_id", "case-1", "subject_id", "subject-1",
+                "oracle_results", List.of(
+                        Map.of("oracle_id", "oracle-1", "decision", "PASS"),
+                        Map.of("oracle_id", "oracle-2", "decision", "PASS"))));
+        assertEquals(false, result.get("disagreement"));
+        assertEquals("RESOLVED", result.get("status"));
+        assertEquals("PASS", result.get("related_decision"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void oracleMultiEvaluateOpensADisagreementCaseAndForcesHold() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.multi-evaluate", Map.of(
+                "disagreement_case_id", "case-2", "subject_id", "subject-2",
+                "oracle_results", List.of(
+                        Map.of("oracle_id", "oracle-1", "decision", "PASS"),
+                        Map.of("oracle_id", "oracle-2", "decision", "FAIL"))));
+        assertEquals(true, result.get("disagreement"));
+        assertEquals("OPEN", result.get("status"));
+        assertEquals("HOLD", result.get("related_decision"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void corpusIntegrityCheckBlocksOnConfirmedPoisoning() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.corpus.integrity-check", Map.of(
+                "corpus_id", "corpus-1", "poisoning_state", "CONFIRMED",
+                "tenant_leakage_state", "CLEAR", "benchmark_contamination_state", "CLEAR"));
+        assertEquals("BLOCKED", result.get("decision"));
+    }
+
+    @Test
+    void corpusIntegrityCheckIsClearOnlyWhenAllThreeAxesAreClear() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.corpus.integrity-check", Map.of(
+                "corpus_id", "corpus-2", "poisoning_state", "CLEAR",
+                "tenant_leakage_state", "CLEAR", "benchmark_contamination_state", "CLEAR"));
+        assertEquals("CLEAR", result.get("decision"));
+    }
+
+    @Test
+    void validatorRegressionQualifyRegressesWhenDriftExceedsItsOwnThreshold() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.validator.regression-qualify", Map.of(
+                "validator_id", "validator-1", "golden_result", "PASS", "blind_result", "PASS",
+                "challenge_result", "PASS", "false_positive_drift", 0.12, "false_negative_drift", 0.02,
+                "drift_threshold", 0.05));
+        assertEquals("REGRESSED", result.get("decision"));
+    }
+
+    @Test
+    void validatorRegressionQualifyQualifiesWithinThreshold() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.validator.regression-qualify", Map.of(
+                "validator_id", "validator-2", "golden_result", "PASS", "blind_result", "PASS",
+                "challenge_result", "PASS", "false_positive_drift", 0.01, "false_negative_drift", 0.01,
+                "drift_threshold", 0.05));
+        assertEquals("QUALIFIED", result.get("decision"));
+    }
+
+    @Test
+    void learningStopDecisionStopsOnExceededBudgetRegardlessOfMarginalGain() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.stop-decision.compute", Map.of(
+                "candidate_id", "candidate-1", "marginal_gain", 0.5, "regression_risk", "LOW",
+                "false_positive_cost", "LOW", "coverage_saturation", 0.3, "budget_state", "EXCEEDED"));
+        assertEquals("STOP", result.get("decision"));
+    }
+
+    @Test
+    void learningStopDecisionContinuesOnlyWithARealPositiveBasis() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.stop-decision.compute", Map.of(
+                "candidate_id", "candidate-2", "marginal_gain", 0.02, "regression_risk", "LOW",
+                "false_positive_cost", "LOW", "coverage_saturation", 0.4, "budget_state", "WITHIN_BUDGET"));
+        assertEquals("CONTINUE", result.get("decision"));
+    }
+
+    @Test
+    void learningStopDecisionHoldsOnZeroMarginalGainEvenWithinBudget() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.stop-decision.compute", Map.of(
+                "candidate_id", "candidate-3", "marginal_gain", 0.0, "regression_risk", "LOW",
+                "false_positive_cost", "LOW", "coverage_saturation", 0.4, "budget_state", "WITHIN_BUDGET"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

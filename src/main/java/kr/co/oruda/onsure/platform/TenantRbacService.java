@@ -40,7 +40,11 @@ public final class TenantRbacService {
             "assurance.external-integration.reconcile",
             "assurance.learning.candidate.register",
             "assurance.learning.validation.request",
-            "assurance.learning.completion-status.check");
+            "assurance.learning.completion-status.check",
+            "assurance.oracle.multi-evaluate",
+            "assurance.corpus.integrity-check",
+            "assurance.validator.regression-qualify",
+            "assurance.learning.stop-decision.compute");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",
