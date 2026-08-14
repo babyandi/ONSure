@@ -674,6 +674,69 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals(true, result.get("review_completed"));
     }
 
+    @Test
+    void pluginQualificationIsRevokedWhenThePublisherIsRevoked() throws Exception {
+        Map<?, ?> result = pluginQualify("plugin-1", true, true, "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1", List.of());
+        assertEquals("REVOKED", result.get("qualification_state"));
+    }
+
+    @Test
+    void pluginQualificationFailsWithAnInvalidPublisherSignature() throws Exception {
+        Map<?, ?> result = pluginQualify("plugin-2", false, false, "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1", List.of());
+        assertEquals("NOT_QUALIFIED", result.get("qualification_state"));
+        assertEquals(List.of("PUBLISHER_SIGNATURE_INVALID"), result.get("reasons"));
+    }
+
+    @Test
+    void pluginQualificationBlocksAnUndeclaredPrivilege() throws Exception {
+        Map<?, ?> result = pluginQualify(
+                "plugin-3", true, false, "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                List.of("NETWORK_EGRESS"));
+        assertEquals("NOT_QUALIFIED", result.get("qualification_state"));
+        assertEquals(List.of("UNDECLARED_PRIVILEGE:NETWORK_EGRESS"), result.get("reasons"));
+    }
+
+    @Test
+    void pluginQualifiesWhenEveryRequiredPrivilegeIsDeclared() throws Exception {
+        Map<?, ?> result = pluginQualify(
+                "plugin-4", true, false, "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                List.of("FILESYSTEM_READ"));
+        assertEquals("QUALIFIED", result.get("qualification_state"));
+        assertEquals(List.of(), result.get("reasons"));
+    }
+
+    @Test
+    void aChangedArtifactDigestDropsAPreviouslyQualifiedPluginToPending() throws Exception {
+        Map<?, ?> first = pluginQualify(
+                "plugin-5", true, false, "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1", List.of());
+        assertEquals("QUALIFIED", first.get("qualification_state"));
+
+        Map<?, ?> second = pluginQualify(
+                "plugin-5", true, false, "70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b", List.of());
+        assertEquals("QUALIFICATION_PENDING", second.get("qualification_state"));
+        assertEquals(List.of("ARTIFACT_DIGEST_CHANGED_REQUALIFICATION_REQUIRED"), second.get("reasons"));
+    }
+
+    private Map<?, ?> pluginQualify(
+            String pluginId, boolean signatureValid, boolean revoked, String artifactDigest,
+            List<String> requiredPrivileges) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("project_id", "project-1");
+        body.put("target_id", "target-1");
+        body.put("plugin_id", pluginId);
+        body.put("plugin_version", "1.0.0");
+        body.put("publisher_signature_valid", signatureValid);
+        body.put("publisher_revoked", revoked);
+        body.put("artifact_digest", artifactDigest);
+        body.put("required_privileges", requiredPrivileges);
+        body.put("access_declarations", Map.of(
+                "filesystem", "READ_ONLY_SANDBOX", "network", "NONE", "tool_invocation", List.of()));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.plugin.qualify", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

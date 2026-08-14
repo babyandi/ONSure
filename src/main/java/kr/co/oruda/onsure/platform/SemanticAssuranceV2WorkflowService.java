@@ -52,7 +52,8 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.delegation.grant",
             "assurance.delegation.check",
             "assurance.break-glass.invoke",
-            "assurance.break-glass.review");
+            "assurance.break-glass.review",
+            "assurance.plugin.qualify");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -110,6 +111,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.delegation.check" -> delegationCheck(request);
             case "assurance.break-glass.invoke" -> breakGlassInvoke(request);
             case "assurance.break-glass.review" -> breakGlassReview(request);
+            case "assurance.plugin.qualify" -> pluginQualify(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1068,6 +1070,79 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("reviewer_actor_id", reviewed.reviewerActorId());
         out.put("review_completed", reviewed.reviewCompleted());
         out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * plugin-manifest.v1.schema.json SS5 real qualification: an unsigned or revoked publisher
+     * forbids qualification outright; an undeclared privilege (one of required_privileges with no
+     * matching access_declarations entry) blocks qualification rather than silently passing
+     * through; and, via PluginQualificationLedger, a plugin previously QUALIFIED whose
+     * artifact_digest has since changed drops to QUALIFICATION_PENDING rather than silently
+     * carrying the old QUALIFIED state forward onto different bytes.
+     */
+    private Map<String, Object> pluginQualify(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String pluginId = requiredText(request, "plugin_id");
+        String pluginVersion = requiredText(request, "plugin_version");
+        boolean publisherSignatureValid = request.path("publisher_signature_valid").asBoolean(false);
+        boolean publisherRevoked = request.path("publisher_revoked").asBoolean(false);
+        String artifactDigest = requiredDigest(request, "artifact_digest");
+
+        JsonNode accessNode = request.path("access_declarations");
+        String filesystem = accessNode.path("filesystem").asText("");
+        String network = accessNode.path("network").asText("");
+        if (!Set.of("NONE", "READ_ONLY_SANDBOX", "READ_WRITE_SANDBOX").contains(filesystem)) {
+            return failClosed("HOLD", List.of("PLUGIN_ACCESS_FILESYSTEM_INVALID"));
+        }
+        if (!Set.of("NONE", "EGRESS_ALLOWLIST_ONLY", "UNRESTRICTED").contains(network)) {
+            return failClosed("HOLD", List.of("PLUGIN_ACCESS_NETWORK_INVALID"));
+        }
+        List<String> toolInvocation = stringList(accessNode.path("tool_invocation"));
+        List<String> requiredPrivileges = stringList(request.path("required_privileges"));
+
+        List<String> reasons = new ArrayList<>();
+        for (String privilege : requiredPrivileges) {
+            boolean declared = switch (privilege) {
+                case "FILESYSTEM_READ" -> Set.of("READ_ONLY_SANDBOX", "READ_WRITE_SANDBOX").contains(filesystem);
+                case "FILESYSTEM_WRITE" -> "READ_WRITE_SANDBOX".equals(filesystem);
+                case "NETWORK_EGRESS" -> Set.of("EGRESS_ALLOWLIST_ONLY", "UNRESTRICTED").contains(network);
+                default -> privilege.startsWith("TOOL_INVOCATION:")
+                        && toolInvocation.contains(privilege.substring("TOOL_INVOCATION:".length()));
+            };
+            if (!declared) reasons.add("UNDECLARED_PRIVILEGE:" + privilege);
+        }
+
+        String qualificationState;
+        if (publisherRevoked) {
+            qualificationState = "REVOKED";
+            reasons.add(0, "PUBLISHER_REVOKED");
+        } else if (!publisherSignatureValid) {
+            qualificationState = "NOT_QUALIFIED";
+            reasons.add(0, "PUBLISHER_SIGNATURE_INVALID");
+        } else if (!reasons.isEmpty()) {
+            qualificationState = "NOT_QUALIFIED";
+        } else {
+            PluginQualificationLedger ledger = new PluginQualificationLedger(
+                    workspaceRoot.resolve(".onsure/assurance/plugin-qualifications"));
+            PluginQualificationLedger.Record previous = ledger.last(pluginId);
+            if (previous != null && "QUALIFIED".equals(previous.qualificationState())
+                    && !previous.artifactDigest().equals(artifactDigest)) {
+                qualificationState = "QUALIFICATION_PENDING";
+                reasons.add("ARTIFACT_DIGEST_CHANGED_REQUALIFICATION_REQUIRED");
+            } else {
+                qualificationState = "QUALIFIED";
+            }
+            ledger.save(new PluginQualificationLedger.Record(pluginId, artifactDigest, qualificationState, Instant.now().toString()));
+        }
+
+        Map<String, Object> out = base("PLUGIN_QUALIFICATION", targetId);
+        out.put("plugin_id", pluginId);
+        out.put("plugin_version", pluginVersion);
+        out.put("artifact_digest", artifactDigest);
+        out.put("qualification_state", qualificationState);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "QUALIFIED".equals(qualificationState) ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

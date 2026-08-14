@@ -697,6 +697,22 @@
         ],
         "bug_found_and_fixed_during_own_test_writing": "DelegationLedger originally stored grants one-file-per-delegate-actor, so its delegation_id uniqueness check only scanned that one delegate's file -- two different delegates could be granted under the SAME delegation_id without either call ever seeing the other, silently breaking the \"one ID identifies exactly one grant\" invariant every other ledger this session relies on. Caught by the first duplicate-ID test (used a different delegate on the second call, expected rejection, got silent success). Fixed by switching to one-file-per-delegation_id (matching RevocationLedger/BreakGlassLedger's already-proven pattern) with activeGrantsFor scanning and filtering instead of a single direct file lookup.",
         "known_gap_not_yet_covered": "Same additive-not-mandatory-gate caveat as slices 1-2 -- delegation is not yet consulted by TenantRbacService.requireRole itself (a delegated role does not actually widen what the delegate is allowed to do at the real RBAC boundary yet). Plugin/Adapter qualification and external integration trust remain open Batch 4 items."
+      },
+      "slice_4_plugin_adapter_qualification": {
+        "state": "EVIDENCE_READY",
+        "note": "plugin-manifest.v1.schema.json SS5 real qualification computation (Wave 7 schema, already registered): an unsigned or revoked publisher forbids qualification outright (REVOKED / NOT_QUALIFIED, real check on caller-declared publisher_signature_valid/publisher_revoked -- eventual real signature verification against a trust root is a further step, not yet wired); an undeclared privilege (a required_privileges entry with no matching access_declarations entry) blocks qualification with a specific UNDECLARED_PRIVILEGE reason rather than silently passing through; and, via PluginQualificationLedger (durable, one file per plugin_id), a plugin previously QUALIFIED whose artifact_digest has since changed drops to QUALIFICATION_PENDING instead of silently carrying the old QUALIFIED state forward onto different bytes -- the actual mechanism behind SS5's \"any artifact digest change requires requalification.\"",
+        "contract_schema": "contracts/plugin-manifest.v1.schema.json (Wave 7, pre-existing, already registered)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/PluginQualificationLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (pluginQualify)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/PluginQualificationLedgerTest.java (NEW, 3 tests)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: revoked publisher, invalid signature, undeclared privilege, full qualification, digest-change drops a QUALIFIED plugin to QUALIFICATION_PENDING)"
+        ],
+        "known_gap_not_yet_covered": "publisher_signature_valid/publisher_revoked are accepted as caller-declared inputs here, not independently re-verified against a real trust-rooted publisher key registry (analogous to how deployment.install's verification_key already does real Ed25519 verification -- plugin qualification could reuse that same primitive as later follow-on work). External integration trust remains the last open Batch 4 item."
       }
     },
     {
