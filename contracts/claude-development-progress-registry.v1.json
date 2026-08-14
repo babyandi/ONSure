@@ -170,6 +170,35 @@
         ],
         "unresolved_blockers": [],
         "design_change_queue_items_this_wave": []
+      },
+      "wave_4_final": {
+        "state": "TESTED",
+        "items": [
+          {"item": "AtomicValidationSnapshot", "state": "TESTED", "contract": "contracts/atomic-validation-snapshot.v2.schema.json", "note": "New. The evidence_bundle referenced by SemanticAssuranceGateReceipt (receipt_type=ATOMIC_VALIDATION_SNAPSHOT); read_consistency_token proves every count/digest was read from one pinned point in time, not stitched from independently-polled sources."},
+          {"item": "SemanticAssuranceGateReceipt", "state": "TESTED", "contract": "contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. This IS 11 SS10.1+10.2 (FinalFreshnessBarrier + FinalClaimReconstruction) combined -- it embeds freshness_barrier/independent_otester/independent_oaudit/human_acceptance/open_findings/revocation and reconstructs a decision from them rather than trusting a cached summary. Confirmed the schema's own final_lock_allowed is a hard const:false regardless of decision -- FinalCandidate structurally cannot self-authorize a lock."},
+          {"item": "FinalCandidate", "state": "TESTED", "note": "Maps onto SemanticAssuranceGateReceipt above (11 SS10.2 FinalClaimReconstruction) -- no separate schema exists in the design corpus; verified this mapping via the schema's decision vocabulary (PASS/BLOCKED/HOLD/INCONCLUSIVE, no APPROVE/LOCKED) and final_lock_allowed:false rather than inventing a redundant fifth contract."},
+          {"item": "FinalApproval", "state": "TESTED", "contract": "contracts/final-approval-receipt.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. Requires gate_receipt_id/gate_receipt_sha256 (references the candidate, does not embed or replace it) and its own principal_profile_id/nonce/expiry/signature -- a structurally separate principal action."},
+          {"item": "FinalLock", "state": "TESTED", "contract": "contracts/final-lock.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. Requires final_approval_decision=const APPROVE plus gate_receipt_sha256/final_approval_sha256/otester/oaudit/human_acceptance receipt hashes -- cannot be constructed from the gate receipt alone. production_go_allowed and commercial_go_allowed are both hard const:false unconditionally (every lock_state, not just LOCK_CANDIDATE) -- FinalLock never implies Production/Commercial GO by itself."}
+        ],
+        "negative_gates_verified": [
+          "gate receipt (FinalCandidate) can never self-authorize a lock: final_lock_allowed is const:false regardless of decision (test_gate_receipt_can_never_self_authorize_a_lock)",
+          "gate receipt decision vocabulary has no APPROVE/LOCKED value (test_gate_receipt_decision_vocabulary_has_no_approve_or_lock_state)",
+          "FinalApproval principal must be distinct from the gate reconstructor principal, i.e. SoD (test_approval_requires_a_principal_distinct_from_the_gate_reconstructor_sod / test_self_approval_fixture_is_detected_as_a_sod_violation)",
+          "a FinalLock built from a self-approved approval is flagged, not silently accepted (test_final_lock_built_from_a_self_approved_approval_is_flagged)",
+          "FinalLock never grants production_go_allowed/commercial_go_allowed, unconditionally (test_final_lock_never_grants_production_or_commercial_go)",
+          "FinalLock is immutable after issuance -- same lock_id with a different lock_state is a detected illegal mutation, not a legitimate update (test_final_lock_is_immutable_after_issuance_same_id_must_not_change_state)",
+          "UNKNOWN/STALE/PARTIAL/INCONCLUSIVE never appear as a positive Final claim (test_no_decision_state_is_ever_promoted_from_unknown_stale_partial_inconclusive)",
+          "decision=PASS requires genuinely clean+independent state (0 blocked/hold/p0/p1, revocation CURRENT, both independent receipts INDEPENDENT+QUALIFIED) -- verified against the schema's own allOf conditionals, not just asserted (test_gate_pass_requires_fully_clean_and_independent_state)"
+        ],
+        "evidence": [
+          "python3 scripts/validate-structured-contracts.py --require-full -> PASS (53 registered schemas, 55 positive + 32 negative instances)",
+          "python3 -m unittest tests.test_wave4_final_chain -> 13/13 PASS",
+          "full python suite -> 59/59 PASS",
+          "mvn -q compile -> clean"
+        ],
+        "unresolved_blockers": [],
+        "design_change_queue_items_this_wave": [],
+        "note": "FinalLock's real ACTIVE mechanism is the v1 ORUDA path (contracts/oruda-final-candidate-gate.v1.schema.json, oruda-final-approval-receipt.v1.schema.json, oruda-final-lock.v1.schema.json, backed by real Java: OrudaFinalCandidateMain/OrudaFinalLockGate/FinalCandidateGate). This wave's v2 candidates are a separate, NONFINAL reconstruction path per 11 SS9/14 SS9 (shadow-comparable against v1, never auto-promoting v1 PASS to v2 PASS) -- this wave did not touch, modify, or activate the v1 mechanism."
       }
     },
     {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},

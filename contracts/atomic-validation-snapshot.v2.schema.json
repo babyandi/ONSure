@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/atomic-validation-snapshot.v2.schema.json",
+  "title": "ONSure Atomic Validation Snapshot v2",
+  "description": "82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md Wave 4, first item. The evidence_bundle referenced by semantic-assurance-gate-receipt.candidate.v2.schema.json (a typedReceiptRef with receipt_type=ATOMIC_VALIDATION_SNAPSHOT). 'Atomic' means every count/digest in this record is read from a single consistent point in time (read_consistency_token), not stitched together from separately-polled sources -- a gate reconstruction built on a non-atomic snapshot could combine a stale open_findings count with a fresher test summary and silently understate risk.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "snapshot_id", "target_id", "target_artifact_sha256", "epochs",
+    "read_consistency_token", "validation_case_population_digest", "test_execution_summary",
+    "open_findings", "semantic_capability_closure", "captured_at",
+    "self_validation_nonfinal", "final_claim_allowed", "snapshot_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ATOMIC_VALIDATION_SNAPSHOT_V2"},
+    "snapshot_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "target_artifact_sha256": {"$ref": "#/$defs/sha256"},
+    "epochs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "requirement", "denominator", "policy", "oracle", "validator_qualification", "authority"],
+      "properties": {
+        "scope": {"type": "string", "minLength": 1},
+        "requirement": {"type": "string", "minLength": 1},
+        "denominator": {"type": "string", "minLength": 1},
+        "policy": {"type": "string", "minLength": 1},
+        "oracle": {"type": "string", "minLength": 1},
+        "validator_qualification": {"type": "string", "minLength": 1},
+        "authority": {"type": "string", "minLength": 1}
+      }
+    },
+    "read_consistency_token": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "token", "read_started_at", "read_completed_at"],
+      "properties": {
+        "method": {"enum": ["SINGLE_TRANSACTION_SNAPSHOT_READ", "LEDGER_SEQUENCE_PINNED_READ"]},
+        "token": {"type": "string", "minLength": 1},
+        "read_started_at": {"type": "string", "format": "date-time"},
+        "read_completed_at": {"type": "string", "format": "date-time"}
+      },
+      "description": "Proof that every field below was read against the same pinned state, not polled independently across time."
+    },
+    "validation_case_population_digest": {"$ref": "#/$defs/sha256"},
+    "test_execution_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applicable_count", "passed_count", "failed_count", "blocked_count", "hold_count", "not_run_count", "exact_result_digest"],
+      "properties": {
+        "applicable_count": {"type": "integer", "minimum": 0},
+        "passed_count": {"type": "integer", "minimum": 0},
+        "failed_count": {"type": "integer", "minimum": 0},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "hold_count": {"type": "integer", "minimum": 0},
+        "not_run_count": {"type": "integer", "minimum": 0},
+        "exact_result_digest": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "open_findings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["p0_count", "p1_count", "blocking_set_digest"],
+      "properties": {
+        "p0_count": {"type": "integer", "minimum": 0},
+        "p1_count": {"type": "integer", "minimum": 0},
+        "blocking_set_digest": {"$ref": "#/$defs/sha256"}
+      },
+      "description": "Same shape as semantic-assurance-gate-receipt.candidate.v2.schema.json's open_findings for direct cross-contract comparison."
+    },
+    "semantic_capability_closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applicable_count", "passed_count", "blocked_count", "hold_count", "not_run_count", "capability_set_digest"],
+      "properties": {
+        "applicable_count": {"type": "integer", "minimum": 0},
+        "passed_count": {"type": "integer", "minimum": 0},
+        "blocked_count": {"type": "integer", "minimum": 0},
+        "hold_count": {"type": "integer", "minimum": 0},
+        "not_run_count": {"type": "integer", "minimum": 0},
+        "capability_set_digest": {"$ref": "#/$defs/sha256"}
+      },
+      "description": "Same shape as semantic-assurance-gate-receipt.candidate.v2.schema.json's semantic_capability_closure for direct cross-contract comparison."
+    },
+    "captured_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false},
+    "snapshot_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

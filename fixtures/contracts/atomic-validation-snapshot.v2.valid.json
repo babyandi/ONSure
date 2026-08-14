@@ -1,0 +1,48 @@
+{
+  "contract": "ONSURE_ATOMIC_VALIDATION_SNAPSHOT_V2",
+  "snapshot_id": "AVS::neutral-001::0001",
+  "target_id": "target-neutral-001",
+  "target_artifact_sha256": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "epochs": {
+    "scope": "EPOCH::SCOPE::0001",
+    "requirement": "EPOCH::REQUIREMENT::0002",
+    "denominator": "EPOCH::DENOMINATOR::0001",
+    "policy": "EPOCH::POLICY::0001",
+    "oracle": "EPOCH::ORACLE::0001",
+    "validator_qualification": "EPOCH::VQ::0001",
+    "authority": "AUTH-EPOCH::0001"
+  },
+  "read_consistency_token": {
+    "method": "LEDGER_SEQUENCE_PINNED_READ",
+    "token": "LEDGER-SEQ::00042",
+    "read_started_at": "2026-08-14T13:28:09.434079+00:00",
+    "read_completed_at": "2026-08-14T13:28:09.434079+00:00"
+  },
+  "validation_case_population_digest": "fdfe910d5066bf318a10e6178022b4a3cf9b4130c1e3d0d0d6a0ed7b0a3f0020",
+  "test_execution_summary": {
+    "applicable_count": 120,
+    "passed_count": 120,
+    "failed_count": 0,
+    "blocked_count": 0,
+    "hold_count": 0,
+    "not_run_count": 0,
+    "exact_result_digest": "34fba747991c8e976135691eea0af7b45513f8a88ef60b0ca4a1c99c0c946bf4"
+  },
+  "open_findings": {
+    "p0_count": 0,
+    "p1_count": 0,
+    "blocking_set_digest": "27092986942a43637b61ffbdc6faaf1693279ae8b6970ced7e3f830800eda5aa"
+  },
+  "semantic_capability_closure": {
+    "applicable_count": 14,
+    "passed_count": 14,
+    "blocked_count": 0,
+    "hold_count": 0,
+    "not_run_count": 0,
+    "capability_set_digest": "52363b2a5ad1b4a7dae68d6505247f8e891a590d2546fcce83a8012f92458208"
+  },
+  "captured_at": "2026-08-14T13:28:09.434079+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false,
+  "snapshot_sha256": "4d67bb73243934ccadb8213fae888057250af9a872fe730a0f1f521ad509ed80"
+}

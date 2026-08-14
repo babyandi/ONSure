@@ -1,0 +1,32 @@
+{
+  "contract": "ONSURE_FINAL_LOCK_V2_CANDIDATE",
+  "lock_id": "LOCK::neutral-001::0001",
+  "target_id": "target-neutral-001",
+  "target_artifact_sha256": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "gate_receipt_sha256": "1e0890c49ba4efa8720cf75714af5a767c48cc965fdb2c0e73df0bd1cece6a47",
+  "final_approval_sha256": "e3a93746bdae3ef82f28308695add49934f4bd3d85feff52a0a87df5dd40ec1b",
+  "final_approval_decision": "APPROVE",
+  "freshness_barrier_sha256": "bd2861e38aac14edd2da05cf76a10ea3b8172f5c9dd6f1aad87e2d52ff2b5c27",
+  "otester_receipt_sha256": "b3ef0b5f1b0034b27ff52dffcc09066c9cad8045baf0fbf1ce12e18ff7e8ade2",
+  "oaudit_receipt_sha256": "ef2b68965f8b501579c27a762626db4e0995f57bd862453c90dc9a73b41487bb",
+  "human_acceptance_receipt_sha256": "81d2b121cf8060ad5b07ac94b951ebc5d0cbcf1dbdf30ea6b91e87c1ebc75735",
+  "epochs": {
+    "scope": "EPOCH::SCOPE::0001",
+    "requirement": "EPOCH::REQUIREMENT::0002",
+    "denominator": "EPOCH::DENOMINATOR::0001",
+    "policy": "EPOCH::POLICY::0001",
+    "oracle": "EPOCH::ORACLE::0001",
+    "validator_qualification": "EPOCH::VQ::0001",
+    "authority": "AUTH-EPOCH::0001",
+    "freshness": "EPOCH::FRESHNESS::0001"
+  },
+  "locked_at": "2026-08-14T13:31:02.507040+00:00",
+  "lock_state": "STALE",
+  "reason_codes": [
+    "FINAL_APPROVAL_APPROVE_VERIFIED",
+    "GATE_RECEIPT_PASS_VERIFIED"
+  ],
+  "lock_sha256": "28f213035773e57be53b6754345ae339af77f75b986c8fa06449f92ad0fa00e0",
+  "production_go_allowed": false,
+  "commercial_go_allowed": false
+}
