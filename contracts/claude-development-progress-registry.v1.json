@@ -488,7 +488,7 @@
     {
       "batch": "BATCH_2",
       "name": "Runtime Foundation",
-      "state": "IN_PROGRESS",
+      "state": "EVIDENCE_READY",
       "primary_dispatcher": {
         "state": "EVIDENCE_READY",
         "note": "LocalAuthenticatedApiServer.workflow()/compatibilityWorkflow() and ONSureCli now construct SemanticAssuranceV2DispatcherBridge instead of bare LocalWorkflowDispatcher, so v2 semantic operations (Waves 1-7 of Batch 1) are reachable from the real production entry points. Bridge.dispatch() returns legacy.dispatch() verbatim for any operation SemanticAssuranceV2WorkflowService does not recognize, so all v1 behavior is unchanged.",
@@ -531,6 +531,18 @@
       },
       "critical_callpath_regression_found_and_fixed_this_batch": {
         "note": "scripts/validate-critical-callpaths.py hard-codes literal source-code tokens as a static regression guard. Its LocalAuthenticatedApiServer.java entry still required the literal string \"new LocalWorkflowDispatcher(workspaceRoot, identity)\", which the Primary Dispatcher commit (8f89726) removed by routing through the Bridge -- this was not caught at the time because that commit only ran `mvn test`, not the separate python test suite. Fixed by updating the token to the Bridge construction and adding a new REQUIRED_TOKENS entry for SemanticAssuranceV2DispatcherBridge.java itself (verifying it still constructs LocalWorkflowDispatcher internally for v1 passthrough, still rejects caller-injected _authorized_ fields). Added 3 corresponding self-test failure-injection cases and made failure_injection_count computed from the actual case list instead of a separately hand-maintained literal (was already stale at 24 before this fix). Verified with --self-test and the full python suite (156/156)."
+      },
+      "batch_2_closure": {
+        "items_complete": "6/6",
+        "items": [
+          "primary_dispatcher",
+          "authenticated_api",
+          "persistence",
+          "transaction_idempotency",
+          "event_receipt_emission",
+          "fail_closed_runtime"
+        ],
+        "note": "Batch 2 (Runtime Foundation) has no further sub-spec doc beyond the one-line item list in 137 SS27 -- unlike Batch 1, no dedicated Wave breakdown exists elsewhere in docs/master. All 6 named items now have real evidence: primary_dispatcher and transaction_idempotency are new work this session (commits 8f89726, e03ccab); authenticated_api gained new end-to-end test coverage this session; persistence, event_receipt_emission, and fail_closed_runtime were pre-existing capabilities (DurableStateLedger/DurableJobService, LocalReceiptLedger/ReceiptReplayLedger, ExclusiveFileLock/sandbox-boundary.v1.json + the BLOCKED fail-closed pattern) verified rather than rebuilt, each already carrying its own contract/schema, fixtures, and test coverage from before this session."
       }
     },
     {
