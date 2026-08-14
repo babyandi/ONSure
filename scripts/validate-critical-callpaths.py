@@ -72,8 +72,14 @@ REQUIRED_TOKENS = {
         "TENANT_RBAC_STATE_SYMLINK",
     ],
     "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java": [
-        "new LocalWorkflowDispatcher(workspaceRoot, identity)",
+        "new SemanticAssuranceV2DispatcherBridge(workspaceRoot, identity)",
         "catch (SecurityException denied)", "artifact.read", "PATH_SYMLINK_PROHIBITED",
+    ],
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java": [
+        "new LocalWorkflowDispatcher(this.workspaceRoot, identity)",
+        "rejectCallerInjectedAuthority", "SEMANTIC_V2_SERVER_AUTHORITY_FIELD_SUBSTITUTION",
+        "SEMANTIC_V2_TARGET_PATH_ESCAPE", "SEMANTIC_V2_OPERATION_ROLE_DENIED",
+        "new TenantRbacService(workspaceRoot).execute",
     ],
     "src/main/java/kr/co/oruda/onsure/platform/BoundedProcessRunner.java": [
         "onsure-process-output-drain", "COMMAND_TIMEOUT", "OUTPUT_DRAIN_TIMEOUT",
@@ -155,7 +161,7 @@ def validate(root: pathlib.Path = ROOT) -> list[str]:
     return sorted(set(errors))
 
 
-def self_test() -> list[str]:
+def self_test() -> tuple[list[str], int]:
     import tempfile
     missed: list[str] = []
     with tempfile.TemporaryDirectory() as directory:
@@ -191,6 +197,9 @@ def self_test() -> list[str]:
             ("key registry concurrency regression", "src/test/java/kr/co/oruda/onsure/assurance/LocalKeyRegistryBoundaryTest.java", "concurrentRegistryInstancesPreserveEveryKey"),
             ("bounded process runner", "src/main/java/kr/co/oruda/onsure/platform/BoundedProcessRunner.java", "onsure-process-output-drain"),
             ("push expiry regression", "src/main/java/kr/co/oruda/onsure/platform/GitWorkflowService.java", "requireApprovalNotExpired"),
+            ("api server routes through v2 bridge", "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java", "new SemanticAssuranceV2DispatcherBridge(workspaceRoot, identity)"),
+            ("v2 bridge still dispatches v1 legacy operations", "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java", "new LocalWorkflowDispatcher(this.workspaceRoot, identity)"),
+            ("v2 bridge rejects caller-injected authority fields", "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java", "SEMANTIC_V2_SERVER_AUTHORITY_FIELD_SUBSTITUTION"),
         ]
         for name, relative, token in cases:
             path = root / relative
@@ -200,7 +209,7 @@ def self_test() -> list[str]:
             if not any(value.startswith("CRITICAL_CALLPATH_TOKEN_MISSING") for value in violations):
                 missed.append(f"CRITICAL_CALLPATH_SELF_TEST_MISSED:{name}")
             path.write_text(original, encoding="utf-8")
-    return missed
+    return missed, len(cases)
 
 
 def main() -> int:
@@ -208,14 +217,14 @@ def main() -> int:
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     errors = validate()
-    self_errors = self_test() if args.self_test else []
+    self_errors, injection_count = self_test() if args.self_test else ([], 0)
     report = {
         "contract": "ONSURE_CRITICAL_CALLPATH_VALIDATION_REPORT_V12",
         "decision": "PASS" if not errors and not self_errors else "FAIL",
         "errors": errors,
         "self_test_errors": self_errors,
         "critical_files": len(REQUIRED_TOKENS),
-        "failure_injection_count": 24 if args.self_test else 0,
+        "failure_injection_count": injection_count,
         "final_claim_allowed": False,
     }
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))

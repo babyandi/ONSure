@@ -191,13 +191,43 @@ public final class LocalAuthenticatedApiServer {
         JsonNode envelope = readJson(exchange);
         String operation = envelope.path("operation").asText();
         JsonNode request = envelope.path("request");
-        Map<String, Object> result = new SemanticAssuranceV2DispatcherBridge(workspaceRoot, identity)
-                .dispatch(operation, request);
+        String idempotencyKey = exchange.getRequestHeaders().getFirst("Idempotency-Key");
+
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            Map<String, Object> result = new SemanticAssuranceV2DispatcherBridge(workspaceRoot, identity)
+                    .dispatch(operation, request);
+            respond(exchange, 200, Map.of(
+                    "contract", CONTRACT,
+                    "request_id", requestId(),
+                    "workflow", result,
+                    "final_claim_allowed", false));
+            return;
+        }
+
+        IdempotencyStore.Lookup lookup;
+        try {
+            lookup = idempotencyStore().resolve(identity.tenantId(), operation, idempotencyKey, request,
+                    () -> new SemanticAssuranceV2DispatcherBridge(workspaceRoot, identity).dispatch(operation, request));
+        } catch (IllegalArgumentException invalid) {
+            respond(exchange, 400, error("IDEMPOTENCY_KEY_INVALID", invalid.getMessage()));
+            return;
+        }
+        if (lookup.outcome() == IdempotencyStore.Outcome.CONFLICT) {
+            respond(exchange, 409, error(
+                    "IDEMPOTENCY_KEY_REQUEST_MISMATCH",
+                    "This Idempotency-Key was already used with a different request body."));
+            return;
+        }
         respond(exchange, 200, Map.of(
                 "contract", CONTRACT,
                 "request_id", requestId(),
-                "workflow", result,
+                "workflow", lookup.cachedResponse(),
+                "idempotency_replay", lookup.outcome() == IdempotencyStore.Outcome.REPLAY,
                 "final_claim_allowed", false));
+    }
+
+    private IdempotencyStore idempotencyStore() {
+        return new IdempotencyStore(workspaceRoot.resolve(".onsure/idempotency"));
     }
 
     private void compatibilityWorkflow(HttpExchange exchange, String operation) throws Exception {

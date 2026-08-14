@@ -1,7 +1,14 @@
 {
   "type": "ONSURE_CLAUDE_DEVELOPMENT_PROGRESS_REGISTRY_V1",
   "authority": "137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md",
-  "allowed_states": ["NOT_STARTED", "IN_PROGRESS", "IMPLEMENTED", "TESTED", "EVIDENCE_READY", "BLOCKED"],
+  "allowed_states": [
+    "NOT_STARTED",
+    "IN_PROGRESS",
+    "IMPLEMENTED",
+    "TESTED",
+    "EVIDENCE_READY",
+    "BLOCKED"
+  ],
   "current_overall_state": "IN_PROGRESS",
   "batches": [
     {
@@ -93,12 +100,41 @@
       "wave_1_identity_foundation": {
         "state": "IN_PROGRESS",
         "items": [
-          {"item": "TargetManifest", "state": "TESTED", "contract": "contracts/target-manifest.v1.schema.json"},
-          {"item": "TargetAssuranceRequirementUniverseSnapshot", "state": "TESTED", "contract": "contracts/target-assurance-requirement-universe-snapshot.v1.schema.json", "note": "Formerly ambiguous with Product Design RU under DCQ-0002; resolved via 141, distinct identity per RESOLVED_WITH_AUTHORITY."},
-          {"item": "Scope/Requirement/Policy Epoch", "state": "TESTED", "contract": "contracts/denominator-epoch.v1.schema.json", "note": "One shared schema with an epoch_type discriminator (SCOPE|REQUIREMENT|POLICY) instead of three near-duplicate schemas."},
-          {"item": "AuthorityPrincipalProfile", "state": "TESTED", "contract": "contracts/authority-principal-profile.candidate.v2.schema.json", "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py (69/69 PASS_NONFINAL), not duplicated into the main registry."},
-          {"item": "ValidatorBuildManifest", "state": "TESTED", "contract": "contracts/validator-build-manifest.candidate.v2.schema.json", "note": "Pre-existing; same v2 pipeline evidence as AuthorityPrincipalProfile."},
-          {"item": "CanonicalizationProfile", "state": "TESTED", "contract": "contracts/evidence-canonicalization-profile.candidate.v2.schema.json", "note": "Pre-existing; same v2 pipeline evidence as AuthorityPrincipalProfile."}
+          {
+            "item": "TargetManifest",
+            "state": "TESTED",
+            "contract": "contracts/target-manifest.v1.schema.json"
+          },
+          {
+            "item": "TargetAssuranceRequirementUniverseSnapshot",
+            "state": "TESTED",
+            "contract": "contracts/target-assurance-requirement-universe-snapshot.v1.schema.json",
+            "note": "Formerly ambiguous with Product Design RU under DCQ-0002; resolved via 141, distinct identity per RESOLVED_WITH_AUTHORITY."
+          },
+          {
+            "item": "Scope/Requirement/Policy Epoch",
+            "state": "TESTED",
+            "contract": "contracts/denominator-epoch.v1.schema.json",
+            "note": "One shared schema with an epoch_type discriminator (SCOPE|REQUIREMENT|POLICY) instead of three near-duplicate schemas."
+          },
+          {
+            "item": "AuthorityPrincipalProfile",
+            "state": "TESTED",
+            "contract": "contracts/authority-principal-profile.candidate.v2.schema.json",
+            "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py (69/69 PASS_NONFINAL), not duplicated into the main registry."
+          },
+          {
+            "item": "ValidatorBuildManifest",
+            "state": "TESTED",
+            "contract": "contracts/validator-build-manifest.candidate.v2.schema.json",
+            "note": "Pre-existing; same v2 pipeline evidence as AuthorityPrincipalProfile."
+          },
+          {
+            "item": "CanonicalizationProfile",
+            "state": "TESTED",
+            "contract": "contracts/evidence-canonicalization-profile.candidate.v2.schema.json",
+            "note": "Pre-existing; same v2 pipeline evidence as AuthorityPrincipalProfile."
+          }
         ],
         "migration_mapping": {
           "contract": "contracts/target-assurance-requirement-universe-migration-mapping.v1.schema.json",
@@ -123,11 +159,43 @@
       "wave_2_execution_evidence": {
         "state": "TESTED",
         "items": [
-          {"item": "RuntimeExecutionReceipt", "state": "TESTED", "contract": "contracts/runtime-execution-receipt.candidate.v2.schema.json", "note": "Pre-existing file had zero fixtures/registration before this batch (137 SS4 violation); now registered in schema-instance-registry.v1.json with real valid+invalid fixtures and a cross-contract test."},
-          {"item": "EvidenceReceiptEnvelope", "state": "TESTED", "contract": "contracts/assurance-receipt-envelope.candidate.v2.schema.json", "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py, not duplicated into the main registry."},
-          {"item": "EvidenceGraphNode/Edge", "state": "TESTED", "contract": "contracts/evidence-graph-snapshot.v1.schema.json", "note": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS5: one snapshot contract carrying nodes[]+edges[] together (their own spec), not split into two files. Dangling-edge invariant is a cross-array check, enforced in tests/test_wave2_execution_evidence.py, not expressible in JSON Schema alone."},
-          {"item": "CollectorHealth/Observation qualification", "state": "TESTED", "contracts": ["contracts/collector-health-record.v1.schema.json", "contracts/observation-record.v1.schema.json"], "note": "Two files, per-execution-session lifecycle (CollectorHealthRecord) vs per-datapoint lifecycle (ObservationRecord), deliberately not merged."},
-          {"item": "WorkUnit/Attempt", "state": "TESTED", "contracts": ["contracts/work-unit.v1.schema.json", "contracts/attempt-record.v1.schema.json", "contracts/distributed-aggregation-receipt.v1.schema.json"], "note": "Three files (71 SS8/SS9 + 23 SS4): WorkUnit (lease/partition envelope), AttemptRecord (append-only retry history), DistributedAggregationReceipt (the only object allowed to declare a cross-WorkUnit aggregate decision)."}
+          {
+            "item": "RuntimeExecutionReceipt",
+            "state": "TESTED",
+            "contract": "contracts/runtime-execution-receipt.candidate.v2.schema.json",
+            "note": "Pre-existing file had zero fixtures/registration before this batch (137 SS4 violation); now registered in schema-instance-registry.v1.json with real valid+invalid fixtures and a cross-contract test."
+          },
+          {
+            "item": "EvidenceReceiptEnvelope",
+            "state": "TESTED",
+            "contract": "contracts/assurance-receipt-envelope.candidate.v2.schema.json",
+            "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py, not duplicated into the main registry."
+          },
+          {
+            "item": "EvidenceGraphNode/Edge",
+            "state": "TESTED",
+            "contract": "contracts/evidence-graph-snapshot.v1.schema.json",
+            "note": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS5: one snapshot contract carrying nodes[]+edges[] together (their own spec), not split into two files. Dangling-edge invariant is a cross-array check, enforced in tests/test_wave2_execution_evidence.py, not expressible in JSON Schema alone."
+          },
+          {
+            "item": "CollectorHealth/Observation qualification",
+            "state": "TESTED",
+            "contracts": [
+              "contracts/collector-health-record.v1.schema.json",
+              "contracts/observation-record.v1.schema.json"
+            ],
+            "note": "Two files, per-execution-session lifecycle (CollectorHealthRecord) vs per-datapoint lifecycle (ObservationRecord), deliberately not merged."
+          },
+          {
+            "item": "WorkUnit/Attempt",
+            "state": "TESTED",
+            "contracts": [
+              "contracts/work-unit.v1.schema.json",
+              "contracts/attempt-record.v1.schema.json",
+              "contracts/distributed-aggregation-receipt.v1.schema.json"
+            ],
+            "note": "Three files (71 SS8/SS9 + 23 SS4): WorkUnit (lease/partition envelope), AttemptRecord (append-only retry history), DistributedAggregationReceipt (the only object allowed to declare a cross-WorkUnit aggregate decision)."
+          }
         ],
         "negative_gates_verified": [
           "dangling EvidenceGraph edge (test_dangling_evidence_graph_edge_is_detected)",
@@ -148,11 +216,36 @@
       "wave_3_qualification_independence": {
         "state": "TESTED",
         "items": [
-          {"item": "ValidatorQualification", "state": "TESTED", "contract": "contracts/validator-qualification-record.candidate.v2.schema.json", "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py (69/69 PASS_NONFINAL), not duplicated into the main registry."},
-          {"item": "IndependentAssuranceExecutionPlan", "state": "TESTED", "contract": "contracts/independent-assurance-execution-plan.candidate.v2.schema.json", "note": "Existed as a file with zero fixtures/registration before this batch (same 137 SS4 gap as Wave 2's RuntimeExecutionReceipt); now registered with real fixtures and a test."},
-          {"item": "IndependentAssuranceReceipt", "state": "TESTED", "contract": "contracts/independent-assurance-receipt.candidate.v2.schema.json", "note": "Pre-existing; validated via the same v2 pipeline."},
-          {"item": "HumanAcceptanceReceipt", "state": "TESTED", "contract": "contracts/human-acceptance-receipt.v1.schema.json", "note": "New (21_CLAUDE_DEVELOPMENT_HANDOFF.md DEV-09 field grounding: authoritative principal lookup, purpose/scope binding, nonce, expiry, revocation, signature, exact candidate/gate digest binding, replay consumption ledger)."},
-          {"item": "AuthorityGrant", "state": "TESTED", "contract": "contracts/authority-grant.v1.schema.json", "note": "New (71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS7)."}
+          {
+            "item": "ValidatorQualification",
+            "state": "TESTED",
+            "contract": "contracts/validator-qualification-record.candidate.v2.schema.json",
+            "note": "Pre-existing; validated via scripts/validate-semantic-assurance-v2-contracts.py (69/69 PASS_NONFINAL), not duplicated into the main registry."
+          },
+          {
+            "item": "IndependentAssuranceExecutionPlan",
+            "state": "TESTED",
+            "contract": "contracts/independent-assurance-execution-plan.candidate.v2.schema.json",
+            "note": "Existed as a file with zero fixtures/registration before this batch (same 137 SS4 gap as Wave 2's RuntimeExecutionReceipt); now registered with real fixtures and a test."
+          },
+          {
+            "item": "IndependentAssuranceReceipt",
+            "state": "TESTED",
+            "contract": "contracts/independent-assurance-receipt.candidate.v2.schema.json",
+            "note": "Pre-existing; validated via the same v2 pipeline."
+          },
+          {
+            "item": "HumanAcceptanceReceipt",
+            "state": "TESTED",
+            "contract": "contracts/human-acceptance-receipt.v1.schema.json",
+            "note": "New (21_CLAUDE_DEVELOPMENT_HANDOFF.md DEV-09 field grounding: authoritative principal lookup, purpose/scope binding, nonce, expiry, revocation, signature, exact candidate/gate digest binding, replay consumption ledger)."
+          },
+          {
+            "item": "AuthorityGrant",
+            "state": "TESTED",
+            "contract": "contracts/authority-grant.v1.schema.json",
+            "note": "New (71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS7)."
+          }
         ],
         "negative_gates_verified": [
           "delegated AuthorityGrant scope/expiry must be a subset of its parent (test_delegated_child_expiry_within_parent_window / test_child_exceeding_parent_expiry_is_detected)",
@@ -174,11 +267,35 @@
       "wave_4_final": {
         "state": "TESTED",
         "items": [
-          {"item": "AtomicValidationSnapshot", "state": "TESTED", "contract": "contracts/atomic-validation-snapshot.v2.schema.json", "note": "New. The evidence_bundle referenced by SemanticAssuranceGateReceipt (receipt_type=ATOMIC_VALIDATION_SNAPSHOT); read_consistency_token proves every count/digest was read from one pinned point in time, not stitched from independently-polled sources."},
-          {"item": "SemanticAssuranceGateReceipt", "state": "TESTED", "contract": "contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. This IS 11 SS10.1+10.2 (FinalFreshnessBarrier + FinalClaimReconstruction) combined -- it embeds freshness_barrier/independent_otester/independent_oaudit/human_acceptance/open_findings/revocation and reconstructs a decision from them rather than trusting a cached summary. Confirmed the schema's own final_lock_allowed is a hard const:false regardless of decision -- FinalCandidate structurally cannot self-authorize a lock."},
-          {"item": "FinalCandidate", "state": "TESTED", "note": "Maps onto SemanticAssuranceGateReceipt above (11 SS10.2 FinalClaimReconstruction) -- no separate schema exists in the design corpus; verified this mapping via the schema's decision vocabulary (PASS/BLOCKED/HOLD/INCONCLUSIVE, no APPROVE/LOCKED) and final_lock_allowed:false rather than inventing a redundant fifth contract."},
-          {"item": "FinalApproval", "state": "TESTED", "contract": "contracts/final-approval-receipt.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. Requires gate_receipt_id/gate_receipt_sha256 (references the candidate, does not embed or replace it) and its own principal_profile_id/nonce/expiry/signature -- a structurally separate principal action."},
-          {"item": "FinalLock", "state": "TESTED", "contract": "contracts/final-lock.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. Requires final_approval_decision=const APPROVE plus gate_receipt_sha256/final_approval_sha256/otester/oaudit/human_acceptance receipt hashes -- cannot be constructed from the gate receipt alone. production_go_allowed and commercial_go_allowed are both hard const:false unconditionally (every lock_state, not just LOCK_CANDIDATE) -- FinalLock never implies Production/Commercial GO by itself."}
+          {
+            "item": "AtomicValidationSnapshot",
+            "state": "TESTED",
+            "contract": "contracts/atomic-validation-snapshot.v2.schema.json",
+            "note": "New. The evidence_bundle referenced by SemanticAssuranceGateReceipt (receipt_type=ATOMIC_VALIDATION_SNAPSHOT); read_consistency_token proves every count/digest was read from one pinned point in time, not stitched from independently-polled sources."
+          },
+          {
+            "item": "SemanticAssuranceGateReceipt",
+            "state": "TESTED",
+            "contract": "contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json",
+            "note": "Pre-existing file, never registered/fixtured before this batch. This IS 11 SS10.1+10.2 (FinalFreshnessBarrier + FinalClaimReconstruction) combined -- it embeds freshness_barrier/independent_otester/independent_oaudit/human_acceptance/open_findings/revocation and reconstructs a decision from them rather than trusting a cached summary. Confirmed the schema's own final_lock_allowed is a hard const:false regardless of decision -- FinalCandidate structurally cannot self-authorize a lock."
+          },
+          {
+            "item": "FinalCandidate",
+            "state": "TESTED",
+            "note": "Maps onto SemanticAssuranceGateReceipt above (11 SS10.2 FinalClaimReconstruction) -- no separate schema exists in the design corpus; verified this mapping via the schema's decision vocabulary (PASS/BLOCKED/HOLD/INCONCLUSIVE, no APPROVE/LOCKED) and final_lock_allowed:false rather than inventing a redundant fifth contract."
+          },
+          {
+            "item": "FinalApproval",
+            "state": "TESTED",
+            "contract": "contracts/final-approval-receipt.candidate.v2.schema.json",
+            "note": "Pre-existing file, never registered/fixtured before this batch. Requires gate_receipt_id/gate_receipt_sha256 (references the candidate, does not embed or replace it) and its own principal_profile_id/nonce/expiry/signature -- a structurally separate principal action."
+          },
+          {
+            "item": "FinalLock",
+            "state": "TESTED",
+            "contract": "contracts/final-lock.candidate.v2.schema.json",
+            "note": "Pre-existing file, never registered/fixtured before this batch. Requires final_approval_decision=const APPROVE plus gate_receipt_sha256/final_approval_sha256/otester/oaudit/human_acceptance receipt hashes -- cannot be constructed from the gate receipt alone. production_go_allowed and commercial_go_allowed are both hard const:false unconditionally (every lock_state, not just LOCK_CANDIDATE) -- FinalLock never implies Production/Commercial GO by itself."
+          }
         ],
         "negative_gates_verified": [
           "gate receipt (FinalCandidate) can never self-authorize a lock: final_lock_allowed is const:false regardless of decision (test_gate_receipt_can_never_self_authorize_a_lock)",
@@ -203,14 +320,54 @@
       "wave_5_deployment_currentness": {
         "state": "TESTED",
         "items": [
-          {"item": "BuildArtifactIdentity", "state": "TESTED", "contract": "contracts/build-artifact-identity.v1.schema.json", "note": "New (29 SS3.1). First link of the Verified-to-Deployed-to-Running chain."},
-          {"item": "DeploymentTarget", "state": "TESTED", "contract": "contracts/deployment-target.v1.schema.json", "note": "New, not in the user's explicit Wave-5 name list but a required prerequisite (29 SS3.2): DeploymentRevision.deployment_target_id needs a real referenced contract, and DeploymentTarget has a distinct lifecycle (created once per environment) from DeploymentRevision (created per rollout)."},
-          {"item": "DeploymentRevision", "state": "TESTED", "contract": "contracts/deployment-revision.v1.schema.json", "note": "New (29 SS3.3). Deployment success != Assurance success -- this record only asserts what was deployed/observed, never a validity claim."},
-          {"item": "RuntimeInstance", "state": "TESTED", "contract": "contracts/runtime-instance.v1.schema.json", "note": "New, prerequisite for RuntimePopulationSnapshot (29 SS3.4): a running instance has its own identity, health success != semantic assurance success."},
-          {"item": "RuntimePopulationSnapshot", "state": "TESTED", "contract": "contracts/runtime-population-snapshot.v1.schema.json", "note": "New. Exhaustive instance-id population claim (not a sampled count) per 71 SS2's runtime_population_complete conditional."},
-          {"item": "CurrentnessSnapshot", "state": "TESTED", "contract": "contracts/currentness-snapshot.v1.schema.json", "note": "New (29 SS3.5 AssuranceCurrentnessSnapshot + 71 SS2 conditionals). The separate, repeatedly-re-evaluated mutable axis FinalLock (Wave 4, immutable historical fact) explicitly does not carry -- references FinalLock only by digest."},
-          {"item": "InvalidationEvent", "state": "TESTED", "contract": "contracts/invalidation-event.v1.schema.json", "note": "New (39 SS3). Append-only fact only; does not itself flip currentness state (Impact Rule traversal per 39 SS4 deferred, not implemented this wave)."},
-          {"item": "RecoveryQualificationReceipt", "state": "TESTED", "contract": "contracts/recovery-qualification-receipt.v1.schema.json", "note": "New (71 SS12, grounded by 64 and 98's '복구 후 자동 Current 금지'). Missing/unverifiable evidence forces assurance_ceiling=NO_PRIOR_ASSURANCE_CARRYOVER at schema level."}
+          {
+            "item": "BuildArtifactIdentity",
+            "state": "TESTED",
+            "contract": "contracts/build-artifact-identity.v1.schema.json",
+            "note": "New (29 SS3.1). First link of the Verified-to-Deployed-to-Running chain."
+          },
+          {
+            "item": "DeploymentTarget",
+            "state": "TESTED",
+            "contract": "contracts/deployment-target.v1.schema.json",
+            "note": "New, not in the user's explicit Wave-5 name list but a required prerequisite (29 SS3.2): DeploymentRevision.deployment_target_id needs a real referenced contract, and DeploymentTarget has a distinct lifecycle (created once per environment) from DeploymentRevision (created per rollout)."
+          },
+          {
+            "item": "DeploymentRevision",
+            "state": "TESTED",
+            "contract": "contracts/deployment-revision.v1.schema.json",
+            "note": "New (29 SS3.3). Deployment success != Assurance success -- this record only asserts what was deployed/observed, never a validity claim."
+          },
+          {
+            "item": "RuntimeInstance",
+            "state": "TESTED",
+            "contract": "contracts/runtime-instance.v1.schema.json",
+            "note": "New, prerequisite for RuntimePopulationSnapshot (29 SS3.4): a running instance has its own identity, health success != semantic assurance success."
+          },
+          {
+            "item": "RuntimePopulationSnapshot",
+            "state": "TESTED",
+            "contract": "contracts/runtime-population-snapshot.v1.schema.json",
+            "note": "New. Exhaustive instance-id population claim (not a sampled count) per 71 SS2's runtime_population_complete conditional."
+          },
+          {
+            "item": "CurrentnessSnapshot",
+            "state": "TESTED",
+            "contract": "contracts/currentness-snapshot.v1.schema.json",
+            "note": "New (29 SS3.5 AssuranceCurrentnessSnapshot + 71 SS2 conditionals). The separate, repeatedly-re-evaluated mutable axis FinalLock (Wave 4, immutable historical fact) explicitly does not carry -- references FinalLock only by digest."
+          },
+          {
+            "item": "InvalidationEvent",
+            "state": "TESTED",
+            "contract": "contracts/invalidation-event.v1.schema.json",
+            "note": "New (39 SS3). Append-only fact only; does not itself flip currentness state (Impact Rule traversal per 39 SS4 deferred, not implemented this wave)."
+          },
+          {
+            "item": "RecoveryQualificationReceipt",
+            "state": "TESTED",
+            "contract": "contracts/recovery-qualification-receipt.v1.schema.json",
+            "note": "New (71 SS12, grounded by 64 and 98's '\ubcf5\uad6c \ud6c4 \uc790\ub3d9 Current \uae08\uc9c0'). Missing/unverifiable evidence forces assurance_ceiling=NO_PRIOR_ASSURANCE_CARRYOVER at schema level."
+          }
         ],
         "negative_gates_verified": [
           "drifted DeploymentRevision (expected != observed artifact digest) is detected (test_drifted_deployment_revision_is_detected)",
@@ -231,11 +388,36 @@
       "wave_6_composition_certificate": {
         "state": "TESTED",
         "items": [
-          {"item": "AssuranceSubjectGraph", "state": "TESTED", "contract": "contracts/assurance-subject-graph.v1.schema.json", "note": "New (71 SS3). Tracks SUBJECT composition (what depends on what) -- distinct from Wave 2's evidence-graph-snapshot.v1 (EVIDENCE lineage)."},
-          {"item": "CompositionSnapshot", "state": "TESTED", "contract": "contracts/assurance-composition-snapshot.v1.schema.json", "note": "New (71 SS4). The Critical-HARD-child-forbids-parent-PASS invariant turned out expressible directly in the schema's own allOf/items conditional -- verified as a real schema-level rejection, not just a documented convention."},
-          {"item": "AssuranceCertificate", "state": "TESTED", "contract": "contracts/assurance-certificate.v1.schema.json", "note": "New (71 SS6). Customer/auditor-facing artifact, deliberately separate from internal Receipt/FinalLock. signature valid != current assurance -- decision is gated by currentness_state_at_issue at schema level."},
-          {"item": "RevocationReceipt", "state": "TESTED", "contract": "contracts/assurance-revocation-event.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch."},
-          {"item": "OfflineTrustBundle", "state": "TESTED", "contract": "contracts/offline-trust-bundle.v1.schema.json", "note": "New (31 SS8). Offline uncertainty must never be hidden -- offline_status has 4 explicit degrading states, and a LOCAL_OS_CLOCK_ONLY time source caps trust_level at LOW/UNTRUSTED at schema level."}
+          {
+            "item": "AssuranceSubjectGraph",
+            "state": "TESTED",
+            "contract": "contracts/assurance-subject-graph.v1.schema.json",
+            "note": "New (71 SS3). Tracks SUBJECT composition (what depends on what) -- distinct from Wave 2's evidence-graph-snapshot.v1 (EVIDENCE lineage)."
+          },
+          {
+            "item": "CompositionSnapshot",
+            "state": "TESTED",
+            "contract": "contracts/assurance-composition-snapshot.v1.schema.json",
+            "note": "New (71 SS4). The Critical-HARD-child-forbids-parent-PASS invariant turned out expressible directly in the schema's own allOf/items conditional -- verified as a real schema-level rejection, not just a documented convention."
+          },
+          {
+            "item": "AssuranceCertificate",
+            "state": "TESTED",
+            "contract": "contracts/assurance-certificate.v1.schema.json",
+            "note": "New (71 SS6). Customer/auditor-facing artifact, deliberately separate from internal Receipt/FinalLock. signature valid != current assurance -- decision is gated by currentness_state_at_issue at schema level."
+          },
+          {
+            "item": "RevocationReceipt",
+            "state": "TESTED",
+            "contract": "contracts/assurance-revocation-event.candidate.v2.schema.json",
+            "note": "Pre-existing file, never registered/fixtured before this batch."
+          },
+          {
+            "item": "OfflineTrustBundle",
+            "state": "TESTED",
+            "contract": "contracts/offline-trust-bundle.v1.schema.json",
+            "note": "New (31 SS8). Offline uncertainty must never be hidden -- offline_status has 4 explicit degrading states, and a LOCAL_OS_CLOCK_ONLY time source caps trust_level at LOW/UNTRUSTED at schema level."
+          }
         ],
         "negative_gates_verified": [
           "a Critical HARD-edge child FAIL with parent decision=PASS is rejected at schema level, not just convention (test_hard_edge_child_fail_with_parent_pass_is_rejected_at_schema_level)",
@@ -255,10 +437,30 @@
       "wave_7_platform_meta": {
         "state": "TESTED",
         "items": [
-          {"item": "PluginManifest", "state": "TESTED", "contract": "contracts/plugin-manifest.v1.schema.json", "note": "New (77 SS5). Unsigned/revoked publisher forbids execution; a plugin result alone can never create independent Final assurance -- enforced at schema level (publisher_revoked=true forces qualification_state=REVOKED)."},
-          {"item": "AIPopulationReceipt", "state": "TESTED", "contract": "contracts/ai-population-receipt.v1.schema.json", "note": "New (71 SS10, AIBehaviorPopulation). zero observed failure != zero failure probability -- confidence interval/bound required, critical_failures without observed_failures rejected at schema level."},
-          {"item": "ONSureReleaseQualification", "state": "TESTED", "contract": "contracts/onsure-release-qualification.v1.schema.json", "note": "New (71 SS11). Self-validation receipts alone cannot produce state=QUALIFIED -- independent_verifier_receipts non-empty is enforced at schema level. Scoped per target archetype, not a single global claim."},
-          {"item": "ActiveContractSelector", "state": "TESTED", "contract": "contracts/contract-active-selector.candidate.v2.schema.json", "note": "Pre-existing file, never registered/fixtured before this batch. Fixture confirms v1 stays active (superseded_version=null) per 137 SS5's 'Active Selector 임의 변경 금지' -- does not promote v2."}
+          {
+            "item": "PluginManifest",
+            "state": "TESTED",
+            "contract": "contracts/plugin-manifest.v1.schema.json",
+            "note": "New (77 SS5). Unsigned/revoked publisher forbids execution; a plugin result alone can never create independent Final assurance -- enforced at schema level (publisher_revoked=true forces qualification_state=REVOKED)."
+          },
+          {
+            "item": "AIPopulationReceipt",
+            "state": "TESTED",
+            "contract": "contracts/ai-population-receipt.v1.schema.json",
+            "note": "New (71 SS10, AIBehaviorPopulation). zero observed failure != zero failure probability -- confidence interval/bound required, critical_failures without observed_failures rejected at schema level."
+          },
+          {
+            "item": "ONSureReleaseQualification",
+            "state": "TESTED",
+            "contract": "contracts/onsure-release-qualification.v1.schema.json",
+            "note": "New (71 SS11). Self-validation receipts alone cannot produce state=QUALIFIED -- independent_verifier_receipts non-empty is enforced at schema level. Scoped per target archetype, not a single global claim."
+          },
+          {
+            "item": "ActiveContractSelector",
+            "state": "TESTED",
+            "contract": "contracts/contract-active-selector.candidate.v2.schema.json",
+            "note": "Pre-existing file, never registered/fixtured before this batch. Fixture confirms v1 stays active (superseded_version=null) per 137 SS5's 'Active Selector \uc784\uc758 \ubcc0\uacbd \uae08\uc9c0' -- does not promote v2."
+          }
         ],
         "negative_gates_verified": [
           "a revoked-publisher plugin cannot be QUALIFIED, enforced at schema level (test_revoked_publisher_plugin_cannot_be_qualified)",
@@ -283,17 +485,108 @@
         "note": "All 7 Waves of 82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md complete with real fixtures, cross-contract tests, and evidence. No P0 design-change-queue item open against Batch 1's scope. Batch 1's own Done Gate (Contract/Schema -> Implementation -> Positive Fixture -> Negative Fixture -> Cross-contract Test -> Compile/Test -> Evidence -> Trace/Registry, per each wave) is satisfied for all 7 waves."
       }
     },
-    {"batch":"BATCH_2","name":"Runtime Foundation","state":"NOT_STARTED"},
-    {"batch":"BATCH_3","name":"Assurance Core","state":"NOT_STARTED"},
-    {"batch":"BATCH_4","name":"Enterprise / Trust","state":"NOT_STARTED"},
-    {"batch":"BATCH_5","name":"AI / Meta-Assurance","state":"NOT_STARTED"},
-    {"batch":"BATCH_6","name":"Safety / Appeal","state":"NOT_STARTED"},
-    {"batch":"BATCH_7","name":"Fresh Review Refinements","state":"NOT_STARTED"},
-    {"batch":"BATCH_8","name":"Migration / Integration","state":"NOT_STARTED"},
-    {"batch":"BATCH_9","name":"Test Materialization","state":"NOT_STARTED"}
+    {
+      "batch": "BATCH_2",
+      "name": "Runtime Foundation",
+      "state": "IN_PROGRESS",
+      "primary_dispatcher": {
+        "state": "EVIDENCE_READY",
+        "note": "LocalAuthenticatedApiServer.workflow()/compatibilityWorkflow() and ONSureCli now construct SemanticAssuranceV2DispatcherBridge instead of bare LocalWorkflowDispatcher, so v2 semantic operations (Waves 1-7 of Batch 1) are reachable from the real production entry points. Bridge.dispatch() returns legacy.dispatch() verbatim for any operation SemanticAssuranceV2WorkflowService does not recognize, so all v1 behavior is unchanged.",
+        "evidence": {
+          "commit": "8f89726",
+          "mvn_test": "472/0/0 passing at commit time"
+        }
+      },
+      "authenticated_api": {
+        "state": "EVIDENCE_READY",
+        "note": "LocalAuthenticatedApiServer pre-existed this batch (loopback-only bind, constant-time bearer token check, Origin rejection, concurrency limiting, security response headers) but had zero dedicated test coverage. Added LocalAuthenticatedApiServerTest.java (end-to-end java.net.http.HttpClient coverage of /v1/health, /v1/status auth boundary, and /v1/workflow including the Idempotency-Key header contract below).",
+        "evidence": {
+          "new_test_file": "src/test/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServerTest.java",
+          "test_count": 6
+        }
+      },
+      "transaction_idempotency": {
+        "state": "EVIDENCE_READY",
+        "note": "04_ARCHITECTURE_DATA_API_OLICENSE.md SS6 requires every Write API to support Idempotency-Key; grep across src/main/java/kr/co/oruda/onsure/platform found no real implementation prior to this batch (capability name string only). Implemented as opt-in via the Idempotency-Key HTTP header (the workflow operation registry has no read/write classification to auto-detect writes). Scoped to (tenant_id, operation, idempotency_key); request body is canonicalized and SHA-256 digested so a replay with a different body is a fail-closed IDEMPOTENCY_KEY_REQUEST_MISMATCH (409) conflict rather than a silently wrong cached response. Records persisted under workspaceRoot/.onsure/idempotency using ExclusiveFileLock for cross-process concurrency safety.",
+        "contract_schema": "contracts/idempotency-record.v1.schema.json",
+        "implementation": "src/main/java/kr/co/oruda/onsure/platform/IdempotencyStore.java",
+        "positive_fixture": "fixtures/contracts/idempotency-record.v1.valid.json",
+        "negative_fixture": "fixtures/contracts/idempotency-record.v1.invalid.json",
+        "unit_tests": "src/test/java/kr/co/oruda/onsure/platform/IdempotencyStoreTest.java (7 tests: first-seen, replay, conflict, tenant isolation, operation isolation, malformed key, cross-instance persistence)",
+        "end_to_end_tests": "LocalAuthenticatedApiServerTest.java (first call, replay, conflict, malformed key over real HTTP)"
+      },
+      "persistence": {
+        "state": "EVIDENCE_READY",
+        "note": [
+          "Pre-existing capability, verified rather than rebuilt: DurableStateLedger, DurableJobService, DurableJobBackupService (platform), LocalReceiptLedger, ReceiptReplayLedger (assurance), ModelInvocationLedger. DurableStateLedgerTest.java covers the core ledger; the receipt ledgers are exercised via LocalEvidenceVerifierTest, LocalFinalReceiptVerifierTest, SecurityPrimitivesTest, LocalKeyRegistryAndLedgerTest."
+        ]
+      },
+      "event_receipt_emission": {
+        "state": "EVIDENCE_READY",
+        "note": "Pre-existing capability, verified rather than rebuilt: LocalReceiptLedger / ReceiptReplayLedger under kr.co.oruda.onsure.assurance, already covered by LocalEvidenceVerifierTest, LocalFinalReceiptVerifierTest, SecurityPrimitivesTest, LocalKeyRegistryAndLedgerTest."
+      },
+      "fail_closed_runtime": {
+        "state": "EVIDENCE_READY",
+        "note": "Pre-existing capability, verified rather than rebuilt: ExclusiveFileLock (cross-process mutual exclusion used by IdempotencyStore/LocalKeyRegistry/work leasing), contracts/sandbox-boundary.v1.json, and the fail-closed BLOCKED-result pattern already used throughout SemanticAssuranceV2DispatcherBridge (deployment.verify-installed returns BLOCKED with TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE rather than silently proceeding)."
+      },
+      "critical_callpath_regression_found_and_fixed_this_batch": {
+        "note": "scripts/validate-critical-callpaths.py hard-codes literal source-code tokens as a static regression guard. Its LocalAuthenticatedApiServer.java entry still required the literal string \"new LocalWorkflowDispatcher(workspaceRoot, identity)\", which the Primary Dispatcher commit (8f89726) removed by routing through the Bridge -- this was not caught at the time because that commit only ran `mvn test`, not the separate python test suite. Fixed by updating the token to the Bridge construction and adding a new REQUIRED_TOKENS entry for SemanticAssuranceV2DispatcherBridge.java itself (verifying it still constructs LocalWorkflowDispatcher internally for v1 passthrough, still rejects caller-injected _authorized_ fields). Added 3 corresponding self-test failure-injection cases and made failure_injection_count computed from the actual case list instead of a separately hand-maintained literal (was already stale at 24 before this fix). Verified with --self-test and the full python suite (156/156)."
+      }
+    },
+    {
+      "batch": "BATCH_3",
+      "name": "Assurance Core",
+      "state": "NOT_STARTED"
+    },
+    {
+      "batch": "BATCH_4",
+      "name": "Enterprise / Trust",
+      "state": "NOT_STARTED"
+    },
+    {
+      "batch": "BATCH_5",
+      "name": "AI / Meta-Assurance",
+      "state": "NOT_STARTED"
+    },
+    {
+      "batch": "BATCH_6",
+      "name": "Safety / Appeal",
+      "state": "NOT_STARTED"
+    },
+    {
+      "batch": "BATCH_7",
+      "name": "Fresh Review Refinements",
+      "state": "NOT_STARTED"
+    },
+    {
+      "batch": "BATCH_8",
+      "name": "Migration / Integration",
+      "state": "NOT_STARTED"
+    },
+    {
+      "batch": "BATCH_9",
+      "name": "Test Materialization",
+      "state": "NOT_STARTED"
+    }
   ],
-  "done_gate": ["CONTRACT", "IMPLEMENTATION", "POSITIVE_FIXTURE_OR_TEST", "NEGATIVE_FIXTURE_OR_TEST", "CROSS_CONTRACT_TEST_IF_APPLICABLE", "COMPILE_BUILD_PASS", "AUTOMATED_TEST_EXECUTED_PASS", "EVIDENCE_RECEIPT_REPORT", "TRACE_UPDATED", "UNRESOLVED_BLOCKERS_RECORDED"],
-  "forbidden_promotions": ["ACTIVE_SELECTOR", "FINAL_LOCK", "PRODUCTION_GO", "COMMERCIAL_GO"],
+  "done_gate": [
+    "CONTRACT",
+    "IMPLEMENTATION",
+    "POSITIVE_FIXTURE_OR_TEST",
+    "NEGATIVE_FIXTURE_OR_TEST",
+    "CROSS_CONTRACT_TEST_IF_APPLICABLE",
+    "COMPILE_BUILD_PASS",
+    "AUTOMATED_TEST_EXECUTED_PASS",
+    "EVIDENCE_RECEIPT_REPORT",
+    "TRACE_UPDATED",
+    "UNRESOLVED_BLOCKERS_RECORDED"
+  ],
+  "forbidden_promotions": [
+    "ACTIVE_SELECTOR",
+    "FINAL_LOCK",
+    "PRODUCTION_GO",
+    "COMMERCIAL_GO"
+  ],
   "implementation_started": true,
   "test_phase_started": false,
   "independent_assurance_started": false,
