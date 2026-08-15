@@ -61,6 +61,7 @@ public final class TenantRbacService {
             "assurance.learning.history-migration.check",
             "assurance.learning.ip-license-provenance.check",
             "assurance.learning.catastrophic-forgetting.check",
+            "assurance.learning.sampling-bias.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",

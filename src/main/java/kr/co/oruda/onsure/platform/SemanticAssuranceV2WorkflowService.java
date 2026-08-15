@@ -89,6 +89,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.history-migration.check",
             "assurance.learning.ip-license-provenance.check",
             "assurance.learning.catastrophic-forgetting.check",
+            "assurance.learning.sampling-bias.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -202,6 +203,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.history-migration.check" -> learningHistoryMigrationCheck(request);
             case "assurance.learning.ip-license-provenance.check" -> ipLicenseProvenanceCheck(request);
             case "assurance.learning.catastrophic-forgetting.check" -> catastrophicForgettingCheck(request);
+            case "assurance.learning.sampling-bias.check" -> activeLearningSamplingBiasCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2986,6 +2988,49 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("forgotten_capabilities", List.copyOf(forgottenCapabilities));
         out.put("forgotten_capability_count", forgottenCapabilities.size());
         out.put("decision", decision);
+        return immutable(out);
+    }
+
+    private static final Set<String> ACTIVE_LEARNING_BIASED_SELECTION_POLICIES =
+            Set.of("UNCERTAINTY_SAMPLING", "DIVERSITY_SAMPLING", "DISAGREEMENT_SAMPLING");
+
+    /**
+     * active-learning-sampling-bias-check.v1.schema.json real computation (FR-LEARN-031
+     * Active-learning Sampling Bias: "학습 대상으로 어떤 사례를 선택했는지 selection policy...
+     * excluded population을 기록한다. uncertainty sampling 등 편향된 표본으로 얻은 효과를 전체
+     * population 성능으로 일반화 금지"). JSON Schema can validate selection_policy and
+     * claim_scope individually but cannot forbid the SPECIFIC combination of a deliberately
+     * non-representative selection policy claimed at OVERALL_POPULATION scope. This operation
+     * rejects that combination for real (UNCERTAINTY_SAMPLING/DIVERSITY_SAMPLING/
+     * DISAGREEMENT_SAMPLING deliberately over/under-sample specific subpopulations, unlike
+     * RANDOM/STRATIFIED), and separately requires excluded_population_disclosed=true always,
+     * closing the requirement's recording obligation.
+     */
+    private Map<String, Object> activeLearningSamplingBiasCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String learningAssetId = requiredText(request, "learning_asset_id");
+        String selectionPolicy = requiredText(request, "selection_policy");
+        String claimScope = requiredText(request, "claim_scope");
+        boolean excludedPopulationDisclosed = request.path("excluded_population_disclosed").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        if (!excludedPopulationDisclosed) {
+            reasons.add("EXCLUDED_POPULATION_NOT_DISCLOSED");
+        }
+        if ("OVERALL_POPULATION".equals(claimScope)
+                && ACTIVE_LEARNING_BIASED_SELECTION_POLICIES.contains(selectionPolicy)) {
+            reasons.add("BIASED_SAMPLE_CANNOT_GENERALIZE_TO_OVERALL_POPULATION:" + selectionPolicy);
+        }
+
+        String decision = reasons.isEmpty() ? "CLAIM_ALLOWED" : "CLAIM_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_ACTIVE_LEARNING_SAMPLING_BIAS_CHECK", targetId);
+        out.put("learning_asset_id", learningAssetId);
+        out.put("selection_policy", selectionPolicy);
+        out.put("excluded_population_disclosed", excludedPopulationDisclosed);
+        out.put("claim_scope", claimScope);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
 

@@ -931,6 +931,15 @@
         "fixtures/contracts/catastrophic-forgetting-check.invalid.json"
       ],
       "schema": "contracts/catastrophic-forgetting-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/active-learning-sampling-bias-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/active-learning-sampling-bias-check.invalid.json"
+      ],
+      "schema": "contracts/active-learning-sampling-bias-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

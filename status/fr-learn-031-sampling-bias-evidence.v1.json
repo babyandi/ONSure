@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-031",
+  "requirement_summary": "Active-learning Sampling Bias: 학습 대상으로 어떤 사례를 선택했는지 selection policy, probability/score, strata, excluded population을 기록한다. uncertainty sampling 등 편향된 표본으로 얻은 효과를 전체 population 성능으로 일반화 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (activeLearningSamplingBiasCheck), assurance.learning.sampling-bias.check v2 operation; contracts/active-learning-sampling-bias-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "activeLearningSamplingBiasCheckAllowsUnbiasedPolicyClaimedAtOverallPopulation",
+    "activeLearningSamplingBiasCheckBlocksBiasedPolicyClaimedAtOverallPopulation",
+    "activeLearningSamplingBiasCheckAllowsBiasedPolicyClaimedAtSampleOnly",
+    "activeLearningSamplingBiasCheckBlocksWhenExcludedPopulationNotDisclosed"
+  ],
+  "coverage_notes": "Two real checks JSON Schema's per-field enum alone cannot express together: (1) a deliberately non-representative selection_policy (UNCERTAINTY_SAMPLING/DIVERSITY_SAMPLING/DISAGREEMENT_SAMPLING) claimed at claim_scope=OVERALL_POPULATION is CLAIM_BLOCKED, directly closing 'uncertainty sampling 등 편향된 표본으로 얻은 효과를 전체 population 성능으로 일반화 금지' -- the SAME biased policy claimed only at SAMPLE_ONLY scope is allowed, since the requirement's concern is specifically about GENERALIZING beyond the sample, not about using biased sampling at all (which is a legitimate active-learning technique in its own right); (2) excluded_population_disclosed=false always blocks the claim regardless of scope, closing the requirement's recording obligation.",
+  "open_gap": "The requirement also names recording 'probability/score' and 'strata' per selected case, not just the aggregate selection_policy label -- this operation does not yet capture or validate per-case selection probability/score or strata membership, only the policy-level classification. Disclosed as a real, not-yet-covered extension.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -2187,6 +2187,48 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-031 Active-learning Sampling Bias
+    @Test
+    void activeLearningSamplingBiasCheckAllowsUnbiasedPolicyClaimedAtOverallPopulation() throws Exception {
+        Map<?, ?> result = activeLearningSamplingBiasCheck("STRATIFIED", true, "OVERALL_POPULATION");
+        assertEquals("CLAIM_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void activeLearningSamplingBiasCheckBlocksBiasedPolicyClaimedAtOverallPopulation() throws Exception {
+        Map<?, ?> result = activeLearningSamplingBiasCheck("UNCERTAINTY_SAMPLING", true, "OVERALL_POPULATION");
+        assertEquals("CLAIM_BLOCKED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).stream()
+                        .anyMatch(r -> r.toString().startsWith("BIASED_SAMPLE_CANNOT_GENERALIZE")));
+    }
+
+    @Test
+    void activeLearningSamplingBiasCheckAllowsBiasedPolicyClaimedAtSampleOnly() throws Exception {
+        Map<?, ?> result = activeLearningSamplingBiasCheck("UNCERTAINTY_SAMPLING", true, "SAMPLE_ONLY");
+        assertEquals("CLAIM_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void activeLearningSamplingBiasCheckBlocksWhenExcludedPopulationNotDisclosed() throws Exception {
+        Map<?, ?> result = activeLearningSamplingBiasCheck("RANDOM", false, "SAMPLE_ONLY");
+        assertEquals("CLAIM_BLOCKED", result.get("decision"));
+        assertEquals(List.of("EXCLUDED_POPULATION_NOT_DISCLOSED"), result.get("reasons"));
+    }
+
+    private Map<?, ?> activeLearningSamplingBiasCheck(
+            String selectionPolicy, boolean excludedPopulationDisclosed, String claimScope) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "learning_asset_id", "asset-1", "selection_policy", selectionPolicy,
+                "excluded_population_disclosed", excludedPopulationDisclosed, "claim_scope", claimScope);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.sampling-bias.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

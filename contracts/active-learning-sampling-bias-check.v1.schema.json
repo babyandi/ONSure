@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/active-learning-sampling-bias-check.v1.schema.json",
+  "title": "ONSure Active-Learning Sampling Bias Check v1",
+  "description": "FR-LEARN-031 Active-learning Sampling Bias: 학습 대상으로 어떤 사례를 선택했는지 selection policy, probability/score, strata, excluded population을 기록한다. uncertainty sampling 등 편향된 표본으로 얻은 효과를 전체 population 성능으로 일반화 금지. A biased (non-representative) selection policy whose effect is claimed to generalize to OVERALL_POPULATION, or excluded_population left undisclosed, is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "learning_asset_id", "selection_policy", "excluded_population_disclosed",
+    "claim_scope", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ACTIVE_LEARNING_SAMPLING_BIAS_CHECK_V1"},
+    "learning_asset_id": {"type": "string", "minLength": 1},
+    "selection_policy": {
+      "enum": ["RANDOM", "STRATIFIED", "UNCERTAINTY_SAMPLING", "DIVERSITY_SAMPLING", "DISAGREEMENT_SAMPLING"]
+    },
+    "excluded_population_disclosed": {"type": "boolean"},
+    "claim_scope": {"enum": ["SAMPLE_ONLY", "OVERALL_POPULATION"]},
+    "decision": {"enum": ["CLAIM_ALLOWED", "CLAIM_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

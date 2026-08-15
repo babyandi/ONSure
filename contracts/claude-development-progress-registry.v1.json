@@ -1555,6 +1555,23 @@
     "evidence": "status/fr-learn-029-catastrophic-forgetting-evidence.v1.json",
     "open_gap": "The requirement also asks for per-capability 'severity', not just a count/list -- this operation treats every forgotten capability as equally blocking rather than classifying by severity."
   },
+  "fr_learn_031_sampling_bias_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Closes another orphan_severity_recalculation candidate. Built contracts/active-learning-sampling-bias-check.v1.schema.json + fixtures from scratch (registered 110 -> 111 schemas), then a real Java consumer. assurance.learning.sampling-bias.check blocks a deliberately non-representative selection_policy (UNCERTAINTY_SAMPLING/DIVERSITY_SAMPLING/DISAGREEMENT_SAMPLING) claimed at OVERALL_POPULATION scope, closing 'uncertainty sampling 등 편향된 표본으로 얻은 효과를 전체 population 성능으로 일반화 금지' -- the same policy at SAMPLE_ONLY scope is allowed, since the requirement targets generalization specifically, not biased sampling itself. excluded_population_disclosed=false always blocks regardless of scope.",
+    "contract_schema": "contracts/active-learning-sampling-bias-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/active-learning-sampling-bias-check.valid.json (NEW)",
+      "fixtures/contracts/active-learning-sampling-bias-check.invalid.json (NEW, invalid selection_policy enum value)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (activeLearningSamplingBiasCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: allowed unbiased policy at overall-population scope, blocked biased policy at overall-population scope, allowed biased policy at sample-only scope, blocked when excluded population undisclosed)",
+    "evidence": "status/fr-learn-031-sampling-bias-evidence.v1.json",
+    "open_gap": "The requirement also names recording per-case 'probability/score' and 'strata', not just the aggregate selection_policy label -- not yet captured or validated at that granularity."
+  },
   "unrelated_flake_fixed_during_verification": {
     "state": "FIXED",
     "note": "Full-suite mvn test surfaced 1 error unrelated to any change this session: kr.co.oruda.onsure.platform.ScheduledBackupServiceTest.startSchedulesRepeatedBackupsAtTheGivenInterval failed with JUnitException 'Failed to close extension context' / DirectoryNotEmptyException on @TempDir cleanup. Root-caused rather than dismissed as noise: ScheduledBackupService.close() called executor.shutdownNow() but never awaited termination, so a scheduled backup write already in flight could still be completing on its own thread after the try-with-resources block exited and the test method returned, racing JUnit's temp-directory teardown. Fixed by adding a bounded executor.awaitTermination(5, TimeUnit.SECONDS) (with proper interrupt-flag restoration) after shutdownNow(). Verified the fix actually closes the race, not just happened to pass once: reran the previously-failing test class 5 consecutive times after the fix, all 5 clean (4/4, 0 failures/errors each run).",
