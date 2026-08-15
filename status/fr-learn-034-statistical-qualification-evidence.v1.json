@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-034",
+  "requirement_summary": "Statistical Qualification: precision/recall/FN/FP 개선 주장은 최소 표본수, confidence interval, variance, statistical power와 필요 시 multiple-comparison correction을 포함한다. 작은 표본의 point estimate만으로 qualification 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (statisticalQualificationCheck), assurance.learning.statistical-qualification.check v2 operation; contracts/statistical-qualification-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "statisticalQualificationCheckReachesQualifiedWithFullStatisticalRigor",
+    "statisticalQualificationCheckRejectsBelowMinimumSampleSize",
+    "statisticalQualificationCheckRejectsMissingConfidenceInterval",
+    "statisticalQualificationCheckRejectsInsufficientStatisticalPower",
+    "statisticalQualificationCheckRejectsMultipleComparisonsWithoutCorrection"
+  ],
+  "coverage_notes": "Four independent structural preconditions are each enforced for real, and ANY ONE of them failing forces UNQUALIFIED regardless of how strong the point_estimate itself looks -- directly closing '작은 표본의 point estimate만으로 qualification 금지': (1) sample_size below a real minimum (30); (2) a missing (null) confidence_interval; (3) missing or below-threshold (0.8) statistical_power; (4) multiple_comparisons_count > 1 without a declared non-NONE correction method. JSON Schema can validate each field's own shape but cannot enforce that all of them are simultaneously satisfied together as a single qualification gate.",
+  "open_gap": "The requirement also names 'variance' as a required component; this schema/operation does not yet have a dedicated variance field or check -- confidence_interval width is a related but not identical concept (a caller could in principle supply an internally-consistent but non-variance-derived interval). Disclosed as a real, not-yet-covered gap, not silently substituted. The specific minimum sample size (30) and power threshold (0.8) are this session's own reasonable statistical convention choices, not sourced from an explicit numeric value in the requirement's own text (which names the categories but not specific thresholds) -- disclosed as a judgment call, not a value taken from canonical design authority.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

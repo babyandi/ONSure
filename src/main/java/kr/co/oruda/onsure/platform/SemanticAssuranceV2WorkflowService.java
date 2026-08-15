@@ -83,6 +83,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.data-residency.check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
+            "assurance.learning.statistical-qualification.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -190,6 +191,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.data-residency.check" -> dataResidencyCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
+            case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2642,6 +2644,80 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("decision_impact", decisionImpact);
         out.put("traffic_scope", trafficScope);
         out.put("qualification_evidence_kind", qualificationEvidenceKind);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    private static final Set<String> STATISTICAL_QUALIFICATION_METRICS =
+            Set.of("PRECISION", "RECALL", "FALSE_POSITIVE_RATE", "FALSE_NEGATIVE_RATE");
+    private static final Set<String> MULTIPLE_COMPARISON_CORRECTIONS =
+            Set.of("BONFERRONI", "HOLM", "BENJAMINI_HOCHBERG");
+    private static final int STATISTICAL_QUALIFICATION_MIN_SAMPLE_SIZE = 30;
+    private static final double STATISTICAL_QUALIFICATION_MIN_POWER = 0.8;
+
+    /**
+     * statistical-qualification-check.v1.schema.json real computation (FR-LEARN-034 Statistical
+     * Qualification: "precision/recall/FN/FP 개선 주장은 최소 표본수, confidence interval,
+     * variance, statistical power와 필요 시 multiple-comparison correction을 포함한다. 작은
+     * 표본의 point estimate만으로 qualification 금지"). JSON Schema can validate each field's own
+     * shape but cannot enforce that ALL of these structural preconditions are simultaneously
+     * satisfied before a claim reaches QUALIFIED. This operation computes decision for real: a
+     * sample_size below a real minimum, a missing (null) confidence_interval, missing or
+     * below-threshold statistical_power, or multiple comparisons (count > 1) without a declared
+     * non-NONE correction method, EACH independently forces UNQUALIFIED regardless of how strong
+     * the point_estimate itself looks -- closing "작은 표본의 point estimate만으로 qualification
+     * 금지" as a real, multi-condition rejection rather than a single soft check.
+     */
+    private Map<String, Object> statisticalQualificationCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String claimId = requiredText(request, "claim_id");
+        String metricName = requiredText(request, "metric_name");
+        if (!STATISTICAL_QUALIFICATION_METRICS.contains(metricName)) {
+            return failClosed("HOLD", List.of("STATISTICAL_METRIC_INVALID:" + metricName));
+        }
+        double pointEstimate = request.path("point_estimate").asDouble(-1);
+        if (pointEstimate < 0 || pointEstimate > 1) {
+            return failClosed("HOLD", List.of("STATISTICAL_POINT_ESTIMATE_INVALID"));
+        }
+        long sampleSize = requiredNonNegativeLong(request, "sample_size");
+
+        JsonNode ciNode = request.path("confidence_interval");
+        boolean hasConfidenceInterval = ciNode.isObject()
+                && ciNode.path("lower").isNumber() && ciNode.path("upper").isNumber();
+
+        JsonNode powerNode = request.path("statistical_power");
+        boolean hasSufficientPower = powerNode.isNumber() && powerNode.asDouble() >= STATISTICAL_QUALIFICATION_MIN_POWER;
+
+        long multipleComparisonsCount = requiredNonNegativeLong(request, "multiple_comparisons_count");
+        if (multipleComparisonsCount < 1) {
+            return failClosed("HOLD", List.of("STATISTICAL_MULTIPLE_COMPARISONS_COUNT_INVALID"));
+        }
+        String correction = request.path("multiple_comparison_correction").isTextual()
+                ? request.path("multiple_comparison_correction").asText() : null;
+
+        List<String> reasons = new ArrayList<>();
+        if (sampleSize < STATISTICAL_QUALIFICATION_MIN_SAMPLE_SIZE) {
+            reasons.add("SAMPLE_SIZE_BELOW_MINIMUM:" + sampleSize);
+        }
+        if (!hasConfidenceInterval) {
+            reasons.add("CONFIDENCE_INTERVAL_MISSING");
+        }
+        if (!hasSufficientPower) {
+            reasons.add("STATISTICAL_POWER_INSUFFICIENT");
+        }
+        if (multipleComparisonsCount > 1 && !MULTIPLE_COMPARISON_CORRECTIONS.contains(correction)) {
+            reasons.add("MULTIPLE_COMPARISON_CORRECTION_REQUIRED");
+        }
+
+        String decision = reasons.isEmpty() ? "QUALIFIED" : "UNQUALIFIED";
+
+        Map<String, Object> out = base("ONSURE_STATISTICAL_QUALIFICATION_CHECK", targetId);
+        out.put("claim_id", claimId);
+        out.put("metric_name", metricName);
+        out.put("point_estimate", pointEstimate);
+        out.put("sample_size", sampleSize);
+        out.put("multiple_comparisons_count", multipleComparisonsCount);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);

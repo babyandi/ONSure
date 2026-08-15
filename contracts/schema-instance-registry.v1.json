@@ -877,6 +877,15 @@
         "fixtures/contracts/learning-activation-stage-transition.invalid.json"
       ],
       "schema": "contracts/learning-activation-stage-transition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/statistical-qualification-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/statistical-qualification-check.invalid.json"
+      ],
+      "schema": "contracts/statistical-qualification-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

@@ -1917,6 +1917,69 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-034 Statistical Qualification
+    @Test
+    void statisticalQualificationCheckReachesQualifiedWithFullStatisticalRigor() throws Exception {
+        Map<?, ?> result = statisticalQualificationCheck(
+                250, Map.of("lower", 0.88, "upper", 0.94), 0.85, 3, "BENJAMINI_HOCHBERG");
+        assertEquals("QUALIFIED", result.get("decision"));
+    }
+
+    @Test
+    void statisticalQualificationCheckRejectsBelowMinimumSampleSize() throws Exception {
+        Map<?, ?> result = statisticalQualificationCheck(
+                5, Map.of("lower", 0.88, "upper", 0.94), 0.85, 1, null);
+        assertEquals("UNQUALIFIED", result.get("decision"));
+        assertEquals(true, ((java.util.List<?>) result.get("reasons")).contains("SAMPLE_SIZE_BELOW_MINIMUM:5"));
+    }
+
+    @Test
+    void statisticalQualificationCheckRejectsMissingConfidenceInterval() throws Exception {
+        Map<?, ?> result = statisticalQualificationCheck(250, null, 0.85, 1, null);
+        assertEquals("UNQUALIFIED", result.get("decision"));
+        assertEquals(
+                true, ((java.util.List<?>) result.get("reasons")).contains("CONFIDENCE_INTERVAL_MISSING"));
+    }
+
+    @Test
+    void statisticalQualificationCheckRejectsInsufficientStatisticalPower() throws Exception {
+        Map<?, ?> result = statisticalQualificationCheck(
+                250, Map.of("lower", 0.88, "upper", 0.94), 0.4, 1, null);
+        assertEquals("UNQUALIFIED", result.get("decision"));
+        assertEquals(
+                true, ((java.util.List<?>) result.get("reasons")).contains("STATISTICAL_POWER_INSUFFICIENT"));
+    }
+
+    @Test
+    void statisticalQualificationCheckRejectsMultipleComparisonsWithoutCorrection() throws Exception {
+        Map<?, ?> result = statisticalQualificationCheck(
+                250, Map.of("lower", 0.88, "upper", 0.94), 0.85, 5, "NONE");
+        assertEquals("UNQUALIFIED", result.get("decision"));
+        assertEquals(
+                true, ((java.util.List<?>) result.get("reasons")).contains("MULTIPLE_COMPARISON_CORRECTION_REQUIRED"));
+    }
+
+    private Map<?, ?> statisticalQualificationCheck(
+            long sampleSize, Map<String, Object> confidenceInterval, Double statisticalPower,
+            long multipleComparisonsCount, String correction) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("project_id", "project-1");
+        body.put("target_id", "target-1");
+        body.put("claim_id", "claim-1");
+        body.put("metric_name", "RECALL");
+        body.put("point_estimate", 0.9);
+        body.put("sample_size", sampleSize);
+        body.put("confidence_interval", confidenceInterval);
+        body.put("confidence_level", 0.95);
+        body.put("statistical_power", statisticalPower);
+        body.put("multiple_comparisons_count", multipleComparisonsCount);
+        body.put("multiple_comparison_correction", correction);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.statistical-qualification.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

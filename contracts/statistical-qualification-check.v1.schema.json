@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/statistical-qualification-check.v1.schema.json",
+  "title": "ONSure Statistical Qualification Check v1",
+  "description": "FR-LEARN-034 Statistical Qualification: precision/recall/FN/FP 개선 주장은 최소 표본수, confidence interval, variance, statistical power와 필요 시 multiple-comparison correction을 포함한다. 작은 표본의 point estimate만으로 qualification 금지. A below-minimum sample size, a missing confidence interval, insufficient statistical power, or multiple comparisons without a declared correction method is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "claim_id", "metric_name", "point_estimate", "sample_size",
+    "confidence_interval", "confidence_level", "statistical_power",
+    "multiple_comparisons_count", "multiple_comparison_correction",
+    "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_STATISTICAL_QUALIFICATION_CHECK_V1"},
+    "claim_id": {"type": "string", "minLength": 1},
+    "metric_name": {"enum": ["PRECISION", "RECALL", "FALSE_POSITIVE_RATE", "FALSE_NEGATIVE_RATE"]},
+    "point_estimate": {"type": "number", "minimum": 0, "maximum": 1},
+    "sample_size": {"type": "integer", "minimum": 0},
+    "confidence_interval": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["lower", "upper"],
+      "properties": {
+        "lower": {"type": "number", "minimum": 0, "maximum": 1},
+        "upper": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "confidence_level": {"type": "number", "minimum": 0, "maximum": 1},
+    "statistical_power": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "multiple_comparisons_count": {"type": "integer", "minimum": 1},
+    "multiple_comparison_correction": {
+      "enum": ["NONE", "BONFERRONI", "HOLM", "BENJAMINI_HOCHBERG", null]
+    },
+    "decision": {"enum": ["QUALIFIED", "UNQUALIFIED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

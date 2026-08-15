@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_STATISTICAL_QUALIFICATION_CHECK_V1",
+  "claim_id": "claim-recall-improvement-epoch-42",
+  "metric_name": "RECALL",
+  "point_estimate": 0.91,
+  "sample_size": 250,
+  "confidence_interval": {"lower": 0.88, "upper": 0.94},
+  "confidence_level": 0.95,
+  "statistical_power": 0.85,
+  "multiple_comparisons_count": 3,
+  "multiple_comparison_correction": "BENJAMINI_HOCHBERG",
+  "decision": "QUALIFIED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
