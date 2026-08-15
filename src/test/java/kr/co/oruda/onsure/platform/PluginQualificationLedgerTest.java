@@ -2,7 +2,10 @@ package kr.co.oruda.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -39,5 +42,22 @@ class PluginQualificationLedgerTest {
         var last = ledger.last("plugin-2");
         assertEquals("QUALIFICATION_PENDING", last.qualificationState());
         assertEquals("70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b", last.artifactDigest());
+    }
+
+    // Autonomous Development Mode (2026-08-15) tamper-evidence hardening: a qualification_state
+    // flipped from PENDING to QUALIFIED outside save() -- the exact bypass this ledger exists to
+    // prevent -- must fail to read back.
+    @Test
+    void aTamperedQualificationStateIsDetectedOnNextRead() throws Exception {
+        PluginQualificationLedger ledger = new PluginQualificationLedger(temp);
+        ledger.save(new PluginQualificationLedger.Record(
+                "plugin-tamper-1", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "QUALIFICATION_PENDING", "2026-08-14T00:00:00Z"));
+        Path file = temp.resolve("plugin-tamper-1.json");
+        String tampered = Files.readString(file).replace("QUALIFICATION_PENDING", "QUALIFIED");
+        Files.writeString(file, tampered);
+        IllegalStateException detected = assertThrows(IllegalStateException.class,
+                () -> ledger.last("plugin-tamper-1"));
+        assertTrue(detected.getMessage().contains("PLUGIN_QUALIFICATION_LEDGER_CHAIN_INVALID"));
     }
 }

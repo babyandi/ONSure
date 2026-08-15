@@ -19,7 +19,8 @@ import java.util.regex.Pattern;
  * GOVERNANCE.md SS2.3/2.4/2.6/2.7), one file per appeal_case_id. Every transition, evidence
  * submission, and decision is appended, never overwritten -- "원 Decision은 immutable historical
  * record로 유지한다": a reversal is a new event on top of the same history, the original FILED/
- * DECIDED entries always remain readable exactly as recorded.
+ * DECIDED entries always remain readable exactly as recorded. Every record is hash-chained via
+ * {@link HashChainRecordStore} (Autonomous Development Mode 2026-08-15 tamper-evidence hardening).
  */
 public final class AppealLedger {
     private static final Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9_.:-]{1,160}$");
@@ -64,7 +65,7 @@ public final class AppealLedger {
         ExclusiveFileLock.run(lockFile, () -> {
             if (Files.exists(file, LinkOption.NOFOLLOW_LINKS)) throw new IllegalArgumentException("APPEAL_CASE_ID_ALREADY_EXISTS:" + appealCaseId);
             if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("APPEAL_RECORD_SYMLINK_PROHIBITED");
-            write(file, List.of(event));
+            append(file, List.of(), event);
         });
         return new FileResult(appealCaseId, List.of(event));
     }
@@ -79,7 +80,8 @@ public final class AppealLedger {
         Path file = root.resolve(appealCaseId + ".json");
         Path lockFile = root.resolve(".locks").resolve(appealCaseId + ".lock");
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<Event> history = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<Event> history = toEvents(raw);
             requireCurrentStatus(history, appealCaseId, "EVIDENCE_LOCKED");
             String challengedDecisionPrincipalId = challengedDecisionPrincipalId(history);
             if (reviewerPrincipalId.equals(challengedDecisionPrincipalId)) {
@@ -88,7 +90,7 @@ public final class AppealLedger {
             Event event = new Event(
                     "REVIEWER_ASSIGNED", "INDEPENDENT_REVIEW", reviewerPrincipalId,
                     "reviewer_principal_id=" + reviewerPrincipalId, Instant.now().toString());
-            append(file, history, event);
+            append(file, raw, event);
             return event;
         });
     }
@@ -98,14 +100,15 @@ public final class AppealLedger {
         Path file = root.resolve(appealCaseId + ".json");
         Path lockFile = root.resolve(".locks").resolve(appealCaseId + ".lock");
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<Event> history = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<Event> history = toEvents(raw);
             if (history.isEmpty()) throw new IllegalArgumentException("APPEAL_CASE_NOT_FOUND:" + appealCaseId);
             String currentStatus = history.get(history.size() - 1).status();
             if ("CLOSED".equals(currentStatus) || "DECIDED".equals(currentStatus) || "IMPACT_APPLIED".equals(currentStatus)) {
                 throw new IllegalArgumentException("APPEAL_EVIDENCE_WINDOW_CLOSED:" + currentStatus);
             }
             Event event = new Event("EVIDENCE_SUBMITTED", currentStatus, actorId, evidenceRefSha256, Instant.now().toString());
-            append(file, history, event);
+            append(file, raw, event);
             return event;
         });
     }
@@ -114,7 +117,8 @@ public final class AppealLedger {
         Path file = root.resolve(appealCaseId + ".json");
         Path lockFile = root.resolve(".locks").resolve(appealCaseId + ".lock");
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<Event> history = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<Event> history = toEvents(raw);
             if (history.isEmpty()) throw new IllegalArgumentException("APPEAL_CASE_NOT_FOUND:" + appealCaseId);
             String currentStatus = history.get(history.size() - 1).status();
             Set<String> allowed = ALLOWED_TRANSITIONS.getOrDefault(currentStatus, Set.of());
@@ -122,7 +126,7 @@ public final class AppealLedger {
                 throw new IllegalArgumentException("APPEAL_TRANSITION_NOT_ALLOWED:" + currentStatus + "->" + toStatus);
             }
             Event event = new Event("TRANSITION", toStatus, actorId, detail, Instant.now().toString());
-            append(file, history, event);
+            append(file, raw, event);
             return event;
         });
     }
@@ -136,14 +140,15 @@ public final class AppealLedger {
         Path file = root.resolve(appealCaseId + ".json");
         Path lockFile = root.resolve(".locks").resolve(appealCaseId + ".lock");
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<Event> history = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<Event> history = toEvents(raw);
             requireCurrentStatus(history, appealCaseId, "INDEPENDENT_REVIEW");
             String assignedReviewer = assignedReviewer(history);
             if (assignedReviewer == null || !assignedReviewer.equals(reviewerPrincipalId)) {
                 throw new SecurityException("APPEAL_DECISION_MUST_COME_FROM_THE_ASSIGNED_REVIEWER");
             }
             Event event = new Event("DECISION", "DECIDED", reviewerPrincipalId, decision + ";" + rationale, Instant.now().toString());
-            append(file, history, event);
+            append(file, raw, event);
             return event;
         });
     }
@@ -184,36 +189,43 @@ public final class AppealLedger {
         return null;
     }
 
-    private void append(Path file, List<Event> history, Event event) throws Exception {
-        List<Event> updated = new ArrayList<>(history);
-        updated.add(event);
-        write(file, updated);
+    private void append(Path file, List<Map<String, Object>> currentRaw, Event event) throws Exception {
+        Files.createDirectories(file.getParent());
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("event_type", event.eventType());
+        fields.put("status", event.status());
+        fields.put("actor_id", event.actorId());
+        fields.put("detail", event.detail());
+        fields.put("recorded_at", event.recordedAt());
+        Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, currentRaw, fields);
+        List<Map<String, Object>> updated = new ArrayList<>(currentRaw);
+        updated.add(chained);
+        mapper.writeValue(file.toFile(), updated);
     }
 
     private List<Event> read(Path file) throws Exception {
-        if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return List.of();
-        if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("APPEAL_RECORD_SYMLINK_PROHIBITED");
-        List<Map<String, String>> raw = mapper.readValue(
-                file.toFile(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
-        List<Event> events = new ArrayList<>();
-        for (Map<String, String> row : raw) {
-            events.add(new Event(row.get("event_type"), row.get("status"), row.get("actor_id"), row.get("detail"), row.get("recorded_at")));
-        }
-        return events;
+        return toEvents(readRaw(file));
     }
 
-    private void write(Path file, List<Event> events) throws Exception {
-        Files.createDirectories(file.getParent());
-        List<Map<String, String>> rows = new ArrayList<>();
-        for (Event event : events) {
-            Map<String, String> row = new LinkedHashMap<>();
-            row.put("event_type", event.eventType());
-            row.put("status", event.status());
-            row.put("actor_id", event.actorId());
-            row.put("detail", event.detail());
-            row.put("recorded_at", event.recordedAt());
-            rows.add(row);
+    private List<Map<String, Object>> readRaw(Path file) throws Exception {
+        if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return List.of();
+        if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("APPEAL_RECORD_SYMLINK_PROHIBITED");
+        List<Map<String, Object>> raw = mapper.readValue(
+                file.toFile(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, raw);
+        if (!chain.valid()) {
+            throw new IllegalStateException("APPEAL_LEDGER_CHAIN_INVALID:" + chain.violations());
         }
-        mapper.writeValue(file.toFile(), rows);
+        return raw;
+    }
+
+    private static List<Event> toEvents(List<Map<String, Object>> raw) {
+        List<Event> events = new ArrayList<>();
+        for (Map<String, Object> row : raw) {
+            events.add(new Event(
+                    (String) row.get("event_type"), (String) row.get("status"),
+                    (String) row.get("actor_id"), (String) row.get("detail"), (String) row.get("recorded_at")));
+        }
+        return events;
     }
 }

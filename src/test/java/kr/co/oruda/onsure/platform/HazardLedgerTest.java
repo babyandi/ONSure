@@ -2,7 +2,9 @@ package kr.co.oruda.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -76,5 +78,50 @@ class HazardLedgerTest {
         HazardLedger ledger = new HazardLedger(temp);
         assertThrows(IllegalArgumentException.class,
                 () -> ledger.advance("hazard-never-created", "ANALYZED", "analyst-a", "n/a", false));
+    }
+
+    // Autonomous Development Mode (2026-08-15) tamper-evidence hardening: a hazard record edited
+    // outside HazardLedger's own append path must fail to read back, not be silently trusted.
+    @Test
+    void aTamperedDispositionFieldIsDetectedOnNextRead() throws Exception {
+        HazardLedger ledger = new HazardLedger(temp);
+        ledger.create("hazard-tamper-1", "analyst-a");
+        ledger.advance("hazard-tamper-1", "ANALYZED", "analyst-a", "analysis complete", false);
+        Path file = temp.resolve("hazard-tamper-1.json");
+        String tampered = Files.readString(file).replace("\"ANALYZED\"", "\"CONTROL_REQUIRED\"");
+        Files.writeString(file, tampered);
+        IllegalStateException detected = assertThrows(IllegalStateException.class,
+                () -> ledger.history("hazard-tamper-1"));
+        assertTrue(detected.getMessage().contains("HAZARD_LEDGER_CHAIN_INVALID"));
+        assertTrue(detected.getMessage().contains("CHAIN_ENTRY_TAMPERED"));
+    }
+
+    @Test
+    void aDroppedMiddleTransitionIsDetectedOnNextRead() throws Exception {
+        HazardLedger ledger = new HazardLedger(temp);
+        ledger.create("hazard-tamper-2", "analyst-a");
+        ledger.advance("hazard-tamper-2", "ANALYZED", "analyst-a", "analysis complete", false);
+        ledger.advance("hazard-tamper-2", "CONTROL_REQUIRED", "analyst-a", "controls needed", false);
+        Path file = temp.resolve("hazard-tamper-2.json");
+        @SuppressWarnings("unchecked")
+        java.util.List<java.util.Map<String, Object>> rows = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readValue(file.toFile(), java.util.List.class);
+        rows.remove(1);
+        new com.fasterxml.jackson.databind.ObjectMapper().writeValue(file.toFile(), rows);
+        IllegalStateException detected = assertThrows(IllegalStateException.class,
+                () -> ledger.history("hazard-tamper-2"));
+        assertTrue(detected.getMessage().contains("HAZARD_LEDGER_CHAIN_INVALID"));
+    }
+
+    @Test
+    void aClonedChainAppendedElsewhereIsNotAffectedByAnotherHazardsHistory() throws Exception {
+        // Regression guard for the shared HashChainRecordStore: two independent hazard files each
+        // start their own chain at GENESIS -- one hazard's history must never leak into another's
+        // previous_hash linkage.
+        HazardLedger ledger = new HazardLedger(temp);
+        ledger.create("hazard-chain-a", "analyst-a");
+        ledger.create("hazard-chain-b", "analyst-b");
+        assertEquals(1, ledger.history("hazard-chain-a").size());
+        assertEquals(1, ledger.history("hazard-chain-b").size());
     }
 }

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -15,6 +16,9 @@ import java.util.regex.Pattern;
  * Durable, append-only ledger for assurance-revocation-event.candidate.v2.schema.json. Revocation
  * events are immutable once issued -- a later revocation can supersede an earlier one for the same
  * subject (supersedes_revocation_sha256), but nothing here ever mutates or deletes a past event.
+ * Every event is hash-chained via {@link HashChainRecordStore} as a length-1 chain (Autonomous
+ * Development Mode 2026-08-15 tamper-evidence hardening) -- a field flipped outside {@link #issue}
+ * fails to read back rather than being trusted.
  */
 public final class RevocationLedger {
     private static final Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9_.:-]{1,160}$");
@@ -42,8 +46,23 @@ public final class RevocationLedger {
             }
             if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("REVOCATION_RECORD_SYMLINK_PROHIBITED");
             Files.createDirectories(file.getParent());
-            mapper.writeValue(file.toFile(), event);
+            Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, List.of(), event);
+            mapper.writeValue(file.toFile(), chained);
         });
+    }
+
+    private Map<String, Object> readVerified(Path file) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> raw = mapper.readValue(file.toFile(), Map.class);
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, List.of(raw));
+        if (!chain.valid()) {
+            throw new IllegalStateException("REVOCATION_LEDGER_CHAIN_INVALID:" + chain.violations());
+        }
+        Map<String, Object> event = new LinkedHashMap<>(raw);
+        event.remove("sequence");
+        event.remove("previous_hash");
+        event.remove("entry_hash");
+        return event;
     }
 
     /**
@@ -57,8 +76,7 @@ public final class RevocationLedger {
         try (var stream = Files.list(root)) {
             for (Path file : stream.filter(path -> path.getFileName().toString().endsWith(".json")).toList()) {
                 if (Files.isSymbolicLink(file)) continue;
-                @SuppressWarnings("unchecked")
-                Map<String, Object> event = mapper.readValue(file.toFile(), Map.class);
+                Map<String, Object> event = readVerified(file);
                 @SuppressWarnings("unchecked")
                 Map<String, Object> subject = (Map<String, Object>) event.get("subject");
                 if (subject != null && subjectType.equals(subject.get("subject_type"))
@@ -76,9 +94,7 @@ public final class RevocationLedger {
         try (var stream = Files.list(root)) {
             for (Path file : stream.filter(path -> path.getFileName().toString().endsWith(".json")).toList()) {
                 if (Files.isSymbolicLink(file)) continue;
-                @SuppressWarnings("unchecked")
-                Map<String, Object> event = mapper.readValue(file.toFile(), Map.class);
-                events.add(event);
+                events.add(readVerified(file));
             }
         }
         return events;

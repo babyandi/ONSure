@@ -19,7 +19,9 @@ import java.util.regex.Pattern;
  * rather than scoped per-delegate. A grant is real expiry-checked (Instant comparison at read
  * time), not a caller-declared "still active" flag -- an expired grant is simply not returned by
  * {@link #activeGrantsFor}, so a caller can never rely on stale delegation state without
- * re-checking.
+ * re-checking. The single grant record is itself hash-chained via {@link HashChainRecordStore}
+ * as a length-1 chain (Autonomous Development Mode 2026-08-15 tamper-evidence hardening) -- an
+ * externally edited expires_at or delegate_actor_id fails to read back rather than being trusted.
  */
 public final class DelegationLedger {
     private static final Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9_.:-]{1,160}$");
@@ -77,22 +79,29 @@ public final class DelegationLedger {
 
     private Grant read(Path file) throws Exception {
         @SuppressWarnings("unchecked")
-        Map<String, String> row = mapper.readValue(file.toFile(), Map.class);
+        Map<String, Object> row = mapper.readValue(file.toFile(), Map.class);
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, List.of(row));
+        if (!chain.valid()) {
+            throw new IllegalStateException("DELEGATION_LEDGER_CHAIN_INVALID:" + chain.violations());
+        }
         return new Grant(
-                row.get("delegation_id"), row.get("delegator_actor_id"), row.get("delegate_actor_id"),
-                row.get("role"), row.get("granted_at"), row.get("expires_at"), row.get("justification"));
+                (String) row.get("delegation_id"), (String) row.get("delegator_actor_id"),
+                (String) row.get("delegate_actor_id"), (String) row.get("role"),
+                (String) row.get("granted_at"), (String) row.get("expires_at"),
+                (String) row.get("justification"));
     }
 
     private void write(Path file, Grant grant) throws Exception {
         Files.createDirectories(file.getParent());
-        Map<String, String> row = new LinkedHashMap<>();
-        row.put("delegation_id", grant.delegationId());
-        row.put("delegator_actor_id", grant.delegatorActorId());
-        row.put("delegate_actor_id", grant.delegateActorId());
-        row.put("role", grant.role());
-        row.put("granted_at", grant.grantedAt());
-        row.put("expires_at", grant.expiresAt());
-        row.put("justification", grant.justification());
-        mapper.writeValue(file.toFile(), row);
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("delegation_id", grant.delegationId());
+        fields.put("delegator_actor_id", grant.delegatorActorId());
+        fields.put("delegate_actor_id", grant.delegateActorId());
+        fields.put("role", grant.role());
+        fields.put("granted_at", grant.grantedAt());
+        fields.put("expires_at", grant.expiresAt());
+        fields.put("justification", grant.justification());
+        Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, List.of(), fields);
+        mapper.writeValue(file.toFile(), chained);
     }
 }

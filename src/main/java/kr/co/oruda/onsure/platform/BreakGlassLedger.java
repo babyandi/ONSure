@@ -7,7 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -16,7 +18,11 @@ import java.util.regex.Pattern;
  * created with review_required permanently true and review_completed false -- there is no
  * constructor path that creates an already-reviewed event -- and can only later be closed by
  * {@link #recordReview}, which requires a reviewer distinct from whoever invoked the override (the
- * same actor cannot grant themselves emergency access and then also sign off on it).
+ * same actor cannot grant themselves emergency access and then also sign off on it). The invoke
+ * and review are two separate, hash-chained records via {@link HashChainRecordStore} (Autonomous
+ * Development Mode 2026-08-15 tamper-evidence hardening) -- the original unreviewed INVOKED record
+ * is preserved verbatim, not overwritten in place, so review can never silently erase the original
+ * emergency-access moment it is attesting to.
  */
 public final class BreakGlassLedger {
     private static final Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9_.:-]{1,160}$");
@@ -47,7 +53,13 @@ public final class BreakGlassLedger {
             if (Files.exists(file, LinkOption.NOFOLLOW_LINKS)) {
                 throw new IllegalArgumentException("BREAK_GLASS_EVENT_ID_ALREADY_EXISTS:" + eventId);
             }
-            write(file, event);
+            Map<String, Object> fields = new LinkedHashMap<>();
+            fields.put("record_type", "INVOKED");
+            fields.put("event_id", eventId);
+            fields.put("invoker_actor_id", invokerActorId);
+            fields.put("justification", justification);
+            fields.put("invoked_at", event.invokedAt());
+            append(file, List.of(), fields);
         });
         return event;
     }
@@ -56,46 +68,59 @@ public final class BreakGlassLedger {
         Path file = root.resolve(eventId + ".json");
         Path lockFile = root.resolve(".locks").resolve(eventId + ".lock");
         return ExclusiveFileLock.call(lockFile, () -> {
-            Event existing = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            Event existing = fold(eventId, raw);
             if (existing == null) throw new IllegalArgumentException("BREAK_GLASS_EVENT_NOT_FOUND:" + eventId);
             if (existing.invokerActorId().equals(reviewerActorId)) {
                 throw new SecurityException("BREAK_GLASS_REVIEWER_CANNOT_BE_THE_INVOKER");
             }
             if (existing.reviewCompleted()) throw new IllegalArgumentException("BREAK_GLASS_EVENT_ALREADY_REVIEWED:" + eventId);
-            Event reviewed = new Event(
+            String reviewedAt = now.toString();
+            Map<String, Object> fields = new LinkedHashMap<>();
+            fields.put("record_type", "REVIEWED");
+            fields.put("reviewer_actor_id", reviewerActorId);
+            fields.put("review_notes", reviewNotes);
+            fields.put("reviewed_at", reviewedAt);
+            append(file, raw, fields);
+            return new Event(
                     existing.eventId(), existing.invokerActorId(), existing.justification(), existing.invokedAt(),
-                    true, true, reviewerActorId, now.toString());
-            write(file, reviewed);
-            return reviewed;
+                    true, true, reviewerActorId, reviewedAt);
         });
     }
 
     public Event get(String eventId) throws Exception {
-        return read(root.resolve(eventId + ".json"));
+        return fold(eventId, readRaw(root.resolve(eventId + ".json")));
     }
 
-    private Event read(Path file) throws Exception {
-        if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return null;
-        if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("BREAK_GLASS_RECORD_SYMLINK_PROHIBITED");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> row = mapper.readValue(file.toFile(), Map.class);
+    private static Event fold(String eventId, List<Map<String, Object>> raw) {
+        if (raw.isEmpty()) return null;
+        Map<String, Object> invoked = raw.get(0);
+        Map<String, Object> reviewed = raw.size() > 1 ? raw.get(1) : null;
         return new Event(
-                (String) row.get("event_id"), (String) row.get("invoker_actor_id"), (String) row.get("justification"),
-                (String) row.get("invoked_at"), (boolean) row.get("review_required"), (boolean) row.get("review_completed"),
-                (String) row.get("reviewer_actor_id"), (String) row.get("reviewed_at"));
+                (String) invoked.get("event_id"), (String) invoked.get("invoker_actor_id"),
+                (String) invoked.get("justification"), (String) invoked.get("invoked_at"),
+                true, reviewed != null,
+                reviewed != null ? (String) reviewed.get("reviewer_actor_id") : null,
+                reviewed != null ? (String) reviewed.get("reviewed_at") : null);
     }
 
-    private void write(Path file, Event event) throws Exception {
+    private List<Map<String, Object>> readRaw(Path file) throws Exception {
+        if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return List.of();
+        if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("BREAK_GLASS_RECORD_SYMLINK_PROHIBITED");
+        List<Map<String, Object>> raw = mapper.readValue(
+                file.toFile(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, raw);
+        if (!chain.valid()) {
+            throw new IllegalStateException("BREAK_GLASS_LEDGER_CHAIN_INVALID:" + chain.violations());
+        }
+        return raw;
+    }
+
+    private void append(Path file, List<Map<String, Object>> currentRaw, Map<String, Object> fields) throws Exception {
         Files.createDirectories(file.getParent());
-        Map<String, Object> row = new LinkedHashMap<>();
-        row.put("event_id", event.eventId());
-        row.put("invoker_actor_id", event.invokerActorId());
-        row.put("justification", event.justification());
-        row.put("invoked_at", event.invokedAt());
-        row.put("review_required", event.reviewRequired());
-        row.put("review_completed", event.reviewCompleted());
-        row.put("reviewer_actor_id", event.reviewerActorId());
-        row.put("reviewed_at", event.reviewedAt());
-        mapper.writeValue(file.toFile(), row);
+        Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, currentRaw, fields);
+        List<Map<String, Object>> updated = new ArrayList<>(currentRaw);
+        updated.add(chained);
+        mapper.writeValue(file.toFile(), updated);
     }
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -64,5 +65,18 @@ class SeparationOfDutiesLedgerTest {
     void unrecordedRequestHasNoStages() throws Exception {
         SeparationOfDutiesLedger ledger = new SeparationOfDutiesLedger(temp);
         assertTrue(ledger.stagesFor("req-never-touched").isEmpty());
+    }
+
+    // Autonomous Development Mode (2026-08-15) tamper-evidence hardening.
+    @Test
+    void aTamperedActorIsDetectedOnNextRead() throws Exception {
+        SeparationOfDutiesLedger ledger = new SeparationOfDutiesLedger(temp);
+        ledger.recordStage("req-tamper-1", "DEVELOP", "actor-a", true);
+        Path file = temp.resolve("req-tamper-1.json");
+        String tampered = Files.readString(file).replace("actor-a", "actor-x");
+        Files.writeString(file, tampered);
+        IllegalStateException detected = assertThrows(IllegalStateException.class,
+                () -> ledger.stagesFor("req-tamper-1"));
+        assertTrue(detected.getMessage().contains("SOD_LEDGER_CHAIN_INVALID"));
     }
 }

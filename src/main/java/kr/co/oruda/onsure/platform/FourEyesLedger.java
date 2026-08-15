@@ -19,7 +19,8 @@ import java.util.regex.Pattern;
  * only satisfied once at least {@code REQUIRED_DISTINCT_APPROVERS} genuinely distinct actors have
  * each recorded an approval for it. The same actor recording twice never counts as two of the
  * "four eyes" -- that would defeat the entire point -- so a repeat by the same actor is rejected
- * rather than silently double-counted or silently ignored.
+ * rather than silently double-counted or silently ignored. Every record is hash-chained via
+ * {@link HashChainRecordStore} (Autonomous Development Mode 2026-08-15 tamper-evidence hardening).
  */
 public final class FourEyesLedger {
     static final int REQUIRED_DISTINCT_APPROVERS = 2;
@@ -45,13 +46,15 @@ public final class FourEyesLedger {
         Path lockFile = root.resolve(".locks").resolve(subjectId + ".lock");
 
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<ApprovalRecord> approvals = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<ApprovalRecord> approvals = toRecords(raw);
             if (approvals.stream().anyMatch(record -> record.actorId().equals(actorId))) {
                 throw new SecurityException("FOUR_EYES_SAME_ACTOR_CANNOT_COUNT_TWICE:" + actorId);
             }
+            ApprovalRecord newRecord = new ApprovalRecord(actorId, Instant.now().toString());
+            append(file, raw, newRecord);
             List<ApprovalRecord> updated = new ArrayList<>(approvals);
-            updated.add(new ApprovalRecord(actorId, Instant.now().toString()));
-            write(file, updated);
+            updated.add(newRecord);
             return new Result(List.copyOf(updated), distinctActorCount(updated) >= REQUIRED_DISTINCT_APPROVERS);
         });
     }
@@ -67,24 +70,37 @@ public final class FourEyesLedger {
     }
 
     private List<ApprovalRecord> read(Path file) throws Exception {
+        return toRecords(readRaw(file));
+    }
+
+    private List<Map<String, Object>> readRaw(Path file) throws Exception {
         if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return List.of();
         if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("FOUR_EYES_RECORD_SYMLINK_PROHIBITED");
-        List<Map<String, String>> raw = mapper.readValue(
+        List<Map<String, Object>> raw = mapper.readValue(
                 file.toFile(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, raw);
+        if (!chain.valid()) {
+            throw new IllegalStateException("FOUR_EYES_LEDGER_CHAIN_INVALID:" + chain.violations());
+        }
+        return raw;
+    }
+
+    private static List<ApprovalRecord> toRecords(List<Map<String, Object>> raw) {
         List<ApprovalRecord> records = new ArrayList<>();
-        for (Map<String, String> row : raw) records.add(new ApprovalRecord(row.get("actor_id"), row.get("recorded_at")));
+        for (Map<String, Object> row : raw) {
+            records.add(new ApprovalRecord((String) row.get("actor_id"), (String) row.get("recorded_at")));
+        }
         return records;
     }
 
-    private void write(Path file, List<ApprovalRecord> approvals) throws Exception {
+    private void append(Path file, List<Map<String, Object>> currentRaw, ApprovalRecord record) throws Exception {
         Files.createDirectories(file.getParent());
-        List<Map<String, String>> rows = new ArrayList<>();
-        for (ApprovalRecord record : approvals) {
-            Map<String, String> row = new LinkedHashMap<>();
-            row.put("actor_id", record.actorId());
-            row.put("recorded_at", record.recordedAt());
-            rows.add(row);
-        }
-        mapper.writeValue(file.toFile(), rows);
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("actor_id", record.actorId());
+        fields.put("recorded_at", record.recordedAt());
+        Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, currentRaw, fields);
+        List<Map<String, Object>> updated = new ArrayList<>(currentRaw);
+        updated.add(chained);
+        mapper.writeValue(file.toFile(), updated);
     }
 }

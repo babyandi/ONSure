@@ -1142,5 +1142,25 @@
       "CONTENT_SHA256_AND_REGISTRY_DIGESTS",
       "REQUIREMENT_BASED_TEST_COVERAGE_UNIVERSE"
     ]
+  },
+  "ledger_tamper_evidence_hardening": {
+    "state": "EVIDENCE_READY",
+    "activated_under": "autonomous_development_mode",
+    "note": "Closed the disclosed gap recorded in Batch 5-9 status snapshots: 9 append-only ledgers (Hazard/Appeal/Offboarding/Revocation/SeparationOfDuties/FourEyes/Delegation/BreakGlass/PluginQualification) lacked the hash-chain tamper-evidence pattern OfficialLearningLedger/ContractSelectorLedger already had. Extracted the proven pattern from OfficialLearningLedger.verifyChain() into a shared, dependency-free utility (src/main/java/kr/co/oruda/onsure/platform/HashChainRecordStore.java) rather than reimplementing chain math 9 times.",
+    "design_choice": "List-history ledgers (Hazard/Appeal/Offboarding/SeparationOfDuties/FourEyes) chain their full append-only sequence. Single-record ledgers (Delegation/PluginQualification/Revocation) chain as length-1 (GENESIS->entry_hash) -- still detects any post-write field edit even though there is only ever one record. BreakGlassLedger's storage was upgraded from a single mutable object (invoke() then recordReview() overwrote the same file in place, silently destroying the original unreviewed state) to two proper chained records (INVOKED, REVIEWED) -- a real soundness fix, not just an evidence-hardening retrofit, since the prior design could lose the original emergency-access moment it was supposed to be auditing.",
+    "excluded_by_design": "ModelInvocationLedger deliberately has neither hash-chain nor signature (documented in its own class javadoc): plain usage telemetry, no promotion gate, low stakes. ContractSelectorLedger already uses real Ed25519 signatures (a stronger mechanism) rather than hash-chaining. DurableStateLedger and OfficialLearningLedger already had hash-chaining before this session.",
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/HashChainRecordStore.java (NEW, shared utility)",
+      "HazardLedger.java, AppealLedger.java, OffboardingLedger.java, SeparationOfDutiesLedger.java, FourEyesLedger.java (list-history retrofit)",
+      "DelegationLedger.java, PluginQualificationLedger.java, RevocationLedger.java (length-1 chain retrofit)",
+      "BreakGlassLedger.java (upgraded from single mutable record to two chained INVOKED/REVIEWED records)"
+    ],
+    "tests": [
+      "HashChainRecordStoreTest.java (NEW, 7 tests: clean chain, tamper detection, dropped/reordered record detection, append-onto-tampered-history rejection)",
+      "One new tamper-injection test added to each of the 9 retrofitted ledgers' existing test files (edit the on-disk JSON directly, assert the next read throws with the ledger-specific CHAIN_INVALID code)",
+      "RevocationLedgerTest.java (NEW -- previously only exercised indirectly via SemanticAssuranceV2WorkflowServiceTest; also verifies chain linkage fields are stripped before the event map is returned to callers, so the retrofit is invisible to existing consumers)",
+      "BreakGlassLedgerTest.java +1 regression test verifying the original INVOKED facts (invoker/justification/invoked_at) survive unchanged after review, given the storage model changed"
+    ],
+    "verification": "All pre-existing ledger tests pass unchanged (behavior-preserving retrofit) plus the new tamper tests. Full suite: 186 Python tests green, full mvn test green (background run confirmed)."
   }
 }

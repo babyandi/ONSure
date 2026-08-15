@@ -19,7 +19,9 @@ import java.util.regex.Pattern;
  * NEW_EFFECT_BLOCKED -> EXPORT_WINDOW -> CREDENTIAL_REVOCATION -> PENDING_JOB_SETTLEMENT ->
  * RETENTION_CLASSIFICATION -> CUSTOMER_EXPORT -> DELETION_OR_LEGAL_HOLD_PROCESSING ->
  * OFFBOARDING_RECEIPT_ISSUED. Legal hold is checked at every deletion attempt, not just recorded
- * as a flag -- "legal hold는 deletion보다 우선하지만 access authority를 자동 연장하지 않음."
+ * as a flag -- "legal hold는 deletion보다 우선하지만 access authority를 자동 연장하지 않음." Every
+ * record is hash-chained via {@link HashChainRecordStore} (Autonomous Development Mode
+ * 2026-08-15 tamper-evidence hardening).
  */
 public final class OffboardingLedger {
     private static final Pattern TENANT_ID_PATTERN = Pattern.compile("^[A-Za-z0-9_.:-]{1,160}$");
@@ -51,7 +53,7 @@ public final class OffboardingLedger {
                 throw new IllegalArgumentException("OFFBOARDING_ALREADY_IN_PROGRESS_OR_COMPLETE:" + tenantId);
             }
             if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("OFFBOARDING_RECORD_SYMLINK_PROHIBITED");
-            write(file, List.of(event));
+            append(file, List.of(), event);
         });
         return event;
     }
@@ -67,7 +69,8 @@ public final class OffboardingLedger {
         Path file = root.resolve(tenantId + ".json");
         Path lockFile = root.resolve(".locks").resolve(tenantId + ".lock");
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<StageEvent> history = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<StageEvent> history = toEvents(raw);
             if (history.isEmpty()) throw new IllegalArgumentException("OFFBOARDING_NOT_FOUND:" + tenantId);
             String currentStage = history.get(history.size() - 1).stage();
             int currentIndex = STAGE_ORDER.indexOf(currentStage);
@@ -78,9 +81,7 @@ public final class OffboardingLedger {
                 throw new SecurityException("LEGAL_HOLD_FORBIDS_DELETION");
             }
             StageEvent event = new StageEvent(toStage, actorId, detail, Instant.now().toString());
-            List<StageEvent> updated = new ArrayList<>(history);
-            updated.add(event);
-            write(file, updated);
+            append(file, raw, event);
             return event;
         });
     }
@@ -102,28 +103,41 @@ public final class OffboardingLedger {
     }
 
     private List<StageEvent> read(Path file) throws Exception {
+        return toEvents(readRaw(file));
+    }
+
+    private List<Map<String, Object>> readRaw(Path file) throws Exception {
         if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return List.of();
         if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("OFFBOARDING_RECORD_SYMLINK_PROHIBITED");
-        List<Map<String, String>> raw = mapper.readValue(
+        List<Map<String, Object>> raw = mapper.readValue(
                 file.toFile(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, raw);
+        if (!chain.valid()) {
+            throw new IllegalStateException("OFFBOARDING_LEDGER_CHAIN_INVALID:" + chain.violations());
+        }
+        return raw;
+    }
+
+    private static List<StageEvent> toEvents(List<Map<String, Object>> raw) {
         List<StageEvent> events = new ArrayList<>();
-        for (Map<String, String> row : raw) {
-            events.add(new StageEvent(row.get("stage"), row.get("actor_id"), row.get("detail"), row.get("recorded_at")));
+        for (Map<String, Object> row : raw) {
+            events.add(new StageEvent(
+                    (String) row.get("stage"), (String) row.get("actor_id"),
+                    (String) row.get("detail"), (String) row.get("recorded_at")));
         }
         return events;
     }
 
-    private void write(Path file, List<StageEvent> events) throws Exception {
+    private void append(Path file, List<Map<String, Object>> currentRaw, StageEvent event) throws Exception {
         Files.createDirectories(file.getParent());
-        List<Map<String, String>> rows = new ArrayList<>();
-        for (StageEvent event : events) {
-            Map<String, String> row = new LinkedHashMap<>();
-            row.put("stage", event.stage());
-            row.put("actor_id", event.actorId());
-            row.put("detail", event.detail());
-            row.put("recorded_at", event.recordedAt());
-            rows.add(row);
-        }
-        mapper.writeValue(file.toFile(), rows);
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("stage", event.stage());
+        fields.put("actor_id", event.actorId());
+        fields.put("detail", event.detail());
+        fields.put("recorded_at", event.recordedAt());
+        Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, currentRaw, fields);
+        List<Map<String, Object>> updated = new ArrayList<>(currentRaw);
+        updated.add(chained);
+        mapper.writeValue(file.toFile(), updated);
     }
 }

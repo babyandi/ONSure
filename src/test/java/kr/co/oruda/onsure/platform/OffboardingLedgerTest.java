@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -70,5 +71,19 @@ class OffboardingLedgerTest {
         OffboardingLedger ledger = new OffboardingLedger(temp);
         ledger.request("tenant-6", "admin-a");
         assertTrue(!ledger.isTerminal("tenant-6"));
+    }
+
+    // Autonomous Development Mode (2026-08-15) tamper-evidence hardening.
+    @Test
+    void aTamperedStageIsDetectedOnNextRead() throws Exception {
+        OffboardingLedger ledger = new OffboardingLedger(temp);
+        ledger.request("tenant-tamper-1", "admin-a");
+        ledger.advance("tenant-tamper-1", "NEW_EFFECT_BLOCKED", "admin-a", false, "blocked");
+        Path file = temp.resolve("tenant-tamper-1.json");
+        String tampered = Files.readString(file).replace("blocked", "sneaky-edit");
+        Files.writeString(file, tampered);
+        IllegalStateException detected = assertThrows(IllegalStateException.class,
+                () -> ledger.history("tenant-tamper-1"));
+        assertTrue(detected.getMessage().contains("OFFBOARDING_LEDGER_CHAIN_INVALID"));
     }
 }

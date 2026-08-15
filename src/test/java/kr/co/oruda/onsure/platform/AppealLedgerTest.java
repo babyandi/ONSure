@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -95,5 +96,23 @@ class AppealLedgerTest {
         ledger.file("appeal-8", "customer-a", "reviewer-original", "REASON");
         assertThrows(IllegalArgumentException.class,
                 () -> ledger.decide("appeal-8", "REVERSE", "reviewer-independent", "shortcut"));
+    }
+
+    // Autonomous Development Mode (2026-08-15) tamper-evidence hardening: a rewritten decision on
+    // an appeal case, edited outside AppealLedger's own append path, must fail to read back --
+    // 127 SS8's "original decision deleted after reversal" negative case extended to detect direct
+    // file tampering, not just API-level replacement attempts.
+    @Test
+    void aTamperedDecisionIsDetectedOnNextRead() throws Exception {
+        AppealLedger ledger = new AppealLedger(temp);
+        toIndependentReview(ledger, "appeal-tamper-1");
+        ledger.decide("appeal-tamper-1", "UPHOLD", "reviewer-independent", "no material change");
+        Path file = temp.resolve("appeal-tamper-1.json");
+        String tampered = Files.readString(file).replace("UPHOLD", "REVERSE");
+        Files.writeString(file, tampered);
+        IllegalStateException detected = assertThrows(IllegalStateException.class,
+                () -> ledger.history("appeal-tamper-1"));
+        assertTrue(detected.getMessage().contains("APPEAL_LEDGER_CHAIN_INVALID"));
+        assertTrue(detected.getMessage().contains("CHAIN_ENTRY_TAMPERED"));
     }
 }

@@ -18,7 +18,10 @@ import java.util.regex.Pattern;
  * Durable, append-only Hazard disposition history (127_SAFETY_HAZARD_AND_CONTESTABILITY_
  * GOVERNANCE.md SS1.3/1.6), one file per hazard_id holding every disposition transition ever
  * recorded -- escalation/closure is a real appended event, not an overwrite, so the full history
- * (including who moved it and when) always survives.
+ * (including who moved it and when) always survives. Every record is hash-chained via
+ * {@link HashChainRecordStore} (Autonomous Development Mode 2026-08-15 tamper-evidence hardening):
+ * a file edited outside this class -- a byte flipped, a middle transition dropped -- fails to read
+ * back at all instead of being silently trusted.
  */
 public final class HazardLedger {
     private static final Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9_.:-]{1,160}$");
@@ -56,7 +59,7 @@ public final class HazardLedger {
         ExclusiveFileLock.run(lockFile, () -> {
             if (Files.exists(file, LinkOption.NOFOLLOW_LINKS)) throw new IllegalArgumentException("HAZARD_ID_ALREADY_EXISTS:" + hazardId);
             if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("HAZARD_RECORD_SYMLINK_PROHIBITED");
-            write(file, List.of(event));
+            append(file, List.of(), event);
         });
         return event;
     }
@@ -80,7 +83,8 @@ public final class HazardLedger {
         Path file = root.resolve(hazardId + ".json");
         Path lockFile = root.resolve(".locks").resolve(hazardId + ".lock");
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<DispositionEvent> history = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<DispositionEvent> history = toEvents(raw);
             if (history.isEmpty()) throw new IllegalArgumentException("HAZARD_NOT_FOUND:" + hazardId);
             DispositionEvent current = history.get(history.size() - 1);
             Set<String> allowed = ALLOWED_TRANSITIONS.getOrDefault(current.disposition(), Set.of());
@@ -99,9 +103,7 @@ public final class HazardLedger {
                 }
             }
             DispositionEvent event = new DispositionEvent(toDisposition, actorId, justification, Instant.now().toString());
-            List<DispositionEvent> updated = new ArrayList<>(history);
-            updated.add(event);
-            write(file, updated);
+            append(file, raw, event);
             return event;
         });
     }
@@ -117,28 +119,41 @@ public final class HazardLedger {
     }
 
     private List<DispositionEvent> read(Path file) throws Exception {
+        return toEvents(readRaw(file));
+    }
+
+    private List<Map<String, Object>> readRaw(Path file) throws Exception {
         if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return List.of();
         if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("HAZARD_RECORD_SYMLINK_PROHIBITED");
-        List<Map<String, String>> raw = mapper.readValue(
+        List<Map<String, Object>> raw = mapper.readValue(
                 file.toFile(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, raw);
+        if (!chain.valid()) {
+            throw new IllegalStateException("HAZARD_LEDGER_CHAIN_INVALID:" + chain.violations());
+        }
+        return raw;
+    }
+
+    private static List<DispositionEvent> toEvents(List<Map<String, Object>> raw) {
         List<DispositionEvent> events = new ArrayList<>();
-        for (Map<String, String> row : raw) {
-            events.add(new DispositionEvent(row.get("disposition"), row.get("actor_id"), row.get("justification"), row.get("recorded_at")));
+        for (Map<String, Object> row : raw) {
+            events.add(new DispositionEvent(
+                    (String) row.get("disposition"), (String) row.get("actor_id"),
+                    (String) row.get("justification"), (String) row.get("recorded_at")));
         }
         return events;
     }
 
-    private void write(Path file, List<DispositionEvent> events) throws Exception {
+    private void append(Path file, List<Map<String, Object>> currentRaw, DispositionEvent event) throws Exception {
         Files.createDirectories(file.getParent());
-        List<Map<String, String>> rows = new ArrayList<>();
-        for (DispositionEvent event : events) {
-            Map<String, String> row = new LinkedHashMap<>();
-            row.put("disposition", event.disposition());
-            row.put("actor_id", event.actorId());
-            row.put("justification", event.justification());
-            row.put("recorded_at", event.recordedAt());
-            rows.add(row);
-        }
-        mapper.writeValue(file.toFile(), rows);
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("disposition", event.disposition());
+        fields.put("actor_id", event.actorId());
+        fields.put("justification", event.justification());
+        fields.put("recorded_at", event.recordedAt());
+        Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, currentRaw, fields);
+        List<Map<String, Object>> updated = new ArrayList<>(currentRaw);
+        updated.add(chained);
+        mapper.writeValue(file.toFile(), updated);
     }
 }

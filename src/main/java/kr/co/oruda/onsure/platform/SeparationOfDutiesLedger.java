@@ -17,7 +17,9 @@ import java.util.regex.Pattern;
  * Durable ledger backing FR-COM-013 (Separation of Duties): the same actor must not both develop
  * (DEVELOP) and verify/accept (VERIFY / ACCEPT) the same ImprovementRequest under a regulated
  * industry policy profile. One JSON file per improvement_request_id, appended to under an
- * ExclusiveFileLock so a concurrent record-stage call can't race past the conflict check.
+ * ExclusiveFileLock so a concurrent record-stage call can't race past the conflict check. Every
+ * record is hash-chained via {@link HashChainRecordStore} (Autonomous Development Mode
+ * 2026-08-15 tamper-evidence hardening).
  */
 public final class SeparationOfDutiesLedger {
     private static final Pattern ID_PATTERN = Pattern.compile("^[A-Za-z0-9_.:-]{1,160}$");
@@ -56,7 +58,8 @@ public final class SeparationOfDutiesLedger {
         Path lockFile = root.resolve(".locks").resolve(improvementRequestId + ".lock");
 
         return ExclusiveFileLock.call(lockFile, () -> {
-            List<StageRecord> stages = read(file);
+            List<Map<String, Object>> raw = readRaw(file);
+            List<StageRecord> stages = toRecords(raw);
             String conflictingStage = stages.stream()
                     .filter(record -> record.actorId().equals(actorId) && !record.stage().equals(stage))
                     .map(StageRecord::stage)
@@ -67,9 +70,10 @@ public final class SeparationOfDutiesLedger {
                         "SOD_VIOLATION:actor_already_performed:" + conflictingStage + ":cannot_also_perform:" + stage);
             }
 
+            StageRecord newRecord = new StageRecord(stage, actorId, Instant.now().toString());
+            append(file, raw, newRecord);
             List<StageRecord> updated = new ArrayList<>(stages);
-            updated.add(new StageRecord(stage, actorId, Instant.now().toString()));
-            write(file, updated);
+            updated.add(newRecord);
             return new Result(
                     conflictingStage != null ? Outcome.ADVISORY_VIOLATION : Outcome.RECORDED,
                     List.copyOf(updated), conflictingStage);
@@ -84,27 +88,39 @@ public final class SeparationOfDutiesLedger {
     }
 
     private List<StageRecord> read(Path file) throws Exception {
+        return toRecords(readRaw(file));
+    }
+
+    private List<Map<String, Object>> readRaw(Path file) throws Exception {
         if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) return List.of();
         if (Files.isSymbolicLink(file)) throw new IllegalArgumentException("SOD_RECORD_SYMLINK_PROHIBITED");
-        List<Map<String, String>> raw = mapper.readValue(
+        List<Map<String, Object>> raw = mapper.readValue(
                 file.toFile(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+        HashChainRecordStore.ChainVerification chain = HashChainRecordStore.verify(mapper, raw);
+        if (!chain.valid()) {
+            throw new IllegalStateException("SOD_LEDGER_CHAIN_INVALID:" + chain.violations());
+        }
+        return raw;
+    }
+
+    private static List<StageRecord> toRecords(List<Map<String, Object>> raw) {
         List<StageRecord> records = new ArrayList<>();
-        for (Map<String, String> row : raw) {
-            records.add(new StageRecord(row.get("stage"), row.get("actor_id"), row.get("recorded_at")));
+        for (Map<String, Object> row : raw) {
+            records.add(new StageRecord(
+                    (String) row.get("stage"), (String) row.get("actor_id"), (String) row.get("recorded_at")));
         }
         return records;
     }
 
-    private void write(Path file, List<StageRecord> stages) throws Exception {
+    private void append(Path file, List<Map<String, Object>> currentRaw, StageRecord record) throws Exception {
         Files.createDirectories(file.getParent());
-        List<Map<String, String>> rows = new ArrayList<>();
-        for (StageRecord record : stages) {
-            Map<String, String> row = new LinkedHashMap<>();
-            row.put("stage", record.stage());
-            row.put("actor_id", record.actorId());
-            row.put("recorded_at", record.recordedAt());
-            rows.add(row);
-        }
-        mapper.writeValue(file.toFile(), rows);
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("stage", record.stage());
+        fields.put("actor_id", record.actorId());
+        fields.put("recorded_at", record.recordedAt());
+        Map<String, Object> chained = HashChainRecordStore.nextRecord(mapper, currentRaw, fields);
+        List<Map<String, Object>> updated = new ArrayList<>(currentRaw);
+        updated.add(chained);
+        mapper.writeValue(file.toFile(), updated);
     }
 }
