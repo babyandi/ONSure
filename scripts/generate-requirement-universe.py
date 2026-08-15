@@ -25,6 +25,21 @@ authority-change requalification:
 
 Ambiguous ID taxonomies (e.g. SA-*/XC-*) are intentionally excluded from EXPLICIT_ID
 extraction and remain DCQ-0001 (P1, still OPEN). See design-change-queue.v1.json.
+
+Per 160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md and the 2026-08-14 authority-conflict
+design decision: FR-FIN-01..22 (docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md, the
+FINAL_TARGET tree's Requirement-ID anchor) are now a recognized EXPLICIT_ID family, classified
+PRODUCT/POSITIVE_CLAIM_GATE like FR-COM (they are product functional requirements, not
+ONSure's own validation-machinery meta-requirements like FR-META). BUT the live/default run
+(no flags) still excludes FINAL_TARGET-class authority sources from the population, so
+EPOCH::REQUIREMENT::0002 stays byte-for-byte what it was before this decision -- "don't claim
+the new authority as Final/Active canonical before PR #52 merges" means the live epoch must
+not silently start including FR-FIN-* just because the manifest now classifies docs/05 as
+eligible. Pass --epoch-candidate to include FINAL_TARGET sources and materialize FR-FIN-*;
+that mode writes to .onsure/requirement-universe/epoch-0003-candidate/ under a distinct
+"EPOCH::REQUIREMENT::0003::CANDIDATE" id -- a disclosed preparatory artifact, not a registered
+epoch and not the live population. The real epoch 0002->0003 cutover happens only after PR #52
+merges, per the user's explicit instruction.
 """
 from __future__ import annotations
 
@@ -47,6 +62,14 @@ SUPERSEDED_REQUIREMENT_EPOCH_ID = "EPOCH::REQUIREMENT::0001"
 EXPLICIT_ID_RE = re.compile(
     r"\b(FR-COM-\d+|FR-META-\d+|FR-FRESH-\d+|FR-LEARN-\d+|NFR-[A-Z]+(?:-\d+)?)\b"
 )
+# FR-FIN-* is only recognized in --epoch-candidate mode (see main()): the live
+# EPOCH::REQUIREMENT::0002 pattern must not start matching FR-FIN-* just because some
+# eligible docs/master companion document (e.g. 160, discussing the authority-reconciliation
+# decision itself) happens to cite an FR-FIN-* id by name in passing.
+FINAL_TARGET_EXPLICIT_ID_RE = re.compile(
+    r"\b(FR-COM-\d+|FR-META-\d+|FR-FRESH-\d+|FR-LEARN-\d+|FR-FIN-\d+|NFR-[A-Z]+(?:-\d+)?)\b"
+)
+PRODUCT_ID_PREFIXES = ("FR-COM", "FR-FIN")
 NORMATIVE_RE = re.compile(
     r"(?:해야 합니다|해야 한다|하여야|금지|필수|수용\s*기준|완료\s*조건|MUST|SHALL|REQUIRED|PROHIBITED|MUST NOT)",
     re.IGNORECASE,
@@ -71,9 +94,24 @@ def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
 
 
-def load_eligible_authority_sources() -> dict[str, str]:
-    """Returns {artifact_path: requirement_source_disposition} for ELIGIBLE rows only,
-    per requirement-authority-source-manifest.candidate.v1.json's denominator_contribution_rules."""
+def load_eligible_authority_sources(include_final_target: bool = False) -> tuple[dict[str, str], set[str]]:
+    """Returns ({artifact_path: requirement_source_disposition} for ELIGIBLE rows only,
+    {artifact_path, ...} subset that is FINAL_TARGET-class), per
+    requirement-authority-source-manifest.candidate.v1.json's denominator_contribution_rules.
+
+    include_final_target=False (default -- the live EPOCH::REQUIREMENT::0002 path) excludes
+    FINAL_TARGET-class rows (docs/05, docs/40~44) even though the manifest now classifies
+    docs/05/41/42/43/44 as eligible: per the 2026-08-14 authority-conflict decision, the live
+    population must stay exactly what it was before 160/PR #52 until PR #52 actually merges
+    and the next epoch is explicitly created. Pass include_final_target=True only from
+    --epoch-candidate mode.
+
+    The returned final-target path set is used to keep FR-FIN-* canonical-text resolution
+    scoped to its own authority tree (160 SS2.A: docs/05 has precedence for FR-FIN-* identity
+    /text "unless another document explicitly states REFINES or SUPERSEDES that exact
+    Requirement ID") -- a docs/master companion document that merely cites an FR-FIN-* id by
+    name (as 160 itself does, discussing the reconciliation) must not out-rank docs/05 for
+    that id's canonical text just because its own disposition tier is NORMATIVE_REFINEMENT."""
     manifest_path = ROOT / ".onsure" / "requirement-universe" / "requirement-authority-source-manifest.json"
     if not manifest_path.exists():
         raise RuntimeError(
@@ -81,12 +119,19 @@ def load_eligible_authority_sources() -> dict[str, str]:
         )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     eligible = {}
+    final_target_paths: set[str] = set()
     for row in manifest["rows"]:
-        if row["requirement_source_disposition"] in AUTHORITY_RANK:
-            eligible[row["artifact_path"]] = row["requirement_source_disposition"]
+        if row["requirement_source_disposition"] not in AUTHORITY_RANK:
+            continue
+        is_final_target = row["artifact_inventory_authority_class"] == "FINAL_TARGET"
+        if not include_final_target and is_final_target:
+            continue
+        eligible[row["artifact_path"]] = row["requirement_source_disposition"]
+        if is_final_target:
+            final_target_paths.add(row["artifact_path"])
     if not eligible:
         raise RuntimeError("NO_ELIGIBLE_AUTHORITY_SOURCES")
-    return eligible
+    return eligible, final_target_paths
 
 
 def paragraph_after(lines: list[str], heading_line_number: int, heading: str, max_lines: int = 6) -> str:
@@ -159,7 +204,11 @@ def owner_domain_for(relative_path: str) -> str:
     return Path(relative_path).stem
 
 
-def collect(eligible_sources: dict[str, str]) -> dict[str, Any]:
+def collect(
+    eligible_sources: dict[str, str],
+    final_target_paths: set[str],
+    explicit_id_re: re.Pattern[str] = EXPLICIT_ID_RE,
+) -> dict[str, Any]:
     authority_population: list[dict[str, str]] = []
     explicit_occurrences: dict[str, list[dict[str, Any]]] = defaultdict(list)
     candidate_records: list[dict[str, Any]] = []
@@ -176,8 +225,10 @@ def collect(eligible_sources: dict[str, str]) -> dict[str, Any]:
             stripped = raw.strip()
             if stripped.startswith("#"):
                 heading = stripped.lstrip("#").strip() or heading
-                for match in EXPLICIT_ID_RE.finditer(stripped):
+                for match in explicit_id_re.finditer(stripped):
                     explicit_id = match.group(1)
+                    if explicit_id.startswith("FR-FIN-") and relative not in final_target_paths:
+                        continue
                     text = paragraph_after(lines, line_number, heading)
                     explicit_occurrences[explicit_id].append({
                         "explicit_id": explicit_id,
@@ -199,8 +250,10 @@ def collect(eligible_sources: dict[str, str]) -> dict[str, Any]:
             if not stripped:
                 continue
 
-            for match in EXPLICIT_ID_RE.finditer(stripped):
+            for match in explicit_id_re.finditer(stripped):
                 explicit_id = match.group(1)
+                if explicit_id.startswith("FR-FIN-") and relative not in final_target_paths:
+                    continue
                 text = re.sub(r"^[-*+|\d.)\s]+", "", stripped).strip().strip("|").strip()
                 if len(text) < 4:
                     continue
@@ -221,7 +274,7 @@ def collect(eligible_sources: dict[str, str]) -> dict[str, Any]:
                     "line": line_number,
                 })
 
-            if NORMATIVE_RE.search(stripped) and not EXPLICIT_ID_RE.search(stripped):
+            if NORMATIVE_RE.search(stripped) and not explicit_id_re.search(stripped):
                 text = re.sub(r"^[-*+|\d.)\s]+", "", stripped).strip().strip("|").strip()
                 if len(text) < 8:
                     continue
@@ -304,9 +357,9 @@ def resolve_explicit(explicit_occurrences: dict[str, list[dict[str, Any]]]) -> t
             "normative_text_digest": sha256_bytes(norm.encode()),
             "owner_domain": owner_domain_for(canonical["authority_document"]),
             "taxonomy": taxonomy_for(canonical["authority_document"], canonical["text"]),
-            "subject": "PRODUCT" if explicit_id.startswith("FR-COM") else "ONSURE_META",
+            "subject": "PRODUCT" if explicit_id.startswith(PRODUCT_ID_PREFIXES) else "ONSURE_META",
             "criticality": criticality_for(canonical["text"]),
-            "claim_effect": "POSITIVE_CLAIM_GATE" if explicit_id.startswith(("FR-COM", "NFR")) else "QUALIFICATION_GATE",
+            "claim_effect": "POSITIVE_CLAIM_GATE" if explicit_id.startswith(PRODUCT_ID_PREFIXES + ("NFR",)) else "QUALIFICATION_GATE",
             "waivability": "NON_WAIVABLE" if criticality_for(canonical["text"]) == "CRITICAL" else "CONDITIONAL",
             "applicability_state": "UNKNOWN",
             "applicability_rule_ref": None,
@@ -346,10 +399,12 @@ def dedupe_candidates(candidate_records: list[dict[str, Any]]) -> tuple[list[dic
 
 
 def main() -> int:
+    epoch_candidate = "--epoch-candidate" in sys.argv[1:]
     started_at = datetime.now(timezone.utc).isoformat()
-    eligible_sources = load_eligible_authority_sources()
+    eligible_sources, final_target_paths = load_eligible_authority_sources(include_final_target=epoch_candidate)
+    explicit_id_re = FINAL_TARGET_EXPLICIT_ID_RE if epoch_candidate else EXPLICIT_ID_RE
 
-    collected = collect(eligible_sources)
+    collected = collect(eligible_sources, final_target_paths, explicit_id_re)
     explicit_records, explicit_relation_candidates = resolve_explicit(collected["explicit_occurrences"])
     candidate_records, candidate_duplicate_groups = dedupe_candidates(collected["candidate_records"])
 
@@ -370,11 +425,14 @@ def main() -> int:
 
     unresolved_duplicate_candidates = candidate_duplicate_groups
 
+    epoch_id = "EPOCH::REQUIREMENT::0003::CANDIDATE" if epoch_candidate else REQUIREMENT_EPOCH_ID
+    superseded_epoch_id = REQUIREMENT_EPOCH_ID if epoch_candidate else SUPERSEDED_REQUIREMENT_EPOCH_ID
+
     snapshot = {
         "contract": "ONSURE_REQUIREMENT_UNIVERSE_SNAPSHOT_V2",
         "generation_algorithm_version": ALGORITHM_VERSION,
-        "requirement_epoch_id": REQUIREMENT_EPOCH_ID,
-        "superseded_requirement_epoch_id": SUPERSEDED_REQUIREMENT_EPOCH_ID,
+        "requirement_epoch_id": epoch_id,
+        "superseded_requirement_epoch_id": superseded_epoch_id,
         "requirement_ids": requirement_ids,
         "requirement_manifest_digest": requirement_manifest_digest,
         "authority_document_population": authority_population_sorted,
@@ -403,6 +461,8 @@ def main() -> int:
     }
 
     out_dir = ROOT / ".onsure" / "requirement-universe"
+    if epoch_candidate:
+        out_dir = out_dir / "epoch-0003-candidate"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "requirement-records.json").write_text(
         json.dumps(all_records, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -421,6 +481,8 @@ def main() -> int:
     )
 
     print(json.dumps({
+        "epoch_candidate": epoch_candidate,
+        "requirement_epoch_id": epoch_id,
         "authority_documents": len(authority_population_sorted),
         "explicit_id_requirements": len(explicit_records),
         "candidate_extracted_requirements": len(candidate_records),

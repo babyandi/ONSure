@@ -98,13 +98,30 @@ class RequirementUniverseBatch0Test(unittest.TestCase):
         # 145: DesignArtifactInventory membership != requirement-origination authority.
         # Every scanned doc must have a row; UNREVIEWED rows must be excluded from the
         # eligible/scanned population (fail-closed), not silently promoted.
+        #
+        # Since the 2026-08-14 authority-conflict decision (160_FINAL_TARGET_PRODUCT_AUTHORITY_
+        # RECONCILIATION.md): the manifest's eligible set now spans BOTH authority trees
+        # (docs/master + FINAL_TARGET), but the live EPOCH::REQUIREMENT::0002 population
+        # intentionally still excludes FINAL_TARGET-class rows (docs/05, docs/40~44) until
+        # PR #52 merges and the next epoch is explicitly created (see --epoch-candidate in
+        # generate-requirement-universe.py). scanned_paths is therefore a proper subset of
+        # eligible_paths, not equal to it -- and the only allowed gap is exactly the
+        # FINAL_TARGET-class eligible rows, never anything else (that would be a real
+        # fail-closed violation).
         eligible_dispositions = {"NORMATIVE_CURRENT", "NORMATIVE_REFINEMENT"}
-        eligible_paths = {
-            r["artifact_path"] for r in self.authority_manifest["rows"]
+        eligible_rows = {
+            r["artifact_path"]: r["artifact_inventory_authority_class"]
+            for r in self.authority_manifest["rows"]
             if r["requirement_source_disposition"] in eligible_dispositions
         }
+        eligible_paths = set(eligible_rows)
         scanned_paths = {a["path"] for a in self.snapshot["authority_document_population"]}
-        self.assertEqual(eligible_paths, scanned_paths)
+        self.assertTrue(scanned_paths.issubset(eligible_paths), scanned_paths - eligible_paths)
+        not_yet_scanned = eligible_paths - scanned_paths
+        self.assertEqual(
+            not_yet_scanned,
+            {path for path, cls in eligible_rows.items() if cls == "FINAL_TARGET"},
+        )
         self.assertGreater(self.authority_manifest["review_summary"]["unreviewed_count"], 0)
         unreviewed_paths = {
             r["artifact_path"] for r in self.authority_manifest["rows"] if r["review_state"] == "UNREVIEWED"

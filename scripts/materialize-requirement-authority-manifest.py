@@ -1,13 +1,23 @@
 #!/usr/bin/env python3
-"""Materialize the full Requirement Authority Source Manifest (145/DCQ-0002 follow-up).
+"""Materialize the full Requirement Authority Source Manifest (145/DCQ-0002 follow-up,
+160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md SS4 follow-up).
 
 Per 145_REQUIREMENT_AUTHORITY_POPULATION_CLOSURE_CHECKPOINT.md: DesignArtifactInventory
 membership (a doc exists under docs/master) is NOT the same as eligibility to originate
-a CURRENT Product Design Requirement. This script classifies every docs/master/**/*.md
-file's requirement_source_disposition using content_marker_rules from
+a CURRENT Product Design Requirement. This script classifies every scanned file's
+requirement_source_disposition using content_marker_rules from
 contracts/requirement-authority-classification-policy.candidate.v1.json, seeded by the
 human-reviewed rows in the requirement-authority-source-review.seed*.json files pulled
 from the qa/onsure-design-baseline-lock design-authority branch.
+
+Per 160 SS4, the scanned POPULATION itself is no longer inferred from directory location
+(git-ls-files over docs/master): it is read from the explicit, repository-relative
+contracts/requirement-authority-source-allowlist.v1.json, which lists both the docs/master
+tree (grandfathered at its exact pre-160 population, 179 paths) and the final-target
+authority tree (docs/05 + docs/40~44) doc 160 SS2.A names. "Listed" still only means
+"eligible to be scanned and classified" -- disposition (and therefore denominator
+eligibility) is unchanged, still decided per-file by seed rows or content-marker
+classification below.
 
 FAIL_CLOSED_ON_AMBIGUITY: anything not positively classifiable stays UNREVIEWED, which
 is ineligible for the requirement-universe denominator (per
@@ -33,6 +43,7 @@ SEED_FILES = [
     "contracts/requirement-authority-source-review.seed-semantic.v1.json",
     "contracts/requirement-authority-source-review.seed-learning-026-077.compact.v1.json",
     "contracts/requirement-authority-source-review.seed-learning-gates.v1.json",
+    "contracts/requirement-authority-source-review.seed-final-target.v1.json",
 ]
 
 # priority-ordered: first match wins
@@ -61,15 +72,27 @@ def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
 
 
-def git_tracked_master_docs() -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "docs/master"], cwd=ROOT, capture_output=True, check=False
-    )
+ALLOWLIST_PATH = ROOT / "contracts" / "requirement-authority-source-allowlist.v1.json"
+
+
+def git_tracked_files() -> set[str]:
+    result = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=False)
     if result.returncode != 0:
         raise RuntimeError("GIT_LS_FILES_FAILED")
-    return sorted(
-        ROOT / item.decode("utf-8") for item in result.stdout.split(b"\0") if item.endswith(b".md")
-    )
+    return {item.decode("utf-8") for item in result.stdout.split(b"\0") if item}
+
+
+def allowlisted_authority_docs() -> list[Path]:
+    """160 SS4: the scanned population comes from the explicit repository-relative allowlist,
+    never from 'is this file under docs/master' directory inference. An allowlist entry that
+    is not (or no longer) git-tracked is fail-closed excluded, not silently invented."""
+    allowlist = json.loads(ALLOWLIST_PATH.read_text(encoding="utf-8"))
+    listed = list(allowlist["master_tree"]["paths"]) + list(allowlist["final_target_tree"]["paths"])
+    tracked = git_tracked_files()
+    missing = [path for path in listed if path not in tracked]
+    if missing:
+        raise RuntimeError(f"ALLOWLIST_ENTRY_NOT_GIT_TRACKED:{missing}")
+    return sorted(ROOT / path for path in listed)
 
 
 def load_seed_rows() -> dict[str, dict[str, Any]]:
@@ -123,6 +146,8 @@ def classify_by_content(relative: str, text: str) -> tuple[str, str]:
 
 
 def artifact_inventory_class(relative: str) -> str:
+    if not relative.startswith("docs/master/"):
+        return "FINAL_TARGET"
     if relative.startswith("docs/master/semantic-assurance/"):
         return "COMPANION"
     return "MASTER"
@@ -130,7 +155,7 @@ def artifact_inventory_class(relative: str) -> str:
 
 def main() -> int:
     seed_rows = load_seed_rows()
-    docs = git_tracked_master_docs()
+    docs = allowlisted_authority_docs()
 
     rows: list[dict[str, Any]] = []
     for doc in docs:

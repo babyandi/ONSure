@@ -1,0 +1,139 @@
+{
+  "contract": "ONSURE_FR_FIN_SEMANTIC_RELATIONS_V1",
+  "status": "CLAUDE_PROPOSED_NONFINAL",
+  "authority_ref": "docs/master/semantic-assurance/160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md",
+  "relation_semantics": {
+    "REFINES": "The existing requirement adds implementation- or scope-level detail to the FR-FIN requirement's general statement. Reads: existing_requirement_ref REFINES fr_fin_requirement_id.",
+    "DECOMPOSES": "The existing requirement(s), taken together, break the FR-FIN requirement down into constituent parts already separately governed. Reads: existing_requirement_ref DECOMPOSES fr_fin_requirement_id.",
+    "SATISFIES": "The existing requirement's already-specified/built mechanism substantively fulfills what the FR-FIN requirement demands, with near-direct textual/intent correspondence. Reads: existing_requirement_ref SATISFIES fr_fin_requirement_id.",
+    "OVERLAPS": "Meaningful topical/semantic overlap between the two requirements without a clean hierarchical (refines/decomposes/satisfies) relation.",
+    "CONFLICTS": "The existing requirement and the FR-FIN requirement cannot both be true/satisfied under any consistent reading. See conflicts[] -- none found as of this analysis."
+  },
+  "convention": "Each relations[] entry reads as: existing_requirement_ref <relation_type> fr_fin_requirement_id (existing requirement is grammatical subject, FR-FIN requirement is object), except OVERLAPS/CONFLICTS which are symmetric.",
+  "relations": [
+    {"fr_fin_requirement_id": "FR-FIN-01", "existing_requirement_ref": "FR-META-001", "relation_type": "OVERLAPS", "rationale": "FR-META-001 (Validation Target Manifest) binds a Validation run's identity to Source/product-identity digests; FR-FIN-01 requires registering the broader asset/org/jurisdiction/materiality inventory those manifests draw from. Adjacent concerns at different levels (validation-run identity vs. product-wide asset inventory), not a hierarchy."},
+
+    {"fr_fin_requirement_id": "FR-FIN-02", "existing_requirement_ref": "FR-LEARN-001", "relation_type": "DECOMPOSES", "rationale": "FR-LEARN-001's Target/Assurance/Validator learning authority-domain separation is the granular mechanism that realizes FR-FIN-02's 'project-only memory vs verified anonymized general pattern' separation."},
+    {"fr_fin_requirement_id": "FR-FIN-02", "existing_requirement_ref": "FR-LEARN-002", "relation_type": "DECOMPOSES", "rationale": "FR-LEARN-002's common Candidate Lifecycle + immutable provenance is the mechanism FR-FIN-02's 'incremental learning + baseline promotion approval' requirement runs on."},
+    {"fr_fin_requirement_id": "FR-FIN-02", "existing_requirement_ref": "FR-LEARN-023", "relation_type": "DECOMPOSES", "rationale": "FR-LEARN-023's staged PRIVATE/ORGANIZATION/INDUSTRY/GLOBAL scope-promotion consent/qualification gates are the concrete decomposition of FR-FIN-02's 'baseline promotion approval' clause."},
+
+    {"fr_fin_requirement_id": "FR-FIN-03", "existing_requirement_ref": "FR-META-003", "relation_type": "OVERLAPS", "rationale": "FR-META-003 qualifies validator capability per target language/framework/deployment; FR-FIN-03 catalogs external regulatory frameworks (NIST/ISO/OWASP/MITRE/financial MRM) and their applicability per product/business. Same 'compute applicability' pattern, different subject (validator capability vs regulatory-control catalog) -- the regulatory-catalog content itself is new."},
+
+    {"fr_fin_requirement_id": "FR-FIN-04", "existing_requirement_ref": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#4-OPlanning", "relation_type": "REFINES", "rationale": "The existing OPlanning program section (책임/기능/산출물/수용기준, CANDIDATE_EXTRACTED content, no explicit ID) already specifies threat/risk/coverage-gap/Positive-Negative-Adversarial-Resilience planning mechanics; it refines FR-FIN-04's product-level statement of the same capability."},
+    {"fr_fin_requirement_id": "FR-FIN-04", "existing_requirement_ref": "FR-META-005", "relation_type": "OVERLAPS", "rationale": "FR-META-005's Oracle typology/independence (SPEC/EXECUTABLE/METAMORPHIC/DIFFERENTIAL/EXPERT) is exactly the 'Oracle' generation FR-FIN-04 requires as part of threat/risk planning."},
+
+    {"fr_fin_requirement_id": "FR-FIN-05", "existing_requirement_ref": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md#6-OVerification", "relation_type": "REFINES", "rationale": "The existing OVerification program section specifies the actual multi-surface execution (design/code/app/API/model/data/RAG/agent/supply-chain/perf/failure/recovery/DR) FR-FIN-05 requires; it refines FR-FIN-05's product-level statement."},
+    {"fr_fin_requirement_id": "FR-FIN-05", "existing_requirement_ref": "FR-META-018", "relation_type": "DECOMPOSES", "rationale": "FR-META-018 (Negative Assurance: count(CRITICAL)=0 vs CRITICAL_ABSENCE_PROVEN separated) is the precise mechanism behind FR-FIN-05's '0건·Skip·도구오류·환경오류를 PASS로 처리하지 않는다'."},
+    {"fr_fin_requirement_id": "FR-FIN-05", "existing_requirement_ref": "FR-META-030", "relation_type": "DECOMPOSES", "rationale": "FR-META-030 (Validation Saturation Proof) decomposes FR-FIN-05's 'actually executed, not just zero new findings' requirement into a concrete saturation-proof obligation."},
+
+    {"fr_fin_requirement_id": "FR-FIN-06", "existing_requirement_ref": "FR-LEARN-037", "relation_type": "OVERLAPS", "rationale": "FR-LEARN-037 (Emergency Quarantine/Kill Switch for mass-misjudgment/poisoning) is ONSure's own resilience mechanism against the Poisoning threat FR-FIN-06 requires testing for in target AI products -- same threat, different side (defend vs test-for)."},
+    {"fr_fin_requirement_id": "FR-FIN-06", "existing_requirement_ref": "FR-LEARN-086", "relation_type": "OVERLAPS", "rationale": "FR-LEARN-086 (Prompt/Tool/Retrieval Contamination Boundary) governs ONSure's own exposure to Prompt Injection/RAG contamination; FR-FIN-06 requires verifying the same threat class in target AI products."},
+    {"fr_fin_requirement_id": "FR-FIN-06", "existing_requirement_ref": "FR-META-017", "relation_type": "OVERLAPS", "rationale": "FR-META-017 (Composite/Interaction Risk: Attack/Failure/Privilege/Data-Leakage Chain) is the chain-risk assurance concept underlying FR-FIN-06's Tool-privilege-escalation and Multi-agent-delegation abuse verification."},
+    {"fr_fin_requirement_id": "FR-FIN-06", "existing_requirement_ref": "FR-META-039", "relation_type": "OVERLAPS", "rationale": "FR-META-039 (Anti-Evasion Validation: detect target behaving differently when it senses it's under test) is directly relevant to FR-FIN-06's Unsafe-Output/Jailbreak verification scope."},
+
+    {"fr_fin_requirement_id": "FR-FIN-07", "existing_requirement_ref": "FR-COM-002", "relation_type": "DECOMPOSES", "rationale": "FR-COM-002 (Tenant별 논리·물리 격리) is the concrete Tenant-isolation control FR-FIN-07 lists."},
+    {"fr_fin_requirement_id": "FR-FIN-07", "existing_requirement_ref": "FR-COM-013", "relation_type": "DECOMPOSES", "rationale": "FR-COM-013 (SoD forced for regulated-industry Enterprise Edition) is the concrete SoD control FR-FIN-07 lists; see conflict_candidates_considered for the tier-scoping nuance (not a conflict)."},
+    {"fr_fin_requirement_id": "FR-FIN-07", "existing_requirement_ref": "NFR-SEC", "relation_type": "DECOMPOSES", "rationale": "NFR-SEC (저장·전송 암호화, Secret 비노출, 최소권한) is the concrete encryption/least-privilege control FR-FIN-07 lists."},
+    {"fr_fin_requirement_id": "FR-FIN-07", "existing_requirement_ref": "NFR-AUDIT", "relation_type": "DECOMPOSES", "rationale": "NFR-AUDIT (모든 권한·실행·변경 감사) is the concrete audit control behind FR-FIN-07's WORM 감사 requirement."},
+    {"fr_fin_requirement_id": "FR-FIN-07", "existing_requirement_ref": "NFR-SESSION", "relation_type": "DECOMPOSES", "rationale": "NFR-SESSION (JWT Access Token 검증 등 세션 관리) is a concrete IAM/MFA-adjacent control within FR-FIN-07's scope."},
+    {"fr_fin_requirement_id": "FR-FIN-07", "existing_requirement_ref": "NFR-CONFIG", "relation_type": "DECOMPOSES", "rationale": "NFR-CONFIG (표준 보안 헤더 등 보안 설정) is a concrete control within FR-FIN-07's security-verification scope."},
+    {"fr_fin_requirement_id": "FR-FIN-07", "existing_requirement_ref": "FR-META-053", "relation_type": "DECOMPOSES", "rationale": "FR-META-053 (Authority Delegation/Four-eyes/Break-glass) is the concrete PAM/JIT-adjacent control behind FR-FIN-07's privileged-access requirements."},
+
+    {"fr_fin_requirement_id": "FR-FIN-08", "existing_requirement_ref": "FR-META-013", "relation_type": "OVERLAPS", "rationale": "FR-META-013 (Final Claim Reconstruction from raw evidence, not stored report) shares FR-FIN-08's 'reproduction procedure, first-failure point' independent-reconstruction principle."},
+    {"fr_fin_requirement_id": "FR-FIN-08", "existing_requirement_ref": "FR-META-016", "relation_type": "DECOMPOSES", "rationale": "FR-META-016 (Finding Closure Semantics: CLOSED = FIXED/FALSE_POSITIVE/DUPLICATE/NOT_APPLICABLE) is the concrete Finding-lifecycle mechanism FR-FIN-08's RCA process runs on."},
+
+    {"fr_fin_requirement_id": "FR-FIN-09", "existing_requirement_ref": "FR-COM-007", "relation_type": "SATISFIES", "rationale": "FR-COM-007 ('모든 자동 Patch는 별도 Worktree와 Branch에서 수행한다') is a near-direct match for FR-FIN-09's 'Finding에 결속된 최소 Patch만 격리 Worktree에서 수행'."},
+    {"fr_fin_requirement_id": "FR-FIN-09", "existing_requirement_ref": "FR-COM-008", "relation_type": "SATISFIES", "rationale": "FR-COM-008 (no direct Main Branch change before customer approval, contracts/main-branch-protection.v1.json) directly satisfies FR-FIN-09's file/hunk approval requirement."},
+
+    {"fr_fin_requirement_id": "FR-FIN-10", "existing_requirement_ref": "FR-COM-007", "relation_type": "OVERLAPS", "rationale": "Shares worktree/branch discipline with the VS Code Agent's Act/Improve modes, but FR-FIN-10's Ask/Plan/Autopilot/Audit/Offline UX surface itself has no existing explicit-ID counterpart -- see fr_fin_disposition_summary."},
+
+    {"fr_fin_requirement_id": "FR-FIN-11", "existing_requirement_ref": "FR-COM-007", "relation_type": "SATISFIES", "rationale": "Worktree/branch isolation for all automated changes directly satisfies part of FR-FIN-11's Git-chain discipline."},
+    {"fr_fin_requirement_id": "FR-FIN-11", "existing_requirement_ref": "FR-COM-008", "relation_type": "SATISFIES", "rationale": "No unapproved direct Main Branch change directly satisfies FR-FIN-11's approval-bundle requirement."},
+    {"fr_fin_requirement_id": "FR-FIN-11", "existing_requirement_ref": "FR-META-042", "relation_type": "SATISFIES", "rationale": "FR-META-042 (Final Lock/Certificate Revocation, immutable record + revocable current validity) plus this codebase's FinalCandidate!=FinalApproval!=FinalLock!=Current-Production-Assurance discipline already satisfies FR-FIN-11's 'AI 단독 Merge·Release·Production/Commercial GO·FinalLock은 금지한다'."},
+
+    {"fr_fin_requirement_id": "FR-FIN-12", "existing_requirement_ref": "FR-META-006", "relation_type": "DECOMPOSES", "rationale": "FR-META-006 (Evidence Target Binding to target_manifest_digest/scope_epoch) is a concrete link in FR-FIN-12's 원문→요구→...→전달 Hash 계보."},
+    {"fr_fin_requirement_id": "FR-FIN-12", "existing_requirement_ref": "FR-META-022", "relation_type": "DECOMPOSES", "rationale": "FR-META-022 (Evidence Transactionality/Survivability across crash/timeout/disk-full) decomposes FR-FIN-12's evidence-integrity requirement."},
+    {"fr_fin_requirement_id": "FR-FIN-12", "existing_requirement_ref": "FR-META-026", "relation_type": "DECOMPOSES", "rationale": "FR-META-026 (Evidence Origin Independence, PRIMARY/DERIVED counting) decomposes FR-FIN-12's independent-validation requirement."},
+    {"fr_fin_requirement_id": "FR-FIN-12", "existing_requirement_ref": "FR-LEARN-073", "relation_type": "OVERLAPS", "rationale": "FR-LEARN-073 (Evidence Retention vs Deletion Tension) directly governs the retention side of FR-FIN-12's 장기보존·Legal Hold requirement; see conflict_candidates_considered for the retention-vs-deletion nuance (not a conflict, already governed)."},
+    {"fr_fin_requirement_id": "FR-FIN-12", "existing_requirement_ref": "FR-LEARN-074", "relation_type": "SATISFIES", "rationale": "FR-LEARN-074 (Legal Hold vs Right-to-delete Conflict resolved by legal process) directly satisfies FR-FIN-12's Legal Hold requirement's governance mechanism."},
+
+    {"fr_fin_requirement_id": "FR-FIN-13", "existing_requirement_ref": "NFR-AVAIL", "relation_type": "DECOMPOSES", "rationale": "NFR-AVAIL (99.9% availability, Rate Limit, per-tenant concurrency cap) is the concrete HA/Scale control behind FR-FIN-13."},
+    {"fr_fin_requirement_id": "FR-FIN-13", "existing_requirement_ref": "NFR-REL", "relation_type": "DECOMPOSES", "rationale": "NFR-REL (멱등성, 재시도, 중복 이벤트 방어) is the concrete Idempotency control behind FR-FIN-13."},
+    {"fr_fin_requirement_id": "FR-FIN-13", "existing_requirement_ref": "FR-META-054", "relation_type": "DECOMPOSES", "rationale": "FR-META-054 (Distributed Work Integrity: immutable WorkUnit, at-least-once delivery) is the concrete Queue/Checkpoint mechanism behind FR-FIN-13."},
+
+    {"fr_fin_requirement_id": "FR-FIN-14", "existing_requirement_ref": "FR-META-025", "relation_type": "DECOMPOSES", "rationale": "FR-META-025 (Dependency/External Freshness: version/license/artifact currency) decomposes FR-FIN-14's supply-chain verification."},
+    {"fr_fin_requirement_id": "FR-FIN-14", "existing_requirement_ref": "FR-META-028", "relation_type": "DECOMPOSES", "rationale": "FR-META-028 (Trusted Computing Base Manifest) decomposes FR-FIN-14's provenance/signature verification scope."},
+    {"fr_fin_requirement_id": "FR-FIN-14", "existing_requirement_ref": "FR-LEARN-058", "relation_type": "OVERLAPS", "rationale": "FR-LEARN-058 (Upstream Poisoned Dependency Propagation) governs ONSure's own learning-asset supply chain; FR-FIN-14 requires verifying target products' vendor/AI-SaaS/OSS supply chain -- same risk class, different subject."},
+    {"fr_fin_requirement_id": "FR-FIN-14", "existing_requirement_ref": "FR-LEARN-060", "relation_type": "OVERLAPS", "rationale": "FR-LEARN-060 (Learning Asset Supply-chain Signature) is ONSure's own signing discipline, structurally analogous to the vendor/package signature verification FR-FIN-14 requires of target products."},
+    {"fr_fin_requirement_id": "FR-FIN-14", "existing_requirement_ref": "FR-LEARN-076", "relation_type": "DECOMPOSES", "rationale": "FR-LEARN-076 (Export-control/Data Sovereignty Guard) decomposes FR-FIN-14's vendor 지역(region)/하도급 verification."},
+
+    {"fr_fin_requirement_id": "FR-FIN-15", "existing_requirement_ref": "FR-META-010", "relation_type": "OVERLAPS", "rationale": "FR-META-010 (Atomic Validation Snapshot: same Target/Scope/Requirement/Policy generation) shares an atomicity principle with FR-FIN-15's cross-surface session-resume requirement, but the Unified Workbench's multi-surface (VS Code/Web/Desktop/CLI) session/Task-Graph continuity itself has no existing explicit-ID counterpart -- see fr_fin_disposition_summary."},
+
+    {"fr_fin_requirement_id": "FR-FIN-16", "existing_requirement_ref": "FR-COM-007", "relation_type": "OVERLAPS", "rationale": "Worktree isolation for automated patches overlaps FR-FIN-16's Developer Agent Patch/Git discipline."},
+    {"fr_fin_requirement_id": "FR-FIN-16", "existing_requirement_ref": "FR-COM-008", "relation_type": "OVERLAPS", "rationale": "Approval-gated Main Branch protection overlaps FR-FIN-16's Hunk/Git-step approval requirement; the Terminal/Test/Harness/설치 agent-tooling surface itself is new."},
+
+    {"fr_fin_requirement_id": "FR-FIN-17", "existing_requirement_ref": "FR-META-013", "relation_type": "OVERLAPS", "rationale": "FR-META-013's raw-evidence reconstruction principle is conceptually shared with FR-FIN-17's Render·Read-back QA, but the DOCX/PPTX/XLSX/PDF artifact-generation domain itself has no existing explicit-ID counterpart -- see fr_fin_disposition_summary."},
+
+    {"fr_fin_requirement_id": "FR-FIN-18", "existing_requirement_ref": "FR-LEARN-025", "relation_type": "DECOMPOSES", "rationale": "FR-LEARN-025 (a learning subject cannot unilaterally self-promote its own Candidate to QUALIFIED/APPROVED/ACTIVE) directly decomposes FR-FIN-18's '검증되지 않은 대화·웹·Repository 정보는 범용 기준으로 자동 승격하지 않는다'; the Task-orchestration portion of FR-FIN-18 otherwise has no existing counterpart."},
+
+    {"fr_fin_requirement_id": "FR-FIN-19", "existing_requirement_ref": "FR-META-056", "relation_type": "SATISFIES", "rationale": "FR-META-056 (Plugin/Adapter Trust and Qualification: publisher identity, signed manifest) is a near-direct match for FR-FIN-19's signed-manifest/least-privilege/supply-chain requirement for Tool/Skill/Plugin/Connector."},
+
+    {"fr_fin_requirement_id": "FR-FIN-20", "existing_requirement_ref": "NFR-REL", "relation_type": "OVERLAPS", "rationale": "NFR-REL's idempotency/retry principle overlaps FR-FIN-20's automation idempotency/retry requirement."},
+    {"fr_fin_requirement_id": "FR-FIN-20", "existing_requirement_ref": "FR-LEARN-021", "relation_type": "OVERLAPS", "rationale": "FR-LEARN-021's Learning Stop Condition (no promotion by volume alone) shares FR-FIN-20's 'stop condition' concept, applied to automation rather than learning promotion."},
+    {"fr_fin_requirement_id": "FR-FIN-20", "existing_requirement_ref": "FR-LEARN-066", "relation_type": "OVERLAPS", "rationale": "FR-LEARN-066 (Autonomous Learning Budget Control: compute/token/storage/external resource caps) shares FR-FIN-20's execution-cap concept, applied to learning rather than general automation."},
+
+    {"fr_fin_requirement_id": "FR-FIN-21", "existing_requirement_ref": "FR-META-024", "relation_type": "DECOMPOSES", "rationale": "FR-META-024 (Verified-to-Deployed Identity: verified artifact digest == deployed artifact digest) decomposes FR-FIN-21's installation-integrity verification."},
+    {"fr_fin_requirement_id": "FR-FIN-21", "existing_requirement_ref": "FR-META-028", "relation_type": "DECOMPOSES", "rationale": "FR-META-028 (Trusted Computing Base Manifest) decomposes FR-FIN-21's SBOM/signature verification."},
+    {"fr_fin_requirement_id": "FR-FIN-21", "existing_requirement_ref": "FR-META-045", "relation_type": "OVERLAPS", "rationale": "FR-META-045 (Runtime Drift Classification and Impact) overlaps FR-FIN-21's post-install functional/security/recovery verification and Rollback Receipt."},
+
+    {"fr_fin_requirement_id": "FR-FIN-22", "existing_requirement_ref": "FR-META-006", "relation_type": "DECOMPOSES", "rationale": "FR-META-006's Evidence Target Binding is a constituent link within FR-FIN-22's end-to-end (사용자 요청→...→사람결정) Parent Hash lineage."},
+    {"fr_fin_requirement_id": "FR-FIN-22", "existing_requirement_ref": "FR-META-013", "relation_type": "OVERLAPS", "rationale": "FR-META-013's raw-evidence reconstruction principle overlaps FR-FIN-22's independent-verification link in the lineage chain."},
+    {"fr_fin_requirement_id": "FR-FIN-22", "existing_requirement_ref": "FR-FIN-12", "relation_type": "OVERLAPS", "rationale": "Intra-FINAL_TARGET observation (not an existing/master-tree relation, disclosed for completeness): FR-FIN-22's end-to-end lineage (request through human decision) and FR-FIN-12's evidence chain (source through delivery) substantially overlap in scope; docs/05 keeps them as separate IDs (FR-FIN-12 = evidence/independent-validation pack, FR-FIN-22 = the unifying end-to-end Hash lineage across the whole agent-orchestration pipeline), so both are preserved per the 'do not delete granular requirements' instruction."}
+  ],
+  "fr_fin_disposition_summary": [
+    {"fr_fin_requirement_id": "FR-FIN-01", "fr_fin_heading": "Intake·Inventory", "disposition": "NEW_PRODUCT_SURFACE_NO_EXISTING_COUNTERPART"},
+    {"fr_fin_requirement_id": "FR-FIN-02", "fr_fin_heading": "Learning·Profile", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-03", "fr_fin_heading": "Regulatory Control", "disposition": "NEW_PRODUCT_SURFACE_NO_EXISTING_COUNTERPART"},
+    {"fr_fin_requirement_id": "FR-FIN-04", "fr_fin_heading": "Threat·Risk Planning", "disposition": "PARTIAL_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-05", "fr_fin_heading": "Verification Fabric", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-06", "fr_fin_heading": "AI Security", "disposition": "PARTIAL_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-07", "fr_fin_heading": "Financial Security", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-08", "fr_fin_heading": "Finding·RCA", "disposition": "PARTIAL_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-09", "fr_fin_heading": "Controlled Improvement", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-10", "fr_fin_heading": "VS Code Agent", "disposition": "NEW_PRODUCT_SURFACE_NO_EXISTING_COUNTERPART"},
+    {"fr_fin_requirement_id": "FR-FIN-11", "fr_fin_heading": "Git Full-Chain", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-12", "fr_fin_heading": "Evidence·Independent Validation", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-13", "fr_fin_heading": "Operations", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-14", "fr_fin_heading": "Vendor·Supply Chain", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-15", "fr_fin_heading": "Unified Workbench", "disposition": "NEW_PRODUCT_SURFACE_NO_EXISTING_COUNTERPART"},
+    {"fr_fin_requirement_id": "FR-FIN-16", "fr_fin_heading": "Developer Agent", "disposition": "PARTIAL_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-17", "fr_fin_heading": "Work·Artifact Agent", "disposition": "NEW_PRODUCT_SURFACE_NO_EXISTING_COUNTERPART"},
+    {"fr_fin_requirement_id": "FR-FIN-18", "fr_fin_heading": "Orchestration·Memory", "disposition": "PARTIAL_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-19", "fr_fin_heading": "Tool·Skill·Plugin·Connector", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-20", "fr_fin_heading": "Automation", "disposition": "PARTIAL_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-21", "fr_fin_heading": "Package·Delivery", "disposition": "SUBSTANTIALLY_EXISTING_COVERAGE"},
+    {"fr_fin_requirement_id": "FR-FIN-22", "fr_fin_heading": "Unified Evidence", "disposition": "PARTIAL_EXISTING_COVERAGE"}
+  ],
+  "conflict_candidates_considered": [
+    {
+      "fr_fin_requirement_id": "FR-FIN-07",
+      "existing_requirement_ref": "FR-COM-013",
+      "apparent_tension": "FR-COM-013 conditions SoD enforcement on '규제산업 Enterprise Edition' (a specific tier), which could be read as implying SoD is optional outside that tier -- while docs/05 §3 states SoD unconditionally for the final-target product's core roles.",
+      "resolution": "NOT_A_CONFLICT",
+      "reasoning": "docs/05's entire declared scope (§0, 'Status') is '금융권 최종 제품' / financial-sector only. FR-COM-013's condition ('규제산업', regulated industry) is satisfied by construction within docs/05's scope -- there is no reading under which a docs/05-scope deployment falls outside FR-COM-013's SoD-required condition. The two statements are consistent (docs/05 makes unconditional, within its narrower scope, what FR-COM-013 makes conditional within the broader multi-industry MVP scope); this is a REFINES/DECOMPOSES-shaped relation, not a contradiction."
+    },
+    {
+      "fr_fin_requirement_id": "FR-FIN-12",
+      "existing_requirement_ref": "NFR-PRIV",
+      "apparent_tension": "FR-FIN-12/FR-FIN-22 require long-term Evidence retention + Legal Hold; NFR-PRIV requires per-customer retention periods AND proof of complete deletion. Long-term retention and complete-deletion-proof could appear to pull in opposite directions for the same evidence.",
+      "resolution": "NOT_A_CONFLICT",
+      "reasoning": "FR-LEARN-073 (Evidence Retention vs Deletion Tension) and FR-LEARN-074 (Legal Hold vs Right-to-delete Conflict, resolved by legal process) already exist in the corpus specifically to govern this exact tension -- it is a known, already-governed tension with a prescribed resolution mechanism (legal-hold-aware conditional retention), not a fresh unresolved contradiction. Recorded here as SATISFIES/OVERLAPS in relations[], not promoted to conflicts[]."
+    }
+  ],
+  "conflicts": [],
+  "double_count_coverage_warning": "These relations are a discovery/disclosure artifact only. A SATISFIES or DECOMPOSES entry above must NOT be silently converted into automatic FR-FIN-* trace/coverage closure -- per final-target-product-authority-reconciliation.candidate.v1.json's double_count_coverage=false, each FR-FIN-* requirement's own coverage must still be independently (re)verified against its own text when EPOCH::REQUIREMENT::0003 is actually cut over post-PR-#52-merge. Existing evidence for the related existing_requirement_ref is not automatically existing evidence for the fr_fin_requirement_id.",
+  "proposed_by": "CLAUDE_SEMANTIC_ANALYSIS",
+  "requires_human_confirmation": true,
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
