@@ -1181,16 +1181,6 @@
         "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (CONSENT_WITHDRAWAL forbids NO_ACTION_WITH_PROOF, downgraded to REQUALIFY_REQUIRED; real disposition recorded as requested; other triggers may legitimately no-action; empty derived_asset_ids rejected)"
       },
       {
-        "class": "7 -- Adaptive Learning vs Reproducibility / 11 -- Ground-truth Drift vs Historical Immutability",
-        "runtime_operation": "assurance.learning.decision-currentness.evaluate (NEW)",
-        "contract_schema": "contracts/decision-time-knowledge-snapshot.v1.schema.json (NEW -- binds LC-P0-007 and LC-P0-011 per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json)",
-        "note": "Real epoch-comparison logic (JSON Schema without $data can't express it declaratively, documented honestly in the schema's own $comment): matching knowledge_epoch/current_knowledge_epoch is the only way to reach CURRENT+replay_claim_allowed=true; any drift forces STALE or REVIEW_REQUIRED (caller-flagged material_drift) and a real reevaluation_ref -- HOLD if the caller tries to claim drift without one. decision_sha256 is echoed unchanged, never recomputed, so the annotated decision itself is never touched.",
-        "partial_disclosure": null,
-        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +5 (matching epochs stay CURRENT+replayable; drift requires real reevaluation_ref; drift without one HOLDs rather than silently staying CURRENT; material_drift escalates to REVIEW_REQUIRED; decision_sha256 echoed unchanged); GroundTruthEpochLedgerTest.java (5) + RevalidationBacklogLedgerTest.java (7) + SemanticAssuranceV2DispatcherBridgeTest.java +4 (undeclared epoch rejected, real backlog enqueue, backlog completion, duplicate epoch rejected); 5 pre-existing currentness-evaluate tests updated to declare their epochs first",
-        "full_closure_reference": "contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json (LC-P0-007, LC-P0-011)",
-        "cross_wire_closure": "GroundTruthAuthority: current_knowledge_epoch in learningDecisionCurrentnessEvaluate must now be a really-declared epoch, checked against new GroundTruthEpochLedger.java (hash-chained, single global sequence). Declaring a new epoch (assurance.learning.ground-truth.declare-epoch) requires real AUDITOR/ADMIN role authority, computed from the caller's actual roles, never a caller-declared claim -- same shape as HazardLedger's safety-authority check. RevalidationBacklog: a STALE/REVIEW_REQUIRED result is now really enqueued into new RevalidationBacklogLedger.java (one file per reevaluation_ref, hash-chained), queryable via assurance.learning.revalidation.backlog-status and closeable via assurance.learning.revalidation.complete -- 'every stale decision eventually gets reevaluated' becomes a checkable property instead of an unverifiable claim."
-      },
-      {
         "class": "9 -- Human Override vs Self-confirmation",
         "runtime_operation": "assurance.learning.human-override.decide (NEW)",
         "contract_schema": "contracts/human-override-disposition.v1.schema.json (NEW -- binds LC-P0-009's HumanOverrideTrendReport half)",
@@ -1222,6 +1212,26 @@
         "contract_schema": "contracts/evidence-observation.v1.schema.json (NEW -- closes LC-P0-002's EvidenceObservation half; DecisionTimeKnowledgeSnapshot half already built for classes 7/11)",
         "note": "reproducibility_claimed=true is forced to false whenever retention_form=RAW_SENSITIVE, regardless of what the caller requested -- permanent raw-sensitive retention can never be the basis for a reproducibility claim, closing the named negative case.",
         "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +3 (minimized retention can claim reproducibility; raw retention forcibly downgrades the claim; raw retention without a claim is fine)"
+      },
+      {
+        "class": "7 -- Adaptive Learning vs Reproducibility",
+        "runtime_operation": "assurance.learning.decision-currentness.evaluate (NEW)",
+        "contract_schema": "contracts/decision-time-knowledge-snapshot.v1.schema.json (NEW -- binds LC-P0-007 and LC-P0-011 per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json)",
+        "note": "Real epoch-comparison logic (JSON Schema without $data can't express it declaratively, documented honestly in the schema's own $comment): matching knowledge_epoch/current_knowledge_epoch is the only way to reach CURRENT+replay_claim_allowed=true; any drift forces STALE or REVIEW_REQUIRED and a real reevaluation_ref. decision_sha256 is echoed unchanged, never recomputed. ValidationExperiment (LC-P0-007's other named contract) is a distinct, unrelated schema (stochastic/metamorphic run outcomes) already closed independently via oracleMultiEvaluate/validatorRegressionQualify in Batch 5 -- not cross-wired to this op since the two concerns don't share state.",
+        "partial_disclosure": null,
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +5 (matching epochs stay CURRENT+replayable; drift requires real reevaluation_ref; drift without one HOLDs rather than silently staying CURRENT; material_drift escalates to REVIEW_REQUIRED; decision_sha256 echoed unchanged); GroundTruthEpochLedgerTest.java (5) + RevalidationBacklogLedgerTest.java (7) + SemanticAssuranceV2DispatcherBridgeTest.java +4 (undeclared epoch rejected, real backlog enqueue, backlog completion, duplicate epoch rejected); 5 pre-existing currentness-evaluate tests updated to declare their epochs first",
+        "full_closure_reference": "contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json (LC-P0-007, LC-P0-011)",
+        "cross_wire_closure": "GroundTruthAuthority (also serves class 11): current_knowledge_epoch must be a really-declared epoch, checked against GroundTruthEpochLedger.java. Declaring a new epoch requires real AUDITOR/ADMIN authority."
+      },
+      {
+        "class": "11 -- Ground-truth Drift vs Historical Immutability",
+        "runtime_operation": "assurance.learning.decision-currentness.evaluate (NEW)",
+        "contract_schema": "contracts/decision-time-knowledge-snapshot.v1.schema.json (NEW -- binds LC-P0-007 and LC-P0-011 per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json)",
+        "note": "OfficialLearningLedger's append-only hash-chain already made past decisions immutable (Batch 5). This closes the other half: a STALE/REVIEW_REQUIRED currentness result is really enqueued into RevalidationBacklogLedger.java (one file per reevaluation_ref, hash-chained), queryable and closeable, not just returned as a bare string.",
+        "partial_disclosure": null,
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +5 (matching epochs stay CURRENT+replayable; drift requires real reevaluation_ref; drift without one HOLDs rather than silently staying CURRENT; material_drift escalates to REVIEW_REQUIRED; decision_sha256 echoed unchanged); GroundTruthEpochLedgerTest.java (5) + RevalidationBacklogLedgerTest.java (7) + SemanticAssuranceV2DispatcherBridgeTest.java +4 (undeclared epoch rejected, real backlog enqueue, backlog completion, duplicate epoch rejected); 5 pre-existing currentness-evaluate tests updated to declare their epochs first",
+        "full_closure_reference": "contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json (LC-P0-007, LC-P0-011)",
+        "cross_wire_closure": "RevalidationBacklog: assurance.learning.revalidation.backlog-status (real enumeration of pending items) and assurance.learning.revalidation.complete close the loop -- 'every stale decision eventually gets reevaluated' is a checkable property, not an unverifiable claim."
       }
     ],
     "classes_already_covered_by_prior_batch_5_work": [

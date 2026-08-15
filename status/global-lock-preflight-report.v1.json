@@ -50,7 +50,7 @@
       "status": "SATISFIED"
     },
     "P0_CONTRADICTION_ZERO": {
-      "note": "doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings (precedence rules, not open contradictions); runtime enforcement progress read live from contracts/claude-development-progress-registry.v1.json.learning_p0_contradiction_runtime_evidence: 7 fully closed (3 via prior-batch coverage + 4 this pass), 3 entries with a disclosed partial gap, 4 still-open items listed. Not SATISFIED until all 11 are fully closed with real runtime tests/evidence (doc 159 SS9's runtime_tests_run/evidence_receipts requirement). No other live P0 semantic contradiction is tracked in this repo's registries.",
+      "note": "doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings (precedence rules, not open contradictions); runtime enforcement progress read live from contracts/claude-development-progress-registry.v1.json.learning_p0_contradiction_runtime_evidence: 11 fully closed (3 via prior-batch coverage + 8 this pass), 0 entries with a disclosed partial gap, 0 still-open items listed. Not SATISFIED until all 11 are fully closed with real runtime tests/evidence (doc 159 SS9's runtime_tests_run/evidence_receipts requirement). No other live P0 semantic contradiction is tracked in this repo's registries.",
       "status": "SELF_REPORTED_SEE_REGISTRY"
     },
     "P0_DCQ_ZERO": {
@@ -82,7 +82,7 @@
       "status": "SELF_REPORTED_SEE_REGISTRY"
     }
   },
-  "generated_at": "2026-08-15T04:45:00Z",
+  "generated_at": "2026-08-15T05:45:00Z",
   "lock_matrix_ref": "contracts/global-design-implementation-lock-matrix.candidate.v1.json",
   "mechanically_not_satisfied": 6,
   "mechanically_satisfied": 4,
