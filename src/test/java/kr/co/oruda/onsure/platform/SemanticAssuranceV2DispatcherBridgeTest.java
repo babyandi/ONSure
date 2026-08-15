@@ -1500,6 +1500,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-META-010 Atomic Validation Snapshot
     @Test
     void validationSnapshotVerifyReachesAllLanesAtomicCleanWhenEverythingReconciles() throws Exception {
         Map<?, ?> result = validationSnapshotVerify(Map.of(), Map.of(), 0);
@@ -1581,6 +1582,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-013 Stochastic, FR-LEARN-014 Metamorphic, FR-LEARN-015 Differential validation
     @Test
     void validationExperimentEvaluateReachesStableWhenEveryRunPassesAndCountIsAtLeastTwo() throws Exception {
         Map<?, ?> result = validationExperimentEvaluate(
@@ -1650,6 +1652,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-008 baseline-relative precision/recall/FP/FN/coverage/latency change recording
     @Test
     void learningEffectivenessEvaluateReachesImprovedWhenAMetricGetsBetterAndNoneRegress() throws Exception {
         Map<String, Object> before = effectivenessMetrics(0.80, 0.70, 0.10, 0.20, 0.90, 50.0);
