@@ -196,6 +196,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.learning.decision-currentness.evaluate",
                     "assurance.learning.evidence-observation.record", "assurance.release.qualify",
                     "assurance.validation.snapshot-verify", "assurance.validation.experiment-evaluate",
+                    "assurance.learning.effectiveness.evaluate",
                     "assurance.provider.drift-check",
                     "assurance.multi-agent.corroboration-check",
                     "assurance.hazard.create", "assurance.appeal.file",

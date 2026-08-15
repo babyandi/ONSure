@@ -78,6 +78,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.release.qualify",
             "assurance.validation.snapshot-verify",
             "assurance.validation.experiment-evaluate",
+            "assurance.learning.effectiveness.evaluate",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -180,6 +181,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.validation.snapshot-verify" -> validationSnapshotVerify(request);
             case "assurance.validation.experiment-evaluate" -> validationExperimentEvaluate(request);
+            case "assurance.learning.effectiveness.evaluate" -> learningEffectivenessEvaluate(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2322,6 +2324,92 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("result", result);
         out.put("decision", "STABLE".equals(result) ? "NON_FINAL" : "HOLD");
         return immutable(out);
+    }
+
+    private static final List<String> EFFECTIVENESS_METRIC_FIELDS = List.of(
+            "precision", "recall", "false_positive_rate", "false_negative_rate", "coverage", "latency_ms");
+    private static final double EFFECTIVENESS_TOLERANCE = 0.01;
+    private static final double EFFECTIVENESS_MIN_CONFIDENCE = 0.8;
+
+    /**
+     * learning-effectiveness-report.v1.schema.json real computation (Batch 5 object D; 149 SS D:
+     * "before/after metrics on the SAME benchmark_id are the only basis for an IMPROVED/EQUIVALENT
+     * decision... a real regression (worse false_positive/false_negative/recall/precision) claiming
+     * IMPROVED is the named negative case"). JSON Schema alone cannot numerically compare before vs
+     * after. This operation computes decision for real: any regression beyond tolerance on false_
+     * positive_rate, false_negative_rate, recall, or precision forces REGRESSION regardless of what
+     * improved elsewhere -- a caller cannot claim IMPROVED by cherry-picking one better metric while
+     * another got worse. Below-threshold confidence forces INCONCLUSIVE before any directional claim
+     * is made at all.
+     */
+    private Map<String, Object> learningEffectivenessEvaluate(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String reportId = requiredText(request, "report_id");
+        String candidateId = requiredText(request, "candidate_id");
+        String learningEpoch = requiredText(request, "learning_epoch");
+        String benchmarkId = requiredText(request, "benchmark_id");
+
+        Map<String, Double> before = requiredMetricSet(request.path("before"));
+        Map<String, Double> after = requiredMetricSet(request.path("after"));
+        if (before == null || after == null) {
+            return failClosed("HOLD", List.of("EFFECTIVENESS_METRIC_SET_INVALID"));
+        }
+
+        double variance = request.path("variance").asDouble(-1);
+        double confidence = request.path("confidence").asDouble(-1);
+        if (variance < 0 || confidence < 0 || confidence > 1) {
+            return failClosed("HOLD", List.of("EFFECTIVENESS_VARIANCE_OR_CONFIDENCE_INVALID"));
+        }
+
+        String decision;
+        List<String> reasons = new ArrayList<>();
+        if (confidence < EFFECTIVENESS_MIN_CONFIDENCE) {
+            decision = "INCONCLUSIVE";
+            reasons.add("CONFIDENCE_BELOW_THRESHOLD:" + confidence);
+        } else {
+            boolean fpWorse = after.get("false_positive_rate") - before.get("false_positive_rate") > EFFECTIVENESS_TOLERANCE;
+            boolean fnWorse = after.get("false_negative_rate") - before.get("false_negative_rate") > EFFECTIVENESS_TOLERANCE;
+            boolean recallWorse = before.get("recall") - after.get("recall") > EFFECTIVENESS_TOLERANCE;
+            boolean precisionWorse = before.get("precision") - after.get("precision") > EFFECTIVENESS_TOLERANCE;
+            if (fpWorse) reasons.add("FALSE_POSITIVE_RATE_REGRESSED");
+            if (fnWorse) reasons.add("FALSE_NEGATIVE_RATE_REGRESSED");
+            if (recallWorse) reasons.add("RECALL_REGRESSED");
+            if (precisionWorse) reasons.add("PRECISION_REGRESSED");
+
+            if (fpWorse || fnWorse || recallWorse || precisionWorse) {
+                decision = "REGRESSION";
+            } else {
+                boolean fpBetter = before.get("false_positive_rate") - after.get("false_positive_rate") > EFFECTIVENESS_TOLERANCE;
+                boolean fnBetter = before.get("false_negative_rate") - after.get("false_negative_rate") > EFFECTIVENESS_TOLERANCE;
+                boolean recallBetter = after.get("recall") - before.get("recall") > EFFECTIVENESS_TOLERANCE;
+                boolean precisionBetter = after.get("precision") - before.get("precision") > EFFECTIVENESS_TOLERANCE;
+                decision = (fpBetter || fnBetter || recallBetter || precisionBetter) ? "IMPROVED" : "EQUIVALENT";
+            }
+        }
+
+        Map<String, Object> out = base("ONSURE_LEARNING_EFFECTIVENESS_REPORT", targetId);
+        out.put("report_id", reportId);
+        out.put("candidate_id", candidateId);
+        out.put("learning_epoch", learningEpoch);
+        out.put("benchmark_id", benchmarkId);
+        out.put("before", Map.copyOf(before));
+        out.put("after", Map.copyOf(after));
+        out.put("variance", variance);
+        out.put("confidence", confidence);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    private Map<String, Double> requiredMetricSet(JsonNode node) {
+        if (!node.isObject()) return null;
+        Map<String, Double> metrics = new LinkedHashMap<>();
+        for (String field : EFFECTIVENESS_METRIC_FIELDS) {
+            double value = node.path(field).asDouble(-1);
+            if (value < 0) return null;
+            metrics.put(field, value);
+        }
+        return metrics;
     }
 
     private static final List<String> PROVIDER_CHARACTERISTIC_FIELDS = List.of(

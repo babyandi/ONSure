@@ -1651,6 +1651,64 @@ class SemanticAssuranceV2DispatcherBridgeTest {
     }
 
     @Test
+    void learningEffectivenessEvaluateReachesImprovedWhenAMetricGetsBetterAndNoneRegress() throws Exception {
+        Map<String, Object> before = effectivenessMetrics(0.80, 0.70, 0.10, 0.20, 0.90, 50.0);
+        Map<String, Object> after = effectivenessMetrics(0.80, 0.85, 0.10, 0.20, 0.90, 50.0);
+        Map<?, ?> result = learningEffectivenessEvaluate(before, after, 0.02, 0.95);
+        assertEquals("IMPROVED", result.get("decision"));
+    }
+
+    @Test
+    void learningEffectivenessEvaluateReachesEquivalentWhenNothingChangesMeaningfully() throws Exception {
+        Map<String, Object> metrics = effectivenessMetrics(0.80, 0.70, 0.10, 0.20, 0.90, 50.0);
+        Map<?, ?> result = learningEffectivenessEvaluate(metrics, metrics, 0.02, 0.95);
+        assertEquals("EQUIVALENT", result.get("decision"));
+    }
+
+    @Test
+    void learningEffectivenessEvaluateForcesRegressionWhenFalsePositiveRateWorsensEvenIfRecallImproves() throws Exception {
+        Map<String, Object> before = effectivenessMetrics(0.80, 0.70, 0.10, 0.20, 0.90, 50.0);
+        Map<String, Object> after = effectivenessMetrics(0.80, 0.90, 0.30, 0.20, 0.90, 50.0);
+        Map<?, ?> result = learningEffectivenessEvaluate(before, after, 0.02, 0.95);
+        assertEquals("REGRESSION", result.get("decision"));
+        assertEquals(List.of("FALSE_POSITIVE_RATE_REGRESSED"), result.get("reasons"));
+    }
+
+    @Test
+    void learningEffectivenessEvaluateForcesInconclusiveBelowConfidenceThreshold() throws Exception {
+        Map<String, Object> before = effectivenessMetrics(0.80, 0.70, 0.10, 0.20, 0.90, 50.0);
+        Map<String, Object> after = effectivenessMetrics(0.80, 0.90, 0.05, 0.20, 0.90, 50.0);
+        Map<?, ?> result = learningEffectivenessEvaluate(before, after, 0.15, 0.5);
+        assertEquals("INCONCLUSIVE", result.get("decision"));
+    }
+
+    private Map<String, Object> effectivenessMetrics(
+            double precision, double recall, double fpRate, double fnRate, double coverage, double latencyMs) {
+        Map<String, Object> metrics = new java.util.LinkedHashMap<>();
+        metrics.put("precision", precision);
+        metrics.put("recall", recall);
+        metrics.put("false_positive_rate", fpRate);
+        metrics.put("false_negative_rate", fnRate);
+        metrics.put("coverage", coverage);
+        metrics.put("latency_ms", latencyMs);
+        return metrics;
+    }
+
+    private Map<?, ?> learningEffectivenessEvaluate(
+            Map<String, Object> before, Map<String, Object> after, double variance, double confidence)
+            throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "report_id", "report-1", "candidate_id", "candidate-1",
+                "learning_epoch", "epoch-1", "benchmark_id", "benchmark-1",
+                "before", before, "after", after, "variance", variance, "confidence", confidence);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.effectiveness.evaluate", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");
         Map<?, ?> result = providerDriftCheck(characteristics, characteristics);
