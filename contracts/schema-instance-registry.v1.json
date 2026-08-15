@@ -895,6 +895,15 @@
         "fixtures/contracts/decision-explanation-fidelity-check.invalid.json"
       ],
       "schema": "contracts/decision-explanation-fidelity-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/selective-prediction-risk-coverage-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/selective-prediction-risk-coverage-check.invalid.json"
+      ],
+      "schema": "contracts/selective-prediction-risk-coverage-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

@@ -57,6 +57,7 @@ public final class TenantRbacService {
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
             "assurance.learning.explanation-fidelity.check",
+            "assurance.learning.selective-prediction-risk-coverage.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",

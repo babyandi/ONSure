@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-081",
+  "requirement_summary": "Selective Prediction / Risk-Coverage Governance: ABSTAIN/HOLD 비율과 coverage를 함께 관리한다. 어려운 사례를 모두 abstain하여 precision만 높이는 metric gaming을 금지하고 risk-coverage curve를 qualification에 사용한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (selectivePredictionRiskCoverageCheck), assurance.learning.selective-prediction-risk-coverage.check v2 operation; contracts/selective-prediction-risk-coverage-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "selectivePredictionRiskCoverageCheckReachesQualifiedWithSufficientCoverage",
+    "selectivePredictionRiskCoverageCheckRejectsCoverageAbstainRateMismatch",
+    "selectivePredictionRiskCoverageCheckRejectsCoverageBelowMinimumEvenWithHighPrecision"
+  ],
+  "coverage_notes": "Two real cross-field checks JSON Schema's per-field [0,1] bounds cannot express: (1) coverage + abstain_rate must reconcile to ~1.0 (within tolerance), rejecting an internally-inconsistent report; (2) coverage below a declared min_required_coverage forces UNQUALIFIED REGARDLESS of how high precision_at_coverage is -- directly closing the requirement's own named metric-gaming case ('어려운 사례를 모두 abstain하여 precision만 높이는' -- abstaining on every hard case to inflate precision on what's left). A validator cannot claim qualification from a tiny, easy, high-precision island while abstaining on the majority of real cases.",
+  "open_gap": "The requirement also names using the full 'risk-coverage curve' for qualification (a curve across MULTIPLE coverage thresholds, not just a single point). This operation checks a single (precision, coverage) point against a single minimum-coverage floor; it does not compute or validate an entire risk-coverage curve. Disclosed as a real, not-yet-covered extension of the single-point check implemented here.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (157_LEARNING_VALIDATION_BLIND_FINAL_GAP_REVIEW.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

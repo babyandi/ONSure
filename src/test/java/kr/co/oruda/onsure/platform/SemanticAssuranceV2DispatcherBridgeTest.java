@@ -2017,6 +2017,45 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-081 Selective Prediction / Risk-Coverage Governance
+    @Test
+    void selectivePredictionRiskCoverageCheckReachesQualifiedWithSufficientCoverage() throws Exception {
+        Map<?, ?> result = selectivePredictionRiskCoverageCheck(0.93, 0.85, 0.15, 0.7);
+        assertEquals("QUALIFIED", result.get("decision"));
+    }
+
+    @Test
+    void selectivePredictionRiskCoverageCheckRejectsCoverageAbstainRateMismatch() throws Exception {
+        Map<?, ?> result = selectivePredictionRiskCoverageCheck(0.93, 0.85, 0.5, 0.7);
+        assertEquals("UNQUALIFIED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).contains("COVERAGE_AND_ABSTAIN_RATE_DO_NOT_RECONCILE"));
+    }
+
+    @Test
+    void selectivePredictionRiskCoverageCheckRejectsCoverageBelowMinimumEvenWithHighPrecision() throws Exception {
+        Map<?, ?> result = selectivePredictionRiskCoverageCheck(0.99, 0.2, 0.8, 0.7);
+        assertEquals("UNQUALIFIED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).stream()
+                        .anyMatch(r -> r.toString().startsWith("COVERAGE_BELOW_MINIMUM_METRIC_GAMING_RISK")));
+    }
+
+    private Map<?, ?> selectivePredictionRiskCoverageCheck(
+            double precisionAtCoverage, double coverage, double abstainRate, double minRequiredCoverage)
+            throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1", "subject_id", "subject-1",
+                "precision_at_coverage", precisionAtCoverage, "coverage", coverage,
+                "abstain_rate", abstainRate, "min_required_coverage", minRequiredCoverage);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.selective-prediction-risk-coverage.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

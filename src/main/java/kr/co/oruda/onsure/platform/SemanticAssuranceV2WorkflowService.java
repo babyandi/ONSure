@@ -85,6 +85,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
             "assurance.learning.explanation-fidelity.check",
+            "assurance.learning.selective-prediction-risk-coverage.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -194,6 +195,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
             case "assurance.learning.explanation-fidelity.check" -> decisionExplanationFidelityCheck(request);
+            case "assurance.learning.selective-prediction-risk-coverage.check" -> selectivePredictionRiskCoverageCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2768,6 +2770,51 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("explanation_cited_refs", citedRefs);
         out.put("fabricated_refs", List.copyOf(fabricatedRefs));
         out.put("decision", decision);
+        return immutable(out);
+    }
+
+    private static final double COVERAGE_RECONCILIATION_TOLERANCE = 0.01;
+
+    /**
+     * selective-prediction-risk-coverage-check.v1.schema.json real computation (FR-LEARN-081
+     * Selective Prediction / Risk-Coverage Governance: "ABSTAIN/HOLD 비율과 coverage를 함께
+     * 관리한다. 어려운 사례를 모두 abstain하여 precision만 높이는 metric gaming을 금지"). JSON
+     * Schema can bound each of precision/coverage/abstain_rate to [0,1] individually but cannot
+     * check coverage+abstain_rate reconcile to ~1.0, nor enforce that coverage clears a real
+     * minimum before a precision claim counts -- exactly the metric-gaming gap ("abstain on every
+     * hard case, claim high precision on the easy sliver that's left") this requirement forbids.
+     * This operation rejects both: a coverage/abstain_rate pair that does not reconcile, and any
+     * coverage below min_required_coverage, regardless of how high precision_at_coverage is.
+     */
+    private Map<String, Object> selectivePredictionRiskCoverageCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String subjectId = requiredText(request, "subject_id");
+        double precisionAtCoverage = request.path("precision_at_coverage").asDouble(-1);
+        double coverage = request.path("coverage").asDouble(-1);
+        double abstainRate = request.path("abstain_rate").asDouble(-1);
+        double minRequiredCoverage = request.path("min_required_coverage").asDouble(-1);
+        if (precisionAtCoverage < 0 || coverage < 0 || abstainRate < 0 || minRequiredCoverage < 0) {
+            return failClosed("HOLD", List.of("SELECTIVE_PREDICTION_FIELDS_INVALID"));
+        }
+
+        List<String> reasons = new ArrayList<>();
+        if (Math.abs((coverage + abstainRate) - 1.0) > COVERAGE_RECONCILIATION_TOLERANCE) {
+            reasons.add("COVERAGE_AND_ABSTAIN_RATE_DO_NOT_RECONCILE");
+        }
+        if (coverage < minRequiredCoverage) {
+            reasons.add("COVERAGE_BELOW_MINIMUM_METRIC_GAMING_RISK:" + coverage + "<" + minRequiredCoverage);
+        }
+
+        String decision = reasons.isEmpty() ? "QUALIFIED" : "UNQUALIFIED";
+
+        Map<String, Object> out = base("ONSURE_SELECTIVE_PREDICTION_RISK_COVERAGE_CHECK", targetId);
+        out.put("subject_id", subjectId);
+        out.put("precision_at_coverage", precisionAtCoverage);
+        out.put("coverage", coverage);
+        out.put("abstain_rate", abstainRate);
+        out.put("min_required_coverage", minRequiredCoverage);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
 

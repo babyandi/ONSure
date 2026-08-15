@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/selective-prediction-risk-coverage-check.v1.schema.json",
+  "title": "ONSure Selective Prediction Risk-Coverage Check v1",
+  "description": "FR-LEARN-081 Selective Prediction / Risk-Coverage Governance: ABSTAIN/HOLD 비율과 coverage를 함께 관리한다. 어려운 사례를 모두 abstain하여 precision만 높이는 metric gaming을 금지하고 risk-coverage curve를 qualification에 사용한다. A coverage+abstain_rate that does not reconcile to ~1.0, or a coverage below the declared minimum-required threshold (regardless of how high precision_at_coverage looks), is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "precision_at_coverage", "coverage", "abstain_rate",
+    "min_required_coverage", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_SELECTIVE_PREDICTION_RISK_COVERAGE_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "precision_at_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+    "coverage": {"type": "number", "minimum": 0, "maximum": 1},
+    "abstain_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "min_required_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+    "decision": {"enum": ["QUALIFIED", "UNQUALIFIED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}
