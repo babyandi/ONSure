@@ -1,0 +1,100 @@
+{
+  "authority_population_current_snapshot": {
+    "blocking_precondition": "UNREVIEWED_SOURCE_COUNT_ZERO (136 of 177 sources still UNREVIEWED) -- reviewing each source's authority disposition (NORMATIVE_CURRENT / REFERENCE_ONLY / HANDOFF_ONLY / QA_EVIDENCE_ONLY / etc.) requires real per-document judgment, not a mechanical default; doing this honestly is its own substantial track, not something to rubber-stamp in bulk.",
+    "eligible_count": 22,
+    "ineligible_count": 155,
+    "population_digest": "21c2769851c43d75cf6d604d472cfd4f532ba84c99b9482422ae67e82c689b82",
+    "row_count": 177,
+    "unreviewed_count": 136
+  },
+  "authority_ref": "docs/master/semantic-assurance/159_REVERSE_ALIGNMENT_AND_GLOBAL_LOCK_GATE_PREPARATION.md",
+  "contract": "ONSURE_GLOBAL_LOCK_PREFLIGHT_REPORT_V1",
+  "external_dependency": 1,
+  "final_claim_allowed": false,
+  "gate_count": 19,
+  "gates": {
+    "APPLICABILITY_ONE_TO_ONE_CRITICAL_UNKNOWN_ZERO": {
+      "note": "critical_unknown_zero=False counts={'APPLICABLE': 21, 'NOT_APPLICABLE': 0, 'CONDITIONAL': 4, 'UNKNOWN_PENDING_AUTHORITATIVE_CONTEXT': 78}",
+      "status": "NOT_SATISFIED"
+    },
+    "AUTHORITY_POPULATION_FROZEN": {
+      "note": "requirement-authority-source-manifest.candidate.v1.json current_state='ROW_POPULATION_PENDING'",
+      "status": "NOT_SATISFIED"
+    },
+    "CLEAN_RECONSTRUCTABILITY": {
+      "note": "Full mvn test + python unittest discover reruns clean on every batch this session (most recently: 626 Java tests / 186 Python tests, 0 failures). OfficialLearningLedger and ContractSelectorLedger have real hash-chain re-verification tests. 'minimum two independent clean reruns' as a formally recorded artifact has not been produced.",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    },
+    "CONTENT_SHA256_AND_REGISTRY_DIGESTS": {
+      "note": "global_population_digest is null pending full non-ID requirement materialization (unmaterialized_classes: ['NON_ID_PROGRAM_FUNCTION', 'ACCEPTANCE_CRITERION', 'NFR', 'ARCHITECTURE_INVARIANT', 'POLICY_REQUIREMENT', 'REGULATORY_REQUIREMENT'])",
+      "status": "NOT_SATISFIED"
+    },
+    "CONTRACT_REGISTRY_REFERENTIAL_INTEGRITY": {
+      "note": "validate-structured-contracts.py --require-full exit=0 decision=PASS errors=[]",
+      "status": "SATISFIED"
+    },
+    "CORPUS_CONTAMINATION_AND_TRAIN_TEST_LEAKAGE": {
+      "note": "corpusIntegrityCheck implemented and tested (Batch 5 Slice 3): contamination/poisoning/tenant-leakage/train-test-leakage all have real Java checks + positive/negative fixtures. Counted toward Batch 5's PARTIALLY_EVIDENCE_READY state, not independently re-verified here.",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    },
+    "EXACT_RU_DIGEST": {
+      "note": "global_requirement_count=None global_population_digest=None note=103 is the current explicit-ID candidate count only. It is not the exact active Product Design Requirement denominator until authority-filtered non-ID materialization, deduplication, supersession and digest generation complete.",
+      "status": "NOT_SATISFIED"
+    },
+    "FINAL_IDENTITY_CURRENTNESS_SEPARATION": {
+      "note": "FinalCandidate != FinalApproval != FinalLock != Current Production Assurance maintained throughout every batch this session; no batch built or promoted any Final/Production-GO/Commercial-GO object.",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    },
+    "FORWARD_TRACE_AND_REVERSE_ORPHAN": {
+      "note": "forward trace scanner exists and runs clean for the explicit-ID population (scripts/scan-global-trace-closure.py); no reverse-orphan scanner (Evidence->Test->Implementation->Contract->Design->Requirement->Authority) has been built yet.",
+      "status": "NOT_SATISFIED"
+    },
+    "MIGRATION_INTEGRATION_RECONCILIATION": {
+      "note": "Batch 8 EVIDENCE_READY: real reconciliation/cutover/rollback with fail-closed negative tests. Disclosed gap: live v1/v2 traffic shadowing and dual-read are not wired -- reconciliation operates on caller-supplied representations only.",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    },
+    "NO_NONPOSITIVE_TO_POSITIVE_PROMOTION": {
+      "note": "git grep for final_claim_allowed:true across the tracked tree, excluding *.invalid.json negative fixtures (which intentionally carry it to prove rejection): real violations=none found. excluded negative fixtures: ['fixtures/contracts/atomic-validation-snapshot.v2.invalid.json', 'fixtures/contracts/license-state.invalid.json', 'fixtures/contracts/requirement-authority-source-manifest.v1.invalid.json', 'fixtures/contracts/requirement-universe-snapshot.v2.invalid.json']",
+      "status": "SATISFIED"
+    },
+    "P0_CONTRADICTION_ZERO": {
+      "note": "doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings (precedence rules, not open contradictions) but runtime_tests_run=0 / evidence_receipts=0 per doc 159 SS9 -- the design-level contradiction is resolved, the runtime enforcement is not yet evidenced. No other live P0 semantic contradiction is tracked in this repo's registries.",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    },
+    "P0_DCQ_ZERO": {
+      "note": "open P0 DCQ items: []. open P1 items (non-blocking): ['DCQ-0003']",
+      "status": "SATISFIED"
+    },
+    "P0_ORPHAN_ZERO_OR_AUTH_EXTERNAL_BLOCKER": {
+      "note": "mechanical scanner (explicit-ID FR-COM/FR-META/FR-FRESH/FR-LEARN population, 383 rows): p0_orphans=[]. This scanner's denominator is the explicit-ID population only -- doc 140's independent QA snapshot reports a much larger 899-record population (explicit + generated non-ID source-anchored records) with its own orphan count, not reconciled with this scanner. Treat this SATISFIED as scoped to explicit-ID requirements, not the full QA population.",
+      "status": "SATISFIED"
+    },
+    "POST_BATCH9_INDEPENDENT_RERUN": {
+      "note": "doc 159 SS11.18 requires an independent QA rerun after Claude reports Batch 9 complete. This is structurally something Claude's own preflight script cannot satisfy on its own behalf -- reported here for completeness, never SATISFIED.",
+      "status": "EXTERNAL_DEPENDENCY"
+    },
+    "REQUIRED_NEGATIVE_ADVERSARIAL_RECOVERY_EVIDENCE": {
+      "note": "116 *.invalid.json vs 119 *.valid.json fixtures repository-wide (every schema added since Batch 5 has a paired negative fixture). Adversarial/recovery-specific classification against contracts/test-coverage-universe.candidate.v1.json's test_classes taxonomy has not been separately materialized.",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    },
+    "REQUIREMENT_BASED_TEST_COVERAGE_UNIVERSE": {
+      "note": "contracts/test-coverage-universe.candidate.v1.json self-reports status='DESIGN_READY_RUNTIME_MATERIALIZATION_PENDING', known_priority_gaps=['FR-COM-008', 'NFR-CONFIG'] (FR-COM-008/NFR-CONFIG since closed by Batch 9 -- this candidate file's own status field predates that closure and has not been regenerated)",
+      "status": "NOT_SATISFIED"
+    },
+    "SAFETY_APPEAL_EXECUTABLE_EVIDENCE": {
+      "note": "Batch 6 EVIDENCE_READY: HazardLedger/AppealLedger real FSM + actor-identity SoD + negative cases + tests (HazardLedgerTest 6, AppealLedgerTest 8, tests/test_safety_appeal_contracts.py 7).",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    },
+    "VALIDATOR_ORACLE_COLLECTOR_QUALIFICATION_CURRENTNESS": {
+      "note": "OracleQualification/validator-regression-qualification implemented with real staleness and disagreement checks (Batch 5 Slice 3), self-attestation structurally blocked (self-approval prevented by actor-identity checks throughout). Global 'currentness proven' claim across every validator/oracle instance is not separately audited here.",
+      "status": "SELF_REPORTED_SEE_REGISTRY"
+    }
+  },
+  "generated_at": "2026-08-15T00:30:00Z",
+  "lock_matrix_ref": "contracts/global-design-implementation-lock-matrix.candidate.v1.json",
+  "mechanically_not_satisfied": 6,
+  "mechanically_satisfied": 4,
+  "note": "This is a preflight aid, not the Global Design/Implementation Lock itself. GLOBAL_DESIGN_IMPLEMENTATION_LOCK=HOLD/NON_FINAL until every gate is genuinely SATISFIED AND an independent QA rerun (POST_BATCH9_INDEPENDENT_RERUN) has occurred.",
+  "overall": "HOLD_NONFINAL",
+  "self_reported_from_registry": 8
+}

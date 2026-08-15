@@ -1121,5 +1121,26 @@
       "deterministic rerun cleanliness verification",
       "Global Design/Implementation Lock preflight"
     ]
+  },
+  "global_lock_preflight": {
+    "state": "HOLD_NONFINAL",
+    "authority_ref": "docs/master/semantic-assurance/159_REVERSE_ALIGNMENT_AND_GLOBAL_LOCK_GATE_PREPARATION.md",
+    "tool": "scripts/validate-global-lock-preflight.py (NEW) -- mechanically checks 19 gates from contracts/global-design-implementation-lock-matrix.candidate.v1.json against real repo state; never fabricates SATISFIED, reports SELF_REPORTED_SEE_REGISTRY for gates requiring semantic judgment this script cannot mechanically re-derive, and EXTERNAL_DEPENDENCY for POST_BATCH9_INDEPENDENT_RERUN (structurally outside Claude's own authority to satisfy).",
+    "latest_report": "status/global-lock-preflight-report.v1.json",
+    "summary_at_20260815": {
+      "mechanically_satisfied": 4,
+      "mechanically_not_satisfied": 6,
+      "self_reported_from_registry": 8,
+      "external_dependency": 1
+    },
+    "key_finding": "AUTHORITY_POPULATION_FROZEN is blocked by UNREVIEWED_SOURCE_COUNT_ZERO: running scripts/materialize-requirement-authority-manifest.py against the current requirement-authority-source-manifest.candidate.v1.json (now carrying the more fail-closed UNREVIEWED disposition merged in from origin/main) produces row_count=177, unreviewed_count=136. Closing this requires real per-document authority-disposition review (NORMATIVE_CURRENT / REFERENCE_ONLY / HANDOFF_ONLY / QA_EVIDENCE_ONLY / etc.) for each of the 136 sources -- genuine judgment work, not a mechanical default, and not attempted in bulk this session to avoid rubber-stamping.",
+    "mechanically_not_satisfied_gates": [
+      "AUTHORITY_POPULATION_FROZEN",
+      "EXACT_RU_DIGEST",
+      "APPLICABILITY_ONE_TO_ONE_CRITICAL_UNKNOWN_ZERO",
+      "FORWARD_TRACE_AND_REVERSE_ORPHAN",
+      "CONTENT_SHA256_AND_REGISTRY_DIGESTS",
+      "REQUIREMENT_BASED_TEST_COVERAGE_UNIVERSE"
+    ]
   }
 }
