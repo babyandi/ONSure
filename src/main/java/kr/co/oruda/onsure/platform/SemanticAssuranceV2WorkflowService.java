@@ -1822,7 +1822,33 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("disposition", disposition);
         out.put("deletion_basis", deletionBasis);
         out.put("reasons", List.copyOf(reasons));
+        out.put("evidence_observation", evidenceObservationView(disposition));
         return immutable(out);
+    }
+
+    /**
+     * LC-P0-008 cross-wire (doc 158 class 8, second contract binding): the counterevidence
+     * disposition and its corresponding evidence-observation.v1.schema.json retention_form/
+     * reproducibility_claimed must never be independently decided -- one determines the other, so
+     * they cannot drift apart the way two separately-called operations could. DELETED can only
+     * ever be reached here via a genuine legal basis (learningCounterevidenceDispose's own
+     * downgrade logic already guarantees that), so a DELETED disposition maps to TOMBSTONE, never
+     * RAW_SENSITIVE -- evidence-observation's own rule (RAW_SENSITIVE forbids a reproducibility
+     * claim) is therefore automatically respected rather than left to a second, separately-called
+     * evidence-observation.record invocation to enforce.
+     */
+    private Map<String, Object> evidenceObservationView(String disposition) {
+        String retentionForm = switch (disposition) {
+            case "RETAINED_MINIMIZED" -> "MINIMIZED";
+            case "RETAINED_PSEUDONYMIZED" -> "PSEUDONYMIZED";
+            case "RETAINED_FULL" -> "RAW_SENSITIVE";
+            case "DELETED" -> "TOMBSTONE";
+            default -> throw new IllegalStateException("COUNTEREVIDENCE_DISPOSITION_UNREACHABLE:" + disposition);
+        };
+        Map<String, Object> view = new LinkedHashMap<>();
+        view.put("retention_form", retentionForm);
+        view.put("reproducibility_claimed", !"RAW_SENSITIVE".equals(retentionForm));
+        return view;
     }
 
     /**

@@ -1164,7 +1164,7 @@
     "verification": "All pre-existing ledger tests pass unchanged (behavior-preserving retrofit) plus the new tamper tests. Full suite: 186 Python tests green, full mvn test green (background run confirmed)."
   },
   "learning_p0_contradiction_runtime_evidence": {
-    "state": "ALL_11_CLASSES_TOUCHED_4_PARTIAL_REMAIN",
+    "state": "8_OF_11_FULLY_CLOSED_3_PARTIAL_REMAIN",
     "authority_ref": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md",
     "note": "doc 159 SS9/SS11 tracks 11 P0 Learning contradiction classes with runtime_tests_run=0, evidence_receipts=0 as of the doc 158 design-only merge (PR #48). Closing this means: for each class, either point to an ALREADY-real runtime mechanism enforcing it (with tests), or build one. Progress so far, closed this pass:",
     "classes_closed_this_pass": [
@@ -1203,8 +1203,9 @@
         "contract_schema": "contracts/counterevidence-disposition.v1.schema.json (NEW -- binds LC-P0-008's CounterevidenceDisposition half)",
         "note": "Requesting DELETED for real counterevidence is downgraded to RETAINED_PSEUDONYMIZED unless deletion_basis is a genuine external requirement (LEGAL_REQUIREMENT or DATA_SUBJECT_ERASURE_RIGHT) -- PRIVACY_PREFERENCE_ONLY or no basis at all never honors the deletion request, closing the named negative case (unfavorable evidence quietly removed under a privacy pretext).",
         "bug_caught_and_fixed_during_this_slice": "Set.of(...).contains(null) throws NullPointerException in the JDK immutable-collections implementation -- the first test run for the 'no deletion_basis supplied at all' case crashed with NPE instead of exercising the intended downgrade path. Fixed with an explicit null check before the Set.contains() call; same bug CLASS (JDK immutable-collection null-handling surprise) as the Set.of() duplicate-element crash caught earlier in Batch 5.",
-        "partial_disclosure": "EvidenceObservation (the other LC-P0-008 contract) is not yet built -- this closes the CounterevidenceDisposition half only.",
-        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (privacy-only deletion downgraded; no-basis deletion also downgraded, this is the case that caught the NPE; real legal basis honored; non-counterevidence deletion unaffected)"
+        "partial_disclosure": null,
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (privacy-only deletion downgraded; no-basis deletion also downgraded, this is the case that caught the NPE; real legal basis honored; non-counterevidence deletion unaffected); +2 cross-wire tests (aPrivacyDowngradedCounterevidenceDispositionCarriesAConsistentEvidenceObservationView, aLegallyMandatedDeletionCarriesATombstoneEvidenceObservationViewNotRawSensitive)",
+        "cross_wire_closure": "assurance.learning.counterevidence.dispose now returns an embedded evidence_observation view (retention_form + reproducibility_claimed), derived deterministically from the disposition, never independently decided -- closing the EvidenceObservation half of LC-P0-008. DELETED (only reachable via a genuine legal basis) maps to TOMBSTONE, never RAW_SENSITIVE, so evidence-observation.v1.schema.json's own RAW_SENSITIVE-forbids-reproducibility-claim rule is automatically respected rather than left to a second, separately-called operation to enforce."
       },
       {
         "class": "3 -- Transparency vs Challenge Secrecy",
@@ -1228,7 +1229,6 @@
     ],
     "classes_still_open": [
       "7 -- Adaptive Learning vs Reproducibility (PARTIAL -- ValidationExperiment cross-wiring still open)",
-      "8 -- Counterevidence vs Privacy (PARTIAL -- EvidenceObservation now exists but not yet cross-wired into the counterevidence op)",
       "9 -- Human Override vs Self-confirmation (PARTIAL -- aggregate HumanOverrideTrendReport view still open)",
       "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- GroundTruthAuthority + RevalidationBacklog still open)"
     ],

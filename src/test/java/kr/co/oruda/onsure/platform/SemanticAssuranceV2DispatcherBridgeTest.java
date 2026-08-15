@@ -1201,6 +1201,32 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertTrue(((List<?>) result.get("reasons")).isEmpty());
     }
 
+    // LC-P0-008 cross-wire: the counterevidence disposition and the corresponding
+    // evidence-observation.v1.schema.json retention_form/reproducibility_claimed must never drift
+    // apart -- closing class 8's second contract binding.
+    @Test
+    void aPrivacyDowngradedCounterevidenceDispositionCarriesAConsistentEvidenceObservationView() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.counterevidence.dispose", Map.of(
+                "disposition_id", "cd-5", "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "decision_ref", "decision-5", "is_counterevidence", true,
+                "requested_disposition", "DELETED", "deletion_basis", "PRIVACY_PREFERENCE_ONLY"));
+        assertEquals("RETAINED_PSEUDONYMIZED", result.get("disposition"));
+        Map<?, ?> evidenceObservation = (Map<?, ?>) result.get("evidence_observation");
+        assertEquals("PSEUDONYMIZED", evidenceObservation.get("retention_form"));
+        assertEquals(true, evidenceObservation.get("reproducibility_claimed"));
+    }
+
+    @Test
+    void aLegallyMandatedDeletionCarriesATombstoneEvidenceObservationViewNotRawSensitive() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.counterevidence.dispose", Map.of(
+                "disposition_id", "cd-6", "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "decision_ref", "decision-6", "is_counterevidence", true,
+                "requested_disposition", "DELETED", "deletion_basis", "LEGAL_REQUIREMENT"));
+        Map<?, ?> evidenceObservation = (Map<?, ?>) result.get("evidence_observation");
+        assertEquals("TOMBSTONE", evidenceObservation.get("retention_form"));
+        assertEquals(true, evidenceObservation.get("reproducibility_claimed"));
+    }
+
     @Test
     void nonCounterevidenceMayBeDeletedWithoutTheSpecialBasisRequirement() throws Exception {
         Map<String, Object> fields = new java.util.LinkedHashMap<>();
