@@ -1164,7 +1164,7 @@
     "verification": "All pre-existing ledger tests pass unchanged (behavior-preserving retrofit) plus the new tamper tests. Full suite: 186 Python tests green, full mvn test green (background run confirmed)."
   },
   "learning_p0_contradiction_runtime_evidence": {
-    "state": "8_OF_11_FULLY_CLOSED_3_PARTIAL_REMAIN",
+    "state": "9_OF_11_FULLY_CLOSED_2_PARTIAL_REMAIN",
     "authority_ref": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md",
     "note": "doc 159 SS9/SS11 tracks 11 P0 Learning contradiction classes with runtime_tests_run=0, evidence_receipts=0 as of the doc 158 design-only merge (PR #48). Closing this means: for each class, either point to an ALREADY-real runtime mechanism enforcing it (with tests), or build one. Progress so far, closed this pass:",
     "classes_closed_this_pass": [
@@ -1194,8 +1194,9 @@
         "runtime_operation": "assurance.learning.human-override.decide (NEW)",
         "contract_schema": "contracts/human-override-disposition.v1.schema.json (NEW -- binds LC-P0-009's HumanOverrideTrendReport half)",
         "note": "promoted_to_active_knowledge reachable only with reason + evidence_ref + a confirmer_id genuinely distinct from overrider_id -- self-confirmation is rejected outright (SELF_CONFIRMATION_CANNOT_PROMOTE_OVERRIDE_TO_ACTIVE_KNOWLEDGE), same reviewer-separation shape as SeparationOfDutiesLedger/AppealLedger applied to the learning-knowledge-promotion boundary.",
-        "partial_disclosure": "This is a per-event disposition, not the aggregate trend-over-time view the LC-P0-009 contract name (HumanOverrideTrendReport) implies -- an aggregation across many override events (rate over time, per-tenant/per-model breakdown) is not built.",
-        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +3 (full proof promotes; self-confirmation rejected; missing reason/evidence/confirmer rejected)"
+        "partial_disclosure": null,
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +3 (full proof promotes; self-confirmation rejected; missing reason/evidence/confirmer rejected); HumanOverrideTrendLedgerTest.java (5 tests) + SemanticAssuranceV2DispatcherBridgeTest.java +2 (trend across multiple decisions, empty report for untouched candidate)",
+        "cross_wire_closure": "New HumanOverrideTrendLedger.java (hash-chained from the start) persists every learningHumanOverrideDecide() outcome, keyed by candidate_ref. assurance.learning.human-override.trend-report computes real aggregate figures (total_overrides, promoted_count, self_confirmation_rejected_count, promotion_rate) from that actual recorded history -- never a caller-supplied summary. Closes LC-P0-009's HumanOverrideTrendReport half."
       },
       {
         "class": "8 -- Counterevidence vs Privacy",
@@ -1229,7 +1230,6 @@
     ],
     "classes_still_open": [
       "7 -- Adaptive Learning vs Reproducibility (PARTIAL -- ValidationExperiment cross-wiring still open)",
-      "9 -- Human Override vs Self-confirmation (PARTIAL -- aggregate HumanOverrideTrendReport view still open)",
       "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- GroundTruthAuthority + RevalidationBacklog still open)"
     ],
     "summary_at_this_checkpoint": "All 11 doc-158 P0 Learning contradiction classes now have real runtime enforcement + tests. 7 are fully closed per their LC-P0 contract binding (1, 2, 3, 4, 5, 6, 10); 4 remain PARTIAL because their contract binding names a second contract not yet cross-wired (7, 8, 9, 11) -- see classes_still_open for exactly what's missing in each. doc 159's runtime_tests_run=0/evidence_receipts=0 baseline is no longer accurate; scripts/validate-global-lock-preflight.py's P0_CONTRADICTION_ZERO gate reads this section live."

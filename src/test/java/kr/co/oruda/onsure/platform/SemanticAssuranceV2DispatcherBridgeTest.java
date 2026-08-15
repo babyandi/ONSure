@@ -1166,6 +1166,36 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals(List.of("REASON_EVIDENCE_OR_CONFIRMER_MISSING"), result.get("reasons"));
     }
 
+    // LC-P0-009 cross-wire: HumanOverrideTrendReport, computed from real recorded history across
+    // multiple decide() calls -- closing class 9's second contract binding.
+    @Test
+    void trendReportReflectsRealHistoryAcrossMultipleOverrideDecisions() throws Exception {
+        learningDispatch(bridge, "assurance.learning.human-override.decide", Map.of(
+                "override_id", "trend-override-1", "candidate_ref", "trend-candidate-1", "overrider_id", "reviewer-a",
+                "reason", "confirmed false positive",
+                "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "confirmer_id", "reviewer-b"));
+        learningDispatch(bridge, "assurance.learning.human-override.decide", Map.of(
+                "override_id", "trend-override-2", "candidate_ref", "trend-candidate-1", "overrider_id", "reviewer-a",
+                "reason", "self-asserted",
+                "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "confirmer_id", "reviewer-a"));
+
+        Map<?, ?> report = learningDispatch(bridge, "assurance.learning.human-override.trend-report", Map.of(
+                "candidate_ref", "trend-candidate-1"));
+        assertEquals(2, report.get("total_overrides"));
+        assertEquals(1, report.get("promoted_count"));
+        assertEquals(1, report.get("self_confirmation_rejected_count"));
+        assertEquals(0.5, (double) report.get("promotion_rate"), 0.0001);
+    }
+
+    @Test
+    void trendReportForAnUntouchedCandidateIsEmptyNotAnError() throws Exception {
+        Map<?, ?> report = learningDispatch(bridge, "assurance.learning.human-override.trend-report", Map.of(
+                "candidate_ref", "trend-candidate-never-touched"));
+        assertEquals(0, report.get("total_overrides"));
+    }
+
     // doc 158 contradiction class 8 "Counterevidence vs Privacy" -- LC-P0-008 runtime evidence.
     @Test
     void counterevidenceDeletionCitingPrivacyPreferenceAloneIsDowngradedToRetained() throws Exception {

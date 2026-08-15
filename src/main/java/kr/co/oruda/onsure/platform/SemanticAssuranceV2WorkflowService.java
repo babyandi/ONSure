@@ -71,6 +71,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.derived-lineage.dispose",
             "assurance.learning.decision-currentness.evaluate",
             "assurance.learning.human-override.decide",
+            "assurance.learning.human-override.trend-report",
             "assurance.learning.counterevidence.dispose",
             "assurance.learning.challenge-set-access.decide",
             "assurance.learning.evidence-observation.record",
@@ -167,6 +168,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.derived-lineage.dispose" -> learningDerivedLineageDispose(request);
             case "assurance.learning.decision-currentness.evaluate" -> learningDecisionCurrentnessEvaluate(request);
             case "assurance.learning.human-override.decide" -> learningHumanOverrideDecide(request);
+            case "assurance.learning.human-override.trend-report" -> learningHumanOverrideTrendReport(request);
             case "assurance.learning.counterevidence.dispose" -> learningCounterevidenceDispose(request);
             case "assurance.learning.challenge-set-access.decide" -> learningChallengeSetAccessDecide(request);
             case "assurance.learning.evidence-observation.record" -> learningEvidenceObservationRecord(request);
@@ -1746,7 +1748,7 @@ final class SemanticAssuranceV2WorkflowService {
      * attest" shape as SeparationOfDutiesLedger/AppealLedger's reviewer-separation checks
      * elsewhere in this codebase, applied here to the learning-knowledge-promotion boundary.
      */
-    private Map<String, Object> learningHumanOverrideDecide(JsonNode request) {
+    private Map<String, Object> learningHumanOverrideDecide(JsonNode request) throws Exception {
         String targetId = requiredText(request, "target_id");
         String overrideId = requiredText(request, "override_id");
         String candidateRef = requiredText(request, "candidate_ref");
@@ -1756,6 +1758,7 @@ final class SemanticAssuranceV2WorkflowService {
         String confirmerId = request.path("confirmer_id").asText(null);
 
         boolean promoted;
+        boolean selfConfirmationRejected = false;
         List<String> reasons = new ArrayList<>();
         if (reason == null || reason.isBlank() || evidenceRef == null || evidenceRef.isBlank()
                 || confirmerId == null || confirmerId.isBlank()) {
@@ -1763,10 +1766,14 @@ final class SemanticAssuranceV2WorkflowService {
             reasons.add("REASON_EVIDENCE_OR_CONFIRMER_MISSING");
         } else if (confirmerId.equals(overriderId)) {
             promoted = false;
+            selfConfirmationRejected = true;
             reasons.add("SELF_CONFIRMATION_CANNOT_PROMOTE_OVERRIDE_TO_ACTIVE_KNOWLEDGE");
         } else {
             promoted = true;
         }
+
+        new HumanOverrideTrendLedger(workspaceRoot.resolve(".onsure/assurance/override-trends"))
+                .record(candidateRef, overrideId, promoted, selfConfirmationRejected);
 
         Map<String, Object> out = base("HUMAN_OVERRIDE_DISPOSITION", targetId);
         out.put("override_id", overrideId);
@@ -1777,6 +1784,29 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("confirmer_id", confirmerId);
         out.put("promoted_to_active_knowledge", promoted);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * LC-P0-009 cross-wire (doc 158 class 9, second contract binding): HumanOverrideTrendReport,
+     * computed from HumanOverrideTrendLedger's real recorded history for the candidate, never a
+     * caller-supplied summary. Answers the question learningHumanOverrideDecide's per-event
+     * disposition alone cannot: is self-confirmation being attempted repeatedly for this candidate
+     * (a real trend, not a one-off), which promotion_rate and self_confirmation_rejected_count make
+     * visible across the whole history rather than one event at a time.
+     */
+    private Map<String, Object> learningHumanOverrideTrendReport(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String candidateRef = requiredText(request, "candidate_ref");
+        HumanOverrideTrendLedger.TrendReport report = new HumanOverrideTrendLedger(
+                workspaceRoot.resolve(".onsure/assurance/override-trends")).report(candidateRef);
+
+        Map<String, Object> out = base("HUMAN_OVERRIDE_TREND_REPORT", targetId);
+        out.put("candidate_ref", report.candidateRef());
+        out.put("total_overrides", report.totalOverrides());
+        out.put("promoted_count", report.promotedCount());
+        out.put("self_confirmation_rejected_count", report.selfConfirmationRejectedCount());
+        out.put("promotion_rate", report.promotionRate());
         return immutable(out);
     }
 

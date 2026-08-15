@@ -57,7 +57,8 @@ public final class TenantRbacService {
             "assurance.accessibility.validate-render",
             "assurance.migration.reconcile",
             "assurance.session.create",
-            "assurance.session.check-valid");
+            "assurance.session.check-valid",
+            "assurance.learning.human-override.trend-report");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",
