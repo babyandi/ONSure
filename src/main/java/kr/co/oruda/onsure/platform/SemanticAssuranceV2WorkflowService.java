@@ -90,6 +90,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.ip-license-provenance.check",
             "assurance.learning.catastrophic-forgetting.check",
             "assurance.learning.sampling-bias.check",
+            "assurance.learning.confidence-calibration.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -204,6 +205,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.ip-license-provenance.check" -> ipLicenseProvenanceCheck(request);
             case "assurance.learning.catastrophic-forgetting.check" -> catastrophicForgettingCheck(request);
             case "assurance.learning.sampling-bias.check" -> activeLearningSamplingBiasCheck(request);
+            case "assurance.learning.confidence-calibration.check" -> confidenceCalibrationCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -3029,6 +3031,60 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("selection_policy", selectionPolicy);
         out.put("excluded_population_disclosed", excludedPopulationDisclosed);
         out.put("claim_scope", claimScope);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    private static final Set<String> ABSTAIN_REASONS =
+            Set.of("BELOW_THRESHOLD", "OUT_OF_DISTRIBUTION", "INSUFFICIENT_EVIDENCE");
+
+    /**
+     * confidence-calibration-check.v1.schema.json real computation (FR-LEARN-026 Confidence
+     * Calibration / Abstention: "Validator/model의 confidence는 실제 정확도와 calibration되어야
+     * 한다... 임계치 미만·OOD·증거부족에서는 ABSTAIN/HOLD를 허용한다. raw model confidence만으로
+     * PASS 금지"). JSON Schema can validate each field individually but cannot enforce that
+     * PASS_ALLOWED requires a calibrated (not raw) basis, a calibration_error within threshold,
+     * AND a well-formed abstain claim together. This operation forces PASS_BLOCKED whenever:
+     * decision_basis=RAW_CONFIDENCE_ONLY (closing "raw model confidence만으로 PASS 금지"
+     * directly, regardless of any other field); calibration_error exceeds
+     * calibration_error_threshold; or abstain_triggered=true with abstain_reason=NONE (a claimed
+     * abstention with no real reason is malformed, not a legitimate ABSTAIN/HOLD).
+     */
+    private Map<String, Object> confidenceCalibrationCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String validatorId = requiredText(request, "validator_id");
+        String decisionBasis = requiredText(request, "decision_basis");
+        String calibrationMetricKind = requiredText(request, "calibration_metric_kind");
+        double calibrationError = request.path("calibration_error").asDouble(-1);
+        double calibrationErrorThreshold = request.path("calibration_error_threshold").asDouble(-1);
+        if (calibrationError < 0 || calibrationErrorThreshold < 0) {
+            return failClosed("HOLD", List.of("CALIBRATION_ERROR_FIELDS_INVALID"));
+        }
+        boolean abstainTriggered = request.path("abstain_triggered").asBoolean(false);
+        String abstainReason = requiredText(request, "abstain_reason");
+
+        List<String> reasons = new ArrayList<>();
+        if ("RAW_CONFIDENCE_ONLY".equals(decisionBasis)) {
+            reasons.add("RAW_CONFIDENCE_ALONE_CANNOT_JUSTIFY_PASS");
+        }
+        if (calibrationError > calibrationErrorThreshold) {
+            reasons.add("CALIBRATION_ERROR_EXCEEDS_THRESHOLD:" + calibrationError + ">" + calibrationErrorThreshold);
+        }
+        if (abstainTriggered && !ABSTAIN_REASONS.contains(abstainReason)) {
+            reasons.add("ABSTAIN_TRIGGERED_WITHOUT_A_REAL_REASON");
+        }
+
+        String decision = reasons.isEmpty() ? "PASS_ALLOWED" : "PASS_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_CONFIDENCE_CALIBRATION_CHECK", targetId);
+        out.put("validator_id", validatorId);
+        out.put("decision_basis", decisionBasis);
+        out.put("calibration_metric_kind", calibrationMetricKind);
+        out.put("calibration_error", calibrationError);
+        out.put("calibration_error_threshold", calibrationErrorThreshold);
+        out.put("abstain_triggered", abstainTriggered);
+        out.put("abstain_reason", abstainReason);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);

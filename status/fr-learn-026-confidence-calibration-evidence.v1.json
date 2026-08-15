@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-026",
+  "requirement_summary": "Confidence Calibration / Abstention: Validator/model의 confidence는 실제 정확도와 calibration되어야 한다. calibration error, reliability curve, Brier/ECE 또는 동등 지표를 기록하고 임계치 미만·OOD·증거부족에서는 ABSTAIN/HOLD를 허용한다. raw model confidence만으로 PASS 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (confidenceCalibrationCheck), assurance.learning.confidence-calibration.check v2 operation; contracts/confidence-calibration-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "confidenceCalibrationCheckAllowsPassWithGoodCalibrationAndNoAbstention",
+    "confidenceCalibrationCheckBlocksRawConfidenceOnlyBasis",
+    "confidenceCalibrationCheckBlocksWhenCalibrationErrorExceedsThreshold",
+    "confidenceCalibrationCheckBlocksAbstentionClaimWithNoRealReason",
+    "confidenceCalibrationCheckAllowsWellFormedAbstention"
+  ],
+  "coverage_notes": "Three independent real checks, any one forcing PASS_BLOCKED: (1) decision_basis=RAW_CONFIDENCE_ONLY always blocks, directly closing 'raw model confidence만으로 PASS 금지' regardless of any other field; (2) calibration_error exceeding calibration_error_threshold blocks (a real numeric comparison JSON Schema without $data cannot express across two sibling fields); (3) abstain_triggered=true with abstain_reason=NONE is rejected as malformed -- a claimed abstention needs a real, named reason (BELOW_THRESHOLD/OUT_OF_DISTRIBUTION/INSUFFICIENT_EVIDENCE) to be legitimate, closing the requirement's 'ABSTAIN/HOLD를 허용한다' as a genuine, well-formed exception rather than an unexplained escape hatch.",
+  "open_gap": "This operation validates a single caller-reported calibration_error value; it does not itself independently compute ECE/Brier/reliability-curve statistics from raw prediction/outcome pairs -- the metric computation itself is trusted from the caller. Independent recomputation of the calibration metric from raw data is a real, disclosed follow-on, analogous to how statisticalQualificationCheck (FR-LEARN-034) trusts caller-supplied statistics rather than recomputing them.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

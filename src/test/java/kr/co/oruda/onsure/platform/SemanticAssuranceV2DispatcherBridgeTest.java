@@ -2229,6 +2229,64 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-026 Confidence Calibration / Abstention
+    @Test
+    void confidenceCalibrationCheckAllowsPassWithGoodCalibrationAndNoAbstention() throws Exception {
+        Map<?, ?> result = confidenceCalibrationCheck(
+                "CALIBRATED_CONFIDENCE_WITH_METRIC", 0.03, 0.05, false, "NONE");
+        assertEquals("PASS_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void confidenceCalibrationCheckBlocksRawConfidenceOnlyBasis() throws Exception {
+        Map<?, ?> result = confidenceCalibrationCheck("RAW_CONFIDENCE_ONLY", 0.03, 0.05, false, "NONE");
+        assertEquals("PASS_BLOCKED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).contains("RAW_CONFIDENCE_ALONE_CANNOT_JUSTIFY_PASS"));
+    }
+
+    @Test
+    void confidenceCalibrationCheckBlocksWhenCalibrationErrorExceedsThreshold() throws Exception {
+        Map<?, ?> result = confidenceCalibrationCheck(
+                "CALIBRATED_CONFIDENCE_WITH_METRIC", 0.2, 0.05, false, "NONE");
+        assertEquals("PASS_BLOCKED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).stream()
+                        .anyMatch(r -> r.toString().startsWith("CALIBRATION_ERROR_EXCEEDS_THRESHOLD")));
+    }
+
+    @Test
+    void confidenceCalibrationCheckBlocksAbstentionClaimWithNoRealReason() throws Exception {
+        Map<?, ?> result = confidenceCalibrationCheck(
+                "CALIBRATED_CONFIDENCE_WITH_METRIC", 0.03, 0.05, true, "NONE");
+        assertEquals("PASS_BLOCKED", result.get("decision"));
+        assertEquals(List.of("ABSTAIN_TRIGGERED_WITHOUT_A_REAL_REASON"), result.get("reasons"));
+    }
+
+    @Test
+    void confidenceCalibrationCheckAllowsWellFormedAbstention() throws Exception {
+        Map<?, ?> result = confidenceCalibrationCheck(
+                "CALIBRATED_CONFIDENCE_WITH_METRIC", 0.03, 0.05, true, "OUT_OF_DISTRIBUTION");
+        assertEquals("PASS_ALLOWED", result.get("decision"));
+    }
+
+    private Map<?, ?> confidenceCalibrationCheck(
+            String decisionBasis, double calibrationError, double calibrationErrorThreshold,
+            boolean abstainTriggered, String abstainReason) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "validator_id", "validator-1", "decision_basis", decisionBasis,
+                "calibration_metric_kind", "ECE", "calibration_error", calibrationError,
+                "calibration_error_threshold", calibrationErrorThreshold,
+                "abstain_triggered", abstainTriggered, "abstain_reason", abstainReason);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.confidence-calibration.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

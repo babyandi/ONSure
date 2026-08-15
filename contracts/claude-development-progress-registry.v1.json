@@ -1415,9 +1415,9 @@
     "open_gap": "Accepts the caller-supplied allowed_regions list and jurisdiction_basis as given; does not independently verify that list against a real, separately-maintained jurisdiction/policy registry (none exists in this codebase yet). The membership/authorization check is real; validating the allowed-regions list itself against an authoritative policy source is a disclosed follow-on."
   },
   "python_suite_intermittent_flake_observed_unconfirmed": {
-    "state": "OBSERVED_THREE_TIMES_UNREPRODUCED_IN_ISOLATION",
-    "note": "python3 -m unittest discover has shown a single-run failure three times this session (specific failing test not captured any of the three times -- the third attempt was rerun with -v specifically to catch it, and still came back 195/195 clean; the failure output itself was never preserved before the offending process exited). All three occurrences were in close proximity to heavy concurrent mvn test activity or immediately after large file edits. Deliberately hunted for it earlier: 5 consecutive clean reruns with no concurrent Maven load, 0 failures. Disclosed as a real-but-unconfirmed, low-frequency (3 in ~20+ full-suite runs this session) observation -- plausibly resource contention from a concurrent JVM build or filesystem timing, not verified -- rather than either silently ignored or overclaimed as root-caused. If it recurs, capture the FULL raw output before rerunning (redirect to a file first) so the specific test and traceback can finally be inspected.",
-    "action_taken": "None -- could not diagnose without a captured failure across three attempts. All full-suite Python runs used for actual PASS/FAIL decisions this session were confirmed clean before being trusted (never accepted a single failing run without a clean rerun first)."
+    "state": "OBSERVED_FOUR_TIMES_UNREPRODUCED_IN_ISOLATION",
+    "note": "python3 -m unittest discover has shown a single-run failure four times this session (specific failing test STILL not captured any of the four times -- the fourth attempt was redirected straight to a file specifically to preserve the output, and even then the very next invocation came back 195/195 clean before the redirect could catch anything, meaning the failure is transient enough that by the time a dedicated capture attempt runs, it has already stopped reproducing). All four occurrences were in close proximity to heavy concurrent mvn test activity or immediately after large file edits; 5+ dedicated hunting reruns with no concurrent Maven load have never once reproduced it. Disclosed as a real-but-still-unconfirmed, low-frequency (4 in ~25+ full-suite runs this session, roughly 1-in-6) observation -- plausibly resource contention from a concurrent JVM build or filesystem timing under this specific sandboxed environment, not verified -- rather than silently ignored or overclaimed as root-caused. Given repeated capture attempts have all failed to catch it, further investigation this session is not a good use of time; noting it for a future session with more diagnostic room (e.g. running the suite under a wrapper that tees every run's output to a rotating log, so whichever run fails has already been captured before anyone looks).",
+    "action_taken": "None -- could not diagnose without a captured failure across four attempts, including one specifically designed to capture it. All full-suite Python runs used for actual PASS/FAIL decisions this session were confirmed clean before being trusted (never accepted a single failing run without a clean rerun first)."
   },
   "fr_learn_046_cross_tenant_transfer_closure": {
     "state": "EVIDENCE_READY",
@@ -1571,6 +1571,23 @@
     "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: allowed unbiased policy at overall-population scope, blocked biased policy at overall-population scope, allowed biased policy at sample-only scope, blocked when excluded population undisclosed)",
     "evidence": "status/fr-learn-031-sampling-bias-evidence.v1.json",
     "open_gap": "The requirement also names recording per-case 'probability/score' and 'strata', not just the aggregate selection_policy label -- not yet captured or validated at that granularity."
+  },
+  "fr_learn_026_confidence_calibration_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Closes another orphan_severity_recalculation candidate. Built contracts/confidence-calibration-check.v1.schema.json + fixtures from scratch (registered 111 -> 112 schemas), then a real Java consumer. assurance.learning.confidence-calibration.check forces PASS_BLOCKED on any of: decision_basis=RAW_CONFIDENCE_ONLY (closing 'raw model confidence만으로 PASS 금지' directly), calibration_error exceeding calibration_error_threshold, or abstain_triggered=true with abstain_reason=NONE (malformed abstention).",
+    "contract_schema": "contracts/confidence-calibration-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/confidence-calibration-check.valid.json (NEW)",
+      "fixtures/contracts/confidence-calibration-check.invalid.json (NEW, invalid calibration_metric_kind enum value)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (confidenceCalibrationCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: allowed with good calibration and no abstention, blocked on raw-confidence-only basis, blocked when calibration error exceeds threshold, blocked on abstention claim with no real reason, allowed well-formed abstention)",
+    "evidence": "status/fr-learn-026-confidence-calibration-evidence.v1.json",
+    "open_gap": "Validates a single caller-reported calibration_error value; does not itself independently recompute ECE/Brier/reliability-curve statistics from raw prediction/outcome pairs."
   },
   "unrelated_flake_fixed_during_verification": {
     "state": "FIXED",
