@@ -795,6 +795,15 @@
       "invalid_instances": [
         "fixtures/contracts/decision-time-knowledge-snapshot.v1.invalid.json"
       ]
+    },
+    {
+      "schema": "contracts/human-override-disposition.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/human-override-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/human-override-disposition.v1.invalid.json"
+      ]
     }
   ],
   "negative_instances_required_before_final": true,

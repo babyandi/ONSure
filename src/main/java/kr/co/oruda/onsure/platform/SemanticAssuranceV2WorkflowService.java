@@ -70,6 +70,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.scope-promotion.decide",
             "assurance.learning.derived-lineage.dispose",
             "assurance.learning.decision-currentness.evaluate",
+            "assurance.learning.human-override.decide",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
@@ -160,6 +161,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.scope-promotion.decide" -> learningScopePromotionDecide(request);
             case "assurance.learning.derived-lineage.dispose" -> learningDerivedLineageDispose(request);
             case "assurance.learning.decision-currentness.evaluate" -> learningDecisionCurrentnessEvaluate(request);
+            case "assurance.learning.human-override.decide" -> learningHumanOverrideDecide(request);
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
@@ -1722,6 +1724,49 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("currentness_state", currentnessState);
         out.put("reevaluation_ref", reevaluationRef);
         out.put("replay_claim_allowed", replayClaimAllowed);
+        return immutable(out);
+    }
+
+    /**
+     * human-override-disposition.v1.schema.json real computation (doc 158 contradiction class 9
+     * "Human Override vs Self-confirmation", LC-P0-009). "override는 signal이며 truth가 아니다":
+     * promoted_to_active_knowledge can only be true when reason, evidence_ref, AND a confirmer_id
+     * genuinely distinct from overrider_id are all present -- self-confirmation (confirmer_id
+     * equal to overrider_id) is rejected outright, the same "same actor cannot both act and
+     * attest" shape as SeparationOfDutiesLedger/AppealLedger's reviewer-separation checks
+     * elsewhere in this codebase, applied here to the learning-knowledge-promotion boundary.
+     */
+    private Map<String, Object> learningHumanOverrideDecide(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String overrideId = requiredText(request, "override_id");
+        String candidateRef = requiredText(request, "candidate_ref");
+        String overriderId = requiredText(request, "overrider_id");
+        String reason = request.path("reason").asText(null);
+        String evidenceRef = request.path("evidence_ref").asText(null);
+        String confirmerId = request.path("confirmer_id").asText(null);
+
+        boolean promoted;
+        List<String> reasons = new ArrayList<>();
+        if (reason == null || reason.isBlank() || evidenceRef == null || evidenceRef.isBlank()
+                || confirmerId == null || confirmerId.isBlank()) {
+            promoted = false;
+            reasons.add("REASON_EVIDENCE_OR_CONFIRMER_MISSING");
+        } else if (confirmerId.equals(overriderId)) {
+            promoted = false;
+            reasons.add("SELF_CONFIRMATION_CANNOT_PROMOTE_OVERRIDE_TO_ACTIVE_KNOWLEDGE");
+        } else {
+            promoted = true;
+        }
+
+        Map<String, Object> out = base("HUMAN_OVERRIDE_DISPOSITION", targetId);
+        out.put("override_id", overrideId);
+        out.put("candidate_ref", candidateRef);
+        out.put("overrider_id", overriderId);
+        out.put("reason", reason);
+        out.put("evidence_ref", evidenceRef);
+        out.put("confirmer_id", confirmerId);
+        out.put("promoted_to_active_knowledge", promoted);
+        out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
 

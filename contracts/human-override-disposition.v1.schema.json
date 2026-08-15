@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/human-override-disposition.v1.schema.json",
+  "title": "ONSure Human Override Disposition v1",
+  "description": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md class 9 (Human Override vs Self-confirmation), bound per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json LC-P0-009 (HumanOverrideTrendReport, LearningCandidateAsset). '158 SS9: override는 signal이며 truth가 아니다' -- a single override event alone can never become active_knowledge. promoted_to_active_knowledge is reachable only with a stated reason, a real evidence_ref, and a confirmer_id independently distinct from overrider_id (self-confirmation is the named negative case). This is a per-event disposition, not the aggregate trend-over-time view the LC-P0-009 contract name implies -- see the runtime evidence note for what remains open.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "override_id", "candidate_ref", "overrider_id", "reason",
+    "evidence_ref", "confirmer_id", "promoted_to_active_knowledge",
+    "decided_at", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_HUMAN_OVERRIDE_DISPOSITION_V1"},
+    "override_id": {"type": "string", "minLength": 1},
+    "candidate_ref": {"type": "string", "minLength": 1},
+    "overrider_id": {"type": "string", "minLength": 1},
+    "reason": {"type": ["string", "null"], "minLength": 1},
+    "evidence_ref": {"type": ["string", "null"], "minLength": 1},
+    "confirmer_id": {"type": ["string", "null"], "minLength": 1},
+    "promoted_to_active_knowledge": {"type": "boolean"},
+    "decided_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"promoted_to_active_knowledge": {"const": true}}},
+      "then": {
+        "required": ["reason", "evidence_ref", "confirmer_id"],
+        "properties": {
+          "reason": {"type": "string"},
+          "evidence_ref": {"type": "string"},
+          "confirmer_id": {"type": "string"}
+        }
+      }
+    }
+  ],
+  "$comment": "The confirmer_id != overrider_id check (self-confirmation prohibition) is a cross-field inequality JSON Schema without $data cannot express declaratively, honestly documented here rather than faked -- enforced by the Java runtime layer (SemanticAssuranceV2WorkflowService.learningHumanOverrideDecide), same limitation and same disclosure pattern as main-branch-protection.v1.json and decision-time-knowledge-snapshot.v1.schema.json."
+}

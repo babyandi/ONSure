@@ -1188,6 +1188,14 @@
         "partial_disclosure": "LC-P0-007 also names ValidationExperiment (schema-only since Batch 5, not yet cross-wired to this op) and LC-P0-011 also names GroundTruthAuthority + RevalidationBacklog (neither built yet) -- this closes the DecisionTimeKnowledgeSnapshot half of both bindings, not the full multi-contract closure the QA candidate binding table names. Recorded as PARTIAL, not claimed complete.",
         "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +5 (matching epochs stay CURRENT+replayable; drift requires real reevaluation_ref; drift without one HOLDs rather than silently staying CURRENT; material_drift escalates to REVIEW_REQUIRED; decision_sha256 echoed unchanged)",
         "full_closure_reference": "contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json (LC-P0-007, LC-P0-011)"
+      },
+      {
+        "class": "9 -- Human Override vs Self-confirmation",
+        "runtime_operation": "assurance.learning.human-override.decide (NEW)",
+        "contract_schema": "contracts/human-override-disposition.v1.schema.json (NEW -- binds LC-P0-009's HumanOverrideTrendReport half)",
+        "note": "promoted_to_active_knowledge reachable only with reason + evidence_ref + a confirmer_id genuinely distinct from overrider_id -- self-confirmation is rejected outright (SELF_CONFIRMATION_CANNOT_PROMOTE_OVERRIDE_TO_ACTIVE_KNOWLEDGE), same reviewer-separation shape as SeparationOfDutiesLedger/AppealLedger applied to the learning-knowledge-promotion boundary.",
+        "partial_disclosure": "This is a per-event disposition, not the aggregate trend-over-time view the LC-P0-009 contract name (HumanOverrideTrendReport) implies -- an aggregation across many override events (rate over time, per-tenant/per-model breakdown) is not built.",
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +3 (full proof promotes; self-confirmation rejected; missing reason/evidence/confirmer rejected)"
       }
     ],
     "classes_already_covered_by_prior_batch_5_work": [
@@ -1198,10 +1206,10 @@
     "classes_still_open": [
       "2 -- Privacy vs Reproducibility (needs EvidenceObservation contract, not yet built)",
       "3 -- Transparency vs Challenge Secrecy (needs sealed-access enforcement over ValidationExperiment, schema exists since Batch 5 but no access-control wiring)",
-      "7 -- Adaptive Learning vs Reproducibility (PARTIAL -- see classes_closed_this_pass; ValidationExperiment cross-wiring still open)",
+      "7 -- Adaptive Learning vs Reproducibility (PARTIAL -- ValidationExperiment cross-wiring still open)",
       "8 -- Counterevidence vs Privacy (needs CounterevidenceDisposition contract, not yet built)",
-      "9 -- Human Override vs Self-confirmation (needs HumanOverrideTrendReport contract + independent-confirmation gate, not yet built)",
-      "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- see classes_closed_this_pass; GroundTruthAuthority + RevalidationBacklog still open)"
+      "9 -- PARTIAL -- per-event disposition closed; aggregate HumanOverrideTrendReport view still open",
+      "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- GroundTruthAuthority + RevalidationBacklog still open)"
     ]
   }
 }

@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_HUMAN_OVERRIDE_DISPOSITION_V1",
+  "override_id": "override-2",
+  "candidate_ref": "candidate-2",
+  "overrider_id": "reviewer-a",
+  "reason": null,
+  "evidence_ref": null,
+  "confirmer_id": null,
+  "promoted_to_active_knowledge": true,
+  "decided_at": "2026-08-15T00:00:00Z",
+  "final_claim_allowed": false
+}

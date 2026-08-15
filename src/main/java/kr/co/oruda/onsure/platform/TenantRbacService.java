@@ -79,6 +79,7 @@ public final class TenantRbacService {
             "assurance.learning.applied-lock.record",
             "assurance.learning.scope-promotion.decide",
             "assurance.learning.derived-lineage.dispose",
+            "assurance.learning.human-override.decide",
             "assurance.hazard.advance",
             "assurance.appeal.assign-reviewer",
             "assurance.appeal.transition",

@@ -1129,6 +1129,43 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals(digest, result.get("decision_sha256"));
     }
 
+    // doc 158 contradiction class 9 "Human Override vs Self-confirmation" -- LC-P0-009 runtime
+    // evidence.
+    @Test
+    void anOverrideWithReasonEvidenceAndAnIndependentConfirmerIsPromoted() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.human-override.decide", Map.of(
+                "override_id", "override-1", "candidate_ref", "candidate-1", "overrider_id", "reviewer-a",
+                "reason", "domain expert confirmed false positive",
+                "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "confirmer_id", "reviewer-b"));
+        assertEquals(true, result.get("promoted_to_active_knowledge"));
+        assertTrue(((List<?>) result.get("reasons")).isEmpty());
+    }
+
+    @Test
+    void selfConfirmationCannotPromoteAnOverrideToActiveKnowledge() throws Exception {
+        // 158 SS9: "override는 signal이며 truth가 아니다" -- the named negative case.
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.human-override.decide", Map.of(
+                "override_id", "override-2", "candidate_ref", "candidate-2", "overrider_id", "reviewer-a",
+                "reason", "I am confident this is correct",
+                "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "confirmer_id", "reviewer-a"));
+        assertEquals(false, result.get("promoted_to_active_knowledge"));
+        assertEquals(List.of("SELF_CONFIRMATION_CANNOT_PROMOTE_OVERRIDE_TO_ACTIVE_KNOWLEDGE"), result.get("reasons"));
+    }
+
+    @Test
+    void anOverrideWithNoReasonOrEvidenceCannotBePromotedEvenWithAnIndependentConfirmer() throws Exception {
+        Map<String, Object> fields = new java.util.LinkedHashMap<>();
+        fields.put("override_id", "override-3");
+        fields.put("candidate_ref", "candidate-3");
+        fields.put("overrider_id", "reviewer-a");
+        fields.put("confirmer_id", "reviewer-b");
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.human-override.decide", fields);
+        assertEquals(false, result.get("promoted_to_active_knowledge"));
+        assertEquals(List.of("REASON_EVIDENCE_OR_CONFIRMER_MISSING"), result.get("reasons"));
+    }
+
     @Test
     void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
         Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());

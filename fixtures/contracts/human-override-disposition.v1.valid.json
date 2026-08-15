@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_HUMAN_OVERRIDE_DISPOSITION_V1",
+  "override_id": "override-1",
+  "candidate_ref": "candidate-1",
+  "overrider_id": "reviewer-a",
+  "reason": "Domain expert confirmed the model's rejection was a false positive against a known edge case",
+  "evidence_ref": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "confirmer_id": "reviewer-b",
+  "promoted_to_active_knowledge": true,
+  "decided_at": "2026-08-15T00:00:00Z",
+  "final_claim_allowed": false
+}
