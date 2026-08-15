@@ -2141,6 +2141,52 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-029 Catastrophic Forgetting / Interference
+    @Test
+    void catastrophicForgettingCheckAllowsPromotionWhenNoCapabilityIsForgotten() throws Exception {
+        Map<?, ?> result = catastrophicForgettingCheck(
+                List.of(capabilityRegression("cap-1", "PASS", "PASS"), capabilityRegression("cap-2", "FAIL", "PASS")),
+                true);
+        assertEquals("PROMOTION_ALLOWED", result.get("decision"));
+        assertEquals(0, result.get("forgotten_capability_count"));
+    }
+
+    @Test
+    void catastrophicForgettingCheckBlocksPromotionWhenACapabilityIsForgottenEvenWithImprovedMetric()
+            throws Exception {
+        Map<?, ?> result = catastrophicForgettingCheck(
+                List.of(capabilityRegression("cap-1", "PASS", "FAIL"), capabilityRegression("cap-2", "PASS", "PASS")),
+                true);
+        assertEquals("PROMOTION_BLOCKED", result.get("decision"));
+        assertEquals(List.of("cap-1"), result.get("forgotten_capabilities"));
+    }
+
+    @Test
+    void catastrophicForgettingCheckListsEveryForgottenCapability() throws Exception {
+        Map<?, ?> result = catastrophicForgettingCheck(
+                List.of(capabilityRegression("cap-1", "PASS", "FAIL"), capabilityRegression("cap-2", "PASS", "FAIL")),
+                false);
+        assertEquals("PROMOTION_BLOCKED", result.get("decision"));
+        assertEquals(2, result.get("forgotten_capability_count"));
+        assertEquals(List.of("cap-1", "cap-2"), result.get("forgotten_capabilities"));
+    }
+
+    private Map<String, Object> capabilityRegression(String capabilityId, String previousResult, String newResult) {
+        return Map.of("capability_id", capabilityId, "previous_result", previousResult, "new_result", newResult);
+    }
+
+    private Map<?, ?> catastrophicForgettingCheck(
+            List<Map<String, Object>> capabilityRegressions, boolean newMetricImproved) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "learning_epoch_id", "epoch-1", "capability_regressions", capabilityRegressions,
+                "new_metric_improved", newMetricImproved);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.catastrophic-forgetting.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

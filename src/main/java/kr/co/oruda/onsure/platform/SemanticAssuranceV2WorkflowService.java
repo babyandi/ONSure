@@ -88,6 +88,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.selective-prediction-risk-coverage.check",
             "assurance.learning.history-migration.check",
             "assurance.learning.ip-license-provenance.check",
+            "assurance.learning.catastrophic-forgetting.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -200,6 +201,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.selective-prediction-risk-coverage.check" -> selectivePredictionRiskCoverageCheck(request);
             case "assurance.learning.history-migration.check" -> learningHistoryMigrationCheck(request);
             case "assurance.learning.ip-license-provenance.check" -> ipLicenseProvenanceCheck(request);
+            case "assurance.learning.catastrophic-forgetting.check" -> catastrophicForgettingCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2933,6 +2935,57 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("redistribution_permission_granted", redistributionPermissionGranted);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * catastrophic-forgetting-check.v1.schema.json real computation (FR-LEARN-029 Catastrophic
+     * Forgetting / Interference: "새 learning epoch가 과거 capability를 잃게 만들 수 있으므로
+     * 이전 Golden/Blind/Challenge capability 집합에 대한 regression을 수행하고 forgotten-
+     * capability count와 severity를 기록한다. 신규 metric 개선만으로 승격 금지"). JSON Schema
+     * can validate each regression entry's own shape but cannot detect the previous_result=PASS,
+     * new_result=FAIL transition across the two fields. This operation computes forgotten
+     * capabilities for real (every entry where previous_result=PASS and new_result=FAIL) and
+     * forces PROMOTION_BLOCKED whenever any exist, REGARDLESS of new_metric_improved -- a caller
+     * cannot promote on the strength of an improved metric while quietly forgetting a previously
+     * working capability.
+     */
+    private Map<String, Object> catastrophicForgettingCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String learningEpochId = requiredText(request, "learning_epoch_id");
+
+        JsonNode regressionsNode = request.path("capability_regressions");
+        if (!regressionsNode.isArray() || regressionsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("CAPABILITY_REGRESSIONS_REQUIRED"));
+        }
+        boolean newMetricImproved = request.path("new_metric_improved").asBoolean(false);
+
+        Set<String> validResults = Set.of("PASS", "FAIL");
+        java.util.LinkedHashSet<String> seenCapabilities = new java.util.LinkedHashSet<>();
+        List<String> forgottenCapabilities = new ArrayList<>();
+        for (JsonNode regressionNode : regressionsNode) {
+            String capabilityId = requiredText(regressionNode, "capability_id");
+            if (!seenCapabilities.add(capabilityId)) {
+                return failClosed("HOLD", List.of("DUPLICATE_CAPABILITY_ID:" + capabilityId));
+            }
+            String previousResult = requiredText(regressionNode, "previous_result");
+            String newResult = requiredText(regressionNode, "new_result");
+            if (!validResults.contains(previousResult) || !validResults.contains(newResult)) {
+                return failClosed("HOLD", List.of("CAPABILITY_RESULT_INVALID:" + capabilityId));
+            }
+            if ("PASS".equals(previousResult) && "FAIL".equals(newResult)) {
+                forgottenCapabilities.add(capabilityId);
+            }
+        }
+
+        String decision = forgottenCapabilities.isEmpty() ? "PROMOTION_ALLOWED" : "PROMOTION_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_CATASTROPHIC_FORGETTING_CHECK", targetId);
+        out.put("learning_epoch_id", learningEpochId);
+        out.put("new_metric_improved", newMetricImproved);
+        out.put("forgotten_capabilities", List.copyOf(forgottenCapabilities));
+        out.put("forgotten_capability_count", forgottenCapabilities.size());
+        out.put("decision", decision);
         return immutable(out);
     }
 

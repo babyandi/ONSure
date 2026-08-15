@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-029",
+  "requirement_summary": "Catastrophic Forgetting / Interference: 새 learning epoch가 과거 capability를 잃게 만들 수 있으므로 이전 Golden/Blind/Challenge capability 집합에 대한 regression을 수행하고 forgotten-capability count와 severity를 기록한다. 신규 metric 개선만으로 승격 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (catastrophicForgettingCheck), assurance.learning.catastrophic-forgetting.check v2 operation; contracts/catastrophic-forgetting-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "catastrophicForgettingCheckAllowsPromotionWhenNoCapabilityIsForgotten",
+    "catastrophicForgettingCheckBlocksPromotionWhenACapabilityIsForgottenEvenWithImprovedMetric",
+    "catastrophicForgettingCheckListsEveryForgottenCapability"
+  ],
+  "coverage_notes": "forgotten_capabilities is computed for real from a per-capability previous_result/new_result transition (PASS->FAIL) JSON Schema cannot detect across two fields of the same array item. PROMOTION_BLOCKED is forced whenever any capability is forgotten, REGARDLESS of new_metric_improved -- directly closing '신규 metric 개선만으로 승격 금지' (promotion cannot be justified by new-metric improvement alone). Every forgotten capability is named individually (forgotten_capabilities list) alongside a count, satisfying the requirement's 'forgotten-capability count' recording obligation.",
+  "open_gap": "The requirement also asks for 'severity' to be recorded per forgotten capability, not just a count/list -- this operation does not yet classify forgotten capabilities by severity (e.g. CRITICAL vs MINOR based on the capability's own criticality), treating every forgotten capability as equally blocking. Disclosed as a real, not-yet-covered refinement.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

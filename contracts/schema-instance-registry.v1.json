@@ -922,6 +922,15 @@
         "fixtures/contracts/ip-license-provenance-check.invalid.json"
       ],
       "schema": "contracts/ip-license-provenance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/catastrophic-forgetting-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/catastrophic-forgetting-check.invalid.json"
+      ],
+      "schema": "contracts/catastrophic-forgetting-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

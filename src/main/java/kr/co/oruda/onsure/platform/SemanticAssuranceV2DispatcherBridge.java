@@ -205,6 +205,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.learning.selective-prediction-risk-coverage.check",
                     "assurance.learning.history-migration.check",
                     "assurance.learning.ip-license-provenance.check",
+                    "assurance.learning.catastrophic-forgetting.check",
                     "assurance.provider.drift-check",
                     "assurance.multi-agent.corroboration-check",
                     "assurance.hazard.create", "assurance.appeal.file",
