@@ -71,6 +71,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.derived-lineage.dispose",
             "assurance.learning.decision-currentness.evaluate",
             "assurance.learning.human-override.decide",
+            "assurance.learning.counterevidence.dispose",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
@@ -162,6 +163,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.derived-lineage.dispose" -> learningDerivedLineageDispose(request);
             case "assurance.learning.decision-currentness.evaluate" -> learningDecisionCurrentnessEvaluate(request);
             case "assurance.learning.human-override.decide" -> learningHumanOverrideDecide(request);
+            case "assurance.learning.counterevidence.dispose" -> learningCounterevidenceDispose(request);
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
@@ -1766,6 +1768,51 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("evidence_ref", evidenceRef);
         out.put("confirmer_id", confirmerId);
         out.put("promoted_to_active_knowledge", promoted);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * counterevidence-disposition.v1.schema.json real computation (doc 158 contradiction class 8
+     * "Counterevidence vs Privacy", LC-P0-008). "privacy를 이유로 불리한 증거만 제거하지 않는다":
+     * a caller requesting DELETE for real counterevidence is downgraded to RETAINED_PSEUDONYMIZED
+     * unless deletion_basis is a genuine external requirement (LEGAL_REQUIREMENT or
+     * DATA_SUBJECT_ERASURE_RIGHT) -- PRIVACY_PREFERENCE_ONLY or no basis at all is exactly the
+     * named negative case (unfavorable evidence quietly removed under a privacy pretext) and is
+     * never honored as a deletion reason on its own.
+     */
+    private Map<String, Object> learningCounterevidenceDispose(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String dispositionId = requiredText(request, "disposition_id");
+        String evidenceRef = requiredText(request, "evidence_ref");
+        String decisionRef = requiredText(request, "decision_ref");
+        boolean isCounterevidence = request.path("is_counterevidence").asBoolean(false);
+        String requestedDisposition = requiredText(request, "requested_disposition");
+        Set<String> dispositions = Set.of("RETAINED_MINIMIZED", "RETAINED_PSEUDONYMIZED", "RETAINED_FULL", "DELETED");
+        if (!dispositions.contains(requestedDisposition)) {
+            return failClosed("HOLD", List.of("COUNTEREVIDENCE_DISPOSITION_INVALID"));
+        }
+        String deletionBasis = request.path("deletion_basis").asText(null);
+        Set<String> genuineDeletionBases = Set.of("LEGAL_REQUIREMENT", "DATA_SUBJECT_ERASURE_RIGHT");
+
+        String disposition = requestedDisposition;
+        List<String> reasons = new ArrayList<>();
+        if (isCounterevidence && "DELETED".equals(requestedDisposition)
+                && (deletionBasis == null || !genuineDeletionBases.contains(deletionBasis))) {
+            disposition = "RETAINED_PSEUDONYMIZED";
+            deletionBasis = null;
+            reasons.add("PRIVACY_ONLY_DELETION_OF_COUNTEREVIDENCE_DOWNGRADED_TO_RETAINED_PSEUDONYMIZED");
+        } else if (!"DELETED".equals(disposition)) {
+            deletionBasis = null;
+        }
+
+        Map<String, Object> out = base("COUNTEREVIDENCE_DISPOSITION", targetId);
+        out.put("disposition_id", dispositionId);
+        out.put("evidence_ref", evidenceRef);
+        out.put("decision_ref", decisionRef);
+        out.put("is_counterevidence", isCounterevidence);
+        out.put("disposition", disposition);
+        out.put("deletion_basis", deletionBasis);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }

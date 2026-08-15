@@ -1166,6 +1166,53 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals(List.of("REASON_EVIDENCE_OR_CONFIRMER_MISSING"), result.get("reasons"));
     }
 
+    // doc 158 contradiction class 8 "Counterevidence vs Privacy" -- LC-P0-008 runtime evidence.
+    @Test
+    void counterevidenceDeletionCitingPrivacyPreferenceAloneIsDowngradedToRetained() throws Exception {
+        // 158 SS8 named negative case: unfavorable evidence removed under a privacy pretext.
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.counterevidence.dispose", Map.of(
+                "disposition_id", "cd-1", "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "decision_ref", "decision-1", "is_counterevidence", true,
+                "requested_disposition", "DELETED", "deletion_basis", "PRIVACY_PREFERENCE_ONLY"));
+        assertEquals("RETAINED_PSEUDONYMIZED", result.get("disposition"));
+        assertEquals(List.of("PRIVACY_ONLY_DELETION_OF_COUNTEREVIDENCE_DOWNGRADED_TO_RETAINED_PSEUDONYMIZED"), result.get("reasons"));
+    }
+
+    @Test
+    void counterevidenceDeletionWithNoBasisAtAllIsAlsoDowngraded() throws Exception {
+        Map<String, Object> fields = new java.util.LinkedHashMap<>();
+        fields.put("disposition_id", "cd-2");
+        fields.put("evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1");
+        fields.put("decision_ref", "decision-2");
+        fields.put("is_counterevidence", true);
+        fields.put("requested_disposition", "DELETED");
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.counterevidence.dispose", fields);
+        assertEquals("RETAINED_PSEUDONYMIZED", result.get("disposition"));
+    }
+
+    @Test
+    void counterevidenceDeletionWithARealLegalBasisIsHonored() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.counterevidence.dispose", Map.of(
+                "disposition_id", "cd-3", "evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "decision_ref", "decision-3", "is_counterevidence", true,
+                "requested_disposition", "DELETED", "deletion_basis", "LEGAL_REQUIREMENT"));
+        assertEquals("DELETED", result.get("disposition"));
+        assertEquals("LEGAL_REQUIREMENT", result.get("deletion_basis"));
+        assertTrue(((List<?>) result.get("reasons")).isEmpty());
+    }
+
+    @Test
+    void nonCounterevidenceMayBeDeletedWithoutTheSpecialBasisRequirement() throws Exception {
+        Map<String, Object> fields = new java.util.LinkedHashMap<>();
+        fields.put("disposition_id", "cd-4");
+        fields.put("evidence_ref", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1");
+        fields.put("decision_ref", "decision-4");
+        fields.put("is_counterevidence", false);
+        fields.put("requested_disposition", "DELETED");
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.counterevidence.dispose", fields);
+        assertEquals("DELETED", result.get("disposition"));
+    }
+
     @Test
     void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
         Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());

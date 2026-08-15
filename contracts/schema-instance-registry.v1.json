@@ -804,6 +804,15 @@
       "invalid_instances": [
         "fixtures/contracts/human-override-disposition.v1.invalid.json"
       ]
+    },
+    {
+      "schema": "contracts/counterevidence-disposition.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/counterevidence-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/counterevidence-disposition.v1.invalid.json"
+      ]
     }
   ],
   "negative_instances_required_before_final": true,

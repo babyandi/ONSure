@@ -1196,6 +1196,15 @@
         "note": "promoted_to_active_knowledge reachable only with reason + evidence_ref + a confirmer_id genuinely distinct from overrider_id -- self-confirmation is rejected outright (SELF_CONFIRMATION_CANNOT_PROMOTE_OVERRIDE_TO_ACTIVE_KNOWLEDGE), same reviewer-separation shape as SeparationOfDutiesLedger/AppealLedger applied to the learning-knowledge-promotion boundary.",
         "partial_disclosure": "This is a per-event disposition, not the aggregate trend-over-time view the LC-P0-009 contract name (HumanOverrideTrendReport) implies -- an aggregation across many override events (rate over time, per-tenant/per-model breakdown) is not built.",
         "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +3 (full proof promotes; self-confirmation rejected; missing reason/evidence/confirmer rejected)"
+      },
+      {
+        "class": "8 -- Counterevidence vs Privacy",
+        "runtime_operation": "assurance.learning.counterevidence.dispose (NEW)",
+        "contract_schema": "contracts/counterevidence-disposition.v1.schema.json (NEW -- binds LC-P0-008's CounterevidenceDisposition half)",
+        "note": "Requesting DELETED for real counterevidence is downgraded to RETAINED_PSEUDONYMIZED unless deletion_basis is a genuine external requirement (LEGAL_REQUIREMENT or DATA_SUBJECT_ERASURE_RIGHT) -- PRIVACY_PREFERENCE_ONLY or no basis at all never honors the deletion request, closing the named negative case (unfavorable evidence quietly removed under a privacy pretext).",
+        "bug_caught_and_fixed_during_this_slice": "Set.of(...).contains(null) throws NullPointerException in the JDK immutable-collections implementation -- the first test run for the 'no deletion_basis supplied at all' case crashed with NPE instead of exercising the intended downgrade path. Fixed with an explicit null check before the Set.contains() call; same bug CLASS (JDK immutable-collection null-handling surprise) as the Set.of() duplicate-element crash caught earlier in Batch 5.",
+        "partial_disclosure": "EvidenceObservation (the other LC-P0-008 contract) is not yet built -- this closes the CounterevidenceDisposition half only.",
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (privacy-only deletion downgraded; no-basis deletion also downgraded, this is the case that caught the NPE; real legal basis honored; non-counterevidence deletion unaffected)"
       }
     ],
     "classes_already_covered_by_prior_batch_5_work": [
@@ -1207,7 +1216,7 @@
       "2 -- Privacy vs Reproducibility (needs EvidenceObservation contract, not yet built)",
       "3 -- Transparency vs Challenge Secrecy (needs sealed-access enforcement over ValidationExperiment, schema exists since Batch 5 but no access-control wiring)",
       "7 -- Adaptive Learning vs Reproducibility (PARTIAL -- ValidationExperiment cross-wiring still open)",
-      "8 -- Counterevidence vs Privacy (needs CounterevidenceDisposition contract, not yet built)",
+      "8 -- PARTIAL -- CounterevidenceDisposition closed; EvidenceObservation half still open",
       "9 -- PARTIAL -- per-event disposition closed; aggregate HumanOverrideTrendReport view still open",
       "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- GroundTruthAuthority + RevalidationBacklog still open)"
     ]

@@ -214,7 +214,8 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.learning.validation.receipt.record", "assurance.learning.promotion.approve",
                     "assurance.learning.applied-lock.record", "assurance.learning.scope-promotion.decide",
                     "assurance.learning.derived-lineage.dispose",
-                    "assurance.learning.human-override.decide" -> auditor || admin;
+                    "assurance.learning.human-override.decide",
+                    "assurance.learning.counterevidence.dispose" -> auditor || admin;
             case "assurance.human-accept" -> approver || admin;
             case "assurance.otester.accept", "assurance.oaudit.accept" -> auditor;
             case "git.push" -> operator || admin;
