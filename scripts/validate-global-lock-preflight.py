@@ -145,20 +145,30 @@ def check_no_nonpositive_to_positive_promotion() -> dict:
 def check_learning_p0_contradiction_progress() -> dict:
     registry = load("contracts/claude-development-progress-registry.v1.json")
     section = registry.get("learning_p0_contradiction_runtime_evidence", {})
-    closed = section.get("classes_closed_this_pass", [])
+    closed_this_pass = section.get("classes_closed_this_pass", [])
+    already_covered = section.get("classes_already_covered_by_prior_batch_5_work", [])
     still_open = section.get("classes_still_open", [])
-    fully_closed = sum(1 for c in closed if "PARTIAL" not in str(c.get("class", "")))
-    partial = sum(1 for c in closed if "PARTIAL" in str(c.get("class", "")))
+    # A closed_this_pass entry counts as fully closed only if it carries no partial_disclosure
+    # note -- checking the dict's own fields, not string-matching the free-text "class" label,
+    # since a label can omit "(PARTIAL)" while the entry's partial_disclosure field still
+    # discloses a real gap (caught this exact undercount/overcount risk while building this
+    # check: classes 8 and 9's entries have partial_disclosure set but no "(PARTIAL)" in their
+    # "class" string, which the earlier string-matching version would have missed).
+    fully_closed = sum(1 for c in closed_this_pass if not c.get("partial_disclosure"))
+    partial_entries = sum(1 for c in closed_this_pass if c.get("partial_disclosure"))
+    fully_closed_total = fully_closed + len(already_covered)
     return {
         "status": "SELF_REPORTED_SEE_REGISTRY",
         "note": f"doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings "
                 f"(precedence rules, not open contradictions); runtime enforcement progress read "
                 f"live from contracts/claude-development-progress-registry.v1.json."
-                f"learning_p0_contradiction_runtime_evidence: {fully_closed} fully closed, "
-                f"{partial} partially closed, {len(still_open)} still open of 11 total. "
-                f"Not SATISFIED until all 11 are fully closed with real runtime tests/evidence "
-                f"(doc 159 SS9's runtime_tests_run/evidence_receipts requirement). No other live "
-                f"P0 semantic contradiction is tracked in this repo's registries.",
+                f"learning_p0_contradiction_runtime_evidence: {fully_closed_total} fully closed "
+                f"({len(already_covered)} via prior-batch coverage + {fully_closed} this pass), "
+                f"{partial_entries} entries with a disclosed partial gap, {len(still_open)} "
+                f"still-open items listed. Not SATISFIED until all 11 are fully closed with real "
+                f"runtime tests/evidence (doc 159 SS9's runtime_tests_run/evidence_receipts "
+                f"requirement). No other live P0 semantic contradiction is tracked in this repo's "
+                f"registries.",
     }
 
 
