@@ -1233,5 +1233,17 @@
       "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- GroundTruthAuthority + RevalidationBacklog still open)"
     ],
     "summary_at_this_checkpoint": "All 11 doc-158 P0 Learning contradiction classes now have real runtime enforcement + tests. 7 are fully closed per their LC-P0 contract binding (1, 2, 3, 4, 5, 6, 10); 4 remain PARTIAL because their contract binding names a second contract not yet cross-wired (7, 8, 9, 11) -- see classes_still_open for exactly what's missing in each. doc 159's runtime_tests_run=0/evidence_receipts=0 baseline is no longer accurate; scripts/validate-global-lock-preflight.py's P0_CONTRADICTION_ZERO gate reads this section live."
+  },
+  "p1_orphan_coverage_closure": {
+    "state": "IN_PROGRESS",
+    "note": "137-doc standing directive's own execution queue item 1 ('Requirement Coverage Closure for remaining orphans'). Started with the cheapest, most honest wins: requirements whose orphan_dimensions was PURELY REQUIREMENT_WITHOUT_EVIDENCE_PATH -- meaning a real test already existed and passed, only a formal status/*.json evidence artifact was missing. Verified each one's cited test actually exists and passes before writing its evidence file -- not fabricated.",
+    "closed_this_pass": [
+      "FR-COM-013 (Separation of Duties) -- status/fr-com-013-separation-of-duties-evidence.v1.json, cites SeparationOfDutiesLedgerTest (6 real tests, including the 2026-08-15 tamper-evidence addition)",
+      "FR-FRESH-001 (Rules of Engagement / Target Testing Authorization) -- status/fr-fresh-001-engagement-authorization-evidence.v1.json, cites SemanticAssuranceV2DispatcherBridgeTest's engagementCheckScope tests (3 real tests)",
+      "FR-FRESH-002 (Accessibility/i18n/Locale) -- status/fr-fresh-002-accessibility-evidence.v1.json, cites accessibilityValidateRender tests (3 Java + 2 Python, real jsonschema fixture rejection)",
+      "FR-FRESH-003 (Tenant Offboarding Closure) -- status/fr-fresh-003-offboarding-evidence.v1.json, cites OffboardingLedgerTest (7 real tests) + 1 Python jsonschema test"
+    ],
+    "orphan_count_progress": "381 P1 orphans -> 377 after this slice (P0 remains 0). Remaining 377 breakdown by orphan_dimensions combination: 220 WITHOUT_EVIDENCE_PATH+WITHOUT_TEST (design exists, no test/evidence -- real implementation work needed, not just an evidence file), 147 WITHOUT_DESIGN+WITHOUT_EVIDENCE_PATH+WITHOUT_TEST (no design citation either -- likely non-ID/generated source-anchored records from the broader 899-record QA population, needs case-by-case triage), 10 WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED (POSITIVE_CLAIM_GATE/QUALIFICATION_GATE requirements with no schema at all -- highest-value next targets since they're machine-enforcement-required by definition).",
+    "next_targets": "The 10 REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED requirements are the next highest-value slice: these are POSITIVE_CLAIM_GATE/QUALIFICATION_GATE requirements that structurally require a schema and currently have none."
   }
 }

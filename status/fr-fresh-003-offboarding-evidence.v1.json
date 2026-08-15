@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-FRESH-003",
+  "requirement_summary": "Contract Termination / Tenant Offboarding Closure: TERMINATION_REQUESTED -> NEW_EFFECT_BLOCKED -> EXPORT_WINDOW -> CREDENTIAL_REVOCATION -> PENDING_JOB_SETTLEMENT -> RETENTION_CLASSIFICATION -> CUSTOMER_EXPORT -> DELETION_OR_LEGAL_HOLD_PROCESSING -> OFFBOARDING_RECEIPT_ISSUED, no stage skipped; legal hold takes priority over deletion but does not auto-extend access authority; a tenant identifier cannot be reused while offboarding is in progress.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/OffboardingLedger.java; contracts/offboarding-closure.v1.schema.json",
+  "observed_source": "OffboardingLedgerTest (real JUnit execution), tests/test_fresh_review_refinement_contracts.py (real jsonschema validation)",
+  "observed_test_methods": [
+    "requestStartsTerminationRequested",
+    "stagesCannotBeSkipped",
+    "legalHoldForbidsDeletion",
+    "withoutLegalHoldDeletionProceeds",
+    "aTenantIdentifierCannotBeReusedWhileOffboardingIsInProgress",
+    "isTerminalIsFalseUntilTheReceiptStageIsReached",
+    "aTamperedStageIsDetectedOnNextRead",
+    "test_legal_hold_forbids_deletion_in_offboarding"
+  ],
+  "coverage_notes": "Stage sequence is strictly enforced (STAGE_ORDER index check, no skip). Legal hold forbids deletion via a real SecurityException (LEGAL_HOLD_FORBIDS_DELETION), not a soft flag. A still-in-progress or completed tenant identifier cannot be reused for a new offboarding request. Tamper-evidence added under Autonomous Development Mode (2026-08-15) hash-chain hardening.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

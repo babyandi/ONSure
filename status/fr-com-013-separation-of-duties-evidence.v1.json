@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-013",
+  "requirement_summary": "규제산업 Enterprise Edition SoD: 동일 사용자가 같은 ImprovementRequest의 개발(DEVELOP)/검증(VERIFY)/최종인수(ACCEPT)를 모두 수행할 수 없다 (ENFORCED policy). 일반 Plan은 권고만 한다 (ADVISORY policy).",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SeparationOfDutiesLedger.java",
+  "observed_source": "SeparationOfDutiesLedgerTest (real JUnit execution, not simulated)",
+  "observed_test_methods": [
+    "enforcedPolicyRejectsTheSameActorPerformingAConflictingStage",
+    "enforcedConflictLeavesNoRecordOfTheRejectedStage",
+    "advisoryPolicyRecordsTheConflictInsteadOfBlockingIt",
+    "differentActorsPerformingDifferentStagesIsNeverAConflict",
+    "theSameActorRecordingTheSameStageTwiceIsNotAConflict",
+    "aTamperedActorIsDetectedOnNextRead"
+  ],
+  "coverage_notes": "ENFORCED policy rejects the same actor performing a conflicting stage before any record is written (real SecurityException, not a soft warning). ADVISORY policy records the conflict rather than silently accepting it as an unrelated stage. Distinct actors across DEVELOP/VERIFY/ACCEPT are never flagged as a false conflict. Tamper-evidence added under Autonomous Development Mode (2026-08-15) hash-chain hardening.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
