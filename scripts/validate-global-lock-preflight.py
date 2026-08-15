@@ -142,6 +142,26 @@ def check_no_nonpositive_to_positive_promotion() -> dict:
     }
 
 
+def check_learning_p0_contradiction_progress() -> dict:
+    registry = load("contracts/claude-development-progress-registry.v1.json")
+    section = registry.get("learning_p0_contradiction_runtime_evidence", {})
+    closed = section.get("classes_closed_this_pass", [])
+    still_open = section.get("classes_still_open", [])
+    fully_closed = sum(1 for c in closed if "PARTIAL" not in str(c.get("class", "")))
+    partial = sum(1 for c in closed if "PARTIAL" in str(c.get("class", "")))
+    return {
+        "status": "SELF_REPORTED_SEE_REGISTRY",
+        "note": f"doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings "
+                f"(precedence rules, not open contradictions); runtime enforcement progress read "
+                f"live from contracts/claude-development-progress-registry.v1.json."
+                f"learning_p0_contradiction_runtime_evidence: {fully_closed} fully closed, "
+                f"{partial} partially closed, {len(still_open)} still open of 11 total. "
+                f"Not SATISFIED until all 11 are fully closed with real runtime tests/evidence "
+                f"(doc 159 SS9's runtime_tests_run/evidence_receipts requirement). No other live "
+                f"P0 semantic contradiction is tracked in this repo's registries.",
+    }
+
+
 def check_post_batch9_independent_rerun() -> dict:
     return {
         "status": "EXTERNAL_DEPENDENCY",
@@ -174,13 +194,7 @@ GATES = {
                 "been built yet.",
     },
     "P0_ORPHAN_ZERO_OR_AUTH_EXTERNAL_BLOCKER": check_p0_orphan_zero,
-    "P0_CONTRADICTION_ZERO": lambda: registry_backed_gate(
-        "P0_CONTRADICTION_ZERO",
-        "doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings (precedence "
-        "rules, not open contradictions) but runtime_tests_run=0 / evidence_receipts=0 per doc 159 "
-        "SS9 -- the design-level contradiction is resolved, the runtime enforcement is not yet "
-        "evidenced. No other live P0 semantic contradiction is tracked in this repo's registries.",
-    ),
+    "P0_CONTRADICTION_ZERO": check_learning_p0_contradiction_progress,
     "P0_DCQ_ZERO": check_p0_dcq_zero,
     "CONTRACT_REGISTRY_REFERENTIAL_INTEGRITY": check_contract_registry_integrity,
     "REQUIREMENT_BASED_TEST_COVERAGE_UNIVERSE": check_requirement_based_coverage_universe,

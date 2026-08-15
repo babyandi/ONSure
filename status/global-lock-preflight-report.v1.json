@@ -1,12 +1,4 @@
 {
-  "authority_population_current_snapshot": {
-    "blocking_precondition": "UNREVIEWED_SOURCE_COUNT_ZERO (136 of 177 sources still UNREVIEWED) -- reviewing each source's authority disposition (NORMATIVE_CURRENT / REFERENCE_ONLY / HANDOFF_ONLY / QA_EVIDENCE_ONLY / etc.) requires real per-document judgment, not a mechanical default; doing this honestly is its own substantial track, not something to rubber-stamp in bulk.",
-    "eligible_count": 22,
-    "ineligible_count": 155,
-    "population_digest": "21c2769851c43d75cf6d604d472cfd4f532ba84c99b9482422ae67e82c689b82",
-    "row_count": 177,
-    "unreviewed_count": 136
-  },
   "authority_ref": "docs/master/semantic-assurance/159_REVERSE_ALIGNMENT_AND_GLOBAL_LOCK_GATE_PREPARATION.md",
   "contract": "ONSURE_GLOBAL_LOCK_PREFLIGHT_REPORT_V1",
   "external_dependency": 1,
@@ -58,7 +50,7 @@
       "status": "SATISFIED"
     },
     "P0_CONTRADICTION_ZERO": {
-      "note": "doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings (precedence rules, not open contradictions) but runtime_tests_run=0 / evidence_receipts=0 per doc 159 SS9 -- the design-level contradiction is resolved, the runtime enforcement is not yet evidenced. No other live P0 semantic contradiction is tracked in this repo's registries.",
+      "note": "doc 158's 11 P0 Learning contradiction CLASSES have design-policy bindings (precedence rules, not open contradictions); runtime enforcement progress read live from contracts/claude-development-progress-registry.v1.json.learning_p0_contradiction_runtime_evidence: 4 fully closed, 1 partially closed, 6 still open of 11 total. Not SATISFIED until all 11 are fully closed with real runtime tests/evidence (doc 159 SS9's runtime_tests_run/evidence_receipts requirement). No other live P0 semantic contradiction is tracked in this repo's registries.",
       "status": "SELF_REPORTED_SEE_REGISTRY"
     },
     "P0_DCQ_ZERO": {
@@ -90,7 +82,7 @@
       "status": "SELF_REPORTED_SEE_REGISTRY"
     }
   },
-  "generated_at": "2026-08-15T00:30:00Z",
+  "generated_at": "2026-08-15T04:35:00Z",
   "lock_matrix_ref": "contracts/global-design-implementation-lock-matrix.candidate.v1.json",
   "mechanically_not_satisfied": 6,
   "mechanically_satisfied": 4,
