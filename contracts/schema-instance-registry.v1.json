@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.19.5",
+  "version": "1.19.6",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -713,6 +713,33 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/multi-agent-corroboration.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/hazard.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/hazard.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/hazard.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/safety-case.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/safety-case.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/safety-case.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/appeal-case.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/appeal-case.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/appeal-case.v1.invalid.json"
       ]
     }
   ],

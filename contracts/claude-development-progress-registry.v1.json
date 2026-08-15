@@ -911,7 +911,45 @@
     {
       "batch": "BATCH_6",
       "name": "Safety / Appeal",
-      "state": "NOT_STARTED"
+      "state": "EVIDENCE_READY",
+      "scope_note": "137 SS27 Batch 6: Hazard/SafetyRequirement/SafetyControl/SafetyCase/ResidualSafetyRisk/currentness/fault injection and AppealCase/independent reviewer/original decision immutability/appeal impact propagation. Grounded entirely in 127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md (DESIGN_ONLY/INTEGRATED_SCOPE_EXTENSION/NON_FINAL) SS1/SS2/SS8, a completely greenfield area for this codebase -- zero prior Hazard/Safety/Appeal references anywhere before this batch. User directive 2026-08-14 required real executable workflows, not schema-only: hazard creation/escalation/closure, appeal submission/reviewer separation, remedy/reversal/reopen, authority/SoD, immutable receipt/evidence, negative cases -- all built and tested together this time (schema + implementation + tests in the same slice), not deferred as in Batch 5's earlier slices.",
+      "hazard_safety_case": {
+        "state": "EVIDENCE_READY",
+        "note": "HazardLedger.java (NEW, durable, append-only, one file per hazard_id): real disposition state-machine (IDENTIFIED -> ANALYZED -> CONTROL_REQUIRED -> CONTROLLED_PENDING_VALIDATION -> {VALIDATED_CONTROLLED | RESIDUAL_RISK_ACCEPTANCE_REQUIRED -> {VALIDATED_CONTROLLED | UNACCEPTABLE}} | STALE), rejecting any transition not in the allowed-successor table -- closing SS8's \"unvalidated safe state\" negative case structurally, not by convention. Residual risk acceptance (the RESIDUAL_RISK_ACCEPTANCE_REQUIRED -> VALIDATED_CONTROLLED transition) requires BOTH an actor distinct from the hazard's creator AND safety-authority confirmation computed from the caller's real authenticated roles (APPROVER/ADMIN), never a caller-declared claim -- closing SS1.6's \"waived critical safety requirement\" negative case. safety-case.v1.schema.json structurally blocks the SS1.6-named forbidden reductions: PASS_NONFINAL requires the evidence population to actually contain FAULT_SCENARIO_VERIFICATION and SAFE_STATE_EVIDENCE classes, so a safety case built only from SECURITY_FINDING_COUNT/ UPTIME_METRIC evidence can never reach PASS_NONFINAL. final_claim_allowed is always false -- PASS_NONFINAL never generates a Product Final/Certificate directly.",
+        "contract_schema": [
+          "contracts/hazard.v1.schema.json (NEW)",
+          "contracts/safety-case.v1.schema.json (NEW)"
+        ],
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/HazardLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (hazardCreate, hazardAdvance)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates: create operator-tier, advance auditor-tier)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/HazardLedgerTest.java (NEW, 6 tests)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+2 tests: create starts IDENTIFIED; a distinct actor with real ADMIN role can advance through the full lifecycle to VALIDATED_CONTROLLED)",
+          "tests/test_safety_appeal_contracts.py (NEW, shared with SafetyCase/AppealCase -- see below)"
+        ],
+        "known_gap_not_yet_covered": "SafetyRequirement and SafetyControl (127 SS1.2) remain unmaterialized as their own schema identities -- HazardLedger tracks Hazard disposition directly without a separate SafetyRequirement/SafetyControl population; Safety Currentness (SS1.7, change-triggered safety case impact analysis) and the 12 named Safety Verification fault-scenario test categories (SS1.5) are not wired. safety-case.v1.schema.json exists with real structural guards but has no Java runtime producer computing a SafetyCase from a real hazard/control population yet -- schema only, matching the honest \"pending runtime consumer\" labeling used in Batch 5."
+      },
+      "appeal_governance": {
+        "state": "EVIDENCE_READY",
+        "note": "AppealLedger.java (NEW, durable, append-only, one file per appeal_case_id): real lifecycle state-machine (FILED -> ADMISSIBILITY_REVIEW -> EVIDENCE_LOCKED -> INDEPENDENT_REVIEW -> {DECIDED | INCONCLUSIVE} -> IMPACT_APPLIED -> CLOSED, with REJECTED_OUT_OF_SCOPE/WITHDRAWN/HOLD_INPUT_REQUIRED exception branches). Filing rejects an appellant challenging their own decision outright. Reviewer assignment rejects the original decision's own principal -- closing SS8's \"original reviewer decides appeal\" negative case for real, checked against the principal_id recorded at filing time, never a caller re-declaration. Deciding is restricted to whichever principal was actually assigned as reviewer -- the original decision principal (or anyone else) attempting to decide is rejected. Because the ledger is genuinely append-only, \"\uc6d0 Decision\uc740 immutable historical record\ub85c \uc720\uc9c0\ud55c\ub2e4\" and \"new evidence replaces old bytes\" are both true by construction, not by convention: the FILED event and every prior evidence submission remain byte-identical and readable after any number of subsequent events, verified directly (not merely asserted) by AppealLedgerTest.",
+        "contract_schema": "contracts/appeal-case.v1.schema.json (NEW)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/AppealLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (appealFile, appealAssignReviewer, appealSubmitEvidence, appealTransition, appealDecide)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates: file/submit-evidence operator-tier, assign-reviewer/transition/decide auditor-tier)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/AppealLedgerTest.java (NEW, 8 tests covering 4 of the 7 SS8-named appeal negative cases directly: self-challenge, original-reviewer-self-review, decision-by-non-assigned-reviewer, evidence-after-closure -- plus immutability/append-only verification)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+3 tests: self-challenge rejected through the wired operation, full 3-distinct-actor lifecycle -- appellant/coordinator/independent reviewer -- reaching DECIDED, non-assigned-reviewer rejected through the wired operation)",
+          "tests/test_safety_appeal_contracts.py (NEW, 7 tests: schema self-validity, every valid/invalid fixture pair, DECIDED-while-PENDING rejected, safety case forbidden-evidence-only rejected, catastrophic-hazard-direct-to-VALIDATED_CONTROLLED rejected, safety case never final)"
+        ],
+        "known_gap_not_yet_covered": "Appeal impact propagation (127 SS2.7/SS3: a material REVERSE/MODIFY decision triggering REASSESSMENT_REQUIRED on downstream Final/Certificate/currentness objects) is not wired -- AppealLedger records the decision but does not itself call into CertificateIssue/RevocationLedger/CurrentnessSnapshot. Cross-tenant appellant rejection relies on TenantRbacService's generic tenant-ownership boundary rather than an appeal-specific check (adequate but not appeal-domain-specific). \"unqualified expert overturns Critical Finding\" (SS8) is not covered -- no expert/qualification profile is consulted by assignReviewer/decide."
+      }
     },
     {
       "batch": "BATCH_7",

@@ -69,7 +69,14 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.stop-decision.compute",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
-            "assurance.multi-agent.corroboration-check");
+            "assurance.multi-agent.corroboration-check",
+            "assurance.hazard.create",
+            "assurance.hazard.advance",
+            "assurance.appeal.file",
+            "assurance.appeal.assign-reviewer",
+            "assurance.appeal.submit-evidence",
+            "assurance.appeal.transition",
+            "assurance.appeal.decide");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -143,6 +150,13 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
+            case "assurance.hazard.create" -> hazardCreate(request);
+            case "assurance.hazard.advance" -> hazardAdvance(request);
+            case "assurance.appeal.file" -> appealFile(request);
+            case "assurance.appeal.assign-reviewer" -> appealAssignReviewer(request);
+            case "assurance.appeal.submit-evidence" -> appealSubmitEvidence(request);
+            case "assurance.appeal.transition" -> appealTransition(request);
+            case "assurance.appeal.decide" -> appealDecide(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1713,6 +1727,173 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("shared_dependency_axes", List.copyOf(sharedAxes));
         out.put("agreement_strength", agreementStrength);
         out.put("decision", "INDEPENDENT_GROUND_TRUTH".equals(agreementStrength) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private HazardLedger hazardLedger() {
+        return new HazardLedger(workspaceRoot.resolve(".onsure/assurance/hazards"));
+    }
+
+    /** hazard.v1.schema.json real creation: always starts IDENTIFIED, creator bound to the caller. */
+    private Map<String, Object> hazardCreate(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String hazardId = requiredText(request, "hazard_id");
+        HazardLedger.DispositionEvent event;
+        try {
+            event = hazardLedger().create(hazardId, identity.actorId());
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("HAZARD_CREATED", targetId);
+        out.put("hazard_id", hazardId);
+        out.put("disposition", event.disposition());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * hazard.v1.schema.json real disposition advancement (127 SS1.3/1.6). safety_authority_confirmed
+     * is never a caller-declared claim -- it is computed here from the authenticated caller's real
+     * roles (APPROVER, the same role tier this codebase already uses for other elevated-authority
+     * approval gates), not trusted from the request body.
+     */
+    private Map<String, Object> hazardAdvance(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String hazardId = requiredText(request, "hazard_id");
+        String toDisposition = requiredText(request, "to_disposition");
+        String justification = requiredText(request, "justification");
+        boolean safetyAuthorityConfirmed = identity.roles().contains(AuthenticatedWorkflowIdentity.Role.APPROVER)
+                || identity.roles().contains(AuthenticatedWorkflowIdentity.Role.ADMIN);
+
+        HazardLedger.DispositionEvent event;
+        try {
+            event = hazardLedger().advance(hazardId, toDisposition, identity.actorId(), justification, safetyAuthorityConfirmed);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("HAZARD_ADVANCED", targetId);
+        out.put("hazard_id", hazardId);
+        out.put("disposition", event.disposition());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    private AppealLedger appealLedger() {
+        return new AppealLedger(workspaceRoot.resolve(".onsure/assurance/appeals"));
+    }
+
+    /**
+     * appeal-case.v1.schema.json real filing (127 SS2.3). appellant_principal_id is bound to the
+     * authenticated caller; challenged_decision_principal_id is a caller-supplied reference to a
+     * different, already-existing principal from a past decision. An appellant challenging their
+     * own decision is rejected outright.
+     */
+    private Map<String, Object> appealFile(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String appealCaseId = requiredText(request, "appeal_case_id");
+        String challengedDecisionPrincipalId = requiredText(request, "challenged_decision_principal_id");
+        String reasonCode = requiredText(request, "reason_code");
+
+        AppealLedger.FileResult result;
+        try {
+            result = appealLedger().file(appealCaseId, identity.actorId(), challengedDecisionPrincipalId, reasonCode);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("APPEAL_FILED", targetId);
+        out.put("appeal_case_id", result.appealCaseId());
+        out.put("status", "FILED");
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * 127 SS2.6 real independence enforcement: the reviewer can never be the challenged decision's
+     * original principal, checked against the value recorded at filing time (never a caller
+     * re-declaration of who the original principal was).
+     */
+    private Map<String, Object> appealAssignReviewer(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String appealCaseId = requiredText(request, "appeal_case_id");
+        String reviewerPrincipalId = requiredText(request, "reviewer_principal_id");
+
+        AppealLedger.Event event;
+        try {
+            event = appealLedger().assignReviewer(appealCaseId, reviewerPrincipalId);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("APPEAL_REVIEWER_ASSIGNED", targetId);
+        out.put("appeal_case_id", appealCaseId);
+        out.put("status", event.status());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /** 127 SS2.7: new evidence is appended, never replaces a prior submission's bytes. */
+    private Map<String, Object> appealSubmitEvidence(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String appealCaseId = requiredText(request, "appeal_case_id");
+        String evidenceRefSha256 = requiredDigest(request, "evidence_ref_sha256");
+
+        AppealLedger.Event event;
+        try {
+            event = appealLedger().submitEvidence(appealCaseId, identity.actorId(), evidenceRefSha256);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("APPEAL_EVIDENCE_SUBMITTED", targetId);
+        out.put("appeal_case_id", appealCaseId);
+        out.put("status", event.status());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    private Map<String, Object> appealTransition(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String appealCaseId = requiredText(request, "appeal_case_id");
+        String toStatus = requiredText(request, "to_status");
+        String detail = request.path("detail").asText("");
+
+        AppealLedger.Event event;
+        try {
+            event = appealLedger().transition(appealCaseId, toStatus, identity.actorId(), detail);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("APPEAL_TRANSITIONED", targetId);
+        out.put("appeal_case_id", appealCaseId);
+        out.put("status", event.status());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * 127 SS2.5 real decision recording: only the actually-assigned reviewer's decision is
+     * accepted -- the original decision principal (or anyone else) attempting to decide is
+     * rejected. The original decision itself is never deleted or overwritten (append-only ledger);
+     * this event is a new, superseding generation on top of it.
+     */
+    private Map<String, Object> appealDecide(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String appealCaseId = requiredText(request, "appeal_case_id");
+        String decision = requiredText(request, "appeal_decision");
+        if (!Set.of("UPHOLD", "REVERSE", "MODIFY", "REASSESSMENT_REQUIRED", "INCONCLUSIVE").contains(decision)) {
+            return failClosed("HOLD", List.of("APPEAL_DECISION_INVALID"));
+        }
+        String rationale = requiredText(request, "rationale");
+
+        AppealLedger.Event event;
+        try {
+            event = appealLedger().decide(appealCaseId, decision, identity.actorId(), rationale);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("APPEAL_DECIDED", targetId);
+        out.put("appeal_case_id", appealCaseId);
+        out.put("status", event.status());
+        out.put("appeal_decision", decision);
+        out.put("decision", "NON_FINAL");
         return immutable(out);
     }
 

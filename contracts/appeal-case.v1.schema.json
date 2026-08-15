@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/appeal-case.v1.schema.json",
+  "title": "ONSure Appeal Case v1",
+  "description": "127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md SS2.3/2.4/2.6. Lifecycle FILED -> ADMISSIBILITY_REVIEW -> EVIDENCE_LOCKED -> INDEPENDENT_REVIEW -> DECIDED -> IMPACT_APPLIED -> CLOSED (exceptions REJECTED_OUT_OF_SCOPE/WITHDRAWN/HOLD_INPUT_REQUIRED/INCONCLUSIVE). SS2.6: the appeal reviewer can never be the same principal as the original decision -- reviewer_principal_id == challenged_decision_principal_id is the named negative case ('original reviewer decides appeal'). JSON Schema draft 2020-12 without $data support cannot compare two sibling string fields for inequality declaratively (the same limitation already noted on validator-regression-qualification.v1.schema.json's drift-vs-threshold comparison), so this is enforced for real by AppealLedger.assignReviewer at runtime, not expressible here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "appeal_case_id", "appellant_principal_id", "appellant_organization_id",
+    "challenged_object_type", "challenged_object_id", "challenged_object_digest",
+    "challenged_decision_principal_id", "filed_at", "reason_code", "argument",
+    "status", "decision"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_APPEAL_CASE_V1"},
+    "appeal_case_id": {"type": "string", "minLength": 1},
+    "appellant_principal_id": {"type": "string", "minLength": 1},
+    "appellant_organization_id": {"type": "string", "minLength": 1},
+    "challenged_object_type": {
+      "enum": [
+        "FINDING", "APPLICABILITY", "ACCEPTED_RISK", "VERIFICATION_REVIEW",
+        "HUMAN_ACCEPTANCE", "VALIDATOR_QUALIFICATION", "COMPOSITION_RESULT",
+        "CURRENTNESS_INVALIDATION", "ASSURANCE_CERTIFICATE", "CUSTOMER_CLAIM"
+      ]
+    },
+    "challenged_object_id": {"type": "string", "minLength": 1},
+    "challenged_object_digest": {"$ref": "#/$defs/sha256"},
+    "challenged_decision_principal_id": {"type": "string", "minLength": 1},
+    "reviewer_principal_id": {"type": ["string", "null"]},
+    "filed_at": {"type": "string", "format": "date-time"},
+    "reason_code": {"type": "string", "minLength": 1},
+    "argument": {"type": "string", "minLength": 1},
+    "submitted_evidence_refs": {"type": "array", "items": {"$ref": "#/$defs/sha256"}, "uniqueItems": true},
+    "status": {
+      "enum": [
+        "FILED", "ADMISSIBILITY_REVIEW", "EVIDENCE_LOCKED", "INDEPENDENT_REVIEW",
+        "DECIDED", "IMPACT_APPLIED", "CLOSED", "REJECTED_OUT_OF_SCOPE", "WITHDRAWN",
+        "HOLD_INPUT_REQUIRED", "INCONCLUSIVE"
+      ]
+    },
+    "decision": {"enum": ["PENDING", "UPHOLD", "REVERSE", "MODIFY", "REASSESSMENT_REQUIRED", "INCONCLUSIVE"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "DECIDED"}}},
+      "then": {"not": {"properties": {"decision": {"const": "PENDING"}}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

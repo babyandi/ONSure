@@ -194,7 +194,11 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.corpus.integrity-check", "assurance.validator.regression-qualify",
                     "assurance.learning.stop-decision.compute", "assurance.release.qualify",
                     "assurance.provider.drift-check",
-                    "assurance.multi-agent.corroboration-check" -> auditor || operator || admin;
+                    "assurance.multi-agent.corroboration-check",
+                    "assurance.hazard.create", "assurance.appeal.file",
+                    "assurance.appeal.submit-evidence" -> auditor || operator || admin;
+            case "assurance.hazard.advance", "assurance.appeal.assign-reviewer",
+                    "assurance.appeal.transition", "assurance.appeal.decide" -> auditor || admin;
             case "semantic.authority.revalidate", "semantic.independence.assess",
                     "semantic.freshness.invalidate", "semantic.freshness.reconstruct",
                     "semantic.validator.requalify", "assurance.final-candidate.reconstruct",

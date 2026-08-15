@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_HAZARD_V1",
+  "hazard_id": "hazard-001",
+  "target_subject_id": "target-001",
+  "target_subject_digest": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "description": "Autonomous dosing controller may issue an unsafe dose under sensor timeout.",
+  "initiating_conditions": ["sensor_timeout", "stale_reading"],
+  "hazardous_scenario_ids": ["scenario-001"],
+  "potential_harms": ["patient_overdose"],
+  "severity_class": "CATASTROPHIC",
+  "exposure_class": null,
+  "controllability_class": null,
+  "industry_risk_model_ref": "ISO-14971",
+  "disposition": "RESIDUAL_RISK_ACCEPTANCE_REQUIRED",
+  "created_by": "safety-analyst-a",
+  "created_at": "2026-08-15T00:00:00Z"
+}

@@ -1137,6 +1137,71 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void hazardCreatedThroughTheWiredOperationStartsIdentified() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.hazard.create", Map.of("hazard_id", "hazard-1"));
+        assertEquals("IDENTIFIED", result.get("disposition"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void hazardAdvanceGrantsSafetyAuthorityFromRealRolesNotACallerClaim() throws Exception {
+        SemanticAssuranceV2DispatcherBridge approverBridge = new SemanticAssuranceV2DispatcherBridge(
+                temp, identity("tenant-a", "admin-b"));
+        learningDispatch(bridge, "assurance.hazard.create", Map.of("hazard_id", "hazard-2"));
+        learningDispatch(bridge, "assurance.hazard.advance", Map.of(
+                "hazard_id", "hazard-2", "to_disposition", "ANALYZED", "justification", "analysis complete"));
+        learningDispatch(bridge, "assurance.hazard.advance", Map.of(
+                "hazard_id", "hazard-2", "to_disposition", "CONTROL_REQUIRED", "justification", "controls needed"));
+        learningDispatch(bridge, "assurance.hazard.advance", Map.of(
+                "hazard_id", "hazard-2", "to_disposition", "CONTROLLED_PENDING_VALIDATION", "justification", "controls implemented"));
+        learningDispatch(bridge, "assurance.hazard.advance", Map.of(
+                "hazard_id", "hazard-2", "to_disposition", "RESIDUAL_RISK_ACCEPTANCE_REQUIRED", "justification", "residual risk remains"));
+        // admin-b holds ADMIN (which the wiring also treats as safety-authority-equivalent) and is
+        // a distinct actor from the hazard's creator (admin-a via bridge), so this succeeds for real.
+        Map<?, ?> accepted = learningDispatch(approverBridge, "assurance.hazard.advance", Map.of(
+                "hazard_id", "hazard-2", "to_disposition", "VALIDATED_CONTROLLED", "justification", "accepted with authority"));
+        assertEquals("VALIDATED_CONTROLLED", accepted.get("disposition"));
+    }
+
+    @Test
+    void appealFiledThroughTheWiredOperationRejectsSelfChallenge() throws Exception {
+        SecurityException denied = assertThrows(SecurityException.class, () -> bridge.dispatch(
+                "assurance.appeal.file", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "appeal_case_id", "appeal-1", "challenged_decision_principal_id", "admin-a",
+                        "reason_code", "REASON"))));
+        assertEquals("APPELLANT_CANNOT_BE_THE_ORIGINAL_DECISION_PRINCIPAL", denied.getMessage());
+    }
+
+    @Test
+    void appealFullLifecycleThroughWiredOperationsReachesDecidedWithAnIndependentReviewer() throws Exception {
+        SemanticAssuranceV2DispatcherBridge coordinator = new SemanticAssuranceV2DispatcherBridge(
+                temp, identity("tenant-a", "admin-b"));
+        SemanticAssuranceV2DispatcherBridge reviewer = new SemanticAssuranceV2DispatcherBridge(
+                temp, identity("tenant-a", "admin-c"));
+
+        learningDispatch(bridge, "assurance.appeal.file", Map.of(
+                "appeal_case_id", "appeal-2", "challenged_decision_principal_id", "admin-original",
+                "reason_code", "MATERIAL_EVIDENCE_OMITTED"));
+        learningDispatch(coordinator, "assurance.appeal.transition", Map.of(
+                "appeal_case_id", "appeal-2", "to_status", "ADMISSIBILITY_REVIEW"));
+        learningDispatch(coordinator, "assurance.appeal.transition", Map.of(
+                "appeal_case_id", "appeal-2", "to_status", "EVIDENCE_LOCKED"));
+        learningDispatch(coordinator, "assurance.appeal.assign-reviewer", Map.of(
+                "appeal_case_id", "appeal-2", "reviewer_principal_id", "admin-c"));
+
+        SecurityException denied = assertThrows(SecurityException.class, () -> coordinator.dispatch(
+                "assurance.appeal.decide", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "appeal_case_id", "appeal-2", "appeal_decision", "REVERSE", "rationale", "not the reviewer"))));
+        assertEquals("APPEAL_DECISION_MUST_COME_FROM_THE_ASSIGNED_REVIEWER", denied.getMessage());
+
+        Map<?, ?> decided = learningDispatch(reviewer, "assurance.appeal.decide", Map.of(
+                "appeal_case_id", "appeal-2", "appeal_decision", "REVERSE", "rationale", "material evidence changes the outcome"));
+        assertEquals("DECIDED", decided.get("status"));
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,
