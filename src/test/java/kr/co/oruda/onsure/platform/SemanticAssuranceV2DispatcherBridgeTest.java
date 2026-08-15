@@ -2097,6 +2097,50 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-039 IP / License Provenance
+    @Test
+    void ipLicenseProvenanceCheckAllowsUpperScopePromotionWithClearLicenseAndTrainingPermission() throws Exception {
+        Map<?, ?> result = ipLicenseProvenanceCheck("INDUSTRY", "CLEAR", true);
+        assertEquals("PROMOTION_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void ipLicenseProvenanceCheckBlocksUpperScopePromotionWithUnclearLicense() throws Exception {
+        Map<?, ?> result = ipLicenseProvenanceCheck("INDUSTRY", "UNCLEAR", true);
+        assertEquals("PROMOTION_BLOCKED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).stream()
+                        .anyMatch(r -> r.toString().startsWith("UPPER_SCOPE_PROMOTION_REQUIRES_CLEAR_LICENSE")));
+    }
+
+    @Test
+    void ipLicenseProvenanceCheckBlocksUpperScopePromotionWithoutTrainingPermission() throws Exception {
+        Map<?, ?> result = ipLicenseProvenanceCheck("GLOBAL", "CLEAR", false);
+        assertEquals("PROMOTION_BLOCKED", result.get("decision"));
+        assertEquals(
+                List.of("UPPER_SCOPE_PROMOTION_REQUIRES_TRAINING_PERMISSION"), result.get("reasons"));
+    }
+
+    @Test
+    void ipLicenseProvenanceCheckAllowsLowerScopePromotionRegardlessOfLicenseStatus() throws Exception {
+        Map<?, ?> result = ipLicenseProvenanceCheck("ORGANIZATION", "UNCLEAR", false);
+        assertEquals("PROMOTION_ALLOWED", result.get("decision"));
+    }
+
+    private Map<?, ?> ipLicenseProvenanceCheck(
+            String targetScope, String licenseStatus, boolean trainingPermissionGranted) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "asset_id", "asset-1", "asset_origin", "EXTERNAL", "target_scope", targetScope,
+                "license_status", licenseStatus, "training_permission_granted", trainingPermissionGranted,
+                "redistribution_permission_granted", false);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.ip-license-provenance.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

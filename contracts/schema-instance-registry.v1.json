@@ -913,6 +913,15 @@
         "fixtures/contracts/learning-history-migration-check.invalid.json"
       ],
       "schema": "contracts/learning-history-migration-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/ip-license-provenance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ip-license-provenance-check.invalid.json"
+      ],
+      "schema": "contracts/ip-license-provenance-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

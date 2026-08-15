@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_IP_LICENSE_PROVENANCE_CHECK_V1",
+  "asset_id": "pattern-external-fraud-signature-207",
+  "asset_origin": "EXTERNAL",
+  "target_scope": "INDUSTRY",
+  "license_status": "CLEAR",
+  "training_permission_granted": true,
+  "redistribution_permission_granted": false,
+  "decision": "PROMOTION_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

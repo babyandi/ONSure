@@ -87,6 +87,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.explanation-fidelity.check",
             "assurance.learning.selective-prediction-risk-coverage.check",
             "assurance.learning.history-migration.check",
+            "assurance.learning.ip-license-provenance.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -198,6 +199,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.explanation-fidelity.check" -> decisionExplanationFidelityCheck(request);
             case "assurance.learning.selective-prediction-risk-coverage.check" -> selectivePredictionRiskCoverageCheck(request);
             case "assurance.learning.history-migration.check" -> learningHistoryMigrationCheck(request);
+            case "assurance.learning.ip-license-provenance.check" -> ipLicenseProvenanceCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2871,6 +2873,66 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("subject_id", subjectId);
         out.put("lossy_categories", List.copyOf(lossyCategories));
         out.put("decision", decision);
+        return immutable(out);
+    }
+
+    private static final Set<String> IP_LICENSE_ASSET_ORIGINS = Set.of("PUBLIC", "EXTERNAL", "CUSTOMER", "INTERNAL");
+    private static final List<String> IP_LICENSE_TARGET_SCOPES =
+            List.of("PRIVATE", "ORGANIZATION", "INDUSTRY", "GLOBAL");
+    private static final Set<String> IP_LICENSE_STATUSES = Set.of("CLEAR", "UNCLEAR", "RESTRICTED");
+    private static final int IP_LICENSE_UPPER_SCOPE_MIN_RANK = IP_LICENSE_TARGET_SCOPES.indexOf("INDUSTRY");
+
+    /**
+     * ip-license-provenance-check.v1.schema.json real computation (FR-LEARN-039 IP / License
+     * Provenance: "공개·외부·고객 유래 Pattern/Rule/Fixture/Corpus에도 license, usage right,
+     * redistribution/training permission... lineage로 결속한다. 권리 불명확 자산은 상위
+     * scope/global promotion 금지"). JSON Schema can validate license_status and target_scope
+     * individually but cannot enforce that promotion to a HIGHER scope requires a CLEAR license
+     * plus explicit training permission together. This operation rejects promotion to INDUSTRY
+     * or GLOBAL scope whenever license_status is not CLEAR, or training_permission_granted is
+     * false, regardless of asset_origin -- closing "권리 불명확 자산은 상위 scope/global
+     * promotion 금지" as a real, testable rejection rather than a documented convention.
+     */
+    private Map<String, Object> ipLicenseProvenanceCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String assetId = requiredText(request, "asset_id");
+        String assetOrigin = requiredText(request, "asset_origin");
+        if (!IP_LICENSE_ASSET_ORIGINS.contains(assetOrigin)) {
+            return failClosed("HOLD", List.of("IP_LICENSE_ASSET_ORIGIN_INVALID:" + assetOrigin));
+        }
+        String targetScope = requiredText(request, "target_scope");
+        int targetScopeRank = IP_LICENSE_TARGET_SCOPES.indexOf(targetScope);
+        if (targetScopeRank < 0) {
+            return failClosed("HOLD", List.of("IP_LICENSE_TARGET_SCOPE_INVALID:" + targetScope));
+        }
+        String licenseStatus = requiredText(request, "license_status");
+        if (!IP_LICENSE_STATUSES.contains(licenseStatus)) {
+            return failClosed("HOLD", List.of("IP_LICENSE_STATUS_INVALID:" + licenseStatus));
+        }
+        boolean trainingPermissionGranted = request.path("training_permission_granted").asBoolean(false);
+        boolean redistributionPermissionGranted = request.path("redistribution_permission_granted").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        if (targetScopeRank >= IP_LICENSE_UPPER_SCOPE_MIN_RANK) {
+            if (!"CLEAR".equals(licenseStatus)) {
+                reasons.add("UPPER_SCOPE_PROMOTION_REQUIRES_CLEAR_LICENSE:" + licenseStatus);
+            }
+            if (!trainingPermissionGranted) {
+                reasons.add("UPPER_SCOPE_PROMOTION_REQUIRES_TRAINING_PERMISSION");
+            }
+        }
+
+        String decision = reasons.isEmpty() ? "PROMOTION_ALLOWED" : "PROMOTION_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_IP_LICENSE_PROVENANCE_CHECK", targetId);
+        out.put("asset_id", assetId);
+        out.put("asset_origin", assetOrigin);
+        out.put("target_scope", targetScope);
+        out.put("license_status", licenseStatus);
+        out.put("training_permission_granted", trainingPermissionGranted);
+        out.put("redistribution_permission_granted", redistributionPermissionGranted);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
 

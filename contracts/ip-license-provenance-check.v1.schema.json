@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/ip-license-provenance-check.v1.schema.json",
+  "title": "ONSure IP / License Provenance Check v1",
+  "description": "FR-LEARN-039 IP / License Provenance: 공개·외부·고객 유래 Pattern/Rule/Fixture/Corpus에도 license, usage right, redistribution/training permission, jurisdiction/contract restriction을 lineage로 결속한다. 권리 불명확 자산은 상위 scope/global promotion 금지. A promotion to INDUSTRY or GLOBAL scope while license_status is not CLEAR, or without explicit training_permission_granted, is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "asset_id", "asset_origin", "target_scope", "license_status",
+    "training_permission_granted", "redistribution_permission_granted",
+    "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_IP_LICENSE_PROVENANCE_CHECK_V1"},
+    "asset_id": {"type": "string", "minLength": 1},
+    "asset_origin": {"enum": ["PUBLIC", "EXTERNAL", "CUSTOMER", "INTERNAL"]},
+    "target_scope": {"enum": ["PRIVATE", "ORGANIZATION", "INDUSTRY", "GLOBAL"]},
+    "license_status": {"enum": ["CLEAR", "UNCLEAR", "RESTRICTED"]},
+    "training_permission_granted": {"type": "boolean"},
+    "redistribution_permission_granted": {"type": "boolean"},
+    "decision": {"enum": ["PROMOTION_ALLOWED", "PROMOTION_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}
