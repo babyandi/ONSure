@@ -1582,6 +1582,75 @@ class SemanticAssuranceV2DispatcherBridgeTest {
     }
 
     @Test
+    void validationExperimentEvaluateReachesStableWhenEveryRunPassesAndCountIsAtLeastTwo() throws Exception {
+        Map<?, ?> result = validationExperimentEvaluate(
+                "STOCHASTIC", 2, List.of(experimentRun("run-1", "PASS"), experimentRun("run-2", "PASS")));
+        assertEquals("STABLE", result.get("result"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void validationExperimentEvaluateRejectsDeclaredRunCountMismatchWithActualRuns() throws Exception {
+        Map<?, ?> result = validationExperimentEvaluate(
+                "METAMORPHIC", 5, List.of(experimentRun("run-1", "PASS"), experimentRun("run-2", "PASS")));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(
+                List.of("VALIDATION_EXPERIMENT_RUN_COUNT_MISMATCH:declared=5:actual=2"), result.get("reasons"));
+    }
+
+    @Test
+    void validationExperimentEvaluateForcesUnstableOnAnyFailedRun() throws Exception {
+        Map<?, ?> result = validationExperimentEvaluate(
+                "STOCHASTIC", 3,
+                List.of(experimentRun("run-1", "PASS"), experimentRun("run-2", "FAIL"), experimentRun("run-3", "PASS")));
+        assertEquals("UNSTABLE", result.get("result"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void validationExperimentEvaluateForcesNotRunWhenAnyRunIsNotRun() throws Exception {
+        Map<?, ?> result = validationExperimentEvaluate(
+                "ENVIRONMENT_MATRIX", 2, List.of(experimentRun("run-1", "PASS"), experimentRun("run-2", "NOT_RUN")));
+        assertEquals("NOT_RUN", result.get("result"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void validationExperimentEvaluateNeverReachesStableFromASingleRunRegardlessOfMode() throws Exception {
+        Map<?, ?> result = validationExperimentEvaluate(
+                "DIFFERENTIAL", 1, List.of(experimentRun("run-1", "PASS")));
+        assertEquals("INCONCLUSIVE", result.get("result"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void validationExperimentEvaluateRejectsStochasticModeWithFewerThanTwoRuns() throws Exception {
+        Map<?, ?> result = validationExperimentEvaluate(
+                "STOCHASTIC", 1, List.of(experimentRun("run-1", "PASS")));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("STOCHASTIC_REQUIRES_AT_LEAST_TWO_RUNS"), result.get("reasons"));
+    }
+
+    private Map<String, Object> experimentRun(String runId, String outcome) {
+        Map<String, Object> run = new java.util.LinkedHashMap<>();
+        run.put("run_id", runId);
+        run.put("outcome", outcome);
+        return run;
+    }
+
+    private Map<?, ?> validationExperimentEvaluate(
+            String mode, long declaredRunCount, List<Map<String, Object>> runs) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "experiment_id", "experiment-1", "mode", mode, "subject_id", "subject-1",
+                "run_count", declaredRunCount, "runs", runs, "environment", "linux-jdk17");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.validation.experiment-evaluate", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");
         Map<?, ?> result = providerDriftCheck(characteristics, characteristics);

@@ -831,13 +831,9 @@
           "L. LearningStopDecision"
         ],
         "objects_still_pending_runtime_consumer": [
-          "A. LearningCandidateAsset",
-          "B. LearningPromotionReceipt",
-          "D. LearningEffectivenessReport",
-          "H. DerivedLearningLineageDisposition",
-          "I. LearningScopePromotion",
-          "J. ValidationExperiment"
-        ]
+          "D. LearningEffectivenessReport"
+        ],
+        "reconciled_2026_08_15": "This list was stale. H (DerivedLearningLineageDisposition -> assurance.learning.derived-lineage.dispose) and I (LearningScopePromotion -> assurance.learning.scope-promotion.decide) already had real wired operations by the time this pass checked (grep-verified against SemanticAssuranceV2WorkflowService.java's operation switch, not assumed). A and B are covered via OfficialLearningLedger's equivalent (not literally-schema-instantiating) candidate/promotion operations, per the note already on schema_only_pending_runtime_consumer below. J (ValidationExperiment) closed this pass: assurance.validation.experiment-evaluate, real STABLE/UNSTABLE/NOT_RUN/INCONCLUSIVE computation from actual runs[] outcomes plus a run_count-vs-runs.length cross-check, covering FR-LEARN-013/014/015 (Stochastic/Metamorphic/Differential) in one operation -- see status/fr-learn-013-014-015-validation-experiment-evidence.v1.json. Only D (LearningEffectivenessReport) remains genuinely schema-only."
       },
       "slice_3_learning_validation_real_computation": {
         "state": "EVIDENCE_READY",
@@ -887,13 +883,11 @@
       "batch_5_status_summary": {
         "note": "137 SS27 Batch 5 (AI/Meta-Assurance) covered substantially but not exhaustively -- recorded honestly per the user's 2026-08-14 instruction rather than claimed fully closed. Covered with real, tested implementation: LearningCandidate cannot hold ACTIVE/PASS/FAIL authority directly, self-approval/self-qualification blocking (OfficialLearningLedger, now wired), OracleQualification, Multi-Oracle disagreement, corpus contamination/poisoning/tenant leakage, validator drift/regression, rollback, tenant scope promotion (schema only, see below), stochastic/metamorphic/differential validation (schema only, see below), knowledge freshness/learning stop condition, ONSure release/validator/adapter qualification, provider drift, multi-agent common-mode failure / majority vote ceiling.",
         "schema_only_pending_runtime_consumer": [
-          "A. LearningCandidateAsset",
+          "A. LearningCandidateAsset (covered via OfficialLearningLedger's equivalent, not-literally-schema-instantiating candidate operation)",
           "B. LearningPromotionReceipt (contract only; the actual candidate lifecycle runtime is OfficialLearningLedger, which predates and does not literally instantiate these newer schema identities)",
-          "D. LearningEffectivenessReport (False Positive/Negative feedback as a report artifact; the promotion-time false-positive resistance itself is covered by OfficialLearningLedger)",
-          "H. DerivedLearningLineageDisposition (learning provenance / derived deletion lineage)",
-          "I. LearningScopePromotion (tenant scope promotion)",
-          "J. ValidationExperiment (stochastic/metamorphic/differential validation, challenge set/blind regression)"
+          "D. LearningEffectivenessReport (False Positive/Negative feedback as a report artifact; the promotion-time false-positive resistance itself is covered by OfficialLearningLedger) -- the one genuinely remaining gap as of 2026-08-15"
         ],
+        "reconciled_2026_08_15": "H, I, and J removed from this list -- see objects_still_pending_runtime_consumer.reconciled_2026_08_15 above for what closed each and when.",
         "not_covered_this_batch": [
           "Prompt Provenance (34 SS3)",
           "Tool Authority Method (34 SS4)",
@@ -1353,6 +1347,19 @@
     "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: all-lanes-atomic-clean on full reconciliation, HOLD on non-reconciling test-summary counts, HOLD on inverted read-consistency timestamps, HOLD on open P0 findings even with all tests passing, HOLD listing every non-atomic lane when failed/blocked/not_run tests are present)",
     "evidence": "status/fr-meta-010-atomic-validation-snapshot-evidence.v1.json",
     "open_gap": "Validates internal self-consistency of a caller-supplied snapshot only; does not yet cross-check declared epochs against the live system's actual current epoch values (e.g. the real EPOCH::REQUIREMENT::0002 generation receipt) -- a stronger anti-stitching check, disclosed as a real follow-on rather than implemented as a stand-in."
+  },
+  "batch5_object_j_validation_experiment_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Batch 5 shadow-write/real-time-dual-read continuous execution queue item (item 4): while auditing which of the 6 originally-flagged schema-only learning objects (A/B/D/H/I/J) were genuinely still unwired, found H and I already had real operations (registry note was stale, not the code) -- only D and J remained. Closed J for real: assurance.validation.experiment-evaluate wires contracts/validation-experiment.v1.schema.json (previously zero Java consumers) to real computation covering FR-LEARN-013 (Stochastic), FR-LEARN-014 (Metamorphic), and FR-LEARN-015 (Differential) in one unified operation. result is computed from the caller's actual runs[] outcomes (any FAIL forces UNSTABLE, any NOT_RUN forces NOT_RUN, remaining INCONCLUSIVE forces INCONCLUSIVE, STABLE only reachable with run_count>=2 and all-PASS) rather than trusted from a caller-declared value, and the caller's declared run_count is cross-checked against runs[].length -- both real gaps JSON Schema alone (without $data) cannot close.",
+    "contract_schema": "contracts/validation-experiment.v1.schema.json (Batch 5 object J, pre-existing)",
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (validationExperimentEvaluate)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+6 tests: STABLE on run_count>=2 all-PASS, HOLD on declared-vs-actual run_count mismatch, UNSTABLE on any FAIL, NOT_RUN on any NOT_RUN outcome, INCONCLUSIVE on a single passing run regardless of mode, HOLD on STOCHASTIC mode with fewer than two runs)",
+    "evidence": "status/fr-learn-013-014-015-validation-experiment-evidence.v1.json",
+    "open_gap": "FR-LEARN-013's variance measurement across runs is not computed (only stability classification). FR-LEARN-014's metamorphic-relation qualification (is the relation itself vetted) is not independently verified -- both disclosed, not implemented as a stand-in."
   },
   "unrelated_flake_fixed_during_verification": {
     "state": "FIXED",

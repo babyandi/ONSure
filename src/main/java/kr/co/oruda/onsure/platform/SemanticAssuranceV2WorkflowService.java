@@ -77,6 +77,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.evidence-observation.record",
             "assurance.release.qualify",
             "assurance.validation.snapshot-verify",
+            "assurance.validation.experiment-evaluate",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -178,6 +179,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.evidence-observation.record" -> learningEvidenceObservationRecord(request);
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.validation.snapshot-verify" -> validationSnapshotVerify(request);
+            case "assurance.validation.experiment-evaluate" -> validationExperimentEvaluate(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2234,6 +2236,92 @@ final class SemanticAssuranceV2WorkflowService {
             throw new IllegalArgumentException("SEMANTIC_V2_FIELD_REQUIRED:" + field);
         }
         return value.asLong();
+    }
+
+    private static final Set<String> VALIDATION_EXPERIMENT_MODES =
+            Set.of("STOCHASTIC", "METAMORPHIC", "DIFFERENTIAL", "ENVIRONMENT_MATRIX");
+    private static final Set<String> VALIDATION_RUN_OUTCOMES =
+            Set.of("PASS", "FAIL", "NOT_RUN", "INCONCLUSIVE");
+
+    /**
+     * validation-experiment.v1.schema.json real computation (Batch 5 object J; 149 SS J / 148 P0
+     * invariant 12: "a single stochastic run must never claim stability"). JSON Schema's allOf
+     * can enforce STOCHASTIC mode's run_count>=2 and a caller-CLAIMED STABLE result's run_count>=2
+     * plus all-PASS runs, but it cannot: (a) verify run_count actually equals runs.length (a
+     * caller could declare run_count=5 while supplying only 3 real run entries), or (b) COMPUTE
+     * result from the runs[] themselves rather than trust a caller-declared value. This operation
+     * computes result for real: any FAIL makes the experiment UNSTABLE; any NOT_RUN (with no FAIL)
+     * forces NOT_RUN -- generalizing the schema's stated 'a NOT_RUN cell must not be silently
+     * treated as PASS' beyond ENVIRONMENT_MATRIX to every mode; any remaining INCONCLUSIVE (with
+     * no FAIL/NOT_RUN) forces INCONCLUSIVE; only run_count>=2 with every run PASS reaches STABLE
+     * -- a single passing run, in ANY mode, can never claim STABLE.
+     */
+    private Map<String, Object> validationExperimentEvaluate(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String experimentId = requiredText(request, "experiment_id");
+        String subjectId = requiredText(request, "subject_id");
+        String environment = requiredText(request, "environment");
+
+        String mode = requiredText(request, "mode");
+        if (!VALIDATION_EXPERIMENT_MODES.contains(mode)) {
+            return failClosed("HOLD", List.of("VALIDATION_EXPERIMENT_MODE_INVALID:" + mode));
+        }
+
+        JsonNode runsNode = request.path("runs");
+        if (!runsNode.isArray() || runsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("VALIDATION_EXPERIMENT_RUNS_REQUIRED"));
+        }
+        long declaredRunCount = requiredNonNegativeLong(request, "run_count");
+
+        List<Map<String, Object>> runs = new ArrayList<>();
+        java.util.LinkedHashSet<String> runIds = new java.util.LinkedHashSet<>();
+        boolean anyFail = false;
+        boolean anyNotRun = false;
+        boolean anyInconclusive = false;
+        for (JsonNode runNode : runsNode) {
+            String runId = requiredText(runNode, "run_id");
+            if (!runIds.add(runId)) return failClosed("HOLD", List.of("DUPLICATE_RUN_ID:" + runId));
+            String outcome = requiredText(runNode, "outcome");
+            if (!VALIDATION_RUN_OUTCOMES.contains(outcome)) {
+                return failClosed("HOLD", List.of("VALIDATION_RUN_OUTCOME_INVALID:" + outcome));
+            }
+            if ("FAIL".equals(outcome)) anyFail = true;
+            else if ("NOT_RUN".equals(outcome)) anyNotRun = true;
+            else if ("INCONCLUSIVE".equals(outcome)) anyInconclusive = true;
+            runs.add(Map.of("run_id", runId, "outcome", outcome));
+        }
+
+        if (declaredRunCount != runs.size()) {
+            return failClosed("HOLD", List.of(
+                    "VALIDATION_EXPERIMENT_RUN_COUNT_MISMATCH:declared=" + declaredRunCount + ":actual=" + runs.size()));
+        }
+        if ("STOCHASTIC".equals(mode) && runs.size() < 2) {
+            return failClosed("HOLD", List.of("STOCHASTIC_REQUIRES_AT_LEAST_TWO_RUNS"));
+        }
+
+        String result;
+        if (anyFail) {
+            result = "UNSTABLE";
+        } else if (anyNotRun) {
+            result = "NOT_RUN";
+        } else if (anyInconclusive) {
+            result = "INCONCLUSIVE";
+        } else if (runs.size() >= 2) {
+            result = "STABLE";
+        } else {
+            result = "INCONCLUSIVE";
+        }
+
+        Map<String, Object> out = base("ONSURE_VALIDATION_EXPERIMENT", targetId);
+        out.put("experiment_id", experimentId);
+        out.put("mode", mode);
+        out.put("subject_id", subjectId);
+        out.put("run_count", runs.size());
+        out.put("runs", List.copyOf(runs));
+        out.put("environment", environment);
+        out.put("result", result);
+        out.put("decision", "STABLE".equals(result) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
     }
 
     private static final List<String> PROVIDER_CHARACTERISTIC_FIELDS = List.of(
