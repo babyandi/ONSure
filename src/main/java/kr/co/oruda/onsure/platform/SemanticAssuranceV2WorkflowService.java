@@ -91,6 +91,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.catastrophic-forgetting.check",
             "assurance.learning.sampling-bias.check",
             "assurance.learning.confidence-calibration.check",
+            "assurance.learning.adversarial-benchmark-governance.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -206,6 +207,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.catastrophic-forgetting.check" -> catastrophicForgettingCheck(request);
             case "assurance.learning.sampling-bias.check" -> activeLearningSamplingBiasCheck(request);
             case "assurance.learning.confidence-calibration.check" -> confidenceCalibrationCheck(request);
+            case "assurance.learning.adversarial-benchmark-governance.check" -> adversarialBenchmarkGovernanceCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -3085,6 +3087,53 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("calibration_error_threshold", calibrationErrorThreshold);
         out.put("abstain_triggered", abstainTriggered);
         out.put("abstain_reason", abstainReason);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * adversarial-benchmark-governance-check.v1.schema.json real computation (FR-LEARN-063
+     * Adversarial Benchmark Generation Governance: "자동 생성 adversarial/challenge fixture도
+     * source, generation model... 기록한다. generator가 자신의 benchmark 정답을 알고 동일
+     * validator를 튜닝하는 폐루프를 금지한다"). JSON Schema can validate generator_model_id and
+     * tuned_validator_model_id individually but cannot compare them for equality. This operation
+     * rejects the closed loop for real: generator_model_id equal to tuned_validator_model_id is
+     * always FIXTURE_BLOCKED (the generator would already know its own benchmark's answers while
+     * tuning the very validator being benchmarked), alongside CONFIRMED/SUSPECTED contamination
+     * and an incomplete safety review.
+     */
+    private Map<String, Object> adversarialBenchmarkGovernanceCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String fixtureId = requiredText(request, "fixture_id");
+        String source = requiredText(request, "source");
+        String generatorModelId = requiredText(request, "generator_model_id");
+        String tunedValidatorModelId = requiredText(request, "tuned_validator_model_id");
+        String noveltyStatus = requiredText(request, "novelty_status");
+        String contaminationStatus = requiredText(request, "contamination_status");
+        boolean safetyReviewCompleted = request.path("safety_review_completed").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        if (generatorModelId.equals(tunedValidatorModelId)) {
+            reasons.add("GENERATOR_AND_VALIDATOR_CLOSED_LOOP:" + generatorModelId);
+        }
+        if (!"CLEAR".equals(contaminationStatus)) {
+            reasons.add("CONTAMINATION_NOT_CLEAR:" + contaminationStatus);
+        }
+        if (!safetyReviewCompleted) {
+            reasons.add("SAFETY_REVIEW_NOT_COMPLETED");
+        }
+
+        String decision = reasons.isEmpty() ? "FIXTURE_QUALIFIED" : "FIXTURE_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_ADVERSARIAL_BENCHMARK_GOVERNANCE_CHECK", targetId);
+        out.put("fixture_id", fixtureId);
+        out.put("source", source);
+        out.put("generator_model_id", generatorModelId);
+        out.put("tuned_validator_model_id", tunedValidatorModelId);
+        out.put("novelty_status", noveltyStatus);
+        out.put("contamination_status", contaminationStatus);
+        out.put("safety_review_completed", safetyReviewCompleted);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);

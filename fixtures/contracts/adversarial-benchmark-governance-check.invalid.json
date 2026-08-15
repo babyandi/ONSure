@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_ADVERSARIAL_BENCHMARK_GOVERNANCE_CHECK_V1",
+  "fixture_id": "adversarial-fixture-wire-fraud-injection-018",
+  "source": "AUTO_GENERATED",
+  "generator_model_id": "generator-claude-benchmark-writer-v2",
+  "tuned_validator_model_id": "validator-fraud-classifier-v5",
+  "novelty_status": "NOVEL",
+  "contamination_status": "PROBABLY_FINE",
+  "safety_review_completed": true,
+  "decision": "FIXTURE_QUALIFIED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

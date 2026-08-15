@@ -2287,6 +2287,54 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-063 Adversarial Benchmark Generation Governance
+    @Test
+    void adversarialBenchmarkGovernanceCheckQualifiesAWellFormedIndependentFixture() throws Exception {
+        Map<?, ?> result = adversarialBenchmarkGovernanceCheck("generator-a", "validator-b", "CLEAR", true);
+        assertEquals("FIXTURE_QUALIFIED", result.get("decision"));
+    }
+
+    @Test
+    void adversarialBenchmarkGovernanceCheckBlocksClosedLoopWhenGeneratorEqualsValidator() throws Exception {
+        Map<?, ?> result = adversarialBenchmarkGovernanceCheck("model-x", "model-x", "CLEAR", true);
+        assertEquals("FIXTURE_BLOCKED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).stream()
+                        .anyMatch(r -> r.toString().startsWith("GENERATOR_AND_VALIDATOR_CLOSED_LOOP")));
+    }
+
+    @Test
+    void adversarialBenchmarkGovernanceCheckBlocksConfirmedContamination() throws Exception {
+        Map<?, ?> result = adversarialBenchmarkGovernanceCheck("generator-a", "validator-b", "CONFIRMED", true);
+        assertEquals("FIXTURE_BLOCKED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).contains("CONTAMINATION_NOT_CLEAR:CONFIRMED"));
+    }
+
+    @Test
+    void adversarialBenchmarkGovernanceCheckBlocksIncompleteSafetyReview() throws Exception {
+        Map<?, ?> result = adversarialBenchmarkGovernanceCheck("generator-a", "validator-b", "CLEAR", false);
+        assertEquals("FIXTURE_BLOCKED", result.get("decision"));
+        assertEquals(List.of("SAFETY_REVIEW_NOT_COMPLETED"), result.get("reasons"));
+    }
+
+    private Map<?, ?> adversarialBenchmarkGovernanceCheck(
+            String generatorModelId, String tunedValidatorModelId, String contaminationStatus,
+            boolean safetyReviewCompleted) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "fixture_id", "fixture-1", "source", "AUTO_GENERATED",
+                "generator_model_id", generatorModelId, "tuned_validator_model_id", tunedValidatorModelId,
+                "novelty_status", "NOVEL", "contamination_status", contaminationStatus,
+                "safety_review_completed", safetyReviewCompleted);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.adversarial-benchmark-governance.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");
