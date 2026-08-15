@@ -199,7 +199,8 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.multi-agent.corroboration-check",
                     "assurance.hazard.create", "assurance.appeal.file",
                     "assurance.appeal.submit-evidence", "assurance.engagement.check-scope",
-                    "assurance.accessibility.validate-render", "assurance.migration.reconcile" -> auditor || operator || admin;
+                    "assurance.accessibility.validate-render", "assurance.migration.reconcile",
+                    "assurance.session.create", "assurance.session.check-valid" -> auditor || operator || admin;
             case "assurance.hazard.advance", "assurance.appeal.assign-reviewer",
                     "assurance.appeal.transition", "assurance.appeal.decide",
                     "assurance.offboarding.request", "assurance.offboarding.advance",

@@ -831,6 +831,15 @@
       "invalid_instances": [
         "fixtures/contracts/evidence-observation.v1.invalid.json"
       ]
+    },
+    {
+      "schema": "contracts/session-lifecycle-disposition.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/session-lifecycle-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/session-lifecycle-disposition.v1.invalid.json"
+      ]
     }
   ],
   "negative_instances_required_before_final": true,

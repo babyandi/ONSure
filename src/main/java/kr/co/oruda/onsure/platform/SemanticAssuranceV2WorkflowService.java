@@ -90,7 +90,9 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.accessibility.validate-render",
             "assurance.migration.reconcile",
             "assurance.migration.cutover",
-            "assurance.migration.rollback");
+            "assurance.migration.rollback",
+            "assurance.session.create",
+            "assurance.session.check-valid");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -185,6 +187,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.migration.reconcile" -> migrationReconcile(request);
             case "assurance.migration.cutover" -> migrationCutover(request);
             case "assurance.migration.rollback" -> migrationRollback(request);
+            case "assurance.session.create" -> sessionCreate(request);
+            case "assurance.session.check-valid" -> sessionCheckValid(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -2108,6 +2112,67 @@ final class SemanticAssuranceV2WorkflowService {
 
     private HazardLedger hazardLedger() {
         return new HazardLedger(workspaceRoot.resolve(".onsure/assurance/hazards"));
+    }
+
+    private SessionLedger sessionLedger() {
+        return new SessionLedger(workspaceRoot.resolve(".onsure/assurance/sessions"));
+    }
+
+    /**
+     * session-lifecycle-disposition.v1.schema.json real creation (NFR-SESSION, 03 Security
+     * Review). A session that would push the user's active session count over session_ceiling
+     * evicts the single oldest active session before creation succeeds -- the ceiling is
+     * SessionLedger's own real, enforced invariant, not merely reported here.
+     */
+    private Map<String, Object> sessionCreate(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String sessionId = requiredText(request, "session_id");
+        String userId = requiredText(request, "user_id");
+        int sessionCeiling = request.path("session_ceiling").asInt(-1);
+        if (sessionCeiling < 1) {
+            return failClosed("HOLD", List.of("SESSION_CEILING_MUST_BE_POSITIVE"));
+        }
+        Instant expiresAt;
+        try {
+            expiresAt = Instant.parse(requiredText(request, "expires_at"));
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("SESSION_EXPIRY_MALFORMED"));
+        }
+
+        SessionLedger ledger = sessionLedger();
+        Instant now = Instant.now();
+        int activeCountBefore = ledger.activeSessionsFor(userId, now).size();
+        SessionLedger.CreateResult result;
+        try {
+            result = ledger.create(sessionId, userId, expiresAt, sessionCeiling, now);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+
+        Map<String, Object> out = base("SESSION_LIFECYCLE_DISPOSITION", targetId);
+        out.put("session_id", result.session().sessionId());
+        out.put("user_id", result.session().userId());
+        out.put("issued_at", result.session().issuedAt());
+        out.put("expires_at", result.session().expiresAt());
+        out.put("status", result.session().status());
+        out.put("session_ceiling", sessionCeiling);
+        out.put("active_session_count_before_create", activeCountBefore);
+        out.put("evicted_session_id", result.evictedSessionId());
+        return immutable(out);
+    }
+
+    /** Real expiry check at read time (Instant comparison) -- never trusts a caller-declared claim. */
+    private Map<String, Object> sessionCheckValid(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String sessionId = requiredText(request, "session_id");
+        String userId = requiredText(request, "user_id");
+        boolean valid = sessionLedger().isValid(sessionId, userId, Instant.now());
+
+        Map<String, Object> out = base("SESSION_VALIDITY_CHECK", targetId);
+        out.put("session_id", sessionId);
+        out.put("user_id", userId);
+        out.put("session_valid", valid);
+        return immutable(out);
     }
 
     /** hazard.v1.schema.json real creation: always starts IDENTIFIED, creator bound to the caller. */

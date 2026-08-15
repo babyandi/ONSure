@@ -1286,6 +1286,26 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertTrue(((List<?>) result.get("reasons")).isEmpty());
     }
 
+    // NFR-SESSION (03 Security Review, DRAFT C12) runtime evidence via the wired v2 operations.
+    @Test
+    void sessionCreateThroughTheWiredOperationProducesAnActiveSession() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.session.create", Map.of(
+                "session_id", "session-wired-1", "user_id", "user-wired-a",
+                "expires_at", java.time.Instant.now().plusSeconds(3600).toString(), "session_ceiling", 5));
+        assertEquals("ACTIVE", result.get("status"));
+        assertEquals(null, result.get("evicted_session_id"));
+    }
+
+    @Test
+    void sessionCheckValidThroughTheWiredOperationReflectsRealExpiry() throws Exception {
+        learningDispatch(bridge, "assurance.session.create", Map.of(
+                "session_id", "session-wired-2", "user_id", "user-wired-b",
+                "expires_at", java.time.Instant.now().plusSeconds(3600).toString(), "session_ceiling", 5));
+        Map<?, ?> result = learningDispatch(bridge, "assurance.session.check-valid", Map.of(
+                "session_id", "session-wired-2", "user_id", "user-wired-b"));
+        assertEquals(true, result.get("session_valid"));
+    }
+
     @Test
     void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
         Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());

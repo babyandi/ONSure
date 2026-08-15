@@ -1249,6 +1249,15 @@
       "note": "Investigated the 10 REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED items: NFR-PORT, NFR-SESSION, NFR-PRIV, NFR-AUDIT, NFR-AVAIL, NFR-ACCESS, NFR-OBS, NFR-REL, NFR-PERF, NFR-SEC. Each names a genuinely broad architectural concern (deployment portability across SaaS/Local/Air-gapped, session timeout/concurrent-session-limit/fixation-prevention, encryption at rest/in transit, monthly availability + per-tenant rate limiting, structured trace/metric/log observability, idempotency/retry/dedup, staged large-repo analysis with pause/resume) with no existing subsystem to hook a schema onto -- unlike the 4 orphans closed this pass (real tests already existed, only the evidence artifact was missing), these need real new implementation work, not a quick evidence file. Deliberately NOT rushed with a thin schema that would fake closure -- recorded honestly as its own larger track rather than attempted piecemeal.",
       "criticality": "All MEDIUM, not CRITICAL -- confirmed via requirement-records.json before deciding not to rush these.",
       "recommended_approach": "Each of the 10 likely deserves its own Design/Authority -> Contract -> Implementation -> Test -> Evidence -> Trace -> Registry pass (same Done Gate as every other unit of work this session), sized similarly to a Batch slice rather than a quick fix. NFR-SESSION looks most tractable first (session timeout/concurrent-limit/fixation-prevention maps naturally to a bounded, testable mechanism); NFR-PORT/NFR-AVAIL are the broadest and most likely to require real infrastructure decisions beyond this codebase's current scope."
+    },
+    "nfr_session_closed": {
+      "requirement": "NFR-SESSION",
+      "state": "PARTIALLY_CLOSED",
+      "implementation": "src/main/java/kr/co/oruda/onsure/platform/SessionLedger.java (NEW, built with HashChainRecordStore tamper-evidence from the start), assurance.session.create / assurance.session.check-valid v2 operations, contracts/session-lifecycle-disposition.v1.schema.json (NEW)",
+      "tests": "SessionLedgerTest.java (10 tests) + SemanticAssuranceV2DispatcherBridgeTest.java (+2)",
+      "closes": "Both DRAFT C12 verification criteria: expired-session rejection (real Instant comparison), oldest-session eviction when active count reaches the ceiling (real, verified against a 3-session sequence).",
+      "disclosed_gap": "Session fixation prevention (session ID regeneration on privilege escalation) is NOT implemented -- the requirement's own verification method only specifies the two criteria above as testable, so this evidence is honest about closing those two and not the broader NFR-SESSION scope.",
+      "trace_closure": "NFR-SESSION orphan_dimensions now [] (was WITHOUT_CONTRACT/WITHOUT_TEST/WITHOUT_EVIDENCE_PATH). P1 orphan count: 377 -> 376."
     }
   }
 }
