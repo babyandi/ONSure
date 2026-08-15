@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_DECISION_TIME_KNOWLEDGE_SNAPSHOT_V1",
+  "snapshot_id": "snapshot-2",
+  "decision_ref": "receipt-b",
+  "decision_sha256": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "knowledge_epoch": "EPOCH::GROUND-TRUTH::0001",
+  "current_knowledge_epoch": "EPOCH::GROUND-TRUTH::0003",
+  "currentness_state": "STALE",
+  "reevaluation_ref": null,
+  "replay_claim_allowed": false,
+  "evaluated_at": "2026-08-15T00:00:00Z",
+  "final_claim_allowed": false
+}

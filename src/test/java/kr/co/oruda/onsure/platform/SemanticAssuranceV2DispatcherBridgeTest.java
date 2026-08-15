@@ -1076,6 +1076,59 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals("HOLD", result.get("decision"));
     }
 
+    // doc 158 contradiction classes 7 "Adaptive Learning vs Reproducibility" and 11
+    // "Ground-truth Drift vs Historical Immutability" -- LC-P0-007/LC-P0-011 runtime evidence.
+    @Test
+    void matchingKnowledgeEpochsStayCurrentAndAllowReplayClaims() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-1", "decision_ref", "receipt-a",
+                "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "knowledge_epoch", "EPOCH-1", "current_knowledge_epoch", "EPOCH-1"));
+        assertEquals("CURRENT", result.get("currentness_state"));
+        assertEquals(true, result.get("replay_claim_allowed"));
+        assertEquals(null, result.get("reevaluation_ref"));
+    }
+
+    @Test
+    void driftedKnowledgeEpochRequiresARealReevaluationRefAndBlocksReplayClaims() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-2", "decision_ref", "receipt-b",
+                "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "knowledge_epoch", "EPOCH-1", "current_knowledge_epoch", "EPOCH-2",
+                "reevaluation_ref", "reeval-1"));
+        assertEquals("STALE", result.get("currentness_state"));
+        assertEquals(false, result.get("replay_claim_allowed"));
+        assertEquals("reeval-1", result.get("reevaluation_ref"));
+    }
+
+    @Test
+    void driftedEpochWithoutAReevaluationRefIsHeldNotSilentlyMarkedCurrent() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-3", "decision_ref", "receipt-c",
+                "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "knowledge_epoch", "EPOCH-1", "current_knowledge_epoch", "EPOCH-2"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void materialDriftEscalatesToReviewRequiredRatherThanPlainStale() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-4", "decision_ref", "receipt-d",
+                "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "knowledge_epoch", "EPOCH-1", "current_knowledge_epoch", "EPOCH-2",
+                "reevaluation_ref", "reeval-2", "material_drift", true));
+        assertEquals("REVIEW_REQUIRED", result.get("currentness_state"));
+    }
+
+    @Test
+    void theOriginalDecisionDigestIsEchoedUnchangedNeverRecomputed() throws Exception {
+        String digest = "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1";
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-5", "decision_ref", "receipt-e", "decision_sha256", digest,
+                "knowledge_epoch", "EPOCH-1", "current_knowledge_epoch", "EPOCH-1"));
+        assertEquals(digest, result.get("decision_sha256"));
+    }
+
     @Test
     void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
         Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/decision-time-knowledge-snapshot.v1.schema.json",
+  "title": "ONSure Decision-Time Knowledge Snapshot v1",
+  "description": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md classes 7 (Adaptive Learning vs Reproducibility) and 11 (Ground-truth Drift vs Historical Immutability), bound per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json LC-P0-007/LC-P0-011. Every learning decision binds to the knowledge_epoch active when it was made; that binding and decision_sha256 never change once recorded (158 SS11: '과거 decision snapshot은 수정하지 않는다'). When current_knowledge_epoch has moved past knowledge_epoch, currentness_state is forced away from CURRENT and a real reevaluation_ref is required -- the decision itself is never edited to look current, and replay with today's knowledge is never claimed identical to the original decision (158 SS7).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "snapshot_id", "decision_ref", "decision_sha256",
+    "knowledge_epoch", "current_knowledge_epoch", "currentness_state",
+    "reevaluation_ref", "replay_claim_allowed", "evaluated_at", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DECISION_TIME_KNOWLEDGE_SNAPSHOT_V1"},
+    "snapshot_id": {"type": "string", "minLength": 1},
+    "decision_ref": {"type": "string", "minLength": 1},
+    "decision_sha256": {"$ref": "#/$defs/sha256"},
+    "knowledge_epoch": {"type": "string", "minLength": 1},
+    "current_knowledge_epoch": {"type": "string", "minLength": 1},
+    "currentness_state": {"enum": ["CURRENT", "STALE", "REVIEW_REQUIRED"]},
+    "reevaluation_ref": {"type": ["string", "null"], "minLength": 1},
+    "replay_claim_allowed": {"type": "boolean"},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"currentness_state": {"const": "CURRENT"}}},
+      "then": {"properties": {"replay_claim_allowed": {"const": true}, "reevaluation_ref": {"const": null}}}
+    },
+    {
+      "if": {"properties": {"currentness_state": {"enum": ["STALE", "REVIEW_REQUIRED"]}}},
+      "then": {
+        "required": ["reevaluation_ref"],
+        "properties": {"replay_claim_allowed": {"const": false}, "reevaluation_ref": {"type": "string"}}
+      }
+    }
+  ],
+  "$comment": "JSON Schema draft 2020-12 without $data cannot declaratively compare knowledge_epoch against current_knowledge_epoch (the real drift check). That comparison, and the resulting currentness_state, is computed by the Java runtime layer (SemanticAssuranceV2WorkflowService.learningDecisionCurrentnessEvaluate) rather than faked here as a schema constraint -- this schema enforces the CONSEQUENCE invariants (CURRENT implies replay-allowed and no reevaluation; STALE/REVIEW_REQUIRED implies replay-blocked and a real reevaluation_ref), not the epoch comparison itself.",
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

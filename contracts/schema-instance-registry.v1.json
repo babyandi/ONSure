@@ -786,6 +786,15 @@
       "invalid_instances": [
         "fixtures/contracts/operational-remediation-receipt.invalid.json"
       ]
+    },
+    {
+      "schema": "contracts/decision-time-knowledge-snapshot.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/decision-time-knowledge-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/decision-time-knowledge-snapshot.v1.invalid.json"
+      ]
     }
   ],
   "negative_instances_required_before_final": true,

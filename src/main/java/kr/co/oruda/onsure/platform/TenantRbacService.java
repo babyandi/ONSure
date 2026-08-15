@@ -45,6 +45,7 @@ public final class TenantRbacService {
             "assurance.corpus.integrity-check",
             "assurance.validator.regression-qualify",
             "assurance.learning.stop-decision.compute",
+            "assurance.learning.decision-currentness.evaluate",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",

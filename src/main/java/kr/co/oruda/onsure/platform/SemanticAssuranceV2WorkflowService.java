@@ -69,6 +69,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.stop-decision.compute",
             "assurance.learning.scope-promotion.decide",
             "assurance.learning.derived-lineage.dispose",
+            "assurance.learning.decision-currentness.evaluate",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
@@ -158,6 +159,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.stop-decision.compute" -> learningStopDecisionCompute(request);
             case "assurance.learning.scope-promotion.decide" -> learningScopePromotionDecide(request);
             case "assurance.learning.derived-lineage.dispose" -> learningDerivedLineageDispose(request);
+            case "assurance.learning.decision-currentness.evaluate" -> learningDecisionCurrentnessEvaluate(request);
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
@@ -1673,6 +1675,53 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("disposition", disposition);
         out.put("evidence_refs", evidenceRefs);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * decision-time-knowledge-snapshot.v1.schema.json real computation (doc 158 contradiction
+     * classes 7 "Adaptive Learning vs Reproducibility" and 11 "Ground-truth Drift vs Historical
+     * Immutability", LC-P0-007/LC-P0-011). The epoch comparison JSON Schema alone cannot express
+     * (no $data support) happens here: knowledge_epoch equal to current_knowledge_epoch is the
+     * ONLY way to reach CURRENT/replay_claim_allowed=true. Any drift forces STALE (or
+     * REVIEW_REQUIRED when the caller flags it as a materially decision-relevant drift, not just a
+     * cosmetic epoch bump) and REQUIRES a real reevaluation_ref -- there is no code path that lets
+     * a stale decision keep claiming CURRENT, and decision_sha256 is echoed back unchanged, never
+     * recomputed, so the original decision content this snapshot annotates is never itself touched.
+     */
+    private Map<String, Object> learningDecisionCurrentnessEvaluate(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String snapshotId = requiredText(request, "snapshot_id");
+        String decisionRef = requiredText(request, "decision_ref");
+        String decisionSha256 = requiredDigest(request, "decision_sha256");
+        String knowledgeEpoch = requiredText(request, "knowledge_epoch");
+        String currentKnowledgeEpoch = requiredText(request, "current_knowledge_epoch");
+        boolean materialDrift = request.path("material_drift").asBoolean(false);
+        String reevaluationRef = request.path("reevaluation_ref").asText(null);
+
+        String currentnessState;
+        boolean replayClaimAllowed;
+        if (knowledgeEpoch.equals(currentKnowledgeEpoch)) {
+            currentnessState = "CURRENT";
+            replayClaimAllowed = true;
+            reevaluationRef = null;
+        } else {
+            currentnessState = materialDrift ? "REVIEW_REQUIRED" : "STALE";
+            replayClaimAllowed = false;
+            if (reevaluationRef == null || reevaluationRef.isBlank()) {
+                return failClosed("HOLD", List.of("LEARNING_DECISION_CURRENTNESS_REEVALUATION_REF_REQUIRED"));
+            }
+        }
+
+        Map<String, Object> out = base("DECISION_TIME_KNOWLEDGE_SNAPSHOT", targetId);
+        out.put("snapshot_id", snapshotId);
+        out.put("decision_ref", decisionRef);
+        out.put("decision_sha256", decisionSha256);
+        out.put("knowledge_epoch", knowledgeEpoch);
+        out.put("current_knowledge_epoch", currentKnowledgeEpoch);
+        out.put("currentness_state", currentnessState);
+        out.put("reevaluation_ref", reevaluationRef);
+        out.put("replay_claim_allowed", replayClaimAllowed);
         return immutable(out);
     }
 
