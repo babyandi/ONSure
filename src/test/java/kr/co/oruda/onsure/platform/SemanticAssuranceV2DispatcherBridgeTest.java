@@ -2056,6 +2056,47 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-072 Learning History Migration
+    @Test
+    void learningHistoryMigrationCheckReachesPreservedWhenNoCategoryLosesRecords() throws Exception {
+        Map<?, ?> result = learningHistoryMigrationCheck(Map.of(
+                "CANDIDATE_LIFECYCLE", 412L, "LINEAGE", 1893L, "OLD_DECISIONS", 5021L,
+                "REVOKED_ASSETS", 37L, "QUALIFICATION_EVIDENCE", 289L), Map.of(
+                "CANDIDATE_LIFECYCLE", 412L, "LINEAGE", 1893L, "OLD_DECISIONS", 5021L,
+                "REVOKED_ASSETS", 37L, "QUALIFICATION_EVIDENCE", 291L));
+        assertEquals("RECONSTRUCTABILITY_PRESERVED", result.get("decision"));
+    }
+
+    @Test
+    void learningHistoryMigrationCheckBlocksWhenAnyCategoryLosesRecords() throws Exception {
+        Map<?, ?> result = learningHistoryMigrationCheck(Map.of(
+                "CANDIDATE_LIFECYCLE", 412L, "LINEAGE", 1893L, "OLD_DECISIONS", 5021L,
+                "REVOKED_ASSETS", 37L, "QUALIFICATION_EVIDENCE", 289L), Map.of(
+                "CANDIDATE_LIFECYCLE", 412L, "LINEAGE", 1893L, "OLD_DECISIONS", 5021L,
+                "REVOKED_ASSETS", 30L, "QUALIFICATION_EVIDENCE", 289L));
+        assertEquals("RECONSTRUCTABILITY_BLOCKED", result.get("decision"));
+        assertEquals(List.of("REVOKED_ASSETS:37->30"), result.get("lossy_categories"));
+    }
+
+    private Map<?, ?> learningHistoryMigrationCheck(
+            Map<String, Long> preCounts, Map<String, Long> postCounts) throws Exception {
+        List<Map<String, Object>> categories = new java.util.ArrayList<>();
+        for (String category : List.of(
+                "CANDIDATE_LIFECYCLE", "LINEAGE", "OLD_DECISIONS", "REVOKED_ASSETS", "QUALIFICATION_EVIDENCE")) {
+            categories.add(Map.of(
+                    "category", category,
+                    "pre_migration_count", preCounts.get(category),
+                    "post_migration_count", postCounts.get(category)));
+        }
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "migration_id", "migration-1", "subject_id", "subject-1", "categories", categories);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.history-migration.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

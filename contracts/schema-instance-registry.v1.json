@@ -904,6 +904,15 @@
         "fixtures/contracts/selective-prediction-risk-coverage-check.invalid.json"
       ],
       "schema": "contracts/selective-prediction-risk-coverage-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-history-migration-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-history-migration-check.invalid.json"
+      ],
+      "schema": "contracts/learning-history-migration-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

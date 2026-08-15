@@ -86,6 +86,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.statistical-qualification.check",
             "assurance.learning.explanation-fidelity.check",
             "assurance.learning.selective-prediction-risk-coverage.check",
+            "assurance.learning.history-migration.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -196,6 +197,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
             case "assurance.learning.explanation-fidelity.check" -> decisionExplanationFidelityCheck(request);
             case "assurance.learning.selective-prediction-risk-coverage.check" -> selectivePredictionRiskCoverageCheck(request);
+            case "assurance.learning.history-migration.check" -> learningHistoryMigrationCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2815,6 +2817,60 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("min_required_coverage", minRequiredCoverage);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    private static final Set<String> MIGRATION_HISTORY_CATEGORIES = Set.of(
+            "CANDIDATE_LIFECYCLE", "LINEAGE", "OLD_DECISIONS", "REVOKED_ASSETS", "QUALIFICATION_EVIDENCE");
+
+    /**
+     * learning-history-migration-check.v1.schema.json real computation (FR-LEARN-072 Learning
+     * History Migration: "Schema/registry/knowledge-store migration 시 candidate lifecycle,
+     * lineage, old decisions, revoked assets, qualification evidence를 보존한다. migration 후
+     * history loss가 있으면 reconstructability PASS 금지"). JSON Schema can validate each
+     * category's counts are non-negative integers but cannot compare pre- vs post-migration
+     * counts to detect loss. This operation checks every required category for real: any category
+     * whose post_migration_count is LOWER than its pre_migration_count is history loss, forcing
+     * RECONSTRUCTABILITY_BLOCKED and naming every lossy category -- a caller cannot claim overall
+     * preservation while one category quietly lost records.
+     */
+    private Map<String, Object> learningHistoryMigrationCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String migrationId = requiredText(request, "migration_id");
+        String subjectId = requiredText(request, "subject_id");
+
+        JsonNode categoriesNode = request.path("categories");
+        if (!categoriesNode.isArray() || categoriesNode.size() < MIGRATION_HISTORY_CATEGORIES.size()) {
+            return failClosed("INPUT_REQUIRED", List.of("MIGRATION_HISTORY_CATEGORIES_INCOMPLETE"));
+        }
+
+        Set<String> seenCategories = new java.util.LinkedHashSet<>();
+        List<String> lossyCategories = new ArrayList<>();
+        for (JsonNode categoryNode : categoriesNode) {
+            String category = requiredText(categoryNode, "category");
+            if (!MIGRATION_HISTORY_CATEGORIES.contains(category)) {
+                return failClosed("HOLD", List.of("MIGRATION_HISTORY_CATEGORY_INVALID:" + category));
+            }
+            if (!seenCategories.add(category)) {
+                return failClosed("HOLD", List.of("DUPLICATE_MIGRATION_HISTORY_CATEGORY:" + category));
+            }
+            long preCount = requiredNonNegativeLong(categoryNode, "pre_migration_count");
+            long postCount = requiredNonNegativeLong(categoryNode, "post_migration_count");
+            if (postCount < preCount) {
+                lossyCategories.add(category + ":" + preCount + "->" + postCount);
+            }
+        }
+        if (!seenCategories.containsAll(MIGRATION_HISTORY_CATEGORIES)) {
+            return failClosed("INPUT_REQUIRED", List.of("MIGRATION_HISTORY_CATEGORIES_INCOMPLETE"));
+        }
+
+        String decision = lossyCategories.isEmpty() ? "RECONSTRUCTABILITY_PRESERVED" : "RECONSTRUCTABILITY_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_LEARNING_HISTORY_MIGRATION_CHECK", targetId);
+        out.put("migration_id", migrationId);
+        out.put("subject_id", subjectId);
+        out.put("lossy_categories", List.copyOf(lossyCategories));
+        out.put("decision", decision);
         return immutable(out);
     }
 
