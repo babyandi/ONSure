@@ -1,0 +1,27 @@
+{
+  "contract": "ONSURE_PROVIDER_DRIFT_OBSERVATION_V1",
+  "observation_id": "observation-001",
+  "provider_id": "anthropic",
+  "baseline": {
+    "model_alias": "claude-sonnet-5",
+    "safety_filter_digest": "7ccb97022a017630f2928b4998eb2acabd19d11f55f90f93a30d9ba5dc1f9fb3",
+    "tool_semantics_digest": "aca38fd1d383069c898093902d6c3c27b1959f4931b244fa90cb18a7ab0abb23",
+    "context_window": 200000,
+    "rate_limit": 4000,
+    "output_policy_digest": "9902c9aff163d4da9f2f0bad1dded91ff1bf1be384a79a37b8fcc556c7b5d8b0",
+    "routing_target": "us-east"
+  },
+  "observed": {
+    "model_alias": "claude-sonnet-5",
+    "safety_filter_digest": "7ccb97022a017630f2928b4998eb2acabd19d11f55f90f93a30d9ba5dc1f9fb3",
+    "tool_semantics_digest": "aca38fd1d383069c898093902d6c3c27b1959f4931b244fa90cb18a7ab0abb23",
+    "context_window": 200000,
+    "rate_limit": 4000,
+    "output_policy_digest": "9902c9aff163d4da9f2f0bad1dded91ff1bf1be384a79a37b8fcc556c7b5d8b0",
+    "routing_target": "us-east"
+  },
+  "material_change": false,
+  "changed_fields": [],
+  "currentness_state": "CURRENT",
+  "observed_at": "2026-08-14T00:00:00Z"
+}

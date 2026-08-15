@@ -751,7 +751,7 @@
     {
       "batch": "BATCH_5",
       "name": "AI / Meta-Assurance",
-      "state": "IN_PROGRESS",
+      "state": "PARTIALLY_EVIDENCE_READY",
       "scope_note": "137 SS27 Batch 5 items: Model/provider/prompt/RAG/tool/memory/multi-agent identity, stochastic validation, provider drift, ONSure release/validator/oracle/fixture/adapter qualification. User directive 2026-08-14 additionally names 14 specific FR-LEARN-001~095 concerns to not omit: LearningCandidate cannot hold ACTIVE/PASS/FAIL authority directly, self-approval/self-qualification blocking, OracleQualification, Multi-Oracle disagreement, False Positive/Negative feedback, corpus contamination/poisoning/tenant leakage, train/test leakage, validator drift/regression, rollback, learning provenance/derived deletion lineage, tenant scope promotion, stochastic/metamorphic/differential validation, challenge set/blind regression, knowledge freshness/learning stop condition. Per that directive, file/schema existence or test-count increase alone does not count as done -- each item is judged against real coverage and evidence closure.",
       "slice_1_official_learning_ledger_wiring": {
         "state": "EVIDENCE_READY",
@@ -866,6 +866,45 @@
         ],
         "tests": [
           "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: self-validation-only receipts cannot reach QUALIFIED, past valid_until is STALE even with receipts, one non-QUALIFIED archetype caps the whole release at REASSESSMENT_REQUIRED, real QUALIFIED path)"
+        ]
+      },
+      "slice_5_provider_drift_and_multi_agent_corroboration": {
+        "state": "EVIDENCE_READY",
+        "note": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS9.4/9.5/11 (the design doc grounding the rest of 137's own Batch 5 scope: Provider Drift, Multi-Agent common-mode failure / majority vote ceiling). Two new schemas + real computation, built together this time rather than schema-then-implementation-later: provider-drift-observation.v1.schema.json / assurance.provider.drift-check computes material_change field-by-field between baseline and observed provider characteristics (model_alias, safety_filter_digest, tool_semantics_digest, context_window, rate_limit, output_policy_digest, routing_target) -- any single differing field forces REASSESSMENT_REQUIRED, never silently CURRENT, closing \"Provider \uc774\ub984\uc774 \uac19\ub2e4\ub294 \uc774\uc720\ub9cc\uc73c\ub85c currentness\ub97c \uc720\uc9c0\ud558\uc9c0 \uc54a\ub294\ub2e4.\" multi-agent-corroboration.v1.schema.json / assurance.multi-agent.corroboration-check computes common_mode_risk for real by checking whether any of 5 dependency axes (model/provider/prompt/oracle/knowledge source) is shared by two or more agents, and never reaches agreement_strength=INDEPENDENT_GROUND_TRUTH from agent agreement alone -- that requires BOTH zero shared axes AND a caller-supplied independent_oracle_confirmed flag representing a genuinely separate Executable Oracle/Ground Truth check, closing \"N\uac1c\uc758 Agent\uac00 \uac19\uc740 \uacb0\ub860\uc744 \ub0b4\ub3c4 Ground Truth\uac00 \uc544\ub2c8\ub2e4.\"",
+        "contract_schema": [
+          "contracts/provider-drift-observation.v1.schema.json (NEW)",
+          "contracts/multi-agent-corroboration.v1.schema.json (NEW)"
+        ],
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (providerDriftCheck, multiAgentCorroborationCheck)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: drift check stays CURRENT on no change, forces REASSESSMENT_REQUIRED on one changed field, corroboration never reaches ground truth from agreement alone, common-mode risk detected from a shared dependency, ground truth reached only with zero risk plus an independent oracle confirmation)"
+        ]
+      },
+      "batch_5_status_summary": {
+        "note": "137 SS27 Batch 5 (AI/Meta-Assurance) covered substantially but not exhaustively -- recorded honestly per the user's 2026-08-14 instruction rather than claimed fully closed. Covered with real, tested implementation: LearningCandidate cannot hold ACTIVE/PASS/FAIL authority directly, self-approval/self-qualification blocking (OfficialLearningLedger, now wired), OracleQualification, Multi-Oracle disagreement, corpus contamination/poisoning/tenant leakage, validator drift/regression, rollback, tenant scope promotion (schema only, see below), stochastic/metamorphic/differential validation (schema only, see below), knowledge freshness/learning stop condition, ONSure release/validator/adapter qualification, provider drift, multi-agent common-mode failure / majority vote ceiling.",
+        "schema_only_pending_runtime_consumer": [
+          "A. LearningCandidateAsset",
+          "B. LearningPromotionReceipt (contract only; the actual candidate lifecycle runtime is OfficialLearningLedger, which predates and does not literally instantiate these newer schema identities)",
+          "D. LearningEffectivenessReport (False Positive/Negative feedback as a report artifact; the promotion-time false-positive resistance itself is covered by OfficialLearningLedger)",
+          "H. DerivedLearningLineageDisposition (learning provenance / derived deletion lineage)",
+          "I. LearningScopePromotion (tenant scope promotion)",
+          "J. ValidationExperiment (stochastic/metamorphic/differential validation, challenge set/blind regression)"
+        ],
+        "not_covered_this_batch": [
+          "Prompt Provenance (34 SS3)",
+          "Tool Authority Method (34 SS4)",
+          "Agent Memory Assurance (34 SS5, beyond the pre-existing failure/improvement/reusable-pattern-memory schemas verified in earlier batches)",
+          "RAG Assurance (34 SS6, beyond the pre-existing RagPreparationService)",
+          "AgentGraph / Message Contract / Delegation chain preservation / Cyclic Delegation (34 SS9.1/9.2/9.3/9.6 -- distinct from the common-mode-failure/majority-vote-ceiling work this slice did cover)",
+          "AI Safety/Security claim separation (34 SS10)",
+          "Judge/Reviewer Independence (34 SS12)",
+          "Requalification Trigger (34 SS14)",
+          "AI Currentness (34 SS17)",
+          "F. FailureRegistryEntry / N. CoverageBalanceReport (explicitly 148 SS4 Batch 9 scope)"
         ]
       }
     },

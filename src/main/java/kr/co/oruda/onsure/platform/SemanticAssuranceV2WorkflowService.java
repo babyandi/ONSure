@@ -67,7 +67,9 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.corpus.integrity-check",
             "assurance.validator.regression-qualify",
             "assurance.learning.stop-decision.compute",
-            "assurance.release.qualify");
+            "assurance.release.qualify",
+            "assurance.provider.drift-check",
+            "assurance.multi-agent.corroboration-check");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -139,6 +141,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.validator.regression-qualify" -> validatorRegressionQualify(request);
             case "assurance.learning.stop-decision.compute" -> learningStopDecisionCompute(request);
             case "assurance.release.qualify" -> releaseQualify(request);
+            case "assurance.provider.drift-check" -> providerDriftCheck(request);
+            case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1597,6 +1601,118 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("state", state);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "QUALIFIED".equals(state) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final List<String> PROVIDER_CHARACTERISTIC_FIELDS = List.of(
+            "model_alias", "safety_filter_digest", "tool_semantics_digest", "context_window",
+            "rate_limit", "output_policy_digest", "routing_target");
+
+    /**
+     * provider-drift-observation.v1.schema.json real computation (34 SS11): a provider staying
+     * under the same name/id is never sufficient to keep currentness -- every characteristic field
+     * is compared independently between baseline and observed, and any difference is a real
+     * material change forcing REASSESSMENT_REQUIRED, never silently CURRENT.
+     */
+    private Map<String, Object> providerDriftCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String observationId = requiredText(request, "observation_id");
+        String providerId = requiredText(request, "provider_id");
+        JsonNode baselineNode = request.path("baseline");
+        JsonNode observedNode = request.path("observed");
+
+        List<String> changedFields = new ArrayList<>();
+        Map<String, Object> baseline = new LinkedHashMap<>();
+        Map<String, Object> observed = new LinkedHashMap<>();
+        for (String field : PROVIDER_CHARACTERISTIC_FIELDS) {
+            JsonNode baselineValue = baselineNode.path(field);
+            JsonNode observedValue = observedNode.path(field);
+            if (baselineValue.isMissingNode() || observedValue.isMissingNode()) {
+                return failClosed("INPUT_REQUIRED", List.of("PROVIDER_CHARACTERISTIC_FIELD_MISSING:" + field));
+            }
+            baseline.put(field, baselineValue);
+            observed.put(field, observedValue);
+            if (!baselineValue.equals(observedValue)) changedFields.add(field);
+        }
+
+        boolean materialChange = !changedFields.isEmpty();
+        String currentnessState = materialChange ? "REASSESSMENT_REQUIRED" : "CURRENT";
+
+        Map<String, Object> out = base("PROVIDER_DRIFT_OBSERVATION", targetId);
+        out.put("observation_id", observationId);
+        out.put("provider_id", providerId);
+        out.put("material_change", materialChange);
+        out.put("changed_fields", List.copyOf(changedFields));
+        out.put("currentness_state", currentnessState);
+        out.put("decision", materialChange ? "HOLD" : "NON_FINAL");
+        return immutable(out);
+    }
+
+    private static final List<String> AGENT_DEPENDENCY_AXES = List.of(
+            "model_id", "provider_id", "prompt_digest", "oracle_id", "knowledge_source_id");
+
+    /**
+     * multi-agent-corroboration.v1.schema.json real computation (34 SS9.4/9.5): agent agreement is
+     * corroboration, never Ground Truth. Common-mode failure risk is computed for real -- any
+     * dependency axis (model/provider/prompt/oracle/knowledge source) shared by two or more agents
+     * caps agreement_strength below INDEPENDENT_GROUND_TRUTH -- and even with zero shared axes,
+     * majority agreement alone never reaches INDEPENDENT_GROUND_TRUTH without the caller supplying
+     * a genuinely separate independent_oracle_confirmed evidence flag; N agents voting the same way
+     * is not itself an Executable Oracle/Ground Truth source.
+     */
+    private Map<String, Object> multiAgentCorroborationCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String corroborationId = requiredText(request, "corroboration_id");
+        String subjectId = requiredText(request, "subject_id");
+        JsonNode conclusionsNode = request.path("agent_conclusions");
+        if (!conclusionsNode.isArray() || conclusionsNode.size() < 2) {
+            return failClosed("INPUT_REQUIRED", List.of("MULTI_AGENT_CORROBORATION_REQUIRES_AT_LEAST_TWO_AGENTS"));
+        }
+        boolean independentOracleConfirmed = request.path("independent_oracle_confirmed").asBoolean(false);
+
+        java.util.LinkedHashSet<String> agentIds = new java.util.LinkedHashSet<>();
+        java.util.LinkedHashSet<String> distinctConclusions = new java.util.LinkedHashSet<>();
+        Map<String, java.util.LinkedHashSet<String>> valuesByAxis = new LinkedHashMap<>();
+        for (String axis : AGENT_DEPENDENCY_AXES) valuesByAxis.put(axis, new java.util.LinkedHashSet<>());
+
+        for (JsonNode row : conclusionsNode) {
+            String agentId = requiredText(row, "agent_id");
+            if (!agentIds.add(agentId)) return failClosed("HOLD", List.of("DUPLICATE_AGENT_CONCLUSION:" + agentId));
+            String conclusion = row.path("conclusion").asText("");
+            if (!Set.of("PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE").contains(conclusion)) {
+                return failClosed("HOLD", List.of("AGENT_CONCLUSION_INVALID:" + agentId));
+            }
+            distinctConclusions.add(conclusion);
+            for (String axis : AGENT_DEPENDENCY_AXES) {
+                String value = row.path(axis).asText("");
+                if (value.isBlank()) return failClosed("INPUT_REQUIRED", List.of("AGENT_AXIS_MISSING:" + agentId + ":" + axis));
+                valuesByAxis.get(axis).add(value);
+            }
+        }
+
+        List<String> sharedAxes = new ArrayList<>();
+        for (String axis : AGENT_DEPENDENCY_AXES) {
+            if (valuesByAxis.get(axis).size() < agentIds.size()) sharedAxes.add(axis);
+        }
+        boolean commonModeRisk = !sharedAxes.isEmpty();
+        boolean allAgree = distinctConclusions.size() == 1;
+
+        String agreementStrength;
+        if (!allAgree) {
+            agreementStrength = "NONE";
+        } else if (!commonModeRisk && independentOracleConfirmed) {
+            agreementStrength = "INDEPENDENT_GROUND_TRUTH";
+        } else {
+            agreementStrength = "CORROBORATION_ONLY";
+        }
+
+        Map<String, Object> out = base("MULTI_AGENT_CORROBORATION", targetId);
+        out.put("corroboration_id", corroborationId);
+        out.put("subject_id", subjectId);
+        out.put("common_mode_risk", commonModeRisk);
+        out.put("shared_dependency_axes", List.copyOf(sharedAxes));
+        out.put("agreement_strength", agreementStrength);
+        out.put("decision", "INDEPENDENT_GROUND_TRUTH".equals(agreementStrength) ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

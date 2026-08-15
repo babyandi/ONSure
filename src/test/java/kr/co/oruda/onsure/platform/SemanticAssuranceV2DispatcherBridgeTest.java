@@ -1058,6 +1058,85 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
+        Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");
+        Map<?, ?> result = providerDriftCheck(characteristics, characteristics);
+        assertEquals(false, result.get("material_change"));
+        assertEquals("CURRENT", result.get("currentness_state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void providerDriftCheckForcesReassessmentOnASingleChangedField() throws Exception {
+        Map<?, ?> result = providerDriftCheck(
+                providerCharacteristics("safety-filter-v1"), providerCharacteristics("safety-filter-v2"));
+        assertEquals(true, result.get("material_change"));
+        assertEquals(List.of("safety_filter_digest"), result.get("changed_fields"));
+        assertEquals("REASSESSMENT_REQUIRED", result.get("currentness_state"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void multiAgentCorroborationNeverReachesGroundTruthFromAgreementAlone() throws Exception {
+        Map<?, ?> result = multiAgentCorroboration(false, false);
+        assertEquals(false, result.get("common_mode_risk"));
+        assertEquals("CORROBORATION_ONLY", result.get("agreement_strength"));
+    }
+
+    @Test
+    void multiAgentCorroborationDetectsCommonModeRiskFromASharedDependency() throws Exception {
+        Map<?, ?> result = multiAgentCorroboration(true, true);
+        assertEquals(true, result.get("common_mode_risk"));
+        assertEquals("CORROBORATION_ONLY", result.get("agreement_strength"));
+    }
+
+    @Test
+    void multiAgentCorroborationReachesGroundTruthOnlyWithNoCommonModeRiskAndAnIndependentOracle() throws Exception {
+        Map<?, ?> result = multiAgentCorroboration(false, true);
+        assertEquals(false, result.get("common_mode_risk"));
+        assertEquals("INDEPENDENT_GROUND_TRUTH", result.get("agreement_strength"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    private Map<String, Object> providerCharacteristics(String safetyFilterDigest) {
+        return Map.of(
+                "model_alias", "model-a", "safety_filter_digest", safetyFilterDigest,
+                "tool_semantics_digest", "tool-semantics-v1", "context_window", 200000,
+                "rate_limit", 4000, "output_policy_digest", "output-policy-v1", "routing_target", "us-east");
+    }
+
+    private Map<?, ?> providerDriftCheck(Map<String, Object> baseline, Map<String, Object> observed) throws Exception {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.provider.drift-check", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "observation_id", "observation-1", "provider_id", "anthropic",
+                        "baseline", baseline, "observed", observed))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    private Map<?, ?> multiAgentCorroboration(boolean sharedDependency, boolean independentOracleConfirmed) throws Exception {
+        Map<String, Object> agentA = Map.of(
+                "agent_id", "agent-1", "conclusion", "PASS", "model_id", "model-a", "provider_id", "provider-a",
+                "prompt_digest", "prompt-a", "oracle_id", "oracle-a", "knowledge_source_id", "knowledge-a");
+        Map<String, Object> agentB = sharedDependency
+                ? Map.of(
+                        "agent_id", "agent-2", "conclusion", "PASS", "model_id", "model-a", "provider_id", "provider-a",
+                        "prompt_digest", "prompt-a", "oracle_id", "oracle-a", "knowledge_source_id", "knowledge-a")
+                : Map.of(
+                        "agent_id", "agent-2", "conclusion", "PASS", "model_id", "model-b", "provider_id", "provider-b",
+                        "prompt_digest", "prompt-b", "oracle_id", "oracle-b", "knowledge_source_id", "knowledge-b");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.multi-agent.corroboration-check", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "corroboration_id", "corroboration-1", "subject_id", "subject-1",
+                        "agent_conclusions", List.of(agentA, agentB),
+                        "independent_oracle_confirmed", independentOracleConfirmed))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

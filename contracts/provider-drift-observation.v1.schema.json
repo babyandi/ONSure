@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/provider-drift-observation.v1.schema.json",
+  "title": "ONSure Provider Drift Observation v1",
+  "description": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS11. A provider's name staying the same is never sufficient to keep currentness -- model alias, safety filter, tool semantics, context window, rate limit, output policy, and routing target are each independently observed, and any material change forces currentness_state to REASSESSMENT_REQUIRED, never silently CURRENT.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "observation_id", "provider_id", "baseline", "observed",
+    "material_change", "changed_fields", "currentness_state", "observed_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PROVIDER_DRIFT_OBSERVATION_V1"},
+    "observation_id": {"type": "string", "minLength": 1},
+    "provider_id": {"type": "string", "minLength": 1},
+    "baseline": {"$ref": "#/$defs/providerCharacteristics"},
+    "observed": {"$ref": "#/$defs/providerCharacteristics"},
+    "material_change": {"type": "boolean"},
+    "changed_fields": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "currentness_state": {"enum": ["CURRENT", "REASSESSMENT_REQUIRED", "STALE", "UNKNOWN"]},
+    "observed_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"material_change": {"const": true}}},
+      "then": {"properties": {"currentness_state": {"enum": ["REASSESSMENT_REQUIRED", "STALE"]}}}
+    },
+    {
+      "if": {"properties": {"material_change": {"const": false}}},
+      "then": {"properties": {"changed_fields": {"maxItems": 0}}}
+    }
+  ],
+  "$defs": {
+    "providerCharacteristics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_alias", "safety_filter_digest", "tool_semantics_digest",
+        "context_window", "rate_limit", "output_policy_digest", "routing_target"
+      ],
+      "properties": {
+        "model_alias": {"type": "string", "minLength": 1},
+        "safety_filter_digest": {"type": "string", "minLength": 1},
+        "tool_semantics_digest": {"type": "string", "minLength": 1},
+        "context_window": {"type": "integer", "minimum": 1},
+        "rate_limit": {"type": "integer", "minimum": 0},
+        "output_policy_digest": {"type": "string", "minLength": 1},
+        "routing_target": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

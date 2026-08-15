@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.19.4",
+  "version": "1.19.5",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -695,6 +695,24 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/learning-stop-decision.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/provider-drift-observation.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/provider-drift-observation.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/provider-drift-observation.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/multi-agent-corroboration.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/multi-agent-corroboration.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/multi-agent-corroboration.v1.invalid.json"
       ]
     }
   ],

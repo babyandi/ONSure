@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_MULTI_AGENT_CORROBORATION_V1",
+  "corroboration_id": "corroboration-002",
+  "subject_id": "subject-002",
+  "agent_conclusions": [
+    {
+      "agent_id": "agent-1", "conclusion": "PASS", "model_id": "model-a", "provider_id": "provider-a",
+      "prompt_digest": "prompt-a", "oracle_id": "oracle-a", "knowledge_source_id": "knowledge-a"
+    },
+    {
+      "agent_id": "agent-2", "conclusion": "PASS", "model_id": "model-a", "provider_id": "provider-a",
+      "prompt_digest": "prompt-a", "oracle_id": "oracle-a", "knowledge_source_id": "knowledge-a"
+    }
+  ],
+  "common_mode_risk": true,
+  "shared_dependency_axes": ["model_id", "provider_id", "prompt_digest", "oracle_id", "knowledge_source_id"],
+  "agreement_strength": "INDEPENDENT_GROUND_TRUTH",
+  "evaluated_at": "2026-08-14T00:00:00Z"
+}
