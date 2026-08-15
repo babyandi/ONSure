@@ -38,7 +38,7 @@
       "status": "SELF_REPORTED_SEE_REGISTRY"
     },
     "FORWARD_TRACE_AND_REVERSE_ORPHAN": {
-      "note": "forward trace scanner exists and runs clean for the explicit-ID population (scripts/scan-global-trace-closure.py, orphan_p0=0). Reverse-orphan scanner exists (scripts/scan-reverse-orphan.py, disclosure-only, never gates a decision on its own): 3 file(s) cite a requirement id that does not exist in the current Requirement Universe -- see status/reverse-orphan-scan-report.v1.json for the real finding (FR-FIN-01~22, escalated to the user 2026-08-15, not yet resolved). Not SATISFIED while a real dangling reference is open and unresolved.",
+      "note": "forward trace scanner exists and runs clean for the explicit-ID population (scripts/scan-global-trace-closure.py, orphan_p0=0). Reverse-orphan scanner exists (scripts/scan-reverse-orphan.py, disclosure-only, never gates a decision on its own): 5 file(s) cite a requirement id that does not exist in the current Requirement Universe -- see status/reverse-orphan-scan-report.v1.json. As of the 2026-08-14 authority-conflict design decision (BATCH_10, PR #52 + 160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md), these are the EXPECTED, disclosed consequence of FR-FIN-01~22 deliberately staying out of the live Requirement Universe until PR #52 merges -- not an open, unresolved escalation. Still NOT_SATISFIED while any dangling reference exists, by design: this gate does not distinguish 'expected' from 'unexpected' danglers, so it correctly stays HOLD until the epoch-0003 cutover actually adds these ids to the live population.",
       "status": "NOT_SATISFIED"
     },
     "MIGRATION_INTEGRATION_RECONCILIATION": {
@@ -58,7 +58,7 @@
       "status": "SATISFIED"
     },
     "P0_ORPHAN_ZERO_OR_AUTH_EXTERNAL_BLOCKER": {
-      "note": "mechanical scanner (explicit-ID FR-COM/FR-META/FR-FRESH/FR-LEARN population, 383 rows): p0_orphans=[]. This scanner's denominator is the explicit-ID population only -- doc 140's independent QA snapshot reports a much larger 899-record population (explicit + generated non-ID source-anchored records) with its own orphan count, not reconciled with this scanner. Treat this SATISFIED as scoped to explicit-ID requirements, not the full QA population.",
+      "note": "mechanical scanner (explicit-ID FR-COM/FR-META/FR-FRESH/FR-LEARN population, 392 rows): p0_orphans=[]. This scanner's denominator is the explicit-ID population only -- doc 140's independent QA snapshot reports a much larger 899-record population (explicit + generated non-ID source-anchored records) with its own orphan count, not reconciled with this scanner. Treat this SATISFIED as scoped to explicit-ID requirements, not the full QA population.",
       "status": "SATISFIED"
     },
     "POST_BATCH9_INDEPENDENT_RERUN": {
@@ -82,7 +82,6 @@
       "status": "SELF_REPORTED_SEE_REGISTRY"
     }
   },
-  "generated_at": "2026-08-15T06:40:00Z",
   "lock_matrix_ref": "contracts/global-design-implementation-lock-matrix.candidate.v1.json",
   "mechanically_not_satisfied": 6,
   "mechanically_satisfied": 4,

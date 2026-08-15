@@ -48,6 +48,7 @@ public final class TenantRbacService {
             "assurance.learning.decision-currentness.evaluate",
             "assurance.learning.evidence-observation.record",
             "assurance.release.qualify",
+            "assurance.validation.snapshot-verify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",

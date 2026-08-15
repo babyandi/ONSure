@@ -76,6 +76,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.challenge-set-access.decide",
             "assurance.learning.evidence-observation.record",
             "assurance.release.qualify",
+            "assurance.validation.snapshot-verify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -176,6 +177,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.challenge-set-access.decide" -> learningChallengeSetAccessDecide(request);
             case "assurance.learning.evidence-observation.record" -> learningEvidenceObservationRecord(request);
             case "assurance.release.qualify" -> releaseQualify(request);
+            case "assurance.validation.snapshot-verify" -> validationSnapshotVerify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2132,6 +2134,106 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "QUALIFIED".equals(state) ? "NON_FINAL" : "HOLD");
         return immutable(out);
+    }
+
+    private static final List<String> ATOMIC_SNAPSHOT_EPOCH_FIELDS = List.of(
+            "scope", "requirement", "denominator", "policy", "oracle", "validator_qualification", "authority");
+    private static final Set<String> ATOMIC_SNAPSHOT_READ_METHODS =
+            Set.of("SINGLE_TRANSACTION_SNAPSHOT_READ", "LEDGER_SEQUENCE_PINNED_READ");
+
+    /**
+     * atomic-validation-snapshot.v2.schema.json real computation (FR-META-010 Atomic Validation
+     * Snapshot: "Final은 동일 Target/Scope/Requirement/Policy generation에서 필수 Lane이 동시에
+     * 성립한 Snapshot이어야 한다. 서로 다른 Run의 좋은 결과를 선택적으로 조립하지 않는다."). JSON
+     * Schema alone can validate shape but cannot: (a) verify read_completed_at is not before
+     * read_started_at, (b) verify test_execution_summary's own counts arithmetically reconcile
+     * with applicable_count, or (c) force HOLD when any required Lane (open P0 findings, failed/
+     * blocked/not_run tests) is non-clean -- exactly the "selectively assemble good results from
+     * different runs" failure mode this requirement forbids: a snapshot may not report itself
+     * atomic-clean while quietly carrying a failed/blocked/not_run test or an open P0. snapshot_
+     * sha256 is computed here from the sealed payload, never trusted from the caller, so a
+     * downstream consumer can detect any post-capture tamper.
+     */
+    private Map<String, Object> validationSnapshotVerify(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String snapshotId = requiredText(request, "snapshot_id");
+        String targetArtifactSha256 = requiredDigest(request, "target_artifact_sha256");
+
+        JsonNode epochsNode = request.path("epochs");
+        Map<String, String> epochs = new LinkedHashMap<>();
+        for (String field : ATOMIC_SNAPSHOT_EPOCH_FIELDS) {
+            epochs.put(field, requiredText(epochsNode, field));
+        }
+
+        JsonNode tokenNode = request.path("read_consistency_token");
+        String tokenMethod = requiredText(tokenNode, "method");
+        if (!ATOMIC_SNAPSHOT_READ_METHODS.contains(tokenMethod)) {
+            return failClosed("HOLD", List.of("SNAPSHOT_READ_CONSISTENCY_METHOD_INVALID:" + tokenMethod));
+        }
+        String tokenValue = requiredText(tokenNode, "token");
+        Instant readStarted;
+        Instant readCompleted;
+        try {
+            readStarted = Instant.parse(requiredText(tokenNode, "read_started_at"));
+            readCompleted = Instant.parse(requiredText(tokenNode, "read_completed_at"));
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("SNAPSHOT_READ_CONSISTENCY_TIMESTAMP_MALFORMED"));
+        }
+        if (readCompleted.isBefore(readStarted)) {
+            return failClosed("HOLD", List.of("SNAPSHOT_READ_COMPLETED_BEFORE_STARTED"));
+        }
+
+        JsonNode summaryNode = request.path("test_execution_summary");
+        long applicable = requiredNonNegativeLong(summaryNode, "applicable_count");
+        long passed = requiredNonNegativeLong(summaryNode, "passed_count");
+        long failed = requiredNonNegativeLong(summaryNode, "failed_count");
+        long blocked = requiredNonNegativeLong(summaryNode, "blocked_count");
+        long hold = requiredNonNegativeLong(summaryNode, "hold_count");
+        long notRun = requiredNonNegativeLong(summaryNode, "not_run_count");
+        if (passed + failed + blocked + hold + notRun != applicable) {
+            return failClosed("HOLD", List.of("SNAPSHOT_TEST_SUMMARY_COUNTS_DO_NOT_RECONCILE"));
+        }
+        String exactResultDigest = requiredDigest(summaryNode, "exact_result_digest");
+
+        JsonNode findingsNode = request.path("open_findings");
+        long p0Count = requiredNonNegativeLong(findingsNode, "p0_count");
+        long p1Count = requiredNonNegativeLong(findingsNode, "p1_count");
+        String blockingSetDigest = requiredDigest(findingsNode, "blocking_set_digest");
+
+        List<String> nonAtomicLanes = new ArrayList<>();
+        if (p0Count > 0) nonAtomicLanes.add("OPEN_P0_FINDINGS:" + p0Count);
+        if (failed > 0) nonAtomicLanes.add("FAILED_TESTS:" + failed);
+        if (blocked > 0) nonAtomicLanes.add("BLOCKED_TESTS:" + blocked);
+        if (notRun > 0) nonAtomicLanes.add("NOT_RUN_TESTS:" + notRun);
+        String decision = nonAtomicLanes.isEmpty() ? "ALL_LANES_ATOMIC_CLEAN" : "HOLD";
+
+        Map<String, Object> out = base("ONSURE_ATOMIC_VALIDATION_SNAPSHOT", targetId);
+        out.put("snapshot_id", snapshotId);
+        out.put("target_artifact_sha256", targetArtifactSha256);
+        out.put("epochs", Map.copyOf(epochs));
+        out.put("read_consistency_token", Map.of(
+                "method", tokenMethod, "token", tokenValue,
+                "read_started_at", readStarted.toString(), "read_completed_at", readCompleted.toString()));
+        out.put("test_execution_summary", Map.of(
+                "applicable_count", applicable, "passed_count", passed, "failed_count", failed,
+                "blocked_count", blocked, "hold_count", hold, "not_run_count", notRun,
+                "exact_result_digest", exactResultDigest));
+        out.put("open_findings", Map.of(
+                "p0_count", p0Count, "p1_count", p1Count, "blocking_set_digest", blockingSetDigest));
+        out.put("non_atomic_lanes", List.copyOf(nonAtomicLanes));
+        out.put("decision", decision);
+        Map<String, Object> sealed = immutable(out);
+        Map<String, Object> withDigest = new LinkedHashMap<>(sealed);
+        withDigest.put("snapshot_sha256", digest(sealed));
+        return immutable(withDigest);
+    }
+
+    private long requiredNonNegativeLong(JsonNode node, String field) {
+        JsonNode value = node.path(field);
+        if (!value.isIntegralNumber() || value.asLong() < 0) {
+            throw new IllegalArgumentException("SEMANTIC_V2_FIELD_REQUIRED:" + field);
+        }
+        return value.asLong();
     }
 
     private static final List<String> PROVIDER_CHARACTERISTIC_FIELDS = List.of(

@@ -158,9 +158,14 @@ def check_forward_and_reverse_trace() -> dict:
                 f"(scripts/scan-global-trace-closure.py, orphan_p0=0). Reverse-orphan scanner "
                 f"exists (scripts/scan-reverse-orphan.py, disclosure-only, never gates a decision "
                 f"on its own): {stale_total} file(s) cite a requirement id that does not exist in "
-                f"the current Requirement Universe -- see status/reverse-orphan-scan-report.v1.json "
-                f"for the real finding (FR-FIN-01~22, escalated to the user 2026-08-15, not yet "
-                f"resolved). Not SATISFIED while a real dangling reference is open and unresolved.",
+                f"the current Requirement Universe -- see status/reverse-orphan-scan-report.v1.json. "
+                f"As of the 2026-08-14 authority-conflict design decision (BATCH_10, PR #52 + "
+                f"160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md), these are the EXPECTED, "
+                f"disclosed consequence of FR-FIN-01~22 deliberately staying out of the live "
+                f"Requirement Universe until PR #52 merges -- not an open, unresolved escalation. "
+                f"Still NOT_SATISFIED while any dangling reference exists, by design: this gate "
+                f"does not distinguish 'expected' from 'unexpected' danglers, so it correctly stays "
+                f"HOLD until the epoch-0003 cutover actually adds these ids to the live population.",
     }
 
 

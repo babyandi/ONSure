@@ -1501,6 +1501,87 @@ class SemanticAssuranceV2DispatcherBridgeTest {
     }
 
     @Test
+    void validationSnapshotVerifyReachesAllLanesAtomicCleanWhenEverythingReconciles() throws Exception {
+        Map<?, ?> result = validationSnapshotVerify(Map.of(), Map.of(), 0);
+        assertEquals("ALL_LANES_ATOMIC_CLEAN", result.get("decision"));
+        assertEquals(List.of(), result.get("non_atomic_lanes"));
+        assertEquals(true, ((String) result.get("snapshot_sha256")).matches("[0-9a-f]{64}"));
+    }
+
+    @Test
+    void validationSnapshotVerifyForcesHoldWhenTestSummaryCountsDoNotReconcile() throws Exception {
+        Map<?, ?> result = validationSnapshotVerify(
+                Map.of("applicable_count", 10L, "passed_count", 5L), Map.of(), 0);
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("SNAPSHOT_TEST_SUMMARY_COUNTS_DO_NOT_RECONCILE"), result.get("reasons"));
+    }
+
+    @Test
+    void validationSnapshotVerifyForcesHoldWhenReadCompletedBeforeReadStarted() throws Exception {
+        java.time.Instant now = java.time.Instant.now();
+        Map<?, ?> result = validationSnapshotVerify(
+                Map.of(),
+                Map.of("read_started_at", now.toString(), "read_completed_at", now.minusSeconds(60).toString()),
+                0);
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("SNAPSHOT_READ_COMPLETED_BEFORE_STARTED"), result.get("reasons"));
+    }
+
+    @Test
+    void validationSnapshotVerifyForcesHoldOnOpenP0FindingsEvenWhenAllTestsPassed() throws Exception {
+        Map<?, ?> result = validationSnapshotVerify(Map.of(), Map.of(), 2);
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("OPEN_P0_FINDINGS:2"), result.get("non_atomic_lanes"));
+    }
+
+    @Test
+    void validationSnapshotVerifyForcesHoldOnAnyFailedBlockedOrNotRunTest() throws Exception {
+        Map<?, ?> result = validationSnapshotVerify(
+                Map.of("applicable_count", 10L, "passed_count", 7L, "failed_count", 1L,
+                        "blocked_count", 1L, "not_run_count", 1L),
+                Map.of(), 0);
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(
+                List.of("FAILED_TESTS:1", "BLOCKED_TESTS:1", "NOT_RUN_TESTS:1"),
+                result.get("non_atomic_lanes"));
+    }
+
+    private Map<?, ?> validationSnapshotVerify(
+            Map<String, Object> testSummaryOverrides, Map<String, Object> tokenOverrides, long p0Count)
+            throws Exception {
+        Map<String, Object> summary = new java.util.LinkedHashMap<>(Map.of(
+                "applicable_count", 10L, "passed_count", 10L, "failed_count", 0L,
+                "blocked_count", 0L, "hold_count", 0L, "not_run_count", 0L));
+        summary.put("exact_result_digest", "6b6509445d39461297f1bc9e09e35d2f5f4d1202827c84c821c0e2f93e4fd548");
+        summary.putAll(testSummaryOverrides);
+
+        java.time.Instant now = java.time.Instant.now();
+        Map<String, Object> token = new java.util.LinkedHashMap<>(Map.of(
+                "method", "SINGLE_TRANSACTION_SNAPSHOT_READ", "token", "read-token-1",
+                "read_started_at", now.toString(), "read_completed_at", now.plusSeconds(1).toString()));
+        token.putAll(tokenOverrides);
+
+        Map<String, Object> body = Map.ofEntries(
+                Map.entry("project_id", "project-1"), Map.entry("target_id", "target-1"),
+                Map.entry("snapshot_id", "snapshot-1"),
+                Map.entry("target_artifact_sha256", "6b6509445d39461297f1bc9e09e35d2f5f4d1202827c84c821c0e2f93e4fd548"),
+                Map.entry("epochs", Map.of(
+                        "scope", "EPOCH::SCOPE::0001", "requirement", "EPOCH::REQUIREMENT::0002",
+                        "denominator", "EPOCH::DENOMINATOR::0001", "policy", "EPOCH::POLICY::0001",
+                        "oracle", "EPOCH::ORACLE::0001", "validator_qualification", "EPOCH::VALIDATOR::0001",
+                        "authority", "EPOCH::AUTHORITY::0001")),
+                Map.entry("read_consistency_token", token),
+                Map.entry("test_execution_summary", summary),
+                Map.entry("open_findings", Map.of(
+                        "p0_count", p0Count, "p1_count", 0L,
+                        "blocking_set_digest", "df772cb57d0dfafb14f45df86e575a3d5e506ead160f271351bb14b2a5c9d098")));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.validation.snapshot-verify", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");
         Map<?, ?> result = providerDriftCheck(characteristics, characteristics);

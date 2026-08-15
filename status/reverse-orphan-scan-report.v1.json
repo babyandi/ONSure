@@ -3,9 +3,16 @@
   "categories": {
     "contract_schema": {
       "cites_a_real_requirement_id": 5,
-      "cites_a_stale_nonexistent_id": 0,
+      "cites_a_stale_nonexistent_id": 1,
       "cites_no_requirement_id_at_all": 143,
-      "dangling_citations": [],
+      "dangling_citations": [
+        {
+          "file": "contracts/fr-fin-existing-requirement-semantic-relations.candidate.v1.schema.json",
+          "stale_ids": [
+            "FR-FIN-01"
+          ]
+        }
+      ],
       "no_citation_sample": [
         "contracts/acceptance-certificate.candidate.v1.schema.json",
         "contracts/ai-population-receipt.v1.schema.json",
@@ -38,12 +45,12 @@
         "contracts/decision-time-knowledge-snapshot.v1.schema.json",
         "contracts/denominator-epoch.v1.schema.json"
       ],
-      "scanned": 148
+      "scanned": 149
     },
     "evidence": {
-      "cites_a_real_requirement_id": 15,
-      "cites_a_stale_nonexistent_id": 1,
-      "cites_no_requirement_id_at_all": 13,
+      "cites_a_real_requirement_id": 16,
+      "cites_a_stale_nonexistent_id": 2,
+      "cites_no_requirement_id_at_all": 14,
       "dangling_citations": [
         {
           "file": "status/final-product-requirement-coverage.v1.json",
@@ -71,6 +78,12 @@
             "FR-FIN-21",
             "FR-FIN-22"
           ]
+        },
+        {
+          "file": "status/global-lock-preflight-report.v1.json",
+          "stale_ids": [
+            "FR-FIN-01"
+          ]
         }
       ],
       "no_citation_sample": [
@@ -86,9 +99,10 @@
         "status/post-merge-self-audit.v1.json",
         "status/product-subrequirement-coverage.v1.json",
         "status/remaining-work-register.v1.json",
+        "status/reverse-orphan-scan-report.v1.json",
         "status/verification-status.v1.json"
       ],
-      "scanned": 29
+      "scanned": 31
     },
     "test": {
       "cites_a_real_requirement_id": 7,
@@ -130,10 +144,17 @@
       "scanned": 126
     },
     "test_py": {
-      "cites_a_real_requirement_id": 2,
-      "cites_a_stale_nonexistent_id": 0,
+      "cites_a_real_requirement_id": 3,
+      "cites_a_stale_nonexistent_id": 1,
       "cites_no_requirement_id_at_all": 23,
-      "dangling_citations": [],
+      "dangling_citations": [
+        {
+          "file": "tests/test_reverse_orphan_scan.py",
+          "stale_ids": [
+            "FR-ZZZTEST-01"
+          ]
+        }
+      ],
       "no_citation_sample": [
         "tests/test_acceptance_runtime_results.py",
         "tests/test_cause_aware_verification.py",
@@ -159,11 +180,11 @@
         "tests/test_wave6_composition_certificate.py",
         "tests/test_wave7_platform_meta.py"
       ],
-      "scanned": 25
+      "scanned": 26
     }
   },
   "contract": "ONSURE_REVERSE_ORPHAN_SCAN_REPORT_V1",
   "disposition": "DISCLOSURE_ONLY -- a file citing zero requirement IDs is not automatically a defect (shared infrastructure legitimately supports many requirements indirectly without citing any one by ID). cites_a_stale_nonexistent_id is the actionable finding: a file citing a requirement ID that no longer exists in the current Requirement Universe, which should be investigated (renamed/superseded requirement? typo? genuinely removed scope?).",
   "final_claim_allowed": false,
-  "known_requirement_id_count": 383
+  "known_requirement_id_count": 392
 }
