@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** NFR-REL (멱등성, 재시도, 중복 이벤트 방어): idempotency and duplicate-event defense half. */
 class IdempotencyStoreTest {
     @TempDir Path temp;
     private final ObjectMapper mapper = new ObjectMapper();

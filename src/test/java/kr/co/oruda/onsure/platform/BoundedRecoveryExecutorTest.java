@@ -12,7 +12,8 @@ import kr.co.oruda.onsure.platform.BoundedRecoveryExecutor.RecoveryResult;
 import org.junit.jupiter.api.Test;
 
 /** Failure-injection tests for recovery: deliberately fails an operation N times, then verifies
- * recovery either succeeds within budget or fails closed once the budget is exhausted. */
+ * recovery either succeeds within budget or fails closed once the budget is exhausted.
+ * NFR-REL (멱등성, 재시도, 중복 이벤트 방어): retry half. */
 class BoundedRecoveryExecutorTest {
 
     @Test

@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-REL",
+  "requirement_summary": "멱등성, 재시도, 중복 이벤트 방어 (idempotency, retry, duplicate event defense).",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/IdempotencyStore.java (idempotency + duplicate-event defense), src/main/java/kr/co/oruda/onsure/platform/BoundedRecoveryExecutor.java (retry), src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java (Idempotency-Key header wiring)",
+  "observed_source": "IdempotencyStoreTest, BoundedRecoveryExecutorTest, LocalAuthenticatedApiServerTest (real JUnit execution and real HTTP responses)",
+  "observed_test_methods": [
+    "firstCallExecutesAndCachesTheResponse",
+    "sameKeySameRequestReplaysWithoutReexecuting",
+    "sameKeyDifferentRequestIsAConflictNotASilentReplay",
+    "differentTenantsWithTheSameKeyAndOperationDoNotCollide",
+    "differentOperationsWithTheSameKeyDoNotCollide",
+    "malformedKeyIsRejected",
+    "recordIsPersistedAcrossStoreInstances",
+    "recoversAfterInjectedTransientFailuresWithinBudget",
+    "failsClosedWithoutSwallowingWhenRecoveryBudgetIsExhausted",
+    "rejectsInvalidBudgetParameters",
+    "interruptionPropagatesImmediatelyWithoutFurtherRetries",
+    "workflowWithoutIdempotencyKeyAlwaysExecutes",
+    "workflowWithIdempotencyKeyReplaysIdenticalRequestsAndRejectsConflicts",
+    "malformedIdempotencyKeyIsRejectedAsBadRequest"
+  ],
+  "coverage_notes": "Idempotency: a repeated request under the same Idempotency-Key replays the cached response without re-executing (real duplicate-event defense) when the request body genuinely matches; a same-key request with a DIFFERENT body is rejected as a real conflict (409 IDEMPOTENCY_KEY_REQUEST_MISMATCH), never silently treated as a replay -- closing the exact failure mode duplicate-event defense exists to prevent. Idempotency records persist across store instances (survives process restart) and are correctly scoped per tenant and per operation (no cross-tenant or cross-operation collision on a reused key). Retry: BoundedRecoveryExecutor retries a bounded number of times within a real budget and fails closed (rethrows, never swallows) once the budget is exhausted; an interruption propagates immediately without further retry attempts, and invalid budget parameters are rejected outright.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
