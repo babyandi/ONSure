@@ -278,6 +278,9 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals(List.of("DUPLICATE_COMPOSITION_SUBJECT:subject-a"), result.get("reasons"));
     }
 
+    // FR-META-060 Certificate and Product Assurance Final Ceiling: "하나라도 UNKNOWN/HOLD이면
+    // positive Certificate 발급을 금지한다" -- currentness_state_at_issue is always UNKNOWN (no
+    // currentness verifier is wired), so decision can never be a positive PASS certificate.
     @Test
     void certificateIssuanceNeverClaimsPassBecauseNoCurrentnessVerifierIsWired() throws Exception {
         Map<?, ?> certificate = certificateResult("PASS");

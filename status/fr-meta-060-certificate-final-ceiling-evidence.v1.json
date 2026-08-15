@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-060",
+  "requirement_summary": "Certificate and Product Assurance Final Ceiling: Product-level Certificate 발급은 exact CompositionSnapshot, current FinalLock, required independent verification, current qualification/authority, scope 내 unresolved P0 blocker 0, 그리고 요구 Assurance Level이 production-bound이면 Verified-to-Deployed-to-Running Currentness가 모두 닫혀야 한다. 하나라도 UNKNOWN/HOLD이면 positive Certificate 발급을 금지한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (certificateIssue), assurance.certificate.issue v2 operation",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch, real Ed25519 signature verification)",
+  "observed_test_methods": [
+    "certificateIssuanceNeverClaimsPassBecauseNoCurrentnessVerifierIsWired",
+    "certificateIssuanceIsBlockedWhenCompositionDidNotPass",
+    "certificateSignatureIsCryptographicallyVerifiableAgainstItsOwnEmbeddedKey"
+  ],
+  "coverage_notes": "The requirement's core fail-closed rule -- 'any one of the required closures being UNKNOWN/HOLD forbids a positive Certificate' -- is genuinely, unconditionally implemented: currentness_state_at_issue is hardcoded UNKNOWN (CERTIFICATE_CURRENTNESS_VERIFIER_NOT_WIRED is disclosed in limitation_summary on every issuance), so even when composition_decision=PASS, the certificate's own decision is forced to HOLD, never a positive claim. A non-PASS composition_decision forces BLOCKED. Every certificate is Ed25519-signed with every field (including limitation_summary and final_claim_allowed=false) inside the signed payload, verified against its own embedded public key.",
+  "open_gap": "The requirement also names composition_snapshot_digest, final_lock_digest, and 'current qualification/authority' as inputs that must be 'exact'/'current' -- certificateIssue accepts these as caller-supplied digests (format-validated as real sha256 strings) but does not itself independently verify they are the CURRENT/exact values (e.g. cross-checking composition_snapshot_digest against a live CompositionSnapshot store, or final_lock_digest against an actual current FinalLock record). The unconditional-HOLD behavior above makes this gap non-exploitable for a positive claim today (nothing can reach PASS regardless), but the requirement's full scope -- validating the SUPPLIED digests are genuinely current, not just well-formed -- is not yet independently covered.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
