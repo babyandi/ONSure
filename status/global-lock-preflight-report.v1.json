@@ -38,7 +38,7 @@
       "status": "SELF_REPORTED_SEE_REGISTRY"
     },
     "FORWARD_TRACE_AND_REVERSE_ORPHAN": {
-      "note": "forward trace scanner exists and runs clean for the explicit-ID population (scripts/scan-global-trace-closure.py); no reverse-orphan scanner (Evidence->Test->Implementation->Contract->Design->Requirement->Authority) has been built yet.",
+      "note": "forward trace scanner exists and runs clean for the explicit-ID population (scripts/scan-global-trace-closure.py, orphan_p0=0). Reverse-orphan scanner exists (scripts/scan-reverse-orphan.py, disclosure-only, never gates a decision on its own): 3 file(s) cite a requirement id that does not exist in the current Requirement Universe -- see status/reverse-orphan-scan-report.v1.json for the real finding (FR-FIN-01~22, escalated to the user 2026-08-15, not yet resolved). Not SATISFIED while a real dangling reference is open and unresolved.",
       "status": "NOT_SATISFIED"
     },
     "MIGRATION_INTEGRATION_RECONCILIATION": {
@@ -82,7 +82,7 @@
       "status": "SELF_REPORTED_SEE_REGISTRY"
     }
   },
-  "generated_at": "2026-08-15T05:45:00Z",
+  "generated_at": "2026-08-15T06:40:00Z",
   "lock_matrix_ref": "contracts/global-design-implementation-lock-matrix.candidate.v1.json",
   "mechanically_not_satisfied": 6,
   "mechanically_satisfied": 4,

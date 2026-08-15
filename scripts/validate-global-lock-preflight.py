@@ -142,6 +142,28 @@ def check_no_nonpositive_to_positive_promotion() -> dict:
     }
 
 
+def check_forward_and_reverse_trace() -> dict:
+    code, out = run([sys.executable, "scripts/scan-reverse-orphan.py"])
+    if code != 0:
+        return {"status": "NOT_SATISFIED", "note": f"scan-reverse-orphan.py exited {code}: {out[:400]}"}
+    try:
+        start = out.index("{")
+        reverse_report, _ = json.JSONDecoder().raw_decode(out[start:])
+    except (ValueError, json.JSONDecodeError):
+        return {"status": "NOT_SATISFIED", "note": "scan-reverse-orphan.py output did not parse as JSON"}
+    stale_total = sum(cat["cites_a_stale_nonexistent_id"] for cat in reverse_report["categories"].values())
+    return {
+        "status": "NOT_SATISFIED" if stale_total else "SELF_REPORTED_SEE_REGISTRY",
+        "note": f"forward trace scanner exists and runs clean for the explicit-ID population "
+                f"(scripts/scan-global-trace-closure.py, orphan_p0=0). Reverse-orphan scanner "
+                f"exists (scripts/scan-reverse-orphan.py, disclosure-only, never gates a decision "
+                f"on its own): {stale_total} file(s) cite a requirement id that does not exist in "
+                f"the current Requirement Universe -- see status/reverse-orphan-scan-report.v1.json "
+                f"for the real finding (FR-FIN-01~22, escalated to the user 2026-08-15, not yet "
+                f"resolved). Not SATISFIED while a real dangling reference is open and unresolved.",
+    }
+
+
 def check_learning_p0_contradiction_progress() -> dict:
     registry = load("contracts/claude-development-progress-registry.v1.json")
     section = registry.get("learning_p0_contradiction_runtime_evidence", {})
@@ -196,13 +218,7 @@ GATES = {
     "AUTHORITY_POPULATION_FROZEN": check_authority_population_frozen,
     "EXACT_RU_DIGEST": check_exact_ru_digest,
     "APPLICABILITY_ONE_TO_ONE_CRITICAL_UNKNOWN_ZERO": check_applicability_critical_unknown_zero,
-    "FORWARD_TRACE_AND_REVERSE_ORPHAN": lambda: {
-        "status": "NOT_SATISFIED",
-        "note": "forward trace scanner exists and runs clean for the explicit-ID population "
-                "(scripts/scan-global-trace-closure.py); no reverse-orphan scanner "
-                "(Evidence->Test->Implementation->Contract->Design->Requirement->Authority) has "
-                "been built yet.",
-    },
+    "FORWARD_TRACE_AND_REVERSE_ORPHAN": check_forward_and_reverse_trace,
     "P0_ORPHAN_ZERO_OR_AUTH_EXTERNAL_BLOCKER": check_p0_orphan_zero,
     "P0_CONTRADICTION_ZERO": check_learning_p0_contradiction_progress,
     "P0_DCQ_ZERO": check_p0_dcq_zero,
