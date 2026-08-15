@@ -1,0 +1,11 @@
+{
+  "contract": "ONSURE_ASSURANCE_STRENGTH_CEILING_V1",
+  "subject_id": "target-financial-assurance-report-001",
+  "claimed_assurance_level": "AL5_PRODUCTION_BOUND_CURRENT",
+  "critical_children": [],
+  "effective_assurance_level": "AL5_PRODUCTION_BOUND_CURRENT",
+  "ceiling_source_child_id": "none",
+  "decision": "CLAIM_WITHIN_CEILING",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

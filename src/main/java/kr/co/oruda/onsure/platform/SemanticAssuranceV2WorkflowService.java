@@ -79,6 +79,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.validation.snapshot-verify",
             "assurance.validation.experiment-evaluate",
             "assurance.learning.effectiveness.evaluate",
+            "assurance.strength-ceiling.compute",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -182,6 +183,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.validation.snapshot-verify" -> validationSnapshotVerify(request);
             case "assurance.validation.experiment-evaluate" -> validationExperimentEvaluate(request);
             case "assurance.learning.effectiveness.evaluate" -> learningEffectivenessEvaluate(request);
+            case "assurance.strength-ceiling.compute" -> assuranceStrengthCeilingCompute(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2410,6 +2412,60 @@ final class SemanticAssuranceV2WorkflowService {
             metrics.put(field, value);
         }
         return metrics;
+    }
+
+    private static final List<String> ASSURANCE_LEVELS = List.of(
+            "AL0_UNASSESSED", "AL1_EXECUTED", "AL2_EVIDENCE_BOUND",
+            "AL3_INDEPENDENTLY_REPERFORMED", "AL4_QUALIFIED", "AL5_PRODUCTION_BOUND_CURRENT");
+
+    /**
+     * assurance-strength-ceiling.v1.schema.json real computation (FR-META-049 Assurance Strength
+     * Dimension: "상위 결과는 필수 Critical Child의 최저 strength/currentness ceiling을 넘을 수
+     * 없다" -- a parent result can never exceed the LOWEST strength/currentness ceiling among its
+     * required Critical Children). JSON Schema's enum can validate each individual level is one
+     * of the 6 named values, but it cannot compare levels ORDINALLY across fields. This operation
+     * computes the real ceiling: effective_assurance_level is the MINIMUM (weakest) level among
+     * claimed_assurance_level and every critical child's level -- a caller cannot claim a higher
+     * parent-level than its weakest required child, regardless of what is declared.
+     */
+    private Map<String, Object> assuranceStrengthCeilingCompute(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String subjectId = requiredText(request, "subject_id");
+        String claimedLevel = requiredText(request, "claimed_assurance_level");
+        if (!ASSURANCE_LEVELS.contains(claimedLevel)) {
+            return failClosed("HOLD", List.of("ASSURANCE_LEVEL_INVALID:" + claimedLevel));
+        }
+
+        JsonNode childrenNode = request.path("critical_children");
+        if (!childrenNode.isArray() || childrenNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("ASSURANCE_CRITICAL_CHILDREN_REQUIRED"));
+        }
+
+        int minRank = ASSURANCE_LEVELS.indexOf(claimedLevel);
+        String ceilingSourceChildId = null;
+        java.util.LinkedHashSet<String> childIds = new java.util.LinkedHashSet<>();
+        for (JsonNode childNode : childrenNode) {
+            String childId = requiredText(childNode, "child_id");
+            if (!childIds.add(childId)) return failClosed("HOLD", List.of("DUPLICATE_CHILD_ID:" + childId));
+            String childLevel = requiredText(childNode, "assurance_level");
+            int childRank = ASSURANCE_LEVELS.indexOf(childLevel);
+            if (childRank < 0) return failClosed("HOLD", List.of("ASSURANCE_LEVEL_INVALID:" + childLevel));
+            if (childRank < minRank) {
+                minRank = childRank;
+                ceilingSourceChildId = childId;
+            }
+        }
+
+        String effectiveLevel = ASSURANCE_LEVELS.get(minRank);
+        boolean ceilingApplied = ceilingSourceChildId != null;
+
+        Map<String, Object> out = base("ONSURE_ASSURANCE_STRENGTH_CEILING", targetId);
+        out.put("subject_id", subjectId);
+        out.put("claimed_assurance_level", claimedLevel);
+        out.put("effective_assurance_level", effectiveLevel);
+        out.put("ceiling_source_child_id", ceilingApplied ? ceilingSourceChildId : "none");
+        out.put("decision", ceilingApplied ? "CEILING_APPLIED" : "CLAIM_WITHIN_CEILING");
+        return immutable(out);
     }
 
     private static final List<String> PROVIDER_CHARACTERISTIC_FIELDS = List.of(

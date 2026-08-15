@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/assurance-strength-ceiling.v1.schema.json",
+  "title": "ONSure Assurance Strength Ceiling v1",
+  "description": "FR-META-049 Assurance Strength Dimension: Decision과 Assurance Strength를 분리한다. 후보 단계는 AL0_UNASSESSED, AL1_EXECUTED, AL2_EVIDENCE_BOUND, AL3_INDEPENDENTLY_REPERFORMED, AL4_QUALIFIED, AL5_PRODUCTION_BOUND_CURRENT이며, 상위 결과는 필수 Critical Child의 최저 strength/currentness ceiling을 넘을 수 없다. A parent claiming a higher assurance_level than the weakest required critical child is the named negative case this contract forbids.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "claimed_assurance_level", "critical_children",
+    "effective_assurance_level", "ceiling_source_child_id", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ASSURANCE_STRENGTH_CEILING_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "claimed_assurance_level": {"$ref": "#/$defs/assuranceLevel"},
+    "critical_children": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["child_id", "assurance_level"],
+        "properties": {
+          "child_id": {"type": "string", "minLength": 1},
+          "assurance_level": {"$ref": "#/$defs/assuranceLevel"}
+        }
+      }
+    },
+    "effective_assurance_level": {"$ref": "#/$defs/assuranceLevel"},
+    "ceiling_source_child_id": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["CEILING_APPLIED", "CLAIM_WITHIN_CEILING"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "assuranceLevel": {
+      "enum": [
+        "AL0_UNASSESSED", "AL1_EXECUTED", "AL2_EVIDENCE_BOUND",
+        "AL3_INDEPENDENTLY_REPERFORMED", "AL4_QUALIFIED", "AL5_PRODUCTION_BOUND_CURRENT"
+      ]
+    }
+  }
+}

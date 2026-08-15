@@ -51,6 +51,7 @@ public final class TenantRbacService {
             "assurance.validation.snapshot-verify",
             "assurance.validation.experiment-evaluate",
             "assurance.learning.effectiveness.evaluate",
+            "assurance.strength-ceiling.compute",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",

@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-049",
+  "requirement_summary": "Assurance Strength Dimension: Decision과 Assurance Strength를 분리한다. 후보 단계는 AL0_UNASSESSED, AL1_EXECUTED, AL2_EVIDENCE_BOUND, AL3_INDEPENDENTLY_REPERFORMED, AL4_QUALIFIED, AL5_PRODUCTION_BOUND_CURRENT이며, 상위 결과는 필수 Critical Child의 최저 strength/currentness ceiling을 넘을 수 없다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (assuranceStrengthCeilingCompute), assurance.strength-ceiling.compute v2 operation; contracts/assurance-strength-ceiling.v1.schema.json (NEW, built this pass -- no pre-existing schema matched the specific 6-level AL0-AL5 scale)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "assuranceStrengthCeilingComputeAppliesCeilingWhenAChildIsWeakerThanTheClaim",
+    "assuranceStrengthCeilingComputeStaysWithinClaimWhenNoChildIsWeaker",
+    "assuranceStrengthCeilingComputeRejectsDuplicateChildIds",
+    "assuranceStrengthCeilingComputeRejectsInvalidAssuranceLevel"
+  ],
+  "coverage_notes": "effective_assurance_level is computed for real as the ordinal MINIMUM among claimed_assurance_level and every critical child's assurance_level -- a caller cannot claim a stronger parent-level than its weakest required child, regardless of what is declared, directly enforcing 'the parent result cannot exceed the required Critical Child's lowest strength/currentness ceiling.' JSON Schema's enum alone can validate each individual level is one of the 6 named values but cannot compare levels ordinally across fields, which is exactly the gap this real computation closes. Duplicate child_id and any assurance_level value outside the 6-level enum are rejected outright (HOLD) rather than silently accepted.",
+  "open_gap": "The requirement also names 'currentness ceiling' alongside 'strength ceiling' -- this operation computes only the strength dimension (the AL0-AL5 ordinal scale); currentness (whether the evidence is still fresh/not stale) is a separate, not-yet-integrated dimension. The requirement's own text defers 'L0~L5 명칭과의 최종 통합' (final integration with the existing L0-L5 naming) to '08 Open Decision' -- this schema deliberately does not attempt that reconciliation, staying scoped to the AL-prefixed scale as named in this requirement's own text.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

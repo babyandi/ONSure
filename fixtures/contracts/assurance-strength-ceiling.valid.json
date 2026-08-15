@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_ASSURANCE_STRENGTH_CEILING_V1",
+  "subject_id": "target-financial-assurance-report-001",
+  "claimed_assurance_level": "AL4_QUALIFIED",
+  "critical_children": [
+    {"child_id": "child-oracle-qualification", "assurance_level": "AL4_QUALIFIED"},
+    {"child_id": "child-corpus-integrity", "assurance_level": "AL2_EVIDENCE_BOUND"}
+  ],
+  "effective_assurance_level": "AL2_EVIDENCE_BOUND",
+  "ceiling_source_child_id": "child-corpus-integrity",
+  "decision": "CEILING_APPLIED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

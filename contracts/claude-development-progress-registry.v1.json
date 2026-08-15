@@ -1380,6 +1380,23 @@
     "evidence": "status/fr-learn-008-effectiveness-report-evidence.v1.json",
     "open_gap": "Batch 5's broader scope (Prompt Provenance, Tool Authority Method, Agent Memory Assurance beyond pre-existing schemas, RAG Assurance beyond RagPreparationService, AgentGraph/delegation-chain preservation, AI Safety/Security claim separation, Judge/Reviewer Independence, Requalification Trigger, AI Currentness -- 34 SS3/4/5/6/9/10/12/14/17) remains genuinely uncovered; closing all A-J schema objects does not itself close Batch 5 overall, which stays PARTIALLY_EVIDENCE_READY."
   },
+  "fr_meta_049_assurance_strength_ceiling_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Closes one of orphan_severity_recalculation's 34 R1/R2 candidates. No pre-existing schema matched FR-META-049's specific 6-level AL0_UNASSESSED..AL5_PRODUCTION_BOUND_CURRENT ordinal scale (assurance-status-vocabulary.candidate.v2 and status-vocabulary.v1 both describe different, more granular status dimensions), so built contracts/assurance-strength-ceiling.v1.schema.json + positive/negative fixtures from scratch, registered in contracts/schema-instance-registry.v1.json (100 -> 101 schemas), then a real Java consumer. assurance.strength-ceiling.compute computes effective_assurance_level as the ordinal MINIMUM among claimed_assurance_level and every critical child's level -- a caller cannot claim a stronger parent-level than its weakest required child. JSON Schema's enum validates each level individually but cannot compare them ordinally across fields; that cross-field comparison is exactly what this operation adds.",
+    "contract_schema": "contracts/assurance-strength-ceiling.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/assurance-strength-ceiling.valid.json (NEW, ceiling-applied case)",
+      "fixtures/contracts/assurance-strength-ceiling.invalid.json (NEW, empty critical_children violates minItems)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (assuranceStrengthCeilingCompute)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: ceiling applied when a child is weaker, claim stays within ceiling when no child is weaker, duplicate child_id rejected, invalid assurance_level rejected)",
+    "evidence": "status/fr-meta-049-assurance-strength-ceiling-evidence.v1.json",
+    "open_gap": "Computes only the strength dimension of the requirement's 'strength/currentness ceiling' -- currentness (evidence freshness/staleness) is a separate, not-yet-integrated dimension. Final integration with the pre-existing L0-L5 naming is explicitly deferred to '08 Open Decision' by the requirement's own text; this schema deliberately does not attempt that reconciliation."
+  },
   "unrelated_flake_fixed_during_verification": {
     "state": "FIXED",
     "note": "Full-suite mvn test surfaced 1 error unrelated to any change this session: kr.co.oruda.onsure.platform.ScheduledBackupServiceTest.startSchedulesRepeatedBackupsAtTheGivenInterval failed with JUnitException 'Failed to close extension context' / DirectoryNotEmptyException on @TempDir cleanup. Root-caused rather than dismissed as noise: ScheduledBackupService.close() called executor.shutdownNow() but never awaited termination, so a scheduled backup write already in flight could still be completing on its own thread after the try-with-resources block exited and the test method returned, racing JUnit's temp-directory teardown. Fixed by adding a bounded executor.awaitTermination(5, TimeUnit.SECONDS) (with proper interrupt-flag restoration) after shutdownNow(). Verified the fix actually closes the race, not just happened to pass once: reran the previously-failing test class 5 consecutive times after the fix, all 5 clean (4/4, 0 failures/errors each run).",

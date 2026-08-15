@@ -1711,6 +1711,66 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-META-049 Assurance Strength Dimension
+    @Test
+    void assuranceStrengthCeilingComputeAppliesCeilingWhenAChildIsWeakerThanTheClaim() throws Exception {
+        Map<?, ?> result = assuranceStrengthCeilingCompute(
+                "AL4_QUALIFIED",
+                List.of(
+                        ceilingChild("child-1", "AL4_QUALIFIED"),
+                        ceilingChild("child-2", "AL2_EVIDENCE_BOUND")));
+        assertEquals("AL2_EVIDENCE_BOUND", result.get("effective_assurance_level"));
+        assertEquals("child-2", result.get("ceiling_source_child_id"));
+        assertEquals("CEILING_APPLIED", result.get("decision"));
+    }
+
+    @Test
+    void assuranceStrengthCeilingComputeStaysWithinClaimWhenNoChildIsWeaker() throws Exception {
+        Map<?, ?> result = assuranceStrengthCeilingCompute(
+                "AL3_INDEPENDENTLY_REPERFORMED",
+                List.of(
+                        ceilingChild("child-1", "AL4_QUALIFIED"),
+                        ceilingChild("child-2", "AL5_PRODUCTION_BOUND_CURRENT")));
+        assertEquals("AL3_INDEPENDENTLY_REPERFORMED", result.get("effective_assurance_level"));
+        assertEquals("none", result.get("ceiling_source_child_id"));
+        assertEquals("CLAIM_WITHIN_CEILING", result.get("decision"));
+    }
+
+    @Test
+    void assuranceStrengthCeilingComputeRejectsDuplicateChildIds() throws Exception {
+        Map<?, ?> result = assuranceStrengthCeilingCompute(
+                "AL3_INDEPENDENTLY_REPERFORMED",
+                List.of(
+                        ceilingChild("child-1", "AL4_QUALIFIED"),
+                        ceilingChild("child-1", "AL2_EVIDENCE_BOUND")));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("DUPLICATE_CHILD_ID:child-1"), result.get("reasons"));
+    }
+
+    @Test
+    void assuranceStrengthCeilingComputeRejectsInvalidAssuranceLevel() throws Exception {
+        Map<?, ?> result = assuranceStrengthCeilingCompute(
+                "NOT_A_REAL_LEVEL", List.of(ceilingChild("child-1", "AL4_QUALIFIED")));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("ASSURANCE_LEVEL_INVALID:NOT_A_REAL_LEVEL"), result.get("reasons"));
+    }
+
+    private Map<String, Object> ceilingChild(String childId, String assuranceLevel) {
+        return Map.of("child_id", childId, "assurance_level", assuranceLevel);
+    }
+
+    private Map<?, ?> assuranceStrengthCeilingCompute(
+            String claimedLevel, List<Map<String, Object>> criticalChildren) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "subject_id", "subject-1", "claimed_assurance_level", claimedLevel,
+                "critical_children", criticalChildren);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.strength-ceiling.compute", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");
