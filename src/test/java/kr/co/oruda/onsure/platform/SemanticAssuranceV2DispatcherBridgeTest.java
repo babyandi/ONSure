@@ -894,6 +894,10 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return new SemanticAssuranceV2DispatcherBridge(temp, identity("tenant-a", actor));
     }
 
+    private void declareGroundTruthEpoch(SemanticAssuranceV2DispatcherBridge caller, String epochId) throws Exception {
+        learningDispatch(caller, "assurance.learning.ground-truth.declare-epoch", Map.of("epoch_id", epochId));
+    }
+
     private Map<?, ?> learningDispatch(
             SemanticAssuranceV2DispatcherBridge caller, String operation, Map<String, Object> fields) throws Exception {
         Map<String, Object> body = new java.util.LinkedHashMap<>(fields);
@@ -1080,6 +1084,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
     // "Ground-truth Drift vs Historical Immutability" -- LC-P0-007/LC-P0-011 runtime evidence.
     @Test
     void matchingKnowledgeEpochsStayCurrentAndAllowReplayClaims() throws Exception {
+        declareGroundTruthEpoch(bridge, "EPOCH-1");
         Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
                 "snapshot_id", "snap-1", "decision_ref", "receipt-a",
                 "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
@@ -1091,6 +1096,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
 
     @Test
     void driftedKnowledgeEpochRequiresARealReevaluationRefAndBlocksReplayClaims() throws Exception {
+        declareGroundTruthEpoch(bridge, "EPOCH-2");
         Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
                 "snapshot_id", "snap-2", "decision_ref", "receipt-b",
                 "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
@@ -1103,6 +1109,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
 
     @Test
     void driftedEpochWithoutAReevaluationRefIsHeldNotSilentlyMarkedCurrent() throws Exception {
+        declareGroundTruthEpoch(bridge, "EPOCH-2");
         Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
                 "snapshot_id", "snap-3", "decision_ref", "receipt-c",
                 "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
@@ -1111,7 +1118,61 @@ class SemanticAssuranceV2DispatcherBridgeTest {
     }
 
     @Test
+    void anUndeclaredCurrentKnowledgeEpochIsRejectedEvenWithEveryOtherFieldValid() throws Exception {
+        // LC-P0-011 GroundTruthAuthority: current_knowledge_epoch must be a really-declared epoch,
+        // not an arbitrary caller-supplied string -- the named negative case for this cross-wire.
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-undeclared", "decision_ref", "receipt-undeclared",
+                "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "knowledge_epoch", "EPOCH-NEVER-DECLARED", "current_knowledge_epoch", "EPOCH-NEVER-DECLARED"));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("LEARNING_DECISION_CURRENTNESS_EPOCH_NOT_DECLARED"), result.get("reasons"));
+    }
+
+    @Test
+    void aDriftedDecisionIsRealEnqueuedIntoTheRevalidationBacklog() throws Exception {
+        // LC-P0-011 RevalidationBacklog: a STALE result is really tracked, not just returned as a
+        // bare string the caller must remember to follow up on.
+        declareGroundTruthEpoch(bridge, "EPOCH-2");
+        learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-backlog-1", "decision_ref", "receipt-backlog-1",
+                "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "knowledge_epoch", "EPOCH-1", "current_knowledge_epoch", "EPOCH-2",
+                "reevaluation_ref", "reeval-backlog-1"));
+
+        Map<?, ?> status = learningDispatch(bridge, "assurance.learning.revalidation.backlog-status", Map.of());
+        assertEquals(1, status.get("pending_count"));
+        assertEquals(List.of("reeval-backlog-1"), status.get("pending_reevaluation_refs"));
+    }
+
+    @Test
+    void completingARevalidationRemovesItFromTheBacklog() throws Exception {
+        declareGroundTruthEpoch(bridge, "EPOCH-2");
+        learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
+                "snapshot_id", "snap-backlog-2", "decision_ref", "receipt-backlog-2",
+                "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "knowledge_epoch", "EPOCH-1", "current_knowledge_epoch", "EPOCH-2",
+                "reevaluation_ref", "reeval-backlog-2"));
+
+        Map<?, ?> completion = learningDispatch(bridge, "assurance.learning.revalidation.complete", Map.of(
+                "reevaluation_ref", "reeval-backlog-2"));
+        assertEquals("COMPLETED", completion.get("status"));
+
+        Map<?, ?> status = learningDispatch(bridge, "assurance.learning.revalidation.backlog-status", Map.of());
+        assertEquals(0, status.get("pending_count"));
+    }
+
+    @Test
+    void declaringTheSameEpochTwiceIsRejected() throws Exception {
+        declareGroundTruthEpoch(bridge, "EPOCH-DUP");
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.ground-truth.declare-epoch", Map.of(
+                "epoch_id", "EPOCH-DUP"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
     void materialDriftEscalatesToReviewRequiredRatherThanPlainStale() throws Exception {
+        declareGroundTruthEpoch(bridge, "EPOCH-2");
         Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
                 "snapshot_id", "snap-4", "decision_ref", "receipt-d",
                 "decision_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
@@ -1122,6 +1183,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
 
     @Test
     void theOriginalDecisionDigestIsEchoedUnchangedNeverRecomputed() throws Exception {
+        declareGroundTruthEpoch(bridge, "EPOCH-1");
         String digest = "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1";
         Map<?, ?> result = learningDispatch(bridge, "assurance.learning.decision-currentness.evaluate", Map.of(
                 "snapshot_id", "snap-5", "decision_ref", "receipt-e", "decision_sha256", digest,

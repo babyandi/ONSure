@@ -58,7 +58,9 @@ public final class TenantRbacService {
             "assurance.migration.reconcile",
             "assurance.session.create",
             "assurance.session.check-valid",
-            "assurance.learning.human-override.trend-report");
+            "assurance.learning.human-override.trend-report",
+            "assurance.learning.revalidation.complete",
+            "assurance.learning.revalidation.backlog-status");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",
@@ -86,6 +88,7 @@ public final class TenantRbacService {
             "assurance.learning.human-override.decide",
             "assurance.learning.counterevidence.dispose",
             "assurance.learning.challenge-set-access.decide",
+            "assurance.learning.ground-truth.declare-epoch",
             "assurance.hazard.advance",
             "assurance.appeal.assign-reviewer",
             "assurance.appeal.transition",

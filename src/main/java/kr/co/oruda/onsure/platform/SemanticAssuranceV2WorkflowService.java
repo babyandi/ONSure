@@ -93,7 +93,10 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.migration.cutover",
             "assurance.migration.rollback",
             "assurance.session.create",
-            "assurance.session.check-valid");
+            "assurance.session.check-valid",
+            "assurance.learning.ground-truth.declare-epoch",
+            "assurance.learning.revalidation.complete",
+            "assurance.learning.revalidation.backlog-status");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -191,6 +194,9 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.migration.rollback" -> migrationRollback(request);
             case "assurance.session.create" -> sessionCreate(request);
             case "assurance.session.check-valid" -> sessionCheckValid(request);
+            case "assurance.learning.ground-truth.declare-epoch" -> groundTruthEpochDeclare(request);
+            case "assurance.learning.revalidation.complete" -> learningRevalidationComplete(request);
+            case "assurance.learning.revalidation.backlog-status" -> learningRevalidationBacklogStatus(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1703,7 +1709,26 @@ final class SemanticAssuranceV2WorkflowService {
      * a stale decision keep claiming CURRENT, and decision_sha256 is echoed back unchanged, never
      * recomputed, so the original decision content this snapshot annotates is never itself touched.
      */
-    private Map<String, Object> learningDecisionCurrentnessEvaluate(JsonNode request) {
+    private GroundTruthEpochLedger groundTruthEpochLedger() {
+        return new GroundTruthEpochLedger(workspaceRoot.resolve(".onsure/assurance/ground-truth-epochs"));
+    }
+
+    private RevalidationBacklogLedger revalidationBacklogLedger() {
+        return new RevalidationBacklogLedger(workspaceRoot.resolve(".onsure/assurance/revalidation-backlog"));
+    }
+
+    /**
+     * LC-P0-011 cross-wire (doc 158 class 11, both remaining contract bindings). GroundTruthAuthority:
+     * current_knowledge_epoch must be a REALLY-declared epoch (checked against GroundTruthEpochLedger,
+     * which only AUDITOR/ADMIN can append to via {@link #groundTruthEpochDeclare}) -- an arbitrary
+     * caller-supplied epoch string is rejected outright, closing the "who has authority to say what
+     * counts as current" half of the class. RevalidationBacklog: a STALE/REVIEW_REQUIRED result does
+     * not just return a bare reevaluation_ref string for the caller to track themselves -- it is
+     * really enqueued into RevalidationBacklogLedger, so "every stale decision eventually gets
+     * reevaluated" becomes a checkable property via {@link #learningRevalidationBacklogStatus}
+     * instead of an unverifiable claim.
+     */
+    private Map<String, Object> learningDecisionCurrentnessEvaluate(JsonNode request) throws Exception {
         String targetId = requiredText(request, "target_id");
         String snapshotId = requiredText(request, "snapshot_id");
         String decisionRef = requiredText(request, "decision_ref");
@@ -1712,6 +1737,10 @@ final class SemanticAssuranceV2WorkflowService {
         String currentKnowledgeEpoch = requiredText(request, "current_knowledge_epoch");
         boolean materialDrift = request.path("material_drift").asBoolean(false);
         String reevaluationRef = request.path("reevaluation_ref").asText(null);
+
+        if (!groundTruthEpochLedger().isDeclaredEpoch(currentKnowledgeEpoch)) {
+            return failClosed("HOLD", List.of("LEARNING_DECISION_CURRENTNESS_EPOCH_NOT_DECLARED"));
+        }
 
         String currentnessState;
         boolean replayClaimAllowed;
@@ -1725,6 +1754,11 @@ final class SemanticAssuranceV2WorkflowService {
             if (reevaluationRef == null || reevaluationRef.isBlank()) {
                 return failClosed("HOLD", List.of("LEARNING_DECISION_CURRENTNESS_REEVALUATION_REF_REQUIRED"));
             }
+            try {
+                revalidationBacklogLedger().enqueue(reevaluationRef, decisionRef);
+            } catch (IllegalArgumentException alreadyQueued) {
+                return failClosed("HOLD", List.of(alreadyQueued.getMessage()));
+            }
         }
 
         Map<String, Object> out = base("DECISION_TIME_KNOWLEDGE_SNAPSHOT", targetId);
@@ -1736,6 +1770,52 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("currentness_state", currentnessState);
         out.put("reevaluation_ref", reevaluationRef);
         out.put("replay_claim_allowed", replayClaimAllowed);
+        return immutable(out);
+    }
+
+    /** GroundTruthAuthority: authorityConfirmed is computed from the caller's real roles, never trusted from the request. */
+    private Map<String, Object> groundTruthEpochDeclare(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String epochId = requiredText(request, "epoch_id");
+        boolean authorityConfirmed = identity.roles().contains(AuthenticatedWorkflowIdentity.Role.AUDITOR)
+                || identity.roles().contains(AuthenticatedWorkflowIdentity.Role.ADMIN);
+        GroundTruthEpochLedger.EpochDeclaration declaration;
+        try {
+            declaration = groundTruthEpochLedger().declare(epochId, identity.actorId(), authorityConfirmed);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("GROUND_TRUTH_EPOCH_DECLARED", targetId);
+        out.put("epoch_id", declaration.epochId());
+        out.put("declared_by", declaration.declaredBy());
+        out.put("declared_at", declaration.declaredAt());
+        return immutable(out);
+    }
+
+    private Map<String, Object> learningRevalidationComplete(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String reevaluationRef = requiredText(request, "reevaluation_ref");
+        RevalidationBacklogLedger.Entry entry;
+        try {
+            entry = revalidationBacklogLedger().complete(reevaluationRef);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("REVALIDATION_COMPLETED", targetId);
+        out.put("reevaluation_ref", entry.reevaluationRef());
+        out.put("decision_ref", entry.decisionRef());
+        out.put("status", entry.status());
+        out.put("completed_at", entry.completedAt());
+        return immutable(out);
+    }
+
+    /** Real enumeration of every still-open backlog item -- not a caller-supplied count. */
+    private Map<String, Object> learningRevalidationBacklogStatus(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        List<RevalidationBacklogLedger.Entry> pending = revalidationBacklogLedger().pending();
+        Map<String, Object> out = base("REVALIDATION_BACKLOG_STATUS", targetId);
+        out.put("pending_count", pending.size());
+        out.put("pending_reevaluation_refs", pending.stream().map(RevalidationBacklogLedger.Entry::reevaluationRef).sorted().toList());
         return immutable(out);
     }
 

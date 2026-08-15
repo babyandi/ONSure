@@ -201,7 +201,9 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.appeal.submit-evidence", "assurance.engagement.check-scope",
                     "assurance.accessibility.validate-render", "assurance.migration.reconcile",
                     "assurance.session.create", "assurance.session.check-valid",
-                    "assurance.learning.human-override.trend-report" -> auditor || operator || admin;
+                    "assurance.learning.human-override.trend-report",
+                    "assurance.learning.revalidation.complete",
+                    "assurance.learning.revalidation.backlog-status" -> auditor || operator || admin;
             case "assurance.hazard.advance", "assurance.appeal.assign-reviewer",
                     "assurance.appeal.transition", "assurance.appeal.decide",
                     "assurance.offboarding.request", "assurance.offboarding.advance",
@@ -219,7 +221,8 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.learning.derived-lineage.dispose",
                     "assurance.learning.human-override.decide",
                     "assurance.learning.counterevidence.dispose",
-                    "assurance.learning.challenge-set-access.decide" -> auditor || admin;
+                    "assurance.learning.challenge-set-access.decide",
+                    "assurance.learning.ground-truth.declare-epoch" -> auditor || admin;
             case "assurance.human-accept" -> approver || admin;
             case "assurance.otester.accept", "assurance.oaudit.accept" -> auditor;
             case "git.push" -> operator || admin;
