@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_OPERATIONAL_REMEDIATION_RECEIPT_V1",
+  "remediation_id": "REMEDIATION-EXAMPLE-001",
+  "target_policy_ref": "contracts/main-branch-protection.v1.json",
+  "target_evidence_ref": "status/main-branch-protection-evidence.v1.json",
+  "prior_evidence_archive_path": "status/history/example-evidence.epoch-0.json",
+  "prior_evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "decision_basis": "canonical policy required_controls fully specified",
+  "change_description": "example reversible remediation",
+  "change_mechanism": "GITHUB_API",
+  "change_command": "gh api -X PUT example/endpoint --input payload.json",
+  "reversible": false,
+  "rollback_procedure": "gh api -X DELETE example/endpoint restores prior state",
+  "irreversible_data_loss": false,
+  "privilege_expansion": false,
+  "production_or_commercial_authorization_created": false,
+  "executed_at": "2026-08-15T00:10:00Z",
+  "executed_by": "claude-onsure-autonomous-development-mode",
+  "post_change_observation_ref": "status/example-evidence.v1.json",
+  "final_claim_allowed": false,
+  "receipt_sha256": "a64b5d339b8ccf6626ecaa9e35f929ecea7b4b9c70cbdf719fd7e2b22f42f617"
+}

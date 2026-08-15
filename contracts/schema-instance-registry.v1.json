@@ -777,6 +777,15 @@
       "invalid_instances": [
         "fixtures/contracts/migration-reconciliation-report.v1.invalid.json"
       ]
+    },
+    {
+      "schema": "contracts/operational-remediation-receipt.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/operational-remediation-receipt.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/operational-remediation-receipt.invalid.json"
+      ]
     }
   ],
   "negative_instances_required_before_final": true,

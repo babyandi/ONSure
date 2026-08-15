@@ -1034,7 +1034,16 @@
           "tests/test_main_branch_protection.py (+1 test: test_real_observed_evidence_honestly_reports_the_unprotected_branch_as_fail)",
           "scripts/validate-main-branch-protection.py (self_test() canonical_not_run baseline fix)"
         ],
-        "real_actionable_finding": "babyandi/ONSure main branch has zero GitHub branch protection configured (verified live, not simulated). Actually configuring it is a decision for the repository owner -- affects shared GitHub repo state, outside this session's autonomous-continuation authorization."
+        "real_actionable_finding": "babyandi/ONSure main branch has zero GitHub branch protection configured (verified live, not simulated). Actually configuring it is a decision for the repository owner -- affects shared GitHub repo state, outside this session's autonomous-continuation authorization.",
+        "remediation_epoch_1": {
+          "state": "REMEDIATED",
+          "note": "Under the 2026-08-15 Autonomous Development Mode standing directive, FR-COM-008's disclosed FAIL finding (main branch had zero GitHub protection) was autonomously remediated: all 7 admissibility conditions verified (unambiguous canonical policy, prior evidence preserved, reversible, no data loss, no privilege expansion, no production/commercial authorization created, real rollback procedure) before executing `gh api -X PUT repos/babyandi/ONSure/branches/main/protection`. Re-observed via a FRESH independent GET (not the PUT echo): all 8 required_controls now real (pull_request_required, minimum_approvals=1, dismiss_stale_approvals, conversation_resolution_required, direct_push_blocked, force_push_blocked, branch_deletion_blocked, administrators_enforced). Evidence lineage preserved, not overwritten: epoch-0 FAIL archived verbatim at status/history/main-branch-protection-evidence.v1.epoch-0-FAIL-20260815.json, remediation receipt at status/main-branch-protection-remediation-receipt.v1.json (new reusable contracts/operational-remediation-receipt.v1.schema.json, schema-enforces reversible=true/irreversible_data_loss=false/privilege_expansion=false/production_or_commercial_authorization_created=false as const constraints, not just documentation), new evidence epoch 1 at status/main-branch-protection-evidence.v1.json (decision=PASS_NONFINAL, prior_evidence_ref + remediation_receipt_ref fields link the chain).",
+          "disclosed_residual_gap": "policy.independent_status_checks_required_before_merge=true is not enforced at the GitHub level (required_status_checks left null) because no CI workflow exists in this repository yet -- requiring a phantom status check would deadlock all future merges. Does not affect the 8-control PASS_NONFINAL decision, which is what scripts/validate-main-branch-protection.py actually computes.",
+          "rollback": "gh api -X DELETE repos/babyandi/ONSure/branches/main/protection restores the pre-remediation (epoch-0) state; documented in the remediation receipt's rollback_procedure field.",
+          "tests": [
+            "tests/test_main_branch_protection.py (rewrote the now-stale FAIL-assertion test as test_real_observed_evidence_now_honestly_reports_the_remediated_branch_as_pass; added test_lineage_from_fail_to_pass_is_preserved_and_reconstructible verifying the archive/receipt/hash chain independently reconstructs)"
+          ]
+        }
       },
       "nfr_config_closure": {
         "state": "EVIDENCE_READY",
@@ -1083,5 +1092,34 @@
   "implementation_started": true,
   "test_phase_started": false,
   "independent_assurance_started": false,
-  "production_authorized": false
+  "production_authorized": false,
+  "autonomous_development_mode": {
+    "activated": "2026-08-15",
+    "authority": "user standing directive superseding the per-batch checkpoint pattern",
+    "principle": "act on canonical design/policy without mid-task approval requests; only 7 named conditions (irreversible data loss, real-money external commitment, actual Production/Commercial/Final authority grant, conflicting canonical authorities with no defined priority, required security downgrade, required privilege/secret-scope expansion, new legal/regulatory policy decision) warrant asking the user",
+    "priority_order": [
+      "Safety",
+      "Correctness",
+      "Fail-closed",
+      "Reconstructability",
+      "Evidence quality",
+      "Backward compatibility",
+      "Simplicity",
+      "Performance"
+    ],
+    "evidence_lineage_discipline": "FAIL evidence -> remediation receipt -> post-change observation -> re-test -> new PASS/FAIL evidence epoch; prior evidence is archived under status/history/, never overwritten in place",
+    "first_applied_to": "FR-COM-008 main branch protection remediation (see BATCH_9.fr_com_008_closure.remediation_epoch_1)",
+    "ongoing_tracks_not_yet_started": [
+      "377 P1 orphan coverage closure",
+      "orphan severity recompute",
+      "ledger tamper-evidence/hash-chain hardening for the 8 ledgers that lack it",
+      "Batch 5 shadow-write / live dual-read",
+      "Batch 8 live shadowing / reconciliation against real v1/v2 systems",
+      "requirement-based Test Coverage Universe completion",
+      "reverse orphan closure",
+      "unresolved P1 contradiction closure",
+      "deterministic rerun cleanliness verification",
+      "Global Design/Implementation Lock preflight"
+    ]
+  }
 }
