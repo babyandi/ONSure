@@ -121,6 +121,33 @@ class LocalAuthenticatedApiServerTest {
         assertEquals("IDEMPOTENCY_KEY_INVALID", mapper.readTree(response.body()).path("error").asText());
     }
 
+    @Test
+    void everyResponseCarriesTheRequiredNfrConfigSecurityHeaders() throws Exception {
+        // NFR-CONFIG (02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md SS11): HTTP responses must carry
+        // standard security headers -- Strict-Transport-Security and X-Content-Type-Options are the
+        // two the requirement names explicitly (exact list left DRAFT per C13, OWASP ASVS V14).
+        // Checked against a real response header map, not merely asserted from the source.
+        HttpResponse<String> response = client.send(authed("GET", "/v1/status", null), HttpResponse.BodyHandlers.ofString());
+        assertTrue(response.headers().firstValue("Strict-Transport-Security").isPresent());
+        assertEquals("nosniff", response.headers().firstValue("X-Content-Type-Options").orElse(""));
+    }
+
+    @Test
+    void aBrowserOriginHeaderIsRejectedAndNoCorsHeaderIsEverReflected() throws Exception {
+        // NFR-CONFIG: "CORS는 명시적으로 허용된 Origin만 반영해야 한다" -- this server's allowlist is
+        // empty (loopback-only VS Code extension / local CLI clients), so any Origin is rejected
+        // outright and Access-Control-Allow-Origin is never present on any response, including the
+        // rejection itself -- a stronger posture than "reflect only the allowed origin."
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/v1/status"))
+                .header("Authorization", "Bearer " + token)
+                .header("Origin", "https://evil.example.com")
+                .GET().build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(403, response.statusCode());
+        assertEquals("BROWSER_ORIGIN_PROHIBITED", mapper.readTree(response.body()).path("error").asText());
+        assertTrue(response.headers().firstValue("Access-Control-Allow-Origin").isEmpty());
+    }
+
     private HttpRequest authed(String method, String path, String body) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path))
                 .header("Authorization", "Bearer " + token);

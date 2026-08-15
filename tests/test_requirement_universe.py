@@ -146,17 +146,22 @@ class RequirementUniverseBatch0Test(unittest.TestCase):
         row_ids = {row["requirement_id"] for row in self.trace_report["rows"]}
         self.assertEqual(snapshot_ids, row_ids)
 
-    def test_fr_com_008_is_flagged_orphan_without_test_or_evidence_path(self) -> None:
-        # Known, disclosed real finding: FR-COM-008 (CRITICAL, POSITIVE_CLAIM_GATE, cites
-        # contracts/main-branch-protection.v1.json) has zero test_refs/evidence_refs found
-        # by the mechanical scanner. This must surface, not silently pass. (This test file's
-        # own citation of "FR-COM-008" is excluded from the scanner's test_refs via
-        # scan-global-trace-closure.py's META_TEST_FILES set -- otherwise this assertion
-        # would self-invalidate the moment it was written.)
+    def test_fr_com_008_trace_orphan_was_closed_by_real_observation_evidence(self) -> None:
+        # Regression guard, not a worked example: FR-COM-008 (CRITICAL, POSITIVE_CLAIM_GATE,
+        # cites contracts/main-branch-protection.v1.json) was previously a live P0 trace orphan
+        # (zero test_refs/evidence_refs found by the mechanical scanner). Batch 9 closed it with
+        # a real GITHUB_API observation (status/main-branch-protection-evidence.v1.json,
+        # decision=FAIL -- main is genuinely unprotected, a disclosed finding, not fabricated
+        # PASS) plus tests/test_main_branch_protection.py citing "FR-COM-008" directly. This test
+        # now asserts the orphan STAYS closed; if it ever starts failing again, that means the
+        # test/evidence refs were removed or the requirement lost its trace path, which is a real
+        # regression to investigate -- not something to silently re-loosen back to the old
+        # assertion. (This test file's own citation of "FR-COM-008" is excluded from the
+        # scanner's test_refs via scan-global-trace-closure.py's META_TEST_FILES set.)
         row = next(r for r in self.trace_report["rows"] if r["requirement_id"] == "FR-COM-008")
-        self.assertIn("REQUIREMENT_WITHOUT_TEST", row["orphan_dimensions"])
-        self.assertIn("REQUIREMENT_WITHOUT_EVIDENCE_PATH", row["orphan_dimensions"])
-        self.assertIn("FR-COM-008", self.trace_report["orphans"]["p0"])
+        self.assertNotIn("REQUIREMENT_WITHOUT_TEST", row["orphan_dimensions"])
+        self.assertNotIn("REQUIREMENT_WITHOUT_EVIDENCE_PATH", row["orphan_dimensions"])
+        self.assertNotIn("FR-COM-008", self.trace_report["orphans"]["p0"])
 
 
 if __name__ == "__main__":

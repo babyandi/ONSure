@@ -108,22 +108,41 @@ def validate(policy: dict, evidence: dict) -> list[str]:
 def self_test(policy: dict, evidence: dict) -> list[str]:
     missed: list[str] = []
 
-    def expect(name: str, mutate_policy, mutate_evidence, prefix: str) -> None:
+    def expect(name: str, mutate_policy, mutate_evidence, prefix: str, base_evidence: dict = evidence) -> None:
         candidate_policy = copy.deepcopy(policy)
-        candidate_evidence = copy.deepcopy(evidence)
+        candidate_evidence = copy.deepcopy(base_evidence)
         mutate_policy(candidate_policy)
         mutate_evidence(candidate_evidence)
         errors = validate(candidate_policy, candidate_evidence)
         if not any(error.startswith(prefix) for error in errors):
             missed.append(f"MAIN_PROTECTION_SELF_TEST_MISSED:{name}:{prefix}")
 
+    # The NOT_RUN-specific injections below test invariants that only apply to a NOT_RUN evidence
+    # record. They use a fixed synthetic NOT_RUN baseline rather than the live `evidence` argument,
+    # because the live evidence legitimately moves to OBSERVED once a real observation is recorded
+    # (as it now is for FR-COM-008) -- coupling these cases to the live file's current state would
+    # make the self-test's own coverage depend on which state production evidence happens to be in.
+    canonical_not_run = {
+        "contract": "ONSURE_MAIN_BRANCH_PROTECTION_EVIDENCE_V1",
+        "repository": policy.get("repository"),
+        "branch": policy.get("branch"),
+        "observation_state": "NOT_RUN",
+        "observed_at": None,
+        "observed_source": None,
+        "observed_controls": None,
+        "source_commit": None,
+        "evidence_sha256": None,
+        "decision": "HOLD",
+        "final_claim_allowed": False,
+    }
+
     expect("direct push weakened", lambda value: value["required_controls"].update(direct_push_blocked=False), lambda value: None, "MAIN_PROTECTION_CONTROL_WEAKENED")
     expect("force push weakened", lambda value: value["required_controls"].update(force_push_blocked=False), lambda value: None, "MAIN_PROTECTION_CONTROL_WEAKENED")
     expect("approval removed", lambda value: value["required_controls"].update(minimum_approvals=0), lambda value: None, "MAIN_PROTECTION_APPROVAL_COUNT_WEAKENED")
     expect("control omitted", lambda value: value["required_controls"].pop("administrators_enforced"), lambda value: None, "MAIN_PROTECTION_CONTROL_SET_INVALID")
     expect("actions enabled", lambda value: value.update(github_actions_required=True), lambda value: None, "MAIN_PROTECTION_ACTIONS_REQUIREMENT_FORBIDDEN")
-    expect("not-run overclaim", lambda value: None, lambda value: value.update(observed_source="GITHUB_API"), "MAIN_PROTECTION_NOT_RUN_OVERCLAIM")
-    expect("not-run pass", lambda value: None, lambda value: value.update(decision="PASS_NONFINAL"), "MAIN_PROTECTION_NOT_RUN_MUST_HOLD")
+    expect("not-run overclaim", lambda value: None, lambda value: value.update(observed_source="GITHUB_API"), "MAIN_PROTECTION_NOT_RUN_OVERCLAIM", canonical_not_run)
+    expect("not-run pass", lambda value: None, lambda value: value.update(decision="PASS_NONFINAL"), "MAIN_PROTECTION_NOT_RUN_MUST_HOLD", canonical_not_run)
     expect("unsafe final", lambda value: None, lambda value: value.update(final_claim_allowed=True), "MAIN_PROTECTION_EVIDENCE_FINAL_CLAIM_UNSAFE")
     return missed
 

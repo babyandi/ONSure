@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_NFR_CONFIG_SECURITY_HEADERS_EVIDENCE_V1",
+  "requirement_ref": "NFR-CONFIG",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/LocalAuthenticatedApiServer.java",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "observed_source": "LocalAuthenticatedApiServerTest.everyResponseCarriesTheRequiredNfrConfigSecurityHeaders (real HTTP response over java.net.http.HttpClient against the running loopback server)",
+  "observed_headers": {
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": "default-src 'none'",
+    "Cache-Control": "no-store",
+    "Pragma": "no-cache"
+  },
+  "cors_policy": "Empty origin allowlist -- any non-null Origin header is rejected outright (403 BROWSER_ORIGIN_PROHIBITED) and Access-Control-Allow-Origin is never emitted on any response, including the rejection itself. Verified by LocalAuthenticatedApiServerTest.aBrowserOriginHeaderIsRejectedAndNoCorsHeaderIsEverReflected.",
+  "open_decision_ref": "C13 (08_REVIEW_CHECKLIST_OPEN_DECISIONS.md) -- exact required header list remains DRAFT; this evidence covers the two headers NFR-CONFIG names explicitly (Strict-Transport-Security, X-Content-Type-Options).",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

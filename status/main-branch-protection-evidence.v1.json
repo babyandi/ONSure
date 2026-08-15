@@ -1,13 +1,24 @@
 {
   "contract": "ONSURE_MAIN_BRANCH_PROTECTION_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-008",
   "repository": "babyandi/ONSure",
   "branch": "main",
-  "observation_state": "NOT_RUN",
-  "observed_at": null,
-  "observed_source": null,
-  "observed_controls": null,
-  "source_commit": null,
-  "evidence_sha256": null,
-  "decision": "HOLD",
+  "observation_state": "OBSERVED",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "observed_source": "GITHUB_API",
+  "observed_controls": {
+    "pull_request_required": false,
+    "minimum_approvals": 0,
+    "dismiss_stale_approvals": false,
+    "conversation_resolution_required": false,
+    "direct_push_blocked": false,
+    "force_push_blocked": false,
+    "branch_deletion_blocked": false,
+    "administrators_enforced": false
+  },
+  "observed_raw_response": "gh api repos/babyandi/ONSure/branches/main/protection -> 404 Branch not protected",
+  "source_commit": "5a1957f8b7099dbac67b027f7eb93fea31da43d96e9c0bd9802aae1502eca6ba",
+  "evidence_sha256": "d6020ee3b0852c3deb66c66d159cc80caabeaa66ee301778307a2a18d486450d",
+  "decision": "FAIL",
   "final_claim_allowed": false
 }
