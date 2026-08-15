@@ -1275,6 +1275,14 @@
       "note": "멱등성, 재시도, 중복 이벤트 방어 (idempotency, retry, duplicate event defense) -- all three already had real, tested implementations (IdempotencyStore.java + BoundedRecoveryExecutor.java, both with dedicated unit tests plus LocalAuthenticatedApiServerTest integration coverage). Only needed the NFR-REL citation added to the test class docstrings (test files didn't literally cite the requirement ID, so REQUIREMENT_WITHOUT_TEST remained even though real tests existed) plus a real evidence file. design_refs was already satisfied by docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md's existing mention.",
       "evidence": "status/nfr-rel-idempotency-retry-evidence.v1.json",
       "trace_closure": "orphan_dimensions now [] (was WITHOUT_TEST). This is the second of the 10 originally-identified NFR machine-enforcement orphans to close (after NFR-SESSION), and the first that required zero new implementation."
+    },
+    "nfr_access_closed": {
+      "requirement": "NFR-ACCESS",
+      "state": "PARTIALLY_CLOSED",
+      "note": "관리자·개발자·감사자 역할 분리 (admin/developer/auditor role separation). Real gap found, not a citation-only fix: requireSemanticRole's role-tier mechanism (existed since early batches) had ZERO direct test coverage of its DENIAL path -- every test in the whole session used the ADMIN-tier bridge, which passes every gate. Added 4 real negative tests proving genuine separation, including the one deliberate asymmetry in the entire role table (otester.accept/oaudit.accept check auditor alone, no '|| admin' -- an administrator cannot self-certify as the independent acceptor).",
+      "evidence": "status/nfr-access-role-separation-evidence.v1.json",
+      "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (VIEWER denied lowest tier; OPERATOR denied auditor-tier; AUDITOR reaches what OPERATOR cannot; ADMIN-alone denied the auditor-only otester.accept)",
+      "trace_closure": "REQUIREMENT_WITHOUT_TEST and REQUIREMENT_WITHOUT_EVIDENCE_PATH closed. REQUIREMENT_WITHOUT_DESIGN disclosed as still open."
     }
   },
   "orphan_severity_recalculation": {

@@ -1801,11 +1801,61 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // NFR-ACCESS (관리자·개발자·감사자 역할 분리): requireSemanticRole's DENIAL path had zero
+    // test coverage before this -- every other test in this file uses the ADMIN-tier `bridge` or
+    // `actorBridge()`, both of which pass every role gate, so the actual separation enforcement
+    // was never exercised by a negative case.
+    @Test
+    void aViewerOnlyActorIsDeniedEvenTheLowestOperatorTierOperation() throws Exception {
+        SemanticAssuranceV2DispatcherBridge viewer = roleBridge("viewer-a", AuthenticatedWorkflowIdentity.Role.VIEWER);
+        SecurityException denied = assertThrows(SecurityException.class, () -> learningDispatch(
+                viewer, "assurance.session.check-valid", Map.of("session_id", "s-1", "user_id", "u-1")));
+        assertTrue(denied.getMessage().startsWith("SEMANTIC_V2_OPERATION_ROLE_DENIED:"));
+    }
+
+    @Test
+    void anOperatorOnlyActorIsDeniedAnAuditorTierOperation() throws Exception {
+        // assurance.hazard.advance is auditor||admin -- OPERATOR alone must not be enough, even
+        // though OPERATOR passes the lower tier that assurance.hazard.create requires.
+        SemanticAssuranceV2DispatcherBridge operator = roleBridge("operator-a", AuthenticatedWorkflowIdentity.Role.OPERATOR);
+        SecurityException denied = assertThrows(SecurityException.class, () -> learningDispatch(
+                operator, "assurance.hazard.advance", Map.of(
+                        "hazard_id", "hazard-role-test", "to_disposition", "ANALYZED",
+                        "justification", "n/a")));
+        assertTrue(denied.getMessage().startsWith("SEMANTIC_V2_OPERATION_ROLE_DENIED:"));
+    }
+
+    @Test
+    void anAuditorCanReachTheAuditorTierOperationAnOperatorCannot() throws Exception {
+        SemanticAssuranceV2DispatcherBridge auditor = roleBridge("auditor-a", AuthenticatedWorkflowIdentity.Role.AUDITOR);
+        Map<?, ?> result = learningDispatch(auditor, "assurance.hazard.create", Map.of("hazard_id", "hazard-role-test-2"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void adminAloneCannotReachOtesterAcceptWithoutTheAuditorRole() throws Exception {
+        // The one deliberate asymmetry in requireSemanticRole: every other case includes
+        // "|| admin", but otester.accept/oaudit.accept check auditor alone -- even an
+        // administrator cannot self-certify as the independent tester/auditor acceptor.
+        SemanticAssuranceV2DispatcherBridge adminOnly = roleBridge("admin-only-a", AuthenticatedWorkflowIdentity.Role.ADMIN);
+        SecurityException denied = assertThrows(SecurityException.class, () -> learningDispatch(
+                adminOnly, "assurance.otester.accept", Map.of()));
+        assertTrue(denied.getMessage().startsWith("SEMANTIC_V2_OPERATION_ROLE_DENIED:"));
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,
                 Set.of(AuthenticatedWorkflowIdentity.Role.ADMIN), "LOCAL",
                 AuthenticatedWorkflowIdentity.AuthenticationMethod.SIGNED_ENTERPRISE_IDENTITY);
+    }
+
+    private SemanticAssuranceV2DispatcherBridge roleBridge(
+            String actor, AuthenticatedWorkflowIdentity.Role... roles) throws Exception {
+        return new SemanticAssuranceV2DispatcherBridge(temp, new AuthenticatedWorkflowIdentity(
+                "organization", "tenant-a", "workspace", actor,
+                Set.of(roles), "LOCAL",
+                AuthenticatedWorkflowIdentity.AuthenticationMethod.SIGNED_ENTERPRISE_IDENTITY));
     }
 
     private JsonNode request(Map<String, Object> value) {

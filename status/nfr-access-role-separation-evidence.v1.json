@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-ACCESS",
+  "requirement_summary": "관리자·개발자·감사자 역할 분리 (admin/developer/auditor role separation).",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (requireSemanticRole), src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC chain)",
+  "observed_test_methods": [
+    "aViewerOnlyActorIsDeniedEvenTheLowestOperatorTierOperation",
+    "anOperatorOnlyActorIsDeniedAnAuditorTierOperation",
+    "anAuditorCanReachTheAuditorTierOperationAnOperatorCannot",
+    "adminAloneCannotReachOtesterAcceptWithoutTheAuditorRole"
+  ],
+  "coverage_notes": "requireSemanticRole's role-tier mechanism (VIEWER/OPERATOR/APPROVER/AUDITOR/ADMIN, per-operation gate switch) already existed and was exercised implicitly by hundreds of tests that all use an ADMIN-tier caller -- but its DENIAL path had zero direct test coverage before this evidence, since ADMIN passes every gate. Added negative tests proving genuine separation: a VIEWER-only actor is denied even the lowest operator-tier operation; an OPERATOR-only actor is denied an auditor-tier operation (hazard.advance) while an AUDITOR-only actor reaches the equivalent auditor-tier operation (hazard.create) that same OPERATOR could not; and the one deliberate asymmetry in the whole role table -- assurance.otester.accept/oaudit.accept check auditor alone, without '|| admin' -- is verified directly: even an ADMIN-only actor (no AUDITOR role) is denied, meaning an administrator cannot self-certify as the independent tester/auditor acceptor.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
