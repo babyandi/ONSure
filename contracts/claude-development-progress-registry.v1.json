@@ -1162,5 +1162,37 @@
       "BreakGlassLedgerTest.java +1 regression test verifying the original INVOKED facts (invoker/justification/invoked_at) survive unchanged after review, given the storage model changed"
     ],
     "verification": "All pre-existing ledger tests pass unchanged (behavior-preserving retrofit) plus the new tamper tests. Full suite: 186 Python tests green, full mvn test green (background run confirmed)."
+  },
+  "learning_p0_contradiction_runtime_evidence": {
+    "state": "IN_PROGRESS",
+    "authority_ref": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md",
+    "note": "doc 159 SS9/SS11 tracks 11 P0 Learning contradiction classes with runtime_tests_run=0, evidence_receipts=0 as of the doc 158 design-only merge (PR #48). Closing this means: for each class, either point to an ALREADY-real runtime mechanism enforcing it (with tests), or build one. Progress so far, closed this pass:",
+    "classes_closed_this_pass": [
+      {
+        "class": "4 -- Tenant Isolation vs Global Learning",
+        "runtime_operation": "assurance.learning.scope-promotion.decide (NEW)",
+        "contract_schema": "contracts/learning-scope-promotion.v1.schema.json (Batch 5 Slice 2, schema-only until now)",
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (APPROVED requires all proofs + CLEAR corpus; GLOBAL unreachable except from INDUSTRY; HOLD on missing consent; HOLD on non-CLEAR corpus)"
+      },
+      {
+        "class": "5 -- Deletion vs Derived Global Knowledge",
+        "runtime_operation": "assurance.learning.derived-lineage.dispose (NEW)",
+        "contract_schema": "contracts/derived-learning-lineage-disposition.v1.schema.json (Batch 5 Slice 2, schema-only until now)",
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (CONSENT_WITHDRAWAL forbids NO_ACTION_WITH_PROOF, downgraded to REQUALIFY_REQUIRED; real disposition recorded as requested; other triggers may legitimately no-action; empty derived_asset_ids rejected)"
+      }
+    ],
+    "classes_already_covered_by_prior_batch_5_work": [
+      "1 -- Retention vs Deletion/Legal Hold: OffboardingLedger.advance() (Batch 7) -- legalHold+DELETED forces SecurityException, real enforcement not a flag",
+      "6 -- Fail-Closed vs Availability: every v2 op returns HOLD/failClosed on ambiguous input across this entire codebase, never a degrade-to-PASS shortcut",
+      "10 -- Cost Budget vs Mandatory Assurance: learningStopDecisionCompute -- EXCEEDED budget forces STOP regardless of marginal_gain, tested"
+    ],
+    "classes_still_open": [
+      "2 -- Privacy vs Reproducibility (minimization/pseudonymization evidence over raw retention -- no dedicated runtime check yet)",
+      "3 -- Transparency vs Challenge Secrecy (sealed fixture / evaluator-only access -- no runtime access-control mechanism yet, only the challenge_result field exists structurally in validator-regression-qualify)",
+      "7 -- Adaptive Learning vs Reproducibility (decision-time knowledge epoch binding -- no epoch/snapshot binding mechanism yet)",
+      "8 -- Counterevidence vs Privacy (counterevidence must stay decision-relevant, minimized not deleted -- no dedicated runtime check yet)",
+      "9 -- Human Override vs Self-confirmation (override needs independent confirmation before becoming active knowledge -- no dedicated mechanism yet)",
+      "11 -- Ground-truth Drift vs Historical Immutability (OfficialLearningLedger's append-only hash-chain already makes past decisions immutable; the STALE/REVIEW_REQUIRED currentness-marking half is not yet built)"
+    ]
   }
 }

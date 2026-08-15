@@ -988,6 +988,94 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals("HOLD", result.get("decision"));
     }
 
+    // doc 158 contradiction class 4 "Tenant Isolation vs Global Learning" -- 149 SS I / 148 P0
+    // invariant 6 runtime evidence.
+    @Test
+    void scopePromotionApprovesOnlyWithEveryProofPresentAndCorpusClear() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.scope-promotion.decide", Map.of(
+                "promotion_id", "promo-1", "asset_id", "asset-1", "from_scope", "INDUSTRY",
+                "to_scope", "GLOBAL", "consent_ref", "consent-1", "privacy_proof_ref", "privacy-1",
+                "policy_approval_ref", "policy-1", "corpus_integrity_report_decision", "CLEAR"));
+        assertEquals("APPROVED", result.get("decision"));
+    }
+
+    @Test
+    void scopePromotionCannotSkipDirectlyToGlobalFromTenant() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.scope-promotion.decide", Map.of(
+                "promotion_id", "promo-2", "asset_id", "asset-2", "from_scope", "TENANT",
+                "to_scope", "GLOBAL", "consent_ref", "consent-1", "privacy_proof_ref", "privacy-1",
+                "policy_approval_ref", "policy-1", "corpus_integrity_report_decision", "CLEAR"));
+        assertEquals("DENIED", result.get("decision"));
+        assertEquals(List.of("GLOBAL_SCOPE_UNREACHABLE_WITHOUT_INDUSTRY_INTERMEDIATE"), result.get("reasons"));
+    }
+
+    @Test
+    void scopePromotionHoldsWithoutConsentEvenIfEverythingElseIsClear() throws Exception {
+        Map<String, Object> fields = new java.util.LinkedHashMap<>();
+        fields.put("promotion_id", "promo-3");
+        fields.put("asset_id", "asset-3");
+        fields.put("from_scope", "TENANT");
+        fields.put("to_scope", "ORGANIZATION");
+        fields.put("corpus_integrity_report_decision", "CLEAR");
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.scope-promotion.decide", fields);
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("CONSENT_PRIVACY_OR_POLICY_PROOF_MISSING"), result.get("reasons"));
+    }
+
+    @Test
+    void scopePromotionHoldsWhenCorpusIntegrityIsNotClearDespiteFullConsent() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.scope-promotion.decide", Map.of(
+                "promotion_id", "promo-4", "asset_id", "asset-4", "from_scope", "TENANT",
+                "to_scope", "ORGANIZATION", "consent_ref", "consent-1", "privacy_proof_ref", "privacy-1",
+                "policy_approval_ref", "policy-1", "corpus_integrity_report_decision", "HOLD"));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("CORPUS_INTEGRITY_NOT_CLEAR"), result.get("reasons"));
+    }
+
+    // doc 158 contradiction class 5 "Deletion vs Derived Global Knowledge" -- 149 SS H / 148 P0
+    // invariant 7 runtime evidence.
+    @Test
+    void consentWithdrawalForbidsNoActionAndForcesRequalification() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.derived-lineage.dispose", Map.of(
+                "disposition_id", "disp-1", "source_id", "source-1",
+                "derived_asset_ids", List.of("derived-1", "derived-2"),
+                "trigger", "CONSENT_WITHDRAWAL", "disposition", "NO_ACTION_WITH_PROOF",
+                "evidence_refs", List.of("43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1")));
+        assertEquals("REQUALIFY_REQUIRED", result.get("disposition"));
+        assertEquals(List.of("CONSENT_WITHDRAWAL_FORBIDS_NO_ACTION_DOWNGRADED_TO_REQUALIFY_REQUIRED"), result.get("reasons"));
+    }
+
+    @Test
+    void consentWithdrawalWithARealDispositionIsRecordedAsRequested() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.derived-lineage.dispose", Map.of(
+                "disposition_id", "disp-2", "source_id", "source-2",
+                "derived_asset_ids", List.of("derived-3"),
+                "trigger", "CONSENT_WITHDRAWAL", "disposition", "DELETE",
+                "evidence_refs", List.of("43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1")));
+        assertEquals("DELETE", result.get("disposition"));
+        assertTrue(((List<?>) result.get("reasons")).isEmpty());
+    }
+
+    @Test
+    void nonConsentWithdrawalTriggersMayLegitimatelyResolveToNoActionWithProof() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.derived-lineage.dispose", Map.of(
+                "disposition_id", "disp-3", "source_id", "source-3",
+                "derived_asset_ids", List.of("derived-4"),
+                "trigger", "POLICY_CHANGE", "disposition", "NO_ACTION_WITH_PROOF",
+                "evidence_refs", List.of("43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1")));
+        assertEquals("NO_ACTION_WITH_PROOF", result.get("disposition"));
+    }
+
+    @Test
+    void derivedLineageDisposeRequiresAtLeastOneDerivedAssetId() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.derived-lineage.dispose", Map.of(
+                "disposition_id", "disp-4", "source_id", "source-4",
+                "derived_asset_ids", List.of(),
+                "trigger", "POLICY_CHANGE", "disposition", "NO_ACTION_WITH_PROOF",
+                "evidence_refs", List.of("43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1")));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
     @Test
     void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
         Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());

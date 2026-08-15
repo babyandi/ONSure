@@ -67,6 +67,8 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.corpus.integrity-check",
             "assurance.validator.regression-qualify",
             "assurance.learning.stop-decision.compute",
+            "assurance.learning.scope-promotion.decide",
+            "assurance.learning.derived-lineage.dispose",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
@@ -154,6 +156,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.corpus.integrity-check" -> corpusIntegrityCheck(request);
             case "assurance.validator.regression-qualify" -> validatorRegressionQualify(request);
             case "assurance.learning.stop-decision.compute" -> learningStopDecisionCompute(request);
+            case "assurance.learning.scope-promotion.decide" -> learningScopePromotionDecide(request);
+            case "assurance.learning.derived-lineage.dispose" -> learningDerivedLineageDispose(request);
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
@@ -1557,6 +1561,117 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("budget_state", budgetState);
         out.put("marginal_gain", marginalGain);
         out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * learning-scope-promotion.v1.schema.json real computation (149 SS I, 148 P0 invariant 6,
+     * doc 158 contradiction class 4 "Tenant Isolation vs Global Learning"). APPROVED is reachable
+     * only when consent, a privacy/anonymization proof, and explicit policy approval are ALL
+     * present and the corpus integrity report is CLEAR -- any missing proof or a non-CLEAR corpus
+     * report forces HOLD, never a silent APPROVED with a gap. to_scope=GLOBAL is only reachable
+     * from from_scope=INDUSTRY (no skipping straight from TENANT/ORGANIZATION to GLOBAL); a skip
+     * attempt is DENIED outright regardless of how complete the proofs otherwise are.
+     */
+    private Map<String, Object> learningScopePromotionDecide(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String promotionId = requiredText(request, "promotion_id");
+        String assetId = requiredText(request, "asset_id");
+        Set<String> scopes = Set.of("TENANT", "ORGANIZATION", "INDUSTRY", "GLOBAL");
+        String fromScope = requiredText(request, "from_scope");
+        String toScope = requiredText(request, "to_scope");
+        if (!scopes.contains(fromScope) || !scopes.contains(toScope)) {
+            return failClosed("HOLD", List.of("LEARNING_SCOPE_PROMOTION_SCOPE_INVALID"));
+        }
+        String consentRef = request.path("consent_ref").asText(null);
+        String privacyProofRef = request.path("privacy_proof_ref").asText(null);
+        String policyApprovalRef = request.path("policy_approval_ref").asText(null);
+        String corpusIntegrityDecision = requiredText(request, "corpus_integrity_report_decision");
+        if (!Set.of("CLEAR", "HOLD", "BLOCKED").contains(corpusIntegrityDecision)) {
+            return failClosed("HOLD", List.of("LEARNING_SCOPE_PROMOTION_CORPUS_DECISION_INVALID"));
+        }
+
+        String decision;
+        List<String> reasons = new ArrayList<>();
+        if ("GLOBAL".equals(toScope) && !"INDUSTRY".equals(fromScope)) {
+            decision = "DENIED";
+            reasons.add("GLOBAL_SCOPE_UNREACHABLE_WITHOUT_INDUSTRY_INTERMEDIATE");
+        } else if (consentRef == null || privacyProofRef == null || policyApprovalRef == null) {
+            decision = "HOLD";
+            reasons.add("CONSENT_PRIVACY_OR_POLICY_PROOF_MISSING");
+        } else if (!"CLEAR".equals(corpusIntegrityDecision)) {
+            decision = "HOLD";
+            reasons.add("CORPUS_INTEGRITY_NOT_CLEAR");
+        } else {
+            decision = "APPROVED";
+        }
+
+        Map<String, Object> out = base("LEARNING_SCOPE_PROMOTION", targetId);
+        out.put("promotion_id", promotionId);
+        out.put("asset_id", assetId);
+        out.put("from_scope", fromScope);
+        out.put("to_scope", toScope);
+        out.put("corpus_integrity_report_decision", corpusIntegrityDecision);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * derived-learning-lineage-disposition.v1.schema.json real computation (149 SS H, 148 P0
+     * invariant 7, doc 158 contradiction class 5 "Deletion vs Derived Global Knowledge"). A
+     * CONSENT_WITHDRAWAL trigger forces every derived asset onto a real disposition (REVOKE/
+     * DELETE/REQUALIFY_REQUIRED) -- NO_ACTION_WITH_PROOF is structurally unreachable for that
+     * trigger, closing the exact "unresolved derived asset stays implicitly ACTIVE" gap the schema
+     * names. Other triggers (CORPUS_REVOCATION/TENANT_OFFBOARDING/POLICY_CHANGE) may legitimately
+     * resolve to NO_ACTION_WITH_PROOF when the caller has real evidence nothing derived needs to
+     * change, but that evidence (evidence_refs) is still mandatory in every case.
+     */
+    private Map<String, Object> learningDerivedLineageDispose(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String dispositionId = requiredText(request, "disposition_id");
+        String sourceId = requiredText(request, "source_id");
+        JsonNode derivedAssetIdsNode = request.path("derived_asset_ids");
+        if (!derivedAssetIdsNode.isArray() || derivedAssetIdsNode.isEmpty()) {
+            return failClosed("HOLD", List.of("LEARNING_DERIVED_LINEAGE_ASSET_IDS_REQUIRED"));
+        }
+        List<String> derivedAssetIds = stringList(derivedAssetIdsNode);
+        Set<String> triggers = Set.of("CONSENT_WITHDRAWAL", "CORPUS_REVOCATION", "TENANT_OFFBOARDING", "POLICY_CHANGE");
+        String trigger = requiredText(request, "trigger");
+        if (!triggers.contains(trigger)) {
+            return failClosed("HOLD", List.of("LEARNING_DERIVED_LINEAGE_TRIGGER_INVALID"));
+        }
+        String requestedDisposition = requiredText(request, "disposition");
+        Set<String> dispositions = Set.of("REVOKE", "DELETE", "REQUALIFY_REQUIRED", "NO_ACTION_WITH_PROOF");
+        if (!dispositions.contains(requestedDisposition)) {
+            return failClosed("HOLD", List.of("LEARNING_DERIVED_LINEAGE_DISPOSITION_INVALID"));
+        }
+        JsonNode evidenceRefsNode = request.path("evidence_refs");
+        if (!evidenceRefsNode.isArray() || evidenceRefsNode.isEmpty()) {
+            return failClosed("HOLD", List.of("LEARNING_DERIVED_LINEAGE_EVIDENCE_REQUIRED"));
+        }
+        List<String> evidenceRefs = stringList(evidenceRefsNode);
+        for (String ref : evidenceRefs) {
+            if (!ref.matches("[0-9a-f]{64}")) {
+                return failClosed("HOLD", List.of("LEARNING_DERIVED_LINEAGE_EVIDENCE_DIGEST_INVALID"));
+            }
+        }
+
+        String disposition = requestedDisposition;
+        List<String> reasons = new ArrayList<>();
+        if ("CONSENT_WITHDRAWAL".equals(trigger) && "NO_ACTION_WITH_PROOF".equals(requestedDisposition)) {
+            disposition = "REQUALIFY_REQUIRED";
+            reasons.add("CONSENT_WITHDRAWAL_FORBIDS_NO_ACTION_DOWNGRADED_TO_REQUALIFY_REQUIRED");
+        }
+
+        Map<String, Object> out = base("DERIVED_LEARNING_LINEAGE_DISPOSITION", targetId);
+        out.put("disposition_id", dispositionId);
+        out.put("source_id", sourceId);
+        out.put("derived_asset_ids", derivedAssetIds);
+        out.put("trigger", trigger);
+        out.put("disposition", disposition);
+        out.put("evidence_refs", evidenceRefs);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }

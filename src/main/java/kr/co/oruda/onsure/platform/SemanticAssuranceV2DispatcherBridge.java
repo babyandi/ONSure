@@ -211,7 +211,8 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.delegation.check", "assurance.break-glass.invoke",
                     "assurance.break-glass.review", "assurance.learning.validation.pack.issue",
                     "assurance.learning.validation.receipt.record", "assurance.learning.promotion.approve",
-                    "assurance.learning.applied-lock.record" -> auditor || admin;
+                    "assurance.learning.applied-lock.record", "assurance.learning.scope-promotion.decide",
+                    "assurance.learning.derived-lineage.dispose" -> auditor || admin;
             case "assurance.human-accept" -> approver || admin;
             case "assurance.otester.accept", "assurance.oaudit.accept" -> auditor;
             case "git.push" -> operator || admin;
