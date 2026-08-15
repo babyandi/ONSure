@@ -850,6 +850,15 @@
         "fixtures/contracts/assurance-strength-ceiling.invalid.json"
       ],
       "schema": "contracts/assurance-strength-ceiling.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/data-residency-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/data-residency-check.invalid.json"
+      ],
+      "schema": "contracts/data-residency-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

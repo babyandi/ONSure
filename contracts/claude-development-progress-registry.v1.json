@@ -1397,6 +1397,23 @@
     "evidence": "status/fr-meta-049-assurance-strength-ceiling-evidence.v1.json",
     "open_gap": "Computes only the strength dimension of the requirement's 'strength/currentness ceiling' -- currentness (evidence freshness/staleness) is a separate, not-yet-integrated dimension. Final integration with the pre-existing L0-L5 naming is explicitly deferred to '08 Open Decision' by the requirement's own text; this schema deliberately does not attempt that reconciliation."
   },
+  "fr_learn_054_data_residency_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Closes another orphan_severity_recalculation candidate. This one FULLY closes (drops off the P1 orphan list entirely, orphan_p1 383 -> 382) rather than only narrowing to REQUIREMENT_WITHOUT_DESIGN, because a design reference already existed (this session's own doc 161 discusses FR-LEARN-054 for CR-LV-P1-04). Built contracts/data-residency-check.v1.schema.json + positive/negative fixtures from scratch (registered 101 -> 102), then a real Java consumer. assurance.learning.data-residency.check computes decision for real: current_region must be an actual member of allowed_regions (a cross-field membership check JSON Schema cannot express), and CROSS_REGION_AGGREGATE additionally requires explicit cross_region_aggregation_authorized=true even when the region is otherwise allowed for plain STORE/PROCESS/REPLICATE -- closing the requirement's own named stricter case for aggregation specifically.",
+    "contract_schema": "contracts/data-residency-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/data-residency-check.valid.json (NEW)",
+      "fixtures/contracts/data-residency-check.invalid.json (NEW, empty allowed_regions violates minItems)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (dataResidencyCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: allowed within an allowed region, forbidden outside the allowed list, forbidden cross-region aggregate without separate authorization, allowed cross-region aggregate when separately authorized)",
+    "evidence": "status/fr-learn-054-data-residency-evidence.v1.json",
+    "open_gap": "Accepts the caller-supplied allowed_regions list and jurisdiction_basis as given; does not independently verify that list against a real, separately-maintained jurisdiction/policy registry (none exists in this codebase yet). The membership/authorization check is real; validating the allowed-regions list itself against an authoritative policy source is a disclosed follow-on."
+  },
   "unrelated_flake_fixed_during_verification": {
     "state": "FIXED",
     "note": "Full-suite mvn test surfaced 1 error unrelated to any change this session: kr.co.oruda.onsure.platform.ScheduledBackupServiceTest.startSchedulesRepeatedBackupsAtTheGivenInterval failed with JUnitException 'Failed to close extension context' / DirectoryNotEmptyException on @TempDir cleanup. Root-caused rather than dismissed as noise: ScheduledBackupService.close() called executor.shutdownNow() but never awaited termination, so a scheduled backup write already in flight could still be completing on its own thread after the try-with-resources block exited and the test method returned, racing JUnit's temp-directory teardown. Fixed by adding a bounded executor.awaitTermination(5, TimeUnit.SECONDS) (with proper interrupt-flag restoration) after shutdownNow(). Verified the fix actually closes the race, not just happened to pass once: reran the previously-failing test class 5 consecutive times after the fix, all 5 clean (4/4, 0 failures/errors each run).",

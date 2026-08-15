@@ -1771,6 +1771,52 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-054 Data Residency / Cross-region Learning
+    @Test
+    void dataResidencyCheckAllowsStorageWithinAnAllowedRegion() throws Exception {
+        Map<?, ?> result = dataResidencyCheck(
+                "STORE", "eu-west-1", List.of("eu-west-1", "eu-central-1"), false);
+        assertEquals("ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void dataResidencyCheckForbidsARegionOutsideTheAllowedList() throws Exception {
+        Map<?, ?> result = dataResidencyCheck(
+                "STORE", "us-east-1", List.of("eu-west-1", "eu-central-1"), false);
+        assertEquals("FORBIDDEN", result.get("decision"));
+        assertEquals(List.of("REGION_NOT_IN_ALLOWED_LIST:us-east-1"), result.get("reasons"));
+    }
+
+    @Test
+    void dataResidencyCheckForbidsCrossRegionAggregateWithoutSeparateAuthorization() throws Exception {
+        Map<?, ?> result = dataResidencyCheck(
+                "CROSS_REGION_AGGREGATE", "eu-west-1", List.of("eu-west-1"), false);
+        assertEquals("FORBIDDEN", result.get("decision"));
+        assertEquals(List.of("CROSS_REGION_AGGREGATION_NOT_SEPARATELY_AUTHORIZED"), result.get("reasons"));
+    }
+
+    @Test
+    void dataResidencyCheckAllowsCrossRegionAggregateWhenSeparatelyAuthorized() throws Exception {
+        Map<?, ?> result = dataResidencyCheck(
+                "CROSS_REGION_AGGREGATE", "eu-west-1", List.of("eu-west-1"), true);
+        assertEquals("ALLOWED", result.get("decision"));
+    }
+
+    private Map<?, ?> dataResidencyCheck(
+            String operation, String currentRegion, List<String> allowedRegions, boolean crossRegionAuthorized)
+            throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "asset_id", "asset-1", "asset_type", "DERIVED_LEARNING_ASSET", "operation", operation,
+                "current_region", currentRegion, "allowed_regions", allowedRegions,
+                "cross_region_aggregation_authorized", crossRegionAuthorized,
+                "jurisdiction_basis", "test-basis");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.data-residency.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

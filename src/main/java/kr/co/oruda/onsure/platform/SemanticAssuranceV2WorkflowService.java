@@ -80,6 +80,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.validation.experiment-evaluate",
             "assurance.learning.effectiveness.evaluate",
             "assurance.strength-ceiling.compute",
+            "assurance.learning.data-residency.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -184,6 +185,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.validation.experiment-evaluate" -> validationExperimentEvaluate(request);
             case "assurance.learning.effectiveness.evaluate" -> learningEffectivenessEvaluate(request);
             case "assurance.strength-ceiling.compute" -> assuranceStrengthCeilingCompute(request);
+            case "assurance.learning.data-residency.check" -> dataResidencyCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2465,6 +2467,69 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("effective_assurance_level", effectiveLevel);
         out.put("ceiling_source_child_id", ceilingApplied ? ceilingSourceChildId : "none");
         out.put("decision", ceilingApplied ? "CEILING_APPLIED" : "CLAIM_WITHIN_CEILING");
+        return immutable(out);
+    }
+
+    private static final Set<String> RESIDENCY_ASSET_TYPES =
+            Set.of("TRAINING_DATA", "VALIDATION_DATA", "DERIVED_LEARNING_ASSET");
+    private static final Set<String> RESIDENCY_OPERATIONS =
+            Set.of("STORE", "PROCESS", "REPLICATE", "CROSS_REGION_AGGREGATE");
+
+    /**
+     * data-residency-check.v1.schema.json real computation (FR-LEARN-054 Data Residency /
+     * Cross-region Learning: "학습·검증 데이터와 파생 학습자산의... region 이동은 policy/
+     * contract/jurisdiction에 따라 제한한다. 허용되지 않은 cross-region 학습·집계를 금지한다").
+     * JSON Schema can validate current_region and allowed_regions are well-formed but cannot
+     * check current_region is actually a MEMBER of allowed_regions, nor apply the requirement's
+     * own stricter rule for aggregation specifically. This operation computes decision for real:
+     * a current_region outside allowed_regions is always FORBIDDEN regardless of operation type;
+     * a CROSS_REGION_AGGREGATE additionally requires cross_region_aggregation_authorized=true
+     * even when the region itself is allowed for plain STORE/PROCESS/REPLICATE, closing the
+     * requirement's own named stricter case for aggregation.
+     */
+    private Map<String, Object> dataResidencyCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String assetId = requiredText(request, "asset_id");
+        String assetType = requiredText(request, "asset_type");
+        if (!RESIDENCY_ASSET_TYPES.contains(assetType)) {
+            return failClosed("HOLD", List.of("RESIDENCY_ASSET_TYPE_INVALID:" + assetType));
+        }
+        String operation = requiredText(request, "operation");
+        if (!RESIDENCY_OPERATIONS.contains(operation)) {
+            return failClosed("HOLD", List.of("RESIDENCY_OPERATION_INVALID:" + operation));
+        }
+        String currentRegion = requiredText(request, "current_region");
+        String jurisdictionBasis = requiredText(request, "jurisdiction_basis");
+
+        JsonNode allowedRegionsNode = request.path("allowed_regions");
+        if (!allowedRegionsNode.isArray() || allowedRegionsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("RESIDENCY_ALLOWED_REGIONS_REQUIRED"));
+        }
+        List<String> allowedRegions = stringList(allowedRegionsNode);
+        boolean crossRegionAuthorized = request.path("cross_region_aggregation_authorized").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        String decision;
+        if (!allowedRegions.contains(currentRegion)) {
+            decision = "FORBIDDEN";
+            reasons.add("REGION_NOT_IN_ALLOWED_LIST:" + currentRegion);
+        } else if ("CROSS_REGION_AGGREGATE".equals(operation) && !crossRegionAuthorized) {
+            decision = "FORBIDDEN";
+            reasons.add("CROSS_REGION_AGGREGATION_NOT_SEPARATELY_AUTHORIZED");
+        } else {
+            decision = "ALLOWED";
+        }
+
+        Map<String, Object> out = base("ONSURE_DATA_RESIDENCY_CHECK", targetId);
+        out.put("asset_id", assetId);
+        out.put("asset_type", assetType);
+        out.put("operation", operation);
+        out.put("current_region", currentRegion);
+        out.put("allowed_regions", allowedRegions);
+        out.put("cross_region_aggregation_authorized", crossRegionAuthorized);
+        out.put("jurisdiction_basis", jurisdictionBasis);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
 
