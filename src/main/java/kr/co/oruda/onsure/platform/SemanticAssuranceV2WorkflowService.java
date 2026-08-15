@@ -80,7 +80,10 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.offboarding.request",
             "assurance.offboarding.advance",
             "assurance.engagement.check-scope",
-            "assurance.accessibility.validate-render");
+            "assurance.accessibility.validate-render",
+            "assurance.migration.reconcile",
+            "assurance.migration.cutover",
+            "assurance.migration.rollback");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -165,6 +168,9 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.offboarding.advance" -> offboardingAdvance(request);
             case "assurance.engagement.check-scope" -> engagementCheckScope(request);
             case "assurance.accessibility.validate-render" -> accessibilityValidateRender(request);
+            case "assurance.migration.reconcile" -> migrationReconcile(request);
+            case "assurance.migration.cutover" -> migrationCutover(request);
+            case "assurance.migration.rollback" -> migrationRollback(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -2025,6 +2031,109 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("compliant", reasons.isEmpty());
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", reasons.isEmpty() ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * migration-reconciliation-report.v1.schema.json real dual-read comparison (137 SS27 Batch 8):
+     * old_representation and new_representation are compared field by field for real, never
+     * trusted as "the mapping is documented as complete." Any field present in the old
+     * representation that is missing or structurally different in the new one is a real
+     * divergence. loss_classification is RECOVERABLE only when every diverged field is one the
+     * caller has declared reconstructible (reconstructible_fields); otherwise UNRECOVERABLE.
+     * cutover_eligible is never true while an UNRECOVERABLE loss remains.
+     */
+    private Map<String, Object> migrationReconcile(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String reconciliationId = requiredText(request, "reconciliation_id");
+        String subjectId = requiredText(request, "subject_id");
+        JsonNode oldRepresentation = request.path("old_representation");
+        JsonNode newRepresentation = request.path("new_representation");
+        if (!oldRepresentation.isObject() || !newRepresentation.isObject()) {
+            return failClosed("INPUT_REQUIRED", List.of("MIGRATION_REPRESENTATIONS_REQUIRED"));
+        }
+        Set<String> reconstructibleFields = new java.util.HashSet<>(stringList(request.path("reconstructible_fields")));
+
+        List<String> divergedFields = new ArrayList<>();
+        var fieldNames = oldRepresentation.fieldNames();
+        while (fieldNames.hasNext()) {
+            String field = fieldNames.next();
+            JsonNode oldValue = oldRepresentation.get(field);
+            JsonNode newValue = newRepresentation.get(field);
+            if (newValue == null || !oldValue.equals(newValue)) divergedFields.add(field);
+        }
+
+        boolean diverged = !divergedFields.isEmpty();
+        boolean reconstructionAttempted = diverged && !reconstructibleFields.isEmpty();
+        String lossClassification;
+        if (!diverged) {
+            lossClassification = "NONE";
+        } else if (reconstructibleFields.containsAll(divergedFields)) {
+            lossClassification = "RECOVERABLE";
+        } else {
+            lossClassification = "UNRECOVERABLE";
+        }
+        boolean cutoverEligible = !"UNRECOVERABLE".equals(lossClassification);
+
+        Map<String, Object> out = base("MIGRATION_RECONCILIATION_REPORT", targetId);
+        out.put("reconciliation_id", reconciliationId);
+        out.put("subject_id", subjectId);
+        out.put("old_representation_digest", digest(oldRepresentation));
+        out.put("new_representation_digest", digest(newRepresentation));
+        out.put("diverged", diverged);
+        out.put("diverged_fields", List.copyOf(divergedFields));
+        out.put("loss_classification", lossClassification);
+        out.put("reconstruction_attempted", reconstructionAttempted);
+        out.put("cutover_eligible", cutoverEligible);
+        out.put("decision", cutoverEligible ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private ContractSelectorLedger contractSelectorLedger() {
+        return new ContractSelectorLedger(workspaceRoot.resolve(".onsure/assurance/contract-selectors"));
+    }
+
+    /**
+     * contract-active-selector.candidate.v2.schema.json real cutover: blocked outright unless the
+     * caller supplies a genuine reconciliation result with cutover_eligible=true -- an
+     * UNRECOVERABLE loss forbids cutover regardless of any other claim.
+     */
+    private Map<String, Object> migrationCutover(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String contractFamily = requiredText(request, "contract_family");
+        String toVersion = requiredText(request, "to_version");
+        String toContractDigest = requiredDigest(request, "to_contract_digest");
+        String migrationReceiptSha256 = requiredDigest(request, "migration_receipt_sha256");
+        boolean divergenceResolved = request.path("cutover_eligible").asBoolean(false);
+
+        ContractSelectorLedger.SelectorEntry entry;
+        try {
+            entry = contractSelectorLedger().cutover(contractFamily, toVersion, toContractDigest, migrationReceiptSha256, divergenceResolved);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("CONTRACT_SELECTOR_CUTOVER", targetId);
+        out.put("contract_family", contractFamily);
+        out.put("active_version", entry.activeVersion());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /** Real reversion to the immediately preceding selector entry -- always allowed, no gate. */
+    private Map<String, Object> migrationRollback(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String contractFamily = requiredText(request, "contract_family");
+
+        ContractSelectorLedger.SelectorEntry entry;
+        try {
+            entry = contractSelectorLedger().rollback(contractFamily);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("CONTRACT_SELECTOR_ROLLBACK", targetId);
+        out.put("contract_family", contractFamily);
+        out.put("active_version", entry.activeVersion());
+        out.put("decision", "NON_FINAL");
         return immutable(out);
     }
 

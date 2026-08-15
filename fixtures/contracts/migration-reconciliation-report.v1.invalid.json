@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_MIGRATION_RECONCILIATION_REPORT_V1",
+  "reconciliation_id": "reconciliation-002",
+  "subject_id": "subject-002",
+  "old_representation_digest": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "new_representation_digest": "70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b",
+  "diverged": true,
+  "diverged_fields": ["price_field"],
+  "loss_classification": "UNRECOVERABLE",
+  "reconstruction_attempted": true,
+  "cutover_eligible": true,
+  "evaluated_at": "2026-08-15T00:00:00Z"
+}

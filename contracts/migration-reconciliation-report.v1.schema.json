@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/migration-reconciliation-report.v1.schema.json",
+  "title": "ONSure Migration Reconciliation Report v1",
+  "description": "137 SS27 Batch 8: v1->v2 dual-read/shadow-write/divergence/cutover/rollback. Reads the same subject from the old (v1) and new (v2) representation and computes divergence for real -- a mapping claimed complete on paper is not evidence of an actual matching read. When old and new diverge, loss_classification distinguishes RECOVERABLE (a real reconstruction closed the gap) from UNRECOVERABLE (it could not), never silently NONE.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "reconciliation_id", "subject_id", "old_representation_digest",
+    "new_representation_digest", "diverged", "diverged_fields", "loss_classification",
+    "reconstruction_attempted", "cutover_eligible", "evaluated_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_MIGRATION_RECONCILIATION_REPORT_V1"},
+    "reconciliation_id": {"type": "string", "minLength": 1},
+    "subject_id": {"type": "string", "minLength": 1},
+    "old_representation_digest": {"$ref": "#/$defs/sha256"},
+    "new_representation_digest": {"$ref": "#/$defs/sha256"},
+    "diverged": {"type": "boolean"},
+    "diverged_fields": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "loss_classification": {"enum": ["NONE", "RECOVERABLE", "UNRECOVERABLE"]},
+    "reconstruction_attempted": {"type": "boolean"},
+    "cutover_eligible": {"type": "boolean"},
+    "evaluated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"diverged": {"const": false}}},
+      "then": {"properties": {"loss_classification": {"const": "NONE"}, "diverged_fields": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"loss_classification": {"const": "UNRECOVERABLE"}}},
+      "then": {"properties": {"cutover_eligible": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"diverged": {"const": true}, "loss_classification": {"const": "NONE"}}, "required": ["diverged", "loss_classification"]},
+      "then": {"not": {}},
+      "description": "A divergence can never be classified NONE -- if old and new differ, the gap is either RECOVERABLE (reconstruction closed it) or UNRECOVERABLE (it did not). This branch structurally forbids the 'mapping claimed complete on paper' shortcut."
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

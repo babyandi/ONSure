@@ -1291,6 +1291,78 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    @Test
+    void migrationReconcileFindsNoDivergenceWhenRepresentationsMatch() throws Exception {
+        Map<String, Object> same = Map.of("price", 10, "currency", "USD");
+        Map<?, ?> result = migrationReconcile(same, same, List.of());
+        assertEquals(false, result.get("diverged"));
+        assertEquals("NONE", result.get("loss_classification"));
+        assertEquals(true, result.get("cutover_eligible"));
+    }
+
+    @Test
+    void migrationReconcileClassifiesAReconstructibleDivergenceAsRecoverable() throws Exception {
+        Map<String, Object> oldRepresentation = Map.of("price", 10, "currency", "USD");
+        Map<String, Object> newRepresentation = Map.of("price", 12, "currency", "USD");
+        Map<?, ?> result = migrationReconcile(oldRepresentation, newRepresentation, List.of("price"));
+        assertEquals(true, result.get("diverged"));
+        assertEquals(List.of("price"), result.get("diverged_fields"));
+        assertEquals("RECOVERABLE", result.get("loss_classification"));
+        assertEquals(true, result.get("cutover_eligible"));
+    }
+
+    @Test
+    void migrationReconcileClassifiesAnUndeclaredDivergenceAsUnrecoverable() throws Exception {
+        Map<String, Object> oldRepresentation = Map.of("price", 10, "currency", "USD");
+        Map<String, Object> newRepresentation = Map.of("price", 12, "currency", "EUR");
+        Map<?, ?> result = migrationReconcile(oldRepresentation, newRepresentation, List.of("price"));
+        assertEquals("UNRECOVERABLE", result.get("loss_classification"));
+        assertEquals(false, result.get("cutover_eligible"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void migrationCutoverIsBlockedWithoutARealResolvedReconciliation() throws Exception {
+        SecurityException denied = assertThrows(SecurityException.class, () -> bridge.dispatch(
+                "assurance.migration.cutover", request(Map.of(
+                        "project_id", "project-1", "target_id", "target-1",
+                        "contract_family", "family-1", "to_version", "v2",
+                        "to_contract_digest", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                        "migration_receipt_sha256", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                        "cutover_eligible", false))));
+        assertEquals("CUTOVER_BLOCKED_UNRESOLVED_DIVERGENCE", denied.getMessage());
+    }
+
+    @Test
+    void migrationCutoverThenRollbackRoundTripsThroughTheWiredOperations() throws Exception {
+        String digest = "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1";
+        learningDispatch(bridge, "assurance.migration.cutover", Map.of(
+                "contract_family", "family-2", "to_version", "v1", "to_contract_digest", digest,
+                "migration_receipt_sha256", digest, "cutover_eligible", true));
+        Map<?, ?> cutover = learningDispatch(bridge, "assurance.migration.cutover", Map.of(
+                "contract_family", "family-2", "to_version", "v2", "to_contract_digest", digest,
+                "migration_receipt_sha256", digest, "cutover_eligible", true));
+        assertEquals("v2", cutover.get("active_version"));
+
+        Map<?, ?> rolledBack = learningDispatch(bridge, "assurance.migration.rollback", Map.of(
+                "contract_family", "family-2"));
+        assertEquals("v1", rolledBack.get("active_version"));
+    }
+
+    private Map<?, ?> migrationReconcile(
+            Map<String, Object> oldRepresentation, Map<String, Object> newRepresentation,
+            List<String> reconstructibleFields) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "reconciliation_id", "reconciliation-1", "subject_id", "subject-1",
+                "old_representation", oldRepresentation, "new_representation", newRepresentation,
+                "reconstructible_fields", reconstructibleFields);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.migration.reconcile", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {
         return new AuthenticatedWorkflowIdentity(
                 "organization", tenant, "workspace", actor,

@@ -991,7 +991,34 @@
     {
       "batch": "BATCH_8",
       "name": "Migration / Integration",
-      "state": "NOT_STARTED"
+      "state": "EVIDENCE_READY",
+      "scope_note": "137 SS27 Batch 8: v1->v2 dual-read/shadow-write/divergence/cutover/rollback, selector shadow gate, backward compatibility. User directive 2026-08-14 required real migration/reconstruction/integration evidence, not mapping-document PASS: old->new mapping, loss/unrecoverable classification, reconstruction, rollback/retry, integration reconciliation, fail-closed negative test.",
+      "migration_reconciliation": {
+        "state": "EVIDENCE_READY",
+        "note": "assurance.migration.reconcile: real field-by-field comparison between an old (v1) and new (v2) representation of the same subject -- never a document-level \"the mapping is complete\" claim. Any field present in the old representation that is missing or structurally different in the new one is a real divergence. loss_classification is RECOVERABLE only when every diverged field is one the caller has declared reconstructible; otherwise UNRECOVERABLE. migration-reconciliation-report.v1.schema.json structurally forbids the \"diverged=true but loss_classification=NONE\" shortcut (an unsatisfiable then-branch, verified empirically to reject that combination and accept the genuine no-divergence case) and forbids UNRECOVERABLE from ever being cutover_eligible.",
+        "contract_schema": "contracts/migration-reconciliation-report.v1.schema.json (NEW)",
+        "implementation": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (migrationReconcile)",
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+3 tests: matching representations -> no divergence, declared-reconstructible divergence -> RECOVERABLE, undeclared divergence -> UNRECOVERABLE/HOLD)",
+          "tests/test_migration_integration_contracts.py (NEW, 4 tests, including a direct test of the diverged+NONE-forbidden invariant)"
+        ]
+      },
+      "contract_selector_cutover_rollback": {
+        "state": "EVIDENCE_READY",
+        "note": "ContractSelectorLedger.java (NEW, durable, append-only, one file per contract_family) real-implements contract-active-selector.candidate.v2.schema.json (registered since Wave 7, unwired until now -- same \"existence != completion\" pattern closed for OfficialLearningLedger in Batch 5 and onsure-release-qualification.v1 in Batch 5): cutover is blocked outright (SecurityException CUTOVER_BLOCKED_UNRESOLVED_DIVERGENCE) unless the caller supplies a genuinely resolved reconciliation result, never a bare claim. Every selector activation is really Ed25519-signed (LocalReceiptCrypto, ephemeral key, self-validation-nonfinal -- same boundary as certificate/revocation issuance). Rollback always succeeds by construction: because the ledger is append-only, the immediately preceding entry is always still there to re-activate, verified by a real round-trip test (cutover v1 -> cutover v2 -> rollback reactivates v1).",
+        "contract_schema": "contracts/contract-active-selector.candidate.v2.schema.json (Wave 7, pre-existing, already registered)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/ContractSelectorLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (migrationCutover, migrationRollback)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gates: reconcile operator-tier, cutover/rollback auditor-tier)",
+          "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/ContractSelectorLedgerTest.java (NEW, 6 tests: cutover blocked on unresolved divergence, cutover succeeds once resolved, rollback with no prior selector fails, real round-trip rollback, real verifiable signature present, cutover-to-already-active-version rejected)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+2 tests: cutover blocked without a real resolved reconciliation, full cutover-then-rollback round trip)"
+        ]
+      },
+      "known_gap_not_yet_covered": "Shadow-write (writing to v2 in parallel with v1 traffic without switching authority) and dual-read-in-production (actually issuing both reads against live v1/v2 systems, as opposed to the caller supplying both representations to reconcile) are not wired -- this batch covers the reconciliation/cutover/rollback DECISION layer for real, not a live traffic-shadowing pipeline. Retry semantics beyond re-invoking reconcile/cutover are not separately modeled."
     },
     {
       "batch": "BATCH_9",
