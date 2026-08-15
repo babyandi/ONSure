@@ -1855,6 +1855,68 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-027 Shadow / Canary Activation
+    @Test
+    void learningActivationStageTransitionAllowsShadowWithNoDecisionImpact() throws Exception {
+        Map<?, ?> result = learningActivationStageTransition(
+                "APPROVED", "SHADOW", "NONE", "NONE", "ONLINE_SHADOW_COMPARED");
+        assertEquals("TRANSITION_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void learningActivationStageTransitionBlocksSkippingAStage() throws Exception {
+        Map<?, ?> result = learningActivationStageTransition(
+                "APPROVED", "CANARY", "LIMITED", "LIMITED_TENANT_SUBSET", "ONLINE_SHADOW_COMPARED");
+        assertEquals("TRANSITION_BLOCKED", result.get("decision"));
+        assertEquals(List.of("ACTIVATION_STAGE_SKIPPED:APPROVED->CANARY"), result.get("reasons"));
+    }
+
+    @Test
+    void learningActivationStageTransitionBlocksShadowClaimingDecisionImpact() throws Exception {
+        Map<?, ?> result = learningActivationStageTransition(
+                "APPROVED", "SHADOW", "LIMITED", "NONE", "ONLINE_SHADOW_COMPARED");
+        assertEquals("TRANSITION_BLOCKED", result.get("decision"));
+        assertEquals(List.of("SHADOW_STAGE_MUST_HAVE_NO_DECISION_IMPACT"), result.get("reasons"));
+    }
+
+    @Test
+    void learningActivationStageTransitionBlocksCanaryWithFullTrafficScope() throws Exception {
+        Map<?, ?> result = learningActivationStageTransition(
+                "SHADOW", "CANARY", "LIMITED", "FULL", "ONLINE_SHADOW_COMPARED");
+        assertEquals("TRANSITION_BLOCKED", result.get("decision"));
+        assertEquals(List.of("CANARY_STAGE_MUST_BE_TRAFFIC_LIMITED"), result.get("reasons"));
+    }
+
+    @Test
+    void learningActivationStageTransitionBlocksActiveFromOfflineOnlyQualification() throws Exception {
+        Map<?, ?> result = learningActivationStageTransition(
+                "CANARY", "ACTIVE", "FULL", "FULL", "OFFLINE_ONLY");
+        assertEquals("TRANSITION_BLOCKED", result.get("decision"));
+        assertEquals(
+                List.of("ACTIVE_STAGE_CANNOT_BE_REACHED_FROM_OFFLINE_ONLY_QUALIFICATION"), result.get("reasons"));
+    }
+
+    @Test
+    void learningActivationStageTransitionAllowsActiveFromOnlineQualification() throws Exception {
+        Map<?, ?> result = learningActivationStageTransition(
+                "CANARY", "ACTIVE", "FULL", "FULL", "ONLINE_CANARY_OBSERVED");
+        assertEquals("TRANSITION_ALLOWED", result.get("decision"));
+    }
+
+    private Map<?, ?> learningActivationStageTransition(
+            String fromStage, String toStage, String decisionImpact, String trafficScope,
+            String qualificationEvidenceKind) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "learning_asset_id", "asset-1", "from_stage", fromStage, "to_stage", toStage,
+                "decision_impact", decisionImpact, "traffic_scope", trafficScope,
+                "qualification_evidence_kind", qualificationEvidenceKind);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.activation-stage.transition", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

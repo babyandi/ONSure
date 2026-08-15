@@ -868,6 +868,15 @@
         "fixtures/contracts/cross-tenant-transfer-validation.invalid.json"
       ],
       "schema": "contracts/cross-tenant-transfer-validation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-activation-stage-transition.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-activation-stage-transition.invalid.json"
+      ],
+      "schema": "contracts/learning-activation-stage-transition.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

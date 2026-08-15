@@ -1436,6 +1436,23 @@
     "evidence": "status/fr-learn-046-cross-tenant-transfer-evidence.v1.json",
     "open_gap": "Validates that a transfer WOULD be safe; does not itself gate an automatic-promotion pathway (none currently exists to gate -- FR-LEARN-023/assurance.learning.scope-promotion.decide already requires explicit approval, not automatic promotion)."
   },
+  "fr_learn_027_activation_stage_transition_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Closes another orphan_severity_recalculation candidate (both design AND test were missing; investigated contracts/shadow-gate-comparison.candidate.v1.schema.json first but it is a different concept -- legacy-vs-v2 verdict comparison for the Batch 8 migration framework, not learning-asset rollout staging -- so built contracts/learning-activation-stage-transition.v1.schema.json + fixtures from scratch (registered 103 -> 104 schemas), then a real Java consumer. assurance.learning.activation-stage.transition enforces the APPROVED->SHADOW->CANARY->ACTIVE sequence for real: no stage skipping, SHADOW must declare zero decision_impact, CANARY must declare LIMITED_TENANT_SUBSET (never FULL) traffic_scope, and ACTIVE cannot be reached from OFFLINE_ONLY qualification evidence alone.",
+    "contract_schema": "contracts/learning-activation-stage-transition.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/learning-activation-stage-transition.valid.json (NEW)",
+      "fixtures/contracts/learning-activation-stage-transition.invalid.json (NEW, invalid to_stage enum value)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (learningActivationStageTransition)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+6 tests: SHADOW with no decision impact allowed, stage-skip blocked, SHADOW claiming decision impact blocked, CANARY with full traffic scope blocked, ACTIVE from offline-only qualification blocked, ACTIVE from online qualification allowed)",
+    "evidence": "status/fr-learn-027-activation-stage-transition-evidence.v1.json",
+    "open_gap": "Validates a single proposed transition in isolation; does not persist/query the asset's actual current stage across calls (no durable activation-stage ledger exists yet) -- disclosed follow-on, analogous to OfficialLearningLedger's broader candidate lifecycle persistence."
+  },
   "unrelated_flake_fixed_during_verification": {
     "state": "FIXED",
     "note": "Full-suite mvn test surfaced 1 error unrelated to any change this session: kr.co.oruda.onsure.platform.ScheduledBackupServiceTest.startSchedulesRepeatedBackupsAtTheGivenInterval failed with JUnitException 'Failed to close extension context' / DirectoryNotEmptyException on @TempDir cleanup. Root-caused rather than dismissed as noise: ScheduledBackupService.close() called executor.shutdownNow() but never awaited termination, so a scheduled backup write already in flight could still be completing on its own thread after the try-with-resources block exited and the test method returned, racing JUnit's temp-directory teardown. Fixed by adding a bounded executor.awaitTermination(5, TimeUnit.SECONDS) (with proper interrupt-flag restoration) after shutdownNow(). Verified the fix actually closes the race, not just happened to pass once: reran the previously-failing test class 5 consecutive times after the fix, all 5 clean (4/4, 0 failures/errors each run).",

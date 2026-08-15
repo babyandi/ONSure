@@ -82,6 +82,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.strength-ceiling.compute",
             "assurance.learning.data-residency.check",
             "assurance.learning.cross-tenant-transfer.validate",
+            "assurance.learning.activation-stage.transition",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -188,6 +189,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.strength-ceiling.compute" -> assuranceStrengthCeilingCompute(request);
             case "assurance.learning.data-residency.check" -> dataResidencyCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
+            case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2583,6 +2585,63 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("holdout_tenant_id", holdoutTenantId);
         out.put("anonymization_applied", anonymizationApplied);
         out.put("holdout_transfer_impact_evidence_ref", evidenceRef);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    private static final List<String> ACTIVATION_STAGES = List.of("APPROVED", "SHADOW", "CANARY", "ACTIVE");
+
+    /**
+     * learning-activation-stage-transition.v1.schema.json real computation (FR-LEARN-027 Shadow /
+     * Canary Activation: "학습자산의 운영 승격은 최소 APPROVED -> SHADOW -> CANARY -> ACTIVE를
+     * 지원한다. SHADOW는 최종 판정에 영향 없이 비교만 수행하고, CANARY는 제한된 tenant/scope/
+     * traffic에서만 영향 가능하다. offline qualification만으로 즉시 ACTIVE 금지"). JSON Schema's
+     * enum validates each field individually but cannot enforce the SEQUENCE relationship between
+     * from_stage/to_stage, nor which decision_impact/traffic_scope/qualification_evidence_kind
+     * values are permitted for a SPECIFIC target stage. This operation rejects: skipping a
+     * required stage (to_stage must be exactly one rank above from_stage); a SHADOW transition
+     * claiming any decision_impact other than NONE; a CANARY transition claiming FULL (not
+     * LIMITED_TENANT_SUBSET) traffic_scope; and an ACTIVE transition backed only by
+     * OFFLINE_ONLY qualification evidence.
+     */
+    private Map<String, Object> learningActivationStageTransition(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String learningAssetId = requiredText(request, "learning_asset_id");
+        String fromStage = requiredText(request, "from_stage");
+        String toStage = requiredText(request, "to_stage");
+        int fromRank = ACTIVATION_STAGES.indexOf(fromStage);
+        int toRank = ACTIVATION_STAGES.indexOf(toStage);
+        if (fromRank < 0) return failClosed("HOLD", List.of("ACTIVATION_STAGE_INVALID:" + fromStage));
+        if (toRank < 0) return failClosed("HOLD", List.of("ACTIVATION_STAGE_INVALID:" + toStage));
+
+        String decisionImpact = requiredText(request, "decision_impact");
+        String trafficScope = requiredText(request, "traffic_scope");
+        String qualificationEvidenceKind = requiredText(request, "qualification_evidence_kind");
+
+        List<String> reasons = new ArrayList<>();
+        if (toRank != fromRank + 1) {
+            reasons.add("ACTIVATION_STAGE_SKIPPED:" + fromStage + "->" + toStage);
+        }
+        if ("SHADOW".equals(toStage) && !"NONE".equals(decisionImpact)) {
+            reasons.add("SHADOW_STAGE_MUST_HAVE_NO_DECISION_IMPACT");
+        }
+        if ("CANARY".equals(toStage) && !"LIMITED_TENANT_SUBSET".equals(trafficScope)) {
+            reasons.add("CANARY_STAGE_MUST_BE_TRAFFIC_LIMITED");
+        }
+        if ("ACTIVE".equals(toStage) && "OFFLINE_ONLY".equals(qualificationEvidenceKind)) {
+            reasons.add("ACTIVE_STAGE_CANNOT_BE_REACHED_FROM_OFFLINE_ONLY_QUALIFICATION");
+        }
+
+        String decision = reasons.isEmpty() ? "TRANSITION_ALLOWED" : "TRANSITION_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_LEARNING_ACTIVATION_STAGE_TRANSITION", targetId);
+        out.put("learning_asset_id", learningAssetId);
+        out.put("from_stage", fromStage);
+        out.put("to_stage", toStage);
+        out.put("decision_impact", decisionImpact);
+        out.put("traffic_scope", trafficScope);
+        out.put("qualification_evidence_kind", qualificationEvidenceKind);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);
