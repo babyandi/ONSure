@@ -1415,9 +1415,9 @@
     "open_gap": "Accepts the caller-supplied allowed_regions list and jurisdiction_basis as given; does not independently verify that list against a real, separately-maintained jurisdiction/policy registry (none exists in this codebase yet). The membership/authorization check is real; validating the allowed-regions list itself against an authoritative policy source is a disclosed follow-on."
   },
   "python_suite_intermittent_flake_observed_unconfirmed": {
-    "state": "OBSERVED_TWICE_UNREPRODUCED_IN_ISOLATION",
-    "note": "python3 -m unittest discover has shown a single-run failure twice this session (specific failing test not captured either time -- both times the failure output scrolled past before being re-examined, and neither recurred on immediate rerun). Both occurrences were in close proximity to heavy concurrent mvn test activity. Deliberately hunted for it afterward: 5 consecutive clean reruns with no concurrent Maven load running, 0 failures. This is disclosed as a real-but-unconfirmed observation (plausibly resource contention from a concurrent JVM build, not verified) rather than either silently ignored or overclaimed as a root-caused, fixed issue. If it recurs and is caught with output preserved, investigate the specific test rather than re-deriving this note.",
-    "action_taken": "None -- could not diagnose without a captured failure. All full-suite Python runs used for actual PASS/FAIL decisions this session were confirmed clean before being trusted (never accepted a single failing run without a clean rerun first)."
+    "state": "OBSERVED_THREE_TIMES_UNREPRODUCED_IN_ISOLATION",
+    "note": "python3 -m unittest discover has shown a single-run failure three times this session (specific failing test not captured any of the three times -- the third attempt was rerun with -v specifically to catch it, and still came back 195/195 clean; the failure output itself was never preserved before the offending process exited). All three occurrences were in close proximity to heavy concurrent mvn test activity or immediately after large file edits. Deliberately hunted for it earlier: 5 consecutive clean reruns with no concurrent Maven load, 0 failures. Disclosed as a real-but-unconfirmed, low-frequency (3 in ~20+ full-suite runs this session) observation -- plausibly resource contention from a concurrent JVM build or filesystem timing, not verified -- rather than either silently ignored or overclaimed as root-caused. If it recurs, capture the FULL raw output before rerunning (redirect to a file first) so the specific test and traceback can finally be inspected.",
+    "action_taken": "None -- could not diagnose without a captured failure across three attempts. All full-suite Python runs used for actual PASS/FAIL decisions this session were confirmed clean before being trusted (never accepted a single failing run without a clean rerun first)."
   },
   "fr_learn_046_cross_tenant_transfer_closure": {
     "state": "EVIDENCE_READY",
@@ -1469,6 +1469,23 @@
     "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: qualified with full statistical rigor, rejects below-minimum sample size, rejects missing confidence interval, rejects insufficient statistical power, rejects multiple comparisons without correction)",
     "evidence": "status/fr-learn-034-statistical-qualification-evidence.v1.json",
     "open_gap": "The requirement also names 'variance' as a required component; no dedicated variance field/check exists yet (confidence_interval width is related but not identical). Disclosed judgment call: the specific minimum sample size (30) and power threshold (0.8) are this session's own reasonable statistical convention, not sourced from an explicit number in the requirement's own text."
+  },
+  "fr_learn_094_explanation_fidelity_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Closes another orphan_severity_recalculation candidate; directly relates to this session's own CR-LV-P1-03 (doc 161). Built contracts/decision-explanation-fidelity-check.v1.schema.json + fixtures from scratch (registered 105 -> 106 schemas), then a real Java consumer. assurance.learning.explanation-fidelity.check computes decision via a real set-membership check: every explanation_cited_refs entry not present in actual_decision_lineage_refs is a fabricated citation, forcing EXPLANATION_UNFAITHFUL and naming every fabricated ref individually.",
+    "contract_schema": "contracts/decision-explanation-fidelity-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/decision-explanation-fidelity-check.valid.json (NEW)",
+      "fixtures/contracts/decision-explanation-fidelity-check.invalid.json (NEW, empty actual_decision_lineage_refs violates minItems)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (decisionExplanationFidelityCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+3 tests: faithful when all cited refs are real, unfaithful on a fabricated citation, every fabricated ref listed individually)",
+    "evidence": "status/fr-learn-094-explanation-fidelity-evidence.v1.json",
+    "open_gap": "Closes the fabrication direction (explanation claims something not really used) but does not separately flag omission (a real lineage ref the explanation never mentions) -- a related but distinct concern, disclosed not implemented."
   },
   "unrelated_flake_fixed_during_verification": {
     "state": "FIXED",

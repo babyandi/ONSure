@@ -201,6 +201,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.learning.cross-tenant-transfer.validate",
                     "assurance.learning.activation-stage.transition",
                     "assurance.learning.statistical-qualification.check",
+                    "assurance.learning.explanation-fidelity.check",
                     "assurance.provider.drift-check",
                     "assurance.multi-agent.corroboration-check",
                     "assurance.hazard.create", "assurance.appeal.file",

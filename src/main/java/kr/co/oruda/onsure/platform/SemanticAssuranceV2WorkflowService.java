@@ -84,6 +84,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
+            "assurance.learning.explanation-fidelity.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -192,6 +193,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
+            case "assurance.learning.explanation-fidelity.check" -> decisionExplanationFidelityCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2720,6 +2722,52 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("multiple_comparisons_count", multipleComparisonsCount);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * decision-explanation-fidelity-check.v1.schema.json real computation (FR-LEARN-094 Decision
+     * Explanation Fidelity: "설명은 실제 사용된 evidence/rule/oracle/policy 경로에서 생성되어야
+     * 한다. 사후 생성된 그럴듯한 설명이 실제 decision lineage와 불일치하면 explanation PASS
+     * 금지"). JSON Schema can require both ref arrays to be non-empty but cannot check SET
+     * MEMBERSHIP of one array within another. This operation computes decision for real: any
+     * explanation_cited_refs entry that is NOT present in actual_decision_lineage_refs is a
+     * fabricated citation -- a plausible-sounding but untrue claim about what the decision
+     * actually used -- and forces EXPLANATION_UNFAITHFUL, listing every fabricated ref by name.
+     */
+    private Map<String, Object> decisionExplanationFidelityCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String decisionId = requiredText(request, "decision_id");
+        String explanationId = requiredText(request, "explanation_id");
+
+        JsonNode lineageNode = request.path("actual_decision_lineage_refs");
+        if (!lineageNode.isArray() || lineageNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("ACTUAL_DECISION_LINEAGE_REFS_REQUIRED"));
+        }
+        JsonNode citedNode = request.path("explanation_cited_refs");
+        if (!citedNode.isArray() || citedNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("EXPLANATION_CITED_REFS_REQUIRED"));
+        }
+
+        Set<String> actualLineageRefs = new java.util.LinkedHashSet<>(stringList(lineageNode));
+        List<String> citedRefs = stringList(citedNode);
+
+        List<String> fabricatedRefs = new ArrayList<>();
+        for (String ref : citedRefs) {
+            if (!actualLineageRefs.contains(ref)) {
+                fabricatedRefs.add(ref);
+            }
+        }
+
+        String decision = fabricatedRefs.isEmpty() ? "EXPLANATION_FAITHFUL" : "EXPLANATION_UNFAITHFUL";
+
+        Map<String, Object> out = base("ONSURE_DECISION_EXPLANATION_FIDELITY_CHECK", targetId);
+        out.put("decision_id", decisionId);
+        out.put("explanation_id", explanationId);
+        out.put("actual_decision_lineage_refs", List.copyOf(actualLineageRefs));
+        out.put("explanation_cited_refs", citedRefs);
+        out.put("fabricated_refs", List.copyOf(fabricatedRefs));
+        out.put("decision", decision);
         return immutable(out);
     }
 

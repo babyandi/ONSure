@@ -1980,6 +1980,43 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-094 Decision Explanation Fidelity
+    @Test
+    void decisionExplanationFidelityCheckReachesFaithfulWhenAllCitedRefsAreReal() throws Exception {
+        Map<?, ?> result = decisionExplanationFidelityCheck(
+                List.of("oracle:o1", "rule:r1", "policy:p1"), List.of("oracle:o1", "policy:p1"));
+        assertEquals("EXPLANATION_FAITHFUL", result.get("decision"));
+        assertEquals(List.of(), result.get("fabricated_refs"));
+    }
+
+    @Test
+    void decisionExplanationFidelityCheckFlagsUnfaithfulOnAFabricatedCitation() throws Exception {
+        Map<?, ?> result = decisionExplanationFidelityCheck(
+                List.of("oracle:o1", "rule:r1"), List.of("oracle:o1", "oracle:never-actually-run"));
+        assertEquals("EXPLANATION_UNFAITHFUL", result.get("decision"));
+        assertEquals(List.of("oracle:never-actually-run"), result.get("fabricated_refs"));
+    }
+
+    @Test
+    void decisionExplanationFidelityCheckListsEveryFabricatedRef() throws Exception {
+        Map<?, ?> result = decisionExplanationFidelityCheck(
+                List.of("oracle:o1"), List.of("oracle:fake-1", "oracle:fake-2"));
+        assertEquals("EXPLANATION_UNFAITHFUL", result.get("decision"));
+        assertEquals(List.of("oracle:fake-1", "oracle:fake-2"), result.get("fabricated_refs"));
+    }
+
+    private Map<?, ?> decisionExplanationFidelityCheck(
+            List<String> actualLineageRefs, List<String> citedRefs) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "decision_id", "decision-1", "explanation_id", "explanation-1",
+                "actual_decision_lineage_refs", actualLineageRefs, "explanation_cited_refs", citedRefs);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.explanation-fidelity.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

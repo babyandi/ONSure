@@ -1,0 +1,10 @@
+{
+  "contract": "ONSURE_DECISION_EXPLANATION_FIDELITY_CHECK_V1",
+  "decision_id": "decision-final-lock-eligibility-091",
+  "explanation_id": "explanation-091-summary",
+  "actual_decision_lineage_refs": [],
+  "explanation_cited_refs": ["oracle:fabricated-oracle-never-run"],
+  "decision": "EXPLANATION_FAITHFUL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

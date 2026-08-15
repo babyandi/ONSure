@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-094",
+  "requirement_summary": "Decision Explanation Fidelity: 설명은 실제 사용된 evidence/rule/oracle/policy 경로에서 생성되어야 한다. 사후 생성된 그럴듯한 설명이 실제 decision lineage와 불일치하면 explanation PASS 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (decisionExplanationFidelityCheck), assurance.learning.explanation-fidelity.check v2 operation; contracts/decision-explanation-fidelity-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "decisionExplanationFidelityCheckReachesFaithfulWhenAllCitedRefsAreReal",
+    "decisionExplanationFidelityCheckFlagsUnfaithfulOnAFabricatedCitation",
+    "decisionExplanationFidelityCheckListsEveryFabricatedRef"
+  ],
+  "coverage_notes": "decision is computed for real via a set-membership check JSON Schema alone cannot express: every explanation_cited_refs entry is checked for actual presence in actual_decision_lineage_refs, and ANY entry not present is a fabricated citation, forcing EXPLANATION_UNFAITHFUL and naming every fabricated ref individually (not just a boolean flag) -- directly closing '사후 생성된 그럴듯한 설명이 실제 decision lineage와 불일치하면 explanation PASS 금지' (a post-hoc plausible-sounding explanation that doesn't match the real decision lineage must not PASS).",
+  "open_gap": "This closes the FABRICATED-citation direction of fidelity (explanation claims something that wasn't really used) but does not separately flag OMISSION (a real, actually-used lineage ref that the explanation simply never mentions) -- the requirement's text focuses on the fabrication/mismatch case specifically ('실제... 경로에서 생성되어야', '불일치하면... 금지'), and omission-completeness is a related but distinct concern (an explanation can be a faithful but incomplete summary without being fabricated). Disclosed as a real, not-yet-covered extension, not implemented as a stand-in.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (157_LEARNING_VALIDATION_BLIND_FINAL_GAP_REVIEW.md) as circular. docs/master/semantic-assurance/161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md (this session's own CR-LV-P1-03, Decision Explanation Fidelity vs Sealed Challenge/Benchmark Secrecy) discusses FR-LEARN-094 in the context of that specific tension, providing partial design elaboration.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
