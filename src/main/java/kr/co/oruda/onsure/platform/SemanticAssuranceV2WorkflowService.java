@@ -92,6 +92,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.sampling-bias.check",
             "assurance.learning.confidence-calibration.check",
             "assurance.learning.adversarial-benchmark-governance.check",
+            "assurance.learning.knowledge-fork-merge-governance.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -208,6 +209,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.sampling-bias.check" -> activeLearningSamplingBiasCheck(request);
             case "assurance.learning.confidence-calibration.check" -> confidenceCalibrationCheck(request);
             case "assurance.learning.adversarial-benchmark-governance.check" -> adversarialBenchmarkGovernanceCheck(request);
+            case "assurance.learning.knowledge-fork-merge-governance.check" -> knowledgeForkMergeGovernanceCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -3136,6 +3138,58 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("safety_review_completed", safetyReviewCompleted);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * knowledge-fork-merge-governance-check.v1.schema.json real computation (FR-LEARN-069
+     * Knowledge Fork / Merge Governance: "Tenant/Industry/Global knowledge가 fork된 뒤 merge될
+     * 수 있으므로 ancestor epoch, divergent changes, conflicts, chosen resolution, merge
+     * receipt를 보존한다. silent overwrite 금지"). JSON Schema can validate the shape of
+     * detected_conflicts and conflict_resolutions independently but cannot check that every
+     * detected conflict has a MATCHING resolution -- exactly the silent-overwrite gap this
+     * requirement forbids. This operation cross-references the two arrays by conflict_id for
+     * real: any detected conflict with no resolution entry (or an empty resolution_basis) forces
+     * MERGE_BLOCKED, naming every unresolved conflict individually.
+     */
+    private Map<String, Object> knowledgeForkMergeGovernanceCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String knowledgeAssetId = requiredText(request, "knowledge_asset_id");
+        String ancestorEpochId = requiredText(request, "ancestor_epoch_id");
+        String mergeReceiptId = requiredText(request, "merge_receipt_id");
+
+        JsonNode conflictsNode = request.path("detected_conflicts");
+        JsonNode resolutionsNode = request.path("conflict_resolutions");
+        if (!conflictsNode.isArray() || !resolutionsNode.isArray()) {
+            return failClosed("HOLD", List.of("MERGE_CONFLICT_FIELDS_INVALID"));
+        }
+
+        Map<String, String> resolutionByConflictId = new LinkedHashMap<>();
+        for (JsonNode resolutionNode : resolutionsNode) {
+            String conflictId = requiredText(resolutionNode, "conflict_id");
+            String resolutionBasis = requiredText(resolutionNode, "resolution_basis");
+            resolutionByConflictId.put(conflictId, resolutionBasis);
+        }
+
+        List<String> unresolvedConflicts = new ArrayList<>();
+        for (JsonNode conflictNode : conflictsNode) {
+            String conflictId = requiredText(conflictNode, "conflict_id");
+            requiredText(conflictNode, "field_path");
+            String resolutionBasis = resolutionByConflictId.get(conflictId);
+            if (resolutionBasis == null || resolutionBasis.isBlank()) {
+                unresolvedConflicts.add(conflictId);
+            }
+        }
+
+        String decision = unresolvedConflicts.isEmpty() ? "MERGE_ALLOWED" : "MERGE_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_KNOWLEDGE_FORK_MERGE_GOVERNANCE_CHECK", targetId);
+        out.put("knowledge_asset_id", knowledgeAssetId);
+        out.put("ancestor_epoch_id", ancestorEpochId);
+        out.put("merge_receipt_id", mergeReceiptId);
+        out.put("detected_conflict_count", conflictsNode.size());
+        out.put("unresolved_conflicts", List.copyOf(unresolvedConflicts));
+        out.put("decision", decision);
         return immutable(out);
     }
 

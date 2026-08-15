@@ -2335,6 +2335,60 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-069 Knowledge Fork / Merge Governance
+    @Test
+    void knowledgeForkMergeGovernanceCheckAllowsMergeWhenEveryConflictIsResolved() throws Exception {
+        Map<?, ?> result = knowledgeForkMergeGovernanceCheck(
+                List.of(mergeConflict("conflict-1", "rules[3].threshold")),
+                List.of(mergeResolution("conflict-1", "tenant-b preferred: fresher calibration")));
+        assertEquals("MERGE_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void knowledgeForkMergeGovernanceCheckAllowsMergeWithNoConflicts() throws Exception {
+        Map<?, ?> result = knowledgeForkMergeGovernanceCheck(List.of(), List.of());
+        assertEquals("MERGE_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void knowledgeForkMergeGovernanceCheckBlocksSilentOverwriteWhenAConflictHasNoResolution() throws Exception {
+        Map<?, ?> result = knowledgeForkMergeGovernanceCheck(
+                List.of(mergeConflict("conflict-1", "rules[3].threshold")), List.of());
+        assertEquals("MERGE_BLOCKED", result.get("decision"));
+        assertEquals(List.of("conflict-1"), result.get("unresolved_conflicts"));
+    }
+
+    @Test
+    void knowledgeForkMergeGovernanceCheckListsEveryUnresolvedConflict() throws Exception {
+        Map<?, ?> result = knowledgeForkMergeGovernanceCheck(
+                List.of(mergeConflict("conflict-1", "rules[3].threshold"), mergeConflict("conflict-2", "rules[9].weight")),
+                List.of(mergeResolution("conflict-1", "resolved")));
+        assertEquals("MERGE_BLOCKED", result.get("decision"));
+        assertEquals(List.of("conflict-2"), result.get("unresolved_conflicts"));
+    }
+
+    private Map<String, Object> mergeConflict(String conflictId, String fieldPath) {
+        return Map.of("conflict_id", conflictId, "field_path", fieldPath);
+    }
+
+    private Map<String, Object> mergeResolution(String conflictId, String resolutionBasis) {
+        return Map.of("conflict_id", conflictId, "resolution_basis", resolutionBasis);
+    }
+
+    private Map<?, ?> knowledgeForkMergeGovernanceCheck(
+            List<Map<String, Object>> detectedConflicts, List<Map<String, Object>> conflictResolutions)
+            throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "knowledge_asset_id", "asset-1", "ancestor_epoch_id", "epoch-1",
+                "detected_conflicts", detectedConflicts, "conflict_resolutions", conflictResolutions,
+                "merge_receipt_id", "receipt-1");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.knowledge-fork-merge-governance.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

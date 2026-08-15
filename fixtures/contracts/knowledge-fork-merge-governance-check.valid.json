@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_KNOWLEDGE_FORK_MERGE_GOVERNANCE_CHECK_V1",
+  "knowledge_asset_id": "knowledge-fraud-ruleset-industry-financial",
+  "ancestor_epoch_id": "epoch-ruleset-2026-08-01",
+  "detected_conflicts": [
+    {"conflict_id": "conflict-001", "field_path": "rules[12].threshold"}
+  ],
+  "conflict_resolutions": [
+    {"conflict_id": "conflict-001", "resolution_basis": "tenant-b branch preferred: more recent evidence-backed calibration"}
+  ],
+  "merge_receipt_id": "merge-receipt-2026-08-15-009",
+  "decision": "MERGE_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

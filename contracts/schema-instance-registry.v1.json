@@ -958,6 +958,15 @@
         "fixtures/contracts/adversarial-benchmark-governance-check.invalid.json"
       ],
       "schema": "contracts/adversarial-benchmark-governance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/knowledge-fork-merge-governance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/knowledge-fork-merge-governance-check.invalid.json"
+      ],
+      "schema": "contracts/knowledge-fork-merge-governance-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

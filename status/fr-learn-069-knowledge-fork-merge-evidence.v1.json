@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-069",
+  "requirement_summary": "Knowledge Fork / Merge Governance: Tenant/Industry/Global knowledge가 fork된 뒤 merge될 수 있으므로 ancestor epoch, divergent changes, conflicts, chosen resolution, merge receipt를 보존한다. silent overwrite 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (knowledgeForkMergeGovernanceCheck), assurance.learning.knowledge-fork-merge-governance.check v2 operation; contracts/knowledge-fork-merge-governance-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "knowledgeForkMergeGovernanceCheckAllowsMergeWhenEveryConflictIsResolved",
+    "knowledgeForkMergeGovernanceCheckAllowsMergeWithNoConflicts",
+    "knowledgeForkMergeGovernanceCheckBlocksSilentOverwriteWhenAConflictHasNoResolution",
+    "knowledgeForkMergeGovernanceCheckListsEveryUnresolvedConflict"
+  ],
+  "coverage_notes": "unresolved_conflicts is computed for real by cross-referencing detected_conflicts against conflict_resolutions by conflict_id -- a matching-between-two-arrays check JSON Schema cannot express. Any detected conflict with no resolution entry (or a resolution entry with a blank resolution_basis) forces MERGE_BLOCKED, naming every unresolved conflict individually -- directly closing 'silent overwrite 금지' (a conflict cannot be silently overwritten by one side simply winning without an explicit, recorded resolution). ancestor_epoch_id and merge_receipt_id are always required and echoed, satisfying the requirement's preservation obligation for those fields regardless of decision.",
+  "open_gap": "This operation validates that every detected conflict HAS a resolution; it does not itself independently detect conflicts from raw divergent-change data (conflict detection itself is trusted from the caller). Independent conflict detection from raw source/target branch diffs is a real, disclosed follow-on.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
