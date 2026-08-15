@@ -822,6 +822,15 @@
       "invalid_instances": [
         "fixtures/contracts/challenge-set-access-disposition.v1.invalid.json"
       ]
+    },
+    {
+      "schema": "contracts/evidence-observation.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/evidence-observation.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/evidence-observation.v1.invalid.json"
+      ]
     }
   ],
   "negative_instances_required_before_final": true,

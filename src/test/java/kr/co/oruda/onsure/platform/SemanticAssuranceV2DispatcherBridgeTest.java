@@ -1254,6 +1254,38 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals(false, result.get("blind_authority_retained"));
     }
 
+    // doc 158 contradiction class 2 "Privacy vs Reproducibility" -- LC-P0-002 runtime evidence.
+    @Test
+    void minimizedRetentionCanLegitimatelyClaimReproducibility() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.evidence-observation.record", Map.of(
+                "observation_id", "obs-1", "decision_ref", "decision-1", "retention_form", "PSEUDONYMIZED",
+                "content_digest", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "reproducibility_claimed", true));
+        assertEquals(true, result.get("reproducibility_claimed"));
+        assertTrue(((List<?>) result.get("reasons")).isEmpty());
+    }
+
+    @Test
+    void rawSensitiveRetentionCannotJustifyAReproducibilityClaimEvenIfRequested() throws Exception {
+        // 158 SS2 named negative case: permanent raw retention used to justify reproducibility.
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.evidence-observation.record", Map.of(
+                "observation_id", "obs-2", "decision_ref", "decision-2", "retention_form", "RAW_SENSITIVE",
+                "content_digest", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "reproducibility_claimed", true));
+        assertEquals(false, result.get("reproducibility_claimed"));
+        assertEquals(List.of("RAW_SENSITIVE_RETENTION_CANNOT_JUSTIFY_A_REPRODUCIBILITY_CLAIM"), result.get("reasons"));
+    }
+
+    @Test
+    void rawSensitiveRetentionWithoutAReproducibilityClaimIsFine() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.evidence-observation.record", Map.of(
+                "observation_id", "obs-3", "decision_ref", "decision-3", "retention_form", "RAW_SENSITIVE",
+                "content_digest", "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+                "reproducibility_claimed", false));
+        assertEquals(false, result.get("reproducibility_claimed"));
+        assertTrue(((List<?>) result.get("reasons")).isEmpty());
+    }
+
     @Test
     void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
         Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());

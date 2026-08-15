@@ -1,0 +1,10 @@
+{
+  "contract": "ONSURE_EVIDENCE_OBSERVATION_V1",
+  "observation_id": "obs-2",
+  "decision_ref": "decision-2",
+  "retention_form": "RAW_SENSITIVE",
+  "content_digest": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "reproducibility_claimed": true,
+  "observed_at": "2026-08-15T00:00:00Z",
+  "final_claim_allowed": false
+}

@@ -1164,7 +1164,7 @@
     "verification": "All pre-existing ledger tests pass unchanged (behavior-preserving retrofit) plus the new tamper tests. Full suite: 186 Python tests green, full mvn test green (background run confirmed)."
   },
   "learning_p0_contradiction_runtime_evidence": {
-    "state": "IN_PROGRESS",
+    "state": "ALL_11_CLASSES_TOUCHED_4_PARTIAL_REMAIN",
     "authority_ref": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md",
     "note": "doc 159 SS9/SS11 tracks 11 P0 Learning contradiction classes with runtime_tests_run=0, evidence_receipts=0 as of the doc 158 design-only merge (PR #48). Closing this means: for each class, either point to an ALREADY-real runtime mechanism enforcing it (with tests), or build one. Progress so far, closed this pass:",
     "classes_closed_this_pass": [
@@ -1212,6 +1212,13 @@
         "contract_schema": "contracts/challenge-set-access-disposition.v1.schema.json (NEW -- the QA candidate binding names ValidationExperiment for LC-P0-003, but that existing schema is entirely about stochastic/metamorphic/differential run outcomes and has no secrecy/access-control fields at all, so a dedicated schema was built instead of force-fitting)",
         "note": "METHODOLOGY/SCOPE/RESULTS/AUTHORITY always disclosable. SEALED_FIXTURE/SEALED_ANSWER is evaluator-only -- a non-evaluator request is denied outright. Exposure is one-way: any grant of a sealed field (even to a legitimate evaluator) flips exposure_state to EXPOSED and blind_authority_retained to false PERMANENTLY -- once prior_exposure_state is EXPOSED, it stays EXPOSED regardless of what is requested afterward, matching real blind-test contamination which cannot be undone.",
         "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (public results granted without exposure; non-evaluator sealed-fixture request denied; evaluator sealed-answer access exposes permanently; already-exposed set never recovers blind authority)"
+      },
+      {
+        "class": "2 -- Privacy vs Reproducibility",
+        "runtime_operation": "assurance.learning.evidence-observation.record (NEW)",
+        "contract_schema": "contracts/evidence-observation.v1.schema.json (NEW -- closes LC-P0-002's EvidenceObservation half; DecisionTimeKnowledgeSnapshot half already built for classes 7/11)",
+        "note": "reproducibility_claimed=true is forced to false whenever retention_form=RAW_SENSITIVE, regardless of what the caller requested -- permanent raw-sensitive retention can never be the basis for a reproducibility claim, closing the named negative case.",
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +3 (minimized retention can claim reproducibility; raw retention forcibly downgrades the claim; raw retention without a claim is fine)"
       }
     ],
     "classes_already_covered_by_prior_batch_5_work": [
@@ -1220,11 +1227,11 @@
       "10 -- Cost Budget vs Mandatory Assurance: learningStopDecisionCompute -- EXCEEDED budget forces STOP regardless of marginal_gain, tested"
     ],
     "classes_still_open": [
-      "2 -- Privacy vs Reproducibility (needs EvidenceObservation contract, not yet built)",
       "7 -- Adaptive Learning vs Reproducibility (PARTIAL -- ValidationExperiment cross-wiring still open)",
-      "8 -- Counterevidence vs Privacy (PARTIAL -- EvidenceObservation half still open)",
+      "8 -- Counterevidence vs Privacy (PARTIAL -- EvidenceObservation now exists but not yet cross-wired into the counterevidence op)",
       "9 -- Human Override vs Self-confirmation (PARTIAL -- aggregate HumanOverrideTrendReport view still open)",
       "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- GroundTruthAuthority + RevalidationBacklog still open)"
-    ]
+    ],
+    "summary_at_this_checkpoint": "All 11 doc-158 P0 Learning contradiction classes now have real runtime enforcement + tests. 7 are fully closed per their LC-P0 contract binding (1, 2, 3, 4, 5, 6, 10); 4 remain PARTIAL because their contract binding names a second contract not yet cross-wired (7, 8, 9, 11) -- see classes_still_open for exactly what's missing in each. doc 159's runtime_tests_run=0/evidence_receipts=0 baseline is no longer accurate; scripts/validate-global-lock-preflight.py's P0_CONTRADICTION_ZERO gate reads this section live."
   }
 }

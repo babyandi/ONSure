@@ -73,6 +73,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.human-override.decide",
             "assurance.learning.counterevidence.dispose",
             "assurance.learning.challenge-set-access.decide",
+            "assurance.learning.evidence-observation.record",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
@@ -166,6 +167,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.human-override.decide" -> learningHumanOverrideDecide(request);
             case "assurance.learning.counterevidence.dispose" -> learningCounterevidenceDispose(request);
             case "assurance.learning.challenge-set-access.decide" -> learningChallengeSetAccessDecide(request);
+            case "assurance.learning.evidence-observation.record" -> learningEvidenceObservationRecord(request);
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
@@ -1880,6 +1882,43 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("access_granted", accessGranted);
         out.put("exposure_state", exposureState);
         out.put("blind_authority_retained", blindAuthorityRetained);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * evidence-observation.v1.schema.json real computation (doc 158 contradiction class 2
+     * "Privacy vs Reproducibility", LC-P0-002). "원문 민감정보의 영구보존을 재현성 전제조건으로
+     * 두지 않는다": a caller cannot claim reproducibility while retaining raw sensitive content --
+     * RAW_SENSITIVE retention forces reproducibility_claimed to false regardless of what the
+     * caller requested, closing the named negative case (permanent raw retention used to justify
+     * reproducibility) rather than merely discouraging it.
+     */
+    private Map<String, Object> learningEvidenceObservationRecord(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String observationId = requiredText(request, "observation_id");
+        String decisionRef = requiredText(request, "decision_ref");
+        Set<String> retentionForms = Set.of("RAW_SENSITIVE", "MINIMIZED", "PSEUDONYMIZED", "DIGEST_ONLY", "TOMBSTONE");
+        String retentionForm = requiredText(request, "retention_form");
+        if (!retentionForms.contains(retentionForm)) {
+            return failClosed("HOLD", List.of("EVIDENCE_OBSERVATION_RETENTION_FORM_INVALID"));
+        }
+        String contentDigest = requiredDigest(request, "content_digest");
+        boolean requestedReproducibilityClaimed = request.path("reproducibility_claimed").asBoolean(false);
+
+        boolean reproducibilityClaimed = requestedReproducibilityClaimed;
+        List<String> reasons = new ArrayList<>();
+        if ("RAW_SENSITIVE".equals(retentionForm) && requestedReproducibilityClaimed) {
+            reproducibilityClaimed = false;
+            reasons.add("RAW_SENSITIVE_RETENTION_CANNOT_JUSTIFY_A_REPRODUCIBILITY_CLAIM");
+        }
+
+        Map<String, Object> out = base("EVIDENCE_OBSERVATION", targetId);
+        out.put("observation_id", observationId);
+        out.put("decision_ref", decisionRef);
+        out.put("retention_form", retentionForm);
+        out.put("content_digest", contentDigest);
+        out.put("reproducibility_claimed", reproducibilityClaimed);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
