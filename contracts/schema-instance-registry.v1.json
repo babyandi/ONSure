@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.19.6",
+  "version": "1.19.8",
   "pairs": [
     {
       "schema": "contracts/program-profile.v1.schema.json",
@@ -740,6 +740,33 @@
       ],
       "invalid_instances": [
         "fixtures/contracts/appeal-case.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/offboarding-closure.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/offboarding-closure.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/offboarding-closure.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/engagement-authorization.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/engagement-authorization.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/engagement-authorization.v1.invalid.json"
+      ]
+    },
+    {
+      "schema": "contracts/accessible-claim-render.v1.schema.json",
+      "instances": [
+        "fixtures/contracts/accessible-claim-render.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/accessible-claim-render.v1.invalid.json"
       ]
     }
   ],

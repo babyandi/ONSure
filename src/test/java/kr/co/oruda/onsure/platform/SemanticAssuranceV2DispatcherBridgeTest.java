@@ -2,6 +2,7 @@ package kr.co.oruda.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1200,6 +1201,94 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         Map<?, ?> decided = learningDispatch(reviewer, "assurance.appeal.decide", Map.of(
                 "appeal_case_id", "appeal-2", "appeal_decision", "REVERSE", "rationale", "material evidence changes the outcome"));
         assertEquals("DECIDED", decided.get("status"));
+    }
+
+    @Test
+    void offboardingRequestStartsTerminationRequestedThroughTheWiredOperation() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.offboarding.request", Map.of(
+                "offboarding_tenant_id", "tenant-x"));
+        assertEquals("TERMINATION_REQUESTED", result.get("stage"));
+    }
+
+    @Test
+    void offboardingCannotSkipStagesThroughTheWiredOperation() throws Exception {
+        learningDispatch(bridge, "assurance.offboarding.request", Map.of("offboarding_tenant_id", "tenant-y"));
+        Map<?, ?> result = learningDispatch(bridge, "assurance.offboarding.advance", Map.of(
+                "offboarding_tenant_id", "tenant-y", "to_stage", "CREDENTIAL_REVOCATION"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void engagementCheckScopeBlocksAnEndpointOutsideTheAuthorizedSet() throws Exception {
+        Map<?, ?> result = engagementCheckScope("https://production.example.com", "DAST", 10);
+        assertEquals("BLOCKED", result.get("scope_decision"));
+        assertTrue(((List<?>) result.get("reasons")).stream().anyMatch(r -> r.toString().startsWith("ENDPOINT_NOT_IN_SCOPE")));
+    }
+
+    @Test
+    void engagementCheckScopeAllowsAMatchingInScopeRequest() throws Exception {
+        Map<?, ?> result = engagementCheckScope("https://staging.example.com", "DAST", 10);
+        assertEquals("ALLOWED", result.get("scope_decision"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void engagementCheckScopeBlocksARateAboveTheCeiling() throws Exception {
+        Map<?, ?> result = engagementCheckScope("https://staging.example.com", "DAST", 999);
+        assertEquals("BLOCKED", result.get("scope_decision"));
+        assertEquals(List.of("RATE_CEILING_EXCEEDED"), result.get("reasons"));
+    }
+
+    @Test
+    void accessibilityValidateRenderRejectsAColorOnlySignal() throws Exception {
+        Map<?, ?> result = accessibilityValidateRender(true, "Status: Pass", false, true);
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("COLOR_ONLY_SIGNAL_NOT_PERMITTED"));
+    }
+
+    @Test
+    void accessibilityValidateRenderRejectsAFallbackThatDropsLimitationDisclosure() throws Exception {
+        Map<?, ?> result = accessibilityValidateRender(false, "Status: Hold", true, false);
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("FALLBACK_DROPPED_LIMITATION_DISCLOSURE"));
+    }
+
+    @Test
+    void accessibilityValidateRenderAcceptsAFullyCompliantRender() throws Exception {
+        Map<?, ?> result = accessibilityValidateRender(false, "Status: Pass, independently verified", true, true);
+        assertEquals(true, result.get("compliant"));
+        assertEquals(List.of(), result.get("reasons"));
+    }
+
+    private Map<?, ?> engagementCheckScope(String proposedEndpoint, String proposedTestClass, int proposedRate) throws Exception {
+        Map<String, Object> body = Map.ofEntries(
+                Map.entry("project_id", "project-1"), Map.entry("target_id", "target-1"),
+                Map.entry("engagement_id", "engagement-1"),
+                Map.entry("allowed_endpoints", List.of("https://staging.example.com")),
+                Map.entry("allowed_test_classes", List.of("DAST", "LOAD")),
+                Map.entry("forbidden_actions", List.of("DATA_EXFILTRATION_SIMULATION")),
+                Map.entry("starts_at", "2020-01-01T00:00:00Z"), Map.entry("ends_at", "2030-01-01T00:00:00Z"),
+                Map.entry("rate_ceiling_per_minute", 60), Map.entry("revoked", false),
+                Map.entry("proposed_endpoint", proposedEndpoint), Map.entry("proposed_test_class", proposedTestClass),
+                Map.entry("proposed_rate_per_minute", proposedRate));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.engagement.check-scope", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    private Map<?, ?> accessibilityValidateRender(
+            boolean colorOnlySignal, String screenReaderLabel, boolean localizationFallbackUsed,
+            boolean limitationDisclosurePresent) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "render_id", "render-1", "decision_token", "PASS", "color_only_signal", colorOnlySignal,
+                "screen_reader_label", screenReaderLabel, "localization_fallback_used", localizationFallbackUsed,
+                "limitation_disclosure_present", limitationDisclosurePresent);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.accessibility.validate-render", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
     }
 
     private AuthenticatedWorkflowIdentity identity(String tenant, String actor) {

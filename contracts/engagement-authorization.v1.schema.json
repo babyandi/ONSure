@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/engagement-authorization.v1.schema.json",
+  "title": "ONSure Engagement Authorization v1",
+  "description": "126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md FR-FRESH-001. DAST/fuzzing/deployed-service/external-network/load-performance-recovery tests require an explicit engagement scope beyond ordinary tenant role/operation permission. Holding an ONSure license is never itself evidence of authorization to test an arbitrary external system -- out-of-scope effect is always BLOCKED, never inferred as allowed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "engagement_id", "target_owner_authorization_ref", "allowed_endpoints",
+    "allowed_test_classes", "forbidden_actions", "starts_at", "ends_at",
+    "production_classification", "rate_ceiling_per_minute", "emergency_contact",
+    "revoked", "created_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ENGAGEMENT_AUTHORIZATION_V1"},
+    "engagement_id": {"type": "string", "minLength": 1},
+    "target_owner_authorization_ref": {"type": "string", "minLength": 1},
+    "allowed_endpoints": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "allowed_test_classes": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "forbidden_actions": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "starts_at": {"type": "string", "format": "date-time"},
+    "ends_at": {"type": "string", "format": "date-time"},
+    "production_classification": {"enum": ["PRODUCTION", "NON_PRODUCTION"]},
+    "rate_ceiling_per_minute": {"type": "integer", "minimum": 0},
+    "emergency_contact": {"type": "string", "minLength": 1},
+    "third_party_exclusion": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "revoked": {"type": "boolean"},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

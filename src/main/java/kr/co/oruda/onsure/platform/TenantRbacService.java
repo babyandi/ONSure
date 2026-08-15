@@ -50,7 +50,9 @@ public final class TenantRbacService {
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
             "assurance.appeal.file",
-            "assurance.appeal.submit-evidence");
+            "assurance.appeal.submit-evidence",
+            "assurance.engagement.check-scope",
+            "assurance.accessibility.validate-render");
     private static final Set<String> SEMANTIC_AUDITOR_OPERATIONS = Set.of(
             "semantic.authority.revalidate",
             "semantic.independence.assess",
@@ -76,7 +78,9 @@ public final class TenantRbacService {
             "assurance.hazard.advance",
             "assurance.appeal.assign-reviewer",
             "assurance.appeal.transition",
-            "assurance.appeal.decide");
+            "assurance.appeal.decide",
+            "assurance.offboarding.request",
+            "assurance.offboarding.advance");
     private static final Set<String> SEMANTIC_APPROVAL_OPERATIONS = Set.of(
             "assurance.human-accept");
     private static final Set<String> SEMANTIC_OPERATOR_OPERATIONS = Set.of(

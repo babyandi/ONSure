@@ -76,7 +76,11 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.appeal.assign-reviewer",
             "assurance.appeal.submit-evidence",
             "assurance.appeal.transition",
-            "assurance.appeal.decide");
+            "assurance.appeal.decide",
+            "assurance.offboarding.request",
+            "assurance.offboarding.advance",
+            "assurance.engagement.check-scope",
+            "assurance.accessibility.validate-render");
     private static final Set<String> CAPABILITIES = Set.of(
             "SA-01","SA-02","SA-03","SA-04","SA-05","SA-06","SA-07",
             "SA-08","SA-09","SA-10","SA-11","SA-12","SA-13","SA-14");
@@ -157,6 +161,10 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.appeal.submit-evidence" -> appealSubmitEvidence(request);
             case "assurance.appeal.transition" -> appealTransition(request);
             case "assurance.appeal.decide" -> appealDecide(request);
+            case "assurance.offboarding.request" -> offboardingRequest(request);
+            case "assurance.offboarding.advance" -> offboardingAdvance(request);
+            case "assurance.engagement.check-scope" -> engagementCheckScope(request);
+            case "assurance.accessibility.validate-render" -> accessibilityValidateRender(request);
             default -> throw new IllegalStateException("SEMANTIC_V2_OPERATION_SWITCH_GAP:" + operation);
         };
         return envelope(operation, result);
@@ -1894,6 +1902,129 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("status", event.status());
         out.put("appeal_decision", decision);
         out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    private OffboardingLedger offboardingLedger() {
+        return new OffboardingLedger(workspaceRoot.resolve(".onsure/assurance/offboarding"));
+    }
+
+    /** FR-FRESH-003 real filing: "offboarding 완료 전 tenant identifier 재사용 금지" is enforced by
+     * OffboardingLedger.request itself (rejects a second request while one is in progress or done). */
+    private Map<String, Object> offboardingRequest(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String tenantId = requiredText(request, "offboarding_tenant_id");
+        OffboardingLedger.StageEvent event;
+        try {
+            event = offboardingLedger().request(tenantId, identity.actorId());
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("OFFBOARDING_REQUESTED", targetId);
+        out.put("offboarding_tenant_id", tenantId);
+        out.put("stage", event.stage());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /** FR-FRESH-003 real stage advancement: no stage may be skipped, and legal hold is checked for
+     * real at the deletion step rather than trusted as a caller-declared outcome. */
+    private Map<String, Object> offboardingAdvance(JsonNode request) throws Exception {
+        String targetId = requiredText(request, "target_id");
+        String tenantId = requiredText(request, "offboarding_tenant_id");
+        String toStage = requiredText(request, "to_stage");
+        boolean legalHold = request.path("legal_hold").asBoolean(false);
+        String detail = request.path("detail").asText("");
+
+        OffboardingLedger.StageEvent event;
+        try {
+            event = offboardingLedger().advance(tenantId, toStage, identity.actorId(), legalHold, detail);
+        } catch (IllegalArgumentException invalid) {
+            return failClosed("HOLD", List.of(invalid.getMessage()));
+        }
+        Map<String, Object> out = base("OFFBOARDING_ADVANCED", targetId);
+        out.put("offboarding_tenant_id", tenantId);
+        out.put("stage", event.stage());
+        out.put("decision", "NON_FINAL");
+        return immutable(out);
+    }
+
+    /**
+     * engagement-authorization.v1.schema.json real scope check (FR-FRESH-001): default-deny --
+     * every dimension (revocation, time window, endpoint, test class, forbidden-action overlap,
+     * rate ceiling) is checked for real against the proposed action, and any single mismatch
+     * BLOCKS. Holding an ONSure license is never itself evidence of authorization; this operation
+     * never infers ALLOWED from anything other than an explicit, current, matching engagement.
+     */
+    private Map<String, Object> engagementCheckScope(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String engagementId = requiredText(request, "engagement_id");
+        boolean revoked = request.path("revoked").asBoolean(true);
+        List<String> allowedEndpoints = stringList(request.path("allowed_endpoints"));
+        List<String> allowedTestClasses = stringList(request.path("allowed_test_classes"));
+        List<String> forbiddenActions = stringList(request.path("forbidden_actions"));
+        int rateCeiling = request.path("rate_ceiling_per_minute").asInt(0);
+
+        Instant startsAt;
+        Instant endsAt;
+        Instant requestedAt;
+        try {
+            startsAt = Instant.parse(requiredText(request, "starts_at"));
+            endsAt = Instant.parse(requiredText(request, "ends_at"));
+            requestedAt = Instant.parse(request.path("requested_at").asText(Instant.now().toString()));
+        } catch (Exception malformed) {
+            return failClosed("BLOCKED", List.of("ENGAGEMENT_TIMESTAMP_MALFORMED"));
+        }
+
+        String proposedEndpoint = requiredText(request, "proposed_endpoint");
+        String proposedTestClass = requiredText(request, "proposed_test_class");
+        int proposedRate = request.path("proposed_rate_per_minute").asInt(0);
+
+        List<String> reasons = new ArrayList<>();
+        if (revoked) reasons.add("ENGAGEMENT_REVOKED");
+        if (requestedAt.isBefore(startsAt) || requestedAt.isAfter(endsAt)) reasons.add("OUTSIDE_TIME_WINDOW");
+        if (!allowedEndpoints.contains(proposedEndpoint)) reasons.add("ENDPOINT_NOT_IN_SCOPE:" + proposedEndpoint);
+        if (!allowedTestClasses.contains(proposedTestClass)) reasons.add("TEST_CLASS_NOT_IN_SCOPE:" + proposedTestClass);
+        if (forbiddenActions.contains(proposedTestClass)) reasons.add("TEST_CLASS_FORBIDDEN:" + proposedTestClass);
+        if (proposedRate > rateCeiling) reasons.add("RATE_CEILING_EXCEEDED");
+
+        Map<String, Object> out = base("ENGAGEMENT_SCOPE_CHECK", targetId);
+        out.put("engagement_id", engagementId);
+        out.put("proposed_endpoint", proposedEndpoint);
+        out.put("proposed_test_class", proposedTestClass);
+        out.put("scope_decision", reasons.isEmpty() ? "ALLOWED" : "BLOCKED");
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", reasons.isEmpty() ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * accessible-claim-render.v1.schema.json real compliance computation (FR-FRESH-002): a missing
+     * or blank screen_reader_label, a color-only signal, or a localization fallback that drops
+     * limitation disclosure each independently make the render NON_COMPLIANT -- computed for real
+     * from the supplied fields, never assumed compliant by default.
+     */
+    private Map<String, Object> accessibilityValidateRender(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String renderId = requiredText(request, "render_id");
+        Set<String> validDecisionTokens = Set.of("PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE", "UNKNOWN");
+        String decisionToken = request.path("decision_token").asText("");
+        boolean colorOnlySignal = request.path("color_only_signal").asBoolean(true);
+        String screenReaderLabel = request.path("screen_reader_label").asText("");
+        boolean localizationFallbackUsed = request.path("localization_fallback_used").asBoolean(false);
+        boolean limitationDisclosurePresent = request.path("limitation_disclosure_present").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        if (!validDecisionTokens.contains(decisionToken)) reasons.add("DECISION_TOKEN_MISSING_OR_INVALID");
+        if (colorOnlySignal) reasons.add("COLOR_ONLY_SIGNAL_NOT_PERMITTED");
+        if (screenReaderLabel.isBlank()) reasons.add("SCREEN_READER_LABEL_MISSING");
+        if (localizationFallbackUsed && !limitationDisclosurePresent) reasons.add("FALLBACK_DROPPED_LIMITATION_DISCLOSURE");
+
+        Map<String, Object> out = base("ACCESSIBLE_CLAIM_RENDER_VALIDATION", targetId);
+        out.put("render_id", renderId);
+        out.put("compliant", reasons.isEmpty());
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", reasons.isEmpty() ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

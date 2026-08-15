@@ -954,7 +954,39 @@
     {
       "batch": "BATCH_7",
       "name": "Fresh Review Refinements",
-      "state": "NOT_STARTED"
+      "state": "EVIDENCE_READY",
+      "scope_note": "137 SS27 Batch 7: FR-FRESH-001 Rules of Engagement/Target Testing Authorization, FR-FRESH-002 Accessibility/i18n/locale integrity, FR-FRESH-003 Offboarding Export->Revoke->Delete->Closure Receipt. Grounded in 126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md's own three named refinement items -- a completely greenfield area before this batch, zero prior Engagement/Accessibility/Offboarding references anywhere. Schema + implementation + tests built together (following the discipline established in Batch 6).",
+      "fr_fresh_003_offboarding": {
+        "state": "EVIDENCE_READY",
+        "note": "OffboardingLedger.java (NEW, durable, append-only, one file per tenant_id): the exact named 9-stage minimum sequence enforced as a real state machine -- TERMINATION_REQUESTED -> NEW_EFFECT_BLOCKED -> EXPORT_WINDOW -> CREDENTIAL_REVOCATION -> PENDING_JOB_SETTLEMENT -> RETENTION_CLASSIFICATION -> CUSTOMER_EXPORT -> DELETION_OR_LEGAL_HOLD_PROCESSING -> OFFBOARDING_RECEIPT_ISSUED, no stage skippable. Legal hold is checked for real at the deletion step (SecurityException, not merely recorded) -- \"legal hold\ub294 deletion\ubcf4\ub2e4 \uc6b0\uc120.\" A second termination request for a tenant already in progress or complete is rejected outright, closing \"offboarding \uc644\ub8cc \uc804 tenant identifier \uc7ac\uc0ac\uc6a9 \uae08\uc9c0.\"",
+        "contract_schema": "contracts/offboarding-closure.v1.schema.json (NEW)",
+        "implementation": [
+          "src/main/java/kr/co/oruda/onsure/platform/OffboardingLedger.java (NEW)",
+          "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (offboardingRequest, offboardingAdvance)"
+        ],
+        "tests": [
+          "src/test/java/kr/co/oruda/onsure/platform/OffboardingLedgerTest.java (NEW, 6 tests)",
+          "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+2 tests)"
+        ]
+      },
+      "fr_fresh_001_engagement_authorization": {
+        "state": "EVIDENCE_READY",
+        "note": "assurance.engagement.check-scope: real default-deny scope check against every named dimension (revocation, time window, endpoint allowlist, test-class allowlist, forbidden-action overlap, rate ceiling) -- any single mismatch BLOCKS. Holding an ONSure license is never itself evidence of authorization to test an arbitrary external system; this operation never infers ALLOWED from anything other than an explicit, current, matching engagement.",
+        "contract_schema": "contracts/engagement-authorization.v1.schema.json (NEW)",
+        "implementation": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (engagementCheckScope)",
+        "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+3 tests: endpoint out of scope blocked, matching request allowed, rate ceiling exceeded blocked)"
+      },
+      "fr_fresh_002_accessibility": {
+        "state": "EVIDENCE_READY",
+        "note": "assurance.accessibility.validate-render: real compliance computation, not a default-compliant assumption -- a missing/blank screen_reader_label, a color_only_signal, or a localization fallback that drops limitation_disclosure_present each independently make the render NON_COMPLIANT. This is a backend contract-level implementation of the accessibility-safe critical communication requirement (this codebase has no UI layer of its own beyond vscode-extension/extension.js, which this batch does not touch) -- a real UI consumer wiring this validator into an actual rendered surface remains follow-on work, noted below rather than claimed.",
+        "contract_schema": "contracts/accessible-claim-render.v1.schema.json (NEW)",
+        "implementation": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (accessibilityValidateRender)",
+        "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+3 tests: color-only rejected, fallback-drops-limitation rejected, fully compliant render accepted)"
+      },
+      "legacy_contract_semantic_drift_regression": {
+        "note": "Ran the full python unittest suite (180 tests, all passing) and validate-repository-contracts.py / validate-semantic-assurance-v2-contracts.py / validate-structured-contracts.py after every schema addition this batch -- the existing cross-contract regression harness IS the \"legacy contract vs semantic drift\" check this item calls for, and it stayed green throughout. No existing schema, fixture, or v2 operation was modified in this batch; only additive new contracts/operations, so no drift was possible against anything pre-existing."
+      },
+      "python_cross_contract_tests": "tests/test_fresh_review_refinement_contracts.py (NEW, 5 tests)"
     },
     {
       "batch": "BATCH_8",
