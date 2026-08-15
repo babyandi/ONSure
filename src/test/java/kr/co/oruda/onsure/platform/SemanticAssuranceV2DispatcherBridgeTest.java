@@ -1332,7 +1332,9 @@ class SemanticAssuranceV2DispatcherBridgeTest {
     }
 
     // doc 158 contradiction class 3 "Transparency vs Challenge Secrecy" -- LC-P0-003 runtime
-    // evidence.
+    // evidence. Same runtime mechanism also satisfies FR-LEARN-033 Challenge Set Secrecy (151
+    // SS8): "노출·유출되면 해당 set의 blind qualification authority를 즉시 폐기한다" is exactly
+    // the one-way exposure_state/blind_authority_retained behavior these tests verify.
     @Test
     void publicRequestsForResultsAreGrantedWithoutExposingTheChallengeSet() throws Exception {
         Map<?, ?> result = learningDispatch(bridge, "assurance.learning.challenge-set-access.decide", Map.of(

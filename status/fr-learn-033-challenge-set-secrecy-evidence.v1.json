@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-033",
+  "requirement_summary": "Challenge Set Secrecy: 비공개 Challenge Set의 정답/fixture 핵심은 evaluator-only scope로 분리하고 개발 Agent/학습 파이프라인에 노출 금지한다. 노출·유출되면 해당 set의 blind qualification authority를 즉시 폐기한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (learningChallengeSetAccessDecide), assurance.learning.challenge-set-access.decide v2 operation; contracts/challenge-set-access-disposition.v1.schema.json",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain). Same implementation originally built to close doc 158 P0 contradiction class 3 (Transparency vs Challenge Secrecy) -- FR-LEARN-033 is the explicit requirement ID that design work implements.",
+  "observed_test_methods": [
+    "publicRequestsForResultsAreGrantedWithoutExposingTheChallengeSet",
+    "aNonEvaluatorRequestingTheSealedFixtureIsDeniedOutright",
+    "anEvaluatorAccessingTheSealedAnswerExposesTheChallengeSetPermanently",
+    "onceExposedTheChallengeSetNeverRecoversBlindAuthorityRegardlessOfWhatIsRequestedNow"
+  ],
+  "coverage_notes": "SEALED_FIXTURE/SEALED_ANSWER access is evaluator-only -- a non-evaluator (development agent, learning pipeline, or public requester) is denied outright, satisfying '개발 Agent/학습 파이프라인에 노출 금지'. Exposure is modeled as one-way: any grant of a sealed field, even to a legitimate evaluator, permanently flips blind_authority_retained to false -- satisfying '노출·유출되면 해당 set의 blind qualification authority를 즉시 폐기한다' exactly, including that the loss is irreversible (a later request can never re-seal an already-exposed set).",
+  "open_gap": "REQUIREMENT_WITHOUT_DESIGN remains: the trace scanner correctly excludes FR-LEARN-033's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md SS8) as circular, and no OTHER design document currently cites FR-LEARN-033 by ID -- a genuine gap, disclosed rather than papered over.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
