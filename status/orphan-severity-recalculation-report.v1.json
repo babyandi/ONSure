@@ -1,0 +1,507 @@
+{
+  "authority_ref": "90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md SS6 (explicitly requires human/DCQ review of the mechanical heuristic); Autonomous Development Mode standing policy execution queue item 2",
+  "contract": "ONSURE_ORPHAN_SEVERITY_RECALCULATION_REPORT_V1",
+  "disposition": "REVIEW_REQUIRED -- this report identifies candidates for P0 escalation under documented, disclosed criteria (R1, R2). It does NOT itself change any requirement's severity in scan-global-trace-closure.py's own output, contracts/claude-development-progress-registry.v1.json, or any other gate. Treat recalculation_candidates as a prioritized worklist for closure, not as a new authoritative P0 set.",
+  "final_claim_allowed": false,
+  "mechanical_p0_count": 0,
+  "mechanical_p1_count": 376,
+  "recalculation_candidate_count": 34,
+  "recalculation_candidates": [
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "`FR-LEARN-012` Multi-Oracle disagreement가 unresolved인 상태에서는 영향받는 Final PASS를 금지해야 한다.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-012",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "1. FR-LEARN-026 Confidence Calibration / Abstention: Validator/model의 confidence는 실제 정확도와 calibration되어야 한다. calibration error, reliability curve, Brier/ECE 또는 동등 지표를 기록하고 임계치 미만·OOD·증거부족에서는 `ABSTAIN/",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-026",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "2. FR-LEARN-027 Shadow / Canary Activation: 학습자산의 운영 승격은 최소 `APPROVED -> SHADOW -> CANARY -> ACTIVE`를 지원한다. SHADOW는 최종 판정에 영향 없이 비교만 수행하고, CANARY는 제한된 tenant/scope/traffic에서만 영향 가능하다. offline qualific",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-027",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "4. FR-LEARN-029 Catastrophic Forgetting / Interference: 새 learning epoch가 과거 capability를 잃게 만들 수 있으므로 이전 Golden/Blind/Challenge capability 집합에 대한 regression을 수행하고 forgotten-capability count와 severity를",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-029",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "6. FR-LEARN-031 Active-learning Sampling Bias: 학습 대상으로 어떤 사례를 선택했는지 selection policy, probability/score, strata, excluded population을 기록한다. uncertainty sampling 등 편향된 표본으로 얻은 효과를 전체 population 성능으로 일반",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-031",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "8. FR-LEARN-033 Challenge Set Secrecy: 비공개 Challenge Set의 정답/fixture 핵심은 evaluator-only scope로 분리하고 개발 Agent/학습 파이프라인에 노출 금지한다. 노출·유출되면 해당 set의 blind qualification authority를 즉시 폐기한다.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-033",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "9. FR-LEARN-034 Statistical Qualification: precision/recall/FN/FP 개선 주장은 최소 표본수, confidence interval, variance, statistical power와 필요 시 multiple-comparison correction을 포함한다. 작은 표본의 point estimate만으로 q",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-034",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "14. FR-LEARN-039 IP / License Provenance: 공개·외부·고객 유래 Pattern/Rule/Fixture/Corpus에도 license, usage right, redistribution/training permission, jurisdiction/contract restriction을 lineage로 결속한다. 권리 불명확 자",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-039",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-046 Cross-Tenant Transfer Risk: Organization/Industry/Global 학습자산은 source tenant와 별도 tenant holdout에서 transfer impact를 검증한다. 익명화만으로 cross-tenant 안전성을 가정하지 않으며 tenant-specific artifact의 자동 상위 ",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-046",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-054 Data Residency / Cross-region Learning: 학습·검증 데이터와 파생 학습자산의 저장·처리·복제 지역을 기록하고 region 이동은 policy/contract/jurisdiction에 따라 제한한다. 허용되지 않은 cross-region 학습·집계를 금지한다.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-054",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-063 Adversarial Benchmark Generation Governance: 자동 생성 adversarial/challenge fixture도 source, generation model, prompt, seed, novelty, contamination, safety review를 기록한다. generator가 자신의 bench",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-063",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-069 Knowledge Fork / Merge Governance: Tenant/Industry/Global knowledge가 fork된 뒤 merge될 수 있으므로 ancestor epoch, divergent changes, conflicts, chosen resolution, merge receipt를 보존한다. silent ove",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-069",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-072 Learning History Migration: Schema/registry/knowledge-store migration 시 candidate lifecycle, lineage, old decisions, revoked assets, qualification evidence를 보존한다. migration 후 history loss",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-072",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-077 External LLM / Provider Provenance Boundary: 외부 LLM/provider에 전달한 prompt/context/evidence와 반환된 output을 provider/version/region/retention/training-use policy와 함께 기록한다. 외부 provider 출력이 내부 p",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-077",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-081 Selective Prediction / Risk-Coverage Governance: ABSTAIN/HOLD 비율과 coverage를 함께 관리한다. 어려운 사례를 모두 abstain하여 precision만 높이는 metric gaming을 금지하고 risk-coverage curve를 qualification에 사용한다.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-081",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-LEARN-094 Decision Explanation Fidelity: 설명은 실제 사용된 evidence/rule/oracle/policy 경로에서 생성되어야 한다. 사후 생성된 그럴듯한 설명이 실제 decision lineage와 불일치하면 explanation PASS 금지.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-LEARN-094",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-META-010 Atomic Validation Snapshot: Final은 동일 Target/Scope/Requirement/Policy generation에서 필수 Lane이 동시에 성립한 Snapshot이어야 한다. 서로 다른 Run의 좋은 결과를 선택적으로 조립하지 않는다.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-META-010",
+      "taxonomy": "FUNCTIONAL"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-META-041 Cross-Contract Semantic Validation: 개별 Schema valid를 넘어 Contract 간 관계를 검증한다. 예: REJECT Approval은 Final Lock 불가, purpose/type 일치, target/candidate digest 일치, run context 일치, cancelled evide",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-META-041",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-META-043 AI·개발자·운영자 표시 일관성: API, Web, VS Code, Report는 동일 상태 온톨로지와 Assurance Ceiling을 사용한다. `SELF_VALIDATION_NONFINAL PASS`를 단순 Final PASS로 축약하는 UI/문서 변환을 금지한다.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-META-043",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-META-049 Assurance Strength Dimension: Decision과 Assurance Strength를 분리한다. 후보 단계는 AL0_UNASSESSED, AL1_EXECUTED, AL2_EVIDENCE_BOUND, AL3_INDEPENDENTLY_REPERFORMED, AL4_QUALIFIED, AL5_PRODUCTION_BOUN",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-META-049",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "QUALIFICATION_GATE",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R1_CRITICAL_QUALIFICATION_GATE_ORPHAN"
+      ],
+      "normative_text_excerpt": "FR-META-060 Certificate and Product Assurance Final Ceiling: Product-level Certificate 발급은 exact CompositionSnapshot, current FinalLock, required independent verification, current qualification/author",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_DESIGN",
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "FR-META-060",
+      "taxonomy": "ASSURANCE"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "보안 설정(신규, OWASP ASVS V14 대조로 2026-08-09 발견): 필수 HTTP 보안 헤더 누락(Strict-Transport-Security, X-Content-Type-Options 등), CORS가 모든 Origin을 허용하는 과도한 설정, 불필요한 디버그/상세 에러 정보 노출",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md::security-review::6e5c69a7b4d6eb6d64f0",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "결정(2026-08-09, G5)**: 새 Finding 생애주기 계약을 제정하지 않고 이 설계서를 스냅샷 모델에 맞춰 단순화한다. `security-findings.v1.schema.json`의 기존 3단계(OPEN/CLOSED/ACCEPTED_RISK)와 최신 `validation_run` 스냅샷을 조합하면 Case Dashboard·Organizati",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::5-contracts-state-model-mapping-v1-json::67ef573ac16313836f8b",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "중요한 제약**: `service-case-state.v1.schema.json`의 `final_claim_allowed`는 예외 없는 `const: false`이고(70행), G30에서 확인한 `TARGET_PRODUCT_APPLY: mvp_allowed=false` 하드 게이트와 같은 근거를 공유한다 — 즉 AcceptanceCertificate는 \"결",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::acceptancecertificate-externalacceptorgrant-2026-08-11-design-only-g7::3c9340ac8fa4c0079824",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "`completeness_disclaimer`: 고정 상수 텍스트/코드(\"이 인증서는 명시된 정책·범위 내 판정이며 결함 부재를 증명하지 않는다. `final_claim_allowed`는 항상 false다\") — 생략 불가 필수 필드, `final_claim_allowed: const false`와 같은 방식으로 계약화되어야 함",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::acceptancecertificate-externalacceptorgrant-2026-08-11-design-only-g7::883f19b94ef0077b0888",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "Extension은 신뢰되지 않은 Workspace에서 자동 실행을 금지하며 최소 권한 Workspace Trust를 요구한다",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md::extension-distribution::b2c4204ce00f89865059",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "Autopilot: Stop Condition에 도달하거나 위험행위 목록에 해당하는 단계 전까지 연속 실행한다. Autopilot 상태에서도 Main 직접 변경과 Push는 FR-COM-008과 §7에 따라 사용자 승인 없이 수행할 수 없다. 실제 `contracts/unattended-autopilot.v1.json`은 Autopilot을 더 엄격하게 제",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::chat::0b9f7e75ca46485c9eaa",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "HIGH",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "실제 계약과 일치 확인된 부분**: `service-case-state.v1.schema.json`의 `status`(PREFLIGHT_REQUIRED~CLOSED 18단계), `security-findings.v1.schema.json`의 `severity`(CRITICAL/HIGH/MEDIUM/LOW/INFO), `program-risk-score.v1",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md::g14-2026-08-11-08-review-checklist-open-decisions-md-08-review-checklist-open-decisions-md-g14::5956afd7c903730e1cbe",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "Independent Lane은 동일 service method 단순 재호출 금지, verifier/oracle implementation digest 결속, memory-blind 기술 차단, dataset semantic family 보관, weakening API 권한 강화, Oracle coupling 자동표기를 요구한다.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md::8-11::551424a2c303cedfadae",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "권한 축소 후 capability 증가 금지",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md::14-metamorphic-validation::e0f342fbef336fbd0297",
+      "taxonomy": "SECURITY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "학습자산 scope는 `PRIVATE → ORGANIZATION → INDUSTRY → GLOBAL`로 분리한다. 상위 scope 승격에는 consent, anonymization/privacy proof, corpus-quality qualification, policy approval이 필요하다. 자동 상향 승격 금지.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/semantic-assurance/147_LEARNING_VALIDATION_CLOSED_LOOP_QA_GATES.md::25-scope-promotion-gate::897d23d2be325a0dfeb9",
+      "taxonomy": "PRIVACY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "`PRIVATE→ORGANIZATION→INDUSTRY→GLOBAL` 승격을 별도 승인 사건으로 관리한다. consent/privacy/anonymization/corpus-quality/policy proof 없이는 상향 승격 금지.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/semantic-assurance/148_LEARNING_VALIDATION_IMPLEMENTATION_CONTRACT_BLUEPRINT.md::i-learningscopepromotion::fea86a74a85ff0762b41",
+      "taxonomy": "PRIVACY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "필수: asset, from/to scope, consent, privacy/anonymization proof, corpus integrity, policy approval, decision.",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/semantic-assurance/149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md::i-learningscopepromotion::7b7f45603c6663aefd39",
+      "taxonomy": "PRIVACY"
+    },
+    {
+      "claim_effect": "INFORMATIONAL",
+      "criticality": "CRITICAL",
+      "matched_rules": [
+        "R2_SECURITY_PRIVACY_REGULATORY_NO_VERIFICATION_PATH_AT_ALL"
+      ],
+      "normative_text_excerpt": "INVARIANT: Architecture/State/Security 문서의 MUST/MUST_NOT 성격 불변식",
+      "orphan_dimensions": [
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH",
+        "REQUIREMENT_WITHOUT_TEST"
+      ],
+      "requirement_id": "REQ::docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md::2-requirement-source-class::e7272afb918acd75bbda",
+      "taxonomy": "SECURITY"
+    }
+  ]
+}

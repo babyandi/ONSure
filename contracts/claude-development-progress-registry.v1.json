@@ -1267,5 +1267,17 @@
       "disclosed_gap": "Session fixation prevention (session ID regeneration on privilege escalation) is NOT implemented -- the requirement's own verification method only specifies the two criteria above as testable, so this evidence is honest about closing those two and not the broader NFR-SESSION scope.",
       "trace_closure": "NFR-SESSION orphan_dimensions now [] (was WITHOUT_CONTRACT/WITHOUT_TEST/WITHOUT_EVIDENCE_PATH). P1 orphan count: 377 -> 376."
     }
+  },
+  "orphan_severity_recalculation": {
+    "state": "REVIEW_REQUIRED",
+    "note": "Standing policy execution queue item 2. scan-global-trace-closure.py's own docstring requires its mechanical P0 heuristic (claim_effect=POSITIVE_CLAIM_GATE + criticality=CRITICAL + specific dimensions) to be treated as a starting point for human/DCQ review, not a final severity determination. Built scripts/recalculate-orphan-severity.py as a SEPARATE, additive, read-only review pass -- does not silently redefine the mechanical scanner's own P0/P1 output, which the Global Lock preflight's P0_ORPHAN_ZERO_OR_AUTH_EXTERNAL_BLOCKER gate and tests/test_requirement_universe.py already depend on.",
+    "criteria": [
+      "R1: criticality=CRITICAL and claim_effect=QUALIFICATION_GATE (not just POSITIVE_CLAIM_GATE) with a real orphan dimension -- a qualification gate is structurally at least as consequential as a positive-claim gate; excluding it from the original heuristic was narrower wording, not a considered design decision.",
+      "R2: taxonomy in (SECURITY, PRIVACY, REGULATORY) and criticality in (CRITICAL, HIGH) with ZERO test_refs AND ZERO evidence_refs (not merely missing one) -- a security/privacy/regulatory requirement with no real verification path at all."
+    ],
+    "result": "34 candidates found (mechanical P0 remains 0, unchanged). Includes FR-LEARN-012 (multi-oracle disagreement blocking Final PASS), FR-LEARN-033 (Challenge Set Secrecy -- note: this is a distinct explicit requirement ID from doc 158's contradiction CLASS 3 already closed this session; the class-level runtime mechanism exists but this specific FR ID still lacks its own direct test/evidence citation), FR-META-060 (Certificate and Product Assurance Final Ceiling), and 31 others.",
+    "evidence": "status/orphan-severity-recalculation-report.v1.json",
+    "tests": "tests/test_orphan_severity_recalculation.py (4 tests: report never claims final authority, a known real R1 case is captured, every candidate is a genuine mechanical P1 with a matched rule, the pass never mutates the underlying scan report)",
+    "disposition": "REVIEW_REQUIRED, not auto-promoted -- recorded as a prioritized worklist per the script's own explicit disclosure, not a new authoritative P0 set. Closing these 34 items is real, substantial implementation work (each needs the same Contract->Implementation->Test->Evidence Done Gate as everything else this session), tracked as the next concrete slice of the P1 orphan coverage closure track rather than attempted in bulk here."
   }
 }
