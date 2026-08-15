@@ -1205,6 +1205,13 @@
         "bug_caught_and_fixed_during_this_slice": "Set.of(...).contains(null) throws NullPointerException in the JDK immutable-collections implementation -- the first test run for the 'no deletion_basis supplied at all' case crashed with NPE instead of exercising the intended downgrade path. Fixed with an explicit null check before the Set.contains() call; same bug CLASS (JDK immutable-collection null-handling surprise) as the Set.of() duplicate-element crash caught earlier in Batch 5.",
         "partial_disclosure": "EvidenceObservation (the other LC-P0-008 contract) is not yet built -- this closes the CounterevidenceDisposition half only.",
         "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (privacy-only deletion downgraded; no-basis deletion also downgraded, this is the case that caught the NPE; real legal basis honored; non-counterevidence deletion unaffected)"
+      },
+      {
+        "class": "3 -- Transparency vs Challenge Secrecy",
+        "runtime_operation": "assurance.learning.challenge-set-access.decide (NEW)",
+        "contract_schema": "contracts/challenge-set-access-disposition.v1.schema.json (NEW -- the QA candidate binding names ValidationExperiment for LC-P0-003, but that existing schema is entirely about stochastic/metamorphic/differential run outcomes and has no secrecy/access-control fields at all, so a dedicated schema was built instead of force-fitting)",
+        "note": "METHODOLOGY/SCOPE/RESULTS/AUTHORITY always disclosable. SEALED_FIXTURE/SEALED_ANSWER is evaluator-only -- a non-evaluator request is denied outright. Exposure is one-way: any grant of a sealed field (even to a legitimate evaluator) flips exposure_state to EXPOSED and blind_authority_retained to false PERMANENTLY -- once prior_exposure_state is EXPOSED, it stays EXPOSED regardless of what is requested afterward, matching real blind-test contamination which cannot be undone.",
+        "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (public results granted without exposure; non-evaluator sealed-fixture request denied; evaluator sealed-answer access exposes permanently; already-exposed set never recovers blind authority)"
       }
     ],
     "classes_already_covered_by_prior_batch_5_work": [
@@ -1214,10 +1221,9 @@
     ],
     "classes_still_open": [
       "2 -- Privacy vs Reproducibility (needs EvidenceObservation contract, not yet built)",
-      "3 -- Transparency vs Challenge Secrecy (needs sealed-access enforcement over ValidationExperiment, schema exists since Batch 5 but no access-control wiring)",
       "7 -- Adaptive Learning vs Reproducibility (PARTIAL -- ValidationExperiment cross-wiring still open)",
-      "8 -- PARTIAL -- CounterevidenceDisposition closed; EvidenceObservation half still open",
-      "9 -- PARTIAL -- per-event disposition closed; aggregate HumanOverrideTrendReport view still open",
+      "8 -- Counterevidence vs Privacy (PARTIAL -- EvidenceObservation half still open)",
+      "9 -- Human Override vs Self-confirmation (PARTIAL -- aggregate HumanOverrideTrendReport view still open)",
       "11 -- Ground-truth Drift vs Historical Immutability (PARTIAL -- GroundTruthAuthority + RevalidationBacklog still open)"
     ]
   }

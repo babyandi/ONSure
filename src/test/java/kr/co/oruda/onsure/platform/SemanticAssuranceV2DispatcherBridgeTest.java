@@ -1213,6 +1213,47 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         assertEquals("DELETED", result.get("disposition"));
     }
 
+    // doc 158 contradiction class 3 "Transparency vs Challenge Secrecy" -- LC-P0-003 runtime
+    // evidence.
+    @Test
+    void publicRequestsForResultsAreGrantedWithoutExposingTheChallengeSet() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.challenge-set-access.decide", Map.of(
+                "access_id", "access-1", "challenge_set_id", "cs-1", "requester_role", "PUBLIC",
+                "field_requested", "RESULTS", "prior_exposure_state", "SEALED"));
+        assertEquals(true, result.get("access_granted"));
+        assertEquals("SEALED", result.get("exposure_state"));
+        assertEquals(true, result.get("blind_authority_retained"));
+    }
+
+    @Test
+    void aNonEvaluatorRequestingTheSealedFixtureIsDeniedOutright() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.challenge-set-access.decide", Map.of(
+                "access_id", "access-2", "challenge_set_id", "cs-2", "requester_role", "PUBLIC",
+                "field_requested", "SEALED_FIXTURE", "prior_exposure_state", "SEALED"));
+        assertEquals(false, result.get("access_granted"));
+        assertEquals("SEALED", result.get("exposure_state"));
+        assertEquals(List.of("SEALED_FIELD_IS_EVALUATOR_ONLY"), result.get("reasons"));
+    }
+
+    @Test
+    void anEvaluatorAccessingTheSealedAnswerExposesTheChallengeSetPermanently() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.challenge-set-access.decide", Map.of(
+                "access_id", "access-3", "challenge_set_id", "cs-3", "requester_role", "EVALUATOR",
+                "field_requested", "SEALED_ANSWER", "prior_exposure_state", "SEALED"));
+        assertEquals(true, result.get("access_granted"));
+        assertEquals("EXPOSED", result.get("exposure_state"));
+        assertEquals(false, result.get("blind_authority_retained"));
+    }
+
+    @Test
+    void onceExposedTheChallengeSetNeverRecoversBlindAuthorityRegardlessOfWhatIsRequestedNow() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.learning.challenge-set-access.decide", Map.of(
+                "access_id", "access-4", "challenge_set_id", "cs-4", "requester_role", "PUBLIC",
+                "field_requested", "METHODOLOGY", "prior_exposure_state", "EXPOSED"));
+        assertEquals("EXPOSED", result.get("exposure_state"));
+        assertEquals(false, result.get("blind_authority_retained"));
+    }
+
     @Test
     void releaseQualificationCannotReachQualifiedFromSelfValidationReceiptsAlone() throws Exception {
         Map<?, ?> result = releaseQualify(List.of(), List.of(archetype("GENERAL_SOFTWARE", "QUALIFIED")), futureIso());

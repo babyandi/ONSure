@@ -72,6 +72,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.decision-currentness.evaluate",
             "assurance.learning.human-override.decide",
             "assurance.learning.counterevidence.dispose",
+            "assurance.learning.challenge-set-access.decide",
             "assurance.release.qualify",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
@@ -164,6 +165,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.decision-currentness.evaluate" -> learningDecisionCurrentnessEvaluate(request);
             case "assurance.learning.human-override.decide" -> learningHumanOverrideDecide(request);
             case "assurance.learning.counterevidence.dispose" -> learningCounterevidenceDispose(request);
+            case "assurance.learning.challenge-set-access.decide" -> learningChallengeSetAccessDecide(request);
             case "assurance.release.qualify" -> releaseQualify(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
@@ -1813,6 +1815,71 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("is_counterevidence", isCounterevidence);
         out.put("disposition", disposition);
         out.put("deletion_basis", deletionBasis);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * challenge-set-access-disposition.v1.schema.json real computation (doc 158 contradiction
+     * class 3 "Transparency vs Challenge Secrecy", LC-P0-003). Methodology/scope/results/authority
+     * are always disclosable; SEALED_FIXTURE/SEALED_ANSWER access is evaluator-only -- a
+     * non-evaluator requesting either is denied outright. Exposure is one-way: once
+     * prior_exposure_state is EXPOSED (from any earlier grant, including a legitimate evaluator's),
+     * it stays EXPOSED and blind_authority_retained stays false forever, regardless of what's
+     * requested now -- matching real-world blind-test contamination, which cannot be undone by a
+     * later "actually let's keep it sealed" decision.
+     */
+    private Map<String, Object> learningChallengeSetAccessDecide(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String accessId = requiredText(request, "access_id");
+        String challengeSetId = requiredText(request, "challenge_set_id");
+        Set<String> roles = Set.of("EVALUATOR", "PUBLIC", "LEARNER", "OTHER");
+        String requesterRole = requiredText(request, "requester_role");
+        if (!roles.contains(requesterRole)) {
+            return failClosed("HOLD", List.of("CHALLENGE_SET_ACCESS_ROLE_INVALID"));
+        }
+        Set<String> fields = Set.of("METHODOLOGY", "SCOPE", "RESULTS", "AUTHORITY", "SEALED_FIXTURE", "SEALED_ANSWER");
+        String fieldRequested = requiredText(request, "field_requested");
+        if (!fields.contains(fieldRequested)) {
+            return failClosed("HOLD", List.of("CHALLENGE_SET_ACCESS_FIELD_INVALID"));
+        }
+        Set<String> exposureStates = Set.of("SEALED", "EXPOSED");
+        String priorExposureState = requiredText(request, "prior_exposure_state");
+        if (!exposureStates.contains(priorExposureState)) {
+            return failClosed("HOLD", List.of("CHALLENGE_SET_ACCESS_PRIOR_STATE_INVALID"));
+        }
+        boolean sealedField = "SEALED_FIXTURE".equals(fieldRequested) || "SEALED_ANSWER".equals(fieldRequested);
+
+        boolean accessGranted;
+        String exposureState;
+        List<String> reasons = new ArrayList<>();
+        if ("EXPOSED".equals(priorExposureState)) {
+            exposureState = "EXPOSED";
+            accessGranted = !sealedField || "EVALUATOR".equals(requesterRole);
+            reasons.add("CHALLENGE_SET_ALREADY_EXPOSED_BLIND_AUTHORITY_UNRECOVERABLE");
+        } else if (sealedField && !"EVALUATOR".equals(requesterRole)) {
+            accessGranted = false;
+            exposureState = "SEALED";
+            reasons.add("SEALED_FIELD_IS_EVALUATOR_ONLY");
+        } else if (sealedField) {
+            accessGranted = true;
+            exposureState = "EXPOSED";
+            reasons.add("EVALUATOR_ACCESS_TO_SEALED_FIELD_EXPOSES_THE_CHALLENGE_SET");
+        } else {
+            accessGranted = true;
+            exposureState = "SEALED";
+        }
+        boolean blindAuthorityRetained = "SEALED".equals(exposureState);
+
+        Map<String, Object> out = base("CHALLENGE_SET_ACCESS_DISPOSITION", targetId);
+        out.put("access_id", accessId);
+        out.put("challenge_set_id", challengeSetId);
+        out.put("requester_role", requesterRole);
+        out.put("field_requested", fieldRequested);
+        out.put("prior_exposure_state", priorExposureState);
+        out.put("access_granted", accessGranted);
+        out.put("exposure_state", exposureState);
+        out.put("blind_authority_retained", blindAuthorityRetained);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
