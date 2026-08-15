@@ -81,6 +81,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.effectiveness.evaluate",
             "assurance.strength-ceiling.compute",
             "assurance.learning.data-residency.check",
+            "assurance.learning.cross-tenant-transfer.validate",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -186,6 +187,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.effectiveness.evaluate" -> learningEffectivenessEvaluate(request);
             case "assurance.strength-ceiling.compute" -> assuranceStrengthCeilingCompute(request);
             case "assurance.learning.data-residency.check" -> dataResidencyCheck(request);
+            case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -2528,6 +2530,59 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("allowed_regions", allowedRegions);
         out.put("cross_region_aggregation_authorized", crossRegionAuthorized);
         out.put("jurisdiction_basis", jurisdictionBasis);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    private static final Set<String> TRANSFER_TARGET_SCOPES = Set.of("ORGANIZATION", "INDUSTRY", "GLOBAL");
+    private static final Set<String> ANONYMIZATION_ONLY_SENTINELS =
+            Set.of("ANONYMIZATION_ONLY", "ANONYMIZED", "ANONYMIZATION", "NONE", "N/A");
+
+    /**
+     * cross-tenant-transfer-validation.v1.schema.json real computation (FR-LEARN-046 Cross-Tenant
+     * Transfer Risk: "Organization/Industry/Global 학습자산은 source tenant와 별도 tenant
+     * holdout에서 transfer impact를 검증한다. 익명화만으로 cross-tenant 안전성을 가정하지
+     * 않으며..."). JSON Schema can require holdout_transfer_impact_evidence_ref to be a non-empty
+     * string, but cannot check it is a DIFFERENT tenant from source_tenant_id (a self-holdout is
+     * not a real holdout), nor detect a caller substituting a bare anonymization claim for real
+     * transfer-impact evidence. This operation rejects both: holdout_tenant_id equal to
+     * source_tenant_id is always BLOCKED, and an evidence reference that is itself just an
+     * anonymization-only sentinel (rather than a real evidence citation) is also BLOCKED even when
+     * anonymization_applied=true -- closing "익명화만으로 cross-tenant 안전성을 가정하지 않는다"
+     * for real, not merely as a documented convention.
+     */
+    private Map<String, Object> crossTenantTransferValidate(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String learningAssetId = requiredText(request, "learning_asset_id");
+        String targetScope = requiredText(request, "target_scope");
+        if (!TRANSFER_TARGET_SCOPES.contains(targetScope)) {
+            return failClosed("HOLD", List.of("TRANSFER_TARGET_SCOPE_INVALID:" + targetScope));
+        }
+        String sourceTenantId = requiredText(request, "source_tenant_id");
+        String holdoutTenantId = requiredText(request, "holdout_tenant_id");
+        boolean anonymizationApplied = request.path("anonymization_applied").asBoolean(false);
+        String evidenceRef = requiredText(request, "holdout_transfer_impact_evidence_ref");
+
+        List<String> reasons = new ArrayList<>();
+        String decision;
+        if (sourceTenantId.equals(holdoutTenantId)) {
+            decision = "TRANSFER_BLOCKED";
+            reasons.add("HOLDOUT_TENANT_SAME_AS_SOURCE");
+        } else if (ANONYMIZATION_ONLY_SENTINELS.contains(evidenceRef.toUpperCase(java.util.Locale.ROOT))) {
+            decision = "TRANSFER_BLOCKED";
+            reasons.add("ANONYMIZATION_ALONE_IS_NOT_TRANSFER_IMPACT_EVIDENCE");
+        } else {
+            decision = "TRANSFER_VALIDATED";
+        }
+
+        Map<String, Object> out = base("ONSURE_CROSS_TENANT_TRANSFER_VALIDATION", targetId);
+        out.put("learning_asset_id", learningAssetId);
+        out.put("target_scope", targetScope);
+        out.put("source_tenant_id", sourceTenantId);
+        out.put("holdout_tenant_id", holdoutTenantId);
+        out.put("anonymization_applied", anonymizationApplied);
+        out.put("holdout_transfer_impact_evidence_ref", evidenceRef);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);

@@ -198,6 +198,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.validation.snapshot-verify", "assurance.validation.experiment-evaluate",
                     "assurance.learning.effectiveness.evaluate", "assurance.strength-ceiling.compute",
                     "assurance.learning.data-residency.check",
+                    "assurance.learning.cross-tenant-transfer.validate",
                     "assurance.provider.drift-check",
                     "assurance.multi-agent.corroboration-check",
                     "assurance.hazard.create", "assurance.appeal.file",

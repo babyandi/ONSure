@@ -53,6 +53,7 @@ public final class TenantRbacService {
             "assurance.learning.effectiveness.evaluate",
             "assurance.strength-ceiling.compute",
             "assurance.learning.data-residency.check",
+            "assurance.learning.cross-tenant-transfer.validate",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",

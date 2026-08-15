@@ -859,6 +859,15 @@
         "fixtures/contracts/data-residency-check.invalid.json"
       ],
       "schema": "contracts/data-residency-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/cross-tenant-transfer-validation.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/cross-tenant-transfer-validation.invalid.json"
+      ],
+      "schema": "contracts/cross-tenant-transfer-validation.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

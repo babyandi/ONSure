@@ -1817,6 +1817,44 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-046 Cross-Tenant Transfer Risk
+    @Test
+    void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {
+        Map<?, ?> result = crossTenantTransferValidate(
+                "tenant-alpha", "tenant-beta", true, "status/real-transfer-impact-evidence.v1.json");
+        assertEquals("TRANSFER_VALIDATED", result.get("decision"));
+    }
+
+    @Test
+    void crossTenantTransferValidateBlocksWhenHoldoutTenantSameAsSource() throws Exception {
+        Map<?, ?> result = crossTenantTransferValidate(
+                "tenant-alpha", "tenant-alpha", true, "status/real-transfer-impact-evidence.v1.json");
+        assertEquals("TRANSFER_BLOCKED", result.get("decision"));
+        assertEquals(List.of("HOLDOUT_TENANT_SAME_AS_SOURCE"), result.get("reasons"));
+    }
+
+    @Test
+    void crossTenantTransferValidateBlocksWhenEvidenceIsJustAnAnonymizationOnlySentinel() throws Exception {
+        Map<?, ?> result = crossTenantTransferValidate("tenant-alpha", "tenant-beta", true, "ANONYMIZATION_ONLY");
+        assertEquals("TRANSFER_BLOCKED", result.get("decision"));
+        assertEquals(List.of("ANONYMIZATION_ALONE_IS_NOT_TRANSFER_IMPACT_EVIDENCE"), result.get("reasons"));
+    }
+
+    private Map<?, ?> crossTenantTransferValidate(
+            String sourceTenantId, String holdoutTenantId, boolean anonymizationApplied, String evidenceRef)
+            throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "learning_asset_id", "asset-1", "target_scope", "INDUSTRY",
+                "source_tenant_id", sourceTenantId, "holdout_tenant_id", holdoutTenantId,
+                "anonymization_applied", anonymizationApplied,
+                "holdout_transfer_impact_evidence_ref", evidenceRef);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.cross-tenant-transfer.validate", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_CROSS_TENANT_TRANSFER_VALIDATION_V1",
+  "learning_asset_id": "asset-financial-fraud-pattern-014",
+  "target_scope": "INDUSTRY",
+  "source_tenant_id": "tenant-alpha-bank",
+  "holdout_tenant_id": "tenant-beta-bank",
+  "anonymization_applied": true,
+  "holdout_transfer_impact_evidence_ref": "status/transfer-impact-run-2026-08-15-industry-014.v1.json",
+  "decision": "TRANSFER_VALIDATED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

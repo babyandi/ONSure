@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/cross-tenant-transfer-validation.v1.schema.json",
+  "title": "ONSure Cross-Tenant Transfer Validation v1",
+  "description": "FR-LEARN-046 Cross-Tenant Transfer Risk: Organization/Industry/Global 학습자산은 source tenant와 별도 tenant holdout에서 transfer impact를 검증한다. 익명화만으로 cross-tenant 안전성을 가정하지 않으며 tenant-specific artifact의 자동 상위 scope 사용을 금지한다. A holdout tenant identical to the source tenant, or an evidence reference that is itself just an anonymization-only claim rather than a real transfer-impact citation, is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "learning_asset_id", "target_scope", "source_tenant_id", "holdout_tenant_id",
+    "anonymization_applied", "holdout_transfer_impact_evidence_ref", "decision",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CROSS_TENANT_TRANSFER_VALIDATION_V1"},
+    "learning_asset_id": {"type": "string", "minLength": 1},
+    "target_scope": {"enum": ["ORGANIZATION", "INDUSTRY", "GLOBAL"]},
+    "source_tenant_id": {"type": "string", "minLength": 1},
+    "holdout_tenant_id": {"type": "string", "minLength": 1},
+    "anonymization_applied": {"type": "boolean"},
+    "holdout_transfer_impact_evidence_ref": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["TRANSFER_VALIDATED", "TRANSFER_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}
