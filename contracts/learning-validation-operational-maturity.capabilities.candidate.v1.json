@@ -1,0 +1,32 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_OPERATIONAL_MATURITY_CAPABILITIES_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "authority":"docs/master/semantic-assurance/151_LEARNING_VALIDATION_OPERATIONAL_MATURITY_REFINEMENT.md",
+  "capabilities":[
+    {"id":"FR-LEARN-041","name":"Causal Attribution","p0":false},
+    {"id":"FR-LEARN-042","name":"Learning Impact Radius","p0":true},
+    {"id":"FR-LEARN-043","name":"Requalification Trigger Matrix","p0":true},
+    {"id":"FR-LEARN-044","name":"Graceful Deprecation","p0":false},
+    {"id":"FR-LEARN-045","name":"Knowledge Compatibility","p0":false},
+    {"id":"FR-LEARN-046","name":"Cross Tenant Transfer Risk","p0":true},
+    {"id":"FR-LEARN-047","name":"Synthetic Data Collapse Guard","p0":true},
+    {"id":"FR-LEARN-048","name":"Feedback Loop Amplification Guard","p0":true},
+    {"id":"FR-LEARN-049","name":"Human Override Drift","p0":false},
+    {"id":"FR-LEARN-050","name":"Cost Aware Assurance","p0":false},
+    {"id":"FR-LEARN-051","name":"Temporal Distribution Shift","p0":false},
+    {"id":"FR-LEARN-052","name":"Decision Debt Revalidation Backlog","p0":true}
+  ],
+  "origin_types":["REAL_OBSERVATION","HUMAN_AUTHORED","PUBLIC_REFERENCE","SYNTHETIC","DERIVED_SYNTHETIC"],
+  "deprecation_states":["ACTIVE","DEPRECATED","GRACE","RETIRED"],
+  "effect_claim_states":["IMPROVEMENT_PROVEN","CORRELATED_CHANGE_ONLY","NO_IMPROVEMENT","REGRESSION","INCONCLUSIVE"],
+  "forbidden_shortcuts":[
+    "UNRESOLVED_IMPACT_RADIUS_CURRENT_DECISION",
+    "STALE_QUALIFICATION_AFTER_TRIGGER_USED_FOR_PASS",
+    "TENANT_DERIVED_ASSET_AUTO_GLOBAL",
+    "SYNTHETIC_DEPTH_OVER_LIMIT_GLOBAL_WITHOUT_REAL_ANCHOR",
+    "CIRCULAR_SUPPORT_COUNTED_AS_INDEPENDENT_EVIDENCE",
+    "INCOMPATIBLE_KNOWLEDGE_PASS_INHERITANCE",
+    "UNBOUNDED_REVALIDATION_DEBT_IGNORED"
+  ],
+  "final_claim_allowed":false
+}

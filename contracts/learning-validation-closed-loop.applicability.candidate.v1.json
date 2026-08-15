@@ -1,0 +1,12 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_APPLICABILITY_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "authority":"docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md",
+  "applicable":["FR-LEARN-001","FR-LEARN-002","FR-LEARN-003","FR-LEARN-004","FR-LEARN-005","FR-LEARN-006","FR-LEARN-007","FR-LEARN-008","FR-LEARN-009","FR-LEARN-010","FR-LEARN-011","FR-LEARN-012","FR-LEARN-017","FR-LEARN-018","FR-LEARN-019","FR-LEARN-020","FR-LEARN-021","FR-LEARN-022","FR-LEARN-023","FR-LEARN-024","FR-LEARN-025"],
+  "conditional":{"FR-LEARN-013":"STOCHASTIC_TARGET","FR-LEARN-014":"METAMORPHIC_APPLICABLE","FR-LEARN-015":"COMPARATOR_AVAILABLE","FR-LEARN-016":"MULTI_ENVIRONMENT_TARGET"},
+  "not_applicable":[],
+  "unknown":[],
+  "summary":{"applicable":21,"conditional":4,"not_applicable":0,"unknown":0,"critical_unknown":0},
+  "rule":"CONDITIONAL requirements become mandatory when their condition is true; condition-false instances require explicit N/A evidence.",
+  "final_claim_allowed":false
+}

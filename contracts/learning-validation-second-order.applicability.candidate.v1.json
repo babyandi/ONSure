@@ -1,0 +1,9 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_SECOND_ORDER_APPLICABILITY_V1_CANDIDATE",
+  "status":"DESIGN_QA_CANDIDATE_NONFINAL",
+  "rows":[
+    {"id":"FR-LEARN-026","applicability":"APPLICABLE"},{"id":"FR-LEARN-027","applicability":"CONDITIONAL","condition":"Production-impacting learned assets"},{"id":"FR-LEARN-028","applicability":"APPLICABLE"},{"id":"FR-LEARN-029","applicability":"APPLICABLE"},{"id":"FR-LEARN-030","applicability":"APPLICABLE"},{"id":"FR-LEARN-031","applicability":"CONDITIONAL","condition":"Active-learning selection enabled"},{"id":"FR-LEARN-032","applicability":"APPLICABLE"},{"id":"FR-LEARN-033","applicability":"CONDITIONAL","condition":"Private challenge set used"},{"id":"FR-LEARN-034","applicability":"APPLICABLE"},{"id":"FR-LEARN-035","applicability":"APPLICABLE"},{"id":"FR-LEARN-036","applicability":"APPLICABLE"},{"id":"FR-LEARN-037","applicability":"APPLICABLE"},{"id":"FR-LEARN-038","applicability":"CONDITIONAL","condition":"User/external feedback enters learning pipeline"},{"id":"FR-LEARN-039","applicability":"APPLICABLE"},{"id":"FR-LEARN-040","applicability":"APPLICABLE"}
+  ],
+  "summary":{"APPLICABLE":11,"CONDITIONAL":4,"NOT_APPLICABLE":0,"UNKNOWN":0,"CRITICAL_UNKNOWN":0},
+  "final_claim_allowed":false
+}

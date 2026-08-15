@@ -1,0 +1,17 @@
+{
+  "contract_type":"ONSURE_GLOBAL_TRACE_REGISTRY_EXECUTION_CANDIDATE_V3",
+  "status":"EXECUTED_PARTIAL_NONFINAL",
+  "source_requirement_snapshot":"contracts/global-requirement-universe-snapshot.execution.candidate.v3.json",
+  "explicit_candidate_requirement_count":103,
+  "legacy_explicit_traced_count":73,
+  "learning_extension_traced_count":25,
+  "traced_explicit_candidate_count":98,
+  "untraced_explicit_candidate_count":5,
+  "learning_extension_unmapped_count":0,
+  "implementation_trace_pending_learning_count":25,
+  "runtime_test_evidence_pending_learning_count":25,
+  "global_population_digest":null,
+  "global_complete":false,
+  "lock_effect":"HOLD",
+  "note":"FR-LEARN design trace is complete 25/25. Five legacy explicit requirements remain untraced in the prior execution population; full non-ID trace/orphan scan remains pending authority-filtered regeneration."
+}

@@ -1,0 +1,51 @@
+{
+  "type": "ONSURE_DESIGN_QA_12_STEP_EXECUTION_V1",
+  "status": "DESIGN_QA_HOLD_NONFINAL",
+  "baseline_main_commit": "43d560b5964d4942eeb1728c0c62565764ac348b",
+  "steps": {
+    "1_dcq_0001_authority": "PASS_RESOLVED_WITH_AUTHORITY",
+    "2_product_design_requirement_universe": "PARTIAL_RECORD_POPULATION_899_CANDIDATE_ACTIVE_DENOMINATOR_NOT_EXACT",
+    "3_applicability_authoritative_population": "HOLD_NOT_PROVEN",
+    "4_global_trace_registry": "HOLD_P0_1_P1_898_CLOSED_0",
+    "5_repository_orphan_scan": "FAIL_HOLD",
+    "6_cross_design_contradiction_scan": "PARTIAL_HOLD",
+    "7_numbering_authority_alias_cleanup": "PARTIAL_PHYSICAL_COLLISIONS_REMAIN",
+    "8_exact_artifact_inventory": "PARTIAL_GIT_IDENTITY_AVAILABLE_CONTENT_SHA256_QA_MANIFEST_PENDING",
+    "9_canonical_registry_digests": "HOLD_INCOMPLETE",
+    "10_baseline_manifest_reconstructability": "HOLD_RECONSTRUCTABLE_FALSE",
+    "11_design_lock_check": "HOLD",
+    "12_final_design_qa_decision": "DESIGN_QA_HOLD"
+  },
+  "candidate_requirement_evidence": {
+    "explicit_canonical_ids": 89,
+    "generated_non_id_records": 810,
+    "record_population_candidates": 899,
+    "duplicate_semantic_groups": 16,
+    "explicit_ids_with_semantic_variants": 31,
+    "p0_trace_orphans": 1,
+    "p1_trace_orphans": 898,
+    "closed_trace_rows": 0,
+    "known_p0_orphan": "FR-COM-008"
+  },
+  "resolved_design_authority_conflicts": ["DCQ-0001", "DCQ-0002"],
+  "physical_prefix_collisions": ["21", "126", "127"],
+  "lock_gates": {
+    "active_denominator_exact": false,
+    "critical_unknown_zero": false,
+    "p0_orphan_zero": false,
+    "global_orphan_zero": false,
+    "global_contradiction_zero": false,
+    "physical_authority_clean": false,
+    "content_sha256_inventory_complete": false,
+    "registry_digest_set_complete": false,
+    "baseline_reconstructable": false,
+    "ready_for_lock": false
+  },
+  "anti_false_completion": {
+    "product_design_scope_complete_candidate": true,
+    "design_qa_pass": false,
+    "design_baseline_locked": false,
+    "implementation_complete": false,
+    "production_authorized": false
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type":"ONSURE_LEARNING_VALIDATION_TRACE_MATERIALIZATION_STATUS_V1_CANDIDATE",
+  "status":"DESIGN_TRACE_CLOSED_IMPLEMENTATION_TRACE_PENDING",
+  "requirement_population_ref":"contracts/product-design-requirement-universe.learning-extension.candidate.v1.json",
+  "applicability_ref":"contracts/learning-validation-closed-loop.applicability.candidate.v1.json",
+  "design_trace_ref":"contracts/learning-validation-closed-loop.trace-matrix.candidate.v1.json",
+  "contract_boundary_ref":"docs/master/semantic-assurance/148_LEARNING_VALIDATION_IMPLEMENTATION_CONTRACT_BLUEPRINT.md",
+  "schema_fixture_spec_ref":"docs/master/semantic-assurance/149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md",
+  "fixture_plan_ref":"contracts/learning-validation-closed-loop.fixture-plan.candidate.v1.json",
+  "requirement_count":25,
+  "design_trace_unmapped":0,
+  "applicability_unknown":0,
+  "implementation_trace_pending":25,
+  "runtime_test_evidence_pending":25,
+  "design_lock_allowed":false,
+  "final_claim_allowed":false
+}
