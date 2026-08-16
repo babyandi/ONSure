@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-058",
+  "requirement_summary": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS6 RAG Assurance: 'RAG identity는 corpus만이 아니라 Corpus -> ACL -> Chunking -> Embedding Model -> Index Build -> Retrieval Policy -> Reranker -> Citation/Source Binding 전체를 포함한다.' Nine named verification areas: corpus provenance/rights, ACL preservation, poisoning/adversarial document, stale index, index/corpus mismatch, retrieval omission/over-retrieval, citation correctness, cross-tenant retrieval, embedding/model drift.",
+  "subject": "SemanticAssuranceV2WorkflowService.ragRetrievalAssuranceCheck via assurance.rag.retrieval-assurance-check",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/rag-retrieval-assurance-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#ragRetrievalAssuranceCheckIsValidWhenAllChunksAreSameTenantAndAllCitationsAreRetrieved",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#ragRetrievalAssuranceCheckIsValidWithNoCitationsAtAll",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#ragRetrievalAssuranceCheckDetectsAChunkRetrievedFromADifferentTenant",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#ragRetrievalAssuranceCheckDetectsACitationForAChunkThatWasNeverRetrieved",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#ragRetrievalAssuranceCheckAggregatesBothCrossTenantAndFabricatedCitationViolationsTogether"
+  ],
+  "coverage_notes": "Ninth and final closure of Batch 5's disclosed broader-scope gap. Of SS6's nine named verification areas, this operation closes two by real structural computation, deliberately narrower than the full RAG identity chain rather than a superficial pass over all nine: cross_tenant_retrieval_detected is a real per-chunk equality check between each retrieved chunk's own declared source_tenant_id and the querying subject's tenant_id -- ragRetrievalAssuranceCheckDetectsAChunkRetrievedFromADifferentTenant proves a single cross-tenant chunk among otherwise-clean same-tenant chunks is caught, not just an all-or-nothing check. citation_correctness_verified is a real set-membership check -- every chunk_id actually cited must be present in the set of chunk_ids genuinely retrieved for this query; ragRetrievalAssuranceCheckDetectsACitationForAChunkThatWasNeverRetrieved is the direct test of a fabricated/hallucinated citation (a chunk_id the answer cites that was never in retrieved_chunks at all). ragRetrievalAssuranceCheckAggregatesBothCrossTenantAndFabricatedCitationViolationsTogether proves both violation classes are reported together (deterministic reason order: cross-tenant violations first, then fabricated citations) rather than one short-circuiting the other, the same aggregation discipline delegationChainCheck already applies to its own two violation classes.",
+  "open_gap": "Operates on a caller-supplied retrieved_chunks/citations representation; there is no live RAG runtime in this codebase that actually performs retrieval, reranking, or answer generation to feed this gate from real system state (same disclosed 'caller-supplied representation, not live system integration' pattern as every other Batch 5 broader-scope closure this session). 7 of the 9 named SS6 verification areas remain uncovered by this schema: corpus provenance/rights, ACL preservation (beyond the tenant-equality proxy this operation checks), poisoning/adversarial document, stale index, index/corpus mismatch, retrieval omission/over-retrieval, embedding/model drift -- each would require its own caller-supplied signal this schema does not yet request (e.g. corpus/index digests, ACL scope lists, poisoning classifier output) and is disclosed here as out of scope for this closure rather than silently assumed covered.",
+  "design_reference_gap": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md is itself Status: DESIGN_ONLY/DRAFT/NON_FINAL -- this closure builds real, tested conformance-checking infrastructure against two of its SS6 rules, consistent with every other gate built against draft-status design docs this session, but does not and cannot finalize the parent document itself, nor does it claim full SS6 coverage.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

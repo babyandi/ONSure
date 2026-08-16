@@ -105,6 +105,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.prompt.provenance-check",
             "assurance.ai-safety.claim-independence-check",
             "assurance.delegation.chain-check",
+            "assurance.rag.retrieval-assurance-check",
             "assurance.hazard.create",
             "assurance.hazard.advance",
             "assurance.appeal.file",
@@ -232,6 +233,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.prompt.provenance-check" -> promptProvenanceChainCheck(request);
             case "assurance.ai-safety.claim-independence-check" -> aiSafetyClaimIndependenceCheck(request);
             case "assurance.delegation.chain-check" -> delegationChainCheck(request);
+            case "assurance.rag.retrieval-assurance-check" -> ragRetrievalAssuranceCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
             case "assurance.hazard.advance" -> hazardAdvance(request);
             case "assurance.appeal.file" -> appealFile(request);
@@ -3946,6 +3948,63 @@ final class SemanticAssuranceV2WorkflowService {
         path.remove(path.size() - 1);
         onPath.remove(node);
         return null;
+    }
+
+    /**
+     * rag-retrieval-assurance-check.v1.schema.json real computation (FR-META-058 AI Nondeterminism and
+     * Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS6 RAG
+     * Assurance: "RAG identity는 Corpus -> ACL -> Chunking -> Embedding Model -> Index Build -> Retrieval
+     * Policy -> Reranker -> Citation/Source Binding 전체를 포함한다"). Of the nine named verification
+     * areas, this closes two by real structural computation: cross_tenant_retrieval_detected is a per-chunk
+     * equality check between each retrieved chunk's own declared source_tenant_id and the querying
+     * subject's tenant_id, not a caller-asserted flag. citation_correctness_verified is a real set-
+     * membership check -- every cited chunk_id must be present among the chunk_ids genuinely retrieved for
+     * this query; a citation naming an unretrieved chunk_id is a fabricated/hallucinated citation.
+     */
+    private Map<String, Object> ragRetrievalAssuranceCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String queryingTenantId = requiredText(request, "querying_tenant_id");
+        JsonNode chunksNode = request.path("retrieved_chunks");
+        if (!chunksNode.isArray() || chunksNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("RAG_RETRIEVAL_REQUIRES_AT_LEAST_ONE_CHUNK"));
+        }
+
+        Set<String> retrievedChunkIds = new java.util.LinkedHashSet<>();
+        List<String> crossTenantViolations = new ArrayList<>();
+        for (JsonNode chunk : chunksNode) {
+            String chunkId = requiredText(chunk, "chunk_id");
+            String sourceTenantId = requiredText(chunk, "source_tenant_id");
+            retrievedChunkIds.add(chunkId);
+            if (!sourceTenantId.equals(queryingTenantId)) {
+                crossTenantViolations.add(chunkId);
+            }
+        }
+
+        List<String> citations = stringList(request.path("citations"));
+        List<String> fabricatedCitations = new ArrayList<>();
+        for (String citedChunkId : citations) {
+            if (!retrievedChunkIds.contains(citedChunkId)) {
+                fabricatedCitations.add(citedChunkId);
+            }
+        }
+
+        boolean crossTenantDetected = !crossTenantViolations.isEmpty();
+        boolean citationCorrectnessVerified = fabricatedCitations.isEmpty();
+        boolean retrievalValid = !crossTenantDetected && citationCorrectnessVerified;
+
+        List<String> reasons = new ArrayList<>();
+        for (String chunkId : crossTenantViolations) reasons.add("CROSS_TENANT_RETRIEVAL:" + chunkId);
+        for (String chunkId : fabricatedCitations) reasons.add("FABRICATED_CITATION:" + chunkId);
+
+        Map<String, Object> out = base("RAG_RETRIEVAL_ASSURANCE_CHECK", subjectId);
+        out.put("cross_tenant_retrieval_detected", crossTenantDetected);
+        out.put("cross_tenant_violations", List.copyOf(crossTenantViolations));
+        out.put("citation_correctness_verified", citationCorrectnessVerified);
+        out.put("fabricated_citations", List.copyOf(fabricatedCitations));
+        out.put("retrieval_valid", retrievalValid);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", retrievalValid ? "NON_FINAL" : "BLOCKED");
+        return immutable(out);
     }
 
     private HazardLedger hazardLedger() {

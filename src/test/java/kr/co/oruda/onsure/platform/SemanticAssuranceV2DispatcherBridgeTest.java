@@ -3123,6 +3123,78 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "subject_id", "delegation-chain-1", "edges", edges));
     }
 
+    // FR-META-058 AI Nondeterminism and Multi-Agent Assurance (SS6 RAG Assurance)
+    @Test
+    void ragRetrievalAssuranceCheckIsValidWhenAllChunksAreSameTenantAndAllCitationsAreRetrieved() throws Exception {
+        Map<?, ?> result = ragRetrievalAssuranceCheck(
+                "tenant-a",
+                List.of(ragChunk("chunk-1", "tenant-a"), ragChunk("chunk-2", "tenant-a")),
+                List.of("chunk-1"));
+        assertEquals(false, result.get("cross_tenant_retrieval_detected"));
+        assertEquals(true, result.get("citation_correctness_verified"));
+        assertEquals(true, result.get("retrieval_valid"));
+        assertEquals(List.of(), result.get("reasons"));
+    }
+
+    @Test
+    void ragRetrievalAssuranceCheckIsValidWithNoCitationsAtAll() throws Exception {
+        Map<?, ?> result = ragRetrievalAssuranceCheck(
+                "tenant-a", List.of(ragChunk("chunk-1", "tenant-a")), List.of());
+        assertEquals(true, result.get("citation_correctness_verified"));
+        assertEquals(true, result.get("retrieval_valid"));
+    }
+
+    @Test
+    void ragRetrievalAssuranceCheckDetectsAChunkRetrievedFromADifferentTenant() throws Exception {
+        Map<?, ?> result = ragRetrievalAssuranceCheck(
+                "tenant-a",
+                List.of(ragChunk("chunk-1", "tenant-a"), ragChunk("chunk-2", "tenant-b")),
+                List.of("chunk-1"));
+        assertEquals(true, result.get("cross_tenant_retrieval_detected"));
+        assertEquals(List.of("chunk-2"), result.get("cross_tenant_violations"));
+        assertEquals(false, result.get("retrieval_valid"));
+        assertTrue(((List<?>) result.get("reasons")).contains("CROSS_TENANT_RETRIEVAL:chunk-2"));
+    }
+
+    @Test
+    void ragRetrievalAssuranceCheckDetectsACitationForAChunkThatWasNeverRetrieved() throws Exception {
+        Map<?, ?> result = ragRetrievalAssuranceCheck(
+                "tenant-a", List.of(ragChunk("chunk-1", "tenant-a")), List.of("chunk-1", "chunk-99"));
+        assertEquals(false, result.get("cross_tenant_retrieval_detected"));
+        assertEquals(false, result.get("citation_correctness_verified"));
+        assertEquals(List.of("chunk-99"), result.get("fabricated_citations"));
+        assertEquals(false, result.get("retrieval_valid"));
+        assertTrue(((List<?>) result.get("reasons")).contains("FABRICATED_CITATION:chunk-99"));
+    }
+
+    @Test
+    void ragRetrievalAssuranceCheckAggregatesBothCrossTenantAndFabricatedCitationViolationsTogether() throws Exception {
+        Map<?, ?> result = ragRetrievalAssuranceCheck(
+                "tenant-a",
+                List.of(ragChunk("chunk-1", "tenant-a"), ragChunk("chunk-2", "tenant-b")),
+                List.of("chunk-2", "chunk-99"));
+        assertEquals(true, result.get("cross_tenant_retrieval_detected"));
+        assertEquals(false, result.get("citation_correctness_verified"));
+        assertEquals(
+                List.of("CROSS_TENANT_RETRIEVAL:chunk-2", "FABRICATED_CITATION:chunk-99"),
+                result.get("reasons"));
+        assertEquals(false, result.get("retrieval_valid"));
+    }
+
+    private Map<String, Object> ragChunk(String chunkId, String sourceTenantId) {
+        return Map.of("chunk_id", chunkId, "source_tenant_id", sourceTenantId);
+    }
+
+    private Map<?, ?> ragRetrievalAssuranceCheck(
+            String queryingTenantId, List<Map<String, Object>> retrievedChunks, List<String> citations)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.rag.retrieval-assurance-check", Map.of(
+                "subject_id", "rag-retrieval-1",
+                "querying_tenant_id", queryingTenantId,
+                "retrieved_chunks", retrievedChunks,
+                "citations", citations));
+    }
+
     @Test
     void hazardCreatedThroughTheWiredOperationStartsIdentified() throws Exception {
         Map<?, ?> result = learningDispatch(bridge, "assurance.hazard.create", Map.of("hazard_id", "hazard-1"));

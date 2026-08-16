@@ -1057,6 +1057,15 @@
         "fixtures/contracts/delegation-chain-check.invalid.json"
       ],
       "schema": "contracts/delegation-chain-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/rag-retrieval-assurance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/rag-retrieval-assurance-check.invalid.json"
+      ],
+      "schema": "contracts/rag-retrieval-assurance-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

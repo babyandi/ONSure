@@ -220,6 +220,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.prompt.provenance-check",
                     "assurance.ai-safety.claim-independence-check",
                     "assurance.delegation.chain-check",
+                    "assurance.rag.retrieval-assurance-check",
                     "assurance.provider.drift-check",
                     "assurance.multi-agent.corroboration-check",
                     "assurance.hazard.create", "assurance.appeal.file",
