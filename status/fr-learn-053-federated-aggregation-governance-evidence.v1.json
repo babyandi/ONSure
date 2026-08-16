@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-053",
+  "requirement_summary": "153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md FR-LEARN-053 Federated Learning / Aggregation Governance. Reconciled with FR-COM-002 Tenant Isolation and FR-LEARN-046 Cross-Tenant Transfer Risk per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md contradiction #1's own precedence rule: 'Precedence: 최소 cohort 크기 미달 또는 outlier-dominant 집계는 REJECTED로 fail-closed하고, 매 aggregation round는 참여 tenant의 명시적 opt-in을 요구하며 자산 promotion 동의로 대체되지 않는다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.federatedAggregationGovernanceCheck via assurance.learning.federated-aggregation-governance.check; contracts/federated-aggregation-governance-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/federated-aggregation-governance-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#federatedAggregationGovernanceCheckAuthorizesADiverseCohortWithFullOptIn",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#federatedAggregationGovernanceCheckRejectsACohortBelowTheMinimumSize",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#federatedAggregationGovernanceCheckRejectsAnOutlierDominantContribution",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#federatedAggregationGovernanceCheckRejectsAParticipantWhoDidNotOptIntoThisRound"
+  ],
+  "coverage_notes": "All three named precedence rules are individually and directly tested: federatedAggregationGovernanceCheckRejectsACohortBelowTheMinimumSize proves cohort_size < min_cohort_size real-computes cohort_too_small=true and REJECTED. federatedAggregationGovernanceCheckRejectsAnOutlierDominantContribution proves a real max(contribution_weight) vs outlier_dominance_threshold comparison (0.7 > 0.5) forces REJECTED and names the dominant tenant in the reason string, closing 161's own named leakage concern ('outlier tenant의 gradient 특성처럼... 개별 tenant 정보를 구조적으로 누출'). federatedAggregationGovernanceCheckRejectsAParticipantWhoDidNotOptIntoThisRound is the direct test of 'promotion 동의로 대체되지 않는다': this operation reads ONLY the per-round opt_in field on each participant object -- there is no code path that reads any asset-promotion-consent field from elsewhere, so a separately-recorded promotion consent structurally cannot substitute for this round's own opt-in.",
+  "open_gap": "Operates on a caller-supplied participant list (tenant_id/opt_in/contribution_weight); there is no live federated-learning aggregation runtime in this codebase that actually computes real gradient/weight contributions from tenant training rounds (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). This closure targets FR-LEARN-053 specifically; it contributes only a narrow, federated-aggregation-specific slice toward FR-COM-002's much broader tenant-isolation scope and FR-LEARN-046's broader cross-tenant-transfer scope (both already independently covered by their own closures elsewhere) -- it does not claim to close either of those two directly. The evaluator-only diagnostic minimization named in 161's own text ('집계 결과에 개별 tenant를 역추적 가능하게 하는 diagnostic은 evaluator-only로 최소화한다') is not modeled by this schema at all.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

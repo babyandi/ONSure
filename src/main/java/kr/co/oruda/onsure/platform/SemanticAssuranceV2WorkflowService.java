@@ -84,6 +84,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.data-residency.check",
             "assurance.learning.revocation-propagation.check",
             "assurance.decision.propagation-check",
+            "assurance.learning.federated-aggregation-governance.check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -216,6 +217,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.data-residency.check" -> dataResidencyCheck(request);
             case "assurance.learning.revocation-propagation.check" -> revocationPropagationCheck(request);
             case "assurance.decision.propagation-check" -> decisionPropagationCheck(request);
+            case "assurance.learning.federated-aggregation-governance.check" -> federatedAggregationGovernanceCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -2825,6 +2827,71 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("non_pass_dependencies", List.copyOf(nonPass));
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "PASS".equals(propagatedStatus) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * federated-aggregation-governance-check.v1.schema.json real computation. Reconciles
+     * FR-LEARN-053 Federated Learning/Aggregation Governance with FR-COM-002 Tenant Isolation and
+     * FR-LEARN-046 Cross-Tenant Transfer Risk per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_
+     * BINDINGS.md contradiction #1's own precedence rule: federated aggregation is a distinct
+     * mechanism from asset-promotion lineage/consent -- it aggregates multiple tenants' signals
+     * concurrently without a promotion event, and the aggregate itself can structurally leak
+     * individual tenant information (e.g. an outlier tenant's gradient characteristics). A cohort
+     * below min_cohort_size, or any single participant's contribution_weight exceeding
+     * outlier_dominance_threshold, is REJECTED fail-closed -- real computation, not a caller-
+     * declared flag. Every participating tenant's opt_in is checked for THIS round specifically;
+     * a separate asset-promotion consent recorded elsewhere is never substituted (this operation
+     * only reads the per-round opt_in field, nothing else).
+     */
+    private Map<String, Object> federatedAggregationGovernanceCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String aggregationRoundId = requiredText(request, "aggregation_round_id");
+        int minCohortSize = request.path("min_cohort_size").asInt(-1);
+        double outlierThreshold = request.path("outlier_dominance_threshold").asDouble(-1);
+        if (minCohortSize < 1 || outlierThreshold <= 0 || outlierThreshold > 1) {
+            return failClosed("INPUT_REQUIRED", List.of("FEDERATED_AGGREGATION_THRESHOLDS_INVALID"));
+        }
+        JsonNode participantsNode = request.path("participants");
+        if (!participantsNode.isArray() || participantsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("FEDERATED_AGGREGATION_REQUIRES_AT_LEAST_ONE_PARTICIPANT"));
+        }
+
+        int cohortSize = participantsNode.size();
+        boolean cohortTooSmall = cohortSize < minCohortSize;
+        double maxWeight = 0;
+        List<String> nonOptedIn = new ArrayList<>();
+        String dominantTenantId = null;
+        for (JsonNode participant : participantsNode) {
+            String tenantId = requiredText(participant, "tenant_id");
+            boolean optIn = participant.path("opt_in").asBoolean(false);
+            double weight = participant.path("contribution_weight").asDouble(0);
+            if (!optIn) nonOptedIn.add(tenantId);
+            if (weight > maxWeight) {
+                maxWeight = weight;
+                dominantTenantId = tenantId;
+            }
+        }
+        boolean outlierDominant = maxWeight > outlierThreshold;
+
+        List<String> reasons = new ArrayList<>();
+        if (cohortTooSmall) reasons.add("COHORT_BELOW_MINIMUM_SIZE:" + cohortSize + "<" + minCohortSize);
+        if (outlierDominant) reasons.add("OUTLIER_DOMINANT_CONTRIBUTION:" + dominantTenantId);
+        for (String tenantId : nonOptedIn) reasons.add("TENANT_NOT_OPTED_IN_THIS_ROUND:" + tenantId);
+
+        boolean rejected = cohortTooSmall || outlierDominant || !nonOptedIn.isEmpty();
+        String state = rejected ? "REJECTED" : "AGGREGATION_AUTHORIZED";
+
+        Map<String, Object> out = base("FEDERATED_AGGREGATION_GOVERNANCE_CHECK", subjectId);
+        out.put("aggregation_round_id", aggregationRoundId);
+        out.put("cohort_size", cohortSize);
+        out.put("cohort_too_small", cohortTooSmall);
+        out.put("max_contribution_weight", maxWeight);
+        out.put("outlier_dominant", outlierDominant);
+        out.put("non_opted_in_tenants", List.copyOf(nonOptedIn));
+        out.put("state", state);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "AGGREGATION_AUTHORIZED".equals(state) ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

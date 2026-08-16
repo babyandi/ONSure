@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_FEDERATED_AGGREGATION_GOVERNANCE_CHECK_V1",
+  "subject_id": "federated-model-1",
+  "aggregation_round_id": "round-2026-08-16-001",
+  "min_cohort_size": 3,
+  "outlier_dominance_threshold": 0.5,
+  "participants": [
+    {"tenant_id": "tenant-a", "opt_in": true, "contribution_weight": 0.34},
+    {"tenant_id": "tenant-b", "opt_in": true, "contribution_weight": 0.33},
+    {"tenant_id": "tenant-c", "opt_in": true, "contribution_weight": 0.33}
+  ],
+  "cohort_size": 3,
+  "cohort_too_small": false,
+  "max_contribution_weight": 0.34,
+  "outlier_dominant": false,
+  "non_opted_in_tenants": [],
+  "state": "AGGREGATION_AUTHORIZED",
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

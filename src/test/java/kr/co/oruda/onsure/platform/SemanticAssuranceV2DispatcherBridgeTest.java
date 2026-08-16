@@ -1993,6 +1993,63 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "subject_id", "claim-subject-1", "claim_id", "claim-1", "dependencies", dependencies));
     }
 
+    // FR-LEARN-053 Federated Learning/Aggregation Governance (161 P1 contradiction #1)
+    @Test
+    void federatedAggregationGovernanceCheckAuthorizesADiverseCohortWithFullOptIn() throws Exception {
+        Map<?, ?> result = federatedAggregationGovernanceCheck(3, 0.5, List.of(
+                aggregationParticipant("tenant-a", true, 0.34),
+                aggregationParticipant("tenant-b", true, 0.33),
+                aggregationParticipant("tenant-c", true, 0.33)));
+        assertEquals(false, result.get("cohort_too_small"));
+        assertEquals(false, result.get("outlier_dominant"));
+        assertEquals("AGGREGATION_AUTHORIZED", result.get("state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void federatedAggregationGovernanceCheckRejectsACohortBelowTheMinimumSize() throws Exception {
+        Map<?, ?> result = federatedAggregationGovernanceCheck(3, 0.5, List.of(
+                aggregationParticipant("tenant-a", true, 0.5),
+                aggregationParticipant("tenant-b", true, 0.5)));
+        assertEquals(true, result.get("cohort_too_small"));
+        assertEquals("REJECTED", result.get("state"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void federatedAggregationGovernanceCheckRejectsAnOutlierDominantContribution() throws Exception {
+        Map<?, ?> result = federatedAggregationGovernanceCheck(3, 0.5, List.of(
+                aggregationParticipant("tenant-a", true, 0.7),
+                aggregationParticipant("tenant-b", true, 0.15),
+                aggregationParticipant("tenant-c", true, 0.15)));
+        assertEquals(true, result.get("outlier_dominant"));
+        assertEquals("REJECTED", result.get("state"));
+        assertTrue(((List<?>) result.get("reasons")).get(0).toString().startsWith("OUTLIER_DOMINANT_CONTRIBUTION:tenant-a"));
+    }
+
+    @Test
+    void federatedAggregationGovernanceCheckRejectsAParticipantWhoDidNotOptIntoThisRound() throws Exception {
+        Map<?, ?> result = federatedAggregationGovernanceCheck(3, 0.5, List.of(
+                aggregationParticipant("tenant-a", true, 0.34),
+                aggregationParticipant("tenant-b", false, 0.33),
+                aggregationParticipant("tenant-c", true, 0.33)));
+        assertEquals(List.of("tenant-b"), result.get("non_opted_in_tenants"));
+        assertEquals("REJECTED", result.get("state"));
+    }
+
+    private Map<String, Object> aggregationParticipant(String tenantId, boolean optIn, double contributionWeight) {
+        return Map.of("tenant_id", tenantId, "opt_in", optIn, "contribution_weight", contributionWeight);
+    }
+
+    private Map<?, ?> federatedAggregationGovernanceCheck(
+            int minCohortSize, double outlierDominanceThreshold, List<Map<String, Object>> participants)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.learning.federated-aggregation-governance.check", Map.of(
+                "subject_id", "federated-model-1", "aggregation_round_id", "round-1",
+                "min_cohort_size", minCohortSize, "outlier_dominance_threshold", outlierDominanceThreshold,
+                "participants", participants));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {
