@@ -214,7 +214,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.learning.external-llm-provenance-boundary.check",
                     "assurance.final-lock.approval-cross-contract.check",
                     "assurance.ai-product.currentness-compose",
-                    "assurance.judge.independence-check",
+                    "assurance.judge.independence-check", "assurance.reviewer-pool.independence-check",
                     "assurance.requalification.trigger-evaluate",
                     "assurance.agent-memory.conflict-resolve",
                     "assurance.tool-call.authorization-check",

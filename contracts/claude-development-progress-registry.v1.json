@@ -1319,7 +1319,22 @@
       "evidence": "status/nfr-access-role-separation-evidence.v1.json",
       "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (VIEWER denied lowest tier; OPERATOR denied auditor-tier; AUDITOR reaches what OPERATOR cannot; ADMIN-alone denied the auditor-only otester.accept)",
       "trace_closure": "REQUIREMENT_WITHOUT_TEST and REQUIREMENT_WITHOUT_EVIDENCE_PATH closed. REQUIREMENT_WITHOUT_DESIGN disclosed as still open."
-    }
+    },
+    "fr_learn_061_062_093_reviewer_pool_independence_closed_2026_08_16": {
+      "requirement": "FR-LEARN-061, FR-LEARN-062, FR-LEARN-093",
+      "state": "FULLY_CLOSED",
+      "note": "New implementation, not a citation-only fix: no existing operation modeled a reviewer/evaluator POOL (judgeIndependenceCheck only compares one judge against one target). Built contracts/reviewer-pool-independence-check.v1.schema.json (NEW, registered 125 -> 126 schemas) + assurance.reviewer-pool.independence-check, reconciling all 3 requirements together per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md's own precedence rule (contradiction #2): a reviewer pair sharing any of org/instruction-source/model/material-source is a real pairwise collusion-risk computation (mirrors multiAgentCorroborationCheck's zero-shared-axes pattern applied to a pool); authority_capture_risk is a real max(decision_share) vs threshold comparison; pool diversity shortfall or capture risk is never silently relaxed -- STANDARD tier surfaces REDUCED_INDEPENDENCE_DISCLOSED, HIGH_RISK tier (FR-LEARN-093 scope) forces HOLD.",
+      "evidence": "status/fr-learn-061-062-093-reviewer-pool-independence-evidence.v1.json",
+      "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (genuinely diverse pool confirmed independent, shared-org pair discloses reduced independence at STANDARD tier rather than silently passing, identical pool forces HOLD at HIGH_RISK tier, concentration alone triggers capture risk with zero collusion pairs)",
+      "trace_closure": "All 3 requirement_ids' orphan_dimensions now [] (were WITHOUT_TEST/WITHOUT_EVIDENCE_PATH, design_refs already present -- these 3 were the only clean explicit-ID orphans in the 28-item 'design present, test+evidence missing' worklist that shared one natural combined mechanism). Verified via a rerun of generate-requirement-universe.py + scan-global-trace-closure.py after `git add`ing the new files (the scanner is git-ls-files-based; untracked files are invisible to it, confirmed the hard way -- first scan attempt still showed 378 before staging)."
+    },
+    "fr_learn_011_test_citation_fixed_2026_08_16": {
+      "requirement": "FR-LEARN-011",
+      "state": "PARTIALLY_CLOSED",
+      "note": "batch5_object_e_oracle_qualification_closure's own real implementation and tests already existed, but the test file never contained the literal string 'FR-LEARN-011' -- the scanner's test_refs extraction is a literal-substring grep across test files, so REQUIREMENT_WITHOUT_TEST remained despite 6 real passing tests. One-line comment fix (test source, not a new test) closes it.",
+      "trace_closure": "orphan_dimensions: ['REQUIREMENT_WITHOUT_DESIGN', 'REQUIREMENT_WITHOUT_TEST'] -> ['REQUIREMENT_WITHOUT_DESIGN']. Still counted as a P1 orphan overall (REQUIREMENT_WITHOUT_DESIGN is a genuine, undisclosed-elsewhere design gap, not fabricable) -- this closure improves the dimension, not the total P1 count."
+    },
+    "orphan_count_progress_2026_08_16": "Total scanned_requirement_count grew 379->392 between sessions (candidate-extraction drift, independent of this work -- unrelated to any closure). The delta directly attributable to this pass's own closures is -3 (orphan_p1: 378 -> 375, confirmed by scan-global-trace-closure.py rerun before and after `git add`ing the new files -- the scanner is git-ls-files-based and could not see the closures until staged). 375 of 392 scanned requirements remain P1 orphans; this is disclosed as unfinished, multi-session-scale work, not claimed complete."
   },
   "orphan_severity_recalculation": {
     "state": "REVIEW_REQUIRED",

@@ -70,6 +70,7 @@ public final class TenantRbacService {
             "assurance.final-lock.approval-cross-contract.check",
             "assurance.ai-product.currentness-compose",
             "assurance.judge.independence-check",
+            "assurance.reviewer-pool.independence-check",
             "assurance.requalification.trigger-evaluate",
             "assurance.agent-memory.conflict-resolve",
             "assurance.tool-call.authorization-check",

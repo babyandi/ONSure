@@ -911,7 +911,7 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
-    // 149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS E, 148 P0 invariant 4
+    // FR-LEARN-011 Oracle Qualification (146 doc); 149 SS E, 148 P0 invariant 4
     @Test
     void oracleQualificationCheckIsQualifiedWhenIndependentWithFreshUntilInTheFuture() throws Exception {
         Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.qualification-check", Map.of(
@@ -2756,6 +2756,70 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 List.of("training_knowledge_overlap_possible", "memory_previous_verdict_access"),
                 result.get("risk_flags"));
         assertEquals(4, ((List<?>) result.get("reasons")).size());
+    }
+
+    // FR-LEARN-061 Reviewer Collusion/Consensus Bias, FR-LEARN-062 Evaluator Capture/Authority
+    // Concentration, FR-LEARN-093 External Evaluation/Red-team Independence (161 P1 contradiction #2)
+    @Test
+    void reviewerPoolIndependenceCheckConfirmsIndependenceWhenPoolIsGenuinelyDiverse() throws Exception {
+        Map<?, ?> result = reviewerPoolIndependenceCheck("STANDARD", 2, 0.6, List.of(
+                reviewer("reviewer-1", "org-a", "instr-a", "model-a", "material-a", 0.5),
+                reviewer("reviewer-2", "org-b", "instr-b", "model-b", "material-b", 0.5)));
+        assertEquals(false, result.get("reduced_independence"));
+        assertEquals("INDEPENDENT_REVIEW_CONFIRMED", result.get("state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+        assertEquals(List.of(), result.get("collusion_risk_pairs"));
+    }
+
+    @Test
+    void reviewerPoolIndependenceCheckDisclosesReducedIndependenceAtStandardTierRatherThanSilentlyPassing() throws Exception {
+        Map<?, ?> result = reviewerPoolIndependenceCheck("STANDARD", 2, 0.9, List.of(
+                reviewer("reviewer-1", "org-a", "instr-a", "model-a", "material-a", 0.5),
+                reviewer("reviewer-2", "org-a", "instr-b", "model-b", "material-b", 0.5)));
+        assertEquals(true, result.get("reduced_independence"));
+        assertEquals("REDUCED_INDEPENDENCE_DISCLOSED", result.get("state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+        assertTrue(((List<?>) result.get("collusion_risk_pairs")).get(0).toString().contains("org_id"));
+    }
+
+    @Test
+    void reviewerPoolIndependenceCheckForcesHoldAtHighRiskTierWhenIndependenceIsReduced() throws Exception {
+        Map<?, ?> result = reviewerPoolIndependenceCheck("HIGH_RISK", 2, 0.9, List.of(
+                reviewer("reviewer-1", "org-a", "instr-a", "model-a", "material-a", 0.5),
+                reviewer("reviewer-2", "org-a", "instr-b", "model-b", "material-b", 0.5)));
+        assertEquals(true, result.get("reduced_independence"));
+        assertEquals("HOLD", result.get("state"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void reviewerPoolIndependenceCheckDetectsAuthorityCaptureFromConcentrationAloneWithNoCollusion() throws Exception {
+        Map<?, ?> result = reviewerPoolIndependenceCheck("STANDARD", 2, 0.5, List.of(
+                reviewer("reviewer-1", "org-a", "instr-a", "model-a", "material-a", 0.9),
+                reviewer("reviewer-2", "org-b", "instr-b", "model-b", "material-b", 0.1)));
+        assertEquals(List.of(), result.get("collusion_risk_pairs"));
+        assertEquals(true, result.get("authority_capture_risk"));
+        assertEquals(true, result.get("reduced_independence"));
+        assertEquals("REDUCED_INDEPENDENCE_DISCLOSED", result.get("state"));
+    }
+
+    private Map<String, Object> reviewer(
+            String reviewerId, String orgId, String instructionSourceId, String modelId,
+            String materialSourceId, double decisionShare) {
+        return Map.of(
+                "reviewer_id", reviewerId, "org_id", orgId, "instruction_source_id", instructionSourceId,
+                "model_id", modelId, "material_source_id", materialSourceId, "decision_share", decisionShare);
+    }
+
+    private Map<?, ?> reviewerPoolIndependenceCheck(
+            String riskTier, int minRequired, double concentrationThreshold, List<Map<String, Object>> reviewers)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.reviewer-pool.independence-check", Map.of(
+                "subject_id", "candidate-qualification-1",
+                "decision_risk_tier", riskTier,
+                "minimum_required_independent_reviewers", minRequired,
+                "concentration_threshold", concentrationThreshold,
+                "reviewers", reviewers));
     }
 
     private Map<?, ?> judgeIndependenceCheck(

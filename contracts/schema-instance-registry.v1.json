@@ -1066,6 +1066,15 @@
         "fixtures/contracts/rag-retrieval-assurance-check.invalid.json"
       ],
       "schema": "contracts/rag-retrieval-assurance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/reviewer-pool-independence-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/reviewer-pool-independence-check.invalid.json"
+      ],
+      "schema": "contracts/reviewer-pool-independence-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

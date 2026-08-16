@@ -100,6 +100,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.judge.independence-check",
+            "assurance.reviewer-pool.independence-check",
             "assurance.requalification.trigger-evaluate",
             "assurance.agent-memory.conflict-resolve",
             "assurance.tool-call.authorization-check",
@@ -229,6 +230,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.judge.independence-check" -> judgeIndependenceCheck(request);
+            case "assurance.reviewer-pool.independence-check" -> reviewerPoolIndependenceCheck(request);
             case "assurance.requalification.trigger-evaluate" -> requalificationTriggerEvaluate(request);
             case "assurance.agent-memory.conflict-resolve" -> agentMemoryConflictResolve(request);
             case "assurance.tool-call.authorization-check" -> toolCallAuthorizationCheck(request);
@@ -3633,6 +3635,100 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("lane_eligibility", laneEligibility);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "HIGH_CONFIDENCE_INDEPENDENT_LANE".equals(laneEligibility) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * reviewer-pool-independence-check.v1.schema.json real computation. Reconciles three
+     * requirements per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md's own
+     * precedence rule (contradiction #2): FR-LEARN-061 Reviewer Collusion/Consensus Bias ("동일
+     * 조직·지시·모델·자료에 과도하게 의존하거나 상호 영향받으면 독립 review로 계산하지 않는다"),
+     * FR-LEARN-062 Evaluator Capture/Authority Concentration ("특정 evaluator... 과도하게 독점하지
+     * 않도록 concentration metric과 SoD를 적용한다"), and FR-LEARN-093 External Evaluation/Red-team
+     * Independence. A reviewer pair sharing ANY of org/instruction-source/model/material-source is
+     * a real collusion-risk pair (string equality, not a caller-declared flag), mirroring
+     * multiAgentCorroborationCheck's zero-shared-axes-required-for-independence pattern applied to
+     * a reviewer pool instead of an agent pair. authority_capture_risk is a real max(decision_share)
+     * vs concentration_threshold comparison. Per 161's own disclosed precedence: pool diversity
+     * shortfall or capture risk is never silently relaxed -- HIGH_RISK tier (FR-LEARN-093 scope)
+     * forces HOLD until the pool improves; STANDARD tier surfaces REDUCED_INDEPENDENCE_DISCLOSED
+     * instead of silently reporting full independence.
+     */
+    private Map<String, Object> reviewerPoolIndependenceCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String riskTier = requiredText(request, "decision_risk_tier");
+        if (!Set.of("STANDARD", "HIGH_RISK").contains(riskTier)) {
+            return failClosed("INPUT_REQUIRED", List.of("REVIEWER_POOL_RISK_TIER_INVALID:" + riskTier));
+        }
+        int minRequired = request.path("minimum_required_independent_reviewers").asInt(-1);
+        double concentrationThreshold = request.path("concentration_threshold").asDouble(-1);
+        if (minRequired < 1 || concentrationThreshold <= 0 || concentrationThreshold > 1) {
+            return failClosed("INPUT_REQUIRED", List.of("REVIEWER_POOL_THRESHOLDS_INVALID"));
+        }
+        JsonNode reviewersNode = request.path("reviewers");
+        if (!reviewersNode.isArray() || reviewersNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("REVIEWER_POOL_REQUIRES_AT_LEAST_ONE_REVIEWER"));
+        }
+
+        int reviewerCount = reviewersNode.size();
+        List<String> reviewerIds = new ArrayList<>();
+        double maxShare = 0;
+        java.util.LinkedHashSet<String> nonIndependentReviewerIds = new java.util.LinkedHashSet<>();
+        List<String> collusionRiskPairs = new ArrayList<>();
+        for (int i = 0; i < reviewerCount; i++) {
+            JsonNode reviewer = reviewersNode.get(i);
+            String reviewerId = requiredText(reviewer, "reviewer_id");
+            reviewerIds.add(reviewerId);
+            maxShare = Math.max(maxShare, reviewer.path("decision_share").asDouble(0));
+        }
+        for (int i = 0; i < reviewerCount; i++) {
+            JsonNode a = reviewersNode.get(i);
+            for (int j = i + 1; j < reviewerCount; j++) {
+                JsonNode b = reviewersNode.get(j);
+                List<String> sharedAxes = new ArrayList<>();
+                if (requiredText(a, "org_id").equals(requiredText(b, "org_id"))) sharedAxes.add("org_id");
+                if (requiredText(a, "instruction_source_id").equals(requiredText(b, "instruction_source_id"))) sharedAxes.add("instruction_source_id");
+                if (requiredText(a, "model_id").equals(requiredText(b, "model_id"))) sharedAxes.add("model_id");
+                if (requiredText(a, "material_source_id").equals(requiredText(b, "material_source_id"))) sharedAxes.add("material_source_id");
+                if (!sharedAxes.isEmpty()) {
+                    collusionRiskPairs.add(reviewerIds.get(i) + "<->" + reviewerIds.get(j) + ":" + String.join(",", sharedAxes));
+                    nonIndependentReviewerIds.add(reviewerIds.get(i));
+                    nonIndependentReviewerIds.add(reviewerIds.get(j));
+                }
+            }
+        }
+
+        int independentReviewerCount = reviewerCount - nonIndependentReviewerIds.size();
+        boolean authorityCaptureRisk = maxShare > concentrationThreshold;
+        boolean insufficientIndependent = independentReviewerCount < minRequired;
+        boolean reducedIndependence = insufficientIndependent || authorityCaptureRisk;
+
+        List<String> reasons = new ArrayList<>();
+        for (String pair : collusionRiskPairs) reasons.add("COLLUSION_RISK_PAIR:" + pair);
+        if (authorityCaptureRisk) reasons.add("AUTHORITY_CAPTURE_RISK:max_share=" + maxShare);
+        if (insufficientIndependent) {
+            reasons.add("INSUFFICIENT_INDEPENDENT_REVIEWERS:" + independentReviewerCount + "<" + minRequired);
+        }
+
+        String state;
+        if (!reducedIndependence) {
+            state = "INDEPENDENT_REVIEW_CONFIRMED";
+        } else if ("HIGH_RISK".equals(riskTier)) {
+            state = "HOLD";
+        } else {
+            state = "REDUCED_INDEPENDENCE_DISCLOSED";
+        }
+
+        Map<String, Object> out = base("REVIEWER_POOL_INDEPENDENCE_CHECK", subjectId);
+        out.put("decision_risk_tier", riskTier);
+        out.put("collusion_risk_pairs", List.copyOf(collusionRiskPairs));
+        out.put("independent_reviewer_count", independentReviewerCount);
+        out.put("authority_capture_risk", authorityCaptureRisk);
+        out.put("max_concentration_share", maxShare);
+        out.put("reduced_independence", reducedIndependence);
+        out.put("state", state);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "HOLD".equals(state) ? "HOLD" : "NON_FINAL");
         return immutable(out);
     }
 
