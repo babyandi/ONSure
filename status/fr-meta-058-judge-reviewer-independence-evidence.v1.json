@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-058",
+  "requirement_summary": "비결정 AI는 단일 PASS를 충분조건으로 사용하지 않는다... Multi-agent는 agent identity/role/delegation/shared memory/message contract/authority escalation/common-mode failure를 별도 검증한다. (34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS12 Judge/Reviewer Independence sub-scope specifically: \"AI Judge/Reviewer는 target model과 다음 축을 비교한다: provider/model family, prompt/rubric implementation, training/knowledge overlap 가능성, oracle source, hidden benchmark exposure, memory/previous verdict access. 동일 계열 Judge 결과는 보조 corroboration으로 사용할 수 있으나 고신뢰 independent lane을 대체하지 않는다.\")",
+  "subject": "SemanticAssuranceV2WorkflowService.judgeIndependenceCheck via assurance.judge.independence-check",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/judge-reviewer-independence-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#judgeIndependenceCheckReachesHighConfidenceLaneWhenTrulyIndependent",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#judgeIndependenceCheckCapsAtCorroborationOnlyOnASharedProviderFamily",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#judgeIndependenceCheckCapsAtCorroborationOnlyOnHiddenBenchmarkExposureAlone",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#judgeIndependenceCheckAggregatesEverySharedAxisAndRiskFlagNotJustTheFirst"
+  ],
+  "coverage_notes": "Second closure of Batch 5's disclosed 'broader scope' gap (see batch5_broader_scope_ai_currentness_closure for the first, SS17). Mirrors the shape of the pre-existing, already-tested multiAgentCorroborationCheck (Batch 5 slice 5) but applies it to a genuinely different two-party comparison: Judge vs Target Model rather than N-way agent agreement. Three of SS12's six named axes (provider/model family, prompt/rubric implementation, oracle source) are real identity comparisons -- judge_x_id.equals(target_x_id) computed for real, never trusted from a caller-declared 'independent' flag. The other three (training/knowledge overlap possibility, hidden benchmark exposure, memory/previous verdict access) are contamination-risk facts rather than identity comparisons (there is no natural 'target value' for a target model to share a training-data overlap with), so they are read directly as caller-asserted risk flags rather than derived from a value-equality check -- this asymmetry is deliberate and disclosed, not an oversight. lane_eligibility reaches HIGH_CONFIDENCE_INDEPENDENT_LANE only when all three identity axes differ AND all three risk flags are false; judgeIndependenceCheckAggregatesEverySharedAxisAndRiskFlagNotJustTheFirst proves reasons lists every one of 2 shared axes plus 2 risk flags (4 total) simultaneously, not just the first found, matching this session's established 'aggregate, do not short-circuit' precedent (FR-META-041, and now also the AI Currentness closure immediately before this one).",
+  "open_gap": "Operates on caller-supplied judge/target identity and risk-flag values; there is no live Judge/Reviewer runtime or model-provenance registry in this codebase to observe these facts from directly (same disclosed 'caller-supplied representation, not live system read' pattern as Provider Drift, Multi-Agent Corroboration, and the AI Currentness closure immediately before this one). The three risk flags (training/knowledge overlap possibility, hidden benchmark exposure, memory/previous verdict access) are trusted as caller-asserted facts with no independent verification mechanism -- a caller who falsely asserts all three false when one is actually true would incorrectly reach HIGH_CONFIDENCE_INDEPENDENT_LANE; closing this would require a real provenance/attestation source for these facts, which does not yet exist.",
+  "design_reference_gap": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md is itself Status: DESIGN_ONLY/DRAFT/NON_FINAL -- this closure builds real, tested conformance-checking infrastructure against its SS12 rule, consistent with every other self_validation_nonfinal/PASS_NONFINAL gate built against draft-status design docs this session, but does not and cannot finalize the parent document itself. The doc does not specify machine-readable field names for the 6 axes; the judge_provider_model_family_id / prompt_rubric_implementation_id / oracle_source_id naming and the identity-vs-risk-flag split across the 6 axes are this closure's own inferred, disclosed mapping.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

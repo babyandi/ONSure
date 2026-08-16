@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/requalification-trigger-evaluation.v1.schema.json",
+  "title": "ONSure Requalification Trigger Evaluation v1",
+  "description": "FR-META-059 ONSure Release Qualification / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS14 Requalification Trigger: 9 named conditions (validator implementation change, Oracle/rubric change, Adapter/Plugin change, benchmark/hidden corpus material change, sandbox/TCB/crypto change, major dependency/runtime change, MissedFinding blind-spot confirmation, severity/coverage policy weakening, provider/model change for AI validator) each independently force requalification; 'Impact analysis 결과에 따라 full/partial requalification 범위를 정한다.' SS14 itself does not define the full-vs-partial rule, so this schema commits to an explicit, disclosed one: sandbox/TCB/crypto change, a confirmed MissedFinding blind spot, or a weakened severity/coverage policy are trust-boundary-level changes that force FULL requalification regardless of any other flag; the remaining 6 triggers (each a narrower, localized change) force only PARTIAL requalification when no FULL-tier trigger is also present. Complements onsure-release-qualification.v1.schema.json (Batch 5 slice 4, which qualifies a release as of one point in time) by deciding whether that qualification must be redone at all.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id",
+    "validator_implementation_changed", "oracle_rubric_changed", "adapter_plugin_changed",
+    "benchmark_hidden_corpus_changed", "sandbox_tcb_crypto_changed", "major_dependency_runtime_changed",
+    "missed_finding_blind_spot_confirmed", "severity_coverage_policy_weakened",
+    "provider_model_changed_for_ai_validator",
+    "requalification_required", "requalification_scope", "triggered_reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_REQUALIFICATION_TRIGGER_EVALUATION_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "validator_implementation_changed": {"type": "boolean"},
+    "oracle_rubric_changed": {"type": "boolean"},
+    "adapter_plugin_changed": {"type": "boolean"},
+    "benchmark_hidden_corpus_changed": {"type": "boolean"},
+    "sandbox_tcb_crypto_changed": {"type": "boolean"},
+    "major_dependency_runtime_changed": {"type": "boolean"},
+    "missed_finding_blind_spot_confirmed": {"type": "boolean"},
+    "severity_coverage_policy_weakened": {"type": "boolean"},
+    "provider_model_changed_for_ai_validator": {"type": "boolean"},
+    "requalification_required": {"type": "boolean"},
+    "requalification_scope": {"enum": ["NONE", "PARTIAL", "FULL"]},
+    "triggered_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"requalification_scope": {"const": "NONE"}}},
+      "then": {"properties": {"requalification_required": {"const": false}, "triggered_reasons": {"maxItems": 0}}}
+    },
+    {
+      "if": {"not": {"properties": {"requalification_scope": {"const": "NONE"}}}},
+      "then": {"properties": {"requalification_required": {"const": true}}}
+    },
+    {
+      "if": {
+        "anyOf": [
+          {"properties": {"sandbox_tcb_crypto_changed": {"const": true}}},
+          {"properties": {"missed_finding_blind_spot_confirmed": {"const": true}}},
+          {"properties": {"severity_coverage_policy_weakened": {"const": true}}}
+        ]
+      },
+      "then": {"properties": {"requalification_scope": {"const": "FULL"}}}
+    }
+  ]
+}

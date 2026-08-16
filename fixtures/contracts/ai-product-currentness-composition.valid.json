@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_AI_PRODUCT_CURRENTNESS_COMPOSITION_V1",
+  "subject_id": "ai-target-underwriting-assistant-1",
+  "model_deployment_currentness": "CURRENT",
+  "prompt_bundle_currentness": "CURRENT",
+  "tool_registry_currentness": "CURRENT",
+  "memory_policy_currentness": "CURRENT",
+  "rag_stack_currentness": "CURRENT",
+  "external_provider_contract_currentness": "CURRENT",
+  "validator_qualification_currentness": "CURRENT",
+  "overall_currentness": "CURRENT",
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

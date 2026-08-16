@@ -2512,6 +2512,59 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-META-057 AI Runtime Identity Closure (34_AI_RUNTIME_MULTI_AGENT... SS17 AI Currentness)
+    @Test
+    void aiProductCurrentnessComposeStaysCurrentWhenAllSevenAxesAreCurrent() throws Exception {
+        Map<?, ?> result = aiProductCurrentnessCompose(
+                "CURRENT", "CURRENT", "CURRENT", "CURRENT", "CURRENT", "CURRENT", "CURRENT");
+        assertEquals("CURRENT", result.get("overall_currentness"));
+        assertEquals(List.of(), result.get("reasons"));
+    }
+
+    @Test
+    void aiProductCurrentnessComposePropagatesASingleStaleAxis() throws Exception {
+        Map<?, ?> result = aiProductCurrentnessCompose(
+                "CURRENT", "CURRENT", "CURRENT", "CURRENT", "STALE", "CURRENT", "CURRENT");
+        assertEquals("STALE", result.get("overall_currentness"));
+        assertEquals(List.of("rag_stack_currentness:STALE"), result.get("reasons"));
+    }
+
+    @Test
+    void aiProductCurrentnessComposeWorstTierWinsButReasonsListsEveryDriftedAxis() throws Exception {
+        Map<?, ?> result = aiProductCurrentnessCompose(
+                "REVOKED", "CURRENT", "CURRENT", "CURRENT", "STALE", "CURRENT", "CURRENT");
+        assertEquals("REVOKED", result.get("overall_currentness"));
+        assertEquals(
+                List.of("model_deployment_currentness:REVOKED", "rag_stack_currentness:STALE"),
+                result.get("reasons"));
+    }
+
+    @Test
+    void aiProductCurrentnessComposeRejectsAnUnrecognizedAxisValue() throws Exception {
+        Exception failure = assertThrows(Exception.class, () -> aiProductCurrentnessCompose(
+                "CURRENT", "CURRENT", "CURRENT", "CURRENT", "NOT_A_REAL_STATE", "CURRENT", "CURRENT"));
+        assertTrue(failure.getMessage().contains("SEMANTIC_V2_CURRENTNESS_STATE_INVALID"));
+    }
+
+    private Map<?, ?> aiProductCurrentnessCompose(
+            String modelDeployment, String promptBundle, String toolRegistry, String memoryPolicy,
+            String ragStack, String externalProviderContract, String validatorQualification) throws Exception {
+        Map<String, Object> body = Map.ofEntries(
+                Map.entry("project_id", "project-1"), Map.entry("target_id", "target-1"),
+                Map.entry("subject_id", "ai-target-1"),
+                Map.entry("model_deployment_currentness", modelDeployment),
+                Map.entry("prompt_bundle_currentness", promptBundle),
+                Map.entry("tool_registry_currentness", toolRegistry),
+                Map.entry("memory_policy_currentness", memoryPolicy),
+                Map.entry("rag_stack_currentness", ragStack),
+                Map.entry("external_provider_contract_currentness", externalProviderContract),
+                Map.entry("validator_qualification_currentness", validatorQualification));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.ai-product.currentness-compose", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");
@@ -2588,6 +2641,195 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                         "corroboration_id", "corroboration-1", "subject_id", "subject-1",
                         "agent_conclusions", List.of(agentA, agentB),
                         "independent_oracle_confirmed", independentOracleConfirmed))).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    // FR-META-058 AI Nondeterminism and Multi-Agent Assurance (SS12 Judge/Reviewer Independence)
+    @Test
+    void judgeIndependenceCheckReachesHighConfidenceLaneWhenTrulyIndependent() throws Exception {
+        Map<?, ?> result = judgeIndependenceCheck(
+                "provider-anthropic", "provider-openai", "rubric-v1", "prompt-v7",
+                "oracle-judge-panel", "oracle-golden-set", false, false, false);
+        assertEquals("HIGH_CONFIDENCE_INDEPENDENT_LANE", result.get("lane_eligibility"));
+        assertEquals(List.of(), result.get("shared_identity_axes"));
+        assertEquals(List.of(), result.get("risk_flags"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void judgeIndependenceCheckCapsAtCorroborationOnlyOnASharedProviderFamily() throws Exception {
+        Map<?, ?> result = judgeIndependenceCheck(
+                "provider-anthropic", "provider-anthropic", "rubric-v1", "prompt-v7",
+                "oracle-judge-panel", "oracle-golden-set", false, false, false);
+        assertEquals("CORROBORATION_ONLY", result.get("lane_eligibility"));
+        assertEquals(List.of("judge_provider_model_family_id"), result.get("shared_identity_axes"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void judgeIndependenceCheckCapsAtCorroborationOnlyOnHiddenBenchmarkExposureAlone() throws Exception {
+        Map<?, ?> result = judgeIndependenceCheck(
+                "provider-anthropic", "provider-openai", "rubric-v1", "prompt-v7",
+                "oracle-judge-panel", "oracle-golden-set", false, true, false);
+        assertEquals("CORROBORATION_ONLY", result.get("lane_eligibility"));
+        assertEquals(List.of(), result.get("shared_identity_axes"));
+        assertEquals(List.of("hidden_benchmark_exposure"), result.get("risk_flags"));
+    }
+
+    @Test
+    void judgeIndependenceCheckAggregatesEverySharedAxisAndRiskFlagNotJustTheFirst() throws Exception {
+        Map<?, ?> result = judgeIndependenceCheck(
+                "provider-anthropic", "provider-anthropic", "rubric-v1", "rubric-v1",
+                "oracle-judge-panel", "oracle-golden-set", true, false, true);
+        assertEquals("CORROBORATION_ONLY", result.get("lane_eligibility"));
+        assertEquals(
+                List.of("judge_provider_model_family_id", "judge_prompt_rubric_implementation_id"),
+                result.get("shared_identity_axes"));
+        assertEquals(
+                List.of("training_knowledge_overlap_possible", "memory_previous_verdict_access"),
+                result.get("risk_flags"));
+        assertEquals(4, ((List<?>) result.get("reasons")).size());
+    }
+
+    private Map<?, ?> judgeIndependenceCheck(
+            String judgeProviderFamily, String targetProviderFamily,
+            String judgeRubricImpl, String targetPromptImpl,
+            String judgeOracleSource, String targetOracleSource,
+            boolean trainingKnowledgeOverlapPossible, boolean hiddenBenchmarkExposure,
+            boolean memoryPreviousVerdictAccess) throws Exception {
+        Map<String, Object> body = Map.ofEntries(
+                Map.entry("project_id", "project-1"), Map.entry("target_id", "target-1"),
+                Map.entry("judge_id", "judge-1"), Map.entry("target_model_id", "target-1"),
+                Map.entry("judge_provider_model_family_id", judgeProviderFamily),
+                Map.entry("target_provider_model_family_id", targetProviderFamily),
+                Map.entry("judge_prompt_rubric_implementation_id", judgeRubricImpl),
+                Map.entry("target_prompt_implementation_id", targetPromptImpl),
+                Map.entry("judge_oracle_source_id", judgeOracleSource),
+                Map.entry("target_oracle_source_id", targetOracleSource),
+                Map.entry("training_knowledge_overlap_possible", trainingKnowledgeOverlapPossible),
+                Map.entry("hidden_benchmark_exposure", hiddenBenchmarkExposure),
+                Map.entry("memory_previous_verdict_access", memoryPreviousVerdictAccess));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.judge.independence-check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    // FR-META-059 ONSure Release Qualification (SS14 Requalification Trigger)
+    @Test
+    void requalificationTriggerEvaluateRequiresNothingWhenNoFlagIsSet() throws Exception {
+        Map<?, ?> result = requalificationTriggerEvaluate(Set.of());
+        assertEquals(false, result.get("requalification_required"));
+        assertEquals("NONE", result.get("requalification_scope"));
+        assertEquals(List.of(), result.get("triggered_reasons"));
+    }
+
+    @Test
+    void requalificationTriggerEvaluateIsPartialOnANarrowChangeAlone() throws Exception {
+        Map<?, ?> result = requalificationTriggerEvaluate(Set.of("validator_implementation_changed"));
+        assertEquals(true, result.get("requalification_required"));
+        assertEquals("PARTIAL", result.get("requalification_scope"));
+        assertEquals(List.of("validator_implementation_changed"), result.get("triggered_reasons"));
+    }
+
+    @Test
+    void requalificationTriggerEvaluateIsFullOnASandboxTcbCryptoChangeAlone() throws Exception {
+        Map<?, ?> result = requalificationTriggerEvaluate(Set.of("sandbox_tcb_crypto_changed"));
+        assertEquals("FULL", result.get("requalification_scope"));
+    }
+
+    @Test
+    void requalificationTriggerEvaluateIsFullOnAMissedFindingBlindSpot() throws Exception {
+        Map<?, ?> result = requalificationTriggerEvaluate(Set.of("missed_finding_blind_spot_confirmed"));
+        assertEquals("FULL", result.get("requalification_scope"));
+    }
+
+    @Test
+    void requalificationTriggerEvaluateIsFullOnASeverityCoveragePolicyWeakening() throws Exception {
+        Map<?, ?> result = requalificationTriggerEvaluate(Set.of("severity_coverage_policy_weakened"));
+        assertEquals("FULL", result.get("requalification_scope"));
+    }
+
+    @Test
+    void requalificationTriggerEvaluateFullTierWinsButListsEveryTriggeredReasonNotJustTheFullOne()
+            throws Exception {
+        Map<?, ?> result = requalificationTriggerEvaluate(
+                Set.of("sandbox_tcb_crypto_changed", "adapter_plugin_changed", "oracle_rubric_changed"));
+        assertEquals("FULL", result.get("requalification_scope"));
+        assertEquals(
+                List.of("oracle_rubric_changed", "adapter_plugin_changed", "sandbox_tcb_crypto_changed"),
+                result.get("triggered_reasons"));
+    }
+
+    private Map<?, ?> requalificationTriggerEvaluate(Set<String> setFlags) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("project_id", "project-1");
+        body.put("target_id", "target-1");
+        body.put("subject_id", "onsure-release-1");
+        for (String trigger : List.of(
+                "validator_implementation_changed", "oracle_rubric_changed", "adapter_plugin_changed",
+                "benchmark_hidden_corpus_changed", "sandbox_tcb_crypto_changed", "major_dependency_runtime_changed",
+                "missed_finding_blind_spot_confirmed", "severity_coverage_policy_weakened",
+                "provider_model_changed_for_ai_validator")) {
+            body.put(trigger, setFlags.contains(trigger));
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.requalification.trigger-evaluate", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
+    // FR-META-058 AI Nondeterminism and Multi-Agent Assurance (SS5 Agent Memory Assurance)
+    @Test
+    void agentMemoryConflictResolveAgreesPassWhenBothVerdictsPass() throws Exception {
+        Map<?, ?> result = agentMemoryConflictResolve("PASS", "PASS");
+        assertEquals("AGREE_PASS", result.get("resolution"));
+        assertEquals(false, result.get("additional_oracle_required"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void agentMemoryConflictResolveAgreesNegativeWhenBothVerdictsMatchButAreNotPass() throws Exception {
+        Map<?, ?> result = agentMemoryConflictResolve("FAIL", "FAIL");
+        assertEquals("AGREE_NEGATIVE", result.get("resolution"));
+        assertEquals(false, result.get("additional_oracle_required"));
+    }
+
+    @Test
+    void agentMemoryConflictResolveForcesHoldWhenMemoryAwarePassesButBlindFails() throws Exception {
+        Map<?, ?> result = agentMemoryConflictResolve("PASS", "FAIL");
+        assertEquals("CONFLICT_HOLD", result.get("resolution"));
+        assertEquals(true, result.get("additional_oracle_required"));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("MEMORY_AWARE_MEMORY_BLIND_VERDICT_MISMATCH"), result.get("reasons"));
+    }
+
+    @Test
+    void agentMemoryConflictResolveForcesHoldWhenMemoryBlindPassesButAwareFails() throws Exception {
+        Map<?, ?> result = agentMemoryConflictResolve("FAIL", "PASS");
+        assertEquals("CONFLICT_HOLD", result.get("resolution"));
+        assertEquals(true, result.get("additional_oracle_required"));
+    }
+
+    @Test
+    void agentMemoryConflictResolveRejectsAnUnrecognizedMemoryType() throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "subject_id", "agent-1", "evaluation_id", "eval-1", "memory_type", "NOT_A_REAL_MEMORY_TYPE",
+                "memory_aware_verdict", "PASS", "memory_blind_verdict", "PASS");
+        Exception failure = assertThrows(Exception.class, () -> bridge.dispatch(
+                "assurance.agent-memory.conflict-resolve", request(body)));
+        assertTrue(failure.getMessage().contains("SEMANTIC_V2_MEMORY_TYPE_INVALID"));
+    }
+
+    private Map<?, ?> agentMemoryConflictResolve(String awareVerdict, String blindVerdict) throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "subject_id", "agent-1", "evaluation_id", "eval-1", "memory_type", "USER_PERSISTENT",
+                "memory_aware_verdict", awareVerdict, "memory_blind_verdict", blindVerdict);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.agent-memory.conflict-resolve", request(body)).get("result");
         return (Map<?, ?>) envelope.get("result");
     }
 

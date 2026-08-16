@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-059",
+  "requirement_summary": "ONSure 자신도 release/version별 validator/oracle/adapter/fixture/benchmark/hidden corpus/environment/independent verifier를 결속한 Qualification을 가져야 한다... (34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS14 Requalification Trigger sub-scope specifically: 9 named conditions -- validator implementation change, Oracle/rubric change, Adapter/Plugin change, benchmark/hidden corpus material change, sandbox/TCB/crypto change, major dependency/runtime change, MissedFinding blind-spot confirmation, severity/coverage policy weakening, provider/model change for AI validator -- each independently force requalification. 'Impact analysis 결과에 따라 full/partial requalification 범위를 정한다.')",
+  "subject": "SemanticAssuranceV2WorkflowService.requalificationTriggerEvaluate via assurance.requalification.trigger-evaluate",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/requalification-trigger-evaluation.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#requalificationTriggerEvaluateRequiresNothingWhenNoFlagIsSet",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#requalificationTriggerEvaluateIsPartialOnANarrowChangeAlone",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#requalificationTriggerEvaluateIsFullOnASandboxTcbCryptoChangeAlone",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#requalificationTriggerEvaluateIsFullOnAMissedFindingBlindSpot",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#requalificationTriggerEvaluateIsFullOnASeverityCoveragePolicyWeakening",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#requalificationTriggerEvaluateFullTierWinsButListsEveryTriggeredReasonNotJustTheFullOne"
+  ],
+  "coverage_notes": "Third closure of Batch 5's disclosed broader-scope gap (SS14 Requalification Trigger). Complements the pre-existing onsure-release-qualification.v1.schema.json / assurance.release.qualify (Batch 5 slice 4, which qualifies a release as of one point in time) by deciding whether that qualification must be redone at all, and with what scope. SS14 names 9 independent trigger conditions but does not itself define a full-vs-partial rule -- this closure commits to one, explicitly disclosed: sandbox/TCB/crypto change, a confirmed MissedFinding blind spot, or a weakened severity/coverage policy are trust-boundary-level changes that force FULL requalification regardless of any other flag (a narrower, localized change alone can never widen scope past what a trust-boundary change already requires); the remaining 6 triggers force only PARTIAL when no FULL-tier trigger is also present. requalificationTriggerEvaluateFullTierWinsButListsEveryTriggeredReasonNotJustTheFullOne proves triggered_reasons lists every true flag (oracle_rubric_changed, adapter_plugin_changed, sandbox_tcb_crypto_changed, in ALL_REQUALIFICATION_TRIGGERS iteration order) even though only the FULL-tier one decided the scope -- matching this session's established 'aggregate, do not short-circuit' precedent, now applied a third time in this same broader-scope pass (after FR-META-041 and the AI Currentness closure).",
+  "open_gap": "Operates on caller-supplied trigger flags; there is no live change-detection system in this codebase that observes validator/oracle/adapter/benchmark/sandbox/dependency/policy changes and sets these flags automatically (same disclosed 'caller-supplied representation, not live system read' pattern as every other Batch 5 broader-scope closure this session). The full-vs-partial severity split (which 3 of the 9 triggers are trust-boundary-level) is an inferred, disclosed convention, not literally specified by SS14.",
+  "design_reference_gap": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md is itself Status: DESIGN_ONLY/DRAFT/NON_FINAL -- this closure builds real, tested conformance-checking infrastructure against its SS14 rule, consistent with every other gate built against draft-status design docs this session, but does not and cannot finalize the parent document itself.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

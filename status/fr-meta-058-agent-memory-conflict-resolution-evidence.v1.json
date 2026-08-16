@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-058",
+  "requirement_summary": "Multi-agent는 agent identity/role/delegation/shared memory/message contract/authority escalation/common-mode failure를 별도 검증한다. (34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS5 Agent Memory Assurance sub-scope specifically: memory type taxonomy (SESSION_EPHEMERAL/USER_PERSISTENT/PROJECT_PERSISTENT/ORGANIZATION_SHARED/MODEL_AGENT_LEARNING_MEMORY) plus 8 required verification areas, of which this closure covers the one concrete mechanical rule: \"Memory-aware 평가와 Memory-blind 평가가 충돌하면 자동 majority로 해결하지 않고 HOLD/추가 Oracle로 보낸다.\")",
+  "subject": "SemanticAssuranceV2WorkflowService.agentMemoryConflictResolve via assurance.agent-memory.conflict-resolve",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/agent-memory-conflict-resolution.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#agentMemoryConflictResolveAgreesPassWhenBothVerdictsPass",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#agentMemoryConflictResolveAgreesNegativeWhenBothVerdictsMatchButAreNotPass",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#agentMemoryConflictResolveForcesHoldWhenMemoryAwarePassesButBlindFails",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#agentMemoryConflictResolveForcesHoldWhenMemoryBlindPassesButAwareFails",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#agentMemoryConflictResolveRejectsAnUnrecognizedMemoryType"
+  ],
+  "coverage_notes": "Fourth closure of Batch 5's disclosed broader-scope gap. Deliberately scoped to ONLY SS5's one concrete, mechanically-checkable rule rather than the full 8-item '필수 검증' checklist (tenant/user/project scope, write authority, retrieval authority, retention/deletion, poisoning provenance, stale memory handling, cross-session/cross-tenant leakage) -- those are separately enforced across this codebase's pre-existing tenant-scoped TenantRbacService/DurableStateLedger path on every operation, not a novel gap this closure needed to fabricate a new mechanism for; re-implementing them narrowly here would have duplicated existing enforcement rather than closing a real gap. The genuinely novel, previously-unenforced rule is the memory-aware/memory-blind conflict-resolution one, built the same way as every other Batch 5 broader-scope closure this session: any disagreement between the two verdicts forces CONFLICT_HOLD with an additional oracle required, symmetric in both directions (aware-PASS/blind-FAIL and aware-FAIL/blind-PASS both tested and both force HOLD, proving the rule is not a one-directional 'aware wins' or 'blind wins' shortcut). Both memory_type and each verdict value are validated against their full enumerated vocabularies before comparison, failing closed on an unrecognized value rather than silently proceeding.",
+  "open_gap": "Operates on caller-supplied memory-aware and memory-blind verdicts; there is no live dual-evaluation harness in this codebase that actually runs the same scenario twice (once with agent memory available, once withheld) and produces these two verdicts for real (same disclosed 'caller-supplied representation, not live system read' pattern as every other Batch 5 broader-scope closure this session). SS5's broader 8-item checklist remains only partially covered end-to-end: the items already handled by pre-existing RBAC infrastructure are covered by construction (every operation is already tenant/user/project-scoped and authority-checked), but poisoning provenance and stale memory handling specifically have no dedicated gate anywhere in this codebase yet.",
+  "design_reference_gap": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md is itself Status: DESIGN_ONLY/DRAFT/NON_FINAL -- this closure builds real, tested conformance-checking infrastructure against its SS5 rule, consistent with every other gate built against draft-status design docs this session, but does not and cannot finalize the parent document itself.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

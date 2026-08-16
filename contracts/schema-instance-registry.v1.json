@@ -985,6 +985,42 @@
         "fixtures/contracts/final-lock-approval-cross-contract-check.invalid.json"
       ],
       "schema": "contracts/final-lock-approval-cross-contract-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/ai-product-currentness-composition.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ai-product-currentness-composition.invalid.json"
+      ],
+      "schema": "contracts/ai-product-currentness-composition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/judge-reviewer-independence-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/judge-reviewer-independence-check.invalid.json"
+      ],
+      "schema": "contracts/judge-reviewer-independence-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requalification-trigger-evaluation.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requalification-trigger-evaluation.invalid.json"
+      ],
+      "schema": "contracts/requalification-trigger-evaluation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/agent-memory-conflict-resolution.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/agent-memory-conflict-resolution.invalid.json"
+      ],
+      "schema": "contracts/agent-memory-conflict-resolution.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

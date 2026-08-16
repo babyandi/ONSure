@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_REQUALIFICATION_TRIGGER_EVALUATION_V1",
+  "subject_id": "onsure-release-2026-08-16",
+  "validator_implementation_changed": false,
+  "oracle_rubric_changed": false,
+  "adapter_plugin_changed": false,
+  "benchmark_hidden_corpus_changed": false,
+  "sandbox_tcb_crypto_changed": true,
+  "major_dependency_runtime_changed": false,
+  "missed_finding_blind_spot_confirmed": false,
+  "severity_coverage_policy_weakened": false,
+  "provider_model_changed_for_ai_validator": false,
+  "requalification_required": true,
+  "requalification_scope": "FULL",
+  "triggered_reasons": ["sandbox_tcb_crypto_changed"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

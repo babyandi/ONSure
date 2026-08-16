@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_AGENT_MEMORY_CONFLICT_RESOLUTION_V1",
+  "subject_id": "agent-underwriting-assistant-1",
+  "evaluation_id": "eval-2026-08-16-001",
+  "memory_type": "USER_PERSISTENT",
+  "memory_aware_verdict": "PASS",
+  "memory_blind_verdict": "FAIL",
+  "resolution": "CONFLICT_HOLD",
+  "additional_oracle_required": false,
+  "reasons": ["MEMORY_AWARE_MEMORY_BLIND_VERDICT_MISMATCH"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -95,8 +95,12 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.knowledge-fork-merge-governance.check",
             "assurance.learning.external-llm-provenance-boundary.check",
             "assurance.final-lock.approval-cross-contract.check",
+            "assurance.ai-product.currentness-compose",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
+            "assurance.judge.independence-check",
+            "assurance.requalification.trigger-evaluate",
+            "assurance.agent-memory.conflict-resolve",
             "assurance.hazard.create",
             "assurance.hazard.advance",
             "assurance.appeal.file",
@@ -214,8 +218,12 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.knowledge-fork-merge-governance.check" -> knowledgeForkMergeGovernanceCheck(request);
             case "assurance.learning.external-llm-provenance-boundary.check" -> externalLlmProvenanceBoundaryCheck(request);
             case "assurance.final-lock.approval-cross-contract.check" -> finalLockApprovalCrossContractCheck(request);
+            case "assurance.ai-product.currentness-compose" -> aiProductCurrentnessCompose(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
+            case "assurance.judge.independence-check" -> judgeIndependenceCheck(request);
+            case "assurance.requalification.trigger-evaluate" -> requalificationTriggerEvaluate(request);
+            case "assurance.agent-memory.conflict-resolve" -> agentMemoryConflictResolve(request);
             case "assurance.hazard.create" -> hazardCreate(request);
             case "assurance.hazard.advance" -> hazardAdvance(request);
             case "assurance.appeal.file" -> appealFile(request);
@@ -3303,6 +3311,75 @@ final class SemanticAssuranceV2WorkflowService {
         return immutable(out);
     }
 
+    private static final List<String> CURRENTNESS_STATES = List.of(
+            "CURRENT", "STALE", "REASSESSMENT_REQUIRED", "INVALIDATED", "REVOKED", "UNKNOWN");
+
+    /** Worst-first: the first state in this list found among the axes becomes overall_currentness. */
+    private static final List<String> CURRENTNESS_SEVERITY_ORDER = List.of(
+            "REVOKED", "INVALIDATED", "STALE", "REASSESSMENT_REQUIRED", "UNKNOWN");
+
+    private String requiredCurrentnessState(JsonNode request, String field) {
+        String value = requiredText(request, field);
+        if (!CURRENTNESS_STATES.contains(value)) {
+            throw new IllegalArgumentException("SEMANTIC_V2_CURRENTNESS_STATE_INVALID:" + field);
+        }
+        return value;
+    }
+
+    /**
+     * ai-product-currentness-composition.v1.schema.json real computation (FR-META-057 AI Runtime
+     * Identity Closure / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS17 AI
+     * Currentness: "AI Product CURRENT는 최소 다음 identity가 current여야 한다: model deployment,
+     * prompt bundle, tool registry, memory policy/backend, RAG stack, external provider contract,
+     * relevant validator qualification. 하나가 material drift이면 Product Composition
+     * currentness에 전파한다."). Composes 7 independently-observed axis states into one overall
+     * state: CURRENT only when every axis is CURRENT; any other mix propagates the single worst
+     * axis using an explicit, disclosed severity cascade (REVOKED > INVALIDATED > STALE >
+     * REASSESSMENT_REQUIRED > UNKNOWN) -- SS17 states that drift propagates but does not itself
+     * define a cross-axis order for mixed-severity results, so this method commits to one rather
+     * than leaving the mixed case ambiguous or silently defaulting to CURRENT. Every axis value is
+     * validated against the full 6-state vocabulary before comparison (requiredCurrentnessState),
+     * not merely read as free text -- an unrecognized value fails closed with an exception rather
+     * than silently matching nothing and leaving overall_currentness at its CURRENT default.
+     * reasons lists EVERY non-CURRENT axis, not only those at the worst severity tier -- an
+     * operator needs to see every drifted axis to fix them, not just the single most severe one.
+     */
+    private Map<String, Object> aiProductCurrentnessCompose(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        Map<String, String> axes = new LinkedHashMap<>();
+        axes.put("model_deployment_currentness", requiredCurrentnessState(request, "model_deployment_currentness"));
+        axes.put("prompt_bundle_currentness", requiredCurrentnessState(request, "prompt_bundle_currentness"));
+        axes.put("tool_registry_currentness", requiredCurrentnessState(request, "tool_registry_currentness"));
+        axes.put("memory_policy_currentness", requiredCurrentnessState(request, "memory_policy_currentness"));
+        axes.put("rag_stack_currentness", requiredCurrentnessState(request, "rag_stack_currentness"));
+        axes.put("external_provider_contract_currentness",
+                requiredCurrentnessState(request, "external_provider_contract_currentness"));
+        axes.put("validator_qualification_currentness",
+                requiredCurrentnessState(request, "validator_qualification_currentness"));
+
+        List<String> reasons = new ArrayList<>();
+        List<String> nonCurrentStates = new ArrayList<>();
+        for (Map.Entry<String, String> axis : axes.entrySet()) {
+            if (!"CURRENT".equals(axis.getValue())) {
+                reasons.add(axis.getKey() + ":" + axis.getValue());
+                nonCurrentStates.add(axis.getValue());
+            }
+        }
+        String overall = "CURRENT";
+        for (String tier : CURRENTNESS_SEVERITY_ORDER) {
+            if (nonCurrentStates.contains(tier)) {
+                overall = tier;
+                break;
+            }
+        }
+
+        Map<String, Object> out = base("ONSURE_AI_PRODUCT_CURRENTNESS_COMPOSITION", subjectId);
+        out.putAll(axes);
+        out.put("overall_currentness", overall);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
     private static final List<String> PROVIDER_CHARACTERISTIC_FIELDS = List.of(
             "model_alias", "safety_filter_digest", "tool_semantics_digest", "context_window",
             "rate_limit", "output_policy_digest", "routing_target");
@@ -3412,6 +3489,166 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("shared_dependency_axes", List.copyOf(sharedAxes));
         out.put("agreement_strength", agreementStrength);
         out.put("decision", "INDEPENDENT_GROUND_TRUTH".equals(agreementStrength) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * judge-reviewer-independence-check.v1.schema.json real computation (FR-META-058 AI
+     * Nondeterminism and Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_
+     * ASSURANCE_EXTENSION.md SS12 Judge/Reviewer Independence: "AI Judge/Reviewer는 target
+     * model과... 축을 비교한다... 동일 계열 Judge 결과는 보조 corroboration으로 사용할 수 있으나
+     * 고신뢰 independent lane을 대체하지 않는다"). Three identity axes (provider/model family,
+     * prompt/rubric implementation, oracle source) are compared judge-vs-target by real string
+     * equality -- a match is a shared axis, never trusted from a caller-declared "independent"
+     * flag. Three further axes (training/knowledge overlap possibility, hidden benchmark
+     * exposure, memory/previous verdict access) are contamination-risk facts rather than
+     * identity comparisons, so they are read directly rather than derived. lane_eligibility can
+     * only reach HIGH_CONFIDENCE_INDEPENDENT_LANE when all three identity axes differ AND all
+     * three risk flags are false; any single shared axis or true risk flag caps the result at
+     * CORROBORATION_ONLY, and every contributing reason is listed (not just the first found).
+     */
+    private Map<String, Object> judgeIndependenceCheck(JsonNode request) {
+        String judgeId = requiredText(request, "judge_id");
+        String targetModelId = requiredText(request, "target_model_id");
+        String judgeProviderFamily = requiredText(request, "judge_provider_model_family_id");
+        String targetProviderFamily = requiredText(request, "target_provider_model_family_id");
+        String judgeRubricImpl = requiredText(request, "judge_prompt_rubric_implementation_id");
+        String targetPromptImpl = requiredText(request, "target_prompt_implementation_id");
+        String judgeOracleSource = requiredText(request, "judge_oracle_source_id");
+        String targetOracleSource = requiredText(request, "target_oracle_source_id");
+        boolean trainingKnowledgeOverlapPossible =
+                request.path("training_knowledge_overlap_possible").asBoolean(false);
+        boolean hiddenBenchmarkExposure = request.path("hidden_benchmark_exposure").asBoolean(false);
+        boolean memoryPreviousVerdictAccess = request.path("memory_previous_verdict_access").asBoolean(false);
+
+        List<String> sharedIdentityAxes = new ArrayList<>();
+        if (judgeProviderFamily.equals(targetProviderFamily)) sharedIdentityAxes.add("judge_provider_model_family_id");
+        if (judgeRubricImpl.equals(targetPromptImpl)) sharedIdentityAxes.add("judge_prompt_rubric_implementation_id");
+        if (judgeOracleSource.equals(targetOracleSource)) sharedIdentityAxes.add("judge_oracle_source_id");
+
+        List<String> riskFlags = new ArrayList<>();
+        if (trainingKnowledgeOverlapPossible) riskFlags.add("training_knowledge_overlap_possible");
+        if (hiddenBenchmarkExposure) riskFlags.add("hidden_benchmark_exposure");
+        if (memoryPreviousVerdictAccess) riskFlags.add("memory_previous_verdict_access");
+
+        List<String> reasons = new ArrayList<>();
+        for (String axis : sharedIdentityAxes) reasons.add("SHARED_IDENTITY_AXIS:" + axis);
+        for (String flag : riskFlags) reasons.add("RISK_FLAG_SET:" + flag);
+
+        String laneEligibility = reasons.isEmpty() ? "HIGH_CONFIDENCE_INDEPENDENT_LANE" : "CORROBORATION_ONLY";
+
+        Map<String, Object> out = base("JUDGE_REVIEWER_INDEPENDENCE_CHECK", targetModelId);
+        out.put("judge_id", judgeId);
+        out.put("shared_identity_axes", List.copyOf(sharedIdentityAxes));
+        out.put("risk_flags", List.copyOf(riskFlags));
+        out.put("lane_eligibility", laneEligibility);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "HIGH_CONFIDENCE_INDEPENDENT_LANE".equals(laneEligibility) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final List<String> FULL_SCOPE_REQUALIFICATION_TRIGGERS = List.of(
+            "sandbox_tcb_crypto_changed", "missed_finding_blind_spot_confirmed", "severity_coverage_policy_weakened");
+
+    private static final List<String> ALL_REQUALIFICATION_TRIGGERS = List.of(
+            "validator_implementation_changed", "oracle_rubric_changed", "adapter_plugin_changed",
+            "benchmark_hidden_corpus_changed", "sandbox_tcb_crypto_changed", "major_dependency_runtime_changed",
+            "missed_finding_blind_spot_confirmed", "severity_coverage_policy_weakened",
+            "provider_model_changed_for_ai_validator");
+
+    /**
+     * requalification-trigger-evaluation.v1.schema.json real computation (FR-META-059 ONSure
+     * Release Qualification / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md
+     * SS14 Requalification Trigger: 9 named conditions each independently force requalification;
+     * "Impact analysis 결과에 따라 full/partial requalification 범위를 정한다"). SS14 itself does
+     * not define the full-vs-partial rule, so this method commits to one, explicitly disclosed:
+     * sandbox/TCB/crypto change, a confirmed MissedFinding blind spot, or a weakened
+     * severity/coverage policy are trust-boundary-level changes that force FULL requalification
+     * regardless of any other flag; the remaining 6 triggers (each a narrower, localized change)
+     * force only PARTIAL when no FULL-tier trigger is also present. triggered_reasons lists every
+     * true flag, not only the ones that decided the scope.
+     */
+    private Map<String, Object> requalificationTriggerEvaluate(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        Map<String, Boolean> triggers = new LinkedHashMap<>();
+        for (String trigger : ALL_REQUALIFICATION_TRIGGERS) {
+            triggers.put(trigger, request.path(trigger).asBoolean(false));
+        }
+
+        List<String> triggeredReasons = new ArrayList<>();
+        for (Map.Entry<String, Boolean> trigger : triggers.entrySet()) {
+            if (trigger.getValue()) triggeredReasons.add(trigger.getKey());
+        }
+        boolean fullScope = FULL_SCOPE_REQUALIFICATION_TRIGGERS.stream().anyMatch(triggers::get);
+        String scope = fullScope ? "FULL" : (triggeredReasons.isEmpty() ? "NONE" : "PARTIAL");
+
+        Map<String, Object> out = base("REQUALIFICATION_TRIGGER_EVALUATION", subjectId);
+        out.putAll(triggers);
+        out.put("requalification_required", !"NONE".equals(scope));
+        out.put("requalification_scope", scope);
+        out.put("triggered_reasons", List.copyOf(triggeredReasons));
+        out.put("decision", "NONE".equals(scope) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final Set<String> MEMORY_TYPES = Set.of(
+            "SESSION_EPHEMERAL", "USER_PERSISTENT", "PROJECT_PERSISTENT",
+            "ORGANIZATION_SHARED", "MODEL_AGENT_LEARNING_MEMORY");
+
+    private static final Set<String> EVALUATION_VERDICTS =
+            Set.of("PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE");
+
+    /**
+     * agent-memory-conflict-resolution.v1.schema.json real computation (FR-META-058 AI
+     * Nondeterminism and Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_
+     * ASSURANCE_EXTENSION.md SS5 Agent Memory Assurance: "Memory-aware 평가와 Memory-blind
+     * 평가가 충돌하면 자동 majority로 해결하지 않고 HOLD/추가 Oracle로 보낸다"). Covers only this
+     * one concrete, mechanically-checkable rule from SS5's broader checklist -- tenant/user/
+     * project scope, write/retrieval authority, retention/deletion, cross-tenant leakage are
+     * separately enforced by this codebase's pre-existing tenant-scoped RBAC path, not
+     * re-implemented here. Any disagreement between the memory-aware and memory-blind verdicts
+     * forces CONFLICT_HOLD with an additional oracle required -- never resolved by treating
+     * either verdict as controlling, since with exactly two evaluators a disagreement has no
+     * majority to fall back on by construction.
+     */
+    private Map<String, Object> agentMemoryConflictResolve(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String evaluationId = requiredText(request, "evaluation_id");
+        String memoryType = requiredText(request, "memory_type");
+        if (!MEMORY_TYPES.contains(memoryType)) {
+            throw new IllegalArgumentException("SEMANTIC_V2_MEMORY_TYPE_INVALID:" + memoryType);
+        }
+        String awareVerdict = requiredText(request, "memory_aware_verdict");
+        String blindVerdict = requiredText(request, "memory_blind_verdict");
+        if (!EVALUATION_VERDICTS.contains(awareVerdict)) {
+            throw new IllegalArgumentException("SEMANTIC_V2_VERDICT_INVALID:memory_aware_verdict");
+        }
+        if (!EVALUATION_VERDICTS.contains(blindVerdict)) {
+            throw new IllegalArgumentException("SEMANTIC_V2_VERDICT_INVALID:memory_blind_verdict");
+        }
+
+        String resolution;
+        boolean additionalOracleRequired;
+        List<String> reasons = new ArrayList<>();
+        if (!awareVerdict.equals(blindVerdict)) {
+            resolution = "CONFLICT_HOLD";
+            additionalOracleRequired = true;
+            reasons.add("MEMORY_AWARE_MEMORY_BLIND_VERDICT_MISMATCH");
+        } else if ("PASS".equals(awareVerdict)) {
+            resolution = "AGREE_PASS";
+            additionalOracleRequired = false;
+        } else {
+            resolution = "AGREE_NEGATIVE";
+            additionalOracleRequired = false;
+        }
+
+        Map<String, Object> out = base("AGENT_MEMORY_CONFLICT_RESOLUTION", subjectId);
+        out.put("evaluation_id", evaluationId);
+        out.put("memory_type", memoryType);
+        out.put("resolution", resolution);
+        out.put("additional_oracle_required", additionalOracleRequired);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "CONFLICT_HOLD".equals(resolution) ? "HOLD" : "NON_FINAL");
         return immutable(out);
     }
 

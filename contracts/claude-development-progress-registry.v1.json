@@ -1698,5 +1698,74 @@
     "tests": "src/test/java/kr/co/oruda/onsure/platform/ValidationReportExporterTest.java (NEW, 4 tests: qualifier bound immediately after Decision line, qualifier unconditional across all 6 Decision enum values, HTML carries the same qualifier as Markdown, both real exported files on disk carry it)",
     "evidence": "status/fr-meta-043-report-assurance-ceiling-display-consistency-evidence.v1.json",
     "open_gap": "kr.co.oruda.onsure.assurance.Decision.isFinalPassEligible() remains dead code (zero callers, confirmed via grep) with a misleading name -- it checks only `this == PASS`, not any self_validation_nonfinal/final_claim_allowed context. Left as-is (inert, no live behavior to fix, unrelated dead-code cleanup judged out of scope) but flagged so a future caller does not wire to it naively. docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md's full 6-axis (D,S,C,U,I,Q) Assurance Tuple would generalize this concern further but is itself DESIGN_ONLY/DRAFT/NON_FINAL and not implemented anywhere yet -- out of scope for this closure, which targets only the already-real self_validation_nonfinal/final_claim_allowed ontology already in live use."
+  },
+  "batch5_broader_scope_ai_currentness_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "First closure of Batch 5's disclosed 'broader scope' gap (batch5_object_d_learning_effectiveness_closure.open_gap named 9 uncovered 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md areas: Prompt Provenance SS3, Tool Authority Method SS4, Agent Memory Assurance SS5, RAG Assurance SS6, AgentGraph/Delegation SS9.1-9.3/9.6, AI Safety/Security claim separation SS10, Judge/Reviewer Independence SS12, Requalification Trigger SS14, AI Currentness SS17). Re-read the full design doc and confirmed all 9 are actually tractable via this session's established pattern (schema + real Java cross-field computation over caller-supplied representations, no live runtime subject required) rather than genuinely design-blocked -- the earlier 'needs scoping/design work first' assessment was too conservative. Starting with SS17 (AI Currentness, FR-META-057): contracts/ai-product-currentness-composition.v1.schema.json (NEW, registered 116 -> 117 schemas) composes 7 AI-specific sub-identity axes (model deployment, prompt bundle, tool registry, memory policy, RAG stack, external provider contract, validator qualification) into one overall_currentness using the same 6-state vocabulary as the pre-existing currentness-snapshot.v1.schema.json. assurance.ai-product.currentness-compose computes overall_currentness for real (CURRENT only if all 7 axes are CURRENT; otherwise an explicit disclosed severity cascade REVOKED>INVALIDATED>STALE>REASSESSMENT_REQUIRED>UNKNOWN decides the single worst value) and lists every non-CURRENT axis in reasons, not only the worst one.",
+    "contract_schema": "contracts/ai-product-currentness-composition.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/ai-product-currentness-composition.valid.json (NEW)",
+      "fixtures/contracts/ai-product-currentness-composition.invalid.json (NEW, overall_currentness=CURRENT with one axis STALE, violates the allOf requiring all 7 axes CURRENT)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (aiProductCurrentnessCompose, requiredCurrentnessState helper)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: all-CURRENT stays CURRENT with empty reasons, single STALE axis propagates, a REVOKED axis and a separate STALE axis both appear in reasons while REVOKED alone becomes overall (aggregate, not short-circuit), an unrecognized axis value fails closed with SEMANTIC_V2_CURRENTNESS_STATE_INVALID rather than silently defaulting to CURRENT)",
+    "bug_found_and_fixed_during_own_design": "The first draft of the severity-resolution loop broke out as soon as it found the worst tier, so if e.g. one axis were REVOKED and a different axis were STALE, only the REVOKED axis would appear in reasons -- the STALE axis's drift would be silently invisible to the caller even though it genuinely needs attention too. Caught before writing tests (not after a test failure) by re-checking the design against this session's own established 'aggregate every real issue, do not short-circuit' precedent from FR-META-041; fixed by first collecting every non-CURRENT axis into reasons, then separately deriving overall_currentness as the single worst tier among them.",
+    "evidence": "status/fr-meta-057-ai-currentness-composition-evidence.v1.json",
+    "open_gap": "Operates on caller-supplied per-axis currentness states; no live model-deployment/prompt-bundle/tool-registry/memory/RAG-stack/provider-contract/validator-qualification observer exists in this codebase to feed it for real (same disclosed pattern as Provider Drift and Multi-Agent Corroboration). 8 of the 9 originally-named broader-scope areas remain open: Prompt Provenance, Tool Authority Method, Agent Memory Assurance, RAG Assurance, AgentGraph/Delegation, AI Safety/Security claim separation, Judge/Reviewer Independence, Requalification Trigger."
+  },
+  "batch5_broader_scope_judge_reviewer_independence_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Second closure of Batch 5's disclosed broader-scope gap (SS12 Judge/Reviewer Independence, FR-META-058). Mirrors the pre-existing multiAgentCorroborationCheck (Batch 5 slice 5) but as a two-party Judge-vs-Target comparison rather than N-way agent agreement. contracts/judge-reviewer-independence-check.v1.schema.json (NEW, registered 117 -> 118 schemas). assurance.judge.independence-check computes 3 identity-axis comparisons for real (provider/model family, prompt/rubric implementation, oracle source -- string equality between judge and target, never a trusted caller-declared independence flag) plus reads 3 directly-asserted contamination-risk flags (training/knowledge overlap possibility, hidden benchmark exposure, memory/previous verdict access, since these describe a possibility rather than a same-value identity match). lane_eligibility reaches HIGH_CONFIDENCE_INDEPENDENT_LANE only when all 3 identity axes differ AND all 3 risk flags are false; any single shared axis or true risk flag caps the result at CORROBORATION_ONLY, matching SS12's named prohibition on a same-family Judge substituting for a real independent lane.",
+    "contract_schema": "contracts/judge-reviewer-independence-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/judge-reviewer-independence-check.valid.json (NEW)",
+      "fixtures/contracts/judge-reviewer-independence-check.invalid.json (NEW, shared provider/model family axis claimed alongside lane_eligibility=HIGH_CONFIDENCE_INDEPENDENT_LANE, violates the allOf requiring zero shared axes for that lane)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (judgeIndependenceCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+4 tests: truly independent reaches the high-confidence lane, a shared provider family alone caps at corroboration-only, hidden benchmark exposure alone caps at corroboration-only, 2 shared axes plus 2 risk flags all 4 appear in reasons simultaneously -- aggregate, not short-circuit)",
+    "evidence": "status/fr-meta-058-judge-reviewer-independence-evidence.v1.json",
+    "open_gap": "Operates on caller-supplied judge/target identity and risk-flag values; no live Judge/Reviewer runtime or model-provenance registry exists in this codebase to observe these facts from directly (same disclosed pattern as Provider Drift, Multi-Agent Corroboration, and the AI Currentness closure). The 3 risk flags are trusted as caller-asserted facts with no independent attestation mechanism. 7 of the 9 originally-named broader-scope areas remain open: Prompt Provenance, Tool Authority Method, Agent Memory Assurance, RAG Assurance, AgentGraph/Delegation, AI Safety/Security claim separation, Requalification Trigger."
+  },
+  "batch5_broader_scope_requalification_trigger_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Third closure of Batch 5's disclosed broader-scope gap (SS14 Requalification Trigger, FR-META-059). Complements the pre-existing assurance.release.qualify (Batch 5 slice 4, qualifies a release as of one point in time) by deciding whether that qualification must be redone at all, and with what scope. contracts/requalification-trigger-evaluation.v1.schema.json (NEW, registered 118 -> 119 schemas). SS14 names 9 independent trigger conditions but does not itself define a full-vs-partial rule; assurance.requalification.trigger-evaluate commits to an explicit, disclosed one: sandbox/TCB/crypto change, a confirmed MissedFinding blind spot, or a weakened severity/coverage policy are trust-boundary-level changes that force FULL requalification regardless of any other flag; the remaining 6 narrower triggers force only PARTIAL when no FULL-tier trigger is also present.",
+    "contract_schema": "contracts/requalification-trigger-evaluation.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/requalification-trigger-evaluation.valid.json (NEW)",
+      "fixtures/contracts/requalification-trigger-evaluation.invalid.json (NEW, sandbox_tcb_crypto_changed=true with requalification_scope=PARTIAL, violates the allOf forcing FULL on any trust-boundary-tier trigger)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (requalificationTriggerEvaluate)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+6 tests: no flags means NONE/not-required, one narrow trigger alone means PARTIAL, each of the 3 FULL-tier triggers individually forces FULL, a FULL-tier trigger plus 2 narrow triggers together still list all 3 in triggered_reasons even though only FULL-tier decided the scope -- aggregate, not short-circuit)",
+    "evidence": "status/fr-meta-059-requalification-trigger-evidence.v1.json",
+    "open_gap": "Operates on caller-supplied trigger flags; no live change-detection system in this codebase observes validator/oracle/adapter/benchmark/sandbox/dependency/policy changes and sets these flags automatically (same disclosed pattern as every other Batch 5 broader-scope closure this session). 6 of the 9 originally-named broader-scope areas remain open: Prompt Provenance, Tool Authority Method, Agent Memory Assurance, RAG Assurance, AgentGraph/Delegation, AI Safety/Security claim separation."
+  },
+  "batch5_broader_scope_agent_memory_conflict_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Fourth closure of Batch 5's disclosed broader-scope gap (SS5 Agent Memory Assurance, FR-META-058). Deliberately scoped to only SS5's one concrete mechanical rule (memory-aware vs memory-blind verdict conflict forces HOLD, never auto-resolved by majority) rather than the full 8-item checklist -- tenant/user/project scope, write/retrieval authority, retention/deletion, cross-tenant leakage are already enforced by this codebase's pre-existing tenant-scoped RBAC path on every operation, so re-implementing them narrowly here would duplicate existing enforcement rather than close a real gap. contracts/agent-memory-conflict-resolution.v1.schema.json (NEW, registered 119 -> 120 schemas). assurance.agent-memory.conflict-resolve forces CONFLICT_HOLD with an additional oracle required on any disagreement between the two verdicts, symmetric in both directions (tested both aware-PASS/blind-FAIL and aware-FAIL/blind-PASS, proving neither verdict is treated as controlling).",
+    "contract_schema": "contracts/agent-memory-conflict-resolution.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/agent-memory-conflict-resolution.valid.json (NEW)",
+      "fixtures/contracts/agent-memory-conflict-resolution.invalid.json (NEW, resolution=CONFLICT_HOLD with additional_oracle_required=false, violates the allOf requiring true whenever resolution is CONFLICT_HOLD)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (agentMemoryConflictResolve)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: both PASS agrees AGREE_PASS, both matching-non-PASS agrees AGREE_NEGATIVE, aware-PASS/blind-FAIL forces CONFLICT_HOLD, the reverse direction aware-FAIL/blind-PASS also forces CONFLICT_HOLD -- symmetric, not a one-directional shortcut -- and an unrecognized memory_type fails closed)",
+    "evidence": "status/fr-meta-058-agent-memory-conflict-resolution-evidence.v1.json",
+    "open_gap": "Operates on caller-supplied memory-aware and memory-blind verdicts; no live dual-evaluation harness in this codebase actually runs a scenario twice (memory available vs withheld) to produce these for real (same disclosed pattern as every other Batch 5 broader-scope closure this session). 5 of the 9 originally-named broader-scope areas remain open: Prompt Provenance, Tool Authority Method, RAG Assurance, AgentGraph/Delegation, AI Safety/Security claim separation."
   }
 }
