@@ -41,6 +41,7 @@ public final class TenantRbacService {
             "assurance.learning.candidate.register",
             "assurance.learning.validation.request",
             "assurance.learning.completion-status.check",
+            "assurance.oracle.qualification-check",
             "assurance.oracle.multi-evaluate",
             "assurance.corpus.integrity-check",
             "assurance.validator.regression-qualify",

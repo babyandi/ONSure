@@ -911,6 +911,73 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // 149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS E, 148 P0 invariant 4
+    @Test
+    void oracleQualificationCheckIsQualifiedWhenIndependentWithFreshUntilInTheFuture() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.qualification-check", Map.of(
+                "oracle_id", "oracle-1", "oracle_version", "1.0.0", "independent", true,
+                "result", "QUALIFIED",
+                "qualified_at", "2026-01-01T00:00:00Z", "fresh_until", "2099-01-01T00:00:00Z"));
+        assertEquals("QUALIFIED", result.get("computed_result"));
+        assertEquals(true, result.get("result_verified"));
+        assertEquals(true, result.get("usable_for_final_pass"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void oracleQualificationCheckDetectsStalenessEvenWhenCallerStillClaimsQualified() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.qualification-check", Map.of(
+                "oracle_id", "oracle-2", "oracle_version", "1.0.0", "independent", true,
+                "result", "QUALIFIED",
+                "qualified_at", "2020-01-01T00:00:00Z", "fresh_until", "2020-06-01T00:00:00Z"));
+        assertEquals("STALE", result.get("computed_result"));
+        assertEquals(false, result.get("result_verified"));
+        assertEquals(false, result.get("usable_for_final_pass"));
+        assertEquals("BLOCKED", result.get("decision"));
+    }
+
+    @Test
+    void oracleQualificationCheckForcesNotQualifiedWhenNotIndependentRegardlessOfClaim() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.qualification-check", Map.of(
+                "oracle_id", "oracle-3", "oracle_version", "1.0.0", "independent", false,
+                "result", "QUALIFIED",
+                "qualified_at", "2026-01-01T00:00:00Z", "fresh_until", "2099-01-01T00:00:00Z"));
+        assertEquals("NOT_QUALIFIED", result.get("computed_result"));
+        assertEquals(false, result.get("result_verified"));
+        assertEquals(false, result.get("usable_for_final_pass"));
+    }
+
+    @Test
+    void oracleQualificationCheckHonorsAnExplicitRevocationAndNeverAllowsFinalPass() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.qualification-check", Map.of(
+                "oracle_id", "oracle-4", "oracle_version", "1.0.0", "independent", true,
+                "result", "REVOKED",
+                "qualified_at", "2026-01-01T00:00:00Z", "fresh_until", "2099-01-01T00:00:00Z"));
+        assertEquals("REVOKED", result.get("computed_result"));
+        assertEquals(false, result.get("usable_for_final_pass"));
+        assertEquals("BLOCKED", result.get("decision"));
+    }
+
+    @Test
+    void oracleQualificationCheckIsPendingWhenTimestampsAreIncomplete() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.qualification-check", Map.of(
+                "oracle_id", "oracle-5", "oracle_version", "1.0.0", "independent", true,
+                "result", "QUALIFICATION_PENDING"));
+        assertEquals("QUALIFICATION_PENDING", result.get("computed_result"));
+        assertEquals(true, result.get("result_verified"));
+        assertEquals(false, result.get("usable_for_final_pass"));
+    }
+
+    @Test
+    void oracleQualificationCheckRejectsFreshUntilNotAfterQualifiedAt() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.qualification-check", Map.of(
+                "oracle_id", "oracle-6", "oracle_version", "1.0.0", "independent", true,
+                "result", "QUALIFIED",
+                "qualified_at", "2026-06-01T00:00:00Z", "fresh_until", "2026-01-01T00:00:00Z"));
+        assertEquals("NOT_QUALIFIED", result.get("computed_result"));
+        assertEquals(false, result.get("usable_for_final_pass"));
+    }
+
     @Test
     void oracleMultiEvaluateResolvesWhenEveryOracleAgrees() throws Exception {
         Map<?, ?> result = learningDispatch(bridge, "assurance.oracle.multi-evaluate", Map.of(

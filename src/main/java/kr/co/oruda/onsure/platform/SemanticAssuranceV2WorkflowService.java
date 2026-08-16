@@ -63,6 +63,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.promotion.approve",
             "assurance.learning.applied-lock.record",
             "assurance.learning.completion-status.check",
+            "assurance.oracle.qualification-check",
             "assurance.oracle.multi-evaluate",
             "assurance.corpus.integrity-check",
             "assurance.validator.regression-qualify",
@@ -191,6 +192,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.promotion.approve" -> learningPromotionApprove(request);
             case "assurance.learning.applied-lock.record" -> learningAppliedLockRecord(request);
             case "assurance.learning.completion-status.check" -> learningCompletionStatusCheck(request);
+            case "assurance.oracle.qualification-check" -> oracleQualificationCheck(request);
             case "assurance.oracle.multi-evaluate" -> oracleMultiEvaluate(request);
             case "assurance.corpus.integrity-check" -> corpusIntegrityCheck(request);
             case "assurance.validator.regression-qualify" -> validatorRegressionQualify(request);
@@ -1468,6 +1470,83 @@ final class SemanticAssuranceV2WorkflowService {
      * report the exact same decision; anything else is a real disagreement, not a caller-declared
      * one.
      */
+    /**
+     * oracle-qualification.v1.schema.json real computation (149_LEARNING_VALIDATION_SCHEMA_
+     * FIXTURE_SPECIFICATION.md SS E / 148 P0 invariant 4: "an unqualified or stale oracle must
+     * never be used for a final PASS"). Unlike the schema (which can only check that qualified_at
+     * and fresh_until are present, structurally, when result=QUALIFIED), this recomputes result
+     * for real against the server clock -- a caller cannot simply keep asserting QUALIFIED after
+     * fresh_until has actually passed. Mirrors releaseQualify's now.isBefore(validUntil) staleness
+     * check. REVOKED is a caller-declared terminal action this operation does not attempt to
+     * second-guess from timestamps alone; it is honored as-is, and is never usable_for_final_pass.
+     */
+    private Map<String, Object> oracleQualificationCheck(JsonNode request) {
+        String oracleId = requiredText(request, "oracle_id");
+        String oracleVersion = requiredText(request, "oracle_version");
+        String claimedResult = requiredText(request, "result");
+        JsonNode independentNode = request.path("independent");
+        if (!independentNode.isBoolean()) {
+            return failClosed("INPUT_REQUIRED", List.of("ORACLE_QUALIFICATION_INDEPENDENT_REQUIRED"));
+        }
+        boolean independent = independentNode.asBoolean();
+
+        if ("REVOKED".equals(claimedResult)) {
+            Map<String, Object> out = base("ORACLE_QUALIFICATION_CHECK", oracleId);
+            out.put("oracle_version", oracleVersion);
+            out.put("computed_result", "REVOKED");
+            out.put("claimed_result", claimedResult);
+            out.put("result_verified", true);
+            out.put("usable_for_final_pass", false);
+            out.put("reasons", List.of());
+            out.put("decision", "BLOCKED");
+            return immutable(out);
+        }
+
+        JsonNode qualifiedAtNode = request.path("qualified_at");
+        JsonNode freshUntilNode = request.path("fresh_until");
+        Instant qualifiedAt = null;
+        Instant freshUntil = null;
+        try {
+            if (qualifiedAtNode.isTextual()) qualifiedAt = Instant.parse(qualifiedAtNode.asText());
+            if (freshUntilNode.isTextual()) freshUntil = Instant.parse(freshUntilNode.asText());
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("ORACLE_QUALIFICATION_TIMESTAMP_MALFORMED"));
+        }
+
+        Instant now = Instant.now();
+        List<String> reasons = new ArrayList<>();
+        String computedResult;
+        if (!independent) {
+            computedResult = "NOT_QUALIFIED";
+            reasons.add("ORACLE_NOT_INDEPENDENT");
+        } else if (qualifiedAt != null && freshUntil != null && !freshUntil.isAfter(qualifiedAt)) {
+            computedResult = "NOT_QUALIFIED";
+            reasons.add("FRESH_UNTIL_NOT_AFTER_QUALIFIED_AT");
+        } else if (freshUntil != null && !now.isBefore(freshUntil)) {
+            computedResult = "STALE";
+            reasons.add("FRESH_UNTIL_ALREADY_PASSED");
+        } else if (qualifiedAt != null && freshUntil != null) {
+            computedResult = "QUALIFIED";
+        } else {
+            computedResult = "QUALIFICATION_PENDING";
+            reasons.add("QUALIFICATION_TIMESTAMPS_INCOMPLETE");
+        }
+
+        boolean resultVerified = computedResult.equals(claimedResult);
+        if (!resultVerified) reasons.add("CLAIMED_RESULT_MISMATCH:" + claimedResult + "->" + computedResult);
+        boolean usableForFinalPass = resultVerified && "QUALIFIED".equals(computedResult);
+
+        Map<String, Object> out = base("ORACLE_QUALIFICATION_CHECK", oracleId);
+        out.put("oracle_version", oracleVersion);
+        out.put("computed_result", computedResult);
+        out.put("claimed_result", claimedResult);
+        out.put("result_verified", resultVerified);
+        out.put("usable_for_final_pass", usableForFinalPass);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", usableForFinalPass ? "NON_FINAL" : "BLOCKED");
+        return immutable(out);
+    }
+
     private Map<String, Object> oracleMultiEvaluate(JsonNode request) {
         String targetId = requiredText(request, "target_id");
         // Deliberately not "case_id": that field name is a distinct, already-RBAC-tracked
