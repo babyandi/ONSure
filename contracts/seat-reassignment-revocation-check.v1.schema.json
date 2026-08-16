@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/seat-reassignment-revocation-check.v1.schema.json",
+  "title": "ONSure Seat Reassignment Token Revocation Check v1",
+  "description": "FR-COM-012: 'Seat는 담당자 변경 시 Customer Admin이 즉시 회수·재배정할 수 있으며, 회수된 Seat의 이전 담당자 Access Token은 즉시 무효화한다.' immediate_revocation_confirmed is computed by real per-token cross-referencing between the previous occupant's active tokens and the token_invalidation_events actually recorded for this reassignment -- a token missing from token_invalidation_events, or invalidated strictly after reassigned_at (a window where the old occupant's token still worked post-reassignment), is a real revocation gap, not a caller-declared flag.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "seat_id", "previous_actor_id", "new_actor_id", "reassigned_at",
+    "previous_actor_active_tokens", "token_invalidation_events", "not_timely_invalidated_tokens",
+    "immediate_revocation_confirmed", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_SEAT_REASSIGNMENT_REVOCATION_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "seat_id": {"type": "string", "minLength": 1},
+    "previous_actor_id": {"type": "string", "minLength": 1},
+    "new_actor_id": {"type": "string", "minLength": 1},
+    "reassigned_at": {"type": "string", "format": "date-time"},
+    "previous_actor_active_tokens": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "token_invalidation_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["token_id", "invalidated_at"],
+        "properties": {
+          "token_id": {"type": "string", "minLength": 1},
+          "invalidated_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "not_timely_invalidated_tokens": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "immediate_revocation_confirmed": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"immediate_revocation_confirmed": {"const": true}}},
+      "then": {"properties": {"not_timely_invalidated_tokens": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"not_timely_invalidated_tokens": {"minItems": 1}}},
+      "then": {"properties": {"immediate_revocation_confirmed": {"const": false}}}
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-003",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-003: '실행 전 Entitlement, Credit, Feature, Validity를 확인한다.'",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/LicenseLifecycleService.java (authorize, reserve, validate)",
+  "observed_source": "LicenseLifecycleServiceTest (real JUnit execution, not simulated)",
+  "observed_test_methods": [
+    "issueActivateAuthorizeReserveCommitAndVerifyLedger",
+    "clockRollbackPersistsSuspensionAndDenial",
+    "missingTenantFieldAndCreditOverdrawFailClosed",
+    "authorizeDeniesAnEntitlementNotGrantedOnTheLicenseEvenWhenTheLicenseItselfIsValid"
+  ],
+  "coverage_notes": "All four named axes are covered by pre-existing, real, tested code, not a thin new wrapper: Validity is checked in validate() and enforced before authorize() can ALLOW -- clockRollbackPersistsSuspensionAndDenial proves a detected clock-rollback forces DENY and SUSPENDED, not silently accepted. Entitlement (also standing in for Feature, since this codebase models 'feature' access as an entitlement string like VALIDATION/PROGRAM_LEARNING) is checked in authorize() via entitlements(current).contains(entitlement) -- authorizeDeniesAnEntitlementNotGrantedOnTheLicenseEvenWhenTheLicenseItselfIsValid (added this pass) is the direct negative test: a license that is genuinely ALLOW-valid still DENIES a specific entitlement it was never granted, proving license validity alone does not imply every entitlement. Credit is checked in reserve() -- missingTenantFieldAndCreditOverdrawFailClosed proves a reservation exceeding available credits throws IllegalStateException rather than silently over-committing. authorize()'s own decision object surfaces license_validation, entitlement_present, and available_credits together in one response, so a caller cannot reach ALLOW while any one of the three is actually failing.",
+  "open_gap": "authorize() itself does not check Credit directly (it surfaces available_credits for the caller's own downstream reserve() call rather than gating ALLOW on a minimum balance) -- Credit sufficiency is enforced at reserve()-time, one call later, not inside authorize() itself. This is disclosed as a two-step check (authorize confirms entitlement+validity, reserve confirms credit) rather than a single atomic four-axis gate, which could in principle allow a caller to observe ALLOW from authorize() and then have reserve() reject for insufficient credit moments later -- a real sequencing gap, not fabricated as closed.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

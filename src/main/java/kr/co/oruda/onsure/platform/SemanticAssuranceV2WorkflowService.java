@@ -86,6 +86,8 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.decision.propagation-check",
             "assurance.learning.federated-aggregation-governance.check",
             "assurance.learning.causal-attribution.check",
+            "assurance.usage.attribution-check",
+            "assurance.seat.reassignment-revocation-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -220,6 +222,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.decision.propagation-check" -> decisionPropagationCheck(request);
             case "assurance.learning.federated-aggregation-governance.check" -> federatedAggregationGovernanceCheck(request);
             case "assurance.learning.causal-attribution.check" -> causalAttributionCheck(request);
+            case "assurance.usage.attribution-check" -> usageAttributionCheck(request);
+            case "assurance.seat.reassignment-revocation-check" -> seatReassignmentRevocationCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -2947,6 +2951,105 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("attribution_supported", attributionSupported);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", attributionSupported ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final Set<String> USAGE_FAILURE_CAUSES = Set.of(
+            "NONE", "INTERNAL_ERROR", "CUSTOMER_INPUT_ERROR", "CUSTOMER_USAGE", "EXTERNAL_DEPENDENCY_ERROR");
+
+    /**
+     * usage-attribution-check.v1.schema.json real computation (FR-COM-006: "ONSure 내부 오류에 의한
+     * 실패는 고객 사용량으로 확정하지 않는다."). usage_countable is computed purely from
+     * failure_cause -- INTERNAL_ERROR can never reach usage_countable=true, regardless of what the
+     * caller claims. usage_verified reports whether the caller's own claim actually matched this
+     * real computation, so a mismatched claim is surfaced rather than silently trusted.
+     */
+    private Map<String, Object> usageAttributionCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String executionId = requiredText(request, "execution_id");
+        String failureCause = requiredText(request, "failure_cause");
+        if (!USAGE_FAILURE_CAUSES.contains(failureCause)) {
+            return failClosed("HOLD", List.of("USAGE_FAILURE_CAUSE_INVALID:" + failureCause));
+        }
+        boolean claimedUsageCountable = request.path("claimed_usage_countable").asBoolean(false);
+
+        boolean usageCountable = !"INTERNAL_ERROR".equals(failureCause);
+        boolean usageVerified = usageCountable == claimedUsageCountable;
+
+        List<String> reasons = new ArrayList<>();
+        if (!usageCountable) reasons.add("INTERNAL_ERROR_NEVER_COUNTABLE_AS_USAGE");
+        if (!usageVerified) reasons.add("CLAIMED_USAGE_COUNTABLE_MISMATCH:" + claimedUsageCountable + "!=" + usageCountable);
+
+        Map<String, Object> out = base("USAGE_ATTRIBUTION_CHECK", subjectId);
+        out.put("execution_id", executionId);
+        out.put("failure_cause", failureCause);
+        out.put("claimed_usage_countable", claimedUsageCountable);
+        out.put("usage_countable", usageCountable);
+        out.put("usage_verified", usageVerified);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", usageVerified ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * seat-reassignment-revocation-check.v1.schema.json real computation (FR-COM-012: "Seat는
+     * 담당자 변경 시 Customer Admin이 즉시 회수·재배정할 수 있으며, 회수된 Seat의 이전 담당자 Access
+     * Token은 즉시 무효화한다."). immediate_revocation_confirmed is computed by real per-token
+     * cross-referencing between the previous occupant's declared active tokens and the actual
+     * token_invalidation_events recorded for this reassignment -- a token with no matching
+     * invalidation event, or one invalidated strictly after reassigned_at (a real window where the
+     * old occupant's token still worked post-reassignment), is a genuine revocation gap.
+     */
+    private Map<String, Object> seatReassignmentRevocationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String seatId = requiredText(request, "seat_id");
+        String previousActorId = requiredText(request, "previous_actor_id");
+        String newActorId = requiredText(request, "new_actor_id");
+        Instant reassignedAt;
+        try {
+            reassignedAt = Instant.parse(requiredText(request, "reassigned_at"));
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("SEAT_REASSIGNMENT_TIMESTAMP_MALFORMED"));
+        }
+        JsonNode activeTokensNode = request.path("previous_actor_active_tokens");
+        if (!activeTokensNode.isArray() || activeTokensNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("SEAT_REASSIGNMENT_REQUIRES_AT_LEAST_ONE_ACTIVE_TOKEN"));
+        }
+        List<String> activeTokens = stringList(activeTokensNode);
+
+        Map<String, Instant> invalidatedAt = new LinkedHashMap<>();
+        for (JsonNode event : request.path("token_invalidation_events")) {
+            String tokenId = requiredText(event, "token_id");
+            try {
+                invalidatedAt.put(tokenId, Instant.parse(requiredText(event, "invalidated_at")));
+            } catch (Exception malformed) {
+                return failClosed("HOLD", List.of("TOKEN_INVALIDATION_TIMESTAMP_MALFORMED:" + tokenId));
+            }
+        }
+
+        List<String> notTimelyInvalidated = new ArrayList<>();
+        List<String> reasons = new ArrayList<>();
+        for (String tokenId : activeTokens) {
+            Instant when = invalidatedAt.get(tokenId);
+            if (when == null) {
+                notTimelyInvalidated.add(tokenId);
+                reasons.add("TOKEN_NEVER_INVALIDATED:" + tokenId);
+            } else if (when.isAfter(reassignedAt)) {
+                notTimelyInvalidated.add(tokenId);
+                reasons.add("TOKEN_INVALIDATED_AFTER_REASSIGNMENT:" + tokenId);
+            }
+        }
+
+        boolean immediateRevocationConfirmed = notTimelyInvalidated.isEmpty();
+
+        Map<String, Object> out = base("SEAT_REASSIGNMENT_REVOCATION_CHECK", subjectId);
+        out.put("seat_id", seatId);
+        out.put("previous_actor_id", previousActorId);
+        out.put("new_actor_id", newActorId);
+        out.put("not_timely_invalidated_tokens", List.copyOf(notTimelyInvalidated));
+        out.put("immediate_revocation_confirmed", immediateRevocationConfirmed);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", immediateRevocationConfirmed ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

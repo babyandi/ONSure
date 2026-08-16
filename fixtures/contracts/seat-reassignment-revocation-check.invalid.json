@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_SEAT_REASSIGNMENT_REVOCATION_CHECK_V1",
+  "subject_id": "seat-2026-08-16-002",
+  "seat_id": "seat-2",
+  "previous_actor_id": "actor-old",
+  "new_actor_id": "actor-new",
+  "reassigned_at": "2026-08-16T10:00:00Z",
+  "previous_actor_active_tokens": ["token-3"],
+  "token_invalidation_events": [
+    {"token_id": "token-3", "invalidated_at": "2026-08-16T10:05:00Z"}
+  ],
+  "not_timely_invalidated_tokens": ["token-3"],
+  "immediate_revocation_confirmed": true,
+  "reasons": ["TOKEN_INVALIDATED_AFTER_REASSIGNMENT:token-3"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

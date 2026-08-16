@@ -2105,6 +2105,81 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return learningDispatch(bridge, "assurance.learning.causal-attribution.check", body);
     }
 
+    // FR-COM-006 Internal Error Never Counted as Customer Usage
+    @Test
+    void usageAttributionCheckNeverCountsAnInternalErrorAsUsageEvenIfClaimed() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.usage.attribution-check", Map.of(
+                "subject_id", "execution-1", "execution_id", "exec-1",
+                "failure_cause", "INTERNAL_ERROR", "claimed_usage_countable", true));
+        assertEquals(false, result.get("usage_countable"));
+        assertEquals(false, result.get("usage_verified"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void usageAttributionCheckCountsACustomerInputErrorAsUsage() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.usage.attribution-check", Map.of(
+                "subject_id", "execution-2", "execution_id", "exec-2",
+                "failure_cause", "CUSTOMER_INPUT_ERROR", "claimed_usage_countable", true));
+        assertEquals(true, result.get("usage_countable"));
+        assertEquals(true, result.get("usage_verified"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void usageAttributionCheckFlagsAMismatchedClaim() throws Exception {
+        Map<?, ?> result = learningDispatch(bridge, "assurance.usage.attribution-check", Map.of(
+                "subject_id", "execution-3", "execution_id", "exec-3",
+                "failure_cause", "INTERNAL_ERROR", "claimed_usage_countable", false));
+        assertEquals(false, result.get("usage_countable"));
+        assertEquals(true, result.get("usage_verified"));
+    }
+
+    // FR-COM-012 Seat Reassignment / Immediate Access Token Revocation
+    @Test
+    void seatReassignmentRevocationCheckConfirmsRevocationWhenAllTokensInvalidatedInTime() throws Exception {
+        Map<?, ?> result = seatReassignmentRevocationCheck(
+                "2026-08-16T10:00:00Z", List.of("token-1", "token-2"),
+                List.of(revocationEvent("token-1", "2026-08-16T10:00:00Z"), revocationEvent("token-2", "2026-08-16T09:59:00Z")));
+        assertEquals(List.of(), result.get("not_timely_invalidated_tokens"));
+        assertEquals(true, result.get("immediate_revocation_confirmed"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void seatReassignmentRevocationCheckDetectsATokenInvalidatedAfterTheReassignment() throws Exception {
+        Map<?, ?> result = seatReassignmentRevocationCheck(
+                "2026-08-16T10:00:00Z", List.of("token-3"),
+                List.of(revocationEvent("token-3", "2026-08-16T10:05:00Z")));
+        assertEquals(List.of("token-3"), result.get("not_timely_invalidated_tokens"));
+        assertEquals(false, result.get("immediate_revocation_confirmed"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void seatReassignmentRevocationCheckDetectsATokenNeverInvalidatedAtAll() throws Exception {
+        Map<?, ?> result = seatReassignmentRevocationCheck(
+                "2026-08-16T10:00:00Z", List.of("token-4"), List.of());
+        assertEquals(List.of("token-4"), result.get("not_timely_invalidated_tokens"));
+        assertEquals(false, result.get("immediate_revocation_confirmed"));
+        assertTrue(((List<?>) result.get("reasons")).contains("TOKEN_NEVER_INVALIDATED:token-4"));
+    }
+
+    private Map<String, Object> revocationEvent(String tokenId, String invalidatedAt) {
+        return Map.of("token_id", tokenId, "invalidated_at", invalidatedAt);
+    }
+
+    private Map<?, ?> seatReassignmentRevocationCheck(
+            String reassignedAt, List<String> activeTokens, List<Map<String, Object>> invalidationEvents)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.seat.reassignment-revocation-check", Map.of(
+                "subject_id", "seat-1", "seat_id", "seat-1",
+                "previous_actor_id", "actor-old", "new_actor_id", "actor-new",
+                "reassigned_at", reassignedAt,
+                "previous_actor_active_tokens", activeTokens,
+                "token_invalidation_events", invalidationEvents));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

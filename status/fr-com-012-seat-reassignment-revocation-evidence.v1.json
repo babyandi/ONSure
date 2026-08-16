@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-012",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-012: 'Seat는 담당자 변경 시 Customer Admin이 즉시 회수·재배정할 수 있으며, 회수된 Seat의 이전 담당자 Access Token은 즉시 무효화한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.seatReassignmentRevocationCheck via assurance.seat.reassignment-revocation-check; contracts/seat-reassignment-revocation-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/seat-reassignment-revocation-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#seatReassignmentRevocationCheckConfirmsRevocationWhenAllTokensInvalidatedInTime",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#seatReassignmentRevocationCheckDetectsATokenInvalidatedAfterTheReassignment",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#seatReassignmentRevocationCheckDetectsATokenNeverInvalidatedAtAll"
+  ],
+  "coverage_notes": "immediate_revocation_confirmed is computed by real per-token cross-referencing, not a caller-declared summary flag. seatReassignmentRevocationCheckDetectsATokenInvalidatedAfterTheReassignment is the direct test of '즉시' (immediate): a token invalidated 5 minutes after reassigned_at is flagged TOKEN_INVALIDATED_AFTER_REASSIGNMENT -- a real window during which the previous occupant's token still worked is caught, not just whether invalidation eventually happened at all. seatReassignmentRevocationCheckDetectsATokenNeverInvalidatedAtAll closes the simpler but equally real case of a token with no invalidation event at all.",
+  "open_gap": "Operates on a caller-supplied token list and invalidation-event list; there is no live Seat/session-token runtime in this codebase yet that actually issues, tracks, and invalidates real access tokens per seat occupant (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session -- distinct from the pre-existing SessionLedger, which manages session lifecycle/eviction but has no seat-occupancy or reassignment concept). The reassignment/re-grant half of the requirement ('즉시 회수·재배정') is not modeled by this schema at all -- only the token-revocation half is checked.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

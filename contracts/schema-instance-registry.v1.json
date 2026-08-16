@@ -1111,6 +1111,24 @@
         "fixtures/contracts/causal-attribution-check.invalid.json"
       ],
       "schema": "contracts/causal-attribution-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/usage-attribution-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/usage-attribution-check.invalid.json"
+      ],
+      "schema": "contracts/usage-attribution-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/seat-reassignment-revocation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/seat-reassignment-revocation-check.invalid.json"
+      ],
+      "schema": "contracts/seat-reassignment-revocation-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",
