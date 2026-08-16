@@ -85,6 +85,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.revocation-propagation.check",
             "assurance.decision.propagation-check",
             "assurance.learning.federated-aggregation-governance.check",
+            "assurance.learning.causal-attribution.check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -218,6 +219,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.revocation-propagation.check" -> revocationPropagationCheck(request);
             case "assurance.decision.propagation-check" -> decisionPropagationCheck(request);
             case "assurance.learning.federated-aggregation-governance.check" -> federatedAggregationGovernanceCheck(request);
+            case "assurance.learning.causal-attribution.check" -> causalAttributionCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -2892,6 +2894,59 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("state", state);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "AGGREGATION_AUTHORIZED".equals(state) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final Set<String> CAUSAL_EVIDENCE_METHODS = Set.of(
+            "BEFORE_AFTER_CORRELATION_ONLY", "TREATMENT_CONTROL", "SHADOW_COMPARATOR",
+            "COUNTERFACTUAL", "EQUIVALENT_CAUSAL_EVIDENCE");
+
+    /**
+     * causal-attribution-check.v1.schema.json real computation (FR-LEARN-041 Causal Attribution:
+     * "학습자산 적용 후 품질 변화가 해당 변경 때문인지 검증해야 한다. 단순 before/after 상관관계만으로
+     * 효과를 확정하지 않으며, 가능한 경우 treatment/control, shadow comparator, counterfactual 또는
+     * 동등한 causal evidence를 사용한다."). attribution_supported is computed structurally, never
+     * trusted from a caller-declared flag: a claimed effect backed only by BEFORE_AFTER_CORRELATION_ONLY
+     * is rejected outright -- the named negative case. Each stronger method also has its own real
+     * completeness check rather than being trusted by label alone: TREATMENT_CONTROL requires an
+     * actually-present control group, COUNTERFACTUAL requires a real counterfactual_model_ref.
+     */
+    private Map<String, Object> causalAttributionCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String candidateId = requiredText(request, "candidate_id");
+        String method = requiredText(request, "causal_evidence_method");
+        if (!CAUSAL_EVIDENCE_METHODS.contains(method)) {
+            return failClosed("HOLD", List.of("CAUSAL_EVIDENCE_METHOD_INVALID:" + method));
+        }
+        boolean effectClaimed = request.path("effect_claimed").asBoolean(false);
+        boolean controlGroupPresent = request.path("control_group_present").asBoolean(false);
+        JsonNode counterfactualRefNode = request.path("counterfactual_model_ref");
+        boolean hasCounterfactualRef = counterfactualRefNode.isTextual() && !counterfactualRefNode.asText().isBlank();
+
+        List<String> reasons = new ArrayList<>();
+        boolean attributionSupported;
+        if ("BEFORE_AFTER_CORRELATION_ONLY".equals(method) && effectClaimed) {
+            attributionSupported = false;
+            reasons.add("EFFECT_CLAIMED_FROM_CORRELATION_ONLY");
+        } else if ("TREATMENT_CONTROL".equals(method) && !controlGroupPresent) {
+            attributionSupported = false;
+            reasons.add("TREATMENT_CONTROL_METHOD_WITHOUT_A_CONTROL_GROUP");
+        } else if ("COUNTERFACTUAL".equals(method) && !hasCounterfactualRef) {
+            attributionSupported = false;
+            reasons.add("COUNTERFACTUAL_METHOD_WITHOUT_A_MODEL_REFERENCE");
+        } else {
+            attributionSupported = true;
+        }
+
+        Map<String, Object> out = base("CAUSAL_ATTRIBUTION_CHECK", subjectId);
+        out.put("candidate_id", candidateId);
+        out.put("causal_evidence_method", method);
+        out.put("effect_claimed", effectClaimed);
+        out.put("control_group_present", controlGroupPresent);
+        out.put("counterfactual_model_ref", hasCounterfactualRef ? counterfactualRefNode.asText() : null);
+        out.put("attribution_supported", attributionSupported);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", attributionSupported ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_CAUSAL_ATTRIBUTION_CHECK_V1",
+  "subject_id": "candidate-2026-08-16-001",
+  "candidate_id": "candidate-1",
+  "causal_evidence_method": "TREATMENT_CONTROL",
+  "effect_claimed": true,
+  "control_group_present": true,
+  "counterfactual_model_ref": null,
+  "attribution_supported": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -2050,6 +2050,61 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "participants", participants));
     }
 
+    // FR-LEARN-041 Causal Attribution
+    @Test
+    void causalAttributionCheckRejectsAnEffectClaimedFromCorrelationOnly() throws Exception {
+        Map<?, ?> result = causalAttributionCheck("BEFORE_AFTER_CORRELATION_ONLY", true, false, null);
+        assertEquals(false, result.get("attribution_supported"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("EFFECT_CLAIMED_FROM_CORRELATION_ONLY"));
+    }
+
+    @Test
+    void causalAttributionCheckAllowsCorrelationOnlyWhenNoEffectIsClaimed() throws Exception {
+        Map<?, ?> result = causalAttributionCheck("BEFORE_AFTER_CORRELATION_ONLY", false, false, null);
+        assertEquals(true, result.get("attribution_supported"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void causalAttributionCheckSupportsARealTreatmentControlSplit() throws Exception {
+        Map<?, ?> result = causalAttributionCheck("TREATMENT_CONTROL", true, true, null);
+        assertEquals(true, result.get("attribution_supported"));
+    }
+
+    @Test
+    void causalAttributionCheckRejectsTreatmentControlLabelWithoutAnActualControlGroup() throws Exception {
+        Map<?, ?> result = causalAttributionCheck("TREATMENT_CONTROL", true, false, null);
+        assertEquals(false, result.get("attribution_supported"));
+        assertTrue(((List<?>) result.get("reasons")).contains("TREATMENT_CONTROL_METHOD_WITHOUT_A_CONTROL_GROUP"));
+    }
+
+    @Test
+    void causalAttributionCheckRejectsCounterfactualLabelWithoutAModelReference() throws Exception {
+        Map<?, ?> result = causalAttributionCheck("COUNTERFACTUAL", true, false, null);
+        assertEquals(false, result.get("attribution_supported"));
+        assertTrue(((List<?>) result.get("reasons")).contains("COUNTERFACTUAL_METHOD_WITHOUT_A_MODEL_REFERENCE"));
+    }
+
+    @Test
+    void causalAttributionCheckSupportsARealCounterfactualModelReference() throws Exception {
+        Map<?, ?> result = causalAttributionCheck("COUNTERFACTUAL", true, false, "counterfactual-model-1");
+        assertEquals(true, result.get("attribution_supported"));
+    }
+
+    private Map<?, ?> causalAttributionCheck(
+            String method, boolean effectClaimed, boolean controlGroupPresent, String counterfactualModelRef)
+            throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("subject_id", "candidate-subject-1");
+        body.put("candidate_id", "candidate-1");
+        body.put("causal_evidence_method", method);
+        body.put("effect_claimed", effectClaimed);
+        body.put("control_group_present", controlGroupPresent);
+        body.put("counterfactual_model_ref", counterfactualModelRef);
+        return learningDispatch(bridge, "assurance.learning.causal-attribution.check", body);
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {
