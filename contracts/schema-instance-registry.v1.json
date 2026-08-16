@@ -1156,6 +1156,15 @@
         "fixtures/contracts/corpus-contribution-eligibility-check.invalid.json"
       ],
       "schema": "contracts/corpus-contribution-eligibility-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/patch-isolation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/patch-isolation-check.invalid.json"
+      ],
+      "schema": "contracts/patch-isolation-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

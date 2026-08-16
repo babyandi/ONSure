@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_PATCH_ISOLATION_CHECK_V1",
+  "subject_id": "patch-2026-08-16-002",
+  "patch_id": "patch-2",
+  "patch_worktree_path": "/workspace/ONSure",
+  "main_worktree_path": "/workspace/ONSure",
+  "patch_branch_name": "main",
+  "protected_branch_names": ["main"],
+  "worktree_isolated": false,
+  "branch_isolated": false,
+  "isolated": true,
+  "reasons": ["SAME_WORKTREE_AS_MAIN", "PATCH_BRANCH_IS_PROTECTED:main"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

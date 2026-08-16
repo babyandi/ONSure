@@ -63,6 +63,7 @@ public final class TenantRbacService {
             "assurance.result.reproducibility-check",
             "assurance.currentness.verified-deployed-running-check",
             "assurance.corpus.contribution-eligibility-check",
+            "assurance.patch.isolation-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",

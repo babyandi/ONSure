@@ -91,6 +91,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.result.reproducibility-check",
             "assurance.currentness.verified-deployed-running-check",
             "assurance.corpus.contribution-eligibility-check",
+            "assurance.patch.isolation-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -230,6 +231,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.result.reproducibility-check" -> resultReproducibilityCheck(request);
             case "assurance.currentness.verified-deployed-running-check" -> verifiedDeployedRunningCurrentnessCheck(request);
             case "assurance.corpus.contribution-eligibility-check" -> corpusContributionEligibilityCheck(request);
+            case "assurance.patch.isolation-check" -> patchIsolationCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3222,6 +3224,46 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("eligible", eligible);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", eligible ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * patch-isolation-check.v1.schema.json real computation (FR-COM-007: "모든 자동 Patch는 별도
+     * Worktree와 Branch에서 수행한다."). isolated is computed for real: worktree_isolated is a
+     * real string-inequality check between the patch's own worktree path and the main workspace's
+     * worktree path; branch_isolated is a real membership check that the patch's branch name is
+     * NOT among the caller-declared protected_branch_names. A patch claiming isolation while
+     * actually sharing the main worktree or running directly on a protected branch is rejected.
+     */
+    private Map<String, Object> patchIsolationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String patchId = requiredText(request, "patch_id");
+        String patchWorktreePath = requiredText(request, "patch_worktree_path");
+        String mainWorktreePath = requiredText(request, "main_worktree_path");
+        String patchBranchName = requiredText(request, "patch_branch_name");
+        JsonNode protectedBranchesNode = request.path("protected_branch_names");
+        if (!protectedBranchesNode.isArray() || protectedBranchesNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("PATCH_ISOLATION_REQUIRES_PROTECTED_BRANCH_LIST"));
+        }
+        List<String> protectedBranches = stringList(protectedBranchesNode);
+
+        boolean worktreeIsolated = !patchWorktreePath.equals(mainWorktreePath);
+        boolean branchIsolated = !protectedBranches.contains(patchBranchName);
+        boolean isolated = worktreeIsolated && branchIsolated;
+
+        List<String> reasons = new ArrayList<>();
+        if (!worktreeIsolated) reasons.add("SAME_WORKTREE_AS_MAIN");
+        if (!branchIsolated) reasons.add("PATCH_BRANCH_IS_PROTECTED:" + patchBranchName);
+
+        Map<String, Object> out = base("PATCH_ISOLATION_CHECK", subjectId);
+        out.put("patch_id", patchId);
+        out.put("patch_branch_name", patchBranchName);
+        out.put("protected_branch_names", List.copyOf(protectedBranches));
+        out.put("worktree_isolated", worktreeIsolated);
+        out.put("branch_isolated", branchIsolated);
+        out.put("isolated", isolated);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", isolated ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

@@ -2317,6 +2317,45 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "contractual_block", contractualBlock));
     }
 
+    // FR-COM-007 Automated Patch Isolation
+    @Test
+    void patchIsolationCheckIsIsolatedInADifferentWorktreeAndBranch() throws Exception {
+        Map<?, ?> result = patchIsolationCheck(
+                "/workspace/ONSure-development", "/workspace/ONSure", "claude/onsure-development", List.of("main"));
+        assertEquals(true, result.get("worktree_isolated"));
+        assertEquals(true, result.get("branch_isolated"));
+        assertEquals(true, result.get("isolated"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void patchIsolationCheckDetectsThePatchRunningInTheMainWorktree() throws Exception {
+        Map<?, ?> result = patchIsolationCheck(
+                "/workspace/ONSure", "/workspace/ONSure", "claude/onsure-development", List.of("main"));
+        assertEquals(false, result.get("worktree_isolated"));
+        assertEquals(false, result.get("isolated"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("SAME_WORKTREE_AS_MAIN"));
+    }
+
+    @Test
+    void patchIsolationCheckDetectsThePatchOnAProtectedBranchEvenInADifferentWorktree() throws Exception {
+        Map<?, ?> result = patchIsolationCheck(
+                "/workspace/ONSure-development", "/workspace/ONSure", "main", List.of("main"));
+        assertEquals(false, result.get("branch_isolated"));
+        assertEquals(false, result.get("isolated"));
+        assertTrue(((List<?>) result.get("reasons")).contains("PATCH_BRANCH_IS_PROTECTED:main"));
+    }
+
+    private Map<?, ?> patchIsolationCheck(
+            String patchWorktreePath, String mainWorktreePath, String patchBranchName,
+            List<String> protectedBranchNames) throws Exception {
+        return learningDispatch(bridge, "assurance.patch.isolation-check", Map.of(
+                "subject_id", "patch-subject-1", "patch_id", "patch-1",
+                "patch_worktree_path", patchWorktreePath, "main_worktree_path", mainWorktreePath,
+                "patch_branch_name", patchBranchName, "protected_branch_names", protectedBranchNames));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

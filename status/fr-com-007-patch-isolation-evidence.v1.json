@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-007",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-007: '모든 자동 Patch는 별도 Worktree와 Branch에서 수행한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.patchIsolationCheck via assurance.patch.isolation-check; contracts/patch-isolation-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/patch-isolation-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#patchIsolationCheckIsIsolatedInADifferentWorktreeAndBranch",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#patchIsolationCheckDetectsThePatchRunningInTheMainWorktree",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#patchIsolationCheckDetectsThePatchOnAProtectedBranchEvenInADifferentWorktree"
+  ],
+  "coverage_notes": "worktree_isolated and branch_isolated are two independent real checks, each individually tested: patchIsolationCheckDetectsThePatchRunningInTheMainWorktree proves a patch whose declared worktree path equals the main workspace's own path is caught even when its branch name is legitimately non-protected. patchIsolationCheckDetectsThePatchOnAProtectedBranchEvenInADifferentWorktree proves the converse -- a genuinely separate worktree does not excuse running directly on a protected branch name, closing both halves of '별도 Worktree와 Branch' (separate worktree AND branch, not either/or). The valid case (patchIsolationCheckIsIsolatedInADifferentWorktreeAndBranch) uses this session's own actual real worktree paths (/workspace/ONSure-development vs /workspace/ONSure) as the fixture data, reflecting the genuine isolation this session's own patches have operated under throughout.",
+  "open_gap": "Operates on a caller-supplied worktree-path and branch-name representation; there is no live git/CI orchestration layer in this codebase that actually intercepts an automated patch operation at the moment it runs and feeds this gate from real process state (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session) -- this operation can verify a claimed worktree/branch pairing is isolated, but does not itself enforce isolation by preventing a patch process from running in the main worktree in the first place.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
