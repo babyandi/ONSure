@@ -1289,8 +1289,47 @@
       "FR-LEARN-033 (Challenge Set Secrecy) -- status/fr-learn-033-challenge-set-secrecy-evidence.v1.json. Second closure from the orphan_severity_recalculation R1 worklist: the requirement's exact mechanism (sealed fixture/answer evaluator-only, one-way exposure revoking blind qualification authority) is precisely what learningChallengeSetAccessDecide (built for doc 158 P0 contradiction class 3) already implements -- just needed the FR-LEARN-033 citation added to the tests and a real evidence file. REQUIREMENT_WITHOUT_DESIGN honestly disclosed as still open (own authority document 151 SS8 correctly excluded as circular, no other doc cites it).",
       "FR-META-060 (Certificate and Product Assurance Final Ceiling) -- status/fr-meta-060-certificate-final-ceiling-evidence.v1.json. Third closure from the orphan_severity_recalculation R1 worklist: certificateIssue already unconditionally forces HOLD (never a positive PASS certificate) because currentness_state_at_issue is hardcoded UNKNOWN -- the requirement's core fail-closed rule genuinely holds. Disclosed gap: the requirement also requires independently verifying supplied composition_snapshot_digest/final_lock_digest are truly current/exact, not just well-formed digests -- not yet covered, though non-exploitable today since nothing can reach PASS regardless. REQUIREMENT_WITHOUT_DESIGN also disclosed as open."
     ],
-    "orphan_count_progress": "381 -> 375 across this session's closures (FR-COM-013, FR-FRESH-001/002/003, NFR-SESSION, FR-LEARN-012 partial, FR-LEARN-033 partial, NFR-REL fully closed).",
-    "next_targets": "The 10 REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED requirements are the next highest-value slice: these are POSITIVE_CLAIM_GATE/QUALIFICATION_GATE requirements that structurally require a schema and currently have none.",
+    "orphan_count_progress": "SUPERSEDED -- see session_2026_08_16_consolidated_summary below for the current, verified count (365 of 392 as of the last commit in that summary). This field is kept as a historical record of the state before the 2026-08-16 session's 13 closures, not updated further.",
+    "next_targets": "SUPERSEDED -- see session_2026_08_16_consolidated_summary.actionable_remaining_worklist below for the current, verified next-target list.",
+    "session_2026_08_16_consolidated_summary": {
+      "state": "IN_PROGRESS",
+      "note": "Consolidation checkpoint after 13 P1 trace-orphan closures in one continuous session pass (8 commits: e429bce0..fba86985 on claude/onsure-development). Each individual closure has its own detailed dated entry below (fr_learn_061_062_093_..., fr_com_004_005_..., etc.) with schema/implementation/test/evidence pointers -- this entry exists only to give one clean, re-verified summary rather than requiring a reader to reconstruct progress from 8 scattered per-closure entries.",
+      "requirements_closed_this_session": [
+        "FR-LEARN-061, FR-LEARN-062, FR-LEARN-093 (Reviewer Pool Independence)",
+        "FR-LEARN-011 (Oracle Qualification -- test citation fix only, implementation predates this session)",
+        "FR-LEARN-067, FR-LEARN-068 (Emergency Revocation Propagation)",
+        "FR-META-009 (Decision Propagation)",
+        "FR-LEARN-053 (Federated Aggregation Governance)",
+        "FR-LEARN-041 (Causal Attribution)",
+        "FR-COM-003 (Entitlement/Credit/Feature/Validity -- 1 new negative test added to pre-existing LicenseLifecycleService coverage)",
+        "FR-COM-006 (Internal Error Never Counted as Usage)",
+        "FR-COM-012 (Seat Reassignment Token Revocation)",
+        "FR-COM-004, FR-COM-005 (Result Identity, Reproducibility)"
+      ],
+      "orphan_count_verified": "orphan_p1: 378 -> 365 (13 requirement_ids fully closed to orphan_dimensions=[], re-verified by a fresh generate-requirement-universe.py + scan-global-trace-closure.py rerun against the clean working tree at commit fba86985, not carried forward from an earlier intermediate reading). scanned_requirement_count is 392 (grew from 379 between sessions due to candidate-extraction drift in the requirement-universe generator, unrelated to and not caused by any of this session's own closures).",
+      "full_suite_reverified": "mvn -o test: BUILD SUCCESS (exit 0). python3 -m unittest discover -s tests -p 'test_*.py': 195 tests, all green. python3 scripts/validate-structured-contracts.py: 133 schemas, PASS. python3 scripts/validate-repository-contracts.py: PASS. All re-run fresh at this consolidation checkpoint, not assumed from earlier in the session.",
+      "remaining_orphan_breakdown_365_total": {
+        "REQUIREMENT_WITHOUT_EVIDENCE_PATH+REQUIREMENT_WITHOUT_TEST_only": "211 -- design exists, but almost all of these are candidate-extracted REQ::doc::heading::hash rows from documentation sections, not clean explicit FR-*/NFR-* identifiers; individually low-confidence and high-effort to triage one by one.",
+        "REQUIREMENT_WITHOUT_DESIGN+WITHOUT_TEST+WITHOUT_EVIDENCE_PATH": "115 -- all three dimensions missing; cannot be closed by implementation work alone since the design dimension requires new normative design-doc content, which is outside what a single Java/schema closure can supply.",
+        "REQUIREMENT_WITHOUT_DESIGN_only": "24 -- real implementation and tests already exist (same pattern as FR-LEARN-011 before this pass), but each one's own authority document is circular-excluded from citing it and no other design doc discusses the mechanism. Not closable without new design-doc cross-references, which is a documentation-authority decision, not an implementation task.",
+        "REQUIREMENT_WITHOUT_TEST_only": "14 -- mostly the same messy candidate-extracted rows as the 211 bucket above (their 'evidence' is only a generic orphan-severity-recalculation report reference, not real per-requirement evidence).",
+        "mixed_design+test": "1"
+      },
+      "actionable_remaining_worklist": {
+        "note": "The clean, explicit-ID, design-already-present, test+evidence-missing bucket -- the same category every one of this session's 13 closures came from -- is now down to 14 items, all previously assessed and deliberately deferred rather than rushed:",
+        "items": [
+          "FR-COM-001 (7-axis execution identity binding: Organization/Product/Channel/License/System/Program/Baseline) -- a composite manifest, moderate scope",
+          "FR-COM-007 (automated patches only in a separate worktree/branch) -- would need real git-state verification, not just a caller-declared claim",
+          "FR-COM-009 (corpus contribution opt-in/opt-out state machine, default opt-out, contractual override, public-CVE-derived-pattern exemption) -- a real multi-condition state machine, tractable but not yet scoped",
+          "FR-COM-010 (Customer Admin portfolio dashboard) -- a read-aggregation UI feature, not naturally gate-shaped",
+          "FR-COM-011 (active multi-channel notification on critical state changes) -- needs real channel integration (Email/Webhook/VS Code/admin inbox), not a pure computation",
+          "FR-LEARN-001 (Target/Assurance/Validator Learning as separate authority domains) -- a conceptual/architectural separation, not a bounded single check",
+          "FR-META-001 (Validation Target Manifest: an 11-axis composite identity) -- larger composite than any single closure this session attempted",
+          "FR-META-044 (Verified-to-Deployed-to-Running Currentness: 4-state chain) -- tractable, same shape as prior currentness/state-chain closures, a reasonable next target",
+          "NFR-AVAIL, NFR-OBS, NFR-PERF, NFR-PORT, NFR-PRIV, NFR-SEC (6 items) -- already investigated and explicitly deferred in nfr_machine_enforcement_gap_investigated above: each is a genuinely broad architectural concern (deployment portability, observability infrastructure, encryption at rest/in transit, availability SLA + rate limiting, idempotency, staged large-repo analysis) with no existing subsystem to hook a schema onto -- each deserves its own Design/Authority -> Contract -> Implementation pass sized like a Batch slice, not a quick fix."
+        ]
+      }
+    },
     "nfr_machine_enforcement_gap_investigated": {
       "note": "Investigated the 10 REQUIREMENT_WITHOUT_CONTRACT_WHERE_MACHINE_ENFORCEMENT_REQUIRED items: NFR-PORT, NFR-SESSION, NFR-PRIV, NFR-AUDIT, NFR-AVAIL, NFR-ACCESS, NFR-OBS, NFR-REL, NFR-PERF, NFR-SEC. Each names a genuinely broad architectural concern (deployment portability across SaaS/Local/Air-gapped, session timeout/concurrent-session-limit/fixation-prevention, encryption at rest/in transit, monthly availability + per-tenant rate limiting, structured trace/metric/log observability, idempotency/retry/dedup, staged large-repo analysis with pause/resume) with no existing subsystem to hook a schema onto -- unlike the 4 orphans closed this pass (real tests already existed, only the evidence artifact was missing), these need real new implementation work, not a quick evidence file. Deliberately NOT rushed with a thin schema that would fake closure -- recorded honestly as its own larger track rather than attempted piecemeal.",
       "criticality": "All MEDIUM, not CRITICAL -- confirmed via requirement-records.json before deciding not to rush these.",
