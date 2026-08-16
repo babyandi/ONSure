@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/tool-call-authorization-check.v1.schema.json",
+  "title": "ONSure Tool Call Authorization Check v1",
+  "description": "FR-META-057 AI Runtime Identity Closure / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS4 Tool Authority Method: '각 Tool은 tool_id/version, schema digest, provider/implementation digest, required role/permit, effect class (READ_ONLY|LOCAL_MUTATION|EXTERNAL_MUTATION|FINANCIAL|IRREVERSIBLE), target/resource scope, network/filesystem scope, confirmation policy를 가진다. Agent의 자연어 의도를 authorization proof로 사용하지 않는다. 실제 tool call마다 server-side authority evaluation과 receipt를 요구한다.' required_role is a SERVER-COMPUTED field derived from effect_class (never caller-supplied -- accepting it as trusted input would let any caller name a required_role they already happen to hold, defeating the entire gate), using this codebase's real 5-value role vocabulary (VIEWER/OPERATOR/APPROVER/AUDITOR/ADMIN, the same one identity.roles() and DelegationLedger already use). caller_granted_roles reports the caller's REAL authenticated roles (identity.roles(), server-verified), never a caller-declared array. caller_asserted_natural_language_intent is present specifically so implementations (and tests) can prove it is never consulted when computing authorized, closing the named prohibition for real. receipt_required is always true: every tool call, authorized or not, requires a receipt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "tool_id", "tool_version", "effect_class", "required_role",
+    "caller_granted_roles", "resource_scope", "caller_asserted_natural_language_intent",
+    "authorized", "receipt_required", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_TOOL_CALL_AUTHORIZATION_CHECK_V1"},
+    "tool_id": {"type": "string", "minLength": 1},
+    "tool_version": {"type": "string", "minLength": 1},
+    "effect_class": {"enum": ["READ_ONLY", "LOCAL_MUTATION", "EXTERNAL_MUTATION", "FINANCIAL", "IRREVERSIBLE"]},
+    "required_role": {"$ref": "#/$defs/role"},
+    "caller_granted_roles": {"type": "array", "items": {"$ref": "#/$defs/role"}, "uniqueItems": true},
+    "resource_scope": {"type": "string", "minLength": 1},
+    "caller_asserted_natural_language_intent": {"type": "string"},
+    "authorized": {"type": "boolean"},
+    "receipt_required": {"const": true},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"authorized": {"const": true}}},
+      "then": {"properties": {"reasons": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"authorized": {"const": false}}},
+      "then": {"properties": {"reasons": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"effect_class": {"const": "READ_ONLY"}}},
+      "then": {"properties": {"required_role": {"const": "VIEWER"}}}
+    },
+    {
+      "if": {"properties": {"effect_class": {"const": "LOCAL_MUTATION"}}},
+      "then": {"properties": {"required_role": {"const": "OPERATOR"}}}
+    },
+    {
+      "if": {"properties": {"effect_class": {"const": "EXTERNAL_MUTATION"}}},
+      "then": {"properties": {"required_role": {"const": "APPROVER"}}}
+    },
+    {
+      "if": {"properties": {"effect_class": {"enum": ["FINANCIAL", "IRREVERSIBLE"]}}},
+      "then": {"properties": {"required_role": {"const": "ADMIN"}}}
+    }
+  ],
+  "$defs": {
+    "role": {"enum": ["VIEWER", "OPERATOR", "APPROVER", "AUDITOR", "ADMIN"]}
+  }
+}

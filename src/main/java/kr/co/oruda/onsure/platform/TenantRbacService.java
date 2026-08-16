@@ -71,6 +71,7 @@ public final class TenantRbacService {
             "assurance.judge.independence-check",
             "assurance.requalification.trigger-evaluate",
             "assurance.agent-memory.conflict-resolve",
+            "assurance.tool-call.authorization-check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",

@@ -101,6 +101,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.judge.independence-check",
             "assurance.requalification.trigger-evaluate",
             "assurance.agent-memory.conflict-resolve",
+            "assurance.tool-call.authorization-check",
             "assurance.hazard.create",
             "assurance.hazard.advance",
             "assurance.appeal.file",
@@ -224,6 +225,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.judge.independence-check" -> judgeIndependenceCheck(request);
             case "assurance.requalification.trigger-evaluate" -> requalificationTriggerEvaluate(request);
             case "assurance.agent-memory.conflict-resolve" -> agentMemoryConflictResolve(request);
+            case "assurance.tool-call.authorization-check" -> toolCallAuthorizationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
             case "assurance.hazard.advance" -> hazardAdvance(request);
             case "assurance.appeal.file" -> appealFile(request);
@@ -3649,6 +3651,62 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("additional_oracle_required", additionalOracleRequired);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "CONFLICT_HOLD".equals(resolution) ? "HOLD" : "NON_FINAL");
+        return immutable(out);
+    }
+
+    private static String requiredRoleForEffectClass(String effectClass) {
+        return switch (effectClass) {
+            case "READ_ONLY" -> "VIEWER";
+            case "LOCAL_MUTATION" -> "OPERATOR";
+            case "EXTERNAL_MUTATION" -> "APPROVER";
+            case "FINANCIAL", "IRREVERSIBLE" -> "ADMIN";
+            default -> throw new IllegalArgumentException("SEMANTIC_V2_EFFECT_CLASS_INVALID:" + effectClass);
+        };
+    }
+
+    /**
+     * tool-call-authorization-check.v1.schema.json real computation (FR-META-057 AI Runtime
+     * Identity Closure / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS4
+     * Tool Authority Method: "Agent의 자연어 의도를 authorization proof로 사용하지 않는다. 실제
+     * tool call마다 server-side authority evaluation과 receipt를 요구한다."). Two deliberate
+     * design choices close this for real rather than merely documenting it: (1) required_role is
+     * SERVER-COMPUTED from effect_class via requiredRoleForEffectClass, never accepted as a
+     * trusted request field -- a caller-supplied required_role would let any caller simply name a
+     * role they already hold for an IRREVERSIBLE/FINANCIAL call, defeating the entire gate; (2)
+     * caller_granted_roles is read from identity.roles() (server-authenticated, the same source
+     * DelegationLedger's grant() already trusts), never from the request body. The request's
+     * caller_asserted_natural_language_intent field is read only to echo back into the result --
+     * it is never consulted when computing authorized, closing the named prohibition for real.
+     */
+    private Map<String, Object> toolCallAuthorizationCheck(JsonNode request) {
+        String toolId = requiredText(request, "tool_id");
+        String toolVersion = requiredText(request, "tool_version");
+        String effectClass = requiredText(request, "effect_class");
+        if (!Set.of("READ_ONLY", "LOCAL_MUTATION", "EXTERNAL_MUTATION", "FINANCIAL", "IRREVERSIBLE")
+                .contains(effectClass)) {
+            throw new IllegalArgumentException("SEMANTIC_V2_EFFECT_CLASS_INVALID:" + effectClass);
+        }
+        String resourceScope = requiredText(request, "resource_scope");
+        String naturalLanguageIntent = request.path("caller_asserted_natural_language_intent").asText("");
+
+        String requiredRole = requiredRoleForEffectClass(effectClass);
+        List<String> grantedRoles = identity.roles().stream().map(Enum::name).sorted().toList();
+        boolean authorized = grantedRoles.contains(requiredRole);
+
+        List<String> reasons = new ArrayList<>();
+        if (!authorized) reasons.add("CALLER_LACKS_REQUIRED_ROLE:" + requiredRole);
+
+        Map<String, Object> out = base("TOOL_CALL_AUTHORIZATION_CHECK", toolId);
+        out.put("tool_version", toolVersion);
+        out.put("effect_class", effectClass);
+        out.put("required_role", requiredRole);
+        out.put("caller_granted_roles", grantedRoles);
+        out.put("resource_scope", resourceScope);
+        out.put("caller_asserted_natural_language_intent", naturalLanguageIntent);
+        out.put("authorized", authorized);
+        out.put("receipt_required", true);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", authorized ? "NON_FINAL" : "BLOCKED");
         return immutable(out);
     }
 

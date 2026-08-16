@@ -1021,6 +1021,15 @@
         "fixtures/contracts/agent-memory-conflict-resolution.invalid.json"
       ],
       "schema": "contracts/agent-memory-conflict-resolution.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/tool-call-authorization-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/tool-call-authorization-check.invalid.json"
+      ],
+      "schema": "contracts/tool-call-authorization-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",
