@@ -1942,6 +1942,57 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "revocation_id", "revocation-1", "subject_id", "knowledge-asset-1", "targets", targets));
     }
 
+    // FR-META-009 Decision Propagation
+    @Test
+    void decisionPropagationCheckReachesPassOnlyWhenEveryDependencyIsGenuinelyPass() throws Exception {
+        Map<?, ?> result = decisionPropagationCheck(List.of(
+                dependency("dep-1", "PASS", true), dependency("dep-2", "PASS", false)));
+        assertEquals("PASS", result.get("propagated_status"));
+        assertEquals(List.of(), result.get("non_pass_dependencies"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void decisionPropagationCheckNeverAveragesAnUnresolvedCriticalDependencyIntoPass() throws Exception {
+        Map<?, ?> result = decisionPropagationCheck(List.of(
+                dependency("dep-1", "NOT_RUN", true), dependency("dep-2", "PASS", false)));
+        assertEquals("HOLD", result.get("propagated_status"));
+        assertEquals(List.of("dep-1"), result.get("critical_unresolved_dependencies"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void decisionPropagationCheckLetsANonCriticalUnresolvedDependencyReachOnlyInconclusive() throws Exception {
+        Map<?, ?> result = decisionPropagationCheck(List.of(
+                dependency("dep-1", "PASS", true), dependency("dep-2", "UNKNOWN", false)));
+        assertEquals("INCONCLUSIVE", result.get("propagated_status"));
+        assertEquals(List.of(), result.get("critical_unresolved_dependencies"));
+    }
+
+    @Test
+    void decisionPropagationCheckForcesBlockedAsTheMostSevereEvenWithOtherStatusesPresent() throws Exception {
+        Map<?, ?> result = decisionPropagationCheck(List.of(
+                dependency("dep-1", "FAIL", false), dependency("dep-2", "BLOCKED", true)));
+        assertEquals("BLOCKED", result.get("propagated_status"));
+    }
+
+    @Test
+    void decisionPropagationCheckPropagatesFailWhenNoBlockedIsPresent() throws Exception {
+        Map<?, ?> result = decisionPropagationCheck(List.of(
+                dependency("dep-1", "FAIL", false), dependency("dep-2", "PASS", true)));
+        assertEquals("FAIL", result.get("propagated_status"));
+        assertEquals(List.of("dep-1"), result.get("non_pass_dependencies"));
+    }
+
+    private Map<String, Object> dependency(String dependencyId, String status, boolean critical) {
+        return Map.of("dependency_id", dependencyId, "status", status, "critical", critical);
+    }
+
+    private Map<?, ?> decisionPropagationCheck(List<Map<String, Object>> dependencies) throws Exception {
+        return learningDispatch(bridge, "assurance.decision.propagation-check", Map.of(
+                "subject_id", "claim-subject-1", "claim_id", "claim-1", "dependencies", dependencies));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

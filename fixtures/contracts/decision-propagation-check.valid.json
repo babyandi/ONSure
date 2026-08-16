@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_DECISION_PROPAGATION_CHECK_V1",
+  "subject_id": "claim-2026-08-16-001",
+  "claim_id": "claim-1",
+  "dependencies": [
+    {"dependency_id": "dep-1", "status": "PASS", "critical": true},
+    {"dependency_id": "dep-2", "status": "PASS", "critical": false}
+  ],
+  "propagated_status": "PASS",
+  "critical_unresolved_dependencies": [],
+  "non_pass_dependencies": [],
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

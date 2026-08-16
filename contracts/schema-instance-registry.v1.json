@@ -1084,6 +1084,15 @@
         "fixtures/contracts/revocation-propagation-check.invalid.json"
       ],
       "schema": "contracts/revocation-propagation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/decision-propagation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/decision-propagation-check.invalid.json"
+      ],
+      "schema": "contracts/decision-propagation-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

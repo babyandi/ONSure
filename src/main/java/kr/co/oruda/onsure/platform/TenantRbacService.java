@@ -55,6 +55,7 @@ public final class TenantRbacService {
             "assurance.strength-ceiling.compute",
             "assurance.learning.data-residency.check",
             "assurance.learning.revocation-propagation.check",
+            "assurance.decision.propagation-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",

@@ -83,6 +83,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.strength-ceiling.compute",
             "assurance.learning.data-residency.check",
             "assurance.learning.revocation-propagation.check",
+            "assurance.decision.propagation-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -214,6 +215,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.strength-ceiling.compute" -> assuranceStrengthCeilingCompute(request);
             case "assurance.learning.data-residency.check" -> dataResidencyCheck(request);
             case "assurance.learning.revocation-propagation.check" -> revocationPropagationCheck(request);
+            case "assurance.decision.propagation-check" -> decisionPropagationCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -2738,6 +2740,91 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("propagation_state", propagationState);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "PROPAGATION_BLOCKED".equals(propagationState) ? "HOLD" : "NON_FINAL");
+        return immutable(out);
+    }
+
+    private static final Set<String> DEPENDENCY_STATUS_VALUES =
+            Set.of("PASS", "FAIL", "HOLD", "BLOCKED", "NOT_RUN", "INCONCLUSIVE", "UNKNOWN");
+    private static final Set<String> UNRESOLVED_STATUS_VALUES = Set.of("NOT_RUN", "INCONCLUSIVE", "UNKNOWN");
+
+    /**
+     * decision-propagation-check.v1.schema.json real computation (FR-META-009 Decision Propagation:
+     * "의존 하위 결과의 FAIL/HOLD/BLOCKED/NOT_RUN/INCONCLUSIVE/UNKNOWN은 상위 Claim에 전파한다.
+     * Critical dependency가 미검증이면 전체 PASS로 평균화하지 않는다."). propagated_status is
+     * computed by a real fixed precedence over the dependency array, never trusted from a caller-
+     * declared value: any BLOCKED dependency forces BLOCKED (most severe); any FAIL forces FAIL;
+     * a CRITICAL dependency left NOT_RUN/INCONCLUSIVE/UNKNOWN forces HOLD -- the named negative
+     * case, closing "critical dependency 미검증이면 PASS로 평균화하지 않는다" structurally, since
+     * this branch is checked before the all-PASS branch can ever be reached; any HOLD forces HOLD;
+     * an unresolved but non-critical dependency forces INCONCLUSIVE; only when every dependency is
+     * genuinely PASS does the claim itself reach PASS.
+     */
+    private Map<String, Object> decisionPropagationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String claimId = requiredText(request, "claim_id");
+        JsonNode dependenciesNode = request.path("dependencies");
+        if (!dependenciesNode.isArray() || dependenciesNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("DECISION_PROPAGATION_REQUIRES_AT_LEAST_ONE_DEPENDENCY"));
+        }
+
+        boolean anyBlocked = false;
+        boolean anyFail = false;
+        boolean anyHold = false;
+        boolean anyNonCriticalUnresolved = false;
+        List<String> criticalUnresolved = new ArrayList<>();
+        List<String> nonPass = new ArrayList<>();
+        for (JsonNode dependency : dependenciesNode) {
+            String dependencyId = requiredText(dependency, "dependency_id");
+            String status = requiredText(dependency, "status");
+            if (!DEPENDENCY_STATUS_VALUES.contains(status)) {
+                return failClosed("HOLD", List.of("DECISION_PROPAGATION_STATUS_INVALID:" + dependencyId));
+            }
+            boolean critical = dependency.path("critical").asBoolean(false);
+            if (!"PASS".equals(status)) nonPass.add(dependencyId);
+            switch (status) {
+                case "BLOCKED" -> anyBlocked = true;
+                case "FAIL" -> anyFail = true;
+                case "HOLD" -> anyHold = true;
+                default -> {
+                    if (UNRESOLVED_STATUS_VALUES.contains(status)) {
+                        if (critical) criticalUnresolved.add(dependencyId);
+                        else anyNonCriticalUnresolved = true;
+                    }
+                }
+            }
+        }
+
+        String propagatedStatus;
+        if (anyBlocked) {
+            propagatedStatus = "BLOCKED";
+        } else if (anyFail) {
+            propagatedStatus = "FAIL";
+        } else if (!criticalUnresolved.isEmpty()) {
+            propagatedStatus = "HOLD";
+        } else if (anyHold) {
+            propagatedStatus = "HOLD";
+        } else if (anyNonCriticalUnresolved) {
+            propagatedStatus = "INCONCLUSIVE";
+        } else {
+            propagatedStatus = "PASS";
+        }
+
+        List<String> reasons = new ArrayList<>();
+        if (anyBlocked) reasons.add("BLOCKED_DEPENDENCY_PRESENT");
+        if (anyFail) reasons.add("FAILED_DEPENDENCY_PRESENT");
+        for (String dependencyId : criticalUnresolved) reasons.add("CRITICAL_DEPENDENCY_UNRESOLVED:" + dependencyId);
+        if (anyHold) reasons.add("HOLD_DEPENDENCY_PRESENT");
+        if (anyNonCriticalUnresolved && criticalUnresolved.isEmpty() && !anyBlocked && !anyFail && !anyHold) {
+            reasons.add("NON_CRITICAL_DEPENDENCY_UNRESOLVED");
+        }
+
+        Map<String, Object> out = base("DECISION_PROPAGATION_CHECK", subjectId);
+        out.put("claim_id", claimId);
+        out.put("propagated_status", propagatedStatus);
+        out.put("critical_unresolved_dependencies", List.copyOf(criticalUnresolved));
+        out.put("non_pass_dependencies", List.copyOf(nonPass));
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "PASS".equals(propagatedStatus) ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 
