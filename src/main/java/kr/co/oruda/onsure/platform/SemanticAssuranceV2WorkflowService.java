@@ -104,6 +104,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.tool-call.authorization-check",
             "assurance.prompt.provenance-check",
             "assurance.ai-safety.claim-independence-check",
+            "assurance.delegation.chain-check",
             "assurance.hazard.create",
             "assurance.hazard.advance",
             "assurance.appeal.file",
@@ -230,6 +231,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.tool-call.authorization-check" -> toolCallAuthorizationCheck(request);
             case "assurance.prompt.provenance-check" -> promptProvenanceChainCheck(request);
             case "assurance.ai-safety.claim-independence-check" -> aiSafetyClaimIndependenceCheck(request);
+            case "assurance.delegation.chain-check" -> delegationChainCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
             case "assurance.hazard.advance" -> hazardAdvance(request);
             case "assurance.appeal.file" -> appealFile(request);
@@ -3852,6 +3854,98 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", allEvidenced ? "NON_FINAL" : "INCONCLUSIVE");
         return immutable(out);
+    }
+
+    /**
+     * delegation-chain-check.v1.schema.json real computation (FR-META-058 AI Nondeterminism and
+     * Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md
+     * SS9.3 Delegation and SS9.6 Cyclic Delegation: "Agent A가 Agent B에 일을 위임해도 B가 A보다
+     * 넓은 권한을 획득하지 않는다... A->B->C->A delegation loop, 책임 떠넘기기, 무한 handoff를
+     * 탐지한다."). Complements DelegationLedger (which enforces one grant's delegator-must-hold-
+     * the-role invariant in isolation) by validating an entire multi-hop chain at once. Cycle
+     * detection is a real directed-graph DFS (visited + in-progress recursion-stack, the standard
+     * algorithm), not a caller-declared flag -- delegationCycleSearch finds any agent reachable
+     * from itself, however many hops away, and returns the actual repeating path. Authority
+     * expansion is checked per edge: delegated_authority_scope must be a real subset of that
+     * edge's own from_agent_authority_scope, closing "B가 A보다 넓은 권한을 획득하지 않는다" for
+     * every hop, not just the first.
+     */
+    private Map<String, Object> delegationChainCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        JsonNode edgesNode = request.path("edges");
+        if (!edgesNode.isArray() || edgesNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("DELEGATION_CHAIN_REQUIRES_AT_LEAST_ONE_EDGE"));
+        }
+
+        Map<String, List<String>> adjacency = new LinkedHashMap<>();
+        List<String> expansionViolations = new ArrayList<>();
+        for (JsonNode edge : edgesNode) {
+            String fromAgentId = requiredText(edge, "from_agent_id");
+            String toAgentId = requiredText(edge, "to_agent_id");
+            List<String> fromScope = stringList(edge.path("from_agent_authority_scope"));
+            List<String> delegatedScope = stringList(edge.path("delegated_authority_scope"));
+            adjacency.computeIfAbsent(fromAgentId, key -> new ArrayList<>()).add(toAgentId);
+            for (String capability : delegatedScope) {
+                if (!fromScope.contains(capability)) {
+                    expansionViolations.add(fromAgentId + "->" + toAgentId + ":" + capability);
+                }
+            }
+        }
+
+        List<String> cyclePath = delegationCycleSearch(adjacency);
+        boolean cycleDetected = !cyclePath.isEmpty();
+        boolean expansionDetected = !expansionViolations.isEmpty();
+
+        List<String> reasons = new ArrayList<>();
+        if (cycleDetected) reasons.add("DELEGATION_CYCLE_DETECTED");
+        for (String violation : expansionViolations) reasons.add("AUTHORITY_EXPANSION:" + violation);
+        boolean chainValid = !cycleDetected && !expansionDetected;
+
+        Map<String, Object> out = base("DELEGATION_CHAIN_CHECK", subjectId);
+        out.put("cycle_detected", cycleDetected);
+        out.put("cycle_path", cyclePath);
+        out.put("authority_expansion_detected", expansionDetected);
+        out.put("authority_expansion_violations", List.copyOf(expansionViolations));
+        out.put("chain_valid", chainValid);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", chainValid ? "NON_FINAL" : "BLOCKED");
+        return immutable(out);
+    }
+
+    /** Standard DFS cycle search (visited + in-progress recursion-stack); returns the repeating path or empty. */
+    private List<String> delegationCycleSearch(Map<String, List<String>> adjacency) {
+        Set<String> visited = new java.util.HashSet<>();
+        Set<String> onPath = new java.util.HashSet<>();
+        List<String> path = new ArrayList<>();
+        for (String start : adjacency.keySet()) {
+            if (!visited.contains(start)) {
+                List<String> cycle = delegationCycleDfs(start, adjacency, visited, onPath, path);
+                if (cycle != null) return cycle;
+            }
+        }
+        return List.of();
+    }
+
+    private List<String> delegationCycleDfs(
+            String node, Map<String, List<String>> adjacency,
+            Set<String> visited, Set<String> onPath, List<String> path) {
+        visited.add(node);
+        onPath.add(node);
+        path.add(node);
+        for (String next : adjacency.getOrDefault(node, List.of())) {
+            if (onPath.contains(next)) {
+                List<String> cycle = new ArrayList<>(path.subList(path.indexOf(next), path.size()));
+                cycle.add(next);
+                return cycle;
+            }
+            if (!visited.contains(next)) {
+                List<String> found = delegationCycleDfs(next, adjacency, visited, onPath, path);
+                if (found != null) return found;
+            }
+        }
+        path.remove(path.size() - 1);
+        onPath.remove(node);
+        return null;
     }
 
     private HazardLedger hazardLedger() {

@@ -1048,6 +1048,15 @@
         "fixtures/contracts/ai-safety-claim-independence-check.invalid.json"
       ],
       "schema": "contracts/ai-safety-claim-independence-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/delegation-chain-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/delegation-chain-check.invalid.json"
+      ],
+      "schema": "contracts/delegation-chain-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

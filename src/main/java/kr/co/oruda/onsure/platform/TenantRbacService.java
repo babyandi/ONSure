@@ -74,6 +74,7 @@ public final class TenantRbacService {
             "assurance.tool-call.authorization-check",
             "assurance.prompt.provenance-check",
             "assurance.ai-safety.claim-independence-check",
+            "assurance.delegation.chain-check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",

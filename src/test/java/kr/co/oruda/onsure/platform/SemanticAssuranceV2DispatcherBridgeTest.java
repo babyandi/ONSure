@@ -3046,6 +3046,83 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "subject_id", "ai-target-1", "submitted_claims", submittedClaims));
     }
 
+    // FR-META-058 AI Nondeterminism and Multi-Agent Assurance (SS9.3 Delegation, SS9.6 Cyclic Delegation)
+    @Test
+    void delegationChainCheckIsValidForACleanTwoHopChain() throws Exception {
+        Map<?, ?> result = delegationChainCheck(List.of(
+                delegationEdge("agent-a", "agent-b", List.of("read", "write"), List.of("read")),
+                delegationEdge("agent-b", "agent-c", List.of("read"), List.of("read"))));
+        assertEquals(false, result.get("cycle_detected"));
+        assertEquals(false, result.get("authority_expansion_detected"));
+        assertEquals(true, result.get("chain_valid"));
+        assertEquals(List.of(), result.get("reasons"));
+    }
+
+    @Test
+    void delegationChainCheckDetectsADirectTwoNodeCycle() throws Exception {
+        Map<?, ?> result = delegationChainCheck(List.of(
+                delegationEdge("agent-a", "agent-b", List.of("read"), List.of("read")),
+                delegationEdge("agent-b", "agent-a", List.of("read"), List.of("read"))));
+        assertEquals(true, result.get("cycle_detected"));
+        assertEquals(List.of("agent-a", "agent-b", "agent-a"), result.get("cycle_path"));
+        assertEquals(false, result.get("chain_valid"));
+        assertTrue(((List<?>) result.get("reasons")).contains("DELEGATION_CYCLE_DETECTED"));
+    }
+
+    @Test
+    void delegationChainCheckDetectsAThreeNodeCycle() throws Exception {
+        Map<?, ?> result = delegationChainCheck(List.of(
+                delegationEdge("agent-a", "agent-b", List.of("read"), List.of("read")),
+                delegationEdge("agent-b", "agent-c", List.of("read"), List.of("read")),
+                delegationEdge("agent-c", "agent-a", List.of("read"), List.of("read"))));
+        assertEquals(true, result.get("cycle_detected"));
+        assertEquals(List.of("agent-a", "agent-b", "agent-c", "agent-a"), result.get("cycle_path"));
+    }
+
+    @Test
+    void delegationChainCheckDoesNotFalselyFlagABranchingNonCyclicGraph() throws Exception {
+        // A delegates to both B and C independently -- branching, never a cycle.
+        Map<?, ?> result = delegationChainCheck(List.of(
+                delegationEdge("agent-a", "agent-b", List.of("read"), List.of("read")),
+                delegationEdge("agent-a", "agent-c", List.of("read"), List.of("read"))));
+        assertEquals(false, result.get("cycle_detected"));
+        assertEquals(true, result.get("chain_valid"));
+    }
+
+    @Test
+    void delegationChainCheckDetectsAuthorityExpansionEvenWithoutACycle() throws Exception {
+        Map<?, ?> result = delegationChainCheck(List.of(
+                delegationEdge("agent-a", "agent-b", List.of("read"), List.of("read", "write"))));
+        assertEquals(false, result.get("cycle_detected"));
+        assertEquals(true, result.get("authority_expansion_detected"));
+        assertEquals(List.of("agent-a->agent-b:write"), result.get("authority_expansion_violations"));
+        assertEquals(false, result.get("chain_valid"));
+    }
+
+    @Test
+    void delegationChainCheckAggregatesBothCycleAndExpansionViolationsTogether() throws Exception {
+        Map<?, ?> result = delegationChainCheck(List.of(
+                delegationEdge("agent-a", "agent-b", List.of("read"), List.of("read", "admin")),
+                delegationEdge("agent-b", "agent-a", List.of("read"), List.of("read"))));
+        assertEquals(true, result.get("cycle_detected"));
+        assertEquals(true, result.get("authority_expansion_detected"));
+        assertEquals(
+                List.of("DELEGATION_CYCLE_DETECTED", "AUTHORITY_EXPANSION:agent-a->agent-b:admin"),
+                result.get("reasons"));
+    }
+
+    private Map<String, Object> delegationEdge(
+            String fromAgentId, String toAgentId, List<String> fromScope, List<String> delegatedScope) {
+        return Map.of(
+                "from_agent_id", fromAgentId, "to_agent_id", toAgentId,
+                "from_agent_authority_scope", fromScope, "delegated_authority_scope", delegatedScope);
+    }
+
+    private Map<?, ?> delegationChainCheck(List<Map<String, Object>> edges) throws Exception {
+        return learningDispatch(bridge, "assurance.delegation.chain-check", Map.of(
+                "subject_id", "delegation-chain-1", "edges", edges));
+    }
+
     @Test
     void hazardCreatedThroughTheWiredOperationStartsIdentified() throws Exception {
         Map<?, ?> result = learningDispatch(bridge, "assurance.hazard.create", Map.of("hazard_id", "hazard-1"));

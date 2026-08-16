@@ -1818,5 +1818,22 @@
     "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: all 11 submitted reaches evidenced, BUSINESS_CORRECTNESS=PASS alone leaves all 10 other types untested -- the direct test of the named rule, a partial 3-of-11 submission lists exactly the remaining 8, a duplicate claim_type fails closed rather than silently overwriting, an unrecognized claim_type fails closed)",
     "evidence": "status/fr-meta-058-ai-safety-claim-independence-evidence.v1.json",
     "open_gap": "Verifies COMPLETENESS of the claim set (nothing silently inferred), not the TRUTH of any individual submitted decision -- no live safety/security test harness exists in this codebase to actually run prompt-injection/exfiltration/privilege-escalation/etc. probes. 2 of the 9 originally-named broader-scope areas remain open: RAG Assurance, AgentGraph/Delegation."
+  },
+  "batch5_broader_scope_delegation_chain_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Eighth closure of Batch 5's disclosed broader-scope gap (SS9.3 Delegation, SS9.6 Cyclic Delegation, FR-META-058). Complements the pre-existing DelegationLedger (which enforces a single grant's delegator-must-hold-the-role invariant in isolation) by validating an entire multi-hop chain of edges at once. cycle_detected is a real directed-graph DFS (visited + in-progress recursion-stack, the standard algorithm) -- delegationCycleSearch finds any agent reachable from itself however many hops away and returns the actual repeating path, not a caller-declared flag. authority_expansion_detected is checked per edge (delegated_authority_scope must be a real subset of that edge's own from_agent_authority_scope), closing 'B가 A보다 넓은 권한을 획득하지 않는다' for every hop in the chain, not just the first. contracts/delegation-chain-check.v1.schema.json (NEW, registered 123 -> 124 schemas).",
+    "contract_schema": "contracts/delegation-chain-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/delegation-chain-check.valid.json (NEW)",
+      "fixtures/contracts/delegation-chain-check.invalid.json (NEW, a direct two-node cycle with cycle_detected=true and chain_valid contradictorily left true, violates the allOf forcing chain_valid=false on a detected cycle)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (delegationChainCheck, delegationCycleSearch, delegationCycleDfs)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+6 tests: a clean two-hop chain is valid, a direct two-node cycle is detected with the exact repeating path returned, a three-node A->B->C->A loop is detected -- the direct test of the named case, a branching non-cyclic fan-out graph is never falsely flagged, authority expansion is detected even with no cycle present, cycle and expansion violations are both reported together rather than one short-circuiting the other)",
+    "evidence": "status/fr-meta-058-delegation-chain-evidence.v1.json",
+    "open_gap": "Operates on a caller-supplied edge list; there is no live multi-agent delegation runtime in this codebase that actually emits these edges from real agent-to-agent handoffs (same disclosed 'caller-supplied representation, not live system integration' pattern as every other Batch 5 broader-scope closure this session). purpose/TTL/subject-scope preservation named in SS9.3's text beyond authority-scope containment is not modeled by this schema -- only the authority-non-expansion and cycle-freedom sub-rules are covered. 1 of the 9 originally-named broader-scope areas remains open: RAG Assurance."
   }
 }
