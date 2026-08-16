@@ -90,6 +90,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.seat.reassignment-revocation-check",
             "assurance.result.reproducibility-check",
             "assurance.currentness.verified-deployed-running-check",
+            "assurance.corpus.contribution-eligibility-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -228,6 +229,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.seat.reassignment-revocation-check" -> seatReassignmentRevocationCheck(request);
             case "assurance.result.reproducibility-check" -> resultReproducibilityCheck(request);
             case "assurance.currentness.verified-deployed-running-check" -> verifiedDeployedRunningCurrentnessCheck(request);
+            case "assurance.corpus.contribution-eligibility-check" -> corpusContributionEligibilityCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3168,6 +3170,58 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("state", state);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", "CURRENT".equals(state) ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * corpus-contribution-eligibility-check.v1.schema.json real computation (FR-COM-009: shared
+     * Corpus contribution defaults to Opt-out, a regulated Enterprise Edition contract can block it
+     * entirely, but a pattern derived from already-public sources (e.g. a public CVE database, not
+     * from observing customer code) is exempt from both and always stays eligible). eligible is
+     * computed structurally, never trusted from a caller-declared flag: PUBLIC_SOURCE_DERIVED is
+     * unconditionally eligible regardless of any org opt-in state or contractual block, because it
+     * never came from observing customer code in the first place. CUSTOMER_CODE_OBSERVATION is
+     * blocked outright by a contractual_block, and otherwise defaults to ineligible unless the
+     * organization has made an EXPLICIT opt-in choice -- silence/an unset choice is never consent.
+     */
+    private Map<String, Object> corpusContributionEligibilityCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String patternId = requiredText(request, "pattern_id");
+        String organizationId = requiredText(request, "organization_id");
+        String patternOrigin = requiredText(request, "pattern_origin");
+        if (!Set.of("CUSTOMER_CODE_OBSERVATION", "PUBLIC_SOURCE_DERIVED").contains(patternOrigin)) {
+            return failClosed("HOLD", List.of("CORPUS_PATTERN_ORIGIN_INVALID:" + patternOrigin));
+        }
+        boolean optInExplicitlySet = request.path("organization_opt_in_explicitly_set").asBoolean(false);
+        boolean optIn = request.path("organization_opt_in").asBoolean(false);
+        boolean contractualBlock = request.path("contractual_block").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        boolean eligible;
+        if ("PUBLIC_SOURCE_DERIVED".equals(patternOrigin)) {
+            eligible = true;
+            reasons.add("PUBLIC_SOURCE_DERIVED_ALWAYS_ELIGIBLE");
+        } else if (contractualBlock) {
+            eligible = false;
+            reasons.add("CONTRACTUAL_BLOCK_ACTIVE");
+        } else if (!optInExplicitlySet) {
+            eligible = false;
+            reasons.add("DEFAULT_OPT_OUT_NO_EXPLICIT_CHOICE");
+        } else {
+            eligible = optIn;
+            if (!eligible) reasons.add("ORGANIZATION_EXPLICITLY_OPTED_OUT");
+        }
+
+        Map<String, Object> out = base("CORPUS_CONTRIBUTION_ELIGIBILITY_CHECK", subjectId);
+        out.put("pattern_id", patternId);
+        out.put("organization_id", organizationId);
+        out.put("pattern_origin", patternOrigin);
+        out.put("organization_opt_in_explicitly_set", optInExplicitlySet);
+        out.put("organization_opt_in", optIn);
+        out.put("contractual_block", contractualBlock);
+        out.put("eligible", eligible);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", eligible ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

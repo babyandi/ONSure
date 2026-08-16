@@ -205,6 +205,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.usage.attribution-check", "assurance.seat.reassignment-revocation-check",
                     "assurance.result.reproducibility-check",
                     "assurance.currentness.verified-deployed-running-check",
+                    "assurance.corpus.contribution-eligibility-check",
                     "assurance.learning.cross-tenant-transfer.validate",
                     "assurance.learning.activation-stage.transition",
                     "assurance.learning.statistical-qualification.check",

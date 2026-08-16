@@ -1293,7 +1293,7 @@
     "next_targets": "SUPERSEDED -- see session_2026_08_16_consolidated_summary.actionable_remaining_worklist below for the current, verified next-target list.",
     "session_2026_08_16_consolidated_summary": {
       "state": "IN_PROGRESS",
-      "note": "Consolidation checkpoint after 14 P1 trace-orphan closures in one continuous session pass (9 commits: e429bce0..[latest] on claude/onsure-development). Each individual closure has its own detailed dated entry below (fr_learn_061_062_093_..., fr_com_004_005_..., fr_meta_044_..., etc.) with schema/implementation/test/evidence pointers -- this entry exists only to give one clean, re-verified summary rather than requiring a reader to reconstruct progress from scattered per-closure entries. Updated in place (not appended as yet another dated key) each time a new closure lands, per the user's own 2026-08-16 request to consolidate before continuing further.",
+      "note": "Consolidation checkpoint after 15 P1 trace-orphan closures in one continuous session pass (10 commits: e429bce0..[latest] on claude/onsure-development). Each individual closure has its own detailed dated entry below (fr_learn_061_062_093_..., fr_com_004_005_..., fr_meta_044_..., fr_com_009_..., etc.) with schema/implementation/test/evidence pointers -- this entry exists only to give one clean, re-verified summary rather than requiring a reader to reconstruct progress from scattered per-closure entries. Updated in place (not appended as yet another dated key) each time a new closure lands, per the user's own 2026-08-16 request to consolidate before continuing further.",
       "requirements_closed_this_session": [
         "FR-LEARN-061, FR-LEARN-062, FR-LEARN-093 (Reviewer Pool Independence)",
         "FR-LEARN-011 (Oracle Qualification -- test citation fix only, implementation predates this session)",
@@ -1305,23 +1305,23 @@
         "FR-COM-006 (Internal Error Never Counted as Usage)",
         "FR-COM-012 (Seat Reassignment Token Revocation)",
         "FR-COM-004, FR-COM-005 (Result Identity, Reproducibility)",
-        "FR-META-044 (Verified-to-Deployed-to-Running Currentness)"
+        "FR-META-044 (Verified-to-Deployed-to-Running Currentness)",
+        "FR-COM-009 (Shared Corpus Contribution Opt-in/Opt-out)"
       ],
-      "orphan_count_verified": "orphan_p1: 378 -> 364 (14 requirement_ids fully closed to orphan_dimensions=[], re-verified by a fresh generate-requirement-universe.py + scan-global-trace-closure.py rerun against the clean working tree, not carried forward from an earlier intermediate reading). scanned_requirement_count is 392 (grew from 379 between sessions due to candidate-extraction drift in the requirement-universe generator, unrelated to and not caused by any of this session's own closures).",
-      "full_suite_reverified": "mvn -o test: BUILD SUCCESS (exit 0). python3 scripts/validate-structured-contracts.py: 134 schemas, PASS. python3 scripts/validate-repository-contracts.py: PASS. Re-run fresh after the FR-META-044 closure; the 195/195 Python unittest green count was last independently reconfirmed at the prior (365-orphan) checkpoint and is unaffected by this Java-only addition.",
-      "remaining_orphan_breakdown_364_total": {
+      "orphan_count_verified": "orphan_p1: 378 -> 363 (15 requirement_ids fully closed to orphan_dimensions=[], re-verified by a fresh generate-requirement-universe.py + scan-global-trace-closure.py rerun against the clean working tree, not carried forward from an earlier intermediate reading). scanned_requirement_count is 392 (grew from 379 between sessions due to candidate-extraction drift in the requirement-universe generator, unrelated to and not caused by any of this session's own closures).",
+      "full_suite_reverified": "mvn -o test: BUILD SUCCESS (exit 0). python3 scripts/validate-structured-contracts.py: 135 schemas, PASS. Re-run fresh after the FR-COM-009 closure; validate-repository-contracts.py and the 195/195 Python unittest green count were last independently reconfirmed at the prior (364-orphan) checkpoint and are unaffected by this Java-only addition.",
+      "remaining_orphan_breakdown_363_total": {
         "REQUIREMENT_WITHOUT_EVIDENCE_PATH+REQUIREMENT_WITHOUT_TEST_only": "211 -- design exists, but almost all of these are candidate-extracted REQ::doc::heading::hash rows from documentation sections, not clean explicit FR-*/NFR-* identifiers; individually low-confidence and high-effort to triage one by one.",
         "REQUIREMENT_WITHOUT_DESIGN+WITHOUT_TEST+WITHOUT_EVIDENCE_PATH": "115 -- all three dimensions missing; cannot be closed by implementation work alone since the design dimension requires new normative design-doc content, which is outside what a single Java/schema closure can supply.",
         "REQUIREMENT_WITHOUT_DESIGN_only": "24 -- real implementation and tests already exist (same pattern as FR-LEARN-011 before this pass), but each one's own authority document is circular-excluded from citing it and no other design doc discusses the mechanism. Not closable without new design-doc cross-references, which is a documentation-authority decision, not an implementation task.",
-        "REQUIREMENT_WITHOUT_TEST_only": "13 -- mostly the same messy candidate-extracted rows as the 211 bucket above (their 'evidence' is only a generic orphan-severity-recalculation report reference, not real per-requirement evidence).",
+        "REQUIREMENT_WITHOUT_TEST_only": "12 -- mostly the same messy candidate-extracted rows as the 211 bucket above (their 'evidence' is only a generic orphan-severity-recalculation report reference, not real per-requirement evidence).",
         "mixed_design+test": "1"
       },
       "actionable_remaining_worklist": {
-        "note": "The clean, explicit-ID, design-already-present, test+evidence-missing bucket -- the same category every one of this session's 14 closures came from -- is now down to 13 items, all previously assessed and deliberately deferred rather than rushed:",
+        "note": "The clean, explicit-ID, design-already-present, test+evidence-missing bucket -- the same category every one of this session's 15 closures came from -- is now down to 12 items, all previously assessed and deliberately deferred rather than rushed:",
         "items": [
           "FR-COM-001 (7-axis execution identity binding: Organization/Product/Channel/License/System/Program/Baseline) -- a composite manifest, moderate scope",
           "FR-COM-007 (automated patches only in a separate worktree/branch) -- would need real git-state verification, not just a caller-declared claim",
-          "FR-COM-009 (corpus contribution opt-in/opt-out state machine, default opt-out, contractual override, public-CVE-derived-pattern exemption) -- a real multi-condition state machine, tractable but not yet scoped",
           "FR-COM-010 (Customer Admin portfolio dashboard) -- a read-aggregation UI feature, not naturally gate-shaped",
           "FR-COM-011 (active multi-channel notification on critical state changes) -- needs real channel integration (Email/Webhook/VS Code/admin inbox), not a pure computation",
           "FR-LEARN-001 (Target/Assurance/Validator Learning as separate authority domains) -- a conceptual/architectural separation, not a bounded single check",
@@ -1432,6 +1432,14 @@
       "evidence": "status/fr-meta-044-verified-deployed-running-currentness-evidence.v1.json",
       "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (a fully matching digest chain reaches CURRENT, matching source_commit/image_tag alone with disagreeing digests never reaches CURRENT -- the direct test of the named rule, a single drifted instance among clean ones is individually named, an empty running population is a distinct DEPLOYED_NOT_RUNNING state rather than vacuously CURRENT)",
       "trace_closure": "orphan_dimensions now [] (was WITHOUT_TEST/WITHOUT_EVIDENCE_PATH, design_refs already present). Verified via scan-global-trace-closure.py rerun after staging: orphan_p1 365 -> 364."
+    },
+    "fr_com_009_corpus_contribution_eligibility_closed_2026_08_16": {
+      "requirement": "FR-COM-009",
+      "state": "FULLY_CLOSED",
+      "note": "New implementation. contracts/corpus-contribution-eligibility-check.v1.schema.json (NEW, registered 134 -> 135 schemas) + assurance.corpus.contribution-eligibility-check: eligible is computed structurally from 3 real conditions in a fixed precedence -- PUBLIC_SOURCE_DERIVED is unconditionally eligible (checked first, bypassing both other gates); CUSTOMER_CODE_OBSERVATION is blocked outright by contractual_block; otherwise defaults to ineligible unless organization_opt_in_explicitly_set=true, closing the requirement's own named default ('기본값은 Opt-out') -- an unset choice is never treated as consent.",
+      "evidence": "status/fr-com-009-corpus-contribution-eligibility-evidence.v1.json",
+      "tests": "SemanticAssuranceV2DispatcherBridgeTest.java +4 (explicit opt-in reaches eligible, no explicit choice defaults to ineligible regardless of the unset opt_in value -- the direct test of the named default, contractual block overrides even an explicit opt-in, a public-source-derived pattern is eligible even with no opt-in AND an active contractual block -- the direct test of the named exemption)",
+      "trace_closure": "orphan_dimensions now [] (was WITHOUT_TEST/WITHOUT_EVIDENCE_PATH, design_refs already present). Verified via scan-global-trace-closure.py rerun after staging: orphan_p1 364 -> 363."
     },
     "orphan_count_progress_2026_08_16": "Total scanned_requirement_count grew 379->392 between sessions (candidate-extraction drift, independent of this work -- unrelated to any closure). The delta directly attributable to this pass's closures is -13 across seven rounds (orphan_p1: 378 -> 375 -> 373 -> 372 -> 371 -> 370 -> 367 -> 365, each confirmed by scan-global-trace-closure.py rerun after `git add`ing the new files -- the scanner is git-ls-files-based and could not see any closure until staged). 365 of 392 scanned requirements remain P1 orphans; this is disclosed as unfinished, multi-session-scale work, not claimed complete."
   },

@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-009",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-009: 'Organization은 자신의 Pattern/Fixture가 익명화된 공유 Corpus에 기여할지 여부를 명시적으로 선택(Opt-in/Opt-out)하며 기본값은 Opt-out이다. 규제산업 Enterprise Edition은 공유 Corpus 기여를 계약으로 원천 차단할 수 있다. 단, 공개 CVE/취약점 DB 등 이미 공개된 정보에서 유래한 Pattern은... 이 Opt-out 대상에서 제외하고 항상 최신으로 유지한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.corpusContributionEligibilityCheck via assurance.corpus.contribution-eligibility-check; contracts/corpus-contribution-eligibility-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/corpus-contribution-eligibility-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#corpusContributionEligibilityCheckIsEligibleWithAnExplicitOptIn",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#corpusContributionEligibilityCheckDefaultsToIneligibleWithNoExplicitChoice",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#corpusContributionEligibilityCheckBlocksEvenAnExplicitOptInUnderContractualBlock",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#corpusContributionEligibilityCheckIsAlwaysEligibleForPublicSourceDerivedPatterns"
+  ],
+  "coverage_notes": "corpusContributionEligibilityCheckDefaultsToIneligibleWithNoExplicitChoice is the direct test of the requirement's default: with organization_opt_in_explicitly_set=false, eligibility is ineligible regardless of the (irrelevant, unset-choice) organization_opt_in value -- silence is never treated as consent. corpusContributionEligibilityCheckBlocksEvenAnExplicitOptInUnderContractualBlock proves the regulated-Enterprise contractual block outranks an individual explicit opt-in -- an org cannot opt itself back in past a contract-level prohibition. corpusContributionEligibilityCheckIsAlwaysEligibleForPublicSourceDerivedPatterns is the direct test of the named exemption: a PUBLIC_SOURCE_DERIVED pattern is eligible even with organization_opt_in_explicitly_set=false AND contractual_block=true -- both of the other two gates are structurally bypassed for this origin, because the schema's own allOf forces eligible=true whenever pattern_origin=PUBLIC_SOURCE_DERIVED with no other precondition, and the Java branch checks this origin first before either the contractual_block or opt-in checks are even reached.",
+  "open_gap": "Operates on a caller-supplied pattern_origin classification and opt-in/contractual-block flags; there is no live pattern-generation pipeline or organization-preference store in this codebase that actually classifies whether a given pattern came from customer-code observation versus a public source, or that persists an organization's real opt-in choice (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). '항상 최신으로 유지한다' (always kept current) for public-source-derived patterns is not modeled at all -- this operation only computes eligibility at a point in time, not an ongoing freshness/update guarantee.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

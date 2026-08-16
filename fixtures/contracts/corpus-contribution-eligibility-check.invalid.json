@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_CORPUS_CONTRIBUTION_ELIGIBILITY_CHECK_V1",
+  "subject_id": "pattern-2026-08-16-002",
+  "pattern_id": "pattern-2",
+  "organization_id": "org-b",
+  "pattern_origin": "CUSTOMER_CODE_OBSERVATION",
+  "organization_opt_in_explicitly_set": false,
+  "organization_opt_in": false,
+  "contractual_block": false,
+  "eligible": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

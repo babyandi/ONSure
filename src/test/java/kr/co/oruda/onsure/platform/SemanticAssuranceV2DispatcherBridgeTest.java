@@ -2277,6 +2277,46 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "running_instances", runningInstances));
     }
 
+    // FR-COM-009 Shared Corpus Contribution Opt-in/Opt-out
+    @Test
+    void corpusContributionEligibilityCheckIsEligibleWithAnExplicitOptIn() throws Exception {
+        Map<?, ?> result = corpusContributionEligibilityCheck("CUSTOMER_CODE_OBSERVATION", true, true, false);
+        assertEquals(true, result.get("eligible"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void corpusContributionEligibilityCheckDefaultsToIneligibleWithNoExplicitChoice() throws Exception {
+        Map<?, ?> result = corpusContributionEligibilityCheck("CUSTOMER_CODE_OBSERVATION", false, false, false);
+        assertEquals(false, result.get("eligible"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("DEFAULT_OPT_OUT_NO_EXPLICIT_CHOICE"));
+    }
+
+    @Test
+    void corpusContributionEligibilityCheckBlocksEvenAnExplicitOptInUnderContractualBlock() throws Exception {
+        Map<?, ?> result = corpusContributionEligibilityCheck("CUSTOMER_CODE_OBSERVATION", true, true, true);
+        assertEquals(false, result.get("eligible"));
+        assertTrue(((List<?>) result.get("reasons")).contains("CONTRACTUAL_BLOCK_ACTIVE"));
+    }
+
+    @Test
+    void corpusContributionEligibilityCheckIsAlwaysEligibleForPublicSourceDerivedPatterns() throws Exception {
+        Map<?, ?> result = corpusContributionEligibilityCheck("PUBLIC_SOURCE_DERIVED", false, false, true);
+        assertEquals(true, result.get("eligible"));
+        assertTrue(((List<?>) result.get("reasons")).contains("PUBLIC_SOURCE_DERIVED_ALWAYS_ELIGIBLE"));
+    }
+
+    private Map<?, ?> corpusContributionEligibilityCheck(
+            String patternOrigin, boolean optInExplicitlySet, boolean optIn, boolean contractualBlock)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.corpus.contribution-eligibility-check", Map.of(
+                "subject_id", "pattern-subject-1", "pattern_id", "pattern-1", "organization_id", "org-1",
+                "pattern_origin", patternOrigin,
+                "organization_opt_in_explicitly_set", optInExplicitlySet, "organization_opt_in", optIn,
+                "contractual_block", contractualBlock));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

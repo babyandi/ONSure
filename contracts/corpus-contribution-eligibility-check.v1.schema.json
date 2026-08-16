@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/corpus-contribution-eligibility-check.v1.schema.json",
+  "title": "ONSure Shared Corpus Contribution Eligibility Check v1",
+  "description": "FR-COM-009: 'Organization은 자신의 Pattern/Fixture가 익명화된 공유 Corpus에 기여할지 여부를 명시적으로 선택(Opt-in/Opt-out)하며 기본값은 Opt-out이다. 규제산업 Enterprise Edition은 공유 Corpus 기여를 계약으로 원천 차단할 수 있다. 단, 공개 CVE/취약점 DB 등 이미 공개된 정보에서 유래한 Pattern은... 이 Opt-out 대상에서 제외하고 항상 최신으로 유지한다.' eligible is computed for real, never trusted from a caller-declared value: a PUBLIC_SOURCE_DERIVED pattern is always eligible regardless of any org opt-in state or contractual block, because it never came from observing customer code in the first place. A CUSTOMER_CODE_OBSERVATION pattern is blocked outright by a contractual_block, and otherwise defaults to ineligible unless the organization has made an EXPLICIT opt-in choice -- silence or an unset choice is never treated as consent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "pattern_id", "organization_id", "pattern_origin",
+    "organization_opt_in_explicitly_set", "organization_opt_in", "contractual_block",
+    "eligible", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CORPUS_CONTRIBUTION_ELIGIBILITY_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "pattern_id": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "pattern_origin": {"enum": ["CUSTOMER_CODE_OBSERVATION", "PUBLIC_SOURCE_DERIVED"]},
+    "organization_opt_in_explicitly_set": {"type": "boolean"},
+    "organization_opt_in": {"type": "boolean"},
+    "contractual_block": {"type": "boolean"},
+    "eligible": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"pattern_origin": {"const": "PUBLIC_SOURCE_DERIVED"}}},
+      "then": {"properties": {"eligible": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"pattern_origin": {"const": "CUSTOMER_CODE_OBSERVATION"}, "contractual_block": {"const": true}}},
+      "then": {"properties": {"eligible": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"pattern_origin": {"const": "CUSTOMER_CODE_OBSERVATION"}, "organization_opt_in_explicitly_set": {"const": false}}},
+      "then": {"properties": {"eligible": {"const": false}}}
+    }
+  ]
+}
