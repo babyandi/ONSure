@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-044",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-META-044 Verified-to-Deployed-to-Running Currentness: '검증된 Build Artifact, 실제 DeploymentRevision, active RuntimeInstance population을 digest로 연결한다. VERIFIED, DEPLOYED, RUNNING, CURRENT를 서로 다른 상태로 관리하며 source commit 또는 image tag 동일성만으로 CURRENT를 발급하지 않는다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.verifiedDeployedRunningCurrentnessCheck via assurance.currentness.verified-deployed-running-check; contracts/verified-deployed-running-currentness-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/verified-deployed-running-currentness-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#verifiedDeployedRunningCurrentnessCheckReachesCurrentWhenTheWholeDigestChainMatches",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#verifiedDeployedRunningCurrentnessCheckNeverReachesCurrentFromMatchingCommitOrTagAlone",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#verifiedDeployedRunningCurrentnessCheckDetectsADriftedRunningInstance",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#verifiedDeployedRunningCurrentnessCheckIsNotRunningWhenNoInstancesArePopulated"
+  ],
+  "coverage_notes": "verifiedDeployedRunningCurrentnessCheckNeverReachesCurrentFromMatchingCommitOrTagAlone is the direct test of the requirement's named negative case: verified_source_commit and deployed_image_tag are supplied consistently (same commit, same tag) while the actual digests disagree -- the method's own source code never reads either field in its computation (only requiredText()s them for structural presence), so there is no code path by which commit/tag agreement could substitute for the digest check, proven by the resulting DEPLOYED_ARTIFACT_MISMATCH state. verifiedDeployedRunningCurrentnessCheckDetectsADriftedRunningInstance proves population-level drift is caught per-instance, not just at the aggregate deployment level -- one drifted instance among several clean ones is individually named in drifted_instances. verifiedDeployedRunningCurrentnessCheckIsNotRunningWhenNoInstancesArePopulated proves an empty running population is a distinct DEPLOYED_NOT_RUNNING state, not silently treated as CURRENT by vacuous truth (no instances to disagree with).",
+  "open_gap": "Operates on a caller-supplied digest representation (verified_artifact_digest/deployed_artifact_digest/running_instances[].running_artifact_digest); there is no live build/deploy/runtime-fleet inventory system in this codebase that actually computes and reports these digests from real infrastructure (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). The requirement names 4 distinct states (VERIFIED, DEPLOYED, RUNNING, CURRENT) but this schema's state enum uses 4 different labels (DEPLOYED_ARTIFACT_MISMATCH, DEPLOYED_NOT_RUNNING, RUNNING_WITH_DRIFT, CURRENT) chosen to be self-describing about WHY a state was not reached, rather than literally naming VERIFIED/DEPLOYED/RUNNING as intermediate positive states -- a disclosed naming choice, not a literal reproduction of the requirement's own state vocabulary.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

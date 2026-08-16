@@ -89,6 +89,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.usage.attribution-check",
             "assurance.seat.reassignment-revocation-check",
             "assurance.result.reproducibility-check",
+            "assurance.currentness.verified-deployed-running-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -226,6 +227,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.usage.attribution-check" -> usageAttributionCheck(request);
             case "assurance.seat.reassignment-revocation-check" -> seatReassignmentRevocationCheck(request);
             case "assurance.result.reproducibility-check" -> resultReproducibilityCheck(request);
+            case "assurance.currentness.verified-deployed-running-check" -> verifiedDeployedRunningCurrentnessCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3107,6 +3109,65 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("reproducible", reproducible);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", reproducible ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * verified-deployed-running-currentness-check.v1.schema.json real computation (FR-META-044
+     * Verified-to-Deployed-to-Running Currentness: "검증된 Build Artifact, 실제 DeploymentRevision,
+     * active RuntimeInstance population을 digest로 연결한다... source commit 또는 image tag
+     * 동일성만으로 CURRENT를 발급하지 않는다."). verified_source_commit and deployed_image_tag are
+     * accepted and echoed back but NEVER read by this computation -- the chain is verified purely
+     * by real digest equality at each link: deployed_artifact_digest must equal
+     * verified_artifact_digest for the deployment to trace back to the verified build at all, and
+     * every running instance's running_artifact_digest must equal deployed_artifact_digest for the
+     * population to be drift-free. A caller supplying a matching source_commit/image_tag while the
+     * digests themselves disagree still cannot reach CURRENT, because those fields play no role in
+     * the state computation whatsoever.
+     */
+    private Map<String, Object> verifiedDeployedRunningCurrentnessCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String verifiedArtifactDigest = requiredText(request, "verified_artifact_digest");
+        requiredText(request, "verified_source_commit");
+        String deployedArtifactDigest = requiredText(request, "deployed_artifact_digest");
+        requiredText(request, "deployed_image_tag");
+
+        List<String> reasons = new ArrayList<>();
+        boolean deployedFromVerifiedMatch = deployedArtifactDigest.equals(verifiedArtifactDigest);
+        if (!deployedFromVerifiedMatch) reasons.add("DEPLOYED_ARTIFACT_DOES_NOT_MATCH_VERIFIED_DIGEST");
+
+        JsonNode instancesNode = request.path("running_instances");
+        List<String> drifted = new ArrayList<>();
+        int instanceCount = 0;
+        if (instancesNode.isArray()) {
+            for (JsonNode instance : instancesNode) {
+                instanceCount++;
+                String instanceId = requiredText(instance, "instance_id");
+                String runningDigest = requiredText(instance, "running_artifact_digest");
+                if (!runningDigest.equals(deployedArtifactDigest)) {
+                    drifted.add(instanceId);
+                    reasons.add("INSTANCE_DIGEST_DRIFT:" + instanceId);
+                }
+            }
+        }
+
+        String state;
+        if (!deployedFromVerifiedMatch) {
+            state = "DEPLOYED_ARTIFACT_MISMATCH";
+        } else if (instanceCount == 0) {
+            state = "DEPLOYED_NOT_RUNNING";
+        } else if (!drifted.isEmpty()) {
+            state = "RUNNING_WITH_DRIFT";
+        } else {
+            state = "CURRENT";
+        }
+
+        Map<String, Object> out = base("VERIFIED_DEPLOYED_RUNNING_CURRENTNESS_CHECK", subjectId);
+        out.put("deployed_from_verified_digest_match", deployedFromVerifiedMatch);
+        out.put("drifted_instances", List.copyOf(drifted));
+        out.put("state", state);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "CURRENT".equals(state) ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

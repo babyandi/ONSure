@@ -2224,6 +2224,59 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "subject_id", "validation-run-1", "results", results));
     }
 
+    // FR-META-044 Verified-to-Deployed-to-Running Currentness
+    @Test
+    void verifiedDeployedRunningCurrentnessCheckReachesCurrentWhenTheWholeDigestChainMatches() throws Exception {
+        Map<?, ?> result = verifiedDeployedRunningCurrentnessCheck(
+                "sha256:aaa", "commit-1", "sha256:aaa", "v1.0.0",
+                List.of(runningInstance("instance-1", "sha256:aaa"), runningInstance("instance-2", "sha256:aaa")));
+        assertEquals(true, result.get("deployed_from_verified_digest_match"));
+        assertEquals(List.of(), result.get("drifted_instances"));
+        assertEquals("CURRENT", result.get("state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void verifiedDeployedRunningCurrentnessCheckNeverReachesCurrentFromMatchingCommitOrTagAlone() throws Exception {
+        Map<?, ?> result = verifiedDeployedRunningCurrentnessCheck(
+                "sha256:aaa", "commit-1", "sha256:bbb", "v1.0.0",
+                List.of(runningInstance("instance-3", "sha256:bbb")));
+        assertEquals(false, result.get("deployed_from_verified_digest_match"));
+        assertEquals("DEPLOYED_ARTIFACT_MISMATCH", result.get("state"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void verifiedDeployedRunningCurrentnessCheckDetectsADriftedRunningInstance() throws Exception {
+        Map<?, ?> result = verifiedDeployedRunningCurrentnessCheck(
+                "sha256:aaa", "commit-1", "sha256:aaa", "v1.0.0",
+                List.of(runningInstance("instance-4", "sha256:aaa"), runningInstance("instance-5", "sha256:stale")));
+        assertEquals(List.of("instance-5"), result.get("drifted_instances"));
+        assertEquals("RUNNING_WITH_DRIFT", result.get("state"));
+    }
+
+    @Test
+    void verifiedDeployedRunningCurrentnessCheckIsNotRunningWhenNoInstancesArePopulated() throws Exception {
+        Map<?, ?> result = verifiedDeployedRunningCurrentnessCheck(
+                "sha256:aaa", "commit-1", "sha256:aaa", "v1.0.0", List.of());
+        assertEquals("DEPLOYED_NOT_RUNNING", result.get("state"));
+    }
+
+    private Map<String, Object> runningInstance(String instanceId, String runningArtifactDigest) {
+        return Map.of("instance_id", instanceId, "running_artifact_digest", runningArtifactDigest);
+    }
+
+    private Map<?, ?> verifiedDeployedRunningCurrentnessCheck(
+            String verifiedArtifactDigest, String verifiedSourceCommit,
+            String deployedArtifactDigest, String deployedImageTag,
+            List<Map<String, Object>> runningInstances) throws Exception {
+        return learningDispatch(bridge, "assurance.currentness.verified-deployed-running-check", Map.of(
+                "subject_id", "product-1",
+                "verified_artifact_digest", verifiedArtifactDigest, "verified_source_commit", verifiedSourceCommit,
+                "deployed_artifact_digest", deployedArtifactDigest, "deployed_image_tag", deployedImageTag,
+                "running_instances", runningInstances));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_VERIFIED_DEPLOYED_RUNNING_CURRENTNESS_CHECK_V1",
+  "subject_id": "product-2026-08-16-001",
+  "verified_artifact_digest": "sha256:aaa",
+  "verified_source_commit": "commit-abc123",
+  "deployed_artifact_digest": "sha256:aaa",
+  "deployed_image_tag": "v1.2.3",
+  "running_instances": [
+    {"instance_id": "instance-1", "running_artifact_digest": "sha256:aaa"},
+    {"instance_id": "instance-2", "running_artifact_digest": "sha256:aaa"}
+  ],
+  "deployed_from_verified_digest_match": true,
+  "drifted_instances": [],
+  "state": "CURRENT",
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

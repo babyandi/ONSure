@@ -1138,6 +1138,15 @@
         "fixtures/contracts/result-reproducibility-check.invalid.json"
       ],
       "schema": "contracts/result-reproducibility-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/verified-deployed-running-currentness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/verified-deployed-running-currentness-check.invalid.json"
+      ],
+      "schema": "contracts/verified-deployed-running-currentness-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",
