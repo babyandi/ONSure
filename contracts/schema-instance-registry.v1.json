@@ -1075,6 +1075,15 @@
         "fixtures/contracts/reviewer-pool-independence-check.invalid.json"
       ],
       "schema": "contracts/reviewer-pool-independence-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/revocation-propagation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/revocation-propagation-check.invalid.json"
+      ],
+      "schema": "contracts/revocation-propagation-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

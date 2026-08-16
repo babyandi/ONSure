@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-067, FR-LEARN-068",
+  "requirement_summary": "153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md FR-LEARN-067 Emergency Global Revocation Propagation: 'Global/Industry knowledge에서 critical defect가 발견되면 모든 dependent tenant/validator/decision에 revocation을 전파하고 신규 사용을 즉시 차단하며 재평가 queue를 생성한다.' FR-LEARN-068 Offline/Air-gapped Learning Synchronization: 'Air-gapped 환경의 learning asset import/export는 signed bundle, epoch, conflict, freshness, revocation delta를 검증한다. 오래된 offline bundle이 최신 revocation을 덮어쓰지 못한다.' Reconciled together per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md contradiction #4's own precedence rule: sovereignty-restricted transmission requires a pre-bound legal basis, never assumed at incident time; air-gapped environments never claim real-time currentness, instead carrying an explicit PROPAGATION_LAG_DISCLOSED-equivalent SLA.",
+  "subject": "SemanticAssuranceV2WorkflowService.revocationPropagationCheck via assurance.learning.revocation-propagation.check; contracts/revocation-propagation-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/revocation-propagation-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#revocationPropagationCheckIsFullyPropagatedWhenEveryTargetIsStandardOrAuthorizedSovereign",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#revocationPropagationCheckBlocksASovereigntyRestrictedTargetWithNoPreboundAuthority",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#revocationPropagationCheckNeverMarksAnAirGappedTargetAsImmediateEvenWithASyncWindow",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#revocationPropagationCheckBlocksAnAirGappedTargetWithNoDisclosedSyncWindow"
+  ],
+  "coverage_notes": "revocationPropagationCheckBlocksASovereigntyRestrictedTargetWithNoPreboundAuthority is the direct test of FR-LEARN-067/161's sovereignty precedence: a SOVEREIGNTY_RESTRICTED target with no sovereignty_authority_ref is structurally BLOCKED_AUTHORITY_MISSING, not silently propagated because the incident is urgent -- legal basis must already have been secured before the emergency, matching 161's own wording ('사전에 확보'). revocationPropagationCheckNeverMarksAnAirGappedTargetAsImmediateEvenWithASyncWindow is the direct test of FR-LEARN-068's physical constraint: even with a genuinely future next_sync_window_at supplied, an AIR_GAPPED target can never reach PROPAGATED_IMMEDIATE -- the method has no code path that produces that disposition for AIR_GAPPED at all, so a caller cannot argue their way past the real-time-delivery impossibility by supplying a convincing-looking sync date. revocationPropagationCheckBlocksAnAirGappedTargetWithNoDisclosedSyncWindow closes the negative case named directly in 161's wording ('실시간 currentness를 주장하지 않는 대신 명시적... SLA를 유지한다') by rejecting an air-gapped target that supplies no SLA at all, rather than defaulting it to an implicitly-current state.",
+  "open_gap": "Operates on a caller-supplied target list (environment_type/sovereignty_authority_ref/next_sync_window_at); there is no live tenant/validator directory or offline-bundle-sync runtime in this codebase that actually produces these fields from real deployment topology (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). FR-LEARN-067's own further-named mechanisms -- immediate blocking of new asset USE (not just propagation) and automatic reassessment-queue creation -- are not modeled by this schema, which covers only the propagation-disposition-per-target computation. FR-LEARN-068's signed-bundle/epoch/conflict verification for actual offline import/export is a separate mechanism this closure does not cover; only the 'stale bundle cannot silently claim it received the latest revocation' framing (via the disclosed-lag/blocked distinction) is addressed.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

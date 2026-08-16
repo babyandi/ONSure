@@ -1884,6 +1884,64 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-067 Emergency Global Revocation Propagation, FR-LEARN-068 Offline/Air-gapped
+    // Learning Synchronization (161 P1 contradiction #4)
+    @Test
+    void revocationPropagationCheckIsFullyPropagatedWhenEveryTargetIsStandardOrAuthorizedSovereign() throws Exception {
+        Map<?, ?> result = revocationPropagationCheck(List.of(
+                revocationTarget("tenant-a", "STANDARD", null, null),
+                revocationTarget("tenant-b", "SOVEREIGNTY_RESTRICTED", "AUTHORITY::SOVEREIGNTY::EU::0001", null)));
+        assertEquals(0, result.get("blocked_target_count"));
+        assertEquals(0, result.get("disclosed_lag_target_count"));
+        assertEquals("FULLY_PROPAGATED", result.get("propagation_state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void revocationPropagationCheckBlocksASovereigntyRestrictedTargetWithNoPreboundAuthority() throws Exception {
+        Map<?, ?> result = revocationPropagationCheck(List.of(
+                revocationTarget("tenant-c", "SOVEREIGNTY_RESTRICTED", null, null)));
+        assertEquals(1, result.get("blocked_target_count"));
+        assertEquals("PROPAGATION_BLOCKED", result.get("propagation_state"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("BLOCKED_AUTHORITY_MISSING:tenant-c"));
+    }
+
+    @Test
+    void revocationPropagationCheckNeverMarksAnAirGappedTargetAsImmediateEvenWithASyncWindow() throws Exception {
+        Map<?, ?> result = revocationPropagationCheck(List.of(
+                revocationTarget("tenant-d-airgapped", "AIR_GAPPED", null, "2099-01-01T00:00:00Z")));
+        assertEquals(0, result.get("blocked_target_count"));
+        assertEquals(1, result.get("disclosed_lag_target_count"));
+        assertEquals("PARTIALLY_PROPAGATED_WITH_DISCLOSED_GAPS", result.get("propagation_state"));
+        List<?> dispositions = (List<?>) result.get("target_dispositions");
+        assertEquals("STALE_PENDING_SYNC_DISCLOSED", ((Map<?, ?>) dispositions.get(0)).get("disposition"));
+    }
+
+    @Test
+    void revocationPropagationCheckBlocksAnAirGappedTargetWithNoDisclosedSyncWindow() throws Exception {
+        Map<?, ?> result = revocationPropagationCheck(List.of(
+                revocationTarget("tenant-e-airgapped", "AIR_GAPPED", null, null)));
+        assertEquals(1, result.get("blocked_target_count"));
+        assertEquals("PROPAGATION_BLOCKED", result.get("propagation_state"));
+        assertTrue(((List<?>) result.get("reasons")).contains("BLOCKED_SYNC_WINDOW_MISSING:tenant-e-airgapped"));
+    }
+
+    private Map<String, Object> revocationTarget(
+            String targetId, String environmentType, String sovereigntyAuthorityRef, String nextSyncWindowAt) {
+        Map<String, Object> target = new java.util.LinkedHashMap<>();
+        target.put("target_id", targetId);
+        target.put("environment_type", environmentType);
+        target.put("sovereignty_authority_ref", sovereigntyAuthorityRef);
+        target.put("next_sync_window_at", nextSyncWindowAt);
+        return target;
+    }
+
+    private Map<?, ?> revocationPropagationCheck(List<Map<String, Object>> targets) throws Exception {
+        return learningDispatch(bridge, "assurance.learning.revocation-propagation.check", Map.of(
+                "revocation_id", "revocation-1", "subject_id", "knowledge-asset-1", "targets", targets));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

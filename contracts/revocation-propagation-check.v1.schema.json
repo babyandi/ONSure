@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/revocation-propagation-check.v1.schema.json",
+  "title": "ONSure Emergency Revocation Propagation Check v1",
+  "description": "FR-LEARN-067 Emergency Global Revocation Propagation ('Global/Industry knowledge에서 critical defect가 발견되면 모든 dependent tenant/validator/decision에 revocation을 전파하고 신규 사용을 즉시 차단하며 재평가 queue를 생성한다') reconciled with FR-LEARN-068 Offline/Air-gapped Learning Synchronization ('오래된 offline bundle이 최신 revocation을 덮어쓰지 못한다') per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md contradiction #4's own precedence rule: emergency propagation speed never overrides sovereignty/air-gap constraints by assuming a target already received a signal it structurally cannot have. A SOVEREIGNTY_RESTRICTED target without a pre-bound sovereignty_authority_ref is blocked from receiving the transmission at all (legal basis must be secured in advance, not assumed at incident time); an AIR_GAPPED target can never be marked PROPAGATED_IMMEDIATE (real-time signal delivery is impossible by definition) and must instead carry an explicit disclosed next_sync_window_at SLA rather than a silently-assumed-current state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "revocation_id", "subject_id", "targets", "target_dispositions",
+    "blocked_target_count", "disclosed_lag_target_count", "propagation_state", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_REVOCATION_PROPAGATION_CHECK_V1"},
+    "revocation_id": {"type": "string", "minLength": 1},
+    "subject_id": {"type": "string", "minLength": 1},
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_id", "environment_type", "sovereignty_authority_ref", "next_sync_window_at"],
+        "properties": {
+          "target_id": {"type": "string", "minLength": 1},
+          "environment_type": {"enum": ["STANDARD", "AIR_GAPPED", "SOVEREIGNTY_RESTRICTED"]},
+          "sovereignty_authority_ref": {"type": ["string", "null"]},
+          "next_sync_window_at": {"type": ["string", "null"], "format": "date-time"}
+        }
+      }
+    },
+    "target_dispositions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_id", "disposition"],
+        "properties": {
+          "target_id": {"type": "string", "minLength": 1},
+          "disposition": {"enum": [
+            "PROPAGATED_IMMEDIATE", "STALE_PENDING_SYNC_DISCLOSED",
+            "BLOCKED_AUTHORITY_MISSING", "BLOCKED_SYNC_WINDOW_MISSING"
+          ]}
+        }
+      }
+    },
+    "blocked_target_count": {"type": "integer", "minimum": 0},
+    "disclosed_lag_target_count": {"type": "integer", "minimum": 0},
+    "propagation_state": {"enum": ["FULLY_PROPAGATED", "PARTIALLY_PROPAGATED_WITH_DISCLOSED_GAPS", "PROPAGATION_BLOCKED"]},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"propagation_state": {"const": "FULLY_PROPAGATED"}}},
+      "then": {"properties": {"blocked_target_count": {"const": 0}, "disclosed_lag_target_count": {"const": 0}}}
+    },
+    {
+      "if": {"properties": {"blocked_target_count": {"minimum": 1}}},
+      "then": {"properties": {"propagation_state": {"const": "PROPAGATION_BLOCKED"}}}
+    },
+    {
+      "if": {"properties": {"blocked_target_count": {"const": 0}, "disclosed_lag_target_count": {"minimum": 1}}},
+      "then": {"properties": {"propagation_state": {"const": "PARTIALLY_PROPAGATED_WITH_DISCLOSED_GAPS"}}}
+    }
+  ]
+}

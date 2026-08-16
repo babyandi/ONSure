@@ -82,6 +82,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.effectiveness.evaluate",
             "assurance.strength-ceiling.compute",
             "assurance.learning.data-residency.check",
+            "assurance.learning.revocation-propagation.check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -212,6 +213,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.effectiveness.evaluate" -> learningEffectivenessEvaluate(request);
             case "assurance.strength-ceiling.compute" -> assuranceStrengthCeilingCompute(request);
             case "assurance.learning.data-residency.check" -> dataResidencyCheck(request);
+            case "assurance.learning.revocation-propagation.check" -> revocationPropagationCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -2657,6 +2659,85 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("jurisdiction_basis", jurisdictionBasis);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * revocation-propagation-check.v1.schema.json real computation. Reconciles FR-LEARN-067
+     * Emergency Global Revocation Propagation with FR-LEARN-068 Offline/Air-gapped Learning
+     * Synchronization per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md's own
+     * precedence rule (contradiction #4): emergency propagation speed never overrides sovereignty/
+     * air-gap physics by assuming a target already received a signal it structurally cannot have.
+     * A SOVEREIGNTY_RESTRICTED target with no pre-bound sovereignty_authority_ref is BLOCKED --
+     * legal basis must already exist, never assumed at incident time. An AIR_GAPPED target can
+     * never be PROPAGATED_IMMEDIATE (real-time delivery is impossible by definition); it must
+     * carry an explicit next_sync_window_at, or it is BLOCKED_SYNC_WINDOW_MISSING rather than
+     * silently treated as current. The overall propagation_state can only claim FULLY_PROPAGATED
+     * when every target genuinely received the signal immediately -- any disclosed lag or block
+     * is surfaced, never averaged away.
+     */
+    private Map<String, Object> revocationPropagationCheck(JsonNode request) {
+        String revocationId = requiredText(request, "revocation_id");
+        String subjectId = requiredText(request, "subject_id");
+        JsonNode targetsNode = request.path("targets");
+        if (!targetsNode.isArray() || targetsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("REVOCATION_PROPAGATION_REQUIRES_AT_LEAST_ONE_TARGET"));
+        }
+
+        Set<String> validEnvironments = Set.of("STANDARD", "AIR_GAPPED", "SOVEREIGNTY_RESTRICTED");
+        List<Map<String, Object>> dispositions = new ArrayList<>();
+        List<String> reasons = new ArrayList<>();
+        int blockedCount = 0;
+        int disclosedLagCount = 0;
+        for (JsonNode target : targetsNode) {
+            String targetId = requiredText(target, "target_id");
+            String environmentType = requiredText(target, "environment_type");
+            if (!validEnvironments.contains(environmentType)) {
+                return failClosed("HOLD", List.of("REVOCATION_TARGET_ENVIRONMENT_INVALID:" + targetId));
+            }
+            JsonNode sovereigntyRefNode = target.path("sovereignty_authority_ref");
+            JsonNode nextSyncNode = target.path("next_sync_window_at");
+            boolean hasSovereigntyRef = sovereigntyRefNode.isTextual() && !sovereigntyRefNode.asText().isBlank();
+            boolean hasNextSync = nextSyncNode.isTextual() && !nextSyncNode.asText().isBlank();
+
+            String disposition;
+            if ("SOVEREIGNTY_RESTRICTED".equals(environmentType) && !hasSovereigntyRef) {
+                disposition = "BLOCKED_AUTHORITY_MISSING";
+                blockedCount++;
+                reasons.add("BLOCKED_AUTHORITY_MISSING:" + targetId);
+            } else if ("AIR_GAPPED".equals(environmentType)) {
+                if (!hasNextSync) {
+                    disposition = "BLOCKED_SYNC_WINDOW_MISSING";
+                    blockedCount++;
+                    reasons.add("BLOCKED_SYNC_WINDOW_MISSING:" + targetId);
+                } else {
+                    disposition = "STALE_PENDING_SYNC_DISCLOSED";
+                    disclosedLagCount++;
+                    reasons.add("STALE_PENDING_SYNC_DISCLOSED:" + targetId);
+                }
+            } else {
+                disposition = "PROPAGATED_IMMEDIATE";
+            }
+            dispositions.add(Map.of("target_id", targetId, "disposition", disposition));
+        }
+
+        String propagationState;
+        if (blockedCount > 0) {
+            propagationState = "PROPAGATION_BLOCKED";
+        } else if (disclosedLagCount > 0) {
+            propagationState = "PARTIALLY_PROPAGATED_WITH_DISCLOSED_GAPS";
+        } else {
+            propagationState = "FULLY_PROPAGATED";
+        }
+
+        Map<String, Object> out = base("REVOCATION_PROPAGATION_CHECK", subjectId);
+        out.put("revocation_id", revocationId);
+        out.put("target_dispositions", List.copyOf(dispositions));
+        out.put("blocked_target_count", blockedCount);
+        out.put("disclosed_lag_target_count", disclosedLagCount);
+        out.put("propagation_state", propagationState);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", "PROPAGATION_BLOCKED".equals(propagationState) ? "HOLD" : "NON_FINAL");
         return immutable(out);
     }
 
