@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/result-reproducibility-check.v1.schema.json",
+  "title": "ONSure Result Identity and Reproducibility Check v1",
+  "description": "FR-COM-004: '모든 결과는 정책 버전, 입력 Hash, 실행환경, 도구 버전, 결과 Hash를 기록한다.' FR-COM-005: '동일 입력·정책·도구 버전은 재현 가능한 판정 구조를 가져야 한다.' Every submitted result must carry all five identity fields (enforced by this schema's own required list). reproducibility_violation_groups is computed by real cross-record comparison: results sharing the same (input_hash, policy_version, tool_version) triple must produce the same result_hash -- execution_environment is deliberately excluded from the equivalence key (it may legitimately vary across nodes/runs without breaking reproducibility), so a genuine result_hash mismatch within a matching triple is a real reproducibility violation, not a caller-declared flag.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "results", "reproducibility_violation_groups",
+    "reproducible", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_RESULT_REPRODUCIBILITY_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["result_id", "policy_version", "input_hash", "execution_environment", "tool_version", "result_hash"],
+        "properties": {
+          "result_id": {"type": "string", "minLength": 1},
+          "policy_version": {"type": "string", "minLength": 1},
+          "input_hash": {"type": "string", "minLength": 1},
+          "execution_environment": {"type": "string", "minLength": 1},
+          "tool_version": {"type": "string", "minLength": 1},
+          "result_hash": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "reproducibility_violation_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["group_key", "differing_result_ids"],
+        "properties": {
+          "group_key": {"type": "string", "minLength": 1},
+          "differing_result_ids": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+        }
+      }
+    },
+    "reproducible": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"reproducible": {"const": true}}},
+      "then": {"properties": {"reproducibility_violation_groups": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"reproducibility_violation_groups": {"minItems": 1}}},
+      "then": {"properties": {"reproducible": {"const": false}}}
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-004, FR-COM-005",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-004: '모든 결과는 정책 버전, 입력 Hash, 실행환경, 도구 버전, 결과 Hash를 기록한다.' FR-COM-005: '동일 입력·정책·도구 버전은 재현 가능한 판정 구조를 가져야 한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.resultReproducibilityCheck via assurance.result.reproducibility-check; contracts/result-reproducibility-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/result-reproducibility-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#resultReproducibilityCheckIsReproducibleWhenMatchingKeysShareTheSameResultHash",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#resultReproducibilityCheckDetectsADifferingResultHashForTheSameInputPolicyAndTool",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#resultReproducibilityCheckNeverFlagsDifferentInputsAsAViolation"
+  ],
+  "coverage_notes": "FR-COM-004 is closed structurally: the schema's own required list forces every result object to carry all 5 named identity fields (policy_version/input_hash/execution_environment/tool_version/result_hash), and the Java layer additionally requiredText()s each one, failing closed on any missing field. FR-COM-005 is closed by real cross-record computation: resultReproducibilityCheckDetectsADifferingResultHashForTheSameInputPolicyAndTool is the direct test -- two results sharing identical (input_hash, policy_version, tool_version) but producing different result_hash values are flagged as a genuine REPRODUCIBILITY_VIOLATION group naming both differing result_ids, not silently accepted. resultReproducibilityCheckNeverFlagsDifferentInputsAsAViolation proves the equivalence key is real (different input_hash means no comparison is even attempted, so no false positive). execution_environment is deliberately excluded from the equivalence key (proven by resultReproducibilityCheckIsReproducibleWhenMatchingKeysShareTheSameResultHash using two different execution_environment values that still reproduce identically) since the requirement's own wording names only 입력·정책·도구 버전 (input/policy/tool version) as the reproducibility key, not execution environment.",
+  "open_gap": "Operates on a caller-supplied batch of result records; there is no live validation-execution runtime in this codebase that actually re-runs a validation under identical input/policy/tool conditions and produces a second real result_hash to compare against the first (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session) -- this operation can only detect a reproducibility violation if two already-produced results are submitted together in one call; it does not itself trigger or orchestrate a re-run.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

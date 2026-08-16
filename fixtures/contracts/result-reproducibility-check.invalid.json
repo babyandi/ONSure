@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_RESULT_REPRODUCIBILITY_CHECK_V1",
+  "subject_id": "validation-run-2026-08-16-002",
+  "results": [
+    {"result_id": "result-3", "policy_version": "policy-v1", "input_hash": "sha256:aaa", "execution_environment": "node-a", "tool_version": "tool-v1", "result_hash": "sha256:bbb"},
+    {"result_id": "result-4", "policy_version": "policy-v1", "input_hash": "sha256:aaa", "execution_environment": "node-b", "tool_version": "tool-v1", "result_hash": "sha256:ccc"}
+  ],
+  "reproducibility_violation_groups": [
+    {"group_key": "policy-v1|sha256:aaa|tool-v1", "differing_result_ids": ["result-3", "result-4"]}
+  ],
+  "reproducible": true,
+  "reasons": ["REPRODUCIBILITY_VIOLATION:policy-v1|sha256:aaa|tool-v1"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -2180,6 +2180,50 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "token_invalidation_events", invalidationEvents));
     }
 
+    // FR-COM-004 Result Identity Recording, FR-COM-005 Reproducibility
+    @Test
+    void resultReproducibilityCheckIsReproducibleWhenMatchingKeysShareTheSameResultHash() throws Exception {
+        Map<?, ?> result = resultReproducibilityCheck(List.of(
+                resultRecord("result-1", "policy-v1", "hash-in", "node-a", "tool-v1", "hash-out"),
+                resultRecord("result-2", "policy-v1", "hash-in", "node-b", "tool-v1", "hash-out")));
+        assertEquals(List.of(), result.get("reproducibility_violation_groups"));
+        assertEquals(true, result.get("reproducible"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void resultReproducibilityCheckDetectsADifferingResultHashForTheSameInputPolicyAndTool() throws Exception {
+        Map<?, ?> result = resultReproducibilityCheck(List.of(
+                resultRecord("result-3", "policy-v1", "hash-in", "node-a", "tool-v1", "hash-out-a"),
+                resultRecord("result-4", "policy-v1", "hash-in", "node-b", "tool-v1", "hash-out-b")));
+        assertEquals(false, result.get("reproducible"));
+        assertEquals("HOLD", result.get("decision"));
+        List<?> groups = (List<?>) result.get("reproducibility_violation_groups");
+        assertEquals(1, groups.size());
+        assertEquals(List.of("result-3", "result-4"), ((Map<?, ?>) groups.get(0)).get("differing_result_ids"));
+    }
+
+    @Test
+    void resultReproducibilityCheckNeverFlagsDifferentInputsAsAViolation() throws Exception {
+        Map<?, ?> result = resultReproducibilityCheck(List.of(
+                resultRecord("result-5", "policy-v1", "hash-in-a", "node-a", "tool-v1", "hash-out-a"),
+                resultRecord("result-6", "policy-v1", "hash-in-b", "node-a", "tool-v1", "hash-out-b")));
+        assertEquals(true, result.get("reproducible"));
+    }
+
+    private Map<String, Object> resultRecord(
+            String resultId, String policyVersion, String inputHash, String executionEnvironment,
+            String toolVersion, String resultHash) {
+        return Map.of(
+                "result_id", resultId, "policy_version", policyVersion, "input_hash", inputHash,
+                "execution_environment", executionEnvironment, "tool_version", toolVersion, "result_hash", resultHash);
+    }
+
+    private Map<?, ?> resultReproducibilityCheck(List<Map<String, Object>> results) throws Exception {
+        return learningDispatch(bridge, "assurance.result.reproducibility-check", Map.of(
+                "subject_id", "validation-run-1", "results", results));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

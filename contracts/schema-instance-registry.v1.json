@@ -1129,6 +1129,15 @@
         "fixtures/contracts/seat-reassignment-revocation-check.invalid.json"
       ],
       "schema": "contracts/seat-reassignment-revocation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/result-reproducibility-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/result-reproducibility-check.invalid.json"
+      ],
+      "schema": "contracts/result-reproducibility-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

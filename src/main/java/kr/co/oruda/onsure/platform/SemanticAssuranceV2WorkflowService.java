@@ -88,6 +88,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.causal-attribution.check",
             "assurance.usage.attribution-check",
             "assurance.seat.reassignment-revocation-check",
+            "assurance.result.reproducibility-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -224,6 +225,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.causal-attribution.check" -> causalAttributionCheck(request);
             case "assurance.usage.attribution-check" -> usageAttributionCheck(request);
             case "assurance.seat.reassignment-revocation-check" -> seatReassignmentRevocationCheck(request);
+            case "assurance.result.reproducibility-check" -> resultReproducibilityCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3050,6 +3052,61 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("immediate_revocation_confirmed", immediateRevocationConfirmed);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", immediateRevocationConfirmed ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * result-reproducibility-check.v1.schema.json real computation (FR-COM-004: "모든 결과는
+     * 정책 버전, 입력 Hash, 실행환경, 도구 버전, 결과 Hash를 기록한다." FR-COM-005: "동일 입력·정책·
+     * 도구 버전은 재현 가능한 판정 구조를 가져야 한다."). Every result object is required to carry
+     * all five identity fields (FR-COM-004, enforced structurally by requiredText). reproducible is
+     * computed by real cross-record comparison: results sharing the same (input_hash,
+     * policy_version, tool_version) key must produce the same result_hash -- execution_environment
+     * is deliberately excluded from the equivalence key since it may legitimately vary without
+     * breaking reproducibility, so a genuine result_hash mismatch within a matching key is a real
+     * violation, not a caller-declared summary flag.
+     */
+    private Map<String, Object> resultReproducibilityCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        JsonNode resultsNode = request.path("results");
+        if (!resultsNode.isArray() || resultsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("RESULT_REPRODUCIBILITY_REQUIRES_AT_LEAST_ONE_RESULT"));
+        }
+
+        Map<String, List<String>> resultHashesByKey = new LinkedHashMap<>();
+        Map<String, List<String>> resultIdsByKey = new LinkedHashMap<>();
+        for (JsonNode result : resultsNode) {
+            requiredText(result, "result_id");
+            String policyVersion = requiredText(result, "policy_version");
+            String inputHash = requiredText(result, "input_hash");
+            requiredText(result, "execution_environment");
+            String toolVersion = requiredText(result, "tool_version");
+            String resultHash = requiredText(result, "result_hash");
+            String resultId = result.path("result_id").asText();
+
+            String key = policyVersion + "|" + inputHash + "|" + toolVersion;
+            resultHashesByKey.computeIfAbsent(key, k -> new ArrayList<>()).add(resultHash);
+            resultIdsByKey.computeIfAbsent(key, k -> new ArrayList<>()).add(resultId);
+        }
+
+        List<Map<String, Object>> violationGroups = new ArrayList<>();
+        List<String> reasons = new ArrayList<>();
+        for (var entry : resultHashesByKey.entrySet()) {
+            String key = entry.getKey();
+            List<String> hashes = entry.getValue();
+            if (new java.util.LinkedHashSet<>(hashes).size() > 1) {
+                violationGroups.add(Map.of("group_key", key, "differing_result_ids", List.copyOf(resultIdsByKey.get(key))));
+                reasons.add("REPRODUCIBILITY_VIOLATION:" + key);
+            }
+        }
+
+        boolean reproducible = violationGroups.isEmpty();
+
+        Map<String, Object> out = base("RESULT_REPRODUCIBILITY_CHECK", subjectId);
+        out.put("reproducibility_violation_groups", List.copyOf(violationGroups));
+        out.put("reproducible", reproducible);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", reproducible ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 
