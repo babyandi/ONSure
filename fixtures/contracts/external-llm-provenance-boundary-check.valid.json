@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_EXTERNAL_LLM_PROVENANCE_BOUNDARY_CHECK_V1",
+  "interaction_id": "external-llm-call-2026-08-15-441",
+  "provider_id": "external-provider-alpha",
+  "provider_version": "2026-07-model",
+  "provider_region": "us-east-1",
+  "retention_policy_ref": "contract/vendor-alpha-dpa-2026.pdf#retention",
+  "training_use_prohibited_by_contract": true,
+  "proposed_reuse_purpose": "EVIDENCE_ONLY",
+  "internal_provenance_established": true,
+  "decision": "REUSE_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

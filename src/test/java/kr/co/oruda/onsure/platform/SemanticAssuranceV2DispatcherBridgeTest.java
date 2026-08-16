@@ -2389,6 +2389,53 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-LEARN-077 External LLM / Provider Provenance Boundary
+    @Test
+    void externalLlmProvenanceBoundaryCheckAllowsEvidenceOnlyReuseUnderProhibitedTrainingContract()
+            throws Exception {
+        Map<?, ?> result = externalLlmProvenanceBoundaryCheck(true, "EVIDENCE_ONLY", true);
+        assertEquals("REUSE_ALLOWED", result.get("decision"));
+    }
+
+    @Test
+    void externalLlmProvenanceBoundaryCheckBlocksTrainingReuseUnderProhibitedContract() throws Exception {
+        Map<?, ?> result = externalLlmProvenanceBoundaryCheck(true, "TRAINING_DATA", true);
+        assertEquals("REUSE_BLOCKED", result.get("decision"));
+        assertEquals(
+                true,
+                ((java.util.List<?>) result.get("reasons")).contains("TRAINING_USE_PROHIBITED_BY_CONTRACT"));
+    }
+
+    @Test
+    void externalLlmProvenanceBoundaryCheckBlocksWhenInternalProvenanceNotEstablished() throws Exception {
+        Map<?, ?> result = externalLlmProvenanceBoundaryCheck(false, "EVIDENCE_ONLY", false);
+        assertEquals("REUSE_BLOCKED", result.get("decision"));
+        assertEquals(
+                List.of("EXTERNAL_OUTPUT_CANNOT_SUBSTITUTE_FOR_INTERNAL_PROVENANCE"), result.get("reasons"));
+    }
+
+    @Test
+    void externalLlmProvenanceBoundaryCheckAllowsTrainingReuseWhenContractPermitsIt() throws Exception {
+        Map<?, ?> result = externalLlmProvenanceBoundaryCheck(false, "TRAINING_DATA", true);
+        assertEquals("REUSE_ALLOWED", result.get("decision"));
+    }
+
+    private Map<?, ?> externalLlmProvenanceBoundaryCheck(
+            boolean trainingUseProhibited, String proposedReusePurpose, boolean internalProvenanceEstablished)
+            throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1",
+                "interaction_id", "interaction-1", "provider_id", "provider-1",
+                "provider_version", "v1", "provider_region", "us-east-1",
+                "retention_policy_ref", "policy-1", "training_use_prohibited_by_contract", trainingUseProhibited,
+                "proposed_reuse_purpose", proposedReusePurpose,
+                "internal_provenance_established", internalProvenanceEstablished);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.learning.external-llm-provenance-boundary.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

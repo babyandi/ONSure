@@ -93,6 +93,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.confidence-calibration.check",
             "assurance.learning.adversarial-benchmark-governance.check",
             "assurance.learning.knowledge-fork-merge-governance.check",
+            "assurance.learning.external-llm-provenance-boundary.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -210,6 +211,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.confidence-calibration.check" -> confidenceCalibrationCheck(request);
             case "assurance.learning.adversarial-benchmark-governance.check" -> adversarialBenchmarkGovernanceCheck(request);
             case "assurance.learning.knowledge-fork-merge-governance.check" -> knowledgeForkMergeGovernanceCheck(request);
+            case "assurance.learning.external-llm-provenance-boundary.check" -> externalLlmProvenanceBoundaryCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -3190,6 +3192,52 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("detected_conflict_count", conflictsNode.size());
         out.put("unresolved_conflicts", List.copyOf(unresolvedConflicts));
         out.put("decision", decision);
+        return immutable(out);
+    }
+
+    /**
+     * external-llm-provenance-boundary-check.v1.schema.json real computation (FR-LEARN-077
+     * External LLM / Provider Provenance Boundary: "외부 LLM/provider에 전달한 prompt/context/
+     * evidence와 반환된 output을... 기록한다. 외부 provider 출력이 내부 provenance를 대체하지
+     * 않으며 training-use 금지 계약을 위반하는 재사용을 차단한다"). JSON Schema can validate
+     * training_use_prohibited_by_contract and proposed_reuse_purpose individually but cannot
+     * forbid the SPECIFIC combination of a training-use-prohibited contract with a proposed
+     * TRAINING_DATA reuse. This operation rejects that combination for real, and separately
+     * requires internal_provenance_established=true always -- external provider output alone,
+     * without real internal provenance also established, can never justify REUSE_ALLOWED.
+     */
+    private Map<String, Object> externalLlmProvenanceBoundaryCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String interactionId = requiredText(request, "interaction_id");
+        String providerId = requiredText(request, "provider_id");
+        String providerVersion = requiredText(request, "provider_version");
+        String providerRegion = requiredText(request, "provider_region");
+        String retentionPolicyRef = requiredText(request, "retention_policy_ref");
+        boolean trainingUseProhibited = request.path("training_use_prohibited_by_contract").asBoolean(false);
+        String proposedReusePurpose = requiredText(request, "proposed_reuse_purpose");
+        boolean internalProvenanceEstablished = request.path("internal_provenance_established").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        if (trainingUseProhibited && "TRAINING_DATA".equals(proposedReusePurpose)) {
+            reasons.add("TRAINING_USE_PROHIBITED_BY_CONTRACT");
+        }
+        if (!internalProvenanceEstablished) {
+            reasons.add("EXTERNAL_OUTPUT_CANNOT_SUBSTITUTE_FOR_INTERNAL_PROVENANCE");
+        }
+
+        String decision = reasons.isEmpty() ? "REUSE_ALLOWED" : "REUSE_BLOCKED";
+
+        Map<String, Object> out = base("ONSURE_EXTERNAL_LLM_PROVENANCE_BOUNDARY_CHECK", targetId);
+        out.put("interaction_id", interactionId);
+        out.put("provider_id", providerId);
+        out.put("provider_version", providerVersion);
+        out.put("provider_region", providerRegion);
+        out.put("retention_policy_ref", retentionPolicyRef);
+        out.put("training_use_prohibited_by_contract", trainingUseProhibited);
+        out.put("proposed_reuse_purpose", proposedReusePurpose);
+        out.put("internal_provenance_established", internalProvenanceEstablished);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
         return immutable(out);
     }
 

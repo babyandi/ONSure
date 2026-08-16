@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/external-llm-provenance-boundary-check.v1.schema.json",
+  "title": "ONSure External LLM / Provider Provenance Boundary Check v1",
+  "description": "FR-LEARN-077 External LLM / Provider Provenance Boundary: 외부 LLM/provider에 전달한 prompt/context/evidence와 반환된 output을 provider/version/region/retention/training-use policy와 함께 기록한다. 외부 provider 출력이 내부 provenance를 대체하지 않으며 training-use 금지 계약을 위반하는 재사용을 차단한다. Proposing TRAINING_DATA reuse under a training-use-prohibited contract, or treating external output as a substitute for internal provenance, is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "interaction_id", "provider_id", "provider_version", "provider_region",
+    "retention_policy_ref", "training_use_prohibited_by_contract", "proposed_reuse_purpose",
+    "internal_provenance_established", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EXTERNAL_LLM_PROVENANCE_BOUNDARY_CHECK_V1"},
+    "interaction_id": {"type": "string", "minLength": 1},
+    "provider_id": {"type": "string", "minLength": 1},
+    "provider_version": {"type": "string", "minLength": 1},
+    "provider_region": {"type": "string", "minLength": 1},
+    "retention_policy_ref": {"type": "string", "minLength": 1},
+    "training_use_prohibited_by_contract": {"type": "boolean"},
+    "proposed_reuse_purpose": {"enum": ["EVIDENCE_ONLY", "TRAINING_DATA"]},
+    "internal_provenance_established": {"type": "boolean"},
+    "decision": {"enum": ["REUSE_ALLOWED", "REUSE_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}
