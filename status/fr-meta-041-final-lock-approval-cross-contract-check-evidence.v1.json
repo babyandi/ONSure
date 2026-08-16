@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-041",
+  "requirement_summary": "개별 Schema valid를 넘어 Contract 간 관계를 검증한다. 예: REJECT Approval은 Final Lock 불가, purpose/type 일치, target/candidate digest 일치, run context 일치, cancelled evidence 사용 금지.",
+  "subject": "SemanticAssuranceV2WorkflowService.finalLockApprovalCrossContractCheck via assurance.final-lock.approval-cross-contract.check",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/final-lock-approval-cross-contract-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#finalLockApprovalCrossContractCheckConsistentWhenReferencedApprovalTrulyMatches",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#finalLockApprovalCrossContractCheckBlocksWhenReferencedApprovalIsNotApprove",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#finalLockApprovalCrossContractCheckBlocksOnApprovalDigestMismatch",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#finalLockApprovalCrossContractCheckBlocksOnTargetIdMismatch",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#finalLockApprovalCrossContractCheckAggregatesArtifactAndGateReceiptMismatches",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#finalLockApprovalCrossContractCheckBlocksOnCancelledApproval"
+  ],
+  "coverage_notes": "final-approval-receipt.candidate.v2.schema.json and final-lock.candidate.v2.schema.json already close the WITHIN-DOCUMENT version of 'REJECT Approval은 Final Lock 불가' via allOf/if-then and a literal const:\"APPROVE\" constraint on final-lock's own final_approval_decision field. That only validates the FinalLock's OWN claim about the approval it references -- it cannot verify that claim against the REAL, separately-supplied Approval Receipt object the FinalLock points to by digest, because JSON Schema cannot reach across two independent contract instances. This operation performs the actual cross-CONTRACT comparison: it takes the FinalLock's own declared final_approval_sha256/target_id/target_artifact_sha256/gate_receipt_sha256 alongside the REAL referenced Approval Receipt's actual decision/sha256/target_id/target_artifact_sha256/gate_receipt_sha256/cancelled fields, and computes CROSS_CONTRACT_INCONSISTENT (naming every specific reason) unless all six checks pass for real: referenced decision is genuinely APPROVE (not assumed from the FinalLock's own trusted field), the referenced approval's digest matches what the FinalLock declares, target id matches (purpose/type 일치), target artifact digest matches (target/candidate digest 일치), gate receipt digest matches (run context 일치), and the referenced approval is not cancelled (cancelled evidence 사용 금지). Six independent branches are each individually test-covered (decision-not-APPROVE, digest mismatch, target-id mismatch, a combined artifact+gate-receipt mismatch proving reasons aggregate rather than short-circuit, and cancelled), plus one fully-consistent positive case.",
+  "open_gap": "This operation trusts its caller to supply the referenced approval's real fields (decision/sha256/target_id/target_artifact_sha256/gate_receipt_sha256/cancelled) as request input rather than fetching the Approval Receipt object itself from a durable store by referenced_approval_id -- there is no persisted Approval Receipt registry/lookup in this codebase yet for it to fetch from. A future Approval Receipt persistence layer should replace the caller-supplied referenced_approval_* fields with a server-side lookup by referenced_approval_id, closing the residual trust-the-caller gap the same way requiredDigest/requiredText already close simple type gaps.",
+  "design_reference_gap": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md:484-485 names five specific cross-contract checks; no lower-level design doc enumerates the exact field-pair mapping used here (final_lock_target_artifact_sha256<->referenced_approval_target_artifact_sha256 for 'target/candidate digest 일치', final_lock_gate_receipt_sha256<->referenced_approval_gate_receipt_sha256 for 'run context 일치') -- this mapping was inferred from the existing final-lock.candidate.v2.schema.json / final-approval-receipt.candidate.v2.schema.json field names, not from an explicit cross-reference design document.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

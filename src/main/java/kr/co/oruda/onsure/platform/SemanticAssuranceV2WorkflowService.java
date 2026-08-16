@@ -94,6 +94,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.adversarial-benchmark-governance.check",
             "assurance.learning.knowledge-fork-merge-governance.check",
             "assurance.learning.external-llm-provenance-boundary.check",
+            "assurance.final-lock.approval-cross-contract.check",
             "assurance.provider.drift-check",
             "assurance.multi-agent.corroboration-check",
             "assurance.hazard.create",
@@ -212,6 +213,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.adversarial-benchmark-governance.check" -> adversarialBenchmarkGovernanceCheck(request);
             case "assurance.learning.knowledge-fork-merge-governance.check" -> knowledgeForkMergeGovernanceCheck(request);
             case "assurance.learning.external-llm-provenance-boundary.check" -> externalLlmProvenanceBoundaryCheck(request);
+            case "assurance.final-lock.approval-cross-contract.check" -> finalLockApprovalCrossContractCheck(request);
             case "assurance.provider.drift-check" -> providerDriftCheck(request);
             case "assurance.multi-agent.corroboration-check" -> multiAgentCorroborationCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
@@ -3236,6 +3238,66 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("training_use_prohibited_by_contract", trainingUseProhibited);
         out.put("proposed_reuse_purpose", proposedReusePurpose);
         out.put("internal_provenance_established", internalProvenanceEstablished);
+        out.put("decision", decision);
+        out.put("reasons", List.copyOf(reasons));
+        return immutable(out);
+    }
+
+    /**
+     * final-lock-approval-cross-contract-check.v1.schema.json real computation (FR-META-041
+     * Cross-Contract Semantic Validation: "개별 Schema valid를 넘어 Contract 간 관계를 검증한다.
+     * 예: REJECT Approval은 Final Lock 불가, purpose/type 일치, target/candidate digest 일치,
+     * run context 일치, cancelled evidence 사용 금지"). final-lock.candidate.v2.schema.json's
+     * own final_approval_decision field is already schema-constrained to the literal const
+     * "APPROVE" -- but that only validates the FinalLock's OWN claim about the approval, not the
+     * REAL, separately-referenced Approval Receipt it points to by digest. This operation
+     * performs the actual cross-contract comparison no single schema's allOf can reach across two
+     * separate documents: the referenced approval's real decision must be APPROVE (not merely
+     * assumed from the FinalLock's own field), its digest/target/gate-receipt must match what the
+     * FinalLock itself declares, and it must not be cancelled -- any mismatch forces
+     * CROSS_CONTRACT_INCONSISTENT, naming every specific inconsistency found.
+     */
+    private Map<String, Object> finalLockApprovalCrossContractCheck(JsonNode request) {
+        String targetId = requiredText(request, "target_id");
+        String lockId = requiredText(request, "lock_id");
+        String lockApprovalSha = requiredDigest(request, "final_lock_final_approval_sha256");
+        String lockTargetId = requiredText(request, "final_lock_target_id");
+        String lockTargetArtifactSha = requiredDigest(request, "final_lock_target_artifact_sha256");
+        String lockGateReceiptSha = requiredDigest(request, "final_lock_gate_receipt_sha256");
+
+        String approvalId = requiredText(request, "referenced_approval_id");
+        String approvalSha = requiredDigest(request, "referenced_approval_sha256");
+        String approvalDecision = requiredText(request, "referenced_approval_decision");
+        String approvalTargetId = requiredText(request, "referenced_approval_target_id");
+        String approvalTargetArtifactSha = requiredDigest(request, "referenced_approval_target_artifact_sha256");
+        String approvalGateReceiptSha = requiredDigest(request, "referenced_approval_gate_receipt_sha256");
+        boolean approvalCancelled = request.path("referenced_approval_cancelled").asBoolean(false);
+
+        List<String> reasons = new ArrayList<>();
+        if (!"APPROVE".equals(approvalDecision)) {
+            reasons.add("REFERENCED_APPROVAL_DECISION_NOT_APPROVE:" + approvalDecision);
+        }
+        if (!lockApprovalSha.equals(approvalSha)) {
+            reasons.add("APPROVAL_DIGEST_MISMATCH");
+        }
+        if (!lockTargetId.equals(approvalTargetId)) {
+            reasons.add("TARGET_ID_MISMATCH");
+        }
+        if (!lockTargetArtifactSha.equals(approvalTargetArtifactSha)) {
+            reasons.add("TARGET_ARTIFACT_DIGEST_MISMATCH");
+        }
+        if (!lockGateReceiptSha.equals(approvalGateReceiptSha)) {
+            reasons.add("GATE_RECEIPT_DIGEST_MISMATCH");
+        }
+        if (approvalCancelled) {
+            reasons.add("REFERENCED_APPROVAL_IS_CANCELLED");
+        }
+
+        String decision = reasons.isEmpty() ? "CROSS_CONTRACT_CONSISTENT" : "CROSS_CONTRACT_INCONSISTENT";
+
+        Map<String, Object> out = base("ONSURE_FINAL_LOCK_APPROVAL_CROSS_CONTRACT_CHECK", targetId);
+        out.put("lock_id", lockId);
+        out.put("referenced_approval_id", approvalId);
         out.put("decision", decision);
         out.put("reasons", List.copyOf(reasons));
         return immutable(out);

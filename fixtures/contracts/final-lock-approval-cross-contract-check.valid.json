@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_FINAL_LOCK_APPROVAL_CROSS_CONTRACT_CHECK_V1",
+  "lock_id": "final-lock-2026-08-16-002",
+  "final_lock_final_approval_sha256": "b5e544e454ef78250f5c18b949868cb58a8918d22a1d04d8f1f634a0f1930b5b",
+  "final_lock_target_id": "target-financial-assurance-report-091",
+  "final_lock_target_artifact_sha256": "109006e18e28a7202653c8dec6b798611af225d103342afdc2a60f61f28ac5c6",
+  "final_lock_gate_receipt_sha256": "5225c47b51aba4535f3ec7c23825b2baac5e314b45a1f81a77809adbd2a8a1df",
+  "referenced_approval_id": "approval-2026-08-16-002",
+  "referenced_approval_sha256": "b5e544e454ef78250f5c18b949868cb58a8918d22a1d04d8f1f634a0f1930b5b",
+  "referenced_approval_decision": "APPROVE",
+  "referenced_approval_target_id": "target-financial-assurance-report-091",
+  "referenced_approval_target_artifact_sha256": "109006e18e28a7202653c8dec6b798611af225d103342afdc2a60f61f28ac5c6",
+  "referenced_approval_gate_receipt_sha256": "5225c47b51aba4535f3ec7c23825b2baac5e314b45a1f81a77809adbd2a8a1df",
+  "referenced_approval_cancelled": false,
+  "decision": "CROSS_CONTRACT_CONSISTENT",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

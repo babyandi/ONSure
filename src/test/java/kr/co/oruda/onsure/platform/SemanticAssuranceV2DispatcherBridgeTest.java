@@ -2436,6 +2436,82 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return (Map<?, ?>) envelope.get("result");
     }
 
+    // FR-META-041 Cross-Contract Semantic Validation
+    @Test
+    void finalLockApprovalCrossContractCheckConsistentWhenReferencedApprovalTrulyMatches() throws Exception {
+        Map<?, ?> result = finalLockApprovalCrossContractCheck(
+                "a".repeat(64), "APPROVE", "target-1", "b".repeat(64), "c".repeat(64), false);
+        assertEquals("CROSS_CONTRACT_CONSISTENT", result.get("decision"));
+        assertEquals(List.of(), result.get("reasons"));
+    }
+
+    @Test
+    void finalLockApprovalCrossContractCheckBlocksWhenReferencedApprovalIsNotApprove() throws Exception {
+        Map<?, ?> result = finalLockApprovalCrossContractCheck(
+                "a".repeat(64), "REJECT", "target-1", "b".repeat(64), "c".repeat(64), false);
+        assertEquals("CROSS_CONTRACT_INCONSISTENT", result.get("decision"));
+        assertEquals(
+                List.of("REFERENCED_APPROVAL_DECISION_NOT_APPROVE:REJECT"), result.get("reasons"));
+    }
+
+    @Test
+    void finalLockApprovalCrossContractCheckBlocksOnApprovalDigestMismatch() throws Exception {
+        Map<?, ?> result = finalLockApprovalCrossContractCheck(
+                "d".repeat(64), "APPROVE", "target-1", "b".repeat(64), "c".repeat(64), false);
+        assertEquals("CROSS_CONTRACT_INCONSISTENT", result.get("decision"));
+        assertEquals(List.of("APPROVAL_DIGEST_MISMATCH"), result.get("reasons"));
+    }
+
+    @Test
+    void finalLockApprovalCrossContractCheckBlocksOnTargetIdMismatch() throws Exception {
+        Map<?, ?> result = finalLockApprovalCrossContractCheck(
+                "a".repeat(64), "APPROVE", "target-other", "b".repeat(64), "c".repeat(64), false);
+        assertEquals("CROSS_CONTRACT_INCONSISTENT", result.get("decision"));
+        assertEquals(List.of("TARGET_ID_MISMATCH"), result.get("reasons"));
+    }
+
+    @Test
+    void finalLockApprovalCrossContractCheckAggregatesArtifactAndGateReceiptMismatches() throws Exception {
+        Map<?, ?> result = finalLockApprovalCrossContractCheck(
+                "a".repeat(64), "APPROVE", "target-1", "e".repeat(64), "f".repeat(64), false);
+        assertEquals("CROSS_CONTRACT_INCONSISTENT", result.get("decision"));
+        assertEquals(
+                List.of("TARGET_ARTIFACT_DIGEST_MISMATCH", "GATE_RECEIPT_DIGEST_MISMATCH"),
+                result.get("reasons"));
+    }
+
+    @Test
+    void finalLockApprovalCrossContractCheckBlocksOnCancelledApproval() throws Exception {
+        Map<?, ?> result = finalLockApprovalCrossContractCheck(
+                "a".repeat(64), "APPROVE", "target-1", "b".repeat(64), "c".repeat(64), true);
+        assertEquals("CROSS_CONTRACT_INCONSISTENT", result.get("decision"));
+        assertEquals(List.of("REFERENCED_APPROVAL_IS_CANCELLED"), result.get("reasons"));
+    }
+
+    private Map<?, ?> finalLockApprovalCrossContractCheck(
+            String referencedApprovalSha256, String referencedApprovalDecision, String referencedApprovalTargetId,
+            String referencedApprovalTargetArtifactSha256, String referencedApprovalGateReceiptSha256,
+            boolean referencedApprovalCancelled) throws Exception {
+        Map<String, Object> body = Map.ofEntries(
+                Map.entry("project_id", "project-1"),
+                Map.entry("target_id", "target-1"), Map.entry("lock_id", "final-lock-1"),
+                Map.entry("final_lock_final_approval_sha256", "a".repeat(64)),
+                Map.entry("final_lock_target_id", "target-1"),
+                Map.entry("final_lock_target_artifact_sha256", "b".repeat(64)),
+                Map.entry("final_lock_gate_receipt_sha256", "c".repeat(64)),
+                Map.entry("referenced_approval_id", "approval-1"),
+                Map.entry("referenced_approval_sha256", referencedApprovalSha256),
+                Map.entry("referenced_approval_decision", referencedApprovalDecision),
+                Map.entry("referenced_approval_target_id", referencedApprovalTargetId),
+                Map.entry("referenced_approval_target_artifact_sha256", referencedApprovalTargetArtifactSha256),
+                Map.entry("referenced_approval_gate_receipt_sha256", referencedApprovalGateReceiptSha256),
+                Map.entry("referenced_approval_cancelled", referencedApprovalCancelled));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> envelope = (Map<String, Object>) bridge.dispatch(
+                "assurance.final-lock.approval-cross-contract.check", request(body)).get("result");
+        return (Map<?, ?>) envelope.get("result");
+    }
+
     @Test
     void providerDriftCheckStaysCurrentWhenNothingChanged() throws Exception {
         Map<String, Object> characteristics = providerCharacteristics("safety-filter-v1");

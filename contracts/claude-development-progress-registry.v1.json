@@ -1670,5 +1670,22 @@
     "evidence": ".onsure/requirement-universe/test-coverage-universe-materialization.v1.json (gitignored, regenerable)",
     "methodology_limitations": "Disclosed in the tool's own output: method-name keyword matching is mechanical, not semantic; SEMANTIC_INVALID/CROSS_CONTRACT applicability rules are heuristic; only explicit_id-bearing requirements are covered by this first pass, not CANDIDATE_EXTRACTED ones.",
     "known_gap_not_yet_covered": "This materialization discovers and quantifies the gap honestly; it does not itself close any of the ~170 POSITIVE/RUNTIME_EVIDENCE gaps or ~100+ CROSS_CONTRACT gaps -- that is real, substantial future implementation work tracked jointly with p1_orphan_coverage_closure and orphan_severity_recalculation above, not attempted in bulk in this single pass."
+  },
+  "fr_meta_041_final_lock_approval_cross_contract_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Closes the 2nd-to-last remaining orphan_severity_recalculation candidate from the original 34 (only FR-META-043 remains). final-approval-receipt.candidate.v2.schema.json and final-lock.candidate.v2.schema.json already enforce the WITHIN-DOCUMENT half of 'REJECT Approval은 Final Lock 불가' via allOf/if-then plus a literal const:\"APPROVE\" on final-lock's own final_approval_decision field -- but that only validates the FinalLock's OWN claim, never the REAL, separately-referenced Approval Receipt it points to by digest. Built contracts/final-lock-approval-cross-contract-check.v1.schema.json + fixtures from scratch (registered 115 -> 116 schemas), then a real Java consumer performing the actual cross-CONTRACT (cross-document) comparison JSON Schema cannot reach: referenced decision genuinely APPROVE, digest/target-id/target-artifact-digest/gate-receipt-digest all match what the FinalLock itself declares, and the referenced approval is not cancelled.",
+    "contract_schema": "contracts/final-lock-approval-cross-contract-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/final-lock-approval-cross-contract-check.valid.json (NEW)",
+      "fixtures/contracts/final-lock-approval-cross-contract-check.invalid.json (NEW, invalid final_lock_final_approval_sha256 pattern)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (finalLockApprovalCrossContractCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+6 tests: fully-consistent positive case, decision-not-APPROVE, approval-digest mismatch, target-id mismatch, combined target-artifact+gate-receipt mismatch proving reasons aggregate rather than short-circuit, cancelled-approval)",
+    "evidence": "status/fr-meta-041-final-lock-approval-cross-contract-check-evidence.v1.json",
+    "open_gap": "Trusts the caller to supply the referenced approval's real fields as request input rather than fetching the Approval Receipt object itself from a durable store by referenced_approval_id -- no persisted Approval Receipt registry/lookup exists in this codebase yet."
   }
 }
