@@ -217,6 +217,8 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.requalification.trigger-evaluate",
                     "assurance.agent-memory.conflict-resolve",
                     "assurance.tool-call.authorization-check",
+                    "assurance.prompt.provenance-check",
+                    "assurance.ai-safety.claim-independence-check",
                     "assurance.provider.drift-check",
                     "assurance.multi-agent.corroboration-check",
                     "assurance.hazard.create", "assurance.appeal.file",

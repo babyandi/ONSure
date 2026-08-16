@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-058",
+  "requirement_summary": "비결정 AI는 단일 PASS를 충분조건으로 사용하지 않는다... (34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS10 AI Safety/Security Claim 분리 sub-scope specifically: Business correctness와 별도 claim set으로 유지한다 -- prompt injection resistance, indirect RAG/tool injection, data exfiltration, unauthorized tool/effect, privilege escalation, hallucinated authority, unsafe financial/external action, memory poisoning, cross-tenant leakage, refusal/policy bypass. 한 claim PASS가 다른 claim을 함의하지 않는다.)",
+  "subject": "SemanticAssuranceV2WorkflowService.aiSafetyClaimIndependenceCheck via assurance.ai-safety.claim-independence-check",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/ai-safety-claim-independence-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#aiSafetyClaimIndependenceCheckIsEvidencedOnlyWhenAllElevenClaimTypesAreSubmitted",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#aiSafetyClaimIndependenceCheckBusinessCorrectnessPassAloneNeverImpliesAnySafetyClaim",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#aiSafetyClaimIndependenceCheckListsEveryUntestedTypeInDeclaredOrder",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#aiSafetyClaimIndependenceCheckRejectsADuplicateClaimType",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#aiSafetyClaimIndependenceCheckRejectsAnUnrecognizedClaimType"
+  ],
+  "coverage_notes": "Seventh closure of Batch 5's disclosed broader-scope gap. The independence this operation enforces is structural, not merely documented: untested_claim_types is computed purely from SET MEMBERSHIP of claim_type strings actually present in submitted_claims -- the method never branches on any claim's decision value anywhere in its logic (in particular never on BUSINESS_CORRECTNESS's decision), so there is no code path by which a PASS on one claim type could cause a never-submitted type to read as tested. aiSafetyClaimIndependenceCheckBusinessCorrectnessPassAloneNeverImpliesAnySafetyClaim is the direct test of the named rule: submitting only BUSINESS_CORRECTNESS=PASS still leaves all 10 other claim types listed in untested_claim_types, proving the PASS carries zero positive weight for any other claim. Duplicate claim_type submissions are rejected outright (fail-closed, same discipline multiAgentCorroborationCheck already applies to duplicate agent conclusions) rather than silently overwritten or double-counted.",
+  "open_gap": "Operates on caller-supplied claim submissions; there is no live safety/security test harness in this codebase that actually runs prompt-injection, RAG/tool-injection, exfiltration, privilege-escalation, etc. probes and produces these 10 decisions for real (same disclosed 'caller-supplied representation, not live system integration' pattern as every other Batch 5 broader-scope closure this session). A caller could submit all 11 claim types with fabricated PASS decisions and this operation would report all_claims_independently_evidenced=true -- it verifies COMPLETENESS of the claim set (nothing silently inferred), not the TRUTH of any individual submitted decision, which would require real adversarial test execution this codebase does not yet have.",
+  "design_reference_gap": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md is itself Status: DESIGN_ONLY/DRAFT/NON_FINAL -- this closure builds real, tested conformance-checking infrastructure against its SS10 rule, consistent with every other gate built against draft-status design docs this session, but does not and cannot finalize the parent document itself. The 10 safety/security claim-type identifiers (e.g. INDIRECT_RAG_TOOL_INJECTION_RESISTANCE) are this closure's own inferred, disclosed naming from SS10's Korean/English bullet list, not literal identifiers the source document defines.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

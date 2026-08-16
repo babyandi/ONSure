@@ -1030,6 +1030,24 @@
         "fixtures/contracts/tool-call-authorization-check.invalid.json"
       ],
       "schema": "contracts/tool-call-authorization-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/prompt-provenance-chain-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/prompt-provenance-chain-check.invalid.json"
+      ],
+      "schema": "contracts/prompt-provenance-chain-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/ai-safety-claim-independence-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ai-safety-claim-independence-check.invalid.json"
+      ],
+      "schema": "contracts/ai-safety-claim-independence-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

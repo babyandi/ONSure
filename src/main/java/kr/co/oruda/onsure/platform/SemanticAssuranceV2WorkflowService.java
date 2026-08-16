@@ -102,6 +102,8 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.requalification.trigger-evaluate",
             "assurance.agent-memory.conflict-resolve",
             "assurance.tool-call.authorization-check",
+            "assurance.prompt.provenance-check",
+            "assurance.ai-safety.claim-independence-check",
             "assurance.hazard.create",
             "assurance.hazard.advance",
             "assurance.appeal.file",
@@ -226,6 +228,8 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.requalification.trigger-evaluate" -> requalificationTriggerEvaluate(request);
             case "assurance.agent-memory.conflict-resolve" -> agentMemoryConflictResolve(request);
             case "assurance.tool-call.authorization-check" -> toolCallAuthorizationCheck(request);
+            case "assurance.prompt.provenance-check" -> promptProvenanceChainCheck(request);
+            case "assurance.ai-safety.claim-independence-check" -> aiSafetyClaimIndependenceCheck(request);
             case "assurance.hazard.create" -> hazardCreate(request);
             case "assurance.hazard.advance" -> hazardAdvance(request);
             case "assurance.appeal.file" -> appealFile(request);
@@ -3707,6 +3711,146 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("receipt_required", true);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", authorized ? "NON_FINAL" : "BLOCKED");
+        return immutable(out);
+    }
+
+    private static final Set<String> PROMPT_FRAGMENT_TYPES = Set.of(
+            "SYSTEM", "DEVELOPER", "TENANT_POLICY", "PRODUCT_TEMPLATE",
+            "USER_INPUT", "RETRIEVED_CONTEXT", "TOOL_RESULT", "RUNTIME_INJECTED_STATE");
+
+    private static final Set<String> DYNAMIC_PROMPT_FRAGMENT_TYPES =
+            Set.of("USER_INPUT", "RETRIEVED_CONTEXT", "TOOL_RESULT", "RUNTIME_INJECTED_STATE");
+
+    /**
+     * prompt-provenance-chain-check.v1.schema.json real computation (FR-META-057 AI Runtime
+     * Identity Closure / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS3
+     * Prompt Provenance: "각 fragment는 source/ref/version/digest를 갖고 최종 assembled prompt
+     * digest와 연결한다. 동적 fragment가 identity에서 빠지면 prompt currentness를 주장할 수
+     * 없다."). assembled_digest_verified is computed for real -- digest() over the ordered list
+     * of fragment digests -- and compared against the caller's claimed_assembled_prompt_digest,
+     * never trusted as a caller-declared boolean. missing_dynamic_fragment_types is the set
+     * difference between dynamic_fragment_types_used (what the caller says genuinely contributed
+     * to this prompt) and the fragment_types actually present in the chain; any gap forces
+     * currentness_claimable=false, closing the named rule without incorrectly demanding all 4
+     * dynamic types be present on every prompt regardless of whether they were actually used.
+     */
+    private Map<String, Object> promptProvenanceChainCheck(JsonNode request) {
+        String promptId = requiredText(request, "prompt_id");
+        JsonNode fragmentsNode = request.path("fragments");
+        if (!fragmentsNode.isArray() || fragmentsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("PROMPT_PROVENANCE_REQUIRES_AT_LEAST_ONE_FRAGMENT"));
+        }
+        List<String> orderedFragmentDigests = new ArrayList<>();
+        Set<String> presentFragmentTypes = new java.util.LinkedHashSet<>();
+        for (JsonNode fragment : fragmentsNode) {
+            String fragmentType = requiredText(fragment, "fragment_type");
+            if (!PROMPT_FRAGMENT_TYPES.contains(fragmentType)) {
+                throw new IllegalArgumentException("SEMANTIC_V2_FRAGMENT_TYPE_INVALID:" + fragmentType);
+            }
+            requiredText(fragment, "source");
+            requiredText(fragment, "ref");
+            requiredText(fragment, "version");
+            orderedFragmentDigests.add(requiredDigest(fragment, "digest"));
+            presentFragmentTypes.add(fragmentType);
+        }
+
+        JsonNode dynamicUsedNode = request.path("dynamic_fragment_types_used");
+        List<String> dynamicUsed = stringList(dynamicUsedNode);
+        for (String type : dynamicUsed) {
+            if (!DYNAMIC_PROMPT_FRAGMENT_TYPES.contains(type)) {
+                throw new IllegalArgumentException("SEMANTIC_V2_DYNAMIC_FRAGMENT_TYPE_INVALID:" + type);
+            }
+        }
+        String claimedDigest = requiredDigest(request, "claimed_assembled_prompt_digest");
+        String computedDigest = digest(orderedFragmentDigests);
+        boolean digestVerified = computedDigest.equals(claimedDigest);
+
+        List<String> missingDynamic = new ArrayList<>();
+        for (String type : dynamicUsed) {
+            if (!presentFragmentTypes.contains(type)) missingDynamic.add(type);
+        }
+
+        List<String> reasons = new ArrayList<>();
+        if (!digestVerified) reasons.add("ASSEMBLED_DIGEST_MISMATCH");
+        for (String type : missingDynamic) reasons.add("DYNAMIC_FRAGMENT_MISSING:" + type);
+        boolean currentnessClaimable = digestVerified && missingDynamic.isEmpty();
+
+        Map<String, Object> out = base("PROMPT_PROVENANCE_CHAIN_CHECK", promptId);
+        out.put("dynamic_fragment_types_used", dynamicUsed);
+        out.put("claimed_assembled_prompt_digest", claimedDigest);
+        out.put("computed_assembled_prompt_digest", computedDigest);
+        out.put("assembled_digest_verified", digestVerified);
+        out.put("missing_dynamic_fragment_types", List.copyOf(missingDynamic));
+        out.put("currentness_claimable", currentnessClaimable);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", currentnessClaimable ? "NON_FINAL" : "STALE");
+        return immutable(out);
+    }
+
+    private static final List<String> AI_SAFETY_CLAIM_TYPES = List.of(
+            "BUSINESS_CORRECTNESS",
+            "PROMPT_INJECTION_RESISTANCE",
+            "INDIRECT_RAG_TOOL_INJECTION_RESISTANCE",
+            "DATA_EXFILTRATION_RESISTANCE",
+            "UNAUTHORIZED_TOOL_EFFECT_RESISTANCE",
+            "PRIVILEGE_ESCALATION_RESISTANCE",
+            "HALLUCINATED_AUTHORITY_RESISTANCE",
+            "UNSAFE_FINANCIAL_EXTERNAL_ACTION_RESISTANCE",
+            "MEMORY_POISONING_RESISTANCE",
+            "CROSS_TENANT_LEAKAGE_RESISTANCE",
+            "REFUSAL_POLICY_BYPASS_RESISTANCE");
+
+    /**
+     * ai-safety-claim-independence-check.v1.schema.json real computation (FR-META-058 AI
+     * Nondeterminism and Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_
+     * ASSURANCE_EXTENSION.md SS10 AI Safety/Security Claim 분리: "Business correctness와 별도
+     * claim set으로 유지한다... 한 claim PASS가 다른 claim을 함의하지 않는다"). The independence
+     * is structural, not merely documented: this method computes untested_claim_types purely from
+     * SET MEMBERSHIP of claim_type strings actually present in submitted_claims -- it never
+     * branches on any claim's decision value (in particular, never on BUSINESS_CORRECTNESS's
+     * decision), so a PASS on one or even all-but-one claim types can never cause a
+     * never-submitted type to read as tested. Rejects a duplicate claim_type outright, the same
+     * fail-closed discipline multiAgentCorroborationCheck already applies to duplicate agent
+     * conclusions.
+     */
+    private Map<String, Object> aiSafetyClaimIndependenceCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        JsonNode submittedNode = request.path("submitted_claims");
+        if (!submittedNode.isArray()) {
+            return failClosed("INPUT_REQUIRED", List.of("SUBMITTED_CLAIMS_MUST_BE_AN_ARRAY"));
+        }
+        List<Map<String, String>> submittedClaims = new ArrayList<>();
+        java.util.LinkedHashSet<String> presentTypes = new java.util.LinkedHashSet<>();
+        for (JsonNode claim : submittedNode) {
+            String claimType = requiredText(claim, "claim_type");
+            if (!AI_SAFETY_CLAIM_TYPES.contains(claimType)) {
+                throw new IllegalArgumentException("SEMANTIC_V2_CLAIM_TYPE_INVALID:" + claimType);
+            }
+            String claimDecision = requiredText(claim, "decision");
+            if (!EVALUATION_VERDICTS.contains(claimDecision)) {
+                throw new IllegalArgumentException("SEMANTIC_V2_VERDICT_INVALID:" + claimType);
+            }
+            if (!presentTypes.add(claimType)) {
+                return failClosed("HOLD", List.of("DUPLICATE_CLAIM_TYPE:" + claimType));
+            }
+            submittedClaims.add(Map.of("claim_type", claimType, "decision", claimDecision));
+        }
+
+        List<String> untested = new ArrayList<>();
+        for (String type : AI_SAFETY_CLAIM_TYPES) {
+            if (!presentTypes.contains(type)) untested.add(type);
+        }
+        boolean allEvidenced = untested.isEmpty();
+
+        List<String> reasons = new ArrayList<>();
+        for (String type : untested) reasons.add("CLAIM_TYPE_UNTESTED:" + type);
+
+        Map<String, Object> out = base("AI_SAFETY_CLAIM_INDEPENDENCE_CHECK", subjectId);
+        out.put("submitted_claims", submittedClaims);
+        out.put("untested_claim_types", List.copyOf(untested));
+        out.put("all_claims_independently_evidenced", allEvidenced);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", allEvidenced ? "NON_FINAL" : "INCONCLUSIVE");
         return immutable(out);
     }
 

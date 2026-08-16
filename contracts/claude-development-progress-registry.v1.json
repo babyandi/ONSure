@@ -1784,5 +1784,39 @@
     "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: operator authorized for LOCAL_MUTATION, same operator denied for FINANCIAL with the specific missing role named, required_role computed correctly for all 5 effect classes, an extremely persuasive natural-language intent string still yields authorized=false for an under-privileged caller -- proving the prohibition for real, receipt_required stays true regardless of outcome)",
     "evidence": "status/fr-meta-057-tool-call-authorization-evidence.v1.json",
     "open_gap": "Role containment is exact-match only, not hierarchical (consistent with this codebase's own no-implicit-hierarchy precedent -- ADMIN does not universally subsume every other role here either). Computes authorization for a caller-described tool call; does not itself intercept any real tool-calling runtime, since none exists in this codebase yet. 4 of the 9 originally-named broader-scope areas remain open: Prompt Provenance, RAG Assurance, AgentGraph/Delegation, AI Safety/Security claim separation."
+  },
+  "batch5_broader_scope_prompt_provenance_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Sixth closure of Batch 5's disclosed broader-scope gap (SS3 Prompt Provenance, FR-META-057). Unlike every other broader-scope closure (which compare caller-supplied values for equality), this one performs a genuine cryptographic recomputation: computed_assembled_prompt_digest = digest() (this file's existing sha256-over-Jackson-serialization helper) over the ordered list of per-fragment digests, compared against the caller's claimed value -- a caller cannot simply assert verified=true. contracts/prompt-provenance-chain-check.v1.schema.json (NEW, registered 121 -> 122 schemas). missing_dynamic_fragment_types is a real set-difference between dynamic_fragment_types_used (caller-declared, which dynamic types genuinely contributed) and the fragment_types actually present in the chain, closing 'dynamic fragment 빠지면 currentness 주장 불가' without incorrectly demanding all 4 dynamic types on every prompt regardless of relevance.",
+    "contract_schema": "contracts/prompt-provenance-chain-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/prompt-provenance-chain-check.valid.json (NEW)",
+      "fixtures/contracts/prompt-provenance-chain-check.invalid.json (NEW, assembled_digest_verified=false with currentness_claimable=true, violates the allOf forcing false on a digest mismatch)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (promptProvenanceChainCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: a probe-then-resubmit pattern proves real digest match without hardcoding an expected hash, a mismatched claim is detected, a dynamic type claimed-used-but-not-present-in-chain forces currentness_claimable=false even with a verified digest, an unrecognized fragment_type fails closed, naming a static type (SYSTEM) as dynamically-used fails closed)",
+    "evidence": "status/fr-meta-057-prompt-provenance-chain-evidence.v1.json",
+    "open_gap": "Operates on a caller-supplied fragment chain; no live prompt-assembly runtime exists in this codebase to feed it from real system state (same disclosed pattern as every other Batch 5 broader-scope closure this session). dynamic_fragment_types_used is itself caller-declared -- a caller could under-declare it to dodge the missing-fragment penalty. 3 of the 9 originally-named broader-scope areas remain open: RAG Assurance, AgentGraph/Delegation, AI Safety/Security claim separation."
+  },
+  "batch5_broader_scope_ai_safety_claim_independence_closure": {
+    "state": "EVIDENCE_READY",
+    "note": "Seventh closure of Batch 5's disclosed broader-scope gap (SS10 AI Safety/Security Claim 분리, FR-META-058). The independence this operation enforces is structural: untested_claim_types is computed purely from set membership of claim_type strings actually present in submitted_claims -- the method never branches on any claim's decision value anywhere, in particular never on BUSINESS_CORRECTNESS's decision, so no code path lets a PASS on one type imply another is tested. contracts/ai-safety-claim-independence-check.v1.schema.json (NEW, registered 122 -> 123 schemas).",
+    "contract_schema": "contracts/ai-safety-claim-independence-check.v1.schema.json (NEW)",
+    "fixtures": [
+      "fixtures/contracts/ai-safety-claim-independence-check.valid.json (NEW)",
+      "fixtures/contracts/ai-safety-claim-independence-check.invalid.json (NEW, only BUSINESS_CORRECTNESS submitted with all_claims_independently_evidenced=true and empty-contradicting untested_claim_types, violates the allOf requiring untested_claim_types empty for true)"
+    ],
+    "implementation": [
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (aiSafetyClaimIndependenceCheck)",
+      "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java (RBAC role gate)",
+      "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java (operation tiering)"
+    ],
+    "tests": "src/test/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridgeTest.java (+5 tests: all 11 submitted reaches evidenced, BUSINESS_CORRECTNESS=PASS alone leaves all 10 other types untested -- the direct test of the named rule, a partial 3-of-11 submission lists exactly the remaining 8, a duplicate claim_type fails closed rather than silently overwriting, an unrecognized claim_type fails closed)",
+    "evidence": "status/fr-meta-058-ai-safety-claim-independence-evidence.v1.json",
+    "open_gap": "Verifies COMPLETENESS of the claim set (nothing silently inferred), not the TRUTH of any individual submitted decision -- no live safety/security test harness exists in this codebase to actually run prompt-injection/exfiltration/privilege-escalation/etc. probes. 2 of the 9 originally-named broader-scope areas remain open: RAG Assurance, AgentGraph/Delegation."
   }
 }

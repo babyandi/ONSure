@@ -2896,6 +2896,156 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "caller_asserted_natural_language_intent", naturalLanguageIntent));
     }
 
+    // FR-META-057 AI Runtime Identity Closure (SS3 Prompt Provenance)
+    @Test
+    void promptProvenanceChainCheckVerifiesWhenClaimedDigestMatchesTheRealComputation() throws Exception {
+        List<Map<String, Object>> fragments = List.of(
+                promptFragment("SYSTEM", "system-v1"), promptFragment("USER_INPUT", "user-turn-1"));
+        // First call with an arbitrary claim to learn what the real computation produces.
+        Map<?, ?> probe = promptProvenanceChainCheck(fragments, List.of("USER_INPUT"), "f".repeat(64));
+        String realComputedDigest = (String) probe.get("computed_assembled_prompt_digest");
+
+        Map<?, ?> result = promptProvenanceChainCheck(fragments, List.of("USER_INPUT"), realComputedDigest);
+        assertEquals(true, result.get("assembled_digest_verified"));
+        assertEquals(true, result.get("currentness_claimable"));
+        assertEquals(List.of(), result.get("reasons"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void promptProvenanceChainCheckDetectsAMismatchedClaimedDigest() throws Exception {
+        List<Map<String, Object>> fragments = List.of(promptFragment("SYSTEM", "system-v1"));
+        Map<?, ?> result = promptProvenanceChainCheck(fragments, List.of(), "a".repeat(64));
+        assertEquals(false, result.get("assembled_digest_verified"));
+        assertEquals(false, result.get("currentness_claimable"));
+        assertTrue(((List<?>) result.get("reasons")).contains("ASSEMBLED_DIGEST_MISMATCH"));
+        assertEquals("STALE", result.get("decision"));
+    }
+
+    @Test
+    void promptProvenanceChainCheckForcesCurrentnessNotClaimableWhenADynamicFragmentTypeIsMissing()
+            throws Exception {
+        List<Map<String, Object>> fragments = List.of(promptFragment("SYSTEM", "system-v1"));
+        Map<?, ?> probe = promptProvenanceChainCheck(fragments, List.of("TOOL_RESULT"), "b".repeat(64));
+        String realComputedDigest = (String) probe.get("computed_assembled_prompt_digest");
+
+        // dynamic_fragment_types_used claims TOOL_RESULT contributed, but no TOOL_RESULT fragment
+        // is actually present in the chain -- even with a verified digest, currentness cannot be
+        // claimed.
+        Map<?, ?> result = promptProvenanceChainCheck(fragments, List.of("TOOL_RESULT"), realComputedDigest);
+        assertEquals(true, result.get("assembled_digest_verified"));
+        assertEquals(false, result.get("currentness_claimable"));
+        assertEquals(List.of("TOOL_RESULT"), result.get("missing_dynamic_fragment_types"));
+        assertEquals(List.of("DYNAMIC_FRAGMENT_MISSING:TOOL_RESULT"), result.get("reasons"));
+    }
+
+    @Test
+    void promptProvenanceChainCheckRejectsAnUnrecognizedFragmentType() throws Exception {
+        Map<String, Object> body = Map.of(
+                "project_id", "project-1", "target_id", "target-1", "prompt_id", "prompt-1",
+                "fragments", List.of(promptFragment("NOT_A_REAL_FRAGMENT_TYPE", "x")),
+                "dynamic_fragment_types_used", List.of(),
+                "claimed_assembled_prompt_digest", "c".repeat(64));
+        Exception failure = assertThrows(Exception.class, () -> bridge.dispatch(
+                "assurance.prompt.provenance-check", request(body)));
+        assertTrue(failure.getMessage().contains("SEMANTIC_V2_FRAGMENT_TYPE_INVALID"));
+    }
+
+    @Test
+    void promptProvenanceChainCheckRejectsADynamicFragmentTypeThatIsActuallyStatic() throws Exception {
+        // SYSTEM is a real fragment type but not one of the 4 dynamic ones -- naming it as
+        // "dynamically used" is itself invalid input, not just a missing-fragment case.
+        List<Map<String, Object>> fragments = List.of(promptFragment("SYSTEM", "system-v1"));
+        Exception failure = assertThrows(Exception.class, () -> promptProvenanceChainCheck(
+                fragments, List.of("SYSTEM"), "d".repeat(64)));
+        assertTrue(failure.getMessage().contains("SEMANTIC_V2_DYNAMIC_FRAGMENT_TYPE_INVALID"));
+    }
+
+    private Map<String, Object> promptFragment(String fragmentType, String seed) {
+        return Map.of(
+                "fragment_type", fragmentType, "source", "source-" + seed, "ref", "ref-" + seed,
+                "version", "v1", "digest", "e".repeat(64));
+    }
+
+    private Map<?, ?> promptProvenanceChainCheck(
+            List<Map<String, Object>> fragments, List<String> dynamicFragmentTypesUsed, String claimedDigest)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.prompt.provenance-check", Map.of(
+                "prompt_id", "prompt-1", "fragments", fragments,
+                "dynamic_fragment_types_used", dynamicFragmentTypesUsed,
+                "claimed_assembled_prompt_digest", claimedDigest));
+    }
+
+    private static final List<String> AI_SAFETY_CLAIM_TYPES = List.of(
+            "BUSINESS_CORRECTNESS",
+            "PROMPT_INJECTION_RESISTANCE",
+            "INDIRECT_RAG_TOOL_INJECTION_RESISTANCE",
+            "DATA_EXFILTRATION_RESISTANCE",
+            "UNAUTHORIZED_TOOL_EFFECT_RESISTANCE",
+            "PRIVILEGE_ESCALATION_RESISTANCE",
+            "HALLUCINATED_AUTHORITY_RESISTANCE",
+            "UNSAFE_FINANCIAL_EXTERNAL_ACTION_RESISTANCE",
+            "MEMORY_POISONING_RESISTANCE",
+            "CROSS_TENANT_LEAKAGE_RESISTANCE",
+            "REFUSAL_POLICY_BYPASS_RESISTANCE");
+
+    // FR-META-058 AI Nondeterminism and Multi-Agent Assurance (SS10 AI Safety/Security Claim 분리)
+    @Test
+    void aiSafetyClaimIndependenceCheckIsEvidencedOnlyWhenAllElevenClaimTypesAreSubmitted() throws Exception {
+        List<Map<String, Object>> allPassing = AI_SAFETY_CLAIM_TYPES.stream()
+                .map(type -> Map.<String, Object>of("claim_type", type, "decision", "PASS"))
+                .toList();
+        Map<?, ?> result = aiSafetyClaimIndependenceCheck(allPassing);
+        assertEquals(true, result.get("all_claims_independently_evidenced"));
+        assertEquals(List.of(), result.get("untested_claim_types"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void aiSafetyClaimIndependenceCheckBusinessCorrectnessPassAloneNeverImpliesAnySafetyClaim() throws Exception {
+        Map<?, ?> result = aiSafetyClaimIndependenceCheck(
+                List.of(Map.of("claim_type", "BUSINESS_CORRECTNESS", "decision", "PASS")));
+        assertEquals(false, result.get("all_claims_independently_evidenced"));
+        @SuppressWarnings("unchecked")
+        List<String> untested = (List<String>) result.get("untested_claim_types");
+        assertEquals(10, untested.size());
+        assertTrue(!untested.contains("BUSINESS_CORRECTNESS"));
+        for (String safetyType : AI_SAFETY_CLAIM_TYPES) {
+            if (!"BUSINESS_CORRECTNESS".equals(safetyType)) assertTrue(untested.contains(safetyType), safetyType);
+        }
+    }
+
+    @Test
+    void aiSafetyClaimIndependenceCheckListsEveryUntestedTypeInDeclaredOrder() throws Exception {
+        Map<?, ?> result = aiSafetyClaimIndependenceCheck(List.of(
+                Map.of("claim_type", "BUSINESS_CORRECTNESS", "decision", "PASS"),
+                Map.of("claim_type", "PROMPT_INJECTION_RESISTANCE", "decision", "PASS"),
+                Map.of("claim_type", "MEMORY_POISONING_RESISTANCE", "decision", "FAIL")));
+        assertEquals(8, ((List<?>) result.get("untested_claim_types")).size());
+        assertEquals(false, result.get("all_claims_independently_evidenced"));
+    }
+
+    @Test
+    void aiSafetyClaimIndependenceCheckRejectsADuplicateClaimType() throws Exception {
+        Map<?, ?> result = aiSafetyClaimIndependenceCheck(List.of(
+                Map.of("claim_type", "BUSINESS_CORRECTNESS", "decision", "PASS"),
+                Map.of("claim_type", "BUSINESS_CORRECTNESS", "decision", "FAIL")));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("DUPLICATE_CLAIM_TYPE:BUSINESS_CORRECTNESS"), result.get("reasons"));
+    }
+
+    @Test
+    void aiSafetyClaimIndependenceCheckRejectsAnUnrecognizedClaimType() throws Exception {
+        Exception failure = assertThrows(Exception.class, () -> aiSafetyClaimIndependenceCheck(
+                List.of(Map.of("claim_type", "NOT_A_REAL_CLAIM_TYPE", "decision", "PASS"))));
+        assertTrue(failure.getMessage().contains("SEMANTIC_V2_CLAIM_TYPE_INVALID"));
+    }
+
+    private Map<?, ?> aiSafetyClaimIndependenceCheck(List<Map<String, Object>> submittedClaims) throws Exception {
+        return learningDispatch(bridge, "assurance.ai-safety.claim-independence-check", Map.of(
+                "subject_id", "ai-target-1", "submitted_claims", submittedClaims));
+    }
+
     @Test
     void hazardCreatedThroughTheWiredOperationStartsIdentified() throws Exception {
         Map<?, ?> result = learningDispatch(bridge, "assurance.hazard.create", Map.of("hazard_id", "hazard-1"));
