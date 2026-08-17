@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-PORT",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md NFR-PORT: 'SaaS, Local Runtime, 폐쇄망(Air-gapped) 배포 가능. 검증: 폐쇄망 배포는 AirGappedDependencyPackager(이미 구현됨, NFR-01)로 패키징한 의존성만으로 외부 네트워크 접근 없이 빌드·실행이 성공해야 한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.airGappedDeploymentCheck via assurance.portability.air-gapped-deployment-check; contracts/air-gapped-deployment-check.v1.schema.json (NEW). Complements the pre-existing, real AirGappedDependencyPackager (src/main/java/kr/co/oruda/onsure/platform/AirGappedDependencyPackager.java, pack()/verify() already implemented and tested) by adding the network-isolation and build-success verification the requirement itself names but the packager's own scope (dependency packaging/pack-integrity verification) does not cover.",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/air-gapped-deployment-check.v1.schema.json",
+    "src/main/java/kr/co/oruda/onsure/platform/AirGappedDependencyPackager.java (pre-existing)"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#airGappedDeploymentCheckIsCompliantWithPackagedDependenciesNoNetworkAccessAndASuccessfulBuild",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#airGappedDeploymentCheckDetectsAnyExternalNetworkAccess",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#airGappedDeploymentCheckDetectsAFailedBuildEvenWithoutAnyNetworkAccess",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#airGappedDeploymentCheckDetectsAnEmptyPackagedDependencySet"
+  ],
+  "coverage_notes": "Three independent real conditions, none inferred from the others. airGappedDeploymentCheckDetectsAnyExternalNetworkAccess is the direct test of the requirement's own named rule ('외부 네트워크 접근 없이'): any external_network_access_count > 0 is caught by a real count check, not a threshold or 'mostly isolated' heuristic. airGappedDeploymentCheckDetectsAFailedBuildEvenWithoutAnyNetworkAccess proves build_succeeded is checked as its own independent condition -- a genuinely network-isolated attempt that still failed to build is never compliant, closing '빌드·실행이 성공해야 한다' (build AND execution must succeed) as a real, separate gate rather than assuming isolation implies success. airGappedDeploymentCheckDetectsAnEmptyPackagedDependencySet closes 'AirGappedDependencyPackager로 패키징한 의존성만으로' (only using packaged dependencies) -- a deployment with zero packaged dependencies cannot claim it drew its build inputs from a real packaged set.",
+  "open_gap": "Operates on a caller-supplied representation (packaged_dependency_count/build_succeeded/external_network_access_count); it does not itself invoke AirGappedDependencyPackager.pack()/verify() or a real network-access monitor -- there is no live network-traffic interception in this codebase that actually counts external accesses during a real build/execution attempt (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session, though the underlying dependency-packaging mechanism it complements IS real, pre-existing, and tested). This closure covers only the air-gapped deployment mode's own stated verification method -- SaaS and Local Runtime deployability (the other two named modes) are not separately modeled, since the requirement itself only names a concrete verification method for the air-gapped case.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -2692,6 +2692,49 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "role_documented_allowed_operations", documentedAllowedOperations));
     }
 
+    // NFR-PORT Air-gapped Deployment
+    @Test
+    void airGappedDeploymentCheckIsCompliantWithPackagedDependenciesNoNetworkAccessAndASuccessfulBuild() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(42, true, 0);
+        assertEquals(true, result.get("has_packaged_dependencies"));
+        assertEquals(true, result.get("network_isolated"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void airGappedDeploymentCheckDetectsAnyExternalNetworkAccess() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(42, true, 3);
+        assertEquals(false, result.get("network_isolated"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("EXTERNAL_NETWORK_ACCESS_DETECTED:3"));
+    }
+
+    @Test
+    void airGappedDeploymentCheckDetectsAFailedBuildEvenWithoutAnyNetworkAccess() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(42, false, 0);
+        assertEquals(true, result.get("network_isolated"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("BUILD_DID_NOT_SUCCEED"));
+    }
+
+    @Test
+    void airGappedDeploymentCheckDetectsAnEmptyPackagedDependencySet() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(0, true, 0);
+        assertEquals(false, result.get("has_packaged_dependencies"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("NO_PACKAGED_DEPENDENCIES"));
+    }
+
+    private Map<?, ?> airGappedDeploymentCheck(
+            int packagedDependencyCount, boolean buildSucceeded, int externalNetworkAccessCount) throws Exception {
+        return learningDispatch(bridge, "assurance.portability.air-gapped-deployment-check", Map.of(
+                "subject_id", "deployment-subject-1", "deployment_id", "deployment-1",
+                "packaged_dependency_count", packagedDependencyCount, "build_succeeded", buildSucceeded,
+                "external_network_access_count", externalNetworkAccessCount));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

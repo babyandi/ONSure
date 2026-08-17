@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_AIR_GAPPED_DEPLOYMENT_CHECK_V1",
+  "subject_id": "deployment-2026-08-17-001",
+  "deployment_id": "deployment-1",
+  "packaged_dependency_count": 42,
+  "build_succeeded": true,
+  "external_network_access_count": 0,
+  "has_packaged_dependencies": true,
+  "network_isolated": true,
+  "compliant": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

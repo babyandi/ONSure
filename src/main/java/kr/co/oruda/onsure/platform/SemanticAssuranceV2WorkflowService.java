@@ -100,6 +100,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.retention.deletion-proof-check",
             "assurance.observability.structured-log-completeness-check",
             "assurance.security.baseline-check",
+            "assurance.portability.air-gapped-deployment-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -248,6 +249,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.retention.deletion-proof-check" -> retentionDeletionProofCheck(request);
             case "assurance.observability.structured-log-completeness-check" -> structuredLogCompletenessCheck(request);
             case "assurance.security.baseline-check" -> securityBaselineCheck(request);
+            case "assurance.portability.air-gapped-deployment-check" -> airGappedDeploymentCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3722,6 +3724,52 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("secret_exposure_clear", secretExposureClear);
         out.put("excess_operations", List.copyOf(excessOperations));
         out.put("least_privilege_compliant", leastPrivilegeCompliant);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * air-gapped-deployment-check.v1.schema.json real computation (NFR-PORT: "SaaS, Local Runtime,
+     * 폐쇄망(Air-gapped) 배포 가능... 폐쇄망 배포는 AirGappedDependencyPackager로 패키징한 의존성만으로
+     * 외부 네트워크 접근 없이 빌드·실행이 성공해야 한다."). compliant is computed from three
+     * independent real conditions: network_isolated is a real count check --
+     * external_network_access_count must be exactly 0, not merely low. has_packaged_dependencies is
+     * a real check that the deployment actually drew from a real packaged-dependency set
+     * (packaged_dependency_count > 0), not an empty/unpackaged attempt. build_succeeded is read
+     * directly and never inferred from the other two -- a network-isolated build that still failed
+     * is not compliant.
+     */
+    private Map<String, Object> airGappedDeploymentCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String deploymentId = requiredText(request, "deployment_id");
+        int packagedDependencyCount = request.path("packaged_dependency_count").asInt(-1);
+        if (packagedDependencyCount < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("PACKAGED_DEPENDENCY_COUNT_INVALID"));
+        }
+        boolean buildSucceeded = request.path("build_succeeded").asBoolean(false);
+        int externalNetworkAccessCount = request.path("external_network_access_count").asInt(-1);
+        if (externalNetworkAccessCount < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("EXTERNAL_NETWORK_ACCESS_COUNT_INVALID"));
+        }
+
+        boolean hasPackagedDependencies = packagedDependencyCount > 0;
+        boolean networkIsolated = externalNetworkAccessCount == 0;
+        boolean compliant = hasPackagedDependencies && networkIsolated && buildSucceeded;
+
+        List<String> reasons = new ArrayList<>();
+        if (!hasPackagedDependencies) reasons.add("NO_PACKAGED_DEPENDENCIES");
+        if (!networkIsolated) reasons.add("EXTERNAL_NETWORK_ACCESS_DETECTED:" + externalNetworkAccessCount);
+        if (!buildSucceeded) reasons.add("BUILD_DID_NOT_SUCCEED");
+
+        Map<String, Object> out = base("AIR_GAPPED_DEPLOYMENT_CHECK", subjectId);
+        out.put("deployment_id", deploymentId);
+        out.put("packaged_dependency_count", packagedDependencyCount);
+        out.put("build_succeeded", buildSucceeded);
+        out.put("external_network_access_count", externalNetworkAccessCount);
+        out.put("has_packaged_dependencies", hasPackagedDependencies);
+        out.put("network_isolated", networkIsolated);
         out.put("compliant", compliant);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", compliant ? "NON_FINAL" : "HOLD");

@@ -1237,6 +1237,15 @@
         "fixtures/contracts/security-baseline-check.invalid.json"
       ],
       "schema": "contracts/security-baseline-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/air-gapped-deployment-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/air-gapped-deployment-check.invalid.json"
+      ],
+      "schema": "contracts/air-gapped-deployment-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

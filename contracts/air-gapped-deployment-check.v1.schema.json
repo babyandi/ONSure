@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/air-gapped-deployment-check.v1.schema.json",
+  "title": "ONSure Air-gapped Deployment Check v1",
+  "description": "NFR-PORT: 'SaaS, Local Runtime, 폐쇄망(Air-gapped) 배포 가능. 검증: 폐쇄망 배포는 AirGappedDependencyPackager로 패키징한 의존성만으로 외부 네트워크 접근 없이 빌드·실행이 성공해야 한다.' compliant is computed for real from three independent conditions: network_isolated is a real count check -- external_network_access_count must be exactly 0, not merely 'low'. has_packaged_dependencies is a real check that the deployment actually drew from a real AirGappedDependencyPackager.pack() output (packaged_dependency_count > 0), not an empty/unpackaged attempt. build_succeeded is read directly, never inferred from the other two -- a network-isolated build that still failed to build is not compliant.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "deployment_id", "packaged_dependency_count", "build_succeeded",
+    "external_network_access_count", "has_packaged_dependencies", "network_isolated", "compliant",
+    "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AIR_GAPPED_DEPLOYMENT_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "deployment_id": {"type": "string", "minLength": 1},
+    "packaged_dependency_count": {"type": "integer", "minimum": 0},
+    "build_succeeded": {"type": "boolean"},
+    "external_network_access_count": {"type": "integer", "minimum": 0},
+    "has_packaged_dependencies": {"type": "boolean"},
+    "network_isolated": {"type": "boolean"},
+    "compliant": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"compliant": {"const": true}}},
+      "then": {
+        "properties": {
+          "has_packaged_dependencies": {"const": true},
+          "network_isolated": {"const": true},
+          "build_succeeded": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"external_network_access_count": {"minimum": 1}}},
+      "then": {"properties": {"network_isolated": {"const": false}, "compliant": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"packaged_dependency_count": {"const": 0}}},
+      "then": {"properties": {"has_packaged_dependencies": {"const": false}, "compliant": {"const": false}}}
+    }
+  ]
+}
