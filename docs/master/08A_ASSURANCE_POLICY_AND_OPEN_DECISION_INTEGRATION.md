@@ -74,3 +74,43 @@ Parent: `08_REVIEW_CHECKLIST_OPEN_DECISIONS.md`
 - industry/product/tenant override 우선순위 명시
 - 안전 floor보다 약한 override 차단
 - policy epoch/digest가 Receipt/Final/Certificate에 결속
+
+## 9. Final-target delta discovery 결정 추적
+`162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md`와 `163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md`가 FR-FIN-01~22 도입 이후 Product Design scope를 다시 열었다. 아래 항목은 구현자가 임의 상수나 관행으로 정할 수 없다.
+
+### 9.1 P0 — policy/authority 결정 필요
+- DD-001 visibility mode별 minimum evidence floor
+- DD-002 Oracle owner/change/dispute authority
+- DD-003 Assurance Tier별 independence dimension 최소조건
+- DD-004 opaque provider/model drift 판정 및 fallback equivalence ceiling
+- DD-005 adapter/parser skipped/unsupported/failed 허용 ceiling
+- DD-006 critical TCB health/requalification 기준과 fault-injection mandatory set
+- DD-007 trusted-time/key compromise 영향 범위와 offline grace ceiling
+- DD-008 budget/credit/token/time exhaustion 시 rescope authority와 positive-claim ceiling
+- DD-009 waiver max duration/renewal/compensating-control minimum 및 invalidation trigger
+- DD-010 systemic dependency criticality/fan-out and portfolio requalification floor
+- DD-011 shared-corpus withdrawal/poisoning/rights-invalid derived-impact policy
+- DD-012 reviewer qualification validity/conflict/rotation/calibration floor
+
+### 9.2 P1 — policy/profile 결정 필요
+- DD-013 purpose/rights/consent evidence level
+- DD-014 external-effect engagement authorization profile
+- DD-015 termination export/retention/legal-hold/shared-corpus settlement policy
+- DD-016 locale/accessibility target profile without canonical-state weakening
+- DD-017 connector retry/dead-letter/replay window
+- DD-018 checkpoint/effect dedupe retention and replay ceiling
+- DD-019 competing evidence-head reconciliation authority
+- DD-020 vendor/subprocessor exit evidence retention/continuity threshold
+- DD-021 redaction proof level and limitation disclosure
+- DD-022 break-glass maximum TTL/post-review SLA/quorum
+- DD-023 standard/regulatory currentness interval/supersession grace
+- DD-024 benchmark contamination threshold/rotation/invalidation scope
+
+### 9.3 Fail-closed rule
+위 값이 미확정이어도 설계가 사라지는 것은 아니다. 안전 불변식은 즉시 적용한다:
+- visibility/evidence insufficiency, disputed oracle, degraded independence, provider drift, parser loss, TCB failure, trust uncertainty, budget exhaustion, expired waiver는 positive claim strength를 올릴 수 없다.
+- policy 값이 없어서 판단을 못 하면 `HOLD/UNKNOWN/REASSESSMENT_REQUIRED`를 사용한다.
+- P0 값을 코드가 임의 기본값으로 고정해 Design Closure를 통과시키는 것을 금지한다.
+
+## 10. Delta completion boundary
+DD-001~024는 companion 설계 수준에서 owner/state/evidence/failure/oracle가 정의되었지만, 위 policy decision과 machine contract/API/schema가 materialize되기 전까지 `CONTRACTED` 또는 `QUALIFIED`로 승격하지 않는다.
