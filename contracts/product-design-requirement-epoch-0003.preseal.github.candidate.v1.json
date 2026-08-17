@@ -13,6 +13,9 @@
     "docs/master/semantic-assurance/163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md",
     "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md",
     "docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md",
+    "contracts/requirement-authority-source-allowlist.delta-final-target.v1.json",
+    "contracts/requirement-authority-source-review.seed-final-target-delta.v1.json",
+    "contracts/post-final-target-dd-001-040-authority-admission.candidate.v1.json",
     "contracts/design-discovery-delta-triage.final-target.candidate.v1.json",
     "contracts/design-discovery-delta-triage.waves-2-3.candidate.v1.json",
     "contracts/design-discovery-saturation.candidate.v1.json",
@@ -20,21 +23,15 @@
     "contracts/requirement-authority-source-manifest.candidate.v1.json",
     "contracts/requirement-authority-source-review.final-target.github.v1.json"
   ],
-  "mandatory_additive_explicit_requirements": [
-    "FR-FIN-01","FR-FIN-02","FR-FIN-03","FR-FIN-04","FR-FIN-05","FR-FIN-06","FR-FIN-07","FR-FIN-08","FR-FIN-09","FR-FIN-10","FR-FIN-11","FR-FIN-12","FR-FIN-13","FR-FIN-14","FR-FIN-15","FR-FIN-16","FR-FIN-17","FR-FIN-18","FR-FIN-19","FR-FIN-20","FR-FIN-21","FR-FIN-22"
-  ],
-  "mandatory_delta_design_obligations": [
-    "DD-001","DD-002","DD-003","DD-004","DD-005","DD-006","DD-007","DD-008","DD-009","DD-010","DD-011","DD-012","DD-013","DD-014","DD-015","DD-016","DD-017","DD-018","DD-019","DD-020","DD-021","DD-022","DD-023","DD-024","DD-025","DD-026","DD-027","DD-028","DD-029","DD-030","DD-031","DD-032","DD-033","DD-034","DD-035","DD-036","DD-037","DD-038","DD-039","DD-040"
-  ],
+  "mandatory_additive_explicit_requirements": ["FR-FIN-01","FR-FIN-02","FR-FIN-03","FR-FIN-04","FR-FIN-05","FR-FIN-06","FR-FIN-07","FR-FIN-08","FR-FIN-09","FR-FIN-10","FR-FIN-11","FR-FIN-12","FR-FIN-13","FR-FIN-14","FR-FIN-15","FR-FIN-16","FR-FIN-17","FR-FIN-18","FR-FIN-19","FR-FIN-20","FR-FIN-21","FR-FIN-22"],
+  "mandatory_delta_design_obligations": ["DD-001","DD-002","DD-003","DD-004","DD-005","DD-006","DD-007","DD-008","DD-009","DD-010","DD-011","DD-012","DD-013","DD-014","DD-015","DD-016","DD-017","DD-018","DD-019","DD-020","DD-021","DD-022","DD-023","DD-024","DD-025","DD-026","DD-027","DD-028","DD-029","DD-030","DD-031","DD-032","DD-033","DD-034","DD-035","DD-036","DD-037","DD-038","DD-039","DD-040"],
   "semantic_relation_registry": "findings/ONSURE_FR_FIN_01_22_SEMANTIC_RELATION_MAPPING.github.nonfinal.json",
   "delta_parent_relation_registry": "contracts/post-final-target-dd-to-fr-fin-relation.candidate.v1.json",
-  "delta_triage_registries": [
-    "contracts/design-discovery-delta-triage.final-target.candidate.v1.json",
-    "contracts/design-discovery-delta-triage.waves-2-3.candidate.v1.json"
-  ],
+  "dd_authority_admission_registry": "contracts/post-final-target-dd-001-040-authority-admission.candidate.v1.json",
+  "delta_triage_registries": ["contracts/design-discovery-delta-triage.final-target.candidate.v1.json","contracts/design-discovery-delta-triage.waves-2-3.candidate.v1.json"],
   "discovery_saturation_registry": "contracts/design-discovery-saturation.candidate.v1.json",
   "requirements_preserved": ["FR-COM-*","FR-META-*","FR-FRESH-*","FR-LEARN-001~095","NFR-*","authority-eligible non-ID materialized requirements"],
-  "anti_double_count_rule": "FR-FIN parents, DD discovery obligations and granular requirements remain distinct semantic nodes unless Requirement Authority records explicit relations. Existing-owner DD refinements must not be promoted as duplicate top-level product requirements merely to inflate denominator size.",
+  "anti_double_count_rule": "FR-FIN parents, DD canonical discovery-obligation nodes and granular requirements remain distinct semantic nodes connected by explicit relations. Parent roll-up must not count the same DD obligation twice.",
   "preseal_checks": {
     "final_target_authority_rows_reviewed": true,
     "fr_fin_01_22_extracted_gap_free": true,
@@ -42,8 +39,8 @@
     "dd_001_040_triaged": true,
     "dd_001_040_parent_relations_materialized": true,
     "dd_001_040_companion_missing_design_closed": true,
+    "delta_authority_admission_complete": true,
     "global_discovery_saturation_proven": false,
-    "delta_authority_admission_complete": false,
     "full_authority_manifest_population_complete": false,
     "raw_content_sha256_complete": false,
     "unreviewed_authority_source_count_zero": false,
@@ -57,14 +54,13 @@
     "prior_epoch_0003_candidate_action": "STALE_DO_NOT_PROMOTE",
     "epoch_0003_action": "REGENERATE_ONLY_AFTER_POST_DELTA_AUTHORITY_AND_DISCOVERY_SATURATION_QUALIFICATION",
     "fr_fin_action": "ADD_AS_EXPLICIT_CURRENT_PRODUCT_DESIGN_REQUIREMENTS",
-    "delta_action": "ADMIT_AND_MATERIALIZE_DD_001_040_WITHOUT_DOUBLE_COUNT",
+    "delta_action": "DD_001_040_AUTHORITY_ADMISSION_MATERIALIZED_AS_CANONICAL_OBLIGATION_NODES_WITH_ANTI_DOUBLE_COUNT",
     "discovery_action": "QUALIFY_DD_040_SATURATION_BEFORE_PRODUCT_DESIGN_SCOPE_COMPLETE_REDECLARATION"
   },
   "blocking_reasons": [
     "GLOBAL_DISCOVERY_SATURATION_NOT_PROVEN",
-    "DELTA_REQUIREMENT_AUTHORITY_ADMISSION_NOT_COMPLETE",
-    "FULL_REQUIREMENT_AUTHORITY_SOURCE_MANIFEST_NOT_COMPLETE",
-    "RAW_CONTENT_SHA256_NOT_COMPLETE",
+    "FULL_REQUIREMENT_AUTHORITY_SOURCE_MANIFEST_NOT_EXECUTED_POST_DELTA",
+    "RAW_CONTENT_SHA256_NOT_EXECUTED_POST_DELTA",
     "AUTHORITY_FILTERED_FULL_RU_GENERATION_AFTER_DELTA_NOT_EXECUTED",
     "APPLICABILITY_AND_GLOBAL_TRACE_REGENERATION_AFTER_DELTA_NOT_EXECUTED",
     "DETERMINISTIC_TWO_RUN_DIGEST_AFTER_DELTA_NOT_PROVEN"
