@@ -1,37 +1,16 @@
 {
-  "type": "ONSURE_REQUIREMENT_AUTHORITY_SOURCE_REVIEW_SEED_V1",
-  "status": "HUMAN_REVIEWED_SEED_NONFINAL",
-  "authority_basis": "The documents themselves explicitly reopen and refine the post-final-target Product Design denominator; this seed classifies source role only and does not claim implementation or Design Lock.",
-  "rows": [
-    {
-      "artifact_path": "docs/master/semantic-assurance/162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md",
-      "git_blob_sha": "34dade6e860213e64e30275a1dafedbd72df82a9",
-      "disposition": "NORMATIVE_REFINEMENT",
-      "review_state": "REVIEWED",
-      "rationale": "Explicit DESIGN_AUTHORITY_REVIEW / NORMATIVE_REFINEMENT that reopens post-final-target Product Design discovery and defines DD-001~024 normative obligations."
-    },
-    {
-      "artifact_path": "docs/master/semantic-assurance/163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md",
-      "git_blob_sha": "4037dd07a836576d075498832d60806707bcf502",
-      "disposition": "NORMATIVE_REFINEMENT",
-      "review_state": "REVIEWED",
-      "rationale": "Normative design refinement materializing owner/object/state/authority/evidence/failure/oracle semantics for DD-001~024."
-    },
-    {
-      "artifact_path": "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md",
-      "git_blob_sha": "f5d8063cbe35f789dc6471930f9ba946ade483f2",
-      "disposition": "NORMATIVE_REFINEMENT",
-      "review_state": "REVIEWED",
-      "rationale": "Post-final-target discovery refinement defining DD-025~040; GLOBAL_DISCOVERY_EXHAUSTED remains false."
-    },
-    {
-      "artifact_path": "docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md",
-      "git_blob_sha": "4f57b48870f83d124f0179586791d4f41c7281b9",
-      "disposition": "NORMATIVE_REFINEMENT",
-      "review_state": "REVIEWED",
-      "rationale": "Design-level closure semantics for DD-025~040 including canonical objects, invalidation, evidence, fixtures and discovery saturation protocol."
-    }
+  "type":"ONSURE_REQUIREMENT_AUTHORITY_SOURCE_REVIEW_SEED_V2",
+  "status":"SOURCE_ROLE_CLASSIFIED_NONFINAL",
+  "review_state_semantics":"REVIEWED means source-role classification reviewed, not human design-authority approval.",
+  "review_provenance":{"review_mode":"GITHUB_DIRECT_DESIGN_RECONCILIATION","human_design_authority_approval":false,"reviewer_principal":null,"review_authority":null,"reviewed_at":null,"approval_receipt_digest":null},
+  "authority_basis":"The source documents explicitly reopen/refine the post-final-target Product Design denominator. This seed classifies source role only; it is not human design-authority approval and does not claim implementation or Design Lock.",
+  "rows":[
+    {"artifact_path":"docs/master/semantic-assurance/162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md","git_blob_sha":"34dade6e860213e64e30275a1dafedbd72df82a9","disposition":"NORMATIVE_REFINEMENT","review_state":"REVIEWED","classification_state":"CLASSIFIED","rationale":"Explicit post-final-target design discovery authority for DD-001~024."},
+    {"artifact_path":"docs/master/semantic-assurance/163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md","git_blob_sha":"4037dd07a836576d075498832d60806707bcf502","disposition":"NORMATIVE_REFINEMENT","review_state":"REVIEWED","classification_state":"CLASSIFIED","rationale":"Companion design materializing DD-001~024 owner/object/state/authority/evidence/failure/oracle semantics."},
+    {"artifact_path":"docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md","git_blob_sha":"f5d8063cbe35f789dc6471930f9ba946ade483f2","disposition":"NORMATIVE_REFINEMENT","review_state":"REVIEWED","classification_state":"CLASSIFIED","rationale":"Post-final-target design discovery authority for DD-025~040; saturation remains unproven."},
+    {"artifact_path":"docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md","git_blob_sha":"4f57b48870f83d124f0179586791d4f41c7281b9","disposition":"NORMATIVE_REFINEMENT","review_state":"REVIEWED","classification_state":"CLASSIFIED","rationale":"Companion design for DD-025~040 including objects/invalidation/evidence/fixtures/oracle semantics."}
   ],
-  "excluded_status_sources": ["docs/master/semantic-assurance/164_EIGHT_STEP_DESIGN_DISCOVERY_TO_CLOSURE_EXECUTION_STATUS.md"],
-  "final_claim_allowed": false
+  "excluded_status_sources":["docs/master/semantic-assurance/164_EIGHT_STEP_DESIGN_DISCOVERY_TO_CLOSURE_EXECUTION_STATUS.md","docs/master/semantic-assurance/167_POST_DELTA_AUTHORITY_EPOCH3_AND_CLOSURE_EXECUTION_PREPARATION.md"],
+  "human_approval_required_for_final_design_authority":true,
+  "final_claim_allowed":false
 }

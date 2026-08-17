@@ -1,51 +1,78 @@
 {
-  "contract": "ONSURE_INDEPENDENT_DESIGN_DISCOVERY_WAVE_INTAKE_V1",
-  "status": "READY_FOR_INDEPENDENT_EXECUTION_NONFINAL",
-  "purpose": "Provide blind, frozen inputs for the two independent zero-new-P0 waves required by DD-040 without allowing the authoring context to self-certify saturation.",
-  "baseline": {
-    "repository": "babyandi/ONSure",
-    "branch": "autopilot/design-closure-mission",
-    "minimum_head_including_dd_001_040": "a0fdecf2aa023af45f842931df6cf71e22015755",
-    "frozen_product_authority": [
+  "contract": "ONSURE_INDEPENDENT_DESIGN_DISCOVERY_WAVE_INTAKE_V2",
+  "status": "READY_FOR_UNCONTAMINATED_FREEZE_NONFINAL",
+  "purpose": "Provide two independent saturation waves with the same exact frozen design baseline while withholding all prior DD and scope-closure conclusions.",
+  "freeze": {
+    "exact_git_tree_sha_required": true,
+    "minimum_head_semantics_forbidden": true,
+    "freeze_receipt": ".onsure/design-discovery/frozen-baseline/freeze-receipt.json",
+    "bundle_root": ".onsure/design-discovery/frozen-baseline/bundle",
+    "generator": "scripts/freeze-independent-design-discovery-baseline.py",
+    "same_tree_sha_required_for_wave_a_b": true,
+    "same_authority_population_digest_required_for_wave_a_b": true
+  },
+  "baseline_source_policy": {
+    "include": [
       "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
       "docs/41_ONSURE_FINAL_TARGET_ARCHITECTURE.md",
       "docs/42_VSCODE_AGENT_AND_GIT_FULL_CHAIN_DESIGN.md",
       "docs/43_FINANCIAL_CONTROL_TRACE_AND_ACCEPTANCE.md",
       "docs/44_UNIFIED_AI_WORK_DEVELOPER_ASSURANCE_DESIGN.md",
-      "docs/master/00_ONSURE_MASTER_DESIGN_SET.md"
+      "docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md",
+      "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+      "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md",
+      "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md",
+      "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
+      "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
+      "docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md",
+      "eligible pre-162 semantic-assurance DESIGN/NORMATIVE documents selected by freeze generator"
     ],
-    "prior_candidate_conclusions_withheld_from_blind_reviewer": [
+    "sanitized_include": [
+      {"path":"docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md","rule":"include sections before '## 9. Final-target delta discovery 결정 추적' only"}
+    ],
+    "exclude": [
+      "docs/master/00_ONSURE_MASTER_DESIGN_SET.md",
+      "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md",
+      "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW.md",
+      "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md",
+      "docs/master/semantic-assurance/128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md",
+      "docs/master/semantic-assurance/160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md",
       "docs/master/semantic-assurance/162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md",
+      "docs/master/semantic-assurance/163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md",
+      "docs/master/semantic-assurance/164_EIGHT_STEP_DESIGN_DISCOVERY_TO_CLOSURE_EXECUTION_STATUS.md",
       "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md",
+      "docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md",
+      "docs/master/semantic-assurance/167_POST_DELTA_AUTHORITY_EPOCH3_AND_CLOSURE_EXECUTION_PREPARATION.md",
       "contracts/design-discovery-delta-triage.final-target.candidate.v1.json",
-      "contracts/design-discovery-delta-triage.waves-2-3.candidate.v1.json"
+      "contracts/design-discovery-delta-triage.waves-2-3.candidate.v1.json",
+      "contracts/post-final-target-dd-001-040-authority-admission.candidate.v1.json",
+      "contracts/post-final-target-dd-to-fr-fin-relation.candidate.v1.json"
     ]
   },
-  "mandatory_lenses": [
-    "CUSTOMER_LIFECYCLE","FAILURE_RECOVERY","ADVERSARIAL","REGULATORY_STANDARD","FINANCIAL_OPERATION","EXTERNAL_DEPENDENCY","ORGANIZATION_GOVERNANCE","META_ASSURANCE","NEGATIVE_SPACE"
+  "contamination_forbidden_patterns": [
+    "DD-[0-9]{3}",
+    "40_POST_FINAL_TARGET_DELTA_OBLIGATIONS",
+    "GLOBAL_DISCOVERY_EXHAUSTED",
+    "PRODUCT_DESIGN_SCOPE_COMPLETE_CANDIDATE",
+    "DISCOVERY_SATURATION_NOT_PROVEN"
   ],
+  "mandatory_lenses": ["CUSTOMER_LIFECYCLE","FAILURE_RECOVERY","ADVERSARIAL","REGULATORY_STANDARD","FINANCIAL_OPERATION","EXTERNAL_DEPENDENCY","ORGANIZATION_GOVERNANCE","META_ASSURANCE","NEGATIVE_SPACE"],
   "waves": [
-    {
-      "wave_id": "INDEPENDENT-SATURATION-A",
-      "reviewer_independence_requirement": "Must not consume prior DD accepted-candidate conclusions; reviewer/model/process lineage must be recorded.",
-      "output_required": ["candidate_ledger","triage_all_candidates","new_p0_count","new_p1_count","lens_coverage","frozen_scope_digest","frozen_authority_digest"]
-    },
-    {
-      "wave_id": "INDEPENDENT-SATURATION-B",
-      "reviewer_independence_requirement": "Independent of primary design authoring context and of wave A conclusions; may consume only the same frozen baseline scope/authority.",
-      "output_required": ["candidate_ledger","triage_all_candidates","new_p0_count","new_p1_count","lens_coverage","frozen_scope_digest","frozen_authority_digest"]
-    }
+    {"wave_id":"INDEPENDENT-SATURATION-A","prior_dd_conclusions_allowed":false,"wave_b_conclusions_allowed":false,"reviewer_lineage_required":true},
+    {"wave_id":"INDEPENDENT-SATURATION-B","prior_dd_conclusions_allowed":false,"wave_a_conclusions_allowed":false,"reviewer_lineage_required":true}
   ],
+  "required_wave_output": ["candidate_ledger","triage_all_candidates","new_p0_count","new_p1_count","lens_coverage","frozen_tree_sha","frozen_authority_digest","reviewer_principal","reviewer_process_lineage","model_or_method_lineage","common_control_attestation","prior_conclusion_exposure_attestation"],
   "acceptance": {
-    "same_scope_digest": true,
-    "same_authority_digest": true,
+    "same_exact_tree_sha": true,
+    "same_exact_authority_digest": true,
     "mandatory_lenses_100_percent_each_wave": true,
     "untriaged_count_each_wave": 0,
     "new_p0_count_each_wave": 0,
     "consecutive_zero_new_p0_waves": 2,
     "p1_novelty_must_satisfy_policy_ceiling": true,
-    "self_authored_same_context_execution_qualifies": false
+    "prior_conclusion_exposure_each_wave": false,
+    "same_authoring_context_self_certification_qualifies": false
   },
-  "on_failure": "Any new P0 reopens discovery, is admitted to Requirement Authority, and resets the consecutive-wave counter.",
+  "on_failure": "Any contamination or new P0 invalidates the wave. New P0 reopens Requirement Authority and resets saturation convergence.",
   "final_claim_allowed": false
 }
