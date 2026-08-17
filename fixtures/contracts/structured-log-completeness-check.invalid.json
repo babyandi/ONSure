@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_STRUCTURED_LOG_COMPLETENESS_CHECK_V1",
+  "subject_id": "trace-2026-08-17-002",
+  "trace_id": "trace-2",
+  "log_entries": [
+    {"entry_id": "entry-2", "entry_trace_id": "trace-other", "operation": "assurance.execution.identity-binding-check", "actor": "actor-1", "duration_ms": 12, "decision": "NON_FINAL", "evidence_ref": "status/entry-2.json"}
+  ],
+  "uncorrelated_entries": ["entry-2"],
+  "invalid_duration_entries": [],
+  "complete": true,
+  "reasons": ["ENTRY_NOT_TRACE_CORRELATED:entry-2"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

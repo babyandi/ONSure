@@ -98,6 +98,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.portfolio.aggregation-completeness-check",
             "assurance.learning.authority-domain-separation-check",
             "assurance.retention.deletion-proof-check",
+            "assurance.observability.structured-log-completeness-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -244,6 +245,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.portfolio.aggregation-completeness-check" -> portfolioAggregationCompletenessCheck(request);
             case "assurance.learning.authority-domain-separation-check" -> learningAuthorityDomainSeparationCheck(request);
             case "assurance.retention.deletion-proof-check" -> retentionDeletionProofCheck(request);
+            case "assurance.observability.structured-log-completeness-check" -> structuredLogCompletenessCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3600,6 +3602,56 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("compliant", compliant);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * structured-log-completeness-check.v1.schema.json real computation (NFR-OBS: "Trace, Metric,
+     * Structured Log... 모든 Workflow Operation 실행이 Trace ID로 상호 연결 가능해야 하며, 최소
+     * 필드셋(operation, actor, duration, decision, evidence_ref)을 포함한 구조화 로그를 남겨야
+     * 한다."). complete is computed for real: uncorrelated_entries is a real equality check --
+     * each log entry's own entry_trace_id must equal the declared trace_id, catching an entry that
+     * was never actually linked into the trace even if it superficially carries a trace_id field.
+     * invalid_duration_entries is a real numeric check -- a negative duration_ms is a structurally
+     * impossible measurement.
+     */
+    private Map<String, Object> structuredLogCompletenessCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String traceId = requiredText(request, "trace_id");
+        JsonNode logEntriesNode = request.path("log_entries");
+        if (!logEntriesNode.isArray() || logEntriesNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("STRUCTURED_LOG_REQUIRES_AT_LEAST_ONE_ENTRY"));
+        }
+
+        List<String> uncorrelated = new ArrayList<>();
+        List<String> invalidDuration = new ArrayList<>();
+        for (JsonNode entry : logEntriesNode) {
+            String entryId = requiredText(entry, "entry_id");
+            String entryTraceId = requiredText(entry, "entry_trace_id");
+            requiredText(entry, "operation");
+            requiredText(entry, "actor");
+            requiredText(entry, "decision");
+            requiredText(entry, "evidence_ref");
+            double durationMs = entry.path("duration_ms").asDouble(Double.NaN);
+            if (Double.isNaN(durationMs)) {
+                return failClosed("HOLD", List.of("STRUCTURED_LOG_DURATION_MISSING:" + entryId));
+            }
+            if (!entryTraceId.equals(traceId)) uncorrelated.add(entryId);
+            if (durationMs < 0) invalidDuration.add(entryId);
+        }
+
+        boolean complete = uncorrelated.isEmpty() && invalidDuration.isEmpty();
+        List<String> reasons = new ArrayList<>();
+        for (String entryId : uncorrelated) reasons.add("ENTRY_NOT_TRACE_CORRELATED:" + entryId);
+        for (String entryId : invalidDuration) reasons.add("ENTRY_DURATION_INVALID:" + entryId);
+
+        Map<String, Object> out = base("STRUCTURED_LOG_COMPLETENESS_CHECK", subjectId);
+        out.put("trace_id", traceId);
+        out.put("uncorrelated_entries", List.copyOf(uncorrelated));
+        out.put("invalid_duration_entries", List.copyOf(invalidDuration));
+        out.put("complete", complete);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", complete ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

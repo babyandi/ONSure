@@ -1219,6 +1219,15 @@
         "fixtures/contracts/retention-deletion-proof-check.invalid.json"
       ],
       "schema": "contracts/retention-deletion-proof-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/structured-log-completeness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/structured-log-completeness-check.invalid.json"
+      ],
+      "schema": "contracts/structured-log-completeness-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

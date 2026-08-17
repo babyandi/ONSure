@@ -2598,6 +2598,43 @@ class SemanticAssuranceV2DispatcherBridgeTest {
         return learningDispatch(bridge, "assurance.retention.deletion-proof-check", body);
     }
 
+    // NFR-OBS Trace-Correlated Structured Logging
+    @Test
+    void structuredLogCompletenessCheckIsCompleteWhenEntriesAreTraceCorrelatedWithValidDurations() throws Exception {
+        Map<?, ?> result = structuredLogCompletenessCheck("trace-1", List.of(logEntry("entry-1", "trace-1", 12)));
+        assertEquals(List.of(), result.get("uncorrelated_entries"));
+        assertEquals(List.of(), result.get("invalid_duration_entries"));
+        assertEquals(true, result.get("complete"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void structuredLogCompletenessCheckDetectsAnEntryNotCorrelatedToTheDeclaredTrace() throws Exception {
+        Map<?, ?> result = structuredLogCompletenessCheck("trace-2", List.of(logEntry("entry-2", "trace-other", 12)));
+        assertEquals(List.of("entry-2"), result.get("uncorrelated_entries"));
+        assertEquals(false, result.get("complete"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void structuredLogCompletenessCheckDetectsANegativeDuration() throws Exception {
+        Map<?, ?> result = structuredLogCompletenessCheck("trace-3", List.of(logEntry("entry-3", "trace-3", -5)));
+        assertEquals(List.of("entry-3"), result.get("invalid_duration_entries"));
+        assertEquals(false, result.get("complete"));
+    }
+
+    private Map<String, Object> logEntry(String entryId, String entryTraceId, double durationMs) {
+        return Map.of(
+                "entry_id", entryId, "entry_trace_id", entryTraceId,
+                "operation", "assurance.execution.identity-binding-check", "actor", "actor-1",
+                "duration_ms", durationMs, "decision", "NON_FINAL", "evidence_ref", "status/" + entryId + ".json");
+    }
+
+    private Map<?, ?> structuredLogCompletenessCheck(String traceId, List<Map<String, Object>> logEntries) throws Exception {
+        return learningDispatch(bridge, "assurance.observability.structured-log-completeness-check", Map.of(
+                "subject_id", "trace-subject-1", "trace_id", traceId, "log_entries", logEntries));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {
