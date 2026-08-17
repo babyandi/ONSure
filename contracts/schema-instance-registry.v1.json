@@ -1174,6 +1174,15 @@
         "fixtures/contracts/execution-identity-binding-check.invalid.json"
       ],
       "schema": "contracts/execution-identity-binding-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/validation-target-manifest-currentness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/validation-target-manifest-currentness-check.invalid.json"
+      ],
+      "schema": "contracts/validation-target-manifest-currentness-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

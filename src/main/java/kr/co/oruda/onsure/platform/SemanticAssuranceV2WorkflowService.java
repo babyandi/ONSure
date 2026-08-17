@@ -93,6 +93,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.corpus.contribution-eligibility-check",
             "assurance.patch.isolation-check",
             "assurance.execution.identity-binding-check",
+            "assurance.currentness.validation-target-manifest-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -234,6 +235,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.corpus.contribution-eligibility-check" -> corpusContributionEligibilityCheck(request);
             case "assurance.patch.isolation-check" -> patchIsolationCheck(request);
             case "assurance.execution.identity-binding-check" -> executionIdentityBindingCheck(request);
+            case "assurance.currentness.validation-target-manifest-check" -> validationTargetManifestCurrentnessCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3311,6 +3313,49 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("bound", bound);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", bound ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final List<String> VALIDATION_TARGET_MANIFEST_AXES = List.of(
+            "source_tree_digest", "dependency_provenance_digest", "runtime_config_digest",
+            "policy_pack_digest", "model_prompt_tool_rag_digest", "external_service_contract_digest",
+            "environment_digest");
+
+    /**
+     * validation-target-manifest-currentness-check.v1.schema.json real computation (FR-META-001
+     * Validation Target Manifest: "모든 Validation은 Source SHA만이 아니라 제품 전체 정체성을 하나의
+     * ValidationTargetManifest로 고정한다... Manifest digest가 바뀌면 기존 Final/Certificate는
+     * STALE 또는 REASSESSMENT_REQUIRED다."). Mirrors providerDriftCheck's established field-by-field
+     * material_change pattern: changed_axes is computed by real per-axis digest comparison between
+     * the manifest locked at certificate issuance and the currently observed manifest, across all 7
+     * named axes (not just source tree) -- any single differing axis forces REASSESSMENT_REQUIRED,
+     * never silently CURRENT.
+     */
+    private Map<String, Object> validationTargetManifestCurrentnessCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String certificateId = requiredText(request, "certificate_id");
+        JsonNode lockedNode = request.path("locked_manifest");
+        JsonNode observedNode = request.path("observed_manifest");
+
+        List<String> changedAxes = new ArrayList<>();
+        for (String axis : VALIDATION_TARGET_MANIFEST_AXES) {
+            String lockedValue = requiredText(lockedNode, axis);
+            String observedValue = requiredText(observedNode, axis);
+            if (!lockedValue.equals(observedValue)) changedAxes.add(axis);
+        }
+
+        boolean manifestChanged = !changedAxes.isEmpty();
+        String certificateState = manifestChanged ? "REASSESSMENT_REQUIRED" : "CURRENT";
+
+        List<String> reasons = new ArrayList<>();
+        for (String axis : changedAxes) reasons.add("MANIFEST_AXIS_CHANGED:" + axis);
+
+        Map<String, Object> out = base("VALIDATION_TARGET_MANIFEST_CURRENTNESS_CHECK", subjectId);
+        out.put("certificate_id", certificateId);
+        out.put("changed_axes", List.copyOf(changedAxes));
+        out.put("certificate_state", certificateState);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", manifestChanged ? "HOLD" : "NON_FINAL");
         return immutable(out);
     }
 

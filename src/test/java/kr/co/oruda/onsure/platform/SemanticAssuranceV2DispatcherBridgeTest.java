@@ -2382,6 +2382,55 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "system_id", "system-1", "program_id", "program-1", "baseline_id", "baseline-1"));
     }
 
+    // FR-META-001 Validation Target Manifest
+    @Test
+    void validationTargetManifestCurrentnessCheckIsCurrentWhenEveryAxisMatches() throws Exception {
+        Map<String, Object> manifest = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg");
+        Map<?, ?> result = validationTargetManifestCurrentnessCheck(manifest, manifest);
+        assertEquals(List.of(), result.get("changed_axes"));
+        assertEquals("CURRENT", result.get("certificate_state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void validationTargetManifestCurrentnessCheckForcesReassessmentOnASingleChangedAxis() throws Exception {
+        Map<String, Object> locked = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg");
+        Map<String, Object> observed = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "CHANGED");
+        Map<?, ?> result = validationTargetManifestCurrentnessCheck(locked, observed);
+        assertEquals(List.of("environment_digest"), result.get("changed_axes"));
+        assertEquals("REASSESSMENT_REQUIRED", result.get("certificate_state"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void validationTargetManifestCurrentnessCheckDoesNotStopAtTheFirstChangedAxis() throws Exception {
+        Map<String, Object> locked = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg");
+        Map<String, Object> observed = manifest("CHANGED-1", "bbb", "ccc", "ddd", "eee", "fff", "CHANGED-2");
+        Map<?, ?> result = validationTargetManifestCurrentnessCheck(locked, observed);
+        assertEquals(List.of("source_tree_digest", "environment_digest"), result.get("changed_axes"));
+    }
+
+    private Map<String, Object> manifest(
+            String sourceTree, String dependencyProvenance, String runtimeConfig, String policyPack,
+            String modelPromptToolRag, String externalServiceContract, String environment) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("source_tree_digest", sourceTree);
+        m.put("dependency_provenance_digest", dependencyProvenance);
+        m.put("runtime_config_digest", runtimeConfig);
+        m.put("policy_pack_digest", policyPack);
+        m.put("model_prompt_tool_rag_digest", modelPromptToolRag);
+        m.put("external_service_contract_digest", externalServiceContract);
+        m.put("environment_digest", environment);
+        return m;
+    }
+
+    private Map<?, ?> validationTargetManifestCurrentnessCheck(
+            Map<String, Object> lockedManifest, Map<String, Object> observedManifest) throws Exception {
+        return learningDispatch(bridge, "assurance.currentness.validation-target-manifest-check", Map.of(
+                "subject_id", "certificate-subject-1", "certificate_id", "cert-1",
+                "locked_manifest", lockedManifest, "observed_manifest", observedManifest));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

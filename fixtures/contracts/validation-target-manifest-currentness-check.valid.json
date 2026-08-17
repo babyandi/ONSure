@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_VALIDATION_TARGET_MANIFEST_CURRENTNESS_CHECK_V1",
+  "subject_id": "certificate-2026-08-17-001",
+  "certificate_id": "cert-1",
+  "locked_manifest": {
+    "source_tree_digest": "sha256:aaa",
+    "dependency_provenance_digest": "sha256:bbb",
+    "runtime_config_digest": "sha256:ccc",
+    "policy_pack_digest": "sha256:ddd",
+    "model_prompt_tool_rag_digest": "sha256:eee",
+    "external_service_contract_digest": "sha256:fff",
+    "environment_digest": "sha256:ggg"
+  },
+  "observed_manifest": {
+    "source_tree_digest": "sha256:aaa",
+    "dependency_provenance_digest": "sha256:bbb",
+    "runtime_config_digest": "sha256:ccc",
+    "policy_pack_digest": "sha256:ddd",
+    "model_prompt_tool_rag_digest": "sha256:eee",
+    "external_service_contract_digest": "sha256:fff",
+    "environment_digest": "sha256:ggg"
+  },
+  "changed_axes": [],
+  "certificate_state": "CURRENT",
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
