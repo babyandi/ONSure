@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_EXECUTION_IDENTITY_BINDING_CHECK_V1",
+  "subject_id": "execution-2026-08-17-002",
+  "execution_id": "exec-2",
+  "organization_id": "org-a",
+  "product_id": "product-1",
+  "channel_id": "vscode",
+  "execution_license_id": "license-2",
+  "license_bound_organization_id": "org-b",
+  "system_id": "system-1",
+  "program_id": "program-1",
+  "baseline_id": "baseline-1",
+  "license_organization_consistent": false,
+  "bound": true,
+  "reasons": ["LICENSE_ORGANIZATION_MISMATCH:org-b!=org-a"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

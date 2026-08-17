@@ -2356,6 +2356,32 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "patch_branch_name", patchBranchName, "protected_branch_names", protectedBranchNames));
     }
 
+    // FR-COM-001 Execution Identity Binding
+    @Test
+    void executionIdentityBindingCheckIsBoundWhenLicenseOrganizationMatches() throws Exception {
+        Map<?, ?> result = executionIdentityBindingCheck("org-a", "org-a");
+        assertEquals(true, result.get("license_organization_consistent"));
+        assertEquals(true, result.get("bound"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void executionIdentityBindingCheckDetectsACrossOrganizationLicense() throws Exception {
+        Map<?, ?> result = executionIdentityBindingCheck("org-a", "org-b");
+        assertEquals(false, result.get("license_organization_consistent"));
+        assertEquals(false, result.get("bound"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("LICENSE_ORGANIZATION_MISMATCH:org-b!=org-a"));
+    }
+
+    private Map<?, ?> executionIdentityBindingCheck(String organizationId, String licenseBoundOrganizationId) throws Exception {
+        return learningDispatch(bridge, "assurance.execution.identity-binding-check", Map.of(
+                "subject_id", "execution-subject-1", "execution_id", "exec-1",
+                "organization_id", organizationId, "product_id", "product-1", "channel_id", "vscode",
+                "execution_license_id", "license-1", "license_bound_organization_id", licenseBoundOrganizationId,
+                "system_id", "system-1", "program_id", "program-1", "baseline_id", "baseline-1"));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

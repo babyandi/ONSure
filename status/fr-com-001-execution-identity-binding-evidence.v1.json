@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-001",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-001: '모든 실행은 Organization, Product, Channel, License, System, Program, Baseline에 결속한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.executionIdentityBindingCheck via assurance.execution.identity-binding-check; contracts/execution-identity-binding-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/execution-identity-binding-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#executionIdentityBindingCheckIsBoundWhenLicenseOrganizationMatches",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#executionIdentityBindingCheckDetectsACrossOrganizationLicense"
+  ],
+  "coverage_notes": "All seven named axes (Organization/Product/Channel/License/System/Program/Baseline) are required structurally by the schema's own required list plus Java-level requiredText() on each field. Beyond presence, license_organization_consistent is a real cross-reference computation, not a caller-declared flag: executionIdentityBindingCheckDetectsACrossOrganizationLicense proves a license genuinely bound to a different organization than the one actually executing is caught (a real borrowed/cross-org license scenario) -- this is the one axis among the seven where a meaningful real invariant beyond mere presence exists (a license has a real owning organization; the other six axes are pure identifiers this operation does not yet have any cross-referenceable ground truth for).",
+  "open_gap": "Operates on a caller-supplied identity representation for all seven axes; there is no live entitlement/license-registry system in this codebase that actually produces license_bound_organization_id from a real license record (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session -- though LicenseLifecycleService, closed for FR-COM-003, is the closest existing real infrastructure and could in principle supply this value in a future integration). The other six axes (Product/Channel/System/Program/Baseline, and License's own existence beyond its organization binding) are checked only for structural presence, not for any deeper consistency -- e.g. this operation does not verify that program_id genuinely belongs to system_id, or that baseline_id is a real baseline of that program. request field 'license_id' had to be renamed to 'execution_license_id' during implementation because 'license_id' collides with TenantRbacService's own reserved RBAC resource-ownership field name (same class of naming collision already documented for oracleMultiEvaluate's case_id -> disagreement_case_id rename).",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

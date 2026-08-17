@@ -92,6 +92,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.currentness.verified-deployed-running-check",
             "assurance.corpus.contribution-eligibility-check",
             "assurance.patch.isolation-check",
+            "assurance.execution.identity-binding-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -232,6 +233,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.currentness.verified-deployed-running-check" -> verifiedDeployedRunningCurrentnessCheck(request);
             case "assurance.corpus.contribution-eligibility-check" -> corpusContributionEligibilityCheck(request);
             case "assurance.patch.isolation-check" -> patchIsolationCheck(request);
+            case "assurance.execution.identity-binding-check" -> executionIdentityBindingCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3264,6 +3266,51 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("isolated", isolated);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", isolated ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * execution-identity-binding-check.v1.schema.json real computation (FR-COM-001: "모든 실행은
+     * Organization, Product, Channel, License, System, Program, Baseline에 결속한다."). All seven
+     * axes are required structurally (requiredText on each). Beyond presence, license_organization
+     * _consistent is a real cross-reference: license_bound_organization_id must equal the
+     * execution's own organization_id -- a license genuinely belongs to exactly one organization,
+     * so a license bound to a different organization than the one actually executing is a real
+     * binding violation (a borrowed/cross-org license), not a caller-declared flag.
+     */
+    private Map<String, Object> executionIdentityBindingCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String executionId = requiredText(request, "execution_id");
+        String organizationId = requiredText(request, "organization_id");
+        String productId = requiredText(request, "product_id");
+        String channelId = requiredText(request, "channel_id");
+        String executionLicenseId = requiredText(request, "execution_license_id");
+        String licenseBoundOrganizationId = requiredText(request, "license_bound_organization_id");
+        String systemId = requiredText(request, "system_id");
+        String programId = requiredText(request, "program_id");
+        String baselineId = requiredText(request, "baseline_id");
+
+        boolean licenseOrganizationConsistent = licenseBoundOrganizationId.equals(organizationId);
+        List<String> reasons = new ArrayList<>();
+        if (!licenseOrganizationConsistent) {
+            reasons.add("LICENSE_ORGANIZATION_MISMATCH:" + licenseBoundOrganizationId + "!=" + organizationId);
+        }
+        boolean bound = licenseOrganizationConsistent;
+
+        Map<String, Object> out = base("EXECUTION_IDENTITY_BINDING_CHECK", subjectId);
+        out.put("execution_id", executionId);
+        out.put("organization_id", organizationId);
+        out.put("product_id", productId);
+        out.put("channel_id", channelId);
+        out.put("execution_license_id", executionLicenseId);
+        out.put("license_bound_organization_id", licenseBoundOrganizationId);
+        out.put("system_id", systemId);
+        out.put("program_id", programId);
+        out.put("baseline_id", baselineId);
+        out.put("license_organization_consistent", licenseOrganizationConsistent);
+        out.put("bound", bound);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", bound ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 
