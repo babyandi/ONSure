@@ -66,6 +66,7 @@ public final class TenantRbacService {
             "assurance.patch.isolation-check",
             "assurance.execution.identity-binding-check",
             "assurance.currentness.validation-target-manifest-check",
+            "assurance.notification.critical-state-change-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",

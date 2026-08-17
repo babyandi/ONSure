@@ -94,6 +94,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.patch.isolation-check",
             "assurance.execution.identity-binding-check",
             "assurance.currentness.validation-target-manifest-check",
+            "assurance.notification.critical-state-change-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -236,6 +237,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.patch.isolation-check" -> patchIsolationCheck(request);
             case "assurance.execution.identity-binding-check" -> executionIdentityBindingCheck(request);
             case "assurance.currentness.validation-target-manifest-check" -> validationTargetManifestCurrentnessCheck(request);
+            case "assurance.notification.critical-state-change-check" -> criticalStateChangeNotificationCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3356,6 +3358,68 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("certificate_state", certificateState);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", manifestChanged ? "HOLD" : "NON_FINAL");
+        return immutable(out);
+    }
+
+    private static final Set<String> NOTIFICATION_CHANNEL_TYPES = Set.of("EMAIL", "WEBHOOK", "VSCODE", "ADMIN_INBOX");
+
+    /**
+     * critical-state-change-notification-check.v1.schema.json real computation (FR-COM-011:
+     * "Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동
+     * 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다."). notified is
+     * computed for real, never trusted from a caller-declared flag: missing_channels is a real
+     * set-difference between required_channels and the channels that actually have a
+     * dispatched=true record. dashboard_independent is a real structural check -- notified can
+     * never be true when dashboard_dependent=true, because active notification by definition
+     * cannot require the customer to first open the Dashboard.
+     */
+    private Map<String, Object> criticalStateChangeNotificationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String entityType = requiredText(request, "entity_type");
+        if (!Set.of("CASE", "FINDING", "LICENSE").contains(entityType)) {
+            return failClosed("HOLD", List.of("NOTIFICATION_ENTITY_TYPE_INVALID:" + entityType));
+        }
+        String entityId = requiredText(request, "entity_id");
+        JsonNode requiredChannelsNode = request.path("required_channels");
+        if (!requiredChannelsNode.isArray() || requiredChannelsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("NOTIFICATION_REQUIRES_AT_LEAST_ONE_REQUIRED_CHANNEL"));
+        }
+        List<String> requiredChannels = stringList(requiredChannelsNode);
+        for (String channel : requiredChannels) {
+            if (!NOTIFICATION_CHANNEL_TYPES.contains(channel)) {
+                return failClosed("HOLD", List.of("NOTIFICATION_CHANNEL_TYPE_INVALID:" + channel));
+            }
+        }
+        boolean dashboardDependent = request.path("dashboard_dependent").asBoolean(false);
+
+        Set<String> dispatchedChannels = new java.util.LinkedHashSet<>();
+        for (JsonNode dispatch : request.path("channel_dispatches")) {
+            String channelType = requiredText(dispatch, "channel_type");
+            if (dispatch.path("dispatched").asBoolean(false)) dispatchedChannels.add(channelType);
+        }
+
+        List<String> missingChannels = new ArrayList<>();
+        for (String channel : requiredChannels) {
+            if (!dispatchedChannels.contains(channel)) missingChannels.add(channel);
+        }
+
+        boolean dashboardIndependent = !dashboardDependent;
+        boolean notified = missingChannels.isEmpty() && dashboardIndependent;
+
+        List<String> reasons = new ArrayList<>();
+        for (String channel : missingChannels) reasons.add("MISSING_CHANNEL:" + channel);
+        if (dashboardDependent) reasons.add("NOTIFICATION_DEPENDS_ON_DASHBOARD_ACCESS");
+
+        Map<String, Object> out = base("CRITICAL_STATE_CHANGE_NOTIFICATION_CHECK", subjectId);
+        out.put("entity_type", entityType);
+        out.put("entity_id", entityId);
+        out.put("required_channels", requiredChannels);
+        out.put("dashboard_dependent", dashboardDependent);
+        out.put("missing_channels", List.copyOf(missingChannels));
+        out.put("dashboard_independent", dashboardIndependent);
+        out.put("notified", notified);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", notified ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

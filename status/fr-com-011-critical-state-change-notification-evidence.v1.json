@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-011",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-011: 'Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.criticalStateChangeNotificationCheck via assurance.notification.critical-state-change-check; contracts/critical-state-change-notification-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/critical-state-change-notification-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#criticalStateChangeNotificationCheckIsNotifiedWhenAllRequiredChannelsDispatchedAndDashboardIndependent",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#criticalStateChangeNotificationCheckDetectsAMissingRequiredChannel",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#criticalStateChangeNotificationCheckNeverCountsAsNotifiedWhenDependentOnDashboardAccess"
+  ],
+  "coverage_notes": "missing_channels is a real set-difference between required_channels and the channels with an actual dispatched=true record, tested directly by criticalStateChangeNotificationCheckDetectsAMissingRequiredChannel. criticalStateChangeNotificationCheckNeverCountsAsNotifiedWhenDependentOnDashboardAccess is the direct test of the requirement's second, independent clause ('고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다') -- even with every required channel genuinely dispatched, dashboard_dependent=true alone still forces notified=false, proving 'active' notification is checked as its own real condition rather than being implied by channel-completeness alone. This closes the requirement's two named sub-rules (channel completeness, dashboard independence) as two structurally distinct, independently-failing gates.",
+  "open_gap": "Operates on a caller-supplied dispatch record (channel_type/dispatched booleans); there is no live Email/Webhook/VS Code/admin-inbox delivery infrastructure in this codebase that actually sends a real notification and produces these dispatch records from real delivery attempts (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session -- explicitly, no real SMTP/webhook call was made or attempted by this closure, by design, to avoid any real external side effect or cost). required_channels and the definition of what counts as a '중요 상태 변화' (critical state change) worthy of triggering this check at all are both caller-supplied inputs this operation does not itself derive from Case/Finding/License state transitions -- there is no live severity-classification trigger wired to Case/Finding/License lifecycle events yet.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1183,6 +1183,15 @@
         "fixtures/contracts/validation-target-manifest-currentness-check.invalid.json"
       ],
       "schema": "contracts/validation-target-manifest-currentness-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/critical-state-change-notification-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/critical-state-change-notification-check.invalid.json"
+      ],
+      "schema": "contracts/critical-state-change-notification-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

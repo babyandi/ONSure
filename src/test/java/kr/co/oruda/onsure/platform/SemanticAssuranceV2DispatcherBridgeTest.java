@@ -2431,6 +2431,52 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "locked_manifest", lockedManifest, "observed_manifest", observedManifest));
     }
 
+    // FR-COM-011 Critical State Change Notification
+    @Test
+    void criticalStateChangeNotificationCheckIsNotifiedWhenAllRequiredChannelsDispatchedAndDashboardIndependent() throws Exception {
+        Map<?, ?> result = criticalStateChangeNotificationCheck(
+                List.of("EMAIL", "ADMIN_INBOX"),
+                List.of(channelDispatch("EMAIL", true), channelDispatch("ADMIN_INBOX", true)),
+                false);
+        assertEquals(List.of(), result.get("missing_channels"));
+        assertEquals(true, result.get("dashboard_independent"));
+        assertEquals(true, result.get("notified"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void criticalStateChangeNotificationCheckDetectsAMissingRequiredChannel() throws Exception {
+        Map<?, ?> result = criticalStateChangeNotificationCheck(
+                List.of("EMAIL", "WEBHOOK"), List.of(channelDispatch("EMAIL", true)), false);
+        assertEquals(List.of("WEBHOOK"), result.get("missing_channels"));
+        assertEquals(false, result.get("notified"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("MISSING_CHANNEL:WEBHOOK"));
+    }
+
+    @Test
+    void criticalStateChangeNotificationCheckNeverCountsAsNotifiedWhenDependentOnDashboardAccess() throws Exception {
+        Map<?, ?> result = criticalStateChangeNotificationCheck(
+                List.of("EMAIL"), List.of(channelDispatch("EMAIL", true)), true);
+        assertEquals(List.of(), result.get("missing_channels"));
+        assertEquals(false, result.get("dashboard_independent"));
+        assertEquals(false, result.get("notified"));
+        assertTrue(((List<?>) result.get("reasons")).contains("NOTIFICATION_DEPENDS_ON_DASHBOARD_ACCESS"));
+    }
+
+    private Map<String, Object> channelDispatch(String channelType, boolean dispatched) {
+        return Map.of("channel_type", channelType, "dispatched", dispatched);
+    }
+
+    private Map<?, ?> criticalStateChangeNotificationCheck(
+            List<String> requiredChannels, List<Map<String, Object>> channelDispatches, boolean dashboardDependent)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.notification.critical-state-change-check", Map.of(
+                "subject_id", "notification-subject-1", "entity_type", "FINDING", "entity_id", "finding-1",
+                "required_channels", requiredChannels, "channel_dispatches", channelDispatches,
+                "dashboard_dependent", dashboardDependent));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {
