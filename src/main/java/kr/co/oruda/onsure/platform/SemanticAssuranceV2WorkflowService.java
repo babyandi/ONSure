@@ -95,6 +95,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.execution.identity-binding-check",
             "assurance.currentness.validation-target-manifest-check",
             "assurance.notification.critical-state-change-check",
+            "assurance.portfolio.aggregation-completeness-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -238,6 +239,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.execution.identity-binding-check" -> executionIdentityBindingCheck(request);
             case "assurance.currentness.validation-target-manifest-check" -> validationTargetManifestCurrentnessCheck(request);
             case "assurance.notification.critical-state-change-check" -> criticalStateChangeNotificationCheck(request);
+            case "assurance.portfolio.aggregation-completeness-check" -> portfolioAggregationCompletenessCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3420,6 +3422,58 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("notified", notified);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", notified ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * portfolio-aggregation-completeness-check.v1.schema.json real computation (FR-COM-010:
+     * "Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한
+     * Portfolio 조회 기능을 제공받는다."). complete is computed for real: missing_entries is a real
+     * set-difference between the organization's declared full System/Program population
+     * (org_systems_programs) and the (system_id, program_id) pairs actually present in
+     * portfolio_entries -- a portfolio view silently omitting even one system/program is caught,
+     * not trusted from a caller-declared completeness flag.
+     */
+    private Map<String, Object> portfolioAggregationCompletenessCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String organizationId = requiredText(request, "organization_id");
+        JsonNode orgSystemsProgramsNode = request.path("org_systems_programs");
+        if (!orgSystemsProgramsNode.isArray() || orgSystemsProgramsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("PORTFOLIO_REQUIRES_AT_LEAST_ONE_SYSTEM_PROGRAM"));
+        }
+
+        Set<String> expectedKeys = new java.util.LinkedHashSet<>();
+        for (JsonNode entry : orgSystemsProgramsNode) {
+            String systemId = requiredText(entry, "system_id");
+            String programId = requiredText(entry, "program_id");
+            expectedKeys.add(systemId + ":" + programId);
+        }
+
+        Set<String> presentKeys = new java.util.LinkedHashSet<>();
+        for (JsonNode entry : request.path("portfolio_entries")) {
+            String systemId = requiredText(entry, "system_id");
+            String programId = requiredText(entry, "program_id");
+            requiredText(entry, "status");
+            requiredText(entry, "risk");
+            requiredText(entry, "usage");
+            presentKeys.add(systemId + ":" + programId);
+        }
+
+        List<String> missingEntries = new ArrayList<>();
+        for (String key : expectedKeys) {
+            if (!presentKeys.contains(key)) missingEntries.add(key);
+        }
+
+        boolean complete = missingEntries.isEmpty();
+        List<String> reasons = new ArrayList<>();
+        for (String key : missingEntries) reasons.add("MISSING_PORTFOLIO_ENTRY:" + key);
+
+        Map<String, Object> out = base("PORTFOLIO_AGGREGATION_COMPLETENESS_CHECK", subjectId);
+        out.put("organization_id", organizationId);
+        out.put("missing_entries", List.copyOf(missingEntries));
+        out.put("complete", complete);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", complete ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

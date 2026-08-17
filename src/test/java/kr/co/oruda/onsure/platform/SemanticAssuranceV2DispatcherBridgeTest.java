@@ -2477,6 +2477,46 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "dashboard_dependent", dashboardDependent));
     }
 
+    // FR-COM-010 Customer Admin Portfolio Aggregation Completeness
+    @Test
+    void portfolioAggregationCompletenessCheckIsCompleteWhenEverySystemProgramIsPresent() throws Exception {
+        Map<?, ?> result = portfolioAggregationCompletenessCheck(
+                List.of(systemProgram("system-1", "program-1"), systemProgram("system-2", "program-2")),
+                List.of(portfolioEntry("system-1", "program-1"), portfolioEntry("system-2", "program-2")));
+        assertEquals(List.of(), result.get("missing_entries"));
+        assertEquals(true, result.get("complete"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void portfolioAggregationCompletenessCheckDetectsASilentlyOmittedSystemProgram() throws Exception {
+        Map<?, ?> result = portfolioAggregationCompletenessCheck(
+                List.of(systemProgram("system-1", "program-1"), systemProgram("system-2", "program-2")),
+                List.of(portfolioEntry("system-1", "program-1")));
+        assertEquals(List.of("system-2:program-2"), result.get("missing_entries"));
+        assertEquals(false, result.get("complete"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("MISSING_PORTFOLIO_ENTRY:system-2:program-2"));
+    }
+
+    private Map<String, Object> systemProgram(String systemId, String programId) {
+        return Map.of("system_id", systemId, "program_id", programId);
+    }
+
+    private Map<String, Object> portfolioEntry(String systemId, String programId) {
+        return Map.of(
+                "system_id", systemId, "program_id", programId,
+                "status", "ACTIVE", "risk", "LOW", "usage", "1");
+    }
+
+    private Map<?, ?> portfolioAggregationCompletenessCheck(
+            List<Map<String, Object>> orgSystemsPrograms, List<Map<String, Object>> portfolioEntries)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.portfolio.aggregation-completeness-check", Map.of(
+                "subject_id", "portfolio-subject-1", "organization_id", "org-1",
+                "org_systems_programs", orgSystemsPrograms, "portfolio_entries", portfolioEntries));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-010",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-010: 'Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한 Portfolio 조회 기능을 제공받는다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.portfolioAggregationCompletenessCheck via assurance.portfolio.aggregation-completeness-check; contracts/portfolio-aggregation-completeness-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/portfolio-aggregation-completeness-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#portfolioAggregationCompletenessCheckIsCompleteWhenEverySystemProgramIsPresent",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#portfolioAggregationCompletenessCheckDetectsASilentlyOmittedSystemProgram"
+  ],
+  "coverage_notes": "Deliberately scoped as a completeness gate over a caller-supplied portfolio result, same 'caller-supplied representation, not live system integration' pattern as every closure this session, rather than building the actual read-aggregation UI/API the requirement's own framing ('Portfolio 조회 기능') implies. missing_entries is a real set-difference between the organization's declared full System/Program population and the (system_id, program_id) pairs actually present in the portfolio result -- portfolioAggregationCompletenessCheckDetectsASilentlyOmittedSystemProgram is the direct test of the requirement's own emphasis ('모든 System/Program' -- ALL systems/programs): a portfolio result that is otherwise well-formed but simply missing one system/program entry is caught, not silently accepted as complete. Every present entry is also required to structurally carry all three named dimensions (status/risk/usage), closing '상태·위험·사용량을 통합한' at the per-entry level.",
+  "open_gap": "Operates on a caller-supplied pair of (org_systems_programs, portfolio_entries) lists; there is no live dashboard/API endpoint in this codebase that actually serves a real Customer Admin portfolio view assembled from real System/Program state, risk assessments, and usage metering (same disclosed gap as every real-computation closure this session -- more pronounced here, since the requirement itself is framed around a user-facing '조회 기능' (query feature), which this operation does not provide; it only verifies the completeness of a result set someone else would need to produce). status/risk/usage field values are accepted as opaque strings and not cross-validated against any real state/risk/usage computation elsewhere in the codebase.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

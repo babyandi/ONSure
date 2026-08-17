@@ -1192,6 +1192,15 @@
         "fixtures/contracts/critical-state-change-notification-check.invalid.json"
       ],
       "schema": "contracts/critical-state-change-notification-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/portfolio-aggregation-completeness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/portfolio-aggregation-completeness-check.invalid.json"
+      ],
+      "schema": "contracts/portfolio-aggregation-completeness-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",
