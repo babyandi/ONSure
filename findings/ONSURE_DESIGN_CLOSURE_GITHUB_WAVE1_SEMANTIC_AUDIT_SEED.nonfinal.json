@@ -1,0 +1,84 @@
+{
+  "type": "ONSURE_DESIGN_CLOSURE_GITHUB_WAVE1_SEMANTIC_AUDIT_SEED",
+  "status": "NON_FINAL",
+  "execution_mode": "GITHUB_DIRECT",
+  "authority_branch": "autopilot/design-closure-mission",
+  "baseline_commit": "f7e129c0f5533c5ee24c20d04e35a8401187b84e",
+  "verified_repository_claims": {
+    "design_work_performed": "50/50",
+    "global_requirement_materialization": "PENDING",
+    "repository_wide_orphan_scan": "PENDING",
+    "exact_design_inventory": "PENDING",
+    "design_lock_execution": "PENDING"
+  },
+  "audit_dimensions": [
+    "CHECKER_ONLY_FALSE_CLOSURE",
+    "SEMANTIC_NARROWING",
+    "CALLER_SUPPLIED_REPRESENTATION_SUBSTITUTION",
+    "STALE_DESIGN",
+    "AUTHORITY_MISMATCH",
+    "WEAK_EVIDENCE",
+    "RUNTIME_CONSUMER_MISSING",
+    "FILE_EXISTENCE_AS_COVERAGE",
+    "ORPHAN_COUNT_AS_COMPLETION"
+  ],
+  "initial_findings": [
+    {
+      "id": "DC-GH-001",
+      "severity": "P0",
+      "state": "OPEN",
+      "finding": "Design work completion is currently separable from actual global Requirement Universe materialization.",
+      "evidence": [
+        "docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md"
+      ],
+      "required_disposition": "Do not calculate authoritative coverage denominator until global Requirement Universe is materialized."
+    },
+    {
+      "id": "DC-GH-002",
+      "severity": "P0",
+      "state": "OPEN",
+      "finding": "Repository-wide orphan=0 has not been executed and therefore cannot be used as a closure fact.",
+      "evidence": [
+        "docs/master/semantic-assurance/100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md",
+        "docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md"
+      ],
+      "required_disposition": "Keep Requirement and contract/operation/event/receipt/test orphan closure OPEN until materialized scanner evidence exists."
+    },
+    {
+      "id": "DC-GH-003",
+      "severity": "P0",
+      "state": "OPEN",
+      "finding": "Exact design population inventory has not been generated, so Design Lock population identity is not yet authoritative.",
+      "evidence": [
+        "docs/master/semantic-assurance/100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md",
+        "docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md"
+      ],
+      "required_disposition": "Materialize exact path/content_sha256/git_blob_sha/authority/lifecycle/source_commit population before lock candidate evaluation."
+    },
+    {
+      "id": "DC-GH-004",
+      "severity": "P0",
+      "state": "OPEN",
+      "finding": "Current design documents explicitly cap the state below actual Design Lock.",
+      "evidence": [
+        "docs/master/semantic-assurance/100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md"
+      ],
+      "required_disposition": "Prevent any derived document, metric, PR comment, or checklist from promoting READY_FOR_LOCK_CHECK to LOCK_CANDIDATE or LOCKED without the defined execution evidence."
+    }
+  ],
+  "forbidden_inferences": [
+    "50/50_DESIGN_WORK_PERFORMED=>DESIGN_LOCKED",
+    "DOCUMENT_EXISTS=>SEMANTICALLY_COVERED",
+    "ORPHAN_COUNT_REDUCED=>DESIGN_CLOSED",
+    "CHECKER_PASS=>FULL_PRODUCT_CLOSURE",
+    "SIMILAR_WORDING=>FR_FIN_SATISFIED"
+  ],
+  "next_required_work": [
+    "MATERIALIZE_GLOBAL_REQUIREMENT_UNIVERSE",
+    "TRIAGE_ALL_CANDIDATE_REQUIREMENTS",
+    "MAP_FR_FIN_01_22",
+    "AUDIT_EXISTING_DESIGN_SEMANTICS",
+    "MATERIALIZE_EXACT_DESIGN_INVENTORY"
+  ],
+  "final_claim_allowed": false
+}
