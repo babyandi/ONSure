@@ -1,0 +1,26 @@
+{
+  "type": "ONSURE_CANDIDATE_TRIAGE_FR_FIN_GITHUB_NONFINAL",
+  "status": "PARTIAL_GLOBAL_TRIAGE_FR_FIN_COMPLETE",
+  "authority_refs": [
+    "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
+    "docs/master/semantic-assurance/160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md"
+  ],
+  "disposition_rule": "FR-FIN-01~22 are explicit current Product Design Requirements under the final-target reconciliation. Refinement documents may refine/decompose them but may not silently supersede or erase their parent identity.",
+  "records": [
+    {"id":"FR-FIN-01","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-02","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-03","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-04","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-05","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-06","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-07","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-08","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-09","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-10","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-11","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-12","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-13","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-14","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-15","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-16","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-17","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-18","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-19","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-20","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-21","disposition":"VALID_REQUIREMENT"},{"id":"FR-FIN-22","disposition":"VALID_REQUIREMENT"}
+  ],
+  "summary": {
+    "fr_fin_candidate_count": 22,
+    "fr_fin_reviewed": 22,
+    "fr_fin_unreviewed": 0,
+    "fr_fin_valid_requirement": 22,
+    "global_candidate_triage_percent": null
+  },
+  "global_blockers": [
+    "FULL_CANDIDATE_CORPUS_EXACT_LEDGER_NOT_MATERIALIZED",
+    "POST_RECONCILIATION_REQUIREMENT_EPOCH_NOT_SEALED"
+  ],
+  "highest_claim": "FR_FIN_CANDIDATE_TRIAGE_100_PERCENT_NONFINAL",
+  "global_candidate_triage_complete": false,
+  "final_claim_allowed": false
+}

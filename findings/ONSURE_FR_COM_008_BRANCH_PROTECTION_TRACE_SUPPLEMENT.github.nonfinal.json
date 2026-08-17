@@ -1,0 +1,33 @@
+{
+  "type": "ONSURE_FR_COM_008_BRANCH_PROTECTION_TRACE_SUPPLEMENT_GITHUB_NONFINAL",
+  "status": "CONTRACT_AND_EXTERNAL_BEHAVIOR_BOUND_PARTIAL",
+  "requirement_id": "FR-COM-008",
+  "requirement_source": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+  "contract": "contracts/main-branch-protection.v1.json",
+  "contract_controls": {
+    "pull_request_required": true,
+    "minimum_approvals": 1,
+    "dismiss_stale_approvals": true,
+    "conversation_resolution_required": true,
+    "direct_push_blocked": true,
+    "force_push_blocked": true,
+    "branch_deletion_blocked": true,
+    "administrators_enforced": true,
+    "independent_status_checks_required_before_merge": true
+  },
+  "external_readback": {
+    "repository": "babyandi/ONSure",
+    "pr": 54,
+    "observed_behavior": "PR remains unmerged despite mergeable state because protected-branch approval requirements remain in force; protection was not bypassed.",
+    "evidence_class": "GITHUB_EXTERNAL_BEHAVIOR_READBACK"
+  },
+  "closure_assessment": {
+    "contract_defined": true,
+    "external_behavior_consistent_with_contract": true,
+    "dedicated_negative_fixture_or_runtime_test_found_by_github_code_search": false,
+    "full_requirement_test_evidence_closure": false
+  },
+  "remaining_gap": "Repository-local negative/behavioral test evidence proving each protection control is not available through the current GitHub-only execution path; do not convert external behavior readback into a full test-oracle PASS.",
+  "highest_claim": "FR_COM_008_CONTRACT_EXTERNAL_EVIDENCE_PARTIAL_NONFINAL",
+  "final_claim_allowed": false
+}
