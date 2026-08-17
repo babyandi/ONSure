@@ -114,3 +114,42 @@ Parent: `08_REVIEW_CHECKLIST_OPEN_DECISIONS.md`
 
 ## 10. Delta completion boundary
 DD-001~024는 companion 설계 수준에서 owner/state/evidence/failure/oracle가 정의되었지만, 위 policy decision과 machine contract/API/schema가 materialize되기 전까지 `CONTRACTED` 또는 `QUALIFIED`로 승격하지 않는다.
+
+## 11. Blind Discovery Waves 2~3 결정 추적
+`165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md`와 `166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md`에서 DD-025~040을 추가했다.
+
+### 11.1 P0 policy/authority 결정 필요
+- DD-025 regulation effective-date/transition grace/supersession authority
+- DD-026 applicability-context high-impact delta threshold 및 requalification authority
+- DD-028 Black-box 필수검증 미관측 dimension별 claim ceiling
+- DD-029 third-party target authorization delegation/expiry/revocation floor
+- DD-030 M&A/split/merge tenant transfer dual-control 및 authority rebinding rule
+- DD-031 residency/sovereignty failover 허용 region/key/subprocessor policy
+- DD-032 vendor/model/service EOL replacement semantic-equivalence qualification floor
+- DD-033 crypto algorithm deprecation/migration/renewed-anchor policy
+- DD-035 privileged support/admin intervention materiality와 automatic requalification trigger
+- DD-036 independence common-control/common-knowledge disqualifier set
+- DD-038 production financial-effect test 허용 operation set, ceiling, abort/reconciliation authority
+- DD-040 discovery saturation novelty ceiling, blind-wave independence, invalidation trigger
+
+### 11.2 P1 policy/profile 결정 필요
+- DD-027 business calendar source/override/cutoff governance
+- DD-034 external audit/regulator disclosure/redaction/custody profile
+- DD-037 long-horizon evidence parser/schema support horizon and migration policy
+- DD-039 observation coverage minimum/sampling-loss ceiling for OPERATING_EFFECTIVELY
+
+### 11.3 추가 고정 불변식
+- 규제/적용성 context가 material하게 바뀌면 기존 CURRENT claim을 자동 승계하지 않는다.
+- Black-box 접근제약을 위험 없음 또는 PASS 근거로 사용하지 않는다.
+- 조직 이름/tenant id 변경만으로 authority/evidence lineage를 승계하지 않는다.
+- 서비스 DR 성공을 residency/sovereignty PASS로 승격하지 않는다.
+- provider/model EOL 후 alias/API 호환만으로 semantic equivalence를 주장하지 않는다.
+- deprecated crypto profile을 strongest-current로 계속 표시하지 않는다.
+- privileged manual change 후 dependent CLEAN/qualification을 자동 승계하지 않는다.
+- 서로 다른 계정만으로 independence/four-eyes를 충족했다고 보지 않는다.
+- bytes가 남아 있다는 이유만으로 장기 Evidence가 independently verifiable하다고 주장하지 않는다.
+- telemetry gap이 있는 기간의 zero-error observation을 operating-effectiveness PASS로 승격하지 않는다.
+- discovery saturation은 문서 수나 한 번의 fresh review가 아니라 `design-discovery-saturation.candidate.v1.json`의 독립 반복 게이트로만 후보화한다.
+
+## 12. Discovery 종료 경계
+현재 Wave 1에서 24건, Wave 2~3에서 16건의 신규 P0/P1 delta가 발견됐다. 따라서 `GLOBAL_DISCOVERY_EXHAUSTED=false`다. 최소 연속 2개 독립 discovery wave에서 신규 P0=0을 증명하기 전에는 Product Design Scope Complete를 재선언하지 않는다.
