@@ -1,0 +1,16 @@
+{
+  "contract": "ONSURE_RETENTION_DELETION_PROOF_CHECK_V1",
+  "subject_id": "case-2026-08-17-001",
+  "service_case_id": "case-1",
+  "deletion_requested_at": "2026-08-01T00:00:00Z",
+  "retention_period_days": 30,
+  "deletion_receipt_present": true,
+  "deletion_receipt_issued_at": "2026-08-15T00:00:00Z",
+  "retention_state": "DELETED_SIGNED_EXTERNAL_VERIFICATION",
+  "within_retention_period": true,
+  "retention_state_correct": true,
+  "compliant": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -69,6 +69,7 @@ public final class TenantRbacService {
             "assurance.notification.critical-state-change-check",
             "assurance.portfolio.aggregation-completeness-check",
             "assurance.learning.authority-domain-separation-check",
+            "assurance.retention.deletion-proof-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",

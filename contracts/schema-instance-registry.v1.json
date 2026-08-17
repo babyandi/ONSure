@@ -1210,6 +1210,15 @@
         "fixtures/contracts/learning-authority-domain-separation-check.invalid.json"
       ],
       "schema": "contracts/learning-authority-domain-separation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/retention-deletion-proof-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/retention-deletion-proof-check.invalid.json"
+      ],
+      "schema": "contracts/retention-deletion-proof-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

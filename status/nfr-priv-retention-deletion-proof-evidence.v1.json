@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-PRIV",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md NFR-PRIV: '고객별 보존기간과 완전 삭제 증명. 검증: 삭제 요청 후 계약된 보존기간 내 deletion_receipt가 발급되고 retention_state가 DELETED_SIGNED_EXTERNAL_VERIFICATION으로 전이해야 한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.retentionDeletionProofCheck via assurance.retention.deletion-proof-check; contracts/retention-deletion-proof-check.v1.schema.json (NEW). Complements the pre-existing ServiceCaseLifecycleService.recordDeletion (real signed-external-verification-receipt-gated deletion, legal-hold blocking, already implemented before this closure) by adding the retention-period timing check the requirement itself names but recordDeletion did not enforce.",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/retention-deletion-proof-check.v1.schema.json",
+    "src/main/java/kr/co/oruda/onsure/platform/ServiceCaseLifecycleService.java (recordDeletion, pre-existing)"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#retentionDeletionProofCheckIsCompliantWhenReceiptIssuedWithinTheRetentionPeriod",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#retentionDeletionProofCheckDetectsAReceiptIssuedAfterTheRetentionDeadline",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#retentionDeletionProofCheckRejectsADeletedStateClaimedWithoutAReceipt"
+  ],
+  "coverage_notes": "retentionDeletionProofCheckDetectsAReceiptIssuedAfterTheRetentionDeadline is the direct test of the requirement's own named timing rule ('보존기간 내'): a genuinely-present receipt issued after deletion_requested_at + retention_period_days is caught by a real Instant comparison, not merely checked for eventual existence. retentionDeletionProofCheckRejectsADeletedStateClaimedWithoutAReceipt mirrors the discipline ServiceCaseLifecycleService.recordDeletion already enforces in real code (deletion can only be recorded with a genuine signed external verification receipt, never a bare status flip) -- this operation independently re-derives the same rule structurally, rather than trusting a caller's retention_state=DELETED_SIGNED_EXTERNAL_VERIFICATION claim at face value.",
+  "open_gap": "Operates on a caller-supplied timestamp/receipt-presence representation; it does not itself call ServiceCaseLifecycleService or read a real case's persisted state (same disclosed 'caller-supplied representation, not live system integration' pattern as every real-computation closure this session, though the underlying deletion-receipt mechanism it verifies against IS real, pre-existing, cryptographically-verified code, unlike most other closures this session which have no live counterpart at all). retention_period_days itself is DRAFT/contract-specific per the design doc's own C10 open decision -- this operation accepts it as a caller-supplied input rather than deriving it from any actual customer contract, since no such contract-terms store exists in this codebase.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

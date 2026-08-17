@@ -97,6 +97,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.notification.critical-state-change-check",
             "assurance.portfolio.aggregation-completeness-check",
             "assurance.learning.authority-domain-separation-check",
+            "assurance.retention.deletion-proof-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -242,6 +243,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.notification.critical-state-change-check" -> criticalStateChangeNotificationCheck(request);
             case "assurance.portfolio.aggregation-completeness-check" -> portfolioAggregationCompletenessCheck(request);
             case "assurance.learning.authority-domain-separation-check" -> learningAuthorityDomainSeparationCheck(request);
+            case "assurance.retention.deletion-proof-check" -> retentionDeletionProofCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3530,6 +3532,74 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("separation_valid", separationValid);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", separationValid ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * retention-deletion-proof-check.v1.schema.json real computation (NFR-PRIV: "고객별 보존기간과
+     * 완전 삭제 증명... 삭제 요청 후 계약된 보존기간 내 deletion_receipt가 발급되고 retention_state가
+     * DELETED_SIGNED_EXTERNAL_VERIFICATION으로 전이해야 한다."). Mirrors releaseQualify's pre-
+     * existing now.isBefore(validUntil) staleness pattern: within_retention_period is a real Instant
+     * comparison -- the receipt must actually have been issued on or before
+     * deletion_requested_at + retention_period_days, not merely eventually. retention_state_correct
+     * is a real structural check: DELETED_SIGNED_EXTERNAL_VERIFICATION can never be compliant
+     * without a genuinely present receipt, mirroring ServiceCaseLifecycleService.recordDeletion's
+     * own pre-existing rule that this state transition requires a real signed external verification
+     * receipt, never a bare caller assertion.
+     */
+    private Map<String, Object> retentionDeletionProofCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String serviceCaseId = requiredText(request, "service_case_id");
+        Instant deletionRequestedAt;
+        try {
+            deletionRequestedAt = Instant.parse(requiredText(request, "deletion_requested_at"));
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("RETENTION_DELETION_REQUESTED_AT_MALFORMED"));
+        }
+        int retentionPeriodDays = request.path("retention_period_days").asInt(-1);
+        if (retentionPeriodDays < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("RETENTION_PERIOD_DAYS_INVALID"));
+        }
+        String retentionState = requiredText(request, "retention_state");
+        if (!Set.of("ACTIVE", "DELETED_SIGNED_EXTERNAL_VERIFICATION").contains(retentionState)) {
+            return failClosed("HOLD", List.of("RETENTION_STATE_INVALID:" + retentionState));
+        }
+
+        JsonNode receiptIssuedAtNode = request.path("deletion_receipt_issued_at");
+        boolean receiptPresent = receiptIssuedAtNode.isTextual() && !receiptIssuedAtNode.asText().isBlank();
+        Instant receiptIssuedAt = null;
+        if (receiptPresent) {
+            try {
+                receiptIssuedAt = Instant.parse(receiptIssuedAtNode.asText());
+            } catch (Exception malformed) {
+                return failClosed("HOLD", List.of("RETENTION_RECEIPT_ISSUED_AT_MALFORMED"));
+            }
+        }
+
+        Instant deadline = deletionRequestedAt.plus(java.time.Duration.ofDays(retentionPeriodDays));
+        boolean withinRetentionPeriod = receiptPresent && !receiptIssuedAt.isAfter(deadline);
+
+        boolean retentionStateCorrect =
+                !"DELETED_SIGNED_EXTERNAL_VERIFICATION".equals(retentionState) || receiptPresent;
+
+        boolean compliant = receiptPresent && withinRetentionPeriod && retentionStateCorrect
+                && "DELETED_SIGNED_EXTERNAL_VERIFICATION".equals(retentionState);
+
+        List<String> reasons = new ArrayList<>();
+        if (!receiptPresent) reasons.add("DELETION_RECEIPT_MISSING");
+        if (receiptPresent && !withinRetentionPeriod) reasons.add("RECEIPT_ISSUED_AFTER_RETENTION_DEADLINE");
+        if (!retentionStateCorrect) reasons.add("RETENTION_STATE_CLAIMED_WITHOUT_RECEIPT");
+
+        Map<String, Object> out = base("RETENTION_DELETION_PROOF_CHECK", subjectId);
+        out.put("service_case_id", serviceCaseId);
+        out.put("retention_period_days", retentionPeriodDays);
+        out.put("deletion_receipt_present", receiptPresent);
+        out.put("retention_state", retentionState);
+        out.put("within_retention_period", withinRetentionPeriod);
+        out.put("retention_state_correct", retentionStateCorrect);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

@@ -2554,6 +2554,50 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "decision_authority_domain_scope", authorityDomainScope));
     }
 
+    // NFR-PRIV Retention Period and Complete Deletion Proof
+    @Test
+    void retentionDeletionProofCheckIsCompliantWhenReceiptIssuedWithinTheRetentionPeriod() throws Exception {
+        Map<?, ?> result = retentionDeletionProofCheck(
+                "2026-08-01T00:00:00Z", 30, "2026-08-15T00:00:00Z", "DELETED_SIGNED_EXTERNAL_VERIFICATION");
+        assertEquals(true, result.get("deletion_receipt_present"));
+        assertEquals(true, result.get("within_retention_period"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void retentionDeletionProofCheckDetectsAReceiptIssuedAfterTheRetentionDeadline() throws Exception {
+        Map<?, ?> result = retentionDeletionProofCheck(
+                "2026-08-01T00:00:00Z", 5, "2026-08-15T00:00:00Z", "DELETED_SIGNED_EXTERNAL_VERIFICATION");
+        assertEquals(false, result.get("within_retention_period"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("RECEIPT_ISSUED_AFTER_RETENTION_DEADLINE"));
+    }
+
+    @Test
+    void retentionDeletionProofCheckRejectsADeletedStateClaimedWithoutAReceipt() throws Exception {
+        Map<?, ?> result = retentionDeletionProofCheck(
+                "2026-08-01T00:00:00Z", 30, null, "DELETED_SIGNED_EXTERNAL_VERIFICATION");
+        assertEquals(false, result.get("deletion_receipt_present"));
+        assertEquals(false, result.get("retention_state_correct"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("RETENTION_STATE_CLAIMED_WITHOUT_RECEIPT"));
+    }
+
+    private Map<?, ?> retentionDeletionProofCheck(
+            String deletionRequestedAt, int retentionPeriodDays, String deletionReceiptIssuedAt,
+            String retentionState) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("subject_id", "case-subject-1");
+        body.put("service_case_id", "case-1");
+        body.put("deletion_requested_at", deletionRequestedAt);
+        body.put("retention_period_days", retentionPeriodDays);
+        body.put("deletion_receipt_issued_at", deletionReceiptIssuedAt);
+        body.put("retention_state", retentionState);
+        return learningDispatch(bridge, "assurance.retention.deletion-proof-check", body);
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {
