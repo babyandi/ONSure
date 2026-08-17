@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/idempotency-record.v1.schema.json",
+  "title": "ONSure Idempotency Record v1",
+  "description": "04_ARCHITECTURE_DATA_API_OLICENSE.md SS6: '모든 Write API는 Idempotency-Key를 지원한다.' Persisted by IdempotencyStore.java when a caller supplies an Idempotency-Key header on a workflow request. Scoped to (tenant_id, operation, idempotency_key); request_digest lets a replay with a different request body be detected as a conflict instead of silently returning a response for the wrong request.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "tenant_id", "operation", "idempotency_key", "request_digest",
+    "response", "first_seen_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_IDEMPOTENCY_RECORD_V1"},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "operation": {"type": "string", "minLength": 1},
+    "idempotency_key": {"type": "string", "pattern": "^[A-Za-z0-9_.:-]{8,200}$"},
+    "request_digest": {"$ref": "#/$defs/sha256"},
+    "response": {"type": "object"},
+    "first_seen_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

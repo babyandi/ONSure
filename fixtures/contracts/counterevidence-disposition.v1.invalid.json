@@ -1,0 +1,11 @@
+{
+  "contract": "ONSURE_COUNTEREVIDENCE_DISPOSITION_V1",
+  "disposition_id": "cd-2",
+  "evidence_ref": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "decision_ref": "decision-2",
+  "is_counterevidence": true,
+  "disposition": "DELETED",
+  "deletion_basis": "PRIVACY_PREFERENCE_ONLY",
+  "decided_at": "2026-08-15T00:00:00Z",
+  "final_claim_allowed": false
+}

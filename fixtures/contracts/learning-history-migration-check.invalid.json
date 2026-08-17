@@ -1,0 +1,11 @@
+{
+  "contract": "ONSURE_LEARNING_HISTORY_MIGRATION_CHECK_V1",
+  "migration_id": "migration-knowledge-store-v3-to-v4",
+  "subject_id": "learning-registry-financial-fraud",
+  "categories": [
+    {"category": "CANDIDATE_LIFECYCLE", "pre_migration_count": 412, "post_migration_count": 380}
+  ],
+  "decision": "RECONSTRUCTABILITY_PRESERVED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

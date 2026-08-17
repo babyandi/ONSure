@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_USAGE_ATTRIBUTION_CHECK_V1",
+  "subject_id": "execution-2026-08-16-001",
+  "execution_id": "exec-1",
+  "failure_cause": "CUSTOMER_INPUT_ERROR",
+  "claimed_usage_countable": true,
+  "usage_countable": true,
+  "usage_verified": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

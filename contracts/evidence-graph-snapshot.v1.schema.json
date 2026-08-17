@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/evidence-graph-snapshot.v1.schema.json",
+  "title": "ONSure Evidence Graph Snapshot v1",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS5 EvidenceGraphSnapshot. Nodes and edges are two lifecycle-distinct object classes (edges reference nodes, never the reverse) but are versioned together as one immutable graph generation, per 71's own field spec -- not split into separate node/edge contract files.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "evidence_graph_id", "graph_generation", "graph_head_digest",
+    "node_population_digest", "edge_population_digest", "canonical_order_profile",
+    "nodes", "edges", "tenant_id", "created_at", "self_validation_nonfinal",
+    "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EVIDENCE_GRAPH_SNAPSHOT_V1"},
+    "evidence_graph_id": {"type": "string", "minLength": 1},
+    "graph_generation": {"type": "integer", "minimum": 1},
+    "graph_head_digest": {"$ref": "#/$defs/sha256"},
+    "node_population_digest": {"$ref": "#/$defs/sha256"},
+    "edge_population_digest": {"$ref": "#/$defs/sha256"},
+    "canonical_order_profile": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id", "node_type", "content_digest", "origin_class", "tenant_id"],
+        "properties": {
+          "node_id": {"type": "string", "minLength": 1},
+          "node_type": {"type": "string", "minLength": 1},
+          "content_digest": {"$ref": "#/$defs/sha256"},
+          "origin_class": {"enum": ["PRIMARY", "DERIVED", "AGGREGATED"]},
+          "tenant_id": {"type": "string", "minLength": 1},
+          "validity_generation": {"type": "integer", "minimum": 1, "default": 1},
+          "superseded_by_node_id": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["edge_id", "edge_type", "source_node_id", "target_node_id", "source_digest", "target_digest", "rule_id", "evidence_digest"],
+        "properties": {
+          "edge_id": {"type": "string", "minLength": 1},
+          "edge_type": {"enum": ["SUPERSEDES", "INVALIDATES", "REVOKES", "DERIVES_FROM", "AGGREGATES"]},
+          "source_node_id": {"type": "string", "minLength": 1},
+          "target_node_id": {"type": "string", "minLength": 1},
+          "source_digest": {"$ref": "#/$defs/sha256"},
+          "target_digest": {"$ref": "#/$defs/sha256"},
+          "rule_id": {"type": "string", "minLength": 1},
+          "evidence_digest": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

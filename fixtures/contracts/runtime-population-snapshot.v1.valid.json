@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_RUNTIME_POPULATION_SNAPSHOT_V1",
+  "population_id": "RPS::neutral-001::0001",
+  "deployment_revision_id": "DR::neutral-001::0001",
+  "exact_runtime_instance_ids": [
+    "RI::neutral-001::pod-a",
+    "RI::neutral-001::pod-b"
+  ],
+  "runtime_population_digest": "5dacbf20049e3072efc73c4c1282071668591e73c76dd9f8bd7dd66239d05190",
+  "runtime_population_complete": true,
+  "incomplete_reason": null,
+  "observed_at": "2026-08-14T13:42:45.363817+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

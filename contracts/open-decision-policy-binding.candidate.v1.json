@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_OPEN_DECISION_POLICY_BINDING_CANDIDATE_V1",
+  "status": "CANDIDATE_NOT_ACTIVE",
+  "sources": ["docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md", "docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md"],
+  "precedence": ["FIXED_INVARIANT", "INDUSTRY_PROFILE", "TENANT_CONFIGURABLE_WITH_FLOOR", "CONTRACT_OVERRIDE_WITH_CEILING", "PRODUCT_TIER", "UNRESOLVED_SAFE_FLOOR"],
+  "bindings": [
+    {"decision_id":"C9","topic":"retry_backoff","policy_class":"TENANT_CONFIGURABLE_WITH_FLOOR","safe_floor":"bounded_retry_with_history_and_no_retry_to_stable_pass","unresolved_behavior":"HOLD_ON_EXHAUSTION"},
+    {"decision_id":"C10","topic":"retention_period","policy_class":"CONTRACT_OVERRIDE_WITH_CEILING","safe_floor":"retain_until_contract_policy_is_resolved; deletion requires legal-hold check and receipt","unresolved_behavior":"NO_SILENT_DELETE"},
+    {"decision_id":"C12","topic":"session_timeout_and_concurrent_sessions","policy_class":"INDUSTRY_PROFILE","safe_floor":"short-lived authenticated session plus server-side invalidation; high-risk approval requires fresh authority","unresolved_behavior":"DENY_HIGH_RISK_IF_SESSION_ASSURANCE_UNKNOWN"},
+    {"decision_id":"C14","topic":"confidence_calibration_bias_threshold","policy_class":"TENANT_CONFIGURABLE_WITH_FLOOR","safe_floor":"threshold unresolved cannot create positive confidence upgrade","unresolved_behavior":"NOT_PROVEN_OR_HOLD"},
+    {"decision_id":"C15","topic":"confidence_recalibration_window","policy_class":"TENANT_CONFIGURABLE_WITH_FLOOR","safe_floor":"window unresolved cannot suppress observed calibration drift","unresolved_behavior":"REASSESSMENT_REQUIRED"},
+    {"decision_id":"B4","topic":"privacy_legal_requirements","policy_class":"INDUSTRY_PROFILE","safe_floor":"data minimization, masking, tenant isolation, retention/deletion trace; no legal-compliance claim without approved profile","unresolved_behavior":"NO_COMPLIANCE_CERTIFICATION"},
+    {"decision_id":"B6","topic":"training_data_consent_license","policy_class":"FIXED_INVARIANT","safe_floor":"no training without explicit provenance and consent/license evidence","unresolved_behavior":"BLOCKED"},
+    {"decision_id":"A6","topic":"training_price_gpu_cost","policy_class":"PRODUCT_TIER","safe_floor":"commercial price unresolved does not block technical design but paid execution requires explicit quote/entitlement","unresolved_behavior":"NO_PAID_EXECUTION_WITHOUT_QUOTE"},
+    {"decision_id":"A3","topic":"quote_validity_requote_trigger","policy_class":"TENANT_CONFIGURABLE_WITH_FLOOR","safe_floor":"expired or materially changed scope cannot reuse old quote","unresolved_behavior":"REQUOTE_REQUIRED"},
+    {"decision_id":"A5","topic":"support_sla","policy_class":"CONTRACT_OVERRIDE_WITH_CEILING","safe_floor":"do not advertise an unconfirmed response-time commitment as guaranteed","unresolved_behavior":"SLA_UNCONFIRMED"}
+  ],
+  "fixed_invariants": [
+    "UNKNOWN|NOT_RUN|HOLD|BLOCKED|INCONCLUSIVE cannot be promoted to PASS",
+    "revoked or invalid authority cannot authorize an effect",
+    "exact denominator is required for product/final completeness claims",
+    "break-glass cannot raise assurance strength",
+    "offline uncertainty cannot be rendered as online CURRENT",
+    "policy_source=UNRESOLVED cannot be hidden"
+  ],
+  "receipt_binding_required": ["policy_epoch", "policy_digest", "policy_source", "resolved_value_or_safe_floor", "industry_profile_if_any"],
+  "activation_gate": ["all P0-impact OPEN decisions bound", "override precedence test", "safe-floor weakening negative test", "receipt binding test"]
+}

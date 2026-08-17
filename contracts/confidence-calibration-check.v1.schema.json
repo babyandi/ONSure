@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/confidence-calibration-check.v1.schema.json",
+  "title": "ONSure Confidence Calibration Check v1",
+  "description": "FR-LEARN-026 Confidence Calibration / Abstention: Validator/model의 confidence는 실제 정확도와 calibration되어야 한다. calibration error, reliability curve, Brier/ECE 또는 동등 지표를 기록하고 임계치 미만·OOD·증거부족에서는 ABSTAIN/HOLD를 허용한다. raw model confidence만으로 PASS 금지. A decision_basis of RAW_CONFIDENCE_ONLY, a calibration_error above threshold, or an abstain_triggered claim with no real abstain_reason is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "validator_id", "decision_basis", "calibration_metric_kind", "calibration_error",
+    "calibration_error_threshold", "abstain_triggered", "abstain_reason",
+    "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CONFIDENCE_CALIBRATION_CHECK_V1"},
+    "validator_id": {"type": "string", "minLength": 1},
+    "decision_basis": {"enum": ["RAW_CONFIDENCE_ONLY", "CALIBRATED_CONFIDENCE_WITH_METRIC"]},
+    "calibration_metric_kind": {"enum": ["ECE", "BRIER_SCORE", "RELIABILITY_CURVE"]},
+    "calibration_error": {"type": "number", "minimum": 0, "maximum": 1},
+    "calibration_error_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+    "abstain_triggered": {"type": "boolean"},
+    "abstain_reason": {"enum": ["NONE", "BELOW_THRESHOLD", "OUT_OF_DISTRIBUTION", "INSUFFICIENT_EVIDENCE"]},
+    "decision": {"enum": ["PASS_ALLOWED", "PASS_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

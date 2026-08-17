@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.local/contracts/fr-fin-existing-requirement-semantic-relations.candidate.v1.schema.json",
+  "title": "ONSure FR-FIN-* to Existing Requirement Semantic Relations v1 (candidate, nonfinal)",
+  "description": "160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md / the 2026-08-14 authority-conflict decision requires every FR-FIN-01..22 (FINAL_TARGET authority tree) requirement to be related to the pre-existing docs/master (DEVELOPMENT_DESIGN_REALIZATION_AUTHORITY) granular requirement corpus via REFINES/DECOMPOSES/SATISFIES/OVERLAPS/CONFLICTS -- no existing requirement is deleted, and no FR-FIN requirement's coverage is asserted without a disclosed relation. This is a CLAUDE-proposed analysis pending human confirmation, not itself a design-authority decision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "status", "authority_ref", "relation_semantics", "convention",
+    "relations", "fr_fin_disposition_summary", "conflict_candidates_considered", "conflicts",
+    "double_count_coverage_warning", "proposed_by", "requires_human_confirmation",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_FR_FIN_SEMANTIC_RELATIONS_V1"},
+    "status": {"const": "CLAUDE_PROPOSED_NONFINAL"},
+    "authority_ref": {"type": "string", "minLength": 1},
+    "relation_semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["REFINES", "DECOMPOSES", "SATISFIES", "OVERLAPS", "CONFLICTS"],
+      "properties": {
+        "REFINES": {"type": "string"},
+        "DECOMPOSES": {"type": "string"},
+        "SATISFIES": {"type": "string"},
+        "OVERLAPS": {"type": "string"},
+        "CONFLICTS": {"type": "string"}
+      }
+    },
+    "convention": {"type": "string", "minLength": 1},
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fr_fin_requirement_id", "existing_requirement_ref", "relation_type", "rationale"],
+        "properties": {
+          "fr_fin_requirement_id": {"type": "string", "pattern": "^FR-FIN-\\d+$"},
+          "existing_requirement_ref": {"type": "string", "minLength": 1},
+          "relation_type": {"enum": ["REFINES", "DECOMPOSES", "SATISFIES", "OVERLAPS", "CONFLICTS"]},
+          "rationale": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "fr_fin_disposition_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fr_fin_requirement_id", "fr_fin_heading", "disposition"],
+        "properties": {
+          "fr_fin_requirement_id": {"type": "string", "pattern": "^FR-FIN-\\d+$"},
+          "fr_fin_heading": {"type": "string", "minLength": 1},
+          "disposition": {
+            "enum": [
+              "SUBSTANTIALLY_EXISTING_COVERAGE",
+              "PARTIAL_EXISTING_COVERAGE",
+              "NEW_PRODUCT_SURFACE_NO_EXISTING_COUNTERPART"
+            ]
+          }
+        }
+      }
+    },
+    "conflict_candidates_considered": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fr_fin_requirement_id", "existing_requirement_ref", "apparent_tension", "resolution", "reasoning"],
+        "properties": {
+          "fr_fin_requirement_id": {"type": "string", "pattern": "^FR-FIN-\\d+$"},
+          "existing_requirement_ref": {"type": "string", "minLength": 1},
+          "apparent_tension": {"type": "string", "minLength": 1},
+          "resolution": {"enum": ["NOT_A_CONFLICT", "PROMOTED_TO_CONFLICT_RECORD"]},
+          "reasoning": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "conflicts": {
+      "description": "Per conflict_policy.explicit_conflict_record_required in final-target-product-authority-reconciliation.candidate.v1.json: any CONFLICTS relation is recorded HERE, never resolved by arbitrary precedence (path/recency/text-length/implementation-convenience are all explicitly forbidden). Empty only means no unresolved conflict has been found YET -- it is not evidence that none exists.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fr_fin_requirement_id", "existing_requirement_ref", "conflict_summary", "positive_claim_effect", "resolution_required_from"],
+        "properties": {
+          "fr_fin_requirement_id": {"type": "string", "pattern": "^FR-FIN-\\d+$"},
+          "existing_requirement_ref": {"type": "string", "minLength": 1},
+          "conflict_summary": {"type": "string", "minLength": 1},
+          "positive_claim_effect": {"const": "HOLD"},
+          "resolution_required_from": {"const": "HUMAN_DESIGN_AUTHORITY_DECISION"}
+        }
+      }
+    },
+    "double_count_coverage_warning": {"type": "string", "minLength": 1},
+    "proposed_by": {"const": "CLAUDE_SEMANTIC_ANALYSIS"},
+    "requires_human_confirmation": {"const": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

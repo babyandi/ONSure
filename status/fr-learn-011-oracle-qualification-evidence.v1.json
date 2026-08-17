@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-011",
+  "requirement_summary": "146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md: 'Oracle 자체를 qualification 대상으로 취급해야 한다.' 149 SS E / 148 P0 invariant 4: 'an unqualified or stale oracle must never be used for a final PASS.'",
+  "subject": "SemanticAssuranceV2WorkflowService.oracleQualificationCheck via assurance.oracle.qualification-check; contracts/oracle-qualification.v1.schema.json (pre-existing, previously zero Java consumers)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/oracle-qualification.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#oracleQualificationCheckIsQualifiedWhenIndependentWithFreshUntilInTheFuture",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#oracleQualificationCheckDetectsStalenessEvenWhenCallerStillClaimsQualified",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#oracleQualificationCheckForcesNotQualifiedWhenNotIndependentRegardlessOfClaim",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#oracleQualificationCheckHonorsAnExplicitRevocationAndNeverAllowsFinalPass",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#oracleQualificationCheckIsPendingWhenTimestampsAreIncomplete",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#oracleQualificationCheckRejectsFreshUntilNotAfterQualifiedAt"
+  ],
+  "coverage_notes": "contracts/oracle-qualification.v1.schema.json existed since Batch 5 slice 2 (schema + fixtures materialized, structural allOf requiring independent=true and both timestamps present when result=QUALIFIED) but had zero Java references anywhere -- a validated contract with no runtime that could ever actually reach or refute a QUALIFIED claim, exactly the disclosed 'schema-only, no runtime consumer' gap this closure fixes. What the schema itself cannot express (no $data cross-field date arithmetic in vanilla JSON Schema) is exactly what this operation adds: computed_result is derived against the real server clock, mirroring releaseQualify's pre-existing now.isBefore(validUntil) staleness pattern -- a caller cannot keep asserting QUALIFIED once fresh_until has actually passed. oracleQualificationCheckDetectsStalenessEvenWhenCallerStillClaimsQualified is the direct test of the named P0 case ('UNQUALIFIED/STALE oracle이 final PASS에 사용됨'): a claimed QUALIFIED with an already-passed fresh_until is recomputed to STALE, result_verified=false, usable_for_final_pass=false -- the caller's claim is refuted, not trusted. independent=false forces NOT_QUALIFIED regardless of any claimed result (oracleQualificationCheckForcesNotQualifiedWhenNotIndependentRegardlessOfClaim), and a nonsensical fresh_until<=qualified_at ordering is rejected outright rather than silently accepted. REVOKED is treated as a caller-declared terminal action (not something timestamps alone could ever assert or refute) and is honored as-is, but is never usable_for_final_pass either way.",
+  "open_gap": "Operates on a caller-supplied oracle_id/version/hash/independent/timestamp representation; there is no live oracle registry or benchmark-execution runtime in this codebase that actually runs an oracle against expected_result_authority_ref and produces these fields from real execution (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). oracle_hash and expected_result_authority_ref are accepted and required by the schema but not independently re-verified by this operation -- a caller could supply a genuinely-independent, genuinely-fresh oracle_id paired with a fabricated hash, and this check would not catch that (no content-addressable oracle artifact store exists yet to verify against).",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,170 @@
+{
+  "contract": "ONSURE_SEMANTIC_ASSURANCE_GATE_RECEIPT_V2_CANDIDATE",
+  "gate_receipt_id": "GATE::neutral-001::0001",
+  "target": {
+    "target_id": "target-neutral-001",
+    "source_tree_sha256": "7169e22c4321bfc856a5a7826e04fd020e4aa6fb1c4cb0b729f8cd569a65800a",
+    "artifact_digest": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe"
+  },
+  "epochs": {
+    "scope_epoch": "EPOCH::SCOPE::0001",
+    "requirement_epoch": "EPOCH::REQUIREMENT::0002",
+    "denominator_epoch": "EPOCH::DENOMINATOR::0001",
+    "policy_epoch": "EPOCH::POLICY::0001",
+    "oracle_epoch": "EPOCH::ORACLE::0001",
+    "validator_qualification_epoch": "EPOCH::VQ::0001",
+    "authority_epoch": "AUTH-EPOCH::0001"
+  },
+  "evidence_bundle": {
+    "receipt_id": "AVS::neutral-001::0001",
+    "receipt_type": "ATOMIC_VALIDATION_SNAPSHOT",
+    "receipt_sha256": "4d67bb73243934ccadb8213fae888057250af9a872fe730a0f1f521ad509ed80"
+  },
+  "semantic_capability_closure": {
+    "applicable_count": 14,
+    "passed_count": 14,
+    "blocked_count": 0,
+    "hold_count": 0,
+    "not_run_count": 0,
+    "capability_set_digest": "52363b2a5ad1b4a7dae68d6505247f8e891a590d2546fcce83a8012f92458208",
+    "closure_receipts": [
+      {
+        "capability_id": "SA-01",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "af840635166b77d4f86865878a0d09c807633f307554eb2851f9b743be677462"
+      },
+      {
+        "capability_id": "SA-02",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "31ced559f8c37ec529dc7669bd7be50e3cd99fcfbc4f2c3260f26065c2b8899f"
+      },
+      {
+        "capability_id": "SA-03",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "b21bf1b7d1c7e92f42b5b5441ca34889724268419a8c077c9df81e7d657e2869"
+      },
+      {
+        "capability_id": "SA-04",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "d57f7a6ca7512177b7666705d4b49d0bf23462158da5009cb1f1fc9867b43684"
+      },
+      {
+        "capability_id": "SA-05",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "256a07b28821feace36fef1114b6c930f1c9f4d3198928e04a5c7eaca5219237"
+      },
+      {
+        "capability_id": "SA-06",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "73c462077378e3341b6310b93d8f6ce4686e6a6ff511668662f4dab1d65c4817"
+      },
+      {
+        "capability_id": "SA-07",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "7d6aaf06079f0fc73f9d625f3fc1d146a35425b952b6fb078eefddc30dba6650"
+      },
+      {
+        "capability_id": "SA-08",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "86bc2affae84eb56aba12d4f51541cfa66b478b7d22a2e27b42abb2081362ae5"
+      },
+      {
+        "capability_id": "SA-09",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "63a676e00e400a3ecbba1a9a8169d8fe24a7713aa030fda0cbca050ed8961868"
+      },
+      {
+        "capability_id": "SA-10",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "74f8630f4f37dcb7600f0a212eac80ac55691db9ede75171140473511699593f"
+      },
+      {
+        "capability_id": "SA-11",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "91827dd612e35012677d71593a80dcd7abcd21d6adc7823d0835373e792df3a7"
+      },
+      {
+        "capability_id": "SA-12",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "b63963da5d86c2ff342a71074a0fa339a7850c3d1a1396ca48564bd386cc6d5f"
+      },
+      {
+        "capability_id": "SA-13",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "5aa46033211c3f6c8166e3f724fd9fb564fa24fcf3781fb0519b00326b2cd14f"
+      },
+      {
+        "capability_id": "SA-14",
+        "applicability": "APPLICABLE",
+        "decision": "PASS",
+        "receipt_sha256": "283d555510f5732ac0e47f1c103adc7a1401d4d380c19cb194bfbd83dcef2578"
+      }
+    ]
+  },
+  "freshness_barrier": {
+    "receipt_id": "FFB::neutral-001::0001",
+    "receipt_type": "FINAL_FRESHNESS_BARRIER",
+    "receipt_sha256": "bd2861e38aac14edd2da05cf76a10ea3b8172f5c9dd6f1aad87e2d52ff2b5c27"
+  },
+  "independent_otester": {
+    "receipt_id": "OTESTER::neutral-001::0001",
+    "receipt_sha256": "b3ef0b5f1b0034b27ff52dffcc09066c9cad8045baf0fbf1ce12e18ff7e8ade2",
+    "principal_profile_sha256": "e530678b0be7c203840c1c28d6c361ee6d32fd15a1d3ffbc6a00f186c5cd9b02",
+    "independence_profile_sha256": "14aa406f6a7586c2902fe92476ff8088c040719eb72a861ecc3e44d83d9e478e",
+    "independence_state": "INDEPENDENT",
+    "qualification_state": "QUALIFIED"
+  },
+  "independent_oaudit": {
+    "receipt_id": "OAUDIT::neutral-001::0001",
+    "receipt_sha256": "ef2b68965f8b501579c27a762626db4e0995f57bd862453c90dc9a73b41487bb",
+    "principal_profile_sha256": "5fb3c9511c82890ad33222b948f463d001557355b8c3cef2840463f51f8c0d0f",
+    "independence_profile_sha256": "2a598c5888378641eb510468708ecc56e4280ef110699f6720745ceee2a62c16",
+    "independence_state": "INDEPENDENT",
+    "qualification_state": "QUALIFIED"
+  },
+  "human_acceptance": {
+    "receipt_id": "HAR::neutral-001::0001",
+    "receipt_type": "HUMAN_ACCEPTANCE_RECEIPT",
+    "receipt_sha256": "81d2b121cf8060ad5b07ac94b951ebc5d0cbcf1dbdf30ea6b91e87c1ebc75735"
+  },
+  "open_findings": {
+    "p0_count": 0,
+    "p1_count": 0,
+    "blocking_set_digest": "27092986942a43637b61ffbdc6faaf1693279ae8b6970ced7e3f830800eda5aa"
+  },
+  "revocation": {
+    "state": "CURRENT",
+    "revocation_epoch": "EPOCH::REVOCATION::0001",
+    "current_status_receipt_sha256": "bb8bd305dd3872d6c2f943c1961a38786ffd399229afea639482a059e3c4e794"
+  },
+  "decision": "PASS_FINAL",
+  "reason_codes": [
+    "ALL_CLOSURE_CRITERIA_MET"
+  ],
+  "reconstructed_at": "2026-08-14T13:29:22.254120+00:00",
+  "authority": {
+    "principal_profile_id": "otester-principal-001",
+    "principal_profile_sha256": "feab2420aabe3d6706f09aec08e8945e08554110e6bfd9dd2bf7af1da1aeba70",
+    "authority_epoch": "AUTH-EPOCH::0001"
+  },
+  "signature": {
+    "key_id": "gate-reconstructor-key-001",
+    "algorithm": "Ed25519",
+    "signature": "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
+  },
+  "gate_receipt_sha256": "1e0890c49ba4efa8720cf75714af5a767c48cc965fdb2c0e73df0bd1cece6a47",
+  "final_lock_allowed": false
+}

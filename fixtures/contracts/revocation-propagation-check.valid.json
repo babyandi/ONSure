@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REVOCATION_PROPAGATION_CHECK_V1",
+  "revocation_id": "revocation-2026-08-16-001",
+  "subject_id": "knowledge-asset-1",
+  "targets": [
+    {"target_id": "tenant-a", "environment_type": "STANDARD", "sovereignty_authority_ref": null, "next_sync_window_at": null},
+    {"target_id": "tenant-b-sovereign", "environment_type": "SOVEREIGNTY_RESTRICTED", "sovereignty_authority_ref": "AUTHORITY::SOVEREIGNTY::EU::0001", "next_sync_window_at": null}
+  ],
+  "target_dispositions": [
+    {"target_id": "tenant-a", "disposition": "PROPAGATED_IMMEDIATE"},
+    {"target_id": "tenant-b-sovereign", "disposition": "PROPAGATED_IMMEDIATE"}
+  ],
+  "blocked_target_count": 0,
+  "disclosed_lag_target_count": 0,
+  "propagation_state": "FULLY_PROPAGATED",
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

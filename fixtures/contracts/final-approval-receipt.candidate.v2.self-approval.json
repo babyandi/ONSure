@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_FINAL_APPROVAL_RECEIPT_V2_CANDIDATE",
+  "approval_id": "FAR::neutral-001::0002-SELF-APPROVAL",
+  "gate_receipt_id": "GATE::neutral-001::0001",
+  "gate_receipt_sha256": "1e0890c49ba4efa8720cf75714af5a767c48cc965fdb2c0e73df0bd1cece6a47",
+  "target_id": "target-neutral-001",
+  "target_artifact_sha256": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "principal_profile_id": "otester-principal-001",
+  "principal_profile_sha256": "feab2420aabe3d6706f09aec08e8945e08554110e6bfd9dd2bf7af1da1aeba70",
+  "authority_epoch": "AUTH-EPOCH::0001",
+  "nonce": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+  "approved_at": "2026-08-14T13:28:23.964589+00:00",
+  "expires_at": "2026-08-14T14:28:23.964589+00:00",
+  "decision": "APPROVE",
+  "reason_codes": [
+    "GATE_RECEIPT_PASS_VERIFIED",
+    "INDEPENDENT_RECEIPTS_VERIFIED"
+  ],
+  "signature": {
+    "key_id": "release-approver-key-001",
+    "algorithm": "Ed25519",
+    "signature": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+  },
+  "approval_sha256": "35aebe965e78a0eeccbc2de3513fd1221f29efd2848dfaaa7b67c3731bf5899c",
+  "final_lock_authorized": true
+}

@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-063",
+  "requirement_summary": "Adversarial Benchmark Generation Governance: 자동 생성 adversarial/challenge fixture도 source, generation model, prompt, seed, novelty, contamination, safety review를 기록한다. generator가 자신의 benchmark 정답을 알고 동일 validator를 튜닝하는 폐루프를 금지한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (adversarialBenchmarkGovernanceCheck), assurance.learning.adversarial-benchmark-governance.check v2 operation; contracts/adversarial-benchmark-governance-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "adversarialBenchmarkGovernanceCheckQualifiesAWellFormedIndependentFixture",
+    "adversarialBenchmarkGovernanceCheckBlocksClosedLoopWhenGeneratorEqualsValidator",
+    "adversarialBenchmarkGovernanceCheckBlocksConfirmedContamination",
+    "adversarialBenchmarkGovernanceCheckBlocksIncompleteSafetyReview"
+  ],
+  "coverage_notes": "Three independent real checks, any one forcing FIXTURE_BLOCKED: (1) generator_model_id equal to tuned_validator_model_id -- a cross-field equality check JSON Schema cannot express -- is always blocked, directly closing 'generator가 자신의 benchmark 정답을 알고 동일 validator를 튜닝하는 폐루프를 금지' (a generator that knows its own benchmark's answers must never tune the very validator being benchmarked against it); (2) contamination_status other than CLEAR; (3) safety_review_completed=false. All required recording fields (source, generation model, prompt/seed refs implied by the schema, novelty, contamination, safety review) are captured on every instance regardless of decision, satisfying the requirement's recording obligation even for HUMAN_AUTHORED fixtures.",
+  "open_gap": "The closed-loop check compares generator_model_id to tuned_validator_model_id by direct equality only -- it does not detect INDIRECT closed loops (e.g. a generator model that is itself a fine-tuned derivative of the validator, or vice versa, sharing enough lineage to leak benchmark knowledge without being literally the same model id). Direct-identity detection is real and disclosed as the current scope; lineage-aware detection is a stronger, not-yet-covered follow-on.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

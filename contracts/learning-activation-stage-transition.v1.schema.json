@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/learning-activation-stage-transition.v1.schema.json",
+  "title": "ONSure Learning Activation Stage Transition v1",
+  "description": "FR-LEARN-027 Shadow / Canary Activation: 학습자산의 운영 승격은 최소 APPROVED -> SHADOW -> CANARY -> ACTIVE를 지원한다. SHADOW는 최종 판정에 영향 없이 비교만 수행하고, CANARY는 제한된 tenant/scope/traffic에서만 영향 가능하다. offline qualification만으로 즉시 ACTIVE 금지. Skipping a required stage, a SHADOW stage claiming decision impact, a CANARY stage claiming unrestricted (non-limited) traffic scope, or reaching ACTIVE from offline-only qualification evidence is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "learning_asset_id", "from_stage", "to_stage", "decision_impact",
+    "traffic_scope", "qualification_evidence_kind", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_LEARNING_ACTIVATION_STAGE_TRANSITION_V1"},
+    "learning_asset_id": {"type": "string", "minLength": 1},
+    "from_stage": {"$ref": "#/$defs/stage"},
+    "to_stage": {"$ref": "#/$defs/stage"},
+    "decision_impact": {"enum": ["NONE", "LIMITED", "FULL"]},
+    "traffic_scope": {"enum": ["NONE", "LIMITED_TENANT_SUBSET", "FULL"]},
+    "qualification_evidence_kind": {"enum": ["OFFLINE_ONLY", "ONLINE_SHADOW_COMPARED", "ONLINE_CANARY_OBSERVED"]},
+    "decision": {"enum": ["TRANSITION_ALLOWED", "TRANSITION_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "stage": {"enum": ["APPROVED", "SHADOW", "CANARY", "ACTIVE"]}
+  }
+}

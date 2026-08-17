@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/data-residency-check.v1.schema.json",
+  "title": "ONSure Data Residency Check v1",
+  "description": "FR-LEARN-054 Data Residency / Cross-region Learning: 학습·검증 데이터와 파생 학습자산의 저장·처리·복제 지역을 기록하고 region 이동은 policy/contract/jurisdiction에 따라 제한한다. 허용되지 않은 cross-region 학습·집계를 금지한다. A region outside the declared allowed_regions, or a CROSS_REGION_AGGREGATE operation without explicit separate authorization, is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "asset_id", "asset_type", "operation", "current_region",
+    "allowed_regions", "jurisdiction_basis", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DATA_RESIDENCY_CHECK_V1"},
+    "asset_id": {"type": "string", "minLength": 1},
+    "asset_type": {"enum": ["TRAINING_DATA", "VALIDATION_DATA", "DERIVED_LEARNING_ASSET"]},
+    "operation": {"enum": ["STORE", "PROCESS", "REPLICATE", "CROSS_REGION_AGGREGATE"]},
+    "current_region": {"type": "string", "minLength": 1},
+    "allowed_regions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "cross_region_aggregation_authorized": {"type": "boolean"},
+    "jurisdiction_basis": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["ALLOWED", "FORBIDDEN"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-039",
+  "requirement_summary": "IP / License Provenance: 공개·외부·고객 유래 Pattern/Rule/Fixture/Corpus에도 license, usage right, redistribution/training permission, jurisdiction/contract restriction을 lineage로 결속한다. 권리 불명확 자산은 상위 scope/global promotion 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (ipLicenseProvenanceCheck), assurance.learning.ip-license-provenance.check v2 operation; contracts/ip-license-provenance-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "ipLicenseProvenanceCheckAllowsUpperScopePromotionWithClearLicenseAndTrainingPermission",
+    "ipLicenseProvenanceCheckBlocksUpperScopePromotionWithUnclearLicense",
+    "ipLicenseProvenanceCheckBlocksUpperScopePromotionWithoutTrainingPermission",
+    "ipLicenseProvenanceCheckAllowsLowerScopePromotionRegardlessOfLicenseStatus"
+  ],
+  "coverage_notes": "decision is computed for real: promotion to INDUSTRY or GLOBAL scope requires BOTH license_status=CLEAR AND training_permission_granted=true together -- a cross-field AND condition JSON Schema's per-field enum/boolean validation cannot express. Either one missing forces PROMOTION_BLOCKED, directly closing '권리 불명확 자산은 상위 scope/global promotion 금지' (rights-unclear assets are forbidden from upper-scope/global promotion). Promotion to PRIVATE/ORGANIZATION scope is unaffected by license_status, matching the requirement's own framing that the restriction applies specifically to upper-scope/global promotion.",
+  "open_gap": "The requirement also names 'redistribution permission' and 'jurisdiction/contract restriction' as lineage-bound attributes; redistribution_permission_granted is captured and echoed in the response but does NOT currently gate the decision (only training_permission_granted does) -- disclosed because the requirement's text does not make clear whether redistribution rights alone should also block scope promotion the way training rights do, and a wrong assumption here would be worse than an honest gap. jurisdiction/contract restriction has no dedicated field at all yet.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

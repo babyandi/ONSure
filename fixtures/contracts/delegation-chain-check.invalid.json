@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_DELEGATION_CHAIN_CHECK_V1",
+  "subject_id": "delegation-chain-2026-08-16-002",
+  "edges": [
+    {
+      "from_agent_id": "agent-a", "to_agent_id": "agent-b",
+      "from_agent_authority_scope": ["read_claims"],
+      "delegated_authority_scope": ["read_claims"]
+    },
+    {
+      "from_agent_id": "agent-b", "to_agent_id": "agent-a",
+      "from_agent_authority_scope": ["read_claims"],
+      "delegated_authority_scope": ["read_claims"]
+    }
+  ],
+  "cycle_detected": true,
+  "cycle_path": ["agent-a", "agent-b", "agent-a"],
+  "authority_expansion_detected": false,
+  "authority_expansion_violations": [],
+  "chain_valid": true,
+  "reasons": ["DELEGATION_CYCLE_DETECTED"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

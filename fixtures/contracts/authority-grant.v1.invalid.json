@@ -1,0 +1,30 @@
+{
+  "contract": "ONSURE_AUTHORITY_GRANT_V1",
+  "grant_id": "GRANT::invalid::0001",
+  "principal_id": "org-admin-001",
+  "organization_id": "org-001",
+  "tenant_id": "tenant-001",
+  "allowed_operation_patterns": [
+    "assurance.*",
+    "validation.*"
+  ],
+  "resource_scope": "target-neutral-001",
+  "purpose_scope": [
+    "ASSURANCE_EXECUTION"
+  ],
+  "valid_from": "2026-08-13T14:52:23.449572+00:00",
+  "valid_until": "2026-10-12T14:52:23.449572+00:00",
+  "delegation_depth": 0,
+  "parent_grant_id": "GRANT::root::0001",
+  "issuer_principal_id": "org-root-issuer",
+  "approval_chain": [
+    {
+      "approver_principal_id": "org-root-issuer",
+      "approver_key_id": "key-root-001",
+      "approved_at": "2026-08-13T14:52:23.449572+00:00"
+    }
+  ],
+  "state": "ACTIVE",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

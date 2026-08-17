@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-009",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-META-009 Decision Propagation: '의존 하위 결과의 FAIL/HOLD/BLOCKED/NOT_RUN/INCONCLUSIVE/UNKNOWN은 상위 Claim에 전파한다. Critical dependency가 미검증이면 전체 PASS로 평균화하지 않는다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.decisionPropagationCheck via assurance.decision.propagation-check; contracts/decision-propagation-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/decision-propagation-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#decisionPropagationCheckReachesPassOnlyWhenEveryDependencyIsGenuinelyPass",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#decisionPropagationCheckNeverAveragesAnUnresolvedCriticalDependencyIntoPass",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#decisionPropagationCheckLetsANonCriticalUnresolvedDependencyReachOnlyInconclusive",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#decisionPropagationCheckForcesBlockedAsTheMostSevereEvenWithOtherStatusesPresent",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#decisionPropagationCheckPropagatesFailWhenNoBlockedIsPresent"
+  ],
+  "coverage_notes": "decisionPropagationCheckNeverAveragesAnUnresolvedCriticalDependencyIntoPass is the direct test of the requirement's named negative case: a NOT_RUN critical dependency alongside an otherwise-PASS dependency set forces HOLD, not PASS -- the critical-unresolved branch is checked before the all-PASS branch in the fixed precedence, so there is no code path by which a critical-but-unverified dependency could be silently averaged away. decisionPropagationCheckLetsANonCriticalUnresolvedDependencyReachOnlyInconclusive proves the distinction the requirement draws is real: the identical UNKNOWN status on a non-critical dependency reaches the weaker INCONCLUSIVE rather than HOLD, so criticality genuinely changes the computed outcome rather than being an unused input field. decisionPropagationCheckForcesBlockedAsTheMostSevereEvenWithOtherStatusesPresent proves the precedence ordering itself is real and fixed (BLOCKED outranks FAIL outranks HOLD outranks INCONCLUSIVE), not first-match-in-array-order or caller-selectable.",
+  "open_gap": "Operates on a caller-supplied dependency list (dependency_id/status/critical); there is no live claim-dependency graph runtime in this codebase that actually produces this list from real sub-claim execution results (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). The requirement's broader context (this being about hierarchical Claim/sub-Claim structures within ONSure's own Final/Certificate assembly) is not modeled beyond the single-level dependency-list aggregation this operation performs -- multi-level propagation (a HOLD produced by this operation itself becoming one dependency of a higher-level claim) is not tested, though the schema's own output shape (propagated_status drawn from the same enum family as input dependency status) is designed to compose that way if a caller chose to chain calls.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

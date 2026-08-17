@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/onsure-release-qualification.v1.schema.json",
+  "title": "ONSure Release Qualification v1",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS11. Self-validation receipts alone can never produce QUALIFIED -- independent_verifier_receipts is required and non-empty for state=QUALIFIED. Qualification is scoped per target archetype, not a single global claim. A critical blind spot confirmed via MissedFinding must STALE or REASSESSMENT_REQUIRE the affected archetype's qualification, never leave it silently QUALIFIED.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "release_qualification_id", "onsure_release_digest", "validator_set_digest",
+    "oracle_set_digest", "adapter_set_digest", "fixture_set_digest",
+    "hidden_benchmark_generation", "build_provenance_digest", "sbom_digest",
+    "tcb_manifest_digest", "archetype_qualification_map", "independent_verifier_receipts",
+    "known_limitations", "valid_from", "valid_until", "requalification_triggers", "state",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_RELEASE_QUALIFICATION_V1"},
+    "release_qualification_id": {"type": "string", "minLength": 1},
+    "onsure_release_digest": {"$ref": "#/$defs/sha256"},
+    "validator_set_digest": {"$ref": "#/$defs/sha256"},
+    "oracle_set_digest": {"$ref": "#/$defs/sha256"},
+    "adapter_set_digest": {"$ref": "#/$defs/sha256"},
+    "fixture_set_digest": {"$ref": "#/$defs/sha256"},
+    "hidden_benchmark_generation": {"type": "integer", "minimum": 1},
+    "build_provenance_digest": {"$ref": "#/$defs/sha256"},
+    "sbom_digest": {"$ref": "#/$defs/sha256"},
+    "tcb_manifest_digest": {"$ref": "#/$defs/sha256"},
+    "archetype_qualification_map": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_archetype", "scope_state"],
+        "properties": {
+          "target_archetype": {"type": "string", "minLength": 1},
+          "scope_state": {"enum": ["QUALIFIED", "NOT_QUALIFIED", "STALE", "REASSESSMENT_REQUIRED"]}
+        }
+      }
+    },
+    "independent_verifier_receipts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["receipt_id", "receipt_sha256", "principal_profile_sha256"],
+        "properties": {
+          "receipt_id": {"type": "string", "minLength": 1},
+          "receipt_sha256": {"$ref": "#/$defs/sha256"},
+          "principal_profile_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "known_limitations": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "requalification_triggers": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "state": {"enum": ["NOT_QUALIFIED", "QUALIFICATION_PENDING", "QUALIFIED", "STALE", "REASSESSMENT_REQUIRED", "REVOKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"const": "QUALIFIED"}}},
+      "then": {"properties": {"independent_verifier_receipts": {"minItems": 1}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

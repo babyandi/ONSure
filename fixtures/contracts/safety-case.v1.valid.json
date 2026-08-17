@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_SAFETY_CASE_V1",
+  "safety_case_id": "safety-case-001",
+  "subject_digest": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "hazard_population_digest": "70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b",
+  "safety_requirement_population_digest": "07614cb0e158c8e8c223883f5a9173e813b3c0c302fe8d42a9aaf85300810606",
+  "safety_control_population_digest": "db40281222139a3cc745f264e56507a56bebaeeae19ead23000d88948f9b8faf",
+  "residual_risk_population_digest": "fb3ad22cb997c7e8e3c4d27ffc0bf0dff7acdb7bf03b72b66687ca05c133a47b",
+  "evidence_classes": ["FAULT_SCENARIO_VERIFICATION", "SAFE_STATE_EVIDENCE", "RESIDUAL_RISK_AUTHORITY_ACCEPTANCE"],
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false,
+  "generated_at": "2026-08-15T00:00:00Z"
+}

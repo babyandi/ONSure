@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-061, FR-LEARN-062, FR-LEARN-093",
+  "requirement_summary": "153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md FR-LEARN-061 Reviewer Collusion/Consensus Bias: '여러 Reviewer가 있어도 동일 조직·지시·모델·자료에 과도하게 의존하거나 상호 영향받으면 독립 review로 계산하지 않는다.' FR-LEARN-062 Evaluator Capture/Authority Concentration: '특정 evaluator, team, model, vendor가 candidate qualification·oracle approval·final policy를 과도하게 독점하지 않도록 concentration metric과 SoD를 적용한다. authority capture 위험이 임계치를 넘으면 독립 review를 요구한다.' 157_LEARNING_VALIDATION_BLIND_FINAL_GAP_REVIEW.md FR-LEARN-093 External Evaluation/Red-team Independence. Reconciled together per 161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md contradiction #2's own precedence rule: pool diversity shortfall is never silently relaxed -- REDUCED_INDEPENDENCE_DISCLOSED with the real overlap reason, and FR-LEARN-093-scope (high-risk) decisions HOLD until external reviewers are added.",
+  "subject": "SemanticAssuranceV2WorkflowService.reviewerPoolIndependenceCheck via assurance.reviewer-pool.independence-check; contracts/reviewer-pool-independence-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/reviewer-pool-independence-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#reviewerPoolIndependenceCheckConfirmsIndependenceWhenPoolIsGenuinelyDiverse",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#reviewerPoolIndependenceCheckDisclosesReducedIndependenceAtStandardTierRatherThanSilentlyPassing",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#reviewerPoolIndependenceCheckForcesHoldAtHighRiskTierWhenIndependenceIsReduced",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#reviewerPoolIndependenceCheckDetectsAuthorityCaptureFromConcentrationAloneWithNoCollusion"
+  ],
+  "coverage_notes": "A reviewer pair sharing ANY of org_id/instruction_source_id/model_id/material_source_id is a real collusion-risk pair, computed by pairwise string equality across the whole pool -- mirroring multiAgentCorroborationCheck's pre-existing zero-shared-axes-required-for-independence pattern (SS9.4/9.5), applied here to a reviewer pool instead of an agent pair. authority_capture_risk is a real max(decision_share) vs concentration_threshold comparison (reviewerPoolIndependenceCheckDetectsAuthorityCaptureFromConcentrationAloneWithNoCollusion proves this fires independently of any collusion pair, closing FR-LEARN-062 as a distinct axis from FR-LEARN-061). The core disclosed rule from 161's contradiction binding is directly tested: reviewerPoolIndependenceCheckDisclosesReducedIndependenceAtStandardTierRatherThanSilentlyPassing proves a diversity shortfall at STANDARD risk tier surfaces as REDUCED_INDEPENDENCE_DISCLOSED (not silently reported as fully independent, and not blocked either -- disclosed, per 161's own wording), while reviewerPoolIndependenceCheckForcesHoldAtHighRiskTierWhenIndependenceIsReduced proves the identical pool composition forces HOLD once decision_risk_tier=HIGH_RISK (the FR-LEARN-093 external-evaluation/red-team scope) -- the exact same underlying computation, gated only by risk tier, not two different code paths that could silently drift apart.",
+  "open_gap": "Operates on a caller-supplied reviewer roster (org_id/instruction_source_id/model_id/material_source_id/decision_share); there is no live reviewer-assignment or authority-tracking runtime in this codebase that actually produces these fields from real reviewer activity (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). FR-LEARN-093's own distinct concerns beyond the shared reviewer-pool mechanism (external/red-team-specific engagement scoping, adversarial engagement authorization) are not separately modeled -- this closure treats FR-LEARN-093 only through the HIGH_RISK decision-tier gate 161 itself specifies, not as a fully independent requirement with its own schema.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

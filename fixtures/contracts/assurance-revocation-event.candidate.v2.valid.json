@@ -1,0 +1,36 @@
+{
+  "contract": "ONSURE_ASSURANCE_REVOCATION_EVENT_V2_CANDIDATE",
+  "revocation_id": "REV::neutral-001::0001",
+  "subject": {
+    "subject_type": "CERTIFICATE",
+    "subject_id": "CERT::neutral-001::0001",
+    "subject_sha256": "14b6256a92a1ed5064487ca6aa148284dd6768d70837ebac6df367ea977272b9"
+  },
+  "reason": "Underlying auth-component subject reassessed FAIL after a critical vulnerability disclosure.",
+  "severity": "CRITICAL",
+  "triggering_evidence": [
+    {
+      "id": "IE::neutral-001::cve-disclosure",
+      "sha256": "c273dbe5ef1c0f76faaa42219137ecb1ec9843eed853ad8d62a5c49b531d2660"
+    }
+  ],
+  "authority": {
+    "principal_profile_sha256": "20bd496618275bc15199406cde8b386d6094214260c75aec88af5fd5f99b82a3",
+    "authority_epoch": "AUTH-EPOCH::0001",
+    "purpose": "ASSURANCE_REVOCATION"
+  },
+  "issued_at": "2026-08-14T13:44:18.506758+00:00",
+  "effective_at": "2026-08-14T13:44:18.506758+00:00",
+  "propagation_scope": {
+    "scope_type": "SUBJECT_GRAPH",
+    "scope_digest": "166b3dfc0a65b76cda902f7e2f9f2781ac2cc88b6b7788154a5e64f0306ad21f"
+  },
+  "revocation_epoch": "EPOCH::REVOCATION::0002",
+  "supersedes_revocation_sha256": null,
+  "signature": {
+    "key_id": "revocation-authority-key-001",
+    "algorithm": "Ed25519",
+    "signature": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+  },
+  "revocation_sha256": "c5852544a64e585c09684ba6d758e371998aaaba4442bb0f38aaf78db8382c6e"
+}

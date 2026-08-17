@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/observation-record.v1.schema.json",
+  "title": "ONSure Observation Record v1",
+  "description": "A single datapoint produced by a Collector during an execution, referencing the CollectorHealthRecord (collector-health-record.v1.schema.json) that attests the Collector's state at observation time. authoritative=true asserts this observation may be used as evidence for a positive claim; whether that assertion is actually permitted (the referenced CollectorHealthRecord must be HEALTHY+QUALIFIED+FULL) is a cross-contract invariant, not expressible inside this schema alone -- enforced by tests/test_wave2_execution_evidence.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "observation_id", "collector_health_id", "channel", "observed_at",
+    "content_digest", "authoritative", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_OBSERVATION_RECORD_V1"},
+    "observation_id": {"type": "string", "minLength": 1},
+    "collector_health_id": {"type": "string", "minLength": 1},
+    "channel": {
+      "enum": [
+        "PROCESS_EXIT", "STDOUT_STDERR", "FILESYSTEM_DIFF", "NETWORK_ACTIVITY", "LOG",
+        "METRIC", "TRACE", "SCREEN_OR_UI_STATE", "DATABASE_STATE", "AI_MODEL_RESPONSE",
+        "AI_TOOL_CALL", "AUTHORITY_AND_PERMISSION_EVENT"
+      ]
+    },
+    "observed_at": {"type": "string", "format": "date-time"},
+    "content_digest": {"$ref": "#/$defs/sha256"},
+    "authoritative": {
+      "type": "boolean",
+      "description": "true asserts this observation is usable as evidence for a positive claim. A stale/unqualified/degraded/failed Collector must never produce authoritative=true (cross-contract invariant)."
+    },
+    "non_authoritative_reason": {"type": ["string", "null"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"authoritative": {"const": false}}},
+      "then": {"required": ["non_authoritative_reason"], "properties": {"non_authoritative_reason": {"type": "string", "minLength": 1}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

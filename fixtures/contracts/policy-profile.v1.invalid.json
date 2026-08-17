@@ -1,0 +1,10 @@
+{
+  "contract": "ONSURE_POLICY_PROFILE_V1",
+  "policy_profile_id": "POLICY::STANDARD::0001",
+  "industry_class": "STANDARD",
+  "sod_enforcement": "ENFORCED",
+  "four_eyes_required": false,
+  "created_at": "2026-08-14T00:00:00Z",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

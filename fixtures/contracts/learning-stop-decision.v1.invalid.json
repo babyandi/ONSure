@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_LEARNING_STOP_DECISION_V1",
+  "candidate_id": "candidate-002",
+  "learning_epoch": "EPOCH::LEARNING::0001",
+  "marginal_gain": 0.0001,
+  "regression_risk": "HIGH",
+  "false_positive_cost": "HIGH",
+  "coverage_saturation": 0.99,
+  "budget_state": "EXCEEDED",
+  "decision": "CONTINUE",
+  "rationale_digest": "f350895acb597dcc8a039060a9ce12f0c9c6504f51c2bfc25034f04c4c786675",
+  "decided_at": "2026-08-14T00:00:00Z"
+}

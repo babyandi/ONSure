@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/requirement-semantic-relation.v1.schema.json",
+  "title": "ONSure Requirement Semantic Relation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "relation_id", "canonical_requirement_id", "duplicate_requirement_ids", "relation",
+    "rationale", "source_digests", "decided_by"
+  ],
+  "properties": {
+    "relation_id": {"type": "string", "minLength": 1},
+    "canonical_requirement_id": {"type": "string", "minLength": 1},
+    "duplicate_requirement_ids": {
+      "type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true
+    },
+    "relation": {"enum": ["CANONICAL", "REFINES", "DUPLICATES", "SUPERSEDES", "CONFLICTS_WITH"]},
+    "conflict_class": {
+      "type": ["string", "null"],
+      "enum": [
+        "NAME_ONLY", "ENUM_SEMANTIC", "AUTHORITY_SEMANTIC", "LIFECYCLE_SEMANTIC",
+        "ASSURANCE_STRENGTH", "CURRENTNESS_SEMANTIC", "DENOMINATOR_SEMANTIC", "SECURITY_BOUNDARY", null
+      ]
+    },
+    "severity": {"type": ["string", "null"], "enum": ["P0", "P1", "P2", null]},
+    "rationale": {"type": "string", "minLength": 1},
+    "source_digests": {
+      "type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sha256"}, "uniqueItems": true
+    },
+    "decided_by": {"enum": ["RULE_EXACT_NORMALIZED_MATCH", "HUMAN_REVIEW"]},
+    "reviewed_by": {"type": ["string", "null"]},
+    "decision_time": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"relation": {"const": "CONFLICTS_WITH"}}},
+      "then": {
+        "required": ["conflict_class", "severity"],
+        "properties": {
+          "conflict_class": {
+            "enum": [
+              "NAME_ONLY", "ENUM_SEMANTIC", "AUTHORITY_SEMANTIC", "LIFECYCLE_SEMANTIC",
+              "ASSURANCE_STRENGTH", "CURRENTNESS_SEMANTIC", "DENOMINATOR_SEMANTIC", "SECURITY_BOUNDARY"
+            ]
+          },
+          "severity": {"enum": ["P0", "P1", "P2"]}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"decided_by": {"const": "HUMAN_REVIEW"}}},
+      "then": {"required": ["reviewed_by", "decision_time"]}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

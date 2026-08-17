@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-054",
+  "requirement_summary": "Data Residency / Cross-region Learning: 학습·검증 데이터와 파생 학습자산의 저장·처리·복제 지역을 기록하고 region 이동은 policy/contract/jurisdiction에 따라 제한한다. 허용되지 않은 cross-region 학습·집계를 금지한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (dataResidencyCheck), assurance.learning.data-residency.check v2 operation; contracts/data-residency-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "dataResidencyCheckAllowsStorageWithinAnAllowedRegion",
+    "dataResidencyCheckForbidsARegionOutsideTheAllowedList",
+    "dataResidencyCheckForbidsCrossRegionAggregateWithoutSeparateAuthorization",
+    "dataResidencyCheckAllowsCrossRegionAggregateWhenSeparatelyAuthorized"
+  ],
+  "coverage_notes": "decision is computed for real, not trusted from a caller-declared value: current_region must be an actual member of allowed_regions (JSON Schema can validate each field's shape but cannot check membership of one field's value within another field's array), and CROSS_REGION_AGGREGATE additionally requires an explicit cross_region_aggregation_authorized=true even when the region itself is otherwise allowed for plain STORE/PROCESS/REPLICATE -- directly closing the requirement's own named stricter case ('허용되지 않은 cross-region 학습·집계를 금지한다', unauthorized cross-region learning/aggregation specifically forbidden, distinct from ordinary region-restricted storage).",
+  "open_gap": "The requirement also says region movement must be restricted 'according to policy/contract/jurisdiction' -- this operation accepts a caller-supplied jurisdiction_basis string and allowed_regions list as given, but does not itself independently verify that list against a real, separately-maintained jurisdiction/policy registry (no such registry currently exists in this codebase). The membership/authorization check is real; validating the ALLOWED-REGIONS LIST ITSELF against an authoritative policy source is a disclosed follow-on, not implemented as a stand-in.",
+  "design_reference_gap": "Partially covered: docs/master/semantic-assurance/161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md (this session's own CR-LV-P1-04, Emergency Global Revocation Speed vs Data Residency/Air-gapped Isolation) discusses FR-LEARN-054 in the context of that specific tension, but is not a full independent design elaboration of the requirement's general storage/processing/replication scope.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

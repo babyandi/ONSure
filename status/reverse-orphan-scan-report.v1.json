@@ -1,0 +1,190 @@
+{
+  "authority_ref": "docs/master/semantic-assurance/159_REVERSE_ALIGNMENT_AND_GLOBAL_LOCK_GATE_PREPARATION.md SS1; Autonomous Development Mode standing policy execution queue item 7",
+  "categories": {
+    "contract_schema": {
+      "cites_a_real_requirement_id": 5,
+      "cites_a_stale_nonexistent_id": 1,
+      "cites_no_requirement_id_at_all": 143,
+      "dangling_citations": [
+        {
+          "file": "contracts/fr-fin-existing-requirement-semantic-relations.candidate.v1.schema.json",
+          "stale_ids": [
+            "FR-FIN-01"
+          ]
+        }
+      ],
+      "no_citation_sample": [
+        "contracts/acceptance-certificate.candidate.v1.schema.json",
+        "contracts/ai-population-receipt.v1.schema.json",
+        "contracts/appeal-case.v1.schema.json",
+        "contracts/assurance-certificate.v1.schema.json",
+        "contracts/assurance-composition-snapshot.v1.schema.json",
+        "contracts/assurance-population-denominator.candidate.v2.schema.json",
+        "contracts/assurance-receipt-envelope.candidate.v2.schema.json",
+        "contracts/assurance-revocation-event.candidate.v2.schema.json",
+        "contracts/assurance-status-vocabulary.candidate.v2.schema.json",
+        "contracts/assurance-subject-graph.v1.schema.json",
+        "contracts/atomic-requirement.v1.schema.json",
+        "contracts/atomic-validation-snapshot.v2.schema.json",
+        "contracts/attempt-record.v1.schema.json",
+        "contracts/authority-grant.v1.schema.json",
+        "contracts/authority-principal-profile.candidate.v2.schema.json",
+        "contracts/behavior-observation-receipt.v1.schema.json",
+        "contracts/behavior-profile.v1.schema.json",
+        "contracts/blind-context-manifest.candidate.v2.schema.json",
+        "contracts/build-artifact-identity.v1.schema.json",
+        "contracts/challenge-set-access-disposition.v1.schema.json",
+        "contracts/collector-health-record.v1.schema.json",
+        "contracts/component-contract.v1.schema.json",
+        "contracts/contract-active-selector.candidate.v2.schema.json",
+        "contracts/contract-selector-transition-receipt.candidate.v2.schema.json",
+        "contracts/corpus-integrity-report.v1.schema.json",
+        "contracts/counterevidence-disposition.v1.schema.json",
+        "contracts/coverage-report.candidate.v1.schema.json",
+        "contracts/currentness-snapshot.v1.schema.json",
+        "contracts/decision-time-knowledge-snapshot.v1.schema.json",
+        "contracts/denominator-epoch.v1.schema.json"
+      ],
+      "scanned": 149
+    },
+    "evidence": {
+      "cites_a_real_requirement_id": 16,
+      "cites_a_stale_nonexistent_id": 2,
+      "cites_no_requirement_id_at_all": 14,
+      "dangling_citations": [
+        {
+          "file": "status/final-product-requirement-coverage.v1.json",
+          "stale_ids": [
+            "FR-FIN-01",
+            "FR-FIN-02",
+            "FR-FIN-03",
+            "FR-FIN-04",
+            "FR-FIN-05",
+            "FR-FIN-06",
+            "FR-FIN-07",
+            "FR-FIN-08",
+            "FR-FIN-09",
+            "FR-FIN-10",
+            "FR-FIN-11",
+            "FR-FIN-12",
+            "FR-FIN-13",
+            "FR-FIN-14",
+            "FR-FIN-15",
+            "FR-FIN-16",
+            "FR-FIN-17",
+            "FR-FIN-18",
+            "FR-FIN-19",
+            "FR-FIN-20",
+            "FR-FIN-21",
+            "FR-FIN-22"
+          ]
+        },
+        {
+          "file": "status/global-lock-preflight-report.v1.json",
+          "stale_ids": [
+            "FR-FIN-01"
+          ]
+        }
+      ],
+      "no_citation_sample": [
+        "status/design-capability-coverage.v2.json",
+        "status/design-conflict-register.v1.json",
+        "status/final-acceptance-coverage.v1.json",
+        "status/implementation-matrix.v1.json",
+        "status/implementation-status.v1.json",
+        "status/meta-omission-findings.v1.json",
+        "status/missing-capability-register.v1.json",
+        "status/mvp-acceptance-coverage.v1.json",
+        "status/omission-detection-status.v1.json",
+        "status/post-merge-self-audit.v1.json",
+        "status/product-subrequirement-coverage.v1.json",
+        "status/remaining-work-register.v1.json",
+        "status/reverse-orphan-scan-report.v1.json",
+        "status/verification-status.v1.json"
+      ],
+      "scanned": 31
+    },
+    "test": {
+      "cites_a_real_requirement_id": 7,
+      "cites_a_stale_nonexistent_id": 0,
+      "cites_no_requirement_id_at_all": 119,
+      "dangling_citations": [],
+      "no_citation_sample": [
+        "src/test/java/kr/co/oruda/onsure/assurance/AdversarialFixtureCatalogTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/AdversarialFixtureReportMainTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/AdversarialFixtureRunnerTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptIdCollisionTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ApprovalReceiptVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ConsumedApprovalReceiptVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ContractConsistencyTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/EnvelopeAndBuilderValidatorsTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ExecutionEnvironmentContractTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalEvidenceVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalFinalLockVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalFinalReceiptVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalKeyRegistryAndLedgerTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalKeyRegistryBoundaryTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalPolicySnapshotVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalSecurityGateVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/LocalSourceLockVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/OBuilderEvidenceBindingTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/ProductScopeContractTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/RagLearningMaterialPreparationTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/SecurityPrimitivesTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/SignedReceiptVerifierTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/StateTransitionValidatorTest.java",
+        "src/test/java/kr/co/oruda/onsure/assurance/SupplyChainValidatorTest.java",
+        "src/test/java/kr/co/oruda/onsure/harness/FinalCandidateAndRegressionTest.java",
+        "src/test/java/kr/co/oruda/onsure/harness/OracleEngineTest.java",
+        "src/test/java/kr/co/oruda/onsure/harness/UniversalHarnessContractTest.java",
+        "src/test/java/kr/co/oruda/onsure/harness/UniversalHarnessRunnerTest.java",
+        "src/test/java/kr/co/oruda/onsure/learning/OfficialLearningLedgerTest.java",
+        "src/test/java/kr/co/oruda/onsure/platform/AdversarialConcurrencyAndOutputTest.java"
+      ],
+      "scanned": 126
+    },
+    "test_py": {
+      "cites_a_real_requirement_id": 3,
+      "cites_a_stale_nonexistent_id": 1,
+      "cites_no_requirement_id_at_all": 23,
+      "dangling_citations": [
+        {
+          "file": "tests/test_reverse_orphan_scan.py",
+          "stale_ids": [
+            "FR-ZZZTEST-01"
+          ]
+        }
+      ],
+      "no_citation_sample": [
+        "tests/test_acceptance_runtime_results.py",
+        "tests/test_cause_aware_verification.py",
+        "tests/test_ci_boundary.py",
+        "tests/test_design_baseline_runtime.py",
+        "tests/test_design_expert_competency_framework.py",
+        "tests/test_design_expert_task_bank.py",
+        "tests/test_final_acceptance_execution.py",
+        "tests/test_integrated_run.py",
+        "tests/test_learning_validation_contracts.py",
+        "tests/test_migration_integration_contracts.py",
+        "tests/test_odesign_oui_learning.py",
+        "tests/test_omission_detection_gates.py",
+        "tests/test_onsure_autopilot.py",
+        "tests/test_onsure_verify_run_cli.py",
+        "tests/test_safety_appeal_contracts.py",
+        "tests/test_surefire_summary_normalization.py",
+        "tests/test_verification_claims.py",
+        "tests/test_wave2_execution_evidence.py",
+        "tests/test_wave3_qualification_independence.py",
+        "tests/test_wave4_final_chain.py",
+        "tests/test_wave5_deployment_currentness.py",
+        "tests/test_wave6_composition_certificate.py",
+        "tests/test_wave7_platform_meta.py"
+      ],
+      "scanned": 26
+    }
+  },
+  "contract": "ONSURE_REVERSE_ORPHAN_SCAN_REPORT_V1",
+  "disposition": "DISCLOSURE_ONLY -- a file citing zero requirement IDs is not automatically a defect (shared infrastructure legitimately supports many requirements indirectly without citing any one by ID). cites_a_stale_nonexistent_id is the actionable finding: a file citing a requirement ID that no longer exists in the current Requirement Universe, which should be investigated (renamed/superseded requirement? typo? genuinely removed scope?).",
+  "final_claim_allowed": false,
+  "known_requirement_id_count": 392
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/counterevidence-disposition.v1.schema.json",
+  "title": "ONSure Counterevidence Disposition v1",
+  "description": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md class 8 (Counterevidence vs Privacy), bound per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json LC-P0-008 (EvidenceObservation, CounterevidenceDisposition). '158 SS8: privacy를 이유로 불리한 증거만 제거하지 않는다' -- when is_counterevidence=true, DELETE is reachable only with a real deletion_basis (LEGAL_REQUIREMENT or DATA_SUBJECT_ERASURE_RIGHT), never PRIVACY_PREFERENCE_ONLY alone: that is exactly the named negative case (removing only unfavorable evidence under a privacy pretext), so the schema forbids it as a combination, not just discourages it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "disposition_id", "evidence_ref", "decision_ref",
+    "is_counterevidence", "disposition", "deletion_basis", "decided_at",
+    "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_COUNTEREVIDENCE_DISPOSITION_V1"},
+    "disposition_id": {"type": "string", "minLength": 1},
+    "evidence_ref": {"type": "string", "minLength": 1},
+    "decision_ref": {"type": "string", "minLength": 1},
+    "is_counterevidence": {"type": "boolean"},
+    "disposition": {"enum": ["RETAINED_MINIMIZED", "RETAINED_PSEUDONYMIZED", "RETAINED_FULL", "DELETED"]},
+    "deletion_basis": {"enum": [null, "LEGAL_REQUIREMENT", "DATA_SUBJECT_ERASURE_RIGHT", "PRIVACY_PREFERENCE_ONLY"]},
+    "decided_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"is_counterevidence": {"const": true}, "disposition": {"const": "DELETED"}},
+        "required": ["is_counterevidence", "disposition"]
+      },
+      "then": {
+        "required": ["deletion_basis"],
+        "properties": {"deletion_basis": {"enum": ["LEGAL_REQUIREMENT", "DATA_SUBJECT_ERASURE_RIGHT"]}}
+      }
+    },
+    {
+      "if": {"not": {"properties": {"disposition": {"const": "DELETED"}}, "required": ["disposition"]}},
+      "then": {"properties": {"deletion_basis": {"const": null}}}
+    }
+  ]
+}

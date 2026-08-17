@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/learning-promotion-receipt.v1.schema.json",
+  "title": "ONSure Learning Promotion Receipt v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS B. Records exactly one state transition of a LearningCandidateAsset. 148 P0 invariant 2: a direct CANDIDATE->ACTIVE transition is forbidden -- the allowed_transitions enum below only permits the adjacent-stage transitions a real qualification pipeline goes through (mirroring OfficialLearningLedger's own CANDIDATE->...->APPLIED_LOCK staging), so a receipt claiming to skip straight from CANDIDATE to ACTIVE is a schema-level rejection, not just a runtime check.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "receipt_id", "candidate_id", "from_state", "to_state", "actor_id",
+    "authority_ref", "policy_ref", "evidence_refs", "created_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_LEARNING_PROMOTION_RECEIPT_V1"},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "from_state": {
+      "enum": ["OBSERVED", "CANDIDATE", "EVALUATED", "QUALIFIED", "APPROVED", "ACTIVE"]
+    },
+    "to_state": {
+      "enum": [
+        "CANDIDATE", "EVALUATED", "QUALIFIED", "APPROVED", "ACTIVE",
+        "RETIRED", "REJECTED", "QUARANTINED", "REVOKED", "SUPERSEDED"
+      ]
+    },
+    "actor_id": {"type": "string", "minLength": 1},
+    "authority_ref": {"type": "string", "minLength": 1},
+    "policy_ref": {"type": "string", "minLength": 1},
+    "evidence_refs": {
+      "type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sha256"}, "uniqueItems": true
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "description": "148 P0 invariant 2: candidate creator and final approver being the same actor is enforced by the cross-contract validator against LearningCandidateAsset.created_by, not expressible from this schema in isolation.",
+      "if": {"properties": {"from_state": {"const": "CANDIDATE"}}},
+      "then": {"properties": {"to_state": {"enum": ["EVALUATED", "REJECTED", "QUARANTINED"]}}}
+    },
+    {
+      "if": {"properties": {"to_state": {"const": "ACTIVE"}}},
+      "then": {"properties": {"from_state": {"const": "APPROVED"}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

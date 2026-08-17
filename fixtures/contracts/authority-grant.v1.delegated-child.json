@@ -1,0 +1,29 @@
+{
+  "contract": "ONSURE_AUTHORITY_GRANT_V1",
+  "grant_id": "GRANT::child::0001",
+  "principal_id": "otester-principal-001",
+  "organization_id": "org-001",
+  "tenant_id": "tenant-001",
+  "allowed_operation_patterns": [
+    "assurance.human-accept"
+  ],
+  "resource_scope": "target-neutral-001",
+  "purpose_scope": [
+    "ASSURANCE_EXECUTION"
+  ],
+  "valid_from": "2026-08-13T14:52:23.449572+00:00",
+  "valid_until": "2026-09-12T14:52:23.449572+00:00",
+  "delegation_depth": 1,
+  "parent_grant_id": "GRANT::root::0001",
+  "issuer_principal_id": "org-admin-001",
+  "approval_chain": [
+    {
+      "approver_principal_id": "org-admin-001",
+      "approver_key_id": "key-admin-001",
+      "approved_at": "2026-08-13T14:52:23.449572+00:00"
+    }
+  ],
+  "state": "ACTIVE",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

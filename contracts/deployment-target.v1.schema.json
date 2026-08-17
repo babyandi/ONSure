@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/deployment-target.v1.schema.json",
+  "title": "ONSure Deployment Target v1",
+  "description": "29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md SS3.2. Prerequisite for DeploymentRevision (deployment_target_id foreign key) -- created once per environment/cluster/namespace, unlike a DeploymentRevision which is created per rollout, so kept as a separate object rather than merged.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "deployment_target_id", "organization_id", "tenant_id", "target_id",
+    "environment_class", "provider_type", "region", "cluster_id", "namespace",
+    "target_binding_digest", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DEPLOYMENT_TARGET_V1"},
+    "deployment_target_id": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "environment_class": {"enum": ["DEV", "TEST", "STAGE", "PROD", "DR"]},
+    "provider_type": {"type": "string", "minLength": 1},
+    "region": {"type": "string", "minLength": 1},
+    "cluster_id": {"type": ["string", "null"]},
+    "namespace": {"type": "string", "minLength": 1},
+    "target_binding_digest": {"$ref": "#/$defs/sha256"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

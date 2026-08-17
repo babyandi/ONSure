@@ -1,0 +1,17 @@
+{
+  "relation_id": "REL::95ab362a95593123",
+  "canonical_requirement_id": "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-1-sa-01-evidence-truth::95ab362a95593123dc20",
+  "duplicate_requirement_ids": [
+    "REQ::docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md::17-2-sa-02-requirement-universe-unknown-exclusion::95ab362a95593123dc20"
+  ],
+  "relation": "CONFLICTS_WITH",
+  "conflict_class": null,
+  "severity": null,
+  "rationale": "Exact normalized-text match found by RU-04/RU-05 rule-based dedup.",
+  "source_digests": [
+    "95ab362a95593123dc208a675e6b17e2d6f208fc5e9357f503f7d056dfd63ef2"
+  ],
+  "decided_by": "RULE_EXACT_NORMALIZED_MATCH",
+  "reviewed_by": null,
+  "decision_time": null
+}

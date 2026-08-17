@@ -1,0 +1,1748 @@
+{
+  "baseline_ref": "claude/onsure-development",
+  "contract": "ONSURE_REQUIREMENT_AUTHORITY_SOURCE_MANIFEST_V1",
+  "final_claim_allowed": true,
+  "population_digest": "3ac754788d09f0476003e3b0f547fb9439123f0f69e0ed02abfef56ddf85df61",
+  "review_summary": {
+    "disputed_count": 0,
+    "eligible_count": 21,
+    "ineligible_count": 152,
+    "reviewed_count": 38,
+    "row_count": 173,
+    "unreviewed_count": 135
+  },
+  "rows": [
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/00_ONSURE_MASTER_DESIGN_SET.md",
+      "authority_parent_refs": [],
+      "content_sha256": "863d7d6c4d1401b90e85a13e03cab72ee8f04fe5ed7c048272f8def5302f6841",
+      "rationale": "Master Design Set explicitly defines the integrated design baseline and points to 01~08/08A and semantic-assurance companions.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/01_BUSINESS_PRODUCT_SERVICE_PLAN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "83bc110f135e79165b4475a1224f561463718ca87425e6c7ddfb39b6ae713495",
+      "rationale": "Current business/product/service master design content.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "9e767ccaade196458b35fbdbf5d970df4482a8183f64642708dd57e186ce4b55",
+      "rationale": "Current functional requirement and program specification; contains explicit requirement semantics and design-only flags where applicable.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/03_OREVIEW_CODE_REVIEW_SPECIFICATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "663dd8bb0643d97214742afc7c6cbe63ec8a7ed5eb8c3a0da510029ab8d5d4b0",
+      "rationale": "Current OReview detailed design specification.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/04_ARCHITECTURE_DATA_API_OLICENSE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "de313daa88f292a1317b88e5b2b3626a4a28e41ba1a9fdaa216776f056645db1",
+      "rationale": "Current architecture/data/API/OLicense detailed design.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/05_UI_UX_WORKFLOW_SPECIFICATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "df6dd9b0810b4a243bff8e455d57d1a62cab6224b06cd9cbf42c38f4e62b87b8",
+      "rationale": "Current UI/UX/workflow detailed design with explicit fail-closed UX semantics.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/06A_RUNTIME_AUTHORITY_CORRECTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "be29317a9cd51f4a008ad26122b3d752c0006b4e0226814d4dc1d1eb218b8dfc",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/06_TEST_OPERATION_IMPLEMENTATION_PLAN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "4dc8b41ebdbf1596eb98a728416f2607761da6a5c3be7db2cb44dd25b63a1c47",
+      "rationale": "Current test/operation/implementation design; explicitly separates DESIGN_ONLY operations from registered executable operations.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/07_COMPONENT_MODEL_AND_AI_METHODOLOGY.md",
+      "authority_parent_refs": [],
+      "content_sha256": "fac5c7d1e8037918772b3775c13db57e0efd20041616094117a93ad75f1b3f3c",
+      "rationale": "Current component and AI-agent methodology design.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/08A_ASSURANCE_POLICY_AND_OPEN_DECISION_INTEGRATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6f499d597b26e6ed1c8056841001fed2dd32e02f2932d1e5a393bd40ef9d9f62",
+      "rationale": "DESIGN_ONLY/DRAFT/NON_FINAL companion tracking policy/open decisions; values become active only through explicit policy/authority promotion.",
+      "requirement_source_disposition": "OPEN_DECISION_INPUT_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "MASTER",
+      "artifact_path": "docs/master/08_REVIEW_CHECKLIST_OPEN_DECISIONS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0cfc76f3d48d57ef977342907afaea59d3d240f636a1a838e4a4a1697df308d2",
+      "rationale": "Document explicitly states that it is not design authority and is used to track confirmation progress.",
+      "requirement_source_disposition": "REFERENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/00_INTEGRATION_AND_OWNERSHIP.md",
+      "authority_parent_refs": [],
+      "content_sha256": "7af2d8d10f3574630bc23562ebd33a0cf505ae437b0b37fcba36a30beae78810",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6b927f922098ba149597c47f2d8b8a5cbae956a193a96502a43fa19cbe1c2f77",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/03_REVIEW_SPECIFICATION_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a496bef04f8899c697fa00053c1cc3e328ae00999d8364fbc93d2b23508d58cd",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/04_ARCHITECTURE_DATA_API_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a6eeabe6aa90b3c20bd6086a07ee7ad8a6f2149176ddec83fead143fd1b68ac1",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/05_UI_UX_WORKFLOW_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "2b9d7a1a27bf57c2b55c7591be617b7dc5ce046a0c10854e935589bfd3574d36",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/06_TEST_OPERATION_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "24392f7eb299942a7a30f829910e79d9177604768ce863494ad7cc018502fc6b",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/07_AI_AGENT_METHOD_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "4a37d0264e380c3a3aeba7253c6b765d0172acebdec09d5c3891e3086cf1662a",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/08_OPEN_DECISIONS_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "3db588617570d6434aa86c4873741b7c6f293821060a0a21f28f2b3f85083567",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/09_INDEPENDENT_REVIEW_FINDINGS_INTEGRATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c00da13d65dd3cd2238869a0d02d9538b526da464ae34ac6900f435d18e94f8f",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/100_DESIGN_INVENTORY_LOCK_CLAUDE_DRIFT_CHANGE_QUEUE_AND_FINAL_BASELINE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "ef8f12c84ceffc58bc6f93abda4e4198fbb209b6ce3caf6d1fe971a6bc7a6a63",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a639986c321c7f4cdcf48227ce4dfcb4ebdd36a8aa1dd7a05977edb1b8227e7a",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/102_GLOBAL_REQUIREMENT_MATERIALIZATION_APPLICABILITY_AND_TRACE_EXECUTION_PLAN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e6150a431709cce51ecfaac222a1a843177ee88995e4a75d07fcbd088ec7774f",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/103_GLOBAL_ORPHAN_CONTRADICTION_INVENTORY_AND_BASELINE_LOCK.md",
+      "authority_parent_refs": [],
+      "content_sha256": "319d01ba5bb6421d4dd2ca201aabc013651b8aba49402bbeac6b135e66c43c5a",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/104_DESIGN_BASELINE_CANDIDATE_DECISION_AND_CHANGE_CONTROL.md",
+      "authority_parent_refs": [],
+      "content_sha256": "609469888a5fff843fe3fd9e168c0e95ae85ff50338c132445580c3c84320032",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/105_DESIGN_TO_IMPLEMENTATION_INVENTORY_ALIGNMENT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "be31a08eaeba3f320988f0676cdc5c0c281f046ecb019542f42bfe84b31d992a",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/106_CLAUDE_SEMANTIC_CHANGE_INTAKE_AND_DESIGN_LOCK_CANDIDATE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "2e0b5dedd26c804e71478cca685732f4aefbb0d4f6d89511f28103482d554ff6",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/107_FIFTEEN_STEP_DESIGN_LOCK_CLOSURE_MASTER_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c8f627b547c1e903b9839f819390d65d2a3dfc15b87fa820eb364e32937fe4e6",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/108_GLOBAL_REQUIREMENT_UNIVERSE_EXECUTION_SNAPSHOT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "28e6aebc267f014e13c2983cde686af9c5a1cede2347ca09528e42b40ce890c3",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/109_APPLICABILITY_POPULATION_EXECUTION_SNAPSHOT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "342ecd99f67cf659f3212cbc83c5edbe415f8a91c41ae17868160392815c3936",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/10_FINDING_LEDGER.md",
+      "authority_parent_refs": [],
+      "content_sha256": "2e0a44a42514573e35074cff1ebee78cb261d9e2650a6ca47fa2e04b387d901f",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/110_GLOBAL_TRACE_AND_ORPHAN_EXECUTION_SNAPSHOT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b81f8ef2e539811d00ab7e469fc3502af8b03e0c487e0ef9a53c814da6b4d71a",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/111_CROSS_DESIGN_CONTRADICTION_EXECUTION_SNAPSHOT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1fc784c7e67db56e58f79fd39d01becb040c43746a936296252f7a809aef93dd",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/112_EXACT_DESIGN_ARTIFACT_INVENTORY_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "10f1b014ac009caf59e237473ebc95d388f3d081665ff50f0e9c0f79e113a31b",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/113_BASELINE_MANIFEST_REGENERATION_ATTEMPT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a1999a43b199717f63da7a09dc9f684c15e898246f3a9f7d569776131222bc3e",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/114_DESIGN_LOCK_CHECK_EXECUTION_REPORT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a54192469bd93065541db1abcae59d74edb38c5db6d1907280c90aed3d37fef7",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/115_EIGHT_STEP_DESIGN_LOCK_EXECUTION_MASTER_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "95c7e1de889014776880764e8d7c3aa0d6b0fd1fd73412b295840315650f711d",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/116_FR_COM_TRACE_AND_GLOBAL_REQUIREMENT_REMEDIATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "3731358755e04b8526565a700f6e68656932a91faf0f80fe02471eac51595c73",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/117_APPLICABILITY_CONTEXT_AND_GLOBAL_POPULATION_CLOSURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "23a188a8e5734ee7700cda0624af52dd54eddef9fe91d78fe0930810a1fba808",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/118_GLOBAL_TRACE_ORPHAN_AND_CONTRADICTION_RERUN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1b8b8f42a7cf56b50b02d7daf8c9b45b198d1c23c3972ce56db1cbab8c4450ea",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/119_EXACT_DESIGN_ARTIFACT_POPULATION_AND_DIGEST_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0a445f823c404ce8c19b02771a8239e0b8bfd665b468a7a7d88fe3b8c458bd45",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/11_CONTRACT_UPGRADE_BLUEPRINT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "2401c4c4bb22f85359fdaa5b56bc128409f2adb28b51de04d52876d3d3154dc0",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/120_BASELINE_MANIFEST_REGENERATION_AND_RECONSTRUCTABILITY.md",
+      "authority_parent_refs": [],
+      "content_sha256": "978b9ee4c448abed3a9ad4b00f436599f1bca23df63f849be888f71d316a9bf1",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/121_DESIGN_LOCK_RERUN_AND_CANDIDATE_DECISION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "4f65ffeefb68849c1a790061b51e5e39e8a52b7b47dc0db4768ff5df421765cb",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/122_CLAUDE_REVERSE_ALIGNMENT_SEMANTIC_CHANGE_AND_DESIGN_DRIFT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "679902d1a630d6fa4a30404c7fff294db26b1a0bb30d03c736bbb5b86b56f506",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/123_THIRTY_FIVE_TASK_EXECUTION_MASTER_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "02ddf65f1ff18f8005465bfa4ea7eccadc101d6d56a7789454c2460b04d60748",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/124_POST_35_TASK_EXECUTION_INDEX_AND_AUTHORITY.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0728e9cc024eb263630ac395e87b652255671dd86f38ec930388184aebc80fca",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/125_SEVENTEEN_STEP_POST_HOLD_CLOSURE_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e06d3d6fd0f8b318218668b7afd25285e9cfbdd2d2cfe40421f554f7d402f0d8",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW.md",
+      "authority_parent_refs": [],
+      "content_sha256": "58c09da732458877706b57ab12cee8581738b076a22ce235dcce921c4f5945e0",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e9f5780ffc5f76ac063493a1b938d47f1b8f986171e249b5670a23586fef33ea",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/127_PRODUCT_DESIGN_TO_DESIGN_QA_PHASE_HANDOFF.md",
+      "authority_parent_refs": [],
+      "content_sha256": "12c9cfb082e64966bec77bbb654ad507b5e0195da8b3d1d0b795afc0208fa72c",
+      "rationale": "Status line identifies document as a development handoff.",
+      "requirement_source_disposition": "HANDOFF_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e1ae4c8e2fd509da1b47401f69e81a08d4d3ef3130c0344d528438bb2c2c44ad",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/127_SAFETY_HAZARD_ASSURANCE_ARCHITECTURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "812fbaae2616783d01609a4dbb9b23b15b9e0b8889b5f7a73e2e511f28a73bd6",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "d1141bf97f9b525da5d156b9e2c782936e72edcf4a4227d01065128f82607809",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/129_DESIGN_QA_EIGHT_STEP_EXECUTION_AFTER_SCOPE_CLOSURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a6952ee167dbe1374b09aa16e8f1fc3531c21bd5071c5eec6c1683db74eb28ee",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/12_P0_VERTICAL_TRACEABILITY_AND_APPLICATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "cccefe8d07b896eb31bbae0b964ffefa0dd3cd0f3af20bac213d4355fb6d2f0d",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/130_PHASE_A_DESIGN_QA_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "7cb3b8d077393d45d19f0342e744e9ae78eaae1d3634a6152a0a597b96f934ab",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/131_PHASE_B_IMPLEMENTATION_ALIGNMENT_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "176fbc134fda532dc6b90d53c2651edf9187a5d9d135f0fb79e64d944de61d28",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/132_PHASE_C_TEST_RUNTIME_VERIFICATION_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "42cf68d902b8f073b0d17b08ad4758c699bd7d40b75ef213cedd4e2b68f78766",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/133_PHASE_D_INDEPENDENT_ASSURANCE_RELEASE_QUALIFICATION_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c2eb4c4bacf4233bfae6d7256c5d0c9bb79c168ad33f927e6cea52347c8dfe77",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/134_PHASE_E_PRODUCTION_OPERATE_CHANGE_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e1443121bd96307efd6de6c3b90587b2880890a8d94498fafdd445aefdcd9453",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/135_FIVE_PHASE_END_TO_END_EXECUTION_MASTER.md",
+      "authority_parent_refs": [],
+      "content_sha256": "612753c042000531f88df5c31492b7da5798e4cdbf12defb1312f6148a55882d",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/136_PRE_MERGE_STATUS_CORRECTION_AND_BASELINE_HANDOFF.md",
+      "authority_parent_refs": [],
+      "content_sha256": "d3ea555707f963dc741c0bec9cc1eb86f89d90d594d31d9ce56d5f7f139d9694",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e8b474ce00d826abe7c09fc1af4b38c065a5930b8a60d7148cee805a0411a8de",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "ea9447698a92a2d39c1c697f73a3de1794ca03034eb3778dfb286a54cda23c90",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/139_QA_APPLICABILITY_STATUS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b1ce4387e5ed3276fee6ef2be95d7d5764980d6f2439a515ea00d5606d1b3ba5",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/13_V2_CONTRACT_MIGRATION_AND_VALIDATION_PLAN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "02161c987bcfd118bc3c92b4c75a1138f3c74f25313357bce48e4766dfd4ce14",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/140_QA_TRACE_ORPHAN_CONTRADICTION_STATUS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0078a813ee08eda1744a80447c46431bf8a4eb049a6b09956307794c58c528c5",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "64273a4cb171a71caee2ba04493c29a43d81d277ef97908492fb1de1dcc2c884",
+      "rationale": "Explicit DESIGN_AUTHORITY_DECISION resolving DCQ-0002.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/142_DCQ0001_SA_XC_AUTHORITY_DECISION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "453f1fadd48b5da467bf85e3a2815e8aee83d5d240bed9cbf5f7c31810de53e1",
+      "rationale": "Explicit DESIGN_AUTHORITY_DECISION resolving DCQ-0001.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/143_DESIGN_QA_12_STEP_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "cf0e3dea101538873e79a5df4ed790abf7fa014ace79ae37971c08b21bb6ad8f",
+      "rationale": "QA execution/status evidence; does not originate current product requirements.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/144_DESIGN_QA_BLOCKER_CLOSURE_EXECUTION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "86904c64a57d013bdaf6edb7805d6fcdeb308669b5d0dbed5e4c752813303bd2",
+      "rationale": "QA blocker closure evidence; does not originate current product requirements.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/145_REQUIREMENT_AUTHORITY_POPULATION_CLOSURE_CHECKPOINT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "d23a10ec0a7a861ad7b93dd65e11cab93170a600c9a14dbfa7c764eff53fdeea",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "4c3ebc2099c19c2d7aaa7de38912452171cfcc7c2c851c697a91045b9fceaad7",
+      "rationale": "Explicit learning/validation closed-loop refinement under 02 and 07; originates FR-LEARN-001 through FR-LEARN-025 after authority-filtered RU regeneration.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/147_LEARNING_VALIDATION_CLOSED_LOOP_QA_GATES.md",
+      "authority_parent_refs": [
+        "docs/master/semantic-assurance/146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md"
+      ],
+      "content_sha256": "bd781a78d338ec4466fed6e0b87482bd3760377a5bc5c5f68871f8ed4d143ade",
+      "rationale": "Defines enforceable QA gates for the learning/validation closed-loop capabilities. Requirement/Trace/Test population must consume these gates before Design Lock.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/148_LEARNING_VALIDATION_IMPLEMENTATION_CONTRACT_BLUEPRINT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "2a14ba45b18e9b9fdbb2760640a5a88d99f617c965d27a38b58a150077b5c53a",
+      "rationale": "Status line self-declares 'NORMATIVE_REFINEMENT'.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b077ccdbcf4c63f19c4569db1648d356317f5387fbce9f74e0ca33354be572d5",
+      "rationale": "Status line self-declares 'NORMATIVE_REFINEMENT'.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/14_V1_V2_SEMANTIC_GAP_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6a4b652f643d4d1511b0dbe615352d894d494e57f2a0a0c017643be393844686",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/150_DESIGN_QA_LOCK_RERUN_AFTER_LEARNING_VALIDATION_REFINEMENT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "8de174ddba97f7c1d22b7ab264c49f31233b40102bf1bc85decf5741a69af2e2",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/151_FINAL_REMAINING_EXECUTION_AND_CLAUDE_HANDOFF.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0addaca7f6e9002fb51775aa6a86f20382ac806f97632ed74229aedf64a489f2",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/151_LEARNING_VALIDATION_OPERATIONAL_MATURITY_REFINEMENT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e7f2241d6136b62847a86c7ad7d617951690edbef6279ad4b7a254dc0b3da0e1",
+      "rationale": "Human-reviewed seed disposition.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "526c40729a6d06da5c7ec8e7344cba2b523b8d9d20c560de6973ab3d2eef0af9",
+      "rationale": "Human-reviewed seed disposition.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/152_LEARNING_VALIDATION_40_CAPABILITY_CLOSURE_RERUN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "58734b4f8dc44136a2179d68afe1932f24b042059876d68cfb29c0444a1739a1",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "379b4159138247cf7cc7972ac2334f07aaae073f02ccad286213804d6e81325f",
+      "rationale": "Human-reviewed seed disposition.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/154_LEARNING_VALIDATION_041_077_TRACE_AND_VALIDATION_MATERIALIZATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c1b7d73b95af6b2712b4500160a3e7a06b7d3109b313a89a2ca00f6ad588f9ee",
+      "rationale": "Status line identifies QA execution/status/evidence content.",
+      "requirement_source_disposition": "QA_EVIDENCE_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/156_LEARNING_VALIDATION_NUMBERING_CANONICALIZATION_DECISION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c4631ab1c3df4fff03276eb0524a0c6b677a23c2f48275538ca741dfc6b67fb0",
+      "rationale": "Status line identifies an explicit DESIGN_AUTHORITY_DECISION.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/157_LEARNING_VALIDATION_BLIND_FINAL_GAP_REVIEW.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c3701cb485197e72e387084fe8db6d0b5ebdd09737aacc153e774a884ea1e248",
+      "rationale": "Status line self-declares 'NORMATIVE_REFINEMENT'.",
+      "requirement_source_disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/15_V2_STATIC_QUALIFICATION_FIXTURE_SPEC.md",
+      "authority_parent_refs": [],
+      "content_sha256": "843d69f92ad519543c846d7ccfc1a8f64ff270459c899b2e8d57ce2b138d54d3",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/16_ARTIFACT_COVERAGE_AND_COMPLETION_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "28284e61607b734691ac62dcd06bf78967db64057f2a9955515f4f75b80d7b81",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/17_RUNTIME_WIRING_AND_ADAPTER_IMPLEMENTATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "8156e7664e32f572c8db014332380bb1729536de6365360c9e3843edaea430ac",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/18_VALIDATION_FINAL_DENOMINATOR_MIGRATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "45cb941deeba731add68a02a3a9d0a3b6719d7c0fdc0965cabb53d8ea07cb4c3",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/19_FINAL_REVIEW_AND_EXECUTION_BLOCKERS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "2a8fe67c408d537a62b63ea049e659474ac4829314ae146a60997c3547413fb0",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/20_POST_V2_FINAL_REVIEW_FINDINGS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "02abef3261a6e6a2206471783c547d0b5c02143ecec6990db5da65ae00fa99db",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/21_CLAUDE_DEVELOPMENT_HANDOFF.md",
+      "authority_parent_refs": [],
+      "content_sha256": "f477cb195dc4b3a787b4d685422b78fdd71b8c75a63e33169eaaad33325f4bcd",
+      "rationale": "Status line identifies document as a development handoff.",
+      "requirement_source_disposition": "HANDOFF_ONLY",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/21_INDEPENDENT_ASSURANCE_EXECUTION_ARCHITECTURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a3ed6c3cb6f837807622645f9f73fec0f39f1cc815a3f1ff3dbefecd9da42f78",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/22_TARGET_BOUND_DEPLOYMENT_AND_RELEASE_IDENTITY.md",
+      "authority_parent_refs": [],
+      "content_sha256": "463720a9a08a84fd596c7c7bfed6de6e5e4e1447d06bf401e2b83d9b060f6c9c",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/23_RUNTIME_EXECUTION_EVIDENCE_AND_QUALIFICATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "15344c3d92395be4de03ec724d134725a2c79425e7c7edfabeb1c697af8272ba",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/24_ACTIVE_SELECTOR_ROLLOUT_AND_ROLLBACK_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "61e0bfe4bc1a4e9b558cf6978db500f530e6ed75402a121bfa3f16e57edd3076",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/25_VALIDATOR_BUILD_PROVENANCE_AND_TCB.md",
+      "authority_parent_refs": [],
+      "content_sha256": "bf3f6125f62a694df880942c3a7f760c75c332f3889d8ff2d8a77934ad74bcd4",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/26_REQUIREMENT_UNIVERSE_AND_DISCOVERY_AUTHORITY.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a96d8120ab39acac3fe152870fb910eded4d5ec51db26000d2126f48b2267486",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/27_EVIDENCE_CANONICALIZATION_AND_CRYPTO_LIFECYCLE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "ee109813f31fc4fe81e9690309e244f099b24494df06bf34113140c233d965b9",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/28_DISTRIBUTED_CURRENTNESS_AND_REVOCATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0730598cfabda9e762b9ca1e099543c042dddcff62b838f0a51cfa633413e63d",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "510226339fca76727b2ff916445912187c1bc45447e2c784788ae861e3437fba",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/30_DISTRIBUTED_ASSURANCE_COMPOSITION_AND_EVIDENCE_GRAPH.md",
+      "authority_parent_refs": [],
+      "content_sha256": "25c0482e08fe972f002d0dbfc7beac7c2497bf0adca9a17d48cd39eefe5c85cd",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/31_ASSURANCE_CERTIFICATE_OFFLINE_ENTERPRISE_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "8ff34a3bd40cdb636af98b84ba6973d29109ca8ca2566f92ae69ca0be78f1d77",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/32_SCALE_PLUGIN_AI_META_ASSURANCE_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "fe11c4a10797363383fb8f622454da045da132009be57cd31ab3a9c975ed6c76",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/33_RUNTIME_COMPOSITION_CERTIFICATE_TEST_OPERATION_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "2c40d30368daa9a622cbced83ebac778c737a3bef0403dd2ecca5c20d145c4af",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b1e31f63404b61e2740d9d983c9734b072efb3d8b74639801bfca658ec9c3220",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/35_RUNTIME_COMPOSITION_CERTIFICATE_OPEN_DECISIONS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "f17f7bcf6d50c38b79701c1795125c3157091cfe7e2e3feddd307a9dc466318e",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/36_DESIGN_COMPLETION_AND_REMAINING_GAPS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "031b3653aa3de745450a6ab8f18c3924506d00435a594ca4b21cfe2dbfda7f4d",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/37_NEXT_CONTRACT_BATCH_BLUEPRINT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "3e376e2732e61b2e088b73885a3b2c14db949e1c4b770f0f3471df291b08d505",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/38_FORMAL_ASSURANCE_ALGEBRA_AND_STATE_LATTICE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "4250af5a4f0a4a716e7829390f28f4810ceca3ecb40ae7c40d539b74d4fa97c1",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/39_INVALIDATION_IMPACT_AND_CURRENTNESS_ENGINE_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "707c8bcceefb0f52f5da9487593e6028fd7648fa79259117b7152a242e1d98f7",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/40_EVIDENCE_GRAPH_STORAGE_INDEX_AND_QUERY_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "ee34ebfcb1605e9c715cefcfe94790727cc56521d077fcc2cd711eaae2091438",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/41_ASSURANCE_CERTIFICATE_VERIFICATION_PROTOCOL_AND_INTEROPERABILITY.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6ab93083321455095e4ddf229b4bebc0a050c6ba811d9e04d53bf7ddde3f2728",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/42_ASSURANCE_POLICY_PROFILE_AND_RULE_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0e02a007f934448a422748fe3f2b8c226df463910acf7d2df795ae656b9f5708",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/43_PERSISTENCE_CONSISTENCY_AND_RECOVERY_ARCHITECTURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a100be16bcd4449ca4ead13a59ac3ccef49b294ff9153de5e6203a26cf3b27c5",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/44_STATE_TRANSITION_AND_OPERATION_LIFECYCLE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6ef0605817d9095771c42f2c280cf3ad56ec7eb302214885e24b20594a960603",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/45_API_ERROR_IDEMPOTENCY_AND_TRANSACTION_SEMANTICS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "4064f4a159e10f3f5c11d73db4af4631bbb1f24853b2d6c6743dd4f0dbd7aa2f",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/46_SECURITY_PRIVACY_AND_DATA_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "ed5008e766cfd88f5360adbe85209954670848f3a9716b7ff89234c2d0065e58",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/47_OBSERVABILITY_AUDIT_AND_OPERATIONAL_SLO.md",
+      "authority_parent_refs": [],
+      "content_sha256": "55dc35bb7f54ed9b12efcc16ad6d7064f1bbba713f115ab6eaf86e403835167b",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/48_PHYSICAL_DATA_MODEL_AND_STORAGE_PARTITIONING.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6af1957363eb09f62fb60fc581705f9397a6409c7b08d9b9abec97e4b473bea0",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/49_THREAT_MODEL_AND_TRUST_BOUNDARY_ARCHITECTURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "ffcc4fa99773c99dab98853a04c2343cce4ed1775d5fe07e07e4032df4d22321",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/50_VERSIONING_COMPATIBILITY_AND_INTEROPERABILITY.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b335444d11dda66c0156a0cf1ab7b479635b4e720e7914a0055563c17ab21a0c",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/51_DISASTER_RECOVERY_AND_BUSINESS_CONTINUITY_ASSURANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "791bf68740a6ea1037a6829164e7d84e82cf594ea49289e1ecb70ed33d5bdf06",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/52_EXTERNAL_INTEGRATION_AND_SUPPLY_CHAIN_TRUST.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b6369a3af8ee33f574f1690df69e00e6711d386807e099977b7b422a9a14a020",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/53_END_TO_END_DESIGN_TRACEABILITY_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "8ac96feb419db44a685eba9af3ac5b29a51f1e5f49b92f81a70ca2527e40de6a",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/54_END_TO_END_ASSURANCE_SEQUENCE_AND_FAILURE_PATHS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6e63e4dd7af60c9542c2bb2748abf94a7074280c7f90a031476808809ba6a1ea",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/55_DECISION_AUTHORITY_AND_SEGREGATION_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1eaf5dad29ff490c984f7f062c098290884d89671470b193970c61f3251aeb86",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/56_SAFE_DEFAULTS_AND_FAIL_CLOSED_POLICY_BASELINE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "af62ba7b6986b3a24f43d3ba38e09eac55e9b171ec8c10489153cf2af9ebbd87",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/57_DESIGN_CLOSURE_REFRESH_00_TO_56.md",
+      "authority_parent_refs": [],
+      "content_sha256": "5cdafa7b1b67bbd2792524a8b66a63678b20088f703d76d74b3303b96c093f4b",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/58_P0_MACHINE_CONTRACT_CLOSURE_BLUEPRINT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "d905eb9a347377dbb9879db35410dc13d12513da457745dfcf2c9604c1c79a63",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/59_WORKFLOW_OPERATION_REGISTRY_V2_EXTENSION_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e48349285e9bedd3f0ff67bf0718e246dc784cbee1cac81e79521d06be25c282",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/60_EVENT_AND_RECEIPT_CONTRACT_ARCHITECTURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "72f7a5fec2c7aaa12de7d69c18a079ea052fe58af18c278843463babb6141c82",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/61_ASSURANCE_POLICY_PROFILE_MACHINE_SCHEMA_SPEC.md",
+      "authority_parent_refs": [],
+      "content_sha256": "bb6e37bb94aead27a373a2b7c42941bbc2f38eac08275884165b2247e71a7e4e",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/62_AUTHORITY_GRANT_AND_RBAC_MAPPING_CONTRACT_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "676ad662d157652985b4427fc8aa0be4575f597bef9894e10b109a3da6cf2c9e",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/63_CANONICAL_SERIALIZATION_AND_DIGEST_PROFILE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "4a8490392ecd95fc748ff03300e4651776fb5ec65ec90adf6e421f1f1cf77ed1",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/64_RECOVERY_QUALIFICATION_RECEIPT_CONTRACT_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "7e757e0e37a97f2e11d9b122dd5d28684dc648620640d9488ed64375a792ba45",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/65_DESIGN_TRACE_REGISTRY_MACHINE_SPEC.md",
+      "authority_parent_refs": [],
+      "content_sha256": "897a7947459091e8ef83faeab0f513bc7f608c53bb7711670577334190c69d35",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/66_OPEN_DECISION_TO_CONFIGURABLE_POLICY_MODEL.md",
+      "authority_parent_refs": [],
+      "content_sha256": "9d19b8205172f22086b364417cc10ab18ef28c1bee0e2029e3bb8e32b6c053ee",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/67_INDUSTRY_ASSURANCE_PROFILE_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "e718bbca69982660994679e1ae724fe2b4d6e4e8bc0e4bba4c0d4a4f1421e4c7",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/68_PRODUCT_ASSURANCE_TIER_AND_SERVICE_PROFILE_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a973e1307181b9af0eae8c8f4d12214f220daa6a2e6a5fce79bc14019a6dc08f",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/69_CUSTOMER_DELIVERY_REPORT_AND_CLAIM_LANGUAGE_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "07bc7dec56dad75407473a98fd36d252ae29716a0e96365596f5617c981a5fcc",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/70_THIRTY_TASK_DESIGN_CLOSURE_MASTER_PLAN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "f034bbcf6bf511bd8405fee55ecfc213374cf202931458932a448c12ec60a035",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md",
+      "authority_parent_refs": [],
+      "content_sha256": "23fa25f8505ac9d01c0550fcd43614d1f1df32230404d07b2b1bbd34ef6c3668",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/72_CROSS_CONTRACT_SEMANTIC_RULE_TABLE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "0fe9db78658d5f08cb1598d6c039dc52b5ff240f8686a66a623b22ee8ccbe0d3",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/73_GLOBAL_STATE_TRANSITION_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "936da65e5722b56c3a9c8bab3d251dd332f2ef332295b784d07777b7bdbd5148",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/74_OPERATION_EVENT_RECEIPT_AUTHORITY_MATRIX.md",
+      "authority_parent_refs": [],
+      "content_sha256": "bb96a8020bc96b537388efce55abd1b0068d98c36dad73e800682e133454b095",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/75_POLICY_INDUSTRY_AND_ASSURANCE_TIER_BASELINE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "92a52ab1f3094f3f00f29ad6a7c50da614f75e11f2292e1afba7779b7c3eb71f",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/76_COMPOSITION_EVIDENCE_INVALIDATION_RECOVERY_CERTIFICATE_FINAL_SPEC.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a0342a89a4467418f5a7f121b59b83d66908c2cea77ae34c51f27e0720476b6f",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/77_EXTERNAL_PLUGIN_AI_META_ASSURANCE_FINAL_SPEC.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b72ba122e8eac583c04aa9bdef6d2d690997894757236f1c0e3d66af7d50281b",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/78_DATA_API_THREAT_OBSERVABILITY_SAFE_DEFAULT_FINAL_SPEC.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1361c2dea8bbbcb743064b54195eed156a7e6071abd5d98df645686ad3ac95f1",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/79_NAMING_CONFLICT_TRACE_AND_MASTER_INDEX_CLOSURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "dac5bfbac7a6f27e87c11c5158d1f3129bfd30bc4c1872099cebbdedbe12aba0",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/80_DESIGN_BASELINE_CANDIDATE_LOCK_PRECONDITIONS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "57e9e9fe64b3a05b3487a50f3b0822a1079157fed0b6c5a984302fcb2a4fbd74",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/81_NEXT_DEVELOPMENT_BATCH_F_TO_K.md",
+      "authority_parent_refs": [],
+      "content_sha256": "02c1ccdfaf10fb05309d03ff880632b3b707a59021894bf638854fbaa2f99ee4",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "9292d5deba350a77f77596ab94d74c889c638fd43482428647241b146d5004ff",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/83_PERSISTENCE_MIGRATION_AND_DUAL_WRITE_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "8c4e79667cfc19c843fa06cae40ca8ae29975b579a6ab0bec9b1ae0950a83869",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/84_POLICY_BOOTSTRAP_AND_PROFILE_DEFAULTS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "fe4404859e6b8b2da2855729f7e8ea4385f1bedd16ef654319f22316f5555982",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/85_RUNTIME_API_AND_ERROR_CONTRACT_HANDOFF.md",
+      "authority_parent_refs": [],
+      "content_sha256": "f850b68c906988dce54e47a713c676a6db842a1a31758f0cb4f6d77e35c9d02f",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/86_DESIGN_ARTIFACT_INVENTORY_AND_LOCK_GOVERNANCE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c8f2281e67a0ddac4cf7b9f0d9bf7c5d682d60007db7676189964295ba74db56",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/87_DESIGN_LOCK_CHECK_AND_REPOSITORY_ORPHAN_SCAN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1aa2015b86a352c06cd8ac45eb61c26997ada01f13be7bee6d8cfe67525b6e5f",
+      "rationale": "No content-marker rule matched; fail-closed.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/88_GLOBAL_REQUIREMENT_UNIVERSE_AND_DENOMINATOR.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1eead44e237068f552c8350a8f28fac175bc79a8a56ecaced7c4107b25b06bde",
+      "rationale": "141 designates 88+92 as Product Design Requirement Universe authority.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/89_REQUIREMENT_ID_NORMALIZATION_AND_SEMANTIC_DEDUPLICATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "dc15b2aa18e3fffb64bc310043e99b4d0a716a0cd06558d56935d4c1abe72071",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/90_GLOBAL_TRACE_CLOSURE_SCANNER_DESIGN.md",
+      "authority_parent_refs": [],
+      "content_sha256": "7c0ac5625581ba034e0bfb5dc02614955a796b188fc6e2f780b47ae053ed7d8d",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/91_REQUIREMENT_UNIVERSE_MATERIALIZATION_HANDOFF.md",
+      "authority_parent_refs": [],
+      "content_sha256": "6d1854fde9634d79388243e5d7d31da2e416c75f3d9ba1092bbbcf6a9c93e61a",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md",
+      "authority_parent_refs": [],
+      "content_sha256": "a5873b59bac1af10742ce4e05401055ffd39724662a208ac0c08b60ac288b187",
+      "rationale": "141 designates 88+92 as Product Design Requirement Universe authority.",
+      "requirement_source_disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/93_REQUIREMENT_CONFLICT_BASELINE_AND_CHANGE_CONTROL.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1be7f9dfa319196ddaddb265cd0d5351e2d9914bfe5a422d21a455a133eab71d",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/94_SCHEMA_RELATION_OPERATION_EVENT_RECEIPT_STATE_FINALIZATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "1bf77c7d0677c133b92519b99427fc283950b4472fa89a7e7697a11ea3c3a5f4",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/95_ASSURANCE_ALGEBRA_COMPOSITION_EVIDENCE_INVALIDATION_CURRENTNESS.md",
+      "authority_parent_refs": [],
+      "content_sha256": "07797d75a7635112f8c059dfe54898da64d4fcda1e8cfe0c8f22dcd95594397b",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/96_DEPLOYMENT_CERTIFICATE_AUTHORITY_POLICY_INDUSTRY_TIER_FINALIZATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "02cb6fd2a8efc80210dec099332af965dcddf49294dc356d0c6ff3ff70af4bf3",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/97_AI_PLUGIN_META_ASSURANCE_FINALIZATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "c6278ef6ef4e90d3812a27471f6be22768d54c21b323c3563297df5383fa743e",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/98_DATA_MIGRATION_API_SECURITY_OBSERVABILITY_RECOVERY_EXTERNAL_FINALIZATION.md",
+      "authority_parent_refs": [],
+      "content_sha256": "b149d42794b19ac26fc4182096bd3f4a666691f479991a90ffbf2cab1e0d3118",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    },
+    {
+      "artifact_inventory_authority_class": "COMPANION",
+      "artifact_path": "docs/master/semantic-assurance/99_SAFE_DEFAULT_NAMING_MASTER_COMPLETION_AND_ORPHAN_CLOSURE.md",
+      "authority_parent_refs": [],
+      "content_sha256": "bb55e54ab7ab7317d2d194f4e3ad10e30599909d53c971e062f97a29511d6a9b",
+      "rationale": "Only marker is DESIGN_ONLY/DRAFT/NON_FINAL; requires manual content-role review.",
+      "requirement_source_disposition": "UNREVIEWED",
+      "review_state": "UNREVIEWED",
+      "supersedes": []
+    }
+  ]
+}

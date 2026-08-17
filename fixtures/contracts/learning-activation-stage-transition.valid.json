@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_LEARNING_ACTIVATION_STAGE_TRANSITION_V1",
+  "learning_asset_id": "asset-financial-fraud-pattern-014",
+  "from_stage": "SHADOW",
+  "to_stage": "CANARY",
+  "decision_impact": "LIMITED",
+  "traffic_scope": "LIMITED_TENANT_SUBSET",
+  "qualification_evidence_kind": "ONLINE_SHADOW_COMPARED",
+  "decision": "TRANSITION_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

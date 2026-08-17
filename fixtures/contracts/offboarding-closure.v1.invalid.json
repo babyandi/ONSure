@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_OFFBOARDING_CLOSURE_V1",
+  "offboarding_id": "offboarding-002",
+  "tenant_id": "tenant-b",
+  "stage": "DELETION_OR_LEGAL_HOLD_PROCESSING",
+  "legal_hold": true,
+  "new_effect_blocked": true,
+  "credential_revocation_complete": true,
+  "outstanding_jobs_settled": true,
+  "customer_export_complete": true,
+  "deletion_state": "DELETED",
+  "created_at": "2026-08-15T00:00:00Z"
+}

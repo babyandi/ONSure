@@ -1,0 +1,11 @@
+{
+  "contract": "ONSURE_SELECTIVE_PREDICTION_RISK_COVERAGE_CHECK_V1",
+  "subject_id": "validator-fraud-detector-v3",
+  "precision_at_coverage": 0.99,
+  "coverage": 1.4,
+  "abstain_rate": -0.4,
+  "min_required_coverage": 0.7,
+  "decision": "QUALIFIED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

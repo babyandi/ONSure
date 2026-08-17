@@ -1,0 +1,94 @@
+{
+  "contract": "ONSURE_TARGET_ASSURANCE_REQUIREMENT_UNIVERSE_MIGRATION_MAPPING_V1",
+  "from_contract": "contracts/requirement-universe-snapshot.candidate.v2.schema.json",
+  "to_contract": "contracts/target-assurance-requirement-universe-snapshot.v1.schema.json",
+  "mappings": [
+    {
+      "old_value": "BUSINESS",
+      "disposition": "DIRECT",
+      "candidate_new_values": [],
+      "rationale": "Exact name match, same meaning in both vocabularies."
+    },
+    {
+      "old_value": "EXTERNAL_STANDARD",
+      "disposition": "DIRECT",
+      "candidate_new_values": [
+        "EXTERNAL_STANDARD"
+      ],
+      "rationale": "Exact name match, same meaning in both vocabularies."
+    },
+    {
+      "old_value": "FUNCTIONAL",
+      "disposition": "REPERFORMANCE",
+      "candidate_new_values": [
+        "CODE",
+        "API",
+        "CONTRACT"
+      ],
+      "rationale": "The old vocabulary's FUNCTIONAL is a subject-matter class with no direct counterpart; the new vocabulary instead distinguishes by origin (CODE/API/CONTRACT). Which one applies depends on the specific requirement instance and cannot be decided at the class level -- each old FUNCTIONAL requirement must be re-examined against its actual source."
+    },
+    {
+      "old_value": "NON_FUNCTIONAL",
+      "disposition": "REPERFORMANCE",
+      "candidate_new_values": [
+        "OPERATIONS",
+        "RUNTIME_BEHAVIOR",
+        "CONFIG"
+      ],
+      "rationale": "Same problem as FUNCTIONAL: NON_FUNCTIONAL has no new-vocabulary counterpart and could land in OPERATIONS, RUNTIME_BEHAVIOR, or CONFIG depending on the specific requirement; requires per-instance re-examination."
+    },
+    {
+      "old_value": "SECURITY_PRIVACY_LEGAL",
+      "disposition": "REPERFORMANCE",
+      "candidate_new_values": [
+        "SECURITY",
+        "PRIVACY",
+        "POLICY"
+      ],
+      "rationale": "The old value bundles three concerns the new vocabulary keeps separate (SECURITY, PRIVACY, and POLICY for legal/regulatory). Each old instance must be split by re-reading its actual content."
+    },
+    {
+      "old_value": "ARCHITECTURE_DATA",
+      "disposition": "REPERFORMANCE",
+      "candidate_new_values": [
+        "ARCHITECTURE",
+        "DATA"
+      ],
+      "rationale": "The new vocabulary keeps ARCHITECTURE and DATA as two separate values; the old bundled value must be split per-instance."
+    },
+    {
+      "old_value": "RUNTIME_DEPLOYMENT",
+      "disposition": "REPERFORMANCE",
+      "candidate_new_values": [
+        "RUNTIME_BEHAVIOR",
+        "OPERATIONS",
+        "CONFIG"
+      ],
+      "rationale": "The new vocabulary has RUNTIME_BEHAVIOR but no single DEPLOYMENT value; deployment-related old instances likely split across OPERATIONS/CONFIG depending on content. Requires per-instance re-examination."
+    },
+    {
+      "old_value": "OPERATION_RECOVERY",
+      "disposition": "REPERFORMANCE",
+      "candidate_new_values": [
+        "OPERATIONS",
+        "FAILURE_RECOVERY"
+      ],
+      "rationale": "The new vocabulary keeps OPERATIONS and FAILURE_RECOVERY as two separate values; the old bundled value must be split per-instance."
+    },
+    {
+      "old_value": "AI_AGENT_MODEL",
+      "disposition": "UNRECOVERABLE",
+      "candidate_new_values": [],
+      "rationale": "11_CONTRACT_UPGRADE_BLUEPRINT.md SS6.2's 15-value vocabulary has no AI-specific source class at all. This is a real vocabulary gap, not a naming difference -- old AI_AGENT_MODEL requirements have no destination class until a design authority either adds one or specifies which existing value (likely CODE, API, or a new value) should absorb them. Logged as a design-change-queue follow-up rather than guessed here."
+    },
+    {
+      "old_value": "INFERRED",
+      "disposition": "UNRECOVERABLE",
+      "candidate_new_values": [],
+      "rationale": "INFERRED is not actually a subject-matter/origin class -- it describes HOW a requirement was found, which both schemas already track separately via discovery_methods (ARCHITECTURE_INFERENCE). Its presence in the old source_classes enum conflates the source-class axis with the discovery-method axis, the same category of mistake DCQ-0002 diagnosed at the higher (Product-Design-vs-Target-Assurance) level. No new-vocabulary source_class value should absorb it; old instances tagged INFERRED should be re-examined and re-tagged with discovery_methods=ARCHITECTURE_INFERENCE plus whatever real source_class actually applies."
+    }
+  ],
+  "generated_at": "2026-08-13T13:46:57.135872+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

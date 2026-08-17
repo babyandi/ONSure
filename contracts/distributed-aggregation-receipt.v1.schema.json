@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/distributed-aggregation-receipt.v1.schema.json",
+  "title": "ONSure Distributed Aggregation Receipt v1",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS9. The only object allowed to declare an aggregate decision across many WorkUnits/Attempts. Scheduling order must not change aggregate_digest; missing_partitions non-empty forbids decision=COMPLETE_PASS (an Attempt failure must never be read as WorkUnit/aggregate success by omission).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "aggregate_id", "exact_work_unit_ids", "exact_result_digests",
+    "denominator_digest", "missing_partitions", "duplicate_attempts",
+    "canonical_sort_profile", "aggregate_digest", "decision", "created_at",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DISTRIBUTED_AGGREGATION_RECEIPT_V1"},
+    "aggregate_id": {"type": "string", "minLength": 1},
+    "exact_work_unit_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "exact_result_digests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sha256"}},
+    "denominator_digest": {"$ref": "#/$defs/sha256"},
+    "missing_partitions": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "duplicate_attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["work_unit_id", "attempt_ids", "resolution"],
+        "properties": {
+          "work_unit_id": {"type": "string", "minLength": 1},
+          "attempt_ids": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "resolution": {"enum": ["LATEST_LEASE_WINS", "EXPLICIT_CANCELLATION", "MANUAL_REVIEW_REQUIRED"]}
+        }
+      },
+      "description": "Non-empty when the same work_unit_id produced more than one attempt whose effect could collide (replayed/duplicate attempt); every entry must carry a resolution, never silently pick one."
+    },
+    "canonical_sort_profile": {"type": "string", "minLength": 1},
+    "aggregate_digest": {"$ref": "#/$defs/sha256"},
+    "decision": {"enum": ["COMPLETE_PASS", "COMPLETE_FAIL", "INCOMPLETE_HOLD", "INCOMPLETE_BLOCKED"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "COMPLETE_PASS"}}},
+      "then": {"properties": {"missing_partitions": {"maxItems": 0}}}
+    },
+    {
+      "if": {"not": {"properties": {"missing_partitions": {"maxItems": 0}}}},
+      "then": {"properties": {"decision": {"enum": ["INCOMPLETE_HOLD", "INCOMPLETE_BLOCKED", "COMPLETE_FAIL"]}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

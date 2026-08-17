@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_DATA_RESIDENCY_CHECK_V1",
+  "asset_id": "derived-asset-eu-financial-001",
+  "asset_type": "DERIVED_LEARNING_ASSET",
+  "operation": "CROSS_REGION_AGGREGATE",
+  "current_region": "eu-west-1",
+  "allowed_regions": [],
+  "jurisdiction_basis": "GDPR data-processing addendum, contract ref DPA-2026-0091",
+  "decision": "ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

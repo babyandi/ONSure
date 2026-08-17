@@ -1,13 +1,28 @@
 {
   "contract": "ONSURE_MAIN_BRANCH_PROTECTION_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-008",
   "repository": "babyandi/ONSure",
   "branch": "main",
-  "observation_state": "NOT_RUN",
-  "observed_at": null,
-  "observed_source": null,
-  "observed_controls": null,
-  "source_commit": null,
-  "evidence_sha256": null,
-  "decision": "HOLD",
-  "final_claim_allowed": false
+  "observation_state": "OBSERVED",
+  "observed_at": "2026-08-15T00:12:00Z",
+  "observed_source": "GITHUB_API",
+  "observed_controls": {
+    "pull_request_required": true,
+    "minimum_approvals": 1,
+    "dismiss_stale_approvals": true,
+    "conversation_resolution_required": true,
+    "direct_push_blocked": true,
+    "force_push_blocked": true,
+    "branch_deletion_blocked": true,
+    "administrators_enforced": true
+  },
+  "observed_raw_response": "gh api repos/babyandi/ONSure/branches/main/protection -> 200 (fresh independent GET after remediation PUT, not the PUT response echo): required_pull_request_reviews.required_approving_review_count=1 dismiss_stale_reviews=true; enforce_admins.enabled=true; allow_force_pushes.enabled=false; allow_deletions.enabled=false; required_conversation_resolution.enabled=true; restrictions=absent (no bypass allowlist)",
+  "source_commit": "aee1f9818dbc04ca50457e75cc499a5dcc792e16ad0821f9866d93588a89c621",
+  "evidence_sha256": "d961be11334bbf5b5dce362f8ad4e984cc5a4989e77976467cbc9408099c6c0c",
+  "decision": "PASS_NONFINAL",
+  "final_claim_allowed": false,
+  "epoch": 1,
+  "prior_evidence_ref": "status/history/main-branch-protection-evidence.v1.epoch-0-FAIL-20260815.json",
+  "remediation_receipt_ref": "status/main-branch-protection-remediation-receipt.v1.json",
+  "disclosed_residual_gap": "policy.independent_status_checks_required_before_merge=true is not enforced at the GitHub level (required_status_checks left null) because no CI workflow exists yet to check against -- see the remediation receipt's change_description for the reasoning. This does not affect the PASS_NONFINAL decision, which is computed only from the 8 required_controls per contracts/main-branch-protection.v1.json / scripts/validate-main-branch-protection.py."
 }

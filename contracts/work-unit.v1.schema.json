@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/work-unit.v1.schema.json",
+  "title": "ONSure Work Unit v1 (DistributedWorkUnit)",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS8. A single partition of distributed work with a lease; state and its attempt history (attempt-record.v1.schema.json) are separate objects since a WorkUnit outlives many Attempts and an Attempt's own append-only history must not be rewritable by the WorkUnit envelope.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "work_unit_id", "parent_run_id", "target_epoch", "scope_epoch",
+    "requirement_epoch", "policy_epoch", "input_population_digest", "partition_key",
+    "operation_name", "operation_version", "current_attempt_number", "lease_owner",
+    "lease_expires_at", "expected_output_contract", "idempotency_key", "state",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_WORK_UNIT_V1"},
+    "work_unit_id": {"type": "string", "minLength": 1},
+    "parent_run_id": {"type": "string", "minLength": 1},
+    "target_epoch": {"type": "string", "minLength": 1},
+    "scope_epoch": {"type": "string", "minLength": 1},
+    "requirement_epoch": {"type": "string", "minLength": 1},
+    "policy_epoch": {"type": "string", "minLength": 1},
+    "input_population_digest": {"$ref": "#/$defs/sha256"},
+    "partition_key": {"type": "string", "minLength": 1},
+    "operation_name": {"type": "string", "minLength": 1},
+    "operation_version": {"type": "string", "minLength": 1},
+    "current_attempt_number": {"type": "integer", "minimum": 1},
+    "lease_owner": {"type": "string", "minLength": 1},
+    "lease_expires_at": {"type": "string", "format": "date-time"},
+    "expected_output_contract": {"type": "string", "minLength": 1},
+    "idempotency_key": {"type": "string", "minLength": 1},
+    "state": {
+      "enum": [
+        "LEASED", "RUNNING", "LEASE_EXPIRED", "SUCCEEDED", "FAILED_RETRYABLE",
+        "FAILED_TERMINAL", "CANCELLED"
+      ]
+    },
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

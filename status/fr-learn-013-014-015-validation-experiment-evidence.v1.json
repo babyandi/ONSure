@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-013",
+  "additional_requirement_refs": ["FR-LEARN-014", "FR-LEARN-015"],
+  "requirement_summary": "FR-LEARN-013 비결정적 AI/Agent 검증은 정책에 따른 N-run stochastic validation과 variance 측정을 지원해야 한다. FR-LEARN-014 정답 Oracle이 부족한 대상은 qualified Metamorphic Relation으로 검증할 수 있어야 한다. FR-LEARN-015 target/validator/model/environment 버전 간 Differential Validation을 지원해야 한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (validationExperimentEvaluate), assurance.validation.experiment-evaluate v2 operation; contracts/validation-experiment.v1.schema.json (Batch 5 object J, previously zero Java consumers)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "validationExperimentEvaluateReachesStableWhenEveryRunPassesAndCountIsAtLeastTwo",
+    "validationExperimentEvaluateRejectsDeclaredRunCountMismatchWithActualRuns",
+    "validationExperimentEvaluateForcesUnstableOnAnyFailedRun",
+    "validationExperimentEvaluateForcesNotRunWhenAnyRunIsNotRun",
+    "validationExperimentEvaluateNeverReachesStableFromASingleRunRegardlessOfMode",
+    "validationExperimentEvaluateRejectsStochasticModeWithFewerThanTwoRuns"
+  ],
+  "coverage_notes": "One unified operation handles all four experiment modes (STOCHASTIC=FR-LEARN-013, METAMORPHIC=FR-LEARN-014, DIFFERENTIAL=FR-LEARN-015, and ENVIRONMENT_MATRIX). The core P0 invariant (148 negative case 12: 'a single stochastic run must never claim stability') is enforced for real and generalized to every mode, not just STOCHASTIC: result is COMPUTED from the actual runs[] outcomes rather than trusted from a caller-declared value -- any FAIL forces UNSTABLE, any NOT_RUN (with no FAIL) forces NOT_RUN, any remaining INCONCLUSIVE forces INCONCLUSIVE, and STABLE is reachable only with run_count>=2 and every run PASS, regardless of mode. The caller-declared run_count is cross-checked against the actual runs[] length (JSON Schema alone cannot express this without $data), closing the gap where a caller could declare run_count=5 while supplying only 2 real run entries.",
+  "open_gap": "FR-LEARN-013's 'variance 측정' (variance measurement) is not yet computed -- the operation classifies stability (STABLE/UNSTABLE/NOT_RUN/INCONCLUSIVE) from run outcomes but does not compute a numeric variance/dispersion statistic across runs. FR-LEARN-014's 'qualified Metamorphic Relation' qualification step (is the metamorphic relation itself a recognized, vetted relation) is not independently verified -- the operation accepts any caller-supplied relation string. Both disclosed as real follow-on work, not implemented as a stand-in.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes each requirement's own authority document (146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md) as circular; 149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS J elaborates the schema shape but is itself a companion/fixture-spec document within the same authority family, not an independent design elaboration.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

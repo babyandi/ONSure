@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_WORKFLOW_OPERATION_REGISTRY_V1",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "operations": [
     "project.register-workspace",
     "project.register",
@@ -23,6 +23,8 @@
     "job.recover",
     "deployment.install",
     "deployment.rollback",
+    "deployment.register-target",
+    "deployment.read-target",
     "git.commit",
     "git.draft-pr",
     "license.issue",
@@ -53,11 +55,18 @@
     "case.read"
   ],
   "surface_model": {
-    "generic_surfaces": ["CLI", "LOCAL_AUTHENTICATED_API", "VSCODE"],
+    "generic_surfaces": [
+      "CLI",
+      "LOCAL_AUTHENTICATED_API",
+      "VSCODE"
+    ],
     "all_operations_must_reach_generic_dispatcher": true,
-    "dedicated_vscode_commands_required": ["program.learn", "validation.run"]
+    "dedicated_vscode_commands_required": [
+      "program.learn",
+      "validation.run"
+    ]
   },
-  "operation_count": 49,
+  "operation_count": 51,
   "current_source_execution": "LOCAL_RECEIPT_REQUIRED",
   "final_claim_allowed": false
 }

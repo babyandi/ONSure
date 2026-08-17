@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-COM-006",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-COM-006: 'ONSure 내부 오류에 의한 실패는 고객 사용량으로 확정하지 않는다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.usageAttributionCheck via assurance.usage.attribution-check; contracts/usage-attribution-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/usage-attribution-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#usageAttributionCheckNeverCountsAnInternalErrorAsUsageEvenIfClaimed",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#usageAttributionCheckCountsACustomerInputErrorAsUsage",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#usageAttributionCheckFlagsAMismatchedClaim"
+  ],
+  "coverage_notes": "usageAttributionCheckNeverCountsAnInternalErrorAsUsageEvenIfClaimed is the direct test of the requirement: usage_countable is computed purely from failure_cause, not read from the caller's claimed_usage_countable field, so a caller cannot simply assert INTERNAL_ERROR failures as billable usage -- the mismatch is surfaced (usage_verified=false) rather than silently accepted. usageAttributionCheckCountsACustomerInputErrorAsUsage proves the requirement's carve-out is narrow and specific to INTERNAL_ERROR: a customer-caused failure is legitimately usage-countable, so this operation does not over-broadly exempt every failure type, only the one the requirement names.",
+  "open_gap": "Operates on a caller-supplied failure_cause classification; there is no live billing/metering runtime in this codebase that actually classifies a real execution failure into one of these 5 categories and feeds this gate from real system state (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). The requirement's classification of what genuinely constitutes an 'ONSure 내부 오류' versus the other 4 categories is this closure's own disclosed enum choice, not a literal identifier the requirement text itself defines.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

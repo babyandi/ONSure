@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_CONFIDENCE_CALIBRATION_CHECK_V1",
+  "validator_id": "validator-fraud-classifier-v5",
+  "decision_basis": "CALIBRATED_CONFIDENCE_WITH_METRIC",
+  "calibration_metric_kind": "ECE",
+  "calibration_error": 0.03,
+  "calibration_error_threshold": 0.05,
+  "abstain_triggered": false,
+  "abstain_reason": "NONE",
+  "decision": "PASS_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REVIEWER_POOL_INDEPENDENCE_CHECK_V1",
+  "subject_id": "candidate-qualification-2026-08-16-002",
+  "decision_risk_tier": "HIGH_RISK",
+  "minimum_required_independent_reviewers": 2,
+  "concentration_threshold": 0.5,
+  "reviewers": [
+    {"reviewer_id": "reviewer-1", "org_id": "org-a", "instruction_source_id": "instr-a", "model_id": "model-a", "material_source_id": "material-a", "decision_share": 0.7},
+    {"reviewer_id": "reviewer-2", "org_id": "org-b", "instruction_source_id": "instr-b", "model_id": "model-b", "material_source_id": "material-b", "decision_share": 0.3}
+  ],
+  "collusion_risk_pairs": [],
+  "independent_reviewer_count": 2,
+  "authority_capture_risk": true,
+  "max_concentration_share": 0.7,
+  "reduced_independence": false,
+  "state": "INDEPENDENT_REVIEW_CONFIRMED",
+  "reasons": ["AUTHORITY_CAPTURE_RISK:max_share=0.7"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

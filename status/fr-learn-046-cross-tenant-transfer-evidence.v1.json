@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-046",
+  "requirement_summary": "Cross-Tenant Transfer Risk: Organization/Industry/Global 학습자산은 source tenant와 별도 tenant holdout에서 transfer impact를 검증한다. 익명화만으로 cross-tenant 안전성을 가정하지 않으며 tenant-specific artifact의 자동 상위 scope 사용을 금지한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (crossTenantTransferValidate), assurance.learning.cross-tenant-transfer.validate v2 operation; contracts/cross-tenant-transfer-validation.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence",
+    "crossTenantTransferValidateBlocksWhenHoldoutTenantSameAsSource",
+    "crossTenantTransferValidateBlocksWhenEvidenceIsJustAnAnonymizationOnlySentinel"
+  ],
+  "coverage_notes": "decision is computed for real: holdout_tenant_id equal to source_tenant_id is always TRANSFER_BLOCKED (a self-holdout validates nothing, a cross-field comparison JSON Schema alone cannot express), and an evidence reference that is itself just an anonymization-only sentinel (ANONYMIZATION_ONLY / ANONYMIZED / NONE / N/A, case-insensitive) is also TRANSFER_BLOCKED even when anonymization_applied=true -- directly closing the requirement's own named negative case '익명화만으로 cross-tenant 안전성을 가정하지 않는다' (anonymization alone must not be assumed to establish cross-tenant safety) as a real, testable rejection rather than a documented convention only.",
+  "open_gap": "The requirement's second clause -- 'tenant-specific artifact의 자동 상위 scope 사용을 금지한다' (forbidding automatic use of tenant-specific artifacts at a higher scope) -- is addressed only indirectly: this operation validates that a transfer WOULD be safe to promote, but does not itself gate or intercept an actual automatic-promotion pathway elsewhere in the system (no such pathway currently exists to gate, per the scope-promotion work in FR-LEARN-023/assurance.learning.scope-promotion.decide, which already requires explicit approval rather than automatic promotion). Recorded as consistent with, not independently re-verified against, that existing mechanism.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_MATURITY_REFINEMENT.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

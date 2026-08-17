@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_VALIDATOR_REGRESSION_QUALIFICATION_V1",
+  "validator_id": "validator-002",
+  "validator_version": "1.0.0",
+  "golden_result": "FAIL",
+  "blind_result": "PASS",
+  "challenge_result": "PASS",
+  "false_positive_drift": 0.12,
+  "false_negative_drift": 0.09,
+  "drift_threshold": 0.05,
+  "decision": "QUALIFIED",
+  "evaluated_at": "2026-08-14T00:00:00Z"
+}

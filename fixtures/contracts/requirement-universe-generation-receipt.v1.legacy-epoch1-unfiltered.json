@@ -1,0 +1,14 @@
+{
+  "authority_document_count": 154,
+  "candidate_extracted_requirement_count": 814,
+  "completed_at": "2026-08-13T13:52:36.827771+00:00",
+  "contract": "ONSURE_REQUIREMENT_UNIVERSE_GENERATION_RECEIPT_V1",
+  "decision": "GENERATED_NONFINAL",
+  "duplicate_candidate_group_count": 16,
+  "explicit_id_requirement_count": 89,
+  "final_claim_allowed": false,
+  "generation_algorithm_version": "RU-GEN-1.0.0",
+  "requirement_manifest_digest": "60547f45935a574949e10ce8a8023149bc901b61e1a13f93795c9704b8c2fa44",
+  "self_validation_nonfinal": true,
+  "started_at": "2026-08-13T13:52:33.996001+00:00"
+}

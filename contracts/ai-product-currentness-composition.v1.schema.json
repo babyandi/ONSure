@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/ai-product-currentness-composition.v1.schema.json",
+  "title": "ONSure AI Product Currentness Composition v1",
+  "description": "FR-META-057 AI Runtime Identity Closure / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS17 AI Currentness: 'AI Product CURRENT는 최소 다음 identity가 current여야 한다: model deployment, prompt bundle, tool registry, memory policy/backend, RAG stack, external provider contract, relevant validator qualification. 하나가 material drift이면 Product Composition currentness에 전파한다.' Reuses the same 6-state vocabulary as currentness-snapshot.v1.schema.json (a general product/deployment concept) but scopes composition to exactly the 7 AI-specific sub-identity axes SS17 names -- none of which currentness-snapshot.v1 itself tracks. overall_currentness is a computed field: it can only be CURRENT when every one of the 7 axes is independently CURRENT; any single non-CURRENT axis propagates to the whole, using an explicit disclosed severity cascade (REVOKED > INVALIDATED > STALE > REASSESSMENT_REQUIRED > UNKNOWN) since SS17 itself only states that drift propagates, not how mixed-severity axes resolve.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id",
+    "model_deployment_currentness", "prompt_bundle_currentness", "tool_registry_currentness",
+    "memory_policy_currentness", "rag_stack_currentness", "external_provider_contract_currentness",
+    "validator_qualification_currentness",
+    "overall_currentness", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AI_PRODUCT_CURRENTNESS_COMPOSITION_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "model_deployment_currentness": {"$ref": "#/$defs/currentnessState"},
+    "prompt_bundle_currentness": {"$ref": "#/$defs/currentnessState"},
+    "tool_registry_currentness": {"$ref": "#/$defs/currentnessState"},
+    "memory_policy_currentness": {"$ref": "#/$defs/currentnessState"},
+    "rag_stack_currentness": {"$ref": "#/$defs/currentnessState"},
+    "external_provider_contract_currentness": {"$ref": "#/$defs/currentnessState"},
+    "validator_qualification_currentness": {"$ref": "#/$defs/currentnessState"},
+    "overall_currentness": {"$ref": "#/$defs/currentnessState"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"overall_currentness": {"const": "CURRENT"}}},
+      "then": {
+        "properties": {
+          "model_deployment_currentness": {"const": "CURRENT"},
+          "prompt_bundle_currentness": {"const": "CURRENT"},
+          "tool_registry_currentness": {"const": "CURRENT"},
+          "memory_policy_currentness": {"const": "CURRENT"},
+          "rag_stack_currentness": {"const": "CURRENT"},
+          "external_provider_contract_currentness": {"const": "CURRENT"},
+          "validator_qualification_currentness": {"const": "CURRENT"},
+          "reasons": {"maxItems": 0}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "currentnessState": {"enum": ["CURRENT", "STALE", "REASSESSMENT_REQUIRED", "INVALIDATED", "REVOKED", "UNKNOWN"]}
+  }
+}

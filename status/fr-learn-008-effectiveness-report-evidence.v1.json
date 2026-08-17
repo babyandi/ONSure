@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-008",
+  "requirement_summary": "Candidate/epoch promotion은 baseline 대비 precision/recall/FP/FN/coverage/latency/stability 변화를 기록해야 한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (learningEffectivenessEvaluate), assurance.learning.effectiveness.evaluate v2 operation; contracts/learning-effectiveness-report.v1.schema.json (Batch 5 object D, previously zero Java consumers)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "learningEffectivenessEvaluateReachesImprovedWhenAMetricGetsBetterAndNoneRegress",
+    "learningEffectivenessEvaluateReachesEquivalentWhenNothingChangesMeaningfully",
+    "learningEffectivenessEvaluateForcesRegressionWhenFalsePositiveRateWorsensEvenIfRecallImproves",
+    "learningEffectivenessEvaluateForcesInconclusiveBelowConfidenceThreshold"
+  ],
+  "coverage_notes": "decision is computed from a real before/after (baseline/candidate) comparison across precision, recall, false_positive_rate, and false_negative_rate, not trusted from a caller-declared value. Any regression beyond a small tolerance on ANY of those four metrics forces REGRESSION, even when another metric improved -- directly closing the schema's own named negative case ('a real regression claiming IMPROVED'), so a caller cannot cherry-pick one better metric while masking a worse one. Confidence below a minimum threshold forces INCONCLUSIVE before any directional (IMPROVED/EQUIVALENT/REGRESSION) claim is made at all. before/after metric sets (precision/recall/false_positive_rate/false_negative_rate/coverage/latency_ms) are echoed back in full, satisfying the requirement's 'baseline 대비 변화를 기록' (record the change relative to baseline) obligation.",
+  "open_gap": "Stability (the requirement's 6th named metric, alongside precision/recall/FP/FN/coverage/latency) is not yet a tracked field in learning-effectiveness-report.v1.schema.json or this computation -- the schema's metricSet has 6 fields (precision/recall/false_positive_rate/false_negative_rate/coverage/latency_ms) but no explicit stability metric. Disclosed as a real schema-level gap, not silently substituted with one of the existing fields.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md) as circular; 149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS D elaborates the schema shape but is a companion/fixture-spec document in the same authority family, not an independent design elaboration.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

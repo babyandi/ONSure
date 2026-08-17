@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/verified-deployed-running-currentness-check.v1.schema.json",
+  "title": "ONSure Verified-to-Deployed-to-Running Currentness Check v1",
+  "description": "FR-META-044 Verified-to-Deployed-to-Running Currentness: '검증된 Build Artifact, 실제 DeploymentRevision, active RuntimeInstance population을 digest로 연결한다. VERIFIED, DEPLOYED, RUNNING, CURRENT를 서로 다른 상태로 관리하며 source commit 또는 image tag 동일성만으로 CURRENT를 발급하지 않는다.' The chain is verified by real digest equality at each link, never by source_commit/image_tag equality (both accepted as descriptive fields only, never read by the state computation): deployed_artifact_digest must equal verified_artifact_digest for the deployment to trace back to the verified build at all, and every running instance's running_artifact_digest must equal deployed_artifact_digest for the population to be drift-free. A caller cannot reach CURRENT by matching source_commit_id or image_tag alone while the digests themselves disagree.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "verified_artifact_digest", "verified_source_commit",
+    "deployed_artifact_digest", "deployed_image_tag", "running_instances",
+    "deployed_from_verified_digest_match", "drifted_instances", "state", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_VERIFIED_DEPLOYED_RUNNING_CURRENTNESS_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "verified_artifact_digest": {"type": "string", "minLength": 1},
+    "verified_source_commit": {"type": "string", "minLength": 1},
+    "deployed_artifact_digest": {"type": "string", "minLength": 1},
+    "deployed_image_tag": {"type": "string", "minLength": 1},
+    "running_instances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["instance_id", "running_artifact_digest"],
+        "properties": {
+          "instance_id": {"type": "string", "minLength": 1},
+          "running_artifact_digest": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "deployed_from_verified_digest_match": {"type": "boolean"},
+    "drifted_instances": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "state": {"enum": ["DEPLOYED_ARTIFACT_MISMATCH", "DEPLOYED_NOT_RUNNING", "RUNNING_WITH_DRIFT", "CURRENT"]},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"deployed_from_verified_digest_match": {"const": false}}},
+      "then": {"properties": {"state": {"const": "DEPLOYED_ARTIFACT_MISMATCH"}}}
+    },
+    {
+      "if": {"properties": {"state": {"const": "CURRENT"}}},
+      "then": {
+        "properties": {
+          "deployed_from_verified_digest_match": {"const": true},
+          "drifted_instances": {"maxItems": 0},
+          "running_instances": {"minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"drifted_instances": {"minItems": 1}}},
+      "then": {"properties": {"state": {"const": "RUNNING_WITH_DRIFT"}}}
+    }
+  ]
+}

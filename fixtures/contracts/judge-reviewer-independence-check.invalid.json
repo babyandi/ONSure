@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_JUDGE_REVIEWER_INDEPENDENCE_CHECK_V1",
+  "judge_id": "judge-claude-reviewer-1",
+  "target_model_id": "target-underwriting-assistant-1",
+  "judge_provider_model_family_id": "provider-anthropic-claude",
+  "target_provider_model_family_id": "provider-anthropic-claude",
+  "judge_prompt_rubric_implementation_id": "rubric-impl-v3",
+  "target_prompt_implementation_id": "prompt-impl-underwriting-v7",
+  "judge_oracle_source_id": "oracle-source-judge-panel-1",
+  "target_oracle_source_id": "oracle-source-underwriting-golden-set",
+  "training_knowledge_overlap_possible": false,
+  "hidden_benchmark_exposure": false,
+  "memory_previous_verdict_access": false,
+  "shared_identity_axes": ["judge_provider_model_family_id"],
+  "risk_flags": [],
+  "lane_eligibility": "HIGH_CONFIDENCE_INDEPENDENT_LANE",
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

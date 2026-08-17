@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/adversarial-benchmark-governance-check.v1.schema.json",
+  "title": "ONSure Adversarial Benchmark Generation Governance Check v1",
+  "description": "FR-LEARN-063 Adversarial Benchmark Generation Governance: 자동 생성 adversarial/challenge fixture도 source, generation model, prompt, seed, novelty, contamination, safety review를 기록한다. generator가 자신의 benchmark 정답을 알고 동일 validator를 튜닝하는 폐루프를 금지한다. A generator_model_id identical to tuned_validator_model_id (a closed loop), confirmed/suspected contamination, or an incomplete safety review is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "fixture_id", "source", "generator_model_id", "tuned_validator_model_id",
+    "novelty_status", "contamination_status", "safety_review_completed",
+    "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ADVERSARIAL_BENCHMARK_GOVERNANCE_CHECK_V1"},
+    "fixture_id": {"type": "string", "minLength": 1},
+    "source": {"enum": ["HUMAN_AUTHORED", "AUTO_GENERATED"]},
+    "generator_model_id": {"type": "string", "minLength": 1},
+    "tuned_validator_model_id": {"type": "string", "minLength": 1},
+    "novelty_status": {"enum": ["NOVEL", "DUPLICATE_OF_KNOWN", "DERIVATIVE"]},
+    "contamination_status": {"enum": ["CLEAR", "SUSPECTED", "CONFIRMED"]},
+    "safety_review_completed": {"type": "boolean"},
+    "decision": {"enum": ["FIXTURE_QUALIFIED", "FIXTURE_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

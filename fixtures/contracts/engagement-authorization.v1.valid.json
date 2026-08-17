@@ -1,0 +1,16 @@
+{
+  "contract": "ONSURE_ENGAGEMENT_AUTHORIZATION_V1",
+  "engagement_id": "engagement-001",
+  "target_owner_authorization_ref": "AUTHORIZATION::OWNER-A::0001",
+  "allowed_endpoints": ["https://staging.example.com"],
+  "allowed_test_classes": ["DAST", "LOAD"],
+  "forbidden_actions": ["DATA_EXFILTRATION_SIMULATION"],
+  "starts_at": "2026-08-01T00:00:00Z",
+  "ends_at": "2026-09-01T00:00:00Z",
+  "production_classification": "NON_PRODUCTION",
+  "rate_ceiling_per_minute": 60,
+  "emergency_contact": "security@example.com",
+  "third_party_exclusion": ["payment-provider.example.com"],
+  "revoked": false,
+  "created_at": "2026-08-15T00:00:00Z"
+}

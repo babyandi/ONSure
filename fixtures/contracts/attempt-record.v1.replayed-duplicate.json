@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_ATTEMPT_RECORD_V1",
+  "attempt_id": "ATTEMPT::WU-partition-0::0001-REPLAY",
+  "work_unit_id": "WU::run-001::partition-0",
+  "attempt_number": 1,
+  "retry_policy_digest": "66d9c26da7ab5e9986571bacc1505f36b787e9e33ca708abd9981bda7cbef2e7",
+  "retry_reason": "INITIAL_ATTEMPT",
+  "execution_receipt_id": "RER::neutral-target-001::0001-REPLAY",
+  "outcome": "SUCCEEDED",
+  "started_at": "2026-08-13T14:02:39.662480+00:00",
+  "completed_at": "2026-08-13T14:02:39.662480+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-012",
+  "requirement_summary": "Multi-Oracle disagreement가 unresolved인 상태에서는 영향받는 Final PASS를 금지해야 한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (oracleMultiEvaluate), assurance.oracle.multi-evaluate v2 operation; contracts/oracle-disagreement-case.v1.schema.json",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "oracleMultiEvaluateResolvesWhenEveryOracleAgrees",
+    "oracleMultiEvaluateOpensADisagreementCaseAndForcesHold"
+  ],
+  "coverage_notes": "When oracle results disagree (more than one distinct decision among the supplied oracle_results), related_decision and the overall decision are both forced to HOLD, never PASS -- disagreement structurally cannot reach a Final PASS through this operation. When every oracle agrees, the case resolves to that shared decision. Duplicate oracle_id in the same call is rejected outright (DUPLICATE_ORACLE_RESULT), and fewer than two oracle_results is rejected as INPUT_REQUIRED -- a 'multi-oracle' evaluation genuinely requires multiple independent oracles, not one oracle counted twice.",
+  "open_gap": "REQUIREMENT_WITHOUT_DESIGN remains: the trace scanner correctly excludes the requirement's own authority document (146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md) as circular, and no OTHER design document currently discusses FR-LEARN-012's mechanism -- a genuine gap (no separate design elaboration was ever written), not a bookkeeping omission. This evidence closes the test/evidence-path dimensions honestly; the design-reference dimension is disclosed as still open rather than papered over with a fabricated citation.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-FRESH-001",
+  "requirement_summary": "Rules of Engagement / Target Testing Authorization: a proposed test action (endpoint, test class, rate) against a target must be checked against an authorized engagement scope before execution -- an out-of-scope endpoint or an above-ceiling rate must be blocked, not merely logged.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (engagementCheckScope), assurance.engagement.check-scope v2 operation",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain, not simulated), tests/test_fresh_review_refinement_contracts.py",
+  "observed_test_methods": [
+    "engagementCheckScopeBlocksAnEndpointOutsideTheAuthorizedSet",
+    "engagementCheckScopeAllowsAMatchingInScopeRequest",
+    "engagementCheckScopeBlocksARateAboveTheCeiling"
+  ],
+  "coverage_notes": "An endpoint outside the authorized set is blocked outright. A matching in-scope endpoint at an allowed rate is permitted. A rate above the engagement's ceiling is blocked even for an otherwise in-scope endpoint -- both scope and rate dimensions are real, independently enforced checks, not a single coarse allow/deny.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

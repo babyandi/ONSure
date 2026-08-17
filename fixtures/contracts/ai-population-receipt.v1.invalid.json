@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_AI_POPULATION_RECEIPT_V1",
+  "population_id": "AIPOP::neutral-agent-001::0001",
+  "target_runtime_identity_digest": "a319bceccd09e4f0774adf123ad0f84d404f5d4e43e075350e2a3e8d5cbf88f8",
+  "exact_scenario_population_digest": "6d089dc48efa6f006b46ca3d16563f3a601853a8e2823fdc9d3e4ac64db671c7",
+  "sample_size": 500,
+  "observed_failures": 0,
+  "critical_failures": 0,
+  "seed_profile_digest": "93b1257e6fb67b793a4e66e262b6b853999edaae7101f1ca15bf64006b04a112",
+  "sampling_config_digest": "a8171a945aceee3c15a181918c1f41226fa12ab481561a6beb4d85643c2c5a66",
+  "excluded_run_ids": [
+    {
+      "run_id": "RUN::0042",
+      "reason": "Environment timeout unrelated to target behavior, precommitted exclusion rule."
+    }
+  ],
+  "statistical_method": "CLOPPER_PEARSON_EXACT",
+  "statistical_method_version": "1.0.0",
+  "confidence_level": 1.5,
+  "interval_or_bound": {
+    "kind": "UPPER_BOUND_ONLY",
+    "lower": null,
+    "upper": 0.0074
+  },
+  "generated_at": "2026-08-14T13:48:38.615628+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

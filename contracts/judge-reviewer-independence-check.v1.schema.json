@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/judge-reviewer-independence-check.v1.schema.json",
+  "title": "ONSure Judge / Reviewer Independence Check v1",
+  "description": "FR-META-058 AI Nondeterminism and Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS12 Judge/Reviewer Independence: 'AI Judge/Reviewer는 target model과 다음 축을 비교한다: provider/model family, prompt/rubric implementation, training/knowledge overlap 가능성, oracle source, hidden benchmark exposure, memory/previous verdict access. 동일 계열 Judge 결과는 보조 corroboration으로 사용할 수 있으나 고신뢰 independent lane을 대체하지 않는다.' Three axes are identity comparisons (judge vs target provider/model family, prompt/rubric implementation, oracle source); three are directly-assessed risk flags (training/knowledge overlap possibility, hidden benchmark exposure, memory/previous verdict access) since they describe a contamination possibility rather than a same-value identity match. lane_eligibility can only be HIGH_CONFIDENCE_INDEPENDENT_LANE when all three identity axes differ AND all three risk flags are false -- any shared identity axis or any true risk flag caps the result at CORROBORATION_ONLY, matching the named prohibition on letting a same-family Judge substitute for a real independent lane.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "judge_id", "target_model_id",
+    "judge_provider_model_family_id", "target_provider_model_family_id",
+    "judge_prompt_rubric_implementation_id", "target_prompt_implementation_id",
+    "judge_oracle_source_id", "target_oracle_source_id",
+    "training_knowledge_overlap_possible", "hidden_benchmark_exposure", "memory_previous_verdict_access",
+    "shared_identity_axes", "risk_flags", "lane_eligibility", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_JUDGE_REVIEWER_INDEPENDENCE_CHECK_V1"},
+    "judge_id": {"type": "string", "minLength": 1},
+    "target_model_id": {"type": "string", "minLength": 1},
+    "judge_provider_model_family_id": {"type": "string", "minLength": 1},
+    "target_provider_model_family_id": {"type": "string", "minLength": 1},
+    "judge_prompt_rubric_implementation_id": {"type": "string", "minLength": 1},
+    "target_prompt_implementation_id": {"type": "string", "minLength": 1},
+    "judge_oracle_source_id": {"type": "string", "minLength": 1},
+    "target_oracle_source_id": {"type": "string", "minLength": 1},
+    "training_knowledge_overlap_possible": {"type": "boolean"},
+    "hidden_benchmark_exposure": {"type": "boolean"},
+    "memory_previous_verdict_access": {"type": "boolean"},
+    "shared_identity_axes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "risk_flags": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "lane_eligibility": {"enum": ["HIGH_CONFIDENCE_INDEPENDENT_LANE", "CORROBORATION_ONLY"]},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"lane_eligibility": {"const": "HIGH_CONFIDENCE_INDEPENDENT_LANE"}}},
+      "then": {
+        "properties": {
+          "shared_identity_axes": {"maxItems": 0},
+          "risk_flags": {"maxItems": 0},
+          "training_knowledge_overlap_possible": {"const": false},
+          "hidden_benchmark_exposure": {"const": false},
+          "memory_previous_verdict_access": {"const": false}
+        }
+      }
+    }
+  ]
+}

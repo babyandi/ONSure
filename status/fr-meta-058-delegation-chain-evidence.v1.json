@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-058",
+  "requirement_summary": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS9.3 Delegation and SS9.6 Cyclic Delegation: 'Agent A가 Agent B에 일을 위임해도 B가 A보다 넓은 권한을 획득하지 않는다. delegation chain, purpose, TTL, subject scope를 보존한다... A->B->C->A delegation loop, 책임 떠넘기기, 무한 handoff를 탐지한다. final authority는 명시된 principal/contract에서만 온다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.delegationChainCheck via assurance.delegation.chain-check",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/delegation-chain-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#delegationChainCheckIsValidForACleanTwoHopChain",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#delegationChainCheckDetectsADirectTwoNodeCycle",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#delegationChainCheckDetectsAThreeNodeCycle",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#delegationChainCheckDoesNotFalselyFlagABranchingNonCyclicGraph",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#delegationChainCheckDetectsAuthorityExpansionEvenWithoutACycle",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#delegationChainCheckAggregatesBothCycleAndExpansionViolationsTogether"
+  ],
+  "coverage_notes": "Eighth closure of Batch 5's disclosed broader-scope gap. Complements the pre-existing DelegationLedger (which enforces one grant's delegator-must-hold-the-role invariant in isolation) by validating an entire multi-hop chain of edges at once. cycle_detected is a real directed-graph DFS (visited + in-progress recursion-stack, the standard algorithm) over the submitted edges -- delegationCycleSearch finds any agent reachable from itself however many hops away and returns the actual repeating path, not a caller-declared flag. delegationChainCheckDetectsAThreeNodeCycle is the direct test of the named A->B->C->A loop case; delegationChainCheckDoesNotFalselyFlagABranchingNonCyclicGraph proves a fan-out delegation graph (A delegates to both B and C independently) is never mistaken for a cycle. authority_expansion_detected is checked per edge -- delegated_authority_scope must be a real subset of that edge's own from_agent_authority_scope -- closing 'B가 A보다 넓은 권한을 획득하지 않는다' for every hop in the chain, not just the first; delegationChainCheckAggregatesBothCycleAndExpansionViolationsTogether proves both violation classes are reported together rather than the cycle short-circuiting the expansion check.",
+  "open_gap": "Operates on a caller-supplied edge list; there is no live multi-agent delegation runtime in this codebase that actually emits these edges from real agent-to-agent handoffs (same disclosed 'caller-supplied representation, not live system integration' pattern as every other Batch 5 broader-scope closure this session). purpose/TTL/subject-scope preservation named in SS9.3's text beyond authority-scope containment is not modeled by this schema -- only the authority-non-expansion and cycle-freedom sub-rules are covered. 1 of the 9 originally-named broader-scope areas remains open: RAG Assurance (SS6).",
+  "design_reference_gap": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md is itself Status: DESIGN_ONLY/DRAFT/NON_FINAL -- this closure builds real, tested conformance-checking infrastructure against its SS9.3/SS9.6 rules, consistent with every other gate built against draft-status design docs this session, but does not and cannot finalize the parent document itself.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

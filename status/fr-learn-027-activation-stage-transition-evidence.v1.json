@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-027",
+  "requirement_summary": "Shadow / Canary Activation: 학습자산의 운영 승격은 최소 APPROVED -> SHADOW -> CANARY -> ACTIVE를 지원한다. SHADOW는 최종 판정에 영향 없이 비교만 수행하고, CANARY는 제한된 tenant/scope/traffic에서만 영향 가능하다. offline qualification만으로 즉시 ACTIVE 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (learningActivationStageTransition), assurance.learning.activation-stage.transition v2 operation; contracts/learning-activation-stage-transition.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "learningActivationStageTransitionAllowsShadowWithNoDecisionImpact",
+    "learningActivationStageTransitionBlocksSkippingAStage",
+    "learningActivationStageTransitionBlocksShadowClaimingDecisionImpact",
+    "learningActivationStageTransitionBlocksCanaryWithFullTrafficScope",
+    "learningActivationStageTransitionBlocksActiveFromOfflineOnlyQualification",
+    "learningActivationStageTransitionAllowsActiveFromOnlineQualification"
+  ],
+  "coverage_notes": "Four distinct real checks JSON Schema's per-field enum alone cannot express: (1) to_stage must be exactly one rank above from_stage in APPROVED->SHADOW->CANARY->ACTIVE -- a caller cannot skip a required stage; (2) a transition INTO SHADOW must declare decision_impact=NONE, closing 'SHADOW는 최종 판정에 영향 없이 비교만 수행'; (3) a transition INTO CANARY must declare traffic_scope=LIMITED_TENANT_SUBSET, never FULL, closing 'CANARY는 제한된 tenant/scope/traffic에서만'; (4) a transition INTO ACTIVE backed only by OFFLINE_ONLY qualification_evidence_kind is blocked, closing 'offline qualification만으로 즉시 ACTIVE 금지' as a real, testable rejection.",
+  "open_gap": "This operation validates a single proposed stage transition in isolation; it does not itself maintain or query the learning asset's PERSISTED current stage across calls (no durable activation-stage ledger exists yet), so a caller could in principle invoke this repeatedly with fabricated from_stage values without a real prior transition history to check against. Real persistence/history tracking is a disclosed follow-on, analogous to how OfficialLearningLedger persists the broader candidate lifecycle.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (151_LEARNING_VALIDATION_OPERATIONAL_SECOND_ORDER_RISKS.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

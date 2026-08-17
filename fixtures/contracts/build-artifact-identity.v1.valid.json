@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_BUILD_ARTIFACT_IDENTITY_V1",
+  "artifact_id": "BAI::neutral-001::0001",
+  "artifact_sha256": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "artifact_type": "CONTAINER_IMAGE",
+  "build_receipt_digest": "452d592c3792a0e0dcb7a160d7b4a32696bed2854228ca0caea9c7058f4ef6d6",
+  "source_tree_digest": "7169e22c4321bfc856a5a7826e04fd020e4aa6fb1c4cb0b729f8cd569a65800a",
+  "dependency_set_digest": "4cd8c289740af18a2f486c7f0634f06ce32b6906158ddefee671d06d44384f87",
+  "sbom_digest": "845c856101cdc4c43bc5f32fd7bf759ea31f5beecaadf8ef5917201d2ad0c1b1",
+  "provenance_digest": "84a799c33e4cf50d9b960b0e9195c97ded577597136166aac606846f6f495cf2",
+  "created_at": "2026-08-14T13:37:19.479567+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

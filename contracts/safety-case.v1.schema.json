@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/safety-case.v1.schema.json",
+  "title": "ONSure Safety Case v1",
+  "description": "127_SAFETY_HAZARD_AND_CONTESTABILITY_GOVERNANCE.md SS1.2/1.4/1.6. PASS_NONFINAL never generates a Product Final/Certificate directly (final_claim_allowed const false). SS1.6's forbidden reductions are structurally blocked: 'security finding 0을 safety proof로 사용' and 'uptime/reliability metric만으로 safe behavior 주장' are excluded evidence classes -- a safety case whose only supporting evidence classes are SECURITY_FINDING_COUNT/UPTIME_METRIC can never reach PASS_NONFINAL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "safety_case_id", "subject_digest", "hazard_population_digest",
+    "safety_requirement_population_digest", "safety_control_population_digest",
+    "residual_risk_population_digest", "evidence_classes", "decision",
+    "self_validation_nonfinal", "final_claim_allowed", "generated_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_SAFETY_CASE_V1"},
+    "safety_case_id": {"type": "string", "minLength": 1},
+    "subject_digest": {"$ref": "#/$defs/sha256"},
+    "hazard_population_digest": {"$ref": "#/$defs/sha256"},
+    "safety_requirement_population_digest": {"$ref": "#/$defs/sha256"},
+    "safety_control_population_digest": {"$ref": "#/$defs/sha256"},
+    "residual_risk_population_digest": {"$ref": "#/$defs/sha256"},
+    "evidence_classes": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {
+        "enum": [
+          "FAULT_SCENARIO_VERIFICATION", "SAFE_STATE_EVIDENCE", "DEGRADED_SAFE_STATE_EVIDENCE",
+          "RESIDUAL_RISK_AUTHORITY_ACCEPTANCE", "CURRENTNESS_EVIDENCE",
+          "SECURITY_FINDING_COUNT", "UPTIME_METRIC"
+        ]
+      }
+    },
+    "decision": {"enum": ["PASS_NONFINAL", "FAIL", "HOLD", "INCONCLUSIVE", "REASSESSMENT_REQUIRED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "PASS_NONFINAL"}}},
+      "then": {
+        "properties": {
+          "evidence_classes": {
+            "allOf": [
+              {"contains": {"const": "FAULT_SCENARIO_VERIFICATION"}},
+              {"contains": {"const": "SAFE_STATE_EVIDENCE"}}
+            ]
+          }
+        }
+      },
+      "description": "PASS_NONFINAL requires real fault-scenario verification and safe-state evidence in the population -- a safety case built only from SECURITY_FINDING_COUNT/UPTIME_METRIC evidence classes can never satisfy both contains constraints, structurally blocking SS1.6's named forbidden reductions."
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

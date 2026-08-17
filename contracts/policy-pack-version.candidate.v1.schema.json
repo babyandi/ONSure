@@ -1,0 +1,23 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/policy-pack-version.candidate.v1.schema.json",
+  "title":"ONSure Policy Pack Version Candidate v1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","policy_pack_id","version","organization_id","digest","status","rule_sources","created_at","created_by","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_POLICY_PACK_VERSION_CANDIDATE_V1"},
+    "policy_pack_id":{"type":"string","minLength":1},
+    "version":{"type":"string","minLength":1},
+    "organization_id":{"type":"string","minLength":1},
+    "digest":{"type":"string","pattern":"^[A-Fa-f0-9]{64}$"},
+    "status":{"enum":["DRAFT","QUALIFICATION_REQUIRED","QUALIFIED","ACTIVE","REJECTED","SUPERSEDED","REVOKED"]},
+    "rule_sources":{"type":"array","items":{"type":"string","minLength":1},"minItems":1,"uniqueItems":true},
+    "industry_profile":{"type":["string","null"]},
+    "weakens_fixed_invariant":{"const":false},
+    "qualification_evidence_refs":{"type":"array","items":{"type":"string"}},
+    "created_at":{"type":"string","format":"date-time"},
+    "created_by":{"type":"string","minLength":1},
+    "final_claim_allowed":{"const":false}
+  }
+}

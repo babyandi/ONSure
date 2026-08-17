@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_ORACLE_DISAGREEMENT_CASE_V1",
+  "case_id": "case-002",
+  "subject_id": "subject-002",
+  "oracle_results": [
+    {"oracle_id": "oracle-001", "decision": "PASS"},
+    {"oracle_id": "oracle-002", "decision": "FAIL"}
+  ],
+  "status": "OPEN",
+  "related_decision": "PASS",
+  "resolution_authority_ref": null,
+  "resolution_evidence_refs": [],
+  "opened_at": "2026-08-14T00:00:00Z",
+  "resolved_at": null
+}

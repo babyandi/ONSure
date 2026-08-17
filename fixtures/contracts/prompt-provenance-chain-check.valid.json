@@ -1,0 +1,54 @@
+{
+  "contract": "ONSURE_PROMPT_PROVENANCE_CHAIN_CHECK_V1",
+  "prompt_id": "prompt-underwriting-assistant-2026-08-16-001",
+  "fragments": [
+    {
+      "fragment_type": "SYSTEM",
+      "source": "onsure-core",
+      "ref": "system-prompt-v4",
+      "version": "v4",
+      "digest": "2ce61562077f6faf6f4ee53919f3935955c890d554aa93ce6598b79bb8682f0a"
+    },
+    {
+      "fragment_type": "DEVELOPER",
+      "source": "product-team",
+      "ref": "dev-prompt-v9",
+      "version": "v9",
+      "digest": "5c2a7b6ae0350fcc65378e860b8135bcfcc973b264aa27effc0ed34befd9a13a"
+    },
+    {
+      "fragment_type": "USER_INPUT",
+      "source": "session-772",
+      "ref": "turn-14",
+      "version": "runtime",
+      "digest": "6741475ac86e9ae5e774ec38ca6d0267eeaccb62597c98c44dfafc7c6b21ac2a"
+    },
+    {
+      "fragment_type": "RETRIEVED_CONTEXT",
+      "source": "rag-index-3",
+      "ref": "chunk-8821",
+      "version": "runtime",
+      "digest": "992cbdd63aa943da3424bc78434143ef9d89b2a63e0859e573afa057f1fbf028"
+    },
+    {
+      "fragment_type": "TOOL_RESULT",
+      "source": "tool-underwriting-lookup",
+      "ref": "call-55",
+      "version": "runtime",
+      "digest": "067c6b1d35c53a32a9c70b68c8ade13f2d9cfaf37a310b9600676b6f94df7007"
+    }
+  ],
+  "dynamic_fragment_types_used": [
+    "USER_INPUT",
+    "RETRIEVED_CONTEXT",
+    "TOOL_RESULT"
+  ],
+  "claimed_assembled_prompt_digest": "65da7558b2d60bf7dbdd127dbc32165229cb954f4bb6afc10292d5cb1a868db1",
+  "computed_assembled_prompt_digest": "65da7558b2d60bf7dbdd127dbc32165229cb954f4bb6afc10292d5cb1a868db1",
+  "assembled_digest_verified": true,
+  "missing_dynamic_fragment_types": [],
+  "currentness_claimable": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

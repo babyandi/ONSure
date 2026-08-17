@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/causal-attribution-check.v1.schema.json",
+  "title": "ONSure Causal Attribution Check v1",
+  "description": "FR-LEARN-041 Causal Attribution: '학습자산 적용 후 품질 변화가 해당 변경 때문인지 검증해야 한다. 단순 before/after 상관관계만으로 효과를 확정하지 않으며, 가능한 경우 treatment/control, shadow comparator, counterfactual 또는 동등한 causal evidence를 사용한다.' A claimed effect backed only by before/after correlation -- with no treatment/control split, no shadow comparator, and no counterfactual model -- is REJECTED, computed structurally rather than trusted from a caller-declared attribution_supported flag. Each stronger evidence method has its own real completeness check: TREATMENT_CONTROL requires an actual control group to be present, COUNTERFACTUAL requires a real counterfactual_model_ref, not just the method label alone.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "candidate_id", "causal_evidence_method", "effect_claimed",
+    "control_group_present", "counterfactual_model_ref", "attribution_supported", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CAUSAL_ATTRIBUTION_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "causal_evidence_method": {"enum": [
+      "BEFORE_AFTER_CORRELATION_ONLY", "TREATMENT_CONTROL", "SHADOW_COMPARATOR",
+      "COUNTERFACTUAL", "EQUIVALENT_CAUSAL_EVIDENCE"
+    ]},
+    "effect_claimed": {"type": "boolean"},
+    "control_group_present": {"type": "boolean"},
+    "counterfactual_model_ref": {"type": ["string", "null"]},
+    "attribution_supported": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {
+        "causal_evidence_method": {"const": "BEFORE_AFTER_CORRELATION_ONLY"},
+        "effect_claimed": {"const": true}
+      }},
+      "then": {"properties": {"attribution_supported": {"const": false}}}
+    },
+    {
+      "if": {"properties": {
+        "causal_evidence_method": {"const": "TREATMENT_CONTROL"},
+        "control_group_present": {"const": false}
+      }},
+      "then": {"properties": {"attribution_supported": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"causal_evidence_method": {"const": "COUNTERFACTUAL"}, "counterfactual_model_ref": {"const": null}}},
+      "then": {"properties": {"attribution_supported": {"const": false}}}
+    }
+  ]
+}

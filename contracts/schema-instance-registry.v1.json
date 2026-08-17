@@ -1,37 +1,1172 @@
 {
   "contract": "ONSURE_SCHEMA_INSTANCE_REGISTRY_V1",
-  "version": "1.9.0",
-  "pairs": [
-    {"schema": "contracts/program-profile.v1.schema.json", "instances": ["fixtures/contracts/program-profile.valid.json"]},
-    {"schema": "contracts/behavior-profile.v1.schema.json", "instances": ["fixtures/contracts/behavior-profile.valid.json"], "invalid_instances": ["fixtures/contracts/behavior-profile.invalid.json"]},
-    {"schema": "contracts/behavior-observation-receipt.v1.schema.json", "instances": ["fixtures/contracts/behavior-observation-receipt.valid.json"]},
-    {"schema": "contracts/failure-memory.v1.schema.json", "instances": ["fixtures/contracts/failure-memory.valid.json"]},
-    {"schema": "contracts/improvement-memory.v1.schema.json", "instances": ["fixtures/contracts/improvement-memory.valid.json"]},
-    {"schema": "contracts/reusable-pattern-memory.v1.schema.json", "instances": ["fixtures/contracts/reusable-pattern-memory.valid.json", "fixtures/contracts/reusable-pattern-memory.demoted.valid.json"], "invalid_instances": ["fixtures/contracts/reusable-pattern-memory.invalid.json"]},
-    {"schema": "contracts/durable-job-state.v1.schema.json", "instances": ["fixtures/contracts/durable-job-state.valid.json"]},
-    {"schema": "contracts/restart-restore-receipt.v1.schema.json", "instances": ["fixtures/contracts/restart-restore-receipt.valid.json"]},
-    {"schema": "contracts/evidence-receipt.v1.schema.json", "instances": ["fixtures/contracts/evidence-receipt.valid.json"]},
-    {"schema": "contracts/execution-plan.v1.schema.json", "instances": ["fixtures/contracts/execution-plan.valid.json"]},
-    {"schema": "contracts/execution-plan-approval-evidence.v1.schema.json", "instances": ["fixtures/contracts/execution-plan-approval-evidence.valid.json"]},
-    {"schema": "contracts/oreview-result.v1.schema.json", "instances": ["fixtures/contracts/oreview-result.valid.json"]},
-    {"schema": "contracts/evidence-based-rca.v1.schema.json", "instances": ["fixtures/contracts/evidence-based-rca.valid.json"]},
-    {"schema": "contracts/patch-plan.v1.schema.json", "instances": ["fixtures/contracts/patch-plan.valid.json"]},
-    {"schema": "contracts/hunk-approval-receipt.v1.schema.json", "instances": ["fixtures/contracts/hunk-approval-receipt.valid.json"], "invalid_instances": ["fixtures/contracts/hunk-approval-receipt.invalid.json"]},
-    {"schema": "contracts/patch-apply-receipt.v1.schema.json", "instances": ["fixtures/contracts/patch-apply-receipt.valid.json"]},
-    {"schema": "contracts/improvement-proof.v1.schema.json", "instances": ["fixtures/contracts/improvement-proof.valid.json"]},
-    {"schema": "contracts/patch-rollback-receipt.v1.schema.json", "instances": ["fixtures/contracts/patch-rollback-receipt.valid.json"]},
-    {"schema": "contracts/git-delivery-approval.v1.schema.json", "instances": ["fixtures/contracts/git-delivery-approval.valid.json"]},
-    {"schema": "contracts/git-change-set.v1.schema.json", "instances": ["fixtures/contracts/git-change-set.valid.json"]},
-    {"schema": "contracts/draft-pr-receipt.v1.schema.json", "instances": ["fixtures/contracts/draft-pr-receipt.valid.json"]},
-    {"schema": "contracts/license-state.v1.schema.json", "instances": ["fixtures/contracts/license-state.valid.json"], "invalid_instances": ["fixtures/contracts/license-state.invalid.json"]},
-    {"schema": "contracts/service-case-state.v1.schema.json", "instances": ["fixtures/contracts/service-case-state.valid.json"]},
-    {"schema": "contracts/service-verification-receipt.v1.schema.json", "instances": ["fixtures/contracts/service-verification-receipt.valid.json"], "invalid_instances": ["fixtures/contracts/service-verification-receipt.invalid.json"]},
-    {"schema": "contracts/tenant-context.v1.schema.json", "instances": ["fixtures/contracts/tenant-context.valid.json"]},
-    {"schema": "contracts/component-contract.v1.schema.json", "instances": ["fixtures/contracts/component-contract.valid.json"], "invalid_instances": ["fixtures/contracts/component-contract.superseded.invalid.json"]},
-    {"schema": "contracts/reuse-link.v1.schema.json", "instances": ["fixtures/contracts/reuse-link.valid.json"]},
-    {"schema": "contracts/program-risk-score.v1.schema.json", "instances": ["fixtures/contracts/program-risk-score.valid.json", "fixtures/contracts/program-risk-score.critical-cap.valid.json"], "invalid_instances": ["fixtures/contracts/program-risk-score.invalid.json"]}
-  ],
+  "final_claim_allowed": false,
   "negative_instances_required_before_final": true,
+  "pairs": [
+    {
+      "instances": [
+        "fixtures/contracts/program-profile.valid.json"
+      ],
+      "schema": "contracts/program-profile.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/behavior-profile.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/behavior-profile.invalid.json"
+      ],
+      "schema": "contracts/behavior-profile.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/behavior-observation-receipt.valid.json"
+      ],
+      "schema": "contracts/behavior-observation-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/failure-memory.valid.json"
+      ],
+      "schema": "contracts/failure-memory.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/improvement-memory.valid.json"
+      ],
+      "schema": "contracts/improvement-memory.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/reusable-pattern-memory.valid.json",
+        "fixtures/contracts/reusable-pattern-memory.demoted.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/reusable-pattern-memory.invalid.json"
+      ],
+      "schema": "contracts/reusable-pattern-memory.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/durable-job-state.valid.json"
+      ],
+      "schema": "contracts/durable-job-state.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/restart-restore-receipt.valid.json"
+      ],
+      "schema": "contracts/restart-restore-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/evidence-receipt.valid.json"
+      ],
+      "schema": "contracts/evidence-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/execution-plan.valid.json"
+      ],
+      "schema": "contracts/execution-plan.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/execution-plan-approval-evidence.valid.json"
+      ],
+      "schema": "contracts/execution-plan-approval-evidence.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/oreview-result.valid.json"
+      ],
+      "schema": "contracts/oreview-result.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/evidence-based-rca.valid.json"
+      ],
+      "schema": "contracts/evidence-based-rca.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/patch-plan.valid.json"
+      ],
+      "schema": "contracts/patch-plan.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/hunk-approval-receipt.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/hunk-approval-receipt.invalid.json"
+      ],
+      "schema": "contracts/hunk-approval-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/patch-apply-receipt.valid.json"
+      ],
+      "schema": "contracts/patch-apply-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/improvement-proof.valid.json"
+      ],
+      "schema": "contracts/improvement-proof.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/patch-rollback-receipt.valid.json"
+      ],
+      "schema": "contracts/patch-rollback-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/git-delivery-approval.valid.json"
+      ],
+      "schema": "contracts/git-delivery-approval.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/git-change-set.valid.json"
+      ],
+      "schema": "contracts/git-change-set.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/draft-pr-receipt.valid.json"
+      ],
+      "schema": "contracts/draft-pr-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/license-state.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/license-state.invalid.json"
+      ],
+      "schema": "contracts/license-state.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/service-case-state.valid.json"
+      ],
+      "schema": "contracts/service-case-state.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/service-verification-receipt.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/service-verification-receipt.invalid.json"
+      ],
+      "schema": "contracts/service-verification-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/tenant-context.valid.json"
+      ],
+      "schema": "contracts/tenant-context.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/component-contract.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/component-contract.superseded.invalid.json"
+      ],
+      "schema": "contracts/component-contract.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/reuse-link.valid.json"
+      ],
+      "schema": "contracts/reuse-link.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/program-risk-score.valid.json",
+        "fixtures/contracts/program-risk-score.critical-cap.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/program-risk-score.invalid.json"
+      ],
+      "schema": "contracts/program-risk-score.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requirement-record.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requirement-record.v2.invalid.json"
+      ],
+      "schema": "contracts/requirement-record.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requirement-universe-snapshot.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requirement-universe-snapshot.v2.invalid.json"
+      ],
+      "schema": "contracts/requirement-universe-snapshot.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requirement-semantic-relation.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requirement-semantic-relation.v1.invalid.json"
+      ],
+      "schema": "contracts/requirement-semantic-relation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requirement-universe-generation-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requirement-universe-generation-receipt.v1.invalid.json"
+      ],
+      "schema": "contracts/requirement-universe-generation-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/global-trace-scan-report.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/global-trace-scan-report.v1.invalid.json"
+      ],
+      "schema": "contracts/global-trace-scan-report.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requirement-applicability-evaluation.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requirement-applicability-evaluation.v1.invalid.json"
+      ],
+      "schema": "contracts/requirement-applicability-evaluation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/target-manifest.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/target-manifest.v1.invalid.json"
+      ],
+      "schema": "contracts/target-manifest.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-snapshot.v1.invalid.json"
+      ],
+      "schema": "contracts/target-assurance-requirement-universe-snapshot.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-migration-mapping.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/target-assurance-requirement-universe-migration-mapping.v1.invalid.json"
+      ],
+      "schema": "contracts/target-assurance-requirement-universe-migration-mapping.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/denominator-epoch.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/denominator-epoch.v1.invalid.json"
+      ],
+      "schema": "contracts/denominator-epoch.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/runtime-execution-receipt.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/runtime-execution-receipt.candidate.v2.invalid.json"
+      ],
+      "schema": "contracts/runtime-execution-receipt.candidate.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/evidence-graph-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/evidence-graph-snapshot.v1.invalid.json"
+      ],
+      "schema": "contracts/evidence-graph-snapshot.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/collector-health-record.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/collector-health-record.v1.invalid.json"
+      ],
+      "schema": "contracts/collector-health-record.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/observation-record.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/observation-record.v1.invalid.json"
+      ],
+      "schema": "contracts/observation-record.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/work-unit.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/work-unit.v1.invalid.json"
+      ],
+      "schema": "contracts/work-unit.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/attempt-record.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/attempt-record.v1.invalid.json"
+      ],
+      "schema": "contracts/attempt-record.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/distributed-aggregation-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/distributed-aggregation-receipt.v1.invalid.json"
+      ],
+      "schema": "contracts/distributed-aggregation-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/independent-assurance-execution-plan.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/independent-assurance-execution-plan.candidate.v2.invalid.json"
+      ],
+      "schema": "contracts/independent-assurance-execution-plan.candidate.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/authority-grant.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/authority-grant.v1.invalid.json"
+      ],
+      "schema": "contracts/authority-grant.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/human-acceptance-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/human-acceptance-receipt.v1.invalid.json"
+      ],
+      "schema": "contracts/human-acceptance-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requirement-authority-source-manifest.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requirement-authority-source-manifest.v1.invalid.json"
+      ],
+      "schema": "contracts/requirement-authority-source-manifest.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/atomic-validation-snapshot.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/atomic-validation-snapshot.v2.invalid.json"
+      ],
+      "schema": "contracts/atomic-validation-snapshot.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/semantic-assurance-gate-receipt.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/semantic-assurance-gate-receipt.candidate.v2.invalid.json"
+      ],
+      "schema": "contracts/semantic-assurance-gate-receipt.candidate.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/final-approval-receipt.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/final-approval-receipt.candidate.v2.invalid.json"
+      ],
+      "schema": "contracts/final-approval-receipt.candidate.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/final-lock.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/final-lock.candidate.v2.invalid.json"
+      ],
+      "schema": "contracts/final-lock.candidate.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/build-artifact-identity.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/build-artifact-identity.v1.invalid.json"
+      ],
+      "schema": "contracts/build-artifact-identity.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/deployment-target.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/deployment-target.v1.invalid.json"
+      ],
+      "schema": "contracts/deployment-target.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/deployment-revision.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/deployment-revision.v1.invalid.json"
+      ],
+      "schema": "contracts/deployment-revision.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/runtime-instance.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/runtime-instance.v1.invalid.json"
+      ],
+      "schema": "contracts/runtime-instance.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/runtime-population-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/runtime-population-snapshot.v1.invalid.json"
+      ],
+      "schema": "contracts/runtime-population-snapshot.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/currentness-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/currentness-snapshot.v1.invalid.json"
+      ],
+      "schema": "contracts/currentness-snapshot.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/invalidation-event.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/invalidation-event.v1.invalid.json"
+      ],
+      "schema": "contracts/invalidation-event.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/recovery-qualification-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/recovery-qualification-receipt.v1.invalid.json"
+      ],
+      "schema": "contracts/recovery-qualification-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/assurance-subject-graph.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-subject-graph.v1.invalid.json"
+      ],
+      "schema": "contracts/assurance-subject-graph.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/assurance-composition-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-composition-snapshot.v1.invalid.json"
+      ],
+      "schema": "contracts/assurance-composition-snapshot.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/assurance-certificate.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-certificate.v1.invalid.json"
+      ],
+      "schema": "contracts/assurance-certificate.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/assurance-revocation-event.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-revocation-event.candidate.v2.invalid.json"
+      ],
+      "schema": "contracts/assurance-revocation-event.candidate.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/offline-trust-bundle.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/offline-trust-bundle.v1.invalid.json"
+      ],
+      "schema": "contracts/offline-trust-bundle.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/plugin-manifest.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/plugin-manifest.v1.invalid.json"
+      ],
+      "schema": "contracts/plugin-manifest.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/ai-population-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ai-population-receipt.v1.invalid.json"
+      ],
+      "schema": "contracts/ai-population-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/onsure-release-qualification.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/onsure-release-qualification.v1.invalid.json"
+      ],
+      "schema": "contracts/onsure-release-qualification.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/contract-active-selector.candidate.v2.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/contract-active-selector.candidate.v2.invalid.json"
+      ],
+      "schema": "contracts/contract-active-selector.candidate.v2.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/idempotency-record.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/idempotency-record.v1.invalid.json"
+      ],
+      "schema": "contracts/idempotency-record.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/policy-profile.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/policy-profile.v1.invalid.json"
+      ],
+      "schema": "contracts/policy-profile.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/official-learning-ledger-entry.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/official-learning-ledger-entry.v1.invalid.json"
+      ],
+      "schema": "contracts/official-learning-ledger-entry.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-candidate-asset.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-candidate-asset.v1.invalid.json"
+      ],
+      "schema": "contracts/learning-candidate-asset.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-promotion-receipt.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-promotion-receipt.v1.invalid.json"
+      ],
+      "schema": "contracts/learning-promotion-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/corpus-integrity-report.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/corpus-integrity-report.v1.invalid.json"
+      ],
+      "schema": "contracts/corpus-integrity-report.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-effectiveness-report.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-effectiveness-report.v1.invalid.json"
+      ],
+      "schema": "contracts/learning-effectiveness-report.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/oracle-qualification.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/oracle-qualification.v1.invalid.json"
+      ],
+      "schema": "contracts/oracle-qualification.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/oracle-disagreement-case.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/oracle-disagreement-case.v1.invalid.json"
+      ],
+      "schema": "contracts/oracle-disagreement-case.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/validator-regression-qualification.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/validator-regression-qualification.v1.invalid.json"
+      ],
+      "schema": "contracts/validator-regression-qualification.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/derived-learning-lineage-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/derived-learning-lineage-disposition.v1.invalid.json"
+      ],
+      "schema": "contracts/derived-learning-lineage-disposition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-scope-promotion.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-scope-promotion.v1.invalid.json"
+      ],
+      "schema": "contracts/learning-scope-promotion.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/validation-experiment.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/validation-experiment.v1.invalid.json"
+      ],
+      "schema": "contracts/validation-experiment.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-stop-decision.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-stop-decision.v1.invalid.json"
+      ],
+      "schema": "contracts/learning-stop-decision.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/provider-drift-observation.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/provider-drift-observation.v1.invalid.json"
+      ],
+      "schema": "contracts/provider-drift-observation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/multi-agent-corroboration.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/multi-agent-corroboration.v1.invalid.json"
+      ],
+      "schema": "contracts/multi-agent-corroboration.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/hazard.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/hazard.v1.invalid.json"
+      ],
+      "schema": "contracts/hazard.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/safety-case.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/safety-case.v1.invalid.json"
+      ],
+      "schema": "contracts/safety-case.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/appeal-case.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/appeal-case.v1.invalid.json"
+      ],
+      "schema": "contracts/appeal-case.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/offboarding-closure.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/offboarding-closure.v1.invalid.json"
+      ],
+      "schema": "contracts/offboarding-closure.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/engagement-authorization.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/engagement-authorization.v1.invalid.json"
+      ],
+      "schema": "contracts/engagement-authorization.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/accessible-claim-render.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/accessible-claim-render.v1.invalid.json"
+      ],
+      "schema": "contracts/accessible-claim-render.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/migration-reconciliation-report.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/migration-reconciliation-report.v1.invalid.json"
+      ],
+      "schema": "contracts/migration-reconciliation-report.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/operational-remediation-receipt.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/operational-remediation-receipt.invalid.json"
+      ],
+      "schema": "contracts/operational-remediation-receipt.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/decision-time-knowledge-snapshot.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/decision-time-knowledge-snapshot.v1.invalid.json"
+      ],
+      "schema": "contracts/decision-time-knowledge-snapshot.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/human-override-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/human-override-disposition.v1.invalid.json"
+      ],
+      "schema": "contracts/human-override-disposition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/counterevidence-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/counterevidence-disposition.v1.invalid.json"
+      ],
+      "schema": "contracts/counterevidence-disposition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/challenge-set-access-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/challenge-set-access-disposition.v1.invalid.json"
+      ],
+      "schema": "contracts/challenge-set-access-disposition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/evidence-observation.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/evidence-observation.v1.invalid.json"
+      ],
+      "schema": "contracts/evidence-observation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/session-lifecycle-disposition.v1.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/session-lifecycle-disposition.v1.invalid.json"
+      ],
+      "schema": "contracts/session-lifecycle-disposition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/assurance-strength-ceiling.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/assurance-strength-ceiling.invalid.json"
+      ],
+      "schema": "contracts/assurance-strength-ceiling.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/data-residency-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/data-residency-check.invalid.json"
+      ],
+      "schema": "contracts/data-residency-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/cross-tenant-transfer-validation.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/cross-tenant-transfer-validation.invalid.json"
+      ],
+      "schema": "contracts/cross-tenant-transfer-validation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-activation-stage-transition.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-activation-stage-transition.invalid.json"
+      ],
+      "schema": "contracts/learning-activation-stage-transition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/statistical-qualification-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/statistical-qualification-check.invalid.json"
+      ],
+      "schema": "contracts/statistical-qualification-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/decision-explanation-fidelity-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/decision-explanation-fidelity-check.invalid.json"
+      ],
+      "schema": "contracts/decision-explanation-fidelity-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/selective-prediction-risk-coverage-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/selective-prediction-risk-coverage-check.invalid.json"
+      ],
+      "schema": "contracts/selective-prediction-risk-coverage-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-history-migration-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-history-migration-check.invalid.json"
+      ],
+      "schema": "contracts/learning-history-migration-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/ip-license-provenance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ip-license-provenance-check.invalid.json"
+      ],
+      "schema": "contracts/ip-license-provenance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/catastrophic-forgetting-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/catastrophic-forgetting-check.invalid.json"
+      ],
+      "schema": "contracts/catastrophic-forgetting-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/active-learning-sampling-bias-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/active-learning-sampling-bias-check.invalid.json"
+      ],
+      "schema": "contracts/active-learning-sampling-bias-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/confidence-calibration-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/confidence-calibration-check.invalid.json"
+      ],
+      "schema": "contracts/confidence-calibration-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/adversarial-benchmark-governance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/adversarial-benchmark-governance-check.invalid.json"
+      ],
+      "schema": "contracts/adversarial-benchmark-governance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/knowledge-fork-merge-governance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/knowledge-fork-merge-governance-check.invalid.json"
+      ],
+      "schema": "contracts/knowledge-fork-merge-governance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/external-llm-provenance-boundary-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/external-llm-provenance-boundary-check.invalid.json"
+      ],
+      "schema": "contracts/external-llm-provenance-boundary-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/final-lock-approval-cross-contract-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/final-lock-approval-cross-contract-check.invalid.json"
+      ],
+      "schema": "contracts/final-lock-approval-cross-contract-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/ai-product-currentness-composition.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ai-product-currentness-composition.invalid.json"
+      ],
+      "schema": "contracts/ai-product-currentness-composition.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/judge-reviewer-independence-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/judge-reviewer-independence-check.invalid.json"
+      ],
+      "schema": "contracts/judge-reviewer-independence-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/requalification-trigger-evaluation.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/requalification-trigger-evaluation.invalid.json"
+      ],
+      "schema": "contracts/requalification-trigger-evaluation.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/agent-memory-conflict-resolution.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/agent-memory-conflict-resolution.invalid.json"
+      ],
+      "schema": "contracts/agent-memory-conflict-resolution.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/tool-call-authorization-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/tool-call-authorization-check.invalid.json"
+      ],
+      "schema": "contracts/tool-call-authorization-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/prompt-provenance-chain-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/prompt-provenance-chain-check.invalid.json"
+      ],
+      "schema": "contracts/prompt-provenance-chain-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/ai-safety-claim-independence-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/ai-safety-claim-independence-check.invalid.json"
+      ],
+      "schema": "contracts/ai-safety-claim-independence-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/delegation-chain-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/delegation-chain-check.invalid.json"
+      ],
+      "schema": "contracts/delegation-chain-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/rag-retrieval-assurance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/rag-retrieval-assurance-check.invalid.json"
+      ],
+      "schema": "contracts/rag-retrieval-assurance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/reviewer-pool-independence-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/reviewer-pool-independence-check.invalid.json"
+      ],
+      "schema": "contracts/reviewer-pool-independence-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/revocation-propagation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/revocation-propagation-check.invalid.json"
+      ],
+      "schema": "contracts/revocation-propagation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/decision-propagation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/decision-propagation-check.invalid.json"
+      ],
+      "schema": "contracts/decision-propagation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/federated-aggregation-governance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/federated-aggregation-governance-check.invalid.json"
+      ],
+      "schema": "contracts/federated-aggregation-governance-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/causal-attribution-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/causal-attribution-check.invalid.json"
+      ],
+      "schema": "contracts/causal-attribution-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/usage-attribution-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/usage-attribution-check.invalid.json"
+      ],
+      "schema": "contracts/usage-attribution-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/seat-reassignment-revocation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/seat-reassignment-revocation-check.invalid.json"
+      ],
+      "schema": "contracts/seat-reassignment-revocation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/result-reproducibility-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/result-reproducibility-check.invalid.json"
+      ],
+      "schema": "contracts/result-reproducibility-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/verified-deployed-running-currentness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/verified-deployed-running-currentness-check.invalid.json"
+      ],
+      "schema": "contracts/verified-deployed-running-currentness-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/corpus-contribution-eligibility-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/corpus-contribution-eligibility-check.invalid.json"
+      ],
+      "schema": "contracts/corpus-contribution-eligibility-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/patch-isolation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/patch-isolation-check.invalid.json"
+      ],
+      "schema": "contracts/patch-isolation-check.v1.schema.json"
+    }
+  ],
   "runtime_validation": "NOT_RUN",
-  "final_claim_allowed": false
+  "version": "1.19.9"
 }

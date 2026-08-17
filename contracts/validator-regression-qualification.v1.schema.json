@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/validator-regression-qualification.v1.schema.json",
+  "title": "ONSure Validator Regression Qualification v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS G. 148 P0 invariant 9: a validator whose false_positive/false_negative drift exceeds its own declared threshold must not keep an ACTIVE (QUALIFIED) qualification -- enforced structurally so a validator can't drift past its own stated tolerance while still self-reporting as qualified.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "validator_id", "validator_version", "golden_result", "blind_result",
+    "challenge_result", "false_positive_drift", "false_negative_drift", "drift_threshold",
+    "decision", "evaluated_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_VALIDATOR_REGRESSION_QUALIFICATION_V1"},
+    "validator_id": {"type": "string", "minLength": 1},
+    "validator_version": {"type": "string", "minLength": 1},
+    "golden_result": {"enum": ["PASS", "FAIL", "NOT_RUN"]},
+    "blind_result": {"enum": ["PASS", "FAIL", "NOT_RUN"]},
+    "challenge_result": {"enum": ["PASS", "FAIL", "NOT_RUN"]},
+    "false_positive_drift": {"type": "number", "minimum": 0},
+    "false_negative_drift": {"type": "number", "minimum": 0},
+    "drift_threshold": {"type": "number", "minimum": 0},
+    "decision": {"enum": ["QUALIFIED", "STALE", "REGRESSED", "NOT_QUALIFIED"]},
+    "evaluated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "QUALIFIED"}}},
+      "then": {
+        "properties": {
+          "golden_result": {"const": "PASS"},
+          "blind_result": {"const": "PASS"},
+          "challenge_result": {"const": "PASS"}
+        }
+      }
+    }
+  ]
+}

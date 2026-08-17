@@ -1,0 +1,12 @@
+{
+  "requirement_id": "FR-COM-008",
+  "state": "NOT_APPLICABLE",
+  "rule_id": null,
+  "subject_digest": null,
+  "evaluated_context_digest": "236641fdabe8af3d1763f5fa6e2d268e956c05cfd6c87d8c17b70a62955ec988",
+  "rationale": null,
+  "evaluator_principal": null,
+  "evidence_digest": null,
+  "challenge_status": "NONE",
+  "evaluated_at": "2026-08-12T16:21:22.605895+00:00"
+}

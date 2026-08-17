@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/evidence-observation.v1.schema.json",
+  "title": "ONSure Evidence Observation v1",
+  "description": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md class 2 (Privacy vs Reproducibility), bound per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json LC-P0-002 (EvidenceObservation, DecisionTimeKnowledgeSnapshot). '158 SS2: 원문 민감정보의 영구보존을 재현성 전제조건으로 두지 않는다. 최소화/가명화 evidence, immutable digest, tombstone, decision snapshot을 우선한다.' reproducibility_claimed=true is reachable only when retention_form is MINIMIZED, PSEUDONYMIZED, DIGEST_ONLY, or TOMBSTONE -- RAW_SENSITIVE retention can never be the basis for a reproducibility claim, closing the named negative case (permanent raw-sensitive retention used to justify reproducibility).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "observation_id", "decision_ref", "retention_form",
+    "content_digest", "reproducibility_claimed", "observed_at", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EVIDENCE_OBSERVATION_V1"},
+    "observation_id": {"type": "string", "minLength": 1},
+    "decision_ref": {"type": "string", "minLength": 1},
+    "retention_form": {"enum": ["RAW_SENSITIVE", "MINIMIZED", "PSEUDONYMIZED", "DIGEST_ONLY", "TOMBSTONE"]},
+    "content_digest": {"$ref": "#/$defs/sha256"},
+    "reproducibility_claimed": {"type": "boolean"},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"retention_form": {"const": "RAW_SENSITIVE"}}, "required": ["retention_form"]},
+      "then": {"properties": {"reproducibility_claimed": {"const": false}}}
+    }
+  ],
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

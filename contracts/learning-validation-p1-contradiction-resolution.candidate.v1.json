@@ -1,0 +1,46 @@
+{
+  "type": "ONSURE_LEARNING_VALIDATION_P1_CONTRADICTION_RESOLUTION_CANDIDATE_V1",
+  "scope": "FR-LEARN-001~095",
+  "authority_ref": "docs/master/semantic-assurance/161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md",
+  "relationship_to_original_review": "contracts/learning-validation-95-contradiction-summary.candidate.v1.json records p1=4 and 15 total CR-LV-001..015 ids, but the original cross-capability review's own P1-severity content (which of the 15 ids are P1, and what each names) was never materialized anywhere in the repository -- only the aggregate count survived. The classes below are Claude's own derivation from the FR-LEARN-001~095 corpus, textually grounded and disjoint from 158's 11 P0 classes, NOT a claim to have recovered the original review's exact 4. They use new CR-LV-P1-* ids specifically so they are never confused with a recovered CR-LV-001..015 mapping.",
+  "classes": [
+    {
+      "id": "CR-LV-P1-01",
+      "title": "Federated Aggregation Mechanism vs Tenant Isolation",
+      "grounding": ["FR-LEARN-053", "FR-COM-002", "FR-LEARN-046"],
+      "precedence": "Minimum cohort size / outlier-dominant aggregation fails closed to REJECTED. Every aggregation round requires explicit per-tenant opt-in, not substituted by asset-promotion consent. Re-identifying diagnostics stay evaluator-only."
+    },
+    {
+      "id": "CR-LV-P1-02",
+      "title": "Reviewer/Evaluator Diversity Requirement vs Qualified-Reviewer Scarcity",
+      "grounding": ["FR-LEARN-061", "FR-LEARN-062", "FR-LEARN-093"],
+      "precedence": "A pool too small to satisfy diversity is never silently treated as satisfying it. Decisions get a REDUCED_INDEPENDENCE_DISCLOSED flag with real overlap reasons; high-risk (FR-LEARN-093 scope) decisions HOLD until additional external reviewers are secured."
+    },
+    {
+      "id": "CR-LV-P1-03",
+      "title": "Decision Explanation Fidelity vs Sealed Challenge/Benchmark Secrecy",
+      "grounding": ["FR-LEARN-094", "FR-LEARN-033"],
+      "precedence": "Explanations faithfully cite the real evidence/rule/oracle/policy identifiers and rationale used, but never reproduce sealed fixture content verbatim -- references are redacted/abstracted digests; audits needing the original go through an evaluator-only channel."
+    },
+    {
+      "id": "CR-LV-P1-04",
+      "title": "Emergency Global Revocation Speed vs Data Residency/Air-gapped Isolation",
+      "grounding": ["FR-LEARN-067", "FR-LEARN-054", "FR-LEARN-068"],
+      "precedence": "Legal basis for emergency cross-border revocation transfer into sovereignty-restricted regions is secured in advance (authority_refs bound before an incident, not during one). Air-gapped environments never claim real-time currentness -- they carry an explicit PROPAGATION_LAG_DISCLOSED SLA (STALE until next sync window) instead."
+    }
+  ],
+  "p1": {
+    "classes_derived": 4,
+    "design_bindings": 4,
+    "contract_bindings": 0,
+    "runtime_tests_run": 0,
+    "evidence_receipts": 0,
+    "state": "DESIGN_PROPOSED_PENDING_HUMAN_CONFIRMATION"
+  },
+  "learning_validation_p1_design_state": "P1_CONTRADICTIONS_DESIGN_PROPOSED_CANDIDATE",
+  "global_design_lock": "HOLD",
+  "reason": "design proposal only; human design-authority confirmation, contract bindings, and runtime evidence all remain pending",
+  "proposed_by": "CLAUDE_SEMANTIC_ANALYSIS",
+  "requires_human_confirmation": true,
+  "final_claim_allowed": false
+}

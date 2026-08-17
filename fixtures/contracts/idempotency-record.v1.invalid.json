@@ -1,0 +1,11 @@
+{
+  "contract": "ONSURE_IDEMPOTENCY_RECORD_V1",
+  "tenant_id": "tenant-a",
+  "operation": "case.open",
+  "idempotency_key": "short",
+  "request_digest": "not-a-sha256",
+  "response": {
+    "decision": "OPENED"
+  },
+  "first_seen_at": "2026-08-13T14:07:39.662480+00:00"
+}

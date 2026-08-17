@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-FRESH-002",
+  "requirement_summary": "Accessibility / Internationalization / Locale Integrity: rendered claims must never rely on a color-only signal, must carry a screen-reader label, and a localization fallback must never drop UNKNOWN/HOLD/limitation disclosure.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (accessibilityValidateRender), assurance.accessibility.validate-render v2 operation; contracts/accessible-claim-render.v1.schema.json",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch), tests/test_fresh_review_refinement_contracts.py (real jsonschema validation against fixtures)",
+  "observed_test_methods": [
+    "accessibilityValidateRenderRejectsAColorOnlySignal",
+    "accessibilityValidateRenderRejectsAFallbackThatDropsLimitationDisclosure",
+    "accessibilityValidateRenderAcceptsAFullyCompliantRender",
+    "test_localization_fallback_cannot_drop_limitation_disclosure",
+    "test_accessible_claim_render_never_permits_a_color_only_signal"
+  ],
+  "coverage_notes": "Color-only signal rejected outright. A localization fallback that drops limitation disclosure is rejected -- schema-enforced (the invalid fixture is genuinely rejected by jsonschema, not merely asserted). A fully compliant render (no color-only signal, real screen-reader label, disclosure present) is accepted.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/knowledge-fork-merge-governance-check.v1.schema.json",
+  "title": "ONSure Knowledge Fork / Merge Governance Check v1",
+  "description": "FR-LEARN-069 Knowledge Fork / Merge Governance: Tenant/Industry/Global knowledge가 fork된 뒤 merge될 수 있으므로 ancestor epoch, divergent changes, conflicts, chosen resolution, merge receipt를 보존한다. silent overwrite 금지. A detected conflict with no matching explicit resolution (a silent overwrite) is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "knowledge_asset_id", "ancestor_epoch_id", "detected_conflicts",
+    "conflict_resolutions", "merge_receipt_id", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_KNOWLEDGE_FORK_MERGE_GOVERNANCE_CHECK_V1"},
+    "knowledge_asset_id": {"type": "string", "minLength": 1},
+    "ancestor_epoch_id": {"type": "string", "minLength": 1},
+    "detected_conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["conflict_id", "field_path"],
+        "properties": {
+          "conflict_id": {"type": "string", "minLength": 1},
+          "field_path": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "conflict_resolutions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["conflict_id", "resolution_basis"],
+        "properties": {
+          "conflict_id": {"type": "string", "minLength": 1},
+          "resolution_basis": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "merge_receipt_id": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["MERGE_ALLOWED", "MERGE_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

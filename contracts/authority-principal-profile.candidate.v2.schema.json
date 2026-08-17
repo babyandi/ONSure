@@ -94,7 +94,7 @@
     },
     {
       "if": {"properties": {"qualification": {"properties": {"required": {"const": true}}}}},
-      "then": {"not": {"properties": {"qualification": {"properties": {"state": {"const": "NOT_REQUIRED"}}}}}
+      "then": {"not": {"properties": {"qualification": {"properties": {"state": {"const": "NOT_REQUIRED"}}}}}}
     }
   ],
   "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}

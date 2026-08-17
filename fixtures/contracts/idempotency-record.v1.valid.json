@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_IDEMPOTENCY_RECORD_V1",
+  "tenant_id": "tenant-a",
+  "operation": "case.open",
+  "idempotency_key": "key-00000001",
+  "request_digest": "3e94e6f8266a9719613ab18677354a21ce879cbf72a76f62e41a5fb9c82f5314",
+  "response": {
+    "decision": "OPENED",
+    "case_id": "case-1"
+  },
+  "first_seen_at": "2026-08-13T14:07:39.662480+00:00"
+}

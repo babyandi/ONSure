@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_LEARNING_ACTIVATION_STAGE_TRANSITION_V1",
+  "learning_asset_id": "asset-financial-fraud-pattern-014",
+  "from_stage": "APPROVED",
+  "to_stage": "FULLY_LIVE",
+  "decision_impact": "FULL",
+  "traffic_scope": "FULL",
+  "qualification_evidence_kind": "OFFLINE_ONLY",
+  "decision": "TRANSITION_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

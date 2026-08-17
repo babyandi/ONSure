@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/currentness-snapshot.v1.schema.json",
+  "title": "ONSure Currentness Snapshot v1 (AssuranceCurrentnessSnapshot)",
+  "description": "29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md SS3.5 + 71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS2 conditionals. This is the SEPARATE, mutable-over-time axis that FinalLock (immutable historical issuance fact, Wave 4) explicitly does not carry: a FinalLock's lock_state never changes after issuance, but many CurrentnessSnapshot records over time track whether that lock's target is still deployed/running/matching.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "currentness_snapshot_id", "final_lock_digest", "target_manifest_digest",
+    "deployment_revision_id", "expected_artifact_digest", "observed_artifact_digest",
+    "runtime_population_digest", "runtime_population_complete", "policy_epoch",
+    "validator_qualification_epoch", "authority_epoch", "observation_epoch",
+    "evaluated_at", "state", "reasons", "next_required_actions", "revocation_receipt_digest",
+    "positive_final_eligible", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CURRENTNESS_SNAPSHOT_V1"},
+    "currentness_snapshot_id": {"type": "string", "minLength": 1},
+    "final_lock_digest": {"$ref": "#/$defs/sha256"},
+    "target_manifest_digest": {"$ref": "#/$defs/sha256"},
+    "deployment_revision_id": {"type": "string", "minLength": 1},
+    "expected_artifact_digest": {"$ref": "#/$defs/sha256"},
+    "observed_artifact_digest": {"$ref": "#/$defs/sha256"},
+    "runtime_population_digest": {"$ref": "#/$defs/sha256"},
+    "runtime_population_complete": {"type": "boolean"},
+    "policy_epoch": {"type": "string", "minLength": 1},
+    "validator_qualification_epoch": {"type": "string", "minLength": 1},
+    "authority_epoch": {"type": "string", "minLength": 1},
+    "observation_epoch": {"type": "string", "minLength": 1},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "state": {"enum": ["CURRENT", "STALE", "REASSESSMENT_REQUIRED", "INVALIDATED", "REVOKED", "UNKNOWN"]},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "next_required_actions": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "revocation_receipt_digest": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"},
+    "positive_final_eligible": {"type": "boolean"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"const": "CURRENT"}}},
+      "then": {"properties": {"runtime_population_complete": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"state": {"const": "REVOKED"}}},
+      "then": {"required": ["revocation_receipt_digest"], "properties": {"revocation_receipt_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}
+    },
+    {
+      "if": {"properties": {"state": {"const": "UNKNOWN"}}},
+      "then": {"properties": {"positive_final_eligible": {"const": false}}}
+    },
+    {
+      "if": {"not": {"properties": {"state": {"const": "CURRENT"}}}},
+      "then": {"properties": {"positive_final_eligible": {"const": false}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

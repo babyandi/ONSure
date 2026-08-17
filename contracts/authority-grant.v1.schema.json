@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/authority-grant.v1.schema.json",
+  "title": "ONSure Authority Grant v1",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS7. Invariants: delegated scope must be a subset of the parent grant's scope; a child's valid_until must not exceed its parent's; multiple keys held by the same principal never count as multiple independent approvers (SoD); a grant is not authoritative outside its [valid_from, valid_until) window.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "grant_id", "principal_id", "organization_id", "tenant_id",
+    "allowed_operation_patterns", "resource_scope", "purpose_scope", "valid_from",
+    "valid_until", "delegation_depth", "parent_grant_id", "issuer_principal_id",
+    "approval_chain", "state", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AUTHORITY_GRANT_V1"},
+    "grant_id": {"type": "string", "minLength": 1},
+    "principal_id": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "allowed_operation_patterns": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "resource_scope": {"type": "string", "minLength": 1},
+    "purpose_scope": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "delegation_depth": {"type": "integer", "minimum": 0},
+    "parent_grant_id": {"type": ["string", "null"]},
+    "issuer_principal_id": {"type": "string", "minLength": 1},
+    "approval_chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["approver_principal_id", "approver_key_id", "approved_at"],
+        "properties": {
+          "approver_principal_id": {"type": "string", "minLength": 1},
+          "approver_key_id": {"type": "string", "minLength": 1},
+          "approved_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "description": "Distinct approvers must have distinct approver_principal_id; multiple keys under the same principal_id do not count as multiple approvers (SoD invariant, enforced as a cross-contract test since JSON Schema cannot count-with-dedup across array items by a non-unique-item key)."
+    },
+    "state": {"enum": ["ACTIVE", "SUSPENDED", "REVOKED", "EXPIRED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"delegation_depth": {"const": 0}}},
+      "then": {"properties": {"parent_grant_id": {"const": null}}}
+    },
+    {
+      "if": {"not": {"properties": {"delegation_depth": {"const": 0}}}},
+      "then": {"required": ["parent_grant_id"], "properties": {"parent_grant_id": {"type": "string", "minLength": 1}}}
+    }
+  ]
+}

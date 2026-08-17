@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/operational-remediation-receipt.v1.schema.json",
+  "title": "ONSure Operational Remediation Receipt v1",
+  "description": "Records a reversible operational configuration change made under Autonomous Development Mode (137 standing directive 2026-08-15): every field the mode's own admissibility conditions require (reversibility, no data loss, no privilege expansion, no production/commercial authorization created, a real rollback procedure) must be present and true/non-empty, or the receipt itself is schema-invalid -- the schema is the enforcement mechanism for those conditions, not just documentation of them. This is a generic, reusable receipt type: any future reversible remediation (branch protection, header config, etc.) uses this same contract rather than inventing a new ad hoc shape each time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "remediation_id", "target_policy_ref", "target_evidence_ref",
+    "prior_evidence_archive_path", "prior_evidence_sha256", "decision_basis",
+    "change_description", "change_mechanism", "change_command",
+    "reversible", "rollback_procedure", "irreversible_data_loss",
+    "privilege_expansion", "production_or_commercial_authorization_created",
+    "executed_at", "executed_by", "post_change_observation_ref",
+    "final_claim_allowed", "receipt_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_OPERATIONAL_REMEDIATION_RECEIPT_V1"},
+    "remediation_id": {"type": "string", "minLength": 1},
+    "target_policy_ref": {"type": "string", "minLength": 1},
+    "target_evidence_ref": {"type": "string", "minLength": 1},
+    "prior_evidence_archive_path": {"type": "string", "minLength": 1},
+    "prior_evidence_sha256": {"$ref": "#/$defs/sha256"},
+    "decision_basis": {"type": "string", "minLength": 1},
+    "change_description": {"type": "string", "minLength": 1},
+    "change_mechanism": {"enum": ["GITHUB_API", "GITHUB_RULESET_EXPORT", "OTHER_REVERSIBLE_API"]},
+    "change_command": {"type": "string", "minLength": 1},
+    "reversible": {"const": true},
+    "rollback_procedure": {"type": "string", "minLength": 1},
+    "irreversible_data_loss": {"const": false},
+    "privilege_expansion": {"const": false},
+    "production_or_commercial_authorization_created": {"const": false},
+    "executed_at": {"type": "string", "format": "date-time"},
+    "executed_by": {"type": "string", "minLength": 1},
+    "post_change_observation_ref": {"type": "string", "minLength": 1},
+    "final_claim_allowed": {"const": false},
+    "receipt_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

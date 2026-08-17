@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/final-lock-approval-cross-contract-check.v1.schema.json",
+  "title": "ONSure Final Lock / Approval Receipt Cross-Contract Check v1",
+  "description": "FR-META-041 Cross-Contract Semantic Validation: 개별 Schema valid를 넘어 Contract 간 관계를 검증한다. 예: REJECT Approval은 Final Lock 불가, purpose/type 일치, target/candidate digest 일치, run context 일치, cancelled evidence 사용 금지. final-lock.candidate.v2.schema.json's own final_approval_decision field is schema-constrained to the literal const 'APPROVE', but that only validates the FinalLock's OWN claim -- it cannot verify that claim against the real, separately-referenced Approval Receipt. A referenced approval whose real decision is not APPROVE, whose digest does not match the FinalLock's own reference, whose target/gate-receipt does not match, or which is itself cancelled, is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "lock_id", "final_lock_final_approval_sha256", "final_lock_target_id",
+    "final_lock_target_artifact_sha256", "final_lock_gate_receipt_sha256",
+    "referenced_approval_id", "referenced_approval_sha256", "referenced_approval_decision",
+    "referenced_approval_target_id", "referenced_approval_target_artifact_sha256",
+    "referenced_approval_gate_receipt_sha256", "referenced_approval_cancelled",
+    "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_FINAL_LOCK_APPROVAL_CROSS_CONTRACT_CHECK_V1"},
+    "lock_id": {"type": "string", "minLength": 1},
+    "final_lock_final_approval_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "final_lock_target_id": {"type": "string", "minLength": 1},
+    "final_lock_target_artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "final_lock_gate_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "referenced_approval_id": {"type": "string", "minLength": 1},
+    "referenced_approval_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "referenced_approval_decision": {"enum": ["APPROVE", "REJECT", "HOLD"]},
+    "referenced_approval_target_id": {"type": "string", "minLength": 1},
+    "referenced_approval_target_artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "referenced_approval_gate_receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "referenced_approval_cancelled": {"type": "boolean"},
+    "decision": {"enum": ["CROSS_CONTRACT_CONSISTENT", "CROSS_CONTRACT_INCONSISTENT"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

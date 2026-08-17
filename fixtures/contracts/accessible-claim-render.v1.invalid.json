@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_ACCESSIBLE_CLAIM_RENDER_V1",
+  "render_id": "render-002",
+  "subject_claim_id": "claim-002",
+  "decision_token": "HOLD",
+  "color_only_signal": false,
+  "screen_reader_label": "Assurance status: Hold.",
+  "timestamp_utc": "2026-08-15T00:00:00Z",
+  "currentness_token": "STALE",
+  "limitation_tokens": [],
+  "locale": "ko-KR",
+  "localization_fallback_used": true,
+  "limitation_disclosure_present": false
+}

@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_DEPLOYMENT_TARGET_V1",
+  "deployment_target_id": "DT::neutral-001::prod-us-east",
+  "organization_id": "org-001",
+  "tenant_id": "tenant-001",
+  "target_id": "target-neutral-001",
+  "environment_class": "SANDBOX",
+  "provider_type": "KUBERNETES",
+  "region": "us-east-1",
+  "cluster_id": "cluster-001",
+  "namespace": "neutral-001-prod",
+  "target_binding_digest": "31f1246f779be3819ffc54a5c4b7544703cf6cfc64d5192e553486c6c89eb269",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

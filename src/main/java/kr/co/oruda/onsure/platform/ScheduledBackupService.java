@@ -100,5 +100,12 @@ public final class ScheduledBackupService implements AutoCloseable {
     @Override
     public void close() {
         executor.shutdownNow();
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                Thread.currentThread().interrupt();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

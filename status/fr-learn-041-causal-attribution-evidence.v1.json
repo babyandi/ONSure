@@ -1,0 +1,26 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-041",
+  "requirement_summary": "151_LEARNING_VALIDATION_OPERATIONAL_MATURITY_REFINEMENT.md FR-LEARN-041 Causal Attribution: '학습자산 적용 후 품질 변화가 해당 변경 때문인지 검증해야 한다. 단순 before/after 상관관계만으로 효과를 확정하지 않으며, 가능한 경우 treatment/control, shadow comparator, counterfactual 또는 동등한 causal evidence를 사용한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.causalAttributionCheck via assurance.learning.causal-attribution.check; contracts/causal-attribution-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/causal-attribution-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#causalAttributionCheckRejectsAnEffectClaimedFromCorrelationOnly",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#causalAttributionCheckAllowsCorrelationOnlyWhenNoEffectIsClaimed",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#causalAttributionCheckSupportsARealTreatmentControlSplit",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#causalAttributionCheckRejectsTreatmentControlLabelWithoutAnActualControlGroup",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#causalAttributionCheckRejectsCounterfactualLabelWithoutAModelReference",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#causalAttributionCheckSupportsARealCounterfactualModelReference"
+  ],
+  "coverage_notes": "causalAttributionCheckRejectsAnEffectClaimedFromCorrelationOnly is the direct test of the requirement's named rule: BEFORE_AFTER_CORRELATION_ONLY plus effect_claimed=true is rejected outright, never trusted from a caller-declared attribution_supported flag. causalAttributionCheckAllowsCorrelationOnlyWhenNoEffectIsClaimed proves this is genuinely about the CLAIM, not the method label alone -- correlation-only observation with no effect claim attached is legitimate (e.g. exploratory monitoring), closing the gate only where it is actually needed rather than banning the weaker method outright. The two 'label alone is not evidence' tests (causalAttributionCheckRejectsTreatmentControlLabelWithoutAnActualControlGroup, causalAttributionCheckRejectsCounterfactualLabelWithoutAModelReference) prove a caller cannot simply name a stronger method string to bypass the correlation-only rejection -- TREATMENT_CONTROL requires control_group_present=true and COUNTERFACTUAL requires a real non-blank counterfactual_model_ref, each independently verified.",
+  "open_gap": "Operates on a caller-supplied method label and boolean/reference fields (control_group_present, counterfactual_model_ref); there is no live experiment-execution runtime in this codebase that actually runs a treatment/control split or builds a counterfactual model and produces these fields from real experimentation (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). SHADOW_COMPARATOR and EQUIVALENT_CAUSAL_EVIDENCE methods are accepted at face value with no completeness sub-check analogous to TREATMENT_CONTROL/COUNTERFACTUAL's -- the requirement names these as acceptable methods but does not specify their own required completeness fields the way it implicitly does for treatment/control (a control group) and counterfactual (a model), so no equivalent check was invented for them.",
+  "observed_at": "2026-08-16T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

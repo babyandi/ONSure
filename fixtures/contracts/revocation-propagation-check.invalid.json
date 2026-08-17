@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_REVOCATION_PROPAGATION_CHECK_V1",
+  "revocation_id": "revocation-2026-08-16-002",
+  "subject_id": "knowledge-asset-2",
+  "targets": [
+    {"target_id": "tenant-c-sovereign", "environment_type": "SOVEREIGNTY_RESTRICTED", "sovereignty_authority_ref": null, "next_sync_window_at": null}
+  ],
+  "target_dispositions": [
+    {"target_id": "tenant-c-sovereign", "disposition": "BLOCKED_AUTHORITY_MISSING"}
+  ],
+  "blocked_target_count": 1,
+  "disclosed_lag_target_count": 0,
+  "propagation_state": "FULLY_PROPAGATED",
+  "reasons": ["BLOCKED_AUTHORITY_MISSING:tenant-c-sovereign"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

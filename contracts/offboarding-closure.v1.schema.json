@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/offboarding-closure.v1.schema.json",
+  "title": "ONSure Offboarding Closure v1",
+  "description": "126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md FR-FRESH-003. Minimum sequence: TerminationRequested -> NewEffectBlocked -> ExportWindow -> Credential/Token/Grant Revocation -> Pending Job Settlement/Abort -> Evidence/Certificate Retention Classification -> Customer Export -> Deletion/LegalHold Processing -> OffboardingReceipt. legal_hold=true forbids DELETED (deletion never overrides a legal hold), and the receipt is only ever issued from the terminal stage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "offboarding_id", "tenant_id", "stage", "legal_hold",
+    "new_effect_blocked", "credential_revocation_complete", "outstanding_jobs_settled",
+    "customer_export_complete", "created_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_OFFBOARDING_CLOSURE_V1"},
+    "offboarding_id": {"type": "string", "minLength": 1},
+    "tenant_id": {"type": "string", "minLength": 1},
+    "stage": {
+      "enum": [
+        "TERMINATION_REQUESTED", "NEW_EFFECT_BLOCKED", "EXPORT_WINDOW",
+        "CREDENTIAL_REVOCATION", "PENDING_JOB_SETTLEMENT", "RETENTION_CLASSIFICATION",
+        "CUSTOMER_EXPORT", "DELETION_OR_LEGAL_HOLD_PROCESSING", "OFFBOARDING_RECEIPT_ISSUED"
+      ]
+    },
+    "legal_hold": {"type": "boolean"},
+    "new_effect_blocked": {"type": "boolean"},
+    "credential_revocation_complete": {"type": "boolean"},
+    "outstanding_jobs_settled": {"type": "boolean"},
+    "customer_export_complete": {"type": "boolean"},
+    "deletion_state": {"enum": ["NOT_APPLICABLE", "PENDING", "DELETED", "RETAINED_LEGAL_HOLD"]},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"legal_hold": {"const": true}}},
+      "then": {"not": {"properties": {"deletion_state": {"const": "DELETED"}}}}
+    },
+    {
+      "if": {"properties": {"stage": {"const": "OFFBOARDING_RECEIPT_ISSUED"}}},
+      "then": {
+        "properties": {
+          "new_effect_blocked": {"const": true},
+          "credential_revocation_complete": {"const": true},
+          "outstanding_jobs_settled": {"const": true},
+          "customer_export_complete": {"const": true}
+        }
+      }
+    }
+  ]
+}

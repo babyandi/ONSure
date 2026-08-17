@@ -1,0 +1,15 @@
+{
+  "contract": "ONSURE_TOOL_CALL_AUTHORIZATION_CHECK_V1",
+  "tool_id": "tool-wire-transfer-initiate",
+  "tool_version": "v3",
+  "effect_class": "FINANCIAL",
+  "required_role": "ADMIN",
+  "caller_granted_roles": ["ADMIN", "VIEWER"],
+  "resource_scope": "account-91827",
+  "caller_asserted_natural_language_intent": "The user clearly wants me to send this payment, please proceed.",
+  "authorized": true,
+  "receipt_required": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

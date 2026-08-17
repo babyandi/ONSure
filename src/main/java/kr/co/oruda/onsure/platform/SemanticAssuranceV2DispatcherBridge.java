@@ -61,17 +61,50 @@ public final class SemanticAssuranceV2DispatcherBridge {
         if ("semantic.reperformance.run".equals(operation)) {
             requirePathWithinTarget(request, "subject_path", authorizedTargetRoot);
         }
-        if ("deployment.verify-installed".equals(operation)) {
-            return blocked(operation, "TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE");
-        }
 
         ObjectNode routed = ((ObjectNode) request).deepCopy();
         routed.put("_authorized_target_root", authorizedTargetRoot.toString());
         routed.put("_authorized_target_id", registered.target().targetId());
         routed.put("_authorized_project_id", registered.projectId());
 
+        String pathBinding = "SERVER_RESOLVED_REGISTERED_TARGET_ROOT";
+        if ("deployment.verify-installed".equals(operation)) {
+            Path activeInstallationPath = resolveActiveDeploymentPath(operation, request, registered);
+            if (activeInstallationPath == null) {
+                return blocked(operation, "TARGET_BOUND_DEPLOYMENT_IDENTITY_NOT_AVAILABLE");
+            }
+            routed.put("_authorized_deployment_root", activeInstallationPath.toString());
+            pathBinding = "SERVER_RESOLVED_DEPLOYMENT_IDENTITY";
+        }
+
         Map<String, Object> value = semantic.dispatch(operation, routed);
-        return envelope(operation, value, "TENANT_RBAC_SEMANTIC_OPERATION_TRANSACTION", "SERVER_RESOLVED_REGISTERED_TARGET_ROOT");
+        return envelope(operation, value, "TENANT_RBAC_SEMANTIC_OPERATION_TRANSACTION", pathBinding);
+    }
+
+    /**
+     * Resolves the currently active installed version's directory for a registered deployment
+     * binding (deployment.register-target), the real target-bound deployment identity that
+     * verifyInstalled() digest-compares deployed_artifact_path against. Returns null (never
+     * throws) whenever the identity genuinely is not available yet -- unregistered deployment
+     * binding or zero installed versions -- so the caller fails closed with BLOCKED instead of a
+     * 500, matching every other "identity not yet available" path in this bridge.
+     */
+    private Path resolveActiveDeploymentPath(
+            String operation, JsonNode request, ProductCatalog.RegisteredTarget registered) throws Exception {
+        String deploymentTargetId = request.path("deployment_target_id").asText("");
+        if (deploymentTargetId.isBlank()) return null;
+        ProductCatalog.RegisteredDeployment deployment;
+        try {
+            deployment = new ProductCatalog(workspaceRoot.resolve(".onsure/product-catalog"))
+                    .requireDeployment(registered.projectId(), registered.target().targetId(), deploymentTargetId);
+        } catch (IllegalArgumentException notFound) {
+            return null;
+        }
+        try {
+            return new DeploymentInstallationService(deployment.deploymentRoot()).activeInstallationPath();
+        } catch (IllegalStateException noVersionInstalled) {
+            return null;
+        }
     }
 
     private ProductCatalog.RegisteredTarget registeredTarget(String projectId, String targetId) throws Exception {
@@ -151,11 +184,80 @@ public final class SemanticAssuranceV2DispatcherBridge {
         boolean allowed = switch (operation) {
             case "semantic.applicability.evaluate", "semantic.denominator.discover",
                     "semantic.denominator.challenge", "semantic.denominator.lock",
-                    "semantic.reperformance.run" -> auditor || operator || admin;
+                    "semantic.reperformance.run", "assurance.evidence-graph.validate",
+                    "assurance.composition.compute", "assurance.sod.record-stage",
+                    "assurance.sod.check", "assurance.four-eyes.record-approval",
+                    "assurance.four-eyes.check", "assurance.plugin.qualify",
+                    "assurance.external-integration.reconcile",
+                    "assurance.learning.candidate.register", "assurance.learning.validation.request",
+                    "assurance.learning.completion-status.check",
+                    "assurance.oracle.qualification-check", "assurance.oracle.multi-evaluate",
+                    "assurance.corpus.integrity-check", "assurance.validator.regression-qualify",
+                    "assurance.learning.stop-decision.compute",
+                    "assurance.learning.decision-currentness.evaluate",
+                    "assurance.learning.evidence-observation.record", "assurance.release.qualify",
+                    "assurance.validation.snapshot-verify", "assurance.validation.experiment-evaluate",
+                    "assurance.learning.effectiveness.evaluate", "assurance.strength-ceiling.compute",
+                    "assurance.learning.data-residency.check", "assurance.learning.revocation-propagation.check",
+                    "assurance.decision.propagation-check",
+                    "assurance.learning.federated-aggregation-governance.check",
+                    "assurance.learning.causal-attribution.check",
+                    "assurance.usage.attribution-check", "assurance.seat.reassignment-revocation-check",
+                    "assurance.result.reproducibility-check",
+                    "assurance.currentness.verified-deployed-running-check",
+                    "assurance.corpus.contribution-eligibility-check",
+                    "assurance.patch.isolation-check",
+                    "assurance.learning.cross-tenant-transfer.validate",
+                    "assurance.learning.activation-stage.transition",
+                    "assurance.learning.statistical-qualification.check",
+                    "assurance.learning.explanation-fidelity.check",
+                    "assurance.learning.selective-prediction-risk-coverage.check",
+                    "assurance.learning.history-migration.check",
+                    "assurance.learning.ip-license-provenance.check",
+                    "assurance.learning.catastrophic-forgetting.check",
+                    "assurance.learning.sampling-bias.check",
+                    "assurance.learning.confidence-calibration.check",
+                    "assurance.learning.adversarial-benchmark-governance.check",
+                    "assurance.learning.knowledge-fork-merge-governance.check",
+                    "assurance.learning.external-llm-provenance-boundary.check",
+                    "assurance.final-lock.approval-cross-contract.check",
+                    "assurance.ai-product.currentness-compose",
+                    "assurance.judge.independence-check", "assurance.reviewer-pool.independence-check",
+                    "assurance.requalification.trigger-evaluate",
+                    "assurance.agent-memory.conflict-resolve",
+                    "assurance.tool-call.authorization-check",
+                    "assurance.prompt.provenance-check",
+                    "assurance.ai-safety.claim-independence-check",
+                    "assurance.delegation.chain-check",
+                    "assurance.rag.retrieval-assurance-check",
+                    "assurance.provider.drift-check",
+                    "assurance.multi-agent.corroboration-check",
+                    "assurance.hazard.create", "assurance.appeal.file",
+                    "assurance.appeal.submit-evidence", "assurance.engagement.check-scope",
+                    "assurance.accessibility.validate-render", "assurance.migration.reconcile",
+                    "assurance.session.create", "assurance.session.check-valid",
+                    "assurance.learning.human-override.trend-report",
+                    "assurance.learning.revalidation.complete",
+                    "assurance.learning.revalidation.backlog-status" -> auditor || operator || admin;
+            case "assurance.hazard.advance", "assurance.appeal.assign-reviewer",
+                    "assurance.appeal.transition", "assurance.appeal.decide",
+                    "assurance.offboarding.request", "assurance.offboarding.advance",
+                    "assurance.migration.cutover", "assurance.migration.rollback" -> auditor || admin;
             case "semantic.authority.revalidate", "semantic.independence.assess",
                     "semantic.freshness.invalidate", "semantic.freshness.reconstruct",
                     "semantic.validator.requalify", "assurance.final-candidate.reconstruct",
-                    "deployment.verify-installed" -> auditor || admin;
+                    "deployment.verify-installed", "assurance.certificate.issue",
+                    "assurance.revocation.issue", "assurance.revocation.check",
+                    "assurance.offline-trust-bundle.evaluate", "assurance.delegation.grant",
+                    "assurance.delegation.check", "assurance.break-glass.invoke",
+                    "assurance.break-glass.review", "assurance.learning.validation.pack.issue",
+                    "assurance.learning.validation.receipt.record", "assurance.learning.promotion.approve",
+                    "assurance.learning.applied-lock.record", "assurance.learning.scope-promotion.decide",
+                    "assurance.learning.derived-lineage.dispose",
+                    "assurance.learning.human-override.decide",
+                    "assurance.learning.counterevidence.dispose",
+                    "assurance.learning.challenge-set-access.decide",
+                    "assurance.learning.ground-truth.declare-epoch" -> auditor || admin;
             case "assurance.human-accept" -> approver || admin;
             case "assurance.otester.accept", "assurance.oaudit.accept" -> auditor;
             case "git.push" -> operator || admin;

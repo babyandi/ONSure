@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/denominator-epoch.v1.schema.json",
+  "title": "ONSure Denominator Epoch v1 (Scope / Requirement / Policy)",
+  "description": "11_CONTRACT_UPGRADE_BLUEPRINT.md SS6.4 DenominatorEpoch, extended to cover Scope/Requirement/Policy per 82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md Wave 1 ('Scope/Requirement/Policy Epoch'). One shared schema with an epoch_type discriminator rather than three near-duplicate schemas, per 89's naming-canonicalization principle (do not invent parallel machinery for the same structural pattern). All CoverageReport/FinalAcceptance/ValidationCaseRegistry-family artifacts must reference the current epoch id for their epoch_type; a new epoch supersedes the previous one and downstream artifacts referencing a superseded epoch become stale.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "epoch_id", "epoch_type", "epoch_sequence", "source_digest", "effective_at",
+    "superseded_epoch_id", "supersession_reason", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DENOMINATOR_EPOCH_V1"},
+    "epoch_id": {"type": "string", "minLength": 1},
+    "epoch_type": {"enum": ["SCOPE", "REQUIREMENT", "POLICY"]},
+    "epoch_sequence": {"type": "integer", "minimum": 1, "description": "Monotonically increasing per epoch_type; never reused."},
+    "source_digest": {
+      "$ref": "#/$defs/sha256",
+      "description": "Digest of the exact source population this epoch commits to (e.g. requirement_manifest_digest for REQUIREMENT, policy_pack digest for POLICY, product-scope population digest for SCOPE)."
+    },
+    "effective_at": {"type": "string", "format": "date-time"},
+    "superseded_epoch_id": {"type": ["string", "null"]},
+    "supersession_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "EDITORIAL", "SEMANTIC_NON_BREAKING", "SEMANTIC_BREAKING", "SCOPE_EXPANSION",
+        "SCOPE_REDUCTION", "CRITICALITY_CHANGE", "WAIVABILITY_CHANGE", "APPLICABILITY_CHANGE", null
+      ],
+      "description": "92_REQUIREMENT_UNIVERSE_TAXONOMY_APPLICABILITY_AND_CHANGE_IMPACT.md SS4 change class vocabulary."
+    },
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"epoch_sequence": {"const": 1}}},
+      "then": {"properties": {"superseded_epoch_id": {"const": null}, "supersession_reason": {"const": null}}}
+    },
+    {
+      "if": {"not": {"properties": {"epoch_sequence": {"const": 1}}}},
+      "then": {"required": ["superseded_epoch_id", "supersession_reason"], "properties": {"superseded_epoch_id": {"type": "string", "minLength": 1}, "supersession_reason": {"type": "string"}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "contract": "ONSURE_ASSURANCE_CERTIFICATE_V1",
+  "certificate_id": "CERT::neutral-001::0001",
+  "certificate_version": "1.0.0",
+  "subject_id": "c05d6ee65877d1a125a5e9bfdeb12054eac7efe0c8f484a228342ae9eab626dc",
+  "subject_digest": "c05d6ee65877d1a125a5e9bfdeb12054eac7efe0c8f484a228342ae9eab626dc",
+  "product_version": "neutral-product-v1.4.0",
+  "target_manifest_digest": "79e459b08ef89cc8b68b7c5fcad8ed3a435b3bd65aface1b47ba9a0a57dcdb2c",
+  "requirement_epoch": "EPOCH::REQUIREMENT::0002",
+  "composition_snapshot_digest": "e5c73b315f3f8ed29d8435825f617ed9cdaaf9d41bb35ca0ebeff665b58596df",
+  "final_lock_digest": "28f213035773e57be53b6754345ae339af77f75b986c8fa06449f92ad0fa00e0",
+  "assurance_tier": "TIER_3_HIGH",
+  "decision": "PASS",
+  "currentness_state_at_issue": "CURRENT",
+  "independent_verification_summary_digest": "759ce0a31423147f05f229d2dda0ae917ab64bac039128244fbb1a9206ce08da",
+  "limitation_summary": [
+    "Scope limited to target-neutral-001's declared attack surface at issuance."
+  ],
+  "exclusion_summary": [],
+  "issued_at": "2026-08-14T13:43:58.664442+00:00",
+  "not_before": "2026-08-14T13:43:58.664442+00:00",
+  "revalidation_due_at": "2026-11-12T13:43:58.664442+00:00",
+  "expires_at": "2027-08-14T13:43:58.664442+00:00",
+  "verifier_identity_ref": "otester-principal-001",
+  "revocation_reference": null,
+  "issuer_key_id": "onsure-certificate-issuer-key-001",
+  "signature": {
+    "algorithm": "Ed25519",
+    "signature": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+  },
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

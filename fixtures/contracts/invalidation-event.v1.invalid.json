@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_INVALIDATION_EVENT_V1",
+  "event_id": "IE::neutral-001::0001",
+  "event_type": "ARTIFACT_DRIFT",
+  "observed_at": "2026-08-14T13:38:21.407013+00:00",
+  "effective_at": "2026-08-14T13:38:21.407013+00:00",
+  "organization_id": "org-001",
+  "tenant_id": "tenant-001",
+  "source_subject_ids": [
+    "CS::neutral-001::0001",
+    "DR::neutral-001::0001"
+  ],
+  "changed_from_digest": "39ca4e618ba93bffcac72037875ba8e72111b1420091105367a2be69370b74fe",
+  "changed_to_digest": "84ecdd7ccae38d6dba91ff97457f5f6c174cc989a544451d19f26e08f777bfbd",
+  "triggering_evidence_digest": "56b87c030e261d1f13e7d66bb1dddb843e8a92fe908a17660a6fb600af158069",
+  "severity": "HIGH",
+  "authority_context": null,
+  "source_system": "runtime-drift-collector-v1",
+  "confidence": "CONFIRMED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

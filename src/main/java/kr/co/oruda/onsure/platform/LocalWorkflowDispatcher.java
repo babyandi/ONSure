@@ -109,6 +109,8 @@ public final class LocalWorkflowDispatcher {
             case "job.recover" -> jobRecover(request);
             case "deployment.install" -> deploymentInstall(request);
             case "deployment.rollback" -> deploymentRollback(request);
+            case "deployment.register-target" -> deploymentRegisterTarget(request);
+            case "deployment.read-target" -> deploymentReadTarget(request);
             case "git.commit" -> gitCommit(request);
             case "git.draft-pr" -> gitDraftPr(request);
             case "license.issue" -> licenseIssue(request);
@@ -210,6 +212,35 @@ public final class LocalWorkflowDispatcher {
         ProductCatalog catalog = catalog();
         return Map.of("targets", catalog.targets(requiredId(request, "project_id")),
                 "catalog_revision", catalog.revision(), "final_claim_allowed", false);
+    }
+
+    private static final Set<String> DEPLOYMENT_ENVIRONMENT_CLASSES =
+            Set.of("DEV", "TEST", "STAGE", "PROD", "DR");
+
+    private Map<String, Object> deploymentRegisterTarget(JsonNode request) throws Exception {
+        String projectId = requiredId(request, "project_id");
+        String targetId = requiredId(request, "target_id");
+        String deploymentTargetId = requiredId(request, "deployment_target_id");
+        String environmentClass = requiredText(request, "environment_class");
+        if (!DEPLOYMENT_ENVIRONMENT_CLASSES.contains(environmentClass)) {
+            throw new IllegalArgumentException("DEPLOYMENT_ENVIRONMENT_CLASS_INVALID");
+        }
+        Path deploymentRoot = outputPath(request, "deployment_root",
+                ".onsure/deployment/" + projectId + "/" + deploymentTargetId);
+        ProductCatalog catalog = catalog();
+        ProductCatalog.RegisteredDeployment registered = new ProductCatalog.RegisteredDeployment(
+                projectId, targetId, deploymentTargetId, environmentClass, deploymentRoot, Instant.now());
+        catalog.registerDeployment(registered);
+        return Map.of("registered_deployment", registered, "catalog_revision", catalog.revision(),
+                "final_claim_allowed", false);
+    }
+
+    private Map<String, Object> deploymentReadTarget(JsonNode request) throws Exception {
+        ProductCatalog.RegisteredDeployment registered = catalog().requireDeployment(
+                requiredId(request, "project_id"), requiredId(request, "target_id"),
+                requiredId(request, "deployment_target_id"));
+        return Map.of("registered_deployment", registered, "catalog_revision", catalog().revision(),
+                "final_claim_allowed", false);
     }
 
     private Map<String, Object> knowledgeSeparate(JsonNode request) throws Exception {

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/usage-attribution-check.v1.schema.json",
+  "title": "ONSure Usage Attribution Check v1",
+  "description": "FR-COM-006: 'ONSure 내부 오류에 의한 실패는 고객 사용량으로 확정하지 않는다.' usage_countable is computed for real from failure_cause -- an execution whose failure_cause is INTERNAL_ERROR can never be usage_countable=true, regardless of what the caller claims. usage_verified reports whether the caller's own claimed_usage_countable actually matched the real computation, so a caller cannot silently bill an internal-error failure as customer usage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "execution_id", "failure_cause", "claimed_usage_countable",
+    "usage_countable", "usage_verified", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_USAGE_ATTRIBUTION_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "failure_cause": {"enum": ["NONE", "INTERNAL_ERROR", "CUSTOMER_INPUT_ERROR", "CUSTOMER_USAGE", "EXTERNAL_DEPENDENCY_ERROR"]},
+    "claimed_usage_countable": {"type": "boolean"},
+    "usage_countable": {"type": "boolean"},
+    "usage_verified": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"failure_cause": {"const": "INTERNAL_ERROR"}}},
+      "then": {"properties": {"usage_countable": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"usage_countable": {"const": false}, "claimed_usage_countable": {"const": true}}},
+      "then": {"properties": {"usage_verified": {"const": false}}}
+    }
+  ]
+}

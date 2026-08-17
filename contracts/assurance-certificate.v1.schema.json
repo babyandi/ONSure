@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/assurance-certificate.v1.schema.json",
+  "title": "ONSure Assurance Certificate v1",
+  "description": "71_MACHINE_CONTRACT_FIELD_BY_FIELD_SPEC.md SS6. The customer/auditor-facing artifact, deliberately separate from internal Receipt/FinalLock. signature valid != current assurance: a certificate's cryptographic validity says nothing about whether the underlying assurance is still CURRENT -- that is currentness-snapshot.v1.schema.json's job, referenced here only by digest at issuance time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "certificate_id", "certificate_version", "subject_id", "subject_digest",
+    "product_version", "target_manifest_digest", "requirement_epoch",
+    "composition_snapshot_digest", "final_lock_digest", "assurance_tier", "decision",
+    "currentness_state_at_issue", "independent_verification_summary_digest",
+    "limitation_summary", "exclusion_summary", "issued_at", "not_before",
+    "revalidation_due_at", "expires_at", "verifier_identity_ref", "revocation_reference",
+    "issuer_key_id", "signature", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ASSURANCE_CERTIFICATE_V1"},
+    "certificate_id": {"type": "string", "minLength": 1},
+    "certificate_version": {"type": "string", "minLength": 1},
+    "subject_id": {"type": "string", "minLength": 1},
+    "subject_digest": {"$ref": "#/$defs/sha256"},
+    "product_version": {"type": "string", "minLength": 1},
+    "target_manifest_digest": {"$ref": "#/$defs/sha256"},
+    "requirement_epoch": {"type": "string", "minLength": 1},
+    "composition_snapshot_digest": {"$ref": "#/$defs/sha256"},
+    "final_lock_digest": {"$ref": "#/$defs/sha256"},
+    "assurance_tier": {"enum": ["TIER_1_BASIC", "TIER_2_STANDARD", "TIER_3_HIGH", "TIER_4_CRITICAL"]},
+    "decision": {"enum": ["PASS", "PASS_WITH_LIMITATIONS", "BLOCKED", "HOLD"]},
+    "currentness_state_at_issue": {"enum": ["CURRENT", "STALE", "REASSESSMENT_REQUIRED", "INVALIDATED", "REVOKED", "UNKNOWN"]},
+    "independent_verification_summary_digest": {"$ref": "#/$defs/sha256"},
+    "limitation_summary": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "exclusion_summary": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "not_before": {"type": "string", "format": "date-time"},
+    "revalidation_due_at": {"type": ["string", "null"], "format": "date-time"},
+    "expires_at": {"type": ["string", "null"], "format": "date-time"},
+    "verifier_identity_ref": {"type": "string", "minLength": 1},
+    "revocation_reference": {"type": ["string", "null"]},
+    "issuer_key_id": {"type": "string", "minLength": 1},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "signature"],
+      "properties": {
+        "algorithm": {"const": "Ed25519"},
+        "signature": {"type": "string", "minLength": 32}
+      },
+      "description": "Machine certificate digest signature only; PDF/HTML human-readable representation gets its own separate digest, never conflated with this one."
+    },
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"currentness_state_at_issue": {"const": "CURRENT"}}},
+      "then": {"properties": {"decision": {"enum": ["PASS", "PASS_WITH_LIMITATIONS"]}}}
+    },
+    {
+      "if": {"not": {"properties": {"currentness_state_at_issue": {"const": "CURRENT"}}}},
+      "then": {"properties": {"decision": {"enum": ["BLOCKED", "HOLD"]}}}
+    },
+    {
+      "if": {"properties": {"assurance_tier": {"enum": ["TIER_3_HIGH", "TIER_4_CRITICAL"]}}},
+      "then": {"properties": {"exclusion_summary": {"minItems": 0}}, "required": ["revalidation_due_at"]}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_CHALLENGE_SET_ACCESS_DISPOSITION_V1",
+  "access_id": "access-2",
+  "challenge_set_id": "challenge-set-2",
+  "requester_role": "PUBLIC",
+  "field_requested": "SEALED_FIXTURE",
+  "prior_exposure_state": "SEALED",
+  "access_granted": true,
+  "exposure_state": "EXPOSED",
+  "blind_authority_retained": false,
+  "decided_at": "2026-08-15T00:00:00Z",
+  "final_claim_allowed": false
+}

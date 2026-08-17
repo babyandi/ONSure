@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/decision-explanation-fidelity-check.v1.schema.json",
+  "title": "ONSure Decision Explanation Fidelity Check v1",
+  "description": "FR-LEARN-094 Decision Explanation Fidelity: 설명은 실제 사용된 evidence/rule/oracle/policy 경로에서 생성되어야 한다. 사후 생성된 그럴듯한 설명이 실제 decision lineage와 불일치하면 explanation PASS 금지. An explanation that cites any evidence/rule/oracle/policy reference NOT present in the decision's actual lineage is the named negative case (a fabricated, post-hoc-plausible citation).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "decision_id", "explanation_id", "actual_decision_lineage_refs",
+    "explanation_cited_refs", "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DECISION_EXPLANATION_FIDELITY_CHECK_V1"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "explanation_id": {"type": "string", "minLength": 1},
+    "actual_decision_lineage_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "explanation_cited_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "decision": {"enum": ["EXPLANATION_FAITHFUL", "EXPLANATION_UNFAITHFUL"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

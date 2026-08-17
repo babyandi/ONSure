@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/prompt-provenance-chain-check.v1.schema.json",
+  "title": "ONSure Prompt Provenance Chain Check v1",
+  "description": "FR-META-057 AI Runtime Identity Closure / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS3 Prompt Provenance: 'Prompt는 단순 문자열 hash가 아니라 계층/조립 계보를 가진다: system fragment, developer fragment, tenant policy fragment, product template, user input, retrieved context, tool result, runtime-injected state. 각 fragment는 source/ref/version/digest를 갖고 최종 assembled prompt digest와 연결한다. 동적 fragment가 identity에서 빠지면 prompt currentness를 주장할 수 없다.' assembled_digest_verified is a real computation (sha256 over the ordered fragment digests), not a caller-declared boolean -- a claimed_assembled_prompt_digest that does not match what the fragments actually hash to is detected, not trusted. dynamic_fragment_types_used names which of the 4 dynamic types (USER_INPUT, RETRIEVED_CONTEXT, TOOL_RESULT, RUNTIME_INJECTED_STATE) genuinely contributed to this specific prompt; any of those NOT represented by an actual fragment in the chain forces currentness_claimable=false, closing 'dynamic fragment가 identity에서 빠지면 currentness를 주장할 수 없다' without incorrectly demanding all 4 dynamic types on every prompt regardless of whether they were actually used.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "prompt_id", "fragments", "dynamic_fragment_types_used",
+    "claimed_assembled_prompt_digest", "computed_assembled_prompt_digest", "assembled_digest_verified",
+    "missing_dynamic_fragment_types", "currentness_claimable", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PROMPT_PROVENANCE_CHAIN_CHECK_V1"},
+    "prompt_id": {"type": "string", "minLength": 1},
+    "fragments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fragment_type", "source", "ref", "version", "digest"],
+        "properties": {
+          "fragment_type": {"$ref": "#/$defs/fragmentType"},
+          "source": {"type": "string", "minLength": 1},
+          "ref": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "minLength": 1},
+          "digest": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "dynamic_fragment_types_used": {
+      "type": "array", "items": {"$ref": "#/$defs/dynamicFragmentType"}, "uniqueItems": true
+    },
+    "claimed_assembled_prompt_digest": {"$ref": "#/$defs/sha256"},
+    "computed_assembled_prompt_digest": {"$ref": "#/$defs/sha256"},
+    "assembled_digest_verified": {"type": "boolean"},
+    "missing_dynamic_fragment_types": {
+      "type": "array", "items": {"$ref": "#/$defs/dynamicFragmentType"}, "uniqueItems": true
+    },
+    "currentness_claimable": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"not": {"properties": {"missing_dynamic_fragment_types": {"maxItems": 0}}}},
+      "then": {"properties": {"currentness_claimable": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"assembled_digest_verified": {"const": false}}},
+      "then": {"properties": {"currentness_claimable": {"const": false}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fragmentType": {
+      "enum": [
+        "SYSTEM", "DEVELOPER", "TENANT_POLICY", "PRODUCT_TEMPLATE",
+        "USER_INPUT", "RETRIEVED_CONTEXT", "TOOL_RESULT", "RUNTIME_INJECTED_STATE"
+      ]
+    },
+    "dynamicFragmentType": {
+      "enum": ["USER_INPUT", "RETRIEVED_CONTEXT", "TOOL_RESULT", "RUNTIME_INJECTED_STATE"]
+    }
+  }
+}

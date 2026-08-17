@@ -1,0 +1,51 @@
+{
+  "contract": "ONSURE_TARGET_MANIFEST_V1",
+  "manifest_id": "TM::neutral-target-001",
+  "target_id": "target-neutral-001",
+  "target_type": "GENERAL_SOFTWARE",
+  "archetype": "monorepo-java-service",
+  "classifier": {
+    "classifier_id": "target-type-classifier",
+    "classifier_version": "1.0.0",
+    "qualification_state": "QUALIFICATION_PENDING"
+  },
+  "confidence": 0.82,
+  "alternative_classifications": [
+    {
+      "target_type": "API_SERVICE",
+      "confidence": 0.15
+    }
+  ],
+  "applicable_sa_capabilities": [
+    {
+      "capability_id": "SA-01",
+      "applicability_state": "APPLICABLE"
+    },
+    {
+      "capability_id": "SA-11",
+      "applicability_state": "NOT_APPLICABLE",
+      "na_challenge": {
+        "rule_id": "NO_AI_COMPONENT_DETECTED",
+        "rationale": "No AI/LLM component found in source_inventory.",
+        "evaluator_principal": "target-manifest-generator-v1",
+        "evidence_digest": "cd2d0d5051affd33c7ce3c6e4bc57685c8802d5256589ba4b17d5b38996a77d4",
+        "challenge_status": "NONE"
+      }
+    }
+  ],
+  "source_surfaces": [
+    "GIT_REPOSITORY"
+  ],
+  "deployment_surfaces": [
+    "STANDALONE_DESKTOP_OR_SERVER"
+  ],
+  "runtime_surfaces": [
+    "PROCESS_EXIT",
+    "STDOUT_STDERR",
+    "LOG"
+  ],
+  "generated_at": "2026-08-13T13:48:24.971058+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false,
+  "manifest_sha256": "79e459b08ef89cc8b68b7c5fcad8ed3a435b3bd65aface1b47ba9a0a57dcdb2c"
+}

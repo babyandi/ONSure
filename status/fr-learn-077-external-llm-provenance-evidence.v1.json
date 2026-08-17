@@ -1,0 +1,20 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-077",
+  "requirement_summary": "External LLM / Provider Provenance Boundary: 외부 LLM/provider에 전달한 prompt/context/evidence와 반환된 output을 provider/version/region/retention/training-use policy와 함께 기록한다. 외부 provider 출력이 내부 provenance를 대체하지 않으며 training-use 금지 계약을 위반하는 재사용을 차단한다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (externalLlmProvenanceBoundaryCheck), assurance.learning.external-llm-provenance-boundary.check v2 operation; contracts/external-llm-provenance-boundary-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "externalLlmProvenanceBoundaryCheckAllowsEvidenceOnlyReuseUnderProhibitedTrainingContract",
+    "externalLlmProvenanceBoundaryCheckBlocksTrainingReuseUnderProhibitedContract",
+    "externalLlmProvenanceBoundaryCheckBlocksWhenInternalProvenanceNotEstablished",
+    "externalLlmProvenanceBoundaryCheckAllowsTrainingReuseWhenContractPermitsIt"
+  ],
+  "coverage_notes": "Two independent real checks, either forcing REUSE_BLOCKED: (1) training_use_prohibited_by_contract=true combined with proposed_reuse_purpose=TRAINING_DATA -- a specific cross-field combination JSON Schema's per-field validation cannot forbid -- closing 'training-use 금지 계약을 위반하는 재사용을 차단한다'; the SAME prohibited contract still allows EVIDENCE_ONLY reuse, since the prohibition specifically targets training use. (2) internal_provenance_established=false always blocks REGARDLESS of the training-use fields, closing '외부 provider 출력이 내부 provenance를 대체하지 않으며' (external provider output can never substitute for real internal provenance).",
+  "open_gap": "This operation validates the reuse-authorization DECISION given caller-declared facts (contract prohibition, provenance established); it does not itself independently verify the contract terms against a real, separately-maintained vendor-contract registry (no such registry currently exists in this codebase, similar to the disclosed gap in FR-LEARN-054's jurisdiction_basis). The retention_policy_ref and provider/version/region fields are captured and echoed (satisfying the recording obligation) but not independently cross-checked against a live policy source.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/coverage-report.candidate.v1.schema.json",
+  "title": "ONSure Coverage Report Candidate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract","coverage_report_id","run_reference","scope_source_digest","included","excluded","domain_coverage","coverage_percent","generated_at","final_claim_allowed"],
+  "properties": {
+    "contract": {"const": "ONSURE_COVERAGE_REPORT_CANDIDATE_V1"},
+    "coverage_report_id": {"type":"string","minLength":1},
+    "run_reference": {"type":"string","minLength":1},
+    "scope_source_digest": {"type":"string","pattern":"^[A-Fa-f0-9]{64}$"},
+    "included": {"type":"array","items":{"type":"object","additionalProperties":false,"required":["component_id","domains","result"],"properties":{"component_id":{"type":"string","minLength":1},"domains":{"type":"array","items":{"type":"string"},"minItems":1,"uniqueItems":true},"result":{"enum":["PASS","FAIL","HOLD","BLOCKED","NOT_RUN","INCONCLUSIVE","NON_FINAL"]}}}},
+    "excluded": {"type":"array","items":{"type":"object","additionalProperties":false,"required":["component_id","exclusion_reason","excluded_by","excluded_at"],"properties":{"component_id":{"type":"string","minLength":1},"exclusion_reason":{"enum":["RISK_BASED_DEPRIORITIZATION","OUT_OF_CONTRACT_SCOPE","NO_ACCESS","UNSUPPORTED_LANGUAGE_OR_FORMAT","TIME_BUDGET_EXCEEDED","CUSTOMER_REQUESTED_EXCLUSION","UNKNOWN_DISCOVERY_LIMITATION","UNOBSERVABLE"]},"excluded_by":{"type":"string","minLength":1},"excluded_at":{"type":"string","format":"date-time"}}}},
+    "domain_coverage": {"type":"object","additionalProperties":{"enum":["RUN","NOT_RUN","PARTIAL","NOT_APPLICABLE"]},"minProperties":1},
+    "coverage_percent": {"type":"number","minimum":0,"maximum":100},
+    "critical_unknown_count": {"type":"integer","minimum":0,"default":0},
+    "generated_at": {"type":"string","format":"date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {"if":{"properties":{"critical_unknown_count":{"minimum":1}},"required":["critical_unknown_count"]},"then":{"properties":{"final_claim_allowed":{"const":false}}}}
+  ]
+}

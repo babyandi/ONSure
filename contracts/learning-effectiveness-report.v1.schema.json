@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/learning-effectiveness-report.v1.schema.json",
+  "title": "ONSure Learning Effectiveness Report v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS D. before/after metrics on the SAME benchmark_id are the only basis for an IMPROVED/EQUIVALENT decision; a different benchmark or a real regression (worse false_positive/false_negative/recall) claiming IMPROVED is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "report_id", "candidate_id", "learning_epoch", "benchmark_id",
+    "before", "after", "variance", "confidence", "decision", "generated_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_LEARNING_EFFECTIVENESS_REPORT_V1"},
+    "report_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "learning_epoch": {"type": "string", "minLength": 1},
+    "benchmark_id": {"type": "string", "minLength": 1},
+    "before": {"$ref": "#/$defs/metricSet"},
+    "after": {"$ref": "#/$defs/metricSet"},
+    "variance": {"type": "number", "minimum": 0},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "decision": {"enum": ["IMPROVED", "EQUIVALENT", "REGRESSION", "INCONCLUSIVE"]},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "metricSet": {
+      "type": "object", "additionalProperties": false,
+      "required": ["precision", "recall", "false_positive_rate", "false_negative_rate", "coverage", "latency_ms"],
+      "properties": {
+        "precision": {"type": "number", "minimum": 0, "maximum": 1},
+        "recall": {"type": "number", "minimum": 0, "maximum": 1},
+        "false_positive_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "false_negative_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "latency_ms": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}

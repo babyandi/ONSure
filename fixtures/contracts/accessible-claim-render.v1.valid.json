@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_ACCESSIBLE_CLAIM_RENDER_V1",
+  "render_id": "render-001",
+  "subject_claim_id": "claim-001",
+  "decision_token": "HOLD",
+  "color_only_signal": false,
+  "screen_reader_label": "Assurance status: Hold. Independent verification pending.",
+  "timestamp_utc": "2026-08-15T00:00:00Z",
+  "currentness_token": "STALE",
+  "limitation_tokens": ["INDEPENDENT_VERIFICATION_NOT_RUN"],
+  "locale": "en-US",
+  "localization_fallback_used": true,
+  "limitation_disclosure_present": true
+}

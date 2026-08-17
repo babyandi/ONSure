@@ -1,0 +1,17 @@
+{
+  "contract": "ONSURE_APPEAL_CASE_V1",
+  "appeal_case_id": "appeal-001",
+  "appellant_principal_id": "customer-a",
+  "appellant_organization_id": "org-a",
+  "challenged_object_type": "FINDING",
+  "challenged_object_id": "finding-001",
+  "challenged_object_digest": "43ac647142dac29a5a3105ed53d8b08638e06e288044d7228ef8c985ab79dfa1",
+  "challenged_decision_principal_id": "reviewer-original",
+  "reviewer_principal_id": "reviewer-independent",
+  "filed_at": "2026-08-15T00:00:00Z",
+  "reason_code": "MATERIAL_EVIDENCE_OMITTED",
+  "argument": "The original finding did not account for the corrected sensor log.",
+  "submitted_evidence_refs": ["70213192283560990cc7315457795d1af358aafdb8d1e97c06cbf21dd03d889b"],
+  "status": "INDEPENDENT_REVIEW",
+  "decision": "PENDING"
+}

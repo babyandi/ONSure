@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-010",
+  "requirement_summary": "Atomic Validation Snapshot: Final은 동일 Target/Scope/Requirement/Policy generation에서 필수 Lane이 동시에 성립한 Snapshot이어야 한다. 서로 다른 Run의 좋은 결과를 선택적으로 조립하지 않는다.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (validationSnapshotVerify), assurance.validation.snapshot-verify v2 operation; contracts/atomic-validation-snapshot.v2.schema.json (pre-existing, previously zero Java consumers)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "validationSnapshotVerifyReachesAllLanesAtomicCleanWhenEverythingReconciles",
+    "validationSnapshotVerifyForcesHoldWhenTestSummaryCountsDoNotReconcile",
+    "validationSnapshotVerifyForcesHoldWhenReadCompletedBeforeReadStarted",
+    "validationSnapshotVerifyForcesHoldOnOpenP0FindingsEvenWhenAllTestsPassed",
+    "validationSnapshotVerifyForcesHoldOnAnyFailedBlockedOrNotRunTest"
+  ],
+  "coverage_notes": "The requirement's core invariant -- a Final snapshot must not selectively assemble good results from different runs -- is enforced by real computation the JSON Schema alone cannot express: (1) test_execution_summary's own sub-counts (passed/failed/blocked/hold/not_run) must arithmetically reconcile with applicable_count, rejecting a caller-declared summary that doesn't add up; (2) read_consistency_token's read_completed_at must not be before read_started_at, rejecting a malformed/fabricated single-read proof; (3) ANY non-clean Lane -- an open P0 finding, or any failed/blocked/not_run test -- forces decision=HOLD even when every other field looks fine, so a snapshot cannot report itself atomic-clean while quietly carrying one bad Lane from a different run. snapshot_sha256 is computed server-side from the sealed payload, never trusted from the caller.",
+  "open_gap": "The operation validates internal self-consistency of a caller-supplied snapshot; it does not yet cross-check the declared epochs (scope/requirement/denominator/policy/oracle/validator_qualification/authority) against the live system's actual current epoch values (e.g. the real EPOCH::REQUIREMENT::0002 generation receipt), which would close a stronger version of the 'stitched from different runs' threat where an attacker supplies internally-consistent but stale epoch values. This is disclosed as a real, not-yet-covered extension, not implemented as a stand-in for it.",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: FR-META-010's own authority document (02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md) is excluded as circular by the trace scanner, and no other design document currently elaborates this mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_CONTRACT_ACTIVE_SELECTOR_V2_CANDIDATE",
+  "selector_id": "SELECTOR::final-lock::0001",
+  "contract_family": "final-lock",
+  "active_version": "v1",
+  "active_contract_digest": "c596a7cfdd5a6ce41d300e0a9acca5548eeddf827eab55649f6ea64fdca02428",
+  "effective_at": "2026-08-14T13:49:01.011646+00:00",
+  "superseded_version": null,
+  "migration_receipt_sha256": "34d16083abfdddfa1d92105efc9376a0e6417b42e2edffdcbf184cee621462a5",
+  "rollback_pointer": {
+    "selector_id": "SELECTOR::final-lock::0001",
+    "selector_sha256": "132ff8e8dd6f1fe200ac0c2fef62ca8f2abc4df413a112c3976234ac4e78e7c9"
+  },
+  "authority": {
+    "principal_profile_sha256": "b82ee9da4d53b29fa4fabafaa670e892666397204b08d9b5c543d587e6156287",
+    "authority_epoch": "AUTH-EPOCH::0001",
+    "purpose": "SELECTOR_UPDATE"
+  },
+  "signature": {
+    "key_id": "selector-authority-key-001",
+    "algorithm": "Ed25519",
+    "signature": "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
+  },
+  "selector_sha256": "4cdc7987edc55a15cedb1551b4d21ade57a1dd247dec058a9734ba7676a8c0a1"
+}

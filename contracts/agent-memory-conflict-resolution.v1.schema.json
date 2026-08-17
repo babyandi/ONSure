@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/agent-memory-conflict-resolution.v1.schema.json",
+  "title": "ONSure Agent Memory-Aware vs Memory-Blind Conflict Resolution v1",
+  "description": "FR-META-058 AI Nondeterminism and Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS5 Agent Memory Assurance: 'Memory-aware 평가와 Memory-blind 평가가 충돌하면 자동 majority로 해결하지 않고 HOLD/추가 Oracle로 보낸다.' This schema covers only that one concrete, mechanically-checkable rule from SS5's broader checklist (tenant/user/project scope, write/retrieval authority, retention/deletion, poisoning provenance, stale memory handling, cross-session/cross-tenant leakage are separately covered by this codebase's pre-existing tenant-scoped RBAC infrastructure, not re-implemented here) -- when an evaluation run with the agent's memory available (memory-aware) disagrees with the same evaluation run with memory withheld (memory-blind), that disagreement itself is the signal that memory content may be influencing the verdict, and resolution is CONFLICT_HOLD with an additional oracle required, never resolved by treating either verdict as controlling.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "evaluation_id", "memory_type",
+    "memory_aware_verdict", "memory_blind_verdict",
+    "resolution", "additional_oracle_required", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AGENT_MEMORY_CONFLICT_RESOLUTION_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "evaluation_id": {"type": "string", "minLength": 1},
+    "memory_type": {
+      "enum": [
+        "SESSION_EPHEMERAL", "USER_PERSISTENT", "PROJECT_PERSISTENT",
+        "ORGANIZATION_SHARED", "MODEL_AGENT_LEARNING_MEMORY"
+      ]
+    },
+    "memory_aware_verdict": {"$ref": "#/$defs/verdict"},
+    "memory_blind_verdict": {"$ref": "#/$defs/verdict"},
+    "resolution": {"enum": ["AGREE_PASS", "AGREE_NEGATIVE", "CONFLICT_HOLD"]},
+    "additional_oracle_required": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"resolution": {"const": "CONFLICT_HOLD"}}},
+      "then": {"properties": {"additional_oracle_required": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"resolution": {"const": "AGREE_PASS"}}},
+      "then": {
+        "properties": {
+          "memory_aware_verdict": {"const": "PASS"},
+          "memory_blind_verdict": {"const": "PASS"},
+          "additional_oracle_required": {"const": false}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "verdict": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]}
+  }
+}

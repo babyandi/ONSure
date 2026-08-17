@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_RAG_RETRIEVAL_ASSURANCE_CHECK_V1",
+  "subject_id": "rag-2026-08-16-002",
+  "querying_tenant_id": "tenant-a",
+  "retrieved_chunks": [
+    {"chunk_id": "chunk-1", "source_tenant_id": "tenant-a"},
+    {"chunk_id": "chunk-2", "source_tenant_id": "tenant-b"}
+  ],
+  "citations": ["chunk-1"],
+  "cross_tenant_retrieval_detected": true,
+  "cross_tenant_violations": ["chunk-2"],
+  "citation_correctness_verified": true,
+  "fabricated_citations": [],
+  "retrieval_valid": true,
+  "reasons": ["CROSS_TENANT_RETRIEVAL:chunk-2"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

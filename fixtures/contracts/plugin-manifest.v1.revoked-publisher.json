@@ -1,0 +1,38 @@
+{
+  "contract": "ONSURE_PLUGIN_MANIFEST_V1",
+  "plugin_id": "PLUGIN::revoked-publisher-adapter",
+  "plugin_version": "1.2.0",
+  "publisher_principal_id": "onsure-verified-publisher-001",
+  "publisher_signature_valid": false,
+  "publisher_revoked": true,
+  "artifact_digest": "020b32127620271252bd3f599d0e097448f81f2acb86f18d533fdf1cfd3bd5dd",
+  "artifact_signature": {
+    "key_id": "publisher-key-001",
+    "algorithm": "Ed25519",
+    "signature": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
+  },
+  "capabilities": [
+    "DEPENDENCY_TREE_DISCOVERY",
+    "SBOM_GENERATION"
+  ],
+  "supported_target_archetypes": [
+    "NODE_NPM_SERVICE"
+  ],
+  "required_privileges": [
+    "READ_PACKAGE_JSON",
+    "READ_LOCKFILE"
+  ],
+  "access_declarations": {
+    "filesystem": "READ_ONLY_SANDBOX",
+    "network": "NONE",
+    "tool_invocation": []
+  },
+  "input_output_contract_refs": [
+    "contracts/target-adapter.v1.json"
+  ],
+  "sandbox_profile_id": "sandbox-profile-plugin-default-v1",
+  "qualification_state": "REVOKED",
+  "qualification_expires_at": "2027-02-10T13:48:16.844944+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

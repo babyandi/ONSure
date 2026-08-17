@@ -1,0 +1,56 @@
+{
+  "contract": "ONSURE_INDEPENDENT_ASSURANCE_EXECUTION_PLAN_V2_CANDIDATE",
+  "plan_id": "IAEP::neutral-target-001::0001",
+  "lane": "OTESTER",
+  "target": {
+    "target_id": "target-neutral-001",
+    "source_tree_sha256": "7169e22c4321bfc856a5a7826e04fd020e4aa6fb1c4cb0b729f8cd569a65800a",
+    "artifact_sha256": "18f2b736f7ac82ff33ac2d57a2cda48906927c44ed9a460eb17bd52df7d09c04"
+  },
+  "epochs": {
+    "scope": "EPOCH::SCOPE::0001",
+    "requirement": "EPOCH::REQUIREMENT::0001",
+    "denominator": "EPOCH::DENOMINATOR::0001",
+    "policy": "EPOCH::POLICY::0001",
+    "oracle": "EPOCH::ORACLE::0001",
+    "validator_qualification": "EPOCH::VQ::0001",
+    "authority": "AUTH-EPOCH::0001"
+  },
+  "principal": {
+    "principal_id": "otester-principal-001",
+    "principal_profile_sha256": "e530678b0be7c203840c1c28d6c361ee6d32fd15a1d3ffbc6a00f186c5cd9b02",
+    "credential_id": "cred-otester-001",
+    "credential_admin_owner_id": "credential-admin-001",
+    "qualification_profile_sha256": "e0d76883ac9c3ae9e39e42f2d6617f702a38935c8202476a586592088a06b73f"
+  },
+  "independence_profile_sha256": "14aa406f6a7586c2902fe92476ff8088c040719eb72a861ecc3e44d83d9e478e",
+  "execution_identity": {
+    "fixture_set_sha256": "212aa9852073426786a21e234c7723cefe0fb39d8cf937e32dacde82ab16338c",
+    "oracle_set_sha256": "ddca906f93664bbc4f906fd30c52c8f663dd379e07052db6a2110a6b15c66201",
+    "validator_set_sha256": "5c3c626163522d2a71fe576abd4efc5278ead4f2d33f14f9ff093ed99aec9e0a",
+    "environment_sha256": "162aa7f44dbe659f4e9e1a79e247a900d11027e90397070cc2743ca171958e34",
+    "toolchain_sha256": "bbf836490c50e184ce5567c518e5326014f1fc1e3ac407f9d13a209c8a064fa5"
+  },
+  "blind_context": {
+    "required": true,
+    "manifest_sha256": "cfd14d0147a2222968dd0ed267531bfa236946730700a9c030ed9c77b45661a1"
+  },
+  "effect_policy": "SANDBOXED",
+  "retry_policy": {
+    "max_attempts": 3,
+    "selection_rule": "ALL_ATTEMPTS_MATERIAL",
+    "preserve_all_attempts": false
+  },
+  "expected_evidence": [
+    "execution_receipt",
+    "raw_stdout",
+    "raw_stderr"
+  ],
+  "authority": {
+    "purpose": "INDEPENDENT_ASSURANCE_EXECUTION",
+    "profile_sha256": "39fbefa980fb608e329524ec57bef05d75648b32d8ac4b8110440d1c9e0aab06",
+    "authority_epoch": "AUTH-EPOCH::0001"
+  },
+  "created_at": "2026-08-13T14:51:11.952386+00:00",
+  "plan_sha256": "0d63ee7cc1b2085db1e260496908aa4eb1b9ca50a1e3a98004d57da08c71091e"
+}

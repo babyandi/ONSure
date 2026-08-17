@@ -81,6 +81,22 @@ class LicenseLifecycleServiceTest {
                 start.plusSeconds(100), start.plusSeconds(2), "operator-001"));
     }
 
+    // FR-COM-003: execution requires Entitlement, Credit, Feature, Validity confirmed beforehand.
+    @Test
+    void authorizeDeniesAnEntitlementNotGrantedOnTheLicenseEvenWhenTheLicenseItselfIsValid() throws Exception {
+        LicenseLifecycleService service = new LicenseLifecycleService(temp);
+        Instant start = Instant.parse("2026-07-26T00:00:00Z");
+        service.issue(tenant(), "license-scoped", "ONSURE", "DEVELOPER",
+                start, start.plus(30, ChronoUnit.DAYS), 100, 24, 60,
+                List.of("VALIDATION"), "issuer-001");
+        service.activate("license-scoped", start.plusSeconds(10), "operator-001");
+        Map<String, Object> result = service.authorize(
+                "license-scoped", "PROGRAM_LEARNING", start.plusSeconds(20), true, "operator-001");
+        assertEquals("DENY", result.get("decision"));
+        assertEquals("ALLOW", result.get("license_validation"));
+        assertEquals(false, result.get("entitlement_present"));
+    }
+
     private static Map<String, Object> tenant() {
         return Map.of(
                 "contract", "ONSURE_TENANT_CONTEXT_V1",

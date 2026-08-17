@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/runtime-population-snapshot.v1.schema.json",
+  "title": "ONSure Runtime Population Snapshot v1",
+  "description": "82_SCHEMA_AND_CROSS_CONTRACT_IMPLEMENTATION_SEQUENCE.md Wave 5 RuntimePopulationSnapshot. Aggregates every runtime-instance.v1.schema.json record observed for one deployment-revision.v1.schema.json at one exact moment -- doc71 SS2's 'CURRENT이면 runtime_population_complete=true' conditional requires this to be an exhaustive population claim (exact instance ID list + digest), not a sampled count.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "population_id", "deployment_revision_id", "exact_runtime_instance_ids",
+    "runtime_population_digest", "runtime_population_complete", "incomplete_reason",
+    "observed_at", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_RUNTIME_POPULATION_SNAPSHOT_V1"},
+    "population_id": {"type": "string", "minLength": 1},
+    "deployment_revision_id": {"type": "string", "minLength": 1},
+    "exact_runtime_instance_ids": {
+      "type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}
+    },
+    "runtime_population_digest": {"$ref": "#/$defs/sha256"},
+    "runtime_population_complete": {
+      "type": "boolean",
+      "description": "true only if every expected replica/instance for this deployment_revision_id was actually observed at observed_at -- a partial scrape must set this false."
+    },
+    "incomplete_reason": {"type": ["string", "null"]},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"runtime_population_complete": {"const": false}}},
+      "then": {"required": ["incomplete_reason"], "properties": {"incomplete_reason": {"type": "string", "minLength": 1}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "contract": "ONSURE_ACTIVE_LEARNING_SAMPLING_BIAS_CHECK_V1",
+  "learning_asset_id": "candidate-fraud-rule-refinement-088",
+  "selection_policy": "CONVENIENCE_SAMPLING",
+  "excluded_population_disclosed": true,
+  "claim_scope": "OVERALL_POPULATION",
+  "decision": "CLAIM_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

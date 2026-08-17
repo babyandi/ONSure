@@ -1,0 +1,27 @@
+{
+  "contract":"ONSURE_RUNTIME_AUTHORITY_RECONCILIATION_V1",
+  "status":"ACTIVE_RECONCILIATION_RECORD",
+  "workflow_operation_registry":{
+    "authority":"contracts/workflow-operation-registry.v1.json",
+    "active_operation_count":49,
+    "stale_document_counts":[45],
+    "rule":"Any prose count that differs from the active registry is descriptive drift and must not change runtime authority."
+  },
+  "phase_status":{
+    "product_design_scope":"COMPLETE_CANDIDATE",
+    "design_qa":"IN_PROGRESS_HOLD",
+    "claude_implementation":"NOT_STARTED",
+    "test_runtime_verification":"NOT_STARTED",
+    "independent_assurance":"NOT_STARTED",
+    "production_authorized":false,
+    "authority":"docs/master/semantic-assurance/136_PRE_MERGE_STATUS_CORRECTION_AND_BASELINE_HANDOFF.md"
+  },
+  "superseded_phase_expression":["IMPLEMENTATION_IN_PROGRESS_BY_CLAUDE"],
+  "anti_false_completion":{
+    "design_locked":false,
+    "implementation_complete":false,
+    "test_pass":false,
+    "production_go":false,
+    "commercial_go":false
+  }
+}

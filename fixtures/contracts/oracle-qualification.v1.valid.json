@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_ORACLE_QUALIFICATION_V1",
+  "oracle_id": "oracle-001",
+  "oracle_version": "1.0.0",
+  "oracle_hash": "cda31595fee657a19efd5a1bc7c33fbe0456dc6ec42a1d3918f00a0ec186ac39",
+  "expected_result_authority_ref": "AUTHORITY::ORACLE-EXPECTED-RESULT::0001",
+  "benchmark_refs": ["benchmark-001"],
+  "independent": true,
+  "result": "QUALIFIED",
+  "qualified_at": "2026-08-14T00:00:00Z",
+  "fresh_until": "2026-11-14T00:00:00Z"
+}

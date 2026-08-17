@@ -1,0 +1,53 @@
+{
+  "type": "ONSURE_REQUIREMENT_AUTHORITY_SOURCE_REVIEW_SEED_V1",
+  "status": "HUMAN_REVIEWED_SEED",
+  "purpose": "160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md's own text IS the human/design-authority review for these 6 rows -- automatic content-marker classification would not correctly detect them (docs/05's own status line reads '상태: NORMATIVE TARGET / 구현 완료 주장 아님', which does not literally match any DISPOSITION_TOKENS string). Seeded explicitly instead of relying on classify_by_content's fallback, which would incorrectly leave all 6 UNREVIEWED.",
+  "rows": [
+    {
+      "artifact_path": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
+      "git_blob_sha": "db33f870c0dd28c7b3923a762bd2de2b5ebab5d2",
+      "disposition": "NORMATIVE_CURRENT",
+      "review_state": "REVIEWED",
+      "rationale": "160 SS2.A: 'canonical final-target Requirement-ID anchor and acceptance principles. FR-FIN-01~22 MUST retain identity.' This is the explicit-ID anchor document for the FR-FIN-* family, directly analogous to how 02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md anchors FR-COM/FR-META/FR-FRESH/NFR-*."
+    },
+    {
+      "artifact_path": "docs/41_ONSURE_FINAL_TARGET_ARCHITECTURE.md",
+      "git_blob_sha": "3b9099f7fc9bd2b234e59e790203d69c01fec3f1",
+      "disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "rationale": "160 SS2.A item 2: 'final-target architecture refinement.' Refines docs/05's requirement meaning; does not itself introduce new FR-FIN-* identities (confirmed by inspection: contains zero FR-FIN- headings)."
+    },
+    {
+      "artifact_path": "docs/42_VSCODE_AGENT_AND_GIT_FULL_CHAIN_DESIGN.md",
+      "git_blob_sha": "2ada939d940d50d96b1425ed79aa5afe1ae5a948",
+      "disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "rationale": "160 SS2.A item 3: 'VS Code/Git full-chain detailed refinement.' Refines FR-FIN-10/FR-FIN-11's meaning in detail; introduces zero new FR-FIN-* identities (confirmed by inspection)."
+    },
+    {
+      "artifact_path": "docs/43_FINANCIAL_CONTROL_TRACE_AND_ACCEPTANCE.md",
+      "git_blob_sha": "665bcf9e875ffc8189e9af7e532b86c37f0790b2",
+      "disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "rationale": "160 SS2.A item 4: 'financial-control trace and acceptance refinement.' Refines docs/05 SS6/7 acceptance principles in detail; introduces zero new FR-FIN-* identities (confirmed by inspection)."
+    },
+    {
+      "artifact_path": "docs/44_UNIFIED_AI_WORK_DEVELOPER_ASSURANCE_DESIGN.md",
+      "git_blob_sha": "7dacd746f5429b5d550d4868bf024269c03c1662",
+      "disposition": "NORMATIVE_REFINEMENT",
+      "review_state": "REVIEWED",
+      "rationale": "160 SS2.A item 5: 'unified work/developer/assurance refinement.' Refines FR-FIN-15~20's unified-workbench meaning in detail; introduces zero new FR-FIN-* identities (confirmed by inspection)."
+    },
+    {
+      "artifact_path": "docs/40_FINAL_PRODUCT_RESEARCH_AND_ROLE_MODELS.md",
+      "git_blob_sha": "42d936a4238d0fc53c1f0b0184a0c8b16767d982",
+      "disposition": "REFERENCE_ONLY",
+      "review_state": "REVIEWED",
+      "rationale": "160 SS2.A item 6: 'normative input/source basis; it may originate source-derived requirements only through the Requirement Authority process and may not override explicit FR-FIN requirements by implication.' This is deliberately NOT NORMATIVE_CURRENT/REFINEMENT: it is external research/role-model evidence that could someday justify a NEW non-ID source-anchored requirement candidate through the normal RU-03 process, but must never be read as itself asserting a current explicit requirement -- REFERENCE_ONLY is the correct disposition per denominator_contribution_rules (INELIGIBLE for direct denominator contribution) while still remaining a real, reviewed, tracked source."
+    }
+  ],
+  "rules": [
+    "No LONGEST_TEXT_WINS: docs/05's NORMATIVE_CURRENT status for FR-FIN-* identity/text is not because it is longer or more detailed than 41~44, but because 160 SS2.A explicitly names it the anchor.",
+    "docs/40 REFERENCE_ONLY is deliberate, not an oversight: 160 SS2.A explicitly distinguishes it from the other 5 ('it may originate source-derived requirements only through the Requirement Authority process and may not override explicit FR-FIN requirements by implication')."
+  ]
+}

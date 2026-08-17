@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/ai-safety-claim-independence-check.v1.schema.json",
+  "title": "ONSure AI Safety/Security Claim Independence Check v1",
+  "description": "FR-META-058 AI Nondeterminism and Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS10 AI Safety/Security Claim 분리: 'Business correctness와 별도 claim set으로 유지한다: prompt injection resistance, indirect RAG/tool injection, data exfiltration, unauthorized tool/effect, privilege escalation, hallucinated authority, unsafe financial/external action, memory poisoning, cross-tenant leakage, refusal/policy bypass. 한 claim PASS가 다른 claim을 함의하지 않는다.' all_claims_independently_evidenced can only be true when every one of the 11 claim types (business correctness plus the 10 named safety/security claims) has its OWN submitted, independently-observed entry -- a PASS on business correctness (or on any other single claim type) never causes any other claim type to be treated as tested or passed. untested_claim_types names every claim type with no submitted entry, regardless of how positively the submitted ones scored.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "submitted_claims",
+    "untested_claim_types", "all_claims_independently_evidenced", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AI_SAFETY_CLAIM_INDEPENDENCE_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "submitted_claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim_type", "decision"],
+        "properties": {
+          "claim_type": {"$ref": "#/$defs/claimType"},
+          "decision": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE"]}
+        }
+      }
+    },
+    "untested_claim_types": {"type": "array", "items": {"$ref": "#/$defs/claimType"}, "uniqueItems": true},
+    "all_claims_independently_evidenced": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"all_claims_independently_evidenced": {"const": true}}},
+      "then": {"properties": {"untested_claim_types": {"maxItems": 0}}}
+    },
+    {
+      "if": {"not": {"properties": {"untested_claim_types": {"maxItems": 0}}}},
+      "then": {"properties": {"all_claims_independently_evidenced": {"const": false}}}
+    }
+  ],
+  "$defs": {
+    "claimType": {
+      "enum": [
+        "BUSINESS_CORRECTNESS",
+        "PROMPT_INJECTION_RESISTANCE",
+        "INDIRECT_RAG_TOOL_INJECTION_RESISTANCE",
+        "DATA_EXFILTRATION_RESISTANCE",
+        "UNAUTHORIZED_TOOL_EFFECT_RESISTANCE",
+        "PRIVILEGE_ESCALATION_RESISTANCE",
+        "HALLUCINATED_AUTHORITY_RESISTANCE",
+        "UNSAFE_FINANCIAL_EXTERNAL_ACTION_RESISTANCE",
+        "MEMORY_POISONING_RESISTANCE",
+        "CROSS_TENANT_LEAKAGE_RESISTANCE",
+        "REFUSAL_POLICY_BYPASS_RESISTANCE"
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://onsure.dev/contracts/acceptance-certificate.candidate.v1.schema.json",
+  "title":"ONSure Acceptance Certificate Candidate v1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["contract","certificate_id","case_id","baseline_digest","policy_digest","decision","completeness_disclaimer","issued_at","status","signature","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_ACCEPTANCE_CERTIFICATE_CANDIDATE_V1"},
+    "certificate_id":{"type":"string","minLength":1},
+    "case_id":{"type":"string","minLength":1},
+    "case_revision":{"type":["integer","null"],"minimum":1},
+    "baseline_digest":{"type":"string","pattern":"^[A-Fa-f0-9]{64}$"},
+    "policy_digest":{"type":"string","pattern":"^[A-Fa-f0-9]{64}$"},
+    "decision":{"enum":["PASS","FAIL","HOLD","BLOCKED","NOT_RUN","INCONCLUSIVE","NON_FINAL"]},
+    "assurance_tier":{"enum":["AT0_UNASSESSED","AT1_EXECUTED","AT2_EVIDENCE_BOUND","AT3_INDEPENDENT","AT4_QUALIFIED","AT5_PRODUCTION_BOUND_CURRENT"]},
+    "coverage_report_id":{"type":["string","null"]},
+    "limitations":{"type":"array","items":{"type":"string"}},
+    "completeness_disclaimer":{"const":"This certificate attests only to the declared scope, policy, evidence and time-bound result; it does not prove absence of defects."},
+    "issued_at":{"type":"string","format":"date-time"},
+    "status":{"enum":["ISSUED","STALE","INVALIDATED","REVOKED","SUPERSEDED"]},
+    "revoked_at":{"type":["string","null"],"format":"date-time"},
+    "revoked_reason":{"type":["string","null"]},
+    "signature":{"type":"object","additionalProperties":false,"required":["key_id","signature","signed_at"],"properties":{"key_id":{"type":"string","minLength":1},"signature":{"type":"string","minLength":1},"signed_at":{"type":"string","format":"date-time"}}},
+    "final_claim_allowed":{"const":false}
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-072",
+  "requirement_summary": "Learning History Migration: Schema/registry/knowledge-store migration 시 candidate lifecycle, lineage, old decisions, revoked assets, qualification evidence를 보존한다. migration 후 history loss가 있으면 reconstructability PASS 금지.",
+  "subject": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java (learningHistoryMigrationCheck), assurance.learning.history-migration.check v2 operation; contracts/learning-history-migration-check.v1.schema.json (NEW, built this pass)",
+  "observed_source": "SemanticAssuranceV2DispatcherBridgeTest (real dispatch through the full RBAC/workflow chain)",
+  "observed_test_methods": [
+    "learningHistoryMigrationCheckReachesPreservedWhenNoCategoryLosesRecords",
+    "learningHistoryMigrationCheckBlocksWhenAnyCategoryLosesRecords"
+  ],
+  "coverage_notes": "decision is computed for real across all 5 named categories (candidate lifecycle, lineage, old decisions, revoked assets, qualification evidence): every category is checked for post_migration_count < pre_migration_count (a real pre/post comparison JSON Schema cannot express), and ANY single lossy category forces RECONSTRUCTABILITY_BLOCKED for the whole migration, naming every lossy category by exact pre->post delta -- a caller cannot claim overall preservation while one category quietly lost records. All 5 required categories must be present (not a subset) or the check itself is rejected as incomplete.",
+  "open_gap": "Checks record COUNTS per category, not content-level integrity (e.g. a record could survive migration with the same count but corrupted/altered content) -- a full content-digest comparison per record is a stronger, disclosed follow-on. This operation trusts the caller-supplied pre/post counts as given; it does not itself query the real pre- and post-migration stores (no such migration has actually run in this codebase yet to observe).",
+  "design_reference_gap": "REQUIREMENT_WITHOUT_DESIGN: the trace scanner correctly excludes the requirement's own authority document (153_LEARNING_VALIDATION_GOVERNANCE_SOVEREIGNTY_AND_SUPPLY_CHAIN_REFINEMENT.md) as circular, and no other design document currently elaborates this specific mechanism -- a genuine, disclosed gap.",
+  "observed_at": "2026-08-15T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

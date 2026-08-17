@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/delegation-chain-check.v1.schema.json",
+  "title": "ONSure Multi-Agent Delegation Chain Check v1",
+  "description": "FR-META-058 AI Nondeterminism and Multi-Agent Assurance / 34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS9.3 Delegation and SS9.6 Cyclic Delegation: 'Agent A가 Agent B에 일을 위임해도 B가 A보다 넓은 권한을 획득하지 않는다. delegation chain, purpose, TTL, subject scope를 보존한다... A->B->C->A delegation loop, 책임 떠넘기기, 무한 handoff를 탐지한다. final authority는 명시된 principal/contract에서만 온다.' This complements DelegationLedger (which enforces a single grant's delegator-must-hold-the-role invariant in isolation) by validating an entire multi-hop chain of edges at once: cycle_detected is computed by a real directed-graph traversal (visited + in-progress recursion-stack, standard cycle detection), not a caller-declared flag -- any agent reachable from itself following delegation edges is a cycle, regardless of how many other agents sit between. authority_expansion_detected is computed by checking, for every edge, that delegated_authority_scope is a real subset of that edge's own declared from_agent_authority_scope -- a delegate can never receive a capability its delegator did not declare holding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "edges",
+    "cycle_detected", "cycle_path", "authority_expansion_detected", "authority_expansion_violations",
+    "chain_valid", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DELEGATION_CHAIN_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "edges": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from_agent_id", "to_agent_id", "from_agent_authority_scope", "delegated_authority_scope"],
+        "properties": {
+          "from_agent_id": {"type": "string", "minLength": 1},
+          "to_agent_id": {"type": "string", "minLength": 1},
+          "from_agent_authority_scope": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "delegated_authority_scope": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+        }
+      }
+    },
+    "cycle_detected": {"type": "boolean"},
+    "cycle_path": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "authority_expansion_detected": {"type": "boolean"},
+    "authority_expansion_violations": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "chain_valid": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"chain_valid": {"const": true}}},
+      "then": {
+        "properties": {
+          "cycle_detected": {"const": false},
+          "authority_expansion_detected": {"const": false},
+          "cycle_path": {"maxItems": 0},
+          "authority_expansion_violations": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"cycle_detected": {"const": true}}},
+      "then": {"properties": {"chain_valid": {"const": false}, "cycle_path": {"minItems": 2}}}
+    },
+    {
+      "if": {"properties": {"authority_expansion_detected": {"const": true}}},
+      "then": {"properties": {"chain_valid": {"const": false}, "authority_expansion_violations": {"minItems": 1}}}
+    }
+  ]
+}

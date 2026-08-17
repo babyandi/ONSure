@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/build-artifact-identity.v1.schema.json",
+  "title": "ONSure Build Artifact Identity v1",
+  "description": "29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md SS3.1. First link of SourceSnapshot -> BuildReceipt -> BuildArtifactIdentity -> VerificationEvidence -> FinalLock -> DeploymentRevision -> RuntimeInstancePopulation -> CurrentnessSnapshot. VERIFIED != DEPLOYED != RUNNING != CURRENT: this record is the immutable build-time identity that FinalLock verifies and DeploymentRevision.expected_artifact_digest must equal.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "artifact_id", "artifact_sha256", "artifact_type", "build_receipt_digest",
+    "source_tree_digest", "dependency_set_digest", "sbom_digest", "provenance_digest",
+    "created_at", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_BUILD_ARTIFACT_IDENTITY_V1"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_sha256": {"$ref": "#/$defs/sha256"},
+    "artifact_type": {"enum": ["CONTAINER_IMAGE", "PACKAGE", "BINARY", "STATIC_BUNDLE", "SERVERLESS_FUNCTION"]},
+    "build_receipt_digest": {"$ref": "#/$defs/sha256"},
+    "source_tree_digest": {"$ref": "#/$defs/sha256"},
+    "dependency_set_digest": {"$ref": "#/$defs/sha256"},
+    "sbom_digest": {"$ref": "#/$defs/sha256"},
+    "provenance_digest": {"$ref": "#/$defs/sha256"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

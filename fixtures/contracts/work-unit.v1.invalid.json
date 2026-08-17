@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_WORK_UNIT_V1",
+  "work_unit_id": "WU::run-001::partition-0",
+  "parent_run_id": "RUN::neutral-target-001::0001",
+  "target_epoch": "EPOCH::SCOPE::0001",
+  "scope_epoch": "EPOCH::SCOPE::0001",
+  "requirement_epoch": "EPOCH::REQUIREMENT::0001",
+  "policy_epoch": "EPOCH::POLICY::0001",
+  "input_population_digest": "05d54ed20c14c7feb11ee02e6f4ed6f14bf2b47bb44c64ad390510162a8a5430",
+  "partition_key": "partition-0",
+  "operation_name": "validation.run",
+  "operation_version": "1.0.0",
+  "current_attempt_number": 2,
+  "lease_owner": "onsure-runner-001",
+  "lease_expires_at": "2026-08-13T14:07:39.662480+00:00",
+  "expected_output_contract": "contracts/runtime-execution-receipt.candidate.v2.schema.json",
+  "idempotency_key": "c31a46dd2c9d6daeb16d6e7636ba865775c1d1f537f05e1f739584fb33f4485d",
+  "state": "DONE",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

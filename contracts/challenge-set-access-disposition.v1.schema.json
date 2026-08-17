@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/challenge-set-access-disposition.v1.schema.json",
+  "title": "ONSure Challenge Set Access Disposition v1",
+  "description": "docs/master/semantic-assurance/158_LEARNING_VALIDATION_P0_CONTRADICTION_POLICY_BINDINGS.md class 3 (Transparency vs Challenge Secrecy), bound per contracts/learning-validation-p0-contradiction-contract-bindings.candidate.v1.json LC-P0-003 (ValidationExperiment). '158 SS3: 방법·범위·결과·권위는 공개 가능하되 sealed fixture/answer는 evaluator-only로 유지한다. 노출된 challenge set은 blind authority를 상실한다.' Methodology/scope/results/authority fields are always publicly disclosable. SEALED_FIXTURE/SEALED_ANSWER access is EVALUATOR-only -- a non-evaluator requesting either is denied outright. Once SEALED_FIXTURE/SEALED_ANSWER has been granted to anyone (even a legitimate evaluator), exposure_state becomes EXPOSED permanently and blind_authority_retained becomes false forever: exposure is one-way, matching real-world blind-test contamination.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "access_id", "challenge_set_id", "requester_role", "field_requested",
+    "prior_exposure_state", "access_granted", "exposure_state", "blind_authority_retained",
+    "decided_at", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CHALLENGE_SET_ACCESS_DISPOSITION_V1"},
+    "access_id": {"type": "string", "minLength": 1},
+    "challenge_set_id": {"type": "string", "minLength": 1},
+    "requester_role": {"enum": ["EVALUATOR", "PUBLIC", "LEARNER", "OTHER"]},
+    "field_requested": {"enum": ["METHODOLOGY", "SCOPE", "RESULTS", "AUTHORITY", "SEALED_FIXTURE", "SEALED_ANSWER"]},
+    "prior_exposure_state": {"enum": ["SEALED", "EXPOSED"]},
+    "access_granted": {"type": "boolean"},
+    "exposure_state": {"enum": ["SEALED", "EXPOSED"]},
+    "blind_authority_retained": {"type": "boolean"},
+    "decided_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"prior_exposure_state": {"const": "EXPOSED"}}},
+      "then": {"properties": {"exposure_state": {"const": "EXPOSED"}, "blind_authority_retained": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"exposure_state": {"const": "SEALED"}}},
+      "then": {"properties": {"blind_authority_retained": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"exposure_state": {"const": "EXPOSED"}}},
+      "then": {"properties": {"blind_authority_retained": {"const": false}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "requester_role": {"not": {"const": "EVALUATOR"}},
+          "field_requested": {"enum": ["SEALED_FIXTURE", "SEALED_ANSWER"]}
+        },
+        "required": ["requester_role", "field_requested"]
+      },
+      "then": {"properties": {"access_granted": {"const": false}}}
+    }
+  ]
+}

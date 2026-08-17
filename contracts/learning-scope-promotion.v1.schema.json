@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/learning-scope-promotion.v1.schema.json",
+  "title": "ONSure Learning Scope Promotion v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS I. 148 P0 invariant 6 (scope promotion side): promoting a learning asset's scope requires consent, a privacy/anonymization proof, a CLEAR corpus_integrity_report_decision, and explicit policy approval -- and to_scope=GLOBAL is never reachable directly (a GLOBAL claim without every intermediate proof, or without consent, is the named negative case).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "promotion_id", "asset_id", "from_scope", "to_scope", "consent_ref",
+    "privacy_proof_ref", "corpus_integrity_report_decision", "policy_approval_ref", "decision", "decided_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_LEARNING_SCOPE_PROMOTION_V1"},
+    "promotion_id": {"type": "string", "minLength": 1},
+    "asset_id": {"type": "string", "minLength": 1},
+    "from_scope": {"enum": ["TENANT", "ORGANIZATION", "INDUSTRY", "GLOBAL"]},
+    "to_scope": {"enum": ["TENANT", "ORGANIZATION", "INDUSTRY", "GLOBAL"]},
+    "consent_ref": {"type": ["string", "null"]},
+    "privacy_proof_ref": {"type": ["string", "null"]},
+    "corpus_integrity_report_decision": {"enum": ["CLEAR", "HOLD", "BLOCKED"]},
+    "policy_approval_ref": {"type": ["string", "null"]},
+    "decision": {"enum": ["APPROVED", "HOLD", "DENIED"]},
+    "decided_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "APPROVED"}}},
+      "then": {
+        "required": ["consent_ref", "privacy_proof_ref", "policy_approval_ref"],
+        "properties": {
+          "consent_ref": {"type": "string"},
+          "privacy_proof_ref": {"type": "string"},
+          "policy_approval_ref": {"type": "string"},
+          "corpus_integrity_report_decision": {"const": "CLEAR"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"to_scope": {"const": "GLOBAL"}, "decision": {"const": "APPROVED"}}},
+      "then": {"properties": {"from_scope": {"const": "INDUSTRY"}}}
+    }
+  ]
+}

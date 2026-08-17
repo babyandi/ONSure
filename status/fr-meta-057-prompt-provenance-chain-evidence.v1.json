@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-057",
+  "requirement_summary": "AI Target은 provider/model/deployment, system/developer/user prompt hierarchy... version/digest로 고정한다. (34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md SS3 Prompt Provenance sub-scope specifically: Prompt는 단순 문자열 hash가 아니라 계층/조립 계보를 가진다 -- system/developer/tenant-policy/product-template/user-input/retrieved-context/tool-result/runtime-injected-state fragments, each with source/ref/version/digest, connected to a final assembled prompt digest. 동적 fragment가 identity에서 빠지면 prompt currentness를 주장할 수 없다.)",
+  "subject": "SemanticAssuranceV2WorkflowService.promptProvenanceChainCheck via assurance.prompt.provenance-check",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/prompt-provenance-chain-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#promptProvenanceChainCheckVerifiesWhenClaimedDigestMatchesTheRealComputation",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#promptProvenanceChainCheckDetectsAMismatchedClaimedDigest",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#promptProvenanceChainCheckForcesCurrentnessNotClaimableWhenADynamicFragmentTypeIsMissing",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#promptProvenanceChainCheckRejectsAnUnrecognizedFragmentType",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#promptProvenanceChainCheckRejectsADynamicFragmentTypeThatIsActuallyStatic"
+  ],
+  "coverage_notes": "Sixth closure of Batch 5's disclosed broader-scope gap. Unlike every other closure in this broader-scope pass (which compare caller-supplied VALUES for equality), this one performs a genuine cryptographic recomputation: computed_assembled_prompt_digest = digest() (the same sha256-over-Jackson-serialization helper this file already uses for envelope_sha256 elsewhere) applied to the ORDERED list of per-fragment digests, then compared against the caller's claimed_assembled_prompt_digest -- a caller cannot simply assert assembled_digest_verified=true. Tests prove this without hand-computing an expected hash (which would risk a test bug from mis-reproducing Jackson's exact serialization): promptProvenanceChainCheckVerifiesWhenClaimedDigestMatchesTheRealComputation makes one probe call to learn what the system's own computation produces for a given fragment set, then re-submits that exact value as the claim and confirms verified=true -- proving self-consistency and correct match detection without a hardcoded magic string. Separately, missing_dynamic_fragment_types is computed as a real set-difference between dynamic_fragment_types_used (what the caller says genuinely contributed) and the fragment_types actually present in the chain, closing '동적 fragment가 identity에서 빠지면 currentness를 주장할 수 없다' without incorrectly demanding all 4 dynamic types be present on every prompt regardless of relevance (a prompt with no tool use legitimately has no TOOL_RESULT fragment and should not be penalized for it).",
+  "open_gap": "Operates on a caller-supplied fragment chain; there is no live prompt-assembly runtime in this codebase that actually constructs prompts from named fragments and could feed this gate from real system state (same disclosed 'caller-supplied representation, not live system integration' pattern as every other Batch 5 broader-scope closure this session). dynamic_fragment_types_used is itself a caller-declared fact about which dynamic types contributed -- a caller could under-declare it to avoid the missing-fragment penalty; closing that would require the prompt-assembly runtime itself to report which dynamic types it actually consulted, which does not exist yet.",
+  "design_reference_gap": "34_AI_RUNTIME_MULTI_AGENT_AND_ONSURE_META_ASSURANCE_EXTENSION.md is itself Status: DESIGN_ONLY/DRAFT/NON_FINAL -- this closure builds real, tested conformance-checking infrastructure against its SS3 rule, consistent with every other gate built against draft-status design docs this session, but does not and cannot finalize the parent document itself.",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,12 @@
+{
+  "contract": "ONSURE_LEARNING_PROMOTION_RECEIPT_V1",
+  "receipt_id": "receipt-002",
+  "candidate_id": "candidate-001",
+  "from_state": "CANDIDATE",
+  "to_state": "ACTIVE",
+  "actor_id": "evaluator-a",
+  "authority_ref": "AUTHORITY::LEARNING-QA::0001",
+  "policy_ref": "POLICY::LEARNING-QUALIFICATION::0001",
+  "evidence_refs": ["5108deb71ee1d00d8e14ad48f2ddee3dca264528a5ae802ac5a682ee11ecc0d7"],
+  "created_at": "2026-08-14T00:00:00Z"
+}

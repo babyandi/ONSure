@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_CATASTROPHIC_FORGETTING_CHECK_V1",
+  "learning_epoch_id": "epoch-fraud-detector-2026-08-15-014",
+  "capability_regressions": [
+    {"capability_id": "golden-wire-fraud-pattern-1", "previous_result": "PASS", "new_result": "PASS"},
+    {"capability_id": "blind-account-takeover-3", "previous_result": "PASS", "new_result": "PASS"},
+    {"capability_id": "challenge-synthetic-identity-9", "previous_result": "FAIL", "new_result": "PASS"}
+  ],
+  "new_metric_improved": true,
+  "decision": "PROMOTION_ALLOWED",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

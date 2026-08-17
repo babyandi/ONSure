@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_LEARNING_CANDIDATE_ASSET_V1",
+  "candidate_id": "candidate-002",
+  "candidate_type": "RULE_CANDIDATE",
+  "state": "ACTIVE",
+  "learning_domain": "BEHAVIOR_VALIDATION",
+  "scope": "TENANT",
+  "source_lineage": [],
+  "content_sha256": "ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73",
+  "created_by": "learner-a",
+  "created_at": "2026-08-14T00:00:00Z",
+  "final_decision_authority": true
+}

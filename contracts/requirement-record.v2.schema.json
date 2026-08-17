@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/requirement-record.v2.schema.json",
+  "title": "ONSure Requirement Universe Record v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "requirement_id", "source_class", "extraction_method", "authority_document", "source_anchor",
+    "authority_document_sha256", "exact_source_digest", "normative_text", "normative_text_digest",
+    "owner_domain", "taxonomy", "subject", "criticality", "claim_effect", "waivability",
+    "applicability_state", "applicability_rule_ref", "status"
+  ],
+  "properties": {
+    "requirement_id": {"type": "string", "minLength": 1},
+    "explicit_id": {"type": ["string", "null"], "pattern": "^(?:[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)$"},
+    "source_class": {
+      "enum": [
+        "EXPLICIT_ID", "PROGRAM_FUNCTION", "ACCEPTANCE_CRITERION", "INVARIANT",
+        "POLICY_REQUIRED", "CONTRACT_REQUIRED", "REGULATORY_REQUIRED"
+      ]
+    },
+    "extraction_method": {"enum": ["EXPLICIT_ID_PARSED", "CANDIDATE_EXTRACTED"]},
+    "authority_document": {"type": "string", "minLength": 1},
+    "source_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heading", "line"],
+      "properties": {
+        "heading": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1}
+      }
+    },
+    "authority_document_sha256": {"$ref": "#/$defs/sha256"},
+    "exact_source_digest": {"$ref": "#/$defs/sha256"},
+    "normative_text": {"type": "string", "minLength": 1},
+    "normative_text_digest": {"$ref": "#/$defs/sha256"},
+    "owner_domain": {"type": "string", "minLength": 1},
+    "taxonomy": {
+      "enum": [
+        "FUNCTIONAL", "NON_FUNCTIONAL", "ASSURANCE", "SECURITY", "PRIVACY", "OPERATIONAL",
+        "DEPLOYMENT", "AI_SPECIFIC", "REGULATORY", "COMMERCIAL_CONTRACTUAL"
+      ]
+    },
+    "subject": {"enum": ["PRODUCT", "PROGRAM", "TARGET", "DEPLOYMENT", "RUNTIME", "ONSURE_META"]},
+    "criticality": {"enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]},
+    "claim_effect": {
+      "enum": ["POSITIVE_CLAIM_GATE", "CURRENTNESS_GATE", "QUALIFICATION_GATE", "INFORMATIONAL"]
+    },
+    "waivability": {"enum": ["NON_WAIVABLE", "CONDITIONAL", "WAIVABLE"]},
+    "applicability_state": {"enum": ["APPLICABLE", "NOT_APPLICABLE", "CONDITIONAL", "UNKNOWN"]},
+    "applicability_rule_ref": {"type": ["string", "null"]},
+    "status": {"enum": ["ACTIVE", "SUPERSEDED", "RETIRED", "OPEN_POLICY"]},
+    "superseded_by_requirement_id": {"type": ["string", "null"]},
+    "mention_count": {"type": "integer", "minimum": 1},
+    "mention_documents": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "canonicalization_authority": {
+      "type": ["string", "null"],
+      "enum": ["NORMATIVE_CURRENT", "NORMATIVE_REFINEMENT", null],
+      "description": "For EXPLICIT_ID records: which authority tier the canonical normative_text was drawn from (145: authority/refine/supersession-based selection, never longest-text-wins)."
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "SUPERSEDED"}}},
+      "then": {"required": ["superseded_by_requirement_id"], "properties": {"superseded_by_requirement_id": {"type": "string", "minLength": 1}}}
+    },
+    {
+      "if": {"properties": {"source_class": {"const": "EXPLICIT_ID"}}},
+      "then": {"required": ["explicit_id"], "properties": {"explicit_id": {"type": "string", "minLength": 1}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

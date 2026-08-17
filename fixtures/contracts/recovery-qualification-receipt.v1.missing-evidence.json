@@ -1,0 +1,54 @@
+{
+  "contract": "ONSURE_RECOVERY_QUALIFICATION_RECEIPT_V1",
+  "recovery_qualification_id": "RQR::neutral-001::0002-MISSING-EVIDENCE",
+  "recovery_event_id": "RECOVERY::neutral-001::dr-drill-0001",
+  "restored_component_ids": [
+    "ledger-store-001",
+    "key-registry-001"
+  ],
+  "pre_failure_generation": 42,
+  "restored_generation": 42,
+  "backup_manifest_digest": "e144479035c7546060a239247c1e20f0980d1024dbc8dbd0aafe0420b4b7953f",
+  "restored_ledger_head_digest": "3d1149a487efe99fa17f3618a411fe277e7ef8a5d108768e36ca19da564422ba",
+  "key_registry_snapshot_digest": "f49976b1802f9442f7c90bc446058d23ae6d07772d4475eceb53d9a33855f532",
+  "integrity_checks": [
+    {
+      "check_id": "IC-1",
+      "check_type": "LEDGER_HASH_CHAIN",
+      "result": "PASS"
+    },
+    {
+      "check_id": "IC-2",
+      "check_type": "GENERATION_CONTINUITY",
+      "result": "PASS"
+    },
+    {
+      "check_id": "IC-3",
+      "check_type": "MISSING_RANGE_SCAN",
+      "result": "PASS"
+    },
+    {
+      "check_id": "IC-4",
+      "check_type": "REPLAY_CHECK",
+      "result": "PASS"
+    },
+    {
+      "check_id": "IC-5",
+      "check_type": "KEY_RECONCILIATION",
+      "result": "PASS"
+    },
+    {
+      "check_id": "IC-6",
+      "check_type": "CURRENT_AUTHORITY_POLICY_COMPATIBILITY",
+      "result": "PASS"
+    }
+  ],
+  "missing_or_unverifiable_objects": [
+    "ledger-segment-0912-0918"
+  ],
+  "qualification_decision": "PARTIAL_HOLD",
+  "assurance_ceiling": "NO_PRIOR_ASSURANCE_CARRYOVER",
+  "evaluated_at": "2026-08-14T13:38:21.407013+00:00",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

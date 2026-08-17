@@ -1,0 +1,22 @@
+{
+  "contract": "ONSURE_OPERATIONAL_REMEDIATION_RECEIPT_V1",
+  "remediation_id": "REMEDIATION-FR-COM-008-BRANCH-PROTECTION-20260815",
+  "target_policy_ref": "contracts/main-branch-protection.v1.json",
+  "target_evidence_ref": "status/main-branch-protection-evidence.v1.json",
+  "prior_evidence_archive_path": "status/history/main-branch-protection-evidence.v1.epoch-0-FAIL-20260815.json",
+  "prior_evidence_sha256": "18aff01611a7b9f035f9c50834f85ea9b8180a69888bed390ad35b2a1da1bfd4",
+  "decision_basis": "Autonomous Development Mode standing directive (2026-08-15): FR-COM-008 branch protection remediation named as an explicit worked example -- all 7 admissibility conditions verified before execution: (1) canonical policy state unambiguous (contracts/main-branch-protection.v1.json required_controls, 8 fields), (2) pre-change state preserved as evidence (this receipt's prior_evidence_archive_path), (3) reversible (GitHub branch protection can be deleted/modified via the same API), (4) no data loss, (5) no privilege expansion (uses the existing authenticated gh CLI session's already-granted 'repo' scope, grants nothing new), (6) creates no production/commercial authorization (branch protection is infrastructure config, not a FinalLock/Production-GO/Commercial-GO object), (7) rollback procedure exists and is stated below.",
+  "change_description": "Configured GitHub branch protection on babyandi/ONSure:main to satisfy all 8 required_controls in contracts/main-branch-protection.v1.json: pull_request_required, minimum_approvals=1, dismiss_stale_approvals, conversation_resolution_required, direct_push_blocked (via enforce_admins + required reviews + no restrictions bypass), force_push_blocked, branch_deletion_blocked, administrators_enforced. required_status_checks intentionally left null: the policy's separate independent_status_checks_required_before_merge=true field is not enforceable at the GitHub level yet because no CI workflow exists in this repository (.github/workflows/ is empty, matching the policy's own github_actions_required=false) -- requiring a named status check that never reports would deadlock all future merges, which is a real operational harm outweighing a marginal, currently-unenforceable control. This sub-gap is disclosed here and in the new evidence file rather than silently worked around.",
+  "change_mechanism": "GITHUB_API",
+  "change_command": "gh api -X PUT repos/babyandi/ONSure/branches/main/protection --input branch-protection-payload.json (required_status_checks:null, enforce_admins:true, required_pull_request_reviews:{dismiss_stale_reviews:true,require_code_owner_reviews:false,required_approving_review_count:1}, restrictions:null, required_linear_history:false, allow_force_pushes:false, allow_deletions:false, required_conversation_resolution:true, lock_branch:false, allow_fork_syncing:false)",
+  "reversible": true,
+  "rollback_procedure": "gh api -X DELETE repos/babyandi/ONSure/branches/main/protection restores the pre-remediation state (branch protection absent, matching the archived epoch-0 FAIL evidence). Individual controls can also be selectively reverted with a follow-up PUT carrying the epoch-0 (all-false) control values. No git history, commits, or data are touched by either direction.",
+  "irreversible_data_loss": false,
+  "privilege_expansion": false,
+  "production_or_commercial_authorization_created": false,
+  "executed_at": "2026-08-15T00:10:00Z",
+  "executed_by": "claude-onsure-autonomous-development-mode",
+  "post_change_observation_ref": "status/main-branch-protection-evidence.v1.json (epoch 1, OBSERVED via a fresh independent GET after the PUT, not the PUT response echo)",
+  "final_claim_allowed": false,
+  "receipt_sha256": "bfe8a6394e991968c379f9eb877ec0253f05408f6a931e9856dc102f695c01ba"
+}

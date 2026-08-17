@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/catastrophic-forgetting-check.v1.schema.json",
+  "title": "ONSure Catastrophic Forgetting Check v1",
+  "description": "FR-LEARN-029 Catastrophic Forgetting / Interference: 새 learning epoch가 과거 capability를 잃게 만들 수 있으므로 이전 Golden/Blind/Challenge capability 집합에 대한 regression을 수행하고 forgotten-capability count와 severity를 기록한다. 신규 metric 개선만으로 승격 금지. Any capability that PASSed previously and FAILs now is a forgotten capability -- promotion claiming success purely from new_metric_improved while any capability is forgotten is the named negative case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "learning_epoch_id", "capability_regressions", "new_metric_improved",
+    "decision", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CATASTROPHIC_FORGETTING_CHECK_V1"},
+    "learning_epoch_id": {"type": "string", "minLength": 1},
+    "capability_regressions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["capability_id", "previous_result", "new_result"],
+        "properties": {
+          "capability_id": {"type": "string", "minLength": 1},
+          "previous_result": {"enum": ["PASS", "FAIL"]},
+          "new_result": {"enum": ["PASS", "FAIL"]}
+        }
+      }
+    },
+    "new_metric_improved": {"type": "boolean"},
+    "decision": {"enum": ["PROMOTION_ALLOWED", "PROMOTION_BLOCKED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/target-manifest.v1.schema.json",
+  "title": "ONSure Target Manifest v1 (Target Assurance Requirement Universe family, Wave 1)",
+  "description": "11_CONTRACT_UPGRADE_BLUEPRINT.md SS6.1 TargetManifestV2. Identity-foundation classification of a registered target Program: what kind of thing it is and which SA-01..14 capabilities apply, BEFORE ProgramProfile's structural discovery runs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "manifest_id", "target_id", "target_type", "archetype", "classifier",
+    "confidence", "alternative_classifications", "applicable_sa_capabilities",
+    "source_surfaces", "deployment_surfaces", "runtime_surfaces", "generated_at",
+    "self_validation_nonfinal", "final_claim_allowed", "manifest_sha256"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_TARGET_MANIFEST_V1"},
+    "manifest_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "target_type": {
+      "enum": [
+        "AI_APPLICATION", "AGENTIC_SYSTEM", "GENERAL_SOFTWARE", "WEB_APPLICATION",
+        "API_SERVICE", "DESKTOP_APPLICATION", "MOBILE_APPLICATION", "AUTOMATION_WORKFLOW"
+      ],
+      "description": "Reuses product-scope.v1.json supported_target_types verbatim; does not invent a competing target-type vocabulary."
+    },
+    "archetype": {"type": "string", "minLength": 1},
+    "classifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classifier_id", "classifier_version", "qualification_state"],
+      "properties": {
+        "classifier_id": {"type": "string", "minLength": 1},
+        "classifier_version": {"type": "string", "minLength": 1},
+        "qualification_state": {"enum": ["QUALIFIED", "NOT_QUALIFIED", "QUALIFICATION_PENDING"]}
+      }
+    },
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "alternative_classifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_type", "confidence"],
+        "properties": {
+          "target_type": {
+            "enum": [
+              "AI_APPLICATION", "AGENTIC_SYSTEM", "GENERAL_SOFTWARE", "WEB_APPLICATION",
+              "API_SERVICE", "DESKTOP_APPLICATION", "MOBILE_APPLICATION", "AUTOMATION_WORKFLOW"
+            ]
+          },
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "applicable_sa_capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["capability_id", "applicability_state"],
+        "properties": {
+          "capability_id": {
+            "enum": [
+              "SA-01", "SA-02", "SA-03", "SA-04", "SA-05", "SA-06", "SA-07",
+              "SA-08", "SA-09", "SA-10", "SA-11", "SA-12", "SA-13", "SA-14"
+            ]
+          },
+          "applicability_state": {"enum": ["APPLICABLE", "NOT_APPLICABLE", "CONDITIONAL", "UNKNOWN"]},
+          "na_challenge": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+              "rule_id": {"type": "string", "minLength": 1},
+              "rationale": {"type": "string", "minLength": 1},
+              "evaluator_principal": {"type": "string", "minLength": 1},
+              "evidence_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "challenge_status": {"enum": ["NONE", "OPEN", "RESOLVED"]}
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"applicability_state": {"enum": ["NOT_APPLICABLE", "CONDITIONAL"]}}},
+            "then": {
+              "required": ["na_challenge"],
+              "properties": {
+                "na_challenge": {
+                  "type": "object",
+                  "required": ["rule_id", "rationale", "evaluator_principal", "evidence_digest", "challenge_status"]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "source_surfaces": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "GIT_REPOSITORY", "SOURCE_ARCHIVE", "PACKAGE", "BINARY", "CONTAINER_IMAGE",
+          "DEPLOYED_SERVICE", "DOCUMENT_AND_POLICY_SET"
+        ]
+      },
+      "uniqueItems": true,
+      "description": "Reuses target-adapter.v1.json supported_source_kinds verbatim."
+    },
+    "deployment_surfaces": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "runtime_surfaces": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "PROCESS_EXIT", "STDOUT_STDERR", "FILESYSTEM_DIFF", "NETWORK_ACTIVITY", "LOG",
+          "METRIC", "TRACE", "SCREEN_OR_UI_STATE", "DATABASE_STATE", "AI_MODEL_RESPONSE",
+          "AI_TOOL_CALL", "AUTHORITY_AND_PERMISSION_EVENT"
+        ]
+      },
+      "uniqueItems": true,
+      "description": "Reuses target-adapter.v1.json observation_channels verbatim."
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false},
+    "manifest_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

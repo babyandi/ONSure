@@ -44,7 +44,7 @@
     },
     {
       "id": "P0-WORKFLOW-SURFACE-PARITY",
-      "state": "49_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
+      "state": "51_DISPATCHER_OPERATIONS_3_GENERIC_SURFACES_GATE_IMPLEMENTED_LOCAL_EXECUTION_REQUIRED",
       "requires_human": false,
       "next_action": "Run workflow surface and critical-callpath gates whenever Dispatcher, CLI, Local API, VS Code commands or overloads change."
     },

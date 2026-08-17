@@ -1,0 +1,13 @@
+{
+  "contract": "ONSURE_CORPUS_INTEGRITY_REPORT_V1",
+  "report_id": "report-002",
+  "corpus_id": "corpus-002",
+  "corpus_epoch": "EPOCH::CORPUS::0001",
+  "duplicate_count": 12,
+  "label_error_count": 4,
+  "poisoning_state": "CONFIRMED",
+  "tenant_leakage_state": "CLEAR",
+  "benchmark_contamination_state": "CLEAR",
+  "decision": "CLEAR",
+  "generated_at": "2026-08-14T00:00:00Z"
+}

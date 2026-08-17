@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/session-lifecycle-disposition.v1.schema.json",
+  "title": "ONSure Session Lifecycle Disposition v1",
+  "description": "NFR-SESSION (03 Security Review, DRAFT C12): '만료된 세션으로의 요청은 거부되어야 하고, 동일 사용자의 동시 활성 세션 수가 상한을 넘으면 가장 오래된 세션이 무효화되어야 한다.' Records the outcome of creating one session: the new session's own fields (always status=ACTIVE, since a record describing a rejected/expired attempt is a different concern) plus evicted_session_id, an independent nullable field naming a DIFFERENT, pre-existing session evicted as a side effect when active_session_count_before_create had already reached session_ceiling. The count>=ceiling implies-eviction invariant is a cross-field numeric comparison JSON Schema without $data cannot express declaratively -- enforced by the Java runtime layer (SessionLedger.create), documented honestly here rather than faked with an unrelated proxy constraint, same pattern as main-branch-protection.v1.json and decision-time-knowledge-snapshot.v1.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "session_id", "user_id", "issued_at", "expires_at", "status",
+    "session_ceiling", "active_session_count_before_create", "evicted_session_id",
+    "decided_at", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_SESSION_LIFECYCLE_DISPOSITION_V1"},
+    "session_id": {"type": "string", "minLength": 1},
+    "user_id": {"type": "string", "minLength": 1},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "status": {"const": "ACTIVE"},
+    "session_ceiling": {"type": "integer", "minimum": 1},
+    "active_session_count_before_create": {"type": "integer", "minimum": 0},
+    "evicted_session_id": {"type": ["string", "null"], "minLength": 1},
+    "decided_at": {"type": "string", "format": "date-time"},
+    "final_claim_allowed": {"const": false}
+  },
+  "$comment": "No further allOf: 'evicted_session_id must differ from session_id' and the count>=ceiling implies-eviction invariant are both cross-field comparisons JSON Schema without $data cannot express declaratively. Both are enforced by SessionLedger.create() and covered by SessionLedgerTest, not faked here as a schema constraint."
+}

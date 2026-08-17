@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/accessible-claim-render.v1.schema.json",
+  "title": "ONSure Accessible Claim Render v1",
+  "description": "126_FINAL_FRESH_PRODUCT_DESIGN_REVIEW_AND_SCOPE_CLOSURE.md FR-FRESH-002. color_only_signal is always false -- decision/currentness/limitation must be conveyed by a locale-independent machine token and a screen-reader label, never by color alone. localization_fallback_used never drops limitation_disclosure_present -- a fallback render still must not omit the UNKNOWN/HOLD/limitation wording.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "render_id", "subject_claim_id", "decision_token", "color_only_signal",
+    "screen_reader_label", "timestamp_utc", "currentness_token", "limitation_tokens",
+    "locale", "localization_fallback_used", "limitation_disclosure_present"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_ACCESSIBLE_CLAIM_RENDER_V1"},
+    "render_id": {"type": "string", "minLength": 1},
+    "subject_claim_id": {"type": "string", "minLength": 1},
+    "decision_token": {"enum": ["PASS", "FAIL", "BLOCKED", "HOLD", "NOT_RUN", "INCONCLUSIVE", "UNKNOWN"]},
+    "color_only_signal": {"const": false},
+    "screen_reader_label": {"type": "string", "minLength": 1},
+    "timestamp_utc": {"type": "string", "format": "date-time"},
+    "currentness_token": {"enum": ["CURRENT", "STALE", "REASSESSMENT_REQUIRED", "INVALIDATED", "REVOKED", "UNKNOWN"]},
+    "limitation_tokens": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "locale": {"type": "string", "minLength": 1},
+    "localization_fallback_used": {"type": "boolean"},
+    "limitation_disclosure_present": {"type": "boolean"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"localization_fallback_used": {"const": true}}},
+      "then": {"properties": {"limitation_disclosure_present": {"const": true}}}
+    }
+  ]
+}

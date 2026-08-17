@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/deployment-revision.v1.schema.json",
+  "title": "ONSure Deployment Revision v1",
+  "description": "29_DEPLOYMENT_RUNTIME_CURRENTNESS_AND_REVOCATION_DESIGN.md SS3.3. Deployment success != Assurance success (SS2): this record only asserts what was deployed and observed, never a validity claim. expected_artifact_digest must equal the FinalLock-verified BuildArtifactIdentity.artifact_sha256; observed_artifact_digest is a separate, independently-read-back value -- CURRENT disposition later requires these two to match (doc71 SS2 conditional).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "deployment_revision_id", "deployment_target_id", "expected_artifact_digest",
+    "observed_artifact_digest", "deployment_manifest_digest", "config_digest",
+    "secret_reference_set_digest", "dependency_runtime_digest", "deployment_strategy",
+    "rollout_generation", "started_at", "completed_at", "state",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DEPLOYMENT_REVISION_V1"},
+    "deployment_revision_id": {"type": "string", "minLength": 1},
+    "deployment_target_id": {"type": "string", "minLength": 1},
+    "expected_artifact_digest": {"$ref": "#/$defs/sha256"},
+    "observed_artifact_digest": {"$ref": "#/$defs/sha256"},
+    "deployment_manifest_digest": {"$ref": "#/$defs/sha256"},
+    "config_digest": {"$ref": "#/$defs/sha256"},
+    "secret_reference_set_digest": {"$ref": "#/$defs/sha256"},
+    "dependency_runtime_digest": {"$ref": "#/$defs/sha256"},
+    "deployment_strategy": {"enum": ["RECREATE", "ROLLING", "BLUE_GREEN", "CANARY"]},
+    "rollout_generation": {"type": "integer", "minimum": 1},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "state": {"enum": ["ROLLING_OUT", "COMPLETE", "FAILED", "ROLLED_BACK", "SUPERSEDED"]},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

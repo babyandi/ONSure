@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/requirement-applicability-evaluation.v1.schema.json",
+  "title": "ONSure Requirement Applicability Evaluation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requirement_id", "state", "evaluated_context_digest", "evaluated_at"],
+  "properties": {
+    "requirement_id": {"type": "string", "minLength": 1},
+    "state": {"enum": ["APPLICABLE", "NOT_APPLICABLE", "CONDITIONAL", "UNKNOWN"]},
+    "rule_id": {"type": ["string", "null"]},
+    "subject_digest": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"},
+    "evaluated_context_digest": {"$ref": "#/$defs/sha256"},
+    "rationale": {"type": ["string", "null"]},
+    "evaluator_principal": {"type": ["string", "null"]},
+    "evidence_digest": {"type": ["string", "null"], "pattern": "^(?:[0-9a-f]{64})?$"},
+    "challenge_status": {"enum": ["NONE", "OPEN", "RESOLVED"]},
+    "evaluated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"enum": ["NOT_APPLICABLE", "CONDITIONAL"]}}},
+      "then": {
+        "required": ["rule_id", "subject_digest", "rationale", "evaluator_principal", "evidence_digest"],
+        "properties": {
+          "rule_id": {"type": "string", "minLength": 1},
+          "subject_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "rationale": {"type": "string", "minLength": 1},
+          "evaluator_principal": {"type": "string", "minLength": 1},
+          "evidence_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

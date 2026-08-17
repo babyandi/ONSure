@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/corpus-integrity-report.v1.schema.json",
+  "title": "ONSure Corpus Integrity Report v1",
+  "description": "149_LEARNING_VALIDATION_SCHEMA_FIXTURE_SPECIFICATION.md SS C. 148 P0 invariant 6: a CONFIRMED poisoning, tenant_leakage, or benchmark_contamination state must forbid a CLEAR decision -- enforced structurally below, not merely by convention, so scope promotion/activation gated on this report can never be fooled by a caller-declared CLEAR alongside a CONFIRMED contamination flag.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "report_id", "corpus_id", "corpus_epoch", "duplicate_count", "label_error_count",
+    "poisoning_state", "tenant_leakage_state", "benchmark_contamination_state", "decision", "generated_at"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CORPUS_INTEGRITY_REPORT_V1"},
+    "report_id": {"type": "string", "minLength": 1},
+    "corpus_id": {"type": "string", "minLength": 1},
+    "corpus_epoch": {"type": "string", "minLength": 1},
+    "duplicate_count": {"type": "integer", "minimum": 0},
+    "label_error_count": {"type": "integer", "minimum": 0},
+    "poisoning_state": {"enum": ["CLEAR", "SUSPECTED", "CONFIRMED", "IMPACT_ASSESSED"]},
+    "tenant_leakage_state": {"enum": ["CLEAR", "SUSPECTED", "CONFIRMED", "IMPACT_ASSESSED"]},
+    "benchmark_contamination_state": {"enum": ["CLEAR", "SUSPECTED", "CONFIRMED", "IMPACT_ASSESSED"]},
+    "decision": {"enum": ["CLEAR", "HOLD", "BLOCKED"]},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "poisoning_state": {"enum": ["CONFIRMED", "IMPACT_ASSESSED"]}
+        }
+      },
+      "then": {"properties": {"decision": {"const": "BLOCKED"}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "tenant_leakage_state": {"enum": ["CONFIRMED", "IMPACT_ASSESSED"]}
+        }
+      },
+      "then": {"properties": {"decision": {"const": "BLOCKED"}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "benchmark_contamination_state": {"enum": ["CONFIRMED", "IMPACT_ASSESSED"]}
+        }
+      },
+      "then": {"properties": {"decision": {"const": "BLOCKED"}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "poisoning_state": {"const": "SUSPECTED"}
+        }
+      },
+      "then": {"properties": {"decision": {"enum": ["HOLD", "BLOCKED"]}}}
+    }
+  ]
+}
