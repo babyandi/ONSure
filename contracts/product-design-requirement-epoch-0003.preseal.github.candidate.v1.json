@@ -1,0 +1,54 @@
+{
+  "contract": "ONSURE_PRODUCT_DESIGN_REQUIREMENT_EPOCH_0003_PRESEAL_GITHUB_CANDIDATE_V1",
+  "status": "PRESEAL_NONFINAL",
+  "previous_epoch": "EPOCH::REQUIREMENT::0002",
+  "previous_epoch_disposition": "HISTORICAL_VALID_BUT_PRE_FINAL_TARGET_RECONCILIATION",
+  "next_epoch": "EPOCH::REQUIREMENT::0003",
+  "authority_refs": [
+    "docs/master/semantic-assurance/141_REQUIREMENT_UNIVERSE_AUTHORITY_DECISION.md",
+    "docs/master/semantic-assurance/145_REQUIREMENT_AUTHORITY_POPULATION_CLOSURE_CHECKPOINT.md",
+    "docs/master/semantic-assurance/160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md",
+    "contracts/requirement-authority-source-manifest.candidate.v1.json",
+    "contracts/requirement-authority-source-review.final-target.github.v1.json"
+  ],
+  "mandatory_additive_explicit_requirements": [
+    "FR-FIN-01","FR-FIN-02","FR-FIN-03","FR-FIN-04","FR-FIN-05","FR-FIN-06","FR-FIN-07","FR-FIN-08","FR-FIN-09","FR-FIN-10","FR-FIN-11","FR-FIN-12","FR-FIN-13","FR-FIN-14","FR-FIN-15","FR-FIN-16","FR-FIN-17","FR-FIN-18","FR-FIN-19","FR-FIN-20","FR-FIN-21","FR-FIN-22"
+  ],
+  "semantic_relation_registry": "findings/ONSURE_FR_FIN_01_22_SEMANTIC_RELATION_MAPPING.github.nonfinal.json",
+  "requirements_preserved": [
+    "FR-COM-*",
+    "FR-META-*",
+    "FR-FRESH-*",
+    "FR-LEARN-001~095",
+    "NFR-*",
+    "authority-eligible non-ID materialized requirements"
+  ],
+  "anti_double_count_rule": "Top-level FR-FIN requirements remain independent nodes. Granular requirements remain current. Coverage is not double-counted; closure requires explicit relation and parent-unique acceptance closure.",
+  "preseal_checks": {
+    "final_target_authority_rows_reviewed": true,
+    "fr_fin_01_22_extracted_gap_free": true,
+    "fr_fin_parent_semantic_relations_materialized": true,
+    "full_authority_manifest_population_complete": false,
+    "raw_content_sha256_complete": false,
+    "unreviewed_authority_source_count_zero": false,
+    "authority_filtered_full_ru_generated": false,
+    "applicability_regenerated": false,
+    "global_trace_regenerated": false,
+    "old_to_new_epoch_reconciliation_materialized": true,
+    "deterministic_rerun_digest_stable": false
+  },
+  "reconciliation": {
+    "epoch_0002_action": "PRESERVE_IMMUTABLE_EVIDENCE",
+    "epoch_0003_action": "CREATE_ONLY_AFTER_ALL_PRESEAL_FALSE_FIELDS_ARE_PROVEN_TRUE",
+    "fr_fin_action": "ADD_AS_EXPLICIT_CURRENT_PRODUCT_DESIGN_REQUIREMENTS"
+  },
+  "blocking_reasons": [
+    "FULL_REQUIREMENT_AUTHORITY_SOURCE_MANIFEST_NOT_COMPLETE",
+    "RAW_CONTENT_SHA256_NOT_COMPLETE",
+    "AUTHORITY_FILTERED_FULL_RU_GENERATION_NOT_EXECUTED",
+    "APPLICABILITY_AND_GLOBAL_TRACE_REGENERATION_NOT_EXECUTED",
+    "DETERMINISTIC_TWO_RUN_DIGEST_NOT_PROVEN"
+  ],
+  "sealed": false,
+  "final_claim_allowed": false
+}
