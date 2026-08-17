@@ -1,0 +1,43 @@
+{
+  "type":"ONSURE_DESIGN_CLOSURE_GITHUB_INDEPENDENT_READBACK_NONFINAL",
+  "status":"HOLD_NONFINAL",
+  "independence_boundary":"Read-back assessment against GitHub repository state; not a worker self-approval and not a repository-local runtime execution.",
+  "verified_present":[
+    "contracts/requirement-authority-source-review.final-target.github.v1.json",
+    "contracts/product-design-requirement-epoch-0003.preseal.github.candidate.v1.json",
+    "findings/ONSURE_FR_FIN_01_22_SEMANTIC_RELATION_MAPPING.github.nonfinal.json",
+    "findings/ONSURE_CANDIDATE_TRIAGE_FR_FIN.github.nonfinal.json",
+    "findings/ONSURE_FR_COM_008_BRANCH_PROTECTION_TRACE_SUPPLEMENT.github.nonfinal.json",
+    "findings/ONSURE_LEARNING_VALIDATION_P1_HUMAN_CONFIRMATION_PACKAGE.github.nonfinal.json",
+    "findings/ONSURE_DESIGN_CLOSURE_GITHUB_EXECUTION_STATE_V2.nonfinal.json"
+  ],
+  "not_run":[
+    "raw-byte SHA-256 authority/design population materializer",
+    "authority-filtered full Requirement Universe generator",
+    "applicability regeneration",
+    "global trace regeneration",
+    "current reverse-orphan scanner",
+    "current authority/design conflict scanner",
+    "current Design Lock runner",
+    "repository-local negative/runtime tests for FR-COM-008 and NFR-CONFIG closure",
+    "post-confirmation fixtures/evidence for four P1 Learning Validation policies",
+    "independent CLEAN rerun 1",
+    "independent CLEAN rerun 2"
+  ],
+  "completion_metrics": {
+    "candidate_triage_percent":null,
+    "missing_design":null,
+    "partial_or_semantic_narrowing":null,
+    "design_mapped_percent":null,
+    "semantically_covered_percent":null,
+    "contracted_percent":null,
+    "unreviewed":null,
+    "unresolved_p0_authority_conflict":null,
+    "unresolved_p0_design_contradiction":null,
+    "clean_rerun_reproducible":false
+  },
+  "verdict":"HOLD",
+  "blocking_reasons":["ACTIVE_EPOCH_NOT_SEALED","FULL_AUTHORITY_POPULATION_NOT_PROVEN","CURRENT_GLOBAL_SCANNERS_NOT_EXECUTED","P1_HUMAN_CONFIRMATION_PENDING","INDEPENDENT_TWO_CLEAN_NOT_EXECUTED"],
+  "highest_claim":"GITHUB_READBACK_COMPLETE_EXECUTION_CLOSURE_HOLD_NONFINAL",
+  "final_claim_allowed":false
+}
