@@ -2635,6 +2635,63 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "subject_id", "trace-subject-1", "trace_id", traceId, "log_entries", logEntries));
     }
 
+    // NFR-SEC Storage/Transit Encryption, Secret Non-exposure, Least Privilege
+    @Test
+    void securityBaselineCheckIsCompliantWithStrongEncryptionCleanSecretsAndNoExcessOperations() throws Exception {
+        Map<?, ?> result = securityBaselineCheck(
+                "AES_256", "1.3", 0, List.of("op-a"), List.of("op-a", "op-b"));
+        assertEquals(true, result.get("storage_encryption_compliant"));
+        assertEquals(true, result.get("tls_compliant"));
+        assertEquals(true, result.get("secret_exposure_clear"));
+        assertEquals(true, result.get("least_privilege_compliant"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsStorageEncryptionBelowAes256() throws Exception {
+        Map<?, ?> result = securityBaselineCheck("AES_128", "1.3", 0, List.of(), List.of());
+        assertEquals(false, result.get("storage_encryption_compliant"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("STORAGE_ENCRYPTION_BELOW_AES_256"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsTlsVersionBelow12() throws Exception {
+        Map<?, ?> result = securityBaselineCheck("AES_256", "1.1", 0, List.of(), List.of());
+        assertEquals(false, result.get("tls_compliant"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("TLS_VERSION_BELOW_1_2"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsAnyDetectedSecretPatternMatch() throws Exception {
+        Map<?, ?> result = securityBaselineCheck("AES_256", "1.3", 1, List.of(), List.of());
+        assertEquals(false, result.get("secret_exposure_clear"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsAnOperationCallableBeyondTheDocumentedAllowList() throws Exception {
+        Map<?, ?> result = securityBaselineCheck(
+                "AES_256", "1.3", 0, List.of("op-a", "op-secret"), List.of("op-a"));
+        assertEquals(List.of("op-secret"), result.get("excess_operations"));
+        assertEquals(false, result.get("least_privilege_compliant"));
+        assertEquals(false, result.get("compliant"));
+    }
+
+    private Map<?, ?> securityBaselineCheck(
+            String storageEncryptionAlgorithm, String tlsVersion, int secretPatternMatchesFound,
+            List<String> actualCallableOperations, List<String> documentedAllowedOperations) throws Exception {
+        return learningDispatch(bridge, "assurance.security.baseline-check", Map.of(
+                "subject_id", "security-subject-1",
+                "storage_encryption_algorithm", storageEncryptionAlgorithm, "tls_version", tlsVersion,
+                "secret_pattern_matches_found", secretPatternMatchesFound, "role_id", "OPERATOR",
+                "role_actual_callable_operations", actualCallableOperations,
+                "role_documented_allowed_operations", documentedAllowedOperations));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

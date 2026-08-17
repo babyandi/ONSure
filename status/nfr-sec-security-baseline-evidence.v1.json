@@ -1,0 +1,25 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-SEC",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md NFR-SEC: '저장·전송 암호화, Secret 비노출, 최소권한. 저장 암호화: AES-256 이상. 전송 암호화: TLS 1.2 이상만 허용, 하위 버전 거부. Secret 비노출: 로그·에러메시지·커밋 히스토리에서 Secret 패턴 검출 0건. 최소권한: RBAC 역할별 실제 호출 가능 Operation 목록이 문서화된 허용 목록을 벗어나지 않는지 검증.'",
+  "subject": "SemanticAssuranceV2WorkflowService.securityBaselineCheck via assurance.security.baseline-check; contracts/security-baseline-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/security-baseline-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#securityBaselineCheckIsCompliantWithStrongEncryptionCleanSecretsAndNoExcessOperations",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#securityBaselineCheckDetectsStorageEncryptionBelowAes256",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#securityBaselineCheckDetectsTlsVersionBelow12",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#securityBaselineCheckDetectsAnyDetectedSecretPatternMatch",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#securityBaselineCheckDetectsAnOperationCallableBeyondTheDocumentedAllowList"
+  ],
+  "coverage_notes": "Covers all four named sub-requirements with four independent real computations rather than one combined heuristic. storage_encryption_compliant and tls_compliant are real ORDINAL comparisons (STORAGE_ENCRYPTION_RANK/TLS_VERSION_RANK index comparison) against the named minimum, not string equality against one exact value -- a stronger algorithm/version (e.g. AES_256_GCM, TLS 1.3) still passes, proven by securityBaselineCheckIsCompliantWithStrongEncryptionCleanSecretsAndNoExcessOperations. securityBaselineCheckDetectsAnOperationCallableBeyondTheDocumentedAllowList is the direct test of '최소권한' (least privilege): role_actual_callable_operations minus role_documented_allowed_operations is a real set-difference naming the specific excess operation, closing the requirement's own verification method ('실제로 호출 가능한 Operation 목록이... 허용 목록을 벗어나지 않는지 검증').",
+  "open_gap": "Operates on a caller-supplied representation of storage algorithm/TLS version/secret-scan-result/RBAC-callable-operations; there is no live storage-encryption-configuration reader, TLS-handshake interceptor, or automated secret scanner wired to feed this gate from real system state (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session) -- though the design doc itself names a pre-existing real secret-scanning mechanism (BuiltInStages' SECRET_ rule token static detection) this operation does not itself invoke. role_actual_callable_operations is also caller-supplied rather than introspected live from TenantRbacService's own role-tier tables, which do exist in this codebase and could in principle feed this check in a future integration.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

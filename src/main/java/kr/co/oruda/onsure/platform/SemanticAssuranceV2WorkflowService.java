@@ -99,6 +99,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.learning.authority-domain-separation-check",
             "assurance.retention.deletion-proof-check",
             "assurance.observability.structured-log-completeness-check",
+            "assurance.security.baseline-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -246,6 +247,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.learning.authority-domain-separation-check" -> learningAuthorityDomainSeparationCheck(request);
             case "assurance.retention.deletion-proof-check" -> retentionDeletionProofCheck(request);
             case "assurance.observability.structured-log-completeness-check" -> structuredLogCompletenessCheck(request);
+            case "assurance.security.baseline-check" -> securityBaselineCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3652,6 +3654,77 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("complete", complete);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", complete ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final List<String> STORAGE_ENCRYPTION_RANK =
+            List.of("NONE", "AES_128", "AES_256", "AES_256_GCM");
+    private static final List<String> TLS_VERSION_RANK = List.of("1.0", "1.1", "1.2", "1.3");
+
+    /**
+     * security-baseline-check.v1.schema.json real computation (NFR-SEC: "저장·전송 암호화, Secret
+     * 비노출, 최소권한"). Four independent real computations, one per named sub-requirement.
+     * storage_encryption_compliant and tls_compliant are real ordinal comparisons against a
+     * required minimum (AES-256, TLS 1.2), not string equality against one exact value -- a
+     * stronger algorithm/version than the minimum still passes. secret_exposure_clear is a real
+     * count check (must be exactly 0). least_privilege_compliant is a real set-difference between
+     * a role's actually-callable operations and its documented allow-list -- any operation callable
+     * beyond the documented list is excess privilege, not a caller-declared summary.
+     */
+    private Map<String, Object> securityBaselineCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String storageAlgorithm = requiredText(request, "storage_encryption_algorithm");
+        if (!STORAGE_ENCRYPTION_RANK.contains(storageAlgorithm)) {
+            return failClosed("HOLD", List.of("STORAGE_ENCRYPTION_ALGORITHM_INVALID:" + storageAlgorithm));
+        }
+        String tlsVersion = requiredText(request, "tls_version");
+        if (!TLS_VERSION_RANK.contains(tlsVersion)) {
+            return failClosed("HOLD", List.of("TLS_VERSION_INVALID:" + tlsVersion));
+        }
+        int secretMatches = request.path("secret_pattern_matches_found").asInt(-1);
+        if (secretMatches < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("SECRET_PATTERN_MATCHES_FOUND_INVALID"));
+        }
+        String roleId = requiredText(request, "role_id");
+        if (!Set.of("VIEWER", "OPERATOR", "APPROVER", "AUDITOR", "ADMIN").contains(roleId)) {
+            return failClosed("HOLD", List.of("ROLE_ID_INVALID:" + roleId));
+        }
+        List<String> actualOperations = stringList(request.path("role_actual_callable_operations"));
+        List<String> documentedOperations = stringList(request.path("role_documented_allowed_operations"));
+
+        boolean storageEncryptionCompliant =
+                STORAGE_ENCRYPTION_RANK.indexOf(storageAlgorithm) >= STORAGE_ENCRYPTION_RANK.indexOf("AES_256");
+        boolean tlsCompliant = TLS_VERSION_RANK.indexOf(tlsVersion) >= TLS_VERSION_RANK.indexOf("1.2");
+        boolean secretExposureClear = secretMatches == 0;
+
+        Set<String> documentedSet = new java.util.LinkedHashSet<>(documentedOperations);
+        List<String> excessOperations = new ArrayList<>();
+        for (String operation : actualOperations) {
+            if (!documentedSet.contains(operation)) excessOperations.add(operation);
+        }
+        boolean leastPrivilegeCompliant = excessOperations.isEmpty();
+
+        boolean compliant = storageEncryptionCompliant && tlsCompliant && secretExposureClear && leastPrivilegeCompliant;
+
+        List<String> reasons = new ArrayList<>();
+        if (!storageEncryptionCompliant) reasons.add("STORAGE_ENCRYPTION_BELOW_AES_256");
+        if (!tlsCompliant) reasons.add("TLS_VERSION_BELOW_1_2");
+        if (!secretExposureClear) reasons.add("SECRET_PATTERN_MATCHES_FOUND:" + secretMatches);
+        for (String operation : excessOperations) reasons.add("EXCESS_OPERATION:" + operation);
+
+        Map<String, Object> out = base("SECURITY_BASELINE_CHECK", subjectId);
+        out.put("storage_encryption_algorithm", storageAlgorithm);
+        out.put("tls_version", tlsVersion);
+        out.put("secret_pattern_matches_found", secretMatches);
+        out.put("role_id", roleId);
+        out.put("storage_encryption_compliant", storageEncryptionCompliant);
+        out.put("tls_compliant", tlsCompliant);
+        out.put("secret_exposure_clear", secretExposureClear);
+        out.put("excess_operations", List.copyOf(excessOperations));
+        out.put("least_privilege_compliant", leastPrivilegeCompliant);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

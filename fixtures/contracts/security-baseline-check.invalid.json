@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_SECURITY_BASELINE_CHECK_V1",
+  "subject_id": "security-2026-08-17-002",
+  "storage_encryption_algorithm": "AES_128",
+  "tls_version": "1.1",
+  "secret_pattern_matches_found": 2,
+  "role_id": "OPERATOR",
+  "role_actual_callable_operations": ["assurance.execution.identity-binding-check", "assurance.retention.deletion-proof-check"],
+  "role_documented_allowed_operations": ["assurance.execution.identity-binding-check"],
+  "storage_encryption_compliant": false,
+  "tls_compliant": false,
+  "secret_exposure_clear": false,
+  "excess_operations": ["assurance.retention.deletion-proof-check"],
+  "least_privilege_compliant": false,
+  "compliant": true,
+  "reasons": ["STORAGE_ENCRYPTION_BELOW_AES_256", "TLS_VERSION_BELOW_1_2", "SECRET_PATTERN_MATCHES_FOUND:2", "EXCESS_OPERATION:assurance.retention.deletion-proof-check"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}
