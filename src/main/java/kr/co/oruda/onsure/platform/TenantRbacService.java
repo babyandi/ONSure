@@ -74,6 +74,7 @@ public final class TenantRbacService {
             "assurance.security.baseline-check",
             "assurance.portability.air-gapped-deployment-check",
             "assurance.availability.isolation-check",
+            "assurance.performance.target-compliance-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",

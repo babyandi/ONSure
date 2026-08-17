@@ -1255,6 +1255,15 @@
         "fixtures/contracts/availability-isolation-check.invalid.json"
       ],
       "schema": "contracts/availability-isolation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/performance-target-compliance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/performance-target-compliance-check.invalid.json"
+      ],
+      "schema": "contracts/performance-target-compliance-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

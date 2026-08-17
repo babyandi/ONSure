@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_PERFORMANCE_TARGET_COMPLIANCE_CHECK_V1",
+  "subject_id": "performance-2026-08-17-002",
+  "performance_category": "FAST_REVIEW",
+  "measured_duration_seconds": 8,
+  "target_threshold_seconds": 5,
+  "concurrent_scenario_count": null,
+  "within_threshold": false,
+  "concurrency_supported": true,
+  "compliant": true,
+  "reasons": ["DURATION_EXCEEDS_TARGET_THRESHOLD:8.0>5.0"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

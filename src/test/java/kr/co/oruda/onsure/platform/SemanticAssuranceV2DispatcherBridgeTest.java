@@ -2783,6 +2783,51 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "other_tenant_baseline_success_rate", otherTenantBaselineSuccessRate));
     }
 
+    // NFR-PERF Performance Target Compliance
+    @Test
+    void performanceTargetComplianceCheckIsCompliantWhenMeasuredDurationIsWithinTheTarget() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("FAST_REVIEW", 3, 5, null);
+        assertEquals(true, result.get("within_threshold"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void performanceTargetComplianceCheckDetectsAMeasuredDurationExceedingTheTarget() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("FAST_REVIEW", 8, 5, null);
+        assertEquals(false, result.get("within_threshold"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("DURATION_EXCEEDS_TARGET_THRESHOLD:8.0>5.0"));
+    }
+
+    @Test
+    void performanceTargetComplianceCheckRequiresAtLeast20ConcurrentScenariosOnlyForVerificationScenario() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("VERIFICATION_SCENARIO", 600, 900, 10);
+        assertEquals(false, result.get("concurrency_supported"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("CONCURRENT_SCENARIO_COUNT_BELOW_MINIMUM_20:10"));
+    }
+
+    @Test
+    void performanceTargetComplianceCheckDoesNotApplyTheConcurrencyRequirementToOtherCategories() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("PREFLIGHT", 300, 600, null);
+        assertEquals(true, result.get("concurrency_supported"));
+        assertEquals(true, result.get("compliant"));
+    }
+
+    private Map<?, ?> performanceTargetComplianceCheck(
+            String performanceCategory, double measuredDurationSeconds, double targetThresholdSeconds,
+            Integer concurrentScenarioCount) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("subject_id", "performance-subject-1");
+        body.put("performance_category", performanceCategory);
+        body.put("measured_duration_seconds", measuredDurationSeconds);
+        body.put("target_threshold_seconds", targetThresholdSeconds);
+        body.put("concurrent_scenario_count", concurrentScenarioCount);
+        return learningDispatch(bridge, "assurance.performance.target-compliance-check", body);
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

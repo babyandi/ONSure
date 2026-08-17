@@ -102,6 +102,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.security.baseline-check",
             "assurance.portability.air-gapped-deployment-check",
             "assurance.availability.isolation-check",
+            "assurance.performance.target-compliance-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -252,6 +253,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.security.baseline-check" -> securityBaselineCheck(request);
             case "assurance.portability.air-gapped-deployment-check" -> airGappedDeploymentCheck(request);
             case "assurance.availability.isolation-check" -> availabilityIsolationCheck(request);
+            case "assurance.performance.target-compliance-check" -> performanceTargetComplianceCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3840,6 +3842,67 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("rate_limit_exceeded", rateLimitExceeded);
         out.put("rate_limit_enforced", rateLimitEnforced);
         out.put("noisy_neighbor_isolated", noisyNeighborIsolated);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final Set<String> PERFORMANCE_CATEGORIES = Set.of(
+            "LEARNING_INITIAL", "LEARNING_INCREMENTAL", "FAST_REVIEW", "VERIFICATION_SCENARIO", "PREFLIGHT");
+
+    /**
+     * performance-target-compliance-check.v1.schema.json real computation (NFR-PERF: "대규모
+     * Repository의 단계적 분석과 중단·재개... 검증 방법은 이미 명확하다: 각 목표치를 실제
+     * Repository로 측정해 기준 초과 시 실패로 기록."). within_threshold is a real numeric
+     * comparison between measured_duration_seconds and the caller-declared target_threshold_seconds
+     * for that specific category, never a caller-declared pass/fail summary. For
+     * VERIFICATION_SCENARIO specifically, the design doc additionally names "병렬 실행 시 Case당
+     * 동시 Scenario 20개 이상 지원" -- concurrency_supported is a real minimum-count check (>=20)
+     * that applies only to that category; other categories are not subject to it and always pass
+     * this sub-check.
+     */
+    private Map<String, Object> performanceTargetComplianceCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String performanceCategory = requiredText(request, "performance_category");
+        if (!PERFORMANCE_CATEGORIES.contains(performanceCategory)) {
+            return failClosed("HOLD", List.of("PERFORMANCE_CATEGORY_INVALID:" + performanceCategory));
+        }
+        double measuredDurationSeconds = request.path("measured_duration_seconds").asDouble(-1);
+        if (measuredDurationSeconds < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("MEASURED_DURATION_SECONDS_INVALID"));
+        }
+        double targetThresholdSeconds = request.path("target_threshold_seconds").asDouble(-1);
+        if (targetThresholdSeconds <= 0) {
+            return failClosed("INPUT_REQUIRED", List.of("TARGET_THRESHOLD_SECONDS_INVALID"));
+        }
+        JsonNode concurrentScenarioCountNode = request.path("concurrent_scenario_count");
+        Integer concurrentScenarioCount = concurrentScenarioCountNode.isInt() ? concurrentScenarioCountNode.asInt() : null;
+
+        boolean withinThreshold = measuredDurationSeconds <= targetThresholdSeconds;
+        boolean concurrencySupported;
+        if ("VERIFICATION_SCENARIO".equals(performanceCategory)) {
+            concurrencySupported = concurrentScenarioCount != null && concurrentScenarioCount >= 20;
+        } else {
+            concurrencySupported = true;
+        }
+        boolean compliant = withinThreshold && concurrencySupported;
+
+        List<String> reasons = new ArrayList<>();
+        if (!withinThreshold) {
+            reasons.add("DURATION_EXCEEDS_TARGET_THRESHOLD:" + measuredDurationSeconds + ">" + targetThresholdSeconds);
+        }
+        if ("VERIFICATION_SCENARIO".equals(performanceCategory) && !concurrencySupported) {
+            reasons.add("CONCURRENT_SCENARIO_COUNT_BELOW_MINIMUM_20:" + concurrentScenarioCount);
+        }
+
+        Map<String, Object> out = base("PERFORMANCE_TARGET_COMPLIANCE_CHECK", subjectId);
+        out.put("performance_category", performanceCategory);
+        out.put("measured_duration_seconds", measuredDurationSeconds);
+        out.put("target_threshold_seconds", targetThresholdSeconds);
+        out.put("concurrent_scenario_count", concurrentScenarioCount);
+        out.put("within_threshold", withinThreshold);
+        out.put("concurrency_supported", concurrencySupported);
         out.put("compliant", compliant);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", compliant ? "NON_FINAL" : "HOLD");
