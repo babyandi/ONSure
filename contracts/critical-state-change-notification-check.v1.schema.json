@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/critical-state-change-notification-check.v1.schema.json",
+  "title": "ONSure Critical State Change Notification Check v1",
+  "description": "FR-COM-011: 'Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다.' notified is computed for real, never trusted from a caller-declared flag: missing_channels is a real set-difference between the entity's own required_channels (the channels its policy declares mandatory for this severity) and the channels that actually have a dispatched=true record. dashboard_independent is a real structural check -- notified can never be true when dashboard_dependent=true, because 'active' notification by definition cannot require the customer to first open the Dashboard.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "entity_type", "entity_id", "required_channels", "channel_dispatches",
+    "dashboard_dependent", "missing_channels", "dashboard_independent", "notified", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_CRITICAL_STATE_CHANGE_NOTIFICATION_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "entity_type": {"enum": ["CASE", "FINDING", "LICENSE"]},
+    "entity_id": {"type": "string", "minLength": 1},
+    "required_channels": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {"enum": ["EMAIL", "WEBHOOK", "VSCODE", "ADMIN_INBOX"]}
+    },
+    "channel_dispatches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["channel_type", "dispatched"],
+        "properties": {
+          "channel_type": {"enum": ["EMAIL", "WEBHOOK", "VSCODE", "ADMIN_INBOX"]},
+          "dispatched": {"type": "boolean"}
+        }
+      }
+    },
+    "dashboard_dependent": {"type": "boolean"},
+    "missing_channels": {"type": "array", "items": {"enum": ["EMAIL", "WEBHOOK", "VSCODE", "ADMIN_INBOX"]}, "uniqueItems": true},
+    "dashboard_independent": {"type": "boolean"},
+    "notified": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"notified": {"const": true}}},
+      "then": {"properties": {"missing_channels": {"maxItems": 0}, "dashboard_independent": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"missing_channels": {"minItems": 1}}},
+      "then": {"properties": {"notified": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"dashboard_independent": {"const": false}}},
+      "then": {"properties": {"notified": {"const": false}}}
+    }
+  ]
+}

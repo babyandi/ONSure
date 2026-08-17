@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-META-001",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md FR-META-001 Validation Target Manifest: '모든 Validation은 Source SHA만이 아니라 제품 전체 정체성을 하나의 ValidationTargetManifest로 고정한다. 대상에는 source/tree/build artifact, dependency artifact/provenance, runtime config/feature flags, policy/rule pack, model/prompt/tool/RAG, external service contract, OS/runtime/DB/deployment environment를 포함한다. Manifest digest가 바뀌면 기존 Final/Certificate는 STALE 또는 REASSESSMENT_REQUIRED다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.validationTargetManifestCurrentnessCheck via assurance.currentness.validation-target-manifest-check; contracts/validation-target-manifest-currentness-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/validation-target-manifest-currentness-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#validationTargetManifestCurrentnessCheckIsCurrentWhenEveryAxisMatches",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#validationTargetManifestCurrentnessCheckForcesReassessmentOnASingleChangedAxis",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#validationTargetManifestCurrentnessCheckDoesNotStopAtTheFirstChangedAxis"
+  ],
+  "coverage_notes": "Mirrors providerDriftCheck's pre-existing, already-tested field-by-field material_change pattern (34 SS9.4 closure), applied here to the 7 axes FR-META-001 itself names (source/tree/build artifact, dependency provenance, runtime config, policy/rule pack, model/prompt/tool/RAG, external service contract, OS/runtime/DB/deployment environment) rather than provider characteristics. validationTargetManifestCurrentnessCheckForcesReassessmentOnASingleChangedAxis is the direct test of the requirement's own named rule: a single differing axis (environment_digest alone, all 6 others identical) forces REASSESSMENT_REQUIRED, proving the requirement's own emphasis -- 'Source SHA만이 아니라' (not just Source SHA) -- is real: source_tree_digest matching does not by itself grant CURRENT if any other axis has drifted. validationTargetManifestCurrentnessCheckDoesNotStopAtTheFirstChangedAxis proves changed_axes accumulates every differing axis (not just the first found), naming both source_tree_digest and environment_digest together.",
+  "open_gap": "Operates on a caller-supplied pair of manifests (locked at issuance vs currently observed); there is no live build/dependency/policy/config inventory system in this codebase that actually computes these 7 sub-digests from real system state and feeds this gate automatically whenever a certificate's target changes (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). The requirement names two possible resulting states for an existing certificate (STALE or REASSESSMENT_REQUIRED); this schema's own state enum uses only REASSESSMENT_REQUIRED as the single computed negative state (a disclosed simplification -- the requirement's own text does not specify which axis maps to which of the two states, so no principled distinction was invented).",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/portfolio-aggregation-completeness-check.v1.schema.json",
+  "title": "ONSure Customer Admin Portfolio Aggregation Completeness Check v1",
+  "description": "FR-COM-010: 'Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한 Portfolio 조회 기능을 제공받는다.' complete is computed for real: missing_entries is a real set-difference between the organization's declared full System/Program population and the entries actually present in the portfolio result -- a portfolio view silently omitting even one system/program is caught, not trusted from a caller-declared completeness flag.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "organization_id", "org_systems_programs", "portfolio_entries",
+    "missing_entries", "complete", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PORTFOLIO_AGGREGATION_COMPLETENESS_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "org_systems_programs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["system_id", "program_id"],
+        "properties": {
+          "system_id": {"type": "string", "minLength": 1},
+          "program_id": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "portfolio_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["system_id", "program_id", "status", "risk", "usage"],
+        "properties": {
+          "system_id": {"type": "string", "minLength": 1},
+          "program_id": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "minLength": 1},
+          "risk": {"type": "string", "minLength": 1},
+          "usage": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "missing_entries": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "complete": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"complete": {"const": true}}},
+      "then": {"properties": {"missing_entries": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"missing_entries": {"minItems": 1}}},
+      "then": {"properties": {"complete": {"const": false}}}
+    }
+  ]
+}

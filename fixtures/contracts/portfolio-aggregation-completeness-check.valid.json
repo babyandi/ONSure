@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_PORTFOLIO_AGGREGATION_COMPLETENESS_CHECK_V1",
+  "subject_id": "portfolio-2026-08-17-001",
+  "organization_id": "org-a",
+  "org_systems_programs": [
+    {"system_id": "system-1", "program_id": "program-1"},
+    {"system_id": "system-2", "program_id": "program-2"}
+  ],
+  "portfolio_entries": [
+    {"system_id": "system-1", "program_id": "program-1", "status": "ACTIVE", "risk": "LOW", "usage": "42"},
+    {"system_id": "system-2", "program_id": "program-2", "status": "ACTIVE", "risk": "MEDIUM", "usage": "17"}
+  ],
+  "missing_entries": [],
+  "complete": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

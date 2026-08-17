@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/validation-target-manifest-currentness-check.v1.schema.json",
+  "title": "ONSure Validation Target Manifest Currentness Check v1",
+  "description": "FR-META-001 Validation Target Manifest: '모든 Validation은 Source SHA만이 아니라 제품 전체 정체성을 하나의 ValidationTargetManifest로 고정한다. 대상에는 source/tree/build artifact, dependency artifact/provenance, runtime config/feature flags, policy/rule pack, model/prompt/tool/RAG, external service contract, OS/runtime/DB/deployment environment를 포함한다. Manifest digest가 바뀌면 기존 Final/Certificate는 STALE 또는 REASSESSMENT_REQUIRED다.' changed_axes is computed by real field-by-field digest comparison between the manifest locked at certificate issuance and the currently observed manifest (mirrors providerDriftCheck's established material_change pattern) -- any single differing axis, not just the source tree digest alone, forces the certificate out of CURRENT.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "certificate_id", "locked_manifest", "observed_manifest",
+    "changed_axes", "certificate_state", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_VALIDATION_TARGET_MANIFEST_CURRENTNESS_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "certificate_id": {"type": "string", "minLength": 1},
+    "locked_manifest": {"$ref": "#/$defs/manifest"},
+    "observed_manifest": {"$ref": "#/$defs/manifest"},
+    "changed_axes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "certificate_state": {"enum": ["CURRENT", "REASSESSMENT_REQUIRED"]},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "$defs": {
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_tree_digest", "dependency_provenance_digest", "runtime_config_digest",
+        "policy_pack_digest", "model_prompt_tool_rag_digest", "external_service_contract_digest",
+        "environment_digest"
+      ],
+      "properties": {
+        "source_tree_digest": {"type": "string", "minLength": 1},
+        "dependency_provenance_digest": {"type": "string", "minLength": 1},
+        "runtime_config_digest": {"type": "string", "minLength": 1},
+        "policy_pack_digest": {"type": "string", "minLength": 1},
+        "model_prompt_tool_rag_digest": {"type": "string", "minLength": 1},
+        "external_service_contract_digest": {"type": "string", "minLength": 1},
+        "environment_digest": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"certificate_state": {"const": "CURRENT"}}},
+      "then": {"properties": {"changed_axes": {"maxItems": 0}}}
+    },
+    {
+      "if": {"properties": {"changed_axes": {"minItems": 1}}},
+      "then": {"properties": {"certificate_state": {"const": "REASSESSMENT_REQUIRED"}}}
+    }
+  ]
+}

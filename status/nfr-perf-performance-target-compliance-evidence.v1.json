@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-PERF",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md NFR-PERF: '대규모 Repository의 단계적 분석과 중단·재개. 목표치는... Learning: 100만 LOC 8시간/증분 30분, Continuous Review: 5초, Verification Scenario: 15분(Case당 동시 20개 이상), Preflight: 10분. 검증 방법은... 각 목표치를 실제 Repository로 측정해 기준 초과 시 실패로 기록.'",
+  "subject": "SemanticAssuranceV2WorkflowService.performanceTargetComplianceCheck via assurance.performance.target-compliance-check; contracts/performance-target-compliance-check.v1.schema.json (NEW). This is the sixth and final NFR item closed this session.",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/performance-target-compliance-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#performanceTargetComplianceCheckIsCompliantWhenMeasuredDurationIsWithinTheTarget",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#performanceTargetComplianceCheckDetectsAMeasuredDurationExceedingTheTarget",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#performanceTargetComplianceCheckRequiresAtLeast20ConcurrentScenariosOnlyForVerificationScenario",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#performanceTargetComplianceCheckDoesNotApplyTheConcurrencyRequirementToOtherCategories"
+  ],
+  "coverage_notes": "within_threshold is a real numeric comparison against a caller-declared target for the specific named category (the requirement itself defers the actual numeric targets to DRAFT/customer SLA -- '고객 SLA로 협의 변경 가능' -- so this operation accepts the target as an input rather than hardcoding one of the 5 draft defaults, matching the requirement's own disclosed flexibility). performanceTargetComplianceCheckRequiresAtLeast20ConcurrentScenariosOnlyForVerificationScenario is the direct test of the VERIFICATION_SCENARIO-specific clause ('Case당 동시 Scenario 20개 이상 지원'). performanceTargetComplianceCheckDoesNotApplyTheConcurrencyRequirementToOtherCategories proves this sub-check is scoped correctly -- a PREFLIGHT measurement with no concurrent_scenario_count at all still reaches compliant=true, since that requirement never applied to it.",
+  "open_gap": "Operates on a caller-supplied measured_duration_seconds; there is no live Repository-analysis timing harness in this codebase that actually runs a real 1M-LOC learning pass, a real VS Code Fast Review diff, or a real Verification Pack execution and feeds this gate from a genuine measurement (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session -- and the requirement's own numeric targets remain DRAFT per 08_REVIEW_CHECKLIST_OPEN_DECISIONS.md C1-C3, so this closure verifies conformance to WHATEVER target is supplied, not to any one canonical number). The requirement's own '단계적 분석과 중단·재개' (staged analysis with pause/resume) clause is not modeled by this schema at all -- only the numeric duration-target compliance is covered.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

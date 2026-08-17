@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/execution-identity-binding-check.v1.schema.json",
+  "title": "ONSure Execution Identity Binding Check v1",
+  "description": "FR-COM-001: '모든 실행은 Organization, Product, Channel, License, System, Program, Baseline에 결속한다.' All seven axes are required on every execution (enforced structurally by this schema's own required list). Beyond presence, license_bound_organization_id is cross-referenced for real against the execution's own organization_id: a license genuinely belongs to exactly one organization, so a license bound to a DIFFERENT organization than the one actually executing is a real binding violation (a borrowed/cross-org license), not a caller-declared flag.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "execution_id", "organization_id", "product_id", "channel_id",
+    "execution_license_id", "license_bound_organization_id", "system_id", "program_id", "baseline_id",
+    "license_organization_consistent", "bound", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_EXECUTION_IDENTITY_BINDING_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "execution_id": {"type": "string", "minLength": 1},
+    "organization_id": {"type": "string", "minLength": 1},
+    "product_id": {"type": "string", "minLength": 1},
+    "channel_id": {"type": "string", "minLength": 1},
+    "execution_license_id": {"type": "string", "minLength": 1},
+    "license_bound_organization_id": {"type": "string", "minLength": 1},
+    "system_id": {"type": "string", "minLength": 1},
+    "program_id": {"type": "string", "minLength": 1},
+    "baseline_id": {"type": "string", "minLength": 1},
+    "license_organization_consistent": {"type": "boolean"},
+    "bound": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"license_organization_consistent": {"const": false}}},
+      "then": {"properties": {"bound": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"bound": {"const": true}}},
+      "then": {"properties": {"license_organization_consistent": {"const": true}}}
+    }
+  ]
+}

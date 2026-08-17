@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_CRITICAL_STATE_CHANGE_NOTIFICATION_CHECK_V1",
+  "subject_id": "notification-2026-08-17-001",
+  "entity_type": "FINDING",
+  "entity_id": "finding-1",
+  "required_channels": ["EMAIL", "ADMIN_INBOX"],
+  "channel_dispatches": [
+    {"channel_type": "EMAIL", "dispatched": true},
+    {"channel_type": "ADMIN_INBOX", "dispatched": true}
+  ],
+  "dashboard_dependent": false,
+  "missing_channels": [],
+  "dashboard_independent": true,
+  "notified": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

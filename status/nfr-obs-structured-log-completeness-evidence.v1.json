@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-OBS",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md NFR-OBS: 'Trace, Metric, Structured Log. 검증: 모든 Workflow Operation 실행이 Trace ID로 상호 연결 가능해야 하며, 최소 필드셋(operation, actor, duration, decision, evidence_ref)을 포함한 구조화 로그를 남겨야 한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.structuredLogCompletenessCheck via assurance.observability.structured-log-completeness-check; contracts/structured-log-completeness-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/structured-log-completeness-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#structuredLogCompletenessCheckIsCompleteWhenEntriesAreTraceCorrelatedWithValidDurations",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#structuredLogCompletenessCheckDetectsAnEntryNotCorrelatedToTheDeclaredTrace",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#structuredLogCompletenessCheckDetectsANegativeDuration"
+  ],
+  "coverage_notes": "The 5 named minimum fields (operation/actor/duration/decision/evidence_ref) are required structurally on every entry. Beyond presence, two real checks close the requirement's own further claims: structuredLogCompletenessCheckDetectsAnEntryNotCorrelatedToTheDeclaredTrace is the direct test of '상호 연결 가능해야 한다' (must be mutually correlatable) -- an entry carrying a DIFFERENT trace_id value than the one declared for the batch is caught by real string equality, not merely checked for presence of some trace_id field. structuredLogCompletenessCheckDetectsANegativeDuration proves duration is checked as a real, structurally-sane numeric measurement (a negative duration is physically impossible and rejected), not just a required-but-unvalidated field.",
+  "open_gap": "Operates on a caller-supplied batch of already-produced log entries; there is no live logging/tracing infrastructure in this codebase that actually emits structured log entries from real Workflow Operation executions and feeds this gate automatically (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). The requirement's own field-set is disclosed as still DRAFT (08_REVIEW_CHECKLIST_OPEN_DECISIONS.md C11) -- this closure commits to the specific 5 fields the requirement text itself names, not a speculative superset.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -1,0 +1,19 @@
+{
+  "contract": "ONSURE_SECURITY_BASELINE_CHECK_V1",
+  "subject_id": "security-2026-08-17-001",
+  "storage_encryption_algorithm": "AES_256",
+  "tls_version": "1.3",
+  "secret_pattern_matches_found": 0,
+  "role_id": "OPERATOR",
+  "role_actual_callable_operations": ["assurance.execution.identity-binding-check"],
+  "role_documented_allowed_operations": ["assurance.execution.identity-binding-check", "assurance.patch.isolation-check"],
+  "storage_encryption_compliant": true,
+  "tls_compliant": true,
+  "secret_exposure_clear": true,
+  "excess_operations": [],
+  "least_privilege_compliant": true,
+  "compliant": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

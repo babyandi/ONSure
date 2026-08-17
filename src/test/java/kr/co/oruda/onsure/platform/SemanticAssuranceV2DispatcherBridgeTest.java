@@ -2356,6 +2356,478 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "patch_branch_name", patchBranchName, "protected_branch_names", protectedBranchNames));
     }
 
+    // FR-COM-001 Execution Identity Binding
+    @Test
+    void executionIdentityBindingCheckIsBoundWhenLicenseOrganizationMatches() throws Exception {
+        Map<?, ?> result = executionIdentityBindingCheck("org-a", "org-a");
+        assertEquals(true, result.get("license_organization_consistent"));
+        assertEquals(true, result.get("bound"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void executionIdentityBindingCheckDetectsACrossOrganizationLicense() throws Exception {
+        Map<?, ?> result = executionIdentityBindingCheck("org-a", "org-b");
+        assertEquals(false, result.get("license_organization_consistent"));
+        assertEquals(false, result.get("bound"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("LICENSE_ORGANIZATION_MISMATCH:org-b!=org-a"));
+    }
+
+    private Map<?, ?> executionIdentityBindingCheck(String organizationId, String licenseBoundOrganizationId) throws Exception {
+        return learningDispatch(bridge, "assurance.execution.identity-binding-check", Map.of(
+                "subject_id", "execution-subject-1", "execution_id", "exec-1",
+                "organization_id", organizationId, "product_id", "product-1", "channel_id", "vscode",
+                "execution_license_id", "license-1", "license_bound_organization_id", licenseBoundOrganizationId,
+                "system_id", "system-1", "program_id", "program-1", "baseline_id", "baseline-1"));
+    }
+
+    // FR-META-001 Validation Target Manifest
+    @Test
+    void validationTargetManifestCurrentnessCheckIsCurrentWhenEveryAxisMatches() throws Exception {
+        Map<String, Object> manifest = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg");
+        Map<?, ?> result = validationTargetManifestCurrentnessCheck(manifest, manifest);
+        assertEquals(List.of(), result.get("changed_axes"));
+        assertEquals("CURRENT", result.get("certificate_state"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void validationTargetManifestCurrentnessCheckForcesReassessmentOnASingleChangedAxis() throws Exception {
+        Map<String, Object> locked = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg");
+        Map<String, Object> observed = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "CHANGED");
+        Map<?, ?> result = validationTargetManifestCurrentnessCheck(locked, observed);
+        assertEquals(List.of("environment_digest"), result.get("changed_axes"));
+        assertEquals("REASSESSMENT_REQUIRED", result.get("certificate_state"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void validationTargetManifestCurrentnessCheckDoesNotStopAtTheFirstChangedAxis() throws Exception {
+        Map<String, Object> locked = manifest("aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg");
+        Map<String, Object> observed = manifest("CHANGED-1", "bbb", "ccc", "ddd", "eee", "fff", "CHANGED-2");
+        Map<?, ?> result = validationTargetManifestCurrentnessCheck(locked, observed);
+        assertEquals(List.of("source_tree_digest", "environment_digest"), result.get("changed_axes"));
+    }
+
+    private Map<String, Object> manifest(
+            String sourceTree, String dependencyProvenance, String runtimeConfig, String policyPack,
+            String modelPromptToolRag, String externalServiceContract, String environment) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("source_tree_digest", sourceTree);
+        m.put("dependency_provenance_digest", dependencyProvenance);
+        m.put("runtime_config_digest", runtimeConfig);
+        m.put("policy_pack_digest", policyPack);
+        m.put("model_prompt_tool_rag_digest", modelPromptToolRag);
+        m.put("external_service_contract_digest", externalServiceContract);
+        m.put("environment_digest", environment);
+        return m;
+    }
+
+    private Map<?, ?> validationTargetManifestCurrentnessCheck(
+            Map<String, Object> lockedManifest, Map<String, Object> observedManifest) throws Exception {
+        return learningDispatch(bridge, "assurance.currentness.validation-target-manifest-check", Map.of(
+                "subject_id", "certificate-subject-1", "certificate_id", "cert-1",
+                "locked_manifest", lockedManifest, "observed_manifest", observedManifest));
+    }
+
+    // FR-COM-011 Critical State Change Notification
+    @Test
+    void criticalStateChangeNotificationCheckIsNotifiedWhenAllRequiredChannelsDispatchedAndDashboardIndependent() throws Exception {
+        Map<?, ?> result = criticalStateChangeNotificationCheck(
+                List.of("EMAIL", "ADMIN_INBOX"),
+                List.of(channelDispatch("EMAIL", true), channelDispatch("ADMIN_INBOX", true)),
+                false);
+        assertEquals(List.of(), result.get("missing_channels"));
+        assertEquals(true, result.get("dashboard_independent"));
+        assertEquals(true, result.get("notified"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void criticalStateChangeNotificationCheckDetectsAMissingRequiredChannel() throws Exception {
+        Map<?, ?> result = criticalStateChangeNotificationCheck(
+                List.of("EMAIL", "WEBHOOK"), List.of(channelDispatch("EMAIL", true)), false);
+        assertEquals(List.of("WEBHOOK"), result.get("missing_channels"));
+        assertEquals(false, result.get("notified"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("MISSING_CHANNEL:WEBHOOK"));
+    }
+
+    @Test
+    void criticalStateChangeNotificationCheckNeverCountsAsNotifiedWhenDependentOnDashboardAccess() throws Exception {
+        Map<?, ?> result = criticalStateChangeNotificationCheck(
+                List.of("EMAIL"), List.of(channelDispatch("EMAIL", true)), true);
+        assertEquals(List.of(), result.get("missing_channels"));
+        assertEquals(false, result.get("dashboard_independent"));
+        assertEquals(false, result.get("notified"));
+        assertTrue(((List<?>) result.get("reasons")).contains("NOTIFICATION_DEPENDS_ON_DASHBOARD_ACCESS"));
+    }
+
+    private Map<String, Object> channelDispatch(String channelType, boolean dispatched) {
+        return Map.of("channel_type", channelType, "dispatched", dispatched);
+    }
+
+    private Map<?, ?> criticalStateChangeNotificationCheck(
+            List<String> requiredChannels, List<Map<String, Object>> channelDispatches, boolean dashboardDependent)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.notification.critical-state-change-check", Map.of(
+                "subject_id", "notification-subject-1", "entity_type", "FINDING", "entity_id", "finding-1",
+                "required_channels", requiredChannels, "channel_dispatches", channelDispatches,
+                "dashboard_dependent", dashboardDependent));
+    }
+
+    // FR-COM-010 Customer Admin Portfolio Aggregation Completeness
+    @Test
+    void portfolioAggregationCompletenessCheckIsCompleteWhenEverySystemProgramIsPresent() throws Exception {
+        Map<?, ?> result = portfolioAggregationCompletenessCheck(
+                List.of(systemProgram("system-1", "program-1"), systemProgram("system-2", "program-2")),
+                List.of(portfolioEntry("system-1", "program-1"), portfolioEntry("system-2", "program-2")));
+        assertEquals(List.of(), result.get("missing_entries"));
+        assertEquals(true, result.get("complete"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void portfolioAggregationCompletenessCheckDetectsASilentlyOmittedSystemProgram() throws Exception {
+        Map<?, ?> result = portfolioAggregationCompletenessCheck(
+                List.of(systemProgram("system-1", "program-1"), systemProgram("system-2", "program-2")),
+                List.of(portfolioEntry("system-1", "program-1")));
+        assertEquals(List.of("system-2:program-2"), result.get("missing_entries"));
+        assertEquals(false, result.get("complete"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("MISSING_PORTFOLIO_ENTRY:system-2:program-2"));
+    }
+
+    private Map<String, Object> systemProgram(String systemId, String programId) {
+        return Map.of("system_id", systemId, "program_id", programId);
+    }
+
+    private Map<String, Object> portfolioEntry(String systemId, String programId) {
+        return Map.of(
+                "system_id", systemId, "program_id", programId,
+                "status", "ACTIVE", "risk", "LOW", "usage", "1");
+    }
+
+    private Map<?, ?> portfolioAggregationCompletenessCheck(
+            List<Map<String, Object>> orgSystemsPrograms, List<Map<String, Object>> portfolioEntries)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.portfolio.aggregation-completeness-check", Map.of(
+                "subject_id", "portfolio-subject-1", "organization_id", "org-1",
+                "org_systems_programs", orgSystemsPrograms, "portfolio_entries", portfolioEntries));
+    }
+
+    // FR-LEARN-001 Learning Authority Domain Separation
+    @Test
+    void learningAuthorityDomainSeparationCheckIsValidWhenAuthorityIsScopedToExactlyOneMatchingDomain() throws Exception {
+        Map<?, ?> result = learningAuthorityDomainSeparationCheck("TARGET_LEARNING", List.of("TARGET_LEARNING"));
+        assertEquals(true, result.get("domain_authorized"));
+        assertEquals(false, result.get("cross_domain_authority"));
+        assertEquals(true, result.get("separation_valid"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void learningAuthorityDomainSeparationCheckRejectsAnAuthorityNotScopedToTheCandidatesDomain() throws Exception {
+        Map<?, ?> result = learningAuthorityDomainSeparationCheck("TARGET_LEARNING", List.of("ASSURANCE_LEARNING"));
+        assertEquals(false, result.get("domain_authorized"));
+        assertEquals(false, result.get("separation_valid"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("AUTHORITY_NOT_SCOPED_TO_DOMAIN:authority-1:TARGET_LEARNING"));
+    }
+
+    @Test
+    void learningAuthorityDomainSeparationCheckRejectsAnAuthorityScopedAcrossMultipleDomains() throws Exception {
+        Map<?, ?> result = learningAuthorityDomainSeparationCheck(
+                "ASSURANCE_LEARNING", List.of("ASSURANCE_LEARNING", "VALIDATOR_LEARNING"));
+        assertEquals(true, result.get("domain_authorized"));
+        assertEquals(true, result.get("cross_domain_authority"));
+        assertEquals(false, result.get("separation_valid"));
+        assertTrue(((List<?>) result.get("reasons")).contains("CROSS_DOMAIN_AUTHORITY:authority-1"));
+    }
+
+    private Map<?, ?> learningAuthorityDomainSeparationCheck(String learningDomain, List<String> authorityDomainScope)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.learning.authority-domain-separation-check", Map.of(
+                "subject_id", "candidate-subject-1", "candidate_id", "candidate-1",
+                "learning_domain", learningDomain, "decision_authority_id", "authority-1",
+                "decision_authority_domain_scope", authorityDomainScope));
+    }
+
+    // NFR-PRIV Retention Period and Complete Deletion Proof
+    @Test
+    void retentionDeletionProofCheckIsCompliantWhenReceiptIssuedWithinTheRetentionPeriod() throws Exception {
+        Map<?, ?> result = retentionDeletionProofCheck(
+                "2026-08-01T00:00:00Z", 30, "2026-08-15T00:00:00Z", "DELETED_SIGNED_EXTERNAL_VERIFICATION");
+        assertEquals(true, result.get("deletion_receipt_present"));
+        assertEquals(true, result.get("within_retention_period"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void retentionDeletionProofCheckDetectsAReceiptIssuedAfterTheRetentionDeadline() throws Exception {
+        Map<?, ?> result = retentionDeletionProofCheck(
+                "2026-08-01T00:00:00Z", 5, "2026-08-15T00:00:00Z", "DELETED_SIGNED_EXTERNAL_VERIFICATION");
+        assertEquals(false, result.get("within_retention_period"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("RECEIPT_ISSUED_AFTER_RETENTION_DEADLINE"));
+    }
+
+    @Test
+    void retentionDeletionProofCheckRejectsADeletedStateClaimedWithoutAReceipt() throws Exception {
+        Map<?, ?> result = retentionDeletionProofCheck(
+                "2026-08-01T00:00:00Z", 30, null, "DELETED_SIGNED_EXTERNAL_VERIFICATION");
+        assertEquals(false, result.get("deletion_receipt_present"));
+        assertEquals(false, result.get("retention_state_correct"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("RETENTION_STATE_CLAIMED_WITHOUT_RECEIPT"));
+    }
+
+    private Map<?, ?> retentionDeletionProofCheck(
+            String deletionRequestedAt, int retentionPeriodDays, String deletionReceiptIssuedAt,
+            String retentionState) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("subject_id", "case-subject-1");
+        body.put("service_case_id", "case-1");
+        body.put("deletion_requested_at", deletionRequestedAt);
+        body.put("retention_period_days", retentionPeriodDays);
+        body.put("deletion_receipt_issued_at", deletionReceiptIssuedAt);
+        body.put("retention_state", retentionState);
+        return learningDispatch(bridge, "assurance.retention.deletion-proof-check", body);
+    }
+
+    // NFR-OBS Trace-Correlated Structured Logging
+    @Test
+    void structuredLogCompletenessCheckIsCompleteWhenEntriesAreTraceCorrelatedWithValidDurations() throws Exception {
+        Map<?, ?> result = structuredLogCompletenessCheck("trace-1", List.of(logEntry("entry-1", "trace-1", 12)));
+        assertEquals(List.of(), result.get("uncorrelated_entries"));
+        assertEquals(List.of(), result.get("invalid_duration_entries"));
+        assertEquals(true, result.get("complete"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void structuredLogCompletenessCheckDetectsAnEntryNotCorrelatedToTheDeclaredTrace() throws Exception {
+        Map<?, ?> result = structuredLogCompletenessCheck("trace-2", List.of(logEntry("entry-2", "trace-other", 12)));
+        assertEquals(List.of("entry-2"), result.get("uncorrelated_entries"));
+        assertEquals(false, result.get("complete"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void structuredLogCompletenessCheckDetectsANegativeDuration() throws Exception {
+        Map<?, ?> result = structuredLogCompletenessCheck("trace-3", List.of(logEntry("entry-3", "trace-3", -5)));
+        assertEquals(List.of("entry-3"), result.get("invalid_duration_entries"));
+        assertEquals(false, result.get("complete"));
+    }
+
+    private Map<String, Object> logEntry(String entryId, String entryTraceId, double durationMs) {
+        return Map.of(
+                "entry_id", entryId, "entry_trace_id", entryTraceId,
+                "operation", "assurance.execution.identity-binding-check", "actor", "actor-1",
+                "duration_ms", durationMs, "decision", "NON_FINAL", "evidence_ref", "status/" + entryId + ".json");
+    }
+
+    private Map<?, ?> structuredLogCompletenessCheck(String traceId, List<Map<String, Object>> logEntries) throws Exception {
+        return learningDispatch(bridge, "assurance.observability.structured-log-completeness-check", Map.of(
+                "subject_id", "trace-subject-1", "trace_id", traceId, "log_entries", logEntries));
+    }
+
+    // NFR-SEC Storage/Transit Encryption, Secret Non-exposure, Least Privilege
+    @Test
+    void securityBaselineCheckIsCompliantWithStrongEncryptionCleanSecretsAndNoExcessOperations() throws Exception {
+        Map<?, ?> result = securityBaselineCheck(
+                "AES_256", "1.3", 0, List.of("op-a"), List.of("op-a", "op-b"));
+        assertEquals(true, result.get("storage_encryption_compliant"));
+        assertEquals(true, result.get("tls_compliant"));
+        assertEquals(true, result.get("secret_exposure_clear"));
+        assertEquals(true, result.get("least_privilege_compliant"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsStorageEncryptionBelowAes256() throws Exception {
+        Map<?, ?> result = securityBaselineCheck("AES_128", "1.3", 0, List.of(), List.of());
+        assertEquals(false, result.get("storage_encryption_compliant"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("STORAGE_ENCRYPTION_BELOW_AES_256"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsTlsVersionBelow12() throws Exception {
+        Map<?, ?> result = securityBaselineCheck("AES_256", "1.1", 0, List.of(), List.of());
+        assertEquals(false, result.get("tls_compliant"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("TLS_VERSION_BELOW_1_2"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsAnyDetectedSecretPatternMatch() throws Exception {
+        Map<?, ?> result = securityBaselineCheck("AES_256", "1.3", 1, List.of(), List.of());
+        assertEquals(false, result.get("secret_exposure_clear"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+    }
+
+    @Test
+    void securityBaselineCheckDetectsAnOperationCallableBeyondTheDocumentedAllowList() throws Exception {
+        Map<?, ?> result = securityBaselineCheck(
+                "AES_256", "1.3", 0, List.of("op-a", "op-secret"), List.of("op-a"));
+        assertEquals(List.of("op-secret"), result.get("excess_operations"));
+        assertEquals(false, result.get("least_privilege_compliant"));
+        assertEquals(false, result.get("compliant"));
+    }
+
+    private Map<?, ?> securityBaselineCheck(
+            String storageEncryptionAlgorithm, String tlsVersion, int secretPatternMatchesFound,
+            List<String> actualCallableOperations, List<String> documentedAllowedOperations) throws Exception {
+        return learningDispatch(bridge, "assurance.security.baseline-check", Map.of(
+                "subject_id", "security-subject-1",
+                "storage_encryption_algorithm", storageEncryptionAlgorithm, "tls_version", tlsVersion,
+                "secret_pattern_matches_found", secretPatternMatchesFound, "role_id", "OPERATOR",
+                "role_actual_callable_operations", actualCallableOperations,
+                "role_documented_allowed_operations", documentedAllowedOperations));
+    }
+
+    // NFR-PORT Air-gapped Deployment
+    @Test
+    void airGappedDeploymentCheckIsCompliantWithPackagedDependenciesNoNetworkAccessAndASuccessfulBuild() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(42, true, 0);
+        assertEquals(true, result.get("has_packaged_dependencies"));
+        assertEquals(true, result.get("network_isolated"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void airGappedDeploymentCheckDetectsAnyExternalNetworkAccess() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(42, true, 3);
+        assertEquals(false, result.get("network_isolated"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("EXTERNAL_NETWORK_ACCESS_DETECTED:3"));
+    }
+
+    @Test
+    void airGappedDeploymentCheckDetectsAFailedBuildEvenWithoutAnyNetworkAccess() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(42, false, 0);
+        assertEquals(true, result.get("network_isolated"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("BUILD_DID_NOT_SUCCEED"));
+    }
+
+    @Test
+    void airGappedDeploymentCheckDetectsAnEmptyPackagedDependencySet() throws Exception {
+        Map<?, ?> result = airGappedDeploymentCheck(0, true, 0);
+        assertEquals(false, result.get("has_packaged_dependencies"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("NO_PACKAGED_DEPENDENCIES"));
+    }
+
+    private Map<?, ?> airGappedDeploymentCheck(
+            int packagedDependencyCount, boolean buildSucceeded, int externalNetworkAccessCount) throws Exception {
+        return learningDispatch(bridge, "assurance.portability.air-gapped-deployment-check", Map.of(
+                "subject_id", "deployment-subject-1", "deployment_id", "deployment-1",
+                "packaged_dependency_count", packagedDependencyCount, "build_succeeded", buildSucceeded,
+                "external_network_access_count", externalNetworkAccessCount));
+    }
+
+    // NFR-AVAIL SaaS Availability, Rate Limiting, Tenant Isolation
+    @Test
+    void availabilityIsolationCheckIsCompliantWithinDowntimeCeilingRateLimitEnforcedAndNoisyNeighborIsolated() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(20, 1000, 1500, 429, 0.999, 0.999);
+        assertEquals(true, result.get("availability_compliant"));
+        assertEquals(true, result.get("rate_limit_enforced"));
+        assertEquals(true, result.get("noisy_neighbor_isolated"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void availabilityIsolationCheckDetectsDowntimeExceedingThe43MinuteCeiling() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(60, 1000, 500, 200, 0.999, 0.999);
+        assertEquals(false, result.get("availability_compliant"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("MONTHLY_DOWNTIME_EXCEEDS_43_MINUTES:60.0"));
+    }
+
+    @Test
+    void availabilityIsolationCheckDetectsAnOverLimitRequestNotRejectedWith429() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(20, 1000, 1500, 200, 0.999, 0.999);
+        assertEquals(false, result.get("rate_limit_enforced"));
+        assertEquals(false, result.get("compliant"));
+    }
+
+    @Test
+    void availabilityIsolationCheckDetectsANoisyNeighborDegradationEvenWhenRateLimitIsEnforced() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(20, 1000, 1500, 429, 0.90, 0.999);
+        assertEquals(false, result.get("noisy_neighbor_isolated"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("NOISY_NEIGHBOR_ISOLATION_VIOLATED:0.9<0.999"));
+    }
+
+    private Map<?, ?> availabilityIsolationCheck(
+            double monthlyDowntimeMinutes, int rateLimitThreshold, int observedRequestCount,
+            int rateLimitExceededResponseCode, double otherTenantSuccessRate, double otherTenantBaselineSuccessRate)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.availability.isolation-check", Map.of(
+                "subject_id", "availability-subject-1",
+                "monthly_downtime_minutes", monthlyDowntimeMinutes, "rate_limit_threshold", rateLimitThreshold,
+                "observed_request_count", observedRequestCount,
+                "rate_limit_exceeded_response_code", rateLimitExceededResponseCode,
+                "other_tenant_success_rate", otherTenantSuccessRate,
+                "other_tenant_baseline_success_rate", otherTenantBaselineSuccessRate));
+    }
+
+    // NFR-PERF Performance Target Compliance
+    @Test
+    void performanceTargetComplianceCheckIsCompliantWhenMeasuredDurationIsWithinTheTarget() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("FAST_REVIEW", 3, 5, null);
+        assertEquals(true, result.get("within_threshold"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void performanceTargetComplianceCheckDetectsAMeasuredDurationExceedingTheTarget() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("FAST_REVIEW", 8, 5, null);
+        assertEquals(false, result.get("within_threshold"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("DURATION_EXCEEDS_TARGET_THRESHOLD:8.0>5.0"));
+    }
+
+    @Test
+    void performanceTargetComplianceCheckRequiresAtLeast20ConcurrentScenariosOnlyForVerificationScenario() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("VERIFICATION_SCENARIO", 600, 900, 10);
+        assertEquals(false, result.get("concurrency_supported"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("CONCURRENT_SCENARIO_COUNT_BELOW_MINIMUM_20:10"));
+    }
+
+    @Test
+    void performanceTargetComplianceCheckDoesNotApplyTheConcurrencyRequirementToOtherCategories() throws Exception {
+        Map<?, ?> result = performanceTargetComplianceCheck("PREFLIGHT", 300, 600, null);
+        assertEquals(true, result.get("concurrency_supported"));
+        assertEquals(true, result.get("compliant"));
+    }
+
+    private Map<?, ?> performanceTargetComplianceCheck(
+            String performanceCategory, double measuredDurationSeconds, double targetThresholdSeconds,
+            Integer concurrentScenarioCount) throws Exception {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("subject_id", "performance-subject-1");
+        body.put("performance_category", performanceCategory);
+        body.put("measured_duration_seconds", measuredDurationSeconds);
+        body.put("target_threshold_seconds", targetThresholdSeconds);
+        body.put("concurrent_scenario_count", concurrentScenarioCount);
+        return learningDispatch(bridge, "assurance.performance.target-compliance-check", body);
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

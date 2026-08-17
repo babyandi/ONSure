@@ -1165,6 +1165,105 @@
         "fixtures/contracts/patch-isolation-check.invalid.json"
       ],
       "schema": "contracts/patch-isolation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/execution-identity-binding-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/execution-identity-binding-check.invalid.json"
+      ],
+      "schema": "contracts/execution-identity-binding-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/validation-target-manifest-currentness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/validation-target-manifest-currentness-check.invalid.json"
+      ],
+      "schema": "contracts/validation-target-manifest-currentness-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/critical-state-change-notification-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/critical-state-change-notification-check.invalid.json"
+      ],
+      "schema": "contracts/critical-state-change-notification-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/portfolio-aggregation-completeness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/portfolio-aggregation-completeness-check.invalid.json"
+      ],
+      "schema": "contracts/portfolio-aggregation-completeness-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-authority-domain-separation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-authority-domain-separation-check.invalid.json"
+      ],
+      "schema": "contracts/learning-authority-domain-separation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/retention-deletion-proof-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/retention-deletion-proof-check.invalid.json"
+      ],
+      "schema": "contracts/retention-deletion-proof-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/structured-log-completeness-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/structured-log-completeness-check.invalid.json"
+      ],
+      "schema": "contracts/structured-log-completeness-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/security-baseline-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/security-baseline-check.invalid.json"
+      ],
+      "schema": "contracts/security-baseline-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/air-gapped-deployment-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/air-gapped-deployment-check.invalid.json"
+      ],
+      "schema": "contracts/air-gapped-deployment-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/availability-isolation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/availability-isolation-check.invalid.json"
+      ],
+      "schema": "contracts/availability-isolation-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/performance-target-compliance-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/performance-target-compliance-check.invalid.json"
+      ],
+      "schema": "contracts/performance-target-compliance-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

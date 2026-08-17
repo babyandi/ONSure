@@ -92,6 +92,17 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.currentness.verified-deployed-running-check",
             "assurance.corpus.contribution-eligibility-check",
             "assurance.patch.isolation-check",
+            "assurance.execution.identity-binding-check",
+            "assurance.currentness.validation-target-manifest-check",
+            "assurance.notification.critical-state-change-check",
+            "assurance.portfolio.aggregation-completeness-check",
+            "assurance.learning.authority-domain-separation-check",
+            "assurance.retention.deletion-proof-check",
+            "assurance.observability.structured-log-completeness-check",
+            "assurance.security.baseline-check",
+            "assurance.portability.air-gapped-deployment-check",
+            "assurance.availability.isolation-check",
+            "assurance.performance.target-compliance-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -232,6 +243,17 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.currentness.verified-deployed-running-check" -> verifiedDeployedRunningCurrentnessCheck(request);
             case "assurance.corpus.contribution-eligibility-check" -> corpusContributionEligibilityCheck(request);
             case "assurance.patch.isolation-check" -> patchIsolationCheck(request);
+            case "assurance.execution.identity-binding-check" -> executionIdentityBindingCheck(request);
+            case "assurance.currentness.validation-target-manifest-check" -> validationTargetManifestCurrentnessCheck(request);
+            case "assurance.notification.critical-state-change-check" -> criticalStateChangeNotificationCheck(request);
+            case "assurance.portfolio.aggregation-completeness-check" -> portfolioAggregationCompletenessCheck(request);
+            case "assurance.learning.authority-domain-separation-check" -> learningAuthorityDomainSeparationCheck(request);
+            case "assurance.retention.deletion-proof-check" -> retentionDeletionProofCheck(request);
+            case "assurance.observability.structured-log-completeness-check" -> structuredLogCompletenessCheck(request);
+            case "assurance.security.baseline-check" -> securityBaselineCheck(request);
+            case "assurance.portability.air-gapped-deployment-check" -> airGappedDeploymentCheck(request);
+            case "assurance.availability.isolation-check" -> availabilityIsolationCheck(request);
+            case "assurance.performance.target-compliance-check" -> performanceTargetComplianceCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3264,6 +3286,626 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("isolated", isolated);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", isolated ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * execution-identity-binding-check.v1.schema.json real computation (FR-COM-001: "모든 실행은
+     * Organization, Product, Channel, License, System, Program, Baseline에 결속한다."). All seven
+     * axes are required structurally (requiredText on each). Beyond presence, license_organization
+     * _consistent is a real cross-reference: license_bound_organization_id must equal the
+     * execution's own organization_id -- a license genuinely belongs to exactly one organization,
+     * so a license bound to a different organization than the one actually executing is a real
+     * binding violation (a borrowed/cross-org license), not a caller-declared flag.
+     */
+    private Map<String, Object> executionIdentityBindingCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String executionId = requiredText(request, "execution_id");
+        String organizationId = requiredText(request, "organization_id");
+        String productId = requiredText(request, "product_id");
+        String channelId = requiredText(request, "channel_id");
+        String executionLicenseId = requiredText(request, "execution_license_id");
+        String licenseBoundOrganizationId = requiredText(request, "license_bound_organization_id");
+        String systemId = requiredText(request, "system_id");
+        String programId = requiredText(request, "program_id");
+        String baselineId = requiredText(request, "baseline_id");
+
+        boolean licenseOrganizationConsistent = licenseBoundOrganizationId.equals(organizationId);
+        List<String> reasons = new ArrayList<>();
+        if (!licenseOrganizationConsistent) {
+            reasons.add("LICENSE_ORGANIZATION_MISMATCH:" + licenseBoundOrganizationId + "!=" + organizationId);
+        }
+        boolean bound = licenseOrganizationConsistent;
+
+        Map<String, Object> out = base("EXECUTION_IDENTITY_BINDING_CHECK", subjectId);
+        out.put("execution_id", executionId);
+        out.put("organization_id", organizationId);
+        out.put("product_id", productId);
+        out.put("channel_id", channelId);
+        out.put("execution_license_id", executionLicenseId);
+        out.put("license_bound_organization_id", licenseBoundOrganizationId);
+        out.put("system_id", systemId);
+        out.put("program_id", programId);
+        out.put("baseline_id", baselineId);
+        out.put("license_organization_consistent", licenseOrganizationConsistent);
+        out.put("bound", bound);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", bound ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final List<String> VALIDATION_TARGET_MANIFEST_AXES = List.of(
+            "source_tree_digest", "dependency_provenance_digest", "runtime_config_digest",
+            "policy_pack_digest", "model_prompt_tool_rag_digest", "external_service_contract_digest",
+            "environment_digest");
+
+    /**
+     * validation-target-manifest-currentness-check.v1.schema.json real computation (FR-META-001
+     * Validation Target Manifest: "모든 Validation은 Source SHA만이 아니라 제품 전체 정체성을 하나의
+     * ValidationTargetManifest로 고정한다... Manifest digest가 바뀌면 기존 Final/Certificate는
+     * STALE 또는 REASSESSMENT_REQUIRED다."). Mirrors providerDriftCheck's established field-by-field
+     * material_change pattern: changed_axes is computed by real per-axis digest comparison between
+     * the manifest locked at certificate issuance and the currently observed manifest, across all 7
+     * named axes (not just source tree) -- any single differing axis forces REASSESSMENT_REQUIRED,
+     * never silently CURRENT.
+     */
+    private Map<String, Object> validationTargetManifestCurrentnessCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String certificateId = requiredText(request, "certificate_id");
+        JsonNode lockedNode = request.path("locked_manifest");
+        JsonNode observedNode = request.path("observed_manifest");
+
+        List<String> changedAxes = new ArrayList<>();
+        for (String axis : VALIDATION_TARGET_MANIFEST_AXES) {
+            String lockedValue = requiredText(lockedNode, axis);
+            String observedValue = requiredText(observedNode, axis);
+            if (!lockedValue.equals(observedValue)) changedAxes.add(axis);
+        }
+
+        boolean manifestChanged = !changedAxes.isEmpty();
+        String certificateState = manifestChanged ? "REASSESSMENT_REQUIRED" : "CURRENT";
+
+        List<String> reasons = new ArrayList<>();
+        for (String axis : changedAxes) reasons.add("MANIFEST_AXIS_CHANGED:" + axis);
+
+        Map<String, Object> out = base("VALIDATION_TARGET_MANIFEST_CURRENTNESS_CHECK", subjectId);
+        out.put("certificate_id", certificateId);
+        out.put("changed_axes", List.copyOf(changedAxes));
+        out.put("certificate_state", certificateState);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", manifestChanged ? "HOLD" : "NON_FINAL");
+        return immutable(out);
+    }
+
+    private static final Set<String> NOTIFICATION_CHANNEL_TYPES = Set.of("EMAIL", "WEBHOOK", "VSCODE", "ADMIN_INBOX");
+
+    /**
+     * critical-state-change-notification-check.v1.schema.json real computation (FR-COM-011:
+     * "Case/Finding/License의 중요 상태 변화는 채널(Email, Webhook, VS Code, 관리자 알림함)로 능동
+     * 통지되어야 하며, 고객이 Dashboard를 확인하지 않아도 인지할 수 있어야 한다."). notified is
+     * computed for real, never trusted from a caller-declared flag: missing_channels is a real
+     * set-difference between required_channels and the channels that actually have a
+     * dispatched=true record. dashboard_independent is a real structural check -- notified can
+     * never be true when dashboard_dependent=true, because active notification by definition
+     * cannot require the customer to first open the Dashboard.
+     */
+    private Map<String, Object> criticalStateChangeNotificationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String entityType = requiredText(request, "entity_type");
+        if (!Set.of("CASE", "FINDING", "LICENSE").contains(entityType)) {
+            return failClosed("HOLD", List.of("NOTIFICATION_ENTITY_TYPE_INVALID:" + entityType));
+        }
+        String entityId = requiredText(request, "entity_id");
+        JsonNode requiredChannelsNode = request.path("required_channels");
+        if (!requiredChannelsNode.isArray() || requiredChannelsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("NOTIFICATION_REQUIRES_AT_LEAST_ONE_REQUIRED_CHANNEL"));
+        }
+        List<String> requiredChannels = stringList(requiredChannelsNode);
+        for (String channel : requiredChannels) {
+            if (!NOTIFICATION_CHANNEL_TYPES.contains(channel)) {
+                return failClosed("HOLD", List.of("NOTIFICATION_CHANNEL_TYPE_INVALID:" + channel));
+            }
+        }
+        boolean dashboardDependent = request.path("dashboard_dependent").asBoolean(false);
+
+        Set<String> dispatchedChannels = new java.util.LinkedHashSet<>();
+        for (JsonNode dispatch : request.path("channel_dispatches")) {
+            String channelType = requiredText(dispatch, "channel_type");
+            if (dispatch.path("dispatched").asBoolean(false)) dispatchedChannels.add(channelType);
+        }
+
+        List<String> missingChannels = new ArrayList<>();
+        for (String channel : requiredChannels) {
+            if (!dispatchedChannels.contains(channel)) missingChannels.add(channel);
+        }
+
+        boolean dashboardIndependent = !dashboardDependent;
+        boolean notified = missingChannels.isEmpty() && dashboardIndependent;
+
+        List<String> reasons = new ArrayList<>();
+        for (String channel : missingChannels) reasons.add("MISSING_CHANNEL:" + channel);
+        if (dashboardDependent) reasons.add("NOTIFICATION_DEPENDS_ON_DASHBOARD_ACCESS");
+
+        Map<String, Object> out = base("CRITICAL_STATE_CHANGE_NOTIFICATION_CHECK", subjectId);
+        out.put("entity_type", entityType);
+        out.put("entity_id", entityId);
+        out.put("required_channels", requiredChannels);
+        out.put("dashboard_dependent", dashboardDependent);
+        out.put("missing_channels", List.copyOf(missingChannels));
+        out.put("dashboard_independent", dashboardIndependent);
+        out.put("notified", notified);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", notified ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * portfolio-aggregation-completeness-check.v1.schema.json real computation (FR-COM-010:
+     * "Customer Admin은 Organization에 속한 모든 System/Program의 상태·위험·사용량을 통합한
+     * Portfolio 조회 기능을 제공받는다."). complete is computed for real: missing_entries is a real
+     * set-difference between the organization's declared full System/Program population
+     * (org_systems_programs) and the (system_id, program_id) pairs actually present in
+     * portfolio_entries -- a portfolio view silently omitting even one system/program is caught,
+     * not trusted from a caller-declared completeness flag.
+     */
+    private Map<String, Object> portfolioAggregationCompletenessCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String organizationId = requiredText(request, "organization_id");
+        JsonNode orgSystemsProgramsNode = request.path("org_systems_programs");
+        if (!orgSystemsProgramsNode.isArray() || orgSystemsProgramsNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("PORTFOLIO_REQUIRES_AT_LEAST_ONE_SYSTEM_PROGRAM"));
+        }
+
+        Set<String> expectedKeys = new java.util.LinkedHashSet<>();
+        for (JsonNode entry : orgSystemsProgramsNode) {
+            String systemId = requiredText(entry, "system_id");
+            String programId = requiredText(entry, "program_id");
+            expectedKeys.add(systemId + ":" + programId);
+        }
+
+        Set<String> presentKeys = new java.util.LinkedHashSet<>();
+        for (JsonNode entry : request.path("portfolio_entries")) {
+            String systemId = requiredText(entry, "system_id");
+            String programId = requiredText(entry, "program_id");
+            requiredText(entry, "status");
+            requiredText(entry, "risk");
+            requiredText(entry, "usage");
+            presentKeys.add(systemId + ":" + programId);
+        }
+
+        List<String> missingEntries = new ArrayList<>();
+        for (String key : expectedKeys) {
+            if (!presentKeys.contains(key)) missingEntries.add(key);
+        }
+
+        boolean complete = missingEntries.isEmpty();
+        List<String> reasons = new ArrayList<>();
+        for (String key : missingEntries) reasons.add("MISSING_PORTFOLIO_ENTRY:" + key);
+
+        Map<String, Object> out = base("PORTFOLIO_AGGREGATION_COMPLETENESS_CHECK", subjectId);
+        out.put("organization_id", organizationId);
+        out.put("missing_entries", List.copyOf(missingEntries));
+        out.put("complete", complete);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", complete ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final Set<String> LEARNING_AUTHORITY_DOMAINS =
+            Set.of("TARGET_LEARNING", "ASSURANCE_LEARNING", "VALIDATOR_LEARNING");
+
+    /**
+     * learning-authority-domain-separation-check.v1.schema.json real computation (FR-LEARN-001:
+     * "ONSure는 Target/Assurance/Validator Learning을 별도 authority domain으로 구분해야 한다.").
+     * separation_valid is computed at two real levels: domain_authorized is a real membership
+     * check that the deciding authority's own declared domain_scope actually includes the
+     * candidate's learning_domain -- an authority never granted TARGET_LEARNING scope cannot
+     * decide a TARGET_LEARNING candidate. cross_domain_authority is a real cardinality check --
+     * an authority whose own domain_scope spans more than one of the three domains is itself not
+     * properly separated, regardless of which specific decision it makes, since true separation
+     * means no single authority holds decision power across domains at all.
+     */
+    private Map<String, Object> learningAuthorityDomainSeparationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String candidateId = requiredText(request, "candidate_id");
+        String learningDomain = requiredText(request, "learning_domain");
+        if (!LEARNING_AUTHORITY_DOMAINS.contains(learningDomain)) {
+            return failClosed("HOLD", List.of("LEARNING_DOMAIN_INVALID:" + learningDomain));
+        }
+        String decisionAuthorityId = requiredText(request, "decision_authority_id");
+        JsonNode domainScopeNode = request.path("decision_authority_domain_scope");
+        if (!domainScopeNode.isArray() || domainScopeNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("LEARNING_AUTHORITY_DOMAIN_SCOPE_REQUIRED"));
+        }
+        List<String> domainScope = stringList(domainScopeNode);
+        for (String domain : domainScope) {
+            if (!LEARNING_AUTHORITY_DOMAINS.contains(domain)) {
+                return failClosed("HOLD", List.of("LEARNING_DOMAIN_INVALID:" + domain));
+            }
+        }
+
+        boolean domainAuthorized = domainScope.contains(learningDomain);
+        boolean crossDomainAuthority = new java.util.LinkedHashSet<>(domainScope).size() > 1;
+        boolean separationValid = domainAuthorized && !crossDomainAuthority;
+
+        List<String> reasons = new ArrayList<>();
+        if (!domainAuthorized) reasons.add("AUTHORITY_NOT_SCOPED_TO_DOMAIN:" + decisionAuthorityId + ":" + learningDomain);
+        if (crossDomainAuthority) reasons.add("CROSS_DOMAIN_AUTHORITY:" + decisionAuthorityId);
+
+        Map<String, Object> out = base("LEARNING_AUTHORITY_DOMAIN_SEPARATION_CHECK", subjectId);
+        out.put("candidate_id", candidateId);
+        out.put("learning_domain", learningDomain);
+        out.put("decision_authority_id", decisionAuthorityId);
+        out.put("decision_authority_domain_scope", domainScope);
+        out.put("domain_authorized", domainAuthorized);
+        out.put("cross_domain_authority", crossDomainAuthority);
+        out.put("separation_valid", separationValid);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", separationValid ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * retention-deletion-proof-check.v1.schema.json real computation (NFR-PRIV: "고객별 보존기간과
+     * 완전 삭제 증명... 삭제 요청 후 계약된 보존기간 내 deletion_receipt가 발급되고 retention_state가
+     * DELETED_SIGNED_EXTERNAL_VERIFICATION으로 전이해야 한다."). Mirrors releaseQualify's pre-
+     * existing now.isBefore(validUntil) staleness pattern: within_retention_period is a real Instant
+     * comparison -- the receipt must actually have been issued on or before
+     * deletion_requested_at + retention_period_days, not merely eventually. retention_state_correct
+     * is a real structural check: DELETED_SIGNED_EXTERNAL_VERIFICATION can never be compliant
+     * without a genuinely present receipt, mirroring ServiceCaseLifecycleService.recordDeletion's
+     * own pre-existing rule that this state transition requires a real signed external verification
+     * receipt, never a bare caller assertion.
+     */
+    private Map<String, Object> retentionDeletionProofCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String serviceCaseId = requiredText(request, "service_case_id");
+        Instant deletionRequestedAt;
+        try {
+            deletionRequestedAt = Instant.parse(requiredText(request, "deletion_requested_at"));
+        } catch (Exception malformed) {
+            return failClosed("HOLD", List.of("RETENTION_DELETION_REQUESTED_AT_MALFORMED"));
+        }
+        int retentionPeriodDays = request.path("retention_period_days").asInt(-1);
+        if (retentionPeriodDays < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("RETENTION_PERIOD_DAYS_INVALID"));
+        }
+        String retentionState = requiredText(request, "retention_state");
+        if (!Set.of("ACTIVE", "DELETED_SIGNED_EXTERNAL_VERIFICATION").contains(retentionState)) {
+            return failClosed("HOLD", List.of("RETENTION_STATE_INVALID:" + retentionState));
+        }
+
+        JsonNode receiptIssuedAtNode = request.path("deletion_receipt_issued_at");
+        boolean receiptPresent = receiptIssuedAtNode.isTextual() && !receiptIssuedAtNode.asText().isBlank();
+        Instant receiptIssuedAt = null;
+        if (receiptPresent) {
+            try {
+                receiptIssuedAt = Instant.parse(receiptIssuedAtNode.asText());
+            } catch (Exception malformed) {
+                return failClosed("HOLD", List.of("RETENTION_RECEIPT_ISSUED_AT_MALFORMED"));
+            }
+        }
+
+        Instant deadline = deletionRequestedAt.plus(java.time.Duration.ofDays(retentionPeriodDays));
+        boolean withinRetentionPeriod = receiptPresent && !receiptIssuedAt.isAfter(deadline);
+
+        boolean retentionStateCorrect =
+                !"DELETED_SIGNED_EXTERNAL_VERIFICATION".equals(retentionState) || receiptPresent;
+
+        boolean compliant = receiptPresent && withinRetentionPeriod && retentionStateCorrect
+                && "DELETED_SIGNED_EXTERNAL_VERIFICATION".equals(retentionState);
+
+        List<String> reasons = new ArrayList<>();
+        if (!receiptPresent) reasons.add("DELETION_RECEIPT_MISSING");
+        if (receiptPresent && !withinRetentionPeriod) reasons.add("RECEIPT_ISSUED_AFTER_RETENTION_DEADLINE");
+        if (!retentionStateCorrect) reasons.add("RETENTION_STATE_CLAIMED_WITHOUT_RECEIPT");
+
+        Map<String, Object> out = base("RETENTION_DELETION_PROOF_CHECK", subjectId);
+        out.put("service_case_id", serviceCaseId);
+        out.put("retention_period_days", retentionPeriodDays);
+        out.put("deletion_receipt_present", receiptPresent);
+        out.put("retention_state", retentionState);
+        out.put("within_retention_period", withinRetentionPeriod);
+        out.put("retention_state_correct", retentionStateCorrect);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * structured-log-completeness-check.v1.schema.json real computation (NFR-OBS: "Trace, Metric,
+     * Structured Log... 모든 Workflow Operation 실행이 Trace ID로 상호 연결 가능해야 하며, 최소
+     * 필드셋(operation, actor, duration, decision, evidence_ref)을 포함한 구조화 로그를 남겨야
+     * 한다."). complete is computed for real: uncorrelated_entries is a real equality check --
+     * each log entry's own entry_trace_id must equal the declared trace_id, catching an entry that
+     * was never actually linked into the trace even if it superficially carries a trace_id field.
+     * invalid_duration_entries is a real numeric check -- a negative duration_ms is a structurally
+     * impossible measurement.
+     */
+    private Map<String, Object> structuredLogCompletenessCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String traceId = requiredText(request, "trace_id");
+        JsonNode logEntriesNode = request.path("log_entries");
+        if (!logEntriesNode.isArray() || logEntriesNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("STRUCTURED_LOG_REQUIRES_AT_LEAST_ONE_ENTRY"));
+        }
+
+        List<String> uncorrelated = new ArrayList<>();
+        List<String> invalidDuration = new ArrayList<>();
+        for (JsonNode entry : logEntriesNode) {
+            String entryId = requiredText(entry, "entry_id");
+            String entryTraceId = requiredText(entry, "entry_trace_id");
+            requiredText(entry, "operation");
+            requiredText(entry, "actor");
+            requiredText(entry, "decision");
+            requiredText(entry, "evidence_ref");
+            double durationMs = entry.path("duration_ms").asDouble(Double.NaN);
+            if (Double.isNaN(durationMs)) {
+                return failClosed("HOLD", List.of("STRUCTURED_LOG_DURATION_MISSING:" + entryId));
+            }
+            if (!entryTraceId.equals(traceId)) uncorrelated.add(entryId);
+            if (durationMs < 0) invalidDuration.add(entryId);
+        }
+
+        boolean complete = uncorrelated.isEmpty() && invalidDuration.isEmpty();
+        List<String> reasons = new ArrayList<>();
+        for (String entryId : uncorrelated) reasons.add("ENTRY_NOT_TRACE_CORRELATED:" + entryId);
+        for (String entryId : invalidDuration) reasons.add("ENTRY_DURATION_INVALID:" + entryId);
+
+        Map<String, Object> out = base("STRUCTURED_LOG_COMPLETENESS_CHECK", subjectId);
+        out.put("trace_id", traceId);
+        out.put("uncorrelated_entries", List.copyOf(uncorrelated));
+        out.put("invalid_duration_entries", List.copyOf(invalidDuration));
+        out.put("complete", complete);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", complete ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final List<String> STORAGE_ENCRYPTION_RANK =
+            List.of("NONE", "AES_128", "AES_256", "AES_256_GCM");
+    private static final List<String> TLS_VERSION_RANK = List.of("1.0", "1.1", "1.2", "1.3");
+
+    /**
+     * security-baseline-check.v1.schema.json real computation (NFR-SEC: "저장·전송 암호화, Secret
+     * 비노출, 최소권한"). Four independent real computations, one per named sub-requirement.
+     * storage_encryption_compliant and tls_compliant are real ordinal comparisons against a
+     * required minimum (AES-256, TLS 1.2), not string equality against one exact value -- a
+     * stronger algorithm/version than the minimum still passes. secret_exposure_clear is a real
+     * count check (must be exactly 0). least_privilege_compliant is a real set-difference between
+     * a role's actually-callable operations and its documented allow-list -- any operation callable
+     * beyond the documented list is excess privilege, not a caller-declared summary.
+     */
+    private Map<String, Object> securityBaselineCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String storageAlgorithm = requiredText(request, "storage_encryption_algorithm");
+        if (!STORAGE_ENCRYPTION_RANK.contains(storageAlgorithm)) {
+            return failClosed("HOLD", List.of("STORAGE_ENCRYPTION_ALGORITHM_INVALID:" + storageAlgorithm));
+        }
+        String tlsVersion = requiredText(request, "tls_version");
+        if (!TLS_VERSION_RANK.contains(tlsVersion)) {
+            return failClosed("HOLD", List.of("TLS_VERSION_INVALID:" + tlsVersion));
+        }
+        int secretMatches = request.path("secret_pattern_matches_found").asInt(-1);
+        if (secretMatches < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("SECRET_PATTERN_MATCHES_FOUND_INVALID"));
+        }
+        String roleId = requiredText(request, "role_id");
+        if (!Set.of("VIEWER", "OPERATOR", "APPROVER", "AUDITOR", "ADMIN").contains(roleId)) {
+            return failClosed("HOLD", List.of("ROLE_ID_INVALID:" + roleId));
+        }
+        List<String> actualOperations = stringList(request.path("role_actual_callable_operations"));
+        List<String> documentedOperations = stringList(request.path("role_documented_allowed_operations"));
+
+        boolean storageEncryptionCompliant =
+                STORAGE_ENCRYPTION_RANK.indexOf(storageAlgorithm) >= STORAGE_ENCRYPTION_RANK.indexOf("AES_256");
+        boolean tlsCompliant = TLS_VERSION_RANK.indexOf(tlsVersion) >= TLS_VERSION_RANK.indexOf("1.2");
+        boolean secretExposureClear = secretMatches == 0;
+
+        Set<String> documentedSet = new java.util.LinkedHashSet<>(documentedOperations);
+        List<String> excessOperations = new ArrayList<>();
+        for (String operation : actualOperations) {
+            if (!documentedSet.contains(operation)) excessOperations.add(operation);
+        }
+        boolean leastPrivilegeCompliant = excessOperations.isEmpty();
+
+        boolean compliant = storageEncryptionCompliant && tlsCompliant && secretExposureClear && leastPrivilegeCompliant;
+
+        List<String> reasons = new ArrayList<>();
+        if (!storageEncryptionCompliant) reasons.add("STORAGE_ENCRYPTION_BELOW_AES_256");
+        if (!tlsCompliant) reasons.add("TLS_VERSION_BELOW_1_2");
+        if (!secretExposureClear) reasons.add("SECRET_PATTERN_MATCHES_FOUND:" + secretMatches);
+        for (String operation : excessOperations) reasons.add("EXCESS_OPERATION:" + operation);
+
+        Map<String, Object> out = base("SECURITY_BASELINE_CHECK", subjectId);
+        out.put("storage_encryption_algorithm", storageAlgorithm);
+        out.put("tls_version", tlsVersion);
+        out.put("secret_pattern_matches_found", secretMatches);
+        out.put("role_id", roleId);
+        out.put("storage_encryption_compliant", storageEncryptionCompliant);
+        out.put("tls_compliant", tlsCompliant);
+        out.put("secret_exposure_clear", secretExposureClear);
+        out.put("excess_operations", List.copyOf(excessOperations));
+        out.put("least_privilege_compliant", leastPrivilegeCompliant);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * air-gapped-deployment-check.v1.schema.json real computation (NFR-PORT: "SaaS, Local Runtime,
+     * 폐쇄망(Air-gapped) 배포 가능... 폐쇄망 배포는 AirGappedDependencyPackager로 패키징한 의존성만으로
+     * 외부 네트워크 접근 없이 빌드·실행이 성공해야 한다."). compliant is computed from three
+     * independent real conditions: network_isolated is a real count check --
+     * external_network_access_count must be exactly 0, not merely low. has_packaged_dependencies is
+     * a real check that the deployment actually drew from a real packaged-dependency set
+     * (packaged_dependency_count > 0), not an empty/unpackaged attempt. build_succeeded is read
+     * directly and never inferred from the other two -- a network-isolated build that still failed
+     * is not compliant.
+     */
+    private Map<String, Object> airGappedDeploymentCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String deploymentId = requiredText(request, "deployment_id");
+        int packagedDependencyCount = request.path("packaged_dependency_count").asInt(-1);
+        if (packagedDependencyCount < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("PACKAGED_DEPENDENCY_COUNT_INVALID"));
+        }
+        boolean buildSucceeded = request.path("build_succeeded").asBoolean(false);
+        int externalNetworkAccessCount = request.path("external_network_access_count").asInt(-1);
+        if (externalNetworkAccessCount < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("EXTERNAL_NETWORK_ACCESS_COUNT_INVALID"));
+        }
+
+        boolean hasPackagedDependencies = packagedDependencyCount > 0;
+        boolean networkIsolated = externalNetworkAccessCount == 0;
+        boolean compliant = hasPackagedDependencies && networkIsolated && buildSucceeded;
+
+        List<String> reasons = new ArrayList<>();
+        if (!hasPackagedDependencies) reasons.add("NO_PACKAGED_DEPENDENCIES");
+        if (!networkIsolated) reasons.add("EXTERNAL_NETWORK_ACCESS_DETECTED:" + externalNetworkAccessCount);
+        if (!buildSucceeded) reasons.add("BUILD_DID_NOT_SUCCEED");
+
+        Map<String, Object> out = base("AIR_GAPPED_DEPLOYMENT_CHECK", subjectId);
+        out.put("deployment_id", deploymentId);
+        out.put("packaged_dependency_count", packagedDependencyCount);
+        out.put("build_succeeded", buildSucceeded);
+        out.put("external_network_access_count", externalNetworkAccessCount);
+        out.put("has_packaged_dependencies", hasPackagedDependencies);
+        out.put("network_isolated", networkIsolated);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * availability-isolation-check.v1.schema.json real computation (NFR-AVAIL: "SaaS Control Plane
+     * 월간 가용성 99.9%, API 요청 기준 Rate Limit과 Tenant별 동시 실행 상한을 적용해 특정 고객의
+     * 폭주가 다른 Tenant에 영향을 주지 않는다. 검증: 월간 다운타임을 43분 이내로 실측... Rate Limit
+     * 초과 요청은 429 응답과 함께 거부... 한 Tenant가 상한을 초과해도 다른 Tenant의 요청 성공률은
+     * 영향받지 않아야 한다."). Three independent real computations: availability_compliant is a
+     * real numeric comparison against the 43-minute monthly downtime ceiling. rate_limit_enforced
+     * is a real check that an over-limit request actually received HTTP 429, not merely that a
+     * limit value exists. noisy_neighbor_isolated is a real comparison between another tenant's
+     * observed success rate and its own baseline while the first tenant was over its cap -- any
+     * degradation at all fails isolation, not a caller-declared 'still fine' summary.
+     */
+    private Map<String, Object> availabilityIsolationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        double monthlyDowntimeMinutes = request.path("monthly_downtime_minutes").asDouble(-1);
+        if (monthlyDowntimeMinutes < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("MONTHLY_DOWNTIME_MINUTES_INVALID"));
+        }
+        int rateLimitThreshold = request.path("rate_limit_threshold").asInt(-1);
+        if (rateLimitThreshold < 1) {
+            return failClosed("INPUT_REQUIRED", List.of("RATE_LIMIT_THRESHOLD_INVALID"));
+        }
+        int observedRequestCount = request.path("observed_request_count").asInt(-1);
+        if (observedRequestCount < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("OBSERVED_REQUEST_COUNT_INVALID"));
+        }
+        int rateLimitExceededResponseCode = request.path("rate_limit_exceeded_response_code").asInt(-1);
+        double otherTenantSuccessRate = request.path("other_tenant_success_rate").asDouble(-1);
+        double otherTenantBaselineSuccessRate = request.path("other_tenant_baseline_success_rate").asDouble(-1);
+        if (otherTenantSuccessRate < 0 || otherTenantBaselineSuccessRate < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("TENANT_SUCCESS_RATE_INVALID"));
+        }
+
+        boolean availabilityCompliant = monthlyDowntimeMinutes <= 43;
+        boolean rateLimitExceeded = observedRequestCount > rateLimitThreshold;
+        boolean rateLimitEnforced = !rateLimitExceeded || rateLimitExceededResponseCode == 429;
+        boolean noisyNeighborIsolated = otherTenantSuccessRate >= otherTenantBaselineSuccessRate;
+
+        boolean compliant = availabilityCompliant && rateLimitEnforced && noisyNeighborIsolated;
+
+        List<String> reasons = new ArrayList<>();
+        if (!availabilityCompliant) {
+            reasons.add("MONTHLY_DOWNTIME_EXCEEDS_43_MINUTES:" + monthlyDowntimeMinutes);
+        }
+        if (!rateLimitEnforced) {
+            reasons.add("RATE_LIMIT_EXCEEDED_BUT_NOT_ENFORCED_WITH_429:" + rateLimitExceededResponseCode);
+        }
+        if (!noisyNeighborIsolated) {
+            reasons.add("NOISY_NEIGHBOR_ISOLATION_VIOLATED:" + otherTenantSuccessRate + "<" + otherTenantBaselineSuccessRate);
+        }
+
+        Map<String, Object> out = base("AVAILABILITY_ISOLATION_CHECK", subjectId);
+        out.put("monthly_downtime_minutes", monthlyDowntimeMinutes);
+        out.put("rate_limit_threshold", rateLimitThreshold);
+        out.put("observed_request_count", observedRequestCount);
+        out.put("rate_limit_exceeded_response_code", rateLimitExceededResponseCode);
+        out.put("other_tenant_success_rate", otherTenantSuccessRate);
+        out.put("other_tenant_baseline_success_rate", otherTenantBaselineSuccessRate);
+        out.put("availability_compliant", availabilityCompliant);
+        out.put("rate_limit_exceeded", rateLimitExceeded);
+        out.put("rate_limit_enforced", rateLimitEnforced);
+        out.put("noisy_neighbor_isolated", noisyNeighborIsolated);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final Set<String> PERFORMANCE_CATEGORIES = Set.of(
+            "LEARNING_INITIAL", "LEARNING_INCREMENTAL", "FAST_REVIEW", "VERIFICATION_SCENARIO", "PREFLIGHT");
+
+    /**
+     * performance-target-compliance-check.v1.schema.json real computation (NFR-PERF: "대규모
+     * Repository의 단계적 분석과 중단·재개... 검증 방법은 이미 명확하다: 각 목표치를 실제
+     * Repository로 측정해 기준 초과 시 실패로 기록."). within_threshold is a real numeric
+     * comparison between measured_duration_seconds and the caller-declared target_threshold_seconds
+     * for that specific category, never a caller-declared pass/fail summary. For
+     * VERIFICATION_SCENARIO specifically, the design doc additionally names "병렬 실행 시 Case당
+     * 동시 Scenario 20개 이상 지원" -- concurrency_supported is a real minimum-count check (>=20)
+     * that applies only to that category; other categories are not subject to it and always pass
+     * this sub-check.
+     */
+    private Map<String, Object> performanceTargetComplianceCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String performanceCategory = requiredText(request, "performance_category");
+        if (!PERFORMANCE_CATEGORIES.contains(performanceCategory)) {
+            return failClosed("HOLD", List.of("PERFORMANCE_CATEGORY_INVALID:" + performanceCategory));
+        }
+        double measuredDurationSeconds = request.path("measured_duration_seconds").asDouble(-1);
+        if (measuredDurationSeconds < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("MEASURED_DURATION_SECONDS_INVALID"));
+        }
+        double targetThresholdSeconds = request.path("target_threshold_seconds").asDouble(-1);
+        if (targetThresholdSeconds <= 0) {
+            return failClosed("INPUT_REQUIRED", List.of("TARGET_THRESHOLD_SECONDS_INVALID"));
+        }
+        JsonNode concurrentScenarioCountNode = request.path("concurrent_scenario_count");
+        Integer concurrentScenarioCount = concurrentScenarioCountNode.isInt() ? concurrentScenarioCountNode.asInt() : null;
+
+        boolean withinThreshold = measuredDurationSeconds <= targetThresholdSeconds;
+        boolean concurrencySupported;
+        if ("VERIFICATION_SCENARIO".equals(performanceCategory)) {
+            concurrencySupported = concurrentScenarioCount != null && concurrentScenarioCount >= 20;
+        } else {
+            concurrencySupported = true;
+        }
+        boolean compliant = withinThreshold && concurrencySupported;
+
+        List<String> reasons = new ArrayList<>();
+        if (!withinThreshold) {
+            reasons.add("DURATION_EXCEEDS_TARGET_THRESHOLD:" + measuredDurationSeconds + ">" + targetThresholdSeconds);
+        }
+        if ("VERIFICATION_SCENARIO".equals(performanceCategory) && !concurrencySupported) {
+            reasons.add("CONCURRENT_SCENARIO_COUNT_BELOW_MINIMUM_20:" + concurrentScenarioCount);
+        }
+
+        Map<String, Object> out = base("PERFORMANCE_TARGET_COMPLIANCE_CHECK", subjectId);
+        out.put("performance_category", performanceCategory);
+        out.put("measured_duration_seconds", measuredDurationSeconds);
+        out.put("target_threshold_seconds", targetThresholdSeconds);
+        out.put("concurrent_scenario_count", concurrentScenarioCount);
+        out.put("within_threshold", withinThreshold);
+        out.put("concurrency_supported", concurrencySupported);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

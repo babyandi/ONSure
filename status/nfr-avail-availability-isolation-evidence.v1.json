@@ -1,0 +1,24 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "NFR-AVAIL",
+  "requirement_summary": "02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md NFR-AVAIL: 'SaaS Control Plane 월간 가용성 99.9%, API 요청 기준 Rate Limit과 Tenant별 동시 실행 상한을 적용해 특정 고객의 폭주가 다른 Tenant에 영향을 주지 않는다. 검증: 월간 다운타임을 실측해 43분(99.9% 기준) 이내인지 확인. Rate Limit 초과 요청은 429 응답과 함께 거부되어야 하며, 한 Tenant가 상한을 초과해도 다른 Tenant의 요청 성공률은 영향받지 않아야 한다(Noisy Neighbor 격리 테스트).'",
+  "subject": "SemanticAssuranceV2WorkflowService.availabilityIsolationCheck via assurance.availability.isolation-check; contracts/availability-isolation-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/availability-isolation-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#availabilityIsolationCheckIsCompliantWithinDowntimeCeilingRateLimitEnforcedAndNoisyNeighborIsolated",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#availabilityIsolationCheckDetectsDowntimeExceedingThe43MinuteCeiling",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#availabilityIsolationCheckDetectsAnOverLimitRequestNotRejectedWith429",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#availabilityIsolationCheckDetectsANoisyNeighborDegradationEvenWhenRateLimitIsEnforced"
+  ],
+  "coverage_notes": "Three independent real conditions, matching the requirement's own three-part verification method verbatim. availabilityIsolationCheckDetectsDowntimeExceedingThe43MinuteCeiling directly implements the numeric target the requirement itself names (99.9% monthly availability = 43 minutes downtime). availabilityIsolationCheckDetectsAnOverLimitRequestNotRejectedWith429 is the direct test of 'Rate Limit 초과 요청은 429 응답과 함께 거부되어야 한다' -- an over-limit request that received any status other than 429 is caught, not merely checked for having been rejected at all. availabilityIsolationCheckDetectsANoisyNeighborDegradationEvenWhenRateLimitIsEnforced is the direct test of the named Noisy Neighbor isolation clause: another tenant's success rate dropping below its own baseline fails compliance even when this tenant's own rate limit enforcement is otherwise perfect -- proving isolation is checked as its own independent condition, not assumed from rate-limit enforcement alone.",
+  "open_gap": "Operates on a caller-supplied representation (downtime minutes, request counts, response codes, success rates); there is no live SaaS Control Plane uptime monitor, rate-limiting middleware, or multi-tenant load-testing harness in this codebase that actually measures these values from real production traffic (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). noisy_neighbor_isolated uses a strict zero-tolerance comparison (other_tenant_success_rate >= baseline, no tolerance band) since the requirement's own wording ('영향받지 않아야 한다') does not specify an acceptable degradation margin -- a disclosed, deliberately conservative interpretation.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

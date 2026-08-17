@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/retention-deletion-proof-check.v1.schema.json",
+  "title": "ONSure Retention Deletion Proof Check v1",
+  "description": "NFR-PRIV: '고객별 보존기간과 완전 삭제 증명. 삭제 요청 후 계약된 보존기간 내 deletion_receipt가 발급되고 retention_state가 DELETED_SIGNED_EXTERNAL_VERIFICATION으로 전이해야 한다.' compliant is computed for real: within_retention_period is a real Instant comparison -- the receipt must actually have been issued on or before deletion_requested_at + retention_period_days, not merely eventually. retention_state_correct is a real structural check -- DELETED_SIGNED_EXTERNAL_VERIFICATION can never be claimed true without a genuinely present receipt (mirrors ServiceCaseLifecycleService.recordDeletion's own pre-existing rule that this state transition requires a real signed external verification receipt, never a bare caller assertion).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "service_case_id", "deletion_requested_at", "retention_period_days",
+    "deletion_receipt_present", "deletion_receipt_issued_at", "retention_state",
+    "within_retention_period", "retention_state_correct", "compliant", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_RETENTION_DELETION_PROOF_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "service_case_id": {"type": "string", "minLength": 1},
+    "deletion_requested_at": {"type": "string", "format": "date-time"},
+    "retention_period_days": {"type": "integer", "minimum": 0},
+    "deletion_receipt_present": {"type": "boolean"},
+    "deletion_receipt_issued_at": {"type": ["string", "null"], "format": "date-time"},
+    "retention_state": {"enum": ["ACTIVE", "DELETED_SIGNED_EXTERNAL_VERIFICATION"]},
+    "within_retention_period": {"type": "boolean"},
+    "retention_state_correct": {"type": "boolean"},
+    "compliant": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"compliant": {"const": true}}},
+      "then": {
+        "properties": {
+          "deletion_receipt_present": {"const": true},
+          "within_retention_period": {"const": true},
+          "retention_state_correct": {"const": true},
+          "retention_state": {"const": "DELETED_SIGNED_EXTERNAL_VERIFICATION"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"retention_state": {"const": "DELETED_SIGNED_EXTERNAL_VERIFICATION"}, "deletion_receipt_present": {"const": false}}},
+      "then": {"properties": {"retention_state_correct": {"const": false}, "compliant": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"within_retention_period": {"const": false}}},
+      "then": {"properties": {"compliant": {"const": false}}}
+    }
+  ]
+}

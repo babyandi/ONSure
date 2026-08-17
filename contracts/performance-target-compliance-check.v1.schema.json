@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/performance-target-compliance-check.v1.schema.json",
+  "title": "ONSure Performance Target Compliance Check v1",
+  "description": "NFR-PERF: '대규모 Repository의 단계적 분석과 중단·재개... 검증 방법은 이미 명확하다: 각 목표치를 실제 Repository로 측정해 기준 초과 시 실패로 기록.' within_threshold is computed for real: measured_duration_seconds must not exceed target_threshold_seconds, a real numeric comparison against the caller-declared target for that specific named performance category, never a caller-declared pass/fail summary. For VERIFICATION_SCENARIO specifically, the design doc additionally names '병렬 실행 시 Case당 동시 Scenario 20개 이상 지원' -- concurrency_supported is a real minimum-count check (>=20) that applies only to that category; other categories are not subject to it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "performance_category", "measured_duration_seconds",
+    "target_threshold_seconds", "concurrent_scenario_count", "within_threshold",
+    "concurrency_supported", "compliant", "reasons", "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_PERFORMANCE_TARGET_COMPLIANCE_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "performance_category": {"enum": [
+      "LEARNING_INITIAL", "LEARNING_INCREMENTAL", "FAST_REVIEW", "VERIFICATION_SCENARIO", "PREFLIGHT"
+    ]},
+    "measured_duration_seconds": {"type": "number", "minimum": 0},
+    "target_threshold_seconds": {"type": "number", "exclusiveMinimum": 0},
+    "concurrent_scenario_count": {"type": ["integer", "null"], "minimum": 0},
+    "within_threshold": {"type": "boolean"},
+    "concurrency_supported": {"type": "boolean"},
+    "compliant": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"compliant": {"const": true}}},
+      "then": {"properties": {"within_threshold": {"const": true}, "concurrency_supported": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"within_threshold": {"const": false}}},
+      "then": {"properties": {"compliant": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"performance_category": {"const": "VERIFICATION_SCENARIO"}, "concurrency_supported": {"const": false}}},
+      "then": {"properties": {"compliant": {"const": false}}}
+    }
+  ]
+}
