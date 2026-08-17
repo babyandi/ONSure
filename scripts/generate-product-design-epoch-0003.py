@@ -21,7 +21,8 @@ DELTA_DOCS = {
     "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md",
     "docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md",
 }
-HEADING = re.compile(r"^###\s+(DD-\d{3})\s+[—-]\s+(.+?)(?:\s+[—-]\s+(P[01]))?(?:\s*/.*)?$")
+# Wave 1 uses `DD-001 — title — P0`; waves 2/3 use `DD-025 title — P0`.
+HEADING = re.compile(r"^###\s+(DD-\d{3})(?:\s+[—-])?\s+(.+?)(?:\s+[—-]\s+(P[01]))?(?:\s*/.*)?$")
 
 
 def sha256(b: bytes) -> str:
@@ -44,24 +45,33 @@ def parse_source(path: Path) -> dict[str, dict]:
         dd, title, priority = m.group(1), m.group(2).strip(), m.group(3)
         body = []
         for nxt in lines[i + 1:]:
-            if nxt.startswith("### "):
-                break
-            if nxt.startswith("## "):
+            if nxt.startswith("### ") or nxt.startswith("## "):
                 break
             if nxt.strip():
                 body.append(nxt.strip())
             if len(body) >= 3:
                 break
         text = f"{title}: {' '.join(body)}".strip()
-        out[dd] = {"title": title, "priority": priority or "P1", "text": text, "authority_document": rel, "authority_document_sha256": digest, "line": i + 1}
+        out[dd] = {
+            "title": title,
+            "priority": priority or "P1",
+            "text": text,
+            "authority_document": rel,
+            "authority_document_sha256": digest,
+            "line": i + 1,
+        }
     return out
 
 
 def main() -> int:
-    for cmd in ([sys.executable, "scripts/materialize-product-design-authority.py"], [sys.executable, "scripts/generate-requirement-universe.py", "--epoch-candidate"]):
+    for cmd in (
+        [sys.executable, "scripts/materialize-product-design-authority.py"],
+        [sys.executable, "scripts/generate-requirement-universe.py", "--epoch-candidate"],
+    ):
         rc = subprocess.run(cmd, cwd=ROOT)
         if rc.returncode:
             return rc.returncode
+
     admission = json.loads(ADMISSION.read_text(encoding="utf-8"))
     relations_raw = json.loads(RELATIONS.read_text(encoding="utf-8"))
     relations = {r["dd"]: r["fr_fin"] for r in relations_raw["rows"]}
@@ -70,14 +80,27 @@ def main() -> int:
     missing = sorted(set(canonical_ids) - set(parsed))
     extra = sorted(set(parsed) - set(canonical_ids))
     if missing or extra or len(canonical_ids) != 40 or len(set(canonical_ids)) != 40:
-        raise RuntimeError(f"DD_AUTHORITY_ADMISSION_MISMATCH missing={missing} extra={extra} count={len(canonical_ids)}")
+        raise RuntimeError(
+            f"DD_AUTHORITY_ADMISSION_MISMATCH missing={missing} extra={extra} count={len(canonical_ids)}"
+        )
+    if sorted(relations) != sorted(canonical_ids):
+        raise RuntimeError("DD_PARENT_RELATION_DENOMINATOR_MISMATCH")
+
     records_path = OUT / "requirement-records.json"
     snapshot_path = OUT / "requirement-universe-snapshot.json"
     receipt_path = OUT / "requirement-universe-generation-receipt.json"
     records = json.loads(records_path.read_text(encoding="utf-8"))
-    # Delta design prose is authoritative source material, but DD admission owns its denominator nodes.
-    # Remove auto-extracted non-ID prose from these documents to prevent semantic double counting.
-    records = [r for r in records if not (r.get("authority_document") in DELTA_DOCS and r.get("extraction_method") == "CANDIDATE_EXTRACTED")]
+
+    # DD admission owns delta denominator nodes. Drop auto-extracted prose from the four delta
+    # authority documents to avoid counting the same semantic obligation twice.
+    records = [
+        r for r in records
+        if not (
+            r.get("authority_document") in DELTA_DOCS
+            and r.get("extraction_method") == "CANDIDATE_EXTRACTED"
+        )
+    ]
+
     for dd in canonical_ids:
         p = parsed[dd]
         norm = normalized(p["text"])
@@ -103,39 +126,63 @@ def main() -> int:
             "applicability_rule_ref": None,
             "status": "ACTIVE",
             "node_type": "CANONICAL_DISCOVERY_OBLIGATION",
-            "parent_fr_fin": relations.get(dd, []),
+            "parent_fr_fin": relations[dd],
             "double_count_with_parent": False,
         })
+
     records.sort(key=lambda r: r["requirement_id"])
     ids = [r["requirement_id"] for r in records]
     if len(ids) != len(set(ids)):
         raise RuntimeError("DUPLICATE_REQUIREMENT_IDS_AFTER_DD_ADMISSION")
-    manifest_digest = sha256("\n".join(f"{r['requirement_id']}:{r['normative_text_digest']}" for r in records).encode())
+
+    manifest_digest = sha256(
+        "\n".join(f"{r['requirement_id']}:{r['normative_text_digest']}" for r in records).encode()
+    )
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
     snapshot["requirement_ids"] = ids
     snapshot["requirement_manifest_digest"] = manifest_digest
     snapshot["requirement_epoch_id"] = "EPOCH::REQUIREMENT::0003::CANDIDATE"
-    snapshot["dd_authority_admission"] = {"canonical_dd_count": 40, "admission_contract": ADMISSION.relative_to(ROOT).as_posix(), "relation_registry": RELATIONS.relative_to(ROOT).as_posix(), "double_count_with_parent": False}
+    snapshot["dd_authority_admission"] = {
+        "canonical_dd_count": 40,
+        "admission_contract": ADMISSION.relative_to(ROOT).as_posix(),
+        "relation_registry": RELATIONS.relative_to(ROOT).as_posix(),
+        "double_count_with_parent": False,
+    }
     snapshot["generated_at"] = datetime.now(timezone.utc).isoformat()
+
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     receipt["requirement_manifest_digest"] = manifest_digest
     receipt["canonical_dd_requirement_count"] = 40
     receipt["decision"] = "GENERATED_POST_DELTA_NONFINAL"
-    records_path.write_text(json.dumps(records, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    snapshot_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    receipt_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    records_path.write_text(
+        json.dumps(records, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    snapshot_path.write_text(
+        json.dumps(snapshot, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    receipt_path.write_text(
+        json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
     admission_receipt = {
         "contract": "ONSURE_DD_AUTHORITY_ADMISSION_RECEIPT_V1",
         "dd_count": 40,
         "missing_dd": [],
-        "unmapped_dd": sorted(set(canonical_ids) - set(relations)),
+        "unmapped_dd": [],
         "requirement_count": len(ids),
         "requirement_manifest_digest": manifest_digest,
         "authority_population_digest": snapshot["authority_document_population_digest"],
         "decision": "ADMITTED_TO_EPOCH_0003_CANDIDATE_NONFINAL",
         "final_claim_allowed": False,
     }
-    (OUT / "dd-authority-admission-receipt.json").write_text(json.dumps(admission_receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (OUT / "dd-authority-admission-receipt.json").write_text(
+        json.dumps(admission_receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     print(json.dumps(admission_receipt, ensure_ascii=False))
     return 0
 
