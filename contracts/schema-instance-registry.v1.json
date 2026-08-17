@@ -1201,6 +1201,15 @@
         "fixtures/contracts/portfolio-aggregation-completeness-check.invalid.json"
       ],
       "schema": "contracts/portfolio-aggregation-completeness-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/learning-authority-domain-separation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/learning-authority-domain-separation-check.invalid.json"
+      ],
+      "schema": "contracts/learning-authority-domain-separation-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

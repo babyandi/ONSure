@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_REQUIREMENT_EVIDENCE_V1",
+  "requirement_ref": "FR-LEARN-001",
+  "requirement_summary": "146_LEARNING_VALIDATION_CLOSED_LOOP_AND_META_ASSURANCE.md FR-LEARN-001: 'ONSure는 Target/Assurance/Validator Learning을 별도 authority domain으로 구분해야 한다.'",
+  "subject": "SemanticAssuranceV2WorkflowService.learningAuthorityDomainSeparationCheck via assurance.learning.authority-domain-separation-check; contracts/learning-authority-domain-separation-check.v1.schema.json (NEW)",
+  "observed_source": [
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2WorkflowService.java",
+    "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "src/main/java/kr/co/oruda/onsure/platform/TenantRbacService.java",
+    "contracts/learning-authority-domain-separation-check.v1.schema.json"
+  ],
+  "observed_test_methods": [
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#learningAuthorityDomainSeparationCheckIsValidWhenAuthorityIsScopedToExactlyOneMatchingDomain",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#learningAuthorityDomainSeparationCheckRejectsAnAuthorityNotScopedToTheCandidatesDomain",
+    "kr.co.oruda.onsure.platform.SemanticAssuranceV2DispatcherBridgeTest#learningAuthorityDomainSeparationCheckRejectsAnAuthorityScopedAcrossMultipleDomains"
+  ],
+  "coverage_notes": "Deliberately scoped as an authority-vs-decision separation check, reusing the exact TARGET_LEARNING/ASSURANCE_LEARNING/VALIDATOR_LEARNING vocabulary already present in contracts/learning-validation-closed-loop.capabilities.candidate.v1.json's learning_domains array (found to have zero Java references anywhere in the codebase prior to this closure). Two real, independent checks close two distinct readings of '구분한다' (separate/distinguish): domain_authorized (learningAuthorityDomainSeparationCheckRejectsAnAuthorityNotScopedToTheCandidatesDomain) proves an authority never granted a given domain's scope cannot decide that domain's candidate. cross_domain_authority (learningAuthorityDomainSeparationCheckRejectsAnAuthorityScopedAcrossMultipleDomains) is the stronger, more literal reading of 'separate domain' -- an authority simultaneously scoped to two or more domains is itself not properly separated, regardless of which specific decision it happens to be making, proven directly: an authority scoped to both ASSURANCE_LEARNING and VALIDATOR_LEARNING fails separation_valid even when deciding a candidate whose domain it IS authorized for.",
+  "open_gap": "Operates on a caller-supplied decision_authority_domain_scope; there is no live authority-role/RBAC-grant system in this codebase yet that actually assigns and persists which learning domain(s) a given decision_authority_id is granted (same disclosed 'caller-supplied representation, not live system integration' pattern as every other real-computation closure this session). This closure covers only the decision-authority half of FR-LEARN-001's broader 'authority domain' concept; other possible readings (e.g. separate corpus storage, separate promotion pipelines, separate audit trails per domain) are not modeled.",
+  "observed_at": "2026-08-17T00:00:00Z",
+  "decision": "PASS_NONFINAL",
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

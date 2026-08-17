@@ -1,0 +1,14 @@
+{
+  "contract": "ONSURE_LEARNING_AUTHORITY_DOMAIN_SEPARATION_CHECK_V1",
+  "subject_id": "candidate-2026-08-17-001",
+  "candidate_id": "candidate-1",
+  "learning_domain": "TARGET_LEARNING",
+  "decision_authority_id": "authority-1",
+  "decision_authority_domain_scope": ["TARGET_LEARNING"],
+  "domain_authorized": true,
+  "cross_domain_authority": false,
+  "separation_valid": true,
+  "reasons": [],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

@@ -96,6 +96,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.currentness.validation-target-manifest-check",
             "assurance.notification.critical-state-change-check",
             "assurance.portfolio.aggregation-completeness-check",
+            "assurance.learning.authority-domain-separation-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -240,6 +241,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.currentness.validation-target-manifest-check" -> validationTargetManifestCurrentnessCheck(request);
             case "assurance.notification.critical-state-change-check" -> criticalStateChangeNotificationCheck(request);
             case "assurance.portfolio.aggregation-completeness-check" -> portfolioAggregationCompletenessCheck(request);
+            case "assurance.learning.authority-domain-separation-check" -> learningAuthorityDomainSeparationCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3474,6 +3476,60 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("complete", complete);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", complete ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    private static final Set<String> LEARNING_AUTHORITY_DOMAINS =
+            Set.of("TARGET_LEARNING", "ASSURANCE_LEARNING", "VALIDATOR_LEARNING");
+
+    /**
+     * learning-authority-domain-separation-check.v1.schema.json real computation (FR-LEARN-001:
+     * "ONSure는 Target/Assurance/Validator Learning을 별도 authority domain으로 구분해야 한다.").
+     * separation_valid is computed at two real levels: domain_authorized is a real membership
+     * check that the deciding authority's own declared domain_scope actually includes the
+     * candidate's learning_domain -- an authority never granted TARGET_LEARNING scope cannot
+     * decide a TARGET_LEARNING candidate. cross_domain_authority is a real cardinality check --
+     * an authority whose own domain_scope spans more than one of the three domains is itself not
+     * properly separated, regardless of which specific decision it makes, since true separation
+     * means no single authority holds decision power across domains at all.
+     */
+    private Map<String, Object> learningAuthorityDomainSeparationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        String candidateId = requiredText(request, "candidate_id");
+        String learningDomain = requiredText(request, "learning_domain");
+        if (!LEARNING_AUTHORITY_DOMAINS.contains(learningDomain)) {
+            return failClosed("HOLD", List.of("LEARNING_DOMAIN_INVALID:" + learningDomain));
+        }
+        String decisionAuthorityId = requiredText(request, "decision_authority_id");
+        JsonNode domainScopeNode = request.path("decision_authority_domain_scope");
+        if (!domainScopeNode.isArray() || domainScopeNode.isEmpty()) {
+            return failClosed("INPUT_REQUIRED", List.of("LEARNING_AUTHORITY_DOMAIN_SCOPE_REQUIRED"));
+        }
+        List<String> domainScope = stringList(domainScopeNode);
+        for (String domain : domainScope) {
+            if (!LEARNING_AUTHORITY_DOMAINS.contains(domain)) {
+                return failClosed("HOLD", List.of("LEARNING_DOMAIN_INVALID:" + domain));
+            }
+        }
+
+        boolean domainAuthorized = domainScope.contains(learningDomain);
+        boolean crossDomainAuthority = new java.util.LinkedHashSet<>(domainScope).size() > 1;
+        boolean separationValid = domainAuthorized && !crossDomainAuthority;
+
+        List<String> reasons = new ArrayList<>();
+        if (!domainAuthorized) reasons.add("AUTHORITY_NOT_SCOPED_TO_DOMAIN:" + decisionAuthorityId + ":" + learningDomain);
+        if (crossDomainAuthority) reasons.add("CROSS_DOMAIN_AUTHORITY:" + decisionAuthorityId);
+
+        Map<String, Object> out = base("LEARNING_AUTHORITY_DOMAIN_SEPARATION_CHECK", subjectId);
+        out.put("candidate_id", candidateId);
+        out.put("learning_domain", learningDomain);
+        out.put("decision_authority_id", decisionAuthorityId);
+        out.put("decision_authority_domain_scope", domainScope);
+        out.put("domain_authorized", domainAuthorized);
+        out.put("cross_domain_authority", crossDomainAuthority);
+        out.put("separation_valid", separationValid);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", separationValid ? "NON_FINAL" : "HOLD");
         return immutable(out);
     }
 

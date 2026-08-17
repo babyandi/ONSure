@@ -210,6 +210,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.currentness.validation-target-manifest-check",
                     "assurance.notification.critical-state-change-check",
                     "assurance.portfolio.aggregation-completeness-check",
+                    "assurance.learning.authority-domain-separation-check",
                     "assurance.learning.cross-tenant-transfer.validate",
                     "assurance.learning.activation-stage.transition",
                     "assurance.learning.statistical-qualification.check",

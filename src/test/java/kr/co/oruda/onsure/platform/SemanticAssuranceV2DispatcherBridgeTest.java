@@ -2517,6 +2517,43 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "org_systems_programs", orgSystemsPrograms, "portfolio_entries", portfolioEntries));
     }
 
+    // FR-LEARN-001 Learning Authority Domain Separation
+    @Test
+    void learningAuthorityDomainSeparationCheckIsValidWhenAuthorityIsScopedToExactlyOneMatchingDomain() throws Exception {
+        Map<?, ?> result = learningAuthorityDomainSeparationCheck("TARGET_LEARNING", List.of("TARGET_LEARNING"));
+        assertEquals(true, result.get("domain_authorized"));
+        assertEquals(false, result.get("cross_domain_authority"));
+        assertEquals(true, result.get("separation_valid"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void learningAuthorityDomainSeparationCheckRejectsAnAuthorityNotScopedToTheCandidatesDomain() throws Exception {
+        Map<?, ?> result = learningAuthorityDomainSeparationCheck("TARGET_LEARNING", List.of("ASSURANCE_LEARNING"));
+        assertEquals(false, result.get("domain_authorized"));
+        assertEquals(false, result.get("separation_valid"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("AUTHORITY_NOT_SCOPED_TO_DOMAIN:authority-1:TARGET_LEARNING"));
+    }
+
+    @Test
+    void learningAuthorityDomainSeparationCheckRejectsAnAuthorityScopedAcrossMultipleDomains() throws Exception {
+        Map<?, ?> result = learningAuthorityDomainSeparationCheck(
+                "ASSURANCE_LEARNING", List.of("ASSURANCE_LEARNING", "VALIDATOR_LEARNING"));
+        assertEquals(true, result.get("domain_authorized"));
+        assertEquals(true, result.get("cross_domain_authority"));
+        assertEquals(false, result.get("separation_valid"));
+        assertTrue(((List<?>) result.get("reasons")).contains("CROSS_DOMAIN_AUTHORITY:authority-1"));
+    }
+
+    private Map<?, ?> learningAuthorityDomainSeparationCheck(String learningDomain, List<String> authorityDomainScope)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.learning.authority-domain-separation-check", Map.of(
+                "subject_id", "candidate-subject-1", "candidate_id", "candidate-1",
+                "learning_domain", learningDomain, "decision_authority_id", "authority-1",
+                "decision_authority_domain_scope", authorityDomainScope));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {
