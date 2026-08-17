@@ -7,10 +7,28 @@ cd "$ROOT"
 RU_ROOT="$ROOT/.onsure/requirement-universe"
 CAND="$RU_ROOT/epoch-0003-candidate"
 RECEIPT="$CAND/product-design-closure-one-shot.receipt.json"
+PRESEAL="$ROOT/contracts/product-design-requirement-epoch-0003.preseal.github.candidate.v1.json"
 mkdir -p "$CAND"
 
 log(){ printf '[ONSURE-DESIGN-CLOSURE] %s\n' "$*"; }
 fail(){ log "FAIL: $*"; exit 1; }
+
+log '0/9 verify Product Design discovery/authority preconditions before any closure execution'
+python3 - <<'PY'
+import json, pathlib, sys
+p=pathlib.Path('contracts/product-design-requirement-epoch-0003.preseal.github.candidate.v1.json')
+d=json.loads(p.read_text())
+checks=d.get('preseal_checks',{})
+blocking=[]
+if str(d.get('status','')).startswith('STALE_'):
+    blocking.append('STALE_REQUIREMENT_EPOCH_PRESEAL')
+if not checks.get('delta_authority_admission_complete', False):
+    blocking.append('DELTA_REQUIREMENT_AUTHORITY_ADMISSION_NOT_COMPLETE')
+if blocking:
+    print(json.dumps({'gate':'DESIGN_DISCOVERY_AUTHORITY','status':'HOLD','blocking_reasons':blocking,'preseal_status':d.get('status')}))
+    sys.exit(19)
+print(json.dumps({'gate':'DESIGN_DISCOVERY_AUTHORITY','status':'PASS_NONFINAL','preseal_status':d.get('status')}))
+PY
 
 TMP="$(mktemp -d)"
 restore_live(){
@@ -44,9 +62,8 @@ log '3/9 generate EPOCH 0003 candidate run B and prove deterministic digest'
 python3 scripts/generate-requirement-universe.py --epoch-candidate | tee "$CAND/03-epoch-run-b.stdout.json"
 cp "$CAND/requirement-universe-snapshot.json" "$TMP/epoch-b.json"
 python3 - <<'PY'
-import json, pathlib, sys
-A=json.loads(pathlib.Path('/tmp/nonexistent').read_text()) if False else json.loads(pathlib.Path('.onsure/requirement-universe/epoch-0003-candidate/requirement-universe-snapshot.json').read_text())
-# run A snapshot was preserved by shell in a temp path; compare using env-exported digest files below is intentionally handled by shell python invocation after copying.
+import json, pathlib
+A=json.loads(pathlib.Path('.onsure/requirement-universe/epoch-0003-candidate/requirement-universe-snapshot.json').read_text())
 print(json.dumps({'gate':'EPOCH_0003_RUN_B','requirement_manifest_digest':A['requirement_manifest_digest'],'authority_document_population_digest':A['authority_document_population_digest'],'requirement_count':len(A['requirement_ids'])}))
 PY
 python3 - "$TMP/epoch-a.json" "$TMP/epoch-b.json" <<'PY'
@@ -116,7 +133,6 @@ if trace['orphans']['p0']: blocking.append('P0_FORWARD_ORPHANS')
 if stale: blocking.append('STALE_REVERSE_ORPHAN_REFERENCES')
 if lock_rc != 0: blocking.append('GLOBAL_LOCK_PREFLIGHT_NOT_PASS')
 if clean_rc != 0: blocking.append('INDEPENDENT_CLEAN_TWICE_NOT_PASS')
-# Human design-authority contradiction confirmation is deliberately not auto-approved.
 blocking.append('P1_POLICY_BINDINGS_REQUIRE_HUMAN_DESIGN_AUTHORITY_CONFIRMATION')
 receipt={
  'contract':'ONSURE_PRODUCT_DESIGN_CLOSURE_ONE_SHOT_RECEIPT_V1',
