@@ -215,6 +215,7 @@ public final class SemanticAssuranceV2DispatcherBridge {
                     "assurance.observability.structured-log-completeness-check",
                     "assurance.security.baseline-check",
                     "assurance.portability.air-gapped-deployment-check",
+                    "assurance.availability.isolation-check",
                     "assurance.learning.cross-tenant-transfer.validate",
                     "assurance.learning.activation-stage.transition",
                     "assurance.learning.statistical-qualification.check",

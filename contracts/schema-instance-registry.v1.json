@@ -1246,6 +1246,15 @@
         "fixtures/contracts/air-gapped-deployment-check.invalid.json"
       ],
       "schema": "contracts/air-gapped-deployment-check.v1.schema.json"
+    },
+    {
+      "instances": [
+        "fixtures/contracts/availability-isolation-check.valid.json"
+      ],
+      "invalid_instances": [
+        "fixtures/contracts/availability-isolation-check.invalid.json"
+      ],
+      "schema": "contracts/availability-isolation-check.v1.schema.json"
     }
   ],
   "runtime_validation": "NOT_RUN",

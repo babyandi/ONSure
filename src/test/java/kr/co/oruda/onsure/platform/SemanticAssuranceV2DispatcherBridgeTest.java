@@ -2735,6 +2735,54 @@ class SemanticAssuranceV2DispatcherBridgeTest {
                 "external_network_access_count", externalNetworkAccessCount));
     }
 
+    // NFR-AVAIL SaaS Availability, Rate Limiting, Tenant Isolation
+    @Test
+    void availabilityIsolationCheckIsCompliantWithinDowntimeCeilingRateLimitEnforcedAndNoisyNeighborIsolated() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(20, 1000, 1500, 429, 0.999, 0.999);
+        assertEquals(true, result.get("availability_compliant"));
+        assertEquals(true, result.get("rate_limit_enforced"));
+        assertEquals(true, result.get("noisy_neighbor_isolated"));
+        assertEquals(true, result.get("compliant"));
+        assertEquals("NON_FINAL", result.get("decision"));
+    }
+
+    @Test
+    void availabilityIsolationCheckDetectsDowntimeExceedingThe43MinuteCeiling() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(60, 1000, 500, 200, 0.999, 0.999);
+        assertEquals(false, result.get("availability_compliant"));
+        assertEquals(false, result.get("compliant"));
+        assertEquals("HOLD", result.get("decision"));
+        assertTrue(((List<?>) result.get("reasons")).contains("MONTHLY_DOWNTIME_EXCEEDS_43_MINUTES:60.0"));
+    }
+
+    @Test
+    void availabilityIsolationCheckDetectsAnOverLimitRequestNotRejectedWith429() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(20, 1000, 1500, 200, 0.999, 0.999);
+        assertEquals(false, result.get("rate_limit_enforced"));
+        assertEquals(false, result.get("compliant"));
+    }
+
+    @Test
+    void availabilityIsolationCheckDetectsANoisyNeighborDegradationEvenWhenRateLimitIsEnforced() throws Exception {
+        Map<?, ?> result = availabilityIsolationCheck(20, 1000, 1500, 429, 0.90, 0.999);
+        assertEquals(false, result.get("noisy_neighbor_isolated"));
+        assertEquals(false, result.get("compliant"));
+        assertTrue(((List<?>) result.get("reasons")).contains("NOISY_NEIGHBOR_ISOLATION_VIOLATED:0.9<0.999"));
+    }
+
+    private Map<?, ?> availabilityIsolationCheck(
+            double monthlyDowntimeMinutes, int rateLimitThreshold, int observedRequestCount,
+            int rateLimitExceededResponseCode, double otherTenantSuccessRate, double otherTenantBaselineSuccessRate)
+            throws Exception {
+        return learningDispatch(bridge, "assurance.availability.isolation-check", Map.of(
+                "subject_id", "availability-subject-1",
+                "monthly_downtime_minutes", monthlyDowntimeMinutes, "rate_limit_threshold", rateLimitThreshold,
+                "observed_request_count", observedRequestCount,
+                "rate_limit_exceeded_response_code", rateLimitExceededResponseCode,
+                "other_tenant_success_rate", otherTenantSuccessRate,
+                "other_tenant_baseline_success_rate", otherTenantBaselineSuccessRate));
+    }
+
     // FR-LEARN-046 Cross-Tenant Transfer Risk
     @Test
     void crossTenantTransferValidateReachesValidatedWithRealDifferentHoldoutAndEvidence() throws Exception {

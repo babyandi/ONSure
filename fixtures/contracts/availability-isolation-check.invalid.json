@@ -1,0 +1,18 @@
+{
+  "contract": "ONSURE_AVAILABILITY_ISOLATION_CHECK_V1",
+  "subject_id": "availability-2026-08-17-002",
+  "monthly_downtime_minutes": 60,
+  "rate_limit_threshold": 1000,
+  "observed_request_count": 500,
+  "rate_limit_exceeded_response_code": 200,
+  "other_tenant_success_rate": 0.999,
+  "other_tenant_baseline_success_rate": 0.999,
+  "availability_compliant": true,
+  "rate_limit_exceeded": false,
+  "rate_limit_enforced": true,
+  "noisy_neighbor_isolated": true,
+  "compliant": true,
+  "reasons": ["MONTHLY_DOWNTIME_EXCEEDS_43_MINUTES:60"],
+  "self_validation_nonfinal": true,
+  "final_claim_allowed": false
+}

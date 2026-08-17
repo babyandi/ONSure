@@ -101,6 +101,7 @@ final class SemanticAssuranceV2WorkflowService {
             "assurance.observability.structured-log-completeness-check",
             "assurance.security.baseline-check",
             "assurance.portability.air-gapped-deployment-check",
+            "assurance.availability.isolation-check",
             "assurance.learning.cross-tenant-transfer.validate",
             "assurance.learning.activation-stage.transition",
             "assurance.learning.statistical-qualification.check",
@@ -250,6 +251,7 @@ final class SemanticAssuranceV2WorkflowService {
             case "assurance.observability.structured-log-completeness-check" -> structuredLogCompletenessCheck(request);
             case "assurance.security.baseline-check" -> securityBaselineCheck(request);
             case "assurance.portability.air-gapped-deployment-check" -> airGappedDeploymentCheck(request);
+            case "assurance.availability.isolation-check" -> availabilityIsolationCheck(request);
             case "assurance.learning.cross-tenant-transfer.validate" -> crossTenantTransferValidate(request);
             case "assurance.learning.activation-stage.transition" -> learningActivationStageTransition(request);
             case "assurance.learning.statistical-qualification.check" -> statisticalQualificationCheck(request);
@@ -3770,6 +3772,74 @@ final class SemanticAssuranceV2WorkflowService {
         out.put("external_network_access_count", externalNetworkAccessCount);
         out.put("has_packaged_dependencies", hasPackagedDependencies);
         out.put("network_isolated", networkIsolated);
+        out.put("compliant", compliant);
+        out.put("reasons", List.copyOf(reasons));
+        out.put("decision", compliant ? "NON_FINAL" : "HOLD");
+        return immutable(out);
+    }
+
+    /**
+     * availability-isolation-check.v1.schema.json real computation (NFR-AVAIL: "SaaS Control Plane
+     * 월간 가용성 99.9%, API 요청 기준 Rate Limit과 Tenant별 동시 실행 상한을 적용해 특정 고객의
+     * 폭주가 다른 Tenant에 영향을 주지 않는다. 검증: 월간 다운타임을 43분 이내로 실측... Rate Limit
+     * 초과 요청은 429 응답과 함께 거부... 한 Tenant가 상한을 초과해도 다른 Tenant의 요청 성공률은
+     * 영향받지 않아야 한다."). Three independent real computations: availability_compliant is a
+     * real numeric comparison against the 43-minute monthly downtime ceiling. rate_limit_enforced
+     * is a real check that an over-limit request actually received HTTP 429, not merely that a
+     * limit value exists. noisy_neighbor_isolated is a real comparison between another tenant's
+     * observed success rate and its own baseline while the first tenant was over its cap -- any
+     * degradation at all fails isolation, not a caller-declared 'still fine' summary.
+     */
+    private Map<String, Object> availabilityIsolationCheck(JsonNode request) {
+        String subjectId = requiredText(request, "subject_id");
+        double monthlyDowntimeMinutes = request.path("monthly_downtime_minutes").asDouble(-1);
+        if (monthlyDowntimeMinutes < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("MONTHLY_DOWNTIME_MINUTES_INVALID"));
+        }
+        int rateLimitThreshold = request.path("rate_limit_threshold").asInt(-1);
+        if (rateLimitThreshold < 1) {
+            return failClosed("INPUT_REQUIRED", List.of("RATE_LIMIT_THRESHOLD_INVALID"));
+        }
+        int observedRequestCount = request.path("observed_request_count").asInt(-1);
+        if (observedRequestCount < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("OBSERVED_REQUEST_COUNT_INVALID"));
+        }
+        int rateLimitExceededResponseCode = request.path("rate_limit_exceeded_response_code").asInt(-1);
+        double otherTenantSuccessRate = request.path("other_tenant_success_rate").asDouble(-1);
+        double otherTenantBaselineSuccessRate = request.path("other_tenant_baseline_success_rate").asDouble(-1);
+        if (otherTenantSuccessRate < 0 || otherTenantBaselineSuccessRate < 0) {
+            return failClosed("INPUT_REQUIRED", List.of("TENANT_SUCCESS_RATE_INVALID"));
+        }
+
+        boolean availabilityCompliant = monthlyDowntimeMinutes <= 43;
+        boolean rateLimitExceeded = observedRequestCount > rateLimitThreshold;
+        boolean rateLimitEnforced = !rateLimitExceeded || rateLimitExceededResponseCode == 429;
+        boolean noisyNeighborIsolated = otherTenantSuccessRate >= otherTenantBaselineSuccessRate;
+
+        boolean compliant = availabilityCompliant && rateLimitEnforced && noisyNeighborIsolated;
+
+        List<String> reasons = new ArrayList<>();
+        if (!availabilityCompliant) {
+            reasons.add("MONTHLY_DOWNTIME_EXCEEDS_43_MINUTES:" + monthlyDowntimeMinutes);
+        }
+        if (!rateLimitEnforced) {
+            reasons.add("RATE_LIMIT_EXCEEDED_BUT_NOT_ENFORCED_WITH_429:" + rateLimitExceededResponseCode);
+        }
+        if (!noisyNeighborIsolated) {
+            reasons.add("NOISY_NEIGHBOR_ISOLATION_VIOLATED:" + otherTenantSuccessRate + "<" + otherTenantBaselineSuccessRate);
+        }
+
+        Map<String, Object> out = base("AVAILABILITY_ISOLATION_CHECK", subjectId);
+        out.put("monthly_downtime_minutes", monthlyDowntimeMinutes);
+        out.put("rate_limit_threshold", rateLimitThreshold);
+        out.put("observed_request_count", observedRequestCount);
+        out.put("rate_limit_exceeded_response_code", rateLimitExceededResponseCode);
+        out.put("other_tenant_success_rate", otherTenantSuccessRate);
+        out.put("other_tenant_baseline_success_rate", otherTenantBaselineSuccessRate);
+        out.put("availability_compliant", availabilityCompliant);
+        out.put("rate_limit_exceeded", rateLimitExceeded);
+        out.put("rate_limit_enforced", rateLimitEnforced);
+        out.put("noisy_neighbor_isolated", noisyNeighborIsolated);
         out.put("compliant", compliant);
         out.put("reasons", List.copyOf(reasons));
         out.put("decision", compliant ? "NON_FINAL" : "HOLD");

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onsure.dev/contracts/availability-isolation-check.v1.schema.json",
+  "title": "ONSure Availability and Tenant Isolation Check v1",
+  "description": "NFR-AVAIL: 'SaaS Control Plane 월간 가용성 99.9%, API 요청 기준 Rate Limit과 Tenant별 동시 실행 상한을 적용해 특정 고객의 폭주가 다른 Tenant에 영향을 주지 않는다. 검증: 월간 다운타임을 실측해 43분 이내인지 확인. Rate Limit 초과 요청은 429 응답과 함께 거부되어야 하며, 한 Tenant가 상한을 초과해도 다른 Tenant의 요청 성공률은 영향받지 않아야 한다(Noisy Neighbor 격리 테스트).' Three independent real computations: availability_compliant is a real numeric comparison against the 43-minute monthly downtime ceiling. rate_limit_enforced is a real check that an over-limit request actually received HTTP 429, not merely that a limit value exists. noisy_neighbor_isolated is a real comparison between another tenant's observed success rate and its own baseline while the first tenant was over its cap -- any degradation at all fails isolation, not a caller-declared 'still fine' summary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract", "subject_id", "monthly_downtime_minutes", "rate_limit_threshold",
+    "observed_request_count", "rate_limit_exceeded_response_code", "other_tenant_success_rate",
+    "other_tenant_baseline_success_rate", "availability_compliant", "rate_limit_exceeded",
+    "rate_limit_enforced", "noisy_neighbor_isolated", "compliant", "reasons",
+    "self_validation_nonfinal", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_AVAILABILITY_ISOLATION_CHECK_V1"},
+    "subject_id": {"type": "string", "minLength": 1},
+    "monthly_downtime_minutes": {"type": "number", "minimum": 0},
+    "rate_limit_threshold": {"type": "integer", "minimum": 1},
+    "observed_request_count": {"type": "integer", "minimum": 0},
+    "rate_limit_exceeded_response_code": {"type": "integer"},
+    "other_tenant_success_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "other_tenant_baseline_success_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "availability_compliant": {"type": "boolean"},
+    "rate_limit_exceeded": {"type": "boolean"},
+    "rate_limit_enforced": {"type": "boolean"},
+    "noisy_neighbor_isolated": {"type": "boolean"},
+    "compliant": {"type": "boolean"},
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "self_validation_nonfinal": {"const": true},
+    "final_claim_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"compliant": {"const": true}}},
+      "then": {
+        "properties": {
+          "availability_compliant": {"const": true},
+          "rate_limit_enforced": {"const": true},
+          "noisy_neighbor_isolated": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"monthly_downtime_minutes": {"exclusiveMinimum": 43}}},
+      "then": {"properties": {"availability_compliant": {"const": false}, "compliant": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"rate_limit_exceeded": {"const": true}, "rate_limit_exceeded_response_code": {"not": {"const": 429}}}},
+      "then": {"properties": {"rate_limit_enforced": {"const": false}, "compliant": {"const": false}}}
+    }
+  ]
+}
