@@ -1,0 +1,46 @@
+{
+  "type": "ONSURE_DESIGN_CLOSURE_GITHUB_DENOMINATOR_DISCOVERY_SEED",
+  "status": "NON_FINAL",
+  "execution_mode": "GITHUB_DIRECT",
+  "authority_sources": [
+    "docs/master/02_FUNCTIONAL_REQUIREMENTS_AND_PROGRAMS.md",
+    "docs/master/semantic-assurance/02_FUNCTIONAL_REQUIREMENTS_EXTENSION.md",
+    "docs/master/semantic-assurance/101_FIFTY_TASK_DESIGN_CLOSURE_MASTER_MATRIX.md"
+  ],
+  "authority_observations": [
+    {
+      "id": "DEN-OBS-001",
+      "fact": "The functional requirement master contains explicit FR-COM requirements plus program-level responsibility, function, output and acceptance definitions."
+    },
+    {
+      "id": "DEN-OBS-002",
+      "fact": "Semantic Assurance SA-02 explicitly forbids treating an existing requirement count as the final denominator and requires reverse discovery from actors, goals, states, effects, failures, rights and negative-space behavior."
+    },
+    {
+      "id": "DEN-OBS-003",
+      "fact": "The current 50-task closure matrix declares Global Requirement Universe materialization pending."
+    }
+  ],
+  "mandatory_discovery_axes": [
+    "ACTOR_PERSONA_TO_GOAL_JOB",
+    "BUSINESS_PROCESS_NORMAL_ALTERNATE_FAILURE_RECOVERY",
+    "LIFECYCLE_ENTRY_CREATE_ACTIVE_CHANGE_SUSPEND_REVOCATION_EXIT_RECOVERY_RETENTION",
+    "CANONICAL_STATE_OWNER_TRANSITION",
+    "SIDE_EFFECT_TO_COMMAND_API_EVENT",
+    "PERSISTENCE_NEED_TO_TABLE_OBJECT",
+    "USER_OPERATOR_TASK_TO_UX_ROUTE_ACTION",
+    "RIGHTS_REMEDY_TO_EXERCISING_PATH",
+    "NEGATIVE_SPACE_CANCEL_REVOKE_EXPIRE_BLOCK_REPORT_QUARANTINE_RETRY_REPLAY_LEGAL_HOLD_RESTORE_RECONCILE_FALLBACK"
+  ],
+  "denominator_rules": {
+    "existing_requirement_count_is_working_baseline_only": true,
+    "candidate_change_must_be_recorded": true,
+    "open_high_candidate_blocks_full_coverage": true,
+    "approved_candidate_stales_scope_coverage_test_denominators": true,
+    "force_fitting_candidate_into_existing_requirement_is_forbidden": true
+  },
+  "materialization_state": "PENDING",
+  "blocking_reason": "GLOBAL_REQUIREMENT_UNIVERSE_NOT_YET_MATERIALIZED",
+  "next_output_required": "CoverageUniverseSnapshot with exact active Requirement IDs and denominator epoch digest",
+  "final_claim_allowed": false
+}
