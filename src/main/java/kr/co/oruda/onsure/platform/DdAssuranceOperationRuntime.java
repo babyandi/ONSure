@@ -8,7 +8,7 @@ import java.util.Set;
 
 /** Fail-closed runtime boundary for post-final-target DD-001..040 assurance operations. */
 public final class DdAssuranceOperationRuntime {
-    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V3";
+    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V4";
 
     private static final Map<String, String> DD_BY_OPERATION = Map.ofEntries(
             Map.entry("assurance.visibility-evidence.evaluate", "DD-001"),
@@ -53,14 +53,22 @@ public final class DdAssuranceOperationRuntime {
             Map.entry("discovery.saturation.evaluate", "DD-040"));
 
     private final DdSemanticEvaluatorRegistry evaluators;
+    private final DdEvidenceResolver evidenceResolver;
 
+    /** Built-in concrete evaluators are present but deliberately unqualified and therefore HOLD. */
     public DdAssuranceOperationRuntime() {
-        this(DdSemanticEvaluatorRegistry.empty());
+        this(DdSemanticEvaluatorRegistry.builtInUnqualified(), DdEvidenceResolver.rejecting());
     }
 
     DdAssuranceOperationRuntime(DdSemanticEvaluatorRegistry evaluators) {
+        this(evaluators, DdEvidenceResolver.rejecting());
+    }
+
+    DdAssuranceOperationRuntime(DdSemanticEvaluatorRegistry evaluators, DdEvidenceResolver evidenceResolver) {
         if (evaluators == null) throw new IllegalArgumentException("DD_EVALUATOR_REGISTRY_REQUIRED");
+        if (evidenceResolver == null) throw new IllegalArgumentException("DD_EVIDENCE_RESOLVER_REQUIRED");
         this.evaluators = evaluators;
+        this.evidenceResolver = evidenceResolver;
     }
 
     public boolean supports(String operation) { return DD_BY_OPERATION.containsKey(operation); }
@@ -92,8 +100,8 @@ public final class DdAssuranceOperationRuntime {
         result.put("dd_id", dd);
         result.put("operation", operation);
         result.put("decision", "HOLD");
-        result.put("semantic_evaluator_state", "NOT_QUALIFIED");
-        result.put("blocking_reasons", List.of("SEMANTIC_EVALUATOR_NOT_QUALIFIED"));
+        result.put("semantic_evaluator_state", evaluators.registered(dd).isPresent() ? "IMPLEMENTED_UNQUALIFIED" : "NOT_IMPLEMENTED");
+        result.put("blocking_reasons", List.of("SEMANTIC_EVALUATOR_NOT_INDEPENDENTLY_QUALIFIED"));
         result.put("evidence_ref_count", evidenceCount);
         result.put("evidence_receipt_refs", List.of());
         result.put("claim_strengthening_allowed", false);
@@ -108,7 +116,8 @@ public final class DdAssuranceOperationRuntime {
             String dd, String operation, JsonNode request, DdSemanticEvaluatorRegistry.Registration registration) throws Exception {
         var context = new DdSemanticEvaluator.EvaluationContext(
                 registration.evaluatorId(), registration.evaluatorVersion(), registration.qualificationReceiptDigest(),
-                request.path("policy_ref").asText("UNRESOLVED"), request.path("authority_ref").asText("UNRESOLVED"));
+                request.path("policy_ref").asText("UNRESOLVED"), request.path("authority_ref").asText("UNRESOLVED"),
+                evidenceResolver);
         var evaluation = registration.evaluator().evaluate(request, context);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("contract", CONTRACT);
