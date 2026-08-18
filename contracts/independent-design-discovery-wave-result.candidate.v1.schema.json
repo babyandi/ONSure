@@ -1,0 +1,28 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/independent-design-discovery-wave-result/v1",
+  "title":"ONSure Independent Design Discovery Wave Result",
+  "type":"object",
+  "required":["wave_id","frozen_tree_sha","frozen_authority_digest","mandatory_lens_coverage_percent","untriaged_candidate_count","new_p0_count","new_p1_count","p1_novelty_within_policy_ceiling","reviewer_principal","reviewer_process_lineage","model_or_method_lineage","same_authoring_context_attestation","common_control_attestation","common_control_resolved","prior_conclusion_exposure_attestation","candidate_ledger_digest","receipt_digest","final_claim_allowed"],
+  "properties":{
+    "wave_id":{"enum":["INDEPENDENT-SATURATION-A","INDEPENDENT-SATURATION-B"]},
+    "frozen_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "frozen_authority_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "mandatory_lens_coverage_percent":{"const":100},
+    "untriaged_candidate_count":{"const":0},
+    "new_p0_count":{"const":0},
+    "new_p1_count":{"type":"integer","minimum":0},
+    "p1_novelty_within_policy_ceiling":{"const":true},
+    "reviewer_principal":{"type":"string","minLength":1},
+    "reviewer_process_lineage":{"type":"string","minLength":1},
+    "model_or_method_lineage":{"type":"string","minLength":1},
+    "same_authoring_context_attestation":{"const":false},
+    "common_control_attestation":{"type":"string","minLength":1},
+    "common_control_resolved":{"const":true},
+    "prior_conclusion_exposure_attestation":{"const":false},
+    "candidate_ledger_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "receipt_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}
