@@ -8,6 +8,12 @@ cd "$ROOT"
 : "${ONSURE_DD_EXECUTION_ENVIRONMENT:?ONSURE_DD_EXECUTION_ENVIRONMENT is required}"
 
 RAW="${ONSURE_DD_RUNTIME_RAW:-.onsure/dd-runtime/raw-execution.json}"
+if [[ -n "${ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE:-}" ]]; then
+  python3 scripts/stage-dd-qualification-receipts.py --source "$ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE"
+  export ONSURE_DD_QUALIFICATION_RECEIPTS_DIR="$ROOT/.onsure/dd-independent-qualification/receipts"
+elif [[ -z "${ONSURE_DD_QUALIFICATION_RECEIPTS_DIR:-}" ]]; then
+  export ONSURE_DD_QUALIFICATION_RECEIPTS_DIR="$ROOT/receipts/dd-semantic-evaluator-qualification"
+fi
 if [[ -n "${ONSURE_DD_EVIDENCE_INDEX_SOURCE:-}" ]]; then
   STAGED_INDEX="${ONSURE_DD_EVIDENCE_INDEX_STAGED:-.onsure/dd-runtime/evidence-index.json}"
   python3 scripts/stage-dd-evidence-index.py --input "$ONSURE_DD_EVIDENCE_INDEX_SOURCE" --output "$STAGED_INDEX"
@@ -28,8 +34,7 @@ python3 scripts/materialize-dd-qualified-runtime-activation.py
 echo "[ONSURE-DD-RUNTIME] 3/6 validate current evidence-index subject"
 python3 - "$EVIDENCE_INDEX" "$COMMIT_SHA" "$TREE_SHA" <<'PY'
 import json,pathlib,sys
-p=pathlib.Path(sys.argv[1])
-if not p.is_absolute(): p=pathlib.Path.cwd()/p
+p=pathlib.Path(sys.argv[1]); p=p if p.is_absolute() else pathlib.Path.cwd()/p
 if not p.is_file(): raise SystemExit('DD_EVIDENCE_INDEX_MISSING')
 d=json.loads(p.read_text(encoding='utf-8'))
 assert d.get('contract')=='ONSURE_DD_EVIDENCE_INDEX_V2','DD_EVIDENCE_INDEX_CONTRACT_NOT_V2'
@@ -51,11 +56,10 @@ mvn -B -DskipTests compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
 
 echo "[ONSURE-DD-RUNTIME] 5/6 materialize 40 runtime receipts and status"
 python3 scripts/materialize-dd-semantic-runtime-evidence.py \
-  --raw "$RAW" \
-  --evidence-index "$EVIDENCE_INDEX" \
+  --raw "$RAW" --evidence-index "$EVIDENCE_INDEX" \
   --target-identity "$ONSURE_DD_TARGET_IDENTITY" \
   --execution-principal "$ONSURE_DD_EXECUTION_PRINCIPAL" \
   --execution-environment "$ONSURE_DD_EXECUTION_ENVIRONMENT"
 
 echo "[ONSURE-DD-RUNTIME] 6/6 require exact 40/40 PASS_NONFINAL current runtime evidence"
-python3 scripts/validate-dd-semantic-runtime-evidence.py --source-tree-sha "$TREE_SHA" --require-all-pass
+python3 scripts/validate-dd-semantic-runtime-evidence.py --source-commit-sha "$COMMIT_SHA" --source-tree-sha "$TREE_SHA" --require-all-pass
