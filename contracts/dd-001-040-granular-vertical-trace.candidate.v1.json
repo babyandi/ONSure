@@ -1,17 +1,30 @@
 {
-  "contract":"ONSURE_DD_001_040_GRANULAR_VERTICAL_TRACE_V1",
-  "status":"DESIGN_GRANULARIZED_MACHINE_LAYERS_OPEN_NONFINAL",
+  "contract":"ONSURE_DD_001_040_GRANULAR_VERTICAL_TRACE_V2",
+  "status":"DESIGN_AND_MACHINE_DEFINITIONS_MATERIALIZED_EXECUTION_QUALIFICATION_RUNTIME_OPEN_NONFINAL",
   "rules":[
     "Parent FR-FIN mapping is not sufficient closure.",
-    "Every DD must trace through design object/state/authority/UI/evidence/fixture/oracle and then operation/API/event, schema/contract, executable test and runtime evidence.",
-    "Missing machine layers remain explicit gaps and cannot be inferred from prose."
+    "Every DD must trace through design object/state/authority/UI/evidence/fixture/oracle and operation/API/event, schema/contract, executable test definition, evaluator qualification and target runtime evidence.",
+    "Machine-definition materialization is not execution evidence.",
+    "Synthetic executable fixture mechanics are not independent evaluator qualification and not target runtime evidence.",
+    "Missing qualification or runtime evidence remains an explicit gap and cannot be inferred from code or prose."
   ],
   "layer_contract":{
     "design_layers":["canonical_object","state_invalidation","authority_sod","ui_claim_disclosure","evidence_receipt","negative_recovery_fixture","independent_oracle"],
-    "machine_layers":["operation_api_event","schema_contract","executable_test"],
-    "evidence_layer":"runtime_evidence"
+    "machine_definition_layers":["operation_api_event","schema_contract","executable_test_definition","concrete_evaluator_code"],
+    "qualification_layer":"independent_evaluator_qualification",
+    "evidence_layer":"target_runtime_evidence"
   },
-  "summary":{"dd_count":40,"parent_mapped_count":40,"design_layer_complete_count":40,"machine_operation_materialized_count":0,"schema_contract_materialized_count":0,"executable_test_materialized_count":0,"runtime_evidence_count":0},
+  "summary":{
+    "dd_count":40,
+    "parent_mapped_count":40,
+    "design_layer_complete_count":40,
+    "machine_operation_materialized_count":40,
+    "schema_contract_materialized_count":40,
+    "executable_test_definition_materialized_count":40,
+    "concrete_evaluator_code_materialized_unverified_count":40,
+    "independently_qualified_evaluator_count":0,
+    "target_runtime_evidence_count":0
+  },
   "rows":[
     {"dd":"DD-001","parents":["FR-FIN-05","FR-FIN-12"],"design_doc":"ONSURE-SA-DESIGN-0163","objects":["VisibilityEvidenceProfile"]},
     {"dd":"DD-002","parents":["FR-FIN-04","FR-FIN-05","FR-FIN-12"],"design_doc":"ONSURE-SA-DESIGN-0163","objects":["OracleAuthorityRecord"]},
@@ -62,12 +75,22 @@
     "evidence_receipt":"DEFINED_IN_COMPANION",
     "negative_recovery_fixture":"DEFINED_IN_COMPANION",
     "independent_oracle":"DEFINED_IN_COMPANION",
-    "operation_api_event":"MATERIALIZATION_REQUIRED",
-    "schema_contract":"MATERIALIZATION_REQUIRED",
-    "executable_test":"MATERIALIZATION_REQUIRED",
-    "runtime_evidence":"NOT_RUN",
-    "vertical_trace_state":"DESIGN_COMPLETE_MACHINE_LAYERS_OPEN"
+    "operation_api_event":"MATERIALIZED_IN_DD_MACHINE_REGISTRY",
+    "schema_contract":"MATERIALIZED_GENERIC_SCHEMA_WITH_EXACT_DD_BINDING",
+    "executable_test_definition":"MATERIALIZED_160_CASE_QUALIFICATION_FIXTURE_PLAN_NOT_EXECUTED",
+    "concrete_evaluator_code":"CODE_MATERIALIZED_UNVERIFIED",
+    "independent_evaluator_qualification":"NOT_QUALIFIED",
+    "target_runtime_evidence":"NOT_RUN",
+    "vertical_trace_state":"DESIGN_AND_MACHINE_DEFINITION_COMPLETE_EXECUTION_QUALIFICATION_RUNTIME_OPEN"
   },
-  "closure_gate":{"unmapped_dd":0,"design_layer_gaps":0,"machine_layer_gap_instances":120,"granular_trace_complete":false},
+  "closure_gate":{
+    "unmapped_dd":0,
+    "design_layer_gaps":0,
+    "machine_definition_gap_instances":0,
+    "independent_evaluator_qualification_gaps":40,
+    "target_runtime_evidence_gaps":40,
+    "granular_trace_complete":false
+  },
+  "github_actions_authority":false,
   "final_claim_allowed":false
 }
