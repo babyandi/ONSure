@@ -8,7 +8,7 @@ import java.util.Map;
  * Extension point for one post-final-target DD semantic evaluator.
  *
  * <p>Implementing this interface is not sufficient for runtime use. The evaluator must also be
- * registered with a current qualification receipt by {@link DdSemanticEvaluatorRegistry}.</p>
+ * registered with a current independent qualification receipt by {@link DdSemanticEvaluatorRegistry}.</p>
  */
 public interface DdSemanticEvaluator {
     String ddId();
@@ -20,12 +20,20 @@ public interface DdSemanticEvaluator {
             String evaluatorVersion,
             String qualificationReceiptDigest,
             String policyRef,
-            String authorityRef) {
+            String authorityRef,
+            DdEvidenceResolver evidenceResolver) {
         public EvaluationContext {
             if (evaluatorId == null || evaluatorId.isBlank()
-                    || evaluatorVersion == null || evaluatorVersion.isBlank()
-                    || qualificationReceiptDigest == null || qualificationReceiptDigest.isBlank()) {
+                    || evaluatorVersion == null || evaluatorVersion.isBlank()) {
                 throw new IllegalArgumentException("DD_EVALUATOR_CONTEXT_INCOMPLETE");
+            }
+            if (qualificationReceiptDigest == null || qualificationReceiptDigest.isBlank()) {
+                qualificationReceiptDigest = "UNQUALIFIED";
+            }
+            if (policyRef == null || policyRef.isBlank()) policyRef = "UNRESOLVED";
+            if (authorityRef == null || authorityRef.isBlank()) authorityRef = "UNRESOLVED";
+            if (evidenceResolver == null) {
+                throw new IllegalArgumentException("DD_EVIDENCE_RESOLVER_REQUIRED");
             }
         }
     }
