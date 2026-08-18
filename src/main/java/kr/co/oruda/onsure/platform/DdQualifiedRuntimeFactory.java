@@ -61,7 +61,7 @@ public final class DdQualifiedRuntimeFactory {
             if (seen.size()!=40 || !seen.equals(builtins.keySet())) throw new IllegalStateException("DD_RUNTIME_ACTIVATION_DENOMINATOR_MISMATCH");
             var registry = new DdSemanticEvaluatorRegistry(registrations);
             if (registry.qualifiedCount()!=40) throw new IllegalStateException("DD_RUNTIME_ACTIVATION_QUALIFIED_COUNT_MISMATCH");
-            return new DdAssuranceOperationRuntime(registry, FileBackedDdEvidenceResolver.load(root));
+            return new DdAssuranceOperationRuntime(registry, FileBackedDdEvidenceResolver.load(root, activationTree));
         } catch (Exception e) {
             throw new IllegalStateException("DD_RUNTIME_ACTIVATION_LOAD_FAILED", e);
         }
