@@ -1,0 +1,32 @@
+{
+  "contract":"ONSURE_HUMAN_DESIGN_AUTHORITY_DECISION_QUEUE_V1",
+  "status":"OPEN_NONFINAL",
+  "rules":[
+    "Queue entries are not approvals.",
+    "Only receipts conforming to human-design-authority-decision.candidate.v1.schema.json may close an entry.",
+    "Generic continue/proceed instructions are not policy approval.",
+    "Safe floors remain effective while a decision is OPEN or HOLD."
+  ],
+  "rows":[
+    {"decision_id":"HDA-DD-002","subject_ids":["DD-002"],"topic":"Oracle owner/change/dispute authority","state":"OPEN","safe_floor":"Disputed/unavailable oracle => HOLD; validator cannot self-approve changed oracle."},
+    {"decision_id":"HDA-DD-011","subject_ids":["DD-011"],"topic":"Shared-corpus withdrawal/poisoning/rights-invalid authority","state":"OPEN","safe_floor":"Invalid corpus material cannot silently remain eligible; derived impact must be traced."},
+    {"decision_id":"HDA-DD-013","subject_ids":["DD-013"],"topic":"Data purpose/rights/consent authority","state":"OPEN","safe_floor":"Missing rights/purpose basis blocks secondary use."},
+    {"decision_id":"HDA-DD-014","subject_ids":["DD-014"],"topic":"External-effect engagement authorization authority","state":"OPEN","safe_floor":"No current target authorization => active external-effect test BLOCKED."},
+    {"decision_id":"HDA-DD-015","subject_ids":["DD-015"],"topic":"Tenant offboarding settlement authority","state":"OPEN","safe_floor":"Unresolved grants/tokens/jobs/retention obligations prevent COMPLETE."},
+    {"decision_id":"HDA-DD-019","subject_ids":["DD-019"],"topic":"Competing evidence-head reconciliation authority","state":"OPEN","safe_floor":"Competing heads => HOLD; losing head preserved."},
+    {"decision_id":"HDA-DD-020","subject_ids":["DD-020"],"topic":"Vendor exit continuity authority","state":"OPEN","safe_floor":"Exit cannot close until data/key/evidence continuity is verified."},
+    {"decision_id":"HDA-DD-025","subject_ids":["DD-025"],"topic":"Regulatory effective-date/transition/supersession authority","state":"OPEN","safe_floor":"Unresolved applicable-regulation conflict => HOLD."},
+    {"decision_id":"HDA-DD-027","subject_ids":["DD-027"],"topic":"Business calendar source/override authority","state":"OPEN","safe_floor":"Ambiguous business-time binding cannot support time-sensitive positive claim."},
+    {"decision_id":"HDA-DD-029","subject_ids":["DD-029"],"topic":"Third-party target testing delegation authority","state":"OPEN","safe_floor":"Product purchase never implies authority to actively test an unowned target."},
+    {"decision_id":"HDA-DD-030","subject_ids":["DD-030"],"topic":"Organization transfer dual-control and authority rebinding","state":"OPEN","safe_floor":"Tenant rename cannot transfer authority; explicit rebinding/requalification required."},
+    {"decision_id":"HDA-DD-031","subject_ids":["DD-031"],"topic":"Residency/key/subprocessor failover authority","state":"OPEN","safe_floor":"Unqualified failover => sovereignty/compliance HOLD."},
+    {"decision_id":"HDA-DD-034","subject_ids":["DD-034"],"topic":"External disclosure/redaction/custody authority","state":"OPEN","safe_floor":"Recipient/purpose authority and custody provenance required."},
+    {"decision_id":"HDA-DD-038","subject_ids":["DD-038"],"topic":"Production financial-effect testing authority","state":"OPEN","safe_floor":"Simulation/sandbox default; production effect requires explicit high-risk authority and reconciliation."},
+    {"decision_id":"HDA-P1-001","subject_ids":["P1-FEDERATED-AGGREGATION-TENANT-ISOLATION"],"topic":"Federated Aggregation versus Tenant Isolation","state":"OPEN","safe_floor":"No cross-tenant aggregation promotion when isolation/consent authority is unresolved."},
+    {"decision_id":"HDA-P1-002","subject_ids":["P1-REVIEWER-DIVERSITY-SCARCITY"],"topic":"Reviewer Diversity versus Qualified Reviewer Scarcity","state":"OPEN","safe_floor":"Do not lower qualification or independence floor merely to satisfy diversity/quorum."},
+    {"decision_id":"HDA-P1-003","subject_ids":["P1-EXPLANATION-FIDELITY-SEALED-CHALLENGE"],"topic":"Explanation Fidelity versus Sealed Challenge Secrecy","state":"OPEN","safe_floor":"Challenge secrecy cannot be broken to strengthen explanation; unresolved tradeoff remains HOLD."},
+    {"decision_id":"HDA-P1-004","subject_ids":["P1-EMERGENCY-REVOCATION-RESIDENCY-AIRGAP"],"topic":"Emergency Revocation versus Residency/Air-gap","state":"OPEN","safe_floor":"Offline uncertainty cannot be represented as current; emergency authority cannot bypass residency constraints."}
+  ],
+  "summary":{"open_count":18,"closed_count":0},
+  "final_claim_allowed":false
+}
