@@ -11,17 +11,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/** Resolves DD evidence only from a workspace-local digest-bound evidence index. */
+/** Resolves DD evidence only from an explicitly supplied or workspace-local digest-bound evidence index. */
 public final class FileBackedDdEvidenceResolver implements DdEvidenceResolver {
     public static final String CONTRACT = "ONSURE_DD_EVIDENCE_INDEX_V2";
     private static final ObjectMapper JSON = new ObjectMapper();
     private final Path workspaceRoot;
+    private final Path indexPath;
     private final Map<String, Entry> byRef;
 
     private record Entry(String ref, Set<String> ddIds, Path path, String sha256, boolean current, String authorityRef) {}
 
-    private FileBackedDdEvidenceResolver(Path workspaceRoot, Map<String, Entry> byRef) {
+    private FileBackedDdEvidenceResolver(Path workspaceRoot, Path indexPath, Map<String, Entry> byRef) {
         this.workspaceRoot = workspaceRoot;
+        this.indexPath = indexPath;
         this.byRef = Map.copyOf(byRef);
     }
 
@@ -30,15 +32,26 @@ public final class FileBackedDdEvidenceResolver implements DdEvidenceResolver {
     }
 
     public static FileBackedDdEvidenceResolver load(Path workspaceRoot, String expectedTreeSha) {
+        Path root = workspaceRoot.toAbsolutePath().normalize();
+        String supplied = System.getenv("ONSURE_DD_EVIDENCE_INDEX");
+        Path index = supplied == null || supplied.isBlank()
+                ? root.resolve(".onsure/dd-runtime/evidence-index.json")
+                : Path.of(supplied);
+        if (!index.isAbsolute()) index = root.resolve(index);
+        return load(workspaceRoot, expectedTreeSha, index.normalize());
+    }
+
+    public static FileBackedDdEvidenceResolver load(Path workspaceRoot, String expectedTreeSha, Path indexPath) {
         try {
             Path root = workspaceRoot.toAbsolutePath().normalize();
-            Path index = root.resolve(".onsure/dd-runtime/evidence-index.json").normalize();
-            if (!Files.isRegularFile(index)) return new FileBackedDdEvidenceResolver(root, Map.of());
+            Path index = indexPath.toAbsolutePath().normalize();
+            if (!Files.isRegularFile(index)) return new FileBackedDdEvidenceResolver(root, index, Map.of());
             JsonNode doc = JSON.readTree(Files.readAllBytes(index));
             if (!CONTRACT.equals(doc.path("contract").asText())) throw new IllegalStateException("DD_EVIDENCE_INDEX_CONTRACT_MISMATCH");
             String tree = doc.path("source_tree_sha").asText("");
             if (!tree.matches("[0-9a-f]{40}")) throw new IllegalStateException("DD_EVIDENCE_INDEX_TREE_INVALID");
             if (expectedTreeSha != null && !expectedTreeSha.equals(tree)) throw new IllegalStateException("DD_EVIDENCE_INDEX_TREE_MISMATCH");
+            Path evidenceBase = index.getParent();
             Map<String, Entry> entries = new LinkedHashMap<>();
             for (JsonNode row : doc.path("rows")) {
                 String ref = row.path("evidence_ref").asText("");
@@ -52,12 +65,13 @@ public final class FileBackedDdEvidenceResolver implements DdEvidenceResolver {
                     ddIds.add(dd);
                 }
                 if (ref.isBlank() || rel.isBlank() || !sha.matches("[0-9a-f]{64}") || ddIds.isEmpty()) throw new IllegalStateException("DD_EVIDENCE_INDEX_ROW_INVALID");
-                Path p = root.resolve(rel).normalize();
-                if (!p.startsWith(root)) throw new SecurityException("DD_EVIDENCE_PATH_ESCAPE:" + rel);
+                Path declared = Path.of(rel);
+                Path p = declared.isAbsolute() ? declared.normalize() : evidenceBase.resolve(declared).normalize();
+                if (!declared.isAbsolute() && !p.startsWith(evidenceBase)) throw new SecurityException("DD_EVIDENCE_PATH_ESCAPE:" + rel);
                 Entry prior = entries.putIfAbsent(ref, new Entry(ref, Set.copyOf(ddIds), p, sha, row.path("current").asBoolean(false), authority));
                 if (prior != null) throw new IllegalStateException("DD_EVIDENCE_REF_DUPLICATE:" + ref);
             }
-            return new FileBackedDdEvidenceResolver(root, entries);
+            return new FileBackedDdEvidenceResolver(root, index, entries);
         } catch (Exception e) {
             throw new IllegalStateException("DD_EVIDENCE_INDEX_LOAD_FAILED", e);
         }
