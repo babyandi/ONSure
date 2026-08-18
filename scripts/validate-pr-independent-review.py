@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,hashlib,json
+import argparse,hashlib,json,os
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -10,15 +10,12 @@ def digest_payload(d:dict)->str:
     return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 def main()->int:
-    ap=argparse.ArgumentParser()
-    ap.add_argument('--receipt',default='evidence/pr-review/pr-54-independent-review.json')
-    ap.add_argument('--expected-head-sha',required=True)
-    args=ap.parse_args()
-    p=ROOT/args.receipt; reasons=[]
+    ap=argparse.ArgumentParser(); ap.add_argument('--receipt',default=os.environ.get('ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT','evidence/pr-review/pr-54-independent-review.json')); ap.add_argument('--expected-head-sha',required=True); args=ap.parse_args()
+    p=Path(args.receipt); p=p if p.is_absolute() else ROOT/p; reasons=[]
     if not p.is_file(): reasons.append('INDEPENDENT_PR_REVIEW_RECEIPT_MISSING'); data={}
     else:
-        try: data=json.loads(p.read_text(encoding='utf-8'))
-        except Exception: data={}; reasons.append('INDEPENDENT_PR_REVIEW_RECEIPT_UNREADABLE')
+        try:data=json.loads(p.read_text(encoding='utf-8'))
+        except Exception:data={}; reasons.append('INDEPENDENT_PR_REVIEW_RECEIPT_UNREADABLE')
     if data:
         if data.get('contract')!='ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT_V1': reasons.append('PR_REVIEW_CONTRACT_MISMATCH')
         if data.get('repository')!='babyandi/ONSure' or data.get('pr_number')!=54: reasons.append('PR_REVIEW_SUBJECT_MISMATCH')
@@ -33,7 +30,6 @@ def main()->int:
         digest=str(data.get('receipt_digest',''))
         if len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest): reasons.append('PR_REVIEW_RECEIPT_DIGEST_INVALID')
         elif digest!=digest_payload(data): reasons.append('PR_REVIEW_RECEIPT_DIGEST_MISMATCH')
-    out={'contract':'ONSURE_PR_INDEPENDENT_REVIEW_VALIDATION_V2','expected_head_sha':args.expected_head_sha,'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','github_actions_authority':False,'final_claim_allowed':False}
+    out={'contract':'ONSURE_PR_INDEPENDENT_REVIEW_VALIDATION_V3','expected_head_sha':args.expected_head_sha,'receipt_path':str(p),'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','github_actions_authority':False,'final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 71
-
 if __name__=='__main__': raise SystemExit(main())
