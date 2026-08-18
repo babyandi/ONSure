@@ -1,0 +1,75 @@
+name: ONSure Post-Delta Diagnostic
+
+on:
+  push:
+    branches:
+      - autopilot/design-closure-mission
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  post-delta-diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Freeze uncontaminated independent-discovery baseline
+        run: python3 scripts/freeze-independent-design-discovery-baseline.py
+      - name: Validate design-document authority
+        run: python3 scripts/validate-design-document-authority.py
+      - name: Materialize post-delta requirement authority
+        run: python3 scripts/materialize-product-design-authority.py
+      - name: Generate EPOCH 0003 candidate A
+        run: |
+          python3 scripts/generate-product-design-epoch-0003.py
+          cp .onsure/requirement-universe/epoch-0003-candidate/requirement-universe-snapshot.json /tmp/epoch-a.json
+      - name: Generate EPOCH 0003 candidate B and verify deterministic denominator
+        run: |
+          python3 scripts/generate-product-design-epoch-0003.py
+          python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/epoch-a.json'))
+          b=json.load(open('.onsure/requirement-universe/epoch-0003-candidate/requirement-universe-snapshot.json'))
+          keys=['requirement_manifest_digest','authority_document_population_digest','requirement_ids']
+          assert all(a[k]==b[k] for k in keys), 'EPOCH_0003_NONDETERMINISTIC'
+          req=set(b['requirement_ids'])
+          expected={f'DD-{i:03d}' for i in range(1,41)}|{f'FR-FIN-{i:02d}' for i in range(1,23)}
+          missing=sorted(expected-req)
+          assert not missing, f'MISSING_REQUIRED_IDS:{missing}'
+          print({'requirement_count':len(req),'manifest_digest':b['requirement_manifest_digest'],'authority_digest':b['authority_document_population_digest'],'required_ids_present':62})
+          PY
+      - name: Run post-delta design diagnostics without promotion
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/scan-global-trace-closure.py > .onsure/diagnostic-global-trace.log 2>&1; echo $? > .onsure/diagnostic-global-trace.rc
+          python3 scripts/scan-reverse-orphan-product-design.py > .onsure/diagnostic-reverse-orphan.log 2>&1; echo $? > .onsure/diagnostic-reverse-orphan.rc
+          python3 scripts/validate-final-product-requirements.py > .onsure/diagnostic-final-product.log 2>&1; echo $? > .onsure/diagnostic-final-product.rc
+          python3 scripts/validate-design-coverage.py > .onsure/diagnostic-design-coverage.log 2>&1; echo $? > .onsure/diagnostic-design-coverage.rc
+          python3 scripts/validate-dd-granular-vertical-trace.py > .onsure/diagnostic-dd-trace.log 2>&1; echo $? > .onsure/diagnostic-dd-trace.rc
+          python3 scripts/validate-human-design-authority-decisions.py > .onsure/diagnostic-human-authority.log 2>&1; echo $? > .onsure/diagnostic-human-authority.rc
+          python3 scripts/validate-global-lock-preflight.py > .onsure/diagnostic-lock-preflight.log 2>&1; echo $? > .onsure/diagnostic-lock-preflight.rc
+          python3 - <<'PY'
+          import json,pathlib
+          root=pathlib.Path('.onsure')
+          names=['global-trace','reverse-orphan','final-product','design-coverage','dd-trace','human-authority','lock-preflight']
+          rcs={n:int((root/f'diagnostic-{n}.rc').read_text()) for n in names}
+          receipt={'contract':'ONSURE_POST_DELTA_DIAGNOSTIC_RECEIPT_V1','promotion_allowed':False,'saturation_proven':False,'return_codes':rcs,'decision':'DIAGNOSTIC_ONLY_NONFINAL','final_claim_allowed':False}
+          (root/'post-delta-diagnostic-receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(receipt,sort_keys=True))
+          PY
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onsure-post-delta-diagnostic-${{ github.sha }}
+          path: .onsure/**
+          retention-days: 30
