@@ -1,0 +1,23 @@
+{
+  "contract":"ONSURE_INDEPENDENT_CLEAN_EVIDENCE_INTAKE_V1",
+  "status":"READY_FOR_INDEPENDENT_EXECUTION_NONFINAL",
+  "required_receipts":["INDEPENDENT-CLEAN-A","INDEPENDENT-CLEAN-B"],
+  "tracked_evidence_directory":"evidence/independent-clean",
+  "required_fields":[
+    "clean_id","source_commit_sha","source_tree_sha","requirement_manifest_digest","authority_population_digest","coverage_digest","verifier_principal","verifier_process_lineage","model_or_method_lineage","common_control_attestation","blocking_finding_count","decision","receipt_digest"
+  ],
+  "acceptance":{
+    "same_source_commit":true,
+    "same_source_tree":true,
+    "same_requirement_manifest_digest":true,
+    "same_authority_population_digest":true,
+    "same_coverage_digest":true,
+    "blocking_finding_count_each":0,
+    "decision_each":"CLEAN",
+    "independent_lineage_required":true,
+    "same_principal_process_model_tuple_allowed":false,
+    "unresolved_common_control_allowed":false
+  },
+  "local_assurance_twice_role":"REPRODUCIBILITY_EVIDENCE_ONLY_NOT_INDEPENDENT_CLEAN",
+  "final_claim_allowed":false
+}
