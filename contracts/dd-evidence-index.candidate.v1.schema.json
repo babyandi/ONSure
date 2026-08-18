@@ -1,0 +1,28 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/dd-evidence-index/v1",
+  "title":"ONSure DD Runtime Evidence Index",
+  "type":"object",
+  "required":["contract","source_commit_sha","rows","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_DD_EVIDENCE_INDEX_V1"},
+    "source_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "rows":{
+      "type":"array",
+      "items":{
+        "type":"object",
+        "required":["evidence_ref","path","sha256","current","authority_ref"],
+        "properties":{
+          "evidence_ref":{"type":"string","minLength":1},
+          "path":{"type":"string","minLength":1},
+          "sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+          "current":{"type":"boolean"},
+          "authority_ref":{"type":"string","minLength":1}
+        },
+        "additionalProperties":true
+      }
+    },
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}
