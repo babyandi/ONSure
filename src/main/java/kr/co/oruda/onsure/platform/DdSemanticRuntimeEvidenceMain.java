@@ -27,7 +27,12 @@ public final class DdSemanticRuntimeEvidenceMain {
         outputPath = outputPath.normalize();
         if (!outputPath.startsWith(root)) throw new SecurityException("DD_RUNTIME_RAW_OUTPUT_PATH_ESCAPE");
 
-        Path indexPath = root.resolve(".onsure/dd-runtime/evidence-index.json");
+        String suppliedIndex = System.getenv("ONSURE_DD_EVIDENCE_INDEX");
+        Path indexPath = suppliedIndex == null || suppliedIndex.isBlank()
+                ? root.resolve(".onsure/dd-runtime/evidence-index.json")
+                : Path.of(suppliedIndex);
+        if (!indexPath.isAbsolute()) indexPath = root.resolve(indexPath);
+        indexPath = indexPath.normalize();
         if (!Files.isRegularFile(indexPath)) throw new IllegalStateException("DD_RUNTIME_EVIDENCE_INDEX_MISSING");
         JsonNode index = JSON.readTree(Files.readAllBytes(indexPath));
         if (!FileBackedDdEvidenceResolver.CONTRACT.equals(index.path("contract").asText())) {
@@ -65,6 +70,7 @@ public final class DdSemanticRuntimeEvidenceMain {
         ObjectNode output=JSON.createObjectNode();
         output.put("contract",CONTRACT);
         output.put("source_tree_sha",index.path("source_tree_sha").asText(""));
+        output.put("evidence_index_path",indexPath.toString());
         output.set("rows",rows);
         output.put("final_claim_allowed",false);
         Files.createDirectories(outputPath.getParent());
