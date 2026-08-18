@@ -50,11 +50,13 @@ log '5/12 scan candidate EPOCH directly; historical live Requirement Universe is
 python3 scripts/scan-global-trace-closure.py --universe-dir "$CAND" | tee "$CAND/global-trace.log"
 python3 scripts/scan-reverse-orphan-product-design.py --universe-dir "$CAND" | tee "$CAND/reverse-orphan.log"
 
-log '6/12 run requirement/design/runtime/human validators'
+log '6/12 run requirement/design/DD machine/evaluator/human validators'
 set +e
 python3 scripts/validate-final-product-requirements.py --self-test > "$CAND/final-product-requirements.log" 2>&1; FINAL_REQ_RC=$?
 python3 scripts/validate-design-coverage.py --matrix "$MATRIX" --root "$ROOT" --self-test --output "$CAND/design-coverage-report.json" > "$CAND/design-coverage.log" 2>&1; COVERAGE_RC=$?
+python3 scripts/validate-dd-machine-definition.py > "$CAND/dd-machine-definition.log" 2>&1; DD_MACHINE_RC=$?
 python3 scripts/validate-dd-granular-vertical-trace.py > "$CAND/dd-granular-trace.log" 2>&1; GRANULAR_RC=$?
+python3 scripts/validate-dd-semantic-evaluator-qualifications.py --require-all-qualified > "$CAND/dd-evaluator-qualification.log" 2>&1; DD_QUAL_RC=$?
 python3 scripts/validate-human-design-authority-decisions.py > "$CAND/human-design-authority.log" 2>&1; HUMAN_RC=$?
 set -e
 
@@ -73,25 +75,27 @@ set +e
 python3 scripts/validate-product-design-candidate-preflight.py > "$CAND/candidate-preflight.log" 2>&1; PREFLIGHT_RC=$?
 set -e
 
-log '10/12 aggregate blocker dimensions without allowing any self-validation to override independent/human gates'
-python3 - "$FINAL_REQ_RC" "$COVERAGE_RC" "$GRANULAR_RC" "$HUMAN_RC" "$LOCAL_TWICE_RC" "$INDEP_CLEAN_RC" "$PREFLIGHT_RC" <<'PY'
+log '10/12 aggregate blocker dimensions without allowing self-validation to override evaluator qualification, independent or human gates'
+python3 - "$FINAL_REQ_RC" "$COVERAGE_RC" "$DD_MACHINE_RC" "$GRANULAR_RC" "$DD_QUAL_RC" "$HUMAN_RC" "$LOCAL_TWICE_RC" "$INDEP_CLEAN_RC" "$PREFLIGHT_RC" <<'PY'
 import json,pathlib,sys,datetime
 c=pathlib.Path('.onsure/requirement-universe/epoch-0003-candidate')
 s=json.loads((c/'requirement-universe-snapshot.json').read_text()); t=json.loads((c/'global-trace-scan-report.json').read_text()); r=json.loads((c/'product-design-reverse-orphan-scan-report.json').read_text())
 inv=json.loads(pathlib.Path('.onsure/design-baseline/design-artifact-inventory.json').read_text()); rec=json.loads(pathlib.Path('.onsure/design-baseline/reconstructability-receipt.json').read_text())
-fr,cv,gr,hu,lr,ic,pf=map(int,sys.argv[1:]); blockers=[]
+fr,cv,dm,gr,dq,hu,lr,ic,pf=map(int,sys.argv[1:]); blockers=[]
 if t['orphans']['p0']: blockers.append('P0_FORWARD_ORPHANS')
 if r['stale_reference_count']: blockers.append('STALE_REVERSE_REFERENCES')
 if fr: blockers.append('FINAL_PRODUCT_REQUIREMENT_VALIDATION_NOT_PASS')
 if cv: blockers.append('DESIGN_COVERAGE_NOT_PASS')
+if dm: blockers.append('DD_MACHINE_DEFINITION_NOT_PASS')
 if gr: blockers.append('DD_GRANULAR_RUNTIME_TRACE_NOT_CLOSED')
+if dq: blockers.append('DD_SEMANTIC_EVALUATORS_NOT_40_OF_40_INDEPENDENTLY_QUALIFIED')
 if hu: blockers.append('HUMAN_DESIGN_AUTHORITY_DECISIONS_OPEN')
 if lr: blockers.append('LOCAL_REPRODUCIBILITY_TWICE_NOT_PASS')
 if ic: blockers.append('INDEPENDENT_CLEAN_TWICE_NOT_PASS')
 if pf: blockers.append('CANDIDATE_NATIVE_PREFLIGHT_NOT_PASS')
 if inv.get('missing_registered_paths'): blockers.append('DESIGN_ARTIFACT_INVENTORY_INCOMPLETE')
 if not rec.get('deterministic_two_run'): blockers.append('DESIGN_BASELINE_NOT_RECONSTRUCTABLE')
-receipt={'contract':'ONSURE_POST_RECONCILIATION_PRODUCT_DESIGN_CLOSURE_RECEIPT_V5','generated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'execution_method':'LOCAL_OR_AUTOPILOT_EXPLICIT_RUN_ONLY','github_actions_authority':False,'epoch':'EPOCH::REQUIREMENT::0003::CANDIDATE','requirement_count':len(s['requirement_ids']),'requirement_manifest_digest':s['requirement_manifest_digest'],'authority_population_digest':s['authority_document_population_digest'],'design_artifact_population_digest':inv['population_digest'],'design_reconstructable':rec['deterministic_two_run'],'dd_count':len([x for x in s['requirement_ids'] if x.startswith('DD-')]),'forward_p0_orphans':len(t['orphans']['p0']),'forward_p1_orphans':len(t['orphans']['p1']),'reverse_stale_references':r['stale_reference_count'],'validator_rcs':{'final_requirement':fr,'coverage':cv,'granular_trace':gr,'human_authority':hu,'local_reproducibility_twice':lr,'independent_clean_twice':ic,'candidate_preflight':pf},'blocking_reasons':sorted(set(blockers)),'decision':'DESIGN_CLOSURE_CANDIDATE_NONFINAL' if not blockers else 'HOLD_NONFINAL','design_lock':False,'final_claim_allowed':False}
+receipt={'contract':'ONSURE_POST_RECONCILIATION_PRODUCT_DESIGN_CLOSURE_RECEIPT_V6','generated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'execution_method':'LOCAL_OR_AUTOPILOT_EXPLICIT_RUN_ONLY','github_actions_authority':False,'epoch':'EPOCH::REQUIREMENT::0003::CANDIDATE','requirement_count':len(s['requirement_ids']),'requirement_manifest_digest':s['requirement_manifest_digest'],'authority_population_digest':s['authority_document_population_digest'],'design_artifact_population_digest':inv['population_digest'],'design_reconstructable':rec['deterministic_two_run'],'dd_count':len([x for x in s['requirement_ids'] if x.startswith('DD-')]),'forward_p0_orphans':len(t['orphans']['p0']),'forward_p1_orphans':len(t['orphans']['p1']),'reverse_stale_references':r['stale_reference_count'],'validator_rcs':{'final_requirement':fr,'coverage':cv,'dd_machine_definition':dm,'granular_trace':gr,'dd_evaluator_qualification':dq,'human_authority':hu,'local_reproducibility_twice':lr,'independent_clean_twice':ic,'candidate_preflight':pf},'blocking_reasons':sorted(set(blockers)),'decision':'DESIGN_CLOSURE_CANDIDATE_NONFINAL' if not blockers else 'HOLD_NONFINAL','design_lock':False,'final_claim_allowed':False}
 (c/'post-reconciliation-product-design-closure-receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2,sort_keys=True)+'\n'); print(json.dumps(receipt,ensure_ascii=False,sort_keys=True))
 PY
 
