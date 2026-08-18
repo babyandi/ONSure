@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,hashlib,json,subprocess,sys
+import argparse,hashlib,json,os,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-EVIDENCE=ROOT/'evidence/independent-clean'; PRECLEAN=ROOT/'.onsure/independent-clean/preclean-subject.json'; IDS=('INDEPENDENT-CLEAN-A','INDEPENDENT-CLEAN-B')
+PRECLEAN=ROOT/'.onsure/independent-clean/preclean-subject.json'; IDS=('INDEPENDENT-CLEAN-A','INDEPENDENT-CLEAN-B')
 
 def digest_payload(d:dict)->str:
     x=dict(d); x.pop('receipt_digest',None); return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
@@ -12,7 +12,8 @@ def digest_subject(d:dict)->str:
 def git(*args): return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()
 
 def main()->int:
-    ap=argparse.ArgumentParser(); ap.add_argument('--source-commit-sha',default=None); ap.add_argument('--source-tree-sha',default=None); args=ap.parse_args()
+    ap=argparse.ArgumentParser(); ap.add_argument('--source-commit-sha',default=None); ap.add_argument('--source-tree-sha',default=None); ap.add_argument('--receipts-dir',default=os.environ.get('ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR','evidence/independent-clean')); args=ap.parse_args()
+    evidence=Path(args.receipts_dir); evidence=evidence if evidence.is_absolute() else ROOT/evidence
     expected_commit=args.source_commit_sha or git('rev-parse','HEAD'); expected_tree=args.source_tree_sha or git('rev-parse','HEAD^{tree}'); reasons=[]; waves=[]
     if not PRECLEAN.is_file(): reasons.append('PRECLEAN_SUBJECT_MISSING'); pre={}
     else:
@@ -29,7 +30,7 @@ def main()->int:
             v=str(pre.get(f,''));
             if len(v)!=64 or any(c not in '0123456789abcdef' for c in v): reasons.append(f'PRECLEAN_{f.upper()}_INVALID')
     for cid in IDS:
-        p=EVIDENCE/f'{cid}.json'
+        p=evidence/f'{cid}.json'
         if not p.exists(): reasons.append(f'MISSING_RECEIPT:{cid}'); continue
         try:d=json.loads(p.read_text(encoding='utf-8'))
         except Exception: reasons.append(f'INVALID_JSON:{cid}'); continue
@@ -69,7 +70,7 @@ def main()->int:
         if a is True and b is True:
             da=(waves[0].get('common_control_attestation') or {}).get('details',[]); db=(waves[1].get('common_control_attestation') or {}).get('details',[])
             if set(da)&set(db): reasons.append('CLEAN_A_B_SHARED_COMMON_CONTROL_UNRESOLVED')
-    out={'contract':'ONSURE_INDEPENDENT_CLEAN_TWICE_VALIDATION_V5','expected_source_commit_sha':expected_commit,'expected_source_tree_sha':expected_tree,'preclean_subject_digest':pre.get('subject_digest') if pre else None,'receipt_count':len(waves),'blocking_reasons':sorted(set(reasons)),'decision':'CLEAN_TWICE_NONFINAL' if not reasons else 'HOLD_NONFINAL','design_lock':False,'github_actions_authority':False,'final_claim_allowed':False}
+    out={'contract':'ONSURE_INDEPENDENT_CLEAN_TWICE_VALIDATION_V6','expected_source_commit_sha':expected_commit,'expected_source_tree_sha':expected_tree,'receipts_dir':str(evidence),'preclean_subject_digest':pre.get('subject_digest') if pre else None,'receipt_count':len(waves),'blocking_reasons':sorted(set(reasons)),'decision':'CLEAN_TWICE_NONFINAL' if not reasons else 'HOLD_NONFINAL','design_lock':False,'github_actions_authority':False,'final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 61
 if __name__=='__main__':
     try: raise SystemExit(main())
