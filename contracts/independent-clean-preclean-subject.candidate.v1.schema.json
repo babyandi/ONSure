@@ -1,0 +1,22 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/independent-clean-preclean-subject/v1",
+  "title":"ONSure Independent CLEAN Pre-CLEAN Subject",
+  "type":"object",
+  "required":["contract","source_commit_sha","source_tree_sha","requirement_manifest_digest","authority_population_digest","coverage_inputs","coverage_digest","blocking_reasons","decision","subject_digest","github_actions_authority","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_INDEPENDENT_CLEAN_PRECLEAN_SUBJECT_V1"},
+    "source_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "source_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "requirement_manifest_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "authority_population_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "coverage_inputs":{"type":"object","minProperties":1,"additionalProperties":{"type":"string","pattern":"^[0-9a-f]{64}$"}},
+    "coverage_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "blocking_reasons":{"type":"array","items":{"type":"string"}},
+    "decision":{"enum":["READY_FOR_INDEPENDENT_CLEAN_NONFINAL","HOLD_NONFINAL"]},
+    "subject_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "github_actions_authority":{"const":false},
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}
