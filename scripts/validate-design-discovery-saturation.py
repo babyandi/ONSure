@@ -26,15 +26,18 @@ def main()->int:
     if not freeze_path.exists():
         print(json.dumps({'gate':'DISCOVERY_SATURATION','status':'HOLD','reason':'FROZEN_BASELINE_RECEIPT_MISSING','evidence_dir':str(evidence_dir)})); return 30
     freeze=json.loads(freeze_path.read_text(encoding='utf-8'))
-    if freeze.get('contract')!='ONSURE_INDEPENDENT_DISCOVERY_FROZEN_BASELINE_V1':
-        print(json.dumps({'gate':'DISCOVERY_SATURATION','status':'HOLD','reason':'FROZEN_BASELINE_CONTRACT_MISMATCH'})); return 30
+    reasons=[]
+    if freeze.get('contract')!='ONSURE_INDEPENDENT_DISCOVERY_FROZEN_BASELINE_V2': reasons.append('FROZEN_BASELINE_CONTRACT_NOT_V2')
+    if freeze.get('tracked_worktree_clean') is not True: reasons.append('FROZEN_BASELINE_TRACKED_TREE_NOT_CLEAN')
+    if freeze.get('conclusion_leakage_count')!=0: reasons.append('FROZEN_BASELINE_CONCLUSION_LEAKAGE')
+    if freeze.get('repository_browsing_during_blind_wave_allowed') is not False: reasons.append('FROZEN_BASELINE_REPOSITORY_BROWSING_NOT_FORBIDDEN')
+    if freeze.get('final_claim_allowed') is not False: reasons.append('FROZEN_BASELINE_FINAL_CLAIM_NOT_FALSE')
     waves=[]; ids=('INDEPENDENT-SATURATION-A','INDEPENDENT-SATURATION-B')
     for wid in ids:
         p=evidence_dir/f'{wid}.json'
         if not p.exists():
             print(json.dumps({'gate':'DISCOVERY_SATURATION','status':'HOLD','missing_result':str(p)})); return 30
         waves.append(json.loads(p.read_text(encoding='utf-8')))
-    reasons=[]
     for w,wid in zip(waves,ids):
         if w.get('wave_id')!=wid: reasons.append(f'WAVE_ID_MISMATCH:{wid}')
         if w.get('receipt_digest')!=digest_payload(w): reasons.append(f'RECEIPT_DIGEST_MISMATCH:{wid}')
