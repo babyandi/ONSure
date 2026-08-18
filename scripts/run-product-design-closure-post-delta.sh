@@ -54,7 +54,7 @@ log '6/12 run requirement/design/DD machine/evaluator/human validators'
 set +e
 python3 scripts/validate-final-product-requirements.py --self-test > "$CAND/final-product-requirements.log" 2>&1; FINAL_REQ_RC=$?
 python3 scripts/validate-design-coverage.py --matrix "$MATRIX" --root "$ROOT" --self-test --output "$CAND/design-coverage-report.json" > "$CAND/design-coverage.log" 2>&1; COVERAGE_RC=$?
-python3 scripts/validate-dd-machine-definition.py > "$CAND/dd-machine-definition.log" 2>&1; DD_MACHINE_RC=$?
+python3 scripts/validate-dd-machine-definitions.py > "$CAND/dd-machine-definition.log" 2>&1; DD_MACHINE_RC=$?
 python3 scripts/validate-dd-granular-vertical-trace.py > "$CAND/dd-granular-trace.log" 2>&1; GRANULAR_RC=$?
 python3 scripts/validate-dd-semantic-evaluator-qualifications.py --require-all-qualified > "$CAND/dd-evaluator-qualification.log" 2>&1; DD_QUAL_RC=$?
 python3 scripts/validate-human-design-authority-decisions.py > "$CAND/human-design-authority.log" 2>&1; HUMAN_RC=$?
