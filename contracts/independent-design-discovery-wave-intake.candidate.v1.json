@@ -1,15 +1,24 @@
 {
-  "contract": "ONSURE_INDEPENDENT_DESIGN_DISCOVERY_WAVE_INTAKE_V2",
+  "contract": "ONSURE_INDEPENDENT_DESIGN_DISCOVERY_WAVE_INTAKE_V3",
   "status": "READY_FOR_UNCONTAMINATED_FREEZE_NONFINAL",
-  "purpose": "Provide two independent saturation waves with the same exact frozen design baseline while withholding all prior DD and scope-closure conclusions.",
+  "purpose": "Provide two independent saturation waves with the same exact clean tracked-tree frozen design baseline while withholding prior DD and scope-closure conclusions.",
   "freeze": {
+    "freeze_contract": "ONSURE_INDEPENDENT_DISCOVERY_FROZEN_BASELINE_V2",
+    "exact_git_commit_sha_required": true,
     "exact_git_tree_sha_required": true,
+    "tracked_worktree_clean_required": true,
     "minimum_head_semantics_forbidden": true,
     "freeze_receipt": ".onsure/design-discovery/frozen-baseline/freeze-receipt.json",
     "bundle_root": ".onsure/design-discovery/frozen-baseline/bundle",
     "generator": "scripts/freeze-independent-design-discovery-baseline.py",
     "same_tree_sha_required_for_wave_a_b": true,
     "same_authority_population_digest_required_for_wave_a_b": true
+  },
+  "evidence_custody": {
+    "mode": "EXTERNAL_IMMUTABLE_OR_LOCAL_NONTRACKED",
+    "tracked_receipts_required": false,
+    "reason": "Committing wave receipts to the reviewed subject can change its tree and self-invalidate the freeze.",
+    "validator_environment": "ONSURE_DESIGN_DISCOVERY_EVIDENCE_DIR"
   },
   "baseline_source_policy": {
     "include": [
@@ -58,10 +67,12 @@
   ],
   "mandatory_lenses": ["CUSTOMER_LIFECYCLE","FAILURE_RECOVERY","ADVERSARIAL","REGULATORY_STANDARD","FINANCIAL_OPERATION","EXTERNAL_DEPENDENCY","ORGANIZATION_GOVERNANCE","META_ASSURANCE","NEGATIVE_SPACE"],
   "waves": [
-    {"wave_id":"INDEPENDENT-SATURATION-A","prior_dd_conclusions_allowed":false,"wave_b_conclusions_allowed":false,"reviewer_lineage_required":true},
-    {"wave_id":"INDEPENDENT-SATURATION-B","prior_dd_conclusions_allowed":false,"wave_a_conclusions_allowed":false,"reviewer_lineage_required":true}
+    {"wave_id":"INDEPENDENT-SATURATION-A","prior_dd_conclusions_allowed":false,"other_wave_conclusions_allowed":false,"reviewer_lineage_required":true,"same_authoring_context_attestation":false,"common_control_resolved_required":true},
+    {"wave_id":"INDEPENDENT-SATURATION-B","prior_dd_conclusions_allowed":false,"other_wave_conclusions_allowed":false,"reviewer_lineage_required":true,"same_authoring_context_attestation":false,"common_control_resolved_required":true}
   ],
-  "required_wave_output": ["candidate_ledger","triage_all_candidates","new_p0_count","new_p1_count","lens_coverage","frozen_tree_sha","frozen_authority_digest","reviewer_principal","reviewer_process_lineage","model_or_method_lineage","common_control_attestation","prior_conclusion_exposure_attestation"],
+  "required_wave_output": [
+    "candidate_ledger_digest","triage_all_candidates","new_p0_count","new_p1_count","mandatory_lens_coverage_percent","untriaged_candidate_count","frozen_tree_sha","frozen_authority_digest","reviewer_principal","reviewer_process_lineage","model_or_method_lineage","common_control_attestation","common_control_resolved","same_authoring_context_attestation","prior_conclusion_exposure_attestation","receipt_digest"
+  ],
   "acceptance": {
     "same_exact_tree_sha": true,
     "same_exact_authority_digest": true,
@@ -71,8 +82,12 @@
     "consecutive_zero_new_p0_waves": 2,
     "p1_novelty_must_satisfy_policy_ceiling": true,
     "prior_conclusion_exposure_each_wave": false,
-    "same_authoring_context_self_certification_qualifies": false
+    "same_authoring_context_each_wave": false,
+    "common_control_resolved_each_wave": true,
+    "reviewer_principal_distinct_between_a_b": true,
+    "reviewer_process_lineage_distinct_between_a_b": true
   },
   "on_failure": "Any contamination or new P0 invalidates the wave. New P0 reopens Requirement Authority and resets saturation convergence.",
+  "github_actions_authority": false,
   "final_claim_allowed": false
 }
