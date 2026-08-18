@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.nio.file.Path;
@@ -36,7 +37,6 @@ class PostFinalTargetDdWorkflowTest {
     void allDdOperationsReachRealFailClosedWorkflowBoundary(String operation) throws Exception {
         Map<String, Object> envelope = new PostFinalTargetWorkflowDispatcher(
                 temp, AuthenticatedWorkflowIdentity.localAdministrator()).dispatch(operation, validRequest(operation));
-
         assertEquals(PostFinalTargetWorkflowDispatcher.CONTRACT, envelope.get("contract"));
         assertEquals("POST_FINAL_TARGET_DD_FAIL_CLOSED", envelope.get("route"));
         assertEquals(false, envelope.get("final_claim_allowed"));
@@ -49,7 +49,6 @@ class PostFinalTargetDdWorkflowTest {
     void sharedSemanticBridgeUsedByLocalApiAlsoRoutesAllDdOperationsFailClosed(String operation) throws Exception {
         Map<String, Object> envelope = new SemanticAssuranceV2DispatcherBridge(
                 temp, AuthenticatedWorkflowIdentity.localAdministrator()).dispatch(operation, validRequest(operation));
-
         assertEquals(SemanticAssuranceV2DispatcherBridge.CONTRACT, envelope.get("contract"));
         assertEquals("POST_FINAL_TARGET_DD_FAIL_CLOSED", envelope.get("route"));
         assertEquals(false, envelope.get("final_claim_allowed"));
@@ -120,12 +119,60 @@ class PostFinalTargetDdWorkflowTest {
 
     @Test
     void callerCannotInjectAuthorityOrDecisionFields() {
-        for (String field : List.of("final_claim_allowed", "decision_override", "_authorized_target_root")) {
+        for (String field : List.of("final_claim_allowed", "decision_override", "_authorized_target_root",
+                "qualification_current", "independent_qualification", "qualification_receipt_digest")) {
             ObjectNode request = validRequest("assurance.visibility-evidence.evaluate");
             request.put(field, true);
             SecurityException error = assertThrows(SecurityException.class,
                     () -> new DdAssuranceOperationRuntime().execute("assurance.visibility-evidence.evaluate", request));
             assertTrue(error.getMessage().contains("DD_CALLER_AUTHORITY_FIELD_PROHIBITED"));
         }
+    }
+
+    @Test
+    void registeredButNotIndependentlyQualifiedEvaluatorStillReturnsHold() {
+        DdSemanticEvaluator evaluator = evaluator("PASS_NONFINAL", List.of(), List.of("receipt://qualified"), true, false);
+        var registration = new DdSemanticEvaluatorRegistry.Registration(
+                evaluator, "eval-001", "1.0", "a".repeat(64), true, false);
+        var runtime = new DdAssuranceOperationRuntime(new DdSemanticEvaluatorRegistry(List.of(registration)));
+        Map<String, Object> result = runtime.execute("assurance.visibility-evidence.evaluate",
+                validRequest("assurance.visibility-evidence.evaluate"));
+        assertEquals("HOLD", result.get("decision"));
+        assertEquals(List.of("SEMANTIC_EVALUATOR_NOT_QUALIFIED"), result.get("blocking_reasons"));
+    }
+
+    @Test
+    void qualifiedPositiveEvaluatorNeedsEvidenceReceipt() {
+        DdSemanticEvaluator evaluator = evaluator("PASS_NONFINAL", List.of(), List.of(), true, false);
+        var registration = new DdSemanticEvaluatorRegistry.Registration(
+                evaluator, "eval-001", "1.0", "b".repeat(64), true, true);
+        var runtime = new DdAssuranceOperationRuntime(new DdSemanticEvaluatorRegistry(List.of(registration)));
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> runtime.execute("assurance.visibility-evidence.evaluate",
+                        validRequest("assurance.visibility-evidence.evaluate")));
+        assertTrue(error.getMessage().contains("DD_POSITIVE_RESULT_EVIDENCE_REQUIRED"));
+    }
+
+    @Test
+    void qualifiedEvaluatorCannotSelfAuthorizeExternalEffect() {
+        DdSemanticEvaluator evaluator = evaluator("PASS_NONFINAL", List.of(), List.of("receipt://qualified"), true, true);
+        var registration = new DdSemanticEvaluatorRegistry.Registration(
+                evaluator, "eval-001", "1.0", "c".repeat(64), true, true);
+        var runtime = new DdAssuranceOperationRuntime(new DdSemanticEvaluatorRegistry(List.of(registration)));
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> runtime.execute("assurance.visibility-evidence.evaluate",
+                        validRequest("assurance.visibility-evidence.evaluate")));
+        assertTrue(error.getMessage().contains("DD_EVALUATOR_CANNOT_SELF_AUTHORIZE_EXTERNAL_EFFECT"));
+    }
+
+    private static DdSemanticEvaluator evaluator(
+            String decision, List<String> blockers, List<String> receipts,
+            boolean strengthen, boolean externalEffect) {
+        return new DdSemanticEvaluator() {
+            @Override public String ddId() { return "DD-001"; }
+            @Override public Evaluation evaluate(JsonNode request, EvaluationContext context) {
+                return new Evaluation(decision, blockers, receipts, strengthen, externalEffect, Map.of());
+            }
+        };
     }
 }
