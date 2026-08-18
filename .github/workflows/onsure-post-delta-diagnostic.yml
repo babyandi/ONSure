@@ -74,14 +74,21 @@ jobs:
           rcs={n:int((root/f'diagnostic-{n}.rc').read_text()) for n in names}
           inv=json.load(open('.onsure/design-baseline/design-artifact-inventory.json'))
           rec=json.load(open('.onsure/design-baseline/reconstructability-receipt.json'))
-          receipt={'contract':'ONSURE_POST_DELTA_DIAGNOSTIC_RECEIPT_V2','promotion_allowed':False,'saturation_proven':False,'design_artifact_population_digest':inv['population_digest'],'design_reconstructability':rec['deterministic_two_run'],'return_codes':rcs,'decision':'DIAGNOSTIC_ONLY_NONFINAL','final_claim_allowed':False}
+          receipt={'contract':'ONSURE_POST_DELTA_DIAGNOSTIC_RECEIPT_V3','promotion_allowed':False,'saturation_proven':False,'design_artifact_population_digest':inv['population_digest'],'design_reconstructability':rec['deterministic_two_run'],'return_codes':rcs,'decision':'DIAGNOSTIC_ONLY_NONFINAL','final_claim_allowed':False}
           (root/'post-delta-diagnostic-receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
           print(json.dumps(receipt,sort_keys=True))
           PY
+          echo '--- GLOBAL TRACE ---'; cat .onsure/diagnostic-global-trace.log
+          echo '--- REVERSE ORPHAN ---'; cat .onsure/diagnostic-reverse-orphan.log
+          echo '--- DESIGN COVERAGE ---'; cat .onsure/diagnostic-design-coverage.log
+          echo '--- DD TRACE ---'; cat .onsure/diagnostic-dd-trace.log
+          echo '--- HUMAN AUTHORITY ---'; cat .onsure/diagnostic-human-authority.log
+          echo '--- LOCK PREFLIGHT ---'; cat .onsure/diagnostic-lock-preflight.log
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: onsure-post-delta-diagnostic-${{ github.sha }}
           path: .onsure/**
+          include-hidden-files: true
           retention-days: 30
