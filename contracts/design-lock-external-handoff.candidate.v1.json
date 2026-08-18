@@ -4,128 +4,27 @@
   "purpose": "Single non-self-invalidating handoff denominator for execution, independent assurance, human authority, pre-merge readiness, main revalidation and Design Lock.",
   "execution_authority": "LOCAL_OR_APPROVED_EXECUTION_NODE_NO_GITHUB_ACTIONS",
   "items": [
-    {
-      "id": "EXT-01-CURRENT-SUBJECT-EXECUTION",
-      "producer_independence": "Execution node may be operator-controlled; this is execution evidence, not independent qualification.",
-      "command": "bash scripts/run-dd-semantic-evaluator-manual-verification.sh",
-      "required_output_contract": "ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V5",
-      "required_claims": [
-        "compile_and_targeted_junit_established=true",
-        "dd_authorized_route_execution_mechanics_count=40",
-        "dd_schema_validator_execution_mechanics_count=40",
-        "qualification_fixture_mechanics_executed_count=160",
-        "receipt_backed_runtime_activation_mechanics_established=true"
-      ],
-      "github_actions_allowed": false
-    },
-    {
-      "id": "EXT-02-DD-INDEPENDENT-QUALIFICATION",
-      "producer_independence": "Reviewer must be independent from evaluator authoring and target claim authoring.",
-      "prerequisite": "EXT-01",
-      "prepare_command": "ONSURE_DD_MANUAL_VERIFICATION_RECEIPT=<receipt> python3 scripts/prepare-dd-independent-qualification-bundle.py",
-      "required_bundle_contract": "ONSURE_DD_INDEPENDENT_QUALIFICATION_FROZEN_BUNDLE_V2",
-      "required_receipts": 40,
-      "receipt_schema": "contracts/dd-semantic-evaluator-qualification.candidate.v1.schema.json",
-      "staging_command": "python3 scripts/stage-dd-qualification-receipts.py --source <external-receipts-dir>",
-      "validation_command": "ONSURE_DD_QUALIFICATION_RECEIPTS_DIR=<staged-dir> python3 scripts/validate-dd-semantic-evaluator-qualifications.py --require-all-qualified",
-      "authority_model": "receipt-derived; tracked qualification status is disclosure only"
-    },
-    {
-      "id": "EXT-03-TARGET-RUNTIME-EVIDENCE",
-      "producer_independence": "Execution evidence; independent evaluator qualification must already be established.",
-      "prerequisite": "EXT-02",
-      "required_evidence_index_contract": "ONSURE_DD_EVIDENCE_INDEX_V2",
-      "command": "ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE=<external-qualification-receipts> ONSURE_DD_EVIDENCE_INDEX_SOURCE=<immutable-evidence-index> ONSURE_DD_TARGET_IDENTITY=<target> ONSURE_DD_EXECUTION_PRINCIPAL=<principal> ONSURE_DD_EXECUTION_ENVIRONMENT=<environment> bash scripts/run-dd-semantic-runtime-evidence.sh",
-      "required_runtime_receipts": 40,
-      "validation_command": "python3 scripts/validate-dd-semantic-runtime-evidence.py --require-all-pass"
-    },
-    {
-      "id": "EXT-04-INDEPENDENT-DISCOVERY-SATURATION",
-      "producer_independence": "A and B require distinct reviewer and process lineage, same-authoring-context=false and common-control-resolved=true.",
-      "prepare_command": "python3 scripts/freeze-independent-design-discovery-baseline.py",
-      "required_waves": ["INDEPENDENT-SATURATION-A", "INDEPENDENT-SATURATION-B"],
-      "acceptance": [
-        "same exact frozen tree",
-        "same authority digest",
-        "mandatory lens coverage=100%",
-        "untriaged candidate count=0",
-        "new P0=0 in A",
-        "new P0=0 in B",
-        "prior conclusion exposure=false",
-        "tracked evidence inputs present"
-      ],
-      "validation_command": "python3 scripts/validate-design-discovery-saturation.py"
-    },
-    {
-      "id": "EXT-05-HUMAN-DESIGN-AUTHORITY",
-      "producer_independence": "Authorized human design authority; generic proceed/continue wording is not approval.",
-      "required_decisions": 18,
-      "recommendation_packet": "contracts/human-design-authority-recommendation-packet.candidate.v1.json",
-      "bulk_materializer": "python3 scripts/materialize-human-design-authority-receipts.py --approval-input <explicit-approval> --output-dir <external-or-local-dir>",
-      "validation_command": "ONSURE_HDA_RECEIPTS_DIR=<receipt-dir> python3 scripts/validate-human-design-authority-decisions.py"
-    },
-    {
-      "id": "EXT-06-PRECLEAN-SUBJECT",
-      "prerequisites": ["EXT-01", "EXT-02", "EXT-03", "EXT-04", "EXT-05"],
-      "command": "bash scripts/run-product-design-closure-post-delta.sh",
-      "required_subject_contract": "ONSURE_INDEPENDENT_CLEAN_PRECLEAN_SUBJECT_V2",
-      "required_decision": "READY_FOR_INDEPENDENT_CLEAN_NONFINAL",
-      "rule": "All non-CLEAN blockers must be zero before the subject is sealed."
-    },
-    {
-      "id": "EXT-07-INDEPENDENT-CLEAN-A-B",
-      "producer_independence": "A/B verifier principal and process lineage must differ; common control must be explicitly resolved.",
-      "prerequisite": "EXT-06",
-      "required_receipts": ["INDEPENDENT-CLEAN-A.json", "INDEPENDENT-CLEAN-B.json"],
-      "receipt_contract": "ONSURE_INDEPENDENT_CLEAN_RECEIPT_V2",
-      "receipt_location": "External or local directory; do not commit receipts merely to satisfy the gate.",
-      "validation_command": "ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR=<receipt-dir> python3 scripts/validate-independent-clean-twice.py",
-      "binding": "Both receipts must bind the exact Pre-CLEAN subject digest, requirement digest, authority digest and coverage digest."
-    },
-    {
-      "id": "EXT-08-PR54-INDEPENDENT-REVIEW",
-      "producer_independence": "Reviewer must not be PR/change author; common control must be disclosed.",
-      "required_receipt_contract": "ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT_V1",
-      "receipt_location": "External or local immutable file; do not commit the review receipt to the reviewed feature subject.",
-      "validation_command": "python3 scripts/validate-pr-independent-review.py --receipt <review-receipt> --expected-head-sha <feature-head>"
-    },
-    {
-      "id": "EXT-09-PREMERGE",
-      "prerequisites": ["EXT-01", "EXT-02", "EXT-03", "EXT-04", "EXT-05", "EXT-06", "EXT-07", "EXT-08"],
-      "command": "ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR=<clean-dir> python3 scripts/validate-premerge-design-lock-readiness.py --dd-manual-receipt <receipt> --pr-review-receipt <review-receipt>",
-      "required_decision": "READY_FOR_MAIN_MERGE_NONFINAL"
-    },
-    {
-      "id": "EXT-10-MAIN-PRECLEAN-REVALIDATION",
-      "prerequisite": "main merge after EXT-09",
-      "command": "ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE=<qualified-bundle> ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE=<qualification-receipts> ONSURE_DD_EVIDENCE_INDEX_SOURCE=<target-evidence-index> ONSURE_HDA_RECEIPTS_DIR=<hda-dir> ONSURE_DD_TARGET_IDENTITY=<target> ONSURE_DD_EXECUTION_PRINCIPAL=<principal> ONSURE_DD_EXECUTION_ENVIRONMENT=<environment> bash scripts/run-main-design-lock-revalidation.sh PRE_CLEAN",
-      "required_result": "MAIN_PRECLEAN_SUBJECT_READY_NONFINAL",
-      "stop_condition": "Stop for new main-subject Independent CLEAN A/B."
-    },
-    {
-      "id": "EXT-11-MAIN-INDEPENDENT-CLEAN-A-B",
-      "producer_independence": "Two independent verifier lineages must verify the main Pre-CLEAN subject.",
-      "prerequisite": "EXT-10",
-      "required_receipts": 2,
-      "receipt_contract": "ONSURE_INDEPENDENT_CLEAN_RECEIPT_V2"
-    },
-    {
-      "id": "EXT-12-MAIN-FINALIZE-DESIGN-LOCK",
-      "prerequisite": "EXT-11",
-      "command": "ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR=<main-clean-dir> ONSURE_PR_REVIEW_RECEIPT=<external-review-receipt> bash scripts/run-main-design-lock-revalidation.sh FINALIZE_LOCK",
-      "required_lock_contract": "ONSURE_DESIGN_LOCK_RECEIPT_V4",
-      "required_result": "design_lock=true",
-      "explicit_nonclaims": ["final_lock=false", "production_go=false", "commercial_go=false", "final_claim_allowed=false"]
-    }
+    {"id":"EXT-01-CURRENT-SUBJECT-EXECUTION","command":"bash scripts/run-dd-semantic-evaluator-manual-verification.sh","required_output_contract":"ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V5","required_claims":["compile_and_targeted_junit_established=true","dd_authorized_route_execution_mechanics_count=40","dd_schema_validator_execution_mechanics_count=40","qualification_fixture_mechanics_executed_count=160","receipt_backed_runtime_activation_mechanics_established=true"],"github_actions_allowed":false},
+    {"id":"EXT-02-DD-INDEPENDENT-QUALIFICATION","prerequisite":"EXT-01","required_bundle_contract":"ONSURE_DD_INDEPENDENT_QUALIFICATION_FROZEN_BUNDLE_V2","required_receipts":40,"authority_model":"receipt-derived","prepare_command":"ONSURE_DD_MANUAL_VERIFICATION_RECEIPT=<receipt> python3 scripts/prepare-dd-independent-qualification-bundle.py","staging_command":"python3 scripts/stage-dd-qualification-receipts.py --source <external-receipts-dir>","validation_command":"ONSURE_DD_QUALIFICATION_RECEIPTS_DIR=<staged-dir> python3 scripts/validate-dd-semantic-evaluator-qualifications.py --require-all-qualified"},
+    {"id":"EXT-03-TARGET-RUNTIME-EVIDENCE","prerequisite":"EXT-02","required_evidence_index_contract":"ONSURE_DD_EVIDENCE_INDEX_V2","required_runtime_receipts":40,"command":"ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE=<qualification-receipts> ONSURE_DD_EVIDENCE_INDEX_SOURCE=<evidence-index> ONSURE_DD_TARGET_IDENTITY=<target> ONSURE_DD_EXECUTION_PRINCIPAL=<principal> ONSURE_DD_EXECUTION_ENVIRONMENT=<environment> bash scripts/run-dd-semantic-runtime-evidence.sh"},
+    {"id":"EXT-04-INDEPENDENT-DISCOVERY-SATURATION","producer_independence":"A/B require distinct reviewer/process lineage, same_authoring_context=false and common_control_resolved=true.","prepare_command":"python3 scripts/freeze-independent-design-discovery-baseline.py","required_waves":["INDEPENDENT-SATURATION-A","INDEPENDENT-SATURATION-B"],"evidence_custody":"EXTERNAL_IMMUTABLE_OR_LOCAL_NONTRACKED","validation_command":"ONSURE_DESIGN_DISCOVERY_EVIDENCE_DIR=<external-dir> python3 scripts/validate-design-discovery-saturation.py","acceptance":["same exact frozen tree","same authority digest","mandatory lens coverage=100%","untriaged=0","new P0=0 in A and B","prior conclusion exposure=false"]},
+    {"id":"EXT-05-HUMAN-DESIGN-AUTHORITY","required_decisions":18,"recommendation_packet":"contracts/human-design-authority-recommendation-packet.candidate.v1.json","bulk_materializer":"python3 scripts/materialize-human-design-authority-receipts.py --approval-input <explicit-approval> --output-dir <external-or-local-dir>","validation_command":"ONSURE_HDA_RECEIPTS_DIR=<receipt-dir> python3 scripts/validate-human-design-authority-decisions.py"},
+    {"id":"EXT-06-PRECLEAN-SUBJECT","prerequisites":["EXT-01","EXT-02","EXT-03","EXT-04","EXT-05"],"required_subject_contract":"ONSURE_INDEPENDENT_CLEAN_PRECLEAN_SUBJECT_V2","required_decision":"READY_FOR_INDEPENDENT_CLEAN_NONFINAL"},
+    {"id":"EXT-07-INDEPENDENT-CLEAN-A-B","prerequisite":"EXT-06","required_receipts":["INDEPENDENT-CLEAN-A.json","INDEPENDENT-CLEAN-B.json"],"receipt_contract":"ONSURE_INDEPENDENT_CLEAN_RECEIPT_V2","receipt_location":"EXTERNAL_OR_LOCAL_NONTRACKED","validation_command":"ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR=<receipt-dir> python3 scripts/validate-independent-clean-twice.py"},
+    {"id":"EXT-08-PR54-INDEPENDENT-REVIEW","required_receipt_contract":"ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT_V1","receipt_location":"EXTERNAL_OR_LOCAL_IMMUTABLE","validation_command":"python3 scripts/validate-pr-independent-review.py --receipt <review-receipt> --expected-head-sha <feature-head>"},
+    {"id":"EXT-09-PREMERGE","prerequisites":["EXT-01","EXT-02","EXT-03","EXT-04","EXT-05","EXT-06","EXT-07","EXT-08"],"command":"ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR=<clean-dir> python3 scripts/validate-premerge-design-lock-readiness.py --dd-manual-receipt <receipt> --pr-review-receipt <review-receipt>","required_decision":"READY_FOR_MAIN_MERGE_NONFINAL"},
+    {"id":"EXT-10-MAIN-PRECLEAN-REVALIDATION","prerequisite":"main merge after EXT-09","command":"ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE=<bundle> ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE=<qualification-receipts> ONSURE_DD_EVIDENCE_INDEX_SOURCE=<evidence-index> ONSURE_DESIGN_DISCOVERY_EVIDENCE_DIR=<discovery-dir> ONSURE_HDA_RECEIPTS_DIR=<hda-dir> ONSURE_DD_TARGET_IDENTITY=<target> ONSURE_DD_EXECUTION_PRINCIPAL=<principal> ONSURE_DD_EXECUTION_ENVIRONMENT=<environment> bash scripts/run-main-design-lock-revalidation.sh PRE_CLEAN","required_result":"MAIN_PRECLEAN_SUBJECT_READY_NONFINAL"},
+    {"id":"EXT-11-MAIN-INDEPENDENT-CLEAN-A-B","prerequisite":"EXT-10","required_receipts":2,"receipt_contract":"ONSURE_INDEPENDENT_CLEAN_RECEIPT_V2"},
+    {"id":"EXT-12-MAIN-FINALIZE-DESIGN-LOCK","prerequisite":"EXT-11","command":"ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR=<main-clean-dir> ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT=<review-receipt> bash scripts/run-main-design-lock-revalidation.sh FINALIZE_LOCK","required_lock_contract":"ONSURE_DESIGN_LOCK_RECEIPT_V5","required_result":"design_lock=true","explicit_nonclaims":["final_lock=false","production_go=false","commercial_go=false","final_claim_allowed=false"]}
   ],
   "global_rules": [
-    "No item may infer PASS from a prerequisite definition without its actual receipt.",
+    "No item may infer PASS from a prerequisite definition without actual evidence.",
     "Same authoring context cannot self-certify independent qualification, discovery saturation, CLEAN or PR review.",
-    "Evidence receipts that describe a subject must not be committed merely to satisfy that subject gate when doing so changes the subject commit/tree.",
-    "Qualification subject tree and runtime execution tree are distinct lineage fields and must not be conflated.",
+    "Evidence describing a subject must not be committed merely to satisfy that subject gate when doing so changes the subject commit/tree.",
+    "Qualification subject tree and runtime execution tree are distinct lineage fields.",
     "Pre-CLEAN Subject must be sealed before Independent CLEAN A/B.",
     "main merge is forbidden until EXT-09 is ready.",
-    "Design Lock is forbidden until main PRE_CLEAN, new main CLEAN A/B and FINALIZE_LOCK all succeed.",
+    "Design Lock is forbidden until main PRE_CLEAN, new main CLEAN A/B and FINALIZE_LOCK succeed.",
     "GitHub Actions are not execution or assurance authority."
   ],
   "github_actions_authority": false,
