@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "onsure://contracts/dd-assurance-result/v1",
+  "title": "ONSure DD Assurance Result",
+  "type": "object",
+  "required": ["dd_id","operation","decision","blocking_reasons","claim_strengthening_allowed","external_effect_performed","final_claim_allowed"],
+  "properties": {
+    "dd_id": {"type":"string","pattern":"^DD-(00[1-9]|0[1-3][0-9]|040)$"},
+    "operation": {"type":"string","minLength":3},
+    "decision": {"enum":["PASS_NONFINAL","FAIL","HOLD","BLOCKED","INCONCLUSIVE","NOT_RUN","UNKNOWN"]},
+    "blocking_reasons": {"type":"array","items":{"type":"string"}},
+    "claim_strengthening_allowed": {"type":"boolean"},
+    "external_effect_performed": {"type":"boolean"},
+    "evidence_receipt_refs": {"type":"array","items":{"type":"string"}},
+    "oracle_ref": {"type":"string"},
+    "final_claim_allowed": {"const":false}
+  },
+  "allOf": [
+    {
+      "if": {"properties":{"decision":{"enum":["HOLD","BLOCKED","INCONCLUSIVE","NOT_RUN","UNKNOWN"]}}},
+      "then": {"properties":{"claim_strengthening_allowed":{"const":false}}}
+    }
+  ],
+  "additionalProperties": true
+}
