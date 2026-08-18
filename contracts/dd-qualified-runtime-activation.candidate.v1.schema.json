@@ -1,13 +1,14 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"onsure://contracts/dd-qualified-runtime-activation/v1",
+  "$id":"onsure://contracts/dd-qualified-runtime-activation/v2",
   "title":"ONSure DD Qualified Runtime Activation",
   "type":"object",
-  "required":["contract","source_commit_sha","source_tree_sha","qualified_count","rows","generated_at","final_claim_allowed"],
+  "required":["contract","execution_commit_sha","execution_tree_sha","qualified_subject_tree_sha","qualified_count","rows","generated_at","final_claim_allowed"],
   "properties":{
-    "contract":{"const":"ONSURE_DD_QUALIFIED_RUNTIME_ACTIVATION_V1"},
-    "source_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
-    "source_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "contract":{"const":"ONSURE_DD_QUALIFIED_RUNTIME_ACTIVATION_V2"},
+    "execution_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "execution_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "qualified_subject_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
     "qualified_count":{"const":40},
     "rows":{
       "type":"array","minItems":40,"maxItems":40,
