@@ -6,15 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Fail-closed runtime boundary for post-final-target DD-001..040 assurance operations.
- *
- * <p>This class implements only the authenticated/contract envelope and exact DD routing
- * boundary. It MUST NOT synthesize semantic PASS. Until a DD-specific evaluator is qualified,
- * every operation returns HOLD with SEMANTIC_EVALUATOR_NOT_QUALIFIED.</p>
- */
+/** Fail-closed runtime boundary for post-final-target DD-001..040 assurance operations. */
 public final class DdAssuranceOperationRuntime {
-    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V2";
+    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V3";
 
     private static final Map<String, String> DD_BY_OPERATION = Map.ofEntries(
             Map.entry("assurance.visibility-evidence.evaluate", "DD-001"),
@@ -58,13 +52,19 @@ public final class DdAssuranceOperationRuntime {
             Map.entry("observation.coverage.evaluate", "DD-039"),
             Map.entry("discovery.saturation.evaluate", "DD-040"));
 
-    public boolean supports(String operation) {
-        return DD_BY_OPERATION.containsKey(operation);
+    private final DdSemanticEvaluatorRegistry evaluators;
+
+    public DdAssuranceOperationRuntime() {
+        this(DdSemanticEvaluatorRegistry.empty());
     }
 
-    public Set<String> operations() {
-        return DD_BY_OPERATION.keySet();
+    DdAssuranceOperationRuntime(DdSemanticEvaluatorRegistry evaluators) {
+        if (evaluators == null) throw new IllegalArgumentException("DD_EVALUATOR_REGISTRY_REQUIRED");
+        this.evaluators = evaluators;
     }
+
+    public boolean supports(String operation) { return DD_BY_OPERATION.containsKey(operation); }
+    public Set<String> operations() { return DD_BY_OPERATION.keySet(); }
 
     public String ddIdFor(String operation) {
         String dd = DD_BY_OPERATION.get(operation);
@@ -75,8 +75,18 @@ public final class DdAssuranceOperationRuntime {
     public Map<String, Object> execute(String operation, JsonNode request) {
         String dd = ddIdFor(operation);
         DdAssuranceContractValidator.validateRequest(dd, operation, request);
-        JsonNode evidence = request.path("evidence_refs");
+        var qualified = evaluators.qualified(dd);
+        if (qualified.isEmpty()) return unqualified(dd, operation, request.path("evidence_refs").size());
+        try {
+            return qualified(dd, operation, request, qualified.get());
+        } catch (RuntimeException runtime) {
+            throw runtime;
+        } catch (Exception evaluationFailure) {
+            return evaluatorFailure(dd, operation, qualified.get(), evaluationFailure);
+        }
+    }
 
+    private Map<String, Object> unqualified(String dd, String operation, int evidenceCount) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("contract", CONTRACT);
         result.put("dd_id", dd);
@@ -84,10 +94,57 @@ public final class DdAssuranceOperationRuntime {
         result.put("decision", "HOLD");
         result.put("semantic_evaluator_state", "NOT_QUALIFIED");
         result.put("blocking_reasons", List.of("SEMANTIC_EVALUATOR_NOT_QUALIFIED"));
-        result.put("evidence_ref_count", evidence.size());
+        result.put("evidence_ref_count", evidenceCount);
         result.put("evidence_receipt_refs", List.of());
         result.put("claim_strengthening_allowed", false);
         result.put("external_effect_performed", false);
+        result.put("final_claim_allowed", false);
+        Map<String, Object> immutable = Map.copyOf(result);
+        DdAssuranceContractValidator.validateFailClosedResult(dd, operation, immutable);
+        return immutable;
+    }
+
+    private Map<String, Object> qualified(
+            String dd, String operation, JsonNode request, DdSemanticEvaluatorRegistry.Registration registration) throws Exception {
+        var context = new DdSemanticEvaluator.EvaluationContext(
+                registration.evaluatorId(), registration.evaluatorVersion(), registration.qualificationReceiptDigest(),
+                request.path("policy_ref").asText("UNRESOLVED"), request.path("authority_ref").asText("UNRESOLVED"));
+        var evaluation = registration.evaluator().evaluate(request, context);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("contract", CONTRACT);
+        result.put("dd_id", dd);
+        result.put("operation", operation);
+        result.put("decision", evaluation.decision());
+        result.put("blocking_reasons", evaluation.blockingReasons());
+        result.put("evidence_receipt_refs", evaluation.evidenceReceiptRefs());
+        result.put("claim_strengthening_allowed", evaluation.claimStrengtheningAllowed());
+        result.put("external_effect_performed", evaluation.externalEffectPerformed());
+        result.put("details", evaluation.details());
+        result.put("evaluator_id", registration.evaluatorId());
+        result.put("evaluator_version", registration.evaluatorVersion());
+        result.put("qualification_receipt_digest", registration.qualificationReceiptDigest());
+        result.put("independent_qualification", true);
+        result.put("final_claim_allowed", false);
+        Map<String, Object> immutable = Map.copyOf(result);
+        DdAssuranceContractValidator.validateQualifiedResult(dd, operation, immutable);
+        return immutable;
+    }
+
+    private Map<String, Object> evaluatorFailure(
+            String dd, String operation, DdSemanticEvaluatorRegistry.Registration registration, Exception failure) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("contract", CONTRACT);
+        result.put("dd_id", dd);
+        result.put("operation", operation);
+        result.put("decision", "HOLD");
+        result.put("blocking_reasons", List.of("QUALIFIED_EVALUATOR_EXECUTION_FAILED"));
+        result.put("evidence_receipt_refs", List.of());
+        result.put("claim_strengthening_allowed", false);
+        result.put("external_effect_performed", false);
+        result.put("evaluator_id", registration.evaluatorId());
+        result.put("evaluator_version", registration.evaluatorVersion());
+        result.put("qualification_receipt_digest", registration.qualificationReceiptDigest());
+        result.put("failure_class", failure.getClass().getSimpleName());
         result.put("final_claim_allowed", false);
         Map<String, Object> immutable = Map.copyOf(result);
         DdAssuranceContractValidator.validateFailClosedResult(dd, operation, immutable);
