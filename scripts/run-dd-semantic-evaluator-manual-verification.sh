@@ -8,7 +8,8 @@ OUT_DIR="${ONSURE_DD_VERIFY_OUT:-.onsure/manual-dd-verification}"
 mkdir -p "$OUT_DIR"
 RUN_ID="dd-manual-$(date -u +%Y%m%dT%H%M%SZ)"
 RECEIPT="$OUT_DIR/${RUN_ID}.json"
-HEAD_SHA="$(git rev-parse HEAD 2>/dev/null || printf 'UNKNOWN')"
+COMMIT_SHA="$(git rev-parse HEAD 2>/dev/null || printf 'UNKNOWN')"
+TREE_SHA="$(git rev-parse 'HEAD^{tree}' 2>/dev/null || printf 'UNKNOWN')"
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 run_capture() {
@@ -27,7 +28,8 @@ MAVEN_RC="$(run_capture maven mvn -B -Dtest=BuiltInDdSemanticEvaluatorsTest,DdSe
 set +e
 python3 scripts/materialize-dd-manual-verification-receipt.py \
   --run-id "$RUN_ID" \
-  --source-tree-sha "$HEAD_SHA" \
+  --source-commit-sha "$COMMIT_SHA" \
+  --source-tree-sha "$TREE_SHA" \
   --started-at "$STARTED_AT" \
   --static-rc "$STATIC_RC" \
   --qualification-status-rc "$QUAL_STATUS_RC" \
