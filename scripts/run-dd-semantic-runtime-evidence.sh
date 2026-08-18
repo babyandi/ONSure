@@ -8,6 +8,8 @@ cd "$ROOT"
 : "${ONSURE_DD_EXECUTION_ENVIRONMENT:?ONSURE_DD_EXECUTION_ENVIRONMENT is required}"
 
 RAW="${ONSURE_DD_RUNTIME_RAW:-.onsure/dd-runtime/raw-execution.json}"
+EVIDENCE_INDEX="${ONSURE_DD_EVIDENCE_INDEX:-.onsure/dd-runtime/evidence-index.json}"
+export ONSURE_DD_EVIDENCE_INDEX="$EVIDENCE_INDEX"
 TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
 COMMIT_SHA="$(git rev-parse HEAD)"
 
@@ -18,14 +20,16 @@ echo "[ONSURE-DD-RUNTIME] 2/6 materialize receipt-backed 40/40 runtime activatio
 python3 scripts/materialize-dd-qualified-runtime-activation.py
 
 echo "[ONSURE-DD-RUNTIME] 3/6 validate current evidence-index subject"
-python3 - "$COMMIT_SHA" "$TREE_SHA" <<'PY'
+python3 - "$EVIDENCE_INDEX" "$COMMIT_SHA" "$TREE_SHA" <<'PY'
 import json,pathlib,sys
-p=pathlib.Path('.onsure/dd-runtime/evidence-index.json')
+p=pathlib.Path(sys.argv[1])
+if not p.is_absolute(): p=pathlib.Path.cwd()/p
 if not p.is_file(): raise SystemExit('DD_EVIDENCE_INDEX_MISSING')
 d=json.loads(p.read_text(encoding='utf-8'))
 assert d.get('contract')=='ONSURE_DD_EVIDENCE_INDEX_V2','DD_EVIDENCE_INDEX_CONTRACT_NOT_V2'
-assert d.get('source_commit_sha')==sys.argv[1],'DD_EVIDENCE_INDEX_COMMIT_MISMATCH'
-assert d.get('source_tree_sha')==sys.argv[2],'DD_EVIDENCE_INDEX_TREE_MISMATCH'
+assert d.get('source_commit_sha')==sys.argv[2],'DD_EVIDENCE_INDEX_COMMIT_MISMATCH'
+assert d.get('source_tree_sha')==sys.argv[3],'DD_EVIDENCE_INDEX_TREE_MISMATCH'
+assert d.get('path_base') in ('WORKSPACE_ROOT','INDEX_DIRECTORY'),'DD_EVIDENCE_INDEX_PATH_BASE_INVALID'
 assert d.get('final_claim_allowed') is False
 covered=set()
 for r in d.get('rows',[]): covered.update(r.get('dd_ids') or [])
@@ -42,6 +46,7 @@ mvn -B -DskipTests compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
 echo "[ONSURE-DD-RUNTIME] 5/6 materialize 40 runtime receipts and status"
 python3 scripts/materialize-dd-semantic-runtime-evidence.py \
   --raw "$RAW" \
+  --evidence-index "$EVIDENCE_INDEX" \
   --target-identity "$ONSURE_DD_TARGET_IDENTITY" \
   --execution-principal "$ONSURE_DD_EXECUTION_PRINCIPAL" \
   --execution-environment "$ONSURE_DD_EXECUTION_ENVIRONMENT"
