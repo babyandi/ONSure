@@ -3,8 +3,8 @@
 
 The allowlist defines the scanned source population. Disposition controls whether a source may
 originate CURRENT Product Design requirements. Unknown content remains UNREVIEWED and therefore
-ineligible. Closure gates distinguish unreviewed ELIGIBLE sources (hard blocker) from unreviewed
-INELIGIBLE sources (disclosed negative-space population, not denominator authority).
+ineligible. Backward-compatible review_summary.unreviewed_count/disputed_count are denominator
+blocker counts for ELIGIBLE sources; total/ineligible counts remain separately disclosed.
 """
 from __future__ import annotations
 
@@ -115,15 +115,21 @@ def artifact_inventory_class(relative: str) -> str:
 def review_summary(rows: list[dict[str, Any]]) -> dict[str, int]:
     eligible_rows = [r for r in rows if r["requirement_source_disposition"] in ELIGIBLE_DISPOSITIONS]
     ineligible_rows = [r for r in rows if r["requirement_source_disposition"] not in ELIGIBLE_DISPOSITIONS]
+    eligible_unreviewed = sum(r["review_state"] == "UNREVIEWED" for r in eligible_rows)
+    eligible_disputed = sum(r["review_state"] == "DISPUTED" for r in eligible_rows)
+    total_unreviewed = sum(r["review_state"] == "UNREVIEWED" for r in rows)
+    total_disputed = sum(r["review_state"] == "DISPUTED" for r in rows)
     return {
         "row_count": len(rows),
         "reviewed_count": sum(r["review_state"] == "REVIEWED" for r in rows),
-        "unreviewed_count": sum(r["review_state"] == "UNREVIEWED" for r in rows),
-        "disputed_count": sum(r["review_state"] == "DISPUTED" for r in rows),
+        "unreviewed_count": eligible_unreviewed,
+        "disputed_count": eligible_disputed,
+        "total_unreviewed_count": total_unreviewed,
+        "total_disputed_count": total_disputed,
         "eligible_count": len(eligible_rows),
         "ineligible_count": len(ineligible_rows),
-        "eligible_unreviewed_count": sum(r["review_state"] == "UNREVIEWED" for r in eligible_rows),
-        "eligible_disputed_count": sum(r["review_state"] == "DISPUTED" for r in eligible_rows),
+        "eligible_unreviewed_count": eligible_unreviewed,
+        "eligible_disputed_count": eligible_disputed,
         "ineligible_unreviewed_count": sum(r["review_state"] == "UNREVIEWED" for r in ineligible_rows),
     }
 
@@ -174,7 +180,7 @@ def main() -> int:
         "population_digest": population_digest,
         "review_summary": summary,
         "gate_semantics": {
-            "eligible_unreviewed_or_disputed_blocks_denominator": True,
+            "review_summary_unreviewed_disputed_are_eligible_blockers": True,
             "ineligible_unreviewed_is_disclosed_but_does_not_originate_requirements": True,
         },
         "final_claim_allowed": False,
