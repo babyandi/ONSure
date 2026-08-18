@@ -2,6 +2,7 @@ package kr.co.oruda.onsure.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -36,6 +37,7 @@ public final class DdQualifiedRuntimeFactory {
             for (DdSemanticEvaluator e : BuiltInDdSemanticEvaluators.all()) builtins.put(e.ddId(), e);
             List<DdSemanticEvaluatorRegistry.Registration> registrations = new ArrayList<>();
             java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+            String evaluatorArtifactSha = classArtifactSha256(BuiltInDdSemanticEvaluators.class);
             for (JsonNode row : doc.path("rows")) {
                 String dd = row.path("dd_id").asText("");
                 if (!seen.add(dd)) throw new IllegalStateException("DD_RUNTIME_ACTIVATION_DUPLICATE:" + dd);
@@ -47,7 +49,7 @@ public final class DdQualifiedRuntimeFactory {
 
                 Path receiptPath = resolveUnderRoot(root, row.path("qualification_receipt_ref").asText(""));
                 JsonNode receipt = JSON.readTree(Files.readAllBytes(receiptPath));
-                validateQualificationReceipt(dd, evaluator, row, receipt, activationTree);
+                validateQualificationReceipt(dd, evaluator, row, receipt, activationTree, evaluatorArtifactSha);
                 registrations.add(new DdSemanticEvaluatorRegistry.Registration(
                         evaluator,
                         receipt.path("evaluator_id").asText(""),
@@ -74,35 +76,90 @@ public final class DdQualifiedRuntimeFactory {
     }
 
     private static void validateQualificationReceipt(
-            String dd, DdSemanticEvaluator evaluator, JsonNode activationRow, JsonNode receipt, String activationTree) throws Exception {
+            String dd, DdSemanticEvaluator evaluator, JsonNode activationRow, JsonNode receipt,
+            String activationTree, String evaluatorArtifactSha) throws Exception {
         if (!QUALIFICATION_CONTRACT.equals(receipt.path("contract").asText())) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_CONTRACT_MISMATCH:" + dd);
         if (!dd.equals(receipt.path("dd_id").asText())) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_ID_MISMATCH:" + dd);
         if (!"QUALIFIED_NONFINAL".equals(receipt.path("decision").asText())) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_NOT_QUALIFIED:" + dd);
         if (receipt.path("final_claim_allowed").asBoolean(true)) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_FINAL_CLAIM_INVALID:" + dd);
         if (!activationTree.equals(receipt.path("source_tree_sha").asText())) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_TREE_MISMATCH:" + dd);
+
         String evaluatorId = receipt.path("evaluator_id").asText("");
         String evaluatorVersion = receipt.path("evaluator_version").asText("");
         if (!evaluatorId.equals(activationRow.path("evaluator_id").asText(""))) throw new IllegalStateException("DD_QUALIFICATION_EVALUATOR_ID_MISMATCH:" + dd);
         if (!evaluatorVersion.equals(activationRow.path("evaluator_version").asText(""))) throw new IllegalStateException("DD_QUALIFICATION_EVALUATOR_VERSION_MISMATCH:" + dd);
         if (!BuiltInDdSemanticEvaluators.VERSION.equals(evaluatorVersion)) throw new IllegalStateException("DD_QUALIFICATION_EVALUATOR_VERSION_NOT_CURRENT:" + dd);
-        String digest = receipt.path("receipt_digest").asText("");
-        if (!digest.equals(activationRow.path("qualification_receipt_digest").asText(""))) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_ACTIVATION_DIGEST_MISMATCH:" + dd);
-        if (!digest.equals(canonicalReceiptDigest(receipt))) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_DIGEST_INVALID:" + dd);
+        if (!evaluatorArtifactSha.equals(receipt.path("evaluator_artifact_sha256").asText(""))) {
+            throw new IllegalStateException("DD_QUALIFICATION_EVALUATOR_ARTIFACT_MISMATCH:" + dd);
+        }
+
+        requireSha256(receipt, "obligation_registry_sha256", dd);
+        requireNonEmptyArray(receipt, "policy_authority_digests", dd);
+        requireText(receipt, "qualification_principal", dd);
+        requireText(receipt, "qualification_process_lineage", dd);
+        requireNonEmptyArray(receipt, "positive_oracle_refs", dd);
+
         JsonNode att = receipt.path("independence_attestation");
         if (!att.path("independent_from_evaluator_authoring").asBoolean(false)
                 || !att.path("independent_from_target_claim_author").asBoolean(false)
                 || !att.path("common_control_disclosed").asBoolean(false)) {
             throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_INDEPENDENCE_INVALID:" + dd);
         }
+
+        JsonNode fixtures = receipt.path("fixture_results");
+        for (String klass : List.of("positive", "negative", "recovery", "adversarial")) {
+            JsonNode fr = fixtures.path(klass);
+            int executed = fr.path("executed_count").asInt(0);
+            int passed = fr.path("passed_count").asInt(-1);
+            int failed = fr.path("failed_count").asInt(-1);
+            if (executed < 1 || passed != executed || failed != 0) {
+                throw new IllegalStateException("DD_QUALIFICATION_FIXTURE_RESULT_INVALID:" + dd + ":" + klass);
+            }
+            requireNonEmptyArray(fr, "fixture_ids", dd + ":" + klass);
+            requireNonEmptyArray(fr, "evidence_refs", dd + ":" + klass);
+        }
+
+        Instant qualifiedAt = Instant.parse(receipt.path("qualified_at").asText(""));
         Instant expires = Instant.parse(receipt.path("expires_at").asText(""));
-        if (!expires.isAfter(Instant.now())) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_EXPIRED:" + dd);
+        if (!expires.isAfter(qualifiedAt) || !expires.isAfter(Instant.now())) {
+            throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_EXPIRED_OR_INTERVAL_INVALID:" + dd);
+        }
+
+        String digest = receipt.path("receipt_digest").asText("");
+        if (!digest.equals(activationRow.path("qualification_receipt_digest").asText(""))) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_ACTIVATION_DIGEST_MISMATCH:" + dd);
+        if (!digest.equals(canonicalReceiptDigest(receipt))) throw new IllegalStateException("DD_QUALIFICATION_RECEIPT_DIGEST_INVALID:" + dd);
+    }
+
+    private static void requireText(JsonNode node, String field, String subject) {
+        if (node.path(field).asText("").isBlank()) throw new IllegalStateException("DD_QUALIFICATION_FIELD_REQUIRED:" + subject + ":" + field);
+    }
+
+    private static void requireSha256(JsonNode node, String field, String subject) {
+        if (!node.path(field).asText("").matches("[0-9a-f]{64}")) throw new IllegalStateException("DD_QUALIFICATION_SHA256_REQUIRED:" + subject + ":" + field);
+    }
+
+    private static void requireNonEmptyArray(JsonNode node, String field, String subject) {
+        JsonNode value = node.path(field);
+        if (!value.isArray() || value.isEmpty()) throw new IllegalStateException("DD_QUALIFICATION_ARRAY_REQUIRED:" + subject + ":" + field);
+    }
+
+    private static String classArtifactSha256(Class<?> type) throws Exception {
+        String resource = type.getSimpleName() + ".class";
+        try (InputStream in = type.getResourceAsStream(resource)) {
+            if (in == null) throw new IllegalStateException("DD_EVALUATOR_CLASS_ARTIFACT_UNAVAILABLE");
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(in.readAllBytes());
+            return hex(hash);
+        }
     }
 
     private static String canonicalReceiptDigest(JsonNode receipt) throws Exception {
         Object canonical = canonical(receipt, true);
         byte[] bytes = JSON.writeValueAsBytes(canonical);
-        byte[] hash = MessageDigest.getInstance("SHA-256").digest(bytes);
-        StringBuilder sb = new StringBuilder(64);
+        return hex(MessageDigest.getInstance("SHA-256").digest(bytes));
+    }
+
+    private static String hex(byte[] hash) {
+        StringBuilder sb = new StringBuilder(hash.length * 2);
         for (byte b : hash) sb.append(String.format("%02x", b));
         return sb.toString();
     }
