@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json,sys
+import hashlib,json,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 INTAKE=ROOT/'contracts/independent-design-discovery-wave-intake.candidate.v1.json'
@@ -10,6 +10,10 @@ TRACKED=ROOT/'evidence/design-discovery'
 def choose(name:str)->Path:
     tracked=TRACKED/name
     return tracked if tracked.exists() else LOCAL/name
+
+def digest_payload(d:dict)->str:
+    x=dict(d); x.pop('receipt_digest',None)
+    return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 def main()->int:
     json.loads(INTAKE.read_text(encoding='utf-8'))
@@ -29,6 +33,7 @@ def main()->int:
     reasons=[]
     for w,wid in zip(waves,ids):
         if w.get('wave_id')!=wid: reasons.append(f'WAVE_ID_MISMATCH:{wid}')
+        if w.get('receipt_digest')!=digest_payload(w): reasons.append(f'RECEIPT_DIGEST_MISMATCH:{wid}')
         if w.get('frozen_tree_sha')!=freeze.get('git_tree_sha'): reasons.append(f'TREE_SHA_MISMATCH:{wid}')
         if w.get('frozen_authority_digest')!=freeze.get('authority_population_digest'): reasons.append(f'AUTHORITY_DIGEST_MISMATCH:{wid}')
         if w.get('mandatory_lens_coverage_percent')!=100: reasons.append(f'MANDATORY_LENS_NOT_100:{wid}')
@@ -36,13 +41,20 @@ def main()->int:
         if w.get('new_p0_count')!=0: reasons.append(f'NEW_P0:{wid}')
         if not w.get('p1_novelty_within_policy_ceiling',False): reasons.append(f'P1_CEILING:{wid}')
         if w.get('prior_conclusion_exposure_attestation') is not False: reasons.append(f'PRIOR_CONCLUSION_EXPOSURE:{wid}')
-        for f in ('reviewer_principal','reviewer_process_lineage','model_or_method_lineage','common_control_attestation'):
-            if f not in w: reasons.append(f'MISSING_{f.upper()}:{wid}')
+        if w.get('same_authoring_context_attestation') is not False: reasons.append(f'SAME_AUTHORING_CONTEXT_NOT_FALSE:{wid}')
+        if w.get('common_control_resolved') is not True: reasons.append(f'COMMON_CONTROL_NOT_RESOLVED:{wid}')
+        if not w.get('common_control_attestation'): reasons.append(f'COMMON_CONTROL_ATTESTATION_MISSING:{wid}')
+        if not str(w.get('candidate_ledger_digest','')).isalnum() or len(str(w.get('candidate_ledger_digest','')))!=64: reasons.append(f'CANDIDATE_LEDGER_DIGEST_INVALID:{wid}')
+        for f in ('reviewer_principal','reviewer_process_lineage','model_or_method_lineage'):
+            if not w.get(f): reasons.append(f'MISSING_{f.upper()}:{wid}')
+        if w.get('final_claim_allowed') is not False: reasons.append(f'FINAL_CLAIM_NOT_FALSE:{wid}')
     sig=lambda w:(w.get('reviewer_principal'),w.get('reviewer_process_lineage'),w.get('model_or_method_lineage'))
     if sig(waves[0])==sig(waves[1]): reasons.append('WAVE_A_B_NOT_INDEPENDENT_LINEAGE')
-    if waves[0].get('common_control_attestation') is True and waves[1].get('common_control_attestation') is True: reasons.append('COMMON_CONTROL_NOT_RESOLVED')
+    if waves[0].get('reviewer_principal')==waves[1].get('reviewer_principal'): reasons.append('WAVE_A_B_REVIEWER_PRINCIPAL_NOT_DISTINCT')
+    if waves[0].get('reviewer_process_lineage')==waves[1].get('reviewer_process_lineage'): reasons.append('WAVE_A_B_PROCESS_LINEAGE_NOT_DISTINCT')
     tracked_inputs=all((TRACKED/x).exists() for x in ('frozen-baseline-receipt.json','INDEPENDENT-SATURATION-A.json','INDEPENDENT-SATURATION-B.json'))
-    receipt={'contract':'ONSURE_DESIGN_DISCOVERY_SATURATION_RECEIPT_V3','wave_ids':list(ids),'git_tree_sha':freeze.get('git_tree_sha'),'authority_digest':freeze.get('authority_population_digest'),'tracked_evidence_inputs':tracked_inputs,'blocking_reasons':sorted(set(reasons)),'saturation_candidate':not reasons,'decision':'SATURATION_CANDIDATE_NONFINAL' if not reasons else 'HOLD_NONFINAL','final_claim_allowed':False}
+    if not tracked_inputs: reasons.append('SATURATION_EVIDENCE_NOT_TRACKED')
+    receipt={'contract':'ONSURE_DESIGN_DISCOVERY_SATURATION_RECEIPT_V4','wave_ids':list(ids),'git_tree_sha':freeze.get('git_tree_sha'),'authority_digest':freeze.get('authority_population_digest'),'tracked_evidence_inputs':tracked_inputs,'blocking_reasons':sorted(set(reasons)),'saturation_candidate':not reasons,'decision':'SATURATION_CANDIDATE_NONFINAL' if not reasons else 'HOLD_NONFINAL','final_claim_allowed':False}
     LOCAL.mkdir(parents=True,exist_ok=True); (LOCAL/'saturation-receipt.json').write_text(json.dumps(receipt,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
     print(json.dumps(receipt,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 31
 if __name__=='__main__':
