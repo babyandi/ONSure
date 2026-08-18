@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import hashlib,json,sys
+import argparse,hashlib,json,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 EVIDENCE=ROOT/'evidence/independent-clean'
@@ -9,8 +9,11 @@ IDS=('INDEPENDENT-CLEAN-A','INDEPENDENT-CLEAN-B')
 def digest_payload(d:dict)->str:
     x=dict(d); x.pop('receipt_digest',None)
     return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+def git(*args): return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()
 
 def main()->int:
+    ap=argparse.ArgumentParser(); ap.add_argument('--source-commit-sha',default=None); ap.add_argument('--source-tree-sha',default=None); args=ap.parse_args()
+    expected_commit=args.source_commit_sha or git('rev-parse','HEAD'); expected_tree=args.source_tree_sha or git('rev-parse','HEAD^{tree}')
     waves=[]; reasons=[]
     for cid in IDS:
         p=EVIDENCE/f'{cid}.json'
@@ -24,6 +27,8 @@ def main()->int:
         if d.get('decision')!='CLEAN': reasons.append(f'NOT_CLEAN:{cid}')
         if d.get('blocking_finding_count')!=0: reasons.append(f'BLOCKING_FINDINGS:{cid}')
         if d.get('final_claim_allowed') is not False: reasons.append(f'FINAL_CLAIM_NOT_FALSE:{cid}')
+        if d.get('source_commit_sha')!=expected_commit: reasons.append(f'CURRENT_COMMIT_MISMATCH:{cid}')
+        if d.get('source_tree_sha')!=expected_tree: reasons.append(f'CURRENT_TREE_MISMATCH:{cid}')
         for f,n in (('source_commit_sha',40),('source_tree_sha',40),('requirement_manifest_digest',64),('authority_population_digest',64),('coverage_digest',64)):
             v=str(d.get(f,''))
             if len(v)!=n or any(c not in '0123456789abcdef' for c in v): reasons.append(f'INVALID_{f.upper()}:{cid}')
@@ -40,14 +45,16 @@ def main()->int:
             if waves[0].get(field)!=waves[1].get(field): reasons.append(f'{field.upper()}_DIVERGENCE')
         sig=lambda w:(w.get('verifier_principal'),w.get('verifier_process_lineage'),w.get('model_or_method_lineage'))
         if sig(waves[0])==sig(waves[1]): reasons.append('CLEAN_A_B_NOT_INDEPENDENT_LINEAGE')
+        if waves[0].get('verifier_principal')==waves[1].get('verifier_principal'): reasons.append('CLEAN_A_B_VERIFIER_PRINCIPAL_NOT_DISTINCT')
+        if waves[0].get('verifier_process_lineage')==waves[1].get('verifier_process_lineage'): reasons.append('CLEAN_A_B_PROCESS_LINEAGE_NOT_DISTINCT')
         a=(waves[0].get('common_control_attestation') or {}).get('common_control_present')
         b=(waves[1].get('common_control_attestation') or {}).get('common_control_present')
         if a is True and b is True:
             da=(waves[0].get('common_control_attestation') or {}).get('details',[])
             db=(waves[1].get('common_control_attestation') or {}).get('details',[])
             if set(da)&set(db): reasons.append('CLEAN_A_B_SHARED_COMMON_CONTROL_UNRESOLVED')
-    out={'contract':'ONSURE_INDEPENDENT_CLEAN_TWICE_VALIDATION_V2','receipt_count':len(waves),'blocking_reasons':sorted(set(reasons)),'decision':'CLEAN_TWICE_NONFINAL' if not reasons else 'HOLD_NONFINAL','design_lock':False,'github_actions_authority':False,'final_claim_allowed':False}
+    out={'contract':'ONSURE_INDEPENDENT_CLEAN_TWICE_VALIDATION_V3','expected_source_commit_sha':expected_commit,'expected_source_tree_sha':expected_tree,'receipt_count':len(waves),'blocking_reasons':sorted(set(reasons)),'decision':'CLEAN_TWICE_NONFINAL' if not reasons else 'HOLD_NONFINAL','design_lock':False,'github_actions_authority':False,'final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 61
 if __name__=='__main__':
     try: raise SystemExit(main())
-    except (OSError,ValueError,KeyError) as e: print(f'ONSURE_INDEPENDENT_CLEAN_FAIL {e}',file=sys.stderr); raise SystemExit(1)
+    except (OSError,ValueError,KeyError,subprocess.CalledProcessError) as e: print(f'ONSURE_INDEPENDENT_CLEAN_FAIL {e}',file=sys.stderr); raise SystemExit(1)
