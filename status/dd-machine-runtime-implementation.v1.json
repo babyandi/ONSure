@@ -1,29 +1,38 @@
 {
-  "contract":"ONSURE_DD_MACHINE_RUNTIME_IMPLEMENTATION_STATUS_V1",
-  "status":"ROUTING_BOUNDARY_EVIDENCED_SEMANTIC_EVALUATORS_OPEN_NONFINAL",
-  "authority":"contracts/dd-machine-operation-schema-fixture-registry.candidate.v1.json",
-  "ci_evidence":{
-    "workflow":"ONSure DD Runtime Qualification",
-    "run_id":32138914781,
-    "job_id":95716657913,
-    "conclusion":"success",
-    "proven_scope":[
-      "40 unique DD machine definitions present in workflow operation registry",
-      "Java 17 shared core compiles in modular build",
-      "40 DD operations route through PostFinalTargetWorkflowDispatcher and TenantRbacService in parameterized JUnit",
-      "unqualified DD semantic operations return HOLD and cannot strengthen claims or perform external effects",
-      "DD operation/id mismatch and malformed evidence_refs are rejected"
-    ]
+  "contract": "ONSURE_DD_MACHINE_RUNTIME_IMPLEMENTATION_STATUS_V2",
+  "status": "CODE_MATERIALIZED_EXECUTION_NOT_ESTABLISHED_NONFINAL",
+  "authority": "contracts/dd-machine-operation-schema-fixture-registry.candidate.v1.json",
+  "execution_authority": "LOCAL_OR_AUTOPILOT_EXPLICIT_RUN_ONLY",
+  "github_actions_authority": false,
+  "code_materialization": {
+    "generic_fail_closed_runtime": "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java",
+    "post_final_dispatcher": "src/main/java/kr/co/oruda/onsure/platform/PostFinalTargetWorkflowDispatcher.java",
+    "shared_semantic_bridge": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
+    "parameterized_test_definition": "modules/onsure-core/src/test/java/kr/co/oruda/onsure/platform/PostFinalTargetDdWorkflowTest.java"
   },
-  "rows":[
-    {"dd":"DD-001~DD-040","operation_dispatcher":"IMPLEMENTED_FAIL_CLOSED_GENERIC_BOUNDARY","schema_validation":"BASE_ENVELOPE_ONLY_DD_SPECIFIC_SCHEMA_OPEN","fixture_execution":"PASS_ROUTING_BOUNDARY_ONLY","semantic_evaluator":"NOT_QUALIFIED","runtime_evidence":"FAIL_CLOSED_BOUNDARY_EVIDENCED_SEMANTIC_CLAIM_NOT_EVIDENCED"}
+  "materialized_scope": [
+    "40 unique DD operations are declared in the canonical workflow operation registry.",
+    "A generic fail-closed Java runtime binds each operation to exactly one DD identity.",
+    "The shared workflow bridge contains a DD route and preserves TenantRbacService authorization.",
+    "The test definition covers the 40-operation routing denominator and malformed identity/evidence inputs."
   ],
-  "counts":{
-    "dd_operation_routing_evidenced":40,
-    "dd_semantic_evaluator_qualified":0,
-    "dd_specific_schema_validator_implemented":0,
-    "dd_semantic_fixture_oracle_executed":0
+  "not_proven_without_explicit_execution": [
+    "Java compilation success",
+    "JUnit execution success",
+    "DD-specific semantic evaluator correctness",
+    "DD-specific schema-validation correctness",
+    "semantic fixture/oracle execution",
+    "runtime evidence sufficient for any positive DD claim"
+  ],
+  "rows": [],
+  "counts": {
+    "dd_machine_definition_materialized": 40,
+    "dd_code_route_materialized": 40,
+    "dd_route_execution_evidenced_by_authorized_current_method": 0,
+    "dd_semantic_evaluator_qualified": 0,
+    "dd_specific_schema_validator_implemented": 0,
+    "dd_semantic_fixture_oracle_executed": 0
   },
-  "highest_claim":"DD_RUNTIME_ROUTING_BOUNDARY_EVIDENCED_NONFINAL",
-  "final_claim_allowed":false
+  "highest_claim": "DD_RUNTIME_CODE_BOUNDARY_MATERIALIZED_EXECUTION_NOT_ESTABLISHED_NONFINAL",
+  "final_claim_allowed": false
 }
