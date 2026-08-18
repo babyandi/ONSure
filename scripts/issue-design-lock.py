@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json,os,subprocess,sys
+import hashlib,json,os,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 CAND=ROOT/'.onsure/requirement-universe/epoch-0003-candidate'
@@ -15,6 +15,9 @@ def git(*args,check=True):
 
 def load(p:Path): return json.loads(p.read_text(encoding='utf-8'))
 def run(cmd): return subprocess.run(cmd,cwd=ROOT,capture_output=True,text=True).returncode
+def digest_payload(d):
+    x=dict(d); x.pop('receipt_digest',None)
+    return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 def main()->int:
     ref=os.environ.get('GITHUB_REF_NAME') or git('branch','--show-current')[0]
@@ -50,10 +53,16 @@ def main()->int:
         if not mp.is_file(): blockers.append('CURRENT_HEAD_DD_MANUAL_VERIFICATION_RECEIPT_MISSING')
         else:
             m=load(mp); claims=m.get('claims') or {}
-            if m.get('source_tree_sha')!=head: blockers.append('DD_MANUAL_VERIFICATION_HEAD_SHA_MISMATCH')
+            if m.get('contract')!='ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V4': blockers.append('DD_MANUAL_VERIFICATION_RECEIPT_NOT_V4')
+            if m.get('receipt_digest')!=digest_payload(m): blockers.append('DD_MANUAL_VERIFICATION_RECEIPT_DIGEST_INVALID')
+            if m.get('source_commit_sha')!=head: blockers.append('DD_MANUAL_VERIFICATION_COMMIT_SHA_MISMATCH')
+            if m.get('source_tree_sha')!=tree: blockers.append('DD_MANUAL_VERIFICATION_TREE_SHA_MISMATCH')
             if m.get('verdict')!='PASS_NONFINAL_EXECUTION_MECHANICS_ONLY': blockers.append('DD_MANUAL_VERIFICATION_NOT_PASS')
             if not claims.get('compile_and_targeted_junit_established'): blockers.append('CURRENT_HEAD_JAVA_JUNIT_NOT_PROVEN')
-            if not claims.get('qualification_fixture_mechanics_established'): blockers.append('DD_160_FIXTURE_MECHANICS_NOT_PROVEN')
+            if claims.get('qualification_fixture_mechanics_executed_count')!=160: blockers.append('DD_160_FIXTURE_MECHANICS_NOT_PROVEN')
+            if not claims.get('receipt_backed_runtime_activation_mechanics_established'): blockers.append('DD_RUNTIME_ACTIVATION_MECHANICS_NOT_PROVEN')
+            compiled={x.get('path'):x.get('sha256') for x in m.get('compiled_artifacts',[]) if isinstance(x,dict)}
+            if not compiled.get('target/classes/kr/co/oruda/onsure/platform/BuiltInDdSemanticEvaluators.class'): blockers.append('DD_COMPILED_EVALUATOR_ARTIFACT_NOT_BOUND')
             if m.get('github_actions_authority') is not False: blockers.append('DD_MANUAL_VERIFICATION_ACTIONS_AUTHORITY_INVALID')
 
     if not REVIEW.is_file(): blockers.append('INDEPENDENT_PR_REVIEW_RECEIPT_MISSING')
@@ -66,7 +75,7 @@ def main()->int:
             if ancestor_rc: blockers.append('REVIEWED_PR_HEAD_NOT_ANCESTOR_OF_MAIN_LOCK_SUBJECT')
 
     receipt={
-      'contract':'ONSURE_DESIGN_LOCK_RECEIPT_V2',
+      'contract':'ONSURE_DESIGN_LOCK_RECEIPT_V3',
       'subject_commit_sha':head,
       'subject_tree_sha':tree,
       'ref_name':ref,
