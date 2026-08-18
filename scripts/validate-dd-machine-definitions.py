@@ -14,17 +14,25 @@ REQ=ROOT/'contracts/dd-assurance-request.candidate.v1.schema.json'
 RES=ROOT/'contracts/dd-assurance-result.candidate.v1.schema.json'
 OPS=ROOT/'contracts/workflow-operation-registry.v1.json'
 JAVA=ROOT/'src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java'
+EVALUATORS=ROOT/'src/main/java/kr/co/oruda/onsure/platform/BuiltInDdSemanticEvaluators.java'
+RESOLVER=ROOT/'src/main/java/kr/co/oruda/onsure/platform/DdEvidenceResolver.java'
+QUAL_STATUS=ROOT/'contracts/dd-semantic-evaluator-qualification-status.candidate.v1.json'
+OBLIGATION=ROOT/'contracts/dd-semantic-evaluator-registry.candidate.v1.json'
 ENTRY_RE=re.compile(r'Map\.entry\("([a-z][a-z0-9.-]+)",\s*"(DD-\d{3})"\)')
+SPEC_RE=re.compile(r'spec\("(DD-\d{3})",\s*"([^"]+)",\s*"([^"]+)"\)')
 
 def load(p:Path): return json.loads(p.read_text(encoding='utf-8'))
 
 def main()->int:
     reasons=[]
-    for p in (REG,FIX,BIND,REQ,RES,OPS,JAVA):
+    required_files=(REG,FIX,BIND,REQ,RES,OPS,JAVA,EVALUATORS,RESOLVER,QUAL_STATUS,OBLIGATION)
+    for p in required_files:
         if not p.is_file(): reasons.append(f'MISSING_FILE:{p.relative_to(ROOT)}')
     if reasons:
-        print(json.dumps({'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V2','blocking_reasons':reasons,'decision':'HOLD_NONFINAL','final_claim_allowed':False},sort_keys=True)); return 36
-    reg=load(REG); fixtures=load(FIX); binding=load(BIND); ops=set(load(OPS)['operations']); req=load(REQ); res=load(RES); java=JAVA.read_text(encoding='utf-8')
+        print(json.dumps({'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V3','blocking_reasons':reasons,'decision':'HOLD_NONFINAL','final_claim_allowed':False},sort_keys=True)); return 36
+    reg=load(REG); fixtures=load(FIX); binding=load(BIND); ops=set(load(OPS)['operations']); req=load(REQ); res=load(RES)
+    qstatus=load(QUAL_STATUS); obligation=load(OBLIGATION)
+    java=JAVA.read_text(encoding='utf-8'); eval_java=EVALUATORS.read_text(encoding='utf-8'); resolver_java=RESOLVER.read_text(encoding='utf-8')
     rows=reg.get('rows',[]); frows=fixtures.get('rows',[])
     expected={f'DD-{i:03d}' for i in range(1,41)}
     dd=[r.get('dd') for r in rows]; fdd=[r.get('dd') for r in frows]
@@ -65,10 +73,33 @@ def main()->int:
     if missing_java: reasons.append('JAVA_ROUTE_MISSING_OPERATIONS')
     if extra_java: reasons.append('JAVA_ROUTE_EXTRA_OPERATIONS')
     if mismatch_java: reasons.append('JAVA_ROUTE_DD_MISMATCH')
-    fail_closed_tokens=['"HOLD"','"SEMANTIC_EVALUATOR_NOT_QUALIFIED"','"claim_strengthening_allowed", false','"external_effect_performed", false','"final_claim_allowed", false']
+    fail_closed_tokens=['"HOLD"','"SEMANTIC_EVALUATOR_NOT_INDEPENDENTLY_QUALIFIED"','"claim_strengthening_allowed", false','"external_effect_performed", false','"final_claim_allowed", false']
     if any(t not in java for t in fail_closed_tokens): reasons.append('JAVA_FAIL_CLOSED_TOKENS_MISSING')
 
-    out={'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V2','dd_count':len(rows),'fixture_count':len(frows),'workflow_operation_match_count':len(registry_ops & ops),'java_route_match_count':len(set(reg_pairs)&set(java_pairs))-len(mismatch_java),'schema_binding_model':binding.get('binding_model'),'generic_request_schema':REQ.relative_to(ROOT).as_posix(),'generic_result_schema':RES.relative_to(ROOT).as_posix(),'execution_evidence_established':False,'github_actions_authority':False,'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','final_claim_allowed':False}
+    # Concrete semantic evaluator population and trusted evidence boundary.
+    specs=SPEC_RE.findall(eval_java)
+    spec_dd=[s[0] for s in specs]
+    if len(specs)!=40 or set(spec_dd)!=expected or len(set(spec_dd))!=40: reasons.append('CONCRETE_EVALUATOR_DD_DENOMINATOR_NOT_EXACT_40')
+    for ddid, required_facts, pass_fact in specs:
+        if not required_facts.strip() or not pass_fact.strip(): reasons.append(f'EVALUATOR_SPEC_INCOMPLETE:{ddid}')
+    eval_required_tokens=['evidenceResolver().resolve','integrityVerified()','current()','DD_EVIDENCE_FACT_CONFLICT','PASS_NONFINAL','DD_SAFE_FLOOR_NOT_SATISFIED']
+    if any(t not in eval_java for t in eval_required_tokens): reasons.append('CONCRETE_EVALUATOR_TRUST_OR_FAIL_CLOSED_BOUNDARY_GAP')
+    resolver_required_tokens=['ResolvedEvidence','contentDigest','integrityVerified','current','Optional<ResolvedEvidence> resolve']
+    if any(t not in resolver_java for t in resolver_required_tokens): reasons.append('DD_EVIDENCE_RESOLVER_CONTRACT_GAP')
+
+    obligation_dd={r.get('dd') for r in obligation.get('rows',[])}
+    if obligation_dd!=expected: reasons.append('EVALUATOR_OBLIGATION_DENOMINATOR_NOT_EXACT_40')
+    status_rows=qstatus.get('rows',[]); status_dd={r.get('dd_id') for r in status_rows}
+    if status_dd!=expected or len(status_rows)!=40: reasons.append('EVALUATOR_QUALIFICATION_STATUS_DENOMINATOR_NOT_EXACT_40')
+    implemented=[r for r in status_rows if r.get('implementation_state')=='CODE_MATERIALIZED_UNVERIFIED']
+    if len(implemented)!=40: reasons.append('CONCRETE_EVALUATOR_STATUS_NOT_40_CODE_MATERIALIZED_UNVERIFIED')
+    if any(r.get('qualification_state')=='QUALIFIED_NONFINAL' for r in status_rows):
+        reasons.append('STATIC_MACHINE_VALIDATOR_CANNOT_ACCEPT_QUALIFICATION_WITHOUT_RECEIPT_VALIDATOR')
+    summary=qstatus.get('summary',{})
+    if summary.get('code_materialized_unverified_count')!=40 or summary.get('qualified_nonfinal_count')!=0:
+        reasons.append('EVALUATOR_QUALIFICATION_STATUS_SUMMARY_MISMATCH')
+
+    out={'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V3','dd_count':len(rows),'fixture_count':len(frows),'workflow_operation_match_count':len(registry_ops & ops),'java_route_match_count':len(set(reg_pairs)&set(java_pairs))-len(mismatch_java),'concrete_evaluator_spec_count':len(specs),'code_materialized_unverified_count':len(implemented),'independently_qualified_count':summary.get('qualified_nonfinal_count',0),'schema_binding_model':binding.get('binding_model'),'generic_request_schema':REQ.relative_to(ROOT).as_posix(),'generic_result_schema':RES.relative_to(ROOT).as_posix(),'trusted_evidence_resolver':RESOLVER.relative_to(ROOT).as_posix(),'execution_evidence_established':False,'github_actions_authority':False,'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 36
 if __name__=='__main__':
     try: raise SystemExit(main())
