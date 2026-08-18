@@ -1,16 +1,19 @@
 {
-  "contract": "ONSURE_DD_MACHINE_RUNTIME_IMPLEMENTATION_STATUS_V3",
-  "status": "CONTRACT_AND_ROUTE_CODE_MATERIALIZED_EXECUTION_NOT_ESTABLISHED_NONFINAL",
+  "contract": "ONSURE_DD_MACHINE_RUNTIME_IMPLEMENTATION_STATUS_V4",
+  "status": "CONTRACT_ROUTE_AND_EVALUATOR_FRAMEWORK_CODE_MATERIALIZED_EXECUTION_NOT_ESTABLISHED_NONFINAL",
   "authority": [
     "contracts/dd-machine-operation-schema-fixture-registry.candidate.v1.json",
     "contracts/dd-machine-schema-binding.candidate.v1.json",
-    "contracts/dd-machine-fixture-catalog.candidate.v1.json"
+    "contracts/dd-machine-fixture-catalog.candidate.v1.json",
+    "contracts/dd-semantic-evaluator-registry.candidate.v1.json"
   ],
   "execution_authority": "LOCAL_OR_AUTOPILOT_EXPLICIT_RUN_ONLY",
   "github_actions_authority": false,
   "code_materialization": {
     "generic_fail_closed_runtime": "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java",
     "generic_contract_validator": "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceContractValidator.java",
+    "semantic_evaluator_interface": "src/main/java/kr/co/oruda/onsure/platform/DdSemanticEvaluator.java",
+    "qualification_aware_evaluator_registry": "src/main/java/kr/co/oruda/onsure/platform/DdSemanticEvaluatorRegistry.java",
     "post_final_dispatcher": "src/main/java/kr/co/oruda/onsure/platform/PostFinalTargetWorkflowDispatcher.java",
     "shared_semantic_bridge": "src/main/java/kr/co/oruda/onsure/platform/SemanticAssuranceV2DispatcherBridge.java",
     "parameterized_test_definition": "modules/onsure-core/src/test/java/kr/co/oruda/onsure/platform/PostFinalTargetDdWorkflowTest.java",
@@ -20,14 +23,15 @@
   "materialized_scope": [
     "40 unique DD operations are declared in the canonical workflow operation registry.",
     "A generic fail-closed Java runtime binds each operation to exactly one DD identity.",
-    "The generic contract validator enforces required DD identity, evidence array integrity, caller-authority prohibition and fail-closed result semantics for all 40 routes.",
-    "The shared workflow bridge preserves TenantRbacService authorization.",
-    "The test definition covers the 40-operation denominator and malformed/missing/duplicate evidence plus authority-injection cases."
+    "The generic contract validator enforces exact identity, evidence integrity, caller-authority prohibition and result claim ceilings.",
+    "Semantic evaluator execution requires both current and independent qualification provenance; default runtime has no qualified evaluators and therefore remains HOLD.",
+    "The declarative evaluator registry defines required inputs, safe floor and positive oracle obligation for all 40 DDs.",
+    "The shared workflow bridge preserves TenantRbacService authorization."
   ],
   "not_proven_without_explicit_execution": [
     "Java compilation success under the current head",
     "JUnit execution success under the current head",
-    "semantic evaluator correctness for any DD",
+    "qualification correctness or semantic correctness for any concrete DD evaluator",
     "semantic fixture/oracle execution",
     "runtime evidence sufficient for any positive DD claim"
   ],
@@ -35,12 +39,14 @@
     "dd_machine_definition_materialized": 40,
     "dd_code_route_materialized": 40,
     "dd_generic_schema_validator_code_materialized": 40,
+    "dd_semantic_evaluator_obligation_materialized": 40,
+    "dd_semantic_evaluator_framework_code_materialized": 40,
     "dd_route_execution_evidenced_by_authorized_current_method": 0,
     "dd_schema_validator_execution_evidenced_by_authorized_current_method": 0,
     "dd_semantic_evaluator_qualified": 0,
     "dd_semantic_fixture_oracle_executed": 0,
     "dd_semantic_runtime_evidence": 0
   },
-  "highest_claim": "DD_CONTRACT_AND_ROUTE_CODE_MATERIALIZED_EXECUTION_NOT_ESTABLISHED_NONFINAL",
+  "highest_claim": "DD_SEMANTIC_FRAMEWORK_CODE_MATERIALIZED_EXECUTION_AND_QUALIFICATION_OPEN_NONFINAL",
   "final_claim_allowed": false
 }
