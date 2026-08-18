@@ -12,6 +12,7 @@ if [[ "$BRANCH" != "main" ]]; then echo "ONSURE_MAIN_REVALIDATION_HOLD NOT_MAIN_
 : "${ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE:?ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE is required}"
 : "${ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE:?ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE is required}"
 : "${ONSURE_HDA_RECEIPTS_DIR:?ONSURE_HDA_RECEIPTS_DIR is required; HDA receipts remain external/immutable}"
+: "${ONSURE_DESIGN_DISCOVERY_EVIDENCE_DIR:?ONSURE_DESIGN_DISCOVERY_EVIDENCE_DIR is required; Discovery A/B evidence remains external/immutable}"
 OUT_DIR="${ONSURE_MAIN_REVALIDATION_OUT:-.onsure/main-design-lock-revalidation}"; mkdir -p "$OUT_DIR"
 RUN_ID="main-lock-$(date -u +%Y%m%dT%H%M%SZ)"; LOG="$OUT_DIR/$RUN_ID.log"; exec > >(tee "$LOG") 2>&1
 
@@ -103,6 +104,7 @@ echo "[ONSURE-MAIN-LOCK] FINAL 5/5 require actual Design Lock receipt"
 python3 - "$HEAD_SHA" "$TREE_SHA" <<'PY'
 import json,sys
 p=json.load(open('.onsure/design-baseline/design-lock-receipt.json',encoding='utf-8'))
+assert p.get('contract')=='ONSURE_DESIGN_LOCK_RECEIPT_V5'
 assert p['subject_commit_sha']==sys.argv[1]; assert p['subject_tree_sha']==sys.argv[2]; assert p['design_lock'] is True,f"DESIGN_LOCK_HOLD:{p.get('blocking_reasons')}"
 assert p['final_lock'] is False and p['production_go'] is False and p['commercial_go'] is False
 print(json.dumps(p,ensure_ascii=False,sort_keys=True))
