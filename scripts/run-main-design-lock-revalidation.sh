@@ -8,9 +8,10 @@ if [[ "$BRANCH" != "main" ]]; then echo "ONSURE_MAIN_REVALIDATION_HOLD NOT_MAIN_
 : "${ONSURE_DD_TARGET_IDENTITY:?ONSURE_DD_TARGET_IDENTITY is required}"
 : "${ONSURE_DD_EXECUTION_PRINCIPAL:?ONSURE_DD_EXECUTION_PRINCIPAL is required}"
 : "${ONSURE_DD_EXECUTION_ENVIRONMENT:?ONSURE_DD_EXECUTION_ENVIRONMENT is required}"
-: "${ONSURE_DD_EVIDENCE_INDEX_SOURCE:?ONSURE_DD_EVIDENCE_INDEX_SOURCE is required for fresh main revalidation}"
-: "${ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE:?ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE is required; do not regenerate the independently-qualified subject on main}"
-: "${ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE:?ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE is required for fresh main revalidation}"
+: "${ONSURE_DD_EVIDENCE_INDEX_SOURCE:?ONSURE_DD_EVIDENCE_INDEX_SOURCE is required}"
+: "${ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE:?ONSURE_DD_QUALIFICATION_BUNDLE_SOURCE is required}"
+: "${ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE:?ONSURE_DD_QUALIFICATION_RECEIPTS_SOURCE is required}"
+: "${ONSURE_HDA_RECEIPTS_DIR:?ONSURE_HDA_RECEIPTS_DIR is required; HDA receipts remain external/immutable}"
 OUT_DIR="${ONSURE_MAIN_REVALIDATION_OUT:-.onsure/main-design-lock-revalidation}"; mkdir -p "$OUT_DIR"
 RUN_ID="main-lock-$(date -u +%Y%m%dT%H%M%SZ)"; LOG="$OUT_DIR/$RUN_ID.log"; exec > >(tee "$LOG") 2>&1
 
@@ -70,13 +71,15 @@ print(json.dumps({'decision':'MAIN_PRECLEAN_SUBJECT_READY_NONFINAL','subject_dig
 PY
 
   echo "[ONSURE-MAIN-LOCK] 9/9 STOP_FOR_INDEPENDENT_CLEAN_A_B"
-  echo "Independent CLEAN A/B must be produced against the exact Pre-CLEAN Subject by two independent verifier lineages."
+  echo "Independent CLEAN A/B must be produced outside the git subject against this exact Pre-CLEAN Subject."
   exit 82
 fi
 
 if [[ "$MODE" != "FINALIZE_LOCK" ]]; then echo "Usage: $0 PRE_CLEAN|FINALIZE_LOCK" >&2; exit 2; fi
+: "${ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR:?ONSURE_INDEPENDENT_CLEAN_RECEIPTS_DIR is required for FINALIZE_LOCK}"
+: "${ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT:?ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT is required for FINALIZE_LOCK}"
 
-echo "[ONSURE-MAIN-LOCK] FINAL 1/5 restore staged qualification/runtime inputs and validate CLEAN A/B"
+echo "[ONSURE-MAIN-LOCK] FINAL 1/5 restore staged inputs and validate main-subject CLEAN A/B"
 DD_RECEIPT="$(cat "$OUT_DIR/current-dd-manual-receipt.path")"; STAGED_INDEX="$(cat "$OUT_DIR/current-evidence-index.path")"; QDIR="$(cat "$OUT_DIR/current-qualification-receipts.path")"
 export ONSURE_DD_MANUAL_VERIFICATION_RECEIPT="$DD_RECEIPT"; export ONSURE_DD_EVIDENCE_INDEX="$STAGED_INDEX"; export ONSURE_DD_QUALIFICATION_RECEIPTS_DIR="$QDIR"
 python3 scripts/validate-independent-clean-twice.py --source-commit-sha "$HEAD_SHA" --source-tree-sha "$TREE_SHA"
@@ -84,13 +87,14 @@ python3 scripts/validate-independent-clean-twice.py --source-commit-sha "$HEAD_S
 echo "[ONSURE-MAIN-LOCK] FINAL 2/5 re-run full post-delta closure with CLEAN A/B present"
 bash scripts/run-product-design-closure-post-delta.sh
 
-echo "[ONSURE-MAIN-LOCK] FINAL 3/5 independent PR review must cover an ancestor feature subject"
-REVIEW_HEAD="$(python3 - <<'PY'
-import json
-p=json.load(open('evidence/pr-review/pr-54-independent-review.json',encoding='utf-8')); print(p['reviewed_head_sha'])
+echo "[ONSURE-MAIN-LOCK] FINAL 3/5 validate immutable independent PR review and ancestor relation"
+REVIEW_HEAD="$(python3 - "$ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT" <<'PY'
+import json,sys
+p=json.load(open(sys.argv[1],encoding='utf-8')); print(p['reviewed_head_sha'])
 PY
 )"
-python3 scripts/validate-pr-independent-review.py --expected-head-sha "$REVIEW_HEAD"; git merge-base --is-ancestor "$REVIEW_HEAD" "$HEAD_SHA"
+python3 scripts/validate-pr-independent-review.py --receipt "$ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT" --expected-head-sha "$REVIEW_HEAD"
+git merge-base --is-ancestor "$REVIEW_HEAD" "$HEAD_SHA"
 
 echo "[ONSURE-MAIN-LOCK] FINAL 4/5 invoke main-only Design Lock issuer"
 set +e; python3 scripts/issue-design-lock.py; LOCK_RC=$?; set -e
