@@ -1,0 +1,29 @@
+{
+  "contract":"ONSURE_DD_MACHINE_RUNTIME_IMPLEMENTATION_STATUS_V1",
+  "status":"ROUTING_BOUNDARY_EVIDENCED_SEMANTIC_EVALUATORS_OPEN_NONFINAL",
+  "authority":"contracts/dd-machine-operation-schema-fixture-registry.candidate.v1.json",
+  "ci_evidence":{
+    "workflow":"ONSure DD Runtime Qualification",
+    "run_id":32138914781,
+    "job_id":95716657913,
+    "conclusion":"success",
+    "proven_scope":[
+      "40 unique DD machine definitions present in workflow operation registry",
+      "Java 17 shared core compiles in modular build",
+      "40 DD operations route through PostFinalTargetWorkflowDispatcher and TenantRbacService in parameterized JUnit",
+      "unqualified DD semantic operations return HOLD and cannot strengthen claims or perform external effects",
+      "DD operation/id mismatch and malformed evidence_refs are rejected"
+    ]
+  },
+  "rows":[
+    {"dd":"DD-001~DD-040","operation_dispatcher":"IMPLEMENTED_FAIL_CLOSED_GENERIC_BOUNDARY","schema_validation":"BASE_ENVELOPE_ONLY_DD_SPECIFIC_SCHEMA_OPEN","fixture_execution":"PASS_ROUTING_BOUNDARY_ONLY","semantic_evaluator":"NOT_QUALIFIED","runtime_evidence":"FAIL_CLOSED_BOUNDARY_EVIDENCED_SEMANTIC_CLAIM_NOT_EVIDENCED"}
+  ],
+  "counts":{
+    "dd_operation_routing_evidenced":40,
+    "dd_semantic_evaluator_qualified":0,
+    "dd_specific_schema_validator_implemented":0,
+    "dd_semantic_fixture_oracle_executed":0
+  },
+  "highest_claim":"DD_RUNTIME_ROUTING_BOUNDARY_EVIDENCED_NONFINAL",
+  "final_claim_allowed":false
+}
