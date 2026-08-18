@@ -2,20 +2,19 @@ package kr.co.oruda.onsure.platform;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Fail-closed runtime boundary for post-final-target DD-001..040 assurance operations.
  *
- * <p>This class intentionally implements only the authenticated/contract envelope and routing
+ * <p>This class implements only the authenticated/contract envelope and exact DD routing
  * boundary. It MUST NOT synthesize semantic PASS. Until a DD-specific evaluator is qualified,
- * every operation returns HOLD with SEMANTIC_EVALUATOR_NOT_QUALIFIED. This allows the generic
- * dispatcher, RBAC, API/CLI surfaces and fixtures to exercise a real operation path without
- * confusing route materialization with assurance completion.</p>
+ * every operation returns HOLD with SEMANTIC_EVALUATOR_NOT_QUALIFIED.</p>
  */
 public final class DdAssuranceOperationRuntime {
-    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V1";
+    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V2";
 
     private static final Map<String, String> DD_BY_OPERATION = Map.ofEntries(
             Map.entry("assurance.visibility-evidence.evaluate", "DD-001"),
@@ -67,31 +66,31 @@ public final class DdAssuranceOperationRuntime {
         return DD_BY_OPERATION.keySet();
     }
 
-    public Map<String, Object> execute(String operation, JsonNode request) {
+    public String ddIdFor(String operation) {
         String dd = DD_BY_OPERATION.get(operation);
         if (dd == null) throw new IllegalArgumentException("DD_OPERATION_UNSUPPORTED:" + operation);
-        if (request == null || !request.isObject()) {
-            throw new IllegalArgumentException("DD_REQUEST_OBJECT_REQUIRED");
-        }
-        String supplied = request.path("dd_id").asText(dd);
-        if (!dd.equals(supplied)) {
-            throw new IllegalArgumentException("DD_OPERATION_ID_MISMATCH:" + operation + ":" + supplied);
-        }
+        return dd;
+    }
+
+    public Map<String, Object> execute(String operation, JsonNode request) {
+        String dd = ddIdFor(operation);
+        DdAssuranceContractValidator.validateRequest(dd, operation, request);
         JsonNode evidence = request.path("evidence_refs");
-        if (!evidence.isMissingNode() && !evidence.isArray()) {
-            throw new IllegalArgumentException("DD_EVIDENCE_REFS_ARRAY_REQUIRED");
-        }
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("contract", CONTRACT);
         result.put("dd_id", dd);
         result.put("operation", operation);
         result.put("decision", "HOLD");
         result.put("semantic_evaluator_state", "NOT_QUALIFIED");
-        result.put("blocking_reason", "SEMANTIC_EVALUATOR_NOT_QUALIFIED");
-        result.put("evidence_ref_count", evidence.isArray() ? evidence.size() : 0);
+        result.put("blocking_reasons", List.of("SEMANTIC_EVALUATOR_NOT_QUALIFIED"));
+        result.put("evidence_ref_count", evidence.size());
+        result.put("evidence_receipt_refs", List.of());
         result.put("claim_strengthening_allowed", false);
         result.put("external_effect_performed", false);
         result.put("final_claim_allowed", false);
-        return Map.copyOf(result);
+        Map<String, Object> immutable = Map.copyOf(result);
+        DdAssuranceContractValidator.validateFailClosedResult(dd, operation, immutable);
+        return immutable;
     }
 }
