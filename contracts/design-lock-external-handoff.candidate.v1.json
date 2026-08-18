@@ -1,0 +1,88 @@
+{
+  "contract": "ONSURE_DESIGN_LOCK_EXTERNAL_HANDOFF_V1",
+  "status": "EXTERNAL_EVIDENCE_REQUIRED_NONFINAL",
+  "purpose": "Single handoff denominator for all evidence that cannot be self-authored by the ONSure design-authoring context before main merge and Design Lock.",
+  "execution_authority": "LOCAL_OR_APPROVED_EXECUTION_NODE_NO_GITHUB_ACTIONS",
+  "items": [
+    {
+      "id": "EXT-01-CURRENT-HEAD-EXECUTION",
+      "producer_independence": "execution node may be operator-controlled; this is execution evidence, not independent qualification",
+      "command": "bash scripts/run-dd-semantic-evaluator-manual-verification.sh",
+      "required_output_contract": "ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V4",
+      "required_claims": ["compile_and_targeted_junit_established=true", "qualification_fixture_mechanics_executed_count=160", "receipt_backed_runtime_activation_mechanics_established=true"],
+      "github_actions_allowed": false
+    },
+    {
+      "id": "EXT-02-DD-INDEPENDENT-QUALIFICATION",
+      "producer_independence": "must be independent from evaluator authoring and target claim authoring",
+      "prerequisite": "EXT-01",
+      "prepare_command": "ONSURE_DD_MANUAL_VERIFICATION_RECEIPT=<receipt> python3 scripts/prepare-dd-independent-qualification-bundle.py",
+      "required_receipts": 40,
+      "receipt_schema": "contracts/dd-semantic-evaluator-qualification.candidate.v1.schema.json",
+      "validation_command": "python3 scripts/validate-dd-semantic-evaluator-qualifications.py --require-all-qualified"
+    },
+    {
+      "id": "EXT-03-TARGET-RUNTIME-EVIDENCE",
+      "producer_independence": "execution evidence; evaluator qualification must already be independently established",
+      "prerequisite": "EXT-02",
+      "required_evidence_index_contract": "ONSURE_DD_EVIDENCE_INDEX_V2",
+      "command": "ONSURE_DD_TARGET_IDENTITY=<target> ONSURE_DD_EXECUTION_PRINCIPAL=<principal> ONSURE_DD_EXECUTION_ENVIRONMENT=<environment> bash scripts/run-dd-semantic-runtime-evidence.sh",
+      "required_runtime_receipts": 40,
+      "validation_command": "python3 scripts/validate-dd-semantic-runtime-evidence.py --require-all-pass"
+    },
+    {
+      "id": "EXT-04-INDEPENDENT-DISCOVERY-SATURATION",
+      "producer_independence": "A and B must have distinct independent reviewer/process lineage and no prior-DD conclusion exposure",
+      "prepare_command": "python3 scripts/freeze-independent-design-discovery-baseline.py",
+      "required_waves": ["INDEPENDENT-SATURATION-A", "INDEPENDENT-SATURATION-B"],
+      "acceptance": ["same exact tree", "same authority digest", "9 lenses 100%", "untriaged=0", "new P0=0 in A", "new P0=0 in B"],
+      "validation_command": "python3 scripts/validate-design-discovery-saturation.py"
+    },
+    {
+      "id": "EXT-05-HUMAN-DESIGN-AUTHORITY",
+      "producer_independence": "authorized human design authority; generic proceed/continue wording is not approval",
+      "required_decisions": 18,
+      "recommendation_packet": "contracts/human-design-authority-recommendation-packet.candidate.v1.json",
+      "bulk_materializer": "scripts/materialize-human-design-authority-receipts.py",
+      "validation_command": "python3 scripts/validate-human-design-authority-decisions.py"
+    },
+    {
+      "id": "EXT-06-INDEPENDENT-CLEAN-A-B",
+      "producer_independence": "A/B verifier principal/process/model lineage must differ and common control must be resolved",
+      "prerequisites": ["EXT-01", "EXT-02", "EXT-03", "EXT-04", "EXT-05"],
+      "required_receipts": ["evidence/independent-clean/INDEPENDENT-CLEAN-A.json", "evidence/independent-clean/INDEPENDENT-CLEAN-B.json"],
+      "schema": "contracts/independent-clean-receipt.candidate.v1.schema.json",
+      "validation_command": "python3 scripts/validate-independent-clean-twice.py"
+    },
+    {
+      "id": "EXT-07-PR54-INDEPENDENT-REVIEW",
+      "producer_independence": "reviewer must not be PR/change author and common control must be disclosed",
+      "required_receipt": "evidence/pr-review/pr-54-independent-review.json",
+      "schema": "contracts/pr-independent-review-receipt.candidate.v1.schema.json",
+      "validation_command": "python3 scripts/validate-pr-independent-review.py --expected-head-sha <feature-head>"
+    },
+    {
+      "id": "EXT-08-PREMERGE",
+      "prerequisites": ["EXT-01", "EXT-02", "EXT-03", "EXT-04", "EXT-05", "EXT-06", "EXT-07"],
+      "command": "python3 scripts/validate-premerge-design-lock-readiness.py --dd-manual-receipt <receipt>",
+      "required_decision": "READY_FOR_MAIN_MERGE_NONFINAL"
+    },
+    {
+      "id": "EXT-09-MAIN-REVALIDATION-DESIGN-LOCK",
+      "prerequisite": "main merge after EXT-08",
+      "command": "ONSURE_DD_TARGET_IDENTITY=<target> ONSURE_DD_EXECUTION_PRINCIPAL=<principal> ONSURE_DD_EXECUTION_ENVIRONMENT=<environment> bash scripts/run-main-design-lock-revalidation.sh",
+      "required_lock_contract": "ONSURE_DESIGN_LOCK_RECEIPT_V3",
+      "required_result": "design_lock=true",
+      "explicit_nonclaims": ["final_lock=false", "production_go=false", "commercial_go=false", "final_claim_allowed=false"]
+    }
+  ],
+  "global_rules": [
+    "No item may infer PASS from a prerequisite definition without its actual receipt.",
+    "Same authoring context cannot self-certify independent qualification, discovery saturation, CLEAN, or PR review.",
+    "Any tree-changing code or design modification invalidates execution/qualification/saturation evidence bound to the previous tree.",
+    "main merge is forbidden until EXT-08 is ready.",
+    "Design Lock is forbidden until main-SHA revalidation succeeds."
+  ],
+  "github_actions_authority": false,
+  "final_claim_allowed": false
+}
