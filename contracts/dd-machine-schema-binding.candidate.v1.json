@@ -1,0 +1,20 @@
+{
+  "contract":"ONSURE_DD_MACHINE_SCHEMA_BINDING_V1",
+  "status":"SCHEMA_BINDING_MATERIALIZED_EXECUTION_NOT_RUN_NONFINAL",
+  "binding_model":"GENERIC_SCHEMA_PLUS_EXACT_DD_OPERATION_IDENTITY",
+  "request":{
+    "schema_file":"contracts/dd-assurance-request.candidate.v1.schema.json",
+    "registry_id_pattern":"^dd(00[1-9]|0[1-3][0-9]|040)\\.[a-z0-9-]+\\.request\\.v1$",
+    "runtime_binding":["dd_id must equal registry row dd","operation is selected from registry and cannot be caller-overridden","server authority fields cannot be caller supplied"]
+  },
+  "result":{
+    "schema_file":"contracts/dd-assurance-result.candidate.v1.schema.json",
+    "registry_id_pattern":"^dd(00[1-9]|0[1-3][0-9]|040)\\.[a-z0-9-]+\\.result\\.v1$",
+    "runtime_binding":["dd_id must equal registry row dd","operation must equal registry row operation","final_claim_allowed is always false","nonpositive decision cannot strengthen claim"]
+  },
+  "reason_for_not_generating_80_duplicate_files":"The semantic variation is carried by the exact registry DD/operation binding and fixture/oracle contract. Duplicating an otherwise identical structural schema 80 times would create drift risk without adding enforcement strength.",
+  "schema_specific_semantic_evaluators":"OPEN",
+  "execution_evidence":"NOT_RUN_BY_CURRENT_AUTHORIZED_METHOD",
+  "github_actions_authority":false,
+  "final_claim_allowed":false
+}
