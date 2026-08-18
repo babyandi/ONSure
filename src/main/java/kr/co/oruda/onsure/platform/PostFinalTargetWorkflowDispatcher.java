@@ -43,17 +43,17 @@ public final class PostFinalTargetWorkflowDispatcher {
     }
 
     private Map<String, Object> envelope(String operation, Map<String, Object> result) {
-        return Map.of(
-                "contract", CONTRACT,
-                "route", "POST_FINAL_TARGET_DD_FAIL_CLOSED",
-                "operation", operation,
-                "result", result,
-                "authenticated_actor", identity.actorId(),
-                "authenticated_tenant", identity.tenantId(),
-                "assurance_class", "SELF_VALIDATION_NONFINAL",
-                "semantic_completion", "NOT_QUALIFIED",
-                "independent_otester", "NOT_RUN",
-                "independent_oaudit", "NOT_RUN",
-                "final_claim_allowed", false);
+        return Map.ofEntries(
+                Map.entry("contract", CONTRACT),
+                Map.entry("route", "POST_FINAL_TARGET_DD_FAIL_CLOSED"),
+                Map.entry("operation", operation),
+                Map.entry("result", result),
+                Map.entry("authenticated_actor", identity.actorId()),
+                Map.entry("authenticated_tenant", identity.tenantId()),
+                Map.entry("assurance_class", "SELF_VALIDATION_NONFINAL"),
+                Map.entry("semantic_completion", "NOT_QUALIFIED"),
+                Map.entry("independent_otester", "NOT_RUN"),
+                Map.entry("independent_oaudit", "NOT_RUN"),
+                Map.entry("final_claim_allowed", false));
     }
 }
