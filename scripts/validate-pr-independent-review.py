@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,hashlib,json,sys
+import argparse,hashlib,json
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+
+def digest_payload(d:dict)->str:
+    x=dict(d); x.pop('receipt_digest',None)
+    return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 def main()->int:
     ap=argparse.ArgumentParser()
@@ -26,8 +30,10 @@ def main()->int:
         if data.get('final_claim_allowed') is not False: reasons.append('PR_REVIEW_FINAL_CLAIM_NOT_FALSE')
         if not data.get('reviewer_principal'): reasons.append('PR_REVIEWER_PRINCIPAL_MISSING')
         if not data.get('source_ref'): reasons.append('PR_REVIEW_SOURCE_REF_MISSING')
-        if not str(data.get('receipt_digest','')).isalnum() or len(str(data.get('receipt_digest','')))!=64: reasons.append('PR_REVIEW_RECEIPT_DIGEST_INVALID')
-    out={'contract':'ONSURE_PR_INDEPENDENT_REVIEW_VALIDATION_V1','expected_head_sha':args.expected_head_sha,'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','final_claim_allowed':False}
+        digest=str(data.get('receipt_digest',''))
+        if len(digest)!=64 or any(c not in '0123456789abcdef' for c in digest): reasons.append('PR_REVIEW_RECEIPT_DIGEST_INVALID')
+        elif digest!=digest_payload(data): reasons.append('PR_REVIEW_RECEIPT_DIGEST_MISMATCH')
+    out={'contract':'ONSURE_PR_INDEPENDENT_REVIEW_VALIDATION_V2','expected_head_sha':args.expected_head_sha,'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','github_actions_authority':False,'final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 71
 
 if __name__=='__main__': raise SystemExit(main())
