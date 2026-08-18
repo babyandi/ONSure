@@ -29,7 +29,7 @@ def main()->int:
     for p in required_files:
         if not p.is_file(): reasons.append(f'MISSING_FILE:{p.relative_to(ROOT)}')
     if reasons:
-        print(json.dumps({'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V3','blocking_reasons':reasons,'decision':'HOLD_NONFINAL','final_claim_allowed':False},sort_keys=True)); return 36
+        print(json.dumps({'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V4','blocking_reasons':reasons,'decision':'HOLD_NONFINAL','final_claim_allowed':False},sort_keys=True)); return 36
     reg=load(REG); fixtures=load(FIX); binding=load(BIND); ops=set(load(OPS)['operations']); req=load(REQ); res=load(RES)
     qstatus=load(QUAL_STATUS); obligation=load(OBLIGATION)
     java=JAVA.read_text(encoding='utf-8'); eval_java=EVALUATORS.read_text(encoding='utf-8'); resolver_java=RESOLVER.read_text(encoding='utf-8')
@@ -76,7 +76,6 @@ def main()->int:
     fail_closed_tokens=['"HOLD"','"SEMANTIC_EVALUATOR_NOT_INDEPENDENTLY_QUALIFIED"','"claim_strengthening_allowed", false','"external_effect_performed", false','"final_claim_allowed", false']
     if any(t not in java for t in fail_closed_tokens): reasons.append('JAVA_FAIL_CLOSED_TOKENS_MISSING')
 
-    # Concrete semantic evaluator population and trusted evidence boundary.
     specs=SPEC_RE.findall(eval_java)
     spec_dd=[s[0] for s in specs]
     if len(specs)!=40 or set(spec_dd)!=expected or len(set(spec_dd))!=40: reasons.append('CONCRETE_EVALUATOR_DD_DENOMINATOR_NOT_EXACT_40')
@@ -93,13 +92,16 @@ def main()->int:
     if status_dd!=expected or len(status_rows)!=40: reasons.append('EVALUATOR_QUALIFICATION_STATUS_DENOMINATOR_NOT_EXACT_40')
     implemented=[r for r in status_rows if r.get('implementation_state')=='CODE_MATERIALIZED_UNVERIFIED']
     if len(implemented)!=40: reasons.append('CONCRETE_EVALUATOR_STATUS_NOT_40_CODE_MATERIALIZED_UNVERIFIED')
-    if any(r.get('qualification_state')=='QUALIFIED_NONFINAL' for r in status_rows):
-        reasons.append('STATIC_MACHINE_VALIDATOR_CANNOT_ACCEPT_QUALIFICATION_WITHOUT_RECEIPT_VALIDATOR')
+    qualified=sum(1 for r in status_rows if r.get('qualification_state')=='QUALIFIED_NONFINAL')
     summary=qstatus.get('summary',{})
-    if summary.get('code_materialized_unverified_count')!=40 or summary.get('qualified_nonfinal_count')!=0:
-        reasons.append('EVALUATOR_QUALIFICATION_STATUS_SUMMARY_MISMATCH')
+    if summary.get('code_materialized_unverified_count')!=40:
+        reasons.append('EVALUATOR_CODE_MATERIALIZATION_STATUS_SUMMARY_MISMATCH')
+    if summary.get('qualified_nonfinal_count')!=qualified:
+        reasons.append('EVALUATOR_QUALIFICATION_COUNT_SUMMARY_MISMATCH')
+    if not 0 <= qualified <= 40:
+        reasons.append('EVALUATOR_QUALIFICATION_COUNT_OUT_OF_RANGE')
 
-    out={'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V3','dd_count':len(rows),'fixture_count':len(frows),'workflow_operation_match_count':len(registry_ops & ops),'java_route_match_count':len(set(reg_pairs)&set(java_pairs))-len(mismatch_java),'concrete_evaluator_spec_count':len(specs),'code_materialized_unverified_count':len(implemented),'independently_qualified_count':summary.get('qualified_nonfinal_count',0),'schema_binding_model':binding.get('binding_model'),'generic_request_schema':REQ.relative_to(ROOT).as_posix(),'generic_result_schema':RES.relative_to(ROOT).as_posix(),'trusted_evidence_resolver':RESOLVER.relative_to(ROOT).as_posix(),'execution_evidence_established':False,'github_actions_authority':False,'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','final_claim_allowed':False}
+    out={'contract':'ONSURE_DD_MACHINE_DEFINITION_VALIDATION_V4','dd_count':len(rows),'fixture_count':len(frows),'workflow_operation_match_count':len(registry_ops & ops),'java_route_match_count':len(set(reg_pairs)&set(java_pairs))-len(mismatch_java),'concrete_evaluator_spec_count':len(specs),'code_materialized_unverified_count':len(implemented),'independently_qualified_count_disclosure_only':qualified,'qualification_authority':'scripts/validate-dd-semantic-evaluator-qualifications.py','schema_binding_model':binding.get('binding_model'),'generic_request_schema':REQ.relative_to(ROOT).as_posix(),'generic_result_schema':RES.relative_to(ROOT).as_posix(),'trusted_evidence_resolver':RESOLVER.relative_to(ROOT).as_posix(),'execution_evidence_established':False,'github_actions_authority':False,'blocking_reasons':sorted(set(reasons)),'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL','final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 36
 if __name__=='__main__':
     try: raise SystemExit(main())
