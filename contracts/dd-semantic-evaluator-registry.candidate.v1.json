@@ -1,12 +1,21 @@
 {
   "contract":"ONSURE_DD_SEMANTIC_EVALUATOR_REGISTRY_V1",
-  "status":"EVALUATOR_OBLIGATIONS_MATERIALIZED_IMPLEMENTATION_OPEN_NONFINAL",
-  "model":"DECLARATIVE_OBLIGATION_REGISTRY_WITH_GENERIC_FAIL_CLOSED_RUNTIME",
+  "status":"CONCRETE_EVALUATOR_CODE_MATERIALIZED_COMPILE_AND_QUALIFICATION_OPEN_NONFINAL",
+  "model":"DECLARATIVE_OBLIGATION_REGISTRY_WITH_GENERIC_TRUSTED_EVIDENCE_FAIL_CLOSED_RUNTIME",
+  "implementation_refs":{
+    "concrete_evaluators":"src/main/java/kr/co/oruda/onsure/platform/BuiltInDdSemanticEvaluators.java",
+    "evidence_resolver":"src/main/java/kr/co/oruda/onsure/platform/DdEvidenceResolver.java",
+    "evaluator_interface":"src/main/java/kr/co/oruda/onsure/platform/DdSemanticEvaluator.java",
+    "qualification_registry":"src/main/java/kr/co/oruda/onsure/platform/DdSemanticEvaluatorRegistry.java",
+    "runtime":"src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java"
+  },
   "global_rules":[
     "Missing required semantic inputs => HOLD or INCONCLUSIVE, never PASS.",
-    "A caller-supplied decision, authority outcome, denominator reduction or final-claim flag is never trusted as an oracle.",
+    "A caller-supplied decision, authority outcome, denominator reduction, context fact or final-claim flag is never trusted as an oracle.",
+    "Semantic facts must be resolved from integrity-verified and current evidence through DdEvidenceResolver.",
     "Every evaluator must emit consumed evidence identities and policy/authority versions.",
-    "PASS_NONFINAL, when eventually implemented, requires a qualified evaluator plus its DD-specific positive oracle; this registry alone cannot authorize PASS.",
+    "Concrete code materialization does not imply compile success, runtime evidence or qualification.",
+    "PASS_NONFINAL requires a current independently-qualified evaluator plus its DD-specific positive oracle; this registry alone cannot authorize PASS.",
     "External-effect DDs require effect_performed=false unless a separate current human/target authority explicitly permits the effect."
   ],
   "rows":[
@@ -51,7 +60,14 @@
     {"dd":"DD-039","evaluator":"OBSERVATION_COVERAGE_OPERATING_EFFECTIVENESS","required_inputs":["observation_window","collector_health","sampling","coverage_gaps","events"],"safe_floor":"material observation gap => HOLD/INCONCLUSIVE","positive_oracle":"sufficient observation supports bounded effectiveness claim"},
     {"dd":"DD-040","evaluator":"DISCOVERY_SATURATION_INDEPENDENCE","required_inputs":["frozen_tree","authority_digest","wave_a","wave_b","independence_lineage","new_p0_counts"],"safe_floor":"same context, mismatch, contamination or new P0 => FAIL/HOLD","positive_oracle":"two uncontaminated independent waves on exact same baseline each new P0=0"}
   ],
-  "summary":{"dd_count":40,"evaluator_obligation_count":40,"implemented_qualified_evaluator_count":0},
+  "summary":{
+    "dd_count":40,
+    "evaluator_obligation_count":40,
+    "concrete_code_materialized_count":40,
+    "compile_verified_count":0,
+    "runtime_evidenced_count":0,
+    "independently_qualified_count":0
+  },
   "github_actions_authority":false,
   "final_claim_allowed":false
 }
