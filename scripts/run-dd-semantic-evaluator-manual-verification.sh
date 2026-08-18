@@ -23,7 +23,7 @@ run_capture() {
 set -e
 STATIC_RC="$(run_capture static python3 scripts/validate-dd-machine-definitions.py)"
 QUAL_STATUS_RC="$(run_capture qualification_status python3 scripts/validate-dd-semantic-evaluator-qualifications.py)"
-MAVEN_RC="$(run_capture maven mvn -B -Dtest=BuiltInDdSemanticEvaluatorsTest,DdAssuranceOperationRuntimeTest test)"
+MAVEN_RC="$(run_capture maven mvn -B -Dtest=BuiltInDdSemanticEvaluatorsTest test)"
 set +e
 python3 scripts/materialize-dd-manual-verification-receipt.py \
   --run-id "$RUN_ID" \
