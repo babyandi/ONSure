@@ -1,0 +1,35 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/independent-clean-receipt/v1",
+  "title":"ONSure Independent CLEAN Receipt",
+  "type":"object",
+  "required":["contract","clean_id","source_commit_sha","source_tree_sha","requirement_manifest_digest","authority_population_digest","coverage_digest","verifier_principal","verifier_process_lineage","model_or_method_lineage","common_control_attestation","blocking_finding_count","decision","verified_at","receipt_digest","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_INDEPENDENT_CLEAN_RECEIPT_V1"},
+    "clean_id":{"enum":["INDEPENDENT-CLEAN-A","INDEPENDENT-CLEAN-B"]},
+    "source_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "source_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "requirement_manifest_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "authority_population_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "coverage_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "verifier_principal":{"type":"string","minLength":1},
+    "verifier_process_lineage":{"type":"string","minLength":1},
+    "model_or_method_lineage":{"type":"string","minLength":1},
+    "common_control_attestation":{
+      "type":"object",
+      "required":["common_control_present","details","independence_still_satisfied"],
+      "properties":{
+        "common_control_present":{"type":"boolean"},
+        "details":{"type":"array","items":{"type":"string"}},
+        "independence_still_satisfied":{"const":true}
+      },
+      "additionalProperties":true
+    },
+    "blocking_finding_count":{"const":0},
+    "decision":{"const":"CLEAN"},
+    "verified_at":{"type":"string","format":"date-time"},
+    "receipt_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}
