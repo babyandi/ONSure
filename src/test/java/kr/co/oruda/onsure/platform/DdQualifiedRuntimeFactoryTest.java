@@ -3,7 +3,9 @@ package kr.co.oruda.onsure.platform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,13 +36,13 @@ class DdQualifiedRuntimeFactoryTest {
 
     @Test
     void partialActivationFailsClosedInsteadOfDowngradingSilently() throws Exception {
-        writeActivation(39, false);
+        writeActivation(39, false, false);
         assertThrows(IllegalStateException.class, () -> DdQualifiedRuntimeFactory.loadOrUnqualified(tmp));
     }
 
     @Test
     void exactReceiptBackedActivationAndDigestBoundEvidenceCanExecuteQualifiedPredicate() throws Exception {
-        writeActivation(40, false);
+        writeActivation(40, false, false);
         Path evidence = tmp.resolve("evidence/dd001.json");
         Files.createDirectories(evidence.getParent());
         Files.writeString(evidence, "{\"facts\":{\"mandatory_dimensions\":[\"a\",\"b\"],\"observed_dimensions\":[\"a\",\"b\",\"c\"]}}", StandardCharsets.UTF_8);
@@ -54,13 +56,19 @@ class DdQualifiedRuntimeFactoryTest {
 
     @Test
     void forgedActivationDigestIsRejected() throws Exception {
-        writeActivation(40, true);
+        writeActivation(40, true, false);
+        assertThrows(IllegalStateException.class, () -> DdQualifiedRuntimeFactory.loadOrUnqualified(tmp));
+    }
+
+    @Test
+    void wrongEvaluatorArtifactDigestIsRejected() throws Exception {
+        writeActivation(40, false, true);
         assertThrows(IllegalStateException.class, () -> DdQualifiedRuntimeFactory.loadOrUnqualified(tmp));
     }
 
     @Test
     void wrongEvidenceDigestCannotDrivePositiveClaim() throws Exception {
-        writeActivation(40, false);
+        writeActivation(40, false, false);
         Path evidence = tmp.resolve("evidence/dd001.json");
         Files.createDirectories(evidence.getParent());
         Files.writeString(evidence, "{\"facts\":{\"mandatory_dimensions\":[\"a\"],\"observed_dimensions\":[\"a\"]}}", StandardCharsets.UTF_8);
@@ -71,30 +79,64 @@ class DdQualifiedRuntimeFactoryTest {
         assertEquals("HOLD", result.get("decision"));
     }
 
-    private void writeActivation(int count, boolean forgeFirstDigest) throws Exception {
+    private void writeActivation(int count, boolean forgeFirstDigest, boolean forgeFirstArtifact) throws Exception {
         Path dir = tmp.resolve(".onsure/dd-runtime"); Files.createDirectories(dir);
         Path receipts = tmp.resolve("receipts/dd-semantic-evaluator-qualification"); Files.createDirectories(receipts);
         List<Map<String,Object>> rows = new ArrayList<>();
+        String artifactSha = classArtifactSha256(BuiltInDdSemanticEvaluators.class);
+        Instant qualifiedAt = Instant.now().minus(1, ChronoUnit.MINUTES);
+        Instant expiresAt = Instant.now().plus(1, ChronoUnit.DAYS);
         for (int n=1;n<=count;n++) {
             String dd=String.format("DD-%03d",n);
             String evaluatorId="builtin-"+dd.toLowerCase();
             Map<String,Object> receipt=new LinkedHashMap<>();
             receipt.put("contract","ONSURE_DD_SEMANTIC_EVALUATOR_QUALIFICATION_V1");
-            receipt.put("dd_id",dd); receipt.put("evaluator_id",evaluatorId); receipt.put("evaluator_version",BuiltInDdSemanticEvaluators.VERSION);
-            receipt.put("source_tree_sha",TREE); receipt.put("decision","QUALIFIED_NONFINAL"); receipt.put("final_claim_allowed",false);
-            receipt.put("expires_at",Instant.now().plus(1, ChronoUnit.DAYS).toString());
-            receipt.put("independence_attestation",Map.of("independent_from_evaluator_authoring",true,"independent_from_target_claim_author",true,"common_control_disclosed",true));
+            receipt.put("dd_id",dd);
+            receipt.put("evaluator_id",evaluatorId);
+            receipt.put("evaluator_version",BuiltInDdSemanticEvaluators.VERSION);
+            receipt.put("evaluator_artifact_sha256",forgeFirstArtifact && n==1 ? "e".repeat(64) : artifactSha);
+            receipt.put("source_tree_sha",TREE);
+            receipt.put("obligation_registry_sha256","b".repeat(64));
+            receipt.put("policy_authority_digests",List.of("c".repeat(64)));
+            receipt.put("qualification_principal","independent:test-reviewer-"+n);
+            receipt.put("qualification_process_lineage","independent:test-process-"+n);
+            receipt.put("independence_attestation",Map.of(
+                    "independent_from_evaluator_authoring",true,
+                    "independent_from_target_claim_author",true,
+                    "common_control_disclosed",true));
+            receipt.put("fixture_results",fixtureResults(dd));
+            receipt.put("positive_oracle_refs",List.of("oracle:"+dd));
+            receipt.put("qualified_at",qualifiedAt.toString());
+            receipt.put("expires_at",expiresAt.toString());
+            receipt.put("decision","QUALIFIED_NONFINAL");
+            receipt.put("final_claim_allowed",false);
             String digest=canonicalDigest(receipt); receipt.put("receipt_digest",digest);
             Path rp=receipts.resolve(dd+".json"); Files.writeString(rp,JSON.writeValueAsString(receipt),StandardCharsets.UTF_8);
-            Map<String,Object> row=new LinkedHashMap<>(); row.put("dd_id",dd); row.put("evaluator_id",evaluatorId);
-            row.put("evaluator_version",BuiltInDdSemanticEvaluators.VERSION); row.put("qualification_receipt_ref",tmp.relativize(rp).toString().replace('\\','/'));
+            Map<String,Object> row=new LinkedHashMap<>();
+            row.put("dd_id",dd); row.put("evaluator_id",evaluatorId);
+            row.put("evaluator_version",BuiltInDdSemanticEvaluators.VERSION);
+            row.put("qualification_receipt_ref",tmp.relativize(rp).toString().replace('\\','/'));
             row.put("qualification_receipt_digest",forgeFirstDigest && n==1 ? "f".repeat(64) : digest);
             row.put("qualification_current",true); row.put("independent_qualification",true); rows.add(row);
         }
-        Map<String,Object> doc=new LinkedHashMap<>(); doc.put("contract",DdQualifiedRuntimeFactory.CONTRACT);
+        Map<String,Object> doc=new LinkedHashMap<>();
+        doc.put("contract",DdQualifiedRuntimeFactory.CONTRACT);
         doc.put("source_commit_sha","2".repeat(40)); doc.put("source_tree_sha",TREE); doc.put("qualified_count",count);
         doc.put("rows",rows); doc.put("generated_at",Instant.now().toString()); doc.put("github_actions_authority",false); doc.put("final_claim_allowed",false);
         Files.writeString(dir.resolve("activation.json"),JSON.writeValueAsString(doc),StandardCharsets.UTF_8);
+    }
+
+    private static Map<String,Object> fixtureResults(String dd) {
+        Map<String,Object> result = new LinkedHashMap<>();
+        for (String klass : List.of("positive","negative","recovery","adversarial")) {
+            result.put(klass, Map.of(
+                    "executed_count",1,
+                    "passed_count",1,
+                    "failed_count",0,
+                    "fixture_ids",List.of(dd+"-"+klass.toUpperCase()),
+                    "evidence_refs",List.of("evidence:"+dd+":"+klass)));
+        }
+        return result;
     }
 
     private void writeEvidenceIndex(Path evidence, String digest) throws Exception {
@@ -107,9 +149,35 @@ class DdQualifiedRuntimeFactoryTest {
         Files.writeString(dir.resolve("evidence-index.json"),JSON.writeValueAsString(doc),StandardCharsets.UTF_8);
     }
 
-    private static String canonicalDigest(Map<String,Object> source) throws Exception {
-        byte[] bytes=JSON.writeValueAsBytes(new TreeMap<>(source)); return sha256(bytes);
+    private static String classArtifactSha256(Class<?> type) throws Exception {
+        try (InputStream in = type.getResourceAsStream(type.getSimpleName()+".class")) {
+            if (in == null) throw new IllegalStateException("TEST_CLASS_ARTIFACT_UNAVAILABLE");
+            return sha256(in.readAllBytes());
+        }
     }
+
+    private static String canonicalDigest(Map<String,Object> source) throws Exception {
+        JsonNode node = JSON.valueToTree(source);
+        byte[] bytes=JSON.writeValueAsBytes(canonical(node));
+        return sha256(bytes);
+    }
+
+    private static Object canonical(JsonNode node) {
+        if (node.isObject()) {
+            Map<String,Object> map=new TreeMap<>();
+            node.fields().forEachRemaining(e -> map.put(e.getKey(), canonical(e.getValue())));
+            return map;
+        }
+        if (node.isArray()) {
+            List<Object> out=new ArrayList<>(); node.forEach(v -> out.add(canonical(v))); return out;
+        }
+        if (node.isBoolean()) return node.booleanValue();
+        if (node.isIntegralNumber()) return node.longValue();
+        if (node.isFloatingPointNumber()) return node.decimalValue();
+        if (node.isNull()) return null;
+        return node.asText();
+    }
+
     private static String sha256(byte[] bytes) throws Exception {
         byte[] d=MessageDigest.getInstance("SHA-256").digest(bytes); StringBuilder sb=new StringBuilder();
         for(byte b:d) sb.append(String.format("%02x",b)); return sb.toString();
