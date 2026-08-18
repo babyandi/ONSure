@@ -30,10 +30,13 @@ def main()->int:
     if not DISC.exists(): blockers.append('DISCOVERY_SATURATION_RECEIPT_MISSING')
     else:
         d=load(DISC)
+        if d.get('contract')!='ONSURE_DESIGN_DISCOVERY_SATURATION_RECEIPT_V5': blockers.append('DISCOVERY_SATURATION_RECEIPT_NOT_V5')
         if not d.get('saturation_candidate'): blockers.append('DISCOVERY_SATURATION_NOT_PROVEN')
-        if not d.get('tracked_evidence_inputs'): blockers.append('DISCOVERY_SATURATION_NOT_TRACKED')
+        if d.get('evidence_custody_mode') not in ('EXTERNAL_IMMUTABLE','LOCAL_NONTRACKED'): blockers.append('DISCOVERY_SATURATION_CUSTODY_INVALID')
+        if d.get('github_actions_authority') is not False: blockers.append('DISCOVERY_SATURATION_ACTIONS_AUTHORITY_INVALID')
 
     env=os.environ.copy()
+    if run([sys.executable,'scripts/validate-design-discovery-saturation.py'],env): blockers.append('DISCOVERY_SATURATION_REVALIDATION_NOT_PASS')
     if run([sys.executable,'scripts/validate-human-design-authority-decisions.py'],env): blockers.append('HUMAN_DESIGN_AUTHORITY_OPEN')
     if run([sys.executable,'scripts/validate-dd-semantic-evaluator-qualifications.py','--require-all-qualified'],env): blockers.append('DD_EVALUATOR_QUALIFICATION_40_OF_40_NOT_PROVEN')
     if run([sys.executable,'scripts/validate-dd-semantic-runtime-evidence.py','--source-commit-sha',head,'--source-tree-sha',tree,'--require-all-pass'],env): blockers.append('DD_TARGET_RUNTIME_EVIDENCE_40_OF_40_NOT_PROVEN')
@@ -73,7 +76,7 @@ def main()->int:
                 _,ancestor_rc=git('merge-base','--is-ancestor',reviewed_head,head,check=False)
                 if ancestor_rc: blockers.append('REVIEWED_PR_HEAD_NOT_ANCESTOR_OF_MAIN_LOCK_SUBJECT')
 
-    receipt={'contract':'ONSURE_DESIGN_LOCK_RECEIPT_V4','subject_commit_sha':head,'subject_tree_sha':tree,'ref_name':ref,'requirement_manifest_digest':c.get('requirement_manifest_digest'),'authority_population_digest':c.get('authority_population_digest'),'preclean_subject_digest':c.get('preclean_subject_digest'),'coverage_digest':c.get('coverage_digest'),'blocking_reasons':sorted(set(blockers)),'decision':'DESIGN_LOCKED_NONFINAL_PRODUCT_AUTHORITY' if not blockers else 'HOLD_NONFINAL','design_lock':not blockers,'final_lock':False,'production_go':False,'commercial_go':False,'github_actions_authority':False,'final_claim_allowed':False}
+    receipt={'contract':'ONSURE_DESIGN_LOCK_RECEIPT_V5','subject_commit_sha':head,'subject_tree_sha':tree,'ref_name':ref,'requirement_manifest_digest':c.get('requirement_manifest_digest'),'authority_population_digest':c.get('authority_population_digest'),'preclean_subject_digest':c.get('preclean_subject_digest'),'coverage_digest':c.get('coverage_digest'),'blocking_reasons':sorted(set(blockers)),'decision':'DESIGN_LOCKED_NONFINAL_PRODUCT_AUTHORITY' if not blockers else 'HOLD_NONFINAL','design_lock':not blockers,'final_lock':False,'production_go':False,'commercial_go':False,'github_actions_authority':False,'final_claim_allowed':False}
     out=BASE/'design-lock-receipt.json'; out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(receipt,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
     print(json.dumps(receipt,ensure_ascii=False,sort_keys=True)); return 0 if not blockers else 70
 if __name__=='__main__':
