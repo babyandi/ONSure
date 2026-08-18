@@ -51,7 +51,9 @@ public final class FileBackedDdEvidenceResolver implements DdEvidenceResolver {
             String tree = doc.path("source_tree_sha").asText("");
             if (!tree.matches("[0-9a-f]{40}")) throw new IllegalStateException("DD_EVIDENCE_INDEX_TREE_INVALID");
             if (expectedTreeSha != null && !expectedTreeSha.equals(tree)) throw new IllegalStateException("DD_EVIDENCE_INDEX_TREE_MISMATCH");
-            Path evidenceBase = index.getParent();
+            String pathBase = doc.path("path_base").asText("");
+            if (!Set.of("WORKSPACE_ROOT","INDEX_DIRECTORY").contains(pathBase)) throw new IllegalStateException("DD_EVIDENCE_INDEX_PATH_BASE_INVALID");
+            Path relativeBase = "WORKSPACE_ROOT".equals(pathBase) ? root : index.getParent();
             Map<String, Entry> entries = new LinkedHashMap<>();
             for (JsonNode row : doc.path("rows")) {
                 String ref = row.path("evidence_ref").asText("");
@@ -66,8 +68,8 @@ public final class FileBackedDdEvidenceResolver implements DdEvidenceResolver {
                 }
                 if (ref.isBlank() || rel.isBlank() || !sha.matches("[0-9a-f]{64}") || ddIds.isEmpty()) throw new IllegalStateException("DD_EVIDENCE_INDEX_ROW_INVALID");
                 Path declared = Path.of(rel);
-                Path p = declared.isAbsolute() ? declared.normalize() : evidenceBase.resolve(declared).normalize();
-                if (!declared.isAbsolute() && !p.startsWith(evidenceBase)) throw new SecurityException("DD_EVIDENCE_PATH_ESCAPE:" + rel);
+                Path p = declared.isAbsolute() ? declared.normalize() : relativeBase.resolve(declared).normalize();
+                if (!declared.isAbsolute() && !p.startsWith(relativeBase)) throw new SecurityException("DD_EVIDENCE_PATH_ESCAPE:" + rel);
                 Entry prior = entries.putIfAbsent(ref, new Entry(ref, Set.copyOf(ddIds), p, sha, row.path("current").asBoolean(false), authority));
                 if (prior != null) throw new IllegalStateException("DD_EVIDENCE_REF_DUPLICATE:" + ref);
             }
