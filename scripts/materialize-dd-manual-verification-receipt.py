@@ -8,6 +8,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+TEST_CLASSES = (
+    "BuiltInDdSemanticEvaluatorsTest",
+    "DdSemanticEvaluatorQualificationFixtureTest",
+)
 
 
 def sha256(path: Path) -> str | None:
@@ -16,24 +20,33 @@ def sha256(path: Path) -> str | None:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
-
-
 def parse_surefire() -> dict:
-    report_dir = ROOT / "target" / "surefire-reports"
-    xmls = sorted(report_dir.glob("TEST-kr.co.oruda.onsure.platform.BuiltInDdSemanticEvaluatorsTest.xml"))
-    if not xmls:
-        return {"report_present": False, "tests": 0, "failures": 0, "errors": 0, "skipped": 0, "report_sha256": None}
     import xml.etree.ElementTree as ET
-    root = ET.fromstring(xmls[-1].read_bytes())
+    report_dir = ROOT / "target" / "surefire-reports"
+    reports = []
+    totals = {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+    for klass in TEST_CLASSES:
+        path = report_dir / f"TEST-kr.co.oruda.onsure.platform.{klass}.xml"
+        if not path.is_file():
+            reports.append({"test_class": klass, "report_present": False, "report_sha256": None})
+            continue
+        root = ET.fromstring(path.read_bytes())
+        item = {
+            "test_class": klass,
+            "report_present": True,
+            "tests": int(root.attrib.get("tests", 0)),
+            "failures": int(root.attrib.get("failures", 0)),
+            "errors": int(root.attrib.get("errors", 0)),
+            "skipped": int(root.attrib.get("skipped", 0)),
+            "report_sha256": sha256(path),
+        }
+        reports.append(item)
+        for key in totals:
+            totals[key] += item[key]
     return {
-        "report_present": True,
-        "tests": int(root.attrib.get("tests", 0)),
-        "failures": int(root.attrib.get("failures", 0)),
-        "errors": int(root.attrib.get("errors", 0)),
-        "skipped": int(root.attrib.get("skipped", 0)),
-        "report_sha256": sha256(xmls[-1]),
+        "all_reports_present": all(r["report_present"] for r in reports),
+        "reports": reports,
+        **totals,
     }
 
 
@@ -57,18 +70,27 @@ def main() -> int:
         ROOT / "src/main/java/kr/co/oruda/onsure/platform/DdSemanticEvaluator.java",
         ROOT / "src/main/java/kr/co/oruda/onsure/platform/DdSemanticEvaluatorRegistry.java",
         ROOT / "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java",
+        ROOT / "contracts/dd-semantic-evaluator-qualification-fixture-plan.candidate.v1.json",
     ]
+    fixture_report = next((r for r in surefire["reports"] if r["test_class"] == "DdSemanticEvaluatorQualificationFixtureTest"), {})
+    exact_160_fixture_mechanics = (
+        fixture_report.get("report_present") is True
+        and fixture_report.get("tests") == 160
+        and fixture_report.get("failures") == 0
+        and fixture_report.get("errors") == 0
+        and fixture_report.get("skipped") == 0
+    )
     all_ok = (
         args.static_rc == 0
         and args.qualification_status_rc == 0
         and args.maven_rc == 0
-        and surefire["report_present"]
+        and surefire["all_reports_present"]
         and surefire["failures"] == 0
         and surefire["errors"] == 0
-        and surefire["tests"] >= 6
+        and exact_160_fixture_mechanics
     )
     receipt = {
-        "contract": "ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V1",
+        "contract": "ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V2",
         "run_id": args.run_id,
         "source_tree_sha": args.source_tree_sha,
         "started_at": args.started_at,
@@ -83,12 +105,19 @@ def main() -> int:
         "claims": {
             "concrete_evaluator_code_materialized_count": 40,
             "compile_and_targeted_junit_established": all_ok,
-            "fixture_mechanics_established": all_ok,
+            "qualification_fixture_denominator": 160,
+            "qualification_fixture_mechanics_executed_count": 160 if exact_160_fixture_mechanics else 0,
+            "qualification_fixture_mechanics_established": exact_160_fixture_mechanics,
             "independent_evaluator_qualification_count": 0,
             "semantic_runtime_evidence_count": 0,
             "independent_clean": False,
             "design_lock": False,
         },
+        "limitations": [
+            "Synthetic fixture mechanics are not independent evaluator qualification.",
+            "This receipt cannot promote any DD evaluator to QUALIFIED_NONFINAL.",
+            "Semantic runtime evidence remains separate and must use target/current evidence rather than synthetic mechanics fixtures."
+        ],
         "verdict": "PASS_NONFINAL_EXECUTION_MECHANICS_ONLY" if all_ok else "HOLD_NONFINAL",
         "github_actions_authority": False,
         "final_claim_allowed": False,
