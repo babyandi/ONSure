@@ -8,7 +8,13 @@ cd "$ROOT"
 : "${ONSURE_DD_EXECUTION_ENVIRONMENT:?ONSURE_DD_EXECUTION_ENVIRONMENT is required}"
 
 RAW="${ONSURE_DD_RUNTIME_RAW:-.onsure/dd-runtime/raw-execution.json}"
-EVIDENCE_INDEX="${ONSURE_DD_EVIDENCE_INDEX:-.onsure/dd-runtime/evidence-index.json}"
+if [[ -n "${ONSURE_DD_EVIDENCE_INDEX_SOURCE:-}" ]]; then
+  STAGED_INDEX="${ONSURE_DD_EVIDENCE_INDEX_STAGED:-.onsure/dd-runtime/evidence-index.json}"
+  python3 scripts/stage-dd-evidence-index.py --input "$ONSURE_DD_EVIDENCE_INDEX_SOURCE" --output "$STAGED_INDEX"
+  EVIDENCE_INDEX="$STAGED_INDEX"
+else
+  EVIDENCE_INDEX="${ONSURE_DD_EVIDENCE_INDEX:-.onsure/dd-runtime/evidence-index.json}"
+fi
 export ONSURE_DD_EVIDENCE_INDEX="$EVIDENCE_INDEX"
 TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
 COMMIT_SHA="$(git rev-parse HEAD)"
