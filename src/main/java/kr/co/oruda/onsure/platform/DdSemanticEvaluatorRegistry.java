@@ -20,9 +20,19 @@ public final class DdSemanticEvaluatorRegistry {
                 throw new IllegalArgumentException("DD_EVALUATOR_ID_INVALID");
             }
             if (evaluatorId == null || evaluatorId.isBlank()
-                    || evaluatorVersion == null || evaluatorVersion.isBlank()
-                    || qualificationReceiptDigest == null || qualificationReceiptDigest.isBlank()) {
-                throw new IllegalArgumentException("DD_EVALUATOR_QUALIFICATION_PROVENANCE_REQUIRED");
+                    || evaluatorVersion == null || evaluatorVersion.isBlank()) {
+                throw new IllegalArgumentException("DD_EVALUATOR_PROVENANCE_REQUIRED");
+            }
+            if (qualificationCurrent || independentQualification) {
+                if (!(qualificationCurrent && independentQualification)) {
+                    throw new IllegalArgumentException("DD_EVALUATOR_PARTIAL_QUALIFICATION_FORBIDDEN");
+                }
+                if (qualificationReceiptDigest == null || qualificationReceiptDigest.isBlank()
+                        || "UNQUALIFIED".equals(qualificationReceiptDigest)) {
+                    throw new IllegalArgumentException("DD_EVALUATOR_QUALIFICATION_RECEIPT_REQUIRED");
+                }
+            } else if (qualificationReceiptDigest == null || qualificationReceiptDigest.isBlank()) {
+                qualificationReceiptDigest = "UNQUALIFIED";
             }
         }
     }
@@ -42,6 +52,18 @@ public final class DdSemanticEvaluatorRegistry {
 
     public static DdSemanticEvaluatorRegistry empty() {
         return new DdSemanticEvaluatorRegistry(List.of());
+    }
+
+    public static DdSemanticEvaluatorRegistry builtInUnqualified() {
+        return new DdSemanticEvaluatorRegistry(BuiltInDdSemanticEvaluators.all().stream()
+                .map(evaluator -> new Registration(
+                        evaluator,
+                        "builtin-" + evaluator.ddId().toLowerCase(),
+                        BuiltInDdSemanticEvaluators.VERSION,
+                        "UNQUALIFIED",
+                        false,
+                        false))
+                .toList());
     }
 
     public Optional<Registration> qualified(String ddId) {
