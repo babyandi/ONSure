@@ -22,6 +22,11 @@ public final class DdSemanticRuntimeEvidenceMain {
     public static void main(String[] args) throws Exception {
         Path root = args.length > 0 ? Path.of(args[0]) : Path.of(".");
         root = root.toAbsolutePath().normalize();
+        Path outputPath = args.length > 1 ? Path.of(args[1]) : root.resolve(".onsure/dd-runtime/raw-execution.json");
+        if (!outputPath.isAbsolute()) outputPath = root.resolve(outputPath);
+        outputPath = outputPath.normalize();
+        if (!outputPath.startsWith(root)) throw new SecurityException("DD_RUNTIME_RAW_OUTPUT_PATH_ESCAPE");
+
         Path indexPath = root.resolve(".onsure/dd-runtime/evidence-index.json");
         if (!Files.isRegularFile(indexPath)) throw new IllegalStateException("DD_RUNTIME_EVIDENCE_INDEX_MISSING");
         JsonNode index = JSON.readTree(Files.readAllBytes(indexPath));
@@ -62,6 +67,7 @@ public final class DdSemanticRuntimeEvidenceMain {
         output.put("source_tree_sha",index.path("source_tree_sha").asText(""));
         output.set("rows",rows);
         output.put("final_claim_allowed",false);
-        JSON.writerWithDefaultPrettyPrinter().writeValue(System.out,output);
+        Files.createDirectories(outputPath.getParent());
+        JSON.writerWithDefaultPrettyPrinter().writeValue(outputPath.toFile(),output);
     }
 }
