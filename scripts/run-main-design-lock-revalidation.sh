@@ -12,6 +12,7 @@ fi
 : "${ONSURE_DD_TARGET_IDENTITY:?ONSURE_DD_TARGET_IDENTITY is required}"
 : "${ONSURE_DD_EXECUTION_PRINCIPAL:?ONSURE_DD_EXECUTION_PRINCIPAL is required}"
 : "${ONSURE_DD_EXECUTION_ENVIRONMENT:?ONSURE_DD_EXECUTION_ENVIRONMENT is required}"
+: "${ONSURE_DD_EVIDENCE_INDEX_SOURCE:?ONSURE_DD_EVIDENCE_INDEX_SOURCE is required for fresh main revalidation}"
 
 OUT_DIR="${ONSURE_MAIN_REVALIDATION_OUT:-.onsure/main-design-lock-revalidation}"
 mkdir -p "$OUT_DIR"
@@ -43,18 +44,10 @@ python3 scripts/validate-dd-semantic-evaluator-qualifications.py --require-all-q
 echo "[ONSURE-MAIN-LOCK] 3/8 materialize qualified runtime activation for main commit/tree"
 python3 scripts/materialize-dd-qualified-runtime-activation.py
 
-echo "[ONSURE-MAIN-LOCK] 4/8 rebind evidence index to main commit while preserving same qualified tree/evidence bytes"
-python3 - "$HEAD_SHA" "$TREE_SHA" <<'PY'
-import json,pathlib,sys
-p=pathlib.Path('.onsure/dd-runtime/evidence-index.json')
-if not p.is_file(): raise SystemExit('DD_EVIDENCE_INDEX_MISSING')
-d=json.loads(p.read_text(encoding='utf-8'))
-assert d.get('contract')=='ONSURE_DD_EVIDENCE_INDEX_V2','DD_EVIDENCE_INDEX_NOT_V2'
-# The tree must already be identical to the reviewed/qualified content. Only the commit identity changes after merge.
-assert d.get('source_tree_sha')==sys.argv[2],'DD_EVIDENCE_INDEX_TREE_CHANGED_AFTER_MERGE'
-d['source_commit_sha']=sys.argv[1]
-p.write_text(json.dumps(d,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-PY
+echo "[ONSURE-MAIN-LOCK] 4/8 stage immutable target evidence index for main commit without mutating source custody"
+STAGED_INDEX="$OUT_DIR/$RUN_ID.evidence-index.json"
+python3 scripts/stage-dd-evidence-index.py --input "$ONSURE_DD_EVIDENCE_INDEX_SOURCE" --output "$STAGED_INDEX"
+export ONSURE_DD_EVIDENCE_INDEX="$STAGED_INDEX"
 
 echo "[ONSURE-MAIN-LOCK] 5/8 re-run all 40 DD target semantic runtime evaluations on main"
 bash scripts/run-dd-semantic-runtime-evidence.sh
