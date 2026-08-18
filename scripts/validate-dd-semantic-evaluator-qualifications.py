@@ -7,6 +7,7 @@ from pathlib import Path
 
 EXPECTED = {f"DD-{i:03d}" for i in range(1, 41)}
 QUALIFIED = "QUALIFIED_NONFINAL"
+FIXTURE_CLASSES = {"positive", "negative", "recovery", "adversarial"}
 
 
 def load(path: Path):
@@ -24,12 +25,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--registry", default="contracts/dd-semantic-evaluator-registry.candidate.v1.json")
     ap.add_argument("--status", default="contracts/dd-semantic-evaluator-qualification-status.candidate.v1.json")
+    ap.add_argument("--fixture-plan", default="contracts/dd-semantic-evaluator-qualification-fixture-plan.candidate.v1.json")
     ap.add_argument("--receipts-dir", default="receipts/dd-semantic-evaluator-qualification")
     ap.add_argument("--require-all-qualified", action="store_true")
     args = ap.parse_args()
 
     registry = load(Path(args.registry))
     status = load(Path(args.status))
+    fixture_plan = load(Path(args.fixture_plan))
     errors = []
 
     reg_rows = registry.get("rows", [])
@@ -38,6 +41,32 @@ def main():
         errors.append(f"registry DD population mismatch missing={sorted(EXPECTED-reg_dd)} extra={sorted(reg_dd-EXPECTED)}")
     if registry.get("final_claim_allowed") is not False:
         errors.append("registry final_claim_allowed must be false")
+
+    fixture_rows = fixture_plan.get("rows", [])
+    fixture_dd = {r.get("dd_id") for r in fixture_rows}
+    if len(fixture_rows) != 40 or fixture_dd != EXPECTED:
+        errors.append("qualification fixture DD denominator must be exact 40")
+    fixture_ids = []
+    for row in fixture_rows:
+        dd = row.get("dd_id")
+        cases = row.get("cases") or {}
+        if set(cases) != FIXTURE_CLASSES:
+            errors.append(f"{dd}: qualification fixture classes must be exactly {sorted(FIXTURE_CLASSES)}")
+            continue
+        for klass in sorted(FIXTURE_CLASSES):
+            case = cases.get(klass) or {}
+            fixture_id = case.get("fixture_id")
+            if not fixture_id or not case.get("expected") or not case.get("purpose"):
+                errors.append(f"{dd}: {klass} fixture definition incomplete")
+            else:
+                fixture_ids.append(fixture_id)
+    if len(fixture_ids) != 160 or len(set(fixture_ids)) != 160:
+        errors.append(f"qualification fixture denominator must be 160 unique cases, got={len(fixture_ids)} unique={len(set(fixture_ids))}")
+    fs = fixture_plan.get("summary") or {}
+    if fs.get("dd_count") != 40 or fs.get("fixture_class_count_per_dd") != 4 or fs.get("fixture_case_count") != 160:
+        errors.append("qualification fixture summary mismatch")
+    if fixture_plan.get("final_claim_allowed") is not False:
+        errors.append("qualification fixture plan final_claim_allowed must be false")
 
     rows = status.get("rows", [])
     status_dd = {r.get("dd_id") for r in rows}
@@ -96,6 +125,8 @@ def main():
             if att.get(key) is not True:
                 errors.append(f"{dd}: independence_attestation.{key} must be true")
 
+        plan_row = next((r for r in fixture_rows if r.get("dd_id") == dd), None) or {}
+        plan_cases = plan_row.get("cases") or {}
         for klass in ("positive", "negative", "recovery", "adversarial"):
             fr = (receipt.get("fixture_results") or {}).get(klass) or {}
             executed = fr.get("executed_count", 0)
@@ -110,6 +141,10 @@ def main():
                 errors.append(f"{dd}: {klass} fixture qualification requires all executed fixtures pass")
             if not evidence:
                 errors.append(f"{dd}: {klass} fixture evidence_refs required")
+            expected_fixture_id = (plan_cases.get(klass) or {}).get("fixture_id")
+            receipt_fixture_ids = fr.get("fixture_ids") or []
+            if expected_fixture_id and expected_fixture_id not in receipt_fixture_ids:
+                errors.append(f"{dd}: {klass} qualification receipt missing planned fixture_id={expected_fixture_id}")
 
         if not receipt.get("positive_oracle_refs"):
             errors.append(f"{dd}: positive_oracle_refs required")
@@ -138,12 +173,14 @@ def main():
         errors.append(f"all-qualified gate requires 40/40; current={qualified}/40")
 
     result = {
-        "contract": "ONSURE_DD_SEMANTIC_EVALUATOR_QUALIFICATION_VALIDATION_V1",
+        "contract": "ONSURE_DD_SEMANTIC_EVALUATOR_QUALIFICATION_VALIDATION_V2",
         "dd_count": 40,
+        "qualification_fixture_case_count": len(fixture_ids),
         "qualified_nonfinal_count": qualified,
         "require_all_qualified": args.require_all_qualified,
         "errors": errors,
         "verdict": "PASS_NONFINAL" if not errors else "HOLD",
+        "github_actions_authority": False,
         "final_claim_allowed": False,
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
