@@ -3,11 +3,12 @@
   "$id":"onsure://contracts/dd-evidence-index/v2",
   "title":"ONSure DD Runtime Evidence Index",
   "type":"object",
-  "required":["contract","source_commit_sha","source_tree_sha","rows","final_claim_allowed"],
+  "required":["contract","source_commit_sha","source_tree_sha","path_base","rows","final_claim_allowed"],
   "properties":{
     "contract":{"const":"ONSURE_DD_EVIDENCE_INDEX_V2"},
     "source_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
     "source_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "path_base":{"enum":["WORKSPACE_ROOT","INDEX_DIRECTORY"]},
     "rows":{
       "type":"array",
       "items":{
