@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - autopilot/design-closure-mission
+  pull_request:
+    paths:
+      - 'contracts/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '.github/workflows/onsure-post-delta-diagnostic.yml'
   workflow_dispatch:
 
 permissions:
@@ -25,6 +31,10 @@ jobs:
         run: python3 scripts/freeze-independent-design-discovery-baseline.py
       - name: Validate design-document authority
         run: python3 scripts/validate-design-document-authority.py
+      - name: Materialize exact design artifact inventory
+        run: python3 scripts/materialize-design-artifact-inventory.py
+      - name: Verify design baseline reconstructability twice
+        run: python3 scripts/verify-design-baseline-reconstructability.py
       - name: Materialize post-delta requirement authority
         run: python3 scripts/materialize-product-design-authority.py
       - name: Generate EPOCH 0003 candidate A
@@ -62,7 +72,9 @@ jobs:
           root=pathlib.Path('.onsure')
           names=['global-trace','reverse-orphan','final-product','design-coverage','dd-trace','human-authority','lock-preflight']
           rcs={n:int((root/f'diagnostic-{n}.rc').read_text()) for n in names}
-          receipt={'contract':'ONSURE_POST_DELTA_DIAGNOSTIC_RECEIPT_V1','promotion_allowed':False,'saturation_proven':False,'return_codes':rcs,'decision':'DIAGNOSTIC_ONLY_NONFINAL','final_claim_allowed':False}
+          inv=json.load(open('.onsure/design-baseline/design-artifact-inventory.json'))
+          rec=json.load(open('.onsure/design-baseline/reconstructability-receipt.json'))
+          receipt={'contract':'ONSURE_POST_DELTA_DIAGNOSTIC_RECEIPT_V2','promotion_allowed':False,'saturation_proven':False,'design_artifact_population_digest':inv['population_digest'],'design_reconstructability':rec['deterministic_two_run'],'return_codes':rcs,'decision':'DIAGNOSTIC_ONLY_NONFINAL','final_claim_allowed':False}
           (root/'post-delta-diagnostic-receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')
           print(json.dumps(receipt,sort_keys=True))
           PY
