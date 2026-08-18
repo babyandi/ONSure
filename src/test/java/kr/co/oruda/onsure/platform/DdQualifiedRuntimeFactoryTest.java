@@ -67,6 +67,16 @@ class DdQualifiedRuntimeFactoryTest {
     }
 
     @Test
+    void evidenceIndexFromDifferentTreeIsRejected() throws Exception {
+        writeActivation(40, false, false);
+        Path evidence = tmp.resolve("evidence/dd001.json");
+        Files.createDirectories(evidence.getParent());
+        Files.writeString(evidence, "{\"facts\":{\"mandatory_dimensions\":[\"a\"],\"observed_dimensions\":[\"a\"]}}", StandardCharsets.UTF_8);
+        writeEvidenceIndex(evidence, sha256(Files.readAllBytes(evidence)), "9".repeat(40));
+        assertThrows(IllegalStateException.class, () -> DdQualifiedRuntimeFactory.loadOrUnqualified(tmp));
+    }
+
+    @Test
     void wrongEvidenceDigestCannotDrivePositiveClaim() throws Exception {
         writeActivation(40, false, false);
         Path evidence = tmp.resolve("evidence/dd001.json");
@@ -140,12 +150,17 @@ class DdQualifiedRuntimeFactoryTest {
     }
 
     private void writeEvidenceIndex(Path evidence, String digest) throws Exception {
+        writeEvidenceIndex(evidence,digest,TREE);
+    }
+
+    private void writeEvidenceIndex(Path evidence, String digest, String tree) throws Exception {
         Path dir=tmp.resolve(".onsure/dd-runtime"); Files.createDirectories(dir);
         Map<String,Object> row=new LinkedHashMap<>(); row.put("evidence_ref","e:dd001");
+        row.put("dd_ids",List.of("DD-001"));
         row.put("path",tmp.relativize(evidence).toString().replace('\\','/')); row.put("sha256",digest);
         row.put("current",true); row.put("authority_ref","authority:test");
         Map<String,Object> doc=new LinkedHashMap<>(); doc.put("contract",FileBackedDdEvidenceResolver.CONTRACT);
-        doc.put("source_commit_sha","2".repeat(40)); doc.put("rows",List.of(row)); doc.put("final_claim_allowed",false);
+        doc.put("source_commit_sha","2".repeat(40)); doc.put("source_tree_sha",tree); doc.put("rows",List.of(row)); doc.put("final_claim_allowed",false);
         Files.writeString(dir.resolve("evidence-index.json"),JSON.writeValueAsString(doc),StandardCharsets.UTF_8);
     }
 
