@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,hashlib,json,subprocess
+import argparse,hashlib,json,os,subprocess,sys
 from pathlib import Path
 
 EXPECTED={f'DD-{i:03d}' for i in range(1,41)}
 POSITIVE='PASS_NONFINAL'
 ROOT=Path(__file__).resolve().parents[1]
 BUNDLE=ROOT/'.onsure/dd-independent-qualification/frozen-bundle/bundle-manifest.json'
+DERIVED=ROOT/'.onsure/dd-independent-qualification/validated-status.json'
 
 def load(p:Path): return json.loads(p.read_text(encoding='utf-8'))
 def digest_payload(d:dict)->str:
@@ -15,10 +16,19 @@ def digest_payload(d:dict)->str:
 def git(*args):
     try:return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()
     except Exception:return 'UNKNOWN'
+def resolve(p:str)->Path:
+    x=Path(p); return x if x.is_absolute() else ROOT/x
 
 def main()->int:
-    ap=argparse.ArgumentParser(); ap.add_argument('--status',default='contracts/dd-semantic-runtime-evidence-status.candidate.v1.json'); ap.add_argument('--receipts-dir',default='receipts/dd-semantic-runtime-evidence'); ap.add_argument('--machine-registry',default='contracts/dd-machine-operation-schema-fixture-registry.candidate.v1.json'); ap.add_argument('--qualification-status',default='contracts/dd-semantic-evaluator-qualification-status.candidate.v1.json'); ap.add_argument('--qualification-receipts-dir',default='receipts/dd-semantic-evaluator-qualification'); ap.add_argument('--source-tree-sha',default=None); ap.add_argument('--source-commit-sha',default=None); ap.add_argument('--require-all-pass',action='store_true'); ap.add_argument('--require-all-positive-current',action='store_true'); args=ap.parse_args()
-    status=load(ROOT/args.status); rows=status.get('rows',[]); errors=[]
+    ap=argparse.ArgumentParser(); ap.add_argument('--status',default='contracts/dd-semantic-runtime-evidence-status.candidate.v1.json'); ap.add_argument('--receipts-dir',default='receipts/dd-semantic-runtime-evidence'); ap.add_argument('--machine-registry',default='contracts/dd-machine-operation-schema-fixture-registry.candidate.v1.json'); ap.add_argument('--qualification-receipts-dir',default=os.environ.get('ONSURE_DD_QUALIFICATION_RECEIPTS_DIR','receipts/dd-semantic-evaluator-qualification')); ap.add_argument('--source-tree-sha',default=None); ap.add_argument('--source-commit-sha',default=None); ap.add_argument('--require-all-pass',action='store_true'); ap.add_argument('--require-all-positive-current',action='store_true'); args=ap.parse_args()
+    errors=[]
+    qrc=subprocess.run([sys.executable,'scripts/validate-dd-semantic-evaluator-qualifications.py','--receipts-dir',args.qualification_receipts_dir,'--require-all-qualified'],cwd=ROOT,capture_output=True,text=True).returncode
+    if qrc: errors.append('QUALIFICATION_40_OF_40_NOT_VALID_FOR_RUNTIME')
+    if not DERIVED.is_file(): errors.append('DERIVED_QUALIFICATION_STATUS_MISSING'); qrows={}
+    else:
+        qderived=load(DERIVED); qrows={r.get('dd_id'):r for r in qderived.get('rows',[])}
+        if qderived.get('qualified_nonfinal_count')!=40 or set(qrows)!=EXPECTED: errors.append('DERIVED_QUALIFICATION_STATUS_NOT_40_OF_40')
+    status=load(resolve(args.status)); rows=status.get('rows',[])
     expected_tree=args.source_tree_sha or git('rev-parse','HEAD^{tree}'); expected_commit=args.source_commit_sha or git('rev-parse','HEAD')
     qualified_tree=load(BUNDLE).get('source_tree_sha') if BUNDLE.is_file() else None
     if not qualified_tree: errors.append('QUALIFICATION_BUNDLE_SUBJECT_TREE_MISSING')
@@ -27,12 +37,9 @@ def main()->int:
     if status.get('source_commit_sha') not in (None,expected_commit): errors.append('RUNTIME_STATUS_COMMIT_MISMATCH')
     if status.get('source_tree_sha') not in (None,expected_tree): errors.append('RUNTIME_STATUS_TREE_MISMATCH')
     if qualified_tree and status.get('qualified_subject_tree_sha') not in (None,qualified_tree): errors.append('RUNTIME_STATUS_QUALIFIED_SUBJECT_TREE_MISMATCH')
-    machine=load(ROOT/args.machine_registry); operation_by_dd={r.get('dd'):r.get('operation') for r in machine.get('rows',[]) if r.get('dd') and r.get('operation')}
+    machine=load(resolve(args.machine_registry)); operation_by_dd={r.get('dd'):r.get('operation') for r in machine.get('rows',[]) if r.get('dd') and r.get('operation')}
     if set(operation_by_dd)!=EXPECTED or len(set(operation_by_dd.values()))!=40: errors.append('MACHINE_OPERATION_DD_DENOMINATOR_NOT_EXACT_40')
-    qstatus=load(ROOT/args.qualification_status); qrows={r.get('dd_id'):r for r in qstatus.get('rows',[])}
-    if set(qrows)!=EXPECTED: errors.append('QUALIFICATION_STATUS_DENOMINATOR_NOT_EXACT_40')
-    receipt_dir=ROOT/args.receipts_dir; qreceipt_dir=ROOT/args.qualification_receipts_dir; positive=nonpositive=notrun=0
-    valid_states={'NOT_RUN','HOLD','FAIL','BLOCKED','INCONCLUSIVE','PASS_NONFINAL'}
+    receipt_dir=resolve(args.receipts_dir); positive=nonpositive=notrun=0; valid_states={'NOT_RUN','HOLD','FAIL','BLOCKED','INCONCLUSIVE','PASS_NONFINAL'}
     for row in rows:
         dd=row.get('dd_id'); state=row.get('runtime_state'); ref=row.get('runtime_receipt_ref')
         if state not in valid_states: errors.append(f'{dd}:INVALID_RUNTIME_STATE:{state}'); continue
@@ -44,7 +51,7 @@ def main()->int:
         p=Path(ref); p=p if p.is_absolute() else ROOT/p
         if not p.is_file():
             alt=receipt_dir/p.name
-            if alt.is_file(): p=alt
+            if alt.is_file():p=alt
         if not p.is_file(): errors.append(f'{dd}:RUNTIME_RECEIPT_MISSING:{ref}'); nonpositive+=1; continue
         try:r=load(p)
         except Exception as e: errors.append(f'{dd}:RUNTIME_RECEIPT_UNREADABLE:{e}'); nonpositive+=1; continue
@@ -60,12 +67,8 @@ def main()->int:
         if r.get('github_actions_authority') is not False: errors.append(f'{dd}:GITHUB_ACTIONS_AUTHORITY_FORBIDDEN')
         if r.get('final_claim_allowed') is not False: errors.append(f'{dd}:FINAL_CLAIM_MUST_BE_FALSE')
         qr=qrows.get(dd) or {}
-        if qr.get('qualification_state')!='QUALIFIED_NONFINAL': errors.append(f'{dd}:RUNTIME_REQUIRES_QUALIFIED_EVALUATOR_STATUS')
+        if qr.get('qualification_state')!='QUALIFIED_NONFINAL': errors.append(f'{dd}:RUNTIME_REQUIRES_DERIVED_QUALIFIED_EVALUATOR')
         qref=qr.get('qualification_receipt_ref'); qpath=Path(qref) if qref else None
-        if qpath is not None and not qpath.is_absolute(): qpath=ROOT/qpath
-        if qpath is not None and not qpath.is_file():
-            alt=qreceipt_dir/qpath.name
-            if alt.is_file():qpath=alt
         if not qpath or not qpath.is_file(): errors.append(f'{dd}:QUALIFICATION_RECEIPT_NOT_FOUND_FOR_RUNTIME')
         else:
             qreceipt=load(qpath); qdigest=qreceipt.get('receipt_digest')
@@ -79,11 +82,11 @@ def main()->int:
         for x in inputs:
             if x.get('integrity_verified') is not True or x.get('current') is not True: errors.append(f'{dd}:INPUT_EVIDENCE_NOT_VERIFIED_CURRENT')
             for f in ('content_digest','declared_content_digest'):
-                v=str(x.get(f,''));
+                v=str(x.get(f,''))
                 if len(v)!=64 or any(c not in '0123456789abcdef' for c in v): errors.append(f'{dd}:INPUT_EVIDENCE_{f.upper()}_INVALID')
             if x.get('content_digest')!=x.get('declared_content_digest'): errors.append(f'{dd}:INPUT_EVIDENCE_DIGEST_MISMATCH')
             if not x.get('authority_ref'): errors.append(f'{dd}:INPUT_EVIDENCE_AUTHORITY_MISSING')
-            if x.get('evidence_ref'): refs.append(x.get('evidence_ref'))
+            if x.get('evidence_ref'):refs.append(x.get('evidence_ref'))
         result=r.get('result') or {}; decision=result.get('decision')
         if decision!=state: errors.append(f'{dd}:STATUS_RECEIPT_DECISION_MISMATCH')
         if result.get('final_claim_allowed') is not False: errors.append(f'{dd}:RESULT_FINAL_CLAIM_MUST_BE_FALSE')
@@ -104,6 +107,6 @@ def main()->int:
     if status.get('final_claim_allowed') is not False: errors.append('STATUS_FINAL_CLAIM_MUST_BE_FALSE')
     require_all=args.require_all_pass or args.require_all_positive_current
     if require_all and positive!=40: errors.append(f'ALL_POSITIVE_CURRENT_GATE_REQUIRES_40_OF_40:CURRENT={positive}')
-    out={'contract':'ONSURE_DD_SEMANTIC_RUNTIME_EVIDENCE_VALIDATION_V3','source_commit_sha':expected_commit,'source_tree_sha':expected_tree,'qualified_subject_tree_sha':qualified_tree,'dd_count':40,'not_run_count':notrun,'nonpositive_runtime_count':nonpositive,'pass_nonfinal_runtime_count':positive,'require_all_positive_current':require_all,'blocking_reasons':errors,'decision':'PASS_NONFINAL' if not errors else 'HOLD_NONFINAL','github_actions_authority':False,'final_claim_allowed':False}
+    out={'contract':'ONSURE_DD_SEMANTIC_RUNTIME_EVIDENCE_VALIDATION_V4','source_commit_sha':expected_commit,'source_tree_sha':expected_tree,'qualified_subject_tree_sha':qualified_tree,'dd_count':40,'not_run_count':notrun,'nonpositive_runtime_count':nonpositive,'pass_nonfinal_runtime_count':positive,'require_all_positive_current':require_all,'blocking_reasons':errors,'decision':'PASS_NONFINAL' if not errors else 'HOLD_NONFINAL','github_actions_authority':False,'final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,indent=2,sort_keys=True)); return 0 if not errors else 43
 if __name__=='__main__': raise SystemExit(main())
