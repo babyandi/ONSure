@@ -1,7 +1,6 @@
 package kr.co.oruda.onsure.platform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,7 +34,25 @@ class PostFinalTargetDdWorkflowTest {
         assertEquals("POST_FINAL_TARGET_DD_FAIL_CLOSED", envelope.get("route"));
         assertEquals(false, envelope.get("final_claim_allowed"));
         assertEquals("NOT_QUALIFIED", envelope.get("semantic_completion"));
+        assertFailClosedResult(envelope);
+    }
 
+    @ParameterizedTest
+    @MethodSource("ddOperations")
+    void sharedSemanticBridgeUsedByLocalApiAlsoRoutesAllDdOperationsFailClosed(String operation) throws Exception {
+        ObjectNode request = MAPPER.createObjectNode();
+        request.putArray("evidence_refs");
+        Map<String, Object> envelope = new SemanticAssuranceV2DispatcherBridge(
+                temp, AuthenticatedWorkflowIdentity.localAdministrator()).dispatch(operation, request);
+
+        assertEquals(SemanticAssuranceV2DispatcherBridge.CONTRACT, envelope.get("contract"));
+        assertEquals("POST_FINAL_TARGET_DD_FAIL_CLOSED", envelope.get("route"));
+        assertEquals(false, envelope.get("final_claim_allowed"));
+        assertEquals("NOT_QUALIFIED", envelope.get("semantic_completion"));
+        assertFailClosedResult(envelope);
+    }
+
+    private static void assertFailClosedResult(Map<String, Object> envelope) {
         @SuppressWarnings("unchecked")
         Map<String, Object> result = (Map<String, Object>) envelope.get("result");
         assertEquals("HOLD", result.get("decision"));
