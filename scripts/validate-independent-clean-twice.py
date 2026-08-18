@@ -3,36 +3,30 @@ from __future__ import annotations
 import argparse,hashlib,json,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-EVIDENCE=ROOT/'evidence/independent-clean'
-PRECLEAN=ROOT/'.onsure/independent-clean/preclean-subject.json'
-IDS=('INDEPENDENT-CLEAN-A','INDEPENDENT-CLEAN-B')
+EVIDENCE=ROOT/'evidence/independent-clean'; PRECLEAN=ROOT/'.onsure/independent-clean/preclean-subject.json'; IDS=('INDEPENDENT-CLEAN-A','INDEPENDENT-CLEAN-B')
 
 def digest_payload(d:dict)->str:
-    x=dict(d); x.pop('receipt_digest',None)
-    return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    x=dict(d); x.pop('receipt_digest',None); return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 def digest_subject(d:dict)->str:
-    x=dict(d); x.pop('subject_digest',None)
-    return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    x=dict(d); x.pop('subject_digest',None); return hashlib.sha256(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 def git(*args): return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()
 
 def main()->int:
     ap=argparse.ArgumentParser(); ap.add_argument('--source-commit-sha',default=None); ap.add_argument('--source-tree-sha',default=None); args=ap.parse_args()
-    expected_commit=args.source_commit_sha or git('rev-parse','HEAD'); expected_tree=args.source_tree_sha or git('rev-parse','HEAD^{tree}')
-    reasons=[]; waves=[]
-    if not PRECLEAN.is_file():
-        reasons.append('PRECLEAN_SUBJECT_MISSING'); pre={}
+    expected_commit=args.source_commit_sha or git('rev-parse','HEAD'); expected_tree=args.source_tree_sha or git('rev-parse','HEAD^{tree}'); reasons=[]; waves=[]
+    if not PRECLEAN.is_file(): reasons.append('PRECLEAN_SUBJECT_MISSING'); pre={}
     else:
         try: pre=json.loads(PRECLEAN.read_text(encoding='utf-8'))
         except Exception: pre={}; reasons.append('PRECLEAN_SUBJECT_UNREADABLE')
     if pre:
-        if pre.get('contract')!='ONSURE_INDEPENDENT_CLEAN_PRECLEAN_SUBJECT_V1': reasons.append('PRECLEAN_SUBJECT_CONTRACT_MISMATCH')
+        if pre.get('contract')!='ONSURE_INDEPENDENT_CLEAN_PRECLEAN_SUBJECT_V2': reasons.append('PRECLEAN_SUBJECT_CONTRACT_MISMATCH')
         if pre.get('source_commit_sha')!=expected_commit: reasons.append('PRECLEAN_SUBJECT_COMMIT_MISMATCH')
         if pre.get('source_tree_sha')!=expected_tree: reasons.append('PRECLEAN_SUBJECT_TREE_MISMATCH')
         if pre.get('decision')!='READY_FOR_INDEPENDENT_CLEAN_NONFINAL': reasons.append('PRECLEAN_SUBJECT_NOT_READY')
         if pre.get('blocking_reasons'): reasons.append('PRECLEAN_SUBJECT_HAS_BLOCKERS')
         if pre.get('subject_digest')!=digest_subject(pre): reasons.append('PRECLEAN_SUBJECT_DIGEST_INVALID')
         for f in ('subject_digest','requirement_manifest_digest','authority_population_digest','coverage_digest'):
-            v=str(pre.get(f,''))
+            v=str(pre.get(f,''));
             if len(v)!=64 or any(c not in '0123456789abcdef' for c in v): reasons.append(f'PRECLEAN_{f.upper()}_INVALID')
     for cid in IDS:
         p=EVIDENCE/f'{cid}.json'
@@ -54,7 +48,7 @@ def main()->int:
             if d.get('authority_population_digest')!=pre.get('authority_population_digest'): reasons.append(f'AUTHORITY_DIGEST_NOT_PRECLEAN_SUBJECT:{cid}')
             if d.get('coverage_digest')!=pre.get('coverage_digest'): reasons.append(f'COVERAGE_DIGEST_NOT_PRECLEAN_SUBJECT:{cid}')
         for f,n in (('source_commit_sha',40),('source_tree_sha',40),('preclean_subject_digest',64),('requirement_manifest_digest',64),('authority_population_digest',64),('coverage_digest',64)):
-            v=str(d.get(f,''))
+            v=str(d.get(f,''));
             if len(v)!=n or any(c not in '0123456789abcdef' for c in v): reasons.append(f'INVALID_{f.upper()}:{cid}')
         for f in ('verifier_principal','verifier_process_lineage','model_or_method_lineage','verified_at'):
             if not d.get(f): reasons.append(f'MISSING_{f.upper()}:{cid}')
@@ -71,12 +65,11 @@ def main()->int:
         if waves[0].get('verifier_process_lineage')==waves[1].get('verifier_process_lineage'): reasons.append('CLEAN_A_B_PROCESS_LINEAGE_NOT_DISTINCT')
         sig=lambda w:(w.get('verifier_principal'),w.get('verifier_process_lineage'),w.get('model_or_method_lineage'))
         if sig(waves[0])==sig(waves[1]): reasons.append('CLEAN_A_B_NOT_INDEPENDENT_LINEAGE')
-        a=(waves[0].get('common_control_attestation') or {}).get('common_control_present')
-        b=(waves[1].get('common_control_attestation') or {}).get('common_control_present')
+        a=(waves[0].get('common_control_attestation') or {}).get('common_control_present'); b=(waves[1].get('common_control_attestation') or {}).get('common_control_present')
         if a is True and b is True:
             da=(waves[0].get('common_control_attestation') or {}).get('details',[]); db=(waves[1].get('common_control_attestation') or {}).get('details',[])
             if set(da)&set(db): reasons.append('CLEAN_A_B_SHARED_COMMON_CONTROL_UNRESOLVED')
-    out={'contract':'ONSURE_INDEPENDENT_CLEAN_TWICE_VALIDATION_V4','expected_source_commit_sha':expected_commit,'expected_source_tree_sha':expected_tree,'preclean_subject_digest':pre.get('subject_digest') if pre else None,'receipt_count':len(waves),'blocking_reasons':sorted(set(reasons)),'decision':'CLEAN_TWICE_NONFINAL' if not reasons else 'HOLD_NONFINAL','design_lock':False,'github_actions_authority':False,'final_claim_allowed':False}
+    out={'contract':'ONSURE_INDEPENDENT_CLEAN_TWICE_VALIDATION_V5','expected_source_commit_sha':expected_commit,'expected_source_tree_sha':expected_tree,'preclean_subject_digest':pre.get('subject_digest') if pre else None,'receipt_count':len(waves),'blocking_reasons':sorted(set(reasons)),'decision':'CLEAN_TWICE_NONFINAL' if not reasons else 'HOLD_NONFINAL','design_lock':False,'github_actions_authority':False,'final_claim_allowed':False}
     print(json.dumps(out,ensure_ascii=False,sort_keys=True)); return 0 if not reasons else 61
 if __name__=='__main__':
     try: raise SystemExit(main())
