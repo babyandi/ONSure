@@ -13,6 +13,7 @@ TEST_CLASSES = (
     "DdSemanticEvaluatorQualificationFixtureTest",
     "DdQualifiedRuntimeFactoryTest",
 )
+EVALUATOR_CLASS = ROOT / "target/classes/kr/co/oruda/onsure/platform/BuiltInDdSemanticEvaluators.class"
 
 
 def sha256(path: Path) -> str | None:
@@ -35,7 +36,7 @@ def parse_surefire() -> dict:
 
 
 def main()->int:
-    ap=argparse.ArgumentParser(); ap.add_argument("--run-id",required=True); ap.add_argument("--source-tree-sha",required=True); ap.add_argument("--started-at",required=True); ap.add_argument("--static-rc",type=int,required=True); ap.add_argument("--qualification-status-rc",type=int,required=True); ap.add_argument("--maven-rc",type=int,required=True); ap.add_argument("--output",required=True); args=ap.parse_args()
+    ap=argparse.ArgumentParser(); ap.add_argument("--run-id",required=True); ap.add_argument("--source-commit-sha",required=True); ap.add_argument("--source-tree-sha",required=True); ap.add_argument("--started-at",required=True); ap.add_argument("--static-rc",type=int,required=True); ap.add_argument("--qualification-status-rc",type=int,required=True); ap.add_argument("--maven-rc",type=int,required=True); ap.add_argument("--output",required=True); args=ap.parse_args()
     out=Path(args.output); prefix=out.parent/args.run_id; surefire=parse_surefire()
     code_refs=[
         ROOT/"src/main/java/kr/co/oruda/onsure/platform/BuiltInDdSemanticEvaluators.java",
@@ -52,16 +53,24 @@ def main()->int:
     fixture_report=next((r for r in surefire["reports"] if r["test_class"]=="DdSemanticEvaluatorQualificationFixtureTest"),{})
     activation_report=next((r for r in surefire["reports"] if r["test_class"]=="DdQualifiedRuntimeFactoryTest"),{})
     exact_160=(fixture_report.get("report_present") is True and fixture_report.get("tests")==160 and fixture_report.get("failures")==0 and fixture_report.get("errors")==0 and fixture_report.get("skipped")==0)
-    activation_ok=(activation_report.get("report_present") is True and activation_report.get("tests",0)>=5 and activation_report.get("failures")==0 and activation_report.get("errors")==0 and activation_report.get("skipped")==0)
-    all_ok=(args.static_rc==0 and args.qualification_status_rc==0 and args.maven_rc==0 and surefire["all_reports_present"] and surefire["failures"]==0 and surefire["errors"]==0 and exact_160 and activation_ok)
+    activation_ok=(activation_report.get("report_present") is True and activation_report.get("tests",0)>=6 and activation_report.get("failures")==0 and activation_report.get("errors")==0 and activation_report.get("skipped")==0)
+    evaluator_artifact_sha=sha256(EVALUATOR_CLASS)
+    all_ok=(args.static_rc==0 and args.qualification_status_rc==0 and args.maven_rc==0 and surefire["all_reports_present"] and surefire["failures"]==0 and surefire["errors"]==0 and exact_160 and activation_ok and evaluator_artifact_sha is not None)
     receipt={
-      "contract":"ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V3","run_id":args.run_id,"source_tree_sha":args.source_tree_sha,"started_at":args.started_at,"completed_at":datetime.now(timezone.utc).isoformat().replace("+00:00","Z"),"execution_mode":"MANUAL_LOCAL_OR_APPROVED_EXECUTION_NODE_NO_GITHUB_ACTIONS",
+      "contract":"ONSURE_DD_MANUAL_VERIFICATION_RECEIPT_V4",
+      "run_id":args.run_id,
+      "source_commit_sha":args.source_commit_sha,
+      "source_tree_sha":args.source_tree_sha,
+      "started_at":args.started_at,
+      "completed_at":datetime.now(timezone.utc).isoformat().replace("+00:00","Z"),
+      "execution_mode":"MANUAL_LOCAL_OR_APPROVED_EXECUTION_NODE_NO_GITHUB_ACTIONS",
       "steps":{
         "static_machine_definition":{"return_code":args.static_rc,"stdout_sha256":sha256(Path(str(prefix)+".static.stdout")),"stderr_sha256":sha256(Path(str(prefix)+".static.stderr"))},
         "qualification_status_validation":{"return_code":args.qualification_status_rc,"stdout_sha256":sha256(Path(str(prefix)+".qualification_status.stdout")),"stderr_sha256":sha256(Path(str(prefix)+".qualification_status.stderr"))},
         "maven_targeted_junit":{"return_code":args.maven_rc,"stdout_sha256":sha256(Path(str(prefix)+".maven.stdout")),"stderr_sha256":sha256(Path(str(prefix)+".maven.stderr")),"surefire":surefire}
       },
       "code_artifacts":[{"path":p.relative_to(ROOT).as_posix(),"sha256":sha256(p)} for p in code_refs],
+      "compiled_artifacts":[{"path":EVALUATOR_CLASS.relative_to(ROOT).as_posix(),"sha256":evaluator_artifact_sha}],
       "claims":{"concrete_evaluator_code_materialized_count":40,"compile_and_targeted_junit_established":all_ok,"qualification_fixture_denominator":160,"qualification_fixture_mechanics_executed_count":160 if exact_160 else 0,"qualification_fixture_mechanics_established":exact_160,"receipt_backed_runtime_activation_mechanics_established":activation_ok,"independent_evaluator_qualification_count":0,"semantic_runtime_evidence_count":0,"independent_clean":False,"design_lock":False},
       "limitations":["Synthetic fixture mechanics are not independent evaluator qualification.","Receipt-backed activation mechanics do not make synthetic qualification authoritative.","Semantic runtime evidence remains separate and must use target/current evidence rather than synthetic mechanics fixtures."],
       "verdict":"PASS_NONFINAL_EXECUTION_MECHANICS_ONLY" if all_ok else "HOLD_NONFINAL","github_actions_authority":False,"final_claim_allowed":False
