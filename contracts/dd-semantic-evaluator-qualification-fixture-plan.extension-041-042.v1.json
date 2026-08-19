@@ -1,12 +1,14 @@
 {
-  "contract": "ONSURE_DD_SEMANTIC_EVALUATOR_QUALIFICATION_FIXTURE_PLAN_EXTENSION_V1",
-  "status": "EXACT_8_CASE_EXTENSION_MATERIALIZED_NOT_EXECUTED_NONFINAL",
+  "contract": "ONSURE_DD_SEMANTIC_EVALUATOR_QUALIFICATION_FIXTURE_PLAN_EXTENSION_V2",
+  "status": "EXACT_13_CASE_EXTENSION_MATERIALIZED_NOT_EXECUTED_NONFINAL",
   "base_plan_ref": "contracts/dd-semantic-evaluator-qualification-fixture-plan.candidate.v1.json",
+  "dd042_adversarial_minimum_set_ref": "contracts/dd-042-adversarial-minimum-set.v1.json",
   "rules": [
-    "This extension adds exactly four qualification fixture classes for DD-041 and DD-042.",
-    "Base 160 cases plus this exact 8-case extension form the successor 168-case denominator.",
+    "DD-041 retains exactly four top-level qualification fixtures: positive, negative, recovery, adversarial.",
+    "DD-042 retains the four semantic fixture classes, but its adversarial class contains exactly six distinct mandatory failure-mode fixture IDs required by the delegated design authority minimum set.",
+    "Base 160 cases plus this exact 13-case extension form the successor 173-case denominator.",
     "Positive and recovery fixture PASS is mechanics-only until an independent qualification receipt exists.",
-    "Adversarial fixtures must prove caller/self-authored context cannot substitute for independent evidence or authority.",
+    "A DD-042 qualification receipt must execute and pass all six mandatory adversarial fixture IDs; omission of any one is HOLD.",
     "GitHub Actions are not execution or qualification authority."
   ],
   "rows": [
@@ -23,18 +25,32 @@
     {
       "dd_id": "DD-042",
       "cases": {
-        "positive": {"fixture_id":"DD042-QUAL-POSITIVE","expected":["PASS_NONFINAL"],"purpose":"self-referential claim category is disclosed; no material self-approval loop exists; independent adversarial evidence meets the authority-bound minimum"},
-        "negative": {"fixture_id":"DD042-QUAL-NEGATIVE","expected":["HOLD","INCONCLUSIVE"],"purpose":"subject/evaluator/oracle/promotion lineage forms a self-approval loop or independent adversarial evidence is insufficient"},
-        "recovery": {"fixture_id":"DD042-QUAL-RECOVERY","expected":["PASS_NONFINAL"],"purpose":"self-approval loop is removed and independently sourced adversarial evidence plus current oracle authority satisfy the minimum set"},
-        "adversarial": {"fixture_id":"DD042-QUAL-ADVERSARIAL","expected":["HOLD"],"purpose":"self-authored evidence, evaluator-selected oracle, or caller-declared independence cannot satisfy independent qualification"}
+        "positive": {"fixture_id":"DD042-QUAL-POSITIVE","expected":["PASS_NONFINAL"],"purpose":"self-referential claim category is disclosed; no material self-approval loop exists; independence provenance is verified; independent adversarial evidence meets the authority-bound minimum"},
+        "negative": {"fixture_id":"DD042-QUAL-NEGATIVE","expected":["HOLD","INCONCLUSIVE"],"purpose":"one or more self-approval, circularity, provenance, shared-control or evidence-minimum conditions are unsafe"},
+        "recovery": {"fixture_id":"DD042-QUAL-RECOVERY","expected":["PASS_NONFINAL"],"purpose":"all self-approval/circularity/shared-control loops are removed and verified independent provenance plus adversarial evidence satisfy the minimum set"},
+        "adversarial": {
+          "fixture_ids": [
+            "DD042-QUAL-ADV-CLAIM-EVIDENCE-SELF-SOURCING",
+            "DD042-QUAL-ADV-EVALUATOR-ORACLE-CIRCULARITY",
+            "DD042-QUAL-ADV-SELF-PROMOTION",
+            "DD042-QUAL-ADV-UNVERIFIED-INDEPENDENCE-PROVENANCE",
+            "DD042-QUAL-ADV-INSUFFICIENT-INDEPENDENT-EVIDENCE",
+            "DD042-QUAL-ADV-MATERIAL-SHARED-CONTROL-LOOP"
+          ],
+          "expected":["HOLD"],
+          "purpose":"six independently testable self-approval failure modes from the DD-042 delegated minimum adversarial authority must each fail closed"
+        }
       },
       "execution_state": "NOT_RUN"
     }
   ],
   "summary": {
     "base_case_count": 160,
-    "extension_case_count": 8,
-    "successor_case_count": 168,
+    "extension_case_count": 13,
+    "dd041_case_count": 4,
+    "dd042_case_count": 9,
+    "dd042_adversarial_case_count": 6,
+    "successor_case_count": 173,
     "extension_dd_count": 2
   },
   "final_claim_allowed": false
