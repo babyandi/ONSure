@@ -1,0 +1,23 @@
+{
+  "contract": "ONSURE_HDA_SUCCESSOR_APPROVAL_V1",
+  "subject_lineage": {
+    "prior_frozen_subject": "72f969504a84a26dac62e70eda04bdea71f93d0f",
+    "successor_issue": 72,
+    "successor_pr": 73
+  },
+  "approver_principal": "babyandi / Human Design Authority",
+  "review_authority": "ONSure Human Design Authority",
+  "decision_ids": ["DD-036", "DD-040", "F-04", "F-05"],
+  "decisions": {
+    "DD-036": "Independence Control Graph policy adopted. Same target owner, same design author, and cross-wave communication are DISQUALIFYING; other common-control dimensions require verifiable mitigation evidence before resolution.",
+    "DD-040": "COMPOSITE_RISK_TIERED_CEILING_V1 adopted with p0_ceiling=0, blocking_p1_ceiling=0, required_triage_percent=100, unknown_policy=HOLD; nonblocking_p1_ceiling remains unresolved until at least two actual independent-wave baselines exist.",
+    "F-04": "Adopt as a new DD requirement for crypto-erasure completeness; payload scope and regulated-industry erasure SLA remain separate Compliance Authority decisions.",
+    "F-05": "Adopt as a new DD requirement for self-referential AI safety claims; add the claim category and delegate the minimum adversarial fixture set to follow-up design authority."
+  },
+  "approval_statement": "Approved for ONSure Design Gap Closure only. This approval does not authorize FinalLock, Production GO, or Commercial GO.",
+  "approved_at": "2026-08-19T23:15+09:00",
+  "final_lock": false,
+  "production_go": false,
+  "commercial_go": false,
+  "final_claim_allowed": false
+}
