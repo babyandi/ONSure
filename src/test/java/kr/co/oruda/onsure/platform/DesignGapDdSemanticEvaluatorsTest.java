@@ -16,4 +16,14 @@ final class DesignGapDdSemanticEvaluatorsTest {
         assertTrue(registry.qualified("DD-042").isEmpty());
         assertEquals(0, registry.qualifiedCount());
     }
+
+    @Test
+    void successorRuntimeRoutesDd041AndDd042FailClosedBeforeQualification() {
+        DdAssuranceOperationRuntime runtime = new DdAssuranceOperationRuntime();
+        assertEquals(42, runtime.operations().size());
+        assertTrue(runtime.supports("crypto.erasure-completeness.evaluate"));
+        assertTrue(runtime.supports("ai-safety.self-referential-claim.evaluate"));
+        assertEquals("DD-041", runtime.ddIdFor("crypto.erasure-completeness.evaluate"));
+        assertEquals("DD-042", runtime.ddIdFor("ai-safety.self-referential-claim.evaluate"));
+    }
 }
