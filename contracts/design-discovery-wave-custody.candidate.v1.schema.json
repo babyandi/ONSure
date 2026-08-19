@@ -1,0 +1,31 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/design-discovery-wave-custody/v1",
+  "title":"ONSure Sealed Design Discovery Wave Custody Receipt",
+  "type":"object",
+  "required":["contract","wave_id","pair_digest","envelope_digest","input_bundle_digest","frozen_tree_sha","frozen_authority_digest","wave_result_digest","candidate_ledger_digest","execution_isolation_evidence_digest","reviewer_principal","reviewer_process_lineage","pair_prepared_at","execution_started_at","execution_finished_at","sealed_at","result_sealed_before_reconciliation","opposite_wave_result_accessed","custody_events","receipt_digest","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_DESIGN_DISCOVERY_WAVE_CUSTODY_V1"},
+    "wave_id":{"enum":["INDEPENDENT-SATURATION-A","INDEPENDENT-SATURATION-B"]},
+    "pair_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "envelope_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "input_bundle_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "frozen_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "frozen_authority_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "wave_result_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "candidate_ledger_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "execution_isolation_evidence_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "reviewer_principal":{"type":"string","minLength":1},
+    "reviewer_process_lineage":{"type":"string","minLength":1},
+    "pair_prepared_at":{"type":"string","format":"date-time"},
+    "execution_started_at":{"type":"string","format":"date-time"},
+    "execution_finished_at":{"type":"string","format":"date-time"},
+    "sealed_at":{"type":"string","format":"date-time"},
+    "result_sealed_before_reconciliation":{"const":true},
+    "opposite_wave_result_accessed":{"const":false},
+    "custody_events":{"type":"array","minItems":3,"items":{"type":"object","required":["event","at"],"properties":{"event":{"enum":["ENVELOPE_PREPARED","REVIEW_EXECUTION_COMPLETED","RESULT_SEALED"]},"at":{"type":"string","format":"date-time"}},"additionalProperties":true}},
+    "receipt_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}
