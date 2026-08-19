@@ -12,9 +12,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Executes all 40 independently-qualified DD semantic evaluators against the current digest-bound evidence index. */
+/** Executes all 42 independently-qualified DD semantic evaluators against the current digest-bound evidence index. */
 public final class DdSemanticRuntimeEvidenceMain {
-    public static final String CONTRACT = "ONSURE_DD_TARGET_RUNTIME_EXECUTION_RAW_V1";
+    public static final String CONTRACT = "ONSURE_DD_TARGET_RUNTIME_EXECUTION_RAW_V2";
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private DdSemanticRuntimeEvidenceMain() {}
@@ -40,7 +40,7 @@ public final class DdSemanticRuntimeEvidenceMain {
         }
 
         Map<String,List<String>> refsByDd = new LinkedHashMap<>();
-        for (int n=1;n<=40;n++) refsByDd.put(String.format("DD-%03d",n), new ArrayList<>());
+        for (int n=1;n<=42;n++) refsByDd.put(String.format("DD-%03d",n), new ArrayList<>());
         for (JsonNode row : index.path("rows")) {
             String ref = row.path("evidence_ref").asText("");
             for (JsonNode id : row.path("dd_ids")) {
@@ -51,7 +51,7 @@ public final class DdSemanticRuntimeEvidenceMain {
 
         DdAssuranceOperationRuntime runtime = DdQualifiedRuntimeFactory.loadOrUnqualified(root);
         List<String> operations = runtime.operations().stream().sorted(Comparator.naturalOrder()).toList();
-        if (operations.size()!=40) throw new IllegalStateException("DD_RUNTIME_OPERATION_DENOMINATOR_NOT_40");
+        if (operations.size()!=42) throw new IllegalStateException("DD_RUNTIME_OPERATION_DENOMINATOR_NOT_42");
         ArrayNode rows = JSON.createArrayNode();
         for (String operation : operations) {
             String dd = runtime.ddIdFor(operation);
@@ -71,6 +71,7 @@ public final class DdSemanticRuntimeEvidenceMain {
         output.put("contract",CONTRACT);
         output.put("source_tree_sha",index.path("source_tree_sha").asText(""));
         output.put("evidence_index_path",indexPath.toString());
+        output.put("dd_count",42);
         output.set("rows",rows);
         output.put("final_claim_allowed",false);
         Files.createDirectories(outputPath.getParent());
