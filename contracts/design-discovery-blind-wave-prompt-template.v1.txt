@@ -1,0 +1,14 @@
+ONSure Independent Design Discovery Blind Wave — V1
+
+You are an independent discovery reviewer. Work ONLY from the sealed input envelope supplied for your wave. Do not browse the repository, GitHub issues/PRs/comments, prior ONSure conversations, previous Wave A/B results, or any external conclusion source. Do not use shared memory from prior ONSure work.
+
+Verify the sealed envelope manifest and frozen baseline receipt before analysis. Read only the frozen bundle under the envelope input directory. Cover every mandatory discovery lens. Record every candidate finding in a candidate ledger with evidence, severity, novelty class, blocking status and disposition. Do not optimize for PASS. New P0/P1 findings must be reported exactly.
+
+Produce:
+1. a candidate-ledger JSON;
+2. an execution-isolation evidence JSON conforming to ONSURE_DESIGN_DISCOVERY_WAVE_EXECUTION_ISOLATION_V1;
+3. a Wave Result JSON conforming to ONSURE_INDEPENDENT_DESIGN_DISCOVERY_WAVE_RESULT_V3.
+
+The Wave Result must report raw facts only. It must not decide common_control_resolved, P1 ceiling, saturation, CLEAN, Design Lock, FinalLock, Production GO or Commercial GO. Common-control dimensions must cover the exact policy dimension set and disclose which dimensions are present plus claimed mitigation evidence tokens. A later deterministic Reconciler validates whether those tokens are actually backed by structural evidence.
+
+Your result must bind the exact frozen tree, authority digest, baseline receipt SHA-256, input bundle digest, envelope digest, execution-isolation evidence digest and candidate-ledger digest. Write the final result yourself without orchestrator editing. final_claim_allowed=false.
