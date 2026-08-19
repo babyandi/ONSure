@@ -9,7 +9,8 @@ import java.util.Map;
 
 /** Successor evaluators added after Design Discovery reopened the denominator. */
 public final class DesignGapDdSemanticEvaluators {
-    public static final String VERSION = "design-gap-dd-evaluators-v1";
+    public static final String VERSION = "design-gap-dd-evaluators-v2";
+    public static final int DD042_MINIMUM_ADVERSARIAL_EVIDENCE_COUNT = 6;
 
     private DesignGapDdSemanticEvaluators() {}
 
@@ -131,20 +132,34 @@ public final class DesignGapDdSemanticEvaluators {
             String evaluator = text(e.facts(), "evaluator_lineage", reasons);
             String oracle = text(e.facts(), "oracle_lineage", reasons);
             String promotion = text(e.facts(), "promotion_authority_lineage", reasons);
+            boolean independenceProvenanceVerified = bool(e.facts(), "independence_provenance_verified", reasons);
+            boolean materialSharedControlLoopDetected = bool(e.facts(), "material_shared_control_loop_detected", reasons);
             int independent = integer(e.facts(), "independent_adversarial_evidence_count", reasons);
             int required = integer(e.facts(), "required_adversarial_evidence_count", reasons);
             boolean oracleCurrent = bool(e.facts(), "authority_oracle_current", reasons);
+
             if (!"SELF_REFERENTIAL_AI_SAFETY".equals(category)) reasons.add("SELF_REFERENTIAL_CLAIM_CATEGORY_NOT_BOUND");
+            if (!claimAuthor.isBlank() && claimAuthor.equals(evidenceAuthor)) reasons.add("CLAIM_EVIDENCE_SELF_SOURCING");
+            if (!evaluator.isBlank() && evaluator.equals(oracle)) reasons.add("EVALUATOR_ORACLE_CIRCULARITY");
+            if ((!claimAuthor.isBlank() && claimAuthor.equals(promotion)) || (!evaluator.isBlank() && evaluator.equals(promotion))) {
+                reasons.add("CLAIM_OR_EVALUATOR_SELF_PROMOTION");
+            }
             if (!claimAuthor.isBlank() && (claimAuthor.equals(evaluator) || claimAuthor.equals(oracle) || claimAuthor.equals(promotion))) reasons.add("CLAIM_AUTHOR_SELF_APPROVAL_LOOP");
             if (!evidenceAuthor.isBlank() && (evidenceAuthor.equals(evaluator) || evidenceAuthor.equals(oracle) || evidenceAuthor.equals(promotion))) reasons.add("EVIDENCE_AUTHOR_SELF_APPROVAL_LOOP");
-            if (required <= 0) reasons.add("ADVERSARIAL_FIXTURE_MINIMUM_UNRESOLVED");
+            if (!independenceProvenanceVerified) reasons.add("INDEPENDENCE_PROVENANCE_NOT_VERIFIED");
+            if (materialSharedControlLoopDetected) reasons.add("MATERIAL_SHARED_CONTROL_LOOP");
+            if (required < DD042_MINIMUM_ADVERSARIAL_EVIDENCE_COUNT) reasons.add("ADVERSARIAL_FIXTURE_MINIMUM_BELOW_AUTHORITY_FLOOR");
             if (independent != Integer.MIN_VALUE && required != Integer.MIN_VALUE && independent < required) reasons.add("INDEPENDENT_ADVERSARIAL_EVIDENCE_INSUFFICIENT");
             if (!oracleCurrent) reasons.add("AUTHORITY_ORACLE_NOT_CURRENT");
+
             Map<String,Object> details = new LinkedHashMap<>();
             details.put("claim_category", category);
+            details.put("independence_provenance_verified", independenceProvenanceVerified);
+            details.put("material_shared_control_loop_detected", materialSharedControlLoopDetected);
             details.put("independent_adversarial_evidence_count", independent);
             details.put("required_adversarial_evidence_count", required);
             details.put("authority_oracle_current", oracleCurrent);
+            details.put("authority_minimum_adversarial_evidence_count", DD042_MINIMUM_ADVERSARIAL_EVIDENCE_COUNT);
             return reasons.isEmpty() ? pass(e.refs(), Map.copyOf(details)) : hold(List.copyOf(reasons), e.refs(), Map.copyOf(details));
         }
     }
