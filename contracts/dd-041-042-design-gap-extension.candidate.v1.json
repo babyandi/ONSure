@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_DD_041_042_DESIGN_GAP_EXTENSION_V1",
-  "status": "RUNTIME_AND_FIXTURE_MATERIALIZED_INDEPENDENT_QUALIFICATION_OPEN_NONFINAL",
+  "status": "EVALUATOR_AND_FIXTURE_MATERIALIZED_RUNTIME_ROUTING_OPEN_NONFINAL",
   "source_findings": ["F-04","F-05"],
   "rows": [
     {
@@ -46,7 +46,8 @@
     "prior_dd_count": 40,
     "added_dd_count": 2,
     "new_dd_count": 42,
-    "runtime_materialized_count": 2,
+    "evaluator_materialized_count": 2,
+    "runtime_routed_count": 0,
     "qualification_fixture_plan_materialized_count": 2,
     "qualification_fixture_case_count": 8,
     "successor_total_fixture_case_count": 168,
@@ -58,6 +59,6 @@
     "qualification_fixture_extension": "contracts/dd-semantic-evaluator-qualification-fixture-plan.extension-041-042.v1.json",
     "regression_test": "src/test/java/kr/co/oruda/onsure/platform/DesignGapDdSemanticEvaluatorsTest.java"
   },
-  "implementation_rule": "The legacy 40-DD denominator may not satisfy Design Closure after this extension is adopted. Until DD-041 and DD-042 have current independent qualification and current runtime evidence, every premerge/design-lock gate remains HOLD_NONFINAL.",
+  "implementation_rule": "The legacy 40-DD denominator may not satisfy Design Closure after this extension is adopted. Until DD-041 and DD-042 are runtime-routed, independently qualified, and evidenced on the current subject, every premerge/design-lock gate remains HOLD_NONFINAL.",
   "final_claim_allowed": false
 }
