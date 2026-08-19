@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Fail-closed runtime boundary for post-final-target DD-001..040 assurance operations. */
+/** Fail-closed runtime boundary for post-final-target DD-001..042 assurance operations. */
 public final class DdAssuranceOperationRuntime {
-    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V4";
+    public static final String CONTRACT = "ONSURE_DD_ASSURANCE_OPERATION_RUNTIME_V5";
 
     private static final Map<String, String> DD_BY_OPERATION = Map.ofEntries(
             Map.entry("assurance.visibility-evidence.evaluate", "DD-001"),
@@ -50,7 +50,9 @@ public final class DdAssuranceOperationRuntime {
             Map.entry("evidence.schema-migration.verify", "DD-037"),
             Map.entry("financial-effect.test-authorize", "DD-038"),
             Map.entry("observation.coverage.evaluate", "DD-039"),
-            Map.entry("discovery.saturation.evaluate", "DD-040"));
+            Map.entry("discovery.saturation.evaluate", "DD-040"),
+            Map.entry("crypto.erasure-completeness.evaluate", "DD-041"),
+            Map.entry("ai-safety.self-referential-claim.evaluate", "DD-042"));
 
     private final DdSemanticEvaluatorRegistry evaluators;
     private final DdEvidenceResolver evidenceResolver;
