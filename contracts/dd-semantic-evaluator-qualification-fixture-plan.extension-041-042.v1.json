@@ -1,0 +1,41 @@
+{
+  "contract": "ONSURE_DD_SEMANTIC_EVALUATOR_QUALIFICATION_FIXTURE_PLAN_EXTENSION_V1",
+  "status": "EXACT_8_CASE_EXTENSION_MATERIALIZED_NOT_EXECUTED_NONFINAL",
+  "base_plan_ref": "contracts/dd-semantic-evaluator-qualification-fixture-plan.candidate.v1.json",
+  "rules": [
+    "This extension adds exactly four qualification fixture classes for DD-041 and DD-042.",
+    "Base 160 cases plus this exact 8-case extension form the successor 168-case denominator.",
+    "Positive and recovery fixture PASS is mechanics-only until an independent qualification receipt exists.",
+    "Adversarial fixtures must prove caller/self-authored context cannot substitute for independent evidence or authority.",
+    "GitHub Actions are not execution or qualification authority."
+  ],
+  "rows": [
+    {
+      "dd_id": "DD-041",
+      "cases": {
+        "positive": {"fixture_id":"DD041-QUAL-POSITIVE","expected":["PASS_NONFINAL"],"purpose":"authorized payload scope is complete; every copy/key binding is accounted; retention conflicts and unverifiable erasure are zero"},
+        "negative": {"fixture_id":"DD041-QUAL-NEGATIVE","expected":["HOLD","BLOCKED","INCONCLUSIVE"],"purpose":"unknown or unaccounted payload/key lineage, retention conflict, or unverifiable erasure prohibits completion"},
+        "recovery": {"fixture_id":"DD041-QUAL-RECOVERY","expected":["PASS_NONFINAL"],"purpose":"previous deletion gap is reconciled under current authority and all scope/key/retention/erasure evidence is complete"},
+        "adversarial": {"fixture_id":"DD041-QUAL-ADVERSARIAL","expected":["HOLD"],"purpose":"caller-declared deletion completion or omitted replica/key evidence cannot strengthen the claim"}
+      },
+      "execution_state": "NOT_RUN"
+    },
+    {
+      "dd_id": "DD-042",
+      "cases": {
+        "positive": {"fixture_id":"DD042-QUAL-POSITIVE","expected":["PASS_NONFINAL"],"purpose":"self-referential claim category is disclosed; no material self-approval loop exists; independent adversarial evidence meets the authority-bound minimum"},
+        "negative": {"fixture_id":"DD042-QUAL-NEGATIVE","expected":["HOLD","INCONCLUSIVE"],"purpose":"subject/evaluator/oracle/promotion lineage forms a self-approval loop or independent adversarial evidence is insufficient"},
+        "recovery": {"fixture_id":"DD042-QUAL-RECOVERY","expected":["PASS_NONFINAL"],"purpose":"self-approval loop is removed and independently sourced adversarial evidence plus current oracle authority satisfy the minimum set"},
+        "adversarial": {"fixture_id":"DD042-QUAL-ADVERSARIAL","expected":["HOLD"],"purpose":"self-authored evidence, evaluator-selected oracle, or caller-declared independence cannot satisfy independent qualification"}
+      },
+      "execution_state": "NOT_RUN"
+    }
+  ],
+  "summary": {
+    "base_case_count": 160,
+    "extension_case_count": 8,
+    "successor_case_count": 168,
+    "extension_dd_count": 2
+  },
+  "final_claim_allowed": false
+}
