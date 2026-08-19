@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_DESIGN_DISCOVERY_P1_NOVELTY_POLICY_V1",
+  "status": "HUMAN_AUTHORITY_APPROVED_NONFINAL",
+  "authority_decision": "DD-040",
+  "policy_type": "COMPOSITE_RISK_TIERED_CEILING_V1",
+  "p0_ceiling": 0,
+  "blocking_p1_ceiling": 0,
+  "nonblocking_p1_ceiling": null,
+  "nonblocking_p1_ceiling_state": "DEFERRED_PENDING_TWO_INDEPENDENT_WAVE_BASELINES",
+  "required_triage_percent": 100,
+  "authority_affecting_p1_policy": "HOLD_UNTIL_EXPLICIT_AUTHORITY_DISPOSITION",
+  "unknown_policy": "HOLD",
+  "baseline_requirement": {
+    "minimum_independent_waves": 2,
+    "same_frozen_subject_required": true,
+    "same_authority_digest_required": true,
+    "structural_blindness_required": true
+  },
+  "decision_algorithm": [
+    "new_p0_count must equal 0",
+    "blocking_p1_count must equal 0",
+    "triage_percent must equal 100",
+    "authority_affecting_p1_count must equal 0 unless every item has explicit authority disposition",
+    "until nonblocking_p1_ceiling is configured from at least two valid independent-wave baselines, any nonzero nonblocking_p1_count yields HOLD",
+    "missing classification or policy input yields HOLD"
+  ],
+  "final_claim_allowed": false
+}
