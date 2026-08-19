@@ -1,0 +1,55 @@
+{
+  "contract": "ONSURE_DD_041_042_DESIGN_GAP_EXTENSION_V1",
+  "status": "HUMAN_AUTHORITY_APPROVED_IMPLEMENTATION_OPEN_NONFINAL",
+  "source_findings": ["F-04","F-05"],
+  "rows": [
+    {
+      "dd": "DD-041",
+      "source_finding": "F-04",
+      "title": "Crypto-erasure completeness and verifiable deletion",
+      "requirement": "ONSure shall not claim deletion, offboarding completion, or crypto-erasure completion unless every in-scope payload copy, derivative, key binding, backup/replica location, queued job and retained evidence obligation is accounted for and the applicable erasure method is verified against an authorized payload-scope policy. Missing scope, unknown copy lineage, undeleted key material, or unresolved regulated-retention conflict yields HOLD/BLOCKED rather than COMPLETE.",
+      "acceptance_criteria": [
+        "exact in-scope payload population is explicitly enumerated or deterministically derived",
+        "all key bindings and cryptographic deletion dependencies are accounted for",
+        "replica/backup/queue/derived-copy lineage is covered",
+        "retention conflicts are explicitly resolved by current authority before deletion completion",
+        "payload scope policy is authority-bound and versioned",
+        "regulated-industry erasure SLA remains separately authority-controlled",
+        "missing or unverifiable deletion evidence cannot produce PASS"
+      ],
+      "evaluator_id": "CRYPTO_ERASURE_COMPLETENESS",
+      "required_inputs": ["payload_scope_policy","expected_payload_copy_count","accounted_payload_copy_count","active_key_binding_count","unresolved_retention_conflict_count","unverified_erasure_count"],
+      "safe_floor": "unknown payload scope, unresolved retention conflict, active key binding, unaccounted copy or unverifiable erasure => HOLD/BLOCKED",
+      "positive_oracle": "all authorized in-scope copies and key bindings accounted for with zero unresolved retention conflict and verifiable erasure evidence"
+    },
+    {
+      "dd": "DD-042",
+      "source_finding": "F-05",
+      "title": "Self-referential AI safety claim qualification",
+      "requirement": "ONSure shall treat self-referential AI safety claims as a distinct high-risk claim category. A system, model, evaluator, guard, policy engine or assurance component may not establish its own safety, independence, robustness, compliance or qualification claim solely from evidence it authored, selected, interpreted or promoted. Positive qualification requires independently sourced adversarial evidence and an authority-bound oracle; absent that evidence the claim remains HOLD/INCONCLUSIVE.",
+      "acceptance_criteria": [
+        "self-referential safety claim category is explicitly identifiable",
+        "claim author/evidence author/evaluator/oracle/promotion authority lineage is disclosed",
+        "material self-evaluation loops are detected",
+        "positive qualification requires independent adversarial evidence",
+        "minimum adversarial fixture set is versioned by follow-up design authority before QUALIFIED status",
+        "missing independent adversarial evidence yields HOLD/INCONCLUSIVE",
+        "the subject cannot self-promote its own qualification"
+      ],
+      "evaluator_id": "SELF_REFERENTIAL_SAFETY_CLAIM_INDEPENDENCE",
+      "required_inputs": ["claim_category","claim_author_lineage","evidence_author_lineage","evaluator_lineage","oracle_lineage","promotion_authority_lineage","independent_adversarial_evidence_count","required_adversarial_evidence_count"],
+      "safe_floor": "self-referential authority loop or insufficient independent adversarial evidence => HOLD/INCONCLUSIVE",
+      "positive_oracle": "no material self-approval loop and independently sourced adversarial evidence meets the current authority-bound minimum set"
+    }
+  ],
+  "summary": {
+    "prior_dd_count": 40,
+    "added_dd_count": 2,
+    "new_dd_count": 42,
+    "runtime_materialized_count": 0,
+    "qualification_fixture_plan_materialized_count": 0,
+    "independently_qualified_count": 0
+  },
+  "implementation_rule": "The legacy 40-DD denominator may not satisfy Design Closure after this extension is adopted. Until DD-041 and DD-042 have concrete runtime evaluators, fixtures, qualification and current runtime evidence, every premerge/design-lock gate remains HOLD_NONFINAL.",
+  "final_claim_allowed": false
+}
