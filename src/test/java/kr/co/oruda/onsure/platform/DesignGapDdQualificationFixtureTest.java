@@ -7,26 +7,42 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-/** Eight successor synthetic mechanics cases; never independent qualification. */
+/** Thirteen successor synthetic mechanics cases; never independent qualification. */
 class DesignGapDdQualificationFixtureTest {
     private static final ObjectMapper JSON = new ObjectMapper();
 
     @TestFactory
-    Stream<DynamicTest> exact8DesignGapQualificationFixtureMechanics() {
+    Stream<DynamicTest> exact13DesignGapQualificationFixtureMechanics() {
         List<DynamicTest> tests = new ArrayList<>();
         for (DdSemanticEvaluator evaluator : DesignGapDdSemanticEvaluators.all()) {
             tests.add(DynamicTest.dynamicTest(evaluator.ddId() + " positive", () -> positive(evaluator)));
             tests.add(DynamicTest.dynamicTest(evaluator.ddId() + " negative", () -> negative(evaluator)));
             tests.add(DynamicTest.dynamicTest(evaluator.ddId() + " recovery", () -> recovery(evaluator)));
-            tests.add(DynamicTest.dynamicTest(evaluator.ddId() + " adversarial", () -> adversarial(evaluator)));
+            if ("DD-041".equals(evaluator.ddId())) {
+                tests.add(DynamicTest.dynamicTest("DD-041 adversarial integrity", () -> dd041Adversarial(evaluator)));
+            } else {
+                tests.add(DynamicTest.dynamicTest("DD-042 adversarial claim/evidence self-sourcing", () ->
+                        dd042Adversarial(evaluator, dd042ClaimEvidenceSelfSourcing(), "CLAIM_EVIDENCE_SELF_SOURCING")));
+                tests.add(DynamicTest.dynamicTest("DD-042 adversarial evaluator/oracle circularity", () ->
+                        dd042Adversarial(evaluator, dd042EvaluatorOracleCircularity(), "EVALUATOR_ORACLE_CIRCULARITY")));
+                tests.add(DynamicTest.dynamicTest("DD-042 adversarial self-promotion", () ->
+                        dd042Adversarial(evaluator, dd042SelfPromotion(), "CLAIM_OR_EVALUATOR_SELF_PROMOTION")));
+                tests.add(DynamicTest.dynamicTest("DD-042 adversarial unverified independence provenance", () ->
+                        dd042Adversarial(evaluator, dd042UnverifiedIndependenceProvenance(), "INDEPENDENCE_PROVENANCE_NOT_VERIFIED")));
+                tests.add(DynamicTest.dynamicTest("DD-042 adversarial insufficient independent evidence", () ->
+                        dd042Adversarial(evaluator, dd042InsufficientIndependentEvidence(), "INDEPENDENT_ADVERSARIAL_EVIDENCE_INSUFFICIENT")));
+                tests.add(DynamicTest.dynamicTest("DD-042 adversarial shared-control loop", () ->
+                        dd042Adversarial(evaluator, dd042MaterialSharedControlLoop(), "MATERIAL_SHARED_CONTROL_LOOP")));
+            }
         }
-        assertEquals(8, tests.size());
+        assertEquals(13, tests.size());
         return tests.stream();
     }
 
@@ -52,11 +68,19 @@ class DesignGapDdQualificationFixtureTest {
         assertFalse(recovered.externalEffectPerformed());
     }
 
-    private void adversarial(DdSemanticEvaluator evaluator) throws Exception {
+    private void dd041Adversarial(DdSemanticEvaluator evaluator) throws Exception {
         var result = evaluate(evaluator, positiveFacts(evaluator.ddId()), false, true);
         assertEquals("HOLD", result.decision());
         assertTrue(result.blockingReasons().stream().anyMatch(v -> v.startsWith("EVIDENCE_INTEGRITY_NOT_VERIFIED")));
         assertFalse(result.claimStrengtheningAllowed());
+    }
+
+    private void dd042Adversarial(DdSemanticEvaluator evaluator, Map<String,Object> facts, String requiredReason) throws Exception {
+        var result = evaluate(evaluator, facts, true, true);
+        assertEquals("HOLD", result.decision());
+        assertTrue(result.blockingReasons().contains(requiredReason), () -> "missing reason " + requiredReason + ": " + result.blockingReasons());
+        assertFalse(result.claimStrengtheningAllowed());
+        assertFalse(result.externalEffectPerformed());
     }
 
     private Map<String,Object> positiveFacts(String dd) {
@@ -69,16 +93,19 @@ class DesignGapDdQualificationFixtureTest {
                     "unresolved_retention_conflict_count", 0,
                     "unverified_erasure_count", 0);
         }
-        return Map.ofEntries(
-                Map.entry("claim_category", "SELF_REFERENTIAL_AI_SAFETY"),
-                Map.entry("claim_author_lineage", "claim-author"),
-                Map.entry("evidence_author_lineage", "evidence-author"),
-                Map.entry("evaluator_lineage", "independent-evaluator"),
-                Map.entry("oracle_lineage", "independent-oracle"),
-                Map.entry("promotion_authority_lineage", "independent-promoter"),
-                Map.entry("independent_adversarial_evidence_count", 4),
-                Map.entry("required_adversarial_evidence_count", 4),
-                Map.entry("authority_oracle_current", true));
+        Map<String,Object> facts = new LinkedHashMap<>();
+        facts.put("claim_category", "SELF_REFERENTIAL_AI_SAFETY");
+        facts.put("claim_author_lineage", "claim-author");
+        facts.put("evidence_author_lineage", "evidence-author");
+        facts.put("evaluator_lineage", "independent-evaluator");
+        facts.put("oracle_lineage", "independent-oracle");
+        facts.put("promotion_authority_lineage", "independent-promoter");
+        facts.put("independence_provenance_verified", true);
+        facts.put("material_shared_control_loop_detected", false);
+        facts.put("independent_adversarial_evidence_count", 6);
+        facts.put("required_adversarial_evidence_count", 6);
+        facts.put("authority_oracle_current", true);
+        return facts;
     }
 
     private Map<String,Object> negativeFacts(String dd) {
@@ -91,16 +118,53 @@ class DesignGapDdQualificationFixtureTest {
                     "unresolved_retention_conflict_count", 1,
                     "unverified_erasure_count", 1);
         }
-        return Map.ofEntries(
-                Map.entry("claim_category", "SELF_REFERENTIAL_AI_SAFETY"),
-                Map.entry("claim_author_lineage", "same-control"),
-                Map.entry("evidence_author_lineage", "same-control"),
-                Map.entry("evaluator_lineage", "same-control"),
-                Map.entry("oracle_lineage", "same-control"),
-                Map.entry("promotion_authority_lineage", "same-control"),
-                Map.entry("independent_adversarial_evidence_count", 0),
-                Map.entry("required_adversarial_evidence_count", 4),
-                Map.entry("authority_oracle_current", false));
+        Map<String,Object> facts = new LinkedHashMap<>(positiveFacts(dd));
+        facts.put("claim_author_lineage", "same-control");
+        facts.put("evidence_author_lineage", "same-control");
+        facts.put("evaluator_lineage", "same-control");
+        facts.put("oracle_lineage", "same-control");
+        facts.put("promotion_authority_lineage", "same-control");
+        facts.put("independence_provenance_verified", false);
+        facts.put("material_shared_control_loop_detected", true);
+        facts.put("independent_adversarial_evidence_count", 0);
+        facts.put("authority_oracle_current", false);
+        return facts;
+    }
+
+    private Map<String,Object> dd042ClaimEvidenceSelfSourcing() {
+        Map<String,Object> facts = new LinkedHashMap<>(positiveFacts("DD-042"));
+        facts.put("evidence_author_lineage", facts.get("claim_author_lineage"));
+        return facts;
+    }
+
+    private Map<String,Object> dd042EvaluatorOracleCircularity() {
+        Map<String,Object> facts = new LinkedHashMap<>(positiveFacts("DD-042"));
+        facts.put("oracle_lineage", facts.get("evaluator_lineage"));
+        return facts;
+    }
+
+    private Map<String,Object> dd042SelfPromotion() {
+        Map<String,Object> facts = new LinkedHashMap<>(positiveFacts("DD-042"));
+        facts.put("promotion_authority_lineage", facts.get("evaluator_lineage"));
+        return facts;
+    }
+
+    private Map<String,Object> dd042UnverifiedIndependenceProvenance() {
+        Map<String,Object> facts = new LinkedHashMap<>(positiveFacts("DD-042"));
+        facts.put("independence_provenance_verified", false);
+        return facts;
+    }
+
+    private Map<String,Object> dd042InsufficientIndependentEvidence() {
+        Map<String,Object> facts = new LinkedHashMap<>(positiveFacts("DD-042"));
+        facts.put("independent_adversarial_evidence_count", 5);
+        return facts;
+    }
+
+    private Map<String,Object> dd042MaterialSharedControlLoop() {
+        Map<String,Object> facts = new LinkedHashMap<>(positiveFacts("DD-042"));
+        facts.put("material_shared_control_loop_detected", true);
+        return facts;
     }
 
     private DdSemanticEvaluator.Evaluation evaluate(
