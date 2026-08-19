@@ -1,0 +1,53 @@
+{
+  "contract": "ONSURE_DESIGN_DISCOVERY_BLIND_EXECUTION_POLICY_V1",
+  "status": "DD_036_DD_040_STRUCTURAL_ENFORCEMENT_NONFINAL",
+  "authority": ["DD-036", "DD-040"],
+  "rules": {
+    "sealed_envelope_only": true,
+    "repository_browsing_permitted": false,
+    "issue_pr_comment_browsing_permitted": false,
+    "prior_wave_results_mounted": false,
+    "opposite_wave_result_access_permitted": false,
+    "shared_memory_context_permitted": false,
+    "fresh_session_required": true,
+    "separate_workspace_required": true,
+    "read_only_frozen_bundle_required": true,
+    "reviewer_writes_result_without_orchestrator_editing": true,
+    "candidate_ledger_required": true,
+    "execution_isolation_evidence_required": true,
+    "custody_seal_required_before_reconciliation": true,
+    "both_input_envelopes_prepared_before_any_wave_result": true
+  },
+  "structural_evidence_tokens": [
+    "model_or_method_lineage",
+    "sealed_result_custody",
+    "separate_session_identity",
+    "credential_scope_isolation",
+    "blind_input_enforcement",
+    "no_result_intermediation",
+    "workspace_isolation",
+    "process_isolation",
+    "read_only_frozen_bundle",
+    "separate_workspace",
+    "tree_digest_binding",
+    "prompt_digest",
+    "blindness_constraints",
+    "immutable_receipt_digest",
+    "custody_ledger",
+    "fresh_session_attestation",
+    "memory_isolation_evidence",
+    "selection_authority_disclosed",
+    "independent_reconciler",
+    "promotion_sod_evidence"
+  ],
+  "prohibited_substitutions": [
+    "reviewer self-attestation alone may not prove sealed_result_custody",
+    "a mitigation evidence token string alone may not prove the token",
+    "same repository checkout without a sealed read-only envelope may not prove blindness",
+    "generic fresh session wording may not substitute for an execution-isolation receipt",
+    "a wave may not self-decide common_control_resolved or saturation"
+  ],
+  "unknown_or_missing_structural_evidence": "HOLD",
+  "github_actions_authority": false,
+  "final_claim_allowed": false
+}
