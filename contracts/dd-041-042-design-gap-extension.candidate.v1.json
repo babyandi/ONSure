@@ -1,6 +1,6 @@
 {
   "contract": "ONSURE_DD_041_042_DESIGN_GAP_EXTENSION_V1",
-  "status": "EVALUATOR_AND_FIXTURE_MATERIALIZED_RUNTIME_ROUTING_OPEN_NONFINAL",
+  "status": "RUNTIME_ROUTED_AND_FIXTURE_MATERIALIZED_INDEPENDENT_QUALIFICATION_OPEN_NONFINAL",
   "source_findings": ["F-04","F-05"],
   "rows": [
     {
@@ -18,6 +18,7 @@
         "missing or unverifiable deletion evidence cannot produce PASS"
       ],
       "evaluator_id": "CRYPTO_ERASURE_COMPLETENESS",
+      "operation": "crypto.erasure-completeness.evaluate",
       "required_inputs": ["payload_scope_policy","expected_payload_copy_count","accounted_payload_copy_count","active_key_binding_count","unresolved_retention_conflict_count","unverified_erasure_count"],
       "safe_floor": "unknown payload scope, unresolved retention conflict, active key binding, unaccounted copy or unverifiable erasure => HOLD/BLOCKED",
       "positive_oracle": "all authorized in-scope copies and key bindings accounted for with zero unresolved retention conflict and verifiable erasure evidence"
@@ -37,6 +38,7 @@
         "the subject cannot self-promote its own qualification"
       ],
       "evaluator_id": "SELF_REFERENTIAL_SAFETY_CLAIM_INDEPENDENCE",
+      "operation": "ai-safety.self-referential-claim.evaluate",
       "required_inputs": ["claim_category","claim_author_lineage","evidence_author_lineage","evaluator_lineage","oracle_lineage","promotion_authority_lineage","independent_adversarial_evidence_count","required_adversarial_evidence_count"],
       "safe_floor": "self-referential authority loop or insufficient independent adversarial evidence => HOLD/INCONCLUSIVE",
       "positive_oracle": "no material self-approval loop and independently sourced adversarial evidence meets the current authority-bound minimum set"
@@ -47,7 +49,7 @@
     "added_dd_count": 2,
     "new_dd_count": 42,
     "evaluator_materialized_count": 2,
-    "runtime_routed_count": 0,
+    "runtime_routed_count": 2,
     "qualification_fixture_plan_materialized_count": 2,
     "qualification_fixture_case_count": 8,
     "successor_total_fixture_case_count": 168,
@@ -56,9 +58,13 @@
   "implementation_refs": {
     "java_evaluators": "src/main/java/kr/co/oruda/onsure/platform/DesignGapDdSemanticEvaluators.java",
     "java_registry": "src/main/java/kr/co/oruda/onsure/platform/DdSemanticEvaluatorRegistry.java",
+    "runtime": "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java",
+    "runtime_factory": "src/main/java/kr/co/oruda/onsure/platform/DdQualifiedRuntimeFactory.java",
     "qualification_fixture_extension": "contracts/dd-semantic-evaluator-qualification-fixture-plan.extension-041-042.v1.json",
+    "successor_bundle_builder": "scripts/prepare-dd-independent-qualification-bundle-successor.py",
+    "successor_qualification_validator": "scripts/validate-dd-semantic-evaluator-qualifications-successor.py",
     "regression_test": "src/test/java/kr/co/oruda/onsure/platform/DesignGapDdSemanticEvaluatorsTest.java"
   },
-  "implementation_rule": "The legacy 40-DD denominator may not satisfy Design Closure after this extension is adopted. Until DD-041 and DD-042 are runtime-routed, independently qualified, and evidenced on the current subject, every premerge/design-lock gate remains HOLD_NONFINAL.",
+  "implementation_rule": "The legacy 40-DD denominator may not satisfy Design Closure after this extension is adopted. Until DD-041 and DD-042 are independently qualified and evidenced on the current subject, every premerge/design-lock gate remains HOLD_NONFINAL.",
   "final_claim_allowed": false
 }
