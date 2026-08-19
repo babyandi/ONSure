@@ -14,7 +14,7 @@ class BuiltInDdSemanticEvaluatorsTest {
     private static final ObjectMapper JSON = new ObjectMapper();
 
     @Test
-    void materializesExactlyFortyDistinctDdEvaluators() {
+    void materializesExactlyFortyDistinctLegacyBuiltInDdEvaluators() {
         var evaluators = BuiltInDdSemanticEvaluators.all();
         assertEquals(40, evaluators.size());
         assertEquals(40, evaluators.stream().map(DdSemanticEvaluator::ddId).distinct().count());
@@ -23,9 +23,9 @@ class BuiltInDdSemanticEvaluatorsTest {
     }
 
     @Test
-    void defaultRuntimeKeepsAllConcreteEvaluatorsUnqualifiedAndFailClosed() throws Exception {
+    void defaultRuntimeKeepsAllFortyTwoConcreteEvaluatorsUnqualifiedAndFailClosed() throws Exception {
         var runtime = new DdAssuranceOperationRuntime();
-        assertEquals(40, runtime.operations().size());
+        assertEquals(42, runtime.operations().size());
         for (String operation : runtime.operations()) {
             String dd = runtime.ddIdFor(operation);
             var request = JSON.readTree("{\"dd_id\":\"" + dd + "\",\"evidence_refs\":[\"receipt:test\"]}");
