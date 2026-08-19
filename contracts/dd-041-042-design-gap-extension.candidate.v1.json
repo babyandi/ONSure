@@ -1,6 +1,6 @@
 {
-  "contract": "ONSURE_DD_041_042_DESIGN_GAP_EXTENSION_V1",
-  "status": "RUNTIME_ROUTED_AND_FIXTURE_MATERIALIZED_INDEPENDENT_QUALIFICATION_OPEN_NONFINAL",
+  "contract": "ONSURE_DD_041_042_DESIGN_GAP_EXTENSION_V2",
+  "status": "RUNTIME_ROUTED_AND_173_FIXTURE_MATERIALIZED_INDEPENDENT_QUALIFICATION_OPEN_NONFINAL",
   "source_findings": ["F-04","F-05"],
   "rows": [
     {
@@ -27,21 +27,25 @@
       "dd": "DD-042",
       "source_finding": "F-05",
       "title": "Self-referential AI safety claim qualification",
-      "requirement": "ONSure shall treat self-referential AI safety claims as a distinct high-risk claim category. A system, model, evaluator, guard, policy engine or assurance component may not establish its own safety, independence, robustness, compliance or qualification claim solely from evidence it authored, selected, interpreted or promoted. Positive qualification requires independently sourced adversarial evidence and an authority-bound oracle; absent that evidence the claim remains HOLD/INCONCLUSIVE.",
+      "requirement": "ONSure shall treat self-referential AI safety claims as a distinct high-risk claim category. A system, model, evaluator, guard, policy engine or assurance component may not establish its own safety, independence, robustness, compliance or qualification claim solely from evidence it authored, selected, interpreted or promoted. Positive qualification requires independently sourced adversarial evidence, verified independence provenance, absence of material shared-control/self-promotion loops and an authority-bound oracle; absent that evidence the claim remains HOLD/INCONCLUSIVE.",
       "acceptance_criteria": [
         "self-referential safety claim category is explicitly identifiable",
         "claim author/evidence author/evaluator/oracle/promotion authority lineage is disclosed",
-        "material self-evaluation loops are detected",
+        "claim/evidence self-sourcing and evaluator/oracle circularity are detected",
+        "claim/evaluator self-promotion is detected",
+        "caller-declared independence requires verified provenance",
+        "transitive or shared-control material self-approval loops are detected",
         "positive qualification requires independent adversarial evidence",
-        "minimum adversarial fixture set is versioned by follow-up design authority before QUALIFIED status",
-        "missing independent adversarial evidence yields HOLD/INCONCLUSIVE",
+        "the exact six-fixture adversarial minimum set is versioned by follow-up design authority and bound to the qualification receipt",
+        "missing any mandatory adversarial dimension yields HOLD/INCONCLUSIVE",
         "the subject cannot self-promote its own qualification"
       ],
       "evaluator_id": "SELF_REFERENTIAL_SAFETY_CLAIM_INDEPENDENCE",
       "operation": "ai-safety.self-referential-claim.evaluate",
-      "required_inputs": ["claim_category","claim_author_lineage","evidence_author_lineage","evaluator_lineage","oracle_lineage","promotion_authority_lineage","independent_adversarial_evidence_count","required_adversarial_evidence_count"],
-      "safe_floor": "self-referential authority loop or insufficient independent adversarial evidence => HOLD/INCONCLUSIVE",
-      "positive_oracle": "no material self-approval loop and independently sourced adversarial evidence meets the current authority-bound minimum set"
+      "required_inputs": ["claim_category","claim_author_lineage","evidence_author_lineage","evaluator_lineage","oracle_lineage","promotion_authority_lineage","independence_provenance_verified","material_shared_control_loop_detected","independent_adversarial_evidence_count","required_adversarial_evidence_count","authority_oracle_current"],
+      "adversarial_minimum_set_ref": "contracts/dd-042-adversarial-minimum-set.v1.json",
+      "safe_floor": "self-referential authority loop, unverified independence provenance, material shared-control loop or insufficient independent adversarial evidence => HOLD/INCONCLUSIVE",
+      "positive_oracle": "no material self-approval/circularity/shared-control loop and independently sourced adversarial evidence meets the current authority-bound six-fixture minimum set"
     }
   ],
   "summary": {
@@ -51,8 +55,8 @@
     "evaluator_materialized_count": 2,
     "runtime_routed_count": 2,
     "qualification_fixture_plan_materialized_count": 2,
-    "qualification_fixture_case_count": 8,
-    "successor_total_fixture_case_count": 168,
+    "qualification_fixture_case_count": 13,
+    "successor_total_fixture_case_count": 173,
     "independently_qualified_count": 0
   },
   "implementation_refs": {
@@ -61,10 +65,11 @@
     "runtime": "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java",
     "runtime_factory": "src/main/java/kr/co/oruda/onsure/platform/DdQualifiedRuntimeFactory.java",
     "qualification_fixture_extension": "contracts/dd-semantic-evaluator-qualification-fixture-plan.extension-041-042.v1.json",
+    "dd042_adversarial_minimum_set": "contracts/dd-042-adversarial-minimum-set.v1.json",
     "successor_bundle_builder": "scripts/prepare-dd-independent-qualification-bundle-successor.py",
     "successor_qualification_validator": "scripts/validate-dd-semantic-evaluator-qualifications-successor.py",
-    "regression_test": "src/test/java/kr/co/oruda/onsure/platform/DesignGapDdSemanticEvaluatorsTest.java"
+    "regression_test": "src/test/java/kr/co/oruda/onsure/platform/DesignGapDdQualificationFixtureTest.java"
   },
-  "implementation_rule": "The legacy 40-DD denominator may not satisfy Design Closure after this extension is adopted. Until DD-041 and DD-042 are independently qualified and evidenced on the current subject, every premerge/design-lock gate remains HOLD_NONFINAL.",
+  "implementation_rule": "The legacy 40-DD denominator and the superseded 168-fixture successor denominator may not satisfy Design Closure after this delegated DD-042 minimum-set materialization. Until all DD-001..042 are freshly independently qualified with the exact 173-case current fixture plan, every premerge/design-lock gate remains HOLD_NONFINAL.",
   "final_claim_allowed": false
 }
