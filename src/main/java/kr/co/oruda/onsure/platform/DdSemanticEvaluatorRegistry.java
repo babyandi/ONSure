@@ -1,5 +1,6 @@
 package kr.co.oruda.onsure.platform;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ public final class DdSemanticEvaluatorRegistry {
             boolean independentQualification) {
         public Registration {
             if (evaluator == null) throw new IllegalArgumentException("DD_EVALUATOR_REQUIRED");
-            if (evaluator.ddId() == null || !evaluator.ddId().matches("DD-(00[1-9]|0[1-3][0-9]|040)")) {
+            if (evaluator.ddId() == null || !evaluator.ddId().matches("DD-(00[1-9]|0[1-3][0-9]|04[0-2])")) {
                 throw new IllegalArgumentException("DD_EVALUATOR_ID_INVALID");
             }
             if (evaluatorId == null || evaluatorId.isBlank()
@@ -55,15 +56,22 @@ public final class DdSemanticEvaluatorRegistry {
     }
 
     public static DdSemanticEvaluatorRegistry builtInUnqualified() {
-        return new DdSemanticEvaluatorRegistry(BuiltInDdSemanticEvaluators.all().stream()
-                .map(evaluator -> new Registration(
-                        evaluator,
-                        "builtin-" + evaluator.ddId().toLowerCase(),
-                        BuiltInDdSemanticEvaluators.VERSION,
-                        "UNQUALIFIED",
-                        false,
-                        false))
-                .toList());
+        List<Registration> registrations = new ArrayList<>();
+        BuiltInDdSemanticEvaluators.all().forEach(evaluator -> registrations.add(new Registration(
+                evaluator,
+                "builtin-" + evaluator.ddId().toLowerCase(),
+                BuiltInDdSemanticEvaluators.VERSION,
+                "UNQUALIFIED",
+                false,
+                false)));
+        DesignGapDdSemanticEvaluators.all().forEach(evaluator -> registrations.add(new Registration(
+                evaluator,
+                "design-gap-" + evaluator.ddId().toLowerCase(),
+                DesignGapDdSemanticEvaluators.VERSION,
+                "UNQUALIFIED",
+                false,
+                false)));
+        return new DdSemanticEvaluatorRegistry(registrations);
     }
 
     public Optional<Registration> qualified(String ddId) {
