@@ -1,0 +1,41 @@
+{
+  "contract": "ONSURE_HDA_EXTERNAL_APPROVAL_SOURCE_V1",
+  "subject_commit_sha": "72f969504a84a26dac62e70eda04bdea71f93d0f",
+  "recommendation_packet_path": "contracts/human-design-authority-recommendation-packet.candidate.v1.json",
+  "approver_principal": "babyandi",
+  "review_authority": "ONSURE_HUMAN_DESIGN_AUTHORITY_EXPLICIT_USER_APPROVAL",
+  "approved_at": "2026-08-19T17:58:00+09:00",
+  "decision_ids": [
+    "HDA-DD-002",
+    "HDA-DD-011",
+    "HDA-DD-013",
+    "HDA-DD-014",
+    "HDA-DD-015",
+    "HDA-DD-019",
+    "HDA-DD-020",
+    "HDA-DD-025",
+    "HDA-DD-027",
+    "HDA-DD-029",
+    "HDA-DD-030",
+    "HDA-DD-031",
+    "HDA-DD-034",
+    "HDA-DD-038",
+    "HDA-P1-001",
+    "HDA-P1-002",
+    "HDA-P1-003",
+    "HDA-P1-004"
+  ],
+  "approval_statement": "ONSure frozen subject 72f969504a84a26dac62e70eda04bdea71f93d0f에 대해 contracts/human-design-authority-recommendation-packet.candidate.v1.json의 18개 권고안과 각 조건을 모두 승인한다. 이 승인은 HDA에 한정하며 FinalLock, Production GO, Commercial GO 승인은 아니다.",
+  "scope": {
+    "hda_recommendations_and_conditions": "APPROVED",
+    "final_lock": "NOT_APPROVED",
+    "production_go": "NOT_APPROVED",
+    "commercial_go": "NOT_APPROVED"
+  },
+  "source_issue": "babyandi/ONSure#67",
+  "source_issue_comment_id": 5339882497,
+  "recommendation_packet_digest": null,
+  "materialization_state": "PENDING_FROZEN_PACKET_DIGEST_AND_RECEIPT_VALIDATION",
+  "github_actions_authority": false,
+  "final_claim_allowed": false
+}
