@@ -1,0 +1,30 @@
+{
+  "contract": "ONSURE_DD_041_042_SUCCESSOR_DESIGN_TRACE_STATUS_V1",
+  "status": "DESIGN_AND_MACHINE_PATH_MATERIALIZED_QUALIFICATION_OPEN_NONFINAL",
+  "rows": [
+    {
+      "dd_id": "DD-041",
+      "design_ref": "docs/master/semantic-assurance/166_DD_041_042_SUCCESSOR_TRACE_AUTHORITY.md",
+      "contract_ref": "contracts/dd-041-042-design-gap-extension.candidate.v1.json",
+      "relation_ref": "contracts/post-final-target-dd-041-042-to-fr-fin-relation.v1.json",
+      "test_ref": "src/test/java/kr/co/oruda/onsure/platform/DesignGapDdQualificationFixtureTest.java",
+      "runtime_ref": "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java",
+      "qualification_state": "OPEN_NONFINAL",
+      "runtime_evidence_state": "OPEN_NONFINAL"
+    },
+    {
+      "dd_id": "DD-042",
+      "design_ref": "docs/master/semantic-assurance/166_DD_041_042_SUCCESSOR_TRACE_AUTHORITY.md",
+      "contract_ref": "contracts/dd-041-042-design-gap-extension.candidate.v1.json",
+      "minimum_set_ref": "contracts/dd-042-adversarial-minimum-set.v1.json",
+      "relation_ref": "contracts/post-final-target-dd-041-042-to-fr-fin-relation.v1.json",
+      "test_ref": "src/test/java/kr/co/oruda/onsure/platform/DesignGapDdQualificationFixtureTest.java",
+      "runtime_ref": "src/main/java/kr/co/oruda/onsure/platform/DdAssuranceOperationRuntime.java",
+      "qualification_state": "OPEN_NONFINAL",
+      "runtime_evidence_state": "OPEN_NONFINAL"
+    }
+  ],
+  "dd_count": 2,
+  "github_actions_authority": false,
+  "final_claim_allowed": false
+}
