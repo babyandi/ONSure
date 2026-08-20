@@ -1,0 +1,51 @@
+{
+  "type": "ONSURE_FR_FIN_01_22_SEMANTIC_RELATION_MAPPING_GITHUB_NONFINAL",
+  "status": "MATERIALIZED_NONFINAL",
+  "authority": {
+    "requirement_anchor": "docs/05_PRODUCT_REQUIREMENTS_AND_ACCEPTANCE.md",
+    "authority_reconciliation": "docs/master/semantic-assurance/160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md",
+    "architecture_refinement": "docs/41_ONSURE_FINAL_TARGET_ARCHITECTURE.md",
+    "developer_git_refinement": "docs/42_VSCODE_AGENT_AND_GIT_FULL_CHAIN_DESIGN.md",
+    "financial_control_refinement": "docs/43_FINANCIAL_CONTROL_TRACE_AND_ACCEPTANCE.md",
+    "unified_work_refinement": "docs/44_UNIFIED_AI_WORK_DEVELOPER_ASSURANCE_DESIGN.md"
+  },
+  "relation_vocabulary": ["REFINES","DECOMPOSES","SATISFIES","OVERLAPS","CONFLICTS"],
+  "coverage_rule": "A parent FR-FIN requirement is not closed by textual similarity. All mandatory decompositions/refinements and parent-unique acceptance criteria require separate verified closure.",
+  "records": [
+    {"requirement_id":"FR-FIN-01","title":"Intake·Inventory","relations":[{"relation":"DECOMPOSES","targets":["ONIntake","FIN-GOV"]},{"relation":"REFINES","targets":["FR-COM-001","FR-COM-002","FR-COM-003","FR-COM-004"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-02","title":"Learning·Profile","relations":[{"relation":"DECOMPOSES","targets":["ONLearning","ONProfile"]},{"relation":"OVERLAPS","targets":["FR-LEARN-001~095","OLearning Program requirements"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-03","title":"Regulatory Control","relations":[{"relation":"DECOMPOSES","targets":["ONProfile","ONPlanning","FIN-GOV","FIN-EVD"]},{"relation":"REFINES","targets":["policy/regulatory applicability requirements"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-04","title":"Threat·Risk Planning","relations":[{"relation":"DECOMPOSES","targets":["ONPlanning","Threat Model","Coverage Gap","Oracle planning"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-05","title":"Verification Fabric","relations":[{"relation":"DECOMPOSES","targets":["ONVerification Fabric","Positive/Negative/Boundary/Adversarial/Metamorphic","Performance/Load/Soak/Chaos/Backup/Restore/DR"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-06","title":"AI Security","relations":[{"relation":"DECOMPOSES","targets":["FIN-AIS","RAG Authorization/Poisoning/Exfiltration","Prompt Injection/Jailbreak/Output Safety","Agent/Tool Capability"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-07","title":"Financial Security","relations":[{"relation":"DECOMPOSES","targets":["FIN-IAM","FIN-TEN","FIN-DAT","FIN-CRY","FIN-NET","FIN-AUD","FIN-RES","FIN-OPS"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-08","title":"Finding·RCA","relations":[{"relation":"DECOMPOSES","targets":["ONReview","ONRCA","Finding","RCA","Case Receipt"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-09","title":"Controlled Improvement","relations":[{"relation":"DECOMPOSES","targets":["ONImprovement","ONGit","isolated Worktree","Hunk approval","Before/After regression"]},{"relation":"REFINES","targets":["FR-COM-007","FR-COM-008"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-10","title":"VS Code Agent","relations":[{"relation":"DECOMPOSES","targets":["ONWorkbench","VS Code Agent modes","Context security","Command execution security","Remote Agent"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-11","title":"Git Full-Chain","relations":[{"relation":"DECOMPOSES","targets":["ONGit","Branch/Worktree","Stage/Commit/Push/Draft PR","Signed Receipt"]},{"relation":"REFINES","targets":["FR-COM-007","FR-COM-008"]}],"mapping_status":"MAPPED_PARENT_NONFINAL","known_gap":"FR-COM-008 external branch-protection test/evidence path remains open"},
+    {"requirement_id":"FR-FIN-12","title":"Evidence·Independent Validation","relations":[{"relation":"DECOMPOSES","targets":["ONEvidence","Evidence Ledger","OTester","OAudit","Restricted/Shareable Pack","Legal Hold"]},{"relation":"REFINES","targets":["FR-COM-004","FR-COM-005"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-13","title":"Operations","relations":[{"relation":"DECOMPOSES","targets":["FIN-RES","FIN-OPS","HA","Queue","Checkpoint","Pause/Resume","RTO/RPO","Backup/Restore","DR"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-14","title":"Vendor·Supply Chain","relations":[{"relation":"DECOMPOSES","targets":["FIN-SUP","FIN-TPR","SBOM","Provenance","Signature","Exit Plan"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-15","title":"Unified Workbench","relations":[{"relation":"DECOMPOSES","targets":["ONWorkbench","ONSession","ONOrchestrator","ONMemory","ONEvidence"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-16","title":"Developer Agent","relations":[{"relation":"DECOMPOSES","targets":["ONDeveloper","ONTOOL","ONExecution Node","ONGit","Approval Bundle"]},{"relation":"REFINES","targets":["FR-COM-007","FR-COM-008"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-17","title":"Work·Artifact Agent","relations":[{"relation":"DECOMPOSES","targets":["ONWork","ONArtifact","DOCX/PPTX/XLSX/PDF","Native Object preservation","Render/Read-back QA"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-18","title":"Orchestration·Memory","relations":[{"relation":"DECOMPOSES","targets":["ONOrchestrator","ONMemory","Task Graph","Checkpoint/Recovery","knowledge promotion/currentness"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-19","title":"Tool·Skill·Plugin·Connector","relations":[{"relation":"DECOMPOSES","targets":["ONTOOL-MANIFEST","ONTOOL","ONConnector","signature/SBOM/permission/network boundary"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-20","title":"Automation","relations":[{"relation":"DECOMPOSES","targets":["ONAutomation","schedule/recurrence/condition watch","idempotency/retry/stop condition","approval expiry","result notification"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-21","title":"Package·Delivery","relations":[{"relation":"DECOMPOSES","targets":["ONPackage","ONDelivery","signature/hash/SBOM/malware/license/compatibility","isolated install","Rollback Receipt"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"},
+    {"requirement_id":"FR-FIN-22","title":"Unified Evidence","relations":[{"relation":"DECOMPOSES","targets":["ONEvidence","Parent Hash lineage","User Request→Goal/Plan→Context→Model/Tool→Artifact→Command/Install/Git→Test→Improvement→Independent Validation→Human Decision"]},{"relation":"REFINES","targets":["FR-COM-004","FR-COM-005"]}],"mapping_status":"MAPPED_PARENT_NONFINAL"}
+  ],
+  "summary": {
+    "fr_fin_total": 22,
+    "parent_semantic_mapping_materialized": 22,
+    "parent_mapping_unreviewed": 0,
+    "granular_requirement_exact_relation_completion": "PARTIAL",
+    "reason": "Parent-to-design/control semantics are materialized from current normative target documents. Exact relation to every granular current Product Design RU record requires the post-reconciliation active denominator epoch and cannot be sealed before that population is generated."
+  },
+  "blocking_items": [
+    "POST_RECONCILIATION_ACTIVE_REQUIREMENT_DENOMINATOR_NOT_SEALED",
+    "GRANULAR_REQUIREMENT_RELATION_EXPANSION_PENDING_ACTIVE_EPOCH",
+    "FR_COM_008_EXTERNAL_EVIDENCE_GAP"
+  ],
+  "final_claim_allowed": false
+}

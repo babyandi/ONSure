@@ -1,0 +1,35 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/dd-qualified-runtime-activation/v2",
+  "title":"ONSure DD Qualified Runtime Activation",
+  "type":"object",
+  "required":["contract","execution_commit_sha","execution_tree_sha","qualified_subject_tree_sha","qualified_count","rows","generated_at","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_DD_QUALIFIED_RUNTIME_ACTIVATION_V2"},
+    "execution_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "execution_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "qualified_subject_tree_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "qualified_count":{"const":40},
+    "rows":{
+      "type":"array","minItems":40,"maxItems":40,
+      "items":{
+        "type":"object",
+        "required":["dd_id","evaluator_id","evaluator_version","qualification_receipt_ref","qualification_receipt_digest","qualification_current","independent_qualification"],
+        "properties":{
+          "dd_id":{"type":"string","pattern":"^DD-(00[1-9]|0[1-3][0-9]|040)$"},
+          "evaluator_id":{"type":"string","minLength":1},
+          "evaluator_version":{"type":"string","minLength":1},
+          "qualification_receipt_ref":{"type":"string","minLength":1},
+          "qualification_receipt_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+          "qualification_current":{"const":true},
+          "independent_qualification":{"const":true}
+        },
+        "additionalProperties":true
+      }
+    },
+    "generated_at":{"type":"string","format":"date-time"},
+    "github_actions_authority":{"const":false},
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}

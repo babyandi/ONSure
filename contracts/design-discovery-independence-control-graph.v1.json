@@ -1,0 +1,31 @@
+{
+  "contract": "ONSURE_DESIGN_DISCOVERY_INDEPENDENCE_CONTROL_GRAPH_V1",
+  "status": "HUMAN_AUTHORITY_APPROVED_NONFINAL",
+  "authority_decision": "DD-036",
+  "policy_version": "1.0.0",
+  "dimensions": [
+    {"id":"SAME_MODEL_VENDOR","classification":"REQUIRES_MITIGATION","required_evidence":["model_or_method_lineage","sealed_result_custody"]},
+    {"id":"SAME_ACCOUNT","classification":"REQUIRES_MITIGATION","required_evidence":["separate_session_identity","sealed_result_custody"]},
+    {"id":"SAME_API_CREDENTIAL","classification":"REQUIRES_MITIGATION","required_evidence":["credential_scope_isolation","sealed_result_custody"]},
+    {"id":"SAME_ORCHESTRATOR","classification":"REQUIRES_MITIGATION","required_evidence":["blind_input_enforcement","no_result_intermediation","sealed_result_custody"]},
+    {"id":"SAME_HOST_SERVER","classification":"REQUIRES_MITIGATION","required_evidence":["workspace_isolation","process_isolation"]},
+    {"id":"SAME_WORKSPACE","classification":"REQUIRES_MITIGATION","required_evidence":["read_only_frozen_bundle","separate_workspace"]},
+    {"id":"SAME_REPOSITORY_CHECKOUT","classification":"REQUIRES_MITIGATION","required_evidence":["read_only_frozen_bundle","tree_digest_binding"]},
+    {"id":"SAME_PROMPT_AUTHOR","classification":"ALLOWED_WITH_DISCLOSURE","required_evidence":["prompt_digest","blindness_constraints"]},
+    {"id":"SAME_EVIDENCE_CUSTODIAN","classification":"REQUIRES_MITIGATION","required_evidence":["immutable_receipt_digest","custody_ledger"]},
+    {"id":"SAME_TARGET_OWNER","classification":"DISQUALIFYING","required_evidence":[]},
+    {"id":"SAME_DESIGN_AUTHOR","classification":"DISQUALIFYING","required_evidence":[]},
+    {"id":"PRIOR_CONCLUSION_EXPOSURE","classification":"DISQUALIFYING","required_evidence":[]},
+    {"id":"CROSS_WAVE_COMMUNICATION","classification":"DISQUALIFYING","required_evidence":[]},
+    {"id":"SHARED_MEMORY_CONTEXT","classification":"REQUIRES_MITIGATION","required_evidence":["fresh_session_attestation","memory_isolation_evidence"]},
+    {"id":"SAME_REVIEWER_SELECTION_AUTHORITY","classification":"ALLOWED_WITH_DISCLOSURE","required_evidence":["selection_authority_disclosed"]},
+    {"id":"SAME_RESULT_PROMOTION_AUTHORITY","classification":"REQUIRES_MITIGATION","required_evidence":["independent_reconciler","promotion_sod_evidence"]}
+  ],
+  "decision_algorithm": {
+    "disqualifying_rule": "any present DISQUALIFYING dimension => common_control_resolved=false",
+    "mitigation_rule": "every present REQUIRES_MITIGATION dimension must provide every required evidence item",
+    "allowed_rule": "ALLOWED_WITH_DISCLOSURE dimensions do not block when disclosed",
+    "unknown_rule": "unknown or omitted dimension => HOLD"
+  },
+  "final_claim_allowed": false
+}

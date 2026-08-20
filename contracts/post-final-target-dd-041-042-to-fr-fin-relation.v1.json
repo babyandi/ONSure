@@ -1,0 +1,21 @@
+{
+  "contract": "ONSURE_POST_FINAL_TARGET_DD_041_042_TO_FR_FIN_RELATION_V1",
+  "status": "MAPPED_PARENT_LEVEL_NONFINAL",
+  "authority_basis": "Human-approved F-04/F-05 adoption materialized as DD-041/DD-042; this contract only connects those obligations to the existing FR-FIN taxonomy and does not create new Human policy.",
+  "rows": [
+    {
+      "dd": "DD-041",
+      "fr_fin": ["FR-FIN-13", "FR-FIN-21", "FR-FIN-22"],
+      "rationale": "Crypto-erasure completeness is a tenant/offboarding, retention/deletion and completion-evidence constraint, following the existing DD-015 offboarding lineage."
+    },
+    {
+      "dd": "DD-042",
+      "fr_fin": ["FR-FIN-12", "FR-FIN-18"],
+      "rationale": "Self-referential AI safety qualification is an assurance/evidence and independent qualification constraint, following the existing assurance/reviewer authority lineage."
+    }
+  ],
+  "mapped_dd_count": 2,
+  "unmapped_dd_count": 0,
+  "double_count_with_parent": false,
+  "final_claim_allowed": false
+}

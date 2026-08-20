@@ -1,0 +1,43 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/design-discovery-wave-execution-isolation/v1",
+  "title":"ONSure Design Discovery Wave Execution Isolation Evidence",
+  "type":"object",
+  "required":[
+    "contract","wave_id","envelope_digest","input_bundle_digest","reviewer_principal","reviewer_process_lineage",
+    "session_identity","workspace_identity","execution_started_at","execution_finished_at","fresh_session",
+    "read_only_frozen_bundle","sealed_envelope_only","repository_browsing_performed","issue_pr_comment_browsing_performed",
+    "opposite_wave_result_accessible","opposite_wave_result_accessed","prior_conclusion_source_accessed","shared_memory_context",
+    "orchestrator_result_intermediation","result_written_by_reviewer","credential_scope_isolated","reviewer_selection_authority",
+    "evidence_refs","evidence_digest","final_claim_allowed"
+  ],
+  "properties":{
+    "contract":{"const":"ONSURE_DESIGN_DISCOVERY_WAVE_EXECUTION_ISOLATION_V1"},
+    "wave_id":{"enum":["INDEPENDENT-SATURATION-A","INDEPENDENT-SATURATION-B"]},
+    "envelope_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "input_bundle_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "reviewer_principal":{"type":"string","minLength":1},
+    "reviewer_process_lineage":{"type":"string","minLength":1},
+    "session_identity":{"type":"string","minLength":1},
+    "workspace_identity":{"type":"string","minLength":1},
+    "execution_started_at":{"type":"string","format":"date-time"},
+    "execution_finished_at":{"type":"string","format":"date-time"},
+    "fresh_session":{"const":true},
+    "read_only_frozen_bundle":{"const":true},
+    "sealed_envelope_only":{"const":true},
+    "repository_browsing_performed":{"const":false},
+    "issue_pr_comment_browsing_performed":{"const":false},
+    "opposite_wave_result_accessible":{"const":false},
+    "opposite_wave_result_accessed":{"const":false},
+    "prior_conclusion_source_accessed":{"const":false},
+    "shared_memory_context":{"const":false},
+    "orchestrator_result_intermediation":{"const":false},
+    "result_written_by_reviewer":{"const":true},
+    "credential_scope_isolated":{"type":"boolean"},
+    "reviewer_selection_authority":{"type":"string","minLength":1},
+    "evidence_refs":{"type":"array","minItems":1,"items":{"type":"string","minLength":1},"uniqueItems":true},
+    "evidence_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}

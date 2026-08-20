@@ -1,0 +1,26 @@
+{
+  "projects": [
+    {
+      "project_id": "ONSURE/DESIGN-CLOSURE",
+      "repository": "babyandi/ONSure",
+      "repository_path": "/workspace/ONSure-development",
+      "branch": "autopilot/design-closure-mission",
+      "path_hints": [
+        "/workspace/ONSure-development",
+        "/workspace/ONSure-development/docs",
+        "/workspace/ONSure-development/docs/master",
+        "/workspace/ONSure-development/contracts"
+      ],
+      "keywords": [
+        "ONSure",
+        "Design Closure",
+        "Requirement Universe",
+        "Requirement Authority",
+        "FR-FIN",
+        "FR-LEARN",
+        "orphan",
+        "Autopilot Mission"
+      ]
+    }
+  ]
+}

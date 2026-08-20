@@ -1,0 +1,28 @@
+{
+  "contract": "ONSURE_REQUIREMENT_AUTHORITY_SOURCE_ALLOWLIST_DELTA_FINAL_TARGET_V1",
+  "status": "CANDIDATE_NONFINAL",
+  "authority_basis": [
+    "docs/master/semantic-assurance/160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md",
+    "docs/master/semantic-assurance/162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md"
+  ],
+  "purpose": "Explicitly extend Requirement Authority discovery after final-target design discovery without mutating or reinterpreting the historical 179-path master allowlist population.",
+  "paths": [
+    "docs/master/semantic-assurance/162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md",
+    "docs/master/semantic-assurance/163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md",
+    "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md",
+    "docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md"
+  ],
+  "explicit_exclusions": [
+    {
+      "path": "docs/master/semantic-assurance/164_EIGHT_STEP_DESIGN_DISCOVERY_TO_CLOSURE_EXECUTION_STATUS.md",
+      "reason": "Execution/status evidence; not a Requirement-originating design authority source."
+    }
+  ],
+  "rules": {
+    "listing_is_scan_eligibility_not_requirement_eligibility": true,
+    "disposition_requires_human_review_seed": true,
+    "content_sha256_required_at_materialization": true,
+    "unlisted_new_document_fail_closed": true,
+    "final_claim_allowed": false
+  }
+}

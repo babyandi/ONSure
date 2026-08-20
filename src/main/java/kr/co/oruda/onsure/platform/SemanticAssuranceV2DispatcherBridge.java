@@ -8,20 +8,16 @@ import java.util.Map;
 
 /**
  * Dual-read dispatcher bridge. Existing v1 operations remain on LocalWorkflowDispatcher while
- * Semantic Assurance v2 candidate operations are routed to the isolated v2 service.
- *
- * <p>Semantic operations execute inside the existing TenantRbacService durable ownership
- * transaction under their real semantic operation name. RegisteredTarget.sourceRoot is resolved
- * server-side and caller-injected authority fields are rejected.</p>
- *
- * <p>This is still a candidate bridge: it has not been compile/JUnit/independently verified and is
- * not installed as the product's active contract selector.</p>
+ * Semantic Assurance v2 candidate operations are routed to the isolated v2 service. Post-final-
+ * target DD-001..040 operations are routed to a fail-closed generic DD boundary through the same
+ * authenticated/RBAC transaction used by other semantic operations.
  */
 public final class SemanticAssuranceV2DispatcherBridge {
-    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V6";
+    public static final String CONTRACT = "ONSURE_SEMANTIC_ASSURANCE_V2_DISPATCHER_BRIDGE_V7";
     private final Path workspaceRoot;
     private final LocalWorkflowDispatcher legacy;
     private final SemanticAssuranceV2WorkflowService semantic;
+    private final DdAssuranceOperationRuntime dd;
     private final AuthenticatedWorkflowIdentity identity;
 
     public SemanticAssuranceV2DispatcherBridge(Path workspaceRoot, AuthenticatedWorkflowIdentity identity) {
@@ -32,9 +28,13 @@ public final class SemanticAssuranceV2DispatcherBridge {
         this.identity = identity;
         this.legacy = new LocalWorkflowDispatcher(this.workspaceRoot, identity);
         this.semantic = new SemanticAssuranceV2WorkflowService(this.workspaceRoot, identity);
+        this.dd = new DdAssuranceOperationRuntime();
     }
 
     public Map<String, Object> dispatch(String operation, JsonNode request) throws Exception {
+        if (dd.supports(operation)) {
+            return dispatchDd(operation, request);
+        }
         if (!SemanticAssuranceV2WorkflowService.supports(operation)) {
             return legacy.dispatch(operation, request);
         }
@@ -50,6 +50,29 @@ public final class SemanticAssuranceV2DispatcherBridge {
                 operation,
                 request,
                 () -> executeAuthorizedSemantic(operation, request));
+    }
+
+    private Map<String, Object> dispatchDd(String operation, JsonNode request) throws Exception {
+        if (request == null || !request.isObject()) {
+            throw new IllegalArgumentException("DD_REQUEST_OBJECT_REQUIRED");
+        }
+        requireDdRole(operation);
+        rejectCallerInjectedAuthority(request);
+        return new TenantRbacService(workspaceRoot).execute(
+                identity,
+                operation,
+                request,
+                () -> Map.ofEntries(
+                        Map.entry("contract", CONTRACT),
+                        Map.entry("route", "POST_FINAL_TARGET_DD_FAIL_CLOSED"),
+                        Map.entry("operation", operation),
+                        Map.entry("result", dd.execute(operation, request)),
+                        Map.entry("tenant_resource_authorization", "TENANT_RBAC_DD_OPERATION_TRANSACTION"),
+                        Map.entry("authorization_atomic_with_semantic_call", true),
+                        Map.entry("assurance_class", "SELF_VALIDATION_NONFINAL"),
+                        Map.entry("active_authority", false),
+                        Map.entry("semantic_completion", "NOT_QUALIFIED"),
+                        Map.entry("final_claim_allowed", false)));
     }
 
     private Map<String, Object> executeAuthorizedSemantic(String operation, JsonNode request) throws Exception {
@@ -81,14 +104,6 @@ public final class SemanticAssuranceV2DispatcherBridge {
         return envelope(operation, value, "TENANT_RBAC_SEMANTIC_OPERATION_TRANSACTION", pathBinding);
     }
 
-    /**
-     * Resolves the currently active installed version's directory for a registered deployment
-     * binding (deployment.register-target), the real target-bound deployment identity that
-     * verifyInstalled() digest-compares deployed_artifact_path against. Returns null (never
-     * throws) whenever the identity genuinely is not available yet -- unregistered deployment
-     * binding or zero installed versions -- so the caller fails closed with BLOCKED instead of a
-     * 500, matching every other "identity not yet available" path in this bridge.
-     */
     private Path resolveActiveDeploymentPath(
             String operation, JsonNode request, ProductCatalog.RegisteredTarget registered) throws Exception {
         String deploymentTargetId = request.path("deployment_target_id").asText("");
@@ -172,6 +187,14 @@ public final class SemanticAssuranceV2DispatcherBridge {
         JsonNode tenant = request.path("tenant_context");
         if (!tenant.isMissingNode() && !tenant.isNull()) {
             throw new SecurityException("SEMANTIC_V2_TENANT_CONTEXT_MUST_BE_SERVER_BOUND");
+        }
+    }
+
+    private void requireDdRole(String operation) {
+        boolean auditor = identity.roles().contains(AuthenticatedWorkflowIdentity.Role.AUDITOR);
+        boolean admin = identity.roles().contains(AuthenticatedWorkflowIdentity.Role.ADMIN);
+        if (!(auditor || admin)) {
+            throw new SecurityException("DD_OPERATION_ROLE_DENIED:" + operation);
         }
     }
 

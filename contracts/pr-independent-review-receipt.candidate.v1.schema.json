@@ -1,0 +1,31 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/pr-independent-review-receipt/v1",
+  "title":"ONSure Independent PR Review Receipt",
+  "type":"object",
+  "required":["contract","repository","pr_number","reviewed_head_sha","reviewer_principal","review_state","reviewed_at","independence_attestation","source_ref","receipt_digest","final_claim_allowed"],
+  "properties":{
+    "contract":{"const":"ONSURE_PR_INDEPENDENT_REVIEW_RECEIPT_V1"},
+    "repository":{"const":"babyandi/ONSure"},
+    "pr_number":{"const":54},
+    "reviewed_head_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "reviewer_principal":{"type":"string","minLength":1},
+    "review_state":{"const":"APPROVED"},
+    "reviewed_at":{"type":"string","format":"date-time"},
+    "independence_attestation":{
+      "type":"object",
+      "required":["not_pr_author","not_change_authority_self_approval","common_control_disclosed"],
+      "properties":{
+        "not_pr_author":{"const":true},
+        "not_change_authority_self_approval":{"const":true},
+        "common_control_disclosed":{"const":true},
+        "common_control_details":{"type":"array","items":{"type":"string"}}
+      }
+    },
+    "source_ref":{"type":"string","minLength":1},
+    "review_limitations":{"type":"array","items":{"type":"string"}},
+    "receipt_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "final_claim_allowed":{"const":false}
+  },
+  "additionalProperties":true
+}
