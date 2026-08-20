@@ -51,14 +51,19 @@ def main()->int:
     dd042_adv=set(planned_ids(((by_dd.get('DD-042') or {}).get('cases') or {}).get('adversarial') or {}))
     if minimum.get('minimum_adversarial_fixture_count')!=6 or len(mandatory)!=6: reasons.append('DD042_MINIMUM_SET_NOT_EXACT_6')
     if dd042_adv!=mandatory: reasons.append('DD042_ADVERSARIAL_PLAN_NOT_BOUND_TO_MINIMUM_SET')
-    if summary.get('independently_qualified_count')!=2: reasons.append('DD_041_042_NOT_INDEPENDENTLY_QUALIFIED')
+    # Independent qualification is receipt-derived execution authority and must never be
+    # inferred from or blocked by this tracked static design summary. The successor
+    # qualification validator separately requires exact 42/42 current receipts.
+    static_qualified_disclosure=summary.get('independently_qualified_count',0)
     receipt={
-      'contract':'ONSURE_DD_DENOMINATOR_42_GUARD_V3',
+      'contract':'ONSURE_DD_DENOMINATOR_42_GUARD_V4',
       'required_dd_count':42,
       'materialized_design_dd_count':len(materialized),
       'required_fixture_case_count':173,
       'extension_fixture_case_count':len(fixture_ids),
       'dd042_minimum_adversarial_fixture_count':len(mandatory),
+      'tracked_static_independently_qualified_count_disclosure_only':static_qualified_disclosure,
+      'independent_qualification_authority':'scripts/validate-dd-semantic-evaluator-qualifications-successor.py',
       'blocking_reasons':sorted(set(reasons)),
       'decision':'PASS_NONFINAL' if not reasons else 'HOLD_NONFINAL',
       'final_claim_allowed':False
