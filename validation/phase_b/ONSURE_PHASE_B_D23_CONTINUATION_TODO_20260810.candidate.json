@@ -1,13 +1,32 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.0.1",
   "record_id": "ONSURE_PHASE_B_D23_CONTINUATION_TODO_20260810",
-  "status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
-  "recorded_at": "2026-08-10T00:59:00+09:00",
+  "status": "HOLD_PHASE_A_PROVENANCE_UNRESOLVED",
+  "recorded_at": "2026-08-10T01:17:00+09:00",
   "branch": "work/onsure-phase-b-d23-continuation-20260810",
-  "purpose": "Preserve the exact ONSure continuation point after creation of the isolated canonical-method Codex Phase B candidate. This is a TODO/handoff record only and grants no PASS or production authority.",
-  "phase_a_provenance": {
-    "record_ref": "validation/phase_a/ONSURE_PHASE_A_PROVENANCE_DISCOVERY_20260810.candidate.json",
-    "status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
+  "purpose": "Preserve the exact ONSure continuation point after creation of the isolated canonical-method Codex Phase B candidate. This is a continuation/work branch, not a merge-ready result branch. The sole prerequisite before D23 is authoritative recovery and provenance verification of the original frozen Phase A exact bytes.",
+  "phase_a_gate": {
+    "status": "UNRESOLVED_SOLE_PREREQUISITE_BEFORE_D23",
+    "d23_allowed": false,
+    "required_evidence": [
+      "Locate the actual D01-D22 Phase A output artifact.",
+      "Recover the exact bytes as frozen at the time of Phase A.",
+      "Recompute SHA-256 from those exact bytes.",
+      "Identify the original Git blob SHA and the earliest authoritative commit containing that exact blob.",
+      "Prove the artifact is not a later modified copy, duplicate, reconstructed semantic replay, or post-hoc normalization.",
+      "Prove Phase A was frozen before any Golden Corpus disclosure or access relevant to the run.",
+      "Locate the corresponding freeze receipt, execution receipt, manifest, or equivalent contemporaneous provenance artifact.",
+      "Verify that the receipt/manifest cryptographically binds the exact Phase A bytes, directly or through an unambiguous parent digest chain."
+    ],
+    "anti_substitution_rules": [
+      "Do not regenerate Phase A.",
+      "Do not use the known nonblind semantic replay as a substitute for the original frozen Phase A.",
+      "Do not infer exact-byte identity from filename, semantic similarity, timestamps alone, or narrative declarations.",
+      "Do not execute D23 while Phase A exact-byte provenance remains unresolved."
+    ],
+    "failure_state": "D23_NOT_RUN_PHASE_A_ARTIFACT_UNRESOLVED",
+    "investigation_record_ref": "validation/phase_a/ONSURE_PHASE_A_PROVENANCE_DISCOVERY_20260810.candidate.json",
+    "investigation_status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
     "exact_byte_identity_locked": false,
     "d23": "NOT_RUN_PHASE_A_ARTIFACT_UNRESOLVED",
     "substitute_or_reconstructed_phase_a_allowed": false
@@ -31,6 +50,22 @@
     "regeneration_policy": "DO_NOT_REGENERATE_MERELY_TO_ADD_EVIDENCE_SHELL"
   },
   "next_actions": [
+    {
+      "id": "TODO-00",
+      "action": "RECOVER_AND_PROVE_ORIGINAL_FROZEN_PHASE_A",
+      "status": "BLOCKING",
+      "acceptance": [
+        "Actual D01-D22 Phase A artifact located.",
+        "Exact historical frozen bytes recovered without rewriting.",
+        "SHA-256 recomputed from exact bytes.",
+        "Original Git blob SHA identified.",
+        "Earliest authoritative commit containing that exact blob identified.",
+        "Artifact proven not to be a post-hoc modified copy, duplicate, or semantic replay.",
+        "Pre-Golden freeze timing proven with contemporaneous evidence.",
+        "Freeze receipt, execution receipt, manifest, or equivalent provenance artifact located.",
+        "Receipt/manifest verified to bind the exact Phase A bytes by digest or valid parent-digest chain."
+      ]
+    },
     {
       "id": "TODO-01",
       "action": "PRESERVE_PHASE_B_EXACT_BYTES",
@@ -73,7 +108,7 @@
     {
       "id": "TODO-05",
       "action": "BIND_FROZEN_PHASE_A_AND_PHASE_B",
-      "status": "HOLD_PHASE_A_ARTIFACT_UNRESOLVED",
+      "status": "BLOCKED_BY_TODO_00",
       "acceptance": [
         "Read actual frozen Phase A bytes and actual frozen Phase B bytes.",
         "Recompute both SHA-256 values.",
@@ -116,6 +151,7 @@
       "action": "METHOD_REQUALIFICATION",
       "status": "HOLD",
       "acceptance": [
+        "Original frozen Phase A exact-byte provenance resolved.",
         "D23 validated from actual A/B artifacts.",
         "Golden Critical 53/53 strict recall.",
         "No open Critical DesignEscape requalification blocker.",
@@ -126,8 +162,9 @@
   "non_substitutable_evidence": [
     "First Claude Phase B diagnostic result",
     "Claude provider-policy-blocked attempts",
-    "nonblind Phase A/preflight result",
-    "static method-to-Golden mapping"
+    "nonblind Phase A/preflight semantic replay",
+    "static method-to-Golden mapping",
+    "post-hoc reconstructed or semantically equivalent Phase A copy"
   ],
   "provider_policy_note": {
     "claude_policy_blocked_attempts": "NOT_RUN_PROVIDER_POLICY_BLOCKED",
