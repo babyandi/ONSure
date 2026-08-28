@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${productName}">ONSure Enterprise Web</title>
+  <link rel="stylesheet" th:href="@{/css/onsure.css}">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <strong>ONSure</strong>
+      <span>Enterprise Web</span>
+    </div>
+    <div class="status" th:text="${status}">SELF_VALIDATION_NONFINAL</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">AI ASSURANCE CONTROL PLANE</p>
+      <h1>검증 상태와 증적을 한 화면에서 확인합니다.</h1>
+      <p>이 화면은 현재 Spring Boot Web vertical slice이며 제품 최종 판정을 제공하지 않습니다.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">ASSURANCE STATE</p>
+          <h2>입증 상태 모델</h2>
+        </div>
+        <span class="badge hold">NONFINAL</span>
+      </div>
+      <ol class="state-chain">
+        <li th:each="state : ${assuranceStates}" th:text="${state}">DECLARED</li>
+      </ol>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <p class="eyebrow">PORTFOLIO</p>
+        <h3>증적 연결 대기</h3>
+        <p th:if="${!portfolioEvidenceAvailable}">Core read model과 연결되기 전에는 프로젝트 수, PASS 수, 위험 수치를 추정하지 않습니다.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">NEXT SLICE</p>
+        <h3>Project → Target → Evidence</h3>
+        <p>동일 Tenant·Project identity로 Core 상태를 읽고 Evidence receipt까지 drill-down하는 경로가 다음 구현 범위입니다.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">AUTHORITY</p>
+        <h3>Web은 표시 계층입니다.</h3>
+        <p>권한, 승인, 검증 판정과 Evidence authority는 ONSure Core에서 유지합니다.</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
