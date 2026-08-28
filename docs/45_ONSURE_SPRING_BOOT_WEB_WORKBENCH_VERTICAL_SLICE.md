@@ -3,7 +3,8 @@
 - 상태: `IMPLEMENTED_UNVERIFIED_NONFINAL`
 - 기준 Source: `main@e3e8add1e5917e127d6ea788147055f034231c70`
 - 작업 Branch: `onsure/improve-web-springboot-workbench-20260828`
-- 목적: ONSure의 Web Console을 Spring Boot 기반으로 시작하되, 기존 Assurance 권위와 frozen successor lineage를 침범하지 않는 첫 개발 Vertical Slice를 정의한다.
+- Draft PR: `#93`
+- 목적: ONSure의 Web Console을 Spring Boot 기반으로 시작하되, 기존 Assurance 권위와 frozen successor lineage를 침범하지 않는 개발 Vertical Slice를 정의한다.
 
 ## 1. 적용한 OBuilder 설계 원칙
 
@@ -23,6 +24,7 @@
 6. Foundation Profile과 실행/검증 권위를 분리한다.
 7. 실제 E2E 실행 증적 전에는 `NOT_RUN`을 `PASS`로 변경하지 않는다.
 8. Web은 기존 Core read model을 사용하고 별도 Web-owned Assurance 상태를 만들지 않는다.
+9. Canonical runtime binding이 없으면 경로/사용자를 추측하지 않고 `UNBOUND_NONFINAL`로 닫는다.
 
 중요: ORUDA의 OBuilder 문서상 `SPRING_BOOT_JAVA17_MAVEN`은 설계되어 있으나 OBuilder Integrated E2E에서는 아직 `DESIGNED_NOT_EXECUTION_READY`다. 따라서 본 구현은 OBuilder의 구조 원칙을 참조하지만, OBuilder가 이 Spring Boot 결과를 자동 생성·검증했다는 주장을 하지 않는다.
 
@@ -43,6 +45,7 @@ modules/onsure-web-console
 - loopback default binding `127.0.0.1:47312`
 - 외부 CDN/원격 프런트 의존성 없음
 - authoritative workspace는 `ONSURE_WORKSPACE_ROOT`로만 명시한다
+- Session authority는 `ONSURE_SESSION_LEDGER_ROOT` + `ONSURE_SESSION_USER_ID`가 모두 명시된 경우에만 연결한다
 
 Spring Boot 3.4 계열은 Java 17을 지원하며, 현재 ONSure가 고정한 Jackson 2.18.x 계열과의 통합 위험을 낮추기 위해 3.4.13을 사용한다. 이 선택은 실행 검증 전 개발 기준이며 검증 결과에 따라 별도 Revision으로 조정할 수 있다.
 
@@ -51,9 +54,12 @@ Spring Boot 3.4 계열은 Java 17을 지원하며, 현재 ONSure가 고정한 Ja
 ```text
 GET /api/v1/workbench/status
 GET /api/v1/workbench/catalog
+GET /api/v1/workbench/sessions
 GET /actuator/health
 GET /
 ```
+
+## 3. Core Catalog Read Model
 
 `/api/v1/workbench/catalog`는 기존 Core `ProductCatalog`를 통해 Workspace/Project/Target과 catalog revision을 읽는다. Web Controller가 catalog JSON 파일을 직접 파싱하지 않는다.
 
@@ -68,9 +74,7 @@ CORE_READ_MODEL_BLOCKED_NONFINAL
 
 중 하나로 닫고 빈 catalog를 정상 연결 상태로 위장하지 않는다.
 
-## 3. Core 변경 범위
-
-기존 `ProductCatalog`에 다음 읽기 전용 snapshot API만 보강한다.
+기존 `ProductCatalog`에는 다음 읽기 전용 snapshot API만 보강한다.
 
 ```text
 workspaces()
@@ -79,7 +83,47 @@ projects()
 
 등록/수정/삭제/검증 판정 의미는 변경하지 않는다. 기존 `targets(projectId)`, `revision()`과 조합해 Web read model을 구성한다.
 
-## 4. 권위 경계
+## 4. Core Session Read Model
+
+ONSure 목표 설계의 `ONSession`은 Session ID, Project/Workspace, User/Role/Device/Execution Node, Task/Approval/Evidence 계보를 하나의 작업 상태로 결속해야 한다. 그러나 현재 main 기준으로 `SessionLedger`의 canonical Workspace/runtime storage binding은 확인되지 않았다.
+
+따라서 Web은 `.onsure/sessions` 같은 경로를 임의로 발명하지 않는다. 아래 두 값이 모두 명시된 경우에만 기존 Core `SessionLedger`를 읽는다.
+
+```text
+ONSURE_SESSION_LEDGER_ROOT
+ONSURE_SESSION_USER_ID
+```
+
+미설정 시:
+
+```text
+SESSION_AUTHORITY_UNBOUND_NONFINAL
+SESSION_AUTHORITY_NOT_CONFIGURED
+```
+
+잘못된 user identity 또는 ledger root, 위조/손상된 hash chain은:
+
+```text
+SESSION_READ_MODEL_BLOCKED_NONFINAL
+```
+
+으로 닫는다.
+
+Session projection은 다음 Core 의미를 재사용한다.
+
+- `activeSessionsFor(userId, now)`
+- 실제 `Instant` 기준 expiry 재계산
+- session ceiling에 의해 append된 EVICTED 상태 반영
+- hash-chain verification 실패 시 읽기 차단
+
+브라우저 DTO에는 다음을 노출하지 않는다.
+
+- session ledger filesystem root
+- user id
+- credential/token
+- 기타 로컬 파일 경로
+
+## 5. 권위 경계
 
 현재 Web Console은 다음을 하지 않는다.
 
@@ -94,7 +138,7 @@ projects()
 - Production GO
 - Commercial GO
 
-API 계약은 다음 값을 강제한다.
+Status API 계약은 다음 값을 강제한다.
 
 ```text
 state = READ_ONLY_CANDIDATE_NONFINAL
@@ -107,7 +151,7 @@ release = BLOCKED
 finalDecision = BLOCKED
 ```
 
-Core catalog read model도 다음을 유지한다.
+Catalog/Session read model도 모두 다음을 유지한다.
 
 ```text
 independentVerificationComplete = false
@@ -115,9 +159,7 @@ finalClaimAllowed = false
 productionGo = false
 ```
 
-## 5. ONSure 목표 설계와의 연결
-
-ONSure 정본의 Web 방향은 VS Code/Web/CLI가 동일 Core 상태 모델을 공유하는 것이다.
+## 6. ONSure 목표 설계와의 연결
 
 현재 물질화된 흐름:
 
@@ -126,14 +168,14 @@ Spring Boot runtime
 → Web Workbench surface
 → typed read-only status contract
 → ONSure ProductCatalog read model
+→ explicitly bound ONSure SessionLedger read model
 → explicit authority boundary
 ```
 
 다음 연결 순서:
 
 ```text
-Session read model
-→ Program Profile read model
+Program Profile read model
 → Learning/Verification/Findings/Evidence read model
 → Approval Inbox
 → authenticated command boundary
@@ -143,16 +185,20 @@ Session read model
 
 새 Web 전용 Assurance 엔진이나 별도 PASS 로직을 만들지 않는다.
 
-## 6. 요구 검증 명령
+## 7. 요구 검증 명령
 
 아래는 실행 예정 명령이며 이 문서 작성 시점에는 실행 증적이 없다.
 
 ```bash
 mvn -f pom-modular.xml -pl modules/onsure-web-console -am test
 mvn -f pom-modular.xml -pl modules/onsure-web-console -am package
-ONSURE_WORKSPACE_ROOT="$PWD" java -jar modules/onsure-web-console/target/onsure-web-console-0.1.0-SNAPSHOT.jar
+ONSURE_WORKSPACE_ROOT="$PWD" \
+ONSURE_SESSION_LEDGER_ROOT="<CANONICAL_OR_TEST_SESSION_LEDGER_ROOT>" \
+ONSURE_SESSION_USER_ID="<BOUND_USER_ID>" \
+java -jar modules/onsure-web-console/target/onsure-web-console-0.1.0-SNAPSHOT.jar
 curl -fsS http://127.0.0.1:47312/api/v1/workbench/status
 curl -fsS http://127.0.0.1:47312/api/v1/workbench/catalog
+curl -fsS http://127.0.0.1:47312/api/v1/workbench/sessions
 curl -fsS http://127.0.0.1:47312/actuator/health
 ```
 
@@ -162,9 +208,14 @@ curl -fsS http://127.0.0.1:47312/actuator/health
 2. 설정 workspace가 기존 `ProductCatalog`를 읽는지
 3. target `sourceRoot`가 browser response에 포함되지 않는지
 4. catalog 오류가 PASS/available=true로 승격되지 않는지
-5. status와 catalog 모두 final/production 권위를 false로 유지하는지
+5. session binding 미설정 시 `SESSION_AUTHORITY_UNBOUND_NONFINAL`인지
+6. session user path traversal 입력이 차단되는지
+7. expired/evicted session이 active로 노출되지 않는지
+8. tampered session hash chain이 `SESSION_READ_MODEL_BLOCKED_NONFINAL`로 닫히는지
+9. session user id / ledger root가 browser DTO에 포함되지 않는지
+10. status/catalog/session 모두 final/production 권위를 false로 유지하는지
 
-## 7. 현재 검증 상태
+## 8. 현재 검증 상태
 
 ```text
 SOURCE_MATERIALIZED             COMPLETE
@@ -172,15 +223,22 @@ SPRING_BOOT_MODULE              COMPLETE
 READ_ONLY_STATUS_CONTRACT       COMPLETE
 CORE_CATALOG_READ_MODEL         COMPLETE
 CORE_CATALOG_READ_APIS          COMPLETE
+CORE_SESSION_READ_MODEL         COMPLETE
+SESSION_AUTHORITY_BINDING       EXPLICIT_CONFIG_ONLY_NONFINAL
 LOCAL_PATH_REDACTION            MATERIALIZED_NOT_RUN
+SESSION_IDENTITY_BOUNDARY       MATERIALIZED_NOT_RUN
+SESSION_EXPIRY_EVICTION_TEST    MATERIALIZED_NOT_RUN
+SESSION_TAMPER_TEST             MATERIALIZED_NOT_RUN
 INITIAL_BROWSER_SURFACE         COMPLETE
 FAIL_CLOSED_AUTHORITY_TEST      MATERIALIZED_NOT_RUN
 CORE_CATALOG_READ_MODEL_TEST    MATERIALIZED_NOT_RUN
+CORE_SESSION_READ_MODEL_TEST    MATERIALIZED_NOT_RUN
 MAVEN_TEST                      NOT_RUN
 MAVEN_PACKAGE                   NOT_RUN
 RUNTIME_BOOT                    NOT_RUN
 HTTP_STATUS_READBACK            NOT_RUN
 HTTP_CATALOG_READBACK           NOT_RUN
+HTTP_SESSION_READBACK           NOT_RUN
 BROWSER_READBACK                NOT_RUN
 INDEPENDENT_VERIFICATION        NOT_RUN
 PROMOTION                       BLOCKED
