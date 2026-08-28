@@ -36,11 +36,13 @@ modules/onsure-web-console
 기술 기준:
 
 - Java 17
-- Spring Boot 3.5.16
+- Spring Boot 3.4.13
 - Maven
 - embedded web server
 - loopback default binding `127.0.0.1:47312`
 - 외부 CDN/원격 프런트 의존성 없음
+
+Spring Boot 3.4 계열은 Java 17을 지원하며, 현재 ONSure가 고정한 Jackson 2.18.x 계열과의 통합 위험을 낮추기 위해 3.4.13을 사용한다. 이 선택은 실행 검증 전 개발 기준이며 검증 결과에 따라 별도 Revision으로 조정할 수 있다.
 
 제공 기능:
 
