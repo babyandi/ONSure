@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+:root {
+  font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif;
+  color: #152238;
+  background: #f4f6f8;
+}
+body { margin: 0; min-height: 100vh; background: #f4f6f8; }
+.topbar {
+  min-height: 64px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #102238;
+  color: #fff;
+}
+.topbar strong { font-size: 22px; margin-right: 12px; }
+.topbar span { opacity: .72; }
+.status { font-size: 12px; letter-spacing: .04em; opacity: .88; }
+main { max-width: 1240px; margin: 0 auto; padding: 44px 32px 64px; }
+.hero { max-width: 860px; margin-bottom: 32px; }
+.hero h1 { margin: 8px 0 12px; font-size: clamp(32px, 4vw, 52px); line-height: 1.14; }
+.hero p { color: #526171; line-height: 1.7; }
+.eyebrow { margin: 0; color: #52707b; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.panel, .card { background: #fff; border: 1px solid #dfe5ea; border-radius: 10px; }
+.panel { padding: 28px; margin-bottom: 20px; }
+.panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.panel h2 { margin: 6px 0 0; font-size: 24px; }
+.badge { display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.badge.hold { background: #fff4d6; color: #6b4d00; border: 1px solid #ecd58a; }
+.state-chain { margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; list-style: none; }
+.state-chain li { padding: 14px 12px; border: 1px solid #dfe5ea; border-radius: 8px; font-size: 12px; font-weight: 700; background: #fafbfc; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.card { padding: 24px; }
+.card h3 { margin: 8px 0 10px; font-size: 19px; }
+.card p { margin-bottom: 0; color: #5b6875; line-height: 1.65; }
+@media (max-width: 900px) {
+  .state-chain, .grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 620px) {
+  .topbar { padding: 0 18px; }
+  main { padding: 28px 18px 44px; }
+  .state-chain, .grid { grid-template-columns: 1fr; }
+}
