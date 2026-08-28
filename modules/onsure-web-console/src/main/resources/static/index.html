@@ -57,7 +57,7 @@
       <div class="mark" aria-hidden="true"></div>
       <div>
         <h1>ONSure Workbench</h1>
-        <div class="subtitle">Spring Boot · ONSure Core read model</div>
+        <div class="subtitle">Spring Boot · ONSure Core read models</div>
       </div>
     </div>
     <div class="badge">NON_FINAL · READ ONLY</div>
@@ -67,7 +67,7 @@
     <article class="card">
       <div class="eyebrow">Current state</div>
       <div class="state" id="state">LOADING</div>
-      <p class="note">이 화면은 기존 ONSure Core의 상태를 읽는 Web 작업면 후보입니다. 검증 판정, 파일 변경, Git 실행, Merge, Release 및 Final 권한은 갖지 않습니다.</p>
+      <p class="note">이 화면은 기존 ONSure Core 상태를 읽는 Web 작업면 후보입니다. 검증 판정, 파일 변경, Git 실행, Merge, Release 및 Final 권한은 갖지 않습니다.</p>
     </article>
     <aside class="card facts" id="facts" aria-live="polite"></aside>
   </section>
@@ -94,9 +94,10 @@
 
   async function load() {
     try {
-      const [status, catalog] = await Promise.all([
+      const [status, catalog, sessions] = await Promise.all([
         json('/api/v1/workbench/status'),
-        json('/api/v1/workbench/catalog')
+        json('/api/v1/workbench/catalog'),
+        json('/api/v1/workbench/sessions')
       ]);
       document.getElementById('state').textContent = status.state;
       document.getElementById('facts').innerHTML = [
@@ -104,6 +105,8 @@
         fact('Core catalog', catalog.state),
         fact('Catalog revision', catalog.catalogRevision),
         fact('Workspace / Project / Target', `${catalog.workspaces.length} / ${catalog.projects.length} / ${catalog.targets.length}`),
+        fact('Core session', sessions.state),
+        fact('Active sessions', sessions.activeSessions.length),
         fact('Independent verification', status.independentVerificationComplete ? 'COMPLETE' : 'NOT RUN'),
         fact('Final claim', status.finalClaimAllowed ? 'ALLOWED' : 'BLOCKED')
       ].join('');
@@ -112,10 +115,14 @@
           <h2>${labels[surface.id] || surface.id}</h2>
           <div class="surface-state">${surface.state}</div>
         </article>`).join('');
-      const catalogMessage = catalog.available
-        ? '기존 ONSure ProductCatalog를 읽고 있습니다.'
-        : `Core catalog 미연결: ${catalog.blockedReason}`;
-      document.getElementById('footer').textContent = `${catalogMessage} 모든 고위험 권한은 BLOCKED이며 UI 존재만으로 PASS/GO/Final을 주장하지 않습니다.`;
+      const blocked = [
+        catalog.available ? null : `Catalog: ${catalog.blockedReason}`,
+        sessions.available ? null : `Session: ${sessions.blockedReason}`
+      ].filter(Boolean);
+      const readMessage = blocked.length === 0
+        ? '기존 ONSure Core catalog/session 상태를 읽고 있습니다.'
+        : `Core read model 미연결/차단 — ${blocked.join(' · ')}`;
+      document.getElementById('footer').textContent = `${readMessage} 모든 고위험 권한은 BLOCKED이며 UI 존재만으로 PASS/GO/Final을 주장하지 않습니다.`;
     } catch (error) {
       document.getElementById('state').textContent = 'STATUS_UNAVAILABLE';
       document.getElementById('footer').innerHTML = `<span class="error">Workbench 상태를 읽지 못했습니다: ${error.message}</span>`;
