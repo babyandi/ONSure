@@ -42,6 +42,7 @@
     <module>modules/onsure-sdk</module>
     <module>modules/onsure-cli</module>
     <module>modules/onsure-local-api</module>
+    <module>modules/onsure-web-console</module>
     <module>modules/onsure-test-fixtures</module>
     <module>modules/onsure-adapter-oruda</module>
   </modules>
