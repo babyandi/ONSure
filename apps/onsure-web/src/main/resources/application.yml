@@ -5,6 +5,8 @@ spring:
     user:
       name: ${ONSURE_WEB_BOOTSTRAP_USER}
       password: ${ONSURE_WEB_BOOTSTRAP_PASSWORD}
+  thymeleaf:
+    cache: true
 
 server:
   shutdown: graceful
@@ -20,5 +22,3 @@ management:
       probes:
         enabled: true
       show-details: never
-
-spring.thymeleaf.cache: true
