@@ -4,6 +4,9 @@ spring:
   main:
     banner-mode: "off"
 
+onsure:
+  workspace-root: ${ONSURE_WORKSPACE_ROOT:}
+
 server:
   address: ${ONSURE_WEB_BIND_ADDRESS:127.0.0.1}
   port: ${ONSURE_WEB_PORT:47312}
