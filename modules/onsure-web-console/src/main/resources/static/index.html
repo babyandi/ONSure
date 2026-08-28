@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONSure Workbench</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111d;
+      --panel: #0f1d2b;
+      --text: #eef6fb;
+      --muted: #94a8b8;
+      --line: #243b4d;
+      --accent: #35c7b4;
+      --warn: #f1a24a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif;
+      background: radial-gradient(circle at 15% 0%, #12304a 0, transparent 34%), var(--bg);
+      color: var(--text);
+    }
+    .shell { max-width: 1180px; margin: 0 auto; padding: 28px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .mark { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(145deg, var(--accent), #257da5); box-shadow: 0 12px 36px #0008; }
+    h1 { font-size: 24px; margin: 0; letter-spacing: -.02em; }
+    .subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .badge { border: 1px solid #6c4c28; color: #ffd8a6; background: #2b2116; padding: 8px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .hero { display: grid; grid-template-columns: 1.3fr .7fr; gap: 18px; margin-bottom: 18px; }
+    .card { border: 1px solid var(--line); background: linear-gradient(180deg, #102233e8, #0d1925e8); border-radius: 18px; padding: 22px; box-shadow: 0 20px 50px #0003; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .state { font-size: clamp(25px, 4vw, 42px); font-weight: 800; margin: 12px 0 8px; letter-spacing: -.04em; overflow-wrap: anywhere; }
+    .note { color: var(--muted); line-height: 1.65; }
+    .facts { display: grid; gap: 10px; }
+    .fact { display: flex; justify-content: space-between; gap: 18px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .fact:last-child { border-bottom: 0; }
+    .fact span:first-child { color: var(--muted); }
+    .fact strong { text-align: right; overflow-wrap: anywhere; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .surface { min-height: 125px; border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 17px; }
+    .surface h2 { margin: 0 0 22px; font-size: 15px; }
+    .surface-state { color: var(--warn); font-size: 11px; font-weight: 700; overflow-wrap: anywhere; }
+    .footer { color: var(--muted); font-size: 12px; margin-top: 20px; line-height: 1.6; }
+    .error { color: #ffb4b4; }
+    @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .shell { padding: 18px; } .topbar { align-items: flex-start; flex-direction: column; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <h1>ONSure Workbench</h1>
+        <div class="subtitle">Spring Boot · ONSure Core read models</div>
+      </div>
+    </div>
+    <div class="badge">NON_FINAL · READ ONLY</div>
+  </header>
+
+  <section class="hero">
+    <article class="card">
+      <div class="eyebrow">Current state</div>
+      <div class="state" id="state">LOADING</div>
+      <p class="note">이 화면은 기존 ONSure Core 상태를 읽는 Web 작업면 후보입니다. 검증 판정, 파일 변경, Git 실행, Merge, Release 및 Final 권한은 갖지 않습니다.</p>
+    </article>
+    <aside class="card facts" id="facts" aria-live="polite"></aside>
+  </section>
+
+  <section class="grid" id="surfaces" aria-label="Workbench surfaces"></section>
+
+  <p class="footer" id="footer">API 상태를 확인하는 중입니다.</p>
+</main>
+<script>
+  const labels = {
+    chat: 'Chat', programProfile: 'Program Profile', learning: 'Learning', verification: 'Verification',
+    findings: 'Findings', improvement: 'Improvement', evidence: 'Evidence', gitAndPr: 'Git & PR'
+  };
+
+  function fact(label, value) {
+    return `<div class="fact"><span>${label}</span><strong>${value}</strong></div>`;
+  }
+
+  async function json(path) {
+    const response = await fetch(path, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+    return response.json();
+  }
+
+  async function load() {
+    try {
+      const [status, catalog, sessions] = await Promise.all([
+        json('/api/v1/workbench/status'),
+        json('/api/v1/workbench/catalog'),
+        json('/api/v1/workbench/sessions')
+      ]);
+      document.getElementById('state').textContent = status.state;
+      document.getElementById('facts').innerHTML = [
+        fact('Foundation', status.foundationProfile),
+        fact('Core catalog', catalog.state),
+        fact('Catalog revision', catalog.catalogRevision),
+        fact('Workspace / Project / Target', `${catalog.workspaces.length} / ${catalog.projects.length} / ${catalog.targets.length}`),
+        fact('Core session', sessions.state),
+        fact('Active sessions', sessions.activeSessions.length),
+        fact('Independent verification', status.independentVerificationComplete ? 'COMPLETE' : 'NOT RUN'),
+        fact('Final claim', status.finalClaimAllowed ? 'ALLOWED' : 'BLOCKED')
+      ].join('');
+      document.getElementById('surfaces').innerHTML = status.surfaces.map(surface => `
+        <article class="surface">
+          <h2>${labels[surface.id] || surface.id}</h2>
+          <div class="surface-state">${surface.state}</div>
+        </article>`).join('');
+      const blocked = [
+        catalog.available ? null : `Catalog: ${catalog.blockedReason}`,
+        sessions.available ? null : `Session: ${sessions.blockedReason}`
+      ].filter(Boolean);
+      const readMessage = blocked.length === 0
+        ? '기존 ONSure Core catalog/session 상태를 읽고 있습니다.'
+        : `Core read model 미연결/차단 — ${blocked.join(' · ')}`;
+      document.getElementById('footer').textContent = `${readMessage} 모든 고위험 권한은 BLOCKED이며 UI 존재만으로 PASS/GO/Final을 주장하지 않습니다.`;
+    } catch (error) {
+      document.getElementById('state').textContent = 'STATUS_UNAVAILABLE';
+      document.getElementById('footer').innerHTML = `<span class="error">Workbench 상태를 읽지 못했습니다: ${error.message}</span>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>
