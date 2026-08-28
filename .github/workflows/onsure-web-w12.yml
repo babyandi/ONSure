@@ -23,6 +23,9 @@ jobs:
     name: Compile, test, package, runtime smoke
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      ONSURE_WEB_BOOTSTRAP_USER: w12-fixture-user
+      ONSURE_WEB_BOOTSTRAP_PASSWORD: w12-fixture-credential-not-secret
 
     steps:
       - name: Checkout exact source
@@ -66,9 +69,6 @@ jobs:
 
       - name: Runtime smoke and browser security baseline
         shell: bash
-        env:
-          ONSURE_WEB_BOOTSTRAP_USER: w12-validator
-          ONSURE_WEB_BOOTSTRAP_PASSWORD: w12-validator-secret
         run: |
           set -euo pipefail
           JAR='apps/onsure-web/target/onsure-web-0.1.0-SNAPSHOT.jar'
@@ -97,15 +97,16 @@ jobs:
           unauth_code=$(curl --silent --output /tmp/unauth-body --write-out '%{http_code}' http://127.0.0.1:18080/)
           test "$unauth_code" = '302'
 
+          auth_header=$(printf '%s:%s' "$ONSURE_WEB_BOOTSTRAP_USER" "$ONSURE_WEB_BOOTSTRAP_PASSWORD" | base64 -w0)
           curl --fail --silent \
-            --user "$ONSURE_WEB_BOOTSTRAP_USER:$ONSURE_WEB_BOOTSTRAP_PASSWORD" \
+            --header "Authorization: Basic $auth_header" \
             --output /tmp/dashboard.html \
             http://127.0.0.1:18080/
 
           grep -q 'SELF_VALIDATION_NONFINAL' /tmp/dashboard.html
           grep -q 'Web은 표시 계층입니다' /tmp/dashboard.html
 
-          headers=$(curl --silent --head --user "$ONSURE_WEB_BOOTSTRAP_USER:$ONSURE_WEB_BOOTSTRAP_PASSWORD" http://127.0.0.1:18080/)
+          headers=$(curl --silent --head --header "Authorization: Basic $auth_header" http://127.0.0.1:18080/)
           printf '%s\n' "$headers" | grep -qi '^Content-Security-Policy:'
           printf '%s\n' "$headers" | grep -qi '^X-Frame-Options: DENY'
 
