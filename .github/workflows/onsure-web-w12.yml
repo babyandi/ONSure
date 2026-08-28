@@ -1,0 +1,122 @@
+name: ONSure Web W12 Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/onsure-enterprise-web-springboot
+    paths:
+      - 'apps/onsure-web/**'
+      - '.github/workflows/onsure-web-w12.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/onsure-web/**'
+      - '.github/workflows/onsure-web-w12.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  maven-runtime-validation:
+    name: Compile, test, package, runtime smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: apps/onsure-web/pom.xml
+
+      - name: Record source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD | tee /tmp/onsure-web-source-sha.txt
+          java -version
+          mvn -version
+
+      - name: Maven clean test run 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          mvn -B -ntp -f apps/onsure-web/pom.xml clean test
+
+      - name: Maven clean test run 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$(cat /tmp/onsure-web-source-sha.txt)"
+          mvn -B -ntp -f apps/onsure-web/pom.xml clean test
+
+      - name: Package executable jar
+        shell: bash
+        run: |
+          set -euo pipefail
+          mvn -B -ntp -f apps/onsure-web/pom.xml package -DskipTests
+          test -f apps/onsure-web/target/onsure-web-0.1.0-SNAPSHOT.jar
+
+      - name: Runtime smoke and browser security baseline
+        shell: bash
+        env:
+          ONSURE_WEB_BOOTSTRAP_USER: w12-validator
+          ONSURE_WEB_BOOTSTRAP_PASSWORD: w12-validator-secret
+        run: |
+          set -euo pipefail
+          JAR='apps/onsure-web/target/onsure-web-0.1.0-SNAPSHOT.jar'
+          LOG='/tmp/onsure-web-runtime.log'
+          java -jar "$JAR" --server.port=18080 >"$LOG" 2>&1 &
+          APP_PID=$!
+          trap 'kill "$APP_PID" 2>/dev/null || true; wait "$APP_PID" 2>/dev/null || true' EXIT
+
+          ready=0
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:18080/healthz >/tmp/healthz.json; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" -ne 1 ]; then
+            cat "$LOG"
+            exit 1
+          fi
+
+          grep -q '"status":"UP"' /tmp/healthz.json
+          grep -q '"authority":"ONSURE_WEB_VERTICAL_SLICE_NONFINAL"' /tmp/healthz.json
+
+          unauth_code=$(curl --silent --output /tmp/unauth-body --write-out '%{http_code}' http://127.0.0.1:18080/)
+          test "$unauth_code" = '302'
+
+          curl --fail --silent \
+            --user "$ONSURE_WEB_BOOTSTRAP_USER:$ONSURE_WEB_BOOTSTRAP_PASSWORD" \
+            --output /tmp/dashboard.html \
+            http://127.0.0.1:18080/
+
+          grep -q 'SELF_VALIDATION_NONFINAL' /tmp/dashboard.html
+          grep -q 'Web은 표시 계층입니다' /tmp/dashboard.html
+
+          headers=$(curl --silent --head --user "$ONSURE_WEB_BOOTSTRAP_USER:$ONSURE_WEB_BOOTSTRAP_PASSWORD" http://127.0.0.1:18080/)
+          printf '%s\n' "$headers" | grep -qi '^Content-Security-Policy:'
+          printf '%s\n' "$headers" | grep -qi '^X-Frame-Options: DENY'
+
+      - name: Upload test evidence on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onsure-web-w12-failure-evidence-${{ github.sha }}
+          if-no-files-found: ignore
+          path: |
+            apps/onsure-web/target/surefire-reports/**
+            /tmp/onsure-web-runtime.log
+            /tmp/healthz.json
+            /tmp/dashboard.html
