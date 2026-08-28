@@ -9,7 +9,6 @@
       color-scheme: dark;
       --bg: #07111d;
       --panel: #0f1d2b;
-      --panel-2: #142638;
       --text: #eef6fb;
       --muted: #94a8b8;
       --line: #243b4d;
@@ -34,13 +33,13 @@
     .hero { display: grid; grid-template-columns: 1.3fr .7fr; gap: 18px; margin-bottom: 18px; }
     .card { border: 1px solid var(--line); background: linear-gradient(180deg, #102233e8, #0d1925e8); border-radius: 18px; padding: 22px; box-shadow: 0 20px 50px #0003; }
     .eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-    .state { font-size: clamp(25px, 4vw, 42px); font-weight: 800; margin: 12px 0 8px; letter-spacing: -.04em; }
+    .state { font-size: clamp(25px, 4vw, 42px); font-weight: 800; margin: 12px 0 8px; letter-spacing: -.04em; overflow-wrap: anywhere; }
     .note { color: var(--muted); line-height: 1.65; }
     .facts { display: grid; gap: 10px; }
     .fact { display: flex; justify-content: space-between; gap: 18px; padding: 12px 0; border-bottom: 1px solid var(--line); }
     .fact:last-child { border-bottom: 0; }
     .fact span:first-child { color: var(--muted); }
-    .fact strong { text-align: right; }
+    .fact strong { text-align: right; overflow-wrap: anywhere; }
     .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
     .surface { min-height: 125px; border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 17px; }
     .surface h2 { margin: 0 0 22px; font-size: 15px; }
@@ -58,7 +57,7 @@
       <div class="mark" aria-hidden="true"></div>
       <div>
         <h1>ONSure Workbench</h1>
-        <div class="subtitle">Spring Boot development vertical slice</div>
+        <div class="subtitle">Spring Boot · ONSure Core read model</div>
       </div>
     </div>
     <div class="badge">NON_FINAL · READ ONLY</div>
@@ -68,7 +67,7 @@
     <article class="card">
       <div class="eyebrow">Current state</div>
       <div class="state" id="state">LOADING</div>
-      <p class="note">이 화면은 ONSure의 Web 작업면 후보입니다. 현재 슬라이스는 상태 가시성만 제공하며 검증 판정, 파일 변경, Git 실행, Merge, Release 및 Final 권한을 갖지 않습니다.</p>
+      <p class="note">이 화면은 기존 ONSure Core의 상태를 읽는 Web 작업면 후보입니다. 검증 판정, 파일 변경, Git 실행, Merge, Release 및 Final 권한은 갖지 않습니다.</p>
     </article>
     <aside class="card facts" id="facts" aria-live="polite"></aside>
   </section>
@@ -87,27 +86,39 @@
     return `<div class="fact"><span>${label}</span><strong>${value}</strong></div>`;
   }
 
+  async function json(path) {
+    const response = await fetch(path, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+    return response.json();
+  }
+
   async function load() {
     try {
-      const response = await fetch('/api/v1/workbench/status', { cache: 'no-store' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      document.getElementById('state').textContent = data.state;
+      const [status, catalog] = await Promise.all([
+        json('/api/v1/workbench/status'),
+        json('/api/v1/workbench/catalog')
+      ]);
+      document.getElementById('state').textContent = status.state;
       document.getElementById('facts').innerHTML = [
-        fact('Contract', data.contract),
-        fact('Foundation', data.foundationProfile),
-        fact('Independent verification', data.independentVerificationComplete ? 'COMPLETE' : 'NOT RUN'),
-        fact('Final claim', data.finalClaimAllowed ? 'ALLOWED' : 'BLOCKED')
+        fact('Foundation', status.foundationProfile),
+        fact('Core catalog', catalog.state),
+        fact('Catalog revision', catalog.catalogRevision),
+        fact('Workspace / Project / Target', `${catalog.workspaces.length} / ${catalog.projects.length} / ${catalog.targets.length}`),
+        fact('Independent verification', status.independentVerificationComplete ? 'COMPLETE' : 'NOT RUN'),
+        fact('Final claim', status.finalClaimAllowed ? 'ALLOWED' : 'BLOCKED')
       ].join('');
-      document.getElementById('surfaces').innerHTML = data.surfaces.map(surface => `
+      document.getElementById('surfaces').innerHTML = status.surfaces.map(surface => `
         <article class="surface">
           <h2>${labels[surface.id] || surface.id}</h2>
           <div class="surface-state">${surface.state}</div>
         </article>`).join('');
-      document.getElementById('footer').textContent = '모든 고위험 권한은 현재 BLOCKED입니다. 구현 또는 UI 존재만으로 PASS/GO/Final을 주장하지 않습니다.';
+      const catalogMessage = catalog.available
+        ? '기존 ONSure ProductCatalog를 읽고 있습니다.'
+        : `Core catalog 미연결: ${catalog.blockedReason}`;
+      document.getElementById('footer').textContent = `${catalogMessage} 모든 고위험 권한은 BLOCKED이며 UI 존재만으로 PASS/GO/Final을 주장하지 않습니다.`;
     } catch (error) {
       document.getElementById('state').textContent = 'STATUS_UNAVAILABLE';
-      document.getElementById('footer').innerHTML = `<span class="error">상태 API를 읽지 못했습니다: ${error.message}</span>`;
+      document.getElementById('footer').innerHTML = `<span class="error">Workbench 상태를 읽지 못했습니다: ${error.message}</span>`;
     }
   }
   load();
