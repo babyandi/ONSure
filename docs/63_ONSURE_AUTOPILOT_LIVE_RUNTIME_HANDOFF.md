@@ -4,14 +4,14 @@ Status: `READY_FOR_LIVE_RUNTIME_REBIND_NONFINAL`
 
 This document is the ONSure-side handoff for the next authoritative AutoPilot attempt. It does not modify AutoPilot and does not claim execution.
 
-## Current ONSure subject candidate
+## Current ONSure subject selection rule
 
 - repository: `babyandi/ONSure`
 - PR: #95
 - branch: `feature/onsure-enterprise-web-springboot`
-- candidate source SHA after binding correction: `ae2b979b57c430f2732b4b9d281ab8367b4fe14b`
+- source SHA: resolve the exact current PR #95 HEAD immediately before Project Context CAS / ProjectAdmission and freeze that value for the new lineage
 
-If #95 moves again before admission, discard this candidate SHA and bind the new exact HEAD instead. Never reuse a receipt from an older SHA.
+Do not embed a self-referential candidate SHA in this document. If #95 moves after admission, the admitted lineage is stale and a new exact source identity is required. Never reuse a receipt from an older SHA.
 
 ## Do not use the active developer workspace as the subject
 
@@ -34,7 +34,8 @@ Before W12 execution, prove through live Runtime readback:
 ## Required order
 
 ```text
-ISOLATED_WORKTREE_CREATE
+RESOLVE_EXACT_PR95_HEAD
+→ ISOLATED_WORKTREE_CREATE
 → SOURCE_IDENTITY_READBACK
 → PROJECT_CONTEXT_CAS
 → PROJECT_CONTEXT_READBACK
