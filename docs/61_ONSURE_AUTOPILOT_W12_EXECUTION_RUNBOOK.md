@@ -31,24 +31,25 @@ Reported live API port is `8781`; clients must use discovered/runtime-configured
 ## Authoritative sequence
 
 ```text
-A. Create isolated validation worktree at exact ONSure SHA
-B. Verify HEAD and clean status
-C. PROJECT_CONTEXT_CAS
-D. Read back context revision/content
-E. PROJECT_ADMISSION
-F. Read back ProjectAdmission
-G. MISSION_SPEC_ADMISSION
-H. Read back exact mission ID/version/spec digest
-I. Resolve every Stage adapter against live executor registry
-J. MANUAL_RUN_BEGIN
-K. Java Stage execution and durable receipt persistence
-L. Durable mission/receipt readback
-M. Clean Run A
-N. Clean Run B with independent worktree/Maven repo
-O. G10 actual lineage comparison
+A. Resolve exact current PR #95 HEAD
+B. Create isolated validation worktree at that exact SHA
+C. Verify HEAD and clean status
+D. PROJECT_CONTEXT_CAS
+E. Read back context revision/content
+F. PROJECT_ADMISSION
+G. Read back ProjectAdmission
+H. MISSION_SPEC_ADMISSION
+I. Read back exact mission ID/version/spec digest
+J. Resolve every Stage adapter against live executor registry
+K. MANUAL_RUN_BEGIN
+L. Java Stage execution and durable receipt persistence
+M. Durable mission/receipt readback
+N. Clean Run A
+O. Clean Run B with independent worktree/Maven repo
+P. G10 actual lineage comparison
 ```
 
-If any step C through J is missing, W12 remains `NOT_RUN` or HOLD. Do not fall back to `subprocess.run()` as an alternate execution path.
+If any step D through K is missing, W12 remains `NOT_RUN` or HOLD. Do not fall back to `subprocess.run()` as an alternate execution path.
 
 ## Isolated source subject
 
