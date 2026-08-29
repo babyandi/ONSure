@@ -17,7 +17,7 @@ Execute the W12 validation mission against one exact ONSure SHA using AutoPilot 
 - `/workspace/ONSure` contains the exact PR #95 source SHA requested for validation.
 - Java 17 and Maven are available to the AutoPilot runner.
 - ONSure Web bootstrap credentials are runtime-only values and are not persisted in receipts.
-- Core read roots may be supplied with `ONSURE_CORE_CATALOG_ROOT` and `ONSURE_CORE_VALIDATION_ROOT`; absence must render `NOT_AVAILABLE`, not zero/PASS.
+- Core read roots may be supplied with `ONSURE_CORE_CATALOG_ROOT` and `ONSURE_CORE_VALIDATION_ROOT`; absent stores must render `NOT_AVAILABLE`, not empty/zero/PASS.
 
 ## Required sequence
 
@@ -32,13 +32,14 @@ The runner must HOLD if `/workspace/ONSure` HEAD differs from `<EXACT_PR95_SHA>`
 
 ## AutoPilot DAG
 
-`G0 → {G1,G2,G3} → G4 → {G5,G6,G7} → G8 → G9 → G10`
+`G0 → {G1,G3}; G1 → G2; {G2,G3} → G4 → {G5,G6,G7} → G8 → G9 → G10`
 
 - G0 source identity
 - G1 install authoritative `onsure-core` locally + build Web package
-- G2 unit/MVC/security/Core-read tests with non-zero denominator
-- G3 static Web-authority contract checks
-- G4 real Spring Boot runtime
+- G2 depends on G1; unit/MVC/security/Core-read tests with non-zero denominator
+- G3 may run alongside G1; static Web-authority contract checks
+- G4 real Spring Boot runtime after G2+G3 join
+- G5/G6/G7 may run in parallel after G4 where isolation permits
 - G5 health/auth
 - G6 browser-security negative checks
 - G7 Core read slice validation: Project/Target/Evidence facts + Assurance explicit availability
@@ -48,7 +49,7 @@ The runner must HOLD if `/workspace/ONSure` HEAD differs from `<EXACT_PR95_SHA>`
 
 ## Core read expectations
 
-The current read-only slice uses ONSure Core `ProductCatalog` and validation-store evidence. Project/Target/Evidence are authoritative Core facts. The canonical eight-stage Assurance projection is not yet implemented as a Core provider, so the Web must return `NOT_AVAILABLE` with `CORE_ASSURANCE_PROJECTION_NOT_IMPLEMENTED` rather than infer a stage from evidence or validation decisions.
+The current read-only slice uses ONSure Core `ProductCatalog` and validation-store evidence. Project/Target/Evidence are authoritative Core facts. Missing configured stores are `NOT_AVAILABLE`, distinct from authoritative empty collections. The canonical eight-stage Assurance projection is not yet implemented as a Core provider, so the Web must return `NOT_AVAILABLE` with `CORE_ASSURANCE_PROJECTION_NOT_IMPLEMENTED` rather than infer a stage from evidence or validation decisions.
 
 ## Evidence rules
 
