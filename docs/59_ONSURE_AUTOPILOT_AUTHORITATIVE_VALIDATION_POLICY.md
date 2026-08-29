@@ -11,106 +11,69 @@
 
 ONSure validation MUST NOT use GitHub Actions as the authoritative execution or evidence path.
 
-Authoritative validation is executed through ONSure AutoPilot in an authorized execution environment. GitHub remains source/PR/issue/evidence-index infrastructure only; it is not the validation runner.
+Authoritative validation is executed through the standalone `babyandi/Autopilot` runtime. GitHub remains source/PR/issue/evidence-index infrastructure only.
 
 ## 2. Current binding status
 
-Repository search on the current Enterprise Web branch did not identify a concrete AutoPilot runner entrypoint or binding by the literal names `AutoPilot`, `autopilot`, or `Manual Run`.
+AutoPilot is confirmed and its server-local execution authority is `/workspace/Autopilot`. AutoPilot Draft PR #288 on `feature/onsure-web-w12-binding-v2` materializes the ONSure project context and W12 mission binding. ONSure counterpart contract is `docs/60_ONSURE_AUTOPILOT_W12_BINDING_CONTRACT.md`.
 
-Therefore the current execution state is:
+Current state:
 
-`AUTOPILOT_BINDING_NOT_CONFIRMED`
+`AUTOPILOT_W12_BINDING_MATERIALIZED_NONFINAL`
 
-This MUST NOT be promoted to RUN, PASS, CLEAN, EVIDENCED or INDEPENDENTLY_VERIFIED merely because this policy document exists.
+This is a binding state, not execution evidence. W12 remains `NOT_RUN` until server-local receipts exist for one exact ONSure SHA.
 
 ## 3. W12 execution contract
 
-W12 remains `NOT_RUN` until AutoPilot is concretely bound to an authorized runner and executes the required checks against one exact source SHA.
-
-Minimum AutoPilot W12 sequence for `apps/onsure-web`:
-
-1. resolve and record exact immutable source SHA
-2. establish authorized Java 17 + Maven runtime identity
+Required bounded sequence:
+1. exact source SHA identity
+2. Java 17 + Maven preflight
 3. compile/package
-4. unit/MVC/security tests
-5. real Spring Boot runtime startup
-6. `/healthz` readback
+4. unit/MVC/security tests with non-zero discovered test denominator
+5. real Spring Boot runtime
+6. `/healthz` readback without interpreting service health as assurance PASS
 7. authenticated browser/session behavior
-8. CSP and frame-denial negative verification
-9. Core read-model path validation once implemented
-10. PostgreSQL/Flyway validation only when the implementation actually depends on that persistence path
-11. same-SHA second execution
-12. evidence receipt/readback comparison
-13. independent review gate before any higher assurance claim
+8. CSP/frame-denial negative verification
+9. Core read-model path validation when implemented
+10. PostgreSQL/Flyway only when the slice actually depends on that persistence path
+11. same-SHA clean run A
+12. same-SHA clean run B
+13. AutoPilot receipt/readback integration gate
+14. separate independent review before higher assurance promotion
 
 ## 4. Anti-False-PASS
 
-AutoPilot execution MUST preserve the following distinctions:
-
 - NOT_RUN is not PASS
 - tool/environment failure is not security success
-- 0 cases is not PASS
-- UNKNOWN is not PASS
-- INCONCLUSIVE is not PASS
+- zero tests is not PASS
+- UNKNOWN/INCONCLUSIVE/HOLD are not PASS
 - stale evidence is not current evidence
-- one successful run is not same-SHA two-run reproducibility
+- one successful run is not two-run reproducibility
 - self-validation is not independent verification
+- historical GitHub Actions observations have authoritative weight 0
 
-## 5. Evidence requirements
+## 5. Evidence identity
 
-Each AutoPilot execution must record enough identity to reproduce and independently read back the result, including at least:
-
-- source SHA
-- AutoPilot run identity
-- execution environment identity
-- commands/check identifiers
-- start/end timestamps
-- exit/result status by bounded check
-- generated evidence/receipt identities
-- failure/skip/not-run reasons
-- second-run linkage when applicable
-
-The exact receipt schema is governed by ONSure Core/Evidence authority and MUST NOT be invented by the Web layer.
+Each AutoPilot run must preserve at least:
+- AutoPilot goal/mission identity
+- ONSure exact source SHA
+- workspace/environment identity
+- bounded operation/command identity
+- timestamps
+- result state and explicit failure/skip/not-run reason
+- output/artifact digest or reference
+- parent/dependency receipt lineage
+- second-run linkage
 
 ## 6. GitHub boundary
 
-GitHub may contain:
+Allowed: source, Draft PR, issue/PR ledger, AutoPilot receipt references, immutable SHA references.
 
-- source code
-- Draft PR
-- issue/PR progress ledger
-- links or references to AutoPilot evidence
-- immutable source SHA references
+Forbidden as authority: GitHub Actions workflow/run status, workflow artifacts, CLEAN counters derived from Actions, independent-verification claims derived from Actions.
 
-GitHub Actions MUST NOT be reintroduced as:
+## 7. Promotion gate
 
-- the W12 runner
-- authoritative compile/test/runtime evidence
-- CLEAN counter source
-- independent verification source
-- FinalLock/Production GO/Commercial GO evidence
-
-Historical exploratory Actions results, if any, are debugging intelligence only and have zero authoritative weight.
-
-## 7. UI/UX validation relation
-
-Static UI rendering and design review can produce `VISUAL_BASELINE_CANDIDATE_NONFINAL`, but implementation validation after the Visual baseline is accepted must use AutoPilot for runtime/test/evidence gates.
-
-Visual or design approval never upgrades W12.
-
-## 8. Promotion gate
-
-No W12 promotion is allowed until all of the following are true:
-
-- concrete AutoPilot runner/binding identified
-- authorized execution environment identified
-- exact SHA captured
-- required bounded checks executed
-- results recorded without state collapse
-- same-SHA second run executed where required
-- evidence independently readable
-
-Until then:
+Before server-local AutoPilot execution receipts:
 
 `W12 = NOT_RUN`
 
