@@ -17,39 +17,52 @@
 
   <main>
     <section class="hero">
-      <p class="eyebrow">AI ASSURANCE CONTROL PLANE</p>
-      <h1>검증 상태와 증적을 한 화면에서 확인합니다.</h1>
-      <p>이 화면은 현재 Spring Boot Web vertical slice이며 제품 최종 판정을 제공하지 않습니다.</p>
+      <p class="eyebrow">ASSURANCE WORKSPACE · NONFINAL</p>
+      <h1>Core가 제공하는 사실만 표시합니다.</h1>
+      <p>Web은 Assurance 상태, 차단 원인, 증적 완전성을 자체 계산하지 않습니다.</p>
     </section>
 
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <p class="eyebrow">ASSURANCE STATE</p>
-          <h2>입증 상태 모델</h2>
+          <p class="eyebrow">CORE READ STATUS</p>
+          <h2>Authoritative read availability</h2>
         </div>
-        <span class="badge hold">NONFINAL</span>
+        <span class="badge hold" th:text="${coreAvailability}">NOT_AVAILABLE</span>
       </div>
-      <ol class="state-chain">
-        <li th:each="state : ${assuranceStates}" th:text="${state}">DECLARED</li>
-      </ol>
+      <p th:if="${coreAvailability != 'KNOWN'}">
+        Core read data is unavailable. No zero counts, PASS values, or portfolio status are inferred.
+        <span th:if="${coreUnavailableReason != null}" th:text="${coreUnavailableReason}">CORE_READ_ROOTS_NOT_CONFIGURED</span>
+      </p>
+      <div th:if="${coreAvailability == 'KNOWN'}">
+        <table>
+          <thead><tr><th>Project</th><th>Targets</th><th>Core revision</th></tr></thead>
+          <tbody>
+            <tr th:each="project : ${projects}">
+              <td><strong th:text="${project.name}">Project</strong><br><code th:text="${project.projectId}">PROJECT-ID</code></td>
+              <td th:text="${project.targetCount}">0</td>
+              <td th:text="${project.coreRevision}">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section class="grid">
       <article class="card">
-        <p class="eyebrow">PORTFOLIO</p>
-        <h3>증적 연결 대기</h3>
-        <p th:if="${!portfolioEvidenceAvailable}">Core read model과 연결되기 전에는 프로젝트 수, PASS 수, 위험 수치를 추정하지 않습니다.</p>
+        <p class="eyebrow">ASSURANCE</p>
+        <h3>NOT_AVAILABLE until Core projection exists</h3>
+        <p th:if="${!assuranceProjectionAvailable}">8단계 Assurance는 문서에서 Web이 재계산하지 않습니다. Core authoritative projection이 구현될 때까지 명시적으로 unavailable입니다.</p>
       </article>
       <article class="card">
-        <p class="eyebrow">NEXT SLICE</p>
+        <p class="eyebrow">READ PATH</p>
         <h3>Project → Target → Evidence</h3>
-        <p>동일 Tenant·Project identity로 Core 상태를 읽고 Evidence receipt까지 drill-down하는 경로가 다음 구현 범위입니다.</p>
+        <p>인증된 `/api/web/v1` read-only BFF가 Core catalog와 validation store를 읽습니다.</p>
       </article>
       <article class="card">
         <p class="eyebrow">AUTHORITY</p>
         <h3>Web은 표시 계층입니다.</h3>
-        <p>권한, 승인, 검증 판정과 Evidence authority는 ONSure Core에서 유지합니다.</p>
+        <p>권한, 승인, Assurance 판정과 Evidence authority는 ONSure Core에서 유지합니다.</p>
       </article>
     </section>
   </main>
