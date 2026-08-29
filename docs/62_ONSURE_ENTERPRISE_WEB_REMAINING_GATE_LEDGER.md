@@ -39,7 +39,8 @@ The previous assumption that a Python subprocess orchestrator could be the W12 e
 Authoritative sequence is now:
 
 ```text
-isolated frozen-SHA worktree
+resolve exact current PR #95 HEAD
+→ isolated frozen-SHA worktree
 → Project Context CAS/readback
 → ProjectAdmission/readback
 → MissionSpec admission/readback
