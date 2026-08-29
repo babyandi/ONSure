@@ -12,29 +12,27 @@
 
 ## 1. Authority boundary
 
-GitHub stores source, Draft PR, issues and evidence references. It is not the W12 execution authority.
+GitHub stores source, Draft PR, issues and evidence references. It is not the W12 execution authority. The authoritative execution environment is `/workspace/Autopilot`.
 
-The authoritative execution environment is the AutoPilot server-local workspace documented by `babyandi/Autopilot`: `/workspace/Autopilot`.
-
-ONSure Web must be validated through an AutoPilot Root Goal / GoalNode / Mission DAG. Manual shell observations or historical GitHub Actions results have zero authoritative W12 weight.
+ONSure Web is validated through an AutoPilot Root Goal / GoalNode / Mission DAG. Manual shell observations or historical GitHub Actions results have zero authoritative W12 weight.
 
 ## 2. Root Goal
 
 `ONSURE_WEB_W12_VALIDATE_PR95`
 
-Objective: validate one exact ONSure source SHA for the Enterprise Web vertical slice without creating Web-side business authority and without promoting UNKNOWN/NOT_RUN to success.
+Objective: validate one exact ONSure source SHA without creating Web-side business authority and without promoting UNKNOWN/NOT_RUN to success.
 
 ## 3. Required immutable inputs
 
 - repository: `babyandi/ONSure`
 - target branch: `feature/onsure-enterprise-web-springboot`
-- exact source SHA: captured at AutoPilot mission start and immutable for the run
+- exact source SHA: mission-bound and immutable for the run
 - module: `apps/onsure-web`
 - Java: 17
 - execution authority: `/workspace/Autopilot`
 - product workspace: `/workspace/ONSure`
 
-If the checked-out ONSure SHA differs from the mission-bound SHA, the run is HOLD and must not continue as the same evidence lineage.
+SHA mismatch or dirty validation subject => HOLD.
 
 ## 4. Goal DAG
 
@@ -42,9 +40,10 @@ If the checked-out ONSure SHA differs from the mission-bound SHA, the run is HOL
 G0 SOURCE_IDENTITY
   ↓
   ├─ G1 BUILD_AND_PACKAGE
-  ├─ G2 UNIT_MVC_SECURITY_TESTS
+  │      ↓
+  │   G2 UNIT_MVC_SECURITY_TESTS
   └─ G3 STATIC_CONTRACT_CHECKS
-          ↓ join ALL
+          ↓ join G2 + G3
       G4 RUNTIME_BOOT
           ↓
       ├─ G5 HEALTH_AND_AUTH
@@ -58,7 +57,7 @@ G0 SOURCE_IDENTITY
       G10 RECEIPT_READBACK_AND_INTEGRATION_GATE
 ```
 
-Parallelism is allowed only where dependencies permit. `G8/G9` are sequential reproducibility gates and must use the same immutable ONSure SHA and equivalent declared environment identity.
+G1 installs authoritative `onsure-core` into the server-local Maven repository before packaging Web. Therefore G2 depends on G1 and MUST NOT race the Core install. G1 and G3 may run in parallel. G5/G6/G7 may run in parallel after G4 where process isolation permits. G8/G9 are sequential reproducibility gates.
 
 ## 5. GoalNode acceptance
 
@@ -68,85 +67,56 @@ Parallelism is allowed only where dependencies permit. `G8/G9` are sequential re
 - mismatch => HOLD
 
 ### G1 BUILD_AND_PACKAGE
-- Java 17 preflight
-- Maven executable/version evidence
-- clean compile/package for `apps/onsure-web`
-- non-zero exit => FAIL
+- Java 17/Maven preflight
+- `onsure-core` local install
+- clean Web package
+- non-zero exit => FAIL/HOLD
 
 ### G2 UNIT_MVC_SECURITY_TESTS
-- unit/MVC/security test execution
-- zero discovered tests may not be treated as PASS
-- skipped/disabled/NOT_RUN must remain explicit
+- depends on G1
+- unit/MVC/security/Core-read tests
+- zero discovered tests not PASS
+- skipped required test remains explicit
 
 ### G3 STATIC_CONTRACT_CHECKS
-- no Web-side calculation of assurance state, blockers, approval eligibility or final readiness
-- Core → UI field mapping conformance against `docs/52_ONSURE_ENTERPRISE_WEB_CORE_UI_FIELD_MAPPING.md`
-- forbidden direct state mutation controls absent in the bounded slice
+- no Web-side calculation of assurance state/blockers/approval/final readiness
+- Core→UI mapping conformance
+- forbidden direct state mutation controls absent
 
 ### G4 RUNTIME_BOOT
-- real Spring Boot process starts from the built artifact
-- startup and shutdown receipts recorded
+- real Spring Boot artifact starts/stops with receipts
 
 ### G5 HEALTH_AND_AUTH
-- `/healthz` reachable as designed
+- `/healthz` readback
 - protected UI requires authentication
-- health success must not be interpreted as assurance PASS
+- service health is not assurance PASS
 
 ### G6 BROWSER_SECURITY_NEGATIVE
-- CSP present
-- frame denial present
-- unauthenticated protected-resource access denied/redirected as designed
-- negative result interpretation is fail-closed
+- CSP and frame denial present
+- unauthenticated protected resource blocked/redirected as designed
 
 ### G7 CORE_READ_CONTRACT
-- Project / Target / AssuranceSnapshot / BlockingCondition / Evidence read contract exercised when implementation exists
-- unavailable functionality remains NOT_IMPLEMENTED/NOT_RUN rather than fabricated success
+- Project/Target/persisted Evidence read from Core
+- unavailable Core roots remain NOT_AVAILABLE, not empty/zero
+- eight-stage Assurance remains `NOT_AVAILABLE` until authoritative Core projection exists
 
 ### G8 / G9 TWO CLEAN
-Each run must repeat the complete applicable W12 execution against the same ONSure SHA. Environment differences must be materialized in receipts. A prior run from another SHA cannot satisfy either run.
+Repeat complete applicable W12 against the same SHA. Another SHA cannot satisfy either run.
 
 ### G10 INTEGRATION GATE
 - all required GoalNodes have terminal evidence
-- no UNKNOWN/NOT_RUN/INCONCLUSIVE is silently dropped
-- receipt lineage includes ONSure SHA and AutoPilot mission identity
-- result remains NONFINAL until independent validation requirements are separately met
+- no UNKNOWN/NOT_RUN/INCONCLUSIVE silently dropped
+- receipt lineage includes ONSure SHA and AutoPilot Mission identity
+- result remains NONFINAL pending independent validation
 
-## 6. Receipt minimum fields
+## 6. Promotion rules
 
-Each mission/goal receipt must allow readback of:
-- AutoPilot goal/mission identity
-- ONSure repository and exact SHA
-- execution timestamp
-- execution host/workspace identity
-- command or operation identity
-- exit/result state
-- stdout/stderr or bounded artifact references where applicable
-- dependency parent receipts
-- environment identity
-- explicit NOT_RUN/SKIPPED/UNKNOWN states
+Binding/config/code presence is not validation evidence. Before server-local receipts:
 
-## 7. Promotion rules
+`W12 = NOT_RUN`
 
-Creation of this binding document is not validation evidence.
+Forbidden promotion: EVIDENCED, INDEPENDENTLY_VERIFIED, FinalLock, Production GO, Commercial GO.
 
-Allowed current state after materialization:
-`AUTOPILOT_W12_BINDING_MATERIALIZED_NONFINAL`
+## 7. Cross-repository binding
 
-Forbidden before server-local execution receipts:
-- W12 PASS
-- EVIDENCED
-- INDEPENDENTLY_VERIFIED
-- FinalLock
-- Production GO
-- Commercial GO
-
-## 8. Cross-repository binding
-
-The AutoPilot counterpart is materialized in Draft PR #288 on branch `feature/onsure-web-w12-binding-v2` with:
-- `docs/ONSURE_WEB_W12_MISSION_BINDING_v0.1.md`
-- `config/project-context.onsure-web-w12.json`
-- `config/missions/onsure-web-w12-pr95.json`
-
-Both repositories define the same Root Goal identity: `ONSURE_WEB_W12_VALIDATE_PR95`.
-
-If the two contracts drift materially, execution is HOLD until reconciled.
+AutoPilot Draft PR #288 carries the matching project context, orchestration manifest, Java MissionSpec, Manual Run intent, validators and server-local runners. Material drift between the two repositories => HOLD.
