@@ -2,6 +2,7 @@ package kr.co.oruda.onsure.web.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
@@ -24,13 +25,7 @@ class EnterpriseWebReadServiceTest {
     void readsAuthoritativeProjectTargetAndPersistedEvidenceWithoutInventingAssurance() throws Exception {
         Path catalogRoot = temp.resolve("catalog");
         Path validationRoot = temp.resolve("validation");
-        ProductCatalog catalog = new ProductCatalog(catalogRoot);
-        catalog.registerWorkspace(new ProductCatalog.Workspace("WS1", "Workspace", Instant.parse("2026-08-29T00:00:00Z")));
-        catalog.registerProject(new ProductCatalog.Project("P1", "WS1", "Project One", Instant.parse("2026-08-29T00:01:00Z")));
-        ValidationModel.ValidationTarget target = new ValidationModel.ValidationTarget(
-                "T1", "Payment API", ValidationModel.TargetType.GENERAL_SOFTWARE,
-                temp.resolve("source"), "commit:abc123", "generic-manifest", "policy-default", "execution-default");
-        catalog.registerTarget(new ProductCatalog.RegisteredTarget("P1", target, Instant.parse("2026-08-29T00:02:00Z")));
+        ProductCatalog catalog = catalogWithOneTarget(catalogRoot);
 
         Path run = validationRoot.resolve("T1").resolve("JOB1");
         Files.createDirectories(run);
@@ -49,5 +44,37 @@ class EnterpriseWebReadServiceTest {
         assertEquals(1, read.evidence("P1", "T1").size());
         assertEquals("EV1", read.evidence("P1", "T1").get(0).evidenceId());
         assertEquals("ONSURE_CORE_VALIDATION_STORE", read.evidence("P1", "T1").get(0).authority());
+    }
+
+    @Test
+    void missingValidationStoreIsUnavailableRatherThanAuthoritativeEmptyEvidence() throws Exception {
+        Path catalogRoot = temp.resolve("catalog-missing-validation");
+        catalogWithOneTarget(catalogRoot);
+        EnterpriseWebReadService read = new EnterpriseWebReadService(catalogRoot, temp.resolve("does-not-exist"));
+
+        EnterpriseWebReadService.NotAvailableException error = assertThrows(
+                EnterpriseWebReadService.NotAvailableException.class,
+                () -> read.evidence("P1", "T1"));
+        assertEquals("VALIDATION_STORE_NOT_AVAILABLE", error.getMessage());
+    }
+
+    @Test
+    void missingCatalogIsUnavailableRatherThanAuthoritativeEmptyProjectList() {
+        EnterpriseWebReadService read = new EnterpriseWebReadService(
+                temp.resolve("missing-catalog"), temp.resolve("missing-validation"));
+        EnterpriseWebReadService.NotAvailableException error = assertThrows(
+                EnterpriseWebReadService.NotAvailableException.class, read::projects);
+        assertEquals("PRODUCT_CATALOG_NOT_AVAILABLE", error.getMessage());
+    }
+
+    private ProductCatalog catalogWithOneTarget(Path catalogRoot) throws Exception {
+        ProductCatalog catalog = new ProductCatalog(catalogRoot);
+        catalog.registerWorkspace(new ProductCatalog.Workspace("WS1", "Workspace", Instant.parse("2026-08-29T00:00:00Z")));
+        catalog.registerProject(new ProductCatalog.Project("P1", "WS1", "Project One", Instant.parse("2026-08-29T00:01:00Z")));
+        ValidationModel.ValidationTarget target = new ValidationModel.ValidationTarget(
+                "T1", "Payment API", ValidationModel.TargetType.GENERAL_SOFTWARE,
+                temp.resolve("source"), "commit:abc123", "generic-manifest", "policy-default", "execution-default");
+        catalog.registerTarget(new ProductCatalog.RegisteredTarget("P1", target, Instant.parse("2026-08-29T00:02:00Z")));
+        return catalog;
     }
 }
