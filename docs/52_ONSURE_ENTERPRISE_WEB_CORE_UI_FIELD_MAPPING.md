@@ -35,6 +35,7 @@ Display-only transformations are allowed: localization, truncation, relative tim
 - `blockingConditionCount`
 - `evidenceReceiptCount`
 - `freshnessState` if supplied by Core
+- `lastVerifiedAt` if supplied by Core
 - `coreRevision`
 
 ### AssuranceSnapshot
@@ -49,6 +50,19 @@ Display-only transformations are allowed: localization, truncation, relative tim
 - `authority`
 - `sourceIdentity`
 - `coreRevision`
+
+### AttentionItem
+Optional P01 read-model item. Required before `Needs Attention` can contain production data.
+- `attentionId`
+- `category`
+- `severity`
+- `summary`
+- `subjectRef`
+- `relatedObjectRefs[]`
+- `openedAt` or authoritative age source
+- `authority`
+
+The Web MUST NOT synthesize AttentionItem rows by scanning blockers, stale receipts, findings or pending decisions unless Core defines and returns an equivalent projection.
 
 ### BlockingCondition
 - `conditionId`
@@ -77,6 +91,7 @@ Display-only transformations are allowed: localization, truncation, relative tim
 - `subjectRef`
 - `verificationRunRef`
 - `boundedResult`
+- `supportsAssuranceState` if authoritative
 - `sourceIdentity`
 - `environmentIdentity`
 - `executedAt`
@@ -87,6 +102,7 @@ Display-only transformations are allowed: localization, truncation, relative tim
 - `lineageRefs[]`
 - `approvalRefs[]`
 - `findingRefs[]`
+- `relationshipCompleteness` or equivalent completeness semantics
 - `rawTechnicalMetadata`
 - `authority`
 - `coreRevision`
@@ -95,15 +111,18 @@ Display-only transformations are allowed: localization, truncation, relative tim
 
 | UI element | Core field | Web may transform | Web MUST NOT do |
 |---|---|---|---|
-| Project context | ProjectSummary.name/projectId | label/link | infer tenant/project from client input alone |
+| Tenant context | authorized session/resource context + ProjectSummary.tenantId | safe display label | trust caller-supplied tenant identity |
+| User role context | authenticated principal/policy context | label | invent effective role |
+| Project context | ProjectSummary.name/projectId | label/link | infer project from client input alone |
 | Current Assurance | AssuranceSnapshot.canonicalState | localize display label | calculate from evidence/findings |
 | Progression | AssuranceSnapshot.progressionStatus | badge/icon | map state to blocked using Web rules |
 | Blocking | AssuranceSnapshot.blockingConditions | count/group | create blockers from missing-looking fields |
-| Next unresolved requirement | AssuranceSnapshot.unresolvedRequirements | choose deterministic display order supplied by contract; truncate | invent recommendation or priority |
+| Next unresolved requirement | AssuranceSnapshot.unresolvedRequirements | choose deterministic contract order; truncate | invent recommendation or priority |
+| Needs Attention | AttentionItem[] | sort only by authoritative order/fields | synthesize attention rows locally |
 | Important changes | authoritative event/change read model | human formatting | dump raw audit stream as activity |
 | NONFINAL context | authoritative overall/product context | presentation | infer finality from current stage |
 
-If the API does not yet provide an authoritative change feed, `Important Changes` remains unavailable rather than using fake sample events in production code.
+If Core does not yet provide `AttentionItem[]` or an authoritative change feed, those sections remain unavailable rather than using derived production values.
 
 ## 4. P02 Project / Target mapping
 
@@ -111,11 +130,13 @@ If the API does not yet provide an authoritative change feed, `Important Changes
 |---|---|---|
 | Project target count | ProjectSummary.targetCount | exact authoritative count only |
 | Assurance distribution | ProjectSummary.assuranceDistribution | render distribution; no average/score |
-| Blocking target count | ProjectSummary.blockingTargetCount | no local scan as authority unless contract explicitly defines client aggregation as equivalent read projection |
+| Targets independently verified | assuranceDistribution[INDEPENDENTLY_VERIFIED] or explicit authoritative count | label must refer to targets, never imply Project-level state |
+| Blocking target count | ProjectSummary.blockingTargetCount | no local scan as authority unless contract explicitly defines equivalent projection |
 | Target state | TargetSummary.canonicalAssuranceState | no inheritance |
 | Target progression | TargetSummary.progressionStatus | separate column/semantic |
 | Evidence count | TargetSummary.evidenceReceiptCount | count is not evidence quality/completeness |
 | Freshness | TargetSummary.freshnessState | absent means NOT_AVAILABLE |
+| Last verified | TargetSummary.lastVerifiedAt | relative time is display-only; absent means NOT_AVAILABLE |
 
 ## 5. P03 Target Detail mapping
 
@@ -125,7 +146,10 @@ If the API does not yet provide an authoritative change feed, `Important Changes
 - Type: TargetSummary.targetType
 - Current Assurance: AssuranceSnapshot.canonicalState
 - Progression: AssuranceSnapshot.progressionStatus
+- Target freshness: TargetSummary.freshnessState when authoritative
 - Revision: AssuranceSnapshot.coreRevision
+
+The Web MUST NOT display a locally calculated count such as `1 STALE` unless Core explicitly supplies that aggregate. A target-level freshness enum may be displayed directly.
 
 ### Why this state?
 Render only:
@@ -136,7 +160,7 @@ Render only:
 Web may group by status/category. It cannot create a requirement, mark one satisfied, or decide which blocker prevents a stage unless Core provides that relation.
 
 ### Evidence panel
-Render `supportingEvidence[]` / EvidenceSummary objects. Receipt count does not imply stage completion.
+Render `supportingEvidence[]` / EvidenceSummary objects. Receipt count does not imply stage completion. Bounded result labels must retain their test/verification scope, e.g. `Runtime: PASSED`, not an unqualified global `PASS`.
 
 ## 6. P04 Evidence Receipt mapping
 
@@ -145,6 +169,7 @@ Render `supportingEvidence[]` / EvidenceSummary objects. Receipt count does not 
 - Type ← receiptType
 - Subject ← subjectRef
 - Result ← boundedResult
+- Supports ← supportsAssuranceState only when explicitly authoritative
 - Executed ← executedAt
 - Executor ← executorIdentity
 - Authority ← authority
@@ -163,7 +188,9 @@ Render `supportingEvidence[]` / EvidenceSummary objects. Receipt count does not 
 - Approvals ← approvalRefs[]
 - Lineage trace ← lineageRefs[]
 
-Empty relationship arrays mean `none linked` only when the Core contract explicitly says the query is complete. Missing/unavailable fields must not be converted to empty arrays by Web adapters.
+`Decision not present` or `none linked` may be shown only when `relationshipCompleteness` (or equivalent contract semantics) confirms that the relationship query is complete. Missing/unavailable fields must not be converted to empty arrays by Web adapters.
+
+`Command`, `exitCode` and similar technical values may be rendered from explicitly typed/specified entries in `rawTechnicalMetadata`; the UI must not infer them from log text.
 
 ## 7. Allowed Web-only fields
 
