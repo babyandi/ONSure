@@ -1,66 +1,187 @@
-# ONSure Enterprise Web W12 — AutoPilot Execution Runbook
+# ONSure Enterprise Web W12 — AutoPilot Live Runtime Execution Runbook
 
-- Status: EXECUTION_RUNBOOK_NONFINAL
+- Status: `LIVE_RUNTIME_REBIND_REQUIRED_NONFINAL`
 - Issue: #94
 - ONSure Draft PR: #95
-- AutoPilot Draft PR: #288
 - GitHub Actions: NOT USED
-- Execution authority: `/workspace/Autopilot`
+- Python subprocess orchestrator: NOT AUTHORITATIVE
+- Authoritative execution: AutoPilot live Java Runtime + durable PostgreSQL lineage
 
 ## Purpose
 
-Execute the W12 validation mission against one exact ONSure SHA using AutoPilot server-local gates. This runbook does not authorize merge, FinalLock, Production GO or Commercial GO.
+Validate one exact ONSure Web source SHA through the live AutoPilot Runtime without mutating the active developer workspace and without allowing a sidecar Python process to become a hidden execution authority.
 
 ## Preconditions
 
-- `/workspace/Autopilot` is on the approved AutoPilot binding revision containing PR #288 assets.
-- `/workspace/ONSure` contains the exact PR #95 source SHA requested for validation.
-- Java 17 and Maven are available to the AutoPilot runner.
-- ONSure Web bootstrap credentials are runtime-only values and are not persisted in receipts.
-- Core read roots may be supplied with `ONSURE_CORE_CATALOG_ROOT` and `ONSURE_CORE_VALIDATION_ROOT`; absent stores must render `NOT_AVAILABLE`, not empty/zero/PASS.
+The following must be true before `MANUAL_RUN_BEGIN`:
 
-## Required sequence
+1. AutoPilot Java liveness is `UP` on the actual live Runtime endpoint.
+2. Java 17 and Maven are available to the admitted executor.
+3. An isolated ONSure worktree exists at the exact validation SHA.
+4. The isolated worktree is clean.
+5. Active `/workspace/ONSure` is not reset or reused as the validation subject.
+6. Project Context CAS has installed the intended context and returned a non-stale revision.
+7. `ONSURE/ENTERPRISE_WEB_W12` ProjectAdmission exists in the live Runtime.
+8. MissionSpec is admitted and reads back from the live Runtime.
+9. Every required Stage `adapter_id` resolves to an implemented live executor.
+10. Unsupported adapters remain HOLD and are not substituted by Python subprocesses.
 
-```bash
-cd /workspace/Autopilot
-python3 scripts/validate_onsure_web_w12_binding.py
-python3 scripts/admit_autopilot_onsure_web_w12_java_mission.py --api-url http://127.0.0.1:<java-api-port>
-python3 scripts/run_autopilot_onsure_web_w12_orchestrator_v2.py --onsure-sha <EXACT_PR95_SHA>
+Reported live API port is `8781`; clients must use discovered/runtime-configured endpoint data rather than a hard-coded `8080` default.
+
+## Authoritative sequence
+
+```text
+A. Create isolated validation worktree at exact ONSure SHA
+B. Verify HEAD and clean status
+C. PROJECT_CONTEXT_CAS
+D. Read back context revision/content
+E. PROJECT_ADMISSION
+F. Read back ProjectAdmission
+G. MISSION_SPEC_ADMISSION
+H. Read back exact mission ID/version/spec digest
+I. Resolve every Stage adapter against live executor registry
+J. MANUAL_RUN_BEGIN
+K. Java Stage execution and durable receipt persistence
+L. Durable mission/receipt readback
+M. Clean Run A
+N. Clean Run B with independent worktree/Maven repo
+O. G10 actual lineage comparison
 ```
 
-The runner must HOLD if `/workspace/ONSure` HEAD differs from `<EXACT_PR95_SHA>` or if the validation subject is dirty.
+If any step C through J is missing, W12 remains `NOT_RUN` or HOLD. Do not fall back to `subprocess.run()` as an alternate execution path.
 
-## AutoPilot DAG
+## Isolated source subject
 
-`G0 → {G1,G3}; G1 → G2; {G2,G3} → G4 → {G5,G6,G7} → G8 → G9 → G10`
+Example shape, not a literal mandatory path:
 
-- G0 source identity
-- G1 install authoritative `onsure-core` locally + build Web package
-- G2 depends on G1; unit/MVC/security/Core-read tests with non-zero denominator
-- G3 may run alongside G1; static Web-authority contract checks
-- G4 real Spring Boot runtime after G2+G3 join
-- G5/G6/G7 may run in parallel after G4 where isolation permits
-- G5 health/auth
-- G6 browser-security negative checks
-- G7 Core read slice validation: Project/Target/Evidence facts + Assurance explicit availability
-- G8 clean run A
-- G9 same-SHA clean run B
-- G10 per-node receipt/readback integration
+```bash
+git -C /workspace/ONSure worktree add --detach \
+  /workspace/validation/onsure-web-w12/<RUN_ID>/source \
+  <EXACT_SHA>
+```
 
-## Core read expectations
+The validator then proves:
 
-The current read-only slice uses ONSure Core `ProductCatalog` and validation-store evidence. Project/Target/Evidence are authoritative Core facts. Missing configured stores are `NOT_AVAILABLE`, distinct from authoritative empty collections. The canonical eight-stage Assurance projection is not yet implemented as a Core provider, so the Web must return `NOT_AVAILABLE` with `CORE_ASSURANCE_PROJECTION_NOT_IMPLEMENTED` rather than infer a stage from evidence or validation decisions.
+```bash
+git -C <ISOLATED_WORKTREE> rev-parse HEAD
+git -C <ISOLATED_WORKTREE> status --porcelain
+```
 
-## Evidence rules
+Expected:
 
-The resulting receipt must identify exact ONSure SHA, AutoPilot Mission identity, environment, bounded command/result digests, per-node dependency lineage, explicit unavailable/not-run states and A/B linkage.
+- HEAD exactly equals admitted source SHA;
+- status output is empty.
 
-Java Mission admission/readback is separate from W12 execution evidence. A registered Mission without server-local execution receipts is not W12 completion.
+The active developer workspace may be on another SHA and may contain local modifications. That state must not contaminate or be destroyed by W12.
+
+## Project Context / admission order
+
+Required contract:
+
+```text
+PROJECT_CONTEXT_CAS(expected_revision=N)
+  → PROJECT_CONTEXT_READBACK(revision=N+1)
+  → PROJECT_ADMISSION(project_id=ONSURE/ENTERPRISE_WEB_W12)
+  → PROJECT_ADMISSION_READBACK
+  → MANUAL_RUN_BEGIN
+```
+
+CAS conflict, revision `0` with empty context when a populated context is required, missing ProjectAdmission, or stale admission => HOLD.
+
+## Mission and adapter rules
+
+`MISSION_NOT_FOUND` means the Mission is not admitted. A Mission JSON present in GitHub does not satisfy this condition.
+
+Before execution, enumerate all required Stage adapters. For each:
+
+```text
+SUPPORTED_BY_LIVE_JAVA_EXECUTOR → eligible to execute
+UNSUPPORTED / UNKNOWN           → HOLD_UNSUPPORTED_ADAPTER
+```
+
+No “adapter registered on paper” behavior is acceptable.
+
+## W12 Stage semantics
+
+Logical stages remain:
+
+- G0 exact SHA / isolated worktree identity
+- G1 Core install + Web package
+- G2 unit/MVC/security/Core-read tests
+- G3 static authority checks
+- G4 actual Spring Boot runtime
+- G5 health/authentication
+- G6 CSP/frame/security negative checks
+- G7 Core Project/Target/Evidence read contract and explicit Assurance availability
+- G8 Clean Run A
+- G9 Clean Run B on same SHA
+- G10 durable readback/integration comparison
+
+The logical graph is not itself an executor. Java Runtime Stage execution and durable receipts are required.
+
+## Clean Run A / B isolation
+
+Run A and Run B must not share build state that could create false reproducibility.
+
+At minimum use distinct:
+
+```text
+worktree A != worktree B
+Maven repo A != Maven repo B
+target/build output A != target/build output B
+runtime process A != runtime process B
+receipt lineage A != receipt lineage B
+```
+
+For Maven, use a per-run repository such as:
+
+```bash
+mvn -Dmaven.repo.local=<RUN_SPECIFIC_M2> ...
+```
+
+Both runs must nevertheless use the same admitted source SHA and equivalent declared policy/config identities.
+
+## G10 comparison
+
+G10 computes, it does not assert.
+
+Required comparison inputs include:
+
+```text
+runA.source_sha == runB.source_sha == admitted_source_sha
+runA.policy_digest == runB.policy_digest
+required receipt parent chains complete
+required stage denominator complete
+no unsupported adapter
+no UNKNOWN / NOT_RUN / INCONCLUSIVE hidden
+receipts durable and readable from AutoPilot state
+```
+
+A constant `same_sha: true` field has zero evidence value.
+
+## Receipt authority
+
+Accepted:
+
+- Java Stage executor receipts persisted/read back through AutoPilot durable Runtime state.
+
+Not accepted as W12 authority:
+
+- Python-local receipt JSON;
+- stdout-only success;
+- MissionSpec file in Git;
+- MissionSpec registration with no execution;
+- manual shell success detached from AutoPilot receipt lineage;
+- historical GitHub Actions output.
 
 ## Result interpretation
 
-A successful technical W12 self-validation can at most become `W12_SELF_VALIDATION_CLEAN_NONFINAL` after all required nodes and same-SHA two-clean complete. It is not independent validation and cannot by itself promote the product to `INDEPENDENTLY_VERIFIED`.
-
-Until authoritative receipts are read back:
+Before durable live Runtime execution:
 
 `W12 = NOT_RUN`
+
+After complete same-SHA two-clean live execution, maximum self-validation state:
+
+`W12_SELF_VALIDATION_CLEAN_NONFINAL`
+
+Independent verification, FinalLock, Production GO, and Commercial GO remain separate gates.
