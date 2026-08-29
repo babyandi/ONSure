@@ -8,6 +8,11 @@ spring:
   thymeleaf:
     cache: true
 
+onsure:
+  core:
+    catalog-root: ${ONSURE_CORE_CATALOG_ROOT:}
+    validation-root: ${ONSURE_CORE_VALIDATION_ROOT:}
+
 server:
   shutdown: graceful
   forward-headers-strategy: framework
