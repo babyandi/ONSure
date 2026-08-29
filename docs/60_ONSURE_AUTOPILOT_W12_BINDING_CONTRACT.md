@@ -4,6 +4,9 @@
 - ONSure issue: #94
 - ONSure draft PR: #95
 - Validation executor: `babyandi/Autopilot`
+- AutoPilot counterpart branch: `feature/onsure-web-w12-binding-v2`
+- AutoPilot counterpart draft PR: #288
+- AutoPilot counterpart root goal: `ONSURE_WEB_W12_VALIDATE_PR95`
 - GitHub Actions: NOT USED FOR EXECUTION OR VALIDATION
 - W12: NOT_RUN until server-local AutoPilot receipts exist
 
@@ -139,4 +142,11 @@ Forbidden before server-local execution receipts:
 
 ## 8. Cross-repository binding
 
-AutoPilot counterpart branch/document must define the same Root Goal identity and ONSure project context. If the two contracts drift materially, execution is HOLD until reconciled.
+The AutoPilot counterpart is materialized in Draft PR #288 on branch `feature/onsure-web-w12-binding-v2` with:
+- `docs/ONSURE_WEB_W12_MISSION_BINDING_v0.1.md`
+- `config/project-context.onsure-web-w12.json`
+- `config/missions/onsure-web-w12-pr95.json`
+
+Both repositories define the same Root Goal identity: `ONSURE_WEB_W12_VALIDATE_PR95`.
+
+If the two contracts drift materially, execution is HOLD until reconciled.
