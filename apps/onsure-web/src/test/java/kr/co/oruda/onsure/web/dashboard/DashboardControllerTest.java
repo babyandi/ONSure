@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import kr.co.oruda.onsure.web.config.WebSecurityConfiguration;
+import kr.co.oruda.onsure.web.core.CoreReadProjectionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -15,7 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(DashboardController.class)
-@Import(WebSecurityConfiguration.class)
+@Import({WebSecurityConfiguration.class, CoreReadProjectionService.class})
 class DashboardControllerTest {
 
     @Autowired
@@ -35,11 +36,14 @@ class DashboardControllerTest {
     }
 
     @Test
-    void authenticatedDashboardDoesNotInventPortfolioEvidence() throws Exception {
+    void authenticatedDashboardFailsClosedWhenCoreRootsAreNotConfigured() throws Exception {
         mockMvc.perform(get("/").with(user("reviewer")))
             .andExpect(status().isOk())
             .andExpect(view().name("dashboard"))
             .andExpect(model().attribute("status", "SELF_VALIDATION_NONFINAL"))
-            .andExpect(model().attribute("portfolioEvidenceAvailable", false));
+            .andExpect(model().attribute("coreAvailability", "NOT_AVAILABLE"))
+            .andExpect(model().attribute("coreUnavailableReason", "CORE_READ_ROOTS_NOT_CONFIGURED"))
+            .andExpect(model().attribute("portfolioEvidenceAvailable", false))
+            .andExpect(model().attribute("assuranceProjectionAvailable", false));
     }
 }
