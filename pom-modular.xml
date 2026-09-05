@@ -52,6 +52,7 @@
   </build>
   <modules>
     <module>modules/onsure-core</module>
+    <module>apps/onsure-web</module>
     <module>modules/onsure-sdk</module>
     <module>modules/onsure-cli</module>
     <module>modules/onsure-local-api</module>

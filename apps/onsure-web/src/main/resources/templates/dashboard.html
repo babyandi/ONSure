@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${productName}">ONSure Enterprise Web</title>
+  <link rel="stylesheet" th:href="@{/css/onsure.css}">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <strong>ONSure</strong>
+      <span>Enterprise Web</span>
+    </div>
+    <div class="status" th:text="${status}">SELF_VALIDATION_NONFINAL</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">ASSURANCE WORKSPACE · NONFINAL</p>
+      <h1>Core가 제공하는 사실만 표시합니다.</h1>
+      <p>Web은 Assurance 상태, 차단 원인, 증적 완전성을 자체 계산하지 않습니다.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">CORE READ STATUS</p>
+          <h2>Authoritative read availability</h2>
+        </div>
+        <span class="badge hold" th:text="${coreAvailability}">NOT_AVAILABLE</span>
+      </div>
+      <p th:if="${coreAvailability != 'KNOWN'}">
+        Core read data is unavailable. No zero counts, PASS values, or portfolio status are inferred.
+        <span th:if="${coreUnavailableReason != null}" th:text="${coreUnavailableReason}">CORE_READ_ROOTS_NOT_CONFIGURED</span>
+      </p>
+      <div th:if="${coreAvailability == 'KNOWN'}">
+        <table>
+          <thead><tr><th>Project</th><th>Targets</th><th>Core revision</th></tr></thead>
+          <tbody>
+            <tr th:each="project : ${projects}">
+              <td><strong th:text="${project.name}">Project</strong><br><code th:text="${project.projectId}">PROJECT-ID</code></td>
+              <td th:text="${project.targetCount}">0</td>
+              <td th:text="${project.coreRevision}">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <p class="eyebrow">ASSURANCE</p>
+        <h3>NOT_AVAILABLE until Core projection exists</h3>
+        <p th:if="${!assuranceProjectionAvailable}">8단계 Assurance는 문서에서 Web이 재계산하지 않습니다. Core authoritative projection이 구현될 때까지 명시적으로 unavailable입니다.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">READ PATH</p>
+        <h3>Project → Target → Evidence</h3>
+        <p>인증된 `/api/web/v1` read-only BFF가 Core catalog와 validation store를 읽습니다.</p>
+      </article>
+      <article class="card">
+        <p class="eyebrow">AUTHORITY</p>
+        <h3>Web은 표시 계층입니다.</h3>
+        <p>권한, 승인, Assurance 판정과 Evidence authority는 ONSure Core에서 유지합니다.</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

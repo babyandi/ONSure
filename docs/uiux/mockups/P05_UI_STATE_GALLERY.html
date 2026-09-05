@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONSure UI State Gallery — NONFINAL MOCKUP</title>
+  <link rel="stylesheet" href="onsure-ui-mockup.css">
+  <style>
+    .state-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .state-card{background:#fff;border:1px solid #d9e0e7;border-radius:8px;padding:18px;min-height:170px}
+    .state-card h2{font-size:16px;margin:8px 0 10px}.state-card p{font-size:13px;line-height:1.55;color:#596777}
+    .marker{font-size:12px;font-weight:700;letter-spacing:.03em}.neutral{color:#596777}.warning{color:#8a5a00}.critical{color:#9b2c2c}.primary{color:#244f66}
+    .demo-value{font-size:20px;font-weight:750;margin:8px 0}.rule{font-size:11px;color:#718091;border-top:1px solid #edf0f3;padding-top:10px;margin-top:12px}
+    @media(max-width:1000px){.state-grid{grid-template-columns:1fr 1fr}}@media(max-width:680px){.state-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div><strong>ONSure</strong><span> UI State Gallery</span></div>
+    <div class="status">SAMPLE · NONFINAL · NOT AUTHORITY</div>
+  </header>
+  <main>
+    <section class="page-heading">
+      <p class="eyebrow">DESIGN REVIEW ASSET</p>
+      <h1>예외 상태가 성공처럼 보이지 않는지 비교</h1>
+      <p>모든 값은 시각 설계용 샘플이며 Core 사실이 아니다.</p>
+    </section>
+
+    <section class="state-grid">
+      <article class="state-card">
+        <div class="marker primary">NORMAL_KNOWN</div>
+        <div class="demo-value">TESTED</div>
+        <p>권위 있는 현재 상태가 존재한다. 이 값 자체가 최종 승인이나 Production GO를 뜻하지 않는다.</p>
+        <div class="rule">State와 finality를 분리한다.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker neutral">LOADING</div>
+        <div class="demo-value">데이터 확인 중</div>
+        <p>Skeleton만 표시하고 임시 숫자·임시 PASS·샘플 Assurance 상태를 넣지 않는다.</p>
+        <div class="rule">Fake placeholder value 금지.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker neutral">EMPTY</div>
+        <div class="demo-value">연결된 증적 없음</div>
+        <p>조회가 성공했고 authoritative collection이 비어 있는 경우에만 사용한다.</p>
+        <div class="rule">EMPTY ≠ UNKNOWN ≠ NOT_AVAILABLE.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker neutral">UNKNOWN</div>
+        <div class="demo-value">확인되지 않음</div>
+        <p>Core가 현재 사실을 확정할 수 없는 상태다. 상위 상태로 추정하지 않는다.</p>
+        <div class="rule">성공색·체크마크 금지.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker neutral">NOT_RUN</div>
+        <div class="demo-value">검증 미실행</div>
+        <p>필요한 실행이 아직 수행되지 않았다. 0건 성공이나 미발견으로 표현하지 않는다.</p>
+        <div class="rule">NOT_RUN은 PASS가 아니다.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker warning">INCONCLUSIVE</div>
+        <div class="demo-value">판정 불충분</div>
+        <p>실행은 있었지만 결과가 충분하지 않아 결론을 낼 수 없다.</p>
+        <div class="rule">FAIL/PASS로 강제 변환 금지.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker warning">HOLD</div>
+        <div class="demo-value">진행 보류</div>
+        <p>정책·근거 부족·불명확 상태로 다음 단계 진행을 멈춘다. 단순 로딩처럼 보이면 안 된다.</p>
+        <div class="rule">보류 사유 drill-down 필요.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker warning">STALE</div>
+        <div class="demo-value">증적 갱신 필요</div>
+        <p>현재 Source/Revision과 증적 기준선이 달라졌다. 이전 결과를 현재 판정으로 표시하지 않는다.</p>
+        <div class="rule">Source revision 비교는 Core authority.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker critical">FAILED</div>
+        <div class="demo-value">검증 실패</div>
+        <p>실패 대상과 검증 범위를 함께 보여준다. 전체 제품 실패로 과장하지 않는다.</p>
+        <div class="rule">예: Runtime verification: FAILED.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker warning">CORE_UNAVAILABLE</div>
+        <div class="demo-value">Core 상태 사용 불가</div>
+        <p>권위 상태를 읽지 못했다. 캐시가 있더라도 현재 권위 값처럼 조용히 대신 보여주지 않는다.</p>
+        <div class="rule">Fail-closed presentation.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker neutral">UNAUTHORIZED</div>
+        <div class="demo-value">리소스를 표시할 수 없음</div>
+        <p>권한이 없으며, 다른 Tenant나 보호 리소스의 존재 여부를 불필요하게 노출하지 않는다.</p>
+        <div class="rule">Resource existence leakage 방지.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker warning">POLICY_BLOCKED</div>
+        <div class="demo-value">정책 조건 미충족</div>
+        <p>리소스는 볼 수 있지만 SoD, stale revision 또는 필수 증적 조건 때문에 특정 행동이 차단된다.</p>
+        <div class="rule">Permission denied와 구분.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker warning">NONFINAL</div>
+        <div class="demo-value">독립 검증 미완료</div>
+        <p>현재 화면이나 일부 검증 결과가 존재해도 전체 최종 판정이 아님을 나타낸다.</p>
+        <div class="rule">한 화면에 반복 경고 남발 금지.</div>
+      </article>
+
+      <article class="state-card">
+        <div class="marker primary">PASSED_BOUNDED</div>
+        <div class="demo-value">Runtime verification: PASSED</div>
+        <p>특정 검증의 bounded result만 성공이다. 단독 `PASS` 배지는 사용하지 않는다.</p>
+        <div class="rule">Subject + test type를 항상 명시.</div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
