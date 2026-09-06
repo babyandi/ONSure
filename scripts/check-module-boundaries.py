@@ -46,9 +46,18 @@ def main() -> int:
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
     sdk_contract = json.loads(SDK_CONTRACT.read_text(encoding="utf-8"))
     core = contract["modules"]["onsure-core"]
+    web = contract["modules"].get("onsure-web")
     forbidden_imports = tuple(core["forbidden_import_prefixes"])
     violations: list[str] = []
     inspected_core_files: list[str] = []
+
+    if not isinstance(web, dict):
+        violations.append("WEB_BOUNDARY_CONTRACT_MISSING")
+    else:
+        if web.get("depends_on") != ["onsure-core"]:
+            violations.append("WEB_BOUNDARY_DEPENDENCY_CONTRACT_INVALID")
+        if web.get("final_claim_allowed") is not False:
+            violations.append("WEB_BOUNDARY_FINAL_CLAIM_INVALID")
 
     for path in tracked_java():
         relative = path.relative_to(ROOT).as_posix()
@@ -72,6 +81,7 @@ def main() -> int:
     modules = text_values(aggregator, "m:modules/m:module")
     expected_modules = {
         "modules/onsure-core",
+        "apps/onsure-web",
         "modules/onsure-sdk",
         "modules/onsure-cli",
         "modules/onsure-local-api",

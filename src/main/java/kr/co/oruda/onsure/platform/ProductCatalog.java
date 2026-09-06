@@ -41,13 +41,6 @@ public final class ProductCatalog {
         }
     }
 
-    /**
-     * deployment-target.v1.schema.json SS3.2: created once per environment/cluster/namespace a
-     * RegisteredTarget is deployed to, so a single target can carry several of these (e.g. STAGE
-     * and PROD). {@code deploymentRoot} is the server-resolved directory
-     * DeploymentInstallationService is rooted at for this binding -- callers never supply it again
-     * after registration, matching how RegisteredTarget.sourceRoot is resolved server-side.
-     */
     public record RegisteredDeployment(
             String projectId, String targetId, String deploymentTargetId, String environmentClass,
             Path deploymentRoot, Instant registeredAt) {
@@ -95,6 +88,19 @@ public final class ProductCatalog {
             values.add(project);
             write("projects.json", values);
         });
+    }
+
+    /** Read-only project projection for external surfaces. */
+    public synchronized List<Project> projects() throws Exception {
+        return List.copyOf(read("projects.json", new TypeReference<List<Project>>() {}));
+    }
+
+    /** Read-only project lookup. */
+    public synchronized Project requireProject(String projectId) throws Exception {
+        requireId(projectId, "projectId");
+        return read("projects.json", new TypeReference<List<Project>>() {}).stream()
+                .filter(value -> value.projectId().equals(projectId))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("UNKNOWN_PROJECT"));
     }
 
     public synchronized void registerTarget(RegisteredTarget target) throws Exception {

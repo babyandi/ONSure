@@ -25,28 +25,53 @@
       ]
     },
     "onsure-adapter-oruda": {
-      "depends_on": ["onsure-core"],
+      "depends_on": [
+        "onsure-core"
+      ],
       "package_prefixes": [
         "kr.co.oruda.onsure.platform.oruda",
         "kr.co.oruda.onsure.platform.OrudaTargetAdapter"
       ],
-      "required_scenarios": ["ORUDA_TARGET_FAIL", "ORUDA_MVF_001_PASS"],
+      "required_scenarios": [
+        "ORUDA_TARGET_FAIL",
+        "ORUDA_MVF_001_PASS"
+      ],
       "required_for_core": false
     },
     "onsure-cli": {
-      "depends_on": ["onsure-core"],
-      "optional_runtime_modules": ["onsure-adapter-oruda"]
+      "depends_on": [
+        "onsure-core"
+      ],
+      "optional_runtime_modules": [
+        "onsure-adapter-oruda"
+      ]
     },
     "onsure-sdk": {
-      "depends_on": ["onsure-core"],
-      "public_package_prefixes": ["kr.co.oruda.onsure.sdk.v1"],
+      "depends_on": [
+        "onsure-core"
+      ],
+      "public_package_prefixes": [
+        "kr.co.oruda.onsure.sdk.v1"
+      ],
       "internal_dependency_transitive": false,
       "authority_paths_caller_selectable": false,
       "raw_dispatch_public": false
     },
     "onsure-test-fixtures": {
-      "depends_on": ["onsure-core"],
-      "separate_test_suites": ["core", "oruda", "full-chain"]
+      "depends_on": [
+        "onsure-core"
+      ],
+      "separate_test_suites": [
+        "core",
+        "oruda",
+        "full-chain"
+      ]
+    },
+    "onsure-web": {
+      "depends_on": [
+        "onsure-core"
+      ],
+      "final_claim_allowed": false
     }
   },
   "rules": [

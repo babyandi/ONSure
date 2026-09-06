@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: onsure-web
+  security:
+    user:
+      name: ${ONSURE_WEB_BOOTSTRAP_USER}
+      password: ${ONSURE_WEB_BOOTSTRAP_PASSWORD}
+  thymeleaf:
+    cache: true
+
+onsure:
+  core:
+    catalog-root: ${ONSURE_CORE_CATALOG_ROOT:}
+    validation-root: ${ONSURE_CORE_VALIDATION_ROOT:}
+
+server:
+  shutdown: graceful
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
