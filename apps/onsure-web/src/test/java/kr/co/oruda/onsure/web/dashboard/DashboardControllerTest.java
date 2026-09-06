@@ -15,7 +15,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(DashboardController.class)
+@WebMvcTest(
+    controllers = DashboardController.class,
+    properties = {
+        "spring.security.user.name=test-reviewer",
+        "spring.security.user.password=test-secret"
+    })
 @Import({WebSecurityConfiguration.class, CoreReadProjectionService.class})
 class DashboardControllerTest {
 

@@ -72,6 +72,7 @@ def main() -> int:
     modules = text_values(aggregator, "m:modules/m:module")
     expected_modules = {
         "modules/onsure-core",
+        "apps/onsure-web",
         "modules/onsure-sdk",
         "modules/onsure-cli",
         "modules/onsure-local-api",
