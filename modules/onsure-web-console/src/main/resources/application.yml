@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: onsure-web-console
+  main:
+    banner-mode: "off"
+
+onsure:
+  workspace-root: ${ONSURE_WORKSPACE_ROOT:}
+  session-ledger-root: ${ONSURE_SESSION_LEDGER_ROOT:}
+  session-user-id: ${ONSURE_SESSION_USER_ID:}
+
+server:
+  address: ${ONSURE_WEB_BIND_ADDRESS:127.0.0.1}
+  port: ${ONSURE_WEB_PORT:47312}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+info:
+  onsure:
+    surface: web-console
+    status: NON_FINAL
+    final-claim-allowed: false

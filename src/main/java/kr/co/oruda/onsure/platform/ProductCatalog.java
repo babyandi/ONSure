@@ -111,6 +111,16 @@ public final class ProductCatalog {
         });
     }
 
+    /** Read-only snapshot of registered workspaces for Workbench/SDK consumers. */
+    public synchronized List<Workspace> workspaces() throws Exception {
+        return List.copyOf(read("workspaces.json", new TypeReference<List<Workspace>>() {}));
+    }
+
+    /** Read-only snapshot of registered projects for Workbench/SDK consumers. */
+    public synchronized List<Project> projects() throws Exception {
+        return List.copyOf(read("projects.json", new TypeReference<List<Project>>() {}));
+    }
+
     public synchronized ValidationTarget requireTarget(String targetId) throws Exception {
         return read("targets.json", new TypeReference<List<RegisteredTarget>>() {}).stream()
                 .map(RegisteredTarget::target)
