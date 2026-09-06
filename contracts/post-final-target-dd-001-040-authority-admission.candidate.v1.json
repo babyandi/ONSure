@@ -1,0 +1,39 @@
+{
+  "contract": "ONSURE_POST_FINAL_TARGET_DD_001_040_AUTHORITY_ADMISSION_CANDIDATE_V1",
+  "status": "AUTHORITY_ADMISSION_CANDIDATE_NONFINAL",
+  "authority_sources": {
+    "DD-001..DD-024": "docs/master/semantic-assurance/162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md",
+    "DD-025..DD-040": "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md"
+  },
+  "design_detail_sources": [
+    "docs/master/semantic-assurance/163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md",
+    "docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md"
+  ],
+  "relation_registry": "contracts/post-final-target-dd-to-fr-fin-relation.candidate.v1.json",
+  "admission_rule": {
+    "node_type": "CANONICAL_DISCOVERY_OBLIGATION",
+    "denominator_membership": true,
+    "top_level_product_requirement": false,
+    "double_count_with_parent_fr_fin": false,
+    "closure_rule": "DD node closes only when its own design/contract/evidence/oracle obligations close; FR-FIN parent roll-up uses relation edges and must not count the same obligation twice.",
+    "textual_similarity_closure_prohibited": true
+  },
+  "canonical_ids": [
+    "DD-001","DD-002","DD-003","DD-004","DD-005","DD-006","DD-007","DD-008","DD-009","DD-010",
+    "DD-011","DD-012","DD-013","DD-014","DD-015","DD-016","DD-017","DD-018","DD-019","DD-020",
+    "DD-021","DD-022","DD-023","DD-024","DD-025","DD-026","DD-027","DD-028","DD-029","DD-030",
+    "DD-031","DD-032","DD-033","DD-034","DD-035","DD-036","DD-037","DD-038","DD-039","DD-040"
+  ],
+  "new_cross_cutting_ids": ["DD-008","DD-010","DD-030","DD-037","DD-040"],
+  "required_checks": {
+    "canonical_id_count": 40,
+    "relation_row_count": 40,
+    "unmapped_count": 0,
+    "source_heading_required": true,
+    "source_content_sha256_required": true,
+    "duplicate_id_prohibited": true,
+    "parent_rollup_anti_double_count_required": true
+  },
+  "highest_claim": "DD_AUTHORITY_ADMISSION_MATERIALIZED_NONFINAL",
+  "final_claim_allowed": false
+}

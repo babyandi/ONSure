@@ -1,0 +1,19 @@
+{
+  "contract":"ONSURE_POST_FINAL_TARGET_DD_TO_FR_FIN_RELATION_CANDIDATE_V1",
+  "status":"MAPPED_PARENT_LEVEL_NONFINAL",
+  "rules":[
+    "DD ids are discovery/obligation identities, not automatically new top-level Product Requirement ids.",
+    "Existing-owner refinements remain children/constraints of FR-FIN parents and must not be double-counted as independent top-level requirements.",
+    "NEW_CROSS_CUTTING obligations require canonical non-ID requirement materialization or an explicit future Requirement-ID authority decision before denominator seal.",
+    "Parent-level mapping does not prove granular trace closure."
+  ],
+  "rows":[
+    {"dd":"DD-001","fr_fin":["FR-FIN-05","FR-FIN-12"]},{"dd":"DD-002","fr_fin":["FR-FIN-04","FR-FIN-05","FR-FIN-12"]},{"dd":"DD-003","fr_fin":["FR-FIN-12"]},{"dd":"DD-004","fr_fin":["FR-FIN-14","FR-FIN-18","FR-FIN-19"]},{"dd":"DD-005","fr_fin":["FR-FIN-01","FR-FIN-02","FR-FIN-05","FR-FIN-14"]},{"dd":"DD-006","fr_fin":["FR-FIN-12","FR-FIN-13"]},{"dd":"DD-007","fr_fin":["FR-FIN-07","FR-FIN-12","FR-FIN-13"]},{"dd":"DD-008","fr_fin":["FR-FIN-04","FR-FIN-05","FR-FIN-20"]},{"dd":"DD-009","fr_fin":["FR-FIN-08","FR-FIN-12"]},{"dd":"DD-010","fr_fin":["FR-FIN-01","FR-FIN-13","FR-FIN-14"]},{"dd":"DD-011","fr_fin":["FR-FIN-02","FR-FIN-18"]},{"dd":"DD-012","fr_fin":["FR-FIN-12"]},
+    {"dd":"DD-013","fr_fin":["FR-FIN-01","FR-FIN-02","FR-FIN-14"]},{"dd":"DD-014","fr_fin":["FR-FIN-04","FR-FIN-05"]},{"dd":"DD-015","fr_fin":["FR-FIN-13","FR-FIN-21","FR-FIN-22"]},{"dd":"DD-016","fr_fin":["FR-FIN-15","FR-FIN-17","FR-FIN-22"]},{"dd":"DD-017","fr_fin":["FR-FIN-19","FR-FIN-20"]},{"dd":"DD-018","fr_fin":["FR-FIN-13","FR-FIN-15","FR-FIN-18","FR-FIN-20"]},{"dd":"DD-019","fr_fin":["FR-FIN-12","FR-FIN-13","FR-FIN-22"]},{"dd":"DD-020","fr_fin":["FR-FIN-14"]},{"dd":"DD-021","fr_fin":["FR-FIN-12","FR-FIN-22"]},{"dd":"DD-022","fr_fin":["FR-FIN-07","FR-FIN-12","FR-FIN-13"]},{"dd":"DD-023","fr_fin":["FR-FIN-03","FR-FIN-14"]},{"dd":"DD-024","fr_fin":["FR-FIN-02","FR-FIN-12"]},
+    {"dd":"DD-025","fr_fin":["FR-FIN-03","FR-FIN-12"]},{"dd":"DD-026","fr_fin":["FR-FIN-01","FR-FIN-03","FR-FIN-12"]},{"dd":"DD-027","fr_fin":["FR-FIN-03","FR-FIN-13","FR-FIN-22"]},{"dd":"DD-028","fr_fin":["FR-FIN-05","FR-FIN-12","FR-FIN-14"]},{"dd":"DD-029","fr_fin":["FR-FIN-04","FR-FIN-05","FR-FIN-07"]},{"dd":"DD-030","fr_fin":["FR-FIN-01","FR-FIN-07","FR-FIN-12","FR-FIN-13"]},{"dd":"DD-031","fr_fin":["FR-FIN-07","FR-FIN-12","FR-FIN-13","FR-FIN-14"]},{"dd":"DD-032","fr_fin":["FR-FIN-14","FR-FIN-19"]},{"dd":"DD-033","fr_fin":["FR-FIN-07","FR-FIN-12","FR-FIN-13"]},{"dd":"DD-034","fr_fin":["FR-FIN-12","FR-FIN-22"]},{"dd":"DD-035","fr_fin":["FR-FIN-07","FR-FIN-12","FR-FIN-13"]},{"dd":"DD-036","fr_fin":["FR-FIN-12"]},{"dd":"DD-037","fr_fin":["FR-FIN-12","FR-FIN-22"]},{"dd":"DD-038","fr_fin":["FR-FIN-05","FR-FIN-07"]},{"dd":"DD-039","fr_fin":["FR-FIN-13"]},{"dd":"DD-040","fr_fin":["FR-FIN-01","FR-FIN-04","FR-FIN-12","FR-FIN-18"]}
+  ],
+  "mapped_dd_count":40,
+  "unmapped_dd_count":0,
+  "granular_relation_complete":false,
+  "final_claim_allowed":false
+}

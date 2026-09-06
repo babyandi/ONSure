@@ -1,0 +1,21 @@
+{
+  "type":"ONSURE_DESIGN_CLOSURE_GITHUB_EXECUTION_STATE_V2",
+  "status":"NON_FINAL",
+  "execution_mode":"GITHUB_CONNECTOR_DIRECT",
+  "branch":"github/design-closure-direct-20260818",
+  "supersedes_or_reconciles":["findings/ONSURE_DESIGN_CLOSURE_GITHUB_WAVE0_AUTHORITY_BASELINE.nonfinal.md","findings/ONSURE_DESIGN_CLOSURE_GITHUB_WAVE1_SEMANTIC_AUDIT_SEED.nonfinal.json","findings/ONSURE_DESIGN_CLOSURE_GITHUB_DENOMINATOR_DISCOVERY_SEED.nonfinal.json"],
+  "axes":[
+    {"axis":1,"name":"Global Requirement Universe materialization","state":"PARTIAL","done":["final-target six authority sources reviewed and Git blob identities bound","EPOCH 0003 pre-seal contract created","FR-FIN-01~22 mandated"],"open":["full authority population","raw content SHA-256","sealed post-reconciliation epoch"]},
+    {"axis":2,"name":"Candidate triage","state":"PARTIAL","done":["FR-FIN-01~22 triaged 22/22 VALID_REQUIREMENT"],"open":["exact full candidate corpus ledger","global triage 100%"]},
+    {"axis":3,"name":"FR-FIN semantic mapping","state":"DONE_PARENT_NONFINAL","done":["FR-FIN 01~22 parent semantic mapping 22/22"],"open":["granular exact relation expansion against sealed active epoch"]},
+    {"axis":4,"name":"Missing/partial design closure","state":"DESIGN_DEFINED_EXECUTION_GATES_PENDING","done":["latest design QA lineage states no further broad design authoring is the primary blocker"],"open":["post-epoch recalculation of missing/partial/contracted coverage","P1 human confirmation"]},
+    {"axis":5,"name":"Semantic narrowing/false closure audit","state":"MATERIALIZED_PARTIAL","done":["historical/currentness boundaries identified","false closure rules enforced in execution state"],"open":["repository-wide current semantic scanner execution"]},
+    {"axis":6,"name":"Exact design inventory/trace registry","state":"HOLD_EXECUTION","done":["Git blob identities available for reviewed authority sources"],"open":["raw-byte content SHA-256 inventory","current exact population digest","global trace regeneration"]},
+    {"axis":7,"name":"Integration/reverse orphan/conflict scan","state":"HOLD_EXECUTION","done":["authority and FR-FIN reconciliation artifacts prepared"],"open":["current reverse-orphan scan","current conflict scan","current lock rerun"]},
+    {"axis":8,"name":"Independent CLEAN rerun","state":"NOT_RUN_HOLD","done":[],"open":["independent current-head CLEAN run 1","independent current-head CLEAN run 2","identical denominator/coverage digest proof"]}
+  ],
+  "cross_cutting_open":["FR-COM-008 repository-local negative/runtime test closure partial","NFR-CONFIG reverse-alignment closure requires current trace/test/evidence proof","four P1 Learning Validation contradiction bindings pending human design-authority confirmation"],
+  "highest_claim":"GITHUB_DIRECT_DESIGN_CLOSURE_PROGRESS_NONFINAL",
+  "design_closure_candidate":false,
+  "final_claim_allowed":false
+}

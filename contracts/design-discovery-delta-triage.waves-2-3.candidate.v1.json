@@ -1,0 +1,37 @@
+{
+  "contract": "ONSURE_DESIGN_DISCOVERY_DELTA_TRIAGE_WAVES_2_3_CANDIDATE_V1",
+  "status": "TRIAGED_NONFINAL",
+  "source": "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md",
+  "summary": {
+    "candidate_count": 16,
+    "valid_requirement_count": 16,
+    "p0_count": 11,
+    "p1_count": 5,
+    "new_cross_cutting_count": 3,
+    "existing_owner_refinement_count": 13
+  },
+  "rows": [
+    {"id":"DD-025","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["RegulatoryControl","RequirementAuthority","Currentness"]},
+    {"id":"DD-026","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["Applicability","RequirementUniverse","CertificateCurrentness"]},
+    {"id":"DD-027","priority":"P1","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["TrustedTime","FinancialProfile","UIClaimLanguage"]},
+    {"id":"DD-028","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["TargetAdapter","Coverage","ClaimCeiling"]},
+    {"id":"DD-029","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["RulesOfEngagement","AuthorityGrant","ExternalEffect"]},
+    {"id":"DD-030","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"NEW_CROSS_CUTTING","owners":["OrganizationLifecycle","Authority","EvidenceLineage","DataGovernance"]},
+    {"id":"DD-031","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["Residency","DR","KeyAuthority","DataGovernance"]},
+    {"id":"DD-032","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["SupplyChain","ProviderQualification","Currentness"]},
+    {"id":"DD-033","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["CryptoLifecycle","Evidence","CertificateVerification"]},
+    {"id":"DD-034","priority":"P1","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["EvidenceExport","Audit","Privacy"]},
+    {"id":"DD-035","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["PrivilegedOperations","Audit","Requalification"]},
+    {"id":"DD-036","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["Independence","SoD","Quorum"]},
+    {"id":"DD-037","priority":"P1","disposition":"VALID_REQUIREMENT","kind":"NEW_CROSS_CUTTING","owners":["EvidenceLifecycle","SchemaMigration","Reconstruction"]},
+    {"id":"DD-038","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["FinancialSafety","RulesOfEngagement","ExternalEffect"]},
+    {"id":"DD-039","priority":"P1","disposition":"VALID_REQUIREMENT","kind":"REFINEMENT","owners":["Observability","OperatingEffectiveness","ClaimCeiling"]},
+    {"id":"DD-040","priority":"P0","disposition":"VALID_REQUIREMENT","kind":"NEW_CROSS_CUTTING","owners":["RequirementDiscovery","DesignAuthority","MetaAssurance"]}
+  ],
+  "anti_false_closure": [
+    "A refinement is not considered closed by textual similarity alone.",
+    "NEW_CROSS_CUTTING rows require explicit owner/object/state/evidence/test design.",
+    "GLOBAL_DISCOVERY_EXHAUSTED remains false while the saturation protocol is not qualified."
+  ],
+  "final_claim_allowed": false
+}

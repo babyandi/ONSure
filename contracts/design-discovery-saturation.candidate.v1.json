@@ -1,0 +1,53 @@
+{
+  "contract": "ONSURE_DESIGN_DISCOVERY_SATURATION_CANDIDATE_V1",
+  "status": "DESIGN_ONLY_NONFINAL",
+  "authority_refs": [
+    "docs/master/semantic-assurance/165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md",
+    "docs/master/semantic-assurance/166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md"
+  ],
+  "mandatory_lens_classes": [
+    "CUSTOMER_LIFECYCLE",
+    "FAILURE_RECOVERY",
+    "ADVERSARIAL",
+    "REGULATORY_STANDARD",
+    "FINANCIAL_OPERATION",
+    "EXTERNAL_DEPENDENCY",
+    "ORGANIZATION_GOVERNANCE",
+    "META_ASSURANCE",
+    "NEGATIVE_SPACE"
+  ],
+  "wave_requirements": {
+    "frozen_target_scope_required": true,
+    "frozen_authority_digest_required": true,
+    "candidate_ledger_required": true,
+    "triage_denominator_100_percent_required": true,
+    "blind_independent_wave_required": true,
+    "same_prompt_or_same_prior_conclusion_context_counts_as_independent": false
+  },
+  "saturation_candidate_gate": {
+    "mandatory_lenses_executed_100_percent": true,
+    "untriaged_candidate_count": 0,
+    "unresolved_p0_candidate_count": 0,
+    "consecutive_zero_new_p0_waves": 2,
+    "consecutive_p1_novelty_ceiling_waves": 2,
+    "p1_novelty_ceiling": "CONFIGURABLE_POLICY_WITH_HARD_DISCLOSURE",
+    "unchanged_target_scope_between_consecutive_waves": true,
+    "unchanged_authority_digest_between_consecutive_waves": true
+  },
+  "invalidation_triggers": [
+    "TARGET_SCOPE_CHANGE",
+    "REQUIREMENT_AUTHORITY_CHANGE",
+    "MATERIAL_REGULATORY_OR_STANDARD_CHANGE",
+    "NEW_TARGET_ARCHETYPE",
+    "NEW_P0_DISCOVERY_AFTER_SATURATION",
+    "DISCOVERY_METHOD_OR_LENS_DEFECT_FOUND"
+  ],
+  "current_observed_state": {
+    "wave_1_new_delta_count": 24,
+    "waves_2_3_new_delta_count": 16,
+    "saturation_candidate": false,
+    "reason": "New P0/P1 obligations continued to emerge; zero-new-P0 convergence has not been demonstrated."
+  },
+  "highest_claim": "DISCOVERY_SATURATION_PROTOCOL_DESIGNED_NONFINAL",
+  "final_claim_allowed": false
+}

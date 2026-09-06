@@ -1,0 +1,66 @@
+{
+  "contract": "ONSURE_DD_042_ADVERSARIAL_MINIMUM_SET_V1",
+  "status": "DELEGATED_DESIGN_AUTHORITY_MATERIALIZED_NONFINAL",
+  "dd_id": "DD-042",
+  "authority_source": {
+    "human_decision": "F-05",
+    "delegation": "minimum adversarial fixture set is versioned by follow-up design authority before QUALIFIED status",
+    "issue": "babyandi/ONSure#89"
+  },
+  "rule": "DD-042 may not become QUALIFIED_NONFINAL unless every mandatory adversarial dimension below is executed as a distinct planned fixture, all expected HOLD semantics are observed, and the qualification receipt binds this authority digest and the exact successor fixture plan.",
+  "minimum_adversarial_fixture_count": 6,
+  "mandatory_fixtures": [
+    {
+      "fixture_id": "DD042-QUAL-ADV-CLAIM-EVIDENCE-SELF-SOURCING",
+      "failure_mode": "CLAIM_EVIDENCE_SELF_SOURCING",
+      "expected_decision": "HOLD",
+      "required_reason": "CLAIM_EVIDENCE_SELF_SOURCING",
+      "purpose": "A claim author may not independently source the evidence used to establish the same self-referential safety claim."
+    },
+    {
+      "fixture_id": "DD042-QUAL-ADV-EVALUATOR-ORACLE-CIRCULARITY",
+      "failure_mode": "EVALUATOR_ORACLE_CIRCULARITY",
+      "expected_decision": "HOLD",
+      "required_reason": "EVALUATOR_ORACLE_CIRCULARITY",
+      "purpose": "An evaluator may not establish its own correctness by acting as, or controlling, the oracle used for qualification."
+    },
+    {
+      "fixture_id": "DD042-QUAL-ADV-SELF-PROMOTION",
+      "failure_mode": "CLAIM_OR_EVALUATOR_SELF_PROMOTION",
+      "expected_decision": "HOLD",
+      "required_reason": "CLAIM_OR_EVALUATOR_SELF_PROMOTION",
+      "purpose": "The claim author or evaluator may not be the promotion authority that advances its own qualification."
+    },
+    {
+      "fixture_id": "DD042-QUAL-ADV-UNVERIFIED-INDEPENDENCE-PROVENANCE",
+      "failure_mode": "CALLER_DECLARED_INDEPENDENCE_WITHOUT_PROVENANCE",
+      "expected_decision": "HOLD",
+      "required_reason": "INDEPENDENCE_PROVENANCE_NOT_VERIFIED",
+      "purpose": "Caller-declared independence is insufficient without independently verifiable provenance."
+    },
+    {
+      "fixture_id": "DD042-QUAL-ADV-INSUFFICIENT-INDEPENDENT-EVIDENCE",
+      "failure_mode": "INSUFFICIENT_INDEPENDENT_ADVERSARIAL_EVIDENCE",
+      "expected_decision": "HOLD",
+      "required_reason": "INDEPENDENT_ADVERSARIAL_EVIDENCE_INSUFFICIENT",
+      "purpose": "The independent adversarial evidence population must meet the current authority-bound minimum."
+    },
+    {
+      "fixture_id": "DD042-QUAL-ADV-MATERIAL-SHARED-CONTROL-LOOP",
+      "failure_mode": "TRANSITIVE_OR_SHARED_CONTROL_SELF_APPROVAL_LOOP",
+      "expected_decision": "HOLD",
+      "required_reason": "MATERIAL_SHARED_CONTROL_LOOP",
+      "purpose": "Transitive or shared-control lineage that creates a material self-approval loop disqualifies positive qualification."
+    }
+  ],
+  "qualification_binding": {
+    "policy_authority_digest_required": true,
+    "exact_fixture_plan_digest_required": true,
+    "all_six_fixture_ids_required_in_adversarial_result": true,
+    "adversarial_executed_count_minimum": 6,
+    "failed_count_required": 0,
+    "missing_any_mandatory_fixture": "HOLD"
+  },
+  "github_actions_authority": false,
+  "final_claim_allowed": false
+}

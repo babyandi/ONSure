@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "onsure://contracts/dd-040-nonblocking-p1-bound-decision/v1",
+  "title": "ONSure DD-040 Nonblocking P1 Bound Human Decision Receipt",
+  "type": "object",
+  "required": [
+    "contract", "subject_commit_sha", "subject_tree_sha",
+    "wave_a_receipt_digest", "wave_b_receipt_digest",
+    "observed_wave_a_nonblocking_p1_count", "observed_wave_b_nonblocking_p1_count",
+    "rule_type", "nonblocking_p1_ceiling", "approver_principal", "review_authority",
+    "decision_statement", "decided_at", "receipt_digest", "final_claim_allowed"
+  ],
+  "properties": {
+    "contract": {"const": "ONSURE_DD040_NONBLOCKING_P1_BOUND_DECISION_V1"},
+    "subject_commit_sha": {"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "subject_tree_sha": {"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "wave_a_receipt_digest": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "wave_b_receipt_digest": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "observed_wave_a_nonblocking_p1_count": {"type":"integer","minimum":0},
+    "observed_wave_b_nonblocking_p1_count": {"type":"integer","minimum":0},
+    "rule_type": {"const":"NUMERIC_CEILING"},
+    "nonblocking_p1_ceiling": {"type":"integer","minimum":0},
+    "approver_principal": {"type":"string","minLength":1},
+    "review_authority": {"type":"string","minLength":1},
+    "decision_statement": {"type":"string","minLength":1},
+    "decided_at": {"type":"string","format":"date-time"},
+    "receipt_digest": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "final_claim_allowed": {"const":false}
+  },
+  "additionalProperties": true
+}

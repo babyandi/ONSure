@@ -1,0 +1,17 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"onsure://contracts/human-design-authority-bulk-approval-input/v1",
+  "title":"ONSure Explicit Human Design Authority Bulk Approval Input",
+  "type":"object",
+  "required":["contract","approver_principal","review_authority","approved_recommendation_packet_digest","decision_ids","approval_statement","approved_at"],
+  "properties":{
+    "contract":{"const":"ONSURE_HDA_BULK_APPROVAL_INPUT_V1"},
+    "approver_principal":{"type":"string","minLength":1},
+    "review_authority":{"type":"string","minLength":1},
+    "approved_recommendation_packet_digest":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "decision_ids":{"type":"array","minItems":18,"maxItems":18,"uniqueItems":true,"items":{"type":"string","minLength":1}},
+    "approval_statement":{"type":"string","minLength":1},
+    "approved_at":{"type":"string","format":"date-time"}
+  },
+  "additionalProperties":false
+}

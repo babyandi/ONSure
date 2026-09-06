@@ -1,0 +1,37 @@
+{
+  "type": "ONSURE_LEARNING_VALIDATION_P1_HUMAN_CONFIRMATION_PACKAGE_GITHUB_NONFINAL",
+  "status": "PENDING_HUMAN_DESIGN_AUTHORITY_CONFIRMATION",
+  "source": "docs/master/semantic-assurance/161_LEARNING_VALIDATION_P1_CONTRADICTION_POLICY_BINDINGS.md",
+  "scope": "Four textually-grounded P1 contradiction classes derived from FR-LEARN-001~095. They are not asserted to reproduce a lost original review list.",
+  "decisions": [
+    {
+      "id": "P1-LV-01",
+      "title": "Federated Aggregation Mechanism vs Tenant Isolation",
+      "proposed_binding": "Minimum cohort/outlier dominance fail-closed; per-round tenant opt-in; aggregation diagnostics evaluator-only/minimized.",
+      "state": "PROPOSED_PENDING_HUMAN_CONFIRMATION"
+    },
+    {
+      "id": "P1-LV-02",
+      "title": "Reviewer/Evaluator Diversity vs Qualified-Reviewer Scarcity",
+      "proposed_binding": "Do not silently weaken independence; disclose reduced independence; high-risk decisions HOLD until external reviewer is obtained.",
+      "state": "PROPOSED_PENDING_HUMAN_CONFIRMATION"
+    },
+    {
+      "id": "P1-LV-03",
+      "title": "Decision Explanation Fidelity vs Sealed Challenge Secrecy",
+      "proposed_binding": "Expose actual evidence/rule/oracle/policy identifiers while redacting sealed fixture contents; full fixture only via evaluator-only audit channel.",
+      "state": "PROPOSED_PENDING_HUMAN_CONFIRMATION"
+    },
+    {
+      "id": "P1-LV-04",
+      "title": "Emergency Global Revocation Speed vs Residency/Air-gap",
+      "proposed_binding": "Pre-bind legal authority for sovereignty-restricted revocation propagation; air-gapped nodes disclose propagation lag and remain STALE until synchronized.",
+      "state": "PROPOSED_PENDING_HUMAN_CONFIRMATION"
+    }
+  ],
+  "github_execution_disposition": "MATERIALIZED_FOR_DECISION_NOT_SELF_APPROVED",
+  "negative_fixture_required_after_confirmation": true,
+  "runtime_evidence_required_after_confirmation": true,
+  "global_lock_effect": "HOLD_UNTIL_HUMAN_CONFIRMATION_AND_REQUIRED_EVIDENCE",
+  "final_claim_allowed": false
+}

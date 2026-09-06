@@ -1,0 +1,49 @@
+{
+  "contract": "ONSURE_DESIGN_DISCOVERY_RECONCILER_V2",
+  "status": "STRUCTURAL_ENFORCEMENT_MATERIALIZED_NONFINAL",
+  "role": "DETERMINISTIC_DISCOVERY_RECONCILER",
+  "authority": ["DD-036", "DD-040"],
+  "required_inputs": [
+    "frozen-baseline-receipt.json",
+    "envelope-pair-receipt.json",
+    "INDEPENDENT-SATURATION-A.envelope.json",
+    "INDEPENDENT-SATURATION-B.envelope.json",
+    "INDEPENDENT-SATURATION-A.execution-isolation.json",
+    "INDEPENDENT-SATURATION-B.execution-isolation.json",
+    "INDEPENDENT-SATURATION-A.candidate-ledger.json",
+    "INDEPENDENT-SATURATION-B.candidate-ledger.json",
+    "INDEPENDENT-SATURATION-A.json",
+    "INDEPENDENT-SATURATION-B.json",
+    "INDEPENDENT-SATURATION-A.custody.json",
+    "INDEPENDENT-SATURATION-B.custody.json",
+    "design-discovery-independence-control-graph.v1.json",
+    "design-discovery-p1-novelty-policy.v1.json"
+  ],
+  "sod": {
+    "reconciler_is_non_discretionary_deterministic_process": true,
+    "reconciler_principal_must_differ_from_wave_a_reviewer": true,
+    "reconciler_principal_must_differ_from_wave_b_reviewer": true,
+    "reconciler_process_lineage_must_differ_from_wave_processes": true,
+    "reconciler_does_not_author_wave_results": true,
+    "reconciler_does_not_issue_design_lock": true,
+    "reconciler_code_change_invalidates_reconciliation_evidence": true
+  },
+  "structural_checks": [
+    "baseline receipt file digest and exact frozen tree/authority bind every envelope and wave",
+    "both envelopes are prepared in one pair before either result exists",
+    "A/B input bundle digests are identical and exact",
+    "A/B envelope ids/session ids/workspace ids/process lineages are distinct",
+    "execution-isolation evidence is canonical-digest valid and all fail-closed boolean constraints hold",
+    "candidate ledger files canonical-digest match wave declarations",
+    "wave result receipts canonical-digest match and bind the exact envelope and isolation evidence",
+    "custody receipts canonical-digest match and bind pair/envelope/wave/ledger/isolation digests",
+    "pair preparation precedes execution start; execution finish precedes result seal",
+    "no opposite-wave result access, prior-conclusion access, shared memory, repository/issue browsing or orchestrator result editing is permitted",
+    "common-control mitigation token strings are accepted only if each token is backed by validated structural proof",
+    "unknown or omitted policy dimension is HOLD",
+    "DD-040 unknown nonblocking P1 ceiling is always HOLD until Human Authority finalizes it after two actual baselines"
+  ],
+  "highest_claim": "SATURATION_CANDIDATE_NONFINAL",
+  "github_actions_authority": false,
+  "final_claim_allowed": false
+}

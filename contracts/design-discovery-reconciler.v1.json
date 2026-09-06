@@ -1,0 +1,33 @@
+{
+  "contract": "ONSURE_DESIGN_DISCOVERY_RECONCILER_V1",
+  "status": "DESIGN_MATERIALIZED_NONFINAL",
+  "role": "DISCOVERY_RECONCILER",
+  "inputs": ["frozen-baseline-receipt.json","INDEPENDENT-SATURATION-A.json","INDEPENDENT-SATURATION-B.json","design-discovery-independence-control-graph.v1.json","design-discovery-p1-novelty-policy.v1.json"],
+  "sod": {
+    "must_not_equal_wave_a_reviewer_principal": true,
+    "must_not_equal_wave_b_reviewer_principal": true,
+    "must_not_be_design_author": true,
+    "must_not_be_wave_result_author": true,
+    "must_not_self_issue_design_lock": true,
+    "promotion_authority_separate_from_wave_authors": true
+  },
+  "responsibilities": [
+    "verify A/B frozen tree and authority digest equality",
+    "verify A/B reviewer principal and process lineage distinctness",
+    "evaluate common-control dimensions using the approved control graph rather than trusting a wave boolean",
+    "apply the approved P0/P1 novelty policy rather than trusting a wave boolean",
+    "verify 100 percent mandatory lens coverage and zero untriaged candidates",
+    "produce HOLD on unknown policy, missing evidence, disqualifying common control, new P0, blocking P1, or authority-affecting P1 without disposition",
+    "preserve both sealed wave receipts and candidate ledger digests"
+  ],
+  "sealed_envelope": {
+    "input_bundle_digest_required": true,
+    "wave_output_receipt_digest_required": true,
+    "cross_wave_read_before_seal_forbidden": true,
+    "immutable_custody_ledger_required": true,
+    "cryptographic_signature_required": false,
+    "sha256_commitment_plus_custody_ledger_minimum": true
+  },
+  "highest_claim": "RECONCILER_PROTOCOL_DESIGNED_NONFINAL",
+  "final_claim_allowed": false
+}

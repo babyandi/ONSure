@@ -78,14 +78,22 @@ SA-14 Validator Requalification Engine
 12. Policy/Authority/Persistence/Recovery/Observability integrity
 13. Safety/Hazard Assurance where applicable
 14. Contestability/Appeal Governance where applicable
+15. Design Discovery Saturation / denominator requalification after material scope or authority change
 
 ## 7. 설계 산출물 기준선
 `docs/master/01~08`, `08A`, `docs/master/semantic-assurance/*`를 함께 사용한다. 권위와 supersession은 `docs/architecture/ONSURE_DESIGN_AUTHORITY_AND_SCOPE_v1.md`를 따른다.
 
-Semantic Assurance companion은 00~128+까지 Integration, Migration, Runtime, Independent Assurance, Deployment/Currentness, Composition, Evidence Graph, Certificate, Offline/Enterprise, Scale, Plugin/AI/Meta-Assurance, Formal Algebra, Invalidation, Persistence, API, Security/Privacy, Observability, DR, External Trust, Authority/SoD, Safe Default, Policy/Industry/Tier, Requirement Universe, Lock, Fresh Review, Safety/Hazard, Contestability/Appeal을 정의한다.
+Semantic Assurance companion은 Integration, Migration, Runtime, Independent Assurance, Deployment/Currentness, Composition, Evidence Graph, Certificate, Offline/Enterprise, Scale, Plugin/AI/Meta-Assurance, Formal Algebra, Invalidation, Persistence, API, Security/Privacy, Observability, DR, External Trust, Authority/SoD, Safe Default, Policy/Industry/Tier, Requirement Universe, Lock, Fresh Review, Safety/Hazard, Contestability/Appeal 및 post-final-target Design Discovery를 정의한다.
 
-### 최신 Closure / Handoff Authority
-- Product Design Scope closure: `128_FINAL_FRESH_REVIEW_RERUN_AND_PRODUCT_DESIGN_SCOPE_CLOSURE.md`
+### 최신 Product Design Discovery Authority
+- 과거 scope-closure 후보: `126/128 FINAL_FRESH...` — historical pre-final-target scope evidence
+- Final-target authority reconciliation: `160_FINAL_TARGET_PRODUCT_AUTHORITY_RECONCILIATION.md`
+- Final-target Delta Wave 1: `162_FINAL_TARGET_DELTA_DESIGN_DISCOVERY_REOPENING.md`, `163_FINAL_TARGET_DELTA_MISSING_DESIGN_CLOSURE.md`
+- Blind Discovery Waves 2~3: `165_BLIND_DESIGN_DISCOVERY_WAVES_2_3.md`, `166_WAVES_2_3_MISSING_DESIGN_CLOSURE.md`
+- Discovery saturation contract: `contracts/design-discovery-saturation.candidate.v1.json`
+- 실행상태: `164_EIGHT_STEP_DESIGN_DISCOVERY_TO_CLOSURE_EXECUTION_STATUS.md`
+
+### 개발/Handoff 참고
 - 병합 전 Phase 상태 정정: `136_PRE_MERGE_STATUS_CORRECTION_AND_BASELINE_HANDOFF.md`
 - Claude 개발 단일 진입점: `137_CLAUDE_DEVELOPMENT_MASTER_HANDOFF.md`
 - 개발 진행상태: `contracts/claude-development-progress-registry.v1.json`
@@ -105,49 +113,48 @@ Tier는 증거조건으로 계산하며 상품 Plan으로 자동 상승하지 �
 Verification Decision, Assurance Strength, Currentness, Qualification, Independence, Human Acceptance, Deployment Authorization, Commercial Authorization을 분리한다. Unknown/partial/stale/unverifiable을 positive strong claim으로 자동 승격하지 않는다.
 
 ## 10. Product Design Scope 최신 판정
-Fresh Review에서 Safety/Hazard와 Contestability/Appeal이라는 두 독립축을 추가했고, 이를 반영한 rerun에서 추가 신규 독립축 0건을 확인했다.
+과거 `126/128`은 당시 authority/scope에서 `PRODUCT_DESIGN_SCOPE_COMPLETE_CANDIDATE`를 선언했으나, 이후 `docs/05 + docs/40~44` final-target authority와 `FR-FIN-01~22`가 Product Design Requirement Universe에 추가되면서 그 scope closure는 현재 denominator에 자동 승계될 수 없다.
 
-따라서 제품 설계 범위 상태는:
-**`PRODUCT_DESIGN_SCOPE_COMPLETE_CANDIDATE`**
+Post-final-target discovery 결과:
+- Wave 1: DD-001~024, 24 VALID delta obligations
+- Blind Waves 2~3: DD-025~040, 16 VALID delta obligations
+- 합계: 40개의 post-final-target delta obligations가 발견·triage됨
+- DD-001~040은 companion design 수준에서 owner/state/evidence/failure/oracle까지 정의됐으나 machine contract/implementation/qualification 완료를 의미하지 않는다.
 
-다만 다음 3개 refinement는 기존 owner에 귀속한다.
-- FR-FRESH-001 Rules of Engagement / Target Testing Authorization
-- FR-FRESH-002 Accessibility / Internationalization / Locale Integrity
-- FR-FRESH-003 Contract Termination / Tenant Offboarding Closure
+현재 제품 설계 범위 상태는:
+**`PRODUCT_DESIGN_DISCOVERY_REOPENED / GLOBAL_DISCOVERY_EXHAUSTED=false / NON_FINAL`**
 
-Scope Complete Candidate는 Design QA PASS나 Design Lock을 의미하지 않는다.
+Discovery 종료는 문서 개수 또는 단일 fresh review로 선언하지 않는다. `design-discovery-saturation.candidate.v1.json`의 mandatory lens와 independent repeated-wave gate를 통과해야만 `DISCOVERY_SATURATION_CANDIDATE`가 가능하다. Target scope, Requirement Authority, material regulatory/standard change가 발생하면 saturation은 invalidated된다.
 
 ## 11. Design QA / Baseline Lock 상태
-현재 Design QA는 `IN_PROGRESS / HOLD`다. 다음은 여전히 실제 QA/봉인 작업이다.
-- Global Requirement Universe exact population
-- Applicability exact population
-- repository-wide trace/orphan/contradiction zero 증명
+현재 Design QA는 `HOLD`다. Product Design denominator가 post-delta authority로 재자격되지 않았으므로 예전 EPOCH/trace/lock 결과를 현재 closure로 승계하지 않는다.
+
+재개 전 필수:
+- DD-001~040 authority admission/relation materialization
+- Global Requirement Universe exact population regeneration
+- Applicability exact population regeneration
+- repository-wide trace/orphan/contradiction 재계산
 - authoritative artifact content SHA-256 inventory
 - canonical registry digests
 - baseline reconstructability
 - Design Lock Check
-
-이 항목들은 제품 설계축 추가 작업이 아니라 Design QA다.
+- independent CLEAN rerun
 
 ## 12. 구현 상태
-현재 canonical 구현 상태:
-- Claude Implementation: `NOT_STARTED`
-- Test / Runtime Verification: `NOT_STARTED`
-- Independent Assurance / Release Qualification: `NOT_STARTED`
-- Production / Commercial: `NOT_AUTHORIZED`
+현재 canonical 구현 상태는 각 implementation registry/실제 code evidence를 따른다. 문서상 DESIGN_ONLY/Candidate는 구현 완료로 승격하지 않는다.
 
-`128`에 남아 있는 과거 `IN_PROGRESS_BY_CLAUDE` 표현은 Phase 상태에 한해 `136`에 의해 supersede된다.
+특히 post-final-target DD-001~040은 companion design이 존재한다는 이유만으로 `CONTRACTED`, `IMPLEMENTED`, `TESTED`, `QUALIFIED`로 표현하지 않는다.
 
 ## 13. 개발 전 정합성 보강
-Claude Batch 0 시작 전 다음을 구현 준비 기준으로 사용한다.
+개발/검증은 다음 준비 기준을 사용한다.
 1. Authority/Supersession hierarchy 정합화
-2. Master 최신 상태 반영
+2. Master 최신 Product Design Discovery 상태 반영
 3. machine contract의 exact population을 숫자 단일 권위로 사용
 4. Business Actor→RBAC/Authority mapping 계약화
 5. 핵심 DESIGN_ONLY 기능의 Operation/Contract materialization 후보 생성
 6. Open Decision→Policy source/safe floor binding
-
-완료 여부는 `138_IMPLEMENTATION_READY_DESIGN_BASELINE_RECONCILIATION.md`에서 추적한다.
+7. DD-001~040 canonical requirement relation/admission
+8. Discovery saturation qualification 전 Product Design Scope Complete 재선언 금지
 
 ## 14. 구현/검증 경계
 다음 전까지 Product/Final authority를 올리지 않는다.
@@ -160,8 +167,9 @@ Claude Batch 0 시작 전 다음을 구현 준비 기준으로 사용한다.
 - target-bound deployment/currentness
 - Shadow Gate disagreement closure
 - Active Selector 승인
+- post-final-target Requirement denominator/trace/lock/CLEAN 재자격
 
 문서가 자세하거나 Candidate Contract가 존재한다는 사실은 PASS/QUALIFIED/FINAL 증거가 아니다.
 
 ## 15. 현재 최고 표현
-**`PRODUCT_DESIGN_SCOPE_COMPLETE_CANDIDATE / PRE_IMPLEMENTATION_DESIGN_RECONCILIATION_IN_PROGRESS / DESIGN_QA_HOLD / CLAUDE_IMPLEMENTATION_NOT_STARTED / NON_FINAL`**
+**`PRODUCT_DESIGN_DISCOVERY_REOPENED / 40_POST_FINAL_TARGET_DELTA_OBLIGATIONS_TRIAGED_AND_COMPANION-DESIGNED / DISCOVERY_SATURATION_NOT_PROVEN / REQUIREMENT_DENOMINATOR_REQUALIFICATION_REQUIRED / DESIGN_QA_HOLD / NON_FINAL`**
