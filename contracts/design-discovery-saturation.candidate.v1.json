@@ -30,7 +30,17 @@
     "unresolved_p0_candidate_count": 0,
     "consecutive_zero_new_p0_waves": 2,
     "consecutive_p1_novelty_ceiling_waves": 2,
-    "p1_novelty_ceiling": "CONFIGURABLE_POLICY_WITH_HARD_DISCLOSURE",
+    "p1_novelty_policy": {
+      "policy_id": "COMPOSITE_RISK_TIERED_CEILING_V1",
+      "p0_ceiling": 0,
+      "blocking_p1_ceiling": 0,
+      "authority_affecting_p1_ceiling": 0,
+      "ordinary_nonblocking_p1_ceiling_per_wave": null,
+      "mandatory_triage_percent": 100,
+      "unknown_or_unconfigured_policy_decision": "HOLD",
+      "authority_status": "AWAITING_EXPLICIT_HUMAN_AUTHORITY",
+      "approval_rule": "The ordinary nonblocking P1 ceiling requires an exact Human Authority decision; generic continue/proceed language is not approval."
+    },
     "unchanged_target_scope_between_consecutive_waves": true,
     "unchanged_authority_digest_between_consecutive_waves": true
   },
